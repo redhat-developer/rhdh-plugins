@@ -51,6 +51,14 @@ export function notebookElevenFileStagingPaths(): string[] {
   );
 }
 
+/** Ten paths at the session cap — disables the upload dropzone when all are staged. */
+export function notebookTenFileStagingPaths(): string[] {
+  return notebookElevenFileStagingPaths().slice(
+    0,
+    NOTEBOOK_SESSION_MAX_DOCUMENTS,
+  );
+}
+
 export function notebookUnsupportedTypeFixturePath(): string {
   return path.join(__dirname, 'notebookTranslation.ts');
 }

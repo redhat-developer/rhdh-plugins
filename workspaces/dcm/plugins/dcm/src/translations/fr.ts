@@ -27,7 +27,7 @@ const dcmTranslationFr: TranslationMessages<
   ref: dcmTranslationRef,
   messages: {
     'page.title': 'Centre de donn\u00e9es',
-    'page.tabs.providers': 'Fournisseurs',
+    'page.tabs.agents': 'Agents',
     'page.tabs.policies': 'Politiques',
     'page.tabs.serviceTypes': 'Types de service',
     'page.tabs.catalogItems': '\u00c9l\u00e9ments du catalogue',
@@ -55,48 +55,44 @@ const dcmTranslationFr: TranslationMessages<
     'deleteDialog.cancelButton': 'Annuler',
     'deleteDialog.body':
       '\u00cates-vous s\u00fbr de vouloir supprimer {{resourceName}}\u00a0? Cette action est irr\u00e9versible.',
-    'providers.emptyTitle': 'Aucun fournisseur enregistr\u00e9',
-    'providers.emptyDescription':
-      'Enregistrez un fournisseur de services pour permettre \u00e0 DCM de provisionner des ressources sur une infrastructure externe (p.\u00a0ex. OpenShift, AWS).',
-    'providers.registerButton': 'Enregistrer',
-    'providers.entityLabel': 'Fournisseurs',
-    'providers.registerDialogTitle': 'Enregistrer un fournisseur',
-    'providers.editDialogTitle': 'Modifier le fournisseur',
-    'providers.saveButton': 'Enregistrer',
-    'providers.createSuccess': 'Fournisseur enregistr\u00e9 avec succ\u00e8s.',
-    'providers.updateSuccess': 'Fournisseur mis \u00e0 jour avec succ\u00e8s.',
-    'providers.deleteSuccess': 'Fournisseur supprim\u00e9 avec succ\u00e8s.',
-    'providers.deleteLabel': 'fournisseur',
-    'providers.columns.displayName': 'Nom affich\u00e9',
-    'providers.columns.name': 'Nom',
-    'providers.columns.endpoint': 'Point de terminaison',
-    'providers.columns.serviceType': 'Type de service',
-    'providers.columns.operations': 'Op\u00e9rations',
-    'providers.columns.status': '\u00c9tat',
-    'providers.form.nameLabel': 'Nom *',
-    'providers.form.namePlaceholder': 'p.\u00a0ex. mon-fournisseur-k8s',
-    'providers.form.nameHelper':
+    'agents.emptyTitle': 'Aucun agent enregistr\u00e9',
+    'agents.emptyDescription':
+      'Les agents d\u2019environnement s\u2019enregistrent aupr\u00e8s du plan de contr\u00f4le et envoient des battements de c\u0153ur p\u00e9riodiques.',
+    'agents.registerButton': 'Enregistrer',
+    'agents.entityLabel': 'Agents',
+    'agents.registerDialogTitle': 'Enregistrer un agent',
+    'agents.createSuccess': 'Agent enregistr\u00e9 avec succ\u00e8s.',
+    'agents.columns.name': 'Nom',
+    'agents.columns.environment': 'Environnement',
+    'agents.columns.serviceTypes': 'Types de service',
+    'agents.columns.cost': 'Co\u00fbt',
+    'agents.columns.topic': 'Topic',
+    'agents.columns.health': '\u00c9tat',
+    'agents.columns.lastHeartbeat': 'Dernier battement de cœur',
+    'agents.filter.healthLabel': 'État de santé',
+    'agents.filter.healthAll': 'Tous',
+    'agents.filter.healthReady': 'Prêt',
+    'agents.filter.healthCongested': 'Congestionné',
+    'agents.filter.healthUnavailable': 'Indisponible',
+    'agents.form.nameLabel': 'Nom *',
+    'agents.form.namePlaceholder': 'p.\u00a0ex. env-agent-west-1',
+    'agents.form.nameHelper':
       'Identifiant unique \u2014 uniquement lettres minuscules, chiffres et tirets',
-    'providers.form.nameHelperEditMode':
-      'Le nom du fournisseur ne peut pas \u00eatre modifi\u00e9 apr\u00e8s la cr\u00e9ation',
-    'providers.form.endpointLabel': 'Point de terminaison *',
-    'providers.form.endpointPlaceholder': 'https://api.exemple.com',
-    'providers.form.endpointHelper':
-      'URL compl\u00e8te de l\u2019API du fournisseur (p.\u00a0ex. https://api.exemple.com)',
-    'providers.form.serviceTypeLabel': 'Type de service *',
-    'providers.form.serviceTypeEmpty': 'Aucun type de service disponible',
-    'providers.form.serviceTypeSelect':
-      'S\u00e9lectionnez un type de service\u2026',
-    'providers.form.serviceTypeHelperNoTypes':
-      'Cr\u00e9ez d\u2019abord un type de service dans l\u2019onglet Types de service',
-    'providers.form.serviceTypeHelperDefault':
-      'S\u00e9lectionner parmi les types de service enregistr\u00e9s',
-    'providers.form.schemaVersionLabel': 'Version du sch\u00e9ma *',
-    'providers.form.schemaVersionHelper':
-      'p.\u00a0ex. v1, v1alpha1, v2beta2 \u2014 uniquement v<nombre>[alpha|beta][nombre]',
-    'providers.form.operationsLabel': 'Op\u00e9rations',
-    'providers.form.operationsHelper':
-      'S\u00e9lectionner les op\u00e9rations prises en charge par ce fournisseur',
+    'agents.form.environmentLabel': 'Environnement *',
+    'agents.form.environmentPlaceholder': 'p.\u00a0ex. production',
+    'agents.form.environmentHelper':
+      '\u00c9tiquette d\u2019environnement de l\u2019agent',
+    'agents.form.serviceTypesLabel': 'Types de service *',
+    'agents.form.serviceTypesHelper':
+      'Types de service que cet agent peut fournir',
+    'agents.form.costLabel': 'Co\u00fbt *',
+    'agents.form.costHelper':
+      'Poids de co\u00fbt relatif pour les d\u00e9cisions de placement',
+    'agents.form.topicNameLabel': 'Nom du topic *',
+    'agents.form.topicNamePlaceholder':
+      'p.\u00a0ex. dcm.agent.env-agent-west-1',
+    'agents.form.topicNameHelper':
+      'Nom du topic NATS \u2014 doit commencer par dcm.agent.',
     'policies.emptyTitle': 'Aucune politique d\u00e9finie',
     'policies.emptyDescription':
       'Cr\u00e9ez des politiques OPA Rego pour appliquer des r\u00e8gles de gouvernance sur les ressources DCM.',
@@ -292,21 +288,17 @@ const dcmTranslationFr: TranslationMessages<
     'copyButton.copied': 'Copi\u00e9\u00a0!',
     'copyButton.failed': '\u00c9chec de la copie',
     'copyButton.ariaLabel': 'Copier dans le presse-papiers',
-    'validation.provider.nameRequired': 'Le nom est obligatoire',
-    'validation.provider.namePattern':
+    'validation.agent.nameRequired': 'Le nom est obligatoire',
+    'validation.agent.namePattern':
       'Seules les lettres minuscules, les chiffres et les tirets sont autoris\u00e9s (doit commencer par une lettre)',
-    'validation.provider.endpointRequired':
-      'Le point de terminaison est obligatoire',
-    'validation.provider.endpointPattern':
-      'Doit commencer par http:// ou https:// (p. ex. https://mon-service:8081/api)',
-    'validation.provider.serviceTypeRequired':
-      'Le type de service est obligatoire',
-    'validation.provider.serviceTypeMin':
-      'Veuillez s\u00e9lectionner un type de service dans la liste',
-    'validation.provider.schemaVersionRequired':
-      'La version du sch\u00e9ma est obligatoire',
-    'validation.provider.schemaVersionPattern':
-      'Doit suivre le format v<nombre>[alpha|beta][nombre] \u2014 ex. v1, v1alpha1, v2beta2',
+    'validation.agent.environmentRequired':
+      'L\u2019environnement est obligatoire',
+    'validation.agent.serviceTypesRequired':
+      'Au moins un type de service est requis',
+    'validation.agent.costRequired': 'Le co\u00fbt est obligatoire',
+    'validation.agent.topicNameRequired': 'Le nom du topic est obligatoire',
+    'validation.agent.topicNamePattern':
+      'Le nom du topic doit commencer par dcm.agent.',
     'validation.policy.displayNameRequired':
       "Le nom d'affichage est obligatoire",
     'validation.policy.displayNameEmpty':

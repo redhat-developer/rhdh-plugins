@@ -8,6 +8,8 @@ Connector failures classified into actionable categories with diagnostic guidanc
 
 ### Requirement: Auth/Authorization Failure Classification
 
+The implementation MUST satisfy the scenarios below.
+
 Authentication and authorization errors identified and classified.
 
 #### Scenario: Auth failure classified with diagnostic guidance
@@ -31,6 +33,8 @@ Authentication and authorization errors identified and classified.
 
 ### Requirement: Network/DNS/Connectivity Failure Classification
 
+The implementation MUST satisfy the scenarios below.
+
 Network-related errors identified and classified.
 
 #### Scenario: Network failure classified with diagnostic guidance
@@ -52,6 +56,8 @@ Network-related errors identified and classified.
 - **AND** `diagnosticGuidance` is `"TLS/SSL certificate verification failed. Verify certificate chain or configure connector to trust custom CA certificates."`
 
 ### Requirement: Schema/Parsing Mismatch Classification
+
+The implementation MUST satisfy the scenarios below.
 
 Data schema and parsing errors identified and classified.
 
@@ -75,6 +81,8 @@ Data schema and parsing errors identified and classified.
 
 ### Requirement: Rate Limiting Classification
 
+The implementation MUST satisfy the scenarios below.
+
 Rate limit errors identified and classified.
 
 #### Scenario: Rate limit classified with diagnostic guidance
@@ -96,6 +104,8 @@ Rate limit errors identified and classified.
 - **AND** `diagnosticGuidance` is `"Secondary rate limit triggered (too many requests in short period). Connector will back off and retry. Consider reducing sync frequency."`
 
 ### Requirement: Shared Classification Logic Across Connectors
+
+The implementation MUST satisfy the scenarios below.
 
 Classification logic is reusable across GitHub, GitLab, Jira connectors.
 
@@ -119,6 +129,8 @@ Classification logic is reusable across GitHub, GitLab, Jira connectors.
 
 ### Requirement: Unknown Error Fallback Classification
 
+The implementation MUST satisfy the scenarios below.
+
 Errors that don't match known patterns fall back to generic classification.
 
 #### Scenario: Unknown error fallback
@@ -135,6 +147,8 @@ Errors that don't match known patterns fall back to generic classification.
 - **AND** if no errors match known patterns, falls back to `errorType: "unknown"`
 
 ### Requirement: Error Classification in Health Cards
+
+The implementation MUST satisfy the scenarios below.
 
 Classified errors rendered in admin UI with color-coded badges.
 

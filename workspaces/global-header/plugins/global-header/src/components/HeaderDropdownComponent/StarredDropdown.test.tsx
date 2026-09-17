@@ -33,6 +33,10 @@ jest.mock('@backstage/plugin-catalog-react', () => ({
 
 jest.mock('../../hooks', () => ({
   useDropdownManager: jest.fn(),
+  useRetainMenuContent: (isMenuOpen: boolean) => ({
+    shouldRenderMenuContent: isMenuOpen,
+    handleMenuTransitionExited: jest.fn(),
+  }),
 }));
 
 // Mock translation hooks
@@ -61,7 +65,7 @@ describe('StarredDropdown', () => {
     });
 
     (useDropdownManager as jest.Mock).mockReturnValue({
-      anchorEl: null,
+      anchorEl: document.createElement('div'),
       handleOpen: jest.fn(),
       handleClose: jest.fn(),
     });
@@ -89,8 +93,9 @@ describe('StarredDropdown', () => {
   it('renders an empty state when there are no starred entities', async () => {
     await renderInTestApp(<StarredDropdown />);
 
-    // Replace this with the actual empty state message in your component
-    expect(screen.getByText(/No starred items yet/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/No starred items yet/i),
+    ).toBeInTheDocument();
   });
 
   it('renders starred items when entities exist', async () => {
@@ -101,7 +106,7 @@ describe('StarredDropdown', () => {
     });
 
     await renderInTestApp(<StarredDropdown />);
-    expect(screen.getByText(/Your starred items/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Your starred items/i)).toBeInTheDocument();
   });
 
   it('calls handleOpen when dropdown button is clicked', async () => {
@@ -138,7 +143,7 @@ describe('StarredDropdown', () => {
 
     await renderInTestApp(<StarredDropdown />);
 
-    const starButton = screen.getByLabelText('Remove from list');
+    const starButton = await screen.findByLabelText('Remove from list');
 
     // Star should be hidden initially
     expect(starButton).toHaveStyle('visibility: hidden');
@@ -163,9 +168,7 @@ describe('StarredDropdown', () => {
 
     await renderInTestApp(<StarredDropdown />);
 
-    // Star is always available for clicking, just hidden visually
-
-    const starButton = screen.getByLabelText('Remove from list');
+    const starButton = await screen.findByLabelText('Remove from list');
     fireEvent.click(starButton);
 
     expect(toggleStarredEntity).toHaveBeenCalledWith(

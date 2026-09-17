@@ -5,9 +5,11 @@
 Run all commands from `workspaces/cost-management/` (the workspace root).
 
 - Install: `yarn install`
-- Dev (full app + backend, slow): `yarn start`
+- Dev (NFS app + full backend, RBAC): `yarn start`
+- Dev (legacy app + full backend): `yarn start:legacy`
 - Dev (plugin hot-reload, fast): `yarn start:dev`
-- Dev (frontend plugin only): `yarn start:fe-plugin`
+- Dev (NFS frontend plugin only): `yarn start:fe-plugin`
+- Dev (legacy frontend plugin only): `yarn start:fe-plugin:legacy`
 - Dev (backend plugin only): `yarn start:be-plugin`
 - Build all: `yarn build:all`
 - Test all (with coverage): `yarn test:all`
@@ -33,6 +35,9 @@ workspaces/cost-management/
 │   └── cost-management-common/    # Shared types, API clients, permissions
 │       └── src/generated/         # Auto-generated OpenAPI types — do not hand-edit
 ├── packages/                      # Dev environment shell only (app + backend wiring)
+│   ├── app/                       # NFS frontend (`yarn start`)
+│   ├── app-legacy/                # Legacy frontend (`yarn start:legacy`)
+│   └── backend/                   # Full backend with RBAC
 ├── docs/
 │   ├── rbac.md                    # Full RBAC permission reference
 │   └── dynamic-plugin.md          # Dynamic plugin installation guide

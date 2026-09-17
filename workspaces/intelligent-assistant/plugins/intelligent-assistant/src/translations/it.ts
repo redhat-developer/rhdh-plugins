@@ -67,6 +67,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
       "Messaggio dall'utente: {{prompt}}. Caricamento in corso del messaggio del bot.",
     'conversation.category.pinnedChats': 'Chat fissate',
     'conversation.category.recent': 'Chat',
+    'conversation.category.savedPrompts': 'Prompt salvati',
     'conversation.delete': 'Elimina',
     'conversation.delete.confirm.action': 'Elimina',
     'conversation.delete.confirm.message':
@@ -77,9 +78,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'conversation.rename.confirm.action': 'Rinomina',
     'conversation.rename.confirm.title': 'Rinominare la chat?',
     'conversation.rename.placeholder': 'Nome della chat',
-    'disclaimer.withValidation':
-      'Questa funzione utilizza una tecnologia AI. Non includere nei dati immessi informazioni personali o altre informazioni sensibili. Le interazioni possono essere utilizzate per migliorare i prodotti o i servizi Red Hat.',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'Questa funzione utilizza una tecnologia AI. Non includere nei dati immessi informazioni personali o altre informazioni sensibili. Le interazioni possono essere utilizzate per migliorare i prodotti o i servizi Red Hat.',
     'error.context.fileAttachment':
       "useFileAttachmentContext deve essere all'interno di un FileAttachmentContextProvider",
@@ -115,7 +114,6 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'footer.accuracy.label':
       "Esaminare sempre i contenuti generati dall'intelligenza artificiale prima di utilizzarli.",
     'icon.lightspeed.alt': "icona dell'assistente intelligente",
-    'icon.permissionRequired.alt': 'icona di autorizzazione richiesta',
     'lcore.loadError.description':
       "Il backend dell'assistente intelligente non ha restituito un elenco di modelli. Verifica che il servizio sia in esecuzione e raggiungibile, quindi riprova.",
     'lcore.loadError.title': 'Impossibile caricare i modelli',
@@ -164,8 +162,6 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'mcp.settings.name': 'Nome',
     'mcp.settings.noneAvailable': 'Nessun server MCP disponibile.',
     'mcp.settings.personalAccessToken': 'Token di accesso personale',
-    'mcp.settings.readOnlyAccess':
-      "Disponi dell'accesso in sola lettura ai server MCP.",
     'mcp.settings.removePersonalToken': 'Rimuovi token personale',
     'mcp.settings.savedToken': 'Token salvato',
     'mcp.settings.selectedCount':
@@ -254,6 +250,8 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebook.view.documents.maxReached':
       'Sono consentite al massimo 10 risorse. Elimina una risorsa per caricarne una nuova.',
     'notebook.view.documents.uploading': 'Caricamento risorsa',
+    'notebook.view.documents.uploadsInProgress':
+      'Attendere il completamento dei caricamenti in corso prima di aggiungere altre risorse.',
     'notebook.view.input.disabledTooltip':
       'Seleziona almeno una risorsa caricata per iniziare a chattare',
     'notebook.view.input.placeholder':
@@ -296,12 +294,6 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'page.subtitle':
       "Assistente allo sviluppo basato sull'intelligenza artificiale",
     'page.title': 'Assistente intelligente',
-    'permission.notebooks.goBack': 'Torna indietro',
-    'permission.required.description':
-      "Per visualizzare <subject/>, contattare l'amministratore per ottenere l'autorizzazione <permissions/>.",
-    'permission.required.title': 'Autorizzazioni mancanti',
-    'permission.subject.notebooks': "i quaderni dell'assistente intelligente",
-    'permission.subject.plugin': "il plugin dell'assistente intelligente",
     'prompts.codeOptimization.message':
       'Puoi suggerirmi metodi comuni per ottimizzare il codice e ottenere prestazioni migliori?',
     'prompts.codeOptimization.title': 'Suggerimenti per ottimizzare il codice',
@@ -346,13 +338,58 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'settings.displayMode.label': 'Modalità di visualizzazione',
     'settings.displayMode.overlay': 'Sovrapposizione',
     'settings.mcp.badge': 'Nuovo',
-    'settings.mcp.label': 'Impostazioni MCP',
+    'settings.panel.title': 'Impostazioni',
+    'settings.mcp.label': 'Impostazioni MCP e Prompt',
+    'settings.prompt.label': 'Impostazioni Prompt',
     'settings.pinned.disable': 'Disattiva le chat bloccate',
     'settings.pinned.disabled.description':
       'Le chat bloccate sono attualmente disabilitate',
     'settings.pinned.enable': 'Abilita le chat bloccate',
     'settings.pinned.enabled.description':
       'Le chat bloccate sono attualmente abilitate',
+    'settings.savedPrompts.disable': 'Disattiva prompt salvati',
+    'settings.savedPrompts.disabled.description':
+      'I prompt salvati sono attualmente disabilitati',
+    'settings.savedPrompts.enable': 'Abilita prompt salvati',
+    'settings.savedPrompts.enabled.description':
+      'I prompt salvati sono attualmente abilitati',
+    'savedPrompts.tab.title': 'Prompt salvati',
+    'savedPrompts.disabled.title': 'I prompt salvati sono disabilitati',
+    'savedPrompts.disabled.body':
+      'I prompt salvati sono nascosti nel pannello della cronologia chat. Abilitateli per visualizzare i prompt nella barra laterale.',
+    'savedPrompts.disabled.enableLink': 'Abilita prompt salvati',
+    'savedPrompts.count.zero': 'Nessun prompt',
+    'savedPrompts.count_one': '1 prompt',
+    'savedPrompts.count_other': '{{count}} prompt',
+    'savedPrompts.newPrompt': '+ Nuovo prompt',
+    'savedPrompts.form.titleLabel': 'Titolo',
+    'savedPrompts.form.titlePlaceholder': 'Titolo del prompt',
+    'savedPrompts.form.contentLabel': 'Prompt',
+    'savedPrompts.form.contentPlaceholder': 'Contenuto del prompt',
+    'savedPrompts.form.save': 'Salva',
+    'savedPrompts.form.cancel': 'Annulla',
+    'savedPrompts.validation.titleMaxLength':
+      'Il titolo deve contenere al massimo {{max}} caratteri.',
+    'savedPrompts.validation.contentMaxLength':
+      'Il prompt deve contenere al massimo {{max}} caratteri.',
+    'savedPrompts.limitReached':
+      'Limite di prompt raggiunto. Elimina un prompt esistente per crearne uno nuovo.',
+    'savedPrompts.actions.apply': 'Applica nella casella di input',
+    'savedPrompts.actions.send': 'Invia direttamente',
+    'savedPrompts.actions.sendDisabledStreaming':
+      'Attendere il completamento della risposta',
+    'savedPrompts.actions.delete': 'Elimina',
+    'savedPrompts.actions.menuAriaLabel': 'Azioni per {{name}}',
+    'savedPrompts.delete.confirm.title': 'Eliminare «{{name}}»?',
+    'savedPrompts.delete.confirm.message':
+      'Questo prompt salvato verrà rimosso in modo permanente.',
+    'savedPrompts.delete.confirm.action': 'Elimina',
+    'savedPrompts.empty.description':
+      'Salva i prompt usati di frequente per riutilizzarli rapidamente nelle conversazioni senza riscriverli. I prompt salvati compaiono anche nel pannello della cronologia chat per un accesso rapido.',
+    'savedPrompts.sidebar.showAll': 'Mostra tutto',
+    'savedPrompts.sidebar.showLess': 'Mostra meno',
+    'savedPrompts.sidebar.openSettings': 'Apri impostazioni prompt salvati',
+    'savedPrompts.sidebar.empty': 'Nessun prompt salvato',
     'sort.alphabeticalAsc': 'Nome (A-Z)',
     'sort.alphabeticalDesc': 'Nome (Z-A)',
     'sort.label': 'Ordina conversazioni',
@@ -395,6 +432,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'tooltip.quickNewChat': 'Nuova chat',
     'tooltip.responseRecorded': 'Risposta registrata',
     'tooltip.send': 'Invia',
+    'tooltip.settings': 'Opzioni chatbot',
     'user.guest': 'Ospite',
     'user.loading': '...',
   },

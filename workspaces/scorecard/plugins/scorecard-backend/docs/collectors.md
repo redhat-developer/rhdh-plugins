@@ -22,7 +22,7 @@ Collector APIs are provided by `@red-hat-developer-hub/backstage-plugin-scorecar
 
 ## Collector ID convention
 
-Collector IDs follow the `datasource:name` format (e.g.,`github:deployments`, `github:workflowRuns`).
+Collector IDs follow the `datasource:name` format (e.g.,`github:doraDeployments`, `github:doraDeploymentWorkflowRuns`).
 This distinguishes them visually from metric/provider IDs which use dot notation. Prefer to use `camelCase`
 for collector names.
 
@@ -83,6 +83,12 @@ export class CustomDeploymentsCollector
   }
 }
 ```
+
+## Secrets and credentials
+
+> [!IMPORTANT]
+> Never pass secrets through a collector's `input`. Configure credentials through `app-config` instead.
+> Collectors do not support secrets, if they ever will be added, they will be a separate key from `input`.
 
 ## Register collectors in a backend module
 

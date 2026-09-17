@@ -1,5 +1,50 @@
 # @red-hat-developer-hub/backstage-plugin-llamastack-entity-provider
 
+## 0.6.0
+
+### Minor Changes
+
+- fa11c87: Align OGX AI asset entities with the canonical provider metadata contract and
+  harden shared AI asset type validation.
+
+## 0.5.0
+
+### Minor Changes
+
+- b4f9c3d: Add per-provider TLS connection settings (`caData` and `skipTLSVerify`) to `OgxEntityProviderConfig` so `OgxModelEntityProvider` can fetch `/v1/models` from OGX endpoints that use a private CA or self-signed certificates.
+
+## 0.4.2
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+- Updated dependencies [a65f815]
+  - @red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@0.3.2
+
+## 0.4.1
+
+### Patch Changes
+
+- 0e772a4: bump workspace to Backstage 1.54.4
+- 0ec0b3f: Updated dependency `esbuild` to `^0.28.0`.
+  Updated dependency `@remixicon/react` to `<4.10.0`.
+  Updated dependency `@backstage/backend-defaults` to `^0.17.7`.
+  Updated dependency `@backstage/backend-plugin-api` to `^1.10.0`.
+  Updated dependency `@backstage/backend-test-utils` to `^1.11.6`.
+- Updated dependencies [0e772a4]
+  - @red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@0.3.1
+
+## 0.4.0
+
+### Minor Changes
+
+- 2b94dc0: Add DeltaSyncManager class to the entity-provider SDK for cursor-based incremental sync via Backstage's `applyMutation({ type: 'delta' })` API. Update OGX agent and model entity providers to emit the three required AI asset annotations (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`).
+
+### Patch Changes
+
+- Updated dependencies [2b94dc0]
+  - @red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@0.3.0
+
 ## 0.3.0
 
 ### Minor Changes

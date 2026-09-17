@@ -113,26 +113,39 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
   });
 
   it('should throw when aggregation chart display color is not configured', async () => {
+    const customStatusThresholds = {
+      rules: [
+        { key: 'ok', expression: '>=80', color: 'green' },
+        { key: 'notOk', expression: '<80', color: 'red' },
+      ],
+    };
     const aggregationConfigWithoutColors =
       mockWeightedStatusScoreAggregationConfig({
         id: 'weightedOpenPrs',
         metricId: metric.id,
         options: {
-          statusScores: { error: 0, warning: 50, success: 100 },
+          statusScores: { notOk: 0, maybe: 50, ok: 100 },
           thresholds: {
             rules: [
-              { key: 'success', expression: '>=80' },
-              { key: 'error', expression: '<80' },
+              { key: 'ok', expression: '>=80' },
+              { key: 'notOk', expression: '<80' },
             ],
           },
         },
       });
 
+    (
+      loader.loadStatusGroupedMetricByEntityRefs as jest.Mock
+    ).mockResolvedValueOnce({
+      ...loadedStatusGroupedMetric,
+      values: { ok: 2 },
+    });
+
     await expect(() =>
       strategy.aggregate({
         metric,
         entityRefs,
-        thresholds: mockHigherIsBetterThresholds,
+        thresholds: customStatusThresholds,
         aggregationConfig: aggregationConfigWithoutColors,
       }),
     ).rejects.toThrow(
@@ -193,6 +206,40 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     );
   });
 
+  it('should set aggregationChartDisplayColor to null when total is 0', async () => {
+    (
+      loader.loadStatusGroupedMetricByEntityRefs as jest.Mock
+    ).mockResolvedValueOnce({
+      ...loadedStatusGroupedMetric,
+      values: {},
+      total: 0,
+    });
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      {
+        ...mappedWeightedResult,
+        values: [
+          { name: 'success', count: 0, score: 100 },
+          { name: 'error', count: 0, score: 0 },
+        ],
+        weightedStatusScore: 0,
+        weightedStatusSum: 0,
+        weightedStatusMaxPossible: 0,
+        aggregationChartDisplayColor: null,
+        total: 0,
+      },
+      aggregationConfig,
+    );
+  });
+
   it('should get aggregation result', async () => {
     const result = await strategy.aggregate({
       metric,
@@ -213,5 +260,73 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
       },
       result: mockWeightedStatusScoreAggregationResult,
     });
+  });
+
+  it('should warn and treat unknown status scores as zero', async () => {
+    const metricWithUnknownStatus = {
+      values: { success: 2, mystery: 1 },
+      total: 3,
+      timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 3,
+      calculationErrorCount: 0,
+    };
+
+    (loader.loadStatusGroupedMetricByEntityRefs as jest.Mock).mockResolvedValue(
+      metricWithUnknownStatus,
+    );
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      `The status "mystery" is not in the statusScores for weightedStatusScore aggregation of metric "${metric.id}"`,
+    );
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      expect.objectContaining({
+        weightedStatusSum: 200,
+        values: [
+          { name: 'success', count: 2, score: 100 },
+          { name: 'error', count: 0, score: 0 },
+        ],
+      }),
+      aggregationConfig,
+    );
+  });
+
+  it('should return weightedStatusScore 0 when there are no entities', async () => {
+    const emptyMetric = {
+      values: {},
+      total: 0,
+      timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 0,
+      calculationErrorCount: 0,
+    };
+
+    (loader.loadStatusGroupedMetricByEntityRefs as jest.Mock).mockResolvedValue(
+      emptyMetric,
+    );
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      expect.objectContaining({
+        weightedStatusScore: 0,
+        weightedStatusSum: 0,
+        weightedStatusMaxPossible: 0,
+        aggregationChartDisplayColor: null,
+      }),
+      aggregationConfig,
+    );
   });
 });

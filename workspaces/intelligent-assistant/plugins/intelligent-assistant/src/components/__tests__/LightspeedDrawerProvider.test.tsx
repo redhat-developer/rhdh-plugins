@@ -101,6 +101,8 @@ function baseContextValue(): LightspeedDrawerContextType {
     setShellViewTab: jest.fn(),
     activeNotebookId: undefined,
     setActiveNotebookId: jest.fn(),
+    settingsTab: null,
+    setSettingsTab: jest.fn(),
   };
 }
 
@@ -186,7 +188,7 @@ describe('LightspeedDrawerProvider', () => {
       'data-aria-labelledby',
       'lightspeed-chatpopup-modal',
     );
-    expect(modal.className).toBeTruthy();
+    expect(modal.className).toContain('ia-overlay-chatbot-modal');
     expect(screen.getByTestId('lightspeed-chat-container')).toBeInTheDocument();
   });
 

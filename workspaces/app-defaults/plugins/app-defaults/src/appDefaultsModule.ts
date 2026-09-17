@@ -15,12 +15,12 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import {
-  appDrawerExtension,
-  templateCardExtension,
-} from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
+import { templateCardExtension } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { appDrawerExtension } from './drawer/appDrawerModule';
 import { commonIconsExtension } from './icons/commonIconsExtension';
+import { appDefaultsTranslations } from './translations';
 
 /**
  * RHDH app module for `pluginId: 'app'`.
@@ -33,4 +33,23 @@ import { commonIconsExtension } from './icons/commonIconsExtension';
 export const appDefaultsModule = createFrontendModule({
   pluginId: 'app',
   extensions: [appDrawerExtension, templateCardExtension, commonIconsExtension],
+});
+
+const appDefaultsTranslation = TranslationBlueprint.make({
+  params: {
+    resource: appDefaultsTranslations,
+  },
+});
+
+/**
+ * RHDH app translations module for `pluginId: 'app'`.
+ * Registers the app defaults translation resource. Must be installed
+ * separately because `TranslationBlueprint` is restricted to `pluginId: 'app'`.
+ * Default-export this module for dynamic frontend loading.
+ *
+ * @public
+ */
+export const appDefaultsTranslationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [appDefaultsTranslation],
 });

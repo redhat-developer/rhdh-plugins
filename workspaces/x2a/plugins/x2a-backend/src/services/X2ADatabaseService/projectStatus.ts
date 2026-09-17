@@ -69,8 +69,9 @@ export function calculateProjectStatus(
   ).length;
   const waiting = modulesWithStatus.filter(
     m =>
-      m.status?.isSuccess() &&
-      (!m.module.publish || m.publishStatus?.isCancelled()),
+      m.status?.isStale() ||
+      (m.status?.isSuccess() &&
+        (!m.module.publish || m.publishStatus?.isCancelled())),
   ).length;
   const pending = modulesWithStatus.filter(m => m.status?.isPending()).length;
   const running = modulesWithStatus.filter(m => m.status?.isRunning()).length;

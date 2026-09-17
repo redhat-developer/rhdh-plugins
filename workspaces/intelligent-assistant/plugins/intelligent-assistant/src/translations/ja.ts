@@ -67,6 +67,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'ユーザーからのメッセージ: {{prompt}}。ボットからのメッセージを読み込んでいます。',
     'conversation.category.pinnedChats': '固定チャット',
     'conversation.category.recent': 'チャット',
+    'conversation.category.savedPrompts': '保存済みプロンプト',
     'conversation.delete': '削除',
     'conversation.delete.confirm.action': '削除',
     'conversation.delete.confirm.message':
@@ -77,9 +78,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'conversation.rename.confirm.action': '名前の変更',
     'conversation.rename.confirm.title': 'チャットの名前を変更しますか?',
     'conversation.rename.placeholder': 'チャット名',
-    'disclaimer.withValidation':
-      'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
     'error.context.fileAttachment':
       'useFileAttachmentContext が FileAttachmentContextProvider 内に収まっている必要があります',
@@ -114,7 +113,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'footer.accuracy.label':
       'AI によって生成されたコンテンツは、使用する前に必ず確認してください。',
     'icon.lightspeed.alt': 'インテリジェントアシスタントアイコン',
-    'icon.permissionRequired.alt': '権限不足アイコン',
     'lcore.loadError.description':
       'インテリジェントアシスタントバックエンドがモデル一覧を返しませんでした。サービスが実行中で到達可能か確認してから、もう一度お試しください。',
     'lcore.loadError.title': 'モデルを読み込めませんでした',
@@ -161,8 +159,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.name': '名前',
     'mcp.settings.noneAvailable': '利用可能な MCP サーバーはありません。',
     'mcp.settings.personalAccessToken': '個人アクセストークン',
-    'mcp.settings.readOnlyAccess':
-      'MCP サーバーへのアクセスは読み取り専用です。',
     'mcp.settings.removePersonalToken': '個人トークンを削除',
     'mcp.settings.savedToken': '保存済みトークン',
     'mcp.settings.selectedCount':
@@ -249,6 +245,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.view.documents.maxReached':
       '最大10個のリソースが許可されています。新しいリソースをアップロードするには、リソースを削除してください。',
     'notebook.view.documents.uploading': 'リソースをアップロード中',
+    'notebook.view.documents.uploadsInProgress':
+      '追加のリソースをアップロードする前に、現在のアップロードが完了するまでお待ちください。',
     'notebook.view.input.disabledTooltip':
       'チャットを開始するには、少なくとも1つのロード済みリソースを選択してください',
     'notebook.view.input.placeholder': 'リソースについて質問する...',
@@ -288,12 +286,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebooks.updated.yesterday': '1日前に更新',
     'page.subtitle': 'AI 搭載開発アシスタント',
     'page.title': 'インテリジェントアシスタント',
-    'permission.notebooks.goBack': '戻る',
-    'permission.required.description':
-      '<subject/> を表示するには、管理者に連絡して <permissions/> 権限を付与してもらうよう依頼してください。',
-    'permission.required.title': '権限の不足',
-    'permission.subject.notebooks': 'インテリジェントアシスタントノートブック',
-    'permission.subject.plugin': 'インテリジェントアシスタントプラグイン',
     'prompts.codeOptimization.message':
       'コードを最適化してパフォーマンスを向上させるための一般的な方法を提案してくれませんか?',
     'prompts.codeOptimization.title': 'コードの最適化を提案する',
@@ -337,11 +329,56 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'settings.displayMode.label': '表示モード',
     'settings.displayMode.overlay': 'オーバーレイ',
     'settings.mcp.badge': '新規',
-    'settings.mcp.label': 'MCP 設定',
+    'settings.panel.title': '設定',
+    'settings.mcp.label': 'MCPとプロンプトの設定',
+    'settings.prompt.label': 'プロンプト設定',
     'settings.pinned.disable': 'チャットの固定の無効化',
     'settings.pinned.disabled.description': 'チャットの固定は現在無効です',
     'settings.pinned.enable': 'チャットの固定の有効化',
     'settings.pinned.enabled.description': 'チャットの固定は現在有効です',
+    'settings.savedPrompts.disable': '保存済みプロンプトを無効にする',
+    'settings.savedPrompts.disabled.description':
+      '保存済みプロンプトは現在無効です',
+    'settings.savedPrompts.enable': '保存済みプロンプトを有効にする',
+    'settings.savedPrompts.enabled.description':
+      '保存済みプロンプトは現在有効です',
+    'savedPrompts.tab.title': '保存済みプロンプト',
+    'savedPrompts.disabled.title': '保存済みプロンプトは無効です',
+    'savedPrompts.disabled.body':
+      '保存済みプロンプトはチャット履歴パネルで非表示になっています。サイドバーに表示するには有効にしてください。',
+    'savedPrompts.disabled.enableLink': '保存済みプロンプトを有効にする',
+    'savedPrompts.count.zero': 'プロンプトなし',
+    'savedPrompts.count_one': '1件のプロンプト',
+    'savedPrompts.count_other': '{{count}}件のプロンプト',
+    'savedPrompts.newPrompt': '+ 新しいプロンプト',
+    'savedPrompts.form.titleLabel': 'タイトル',
+    'savedPrompts.form.titlePlaceholder': 'プロンプトのタイトル',
+    'savedPrompts.form.contentLabel': 'プロンプト',
+    'savedPrompts.form.contentPlaceholder': 'プロンプトの内容',
+    'savedPrompts.form.save': '保存',
+    'savedPrompts.form.cancel': 'キャンセル',
+    'savedPrompts.validation.titleMaxLength':
+      'タイトルは{{max}}文字以内である必要があります。',
+    'savedPrompts.validation.contentMaxLength':
+      'プロンプトは{{max}}文字以内である必要があります。',
+    'savedPrompts.limitReached':
+      'プロンプトの上限に達しました。新しいプロンプトを作成するには、既存のプロンプトを削除してください。',
+    'savedPrompts.actions.apply': '入力ボックスに適用',
+    'savedPrompts.actions.send': '直接送信',
+    'savedPrompts.actions.sendDisabledStreaming':
+      '応答が完了するまでお待ちください',
+    'savedPrompts.actions.delete': '削除',
+    'savedPrompts.actions.menuAriaLabel': '{{name}} のアクション',
+    'savedPrompts.delete.confirm.title': '「{{name}}」を削除しますか?',
+    'savedPrompts.delete.confirm.message':
+      'この保存済みプロンプトは完全に削除されます。',
+    'savedPrompts.delete.confirm.action': '削除',
+    'savedPrompts.empty.description':
+      'よく使うプロンプトを保存して、会話で再入力せずにすばやく再利用できます。保存済みプロンプトは、チャット履歴パネルにも表示され、すばやくアクセスできます。',
+    'savedPrompts.sidebar.showAll': 'すべて表示',
+    'savedPrompts.sidebar.showLess': '表示を減らす',
+    'savedPrompts.sidebar.openSettings': '保存済みプロンプトの設定を開く',
+    'savedPrompts.sidebar.empty': '保存済みプロンプトはまだありません',
     'sort.alphabeticalAsc': '名前（A-Z）',
     'sort.alphabeticalDesc': '名前（Z-A）',
     'sort.label': '会話を並べ替え',
@@ -384,6 +421,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'tooltip.quickNewChat': '新しいチャット',
     'tooltip.responseRecorded': '回答が記録されました',
     'tooltip.send': '送信',
+    'tooltip.settings': 'チャットボットのオプション',
     'user.guest': 'ゲスト',
     'user.loading': '...',
   },

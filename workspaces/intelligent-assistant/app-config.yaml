@@ -9,6 +9,11 @@ app:
           defaultLanguage: 'en'
     - page:catalog:
         config:
+          path: /
+          title: 'Home'
+    - nav-item:home: false
+    - nav-item:catalog:
+        config:
           title: 'Home'
 
 organization:
@@ -37,6 +42,8 @@ intelligent-assistant:
   #     auth: dcr
   #   - name: test-mcp-server
   #     token: ${MCP_TOKEN_1}
+  screen-context:
+    enabled: true
   notebooks:
     enabled: ${NOTEBOOKS_ENABLED:-false}
     queryDefaults:

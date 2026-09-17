@@ -133,7 +133,9 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
              groups:
                codeQuality:
                  title: 'Code Quality'
+                 titleKey: groups.codeQuality.title
                  description: 'SonarQube code quality metrics'
+                 descriptionKey: groups.codeQuality.description
                  metrics:
                    - sonarqube.reliabilityIssues
                    - sonarqube.codeCoverage
@@ -147,11 +149,13 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
 
    **Groups config schema:**
 
-   | Field         | Type       | Required | Description                                          |
-   | ------------- | ---------- | -------- | ---------------------------------------------------- |
-   | `title`       | `string`   | Yes      | Display title for the group card.                    |
-   | `description` | `string`   | No       | Optional description shown below the title.          |
-   | `metrics`     | `string[]` | Yes      | Ordered list of metric IDs to include in this group. |
+   | Field            | Type       | Required | Description                                                                                      |
+   | ---------------- | ---------- | -------- | ------------------------------------------------------------------------------------------------ |
+   | `title`          | `string`   | Yes      | Display title for the group card. Used when `titleKey` is omitted or the translation is missing. |
+   | `titleKey`       | `string`   | No       | Translation key under `plugin.scorecard` (for example `groups.codeQuality.title`).               |
+   | `description`    | `string`   | No       | Optional description shown below the title. Used when `descriptionKey` is omitted or missing.    |
+   | `descriptionKey` | `string`   | No       | Translation key under `plugin.scorecard` (for example `groups.codeQuality.description`).         |
+   | `metrics`        | `string[]` | Yes      | Ordered list of metric IDs to include in this group.                                             |
 
    **Behavior:**
 
@@ -513,7 +517,7 @@ Supported scorecard aggregation types (see [Entity Aggregation — Aggregation t
 - [`weightedStatusScore`](../scorecard-backend/docs/aggregation.md#weighted-status-score-type) — weighted portfolio health percentage (donut); requires `options.statusScores`.
 - Scalar types ([`sum`](../scorecard-backend/docs/aggregation.md#sum-type), [`average`](../scorecard-backend/docs/aggregation.md#average-type), [`max`](../scorecard-backend/docs/aggregation.md#max-type), [`min`](../scorecard-backend/docs/aggregation.md#min-type), [`count`](../scorecard-backend/docs/aggregation.md#count-type)) — roll up latest numeric metric values; number metrics only. Optional [`filter.status`](../scorecard-backend/docs/aggregation.md#status-filter-scalar-types) limits the rollup to a threshold status.
 
-**Scalar KPI types** (`sum`, `average`, `max`, `min`, `count`) are fully supported by **`GET /aggregations/:aggregationId`**, including optional **`filter.status`** and **`options.thresholds`**. **`AggregatedMetricCard`** chooses the UI from the **result shape**: a numeric `value` renders **`ScalarStatCard`** (large number, optional description, aggregation-type label, threshold tile color); a `values` array renders the existing pie/donut cards; anything else shows **`UnsupportedAggregationType`**. Unknown scalar type names still render **`ScalarStatCard`** when the payload is scalar-shaped.
+**Scalar KPI types** (`sum`, `average`, `max`, `min`, `count`) are fully supported by **`GET /aggregations/:aggregationId`**, including optional **`filter.status`** and **`options.thresholds`**. **`AggregatedMetricCard`** chooses the UI from the **result shape**: a numeric `value` renders **`ScalarStatCard`** (large number, optional description, aggregation-type label, tile color from **`result.aggregationChartDisplayColor`**); a `values` array renders the existing pie/donut cards; anything else shows **`UnsupportedAggregationType`**. Unknown scalar type names still render **`ScalarStatCard`** when the payload is scalar-shaped.
 
 **Terminology:** Scalar **`average`** (mean of numeric metric values) is distinct from the former weighted KPI type also named `average`, which was renamed to **`weightedStatusScore`**. Update app-config **`type: average`** entries for weighted health scoring to **`type: weightedStatusScore`** and migrate API consumers from **`result.averageScore`** to **`result.weightedStatusScore`**.
 
@@ -605,14 +609,19 @@ Translation keys follow this pattern:
 
 - **Metric titles**: `metric.{metric-id}.title`
 - **Metric descriptions**: `metric.{metric-id}.description`
+- **Layout group titles**: set `titleKey` on the group in app-config (for example `groups.codeQuality.title`)
+- **Layout group descriptions**: set `descriptionKey` on the group (for example `groups.codeQuality.description`)
 
-Use the same pattern with a **KPI id** as `{metric-id}` when localizing **`aggregationKPIs`** titles (for example **`metric.openIssuesKpi.title`**).
+Use the same `metric.{id}.{field}` pattern with a **KPI id** as `{metric-id}` when localizing **`aggregationKPIs`** titles (for example **`metric.openIssuesKpi.title`**).
+
+Group titles and descriptions do **not** use the `metric.{id}.{field}` convention. They are customer-defined in `scorecard-layout` config, so you pass explicit `titleKey` / `descriptionKey` values. Provide translations in plugin locale files or via RHDH `i18n.overrides` under `plugin.scorecard`. If a key is omitted or not found, the UI shows the group's `title` / `description` strings and never the raw key.
 
 ### 3. Fallback Behavior
 
 If a translation key is not found, the plugin will automatically fall back to:
 
 - The original `title` and `description` values from the metric definition
+- For layout groups: the `title` and `description` values from app-config
 - For thresholds: capitalized versions of the threshold keys
 
 ### Example: Adding GitHub Open PRs Translation

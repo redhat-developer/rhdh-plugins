@@ -22,7 +22,9 @@ import { lightspeedApiRef } from '../api/api';
 import { LCSModel } from '../types';
 
 // Fetch all models
-export const useAllModels = (): UseQueryResult<LCSModel[], Error> => {
+export const useAllModels = (
+  enabled = true,
+): UseQueryResult<LCSModel[], Error> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   return useQuery({
     queryKey: ['models'],
@@ -30,6 +32,7 @@ export const useAllModels = (): UseQueryResult<LCSModel[], Error> => {
       const response = await lightspeedApi.getAllModels();
       return response;
     },
+    enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
   });

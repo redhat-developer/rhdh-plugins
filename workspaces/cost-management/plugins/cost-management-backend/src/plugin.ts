@@ -69,7 +69,6 @@ export const costManagementPlugin = createBackendPlugin({
           optimizationApi,
           costManagementApi,
         });
-        // @ts-ignore
         httpRouter.use(router);
         httpRouter.addAuthPolicy({
           path: '/health',

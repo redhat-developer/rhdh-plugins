@@ -1,106 +1,50 @@
 # Conditional Policies
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Draft** — Follow-on policy examples using existing RHDH conditions;
+> no new AI Catalog rule implementation is proposed.
 
-Three custom permission rules enable RBAC policy scoping to asset category, source connector, and tenant identity. Each rule inspects entity annotations and implements `toQuery()` for database-level filtering on list endpoints.
+AI Catalog visibility uses conditions on provider-emitted annotations and
+metadata. Current OGX examples use category `agent` or `model-server`, source
+`ogx`, and the provider's default namespace.
 
-**Jira references:** RHIDP-15270, RHIDP-15312
+**Jira:** RHIDP-15270, RHIDP-15312
 
 ## ADDED Requirements
 
-### Requirement: isAiAssetCategory Rule
+### Requirement: Use provider metadata
 
-A conditional rule MUST filter AI assets by their category annotation.
+RHDH policies MUST use existing annotation and metadata conditions for Catalog
+entity visibility.
 
-#### Scenario: Category-scoped visibility
+#### Scenario: Provider-scoped policy
 
-- **WHEN** a deployer configures an RBAC policy with `isAiAssetCategory({ category: 'ai-model' })`
-- **THEN** the rule's `apply(resource, params)` returns `true` only when the resource's `rhdh.io/ai-asset-category` annotation matches `'ai-model'`
-- **AND** the rule's `toQuery({ category: 'ai-model' })` generates a catalog query predicate filtering by the annotation value
-- **AND** the rule works with both ALLOW and DENY policies
+- **WHEN** a policy matches category `agent` and source `ogx`
+- **THEN** it matches an entity with those exact values
+- **AND** it does not match an entity with a different category or source
 
-#### Scenario: Multiple categories via anyOf
+#### Scenario: Namespace-scoped policy
 
-- **WHEN** a deployer wants to grant access to both `ai-model` and `agent` categories
-- **THEN** they configure two rules composed with `anyOf`:
-  ```
-  anyOf:
-    - isAiAssetCategory({ category: 'ai-model' })
-    - isAiAssetCategory({ category: 'agent' })
-  ```
-- **AND** the `toQuery()` implementation generates an OR clause
+- **WHEN** a policy matches the provider's default namespace
+- **THEN** it matches entities in that namespace
+- **AND** it does not match entities in another namespace
 
-### Requirement: isFromConnector Rule
+### Requirement: Compose existing conditions
 
-A conditional rule MUST filter AI assets by their source connector.
+Policies MUST use the existing `anyOf`, `allOf`, and `not` operators when a
+scope requires composition.
 
-#### Scenario: Connector-scoped visibility
+#### Scenario: Combined condition
 
-- **WHEN** a deployer configures an RBAC policy with `isFromConnector({ connector: 'watsonx' })`
-- **THEN** the rule's `apply(resource, params)` returns `true` only when the resource's `rhdh.io/ai-asset-source` annotation matches `'watsonx'`
-- **AND** `toQuery()` generates a catalog query predicate filtering by the annotation value
+- **WHEN** a policy allows `agent` entities only in the provider's default
+  namespace
+- **THEN** the policy uses `allOf` for category and namespace
+- **AND** an entity must satisfy both conditions
 
-#### Scenario: Deny access to specific connector
+### Requirement: No duplicate rules
 
-- **WHEN** a deployer wants to deny access to assets from a third-party connector
-- **THEN** they configure a DENY policy with `isFromConnector({ connector: 'external-vendor' })`
-- **AND** assets from that connector are excluded from list results and detail pages for affected users
+The implementation MUST satisfy the scenarios below.
 
-#### Scenario: Exact-match contract (no connector-type prefix matching)
+#### Scenario: Existing conditions are sufficient
 
-- **WHEN** the `rhdh.io/ai-asset-source` annotation carries a composite value such as `'kagenti/default'` (connector type + instance ID, as used by some `boost-entity-provider-sdk`-based providers)
-- **THEN** `isFromConnector({ connector: 'kagenti' })` does **NOT** match it — `connector` MUST be the full, exact annotation value (e.g. `isFromConnector({ connector: 'kagenti/default' })`)
-- **AND** a deployment with multiple instances of the same connector type requires one policy per instance to scope by type
-- **RATIONALE:** every custom conditional permission rule in this repo (`isAiAssetCategory`, `extensions-backend`'s `hasAnnotation`, `scorecard-backend`'s `hasMetricId`, `orchestrator-backend`'s `isWorkflowId`, `homepage-backend`'s `hasWidgetId`/`hasTag`) does flat, exact-value matching with no parsing of structured/composite identifiers — this rule follows that same repo-wide convention for consistency. See [#4376](https://github.com/redhat-developer/rhdh-plugins/issues/4376) for the discussion; revisit only if a real deployment needs type-level scoping across multiple connector instances.
-
-### Requirement: isInTenant Rule
-
-A conditional rule MUST filter AI assets by tenant identity for multi-tenant deployments.
-
-#### Scenario: Tenant-scoped visibility
-
-- **WHEN** a deployer configures an RBAC policy with `isInTenant({ tenant: 'team-alpha' })`
-- **THEN** the rule's `apply(resource, params)` returns `true` only when the entity's namespace or tenant annotation matches `'team-alpha'`
-- **AND** `toQuery()` generates a catalog query predicate filtering by namespace or annotation
-
-#### Scenario: Default tenant for unscoped assets
-
-- **WHEN** an AI asset has no explicit tenant annotation or namespace
-- **THEN** it belongs to the `default` namespace
-- **AND** `isInTenant({ tenant: 'default' })` matches it
-
-### Requirement: Rule Registration
-
-Custom rules MUST be registered with the permission framework at startup.
-
-#### Scenario: Rule registration via permissionIntegrationRouter
-
-- **WHEN** the AI Catalog backend module starts
-- **THEN** the three rules are registered via `createPermissionIntegrationRouter` with `resourceType: 'ai-catalog-asset'`
-- **AND** each rule has a unique `name` and `description` for RBAC admin UI display:
-  | Rule Name | Description |
-  |---|---|
-  | `isAiAssetCategory` | Matches AI assets by their category (ai-model, agent, skill, mcp-server, model-server) |
-  | `isFromConnector` | Matches AI assets by their source connector (e.g., watsonx, internal-registry) |
-  | `isInTenant` | Matches AI assets by their tenant identity (namespace or annotation) |
-
-### Requirement: Rule Composability
-
-Rules MUST compose with standard Backstage permission criteria operators.
-
-#### Scenario: allOf composition
-
-- **WHEN** a deployer configures a policy requiring both category and connector match
-- **THEN** they use `allOf`:
-  ```
-  allOf:
-    - isAiAssetCategory({ category: 'ai-model' })
-    - isFromConnector({ connector: 'watsonx' })
-  ```
-- **AND** the generated `toQuery()` produces an AND clause
-
-#### Scenario: not composition
-
-- **WHEN** a deployer wants to allow access to all categories except one
-- **THEN** they configure `not: isAiAssetCategory({ category: 'internal-tool' })` on an ALLOW policy
-- **AND** `toQuery()` produces a NOT clause wrapping the category filter
+- **WHEN** an access scope can be represented by existing conditions
+- **THEN** no AI Catalog-specific category, source, or tenant rule is added

@@ -37,7 +37,7 @@ app:
 
 #### Permission Framework Support
 
-The Adoption Insights Backend plugin has support for the permission framework.
+The Adoption Insights Backend plugin has support for the permission framework. The frontend NFS page uses an `if` predicate on `adoption-insights.events.read` so unauthorized users do not see the page or navigation entry.
 
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access Adoption Insights backend API, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
@@ -103,6 +103,8 @@ If you want to run the entire project, including the frontend, run `yarn start` 
 ## Endpoint
 
 `GET /api/adoption-insights/events`
+
+When `type=top_techdocs`, the backend may enrich each row with a TechDocs `site_name`. That lookup uses Backstage plugin-to-plugin authentication (`getPluginRequestToken`) on behalf of the calling user — it does not forward the caller's raw `Authorization` header. TechDocs therefore evaluates `catalog.entity.read` for that user; entities they cannot read fall back to the entity name, as do failed lookups and invalid entity paths. Rows with empty `namespace` / `kind` / `name` keep an empty `site_name` (TechDocs root).
 
 ## Query Parameters
 

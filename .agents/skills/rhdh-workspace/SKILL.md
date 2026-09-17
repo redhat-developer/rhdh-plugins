@@ -2,17 +2,19 @@
 name: rhdh-workspace
 description: >-
   Route work in the rhdh-plugins monorepo to the affected workspace and package.
-  Use before installing dependencies or running build, test, lint, fix,
-  API-report, or dedupe commands under workspaces/.
+  Use before doing any work under workspaces/, including documentation-only
+  changes.
 ---
 
 # RHDH Workspace
 
 Identify the affected `workspaces/<name>` from changed files or its
 `workspace/<name>` issue label. Change to that workspace and read its
-`AGENTS.md`, if present, before running Yarn commands.
+`AGENTS.md`, if present — it contains coding conventions, documentation
+conventions, and testing requirements that apply to all changes in the
+workspace.
 
-Install dependencies from the workspace root with
+Before running Yarn commands, install dependencies from the workspace root with
 `YARN_ENABLE_SCRIPTS=false yarn install --immutable`.
 
 Run build, lint, fix, API-report, and dedupe commands from the workspace root.

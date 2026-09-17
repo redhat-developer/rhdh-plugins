@@ -8,6 +8,86 @@ import type { DiscoveryApi } from '@backstage/core-plugin-api';
 import type { FetchApi } from '@backstage/core-plugin-api';
 
 // @public
+export interface Agent {
+  agent_id?: string;
+  cost: AgentCost;
+  create_time?: string;
+  environment: string;
+  health_status?: AgentHealthStatus;
+  last_heartbeat?: string;
+  name: string;
+  service_types: string[];
+  topic_name: string;
+  update_time?: string;
+}
+
+// @public
+export type AgentCost =
+  | 'low'
+  | 'medium-low'
+  | 'medium'
+  | 'medium-high'
+  | 'high';
+
+// @public
+export type AgentHealthStatus = 'ready' | 'congested' | 'unavailable';
+
+// @public
+export interface AgentList {
+  // (undocumented)
+  agents?: Agent[];
+  // (undocumented)
+  next_page_token?: string;
+}
+
+// @public
+export interface AgentRegistrationRequest {
+  // (undocumented)
+  cost: AgentCost;
+  // (undocumented)
+  environment: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  service_types: string[];
+  topic_name: string;
+}
+
+// @public
+export interface AgentsApi {
+  // (undocumented)
+  agentHeartbeat(agentId: string, heartbeat: HeartbeatRequest): Promise<Agent>;
+  // (undocumented)
+  createAgent(agent: AgentRegistrationRequest): Promise<Agent>;
+  // (undocumented)
+  getAgent(agentId: string): Promise<Agent>;
+  // (undocumented)
+  listAgents(
+    params?: PaginationParams & {
+      health_status?: AgentHealthStatus;
+    },
+  ): Promise<AgentList>;
+}
+
+// @public
+export class AgentsClient extends DcmBaseClient implements AgentsApi {
+  // (undocumented)
+  agentHeartbeat(agentId: string, heartbeat: HeartbeatRequest): Promise<Agent>;
+  // (undocumented)
+  createAgent(agent: AgentRegistrationRequest): Promise<Agent>;
+  // (undocumented)
+  getAgent(agentId: string): Promise<Agent>;
+  // (undocumented)
+  listAgents(
+    params?: PaginationParams & {
+      health_status?: AgentHealthStatus;
+    },
+  ): Promise<AgentList>;
+  // (undocumented)
+  protected readonly serviceName = 'Agents';
+}
+
+// @public
 export function buildPaginationQuery(params: PaginationParams): string;
 
 // @public
@@ -283,6 +363,12 @@ export interface FieldConfigurationDependsOn {
 }
 
 // @public
+export interface HeartbeatRequest {
+  consumer_lag: number;
+  timestamp: string;
+}
+
+// @public
 export interface ListServiceTypeInstancesParams {
   max_page_size?: number;
   page_token?: string;
@@ -363,97 +449,6 @@ export class PolicyManagerClient
 
 // @public
 export type PolicyType = 'GLOBAL' | 'USER';
-
-// @public
-export interface Provider {
-  // (undocumented)
-  create_time?: string;
-  // (undocumented)
-  display_name?: string;
-  endpoint: string;
-  // (undocumented)
-  health_status?: string;
-  id?: string;
-  // (undocumented)
-  metadata?: ProviderMetadata;
-  // (undocumented)
-  name: string;
-  operations?: string[];
-  path?: string;
-  schema_version: string;
-  // (undocumented)
-  service_type: string;
-  status?: ProviderStatus;
-  // (undocumented)
-  update_time?: string;
-}
-
-// @public
-export interface ProviderList {
-  // (undocumented)
-  next_page_token?: string;
-  // (undocumented)
-  providers?: Provider[];
-}
-
-// @public
-export interface ProviderMetadata {
-  // (undocumented)
-  [key: string]: unknown;
-  // (undocumented)
-  region_code?: string;
-  // (undocumented)
-  resources?: ResourceCapacity;
-  // (undocumented)
-  status?: string;
-  // (undocumented)
-  zone?: string;
-}
-
-// @public
-export interface ProvidersApi {
-  // (undocumented)
-  applyProvider(providerId: string, provider: Provider): Promise<Provider>;
-  // (undocumented)
-  createProvider(provider: Provider): Promise<Provider>;
-  // (undocumented)
-  deleteProvider(providerId: string): Promise<void>;
-  // (undocumented)
-  getProvider(providerId: string): Promise<Provider>;
-  // (undocumented)
-  listProviders(params?: PaginationParams): Promise<ProviderList>;
-}
-
-// @public
-export class ProvidersClient extends DcmBaseClient implements ProvidersApi {
-  // (undocumented)
-  applyProvider(providerId: string, provider: Provider): Promise<Provider>;
-  // (undocumented)
-  createProvider(provider: Provider): Promise<Provider>;
-  // (undocumented)
-  deleteProvider(providerId: string): Promise<void>;
-  // (undocumented)
-  getProvider(providerId: string): Promise<Provider>;
-  // (undocumented)
-  listProviders(params?: PaginationParams): Promise<ProviderList>;
-  // (undocumented)
-  protected readonly serviceName = 'Providers';
-}
-
-// @public
-export type ProviderStatus = 'registered' | 'updated';
-
-// @public
-export interface ResourceCapacity {
-  // (undocumented)
-  total_cpu?: number;
-  // (undocumented)
-  total_memory?: string;
-  // (undocumented)
-  total_node?: number;
-  // (undocumented)
-  total_storage?: string;
-}
 
 // @public
 export interface ResourcesApi {

@@ -370,6 +370,48 @@ scorecard:
       description: This KPI provides a mean open issues count per entity.
       type: average
       metricId: jira.openIssues
+    avgDeploymentFrequency:
+      title: Average Deployment Frequency
+      description: This KPI provides average weekly production deploys over a 30-day window per entity.
+      type: average
+      metricId: dora.deploymentFrequency
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '>=7'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '1-7'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: error
+              expression: '<1'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+    avgEliteDeploymentFrequency:
+      title: Average Elite Deployment Frequency
+      description: This KPI provides average elite weekly production deploys over a 30-day window per entity.
+      type: average
+      metricId: dora.deploymentFrequency
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '>=7'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '1-7'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: error
+              expression: '<1'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+      filter:
+        status: elite
     entitiesWithOpenPrs:
       title: Entities with Open PRs
       description: This KPI provides a count of entities with a stored open-prs value.
@@ -439,6 +481,30 @@ scorecard:
   #     except:
   #       - openssf.maintained
 
+  plugins:
+    dora:
+      # Optional DORA source-data retention and freshness controls
+      # dataRetentionDays: 365
+      # staleAfterMs: 60000
+      # deploymentLookbackMs: 172800000
+      # incidentLookbackMs: 300000
+
+      productionEnvironments: ['production']
+      collectors:
+        deployments:
+          id: github:doraDeployments
+          # Uncomment the following to use workflow runs
+          # id: github:doraDeploymentWorkflowRuns
+          # input:
+          #   workflowName: Create Test Deployment on PR Merge
+        deploymentPullRequests:
+          id: github:doraDeploymentPullRequests
+        incidents:
+          id: jira:doraIncidents
+          # Optional: override default Incident issue type
+          # input:
+          #   issueType: CustomIncident
+
   metricProviders:
     jira:
       openIssues:
@@ -479,59 +545,21 @@ scorecard:
           initialDelay: { seconds: 10 }
     dora:
       deploymentFrequency:
-        options:
-          collectors:
-            deployments:
-              id: github:deployments
-              # Uncomment the following to use workflow runs
-              # id: github:deploymentWorkflowRuns
-              # input:
-              #   workflowName: Create Test Deployment on PR Merge
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
       medianLeadTimeForChanges:
-        options:
-          collectors:
-            deployments:
-              id: github:deployments
-              # Uncomment the following to use workflow runs
-              # id: github:deploymentWorkflowRuns
-              # input:
-              #   workflowName: Create Test Deployment on PR Merge
-            deploymentPullRequests:
-              id: github:deploymentPullRequests
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
       changeFailureRate:
-        options:
-          collectors:
-            deployments:
-              id: github:deployments
-              # Uncomment the following to use workflow runs
-              # id: github:deploymentWorkflowRuns
-              # input:
-              #   workflowName: Create Test Deployment on PR Merge
-            incidents:
-              id: jira:incidents
-              # Optional: override default Incident issue type
-              # input:
-              #   issueType: ServiceIncident
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
-      meanTimeToRestore:
-        options:
-          collectors:
-            incidents:
-              id: jira:incidents
-              # Optional: override default Incident issue type
-              # input:
-              #   issueType: ServiceIncident
+      medianTimeToRestore:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }

@@ -34,7 +34,7 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { Button, makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import {
@@ -85,16 +85,22 @@ import {
 } from '../const';
 import {
   useBackstageUserIdentity,
+  useConversationHistoryGroups,
   useConversationMessages,
   useConversations,
+  useIaChatPermission,
+  useIaMcpToolsPermission,
+  useIaNotebooksPermission,
   useIsMobile,
   useLastOpenedConversation,
-  useLightspeedDeletePermission,
-  useLightspeedNotebooksPermission,
   useNotebookConversationIds,
   useNotebookSession,
   useNotebookSessions,
   usePinnedChatsSettings,
+  useSavedPromptActions,
+  useSavedPrompts,
+  useSavedPromptsSettings,
+  useSettingsPanelUrlState,
   useSortSettings,
   useStopConversation,
 } from '../hooks';
@@ -103,11 +109,15 @@ import { useDeleteNotebook } from '../hooks/notebooks/useDeleteNotebook';
 import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
 import { useRenameNotebookWithAlert } from '../hooks/notebooks/useRenameNotebookWithAlert';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
-import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
 import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
+import {
+  isSavedPromptConversationId,
+  SAVED_PROMPT_CONVERSATION_ID_PREFIX,
+} from '../utils/buildConversationHistoryGroups';
+import { extractPageContext } from '../utils/dom-extractor';
 import {
   ChatbotFootnoteWithIcon,
   getCategorizeMessages,
@@ -118,10 +128,10 @@ import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
 import { CollapsedHistoryStrip } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
+import { DeleteSavedPromptModal } from './DeleteSavedPromptModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
-import { McpServersSettings } from './McpServersSettings';
 import { MessageBarModelSelector } from './MessageBarModelSelector';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebookHeaderActions } from './notebooks/NotebookHeaderActions';
@@ -132,8 +142,9 @@ import {
   SidebarCollapseIcon,
   SidebarExpandIcon,
 } from './notebooks/SidebarCollapseIcon';
-import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
+import { SavedPromptMenuItems } from './SavedPromptMenuItems';
+import { SettingsPanel } from './SettingsPanel';
 import { ToastAlertGroup } from './ToastAlertGroup';
 
 const COLLAPSE_PANEL_ICON_SVG = `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`;
@@ -148,39 +159,109 @@ const ConditionalWrapper = ({
   children: React.ReactNode;
 }) => (condition ? wrapper(children) : children);
 
-const useStyles = makeStyles(theme => ({
-  body: {
-    '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
-      margin: 0,
-      padding: 0,
-    },
-    '& .pf-chatbot__content': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-svg > .pf-v6-icon-rh-ui': {
-      display: 'none !important',
-      width: 0,
-      height: 0,
-      overflow: 'hidden',
-    },
+const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
+
+const StyledChatbot = styled(Chatbot, {
+  shouldForwardProp: prop =>
+    prop !== 'isCompact' &&
+    prop !== 'mcpDrawerFix' &&
+    prop !== 'compactDrawerOpen',
+})<{
+  isCompact?: boolean;
+  mcpDrawerFix?: boolean;
+  compactDrawerOpen?: boolean;
+}>(({ isCompact, mcpDrawerFix, compactDrawerOpen }) => ({
+  '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
+    margin: 0,
+    padding: 0,
   },
-  bodyCompact: {
-    height: '100% !important',
-    minHeight: '0 !important',
+  '& .pf-chatbot__content': {
+    backgroundColor: `${floatingBg} !important`,
+  },
+  '& .pf-v6-svg > .pf-v6-icon-rh-ui': {
+    display: 'none !important',
+    width: 0,
+    height: 0,
     overflow: 'hidden',
   },
-  header: {
-    padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
-      3,
-    )}px !important`,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default) !important',
+  // Remove once @patternfly/chatbot supports ConversationGroup header actions:
+  // https://github.com/patternfly/chatbot/issues/904
+  '& .pf-chatbot__history-menu .pf-v6-c-menu__list': {
+    paddingInlineStart: 0,
   },
-  errorContainer: {
-    padding: theme.spacing(3),
+  '& .pf-chatbot__menu-show-all-toggle': {
+    cursor: 'pointer',
   },
-  drawerFileDropZone: {
+  '& .pf-chatbot__menu-item-header--expandable.lightspeed-saved-prompts-group .pf-v6-c-button__text':
+    {
+      width: '100%',
+    },
+  '& .lightspeed-saved-prompts-section-gear': {
+    opacity: 0,
+    transition: 'opacity 0.15s ease-in-out',
+  },
+  '& .pf-chatbot__menu-item-header--expandable.lightspeed-saved-prompts-group:hover .lightspeed-saved-prompts-section-gear, & .pf-chatbot__menu-item-header--expandable.lightspeed-saved-prompts-group .lightspeed-saved-prompts-section-gear:focus-visible':
+    {
+      opacity: 1,
+    },
+  '& .pf-chatbot-container': {
+    minHeight: 0,
+  },
+  '& .pf-chatbot__header-container': {
+    flexShrink: 0,
+  },
+  ...(isCompact
+    ? {
+        height: '100% !important',
+        minHeight: '0 !important',
+        overflow: 'hidden',
+      }
+    : {}),
+  // Match the previous compactDrawerPanel class: only expand the history
+  // panel when it is actually open. Applying 100% width while collapsed
+  // lets the z-index: 1300 panel cover the Chat/Notebooks tab bar.
+  ...(isCompact && compactDrawerOpen
+    ? {
+        '& .pf-v6-c-drawer__panel': {
+          width: '100%',
+          minWidth: '100%',
+          maxWidth: '100%',
+          flexBasis: '100%',
+        },
+      }
+    : {}),
+  ...(mcpDrawerFix
+    ? {
+        '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
+          {
+            order: 'unset',
+          },
+        '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
+          {
+            visibility: 'hidden',
+            opacity: 0,
+            transition: 'none !important',
+          },
+      }
+    : {}),
+}));
+
+const StyledChatbotHeader = styled(ChatbotHeader)(({ theme }) => ({
+  padding: `${theme.spacing(3)} ${theme.spacing(3)} 0 ${theme.spacing(3)} !important`,
+  backgroundColor: `${floatingBg} !important`,
+}));
+
+const ErrorContainer = styled('div')(({ theme }) => ({
+  padding: theme.spacing(3),
+}));
+
+const FileDropZoneShell = styled('div')({
+  flex: 1,
+  minWidth: 0,
+  minHeight: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  '& > .pf-chatbot__dropzone': {
     gap: 0,
     rowGap: 0,
     columnGap: 0,
@@ -188,465 +269,321 @@ const useStyles = makeStyles(theme => ({
     '--pf-v5-c-multiple-file-upload--Gap': '0',
     flex: 1,
     minWidth: 0,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default) !important',
+    backgroundColor: `${floatingBg} !important`,
   },
-  chatHeaderActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-  },
-  compactDrawerPanel: {
-    '&.pf-v6-c-drawer__panel': {
-      width: '100%',
-      minWidth: '100%',
-      maxWidth: '100%',
-      flexBasis: '100%',
-    },
-  },
-  notebookHeaderActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-  },
-  headerLogo: {
-    width: 48,
-    height: 48,
-    marginRight: theme.spacing(1.5),
-    flexShrink: 0,
-  },
-  headerTitle: {
-    justifyContent: 'left !important',
-  },
-  headerDivider: {
-    paddingTop: 8,
-    borderBottom: '1px solid var(--pf-t--global--border--color--default)',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebooksContainer: {
-    padding: theme.spacing(3),
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    overflowY: 'auto',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebooksHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: theme.spacing(1),
-    marginBottom: theme.spacing(4),
-  },
-  notebooksHeading: {
-    marginBottom: 0,
-    whiteSpace: 'nowrap',
-    fontSize: '1.25rem',
-  },
-  notebooksHeadingEmpty: {
-    '&&': {
-      marginBottom: theme.spacing(1),
-      paddingBottom: theme.spacing(1),
-    },
-  },
-  notebooksEmptyState: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-  },
-  notebooksIcon: {
-    fontSize: 48,
-    color: 'var(--pf-t--global--icon--color--subtle)',
-    marginBottom: theme.spacing(1.5),
-    '& > .pf-v6-icon-rh-ui': {
-      display: 'none !important',
-    },
-  },
-  notebooksDescription: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(3),
-    maxWidth: 420,
-  },
-  notebooksAction: {
-    textTransform: 'none',
-    borderRadius: 999,
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
-  },
-  notebooksActionEmpty: {
-    textTransform: 'none',
-    borderRadius: 999,
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
-    marginTop: theme.spacing(3),
-  },
-  notebooksGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-    gap: theme.spacing(2),
-    width: '100%',
-    maxWidth: '100%',
-    paddingBottom: theme.spacing(3),
-    [theme.breakpoints.down('md')]: {
-      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-    },
-    [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
-    },
-  },
-  notebooksGridCompact: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: theme.spacing(2),
-    width: '100%',
-    maxWidth: '100%',
-    paddingBottom: theme.spacing(6),
-  },
-  notebookCard: {
-    borderRadius: theme.spacing(1.5),
-    display: 'flex',
-    flexDirection: 'column',
-    '&:hover': {
-      borderColor: 'var(--pf-t--global--border--color--hover)',
-      borderWidth: '1px',
-      borderStyle: 'solid',
-      cursor: 'pointer',
-    },
-  },
-  notebookCardHeader: {
-    padding: theme.spacing(3),
-    paddingBottom: 0,
-    alignItems: 'center',
-  },
-  notebookCardDivider: {
-    borderTop: '1px solid var(--pf-t--global--border--color--default)',
-    marginTop: theme.spacing(1),
-  },
-  notebookCardBody: {
-    padding: theme.spacing(3),
-    paddingTop: theme.spacing(2),
-  },
-  notebookDocuments: {
-    paddingTop: theme.spacing(1),
-  },
-  notebookUpdated: {
-    paddingBottom: theme.spacing(3),
-    paddingTop: theme.spacing(2),
-    fontStyle: 'italic',
-  },
-  notebookTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    minWidth: 0,
-    flex: 1,
-  },
-  notebookCardHeaderActions: {
-    marginLeft: theme.spacing(1),
-  },
-  notebookTitleText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    cursor: 'pointer',
-    borderRadius: 4,
-    padding: '2px 6px',
-    '&:hover': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--action--plain--hover)',
-    },
-  },
-  notebookMenuButton: {
-    color: theme.palette.text.secondary,
-  },
-  notebookDropdownList: {
-    paddingTop: 0,
-    paddingBottom: 0,
-    paddingInlineStart: 0,
-  },
-  notebookDropdownMenu: {
-    '--pf-v6-c-menu--PaddingBlockStart': '0',
-    '--pf-v6-c-menu--PaddingBlockEnd': '0',
-  },
-  notebookDropdownItem: {
-    justifyContent: 'flex-start',
-    textAlign: 'left',
-    paddingLeft: theme.spacing(0.5),
-    paddingRight: theme.spacing(0.5),
-  },
-  footer: {
-    '&.pf-chatbot__footer': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '&>.pf-chatbot__footer-container': {
-      width: '95% !important',
-      maxWidth: 'unset !important',
-    },
-    '& .pf-chatbot__message-bar': {
-      backgroundColor:
-        theme.palette.type === 'light'
-          ? theme.palette.grey[100]
-          : 'var(--pf-t--global--background--color--secondary--default)',
-    },
-    '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
-      {
-        borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
-      },
-  },
-  fullscreenFooter: {
-    '&>.pf-chatbot__footer-container': {
-      width: '100% !important',
-      padding: `${theme.spacing(1.5)}px !important`,
-      maxWidth: 'unset !important',
-      margin: '0 auto',
-    },
-  },
-  messageBar: {
-    border: '1px solid var(--pf-t--global--border--color--default)',
-    borderRadius: 24,
-    padding: theme.spacing(0.5),
-    '&::after': {
-      display: 'none',
-    },
-  },
-  sortDropdown: {
-    padding: 0,
-    margin: 0,
-  },
-  // Outer content wrapper (library may override overflow; we rely on inner scroll wrapper).
-  chatbotContent: {
-    minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    '& .pf-chatbot__jump': {
-      left: '50% !important',
-      right: 'auto !important',
-      transform: 'translateX(-50%)',
-      visibility: 'hidden',
-      pointerEvents: 'none',
-    },
-    '& .pf-chatbot__message-contents': {
-      overflowX: 'hidden',
-      overflowWrap: 'break-word',
-      wordBreak: 'break-word',
-    },
-  },
-  chatbotContentHasOverflow: {
-    '& .pf-chatbot__jump': {
-      visibility: 'visible',
-      pointerEvents: 'auto',
-    },
-  },
-  // Inner scroll container we control: always scrollable so zoomed-in users see full content.
-  chatbotContentScroll: {
-    minHeight: 0,
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch',
-  },
-  chatbotContentScrollNewChat: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default) !important',
-  },
-  // When present, pushes welcome content to bottom (zoom out). Scroll up to see important box (zoom in).
-  chatbotContentSpacer: {
-    flex: 1,
-    minHeight: 0,
-  },
-  settingsFlat: {
-    height: '100%',
-    width: '100%',
-    flex: 1,
-    minHeight: 0,
-    '&.pf-chatbot__settings-form-container': {
-      background: 'var(--pf-t--global--background--color--floating--default)',
-      padding: 0,
-      margin: 0,
-      minHeight: 0,
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-start',
-      width: '100%',
-      maxWidth: 'none',
-      overflow: 'hidden',
-      border: 'none',
-    },
-    '& .pf-chatbot__settings-form': {
-      margin: 0,
-      padding: 0,
-      background: 'var(--pf-t--global--background--color--floating--default)',
-      minHeight: 0,
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      maxWidth: 'none',
-      border: 'none',
-    },
-    '& .pf-chatbot__settings-form-row': {
-      background: 'var(--pf-t--global--background--color--floating--default)',
-      border: 'none',
-      margin: 0,
-      padding: 0,
-      minHeight: 0,
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      maxWidth: 'none',
-    },
-    '& .pf-chatbot__settings-label': {
-      display: 'none',
-    },
-  },
-  mcpFullscreenLayout: {
-    display: 'grid',
-    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
-    minHeight: 0,
-    height: '100%',
-    flex: 1,
-    width: '100%',
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  mcpChatPane: {
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-    width: '100%',
-    minWidth: 0,
-    whiteSpace: 'normal',
-    wordBreak: 'break-word',
-    overflowWrap: 'break-word',
-  },
-  mcpSettingsPane: {
-    width: '100%',
-    minWidth: 0,
-    borderLeft: `1px solid ${theme.palette.divider}`,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-    overflow: 'auto',
-  },
-  mcpCollapsedDrawerOrderFix: {
-    '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
-      {
-        order: 'unset',
-      },
-    '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
-      {
-        visibility: 'hidden',
-        opacity: 0,
-        transition: 'none !important',
-      },
-  },
-  // TODO: These PF Chatbot overrides are fragile (version-specific class names).
-  // Remove once the upstream issues are addressed:
-  // - https://github.com/patternfly/chatbot/issues/834 (custom close/collapse icon & positioning)
-  // - https://github.com/patternfly/chatbot/issues/848 (sidebar padding & spacing customization)
-  fullscreenChatLayout: {
-    display: 'flex',
-    flexDirection: 'row',
+});
+
+// FileDropZone forwards extra props into react-dropzone. noClick keeps the
+// parent dropzone from swallowing the message-bar Attach button click.
+const ChatFileDropZone = (props: React.ComponentProps<typeof FileDropZone>) => (
+  <FileDropZoneShell>
+    <FileDropZone
+      {...({ ...props, noClick: true } as React.ComponentProps<
+        typeof FileDropZone
+      >)}
+    />
+  </FileDropZoneShell>
+);
+
+const HeaderActions = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+}));
+
+const HeaderLogo = styled(RhUiAiExperienceIcon)(({ theme }) => ({
+  width: 48,
+  height: 48,
+  marginRight: theme.spacing(1.5),
+  flexShrink: 0,
+}));
+
+const StyledChatbotHeaderTitle = styled(ChatbotHeaderTitle)({
+  justifyContent: 'left !important',
+});
+
+const HeaderDivider = styled('div')({
+  flexShrink: 0,
+  paddingTop: 8,
+  borderBottom: '1px solid var(--pf-t--global--border--color--default)',
+  backgroundColor: floatingBg,
+});
+
+const ChatMain = styled('div')({
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+  '& .pf-chatbot__history': {
     flex: 1,
     minHeight: 0,
     height: '100%',
-    width: '100%',
-    '& .pf-v6-c-drawer, & .pf-v5-c-drawer': {
-      flex: 1,
-      minWidth: 0,
-    },
-    '& .pf-v6-c-drawer__content, & .pf-v5-c-drawer__content': {
-      flex: 1,
-      minWidth: 0,
-    },
-    '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
-      {
-        display: 'none',
-      },
-    // TODO(#834): Remove close button overrides once PF supports custom icon/positioning
-    '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
-      marginTop: 0,
-      marginRight: 0,
-    },
-    // TODO(#848): Remove drawer head padding overrides once PF exposes drawerHeadProps
-    '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
-      paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
-      paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
-    },
-    // TODO(#834): Remove icon replacement hack once PF supports drawerCloseButtonProps.icon
-    '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
-      {
-        display: 'none',
-      },
-    '& .pf-v6-c-drawer__close .pf-v6-c-button, & .pf-v5-c-drawer__close .pf-v5-c-button':
-      {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        '&::before': {
-          content: '""',
-          display: 'block',
-          width: 24,
-          height: 24,
-          mask: COLLAPSE_PANEL_ICON_SVG,
-          WebkitMask: COLLAPSE_PANEL_ICON_SVG,
-          backgroundColor: 'currentColor',
-        },
-      },
-    // TODO(#848): Remove heading padding overrides once PF exposes drawerHeadProps
-    '& .pf-chatbot__heading-container': {
-      paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
-      paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
-    },
-    // TODO(#848): Remove menu item padding overrides once PF exposes menuItemPaddingInline
-    '& .pf-chatbot__menu-item-header > .pf-v6-c-menu__group-title': {
-      '--pf-v6-c-menu__group-title--PaddingInlineStart':
-        'var(--pf-t--global--spacer--md)',
-      '--pf-v6-c-menu__group-title--PaddingInlineEnd':
-        'var(--pf-t--global--spacer--md)',
-    },
-    '& .pf-chatbot__menu-item': {
-      cursor: 'pointer',
-      '--pf-v6-c-menu__item--PaddingInlineStart':
-        'var(--pf-t--global--spacer--md)',
-      '--pf-v6-c-menu__item--PaddingInlineEnd':
-        'var(--pf-t--global--spacer--md)',
-    },
-    // TODO(#848): Remove menu toggle hover hack once PF supports menuToggleVisibility
-    '& .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
-      {
-        opacity: 0,
-        transition: 'opacity 0.15s ease-in-out',
-      },
-    '& .pf-chatbot__menu-item:hover .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item:hover .pf-v5-c-menu-toggle':
-      {
-        opacity: 1,
-      },
   },
-  fullscreenMainContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    minWidth: 0,
-    overflow: 'hidden',
+});
+
+const NotebooksTabLabel = styled('span', {
+  shouldForwardProp: prop => prop !== 'isCompact',
+})<{ isCompact?: boolean }>(({ theme, isCompact }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: isCompact ? theme.spacing(0.5) : theme.spacing(1),
+  minWidth: 0,
+  maxWidth: '100%',
+}));
+
+const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
+  '&.pf-chatbot__footer': {
+    backgroundColor: `${floatingBg} !important`,
+  },
+  '&>.pf-chatbot__footer-container': {
+    width: '100% !important',
+    padding: `${theme.spacing(1.5)} !important`,
+    maxWidth: 'unset !important',
+    margin: '0 auto',
+  },
+  '& .pf-chatbot__message-bar': {
+    backgroundColor:
+      theme.palette.mode === 'light'
+        ? theme.palette.grey[100]
+        : 'var(--pf-t--global--background--color--secondary--default)',
+  },
+  '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
+    {
+      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
+    },
+}));
+
+const StyledMessageBar = styled(MessageBar)(({ theme }) => ({
+  border: '1px solid var(--pf-t--global--border--color--default)',
+  borderRadius: 24,
+  padding: theme.spacing(0.5),
+  '&::after': {
+    display: 'none',
   },
 }));
+
+const StyledSelectList = styled(SelectList)({
+  padding: 0,
+  margin: 0,
+});
+
+const StyledChatbotContent = styled(ChatbotContent, {
+  shouldForwardProp: prop => prop !== 'hasOverflow',
+})<{ hasOverflow?: boolean }>(({ hasOverflow }) => ({
+  minHeight: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  '& .pf-chatbot__jump': {
+    left: '50% !important',
+    right: 'auto !important',
+    transform: 'translateX(-50%)',
+    visibility: hasOverflow ? 'visible' : 'hidden',
+    pointerEvents: hasOverflow ? 'auto' : 'none',
+  },
+  '& .pf-chatbot__message-contents': {
+    overflowX: 'hidden',
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
+  },
+  // Remove once @patternfly/chatbot adds a responsive grid layout for prompt suggestions:
+  // https://github.com/patternfly/chatbot/issues/905
+  '& .pf-chatbot__prompt-suggestions': {
+    display: 'grid !important',
+    flexDirection: 'unset !important',
+    alignItems: 'stretch',
+    gap: 'var(--pf-t--global--spacer--lg)',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 12.5rem), 1fr))',
+  },
+  '& .pf-chatbot__prompt-suggestions > .pf-chatbot__prompt-suggestion': {
+    height: '100%',
+    minWidth: 0,
+  },
+}));
+
+const ContentScroll = styled('div', {
+  shouldForwardProp: prop => prop !== 'isNewChat',
+})<{ isNewChat?: boolean }>(({ isNewChat }) => ({
+  minHeight: 0,
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  overflowY: 'auto',
+  WebkitOverflowScrolling: 'touch',
+  ...(isNewChat ? { backgroundColor: `${floatingBg} !important` } : {}),
+}));
+
+const ContentSpacer = styled('div')({
+  flex: 1,
+  minHeight: 0,
+});
+
+const FlatSettings = styled(Settings)({
+  height: '100%',
+  width: '100%',
+  flex: 1,
+  minHeight: 0,
+  '&.pf-chatbot__settings-form-container': {
+    background: floatingBg,
+    padding: 0,
+    margin: 0,
+    minHeight: 0,
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    width: '100%',
+    maxWidth: 'none',
+    overflow: 'hidden',
+    border: 'none',
+  },
+  '& .pf-chatbot__settings-form': {
+    margin: 0,
+    padding: 0,
+    background: floatingBg,
+    minHeight: 0,
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    maxWidth: 'none',
+    border: 'none',
+  },
+  '& .pf-chatbot__settings-form-row': {
+    background: floatingBg,
+    border: 'none',
+    margin: 0,
+    padding: 0,
+    minHeight: 0,
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    maxWidth: 'none',
+  },
+  '& .pf-chatbot__settings-label': {
+    display: 'none',
+  },
+});
+
+const McpFullscreenLayout = styled('div')({
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+  minHeight: 0,
+  height: '100%',
+  flex: 1,
+  width: '100%',
+  minWidth: 0,
+  overflow: 'hidden',
+});
+
+const McpChatPane = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: 0,
+  width: '100%',
+  minWidth: 0,
+  whiteSpace: 'normal',
+  wordBreak: 'break-word',
+  overflowWrap: 'break-word',
+});
+
+const McpSettingsPane = styled('div')(({ theme }) => ({
+  width: '100%',
+  minWidth: 0,
+  borderLeft: `1px solid ${theme.palette.divider}`,
+  backgroundColor: floatingBg,
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: 0,
+  overflow: 'auto',
+}));
+
+const FullscreenChatLayout = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  flex: 1,
+  minHeight: 0,
+  height: '100%',
+  width: '100%',
+  '& .pf-v6-c-drawer, & .pf-v5-c-drawer': {
+    flex: 1,
+    minWidth: 0,
+  },
+  '& .pf-v6-c-drawer__content, & .pf-v5-c-drawer__content': {
+    flex: 1,
+    minWidth: 0,
+  },
+  '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
+    {
+      display: 'none',
+    },
+  '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
+    marginTop: 0,
+    marginRight: 0,
+  },
+  '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
+    paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
+    paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
+  },
+  '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
+    {
+      display: 'none',
+    },
+  '& .pf-v6-c-drawer__close .pf-v6-c-button, & .pf-v5-c-drawer__close .pf-v5-c-button':
+    {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      '&::before': {
+        content: '""',
+        display: 'block',
+        width: 24,
+        height: 24,
+        mask: COLLAPSE_PANEL_ICON_SVG,
+        WebkitMask: COLLAPSE_PANEL_ICON_SVG,
+        backgroundColor: 'currentColor',
+      },
+    },
+  '& .pf-chatbot__heading-container': {
+    paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
+    paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
+  },
+  '& .pf-chatbot__menu-item-header > .pf-v6-c-menu__group-title': {
+    '--pf-v6-c-menu__group-title--PaddingInlineStart':
+      'var(--pf-t--global--spacer--md)',
+    '--pf-v6-c-menu__group-title--PaddingInlineEnd':
+      'var(--pf-t--global--spacer--md)',
+  },
+  '& .pf-chatbot__menu-item': {
+    cursor: 'pointer',
+    '--pf-v6-c-menu__item--PaddingInlineStart':
+      'var(--pf-t--global--spacer--md)',
+    '--pf-v6-c-menu__item--PaddingInlineEnd': 'var(--pf-t--global--spacer--md)',
+  },
+  '& .pf-chatbot__menu-item .pf-v6-c-menu__item-main, & .pf-chatbot__menu-item .pf-v5-c-menu__item-main':
+    {
+      minWidth: 0,
+      overflow: 'hidden',
+    },
+  '& .pf-chatbot__menu-item-text, & .pf-v6-c-menu__item-text, & .pf-v5-c-menu__item-text':
+    {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
+  '& .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
+    {
+      opacity: 0,
+      transition: 'opacity 0.15s ease-in-out',
+    },
+  '& .pf-chatbot__menu-item:hover .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item:hover .pf-v5-c-menu-toggle':
+    {
+      opacity: 1,
+    },
+});
 
 type LightspeedChatProps = {
   selectedModel: string;
@@ -670,13 +607,25 @@ export const LightspeedChat = ({
   models,
 }: LightspeedChatProps) => {
   const isMobile = useIsMobile();
-  const classes = useStyles();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const configApi = useApi(configApiRef);
   const notebooksEnabled =
     configApi.getOptionalBoolean('intelligent-assistant.notebooks.enabled') ??
     false;
+  const screenContextEnabled =
+    configApi.getOptionalBoolean(
+      'intelligent-assistant.screen-context.enabled',
+    ) ?? false;
+  const domExtractionEnabled =
+    configApi.getOptionalBoolean(
+      'intelligent-assistant.screen-context.dom-extraction.enabled',
+    ) ?? true;
+  const domExtractionMaxChars =
+    configApi.getOptionalNumber(
+      'intelligent-assistant.screen-context.dom-extraction.maxChars',
+    ) ?? 8000;
+
   const notebooksRouteMatch = useMatch(`${LIGHTSPEED_PATH}/notebooks`);
   const notebookViewRouteMatch = useMatch(
     `${LIGHTSPEED_PATH}/notebooks/:notebookId`,
@@ -685,7 +634,6 @@ export const LightspeedChat = ({
   const isOnNotebookRoute = Boolean(
     notebooksRouteMatch || notebookViewRouteMatch,
   );
-  const shouldShowTabs = notebooksEnabled || isOnNotebookRoute;
   const {
     displayMode,
     setDisplayMode,
@@ -698,8 +646,22 @@ export const LightspeedChat = ({
     setShellViewTab,
     activeNotebookId,
     setActiveNotebookId,
+    settingsTab: persistedSettingsTab,
+    setSettingsTab: setPersistedSettingsTab,
   } = useLightspeedDrawerContext();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  const {
+    isOpen: isSettingsOpen,
+    activeTab: activeSettingsTab,
+    openSettings,
+    closeSettings,
+    setActiveTab: setSettingsTab,
+  } = useSettingsPanelUrlState(
+    isFullscreenMode,
+    persistedSettingsTab,
+    setPersistedSettingsTab,
+  );
+  const showCompactSettings = !isFullscreenMode && isSettingsOpen;
   const location = useLocation();
   const isNotebooksFullscreenPath =
     location.pathname === `${LIGHTSPEED_PATH}/notebooks` ||
@@ -721,16 +683,29 @@ export const LightspeedChat = ({
     }
     return 0;
   });
-  const {
-    allowed: hasNotebooksAccess,
-    loading: notebooksPermissionLoading,
-    iaNotebooksUsePermissionName,
-  } = useLightspeedNotebooksPermission();
+  const { allowed: hasChatAccess, loading: chatPermissionLoading } =
+    useIaChatPermission();
+  const chatPermissionResolved = !chatPermissionLoading && hasChatAccess;
+  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
+    useIaNotebooksPermission();
   const notebooksPermissionResolved =
     !notebooksPermissionLoading && hasNotebooksAccess;
+  const canShowNotebooks =
+    notebooksPermissionResolved && (notebooksEnabled || isOnNotebookRoute);
+  const hasChatTab = chatPermissionResolved;
+  const hasNotebooksTab = canShowNotebooks;
+  const hasBothTabs = hasChatTab && hasNotebooksTab;
+  const shouldShowTabs = hasBothTabs;
+  const selectedTabIndex = hasBothTabs ? activeTab : 0;
+  const { allowed: hasMcpToolsAccess, loading: mcpToolsPermissionLoading } =
+    useIaMcpToolsPermission();
+  const mcpToolsPermissionResolved =
+    !mcpToolsPermissionLoading && hasMcpToolsAccess;
 
   const { data: notebookConversationIdsArray = [] } =
-    useNotebookConversationIds();
+    useNotebookConversationIds(
+      chatPermissionResolved || notebooksPermissionResolved,
+    );
   const { data: notebooks = [], refetch: refetchNotebooks } =
     useNotebookSessions(notebooksPermissionResolved);
   const hasNotebooks = notebooks.length > 0;
@@ -787,7 +762,6 @@ export const LightspeedChat = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
-  const [isMcpSettingsOpen, setIsMcpSettingsOpen] = useState<boolean>(false);
   const [chatHeaderBgColor, setChatHeaderBgColor] = useState<string>();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
@@ -796,38 +770,99 @@ export const LightspeedChat = ({
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
-  const showChatPanel = activeTab === 0;
+  const showChatPanel = hasChatTab && (activeTab === 0 || !hasNotebooksTab);
   const showNotebooksPanel =
-    (notebooksEnabled || isOnNotebookRoute) && activeTab !== 0;
+    hasNotebooksTab && (activeTab === 1 || !hasChatTab);
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
 
   // Fullscreen: URL drives Chat vs Notebooks, but shellViewTab must win when entering
   // fullscreen from overlay/docked on Notebooks while navigation still lands on /intelligent-assistant.
   useLayoutEffect(() => {
-    if (!isFullscreenMode) {
+    if (
+      !isFullscreenMode ||
+      chatPermissionLoading ||
+      notebooksPermissionLoading
+    ) {
       return;
     }
     if (isNotebooksFullscreenPath) {
-      setActiveTab(1);
-      setShellViewTab(1);
+      if (canShowNotebooks) {
+        setActiveTab(1);
+        setShellViewTab(1);
+      } else if (chatPermissionResolved) {
+        navigate(
+          routeConversationId
+            ? `${LIGHTSPEED_PATH}/conversation/${routeConversationId}`
+            : LIGHTSPEED_PATH,
+          { replace: true },
+        );
+        setActiveTab(0);
+        setShellViewTab(0);
+      }
       return;
     }
     const isBaseLightspeedChatRoute =
       location.pathname === LIGHTSPEED_PATH ||
       location.pathname === `${LIGHTSPEED_PATH}/`;
-    if (shellViewTab === 1 && isBaseLightspeedChatRoute) {
+    const isConversationRoute = location.pathname.startsWith(
+      `${LIGHTSPEED_PATH}/conversation/`,
+    );
+    if (
+      !chatPermissionResolved &&
+      canShowNotebooks &&
+      (isBaseLightspeedChatRoute || isConversationRoute)
+    ) {
+      navigate(
+        activeNotebookId
+          ? `${LIGHTSPEED_PATH}/notebooks/${activeNotebookId}`
+          : `${LIGHTSPEED_PATH}/notebooks`,
+        { replace: true },
+      );
+      setActiveTab(1);
+      setShellViewTab(1);
+      return;
+    }
+    if (shellViewTab === 1 && isBaseLightspeedChatRoute && canShowNotebooks) {
       navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
       return;
     }
-    setActiveTab(0);
-    setShellViewTab(0);
+    if (chatPermissionResolved) {
+      setActiveTab(0);
+      setShellViewTab(0);
+    }
   }, [
     isFullscreenMode,
     isNotebooksFullscreenPath,
     shellViewTab,
     location.pathname,
     navigate,
+    setShellViewTab,
+    chatPermissionLoading,
+    notebooksPermissionLoading,
+    chatPermissionResolved,
+    canShowNotebooks,
+    activeNotebookId,
+    routeConversationId,
+  ]);
+
+  useEffect(() => {
+    if (chatPermissionLoading || notebooksPermissionLoading) {
+      return;
+    }
+    if (!chatPermissionResolved && canShowNotebooks && activeTab === 0) {
+      setActiveTab(1);
+      setShellViewTab(1);
+    } else if (chatPermissionResolved && !canShowNotebooks && activeTab !== 0) {
+      setActiveTab(0);
+      setShellViewTab(0);
+    }
+  }, [
+    chatPermissionLoading,
+    notebooksPermissionLoading,
+    chatPermissionResolved,
+    canShowNotebooks,
+    activeTab,
     setShellViewTab,
   ]);
 
@@ -856,13 +891,20 @@ export const LightspeedChat = ({
   ]);
 
   const handleNotebookTabSelect = (_event: SyntheticEvent, nextTab: number) => {
-    if (nextTab === 0) {
+    let logicalTab = 0;
+    if (hasBothTabs) {
+      logicalTab = nextTab;
+    } else if (hasNotebooksTab) {
+      logicalTab = 1;
+    }
+
+    if (logicalTab === 0) {
       maybeAutoDeleteScratchNotebook();
     }
-    setActiveTab(nextTab);
-    setShellViewTab(nextTab);
+    setActiveTab(logicalTab);
+    setShellViewTab(logicalTab);
     if (isFullscreenMode) {
-      if (nextTab === 1) {
+      if (logicalTab === 1) {
         navigate(
           activeNotebookId
             ? `${LIGHTSPEED_PATH}/notebooks/${activeNotebookId}`
@@ -876,7 +918,7 @@ export const LightspeedChat = ({
         );
       }
     }
-    if (nextTab === 1 && notebooksPermissionResolved) {
+    if (logicalTab === 1 && notebooksPermissionResolved) {
       refetchNotebooks();
     }
   };
@@ -981,7 +1023,22 @@ export const LightspeedChat = ({
     if (computedBg) {
       setChatHeaderBgColor(computedBg);
     }
-  }, [displayMode, isMcpSettingsOpen]);
+  }, [displayMode, isSettingsOpen]);
+
+  useEffect(() => {
+    if (
+      !mcpToolsPermissionResolved &&
+      isSettingsOpen &&
+      activeSettingsTab === 'mcp-servers'
+    ) {
+      setSettingsTab('saved-prompts');
+    }
+  }, [
+    mcpToolsPermissionResolved,
+    isSettingsOpen,
+    activeSettingsTab,
+    setSettingsTab,
+  ]);
 
   const {
     isPinningChatsEnabled,
@@ -990,6 +1047,9 @@ export const LightspeedChat = ({
     pinChat,
     unpinChat,
   } = usePinnedChatsSettings(user);
+
+  const { isSavedPromptsEnabled, handleSavedPromptsToggle } =
+    useSavedPromptsSettings(user);
 
   const { selectedSort, handleSortChange } = useSortSettings(user);
 
@@ -1059,11 +1119,20 @@ export const LightspeedChat = ({
     data: conversations = [],
     isLoading,
     isRefetching,
-  } = useConversations();
+  } = useConversations(chatPermissionResolved);
 
-  const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
-  const { allowed: hasUpdateAccess } = useLightspeedUpdatePermission();
-  const samplePrompts = useWelcomePrompts();
+  const {
+    savedPrompts,
+    config: savedPromptsConfig,
+    loading: savedPromptsLoading,
+    error: savedPromptsError,
+    createPrompt,
+    deletePrompt,
+  } = useSavedPrompts();
+  const samplePrompts = useWelcomePrompts(
+    chatPermissionResolved,
+    isSavedPromptsEnabled ? savedPrompts : undefined,
+  );
   useEffect(() => {
     if (!user || !isReady) return;
     const onOverlayLikeSurface = isFullscreenMode || !routeConversationId;
@@ -1227,16 +1296,58 @@ export const LightspeedChat = ({
         prompt: message.toString(),
       }),
     );
-    handleInputPrompt(message.toString(), getAttachments(fileContents));
+    const allAttachments = getAttachments(fileContents);
+
+    if (screenContextEnabled && domExtractionEnabled) {
+      try {
+        const domContext = extractPageContext({
+          maxChars: domExtractionMaxChars,
+        });
+        if (domContext) {
+          allAttachments.push({
+            attachment_type: 'configuration',
+            content_type: 'text/plain',
+            content: domContext,
+          });
+        }
+      } catch {
+        // DOM extraction failure is non-fatal; proceed without page context
+      }
+    }
+
+    handleInputPrompt(message.toString(), allAttachments);
     setIsSendButtonDisabled(true);
     setFileContents([]);
     setDraftMessage('');
   };
 
+  const handleApplySavedPrompt = useCallback(
+    (content: string) => {
+      setDraftMessage(content);
+      setMessageBarKey(k => k + 1);
+    },
+    [setDraftMessage],
+  );
+
+  const {
+    sendDirectly: sendSavedPromptDirectly,
+    requestDelete: requestSavedPromptDelete,
+    promptToDelete,
+    closeDeleteModal: closeSavedPromptDeleteModal,
+    confirmDelete: confirmSavedPromptDelete,
+    isDeleting: isSavedPromptDeleting,
+    deleteError: savedPromptDeleteError,
+    isDeleteModalOpen: isSavedPromptDeleteModalOpen,
+  } = useSavedPromptActions({
+    onApplyToInput: handleApplySavedPrompt,
+    onSendDirectly: sendMessage,
+    onDelete: deletePrompt,
+  });
+
   const onNewChat = useCallback(() => {
     (async () => {
       if (!isFullscreenMode) {
-        setIsMcpSettingsOpen(false);
+        closeSettings();
       }
       if (conversationId !== TEMP_CONVERSATION_ID) {
         setMessages([]);
@@ -1262,6 +1373,7 @@ export const LightspeedChat = ({
     setDraftMessage,
     setCurrentConversationId,
     isFullscreenMode,
+    closeSettings,
   ]);
 
   const openDeleteModal = (conversation_id: string) => {
@@ -1291,7 +1403,6 @@ export const LightspeedChat = ({
         menuItems: (
           <>
             <DropdownItem
-              isDisabled={!hasUpdateAccess}
               icon={<PenIcon />}
               onClick={() =>
                 openChatRenameModal(conversationSummary.conversation_id)
@@ -1321,7 +1432,6 @@ export const LightspeedChat = ({
               </>
             )}
             <DropdownItem
-              isDisabled={!hasDeleteAccess}
               icon={<TrashIcon />}
               onClick={() =>
                 openDeleteModal(conversationSummary.conversation_id)
@@ -1333,15 +1443,7 @@ export const LightspeedChat = ({
         ),
       };
     },
-    [
-      pinnedChats,
-      hasDeleteAccess,
-      isPinningChatsEnabled,
-      hasUpdateAccess,
-      t,
-      pinChat,
-      unpinChat,
-    ],
+    [pinnedChats, isPinningChatsEnabled, t, pinChat, unpinChat],
   );
 
   const notebookConversationIds = useMemo(
@@ -1382,85 +1484,31 @@ export const LightspeedChat = ({
     ],
   );
 
-  const filterConversations = useCallback(
-    (targetValue: string) => {
-      const pinnedChatsKey =
-        t('conversation.category.pinnedChats') || 'Pinned chats';
-      let isNoPinnedChatsSearchResults = false;
-      let isNoRecentChatsSearchResults = false;
-      const filteredConversations = Object.entries(categorizedMessages).reduce(
-        (acc, [key, items]) => {
-          const filteredItems = items.filter(item =>
-            (item.text ?? '')
-              .toLocaleLowerCase('en-US')
-              .includes(targetValue.toLocaleLowerCase('en-US')),
-          );
-          const isPinnedCategory = key === pinnedChatsKey;
-          if (isPinnedCategory && isPinningChatsEnabled) {
-            if (filteredItems.length > 0) {
-              acc[pinnedChatsKey] = filteredItems;
-            } else {
-              isNoPinnedChatsSearchResults =
-                categorizedMessages[pinnedChatsKey].length > 0;
-              acc[pinnedChatsKey] = [
-                {
-                  id: isNoPinnedChatsSearchResults
-                    ? 'no-pinned-chats-search-results'
-                    : 'no-pinned-chats',
-                  text: isNoPinnedChatsSearchResults
-                    ? t('common.noSearchResults')
-                    : t('chatbox.emptyState.noPinnedChats'),
-                  noIcon: true,
-                  additionalProps: {
-                    isDisabled: true,
-                    style: {
-                      fontStyle: 'italic',
-                      opacity: 0.6,
-                    },
-                  },
-                },
-              ];
-            }
-          } else if (!isPinnedCategory) {
-            if (filteredItems.length > 0) {
-              acc[key] = filteredItems;
-            } else {
-              isNoRecentChatsSearchResults =
-                categorizedMessages[key].length > 0;
-
-              acc[key] = [
-                {
-                  id: isNoRecentChatsSearchResults
-                    ? 'no-recent-chats-search-results'
-                    : 'no-recent-chats',
-                  text: isNoRecentChatsSearchResults
-                    ? t('common.noSearchResults')
-                    : t('chatbox.emptyState.noRecentChats'),
-                  noIcon: true,
-                  additionalProps: {
-                    isDisabled: true,
-                    style: {
-                      fontStyle: 'italic',
-                      opacity: 0.6,
-                    },
-                  },
-                },
-              ];
-            }
-          }
-          return acc;
-        },
-        {} as any,
-      );
-      // If both sections had items but search filtered them all out, return empty object
-      // so PatternFly's default empty state shows instead of custom empty state messages
-      if (isNoPinnedChatsSearchResults && isNoRecentChatsSearchResults) {
-        return {};
-      }
-      return filteredConversations;
-    },
-    [categorizedMessages, isPinningChatsEnabled, t],
+  const getSavedPromptMenuItems = useCallback(
+    (prompt: (typeof savedPrompts)[number]) => (
+      <SavedPromptMenuItems
+        prompt={prompt}
+        variant="sidebar"
+        onSendDirectly={sendSavedPromptDirectly}
+        onDelete={requestSavedPromptDelete}
+        isSendDirectlyDisabled={streamingUiMatchesView}
+      />
+    ),
+    [sendSavedPromptDirectly, requestSavedPromptDelete, streamingUiMatchesView],
   );
+
+  const { conversationGroups, hasNoSearchResults } =
+    useConversationHistoryGroups({
+      savedPrompts,
+      categorizedMessages,
+      filterValue,
+      isSavedPromptsEnabled,
+      isPinningChatsEnabled,
+      isSettingsOpen,
+      activeSettingsTab,
+      openSettings,
+      getSavedPromptMenuItems,
+    });
 
   useEffect(() => {
     setMessages(conversationMessages);
@@ -1468,8 +1516,21 @@ export const LightspeedChat = ({
 
   const onSelectActiveItem = useCallback(
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
+      if (
+        selectedItem !== undefined &&
+        isSavedPromptConversationId(selectedItem)
+      ) {
+        const promptId = String(selectedItem).slice(
+          SAVED_PROMPT_CONVERSATION_ID_PREFIX.length,
+        );
+        const prompt = savedPrompts.find(({ id }) => id === promptId);
+        if (prompt) {
+          handleApplySavedPrompt(prompt.content);
+        }
+        return;
+      }
       if (!isFullscreenMode) {
-        setIsMcpSettingsOpen(false);
+        closeSettings();
         setIsChatHistoryDrawerOpen(false);
       }
       setNewChatCreated(false);
@@ -1493,7 +1554,9 @@ export const LightspeedChat = ({
       setDraftMessage,
       scrollToBottomRef,
       setCurrentConversationId,
-      setIsMcpSettingsOpen,
+      closeSettings,
+      savedPrompts,
+      handleApplySavedPrompt,
       isFullscreenMode,
     ],
   );
@@ -1503,8 +1566,9 @@ export const LightspeedChat = ({
   );
 
   const getMaxPrompts = () => {
+    const count = samplePrompts?.length ?? 0;
     if (isFullscreenMode) {
-      return samplePrompts?.length; // In the Fullscreen mode, show all prompts
+      return count;
     }
     if (displayMode === ChatbotDisplayMode.docked) {
       return 2; // In the docked mode, show 2 prompts
@@ -1687,7 +1751,7 @@ export const LightspeedChat = ({
   }, [
     conversationId,
     displayMode,
-    isMcpSettingsOpen,
+    isSettingsOpen,
     messages.length,
     welcomePrompts.length,
   ]);
@@ -1695,6 +1759,18 @@ export const LightspeedChat = ({
   const handleFilter = useCallback((value: string) => {
     setFilterValue(value);
   }, []);
+
+  const onClearFilter = useCallback(() => {
+    setFilterValue('');
+  }, []);
+
+  const searchInputProps = useMemo(
+    () => ({
+      value: filterValue,
+      onClear: onClearFilter,
+    }),
+    [filterValue, onClearFilter],
+  );
 
   const onChatHistoryDrawerToggle = useCallback(() => {
     setIsChatHistoryDrawerOpen(isOpen => !isOpen);
@@ -1758,7 +1834,7 @@ export const LightspeedChat = ({
         toggle={sortToggle}
         shouldFocusToggleOnSelect
       >
-        <SelectList className={classes.sortDropdown}>
+        <StyledSelectList>
           <SelectOption value="newest">{t('sort.newest')}</SelectOption>
           <SelectOption value="oldest">{t('sort.oldest')}</SelectOption>
           <SelectOption value="alphabeticalAsc">
@@ -1767,17 +1843,10 @@ export const LightspeedChat = ({
           <SelectOption value="alphabeticalDesc">
             {t('sort.alphabeticalDesc')}
           </SelectOption>
-        </SelectList>
+        </StyledSelectList>
       </Select>
     ),
-    [
-      isSortSelectOpen,
-      selectedSort,
-      onSortSelect,
-      sortToggle,
-      t,
-      classes.sortDropdown,
-    ],
+    [isSortSelectOpen, selectedSort, onSortSelect, sortToggle, t],
   );
 
   const handleAttach = (data: File[], event: ReactDropzoneDropEvent) => {
@@ -1831,22 +1900,12 @@ export const LightspeedChat = ({
 
   const chatMainContent = (
     <>
-      <ChatbotContent
-        className={`${classes.chatbotContent} ${
-          hasChatContentOverflow ? classes.chatbotContentHasOverflow : ''
-        }`}
-      >
-        <div
+      <StyledChatbotContent hasOverflow={hasChatContentOverflow}>
+        <ContentScroll
           ref={contentScrollRef}
-          className={`${classes.chatbotContentScroll}${
-            welcomePrompts.length > 0
-              ? ` ${classes.chatbotContentScrollNewChat}`
-              : ''
-          }`}
+          isNewChat={welcomePrompts.length > 0}
         >
-          {welcomePrompts.length > 0 && (
-            <div className={classes.chatbotContentSpacer} aria-hidden />
-          )}
+          {welcomePrompts.length > 0 && <ContentSpacer aria-hidden />}
           <LightspeedChatBox
             userName={userName}
             messages={messages}
@@ -1866,15 +1925,12 @@ export const LightspeedChat = ({
               style={{ height: 0, flexShrink: 0 }}
             />
           )}
-        </div>
-      </ChatbotContent>
-      <ChatbotFooter
-        className={`${classes.footer} ${classes.fullscreenFooter}`}
-      >
+        </ContentScroll>
+      </StyledChatbotContent>
+      <StyledChatbotFooter>
         <FilePreview />
-        <MessageBar
+        <StyledMessageBar
           key={messageBarKey}
-          className={classes.messageBar}
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
@@ -1919,39 +1975,52 @@ export const LightspeedChat = ({
           placeholder={t('chatbox.message.placeholder')}
         />
         <ChatbotFootnoteWithIcon {...getFootnoteProps(t)} />
-      </ChatbotFooter>
+      </StyledChatbotFooter>
     </>
   );
 
-  const mcpSettingsPanel = (
-    <McpServersSettings
-      onClose={() => setIsMcpSettingsOpen(false)}
+  const settingsPanel = (
+    <SettingsPanel
+      activeTab={activeSettingsTab}
+      onTabChange={setSettingsTab}
+      onClose={closeSettings}
       backgroundColor={chatHeaderBgColor}
+      isSavedPromptsEnabled={isSavedPromptsEnabled}
+      onEnableSavedPrompts={() => handleSavedPromptsToggle(true)}
+      onApplySavedPromptToInput={handleApplySavedPrompt}
+      onSendSavedPromptDirectly={sendMessage}
+      isChatStreaming={streamingUiMatchesView}
+      savedPrompts={savedPrompts}
+      savedPromptsConfig={savedPromptsConfig}
+      savedPromptsLoading={savedPromptsLoading}
+      savedPromptsError={savedPromptsError}
+      onCreateSavedPrompt={createPrompt}
+      onRequestSavedPromptDelete={requestSavedPromptDelete}
+      showMcpSettings={mcpToolsPermissionResolved}
     />
   );
 
   const mainPanelContent = (() => {
-    if (!isMcpSettingsOpen) {
+    if (!isSettingsOpen) {
       return <>{chatMainContent}</>;
     }
 
     if (isFullscreenMode) {
       return (
-        <div className={classes.mcpFullscreenLayout}>
-          <div className={classes.mcpChatPane}>{chatMainContent}</div>
-          <div className={classes.mcpSettingsPane}>{mcpSettingsPanel}</div>
-        </div>
+        <McpFullscreenLayout>
+          <McpChatPane>{chatMainContent}</McpChatPane>
+          <McpSettingsPane>{settingsPanel}</McpSettingsPane>
+        </McpFullscreenLayout>
       );
     }
 
     return (
-      <Settings
-        className={classes.settingsFlat}
+      <FlatSettings
         fields={[
           {
-            id: 'mcp-servers-settings',
+            id: 'settings-panel',
             label: '',
-            field: mcpSettingsPanel,
+            field: settingsPanel,
           },
         ]}
       />
@@ -1961,7 +2030,7 @@ export const LightspeedChat = ({
   let drawerPanelStyle: { [key: string]: string | number } | undefined;
   if (!isFullscreenMode) {
     drawerPanelStyle = { zIndex: 1300 };
-  } else if (isMcpSettingsOpen) {
+  } else if (isSettingsOpen) {
     drawerPanelStyle = { width: 320, minWidth: 320, maxWidth: 320 };
   } else {
     drawerPanelStyle = { minWidth: 232, maxWidth: 400 };
@@ -2001,377 +2070,357 @@ export const LightspeedChat = ({
           isCompact={!isFullscreenMode}
         />
       )}
-      <Chatbot
+      <StyledChatbot
         displayMode={ChatbotDisplayMode.embedded}
-        className={`${classes.body} ${!isFullscreenMode ? classes.bodyCompact : ''} ${
-          isMcpSettingsOpen && !isChatHistoryDrawerOpen
-            ? classes.mcpCollapsedDrawerOrderFix
-            : ''
-        }`}
+        isCompact={!isFullscreenMode}
+        compactDrawerOpen={!isFullscreenMode && isChatHistoryDrawerOpen}
+        mcpDrawerFix={isSettingsOpen && !isChatHistoryDrawerOpen}
       >
-        <ChatbotHeader className={classes.header}>
-          <ChatbotHeaderMain>
-            {showChatPanel && !isFullscreenMode && (
-              <div className={classes.chatHeaderActions}>
-                <Tooltip
-                  content={
-                    isChatHistoryDrawerOpen
-                      ? t('tooltip.collapseHistoryPanel')
-                      : t('tooltip.expandHistoryPanel')
-                  }
-                  position="bottom"
-                >
-                  <PfButton
-                    variant="plain"
-                    onClick={onChatHistoryDrawerToggle}
-                    aria-expanded={isChatHistoryDrawerOpen}
-                    aria-label={t('aria.chatHistoryMenu')}
-                    size="sm"
-                  >
-                    {isChatHistoryDrawerOpen ? (
-                      <SidebarCollapseIcon size={18} />
-                    ) : (
-                      <SidebarExpandIcon size={18} />
-                    )}
-                  </PfButton>
-                </Tooltip>
-                {!isChatHistoryDrawerOpen && (
-                  <Tooltip
-                    content={t('tooltip.quickNewChat')}
-                    position="bottom"
-                  >
-                    <PfButton
-                      variant="plain"
-                      onClick={onNewChat}
-                      isDisabled={newChatCreated}
-                      aria-label={t('tooltip.quickNewChat')}
-                      size="sm"
+        {showCompactSettings ? (
+          settingsPanel
+        ) : (
+          <>
+            <StyledChatbotHeader>
+              <ChatbotHeaderMain>
+                {showChatPanel && !isFullscreenMode && (
+                  <HeaderActions>
+                    <Tooltip
+                      content={
+                        isChatHistoryDrawerOpen
+                          ? t('tooltip.collapseHistoryPanel')
+                          : t('tooltip.expandHistoryPanel')
+                      }
+                      position="bottom"
                     >
-                      <PenIcon
-                        style={{
-                          width: 18,
-                          height: 18,
-                          color: newChatCreated
-                            ? undefined
-                            : 'var(--pf-t--global--color--brand--default)',
-                        }}
-                      />
-                    </PfButton>
-                  </Tooltip>
+                      <PfButton
+                        variant="plain"
+                        onClick={onChatHistoryDrawerToggle}
+                        aria-expanded={isChatHistoryDrawerOpen}
+                        aria-label={t('aria.chatHistoryMenu')}
+                        size="sm"
+                      >
+                        {isChatHistoryDrawerOpen ? (
+                          <SidebarCollapseIcon size={18} />
+                        ) : (
+                          <SidebarExpandIcon size={18} />
+                        )}
+                      </PfButton>
+                    </Tooltip>
+                    {!isChatHistoryDrawerOpen && (
+                      <Tooltip
+                        content={t('tooltip.quickNewChat')}
+                        position="bottom"
+                      >
+                        <PfButton
+                          variant="plain"
+                          onClick={onNewChat}
+                          isDisabled={newChatCreated}
+                          aria-label={t('tooltip.quickNewChat')}
+                          size="sm"
+                        >
+                          <PenIcon
+                            style={{
+                              width: 18,
+                              height: 18,
+                              color: newChatCreated
+                                ? undefined
+                                : 'var(--pf-t--global--color--brand--default)',
+                            }}
+                          />
+                        </PfButton>
+                      </Tooltip>
+                    )}
+                  </HeaderActions>
                 )}
-              </div>
-            )}
-            {!isFullscreenMode && showNotebooksPanel && activeNotebook && (
-              <NotebookHeaderActions
-                className={classes.notebookHeaderActions}
-                onClose={handleCloseNotebook}
-                onOpenUploadModal={() => setNotebookUploadModalOpen(true)}
-                uploadsInProgress={notebookUploadsInProgress}
-                uploadModalOpen={notebookUploadModalOpen}
-                sidebarCollapsed={notebookSidebarCollapsed}
-                onSidebarCollapsedChange={setNotebookSidebarCollapsed}
-              />
-            )}
-            {isFullscreenMode && (
-              <>
-                <RhUiAiExperienceIcon
-                  style={{ width: '24px', height: '24px' }}
-                  aria-label={t('icon.lightspeed.alt')}
-                  className={classes.headerLogo}
-                />
-                <ChatbotHeaderTitle className={classes.headerTitle}>
-                  <Title
-                    headingLevel="h1"
-                    size="2xl"
-                    style={{ fontWeight: 700 }}
-                  >
-                    {t('chatbox.header.title')}
-                  </Title>
-                </ChatbotHeaderTitle>
-              </>
-            )}
-          </ChatbotHeaderMain>
+                {!isFullscreenMode && showNotebooksPanel && activeNotebook && (
+                  <HeaderActions>
+                    <NotebookHeaderActions
+                      onClose={handleCloseNotebook}
+                      onOpenUploadModal={() => setNotebookUploadModalOpen(true)}
+                      uploadsInProgress={notebookUploadsInProgress}
+                      uploadModalOpen={notebookUploadModalOpen}
+                      sidebarCollapsed={notebookSidebarCollapsed}
+                      onSidebarCollapsedChange={setNotebookSidebarCollapsed}
+                    />
+                  </HeaderActions>
+                )}
+                {isFullscreenMode && (
+                  <>
+                    <HeaderLogo
+                      style={{ width: '24px', height: '24px' }}
+                      aria-label={t('icon.lightspeed.alt')}
+                    />
+                    <StyledChatbotHeaderTitle>
+                      <Title
+                        headingLevel="h1"
+                        size="2xl"
+                        style={{ fontWeight: 700 }}
+                      >
+                        {t('chatbox.header.title')}
+                      </Title>
+                    </StyledChatbotHeaderTitle>
+                  </>
+                )}
+              </ChatbotHeaderMain>
 
-          <LightspeedChatBoxHeader
-            selectedModel={selectedModel}
-            handleSelectedModel={handleSelectedModel}
-            models={models}
-            isPinningChatsEnabled={isPinningChatsEnabled}
-            hideModelSelector
-            showChatTabOptions={!showNotebooksPanel}
-            setDisplayMode={setDisplayModeFromHeader}
-            displayMode={displayMode}
-            onPinnedChatsToggle={handlePinningChatsToggle}
-            onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
-          />
-        </ChatbotHeader>
-        {(isFullscreenMode || shouldShowTabs) && (
-          <div className={classes.headerDivider} />
-        )}
-        {shouldShowTabs && (
-          <Tabs
-            value={activeTab}
-            onChange={handleNotebookTabSelect}
-            aria-label={t('tabs.ariaLabel')}
-            variant="standard"
-            textColor="primary"
-            sx={theme => ({
-              backgroundColor:
-                'var(--pf-t--global--background--color--floating--default)',
-              borderBottom:
-                '1px solid var(--pf-t--global--border--color--default)',
-              minHeight: theme.spacing(6),
-              paddingLeft: theme.spacing(2),
-              paddingRight: theme.spacing(2),
-              '& .MuiTabs-flexContainer': {
-                gap: theme.spacing(2),
-              },
-              '& [role="tab"]': {
-                fontWeight: 700,
-                textTransform: 'none',
-                opacity: 1,
-                padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
-                borderRadius: theme.spacing(0.5),
-                '&:not([aria-selected="true"])': {
-                  color: `${theme.palette.text.primary} !important`,
-                },
-                '&:hover': {
-                  background: 'none !important',
-                  backgroundColor: 'transparent !important',
-                  backgroundImage: 'none !important',
-                },
-                '&:not([aria-selected="true"]):hover': {
-                  color: 'var(--pf-t--global--text--color--brand--default)',
-                },
-                '&[aria-selected="true"]:hover': {
-                  color: `${theme.palette.primary.main} !important`,
-                },
-              },
-              '& [class*="Tabs-indicator"]': {
-                height: 3,
-              },
-            })}
-          >
-            <Tab
-              disableRipple
-              label={t('tabs.chat')}
-              aria-label={t('tabs.chat')}
-            />
-            <Tab
-              disableRipple
-              label={
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}
-                >
-                  {t('tabs.notebooks')}
-                  <Label
-                    color="purple"
-                    style={{
-                      alignSelf: 'center',
-                      margin: 0,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {t('tabs.notebooks.devPreview')}
-                  </Label>
-                </span>
-              }
-              aria-label={t('tabs.notebooks')}
-            />
-          </Tabs>
-        )}
-        {showChatPanel && (
-          <ConditionalWrapper
-            condition={isFullscreenMode}
-            wrapper={children => (
-              <div className={classes.fullscreenChatLayout}>
-                {!isChatHistoryDrawerOpen && (
-                  <CollapsedHistoryStrip
-                    onExpand={() => setIsChatHistoryDrawerOpen(true)}
-                    onNewChat={onNewChat}
-                    newChatDisabled={newChatCreated}
+              <LightspeedChatBoxHeader
+                selectedModel={selectedModel}
+                handleSelectedModel={handleSelectedModel}
+                models={models}
+                isPinningChatsEnabled={isPinningChatsEnabled}
+                isSavedPromptsEnabled={isSavedPromptsEnabled}
+                onSavedPromptsToggle={handleSavedPromptsToggle}
+                hideModelSelector
+                showChatTabOptions={!showNotebooksPanel}
+                showMcpSettings={mcpToolsPermissionResolved}
+                setDisplayMode={setDisplayModeFromHeader}
+                displayMode={displayMode}
+                onPinnedChatsToggle={handlePinningChatsToggle}
+                onMcpSettingsClick={() => {
+                  openSettings(
+                    mcpToolsPermissionResolved
+                      ? 'mcp-servers'
+                      : 'saved-prompts',
+                  );
+                }}
+              />
+            </StyledChatbotHeader>
+            {(isFullscreenMode || shouldShowTabs) && (
+              <HeaderDivider data-testid="lightspeed-header-divider" />
+            )}
+            {shouldShowTabs && (
+              <Tabs
+                value={selectedTabIndex}
+                onChange={handleNotebookTabSelect}
+                aria-label={t('tabs.ariaLabel')}
+                variant="standard"
+                textColor="primary"
+                sx={theme => ({
+                  flexShrink: 0,
+                  backgroundColor:
+                    'var(--pf-t--global--background--color--floating--default)',
+                  borderBottom:
+                    '1px solid var(--pf-t--global--border--color--default)',
+                  minHeight: theme.spacing(6),
+                  paddingLeft: theme.spacing(2),
+                  paddingRight: theme.spacing(2),
+                  '& .MuiTabs-flexContainer': {
+                    gap: theme.spacing(2),
+                  },
+                  '& [role="tab"]': {
+                    minWidth: 'auto',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    opacity: 1,
+                    padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+                    borderRadius: theme.spacing(0.5),
+                    '&:not([aria-selected="true"])': {
+                      color: `${theme.palette.text.primary} !important`,
+                    },
+                    '&:hover': {
+                      background: 'none !important',
+                      backgroundColor: 'transparent !important',
+                      backgroundImage: 'none !important',
+                    },
+                    '&:not([aria-selected="true"]):hover': {
+                      color: 'var(--pf-t--global--text--color--brand--default)',
+                    },
+                    '&[aria-selected="true"]:hover': {
+                      color: `${theme.palette.primary.main} !important`,
+                    },
+                  },
+                  '& [class*="Tabs-indicator"]': {
+                    height: 3,
+                  },
+                })}
+              >
+                {hasChatTab && (
+                  <Tab
+                    disableRipple
+                    label={t('tabs.chat')}
+                    aria-label={t('tabs.chat')}
                   />
                 )}
-                {children}
-              </div>
-            )}
-          >
-            <ChatbotConversationHistoryNav
-              drawerPanelContentProps={{
-                isResizable: isFullscreenMode,
-                hasNoBorder: !isFullscreenMode,
-                style: drawerPanelStyle,
-                ...(!isFullscreenMode &&
-                  isChatHistoryDrawerOpen && {
-                    className: classes.compactDrawerPanel,
-                  }),
-              }}
-              reverseButtonOrder
-              displayMode={ChatbotDisplayMode.embedded}
-              onDrawerToggle={onChatHistoryDrawerToggle}
-              title=""
-              navTitleIcon={null}
-              isDrawerOpen={isChatHistoryDrawerOpen}
-              drawerCloseButtonProps={{
-                'aria-label': t('aria.closeDrawerPanel'),
-              }}
-              setIsDrawerOpen={setIsChatHistoryDrawerOpen}
-              activeItemId={viewConversationId}
-              onSelectActiveItem={onSelectActiveItem}
-              conversations={filterConversations(filterValue)}
-              onNewChat={onNewChat}
-              newChatButtonText={t('button.newChat')}
-              newChatButtonProps={{
-                icon: <PenIcon />,
-                isDisabled: newChatCreated,
-              }}
-              handleTextInputChange={handleFilter}
-              searchInputPlaceholder={t('chatbox.search.placeholder')}
-              searchInputAriaLabel={t('aria.search.placeholder')}
-              searchInputProps={{
-                value: filterValue,
-                onClear: () => {
-                  setFilterValue('');
-                },
-              }}
-              searchActionEnd={sortDropdown}
-              noResultsState={
-                filterValue &&
-                Object.keys(filterConversations(filterValue)).length === 0
-                  ? {
-                      bodyText: t('chatbox.emptyState.noResults.body'),
-                      titleText: t('chatbox.emptyState.noResults.title'),
-                      icon: SearchIcon,
+                {hasNotebooksTab && (
+                  <Tab
+                    disableRipple
+                    label={
+                      <NotebooksTabLabel isCompact={!isFullscreenMode}>
+                        {t('tabs.notebooks')}
+                        <Label
+                          color="purple"
+                          isCompact={!isFullscreenMode}
+                          style={{
+                            alignSelf: 'center',
+                            margin: 0,
+                            lineHeight: 1,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {t('tabs.notebooks.devPreview')}
+                        </Label>
+                      </NotebooksTabLabel>
                     }
-                  : undefined
-              }
-              drawerContent={
-                <FileDropZone
-                  className={classes.drawerFileDropZone}
-                  onFileDrop={(e, data) => handleAttach(data, e)}
-                  displayMode={ChatbotDisplayMode.embedded}
-                  infoText={t('chatbox.fileUpload.infoText')}
-                  allowedFileTypes={supportedFileTypes}
-                  onAttachRejected={onAttachRejected}
-                >
-                  {showAlert && uploadError.message && (
-                    <div className={classes.errorContainer}>
-                      <ChatbotAlert
-                        component="h4"
-                        title={t('chatbox.fileUpload.failed')}
-                        variant={uploadError.type ?? 'danger'}
-                        isInline
-                        onClose={() => setUploadError({ message: null })}
-                      >
-                        {uploadError.message}
-                      </ChatbotAlert>
-                    </div>
+                    aria-label={t('tabs.notebooks')}
+                  />
+                )}
+              </Tabs>
+            )}
+            <ChatMain>
+              {showChatPanel && chatPermissionResolved && (
+                <ConditionalWrapper
+                  condition={isFullscreenMode}
+                  wrapper={children => (
+                    <FullscreenChatLayout>
+                      {!isChatHistoryDrawerOpen && (
+                        <CollapsedHistoryStrip
+                          onExpand={() => setIsChatHistoryDrawerOpen(true)}
+                          onNewChat={onNewChat}
+                          newChatDisabled={newChatCreated}
+                        />
+                      )}
+                      {children}
+                    </FullscreenChatLayout>
                   )}
-                  {mainPanelContent}
-                </FileDropZone>
-              }
-            />
-          </ConditionalWrapper>
-        )}
-        {showNotebooksPanel &&
-          !notebooksPermissionLoading &&
-          hasNotebooksAccess &&
-          activeNotebook && (
-            <NotebookView
-              sessionId={activeNotebook.session_id}
-              notebookName={activeNotebook.name}
-              documents={notebookDocuments}
-              isDocumentsFetching={isDocumentsFetching}
-              metadata={activeNotebook.metadata}
-              topicSummary={
-                conversations.find(
-                  c =>
-                    c.conversation_id ===
-                    activeNotebook.metadata?.conversation_id,
-                )?.topic_summary ?? undefined
-              }
-              userName={userName}
-              avatar={avatar}
-              profileLoading={profileLoading}
-              topicRestrictionEnabled={topicRestrictionEnabled}
-              onClose={handleCloseNotebook}
-              isCompact={!isFullscreenMode}
-              sidebarCollapsed={notebookSidebarCollapsed}
-              onSidebarCollapsedChange={setNotebookSidebarCollapsed}
-              isUploadModalOpen={notebookUploadModalOpen}
-              onUploadModalOpenChange={setNotebookUploadModalOpen}
-              onUploadsInProgressChange={setNotebookUploadsInProgress}
-            />
-          )}
-        {showNotebooksPanel &&
-          !notebooksPermissionLoading &&
-          hasNotebooksAccess &&
-          !activeNotebook && (
-            <div
-              style={{
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                flex: 1,
-                minHeight: 0,
-                overflow: 'hidden',
-              }}
-            >
-              <NotebooksTab
-                notebooks={notebooks}
-                hasNotebooks={hasNotebooks}
-                classes={
-                  isFullscreenMode
-                    ? classes
-                    : {
-                        ...classes,
-                        notebooksGrid: classes.notebooksGridCompact,
-                      }
-                }
-                openNotebookMenuId={openNotebookMenuId}
-                setOpenNotebookMenuId={setOpenNotebookMenuId}
-                onSelectNotebook={(notebook: NotebookSession) => {
-                  maybeAutoDeleteScratchNotebook();
-                  setActiveNotebookId(notebook.session_id);
-                  if (isFullscreenMode) {
-                    navigate(
-                      `${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`,
-                    );
+                >
+                  <ChatbotConversationHistoryNav
+                    drawerPanelContentProps={{
+                      isResizable: isFullscreenMode,
+                      hasNoBorder: !isFullscreenMode,
+                      style: drawerPanelStyle,
+                    }}
+                    reverseButtonOrder
+                    displayMode={ChatbotDisplayMode.embedded}
+                    onDrawerToggle={onChatHistoryDrawerToggle}
+                    title=""
+                    navTitleIcon={null}
+                    isDrawerOpen={isChatHistoryDrawerOpen}
+                    drawerCloseButtonProps={{
+                      'aria-label': t('aria.closeDrawerPanel'),
+                    }}
+                    setIsDrawerOpen={setIsChatHistoryDrawerOpen}
+                    activeItemId={viewConversationId}
+                    onSelectActiveItem={onSelectActiveItem}
+                    conversations={conversationGroups}
+                    onNewChat={onNewChat}
+                    newChatButtonText={t('button.newChat')}
+                    newChatButtonProps={{
+                      icon: <PenIcon />,
+                      isDisabled: newChatCreated,
+                    }}
+                    handleTextInputChange={handleFilter}
+                    searchInputPlaceholder={t('chatbox.search.placeholder')}
+                    searchInputAriaLabel={t('aria.search.placeholder')}
+                    searchInputProps={searchInputProps}
+                    searchActionEnd={sortDropdown}
+                    noResultsState={
+                      filterValue && hasNoSearchResults
+                        ? {
+                            bodyText: t('chatbox.emptyState.noResults.body'),
+                            titleText: t('chatbox.emptyState.noResults.title'),
+                            icon: SearchIcon,
+                          }
+                        : undefined
+                    }
+                    drawerContent={
+                      <ChatFileDropZone
+                        onFileDrop={(e, data) => handleAttach(data, e)}
+                        displayMode={ChatbotDisplayMode.embedded}
+                        infoText={t('chatbox.fileUpload.infoText')}
+                        allowedFileTypes={supportedFileTypes}
+                        onAttachRejected={onAttachRejected}
+                      >
+                        {showAlert && uploadError.message && (
+                          <ErrorContainer>
+                            <ChatbotAlert
+                              component="h4"
+                              title={t('chatbox.fileUpload.failed')}
+                              variant={uploadError.type ?? 'danger'}
+                              isInline
+                              onClose={() => setUploadError({ message: null })}
+                            >
+                              {uploadError.message}
+                            </ChatbotAlert>
+                          </ErrorContainer>
+                        )}
+                        {mainPanelContent}
+                      </ChatFileDropZone>
+                    }
+                  />
+                </ConditionalWrapper>
+              )}
+              {showNotebooksPanel && canShowNotebooks && activeNotebook && (
+                <NotebookView
+                  sessionId={activeNotebook.session_id}
+                  notebookName={activeNotebook.name}
+                  documents={notebookDocuments}
+                  isDocumentsFetching={isDocumentsFetching}
+                  metadata={activeNotebook.metadata}
+                  topicSummary={
+                    conversations.find(
+                      c =>
+                        c.conversation_id ===
+                        activeNotebook.metadata?.conversation_id,
+                    )?.topic_summary ?? undefined
                   }
-                }}
-                onRename={handleRenameNotebook}
-                onDelete={setDeleteNotebookId}
-                onCreateNotebook={handleCreateNotebook}
-                t={t}
-              />
-            </div>
-          )}
-        {showNotebooksPanel &&
-          !notebooksPermissionLoading &&
-          !hasNotebooksAccess && (
-            <PermissionRequiredState
-              subject={t('permission.subject.notebooks')}
-              permissions={[iaNotebooksUsePermissionName]}
-              action={
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  style={{ borderRadius: '20px' }}
-                  onClick={() => {
-                    setActiveTab(0);
-                    setShellViewTab(0);
+                  userName={userName}
+                  avatar={avatar}
+                  profileLoading={profileLoading}
+                  topicRestrictionEnabled={topicRestrictionEnabled}
+                  onClose={handleCloseNotebook}
+                  isCompact={!isFullscreenMode}
+                  sidebarCollapsed={notebookSidebarCollapsed}
+                  onSidebarCollapsedChange={setNotebookSidebarCollapsed}
+                  isUploadModalOpen={notebookUploadModalOpen}
+                  onUploadModalOpenChange={setNotebookUploadModalOpen}
+                  onUploadsInProgressChange={setNotebookUploadsInProgress}
+                />
+              )}
+              {showNotebooksPanel && canShowNotebooks && !activeNotebook && (
+                <div
+                  style={{
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flex: 1,
+                    minHeight: 0,
+                    overflow: 'hidden',
                   }}
                 >
-                  {t('permission.notebooks.goBack')}
-                </Button>
-              }
-            />
-          )}
-      </Chatbot>
+                  <NotebooksTab
+                    notebooks={notebooks}
+                    hasNotebooks={hasNotebooks}
+                    isCompact={!isFullscreenMode}
+                    openNotebookMenuId={openNotebookMenuId}
+                    setOpenNotebookMenuId={setOpenNotebookMenuId}
+                    onSelectNotebook={(notebook: NotebookSession) => {
+                      maybeAutoDeleteScratchNotebook();
+                      setActiveNotebookId(notebook.session_id);
+                      if (isFullscreenMode) {
+                        navigate(
+                          `${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`,
+                        );
+                      }
+                    }}
+                    onRename={handleRenameNotebook}
+                    onDelete={setDeleteNotebookId}
+                    onCreateNotebook={handleCreateNotebook}
+                    t={t}
+                  />
+                </div>
+              )}
+            </ChatMain>
+          </>
+        )}
+      </StyledChatbot>
+      <DeleteSavedPromptModal
+        isOpen={isSavedPromptDeleteModalOpen}
+        promptName={promptToDelete?.name}
+        isDeleting={isSavedPromptDeleting}
+        error={savedPromptDeleteError}
+        onClose={closeSavedPromptDeleteModal}
+        onConfirm={confirmSavedPromptDelete}
+      />
       <Attachment />
     </>
   );

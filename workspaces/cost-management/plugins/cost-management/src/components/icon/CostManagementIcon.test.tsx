@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { renderInTestApp } from '@backstage/test-utils';
 import { CostManagementIcon } from './CostManagementIcon';
 import { CostManagementIconOutlined } from './CostManagementIconOutlined';

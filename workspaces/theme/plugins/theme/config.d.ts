@@ -174,8 +174,36 @@ export interface Config {
             appBar?: 'patternfly' | 'mui';
             breadcrumbs?: 'patternfly' | 'mui';
           };
+
+          /**
+           * Structured BUI token overrides mapping to --bui-* CSS custom properties.
+           */
+          bui?: {
+            tokens?: {
+              primary?: string;
+              warning?: string;
+              error?: string;
+              success?: string;
+              info?: string;
+              fontFamily?: string;
+              fontFamilyMonospace?: string;
+              borderColor?: string;
+              backgroundColor?: string;
+              foregroundPrimary?: string;
+              foregroundSecondary?: string;
+              foregroundDisabled?: string;
+              focusRing?: string;
+              shadow?: string;
+            };
+          };
         };
       };
+      /**
+       * Raw CSS string injected as global styles. Use at your own risk --
+       * BUI class names may change between Backstage releases.
+       * @visibility frontend
+       */
+      customCSS?: string;
     };
   };
 }

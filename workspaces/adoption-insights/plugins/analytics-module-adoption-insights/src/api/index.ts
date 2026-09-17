@@ -14,4 +14,3 @@
  * limitations under the License.
  */
 export { AdoptionInsightsAnalyticsApi } from './AdoptionInsightsAnalyticsApi';
-export { AdoptionInsightsAnalyticsApiFactory } from './factory';

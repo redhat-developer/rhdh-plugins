@@ -14,7 +14,8 @@ Eval Hub is the quality feedback pipeline — external eval frameworks (LightEva
 
 - Extend RBAC audit logging pattern (RHIDP-15277) to ingestion events from day one
 - All ingestion sync attempts and config changes audited with structured events
-- Analytics REST API RBAC-gated with `ai-catalog.admin` permission
+- Analytics REST API is RBAC-gated with the existing `boost.admin` permission
+  for the analytics data it exposes
 - Quality score storage decoupled from eval framework specifics
 - Graceful degradation when Eval Hub unavailable
 - On-demand computation for expensive metrics (match coverage, aggregate distributions)
@@ -81,9 +82,10 @@ Audit log channel: RHDH audit log (same as RBAC events). Events persist to local
 
 ### Decision 2: Analytics REST API design
 
-Analytics endpoints serve the Admin Panel Analytics tab (RHDHPLAN-1509). All endpoints RBAC-gated with `ai-catalog.admin` permission.
-
-> **Permission namespace note:** `ai-catalog.admin` is a new permission under the `ai-catalog.*` namespace (RHDHPLAN-1508, RBAC for catalog entity visibility). It coexists with the existing `boost.admin` permission, which gates agent/operational features (agent CRUD, chat, MCP, skills, connector config). The distinction is intentional: `ai-catalog.*` covers catalog asset governance (ingestion analytics, entity visibility, versioning policy), while `boost.*` covers agent and operational concerns outside RHDHPLAN-1505 scope. Both namespaces may converge before feature freeze, but the separation avoids coupling catalog RBAC decisions to agent lifecycle permissions during parallel development.
+Analytics endpoints serve the Admin Panel Analytics tab (RHDHPLAN-1509). Each
+endpoint requires the existing `boost.admin` permission, granted by an RHDH
+RBAC role. Catalog entity visibility remains governed by the
+Catalog permission model and is not coupled to analytics administration.
 
 **Why:** Centralized analytics data layer. Frontend consumes clean JSON payloads without direct DB access. RBAC gating ensures only admins see sensitive sync/quality data.
 
@@ -112,7 +114,7 @@ Endpoints:
    - Embedded in analytics responses (not a separate endpoint)
    - Status: `{ neo4j_connected: boolean, last_sync: string, entity_count: number }`
 
-**Implementation:** `plugins/boost-backend/src/api/admin/analytics/routes.ts` defines Express routes. Each route checks `ai-catalog.admin` permission via `authorize` helper. Routes call service layer (`AnalyticsService`) which queries DB and computes metrics.
+**Implementation:** `plugins/boost-backend/src/api/admin/analytics/routes.ts` defines Express routes. Each route checks `boost.admin` via the authorization helper. Routes call service layer (`AnalyticsService`) which queries DB and computes metrics.
 
 ### Decision 3: Quality score storage
 

@@ -18,6 +18,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { ScorecardEntityContentGridView } from '../ScorecardEntityContentGridView';
 import { mockScorecardSuccessData } from '../../../../__fixtures__/scorecardData';
 import { useScorecards } from '../../../hooks/useScorecards';
+import { useTranslation } from '../../../hooks/useTranslation';
 import { getStatusConfig } from '../../../utils';
 
 jest.mock('@backstage/core-components', () => ({
@@ -118,13 +119,25 @@ jest.mock('../../../hooks/useScorecards', () => ({
   useScorecards: jest.fn(),
 }));
 
-jest.mock('../../../utils', () => ({
-  getStatusConfig: jest.fn(),
-  resolveMetricTranslation: jest.fn(
-    (_t: any, _metricId: string, _field: string, fallback?: string) =>
-      fallback ?? `metric.${_metricId}.${_field}`,
-  ),
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: jest.fn(() => ({
+    t: (key: string) => key,
+  })),
 }));
+
+jest.mock('../../../utils', () => {
+  const { getTranslatedTextWithFallback } = jest.requireActual(
+    '../../../utils/translationUtils',
+  );
+  return {
+    getStatusConfig: jest.fn(),
+    resolveMetricTranslation: jest.fn(
+      (_t: any, _metricId: string, _field: string, fallback?: string) =>
+        fallback ?? `metric.${_metricId}.${_field}`,
+    ),
+    getTranslatedTextWithFallback,
+  };
+});
 
 jest.mock('../../../utils/statusUtils', () => ({
   hasMetricDataError: jest.fn(() => false),
@@ -132,11 +145,16 @@ jest.mock('../../../utils/statusUtils', () => ({
 }));
 
 const useScorecardsMock = useScorecards as jest.Mock;
+const useTranslationMock = useTranslation as jest.Mock;
 const getStatusConfigMock = getStatusConfig as jest.Mock;
 
 describe('ScorecardEntityContentGridView', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
+    useTranslationMock.mockReturnValue({
+      t: (key: string) => key,
+    });
 
     getStatusConfigMock.mockReturnValue({
       color: 'green',
@@ -359,6 +377,69 @@ describe('ScorecardEntityContentGridView', () => {
     render(<ScorecardEntityContentGridView groups={groups} />);
 
     expect(screen.getByText('All code quality metrics')).toBeInTheDocument();
+  });
+
+  it('should fall back to config title when titleKey is missing from translations', () => {
+    useScorecardsMock.mockReturnValue({
+      data: mockScorecardSuccessData,
+      isLoading: false,
+      error: undefined,
+    });
+
+    const groups = {
+      codeQuality: {
+        title: 'Code Quality',
+        titleKey: 'groups.missing.title',
+        description: 'All code quality metrics',
+        descriptionKey: 'groups.missing.description',
+        metrics: ['github.openPRs'],
+      },
+    };
+
+    render(<ScorecardEntityContentGridView groups={groups} />);
+
+    expect(screen.getByText('Code Quality')).toBeInTheDocument();
+    expect(screen.getByText('All code quality metrics')).toBeInTheDocument();
+    expect(screen.queryByText('groups.missing.title')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('groups.missing.description'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should render translated group title and description when keys resolve', () => {
+    useTranslationMock.mockReturnValue({
+      t: (key: string) => {
+        if (key === 'groups.codeQuality.title') return 'Qualität';
+        if (key === 'groups.codeQuality.description')
+          return 'Alle Qualitätsmetriken';
+        return key;
+      },
+    });
+
+    useScorecardsMock.mockReturnValue({
+      data: mockScorecardSuccessData,
+      isLoading: false,
+      error: undefined,
+    });
+
+    const groups = {
+      codeQuality: {
+        title: 'Code Quality',
+        titleKey: 'groups.codeQuality.title',
+        description: 'All code quality metrics',
+        descriptionKey: 'groups.codeQuality.description',
+        metrics: ['github.openPRs'],
+      },
+    };
+
+    render(<ScorecardEntityContentGridView groups={groups} />);
+
+    expect(screen.getByText('Qualität')).toBeInTheDocument();
+    expect(screen.getByText('Alle Qualitätsmetriken')).toBeInTheDocument();
+    expect(screen.queryByText('Code Quality')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('All code quality metrics'),
+    ).not.toBeInTheDocument();
   });
 
   it('should preserve metric order within a group as defined in config', () => {

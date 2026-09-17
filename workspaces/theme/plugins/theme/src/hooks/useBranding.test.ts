@@ -78,4 +78,64 @@ describe('useBranding', () => {
       },
     });
   });
+
+  it('returns branding with customCSS', () => {
+    mockAppConfig({
+      app: {
+        branding: {
+          customCSS: '.bui-Card { border: 2px solid red; }',
+        },
+      },
+    });
+    const { result } = renderHook(() => useBranding());
+    expect(result.current).toEqual({
+      customCSS: '.bui-Card { border: 2px solid red; }',
+    });
+  });
+
+  it('returns branding with per-theme bui.tokens', () => {
+    mockAppConfig({
+      app: {
+        branding: {
+          theme: {
+            light: {
+              bui: {
+                tokens: {
+                  primary: '#0066cc',
+                  backgroundColor: '#f5f5f5',
+                },
+              },
+            },
+            dark: {
+              bui: {
+                tokens: {
+                  primary: '#9cc9ff',
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    const { result } = renderHook(() => useBranding());
+    expect(result.current).toEqual({
+      theme: {
+        light: {
+          bui: {
+            tokens: {
+              primary: '#0066cc',
+              backgroundColor: '#f5f5f5',
+            },
+          },
+        },
+        dark: {
+          bui: {
+            tokens: {
+              primary: '#9cc9ff',
+            },
+          },
+        },
+      },
+    });
+  });
 });

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import { default as React, useCallback, useMemo, useState } from 'react';
 import useAsync from 'react-use/lib/useAsync';
 import snakeCase from 'lodash/snakeCase';
 import {

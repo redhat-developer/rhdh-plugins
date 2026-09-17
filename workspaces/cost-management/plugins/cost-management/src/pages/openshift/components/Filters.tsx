@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  default as React,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from 'react';
 import Box from '@material-ui/core/Box';
 import Divider from '@material-ui/core/Divider';
 import { makeStyles } from '@material-ui/core/styles';

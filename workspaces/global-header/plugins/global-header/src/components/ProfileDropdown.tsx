@@ -118,13 +118,17 @@ const ProfileButtonContent = () => {
  *
  * @internal
  */
-export const ProfileDropdown = () => (
-  <GlobalHeaderDropdown
-    target="profile"
-    buttonContent={<ProfileButtonContent />}
-    buttonProps={{
-      color: 'inherit',
-      sx: { display: 'flex', alignItems: 'center' },
-    }}
-  />
-);
+export const ProfileDropdown = () => {
+  const { t } = useTranslation();
+  return (
+    <GlobalHeaderDropdown
+      target="profile"
+      buttonContent={<ProfileButtonContent />}
+      tooltip={t('profile.settings')}
+      buttonProps={{
+        color: 'inherit',
+        sx: { display: 'flex', alignItems: 'center' },
+      }}
+    />
+  );
+};

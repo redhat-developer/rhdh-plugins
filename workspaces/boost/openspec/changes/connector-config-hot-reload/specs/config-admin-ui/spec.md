@@ -2,7 +2,11 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Admin UI section for toggling connectors, setting endpoints/schedules, referencing K8s Secrets. Changes saved via `AdminConfigService` DB overrides. Takes effect via `RuntimeConfigResolver` hot-reload pattern. RBAC gating: admin-only access.
+Admin UI section for toggling connectors, setting endpoints/schedules, and
+referencing K8s Secrets. Changes are saved via `AdminConfigService` DB
+overrides and take effect via the `RuntimeConfigResolver` hot-reload pattern.
+Connector config writes require `boost.config.manage`; an optional read-only
+view does not grant write access.
 
 ## EXISTING Requirements
 
@@ -152,18 +156,23 @@ Admin UI provides immediate validation feedback before and after save.
 
 ### Requirement: RBAC Gating
 
-Admin UI connector config section requires admin role (RBAC permission check).
+The connector config section requires `boost.config.manage` (RBAC permission
+check). Read-only display of deployment-time values may remain available when
+the implementation supports it, but runtime configuration writes require this
+permission.
 
-#### Scenario: Admin user accesses connector config
+#### Scenario: User with config-management permission accesses connector config
 
-- **WHEN** user with `ai-catalog.admin` permission opens connector config section
+- **WHEN** a user with `boost.config.manage` opens the connector config section
 - **THEN** UI displays full connector config form with edit capabilities
 - **AND** all fields (except yaml-only) are editable
 - **AND** "Save" button is enabled
 
-#### Scenario: Non-admin user blocked from connector config
+#### Scenario: User without config-management permission cannot edit connector config
 
-- **WHEN** user without `ai-catalog.admin` permission attempts to access connector config section
+- **WHEN** a user without `boost.config.manage` attempts to edit the connector
+  config section
+- **AND** the deployment has not enabled the optional read-only view
 - **THEN** UI displays permission error: "You do not have permission to configure connectors"
 - **AND** config section is not rendered
 - **AND** user is redirected to unauthorized page

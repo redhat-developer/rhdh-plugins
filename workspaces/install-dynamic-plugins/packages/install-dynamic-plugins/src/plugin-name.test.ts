@@ -72,68 +72,9 @@ describe('extractPluginName', () => {
     // OCI — empty image name returns null
     ['oci://quay.io/rhdh/:v1.0', null],
 
-    // HTTP(S) — .tgz with version
-    [
-      'https://example.com/plugins/backstage-plugin-foo-1.0.0.tgz',
-      'backstage-plugin-foo',
-    ],
-    // HTTP(S) — .tar.gz with version
-    ['https://example.com/path/my-plugin-2.3.4.tar.gz', 'my-plugin'],
-    // HTTP(S) — http:// URL
-    [
-      'http://registry.example.com/backstage-plugin-bar-0.1.0.tgz',
-      'backstage-plugin-bar',
-    ],
-    // HTTP(S) — with query string (stripped by URL)
-    [
-      'https://example.com/plugins/backstage-plugin-foo-1.0.0.tgz?token=abc',
-      'backstage-plugin-foo',
-    ],
-    // HTTP(S) — no archive extension (version still stripped)
-    [
-      'https://example.com/plugins/backstage-plugin-foo-1.0.0',
-      'backstage-plugin-foo',
-    ],
-    // HTTP(S) — no version suffix (name returned as-is)
-    [
-      'https://example.com/plugins/backstage-plugin-foo.tgz',
-      'backstage-plugin-foo',
-    ],
-    // HTTP(S) — .tar.gz without version
-    [
-      'https://example.com/plugins/backstage-plugin-foo.tar.gz',
-      'backstage-plugin-foo',
-    ],
-    // HTTP(S) — no path returns null
-    ['https://example.com', null],
-    // HTTP(S) — trailing slash returns null
-    ['https://example.com/', null],
-    // HTTP(S) — bare scheme returns null
-    ['https://', null],
-    // HTTP(S) — pre-release version
-    [
-      'https://example.com/plugins/backstage-plugin-foo-1.0.0-beta.1.tgz',
-      'backstage-plugin-foo',
-    ],
-    // HTTP(S) — plugin name containing digits
-    [
-      'https://example.com/plugins/plugin-3scale-backend-1.2.3.tgz',
-      'plugin-3scale-backend',
-    ],
-
-    // Local path — deep
-    [
-      './dynamic-plugins/dist/backstage-plugin-techdocs',
-      'backstage-plugin-techdocs',
-    ],
-    // Local path — shallow
-    ['./plugin-foo', 'plugin-foo'],
-    // Local path — trailing slash
-    ['./foo/', 'foo'],
-    // Local path — bare prefix
-    ['./', '.'],
-
-    // Unknown formats return null
+    // Non-OCI formats return null
+    ['https://example.com/plugins/backstage-plugin-foo-1.0.0.tgz', null],
+    ['./dynamic-plugins/dist/backstage-plugin-techdocs', null],
     ['@backstage/plugin-catalog', null],
     ['some-package', null],
     ['', null],

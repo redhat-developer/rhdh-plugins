@@ -20,9 +20,12 @@ import { ScorecardRoutes } from '../constants/routes';
 import {
   emptyGithubAggregatedResponse,
   emptyJiraAggregatedResponse,
+  emptyLicenseFileExistsAggregatedResponse,
   emptyOpenPrsWeightedAggregatedResponse,
   githubAggregatedResponse,
   jiraAggregatedResponse,
+  licenseFileExistsAggregatedResponse,
+  licenseFileExistsKpiMetadataResponse,
   notAllowedAggregationErrorBody,
   openIssuesKpiMetadataResponse,
   openPrsKpiMetadataResponse,
@@ -30,6 +33,13 @@ import {
   openPrsWeightedKpiMetadataResponse,
 } from './scorecardResponseUtils';
 import { AGGREGATED_CARDS_METRIC_IDS } from '../constants/aggregations';
+import {
+  avgOpenPrsAggregatedResponse,
+  entitiesWithOpenPrsAggregatedResponse,
+  maxOpenPrsAggregatedResponse,
+  minOpenPrsAggregatedResponse,
+  totalOpenBugsAggregatedResponse,
+} from './scalarAggregationTypeResponses';
 
 function aggregationMetadataForRequestUrl(url: string): object {
   if (url.includes('openIssuesKpi')) {
@@ -40,6 +50,9 @@ function aggregationMetadataForRequestUrl(url: string): object {
   }
   if (url.includes('openPrsWeightedKpi')) {
     return openPrsWeightedKpiMetadataResponse;
+  }
+  if (url.includes('licenseFileExistsKpi')) {
+    return licenseFileExistsKpiMetadataResponse;
   }
   if (url.includes('jira.openIssues')) {
     return jiraAggregatedResponse.metadata;
@@ -80,7 +93,7 @@ export async function mockAggregationNoDataFound(page: Page): Promise<void> {
   await page.route('**/api/scorecard/aggregations/**', async route => {
     const url = route.request().url();
 
-    if (url.includes('metadata')) {
+    if (url.includes('/metadata')) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -94,6 +107,15 @@ export async function mockAggregationNoDataFound(page: Page): Promise<void> {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(emptyOpenPrsWeightedAggregatedResponse),
+      });
+      return;
+    }
+
+    if (url.includes(AGGREGATED_CARDS_METRIC_IDS.licenseFileExistsKpi)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(emptyLicenseFileExistsAggregatedResponse),
       });
       return;
     }
@@ -174,6 +196,35 @@ export async function mockAllDefaultHomepageAggregationsSuccess(
     ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
     openPrsWeightedAggregatedResponse,
   );
-
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.LICENSE_FILE_EXISTS_KPI_AGGREGATION_ROUTE,
+    licenseFileExistsAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.TOTAL_OPEN_BUGS_AGGREGATION_ROUTE,
+    totalOpenBugsAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.AVG_OPEN_PRS_AGGREGATION_ROUTE,
+    avgOpenPrsAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.ENTITIES_WITH_OPEN_PRS_AGGREGATION_ROUTE,
+    entitiesWithOpenPrsAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.MAX_OPEN_PRS_AGGREGATION_ROUTE,
+    maxOpenPrsAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.MIN_OPEN_PRS_AGGREGATION_ROUTE,
+    minOpenPrsAggregatedResponse,
+  );
   await page.reload();
 }

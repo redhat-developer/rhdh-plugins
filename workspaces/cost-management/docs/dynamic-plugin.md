@@ -33,7 +33,7 @@ The procedure involves the following steps:
    ```yaml
    # Add to dynamic-plugins-rhdh ConfigMap
 
-   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.2.2!red-hat-developer-hub-plugin-cost-management
+   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.3.0!red-hat-developer-hub-plugin-cost-management
      disabled: false
      pluginConfig:
        dynamicPlugins:
@@ -64,7 +64,7 @@ The procedure involves the following steps:
                cost-management.openshift:
                  parent: cost-management
                  priority: 20
-   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.2.2!red-hat-developer-hub-plugin-cost-management-backend
+   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.3.0!red-hat-developer-hub-plugin-cost-management-backend
      disabled: false
      pluginConfig:
        costManagement:
@@ -80,3 +80,20 @@ The procedure involves the following steps:
    > proxy. SSO tokens are obtained internally via OAuth2 `client_credentials`
    > grant and never exposed to the browser. RBAC filtering is enforced
    > server-side before data is returned. See [rbac.md](./rbac.md) for details.
+
+5. **RHDH 2.1 (New Frontend System):** enable the same OCI packages. Do **not** require `dynamicRoutes` / `importName`. Pages are discovered from the plugin `/alpha` export. Optional operator overrides:
+
+   ```yaml
+   app:
+     extensions:
+       - page:cost-management:
+           config:
+             title: Optimizations
+             path: /cost-management/optimizations
+       - page:cost-management/openshift:
+           config:
+             title: Cost Management
+             path: /cost-management/openshift
+   ```
+
+   The sidebar shows two items (**Optimizations** and **Cost Management**). Nested `menuItems.parent` is not available on NFS ([RHDH-specific gaps](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/migrating-config-to-new-frontend-system.md#rhdh-specific-gaps)). Enable NFS on the backend with `APP_CONFIG_app_packageName=app-next` and `ENABLE_STANDARD_MODULE_FEDERATION=true` ([config migration](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/migrating-config-to-new-frontend-system.md)).

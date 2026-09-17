@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+import type { ReactElement } from 'react';
+
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
+import { MuiThemeTestProvider } from '../../test-utils/MuiThemeTestProvider';
 import { AddDocumentModal } from '../notebooks/AddDocumentModal';
 
 jest.mock('../../hooks/useTranslation', () => ({
@@ -42,13 +45,16 @@ describe('AddDocumentModal', () => {
     onDuplicatesFound: jest.fn(),
   };
 
+  const renderWithTheme = (ui: ReactElement) =>
+    render(ui, { wrapper: MuiThemeTestProvider });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockMutateAsync.mockResolvedValue({ document_id: 'test-doc-id' });
   });
 
   it('should render the modal when open', () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     expect(screen.getByText('Add resources')).toBeInTheDocument();
     expect(
@@ -57,27 +63,27 @@ describe('AddDocumentModal', () => {
   });
 
   it('should not render when isOpen is false', () => {
-    render(<AddDocumentModal {...defaultProps} isOpen={false} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} isOpen={false} />);
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('should render Cancel and Add buttons', () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
   });
 
   it('should have Add button disabled when no files selected', () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     const addButton = screen.getByRole('button', { name: 'Add' });
     expect(addButton).toBeDisabled();
   });
 
   it('should call onClose when Cancel button is clicked', () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     const cancelButton = screen.getByRole('button', { name: 'Cancel' });
     fireEvent.click(cancelButton);
@@ -86,7 +92,7 @@ describe('AddDocumentModal', () => {
   });
 
   it('should call onClose when close icon is clicked', () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     const closeButton = screen.getByRole('button', { name: 'Close' });
     fireEvent.click(closeButton);
@@ -94,8 +100,22 @@ describe('AddDocumentModal', () => {
     expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('should open the file picker when click to browse is used', () => {
+    const clickSpy = jest.spyOn(HTMLInputElement.prototype, 'click');
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Drag and drop files here, or click to browse',
+      }),
+    );
+
+    expect(clickSpy).toHaveBeenCalled();
+    clickSpy.mockRestore();
+  });
+
   it('should display file list when files are dropped', async () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
       .getByText('Drag and drop files here, or click to browse')
@@ -115,7 +135,7 @@ describe('AddDocumentModal', () => {
   });
 
   it('should update Add button count when files are selected', async () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
       .getByText('Drag and drop files here, or click to browse')
@@ -137,7 +157,7 @@ describe('AddDocumentModal', () => {
   });
 
   it('should not auto-close modal after file drop', async () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
       .getByText('Drag and drop files here, or click to browse')
@@ -159,7 +179,7 @@ describe('AddDocumentModal', () => {
   });
 
   it('should trigger upload and close when Add button is clicked', async () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
       .getByText('Drag and drop files here, or click to browse')
@@ -192,7 +212,7 @@ describe('AddDocumentModal', () => {
   });
 
   it('should allow removing files from the list', async () => {
-    render(<AddDocumentModal {...defaultProps} />);
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
 
     const dropzone = screen
       .getByText('Drag and drop files here, or click to browse')
@@ -222,7 +242,9 @@ describe('AddDocumentModal', () => {
   });
 
   it('should clear selected files when modal is closed', async () => {
-    const { rerender } = render(<AddDocumentModal {...defaultProps} />);
+    const { rerender } = renderWithTheme(
+      <AddDocumentModal {...defaultProps} />,
+    );
 
     const dropzone = screen
       .getByText('Drag and drop files here, or click to browse')
@@ -249,7 +271,7 @@ describe('AddDocumentModal', () => {
 
   it('should show disabled dropzone with tooltip when file limit is reached', () => {
     const existingNames = Array.from({ length: 10 }, (_, i) => `file-${i}.txt`);
-    render(
+    renderWithTheme(
       <AddDocumentModal
         {...defaultProps}
         existingDocumentNames={existingNames}
@@ -264,7 +286,7 @@ describe('AddDocumentModal', () => {
   });
 
   it('should call onDuplicatesFound when Add is clicked with duplicate files', async () => {
-    render(
+    renderWithTheme(
       <AddDocumentModal
         {...defaultProps}
         existingDocumentNames={['existing-file.txt']}

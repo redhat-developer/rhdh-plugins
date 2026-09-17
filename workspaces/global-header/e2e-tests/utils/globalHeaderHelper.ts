@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
+
+import type { GlobalHeaderMessages } from './translations';
 
 /**
  * Mapping of locale codes to their native display names
@@ -36,6 +38,57 @@ function getLocaleDisplayName(locale: string): string {
 }
 
 /**
+ * Sign in as guest and wait until the authenticated shell is ready.
+ * NFS cold starts can be slow when several locale workers log in together.
+ */
+export async function loginAsGuest(page: Page): Promise<void> {
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const enter = page.getByRole('button', { name: 'Enter' });
+    await enter.click();
+
+    try {
+      await enter.waitFor({ state: 'hidden', timeout: 15_000 });
+
+      if (process.env.APP_MODE === 'nfs') {
+        await page
+          .getByRole('link', { name: 'Settings' })
+          .waitFor({ state: 'visible', timeout: 15_000 });
+      } else {
+        await page
+          .locator('#global-header')
+          .waitFor({ state: 'visible', timeout: 15_000 });
+      }
+
+      return;
+    } catch {
+      if (attempt === maxAttempts) {
+        throw new Error('loginAsGuest failed');
+      }
+      await page.reload();
+    }
+  }
+}
+
+/**
+ * Open user settings. NFS exposes a sidebar Settings link; legacy uses the
+ * profile dropdown (Guest → Settings) because its sidebar has no settings nav.
+ */
+async function openUserSettings(page: Page): Promise<void> {
+  if (process.env.APP_MODE === 'nfs') {
+    await page.getByRole('link', { name: 'Settings' }).click();
+    return;
+  }
+
+  await page
+    .locator('#global-header')
+    .getByRole('button', { name: 'Guest' })
+    .click();
+  await page.getByRole('menuitem', { name: 'Settings' }).click();
+}
+
+/**
  * Switch to a different locale
  * Extracts base language code (e.g., "en" from "en-US") for locale selection
  */
@@ -44,12 +97,32 @@ export async function switchToLocale(
   locale: string,
 ): Promise<void> {
   const baseLocale = locale.split('-')[0];
-  if (baseLocale !== 'en') {
-    const displayName = getLocaleDisplayName(locale);
-    await page.getByRole('button', { name: 'Guest' }).click();
-    await page.getByRole('menuitem', { name: 'Settings' }).click();
-    await page.getByRole('button', { name: 'English' }).click();
-    await page.getByRole('option', { name: displayName }).click();
-    await page.locator('a').filter({ hasText: 'Home' }).click();
+  if (baseLocale === 'en') {
+    return;
   }
+
+  const displayName = getLocaleDisplayName(locale);
+
+  await openUserSettings(page);
+  await page.getByRole('button', { name: 'English' }).click();
+  await page.getByRole('option', { name: displayName }).click();
+  await page.goto('/');
+}
+
+/**
+ * Wait until the global header shell and lazy-loaded toolbar items are ready.
+ * Search and Help both come from the critical header async chunk.
+ */
+export async function waitForHeaderReady(
+  page: Page,
+  messages: GlobalHeaderMessages,
+): Promise<void> {
+  const globalHeader = page.locator('#global-header');
+  await expect(globalHeader).toBeVisible();
+  await expect(
+    globalHeader.getByRole('combobox', { name: messages.search.placeholder }),
+  ).toBeVisible();
+  await expect(
+    globalHeader.getByRole('button', { name: messages.help.tooltip }),
+  ).toBeVisible();
 }

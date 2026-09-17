@@ -517,6 +517,60 @@ describe('createRouter', () => {
     });
   });
 
+  describe('GET /packages', () => {
+    it('should get the packages', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: mockPackages,
+      });
+      const response = await request(backendServer).get(
+        '/api/extensions/packages',
+      );
+      expect(response.status).toEqual(200);
+      expect(response.body.items).toHaveLength(3);
+    });
+  });
+
+  describe('GET /environment', () => {
+    it('should return the node environment', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: {},
+      });
+      const response = await request(backendServer).get(
+        '/api/extensions/environment',
+      );
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({
+        nodeEnv: expect.any(String),
+      });
+      expect(response.body.nodeEnv.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('GET /plugins/configure', () => {
+    it('should report installation disabled by default', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: {},
+      });
+      const response = await request(backendServer).get(
+        '/api/extensions/plugins/configure',
+      );
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ enabled: false });
+    });
+
+    it('should report installation enabled when configured', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: {},
+        config: FILE_INSTALL_CONFIG,
+      });
+      const response = await request(backendServer).get(
+        '/api/extensions/plugins/configure',
+      );
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual({ enabled: true });
+    });
+  });
+
   describe('GET /plugin/:namespace/:name', () => {
     it('should get the plugin by name', async () => {
       const { backendServer } = await setupTestWithMockCatalog({

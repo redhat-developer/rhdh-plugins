@@ -1,5 +1,53 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira
 
+## 4.3.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@4.3.1
+
+## 4.3.0
+
+### Minor Changes
+
+- 485fadb: Persist DORA collector data in the database and sync incrementally from the last watermark, so metrics reuse stored deployments, incidents, and pull requests instead of refetching the full window every time.
+
+  The Jira `jira:doraIncidents` collector contract now requires `updatedSince` (ISO datetime) in the input and `updatedAt` (ISO datetime) on each incident in the output. Custom incident collector implementations must provide these fields.
+
+- ff6683f: Add DORA metrics and a collectors framework for composing datasource data into metrics.
+
+  - New `@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora` with Deployment Frequency, Median Lead Time for Changes, Mean Time to Restore, and Change Failure Rate
+  - New data collectors used by DORA: GitHub deployments, deployment workflow runs, and deployment pull requests; Jira incidents
+  - Metric time-series API `/metrics/catalog/:kind/:namespace/:name/time-series`
+  - Adds `defaultVisualization` to Metric metadata for sparkline
+
+- a7a1b4a: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- f2662b4: Rename DORA-specific collector IDs to make their scope explicit and avoid conflicts with potential future generic collectors:
+
+  - `github:deployments` -> `github:doraDeployments`
+  - `github:deploymentWorkflowRuns` -> `github:doraDeploymentWorkflowRuns`
+  - `github:deploymentPullRequests` -> `github:doraDeploymentPullRequests`
+  - `jira:incidents` -> `jira:doraIncidents`
+
+- Updated dependencies [9c1936e]
+- Updated dependencies [2bb0ec5]
+- Updated dependencies [485fadb]
+- Updated dependencies [befccc2]
+- Updated dependencies [c380e6b]
+- Updated dependencies [fea86e8]
+- Updated dependencies [ff6683f]
+- Updated dependencies [ecb789b]
+- Updated dependencies [47ac76d]
+- Updated dependencies [c7b7410]
+- Updated dependencies [f3f71a5]
+- Updated dependencies [a7a1b4a]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.3.0
+
 ## 4.2.0
 
 ### Patch Changes

@@ -20,6 +20,7 @@ import {
   createExtensionInput,
   coreExtensionData,
 } from '@backstage/frontend-plugin-api';
+import { z } from 'zod';
 
 import { rootRouteRef } from '../routes';
 import { scorecardLayoutTitleDataRef } from '../blueprints/ScorecardLayoutBlueprint';
@@ -33,20 +34,15 @@ import { scorecardLayoutTitleDataRef } from '../blueprints/ScorecardLayoutBluepr
  */
 export const scorecardEntityContent = EntityContentBlueprint.makeWithOverrides({
   name: 'entity-content-scorecard',
-  config: {
-    schema: {
-      // Allows flexible filtering: { kind: 'Component', type: 'service' }
-      // or just { type: 'service' } for all services.
-      allowedFilters: schema =>
-        schema
-          .array(
-            schema.object({
-              kind: schema.string().optional(),
-              type: schema.string().optional(),
-            }),
-          )
-          .optional(),
-    },
+  configSchema: {
+    allowedFilters: z
+      .array(
+        z.object({
+          kind: z.string().optional(),
+          type: z.string().optional(),
+        }),
+      )
+      .optional(),
   },
   inputs: {
     layouts: createExtensionInput(

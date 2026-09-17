@@ -24,6 +24,7 @@ import { FormComponents } from './FormComponents';
 import { TableExample } from './TableExample';
 import { CardsExample } from './CardExample';
 import { OtherExample } from './OtherExample';
+import { ThemeTokensInspector } from './ThemeTokensInspector';
 
 export const BUITestPage = () => {
   const { pathname } = useLocation();
@@ -58,6 +59,11 @@ export const BUITestPage = () => {
             label: 'Other Example',
             href: '/bui-tests/other-example',
           },
+          {
+            id: 'theme-tokens',
+            label: 'Theme Tokens',
+            href: '/bui-tests/theme-tokens',
+          },
         ]}
       />
       <Container>
@@ -73,6 +79,9 @@ export const BUITestPage = () => {
           </TabPanel>
           <TabPanel id="other-example">
             <OtherExample />
+          </TabPanel>
+          <TabPanel id="theme-tokens">
+            <ThemeTokensInspector />
           </TabPanel>
         </Tabs>
       </Container>

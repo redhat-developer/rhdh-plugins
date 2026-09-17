@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-import { Deployment } from '../schemas/deploymentSchemas';
-import {
-  isProductionEnvironment,
-  isSuccessfulProductionDeployment,
-} from './deploymentFilterUtils';
+import { isProductionEnvironment } from './deploymentFilterUtils';
 
 describe('deploymentFilterUtils', () => {
   describe('isProductionEnvironment', () => {
     it('treats missing environment as production', () => {
       expect(isProductionEnvironment(undefined, ['production'])).toBe(true);
+      expect(isProductionEnvironment(null, ['production'])).toBe(true);
     });
 
     it('matches any configured environment name case-insensitively', () => {
@@ -33,29 +30,6 @@ describe('deploymentFilterUtils', () => {
       expect(isProductionEnvironment('staging', ['production', 'prod'])).toBe(
         false,
       );
-    });
-  });
-
-  describe('isSuccessfulProductionDeployment', () => {
-    it('requires success and a production environment', () => {
-      expect(
-        isSuccessfulProductionDeployment(
-          { result: 'success', environment: 'production' } as Deployment,
-          ['production'],
-        ),
-      ).toBe(true);
-      expect(
-        isSuccessfulProductionDeployment(
-          { result: 'failure', environment: 'production' } as Deployment,
-          ['production'],
-        ),
-      ).toBe(false);
-      expect(
-        isSuccessfulProductionDeployment(
-          { result: 'success', environment: 'development' } as Deployment,
-          ['production'],
-        ),
-      ).toBe(false);
     });
   });
 });

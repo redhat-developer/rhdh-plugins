@@ -38,6 +38,8 @@ interface HeaderDropdownProps {
   size?: IconButtonProps['size'];
   /** Ref forwarded to the underlying MUI MenuList (`<ul>`). */
   menuListRef?: Ref<HTMLUListElement | null>;
+  /** Called when the menu close transition has fully finished. */
+  onTransitionExited?: () => void;
 }
 
 const paperStyle = (theme: Theme) => ({
@@ -76,6 +78,7 @@ export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
   size = 'small',
   tooltip,
   menuListRef,
+  onTransitionExited,
 }) => {
   const id = useId();
 
@@ -95,7 +98,7 @@ export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
     },
     'aria-haspopup': true,
     'aria-controls': menuId,
-    'aria-expanded': anchorEl ? true : undefined,
+    'aria-expanded': Boolean(anchorEl),
     'aria-label': tooltip,
   };
 
@@ -118,6 +121,9 @@ export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
         keepMounted
         open={Boolean(anchorEl)}
         onClose={onClose}
+        TransitionProps={{
+          onExited: onTransitionExited,
+        }}
         anchorOrigin={{
           vertical: 'bottom',
           horizontal: 'center',

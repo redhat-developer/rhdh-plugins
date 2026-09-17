@@ -1,5 +1,10 @@
 # Migration Readiness for Upstream Entity Kinds
 
+> **Workspace status:** Follow-on RHDH schema-alignment planning; not part of
+> the current RHDH 2.1 Boost release. This document records a broader
+> migration-readiness target and does not change the shipped frontend or OGX
+> entity-provider contract.
+
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 >
 > **Design document:** [migration-plan.md](migration-plan.md) — implements RHIDP-15302 tasks 8.1–8.4 (canonical SoT). Platform engineers can also find a pointer at [`specifications/ai-asset-upstream-migration-design.md`](../../../../../specifications/ai-asset-upstream-migration-design.md).
@@ -95,7 +100,7 @@ A design document MUST map current custom annotations to upstream entity kinds w
 - **AND** for `ai-model`, documents that models are part of the `AiModelServerAPI` entity (no separate entity kind)
 - **AND** the document tracks relevant upstream proposals or discussions
 
-> **Out of scope / TBD:** `vector-store` and `ai-tool` are excluded from the seven-category upstream-migration SoT but remain recognized by boost `isAiAsset` / fixtures until explicitly retired. See [catalog-entities spec](../../../agent-creation-discovery/specs/catalog-entities/spec.md) for tracking.
+> **Out of scope:** `vector-store` and `ai-tool` are excluded from the seven-category upstream-migration SoT but remain recognized by boost `isAiAsset` / fixtures until explicitly retired. Source of truth for the seven AI-asset categories: [ai-catalog-entity-model/design.md Decision 1](../../design.md#decision-1-annotation-independence-from-entity-kinds). The [catalog-entities spec](../../../agent-creation-discovery/specs/catalog-entities/spec.md) is supplementary context for provider-deployment, not a competing mapping SoT.
 
 ### Requirement: Consumer-Facing Changes Identified
 

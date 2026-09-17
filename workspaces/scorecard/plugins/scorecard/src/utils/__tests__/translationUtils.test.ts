@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { resolveMetricTranslation } from '../translationUtils';
+import {
+  getTranslatedTextWithFallback,
+  resolveMetricTranslation,
+} from '../translationUtils';
 
 type MockT = (key: string, params?: Record<string, string>) => string;
 
@@ -172,5 +175,63 @@ describe('resolveMetricTranslation', () => {
         'Fallback Title',
       ),
     ).toBe('File check: readme');
+  });
+});
+
+describe('getTranslatedTextWithFallback', () => {
+  it('returns fallback without calling t when translationKey is undefined', () => {
+    const t = jest.fn();
+
+    expect(
+      getTranslatedTextWithFallback(t as any, undefined, 'Code Quality'),
+    ).toBe('Code Quality');
+    expect(t).not.toHaveBeenCalled();
+  });
+
+  it('returns translated text when the key resolves', () => {
+    const t = createMockT({
+      'groups.codeQuality.title': 'Qualität',
+    });
+
+    expect(
+      getTranslatedTextWithFallback(
+        t as any,
+        'groups.codeQuality.title',
+        'Code Quality',
+      ),
+    ).toBe('Qualität');
+  });
+
+  it('returns fallback when translation is missing (t returns the key)', () => {
+    const t = createMockT({});
+
+    expect(
+      getTranslatedTextWithFallback(
+        t as any,
+        'groups.missing.title',
+        'Code Quality',
+      ),
+    ).toBe('Code Quality');
+  });
+
+  it('returns undefined when there is no key and fallback is undefined', () => {
+    const t = jest.fn();
+
+    expect(
+      getTranslatedTextWithFallback(t as any, undefined, undefined),
+    ).toBeUndefined();
+    expect(t).not.toHaveBeenCalled();
+  });
+
+  it('returns undefined when the key is missing and fallback is undefined', () => {
+    const t = createMockT({});
+
+    expect(
+      getTranslatedTextWithFallback(
+        t as any,
+        'groups.missing.description',
+        undefined,
+      ),
+    ).toBeUndefined();
   });
 });

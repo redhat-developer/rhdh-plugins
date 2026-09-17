@@ -15,12 +15,12 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { CleanupExpiredMetricsTask } from './CleanupExpiredMetricsTask';
+import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { mockDatabaseMetricValues } from '../../../__fixtures__/mockDatabaseMetricValues';
 import { CLEANUP_EXPIRED_METRICS_ID } from '../constants';
-import { daysToMilliseconds } from './utils';
+import { CleanupExpiredMetricsTask } from './CleanupExpiredMetricsTask';
 
-jest.mock('./utils', () => ({
+jest.mock('@red-hat-developer-hub/backstage-plugin-scorecard-node', () => ({
   daysToMilliseconds: jest.fn((days: number) => days * 24 * 60 * 60 * 1000),
 }));
 

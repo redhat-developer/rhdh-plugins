@@ -206,9 +206,16 @@ describe('ociPluginKey — auto-detect from image cache', () => {
   });
 
   it('errors when no plugins are declared', async () => {
+    // RHDHBUGS-2530: an image without the io.backstage.dynamic-packages
+    // annotation used to fail unreadably. Assert the full message — it must
+    // name the image and the annotation, and point at the packaging command.
     await expect(
       ociPluginKey('oci://registry.io/plugin:v1.0', fakeImageCache([])),
-    ).rejects.toThrow(/No plugins found/);
+    ).rejects.toThrow(
+      'No plugins found in OCI image oci://registry.io/plugin:v1.0. ' +
+        "The image might not contain the 'io.backstage.dynamic-packages' annotation. " +
+        'Please ensure it was packaged using the @red-hat-developer-hub/cli plugin package command.',
+    );
   });
 
   it('errors with list when multiple plugins are declared', async () => {

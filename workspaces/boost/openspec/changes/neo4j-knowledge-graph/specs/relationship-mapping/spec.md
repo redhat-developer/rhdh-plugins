@@ -8,6 +8,8 @@ The Neo4j sync adapter polls the Backstage catalog search API, identifies change
 
 ### Requirement: Catalog API Polling with Incremental Sync
 
+The implementation MUST satisfy the scenarios below.
+
 The adapter uses scheduled polling rather than real-time event subscription because the Backstage catalog does not provide a built-in secondary data store sync extension point (see RHDHPLAN-1507 feasibility report, Option A).
 
 #### Scenario: Scheduled sync cycle processes only changed entities
@@ -32,6 +34,8 @@ The adapter uses scheduled polling rather than real-time event subscription beca
 - **AND** logs the deletion event
 
 ### Requirement: Graph Node Creation from Catalog Entity Metadata
+
+The implementation MUST satisfy the scenarios below.
 
 Graph nodes mirror catalog entity metadata to enable graph queries without additional API calls.
 
@@ -76,6 +80,8 @@ Graph nodes mirror catalog entity metadata to enable graph queries without addit
 
 ### Requirement: DEPENDS_ON Relationship from Version Dependencies
 
+The implementation MUST satisfy the scenarios below.
+
 Skill-to-skill dependencies are derived from `skillcard.yaml` metadata.
 
 #### Scenario: Skill with version dependencies creates DEPENDS_ON relationships
@@ -91,6 +97,8 @@ Skill-to-skill dependencies are derived from `skillcard.yaml` metadata.
 - **AND** does not delete the dependency Skill node (other skills may still depend on it)
 
 ### Requirement: USES_TOOL Relationship from Allowed Tools
+
+The implementation MUST satisfy the scenarios below.
 
 Skill-to-tool relationships are derived from `skillcard.yaml` allowed tools.
 
@@ -108,6 +116,8 @@ Skill-to-tool relationships are derived from `skillcard.yaml` allowed tools.
 
 ### Requirement: BELONGS_TO Relationship from Domain Tags
 
+The implementation MUST satisfy the scenarios below.
+
 Skill/Agent-to-domain relationships are derived from `domain:*` tags.
 
 #### Scenario: Skill with domain tag creates BELONGS_TO relationship
@@ -123,6 +133,8 @@ Skill/Agent-to-domain relationships are derived from `domain:*` tags.
 - **AND** does not delete the Domain node (other skills may belong to it)
 
 ### Requirement: SIMILAR_TO Relationship from Tag Overlap
+
+The implementation MUST satisfy the scenarios below.
 
 Skill-to-skill similarity is computed from tag overlap using Jaccard similarity.
 
@@ -147,6 +159,8 @@ Skill-to-skill similarity is computed from tag overlap using Jaccard similarity.
 
 ### Requirement: IMPLEMENTED_BY Relationship from Catalog Entity Relations
 
+The implementation MUST satisfy the scenarios below.
+
 Agent-to-skill relationships are derived from catalog `spec.dependsOn` relations.
 
 #### Scenario: Agent depends on skill creates IMPLEMENTED_BY relationship
@@ -160,6 +174,8 @@ Agent-to-skill relationships are derived from catalog `spec.dependsOn` relations
 - **THEN** the adapter deletes the corresponding `IMPLEMENTED_BY` relationship
 
 ### Requirement: Sync Failure Isolation
+
+The implementation MUST satisfy the scenarios below.
 
 Sync failures for individual entities do not abort the remaining sync cycle.
 
@@ -177,6 +193,8 @@ Sync failures for individual entities do not abort the remaining sync cycle.
 - **AND** emits metrics to monitoring system (Prometheus format): `neo4j_sync_total`, `neo4j_sync_success`, `neo4j_sync_failures`
 
 ### Requirement: Neo4j Sync Adapter Interface Implementation
+
+The implementation MUST satisfy the scenarios below.
 
 The adapter implements the interface defined in the entity-provider SDK (RHIDP-15258, story RHIDP-15303).
 

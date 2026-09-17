@@ -21,6 +21,7 @@ import {
   contentsWithRedactedThinking,
   E2E_MCP_VALID_TOKEN,
   generateQueryResponse,
+  generateQueryResponseWithReferencedDocuments,
   mockedMcpServersResponse,
   modelBaseUrl,
   type McpServersListMock,
@@ -607,6 +608,7 @@ export async function mockQuery(
   query: string,
   conversations: any[],
 ) {
+  await page.unroute(`${modelBaseUrl}/v1/query`);
   await page.route(`${modelBaseUrl}/v1/query`, async route => {
     const payload = route.request().postDataJSON();
 
@@ -618,6 +620,32 @@ export async function mockQuery(
         ? conversations[1].conversation_id
         : conversations[0].conversation_id,
     );
+    await route.fulfill({ body });
+  });
+}
+
+/** Mock query SSE that returns BYOK `referenced_documents` on the `end` event. */
+export async function mockQueryWithReferencedDocuments(
+  page: Page,
+  query: string,
+  conversations: any[],
+  referencedDocuments: Record<string, unknown>[],
+) {
+  await page.unroute(`${modelBaseUrl}/v1/query`);
+  await page.route(`${modelBaseUrl}/v1/query`, async route => {
+    const payload = route.request().postDataJSON();
+    if (payload.conversation_id) {
+      conversations[1].conversation_id = payload.conversation_id;
+    }
+    const conversationId =
+      conversations[1].conversation_id ?? conversations[0].conversation_id;
+    const body =
+      payload.query === query
+        ? generateQueryResponseWithReferencedDocuments(
+            conversationId,
+            referencedDocuments,
+          )
+        : generateQueryResponse(conversationId);
     await route.fulfill({ body });
   });
 }
@@ -835,5 +863,94 @@ export async function mockFeedbackReceived(page: Page) {
         response: 'feedback received',
       }),
     });
+  });
+}
+
+type SavedPromptMock = {
+  id: string;
+  name: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+};
+
+const savedPromptsByPage = new WeakMap<Page, SavedPromptMock[]>();
+
+const defaultSavedPromptsConfig = {
+  max_prompts_per_user: 50,
+  max_display_name_length: 255,
+  max_content_length: 10000,
+};
+
+/** Per-page in-memory saved prompts mock (starts empty unless seeded). */
+export async function mockSavedPrompts(
+  page: Page,
+  initialPrompts: SavedPromptMock[] = [],
+) {
+  savedPromptsByPage.set(page, [...initialPrompts]);
+
+  await page.route(`${modelBaseUrl}/v1/saved-prompts**`, async route => {
+    const url = new URL(route.request().url());
+    const method = route.request().method();
+    const prompts = savedPromptsByPage.get(page) ?? [];
+
+    if (url.pathname.endsWith('/v1/saved-prompts/config')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(defaultSavedPromptsConfig),
+      });
+      return;
+    }
+
+    if (method === 'GET' && url.pathname.endsWith('/v1/saved-prompts')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ prompts }),
+      });
+      return;
+    }
+
+    if (method === 'POST' && url.pathname.endsWith('/v1/saved-prompts')) {
+      const body = route.request().postDataJSON() as {
+        name: string;
+        content: string;
+      };
+      const now = new Date().toISOString();
+      const created = {
+        id: randomUUID(),
+        name: body.name,
+        content: body.content,
+        created_at: now,
+        updated_at: now,
+      };
+      prompts.push(created);
+      savedPromptsByPage.set(page, prompts);
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(created),
+      });
+      return;
+    }
+
+    if (method === 'DELETE') {
+      const promptId = url.pathname.split('/').pop() ?? '';
+      const nextPrompts = prompts.filter(prompt => prompt.id !== promptId);
+      savedPromptsByPage.set(page, nextPrompts);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          prompt_id: promptId,
+          deleted: true,
+          response: 'Saved prompt deleted successfully',
+        }),
+      });
+      return;
+    }
+
+    await route.continue();
   });
 }

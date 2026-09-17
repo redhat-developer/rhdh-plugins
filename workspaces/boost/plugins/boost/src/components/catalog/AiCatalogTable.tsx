@@ -17,6 +17,7 @@
 import { useMemo } from 'react';
 import type { Entity } from '@backstage/catalog-model';
 import {
+  Cell,
   type ColumnConfig,
   type SortState,
   type TableItem,
@@ -26,11 +27,15 @@ import {
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { getCategoryMeta } from '../../utils/categoryMeta';
-import { entityHref, getSpecField } from '../../utils/entityHelpers';
+import { entityHref } from '../../utils/entityLinks';
+import { getProvider, getSpecField } from '../../utils/entityFields';
+import { AssetTypeBadge } from './AssetTypeBadge';
+import styles from './AiCatalogTable.module.css';
 
 interface AiAssetRow extends TableItem {
   title: string;
   categoryLabel: string;
+  entity: Entity;
   owner: string;
   provider: string;
   description: string;
@@ -42,16 +47,25 @@ function toRows(entities: Entity[]): AiAssetRow[] {
     id: entity.metadata.uid ?? entity.metadata.name,
     title: entity.metadata.title ?? entity.metadata.name,
     categoryLabel: getCategoryMeta(getSpecField(entity, 'type')).label,
+    entity,
     owner: getSpecField(entity, 'owner') ?? '',
-    provider: entity.metadata.annotations?.['rhdh.io/ai-asset-source'] ?? '',
+    provider: getProvider(entity) ?? '',
     description: entity.metadata.description ?? '',
     href: entityHref(entity),
   }));
 }
 
+function renderAssetTypeCell(item: AiAssetRow) {
+  return (
+    <Cell>
+      <AssetTypeBadge entity={item.entity} />
+    </Cell>
+  );
+}
+
 export interface AiCatalogTableProps {
-  entities: Entity[];
-  sort: SortState;
+  readonly entities: Entity[];
+  readonly sort: SortState;
 }
 
 export const AiCatalogTable = ({ entities, sort }: AiCatalogTableProps) => {
@@ -70,19 +84,19 @@ export const AiCatalogTable = ({ entities, sort }: AiCatalogTableProps) => {
       {
         id: 'categoryLabel',
         label: t('catalog.table.type'),
-        cell: item => <CellText title={item.categoryLabel} />,
-        isSortable: true,
-      },
-      {
-        id: 'owner',
-        label: t('catalog.table.owner'),
-        cell: item => <CellText title={item.owner} />,
+        cell: renderAssetTypeCell,
         isSortable: true,
       },
       {
         id: 'provider',
         label: t('catalog.table.provider'),
         cell: item => <CellText title={item.provider} />,
+        isSortable: true,
+      },
+      {
+        id: 'owner',
+        label: t('catalog.table.owner'),
+        cell: item => <CellText title={item.owner} />,
         isSortable: true,
       },
       {
@@ -95,12 +109,15 @@ export const AiCatalogTable = ({ entities, sort }: AiCatalogTableProps) => {
   );
 
   return (
-    <Table
-      data={rows}
-      columnConfig={columns}
-      pagination={{ type: 'none' }}
-      sort={sort}
-      rowConfig={{ getHref: item => item.href }}
-    />
+    <div className={styles.tableViewport}>
+      <Table
+        data={rows}
+        columnConfig={columns}
+        pagination={{ type: 'none' }}
+        sort={sort}
+        rowConfig={{ getHref: item => item.href }}
+        className={styles.table}
+      />
+    </div>
   );
 };

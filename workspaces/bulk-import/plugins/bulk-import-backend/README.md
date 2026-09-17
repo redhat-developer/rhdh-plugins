@@ -30,7 +30,9 @@ To set up the bulk import backend package for the backend:
 
 #### Permission Framework Support
 
-The Bulk Import Backend plugin has support for the permission framework. A basic example permission policy is shown below to disallow access to the bulk import API for all users except those in the `backstage-admins` group.
+The Bulk Import Backend plugin has support for the permission framework. The plugin registers `bulk.import` as a **feature permission** (`BasicPermission`) from `@red-hat-developer-hub/backstage-plugin-bulk-import-common`.
+
+A basic example permission policy is shown below to disallow access to the bulk import API for all users except those in the `backstage-admins` group.
 
 1. Create a backend module for the permission policy, under a `packages/backend/src/plugins/permissions.ts` file:
 
@@ -221,16 +223,20 @@ When executing an orchestrator workflow, the Bulk Import plugin provides the fol
 Additionally, the plugin automatically provides authentication tokens for the Git provider:
 
 - **`authTokens`** – Array of authentication tokens for the Git provider:
-  - For GitHub repositories (`approvalTool: 'GIT'`): `{ token: <github-token>, provider: 'github' }`
+  - For GitHub repositories (`approvalTool: 'GIT'`): `{ token: <github-app-installation-token>, provider: 'github' }`
   - For GitLab repositories (`approvalTool: 'GITLAB'`): `{ token: <gitlab-token>, provider: 'gitlab' }`
 
-The tokens are obtained from the configured GitHub/GitLab integrations in your Backstage instance.
+**GitHub (required for orchestrator mode):** tokens are short-lived **GitHub App installation tokens** from `integrations.github`. The target org/user must have the App installed. Classic personal access tokens (PATs) are **not** forwarded; if only a PAT is configured (or no App installation covers the repo), the import job for that repository fails closed with an error.
+
+**GitLab:** tokens still come from `integrations.gitlab` (typically long-lived). There is no short-lived App-equivalent path in this plugin today — residual risk is higher; use least-privilege tokens and keep SonataFlow private until a short-lived approach exists.
+
+**Token TTL vs long-running workflows:** GitHub App installation tokens typically expire in about an hour. Credentials are resolved once when the workflow is started and passed into SonataFlow; SonataFlow does **not** re-fetch or refresh them after wait states or long-running steps. Workflows that exceed token lifetime (or wait longer than the TTL) can fail mid-run. Keep orchestrator import workflows short relative to the token TTL, or accept that long/waiting runs may need a retrigger with fresh credentials.
 
 ##### How Orchestrator Mode Works
 
 1. **Workflow Execution**: When you submit a bulk import request with `importAPI: 'orchestrator'`, the plugin:
    - Iterates through each repository in the request
-   - Retrieves the appropriate Git provider credentials (GitHub or GitLab)
+   - Retrieves the appropriate Git provider credentials (GitHub App installation token, or GitLab integration token)
    - Executes the specified orchestrator workflow for each repository
    - Passes the repository information and authentication tokens as input data
 
@@ -266,7 +272,7 @@ Your orchestrator workflow should accept the input parameters described above. H
   },
   "authTokens": [
     {
-      "token": "<github-token>",
+      "token": "<github-app-installation-token>",
       "provider": "github"
     }
   ]
@@ -291,6 +297,25 @@ The plugin maps Orchestrator workflow states to Bulk Import status values:
 - Other states are prefixed with `WORKFLOW_` and uppercased
 
 If workflow status cannot be retrieved, the status is set to `WORKFLOW_FETCH_FAILED`.
+
+##### RBAC and deployment guidance (orchestrator mode)
+
+Because SCM credentials enter the SonataFlow trust boundary for the duration of the workflow, treat access and runtime hardening as part of the control plane:
+
+**RBAC (recommended in production):**
+
+- Enable the Backstage permission framework.
+- Limit who has `bulk.import`.
+- Scope `orchestrator.workflow.use` (and optional workflow-ID conditions such as `IS_ALLOWED_WORKFLOW_ID`) to the allowlisted workflow configured in `bulkImport.orchestratorWorkflow`.
+- Control who can change that config and who can deploy the workflow definition.
+
+**Deployment checklist:**
+
+- Keep SonataFlow private (cluster RBAC; no untrusted co-tenants; not exposed to the public internet).
+- Egress-allowlist SonataFlow to SCM and required APIs only.
+- Verify audit, APM, and ingress logging do not persist `authTokens` body values or `X-Authorization-*` header values.
+- Configure the GitHub App with least privilege (for example contents + pull requests on required orgs/repos only).
+- Monitor Bulk Import / Orchestrator audit events and SCM audit for the App identity; maintain a documented revoke/rotate runbook.
 
 ### Audit Logging
 

@@ -1,6 +1,11 @@
 # Migration Plan: RHDH AI-Asset Entities to Upstream Backstage Kinds
 
-> **Status: Draft** | **Last updated: 2026-08-31** | **Story: RHIDP-15302**
+> **Workspace status:** Follow-on RHDH schema-alignment planning; not part of
+> the current RHDH 2.1 Boost release. The RHDH 2.1 targets mentioned below
+> belong to the broader migration-readiness effort, not the current frontend
+> and OGX release package scope.
+
+> **Status: Ready for Review** | **Last updated: 2026-09-03** | **Story: RHIDP-15302**
 >
 > **Epic:** RHIDP-15258 (Entity-Provider SDK) | **Feature:** RHDHPLAN-1507
 >

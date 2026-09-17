@@ -17,13 +17,19 @@
 import {
   AggregatedMetric,
   AggregatedMetricResult,
+  AggregatedMetricTimeSeriesResponse,
   AggregationMetadata,
   Metric,
   AggregationResultByType,
   ScalarAggregatedMetric,
+  ScalarAggregatedTimeSeriesPoint,
+  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
-import type { DbScalarAggregatedMetric } from '../database/types';
+import type {
+  DbScalarAggregatedMetric,
+  DbScalarTimeSeriesPoint,
+} from '../database/types';
 import { ValidatedAggregationConfig } from '../validation/schemas/aggregationConfigSchemas';
 import { normalizeTimestamp } from '../utils/normalizeTimestamp';
 
@@ -69,6 +75,7 @@ export class AggregatedMetricMapper {
       type: metric.type,
       unit: metric.unit,
       history: metric.history,
+      visualization: metric.defaultVisualization,
       title: aggregationConfig.title,
       description: aggregationConfig.description,
       aggregationType: aggregationConfig.type,
@@ -91,6 +98,42 @@ export class AggregatedMetricMapper {
       status: 'success',
       metadata: this.toAggregationMetadata(metric, aggregationConfig),
       result,
+    };
+  }
+
+  static toScalarAggregatedTimeSeriesPoint(
+    row: DbScalarTimeSeriesPoint,
+  ): ScalarAggregatedTimeSeriesPoint {
+    const successCount = row.successCount;
+    const errorCount = row.errorCount;
+    const status: ScalarAggregatedTimeSeriesPoint['status'] =
+      successCount > 0 ? 'success' : 'error';
+
+    return {
+      value: successCount > 0 ? row.value : null,
+      successCount,
+      errorCount,
+      total: row.total,
+      status,
+      timestamp: row.maxTimestamp.toISOString(),
+      ...(row.errors.length > 0 ? { errors: row.errors } : {}),
+    };
+  }
+
+  static toScalarAggregatedMetricTimeSeriesResponse(
+    metric: Metric,
+    aggregationConfig: ValidatedAggregationConfig,
+    points: ScalarAggregatedTimeSeriesPoint[],
+    thresholds: ThresholdConfig,
+    aggregationChartDisplayColor: string | null,
+  ): AggregatedMetricTimeSeriesResponse {
+    return {
+      id: aggregationConfig.id,
+      metricId: metric.id,
+      points,
+      metadata: this.toAggregationMetadata(metric, aggregationConfig),
+      thresholds,
+      aggregationChartDisplayColor,
     };
   }
 }

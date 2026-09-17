@@ -25,8 +25,14 @@ import { styled } from '@mui/material/styles';
 import { getCategoryTagDisplayInfo } from '../utils';
 
 const StyledLinkButton = styled(LinkButton)({
-  fontWeight: 'normal',
-  padding: '2px 6px',
+  '&&': {
+    fontWeight: 'normal',
+    padding: '3px 10px',
+    fontSize: '0.75rem',
+    borderRadius: '999px',
+    minWidth: 'unset',
+    lineHeight: 1.5,
+  },
   transition: 'border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
   '&:hover': {
     borderColor: '#a3a3a3',

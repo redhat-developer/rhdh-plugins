@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { IntlProvider } from 'react-intl';
 import { RecommendationBoxPlots } from '@red-hat-developer-hub/plugin-cost-management-common/models';
 import {

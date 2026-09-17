@@ -21,10 +21,10 @@ export const rootRouteRef = createRouteRef({
 
 // ── API-aligned tab route refs ─────────────────────────────────────────────
 
-export const providersRouteRef = createSubRouteRef({
-  id: 'dcm-providers',
+export const agentsRouteRef = createSubRouteRef({
+  id: 'dcm-agents',
   parent: rootRouteRef,
-  path: '/providers',
+  path: '/agents',
 });
 
 export const policiesRouteRef = createSubRouteRef({

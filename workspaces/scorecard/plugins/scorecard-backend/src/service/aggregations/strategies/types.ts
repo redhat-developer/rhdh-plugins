@@ -14,9 +14,21 @@
  * limitations under the License.
  */
 
-import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { AggregationOptions } from '../types';
+import type {
+  AggregatedMetricResult,
+  AggregatedMetricTimeSeriesResponse,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type {
+  AggregationOptions,
+  AggregationTimeSeriesOptions,
+} from '../types';
 
 export interface AggregationStrategy {
   aggregate(options: AggregationOptions): Promise<AggregatedMetricResult>;
+  /**
+   * Daily portfolio aggregation.
+   */
+  aggregateTimeSeries?(
+    options: AggregationTimeSeriesOptions,
+  ): Promise<AggregatedMetricTimeSeriesResponse>;
 }

@@ -15,8 +15,8 @@
  */
 
 import type { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { parseDate } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { DbMetricValue, DbMetricValueCreate } from '../types';
-import { parseTimestamp } from '../../utils/normalizeTimestamp';
 
 export type MetricValueRow = {
   catalog_entity_ref: string;
@@ -74,7 +74,7 @@ export function fromMetricValueRow(row: MetricValueRowWithId): DbMetricValue {
     metricId: row.metric_id,
     // JSON columns may surface literal null as the text 'null' rather than SQL NULL.
     value: (row.value as unknown) === 'null' ? null : row.value,
-    timestamp: parseTimestamp(row.timestamp),
+    timestamp: parseDate(row.timestamp),
     errorMessage: row.error_message,
     status: row.status,
     entityKind: row.entity_kind,

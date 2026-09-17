@@ -18,6 +18,10 @@ None — this is a new productization wrapper around the upstream MCP Registry e
 
 ### Requirement: Custom CA Bundle from Mounted Path
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Custom CA bundle is applied
+
 **WHEN** the connector is configured with a custom CA bundle path:
 
 ```yaml
@@ -70,6 +74,10 @@ ai-catalog:
 **AND** the warning message includes the file path and PEM parsing error details.
 
 ### Requirement: Kubernetes Secret-Based Credentials
+
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Secret credentials are loaded
 
 **WHEN** the connector is configured with a Kubernetes Secret reference for authentication:
 
@@ -130,6 +138,10 @@ ai-catalog:
 
 ### Requirement: Per-Connector TLS Configuration
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Connector instances keep TLS settings isolated
+
 **WHEN** multiple MCP Registry connector instances are configured with different TLS settings:
 
 ```yaml
@@ -155,6 +167,10 @@ ai-catalog:
 
 ### Requirement: TLS Certificate Validation Enforcement
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: TLS validation is enforced
+
 **WHEN** the connector makes HTTPS requests to the registry endpoint:
 
 **THEN** the connector always enforces TLS certificate validation (`rejectUnauthorized: true`).
@@ -179,6 +195,10 @@ ai-catalog:
 
 ### Requirement: Shared CA Bundle Utility Integration
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Shared CA utility is used
+
 **WHEN** the connector loads a custom CA bundle:
 
 **THEN** the connector uses the shared `loadCaBundle()` utility from `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` (RHIDP-15316).
@@ -198,6 +218,10 @@ ai-catalog:
 **AND** the error message includes the missing package name and version.
 
 ### Requirement: Prometheus Metrics for TLS and Auth
+
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: TLS and authentication metrics are emitted
 
 **WHEN** the connector validates TLS certificates:
 

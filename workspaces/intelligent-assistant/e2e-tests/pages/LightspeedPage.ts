@@ -21,17 +21,23 @@ import {
   mockedMcpServersResponse,
   type McpServersListMock,
 } from '../fixtures/responses';
+import { waitForChatbotVisible } from '../utils/testHelper';
 import {
   LightspeedMessages,
   evaluateMessage,
   formatMcpSelectedCount,
+  formatSourcesChipLabel,
 } from '../utils/translations';
 
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
 
 // Actions
 export async function openChatbot(page: Page, t: LightspeedMessages) {
-  await page.getByRole('button', { name: t['tooltip.fab.open'] }).click();
+  const closeFab = page.getByRole('button', { name: t['tooltip.fab.close'] });
+  if (!(await closeFab.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: t['tooltip.fab.open'] }).click();
+  }
+  await waitForChatbotVisible(page);
 }
 
 export async function selectDisplayMode(
@@ -52,6 +58,9 @@ export async function selectDisplayMode(
 }
 
 export async function openChatHistoryDrawer(page: Page, t: LightspeedMessages) {
+  const closeButton = page.getByRole('button', {
+    name: t['aria.closeDrawerPanel'],
+  });
   const chatHistoryMenuButton = page.getByRole('button', {
     name: t['aria.chatHistoryMenu'],
   });
@@ -59,11 +68,21 @@ export async function openChatHistoryDrawer(page: Page, t: LightspeedMessages) {
     name: t['tooltip.expandHistoryPanel'],
   });
 
-  if (await chatHistoryMenuButton.isVisible()) {
+  if (await closeButton.isVisible().catch(() => false)) {
+    return;
+  }
+
+  await expect(chatHistoryMenuButton.or(expandHistoryButton)).toBeVisible({
+    timeout: 10000,
+  });
+
+  if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
     await chatHistoryMenuButton.click();
-  } else if (await expandHistoryButton.isVisible()) {
+  } else {
     await expandHistoryButton.click();
   }
+
+  await expect(closeButton).toBeVisible({ timeout: 5000 });
 }
 
 export async function closeChatHistoryDrawer(
@@ -73,14 +92,51 @@ export async function closeChatHistoryDrawer(
   await page.getByRole('button', { name: t['aria.closeDrawerPanel'] }).click();
 }
 
+// Legacy app-legacy uses BackstagePage; NFS uses BUI header titles.
+const backstagePageContent = (page: Page) =>
+  page.locator('main[class*="BackstagePage-root"], .bui-HeaderTitle').first();
+
+const isRenderedInLayout = (element: Element) => {
+  const { width, height } = element.getBoundingClientRect();
+  const style = window.getComputedStyle(element);
+  return (
+    width > 0 &&
+    height > 0 &&
+    style.visibility !== 'hidden' &&
+    style.display !== 'none'
+  );
+};
+
+export async function waitForBackstageCatalogReady(page: Page) {
+  if (process.env.APP_MODE === 'nfs') {
+    return;
+  }
+
+  await expect(page).toHaveURL(/\/catalog/);
+  await expect(backstagePageContent(page)).toBeAttached({ timeout: 15_000 });
+}
+
 // Assertions
 export async function expectBackstagePageVisible(page: Page, visible = true) {
   if (process.env.APP_MODE === 'nfs') {
     return;
   }
-  const locator = page.getByText('Red Hat Catalog');
-  const assertion = visible ? expect(locator) : expect(locator).not;
-  await assertion.toBeVisible();
+
+  const content = backstagePageContent(page);
+
+  if (visible) {
+    await expect(page).toHaveURL(/\/catalog/);
+    // Overlay/dock modes may set aria-hidden on the page behind the chatbot.
+    // Locale-specific catalog titles differ between legacy and NFS — use layout.
+    await expect(content).toBeAttached({ timeout: 15_000 });
+    await expect
+      .poll(async () => content.evaluate(isRenderedInLayout))
+      .toBe(true);
+    return;
+  }
+
+  // Fullscreen navigates to the dedicated IA route instead of overlaying the catalog.
+  await expect(page).toHaveURL(/\/intelligent-assistant/, { timeout: 15_000 });
 }
 
 export async function expectChatbotControlsVisible(
@@ -361,12 +417,11 @@ export async function verifyMcpSettingsPanel(
     }
   }
 
+  await closeMcpSettingsPanel(page, t);
+  await expectMcpServersSettingsHeading(page, false, t);
   await expect(
     page.getByRole('button', { name: t['aria.options.label'] }),
   ).toBeVisible();
-
-  await closeMcpSettingsPanel(page, t);
-  await expectMcpServersSettingsHeading(page, false, t);
 }
 
 /** Chat composer message field (matches sendMessage in testHelper). */
@@ -446,7 +501,7 @@ function getWelcomeHeader(t: LightspeedMessages): string {
   return `
     - region "Scrollable message log":
       - 'heading "Info alert: ${t['aria.important']}" [level=4]'
-      - text: ${t['disclaimer.withValidation']}
+      - text: ${t['disclaimer']}
       - heading "${greeting} ${t['chatbox.welcome.description']}" [level=1]`;
 }
 
@@ -459,6 +514,64 @@ const buttonCounts: Record<DisplayMode, number> = {
   'Dock to window': 2,
   Fullscreen: 3,
 };
+
+export function botMessageRegion(page: Page): Locator {
+  return page.locator('.pf-chatbot__message--bot').last();
+}
+
+export function inlineSourceCards(page: Page): Locator {
+  return page.locator('.pf-chatbot__sources-card');
+}
+
+export async function expectInlineRagSourceLabels(
+  page: Page,
+  ragIds: string[],
+) {
+  const botMessage = botMessageRegion(page);
+  await expect(botMessage.locator('.pf-chatbot__sources-card')).toHaveCount(1);
+
+  for (let index = 0; index < ragIds.length; index++) {
+    await expect(
+      botMessage.getByText(ragIds[index], { exact: true }),
+    ).toBeVisible();
+    if (index < ragIds.length - 1) {
+      await botMessage.getByRole('button', { name: 'Go to next page' }).click();
+    }
+  }
+}
+
+export async function expectNoInlineSourceCards(page: Page) {
+  const botMessage = botMessageRegion(page);
+  await expect(botMessage.locator('.pf-chatbot__sources-card')).toHaveCount(0);
+  await expect(
+    botMessage.getByRole('navigation', { name: 'Pagination' }),
+  ).toHaveCount(0);
+}
+
+export async function openSourcesPopover(page: Page, t: LightspeedMessages) {
+  const chipLabel = formatSourcesChipLabel(t, 1);
+  const sourcesChip = page.getByRole('button', { name: chipLabel });
+  if (await sourcesChip.isVisible().catch(() => false)) {
+    await sourcesChip.click();
+    return;
+  }
+  const pluralChip = page.getByRole('button', {
+    name: formatSourcesChipLabel(t, 2),
+  });
+  await pluralChip.click();
+}
+
+export async function expectSourcesPopoverRagLabels(
+  page: Page,
+  t: LightspeedMessages,
+  ragIds: string[],
+) {
+  const dialog = page.getByRole('dialog', { name: t['sources.modal.title'] });
+  await expect(dialog).toBeVisible();
+  for (const ragId of ragIds) {
+    await expect(dialog.getByText(ragId, { exact: true })).toBeVisible();
+  }
+}
 
 export async function expectConversationArea(
   page: Page,

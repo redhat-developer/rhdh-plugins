@@ -16,11 +16,11 @@
 
 export type { CatalogApi } from './CatalogApi';
 export type { PolicyManagerApi } from './PolicyManagerApi';
-export type { ProvidersApi } from './ProvidersApi';
+export type { AgentsApi } from './AgentsApi';
 export type { ResourcesApi } from './ResourcesApi';
 
 export { DcmBaseClient } from './DcmBaseClient';
 export { CatalogClient } from './CatalogClient';
 export { PolicyManagerClient } from './PolicyManagerClient';
-export { ProvidersClient } from './ProvidersClient';
+export { AgentsClient } from './AgentsClient';
 export { ResourcesClient } from './ResourcesClient';

@@ -18,7 +18,7 @@ export { dcmPlugin, DcmPage } from './plugin';
 export {
   catalogApiRef,
   policyManagerApiRef,
-  providersApiRef,
+  agentsApiRef,
   resourcesApiRef,
 } from './apis';
 export { isDarkMode, useIsDarkMode } from './components/dcmTheme';

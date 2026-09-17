@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import {
   type AppTheme,
   appThemeApiRef,
@@ -28,9 +28,12 @@ import {
   ThemeProvider as Mui5Provider,
   Theme as Mui5Theme,
 } from '@mui/material/styles';
+import GlobalStyles from '@mui/material/GlobalStyles';
 
 import { useTheme } from '../hooks/useTheme';
 import { useThemeConfig } from '../hooks/useThemeConfig';
+import { useBranding } from '../hooks/useBranding';
+import { buiTokensToCSS } from '../utils/buiTokensToCSS';
 import { ThemeConfig } from '../types';
 
 /**
@@ -51,8 +54,31 @@ const ThemeProvider = ({
   theme: UnifiedTheme;
   children: ReactNode;
 }) => {
+  const branding = useBranding();
   const mui5Theme = theme.getTheme('v5') as Mui5Theme;
   const secondary = mui5Theme.palette.text.secondary;
+
+  const buiTokenStyles = useMemo(() => {
+    const themes = branding?.theme;
+    if (!themes) return null;
+    const styles: Record<string, Record<string, string>> = {};
+    for (const [themeName, themeConfig] of Object.entries(themes)) {
+      const tokens = themeConfig?.bui?.tokens;
+      if (!tokens) continue;
+      const cssMap = buiTokensToCSS(tokens);
+      if (Object.keys(cssMap).length === 0) continue;
+      const mode =
+        themeConfig.mode ?? (themeName.includes('dark') ? 'dark' : 'light');
+      styles[`[data-theme-mode='${mode}']`] = {
+        ...styles[`[data-theme-mode='${mode}']`],
+        ...cssMap,
+      };
+    }
+    return Object.keys(styles).length > 0 ? styles : null;
+  }, [branding?.theme]);
+
+  const customCSS = branding?.customCSS ?? '';
+
   return (
     <UnifiedThemeProvider themeName={themeName} theme={theme}>
       <StyledEngineProvider injectFirst>
@@ -66,6 +92,8 @@ const ThemeProvider = ({
               --bui-fg-secondary: ${secondary} !important;
             }
           `}</style>
+          {buiTokenStyles && <GlobalStyles styles={buiTokenStyles} />}
+          {customCSS && <style>{customCSS}</style>}
           {children}
         </Mui5Provider>
       </StyledEngineProvider>
