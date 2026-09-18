@@ -14,6 +14,7 @@
     "./scaffolder-plugin-override": "./src/scaffolderPluginOverrideExport.ts",
     "./api-docs-plugin-override": "./src/apiDocsPluginOverrideExport.ts",
     "./docs-plugin-override": "./src/docsPluginOverrideExport.ts",
+    "./learning-paths-module": "./src/learningPathsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -38,6 +39,9 @@
       ],
       "docs-plugin-override": [
         "src/docsPluginOverrideExport.ts"
+      ],
+      "learning-paths-module": [
+        "src/learningPathsModuleExport.ts"
       ],
       "package.json": [
         "package.json"

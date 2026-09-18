@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import 'material-icons/iconfont/outlined.css';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+import learningPathsData from '../data/data.json';
+import { parseLearningPathLinks } from './parseLearningPathLinks';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+/**
+ * Returns bundled learning path cards from `src/learning-paths/data/data.json`.
+ *
+ * @internal
+ */
+export function getLearningPathFallbackData() {
+  return parseLearningPathLinks(learningPathsData);
+}

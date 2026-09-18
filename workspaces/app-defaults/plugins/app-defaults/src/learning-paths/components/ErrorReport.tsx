@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import 'material-icons/iconfont/outlined.css';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+import { CodeSnippet, WarningPanel } from '@backstage/core-components';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+/**
+ * @internal
+ */
+export const ErrorReport = ({
+  title,
+  errorText,
+}: {
+  title: string;
+  errorText: string;
+}) => (
+  <WarningPanel severity="error" title={title}>
+    <CodeSnippet language="text" text={errorText} />
+  </WarningPanel>
+);

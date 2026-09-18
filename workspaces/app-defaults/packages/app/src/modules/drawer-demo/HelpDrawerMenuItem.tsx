@@ -14,10 +14,25 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import 'material-icons/iconfont/outlined.css';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/components';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+/**
+ * Help-dropdown menu item that toggles the demo help drawer.
+ */
+export const HelpDrawerMenuItem = ({
+  handleClose,
+}: {
+  handleClose?: () => void;
+}) => {
+  const { toggleDrawer } = useAppDrawer();
+
+  const handleClick = () => {
+    toggleDrawer('demo-help');
+    handleClose?.();
+  };
+
+  return (
+    <GlobalHeaderMenuItem title="Help" icon="support" onClick={handleClick} />
+  );
+};

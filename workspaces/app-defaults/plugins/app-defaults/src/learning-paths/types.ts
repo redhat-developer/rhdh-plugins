@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import 'material-icons/iconfont/outlined.css';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+/**
+ * A single learning path card entry.
+ *
+ * @internal
+ */
+export type LearningPathLink = {
+  label: string;
+  url: string;
+  paths: number;
+  description?: string;
+  hours?: number;
+  minutes?: number;
+};

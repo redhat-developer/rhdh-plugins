@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import 'material-icons/iconfont/outlined.css';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+export { learningPathsModule as default } from './learning-paths';

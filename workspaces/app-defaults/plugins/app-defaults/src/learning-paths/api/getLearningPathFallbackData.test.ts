@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import 'material-icons/iconfont/outlined.css';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
+import { getLearningPathFallbackData } from './getLearningPathFallbackData';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+describe('getLearningPathFallbackData', () => {
+  it('returns parsed bundled learning path data', () => {
+    const data = getLearningPathFallbackData();
+
+    expect(data.length).toBeGreaterThan(0);
+    expect(data[0]).toEqual(
+      expect.objectContaining({
+        label: expect.any(String),
+        url: expect.any(String),
+        paths: expect.any(Number),
+      }),
+    );
+  });
+});
