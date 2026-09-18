@@ -30,8 +30,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
     sharedPage = await sharedContext.newPage();
     testUtils = new TestUtils(sharedPage);
     homePageCustomization = new HomePageCustomization(sharedPage);
-    const loginUrl = process.env.APP_MODE === 'nfs' ? '/' : '/customizable';
-    await testUtils.loginAsGuest(loginUrl);
+    await testUtils.loginAsGuest();
   });
 
   test.afterAll(async () => {
@@ -115,8 +114,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
       expect(countBeforeLogout).toBeGreaterThan(0);
 
       await testUtils.signOut();
-      const loginUrl = process.env.APP_MODE === 'nfs' ? '/' : '/customizable';
-      await testUtils.loginAsGuest(loginUrl);
+      await testUtils.loginAsGuest();
       await homePageCustomization.verifyCardHidden(
         'Good (morning|afternoon|evening)',
       );
@@ -136,22 +134,19 @@ test.describe.serial('Dynamic Home Page Customization', () => {
 // - Port 3002: developer (`user:default/developer-user` in `group:default/developers`)
 
 test.describe('Persona-Based Homepages', () => {
-  test('Groups filters default widgets by persona', async ({ browser }) => {
-    // The `if: groups:` condition in `homepage.defaultWidgets` is a legacy-only
-    // feature — NFS does not implement group-based widget filtering.
-    test.skip(
-      process.env.APP_MODE === 'nfs',
-      '`if: groups:` filtering is not supported in NFS mode',
-    );
-
-    const loginUrl = '/customizable';
+  // Persona e2e still targets the legacy /customizable route
+  test.skip('Groups filters default widgets by persona', async ({
+    browser,
+  }) => {
+    // NFS applies `homepage.defaultWidgets` persona filtering in HomePageLayout,
+    // but this suite exercises the legacy `/customizable` mount-point page.
 
     // Guest (port 3000, no groups): sees common defaults only
     const guestPage = await (
       await browser.newContext({ baseURL: 'http://localhost:3000' })
     ).newPage();
     const guestHome = new HomePageCustomization(guestPage);
-    await new TestUtils(guestPage).loginAsGuest(loginUrl);
+    await new TestUtils(guestPage).loginAsGuest();
     await guestHome.verifyHomePageLoaded();
 
     await expect(
@@ -168,7 +163,7 @@ test.describe('Persona-Based Homepages', () => {
       await browser.newContext({ baseURL: 'http://localhost:3001' })
     ).newPage();
     const adminHome = new HomePageCustomization(adminPage);
-    await new TestUtils(adminPage).loginAsGuest(loginUrl);
+    await new TestUtils(adminPage).loginAsGuest();
     await adminHome.verifyHomePageLoaded();
 
     await expect(
@@ -185,7 +180,7 @@ test.describe('Persona-Based Homepages', () => {
       await browser.newContext({ baseURL: 'http://localhost:3002' })
     ).newPage();
     const devHome = new HomePageCustomization(devPage);
-    await new TestUtils(devPage).loginAsGuest(loginUrl);
+    await new TestUtils(devPage).loginAsGuest();
     await devHome.verifyHomePageLoaded();
 
     await expect(

@@ -359,3 +359,26 @@ export function generateQueryResponseWithMcpToolCall(
 
   return serializeQuerySseEvents(events);
 }
+
+export type SavedPromptMock = {
+  id: string;
+  name: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Seeded sidebar prompt for saved-prompts e2e. */
+export const E2E_SAVED_PROMPT_DEPLOY_CHECKLIST: SavedPromptMock = {
+  id: 'sp-e2e-1',
+  name: 'Deploy checklist',
+  content: 'Walk me through a safe deployment.',
+  created_at: '2026-03-10T12:00:00.000Z',
+  updated_at: '2026-03-10T12:00:00.000Z',
+};
+
+/** Created via settings form in saved-prompts e2e. */
+export const E2E_SAVED_PROMPT_RELEASE_NOTES = {
+  name: 'Release notes helper',
+  content: 'Draft concise release notes for this change.',
+} as const;
