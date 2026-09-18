@@ -51,7 +51,7 @@ function transform(messages: typeof aiExperienceTranslationDe.messages) {
 }
 
 export function getTranslations(locale: string) {
-  const languageCode = locale.split('-')[0].toLocaleLowerCase('en-US');
+  const languageCode = locale.split('-')[0].toLowerCase();
 
   switch (languageCode) {
     case 'en':

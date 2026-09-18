@@ -183,8 +183,9 @@ export function buildLinks(doc: McpServerDocument): LinksResult {
       });
 
       // backstage.io/source-location annotation
-      annotations['backstage.io/source-location'] =
-        `url:${repoResult.combinedUrl}`;
+      annotations[
+        'backstage.io/source-location'
+      ] = `url:${repoResult.combinedUrl}`;
       reservedAnnotationKeys.push('backstage.io/source-location');
 
       // Dedicated repository.url annotation (unnormalized)
