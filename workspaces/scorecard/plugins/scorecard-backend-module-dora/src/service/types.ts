@@ -27,6 +27,10 @@ export type WindowOptions = {
   windowTo: Date;
 };
 
+export type EnvironmentFilterOptions = {
+  productionEnvironments?: string[];
+};
+
 export type LastSyncedPullRequestsCollector = {
   id: string | null;
   inputHash: string | null;

@@ -36,8 +36,11 @@ const materialUiMigrationEslintConfig = {
 /**
  * Shared ESLint config for frontend packages in the global-header workspace.
  */
-module.exports = packageDir =>
-  require('@backstage/cli/config/eslint-factory')(
+function createEslintConfig(packageDir) {
+  return require('@backstage/cli/config/eslint-factory')(
     packageDir,
     materialUiMigrationEslintConfig,
   );
+}
+
+module.exports = createEslintConfig;

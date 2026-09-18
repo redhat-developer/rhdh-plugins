@@ -27,6 +27,7 @@ import { DoraMedianLeadTimeForChangesProvider } from './DoraMedianLeadTimeForCha
 import {
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
 } from '../constants';
 import { DEFAULT_DORA_MEDIAN_LEAD_TIME_THRESHOLDS } from './DoraConfig';
 import { EMPTY_INPUT_HASH } from '../database/__fixtures__';
@@ -224,6 +225,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           collector: expect.objectContaining({
             id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           }),
+          productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
         },
       );
       expect(
@@ -389,14 +391,8 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       ).not.toHaveBeenCalled();
     });
 
-    it('should use configured productionEnvironments when filtering deployments', async () => {
+    it('should pass configured productionEnvironments to the data service', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
-        dbDeployment({
-          id: '400',
-          commitSha: 'sha-1',
-          environment: 'production',
-          createdAt: '2026-06-10T00:00:00.000Z',
-        }),
         dbDeployment({
           id: '401',
           commitSha: 'sha-2',
@@ -424,6 +420,12 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
 
       await expect(customProvider.calculateMetrics(mockEntity)).rejects.toThrow(
         /need at least 2 successful production deployments.*found 1/,
+      );
+      expect(mockDoraDataService.readDeployments).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          productionEnvironments: ['prod'],
+        }),
       );
     });
 

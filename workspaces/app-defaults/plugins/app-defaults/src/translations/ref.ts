@@ -17,6 +17,8 @@
 import { createTranslationRef } from '@backstage/frontend-plugin-api';
 
 /**
+ * Translation ref for app-defaults plugin messages.
+ *
  * @public
  */
 export const translationRef = createTranslationRef({
@@ -60,6 +62,16 @@ export const translationRef = createTranslationRef({
         description:
           'There are no documented entities yet, or you do not have permission to view any. Documentation will appear here once entities with TechDocs annotations are registered and you have access.',
         importButtonTitle: 'Register a component',
+      },
+    },
+    menuItem: {
+      learningPaths: 'Learning Paths',
+    },
+    learningPaths: {
+      title: 'Learning Paths',
+      error: {
+        title: 'Could not fetch data.',
+        unknownError: 'Unknown error',
       },
     },
   },
