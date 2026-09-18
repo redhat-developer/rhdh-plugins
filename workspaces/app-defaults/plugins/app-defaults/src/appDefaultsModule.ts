@@ -18,6 +18,7 @@ import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { templateCardExtension } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { autoLogoutElement } from './autoLogout/autoLogoutExtension';
 import { appDrawerExtension } from './drawer/appDrawerModule';
 import { commonIconsExtension } from './icons/commonIconsExtension';
 import { appDefaultsTranslations } from './translations';
@@ -25,14 +26,20 @@ import { appDefaultsTranslations } from './translations';
 /**
  * RHDH app module for `pluginId: 'app'`.
  * Provides the application drawer, the extensible scaffolder template card,
- * and the common RHDH icon catalog (`IconBundleBlueprint`).
+ * the common RHDH icon catalog (`IconBundleBlueprint`), and the AutoLogout
+ * mechanism (disabled by default; opt-in via `auth.autologout.enabled: true`).
  * Default-export this module for dynamic frontend loading.
  *
  * @public
  */
 export const appDefaultsModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [appDrawerExtension, templateCardExtension, commonIconsExtension],
+  extensions: [
+    appDrawerExtension,
+    templateCardExtension,
+    commonIconsExtension,
+    autoLogoutElement,
+  ],
 });
 
 const appDefaultsTranslation = TranslationBlueprint.make({
