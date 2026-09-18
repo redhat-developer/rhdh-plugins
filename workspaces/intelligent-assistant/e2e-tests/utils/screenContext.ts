@@ -42,11 +42,11 @@ export const expectScreenContextPausedVisible = async (
 
 export const expectScreenContextUnavailableVisible = async (
   page: Page,
-  translations: LightspeedMessages,
+  _translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByText(translations['contextChip.label.unavailable']),
-  ).toBeVisible();
+    page.locator('.lightspeed-page-context-label-unavailable'),
+  ).toBeVisible({ timeout: 15_000 });
 };
 
 export const verifyEnableScreenContextOption = async (

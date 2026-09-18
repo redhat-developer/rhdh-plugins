@@ -21,6 +21,7 @@ import {
   modelBaseUrl,
 } from './fixtures/responses';
 import {
+  expectConversationArea,
   openChatbot,
   selectDisplayMode,
   waitForBackstageCatalogReady,
@@ -41,6 +42,7 @@ import {
   expectScreenContextUnavailableVisible,
   pauseScreenContextChip,
   resumeScreenContextChip,
+  selectEnableScreenContext,
   verifyEnableScreenContextOption,
 } from './utils/screenContext';
 import type { LightspeedMessages } from './utils/translations';
@@ -64,11 +66,12 @@ test.describe('Intelligent assistant screen context', () => {
   test('kebab Enable shows recording chip; Disable hides it', async () => {
     await expectScreenContextChipHidden(sharedPage);
 
+    // Verify the enable item, then click it in the same open menu.
+    // Escape closes the chatbot panel (not just the menu), so do not dismiss
+    // and reopen Options between verify and enable.
     await openChatbotSettings(sharedPage, translations);
     await verifyEnableScreenContextOption(sharedPage, translations);
-    await sharedPage.keyboard.press('Escape');
-
-    await enableScreenContextViaKebab(sharedPage, translations);
+    await selectEnableScreenContext(sharedPage, translations);
     await expectScreenContextRecordingVisible(sharedPage);
 
     await disableScreenContextViaKebab(sharedPage, translations);
@@ -89,6 +92,13 @@ test.describe('Intelligent assistant screen context', () => {
   test('fullscreen shows Context: unavailable', async () => {
     await enableScreenContextViaKebab(sharedPage, translations);
     await selectDisplayMode(sharedPage, translations, 'Fullscreen');
+    await expectConversationArea(sharedPage, translations, 'Fullscreen');
+    // Guest sessions do not persist sharing across the fullscreen remount;
+    // re-enable so the unavailable chip can render on the new surface.
+    // Do not use enableScreenContextViaKebab — it asserts the recording chip.
+    await openChatbotSettings(sharedPage, translations);
+    await verifyEnableScreenContextOption(sharedPage, translations);
+    await selectEnableScreenContext(sharedPage, translations);
     await expectScreenContextUnavailableVisible(sharedPage, translations);
   });
 
