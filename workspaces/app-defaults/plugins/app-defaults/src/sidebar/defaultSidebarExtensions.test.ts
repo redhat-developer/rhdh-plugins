@@ -69,6 +69,20 @@ describe('defaultSidebarExtensions', () => {
     );
   });
 
+  it('disables the search and notifications elements by default', () => {
+    const disabledById = Object.fromEntries(
+      defaultSidebarExtensions.map(ext => {
+        const spec = JSON.parse(JSON.stringify(ext));
+        return [`${spec.kind}/${spec.name}`, spec.disabled];
+      }),
+    );
+
+    expect(disabledById['sidebar-element/search']).toBe(true);
+    expect(disabledById['sidebar-element/notifications']).toBe(true);
+    // Other default entries stay enabled.
+    expect(disabledById['sidebar-element/logo']).toBeFalsy();
+  });
+
   it('orders search first and the bottom block below the spacer', () => {
     expect(priorityOf(sidebarLogoElement)).toBeGreaterThan(
       priorityOf(sidebarLogoSpacer)!,

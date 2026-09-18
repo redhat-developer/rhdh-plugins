@@ -70,9 +70,13 @@ export const sidebarLogoSpacer = SidebarSpacerBlueprint.make({
   params: { priority: 1500 },
 });
 
-/** Search modal pinned to the top. Extension ID: `sidebar-element:app/search`. */
+/**
+ * Search modal pinned to the top. Disabled by default; enable via
+ * `app-config.yaml`. Extension ID: `sidebar-element:app/search`.
+ */
 export const sidebarSearchElement = SidebarElementBlueprint.make({
   name: 'search',
+  disabled: true,
   params: {
     component: SidebarSearch,
     to: '/search',
@@ -98,9 +102,13 @@ export const sidebarBottomDivider = SidebarDividerBlueprint.make({
   params: { priority: -35 },
 });
 
-/** Notifications item. Extension ID: `sidebar-element:app/notifications`. */
+/**
+ * Notifications item. Disabled by default; enable via `app-config.yaml`.
+ * Extension ID: `sidebar-element:app/notifications`.
+ */
 export const sidebarNotificationsElement = SidebarElementBlueprint.make({
   name: 'notifications',
+  disabled: true,
   params: {
     component: SidebarNotifications,
     to: '/notifications',
