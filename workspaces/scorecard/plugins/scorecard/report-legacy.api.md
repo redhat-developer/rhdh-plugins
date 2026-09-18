@@ -136,6 +136,9 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'dataSourcesDialog.close': string;
     readonly 'dataSourcesDialog.unknownPlugin': string;
     readonly 'dataSourcesDialog.statusTooltip': string;
+    readonly 'dataSourcesDialog.collectorStatusTooltip': string;
+    readonly 'dataSourcesDialog.collectorEmptyValue': string;
+    readonly 'dataSourcesDialog.collectorUnavailableStatus': string;
     readonly 'dataSourcesDialog.columns.plugin': string;
     readonly 'dataSourcesDialog.columns.check': string;
     readonly 'dataSourcesDialog.columns.value': string;

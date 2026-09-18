@@ -45,6 +45,11 @@ export type LightspeedE2eBootstrap = {
   translations: LightspeedMessages;
 };
 
+export type BootstrapLightspeedE2eOptions = {
+  /** When false, stay on catalog after guest login (overlay/FAB tests). Default true. */
+  openFullscreenChat?: boolean;
+};
+
 async function waitForLoggedInShell(page: Page) {
   const legacyMain = page.locator('main[class*="BackstagePage-root"]').first();
   const nfsCatalogTitle = page.locator('.bui-HeaderTitle').first();
@@ -67,7 +72,7 @@ async function waitForLoggedInShell(page: Page) {
   throw new Error('Timed out waiting for logged-in app shell');
 }
 
-async function loginAsGuest(page: Page) {
+export async function loginAsGuest(page: Page) {
   const enter = page.getByRole('button', { name: 'Enter' });
   const maxAttempts = 3;
 
@@ -107,7 +112,9 @@ async function setupLightspeedApiMocks(page: Page) {
  */
 export async function bootstrapLightspeedE2ePage(
   browser: Browser,
+  options: BootstrapLightspeedE2eOptions = {},
 ): Promise<LightspeedE2eBootstrap> {
+  const { openFullscreenChat = true } = options;
   const context = await browser.newContext();
   const page = await context.newPage();
   const locale = await page.evaluate(() => globalThis.navigator.language);
@@ -119,7 +126,9 @@ export async function bootstrapLightspeedE2ePage(
   await loginAsGuest(page);
 
   await switchToLocale(page, locale);
-  await openLightspeed(page);
+  if (openFullscreenChat) {
+    await openLightspeed(page);
+  }
 
   return { page, locale, translations };
 }

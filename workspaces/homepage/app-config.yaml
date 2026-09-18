@@ -10,10 +10,17 @@ app:
     # Disable the nav items that we're manually rendering in packages/app/src/modules/nav/Sidebar.tsx
     - api:home/visits: true
     - app-root-element:home/visit-listener: true
+    # Community home page (optional). Disable when using page:homepage alone.
     - page:home:
         config:
+          path: /home
+          title: Home
+    # Homepage-owned page (configurable path). Disable with page:homepage: false.
+    - page:homepage:
+        config:
           path: /
-    - home-page-layout:home/dynamic-homepage-layout:
+          title: Dynamic Homepage
+    - home-page-layout:homepage/dynamic-homepage-layout:
         config:
           customizable: true # false for read-only homepage layout
           widgetLayout:

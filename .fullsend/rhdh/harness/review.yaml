@@ -1,3 +1,11 @@
-base: https://raw.githubusercontent.com/fullsend-ai/agents/4bbe4f50ed8e33c60539eaa30ddc320edf8bcda0/harness/review.yaml#sha256=08456e534c7d1251b3a3b2bc1236643403809ecab27832c273764769f219a45b
+# Pinned to agents@v0.43.0 (commit 7ab05564b), matching the fullsend@v0.43.0
+# CLI our own .github/workflows/fullsend.yaml pins — these are companion
+# releases cut together, so this is the harness content the installed CLI
+# was actually built and tested against.
+base: https://raw.githubusercontent.com/fullsend-ai/agents/7ab05564b3c9c0ab20197e0c8572b5905ffd75ca/harness/review.yaml#sha256=c259d94e7c50e5e01cb0fa38df2b70765f8e35beb7ad8bf006c9193a05589917
 image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
-policy: rhdh/policies/review.yaml
+# policy: inherited from base (policies/base.yaml + openshell providers/
+# profiles for vertex-ai and, via the github forge overlay, github-ro).
+# Our former rhdh/policies/review.yaml fork existed only to allowlist the
+# claude.exe binary for Vertex; profiles/fullsend-vertex-ai.yaml now does
+# that upstream (ADR 0065's provider/profile network policy migration).

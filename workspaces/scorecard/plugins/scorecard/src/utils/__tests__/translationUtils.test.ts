@@ -17,6 +17,7 @@
 import {
   getTranslatedTextWithFallback,
   resolveMetricTranslation,
+  extractPluginName,
 } from '../translationUtils';
 
 type MockT = (key: string, params?: Record<string, string>) => string;
@@ -233,5 +234,21 @@ describe('getTranslatedTextWithFallback', () => {
         undefined,
       ),
     ).toBeUndefined();
+  });
+});
+describe('extractPluginName', () => {
+  it('should use the first segment of a dotted metric id', () => {
+    expect(extractPluginName('github.openPRs', 'Unknown')).toBe('Github');
+  });
+
+  it('should use the first segment of a collector id', () => {
+    expect(extractPluginName('github:deploymentWorkflowRuns', 'Unknown')).toBe(
+      'Github',
+    );
+    expect(extractPluginName('jira:incidents', 'Unknown')).toBe('Jira');
+  });
+
+  it('should return the fallback when the id is missing', () => {
+    expect(extractPluginName(undefined, 'Unknown')).toBe('Unknown');
   });
 });

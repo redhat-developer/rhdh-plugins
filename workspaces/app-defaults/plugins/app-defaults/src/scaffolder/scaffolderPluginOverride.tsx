@@ -24,24 +24,27 @@ import { CustomScaffolderPage } from './CustomScaffolderPage';
  *
  * @public
  */
-export const scaffolderPluginOverride = scaffolderPlugin.withOverrides({
-  extensions: [
-    scaffolderPlugin.getExtension('sub-page:scaffolder/templates').override({
-      factory(originalFactory) {
-        const original = originalFactory();
-        const originalElement = original.get(coreExtensionData.reactElement);
-        return [
-          ...original,
-          coreExtensionData.reactElement(
-            <CustomScaffolderPage>{originalElement}</CustomScaffolderPage>,
-          ),
-        ];
-      },
-    }),
-    // add the other extensions to keep the origin order (/templates sub-page first)
-    scaffolderPlugin.getExtension('sub-page:scaffolder/actions'),
-    scaffolderPlugin.getExtension('sub-page:scaffolder/editor'),
-    scaffolderPlugin.getExtension('sub-page:scaffolder/tasks'),
-    scaffolderPlugin.getExtension('sub-page:scaffolder/templating-extensions'),
-  ],
-});
+export const scaffolderPluginOverride: typeof scaffolderPlugin =
+  scaffolderPlugin.withOverrides({
+    extensions: [
+      scaffolderPlugin.getExtension('sub-page:scaffolder/templates').override({
+        factory(originalFactory) {
+          const original = originalFactory();
+          const originalElement = original.get(coreExtensionData.reactElement);
+          return [
+            ...original,
+            coreExtensionData.reactElement(
+              <CustomScaffolderPage>{originalElement}</CustomScaffolderPage>,
+            ),
+          ];
+        },
+      }),
+      // add the other extensions to keep the origin order (/templates sub-page first)
+      scaffolderPlugin.getExtension('sub-page:scaffolder/actions'),
+      scaffolderPlugin.getExtension('sub-page:scaffolder/editor'),
+      scaffolderPlugin.getExtension('sub-page:scaffolder/tasks'),
+      scaffolderPlugin.getExtension(
+        'sub-page:scaffolder/templating-extensions',
+      ),
+    ],
+  });
