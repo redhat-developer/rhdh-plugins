@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-integrations
 
+## 1.1.0
+
+### Minor Changes
+
+- 3625dd9: Backstage version bump to v1.54.6
+
 ## 1.0.1
 
 ### Patch Changes

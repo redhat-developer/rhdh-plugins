@@ -70,6 +70,7 @@ function HookHarness() {
         {contextValue.currentConversationId ?? 'none'}
       </div>
       <div data-testid="shell-view-tab">{contextValue.shellViewTab}</div>
+      <div data-testid="settings-tab">{contextValue.settingsTab ?? 'none'}</div>
       <button
         type="button"
         data-testid="toggle-button"
@@ -113,6 +114,20 @@ function HookHarness() {
         onClick={() => navigate('/catalog')}
       >
         Go catalog
+      </button>
+      <button
+        type="button"
+        data-testid="set-settings-tab"
+        onClick={() => contextValue.setSettingsTab('saved-prompts')}
+      >
+        Open saved prompts settings
+      </button>
+      <button
+        type="button"
+        data-testid="clear-settings-tab"
+        onClick={() => contextValue.setSettingsTab(null)}
+      >
+        Close settings
       </button>
       <button
         type="button"
@@ -550,6 +565,28 @@ describe('useLightspeedProviderState', () => {
         expect(screen.getByTestId('conversation-id')).toHaveTextContent(
           'other-thread',
         );
+      });
+    });
+
+    it('exposes settingsTab state through provider context', async () => {
+      renderWithRouter(['/intelligent-assistant']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('settings-tab')).toHaveTextContent('none');
+      });
+
+      screen.getByTestId('set-settings-tab').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('settings-tab')).toHaveTextContent(
+          'saved-prompts',
+        );
+      });
+
+      screen.getByTestId('clear-settings-tab').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('settings-tab')).toHaveTextContent('none');
       });
     });
 
