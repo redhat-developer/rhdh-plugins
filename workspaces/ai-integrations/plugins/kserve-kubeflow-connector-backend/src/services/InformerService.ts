@@ -85,7 +85,8 @@ function buildImportKeyAndURI(
 
 // Deep-clone an InferenceService so the informer cache object is never mutated.
 function cloneInferenceService(is: InferenceService): InferenceService {
-  return JSON.parse(JSON.stringify(is));
+  const clone = structuredClone(is);
+  return clone;
 }
 
 // Check whether the Ready condition is present and True, independent of
@@ -160,7 +161,8 @@ async function findOwnedServiceUrl(
 
       const scheme = selected.https ? 'https' : 'http';
       const portSuffix =
-        selected.port === 80 || selected.port === 443
+        (selected.port === 80 && !selected.https) ||
+        (selected.port === 443 && selected.https)
           ? ''
           : `:${selected.port}`;
       const url = `${scheme}://${svcName}.${namespace}.svc.cluster.local${portSuffix}`;

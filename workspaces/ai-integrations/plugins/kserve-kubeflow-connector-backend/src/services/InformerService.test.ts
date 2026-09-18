@@ -1002,6 +1002,40 @@ describe('InformerService', () => {
       expect(coreClient.listNamespacedService).not.toHaveBeenCalled();
     });
 
+    it('preserves existing status.address.url without attempting Service fallback', async () => {
+      // Even though there is an owned Service, it should not be consulted
+      setupMockWithService('has-addr-model', 'InferenceService');
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+
+      const is: InferenceService = {
+        ...makeReadyISWithoutUrl({ name: 'has-addr-model' }),
+        status: {
+          conditions: [
+            { type: 'Ready', status: 'True' },
+            { type: 'IngressReady', status: 'True' },
+            { type: 'PredictorReady', status: 'True' },
+          ],
+          modelStatus: { transitionStatus: 'UpToDate' },
+          address: { url: 'https://has-addr-model.internal.example.com' },
+        },
+      };
+
+      await addHandler(is);
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Successfully reconciled InferenceService: test-ns/has-addr-model',
+      );
+      // listNamespacedService should NOT have been called since address.url was already present
+      const coreClient = mockMakeApiClient.mock.results[0]?.value;
+      expect(coreClient.listNamespacedService).not.toHaveBeenCalled();
+    });
+
     it('does not attempt fallback when resource is not Ready', async () => {
       setupMockWithService('not-ready-model', 'InferenceService');
 
