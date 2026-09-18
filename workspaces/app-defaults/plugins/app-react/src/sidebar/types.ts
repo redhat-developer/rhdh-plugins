@@ -50,6 +50,14 @@ export interface SidebarItemData {
    * level.
    */
   group?: string;
+  /**
+   * When `true`, the item is only rendered if the app has a nav route
+   * matching its `to`, i.e. the page it links to is actually installed.
+   * Use this for items that link to an optional plugin's page (for example
+   * an admin page) so the entry disappears when that plugin is absent
+   * instead of linking to a dead route. Requires `to`.
+   */
+  requiresRoute?: boolean;
 }
 
 /**

@@ -64,6 +64,29 @@ describe('SidebarItemBlueprint', () => {
     });
   });
 
+  it('passes requiresRoute through and lets app-config override it', () => {
+    const guarded = createExtensionTester(
+      SidebarItemBlueprint.make({
+        name: 'rbac',
+        params: { title: 'RBAC', to: '/rbac', requiresRoute: true },
+      }),
+    );
+    expect(guarded.get(sidebarItemDataRef)).toMatchObject({
+      requiresRoute: true,
+    });
+
+    const overridden = createExtensionTester(
+      SidebarItemBlueprint.make({
+        name: 'rbac',
+        params: { title: 'RBAC', to: '/rbac', requiresRoute: true },
+      }),
+      { config: { requiresRoute: false } },
+    );
+    expect(overridden.get(sidebarItemDataRef)).toMatchObject({
+      requiresRoute: false,
+    });
+  });
+
   it('lets app-config override title, icon, to, priority and group', () => {
     const tester = createExtensionTester(
       SidebarItemBlueprint.make({

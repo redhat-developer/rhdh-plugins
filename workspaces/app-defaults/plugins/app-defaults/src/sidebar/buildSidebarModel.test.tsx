@@ -219,6 +219,40 @@ describe('buildSidebarModel', () => {
     expect(group?.kind === 'group' ? group.group.items : undefined).toEqual([]);
   });
 
+  it('drops a requiresRoute item when no nav route matches its path', () => {
+    const entries = buildSidebarModel({
+      items: [
+        { id: 'rbac', title: 'RBAC', to: '/rbac', requiresRoute: true },
+        { id: 'home', title: 'Home', to: '/home' },
+      ],
+      groups: [],
+      navItems: [navItem('page:catalog', 'Catalog', '/catalog')],
+    });
+
+    // 'rbac' is dropped (no matching nav route); the rest sort by title.
+    expect(entries.map(idOf)).toEqual(['page:catalog', 'home']);
+  });
+
+  it('keeps a requiresRoute item and takes over its nav route when present', () => {
+    const entries = buildSidebarModel({
+      items: [
+        {
+          id: 'rbac',
+          title: 'RBAC',
+          to: '/rbac',
+          group: 'admin',
+          requiresRoute: true,
+        },
+      ],
+      groups: [{ id: 'admin', title: 'Administration' }],
+      navItems: [navItem('page:rbac', 'Rbac', '/rbac')],
+    });
+
+    expect(entries.map(idOf)).toEqual(['admin']);
+    const group = entries[0].kind === 'group' ? entries[0].group : undefined;
+    expect(group?.items.map(i => i.id)).toEqual(['rbac']);
+  });
+
   it('breaks priority ties between elements by id', () => {
     const C = () => null;
     const entries = buildSidebarModel({

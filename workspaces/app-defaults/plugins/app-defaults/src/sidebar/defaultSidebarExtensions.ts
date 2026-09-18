@@ -17,11 +17,13 @@
 import {
   SidebarDividerBlueprint,
   SidebarElementBlueprint,
+  SidebarItemBlueprint,
   SidebarItemGroupBlueprint,
   SidebarSpacerBlueprint,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import GppMaybeOutlinedIcon from '@mui/icons-material/GppMaybeOutlined';
-import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
+import { default as AdminIcon } from '@mui/icons-material/GppMaybeOutlined';
+import { default as SettingsIcon } from '@mui/icons-material/ManageAccountsOutlined';
+import { default as RbacIcon } from '@mui/icons-material/VpnKeyOutlined';
 
 import { CompanyLogo } from './logo/CompanyLogo';
 import { SidebarNotifications } from './SidebarNotifications';
@@ -38,10 +40,13 @@ import { SidebarSearch } from './SidebarSearch';
  * the notifications item declare their page paths, so the plain
  * auto-discovered entries for the search and notifications pages are hidden.
  *
- * The Administration group has no link of its own, so it stays hidden until
- * a plugin contributes an item with `group: 'admin'`. The Settings group
- * links to the settings page and replaces the auto-discovered settings
- * entry; plugins can add items with `group: 'settings'`.
+ * The Administration group has no link of its own; it ships with the RBAC
+ * item and collects any further items plugins contribute with
+ * `group: 'admin'`. The RBAC item is route-guarded, so the group stays
+ * hidden until the RBAC plugin (or another admin item) is present. The
+ * Settings group links to the settings page and replaces the
+ * auto-discovered settings entry; plugins can add items with
+ * `group: 'settings'`.
  *
  * Each element can be disabled or moved from `app-config.yaml`, e.g.
  *
@@ -123,16 +128,36 @@ export const sidebarSettingsDivider = SidebarDividerBlueprint.make({
 });
 
 /**
- * Administration group, hidden until a plugin adds an item with
- * `group: 'admin'`. Extension ID: `sidebar-item-group:app/admin`.
+ * Administration group. Ships with the route-guarded RBAC item below and
+ * collects any further items a plugin contributes with `group: 'admin'`.
+ * Stays hidden while it has no visible items. Extension ID:
+ * `sidebar-item-group:app/admin`.
  */
 export const sidebarAdminGroup = SidebarItemGroupBlueprint.make({
   name: 'admin',
   params: {
     id: 'admin',
     title: 'Administration',
-    icon: GppMaybeOutlinedIcon,
+    icon: AdminIcon,
     priority: -95,
+  },
+});
+
+/**
+ * RBAC item inside the Administration group, linking to the RBAC page. It is
+ * guarded with `requiresRoute` so it only shows when the RBAC plugin is
+ * installed and its page is registered at `/rbac`. Extension ID:
+ * `sidebar-item:app/rbac`.
+ */
+export const sidebarRbacItem = SidebarItemBlueprint.make({
+  name: 'rbac',
+  params: {
+    title: 'RBAC',
+    icon: RbacIcon,
+    to: '/rbac',
+    group: 'admin',
+    priority: 10,
+    requiresRoute: true,
   },
 });
 
@@ -146,7 +171,7 @@ export const sidebarSettingsGroup = SidebarItemGroupBlueprint.make({
   params: {
     id: 'settings',
     title: 'Settings',
-    icon: ManageAccountsOutlinedIcon,
+    icon: SettingsIcon,
     to: '/settings',
     priority: -100,
   },
@@ -163,5 +188,6 @@ export const defaultSidebarExtensions = [
   sidebarNotificationsElement,
   sidebarSettingsDivider,
   sidebarAdminGroup,
+  sidebarRbacItem,
   sidebarSettingsGroup,
 ];

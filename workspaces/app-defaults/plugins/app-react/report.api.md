@@ -175,6 +175,7 @@ export const SidebarItemBlueprint: ExtensionBlueprint<{
     onClick?: () => void;
     priority?: number;
     group?: string;
+    requiresRoute?: boolean;
   };
   output: ExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>;
   inputs: {};
@@ -184,6 +185,7 @@ export const SidebarItemBlueprint: ExtensionBlueprint<{
     to: string | undefined;
     priority: number | undefined;
     group: string | undefined;
+    requiresRoute: boolean | undefined;
   };
   configInput: {
     title?: string | undefined;
@@ -191,6 +193,7 @@ export const SidebarItemBlueprint: ExtensionBlueprint<{
     to?: string | undefined;
     priority?: number | undefined;
     group?: string | undefined;
+    requiresRoute?: boolean | undefined;
   };
   dataRefs: {
     item: ConfigurableExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>;
@@ -204,6 +207,7 @@ export interface SidebarItemData {
   id: string;
   onClick?: () => void;
   priority?: number;
+  requiresRoute?: boolean;
   title: string;
   to?: string;
 }
