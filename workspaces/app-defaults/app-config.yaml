@@ -22,6 +22,8 @@ app:
     # disabled by default; enable them here.
     - sidebar-element:app/search: true
     - sidebar-element:app/notifications: true
+    # Demo element that throws on render; keep it disabled by default.
+    - sidebar-element:app/crashing: false
 
 organization:
   name: My Company
