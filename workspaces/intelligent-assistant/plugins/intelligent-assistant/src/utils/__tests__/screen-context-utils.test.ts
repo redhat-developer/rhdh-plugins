@@ -14,17 +14,39 @@
  * limitations under the License.
  */
 
+import { extractPageContext } from '../dom-extractor';
+import { captureScreenshot } from '../screen-capture';
 import {
+  buildScreenContextAttachments,
   getPageTitleFromDom,
+  getScreenContextChipLabel,
   getScreenContextRouteKind,
   getScreenContextTooltipLine1Text,
   getScreenContextTooltipLine2Key,
   getSearchQueryFromLocation,
+  isElementVisible,
+  isSoftwareTemplatesListPath,
   normalizeDocumentTitle,
+  parseSoftwareTemplateDetailSlug,
   resolveScreenContextChipLabel,
   shouldAttachScreenContext,
   truncateChipLabel,
 } from '../screen-context-utils';
+
+jest.mock('../dom-extractor', () => ({
+  extractPageContext: jest.fn(),
+}));
+
+jest.mock('../screen-capture', () => ({
+  captureScreenshot: jest.fn(),
+}));
+
+const mockExtractPageContext = extractPageContext as jest.MockedFunction<
+  typeof extractPageContext
+>;
+const mockCaptureScreenshot = captureScreenshot as jest.MockedFunction<
+  typeof captureScreenshot
+>;
 
 describe('screen-context-utils', () => {
   describe('truncateChipLabel', () => {
@@ -371,6 +393,48 @@ describe('screen-context-utils', () => {
       ).toEqual({ attachDom: false, attachScreenshot: false });
     });
 
+    it('attaches nothing when admin disabled', () => {
+      expect(
+        shouldAttachScreenContext({
+          adminEnabled: false,
+          sharingEnabled: true,
+          paused: false,
+          isFullscreen: false,
+          domEnabled: true,
+          screenshotsEnabled: true,
+          supportsVision: true,
+        }),
+      ).toEqual({ attachDom: false, attachScreenshot: false });
+    });
+
+    it('attaches nothing when sharing disabled', () => {
+      expect(
+        shouldAttachScreenContext({
+          adminEnabled: true,
+          sharingEnabled: false,
+          paused: false,
+          isFullscreen: false,
+          domEnabled: true,
+          screenshotsEnabled: true,
+          supportsVision: true,
+        }),
+      ).toEqual({ attachDom: false, attachScreenshot: false });
+    });
+
+    it('attaches nothing when fullscreen', () => {
+      expect(
+        shouldAttachScreenContext({
+          adminEnabled: true,
+          sharingEnabled: true,
+          paused: false,
+          isFullscreen: true,
+          domEnabled: true,
+          screenshotsEnabled: true,
+          supportsVision: true,
+        }),
+      ).toEqual({ attachDom: false, attachScreenshot: false });
+    });
+
     it('attaches dom and screenshot when all gates pass', () => {
       expect(
         shouldAttachScreenContext({
@@ -397,6 +461,192 @@ describe('screen-context-utils', () => {
           supportsVision: true,
         }),
       ).toEqual({ attachDom: false, attachScreenshot: true });
+    });
+
+    it('attaches dom only when model lacks vision', () => {
+      expect(
+        shouldAttachScreenContext({
+          adminEnabled: true,
+          sharingEnabled: true,
+          paused: false,
+          isFullscreen: false,
+          domEnabled: true,
+          screenshotsEnabled: true,
+          supportsVision: false,
+        }),
+      ).toEqual({ attachDom: true, attachScreenshot: false });
+    });
+
+    it('attaches dom only when screenshots disabled by admin', () => {
+      expect(
+        shouldAttachScreenContext({
+          adminEnabled: true,
+          sharingEnabled: true,
+          paused: false,
+          isFullscreen: false,
+          domEnabled: true,
+          screenshotsEnabled: false,
+          supportsVision: true,
+        }),
+      ).toEqual({ attachDom: true, attachScreenshot: false });
+    });
+  });
+
+  describe('isElementVisible', () => {
+    it('returns false for non-HTMLElement nodes', () => {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      expect(isElementVisible(svg)).toBe(false);
+    });
+
+    it('returns false for elements inside screen-capture exclude', () => {
+      const wrap = document.createElement('div');
+      wrap.setAttribute('data-screen-capture-exclude', 'true');
+      const child = document.createElement('span');
+      child.textContent = 'secret';
+      wrap.appendChild(child);
+      document.body.appendChild(wrap);
+      expect(isElementVisible(child)).toBe(false);
+      wrap.remove();
+    });
+  });
+
+  describe('software template path helpers', () => {
+    it('detects gallery vs detail paths', () => {
+      expect(isSoftwareTemplatesListPath('/create/templates')).toBe(true);
+      expect(isSoftwareTemplatesListPath('/create/templates/')).toBe(true);
+      expect(isSoftwareTemplatesListPath('/create/templates/default/foo')).toBe(
+        false,
+      );
+      expect(parseSoftwareTemplateDetailSlug('/create/templates')).toBe(
+        undefined,
+      );
+      expect(
+        parseSoftwareTemplateDetailSlug(
+          '/create/templates/default/argocd-template',
+        ),
+      ).toBe('argocd-template');
+    });
+  });
+
+  describe('getScreenContextChipLabel', () => {
+    it('reads the current window location', () => {
+      window.history.pushState({}, '', '/search?query=widgets');
+      document.body.innerHTML = '';
+      expect(getScreenContextChipLabel()).toBe('widgets');
+    });
+  });
+
+  describe('buildScreenContextAttachments', () => {
+    beforeEach(() => {
+      mockExtractPageContext.mockReset();
+      mockCaptureScreenshot.mockReset();
+    });
+
+    it('returns no attachments when gates fail', async () => {
+      await expect(
+        buildScreenContextAttachments({
+          adminEnabled: true,
+          sharingEnabled: true,
+          paused: true,
+          isFullscreen: false,
+          domEnabled: true,
+          screenshotsEnabled: true,
+          supportsVision: true,
+          domExtractionMaxChars: 1000,
+        }),
+      ).resolves.toEqual([]);
+      expect(mockExtractPageContext).not.toHaveBeenCalled();
+      expect(mockCaptureScreenshot).not.toHaveBeenCalled();
+    });
+
+    it('attaches DOM and screenshot when both gates pass', async () => {
+      mockExtractPageContext.mockReturnValue('Page: /catalog');
+      mockCaptureScreenshot.mockResolvedValue({
+        success: true,
+        contentType: 'image/jpeg',
+        base64: 'abc123',
+      });
+
+      await expect(
+        buildScreenContextAttachments({
+          adminEnabled: true,
+          sharingEnabled: true,
+          paused: false,
+          isFullscreen: false,
+          domEnabled: true,
+          screenshotsEnabled: true,
+          supportsVision: true,
+          domExtractionMaxChars: 2000,
+        }),
+      ).resolves.toEqual([
+        {
+          attachment_type: 'configuration',
+          content_type: 'text/plain',
+          content: 'Page: /catalog',
+        },
+        {
+          attachment_type: 'image',
+          content_type: 'image/jpeg',
+          content: 'abc123',
+        },
+      ]);
+    });
+
+    it('degrades to DOM only when screenshot capture fails', async () => {
+      mockExtractPageContext.mockReturnValue('Page: /catalog');
+      mockCaptureScreenshot.mockResolvedValue({
+        success: false,
+        error: 'capture failed',
+      });
+
+      await expect(
+        buildScreenContextAttachments({
+          adminEnabled: true,
+          sharingEnabled: true,
+          paused: false,
+          isFullscreen: false,
+          domEnabled: true,
+          screenshotsEnabled: true,
+          supportsVision: true,
+          domExtractionMaxChars: 2000,
+        }),
+      ).resolves.toEqual([
+        {
+          attachment_type: 'configuration',
+          content_type: 'text/plain',
+          content: 'Page: /catalog',
+        },
+      ]);
+    });
+
+    it('skips DOM attachment when extractPageContext throws', async () => {
+      mockExtractPageContext.mockImplementation(() => {
+        throw new Error('dom boom');
+      });
+      mockCaptureScreenshot.mockResolvedValue({
+        success: true,
+        contentType: 'image/jpeg',
+        base64: 'img',
+      });
+
+      await expect(
+        buildScreenContextAttachments({
+          adminEnabled: true,
+          sharingEnabled: true,
+          paused: false,
+          isFullscreen: false,
+          domEnabled: true,
+          screenshotsEnabled: true,
+          supportsVision: true,
+          domExtractionMaxChars: 2000,
+        }),
+      ).resolves.toEqual([
+        {
+          attachment_type: 'image',
+          content_type: 'image/jpeg',
+          content: 'img',
+        },
+      ]);
     });
   });
 });
