@@ -565,6 +565,9 @@ describe('screen-context-utils', () => {
         success: true,
         contentType: 'image/jpeg',
         base64: 'abc123',
+        width: 1280,
+        height: 720,
+        captureTimeMs: 10,
       });
 
       await expect(
@@ -627,6 +630,9 @@ describe('screen-context-utils', () => {
         success: true,
         contentType: 'image/jpeg',
         base64: 'img',
+        width: 800,
+        height: 600,
+        captureTimeMs: 5,
       });
 
       await expect(

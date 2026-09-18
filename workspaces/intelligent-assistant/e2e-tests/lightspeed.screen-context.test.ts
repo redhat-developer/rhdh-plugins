@@ -16,6 +16,11 @@
 
 import { test, expect, type Page } from '@playwright/test';
 import {
+  conversations,
+  generateQueryResponse,
+  modelBaseUrl,
+} from './fixtures/responses';
+import {
   openChatbot,
   selectDisplayMode,
   waitForBackstageCatalogReady,
@@ -26,6 +31,7 @@ import {
 } from './utils/lightspeedE2eSetup';
 import { sendMessage } from './utils/testHelper';
 import { openChatbotSettings } from './utils/chatManagement';
+import { mockQuery } from './utils/devMode';
 import {
   disableScreenContextViaKebab,
   enableScreenContextViaKebab,
@@ -91,16 +97,20 @@ test.describe('Intelligent assistant screen context', () => {
     await pauseScreenContextChip(sharedPage);
     await expectScreenContextPausedVisible(sharedPage, translations);
 
-    const queryPromise = sharedPage.waitForRequest(request => {
-      try {
-        return (
-          request.method() === 'POST' &&
-          request.url().includes('/api/intelligent-assistant') &&
-          request.url().includes('/v1/query')
-        );
-      } catch {
-        return false;
+    let capturedAttachments: Array<{ attachment_type?: string }> | undefined;
+
+    await sharedPage.unroute(`${modelBaseUrl}/v1/query`);
+    await sharedPage.route(`${modelBaseUrl}/v1/query`, async route => {
+      const payload = route.request().postDataJSON();
+      capturedAttachments = payload.attachments;
+      if (payload.conversation_id) {
+        conversations[1].conversation_id = payload.conversation_id;
       }
+      const conversationId =
+        conversations[1].conversation_id ?? conversations[0].conversation_id;
+      await route.fulfill({
+        body: generateQueryResponse(conversationId),
+      });
     });
 
     await sendMessage(
@@ -109,11 +119,7 @@ test.describe('Intelligent assistant screen context', () => {
       translations,
     );
 
-    const request = await queryPromise;
-    const payload = request.postDataJSON() as {
-      attachments?: Array<{ attachment_type?: string }>;
-    };
-    const attachments = payload.attachments ?? [];
+    const attachments = capturedAttachments ?? [];
     expect(
       attachments.some(
         a =>
@@ -121,6 +127,13 @@ test.describe('Intelligent assistant screen context', () => {
           a.attachment_type === 'configuration',
       ),
     ).toBe(false);
+
+    await sharedPage.unroute(`${modelBaseUrl}/v1/query`);
+    await mockQuery(
+      sharedPage,
+      LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
+      conversations,
+    );
 
     await disableScreenContextViaKebab(sharedPage, translations);
   });
