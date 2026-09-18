@@ -654,6 +654,30 @@ describe('KubeService', () => {
       expect(mockBatchV1Api.createNamespacedJob).toHaveBeenCalled();
     });
 
+    it('does not create the Job on a foreign ConfigMap on first GET', async () => {
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: {
+          ...mockConfig,
+          git: { useClusterTrustedCABundle: true },
+        },
+        waitClock: advancingClock(),
+      });
+      mockCoreV1Api.readNamespacedConfigMap.mockResolvedValue({
+        metadata: {
+          name: CLUSTER_CA_CONFIG_MAP_NAME,
+          labels: { app: 'other' },
+        },
+      });
+
+      await expect(kubeService.createJob(params)).rejects.toThrow(
+        clusterCaForeignMessage('test-namespace'),
+      );
+      expect(mockCoreV1Api.createNamespacedConfigMap).not.toHaveBeenCalled();
+      expect(mockCoreV1Api.patchNamespacedConfigMap).not.toHaveBeenCalled();
+      expect(mockBatchV1Api.createNamespacedJob).not.toHaveBeenCalled();
+    });
+
     it('does not create the Job on a foreign ConfigMap after 409', async () => {
       kubeService = await KubeService.create({
         logger: mockServices.logger.mock(),
@@ -680,6 +704,49 @@ describe('KubeService', () => {
       );
       expect(mockCoreV1Api.patchNamespacedConfigMap).not.toHaveBeenCalled();
       expect(mockBatchV1Api.createNamespacedJob).not.toHaveBeenCalled();
+    });
+
+    it('polls until the cluster CA bundle is populated, then creates the Job', async () => {
+      const emptyManaged = {
+        metadata: {
+          name: CLUSTER_CA_CONFIG_MAP_NAME,
+          labels: { ...CLUSTER_CA_LABELS },
+        },
+        data: {},
+      };
+      let now = 0;
+      const sleep = jest.fn(async (ms: number) => {
+        now += ms;
+      });
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: {
+          ...mockConfig,
+          git: { useClusterTrustedCABundle: true },
+        },
+        waitClock: { now: () => now, sleep },
+      });
+      mockCoreV1Api.readNamespacedConfigMap
+        .mockResolvedValueOnce(emptyManaged)
+        .mockResolvedValueOnce(emptyManaged)
+        .mockResolvedValue(populatedClusterCm);
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+
+      await kubeService.createJob(params);
+
+      expect(sleep).toHaveBeenCalled();
+      expect(
+        mockCoreV1Api.readNamespacedConfigMap.mock.calls.length,
+      ).toBeGreaterThanOrEqual(3);
+      expect(mockCoreV1Api.createNamespacedConfigMap).not.toHaveBeenCalled();
+      expect(mockCoreV1Api.patchNamespacedConfigMap).not.toHaveBeenCalled();
+      const jobBody = mockBatchV1Api.createNamespacedJob.mock.calls[0][0].body;
+      const volume = jobBody.spec.template.spec.volumes.find(
+        (v: { name: string }) => v.name === 'cluster-ca',
+      );
+      expect(volume.configMap.name).toBe(CLUSTER_CA_CONFIG_MAP_NAME);
     });
 
     it('does not create the Job when inject never populates', async () => {
