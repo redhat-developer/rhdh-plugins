@@ -46,7 +46,10 @@ export interface LinksResult {
 }
 
 // @public
-export function mapRemotes(doc: McpServerDocument): McpServerRemote[];
+export function mapRemotes(
+  doc: McpServerDocument,
+  placeholderRemoteUrl?: string,
+): McpServerRemote[];
 
 // @public
 export function mapServerToEntity(
@@ -55,8 +58,60 @@ export function mapServerToEntity(
 ): McpServerMappingResult;
 
 // @public
+export type McpArgument = McpPositionalArgument | McpNamedArgument;
+
+// @public
+export interface McpInput {
+  choices?: string[];
+  default?: string;
+  description?: string;
+  format?: 'string' | 'number' | 'boolean' | 'filepath';
+  isRequired?: boolean;
+  isSecret?: boolean;
+  placeholder?: string;
+  value?: string;
+}
+
+// @public
+export interface McpInputWithVariables extends McpInput {
+  variables?: Record<string, McpInput>;
+}
+
+// @public
+export interface McpKeyValueInput extends McpInputWithVariables {
+  name: string;
+}
+
+// @public
+export type McpLocalTransport =
+  | McpStdioTransport
+  | McpStreamableHttpTransport
+  | McpSseTransport;
+
+// @public
+export interface McpNamedArgument extends McpInputWithVariables {
+  isRepeated?: boolean;
+  name: string;
+  // (undocumented)
+  type: 'named';
+}
+
+// @public
+export interface McpPositionalArgument extends McpInputWithVariables {
+  isRepeated?: boolean;
+  // (undocumented)
+  type: 'positional';
+  valueHint?: string;
+}
+
+// @public
 export interface McpRegistryIcon {
-  mimeType?: string;
+  mimeType?:
+    | 'image/png'
+    | 'image/jpeg'
+    | 'image/jpg'
+    | 'image/svg+xml'
+    | 'image/webp';
   sizes?: string[];
   src: string;
   theme?: 'light' | 'dark';
@@ -64,31 +119,32 @@ export interface McpRegistryIcon {
 
 // @public
 export interface McpRegistryPackage {
-  environmentVariables?: unknown[];
+  environmentVariables?: McpKeyValueInput[];
   fileSha256?: string;
   identifier: string;
-  packageArguments?: unknown[];
+  packageArguments?: McpArgument[];
   registryBaseUrl?: string;
   registryType: string;
-  runtimeArguments?: unknown[];
+  runtimeArguments?: McpArgument[];
   runtimeHint?: string;
-  transport: unknown;
+  transport: McpLocalTransport;
   version?: string;
 }
 
 // @public
-export interface McpRegistryRemote extends McpServerRemote {
-  headers?: unknown[];
-  variables?: unknown;
-}
+export type McpRegistryRemote = (
+  | McpStreamableHttpTransport
+  | McpSseTransport
+) & {
+  variables?: Record<string, McpInput>;
+};
 
 // @public
 export interface McpServerDocument {
-  $schema?: string;
-  [key: string]: unknown;
+  $schema: string;
   description: string;
   icons?: McpRegistryIcon[];
-  _meta?: Record<string, unknown>;
+  _meta?: McpServerMeta;
   name: string;
   packages?: McpRegistryPackage[];
   remotes?: McpRegistryRemote[];
@@ -102,6 +158,7 @@ export interface McpServerDocument {
 export interface McpServerMappingDefaults {
   lifecycle?: string;
   owner?: string;
+  placeholderRemoteUrl?: string;
   prefix?: string;
 }
 
@@ -113,12 +170,50 @@ export interface McpServerMappingResult {
 }
 
 // @public
+export interface McpServerMeta {
+  'io.modelcontextprotocol.registry/publisher-provided'?: Record<
+    string,
+    unknown
+  >;
+  [key: string]: unknown;
+}
+
+// @public
 export interface McpServerRepository {
   id?: string;
-  source?: string;
+  source: string;
   subfolder?: string;
   url: string;
 }
+
+// @public
+export interface McpSseTransport {
+  headers?: McpKeyValueInput[];
+  // (undocumented)
+  type: 'sse';
+  url: string;
+}
+
+// @public
+export interface McpStdioTransport {
+  // (undocumented)
+  type: 'stdio';
+}
+
+// @public
+export interface McpStreamableHttpTransport {
+  headers?: McpKeyValueInput[];
+  // (undocumented)
+  type: 'streamable-http';
+  url: string;
+}
+
+// @public
+export function projectAnnotations(
+  doc: McpServerDocument,
+  consumedPaths: string[],
+  reservedAnnotationKeys: string[],
+): Record<string, string>;
 
 // @public
 export interface RepositoryUrlResult {
