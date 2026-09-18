@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { createElement } from 'react';
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import {
   SidebarElementBlueprint,
@@ -125,6 +126,56 @@ const pluginsItem = SidebarItemBlueprint.make({
 });
 
 /**
+ * Fixed 64px spacer rendered above the logo. Uses a higher priority than the
+ * app-defaults logo element (2000) so it sits at the very top of the sidebar.
+ */
+const TopSpacer = () =>
+  createElement(
+    'svg',
+    {
+      width: '100%',
+      height: '64px',
+      viewBox: '0 0 70 64',
+      preserveAspectRatio: 'none',
+      role: 'img',
+      'aria-label': 'Red cross',
+    },
+    createElement('rect', {
+      x: 0,
+      y: 0,
+      width: 70,
+      height: 64,
+      fill: 'none',
+      stroke: 'red',
+      strokeWidth: 1,
+    }),
+    createElement('line', {
+      x1: 0,
+      y1: 0,
+      x2: 70,
+      y2: 64,
+      stroke: 'red',
+      strokeWidth: 1,
+    }),
+    createElement('line', {
+      x1: 70,
+      y1: 0,
+      x2: 0,
+      y2: 64,
+      stroke: 'red',
+      strokeWidth: 1,
+    }),
+  );
+
+const topSpacerElement = SidebarElementBlueprint.make({
+  name: 'top-spacer',
+  params: {
+    component: TopSpacer,
+    priority: 3000,
+  },
+});
+
+/**
  * Custom element that throws on render, used to demonstrate that app-defaults
  * wraps every sidebar element in an error boundary: this element fails without
  * taking down the rest of the sidebar.
@@ -144,6 +195,7 @@ const crashingElement = SidebarElementBlueprint.make({
 export const sidebarDemoModule = createFrontendModule({
   pluginId: 'app',
   extensions: [
+    topSpacerElement,
     crashingElement,
     helpItem,
     documentationGroup,
