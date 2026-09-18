@@ -39,11 +39,13 @@ export const ScorecardHomepageCard = ({
   aggregationId,
   showSubheader = true,
   showInfo = true,
+  isDrilldownPage = false,
 }: {
   metricId?: string;
   aggregationId?: string;
   showSubheader?: boolean;
   showInfo?: boolean;
+  isDrilldownPage?: boolean;
 }) => {
   const { t } = useTranslation();
 
@@ -147,6 +149,7 @@ export const ScorecardHomepageCard = ({
         showSubheader={showSubheader}
         showInfo={showInfo}
         dataTestId={cardDataTestId}
+        showCurrentValue={isDrilldownPage}
       />
     );
   }

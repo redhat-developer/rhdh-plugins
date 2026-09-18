@@ -126,6 +126,9 @@ describe('AggregatedSparklineCard', () => {
     expect(screen.getByText('Error (<1/week)')).toBeInTheDocument();
     expect(screen.getByText('4/7 entities')).toBeInTheDocument();
     expect(
+      screen.queryByTestId('sparkline-current-value'),
+    ).not.toBeInTheDocument();
+    expect(
       screen.getByTestId('scorecard-homepage-card-info'),
     ).toBeInTheDocument();
   });

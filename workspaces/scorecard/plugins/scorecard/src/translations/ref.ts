@@ -54,6 +54,7 @@ export const scorecardMessages = {
   // Common UI
   common: {
     loading: 'Loading',
+    current: 'current',
   },
 
   // Error messages

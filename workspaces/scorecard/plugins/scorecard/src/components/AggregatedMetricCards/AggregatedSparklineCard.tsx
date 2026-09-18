@@ -36,6 +36,7 @@ import type { AggregatedMetricCardBaseProps } from './types';
 
 export type AggregatedSparklineCardProps = AggregatedMetricCardBaseProps & {
   series: AggregatedMetricTimeSeriesResponse;
+  showCurrentValue?: boolean;
 };
 
 export const AggregatedSparklineCard = ({
@@ -46,6 +47,7 @@ export const AggregatedSparklineCard = ({
   showSubheader = true,
   showInfo = true,
   dataTestId,
+  showCurrentValue = false,
 }: AggregatedSparklineCardProps) => {
   const theme = useTheme();
   const locale = useLanguage();
@@ -131,6 +133,7 @@ export const AggregatedSparklineCard = ({
         testId={`sparkline-chart-${aggregationId}`}
         legendItems={legendItems}
         legendTestId={`sparkline-threshold-legend-${aggregationId}`}
+        showCurrentValue={showCurrentValue}
       />
     </CardWrapper>
   );

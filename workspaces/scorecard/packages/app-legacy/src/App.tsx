@@ -343,8 +343,8 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-avgDeploymentFrequency',
-      title: 'Scorecard: Average deployment frequency',
+      id: 'scorecard-doraDeploymentFrequencyKpi',
+      title: 'Scorecard: DORA - Deployment Frequency',
       cardLayout: {
         width: {
           minColumns: 3,
@@ -366,15 +366,15 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'avgDeploymentFrequency',
+        aggregationId: 'doraDeploymentFrequencyKpi',
       },
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-changeFailureRateKpi',
-      title: 'Scorecard: Average change failure rate',
+      id: 'scorecard-doraChangeFailureRateKpi',
+      title: 'Scorecard: DORA - Change Failure Rate',
       cardLayout: {
         width: {
           minColumns: 3,
@@ -396,15 +396,15 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'changeFailureRateKpi',
+        aggregationId: 'doraChangeFailureRateKpi',
       },
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-medianLeadTimeForChangesKpi',
-      title: 'Scorecard: Average median lead time for changes',
+      id: 'scorecard-doraMedianLeadTimeForChangesKpi',
+      title: 'Scorecard: DORA - Median Lead Time for Changes',
       cardLayout: {
         width: {
           minColumns: 3,
@@ -426,15 +426,15 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'medianLeadTimeForChangesKpi',
+        aggregationId: 'doraMedianLeadTimeForChangesKpi',
       },
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-medianTimeToRestoreKpi',
-      title: 'Scorecard: Average median time to restore',
+      id: 'scorecard-doraMedianTimeToRestoreKpi',
+      title: 'Scorecard: DORA - Median Time to Restore',
       cardLayout: {
         width: {
           minColumns: 3,
@@ -456,7 +456,7 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'medianTimeToRestoreKpi',
+        aggregationId: 'doraMedianTimeToRestoreKpi',
       },
     },
   },

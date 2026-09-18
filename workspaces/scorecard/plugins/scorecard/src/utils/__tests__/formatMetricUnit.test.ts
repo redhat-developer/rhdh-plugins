@@ -14,7 +14,28 @@
  * limitations under the License.
  */
 
-import { formatWithMetricUnit } from '../formatMetricUnit';
+import {
+  formatNumericMetricValue,
+  formatWithMetricUnit,
+} from '../formatMetricUnit';
+
+describe('formatNumericMetricValue', () => {
+  it('rounds IEEE-754 noise to four decimal places', () => {
+    expect(formatNumericMetricValue(0.46670000000000006)).toBe('0.4667');
+  });
+
+  it('keeps integers without trailing zeros', () => {
+    expect(formatNumericMetricValue(5)).toBe('5');
+  });
+
+  it('keeps a zero value', () => {
+    expect(formatNumericMetricValue(0)).toBe('0');
+  });
+
+  it('stringifies non-finite numbers', () => {
+    expect(formatNumericMetricValue(Number.NaN)).toBe('NaN');
+  });
+});
 
 describe('formatWithMetricUnit', () => {
   it('returns the value unchanged when unit is undefined', () => {

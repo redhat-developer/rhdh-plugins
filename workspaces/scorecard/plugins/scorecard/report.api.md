@@ -158,42 +158,6 @@ const _default: OverridableFrontendPlugin<
         filter?: string | FilterPredicate | ((entity: Entity) => boolean);
       };
     }>;
-    'home-page-widget:scorecard/scorecard-avg-change-failure-rate': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-avg-change-failure-rate';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-avg-deployment-frequency': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-avg-deployment-frequency';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-avg-median-lead-time-for-changes': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-avg-median-lead-time-for-changes';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-avg-median-time-to-restore': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-avg-median-time-to-restore';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
     'home-page-widget:scorecard/scorecard-avg-open-prs': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-avg-open-prs';
@@ -224,6 +188,42 @@ const _default: OverridableFrontendPlugin<
     'home-page-widget:scorecard/scorecard-deprecated-metric-id': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-deprecated-metric-id';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-change-failure-rate': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-change-failure-rate';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-deployment-frequency': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-deployment-frequency';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-median-lead-time-for-changes': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-median-lead-time-for-changes';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-median-time-to-restore': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-median-time-to-restore';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
@@ -470,6 +470,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.description': string;
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
+    readonly 'common.current': string;
     readonly 'common.loading': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.missingAggregationId': string;

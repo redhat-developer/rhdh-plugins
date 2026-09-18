@@ -30,10 +30,12 @@ import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 
 import {
+  getLatestNumericSparklineValue,
   getSparklineYDomain,
   type SparklineChartPoint,
 } from '../../utils/timeSeriesChartData';
 import type { SparklineLegendItem } from '../../utils/sparklineLegend';
+import { SparklineCurrentValue } from './SparklineCurrentValue';
 import { SparklineLegend } from './SparklineLegend';
 import { SparklineTooltip } from './SparklineTooltip';
 
@@ -43,7 +45,7 @@ const X_AXIS_HEIGHT = 30;
 const TOOLTIP_WRAPPER_STYLE = {
   outline: 'none',
   pointerEvents: 'none',
-  position: 'relative',
+  position: 'absolute',
   transform: 'none',
   width: '100%',
   maxWidth: '100%',
@@ -61,6 +63,7 @@ export type SparklineChartProps = {
   strokeDasharray?: string;
   legendItems?: SparklineLegendItem[];
   legendTestId?: string;
+  showCurrentValue?: boolean;
 };
 
 export const SparklineChart = ({
@@ -71,6 +74,7 @@ export const SparklineChart = ({
   strokeDasharray,
   legendItems,
   legendTestId,
+  showCurrentValue = false,
 }: SparklineChartProps) => {
   const gradientId = `sparklineGradient${useId().replace(/:/g, '')}`;
   const [tooltipPortal, setTooltipPortal] = useState<HTMLDivElement | null>(
@@ -82,6 +86,9 @@ export const SparklineChart = ({
   const markerStroke = theme.palette.background.paper;
   const firstPoint = data[0];
   const lastPoint = data[data.length - 1];
+  const currentValue = showCurrentValue
+    ? getLatestNumericSparklineValue(data)
+    : undefined;
   const xTicks: string[] = [];
   if (firstPoint) {
     xTicks.push(firstPoint.date);
@@ -269,18 +276,23 @@ export const SparklineChart = ({
         ref={setTooltipPortal}
         data-testid="sparkline-tooltip-slot"
         sx={{
+          position: 'relative',
           width: '100%',
           maxWidth: '100%',
           minWidth: 0,
           px: 2,
-          minHeight: '2rem',
+          minHeight: showCurrentValue ? '2.25rem' : '2rem',
           boxSizing: 'border-box',
           overflowX: 'hidden',
           '& .recharts-tooltip-wrapper': {
             maxWidth: '100% !important',
           },
         }}
-      />
+      >
+        {currentValue !== undefined && (
+          <SparklineCurrentValue value={currentValue} color={color} />
+        )}
+      </Box>
       {legendItems && legendItems.length > 0 && (
         <SparklineLegend items={legendItems} testId={legendTestId} />
       )}

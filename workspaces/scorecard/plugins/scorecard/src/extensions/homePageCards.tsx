@@ -316,13 +316,13 @@ export const aggregatedCardWithAvgOpenPrsWidget = HomePageWidgetBlueprint.make({
 });
 
 /**
- * NFS widget: AggregatedCardWithAvgDeploymentFrequency (scalar sparkline).
+ * NFS widget: AggregatedCardWithDoraDeploymentFrequency (scalar sparkline).
  */
-export const aggregatedCardWithAvgDeploymentFrequencyWidget =
+export const aggregatedCardWithDoraDeploymentFrequencyWidget =
   HomePageWidgetBlueprint.make({
-    name: 'scorecard-avg-deployment-frequency',
+    name: 'scorecard-dora-deployment-frequency',
     params: {
-      name: 'AggregatedCardWithAvgDeploymentFrequency',
+      name: 'AggregatedCardWithDoraDeploymentFrequency',
       title: 'Scorecard: DORA - Deployment Frequency',
       layout: defaultCardLayout,
       componentProps: {
@@ -331,20 +331,20 @@ export const aggregatedCardWithAvgDeploymentFrequencyWidget =
       components: lazyScorecardWidget(
         ScorecardHomepageCardWithProvider => () =>
           (
-            <ScorecardHomepageCardWithProvider aggregationId="avgDeploymentFrequency" />
+            <ScorecardHomepageCardWithProvider aggregationId="doraDeploymentFrequencyKpi" />
           ),
       ),
     },
   });
 
 /**
- * NFS widget: AggregatedCardWithAvgChangeFailureRate (scalar sparkline).
+ * NFS widget: AggregatedCardWithDoraChangeFailureRate (scalar sparkline).
  */
-export const aggregatedCardWithAvgChangeFailureRateWidget =
+export const aggregatedCardWithDoraChangeFailureRateWidget =
   HomePageWidgetBlueprint.make({
-    name: 'scorecard-avg-change-failure-rate',
+    name: 'scorecard-dora-change-failure-rate',
     params: {
-      name: 'AggregatedCardWithAvgChangeFailureRate',
+      name: 'AggregatedCardWithDoraChangeFailureRate',
       title: 'Scorecard: DORA - Change Failure Rate',
       layout: defaultCardLayout,
       componentProps: {
@@ -353,20 +353,20 @@ export const aggregatedCardWithAvgChangeFailureRateWidget =
       components: lazyScorecardWidget(
         ScorecardHomepageCardWithProvider => () =>
           (
-            <ScorecardHomepageCardWithProvider aggregationId="changeFailureRateKpi" />
+            <ScorecardHomepageCardWithProvider aggregationId="doraChangeFailureRateKpi" />
           ),
       ),
     },
   });
 
 /**
- * NFS widget: AggregatedCardWithAvgMedianLeadTimeForChanges (scalar sparkline).
+ * NFS widget: AggregatedCardWithDoraMedianLeadTimeForChanges (scalar sparkline).
  */
-export const aggregatedCardWithAvgMedianLeadTimeForChangesWidget =
+export const aggregatedCardWithDoraMedianLeadTimeForChangesWidget =
   HomePageWidgetBlueprint.make({
-    name: 'scorecard-avg-median-lead-time-for-changes',
+    name: 'scorecard-dora-median-lead-time-for-changes',
     params: {
-      name: 'AggregatedCardWithAvgMedianLeadTimeForChanges',
+      name: 'AggregatedCardWithDoraMedianLeadTimeForChanges',
       title: 'Scorecard: DORA - Lead Time for Changes',
       layout: defaultCardLayout,
       componentProps: {
@@ -375,20 +375,20 @@ export const aggregatedCardWithAvgMedianLeadTimeForChangesWidget =
       components: lazyScorecardWidget(
         ScorecardHomepageCardWithProvider => () =>
           (
-            <ScorecardHomepageCardWithProvider aggregationId="medianLeadTimeForChangesKpi" />
+            <ScorecardHomepageCardWithProvider aggregationId="doraMedianLeadTimeForChangesKpi" />
           ),
       ),
     },
   });
 
 /**
- * NFS widget: AggregatedCardWithAvgMedianTimeToRestore (scalar sparkline).
+ * NFS widget: AggregatedCardWithDoraMedianTimeToRestore (scalar sparkline).
  */
-export const aggregatedCardWithAvgMedianTimeToRestoreWidget =
+export const aggregatedCardWithDoraMedianTimeToRestoreWidget =
   HomePageWidgetBlueprint.make({
-    name: 'scorecard-avg-median-time-to-restore',
+    name: 'scorecard-dora-median-time-to-restore',
     params: {
-      name: 'AggregatedCardWithAvgMedianTimeToRestore',
+      name: 'AggregatedCardWithDoraMedianTimeToRestore',
       title: 'Scorecard: DORA - Median Time to Restore',
       layout: defaultCardLayout,
       componentProps: {
@@ -397,7 +397,7 @@ export const aggregatedCardWithAvgMedianTimeToRestoreWidget =
       components: lazyScorecardWidget(
         ScorecardHomepageCardWithProvider => () =>
           (
-            <ScorecardHomepageCardWithProvider aggregationId="medianTimeToRestoreKpi" />
+            <ScorecardHomepageCardWithProvider aggregationId="doraMedianTimeToRestoreKpi" />
           ),
       ),
     },
