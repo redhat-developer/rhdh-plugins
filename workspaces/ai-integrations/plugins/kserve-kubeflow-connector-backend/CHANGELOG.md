@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend
 
+## 0.2.0
+
+### Minor Changes
+
+- e15e722: Add support for the `rhdh.io/api-entity-ref` annotation on KServe InferenceServices. The annotation value is normalized to a fully qualified entity reference and set as `spec.apiEntityRef` on the generated `AiModelServerAPI` entity.
+- 5d966c4: Add LLMInferenceService (serving.kserve.io/v1alpha2) discovery support alongside existing InferenceService watching.
+
 ## 0.1.6
 
 ### Patch Changes

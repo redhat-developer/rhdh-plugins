@@ -15,7 +15,6 @@
  */
 
 import { useTranslationRef } from '@backstage/frontend-plugin-api';
-import { ButtonLink } from '@backstage/ui';
 import { translationRef } from '../translations/ref';
 import { EmptyCatalogGate } from './EmptyCatalogGate';
 
@@ -31,11 +30,7 @@ export function CustomCatalogPage(
       emptyState={{
         title: t('catalog.emptyState.title'),
         description: t('catalog.emptyState.description'),
-        action: (
-          <ButtonLink href="/catalog-import" variant="primary">
-            {t('catalog.emptyState.action')}
-          </ButtonLink>
-        ),
+        importButtonTitle: t('catalog.emptyState.importButtonTitle'),
       }}
     >
       {props.children}

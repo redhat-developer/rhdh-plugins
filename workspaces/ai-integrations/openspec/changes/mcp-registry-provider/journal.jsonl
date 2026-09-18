@@ -1,0 +1,57 @@
+{"ts":"2026-08-26T03:49:29Z","phase":"proposal","event":"change.created"}
+{"ts":"2026-08-26T03:49:30Z","phase":"any","event":"turn.start","input":"Propose mcp-registry-provider: backend provider plugin consuming MCP Registry, mapping server.json to mcp-server API entities, with config baseUrl/schedule/apiVersion/defaultOwner + cursor pagination"}
+{"ts":"2026-08-26T03:55:01Z","phase":"any","event":"decision","input":"config placement + apiVersion default","output":"catalog.providers.mcpRegistry.<id> keyed multi-registry map; apiVersion defaults v1 with v0/v0.1 discrepancy documented as risk"}
+{"ts":"2026-08-26T03:55:01Z","phase":"any","event":"decision","input":"reference proxy prototype gap","output":"proxy proto never implemented cursor pagination; provider MUST traverse metadata.nextCursor. Provider = catalog entity provider, not proxy"}
+{"ts":"2026-08-26T03:58:49Z","phase":"authoring","event":"artifact.added","ref":"proposal.md"}
+{"ts":"2026-08-26T03:58:49Z","phase":"authoring","event":"artifact.added","ref":"specs/mcp-registry-provider/spec.md"}
+{"ts":"2026-08-26T04:07:07Z","phase":"authoring","event":"artifact.added","ref":"design.md"}
+{"ts":"2026-08-26T04:07:07Z","phase":"authoring","event":"artifact.added","ref":"tasks.md"}
+{"ts":"2026-08-26T04:07:13Z","phase":"any","event":"turn.end","output":"Created mcp-registry-provider change: proposal, spec, design, tasks. Config catalog.providers.mcpRegistry.<id>, cursor pagination, full mutation, delegates to mapping"}
+{"ts":"2026-08-26T04:15:15Z","phase":"any","event":"turn.start","input":"/opsx:audit mcp-registry-provider"}
+{"ts":"2026-08-26T04:15:15Z","phase":"any","event":"agent.spawned","kind":"audit","count":"1"}
+{"ts":"2026-08-26T04:15:15Z","phase":"any","event":"skill.invoked","name":"opsx:audit"}
+{"ts":"2026-08-26T04:15:15Z","phase":"any","event":"turn.end","output":"Audit clean (no CRITICAL): 1 WARNING (schedule type name drift), 1 SUGGESTION (cursor safeguard wording). User chose report-only. Wrote audit.md"}
+{"ts":"2026-09-14T14:17:24Z","phase":"any","event":"turn.start","input":"Continue mcp-registry-provider: no multi-registry in v1; add baseName alongside baseUrl to override mapping prefix for future multi-registry."}
+{"ts":"2026-09-14T14:17:24Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
+{"ts":"2026-09-14T14:19:59Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md, specs/, design.md, tasks.md","input":"No multi-registry in v1; add baseName alongside baseUrl to override mapping prefix","output":"Single-object catalog.providers.mcpRegistry; keyed maps rejected; baseName passed as mapping prefix override"}
+{"ts":"2026-09-14T14:20:00Z","phase":"any","event":"decision","input":"Resolve multi-registry scope and how mapping prefix is overridden from provider config","output":"Multi-registry out of scope; flat config; optional baseName overrides mapping prefix; hook for a later change"}
+{"ts":"2026-09-14T14:20:00Z","phase":"any","event":"turn.end","output":"Revised provider artifacts: single registry; baseName overrides mapping prefix; keyed maps fail startup"}
+{"ts":"2026-09-14T16:17:52Z","phase":"any","event":"turn.start","input":"Audit mcp-registry-provider artifacts for pre-implementation coherence"}
+{"ts":"2026-09-14T16:17:53Z","phase":"any","event":"skill.invoked","name":"openspec-audit-change"}
+{"ts":"2026-09-14T16:18:27Z","phase":"any","event":"agent.spawned","kind":"audit","count":"1"}
+{"ts":"2026-09-14T16:27:05Z","phase":"authoring","event":"artifact.revised","ref":"specs/, proposal.md, .openspec.yaml","input":"Apply pass-1 audit autofix: provider name/locationKey, .server extract, schedule optional, schema","output":"Propagated D2/D3/D5 into spec/proposal; schema rhdh-spec-driven"}
+{"ts":"2026-09-14T16:27:27Z","phase":"any","event":"agent.spawned","kind":"audit","count":"1"}
+{"ts":"2026-09-14T16:35:32Z","phase":"authoring","event":"artifact.revised","ref":"specs/, tasks.md","input":"Apply pass-2 audit autofix: pagination-safeguard trip and non-2xx in fail-the-run set","output":"Spec D6 error enum includes safeguard trip and non-2xx; task 3.5 matches"}
+{"ts":"2026-09-14T16:36:01Z","phase":"any","event":"agent.spawned","kind":"audit","count":"1"}
+{"ts":"2026-09-14T16:44:35Z","phase":"authoring","event":"artifact.revised","ref":"design.md, specs/, tasks.md, proposal.md","input":"Pass-3 autofix: cursor stop-set absent/null/empty; spec names D4 loop safeguard","output":"Cursor stop-set unified; spec pagination safeguard is max-pages/total plus repeated-cursor"}
+{"ts":"2026-09-14T16:44:35Z","phase":"any","event":"turn.end","output":"Audit clean (no CRITICAL). 4 WARNING, 7 SUGGESTION. Autofix batches applied; remaining findings are judgment calls."}
+{"ts":"2026-09-14T17:18:11Z","phase":"authoring","event":"artifact.revised","ref":"specs/mcp-registry-provider/spec.md","input":"Align baseName metadata.name examples with mapping hash-on-sanitization rule","output":"Provider baseName scenarios expect stem plus hash suffix when name is reverse-DNS"}
+{"ts":"2026-09-14T19:55:37Z","phase":"any","event":"turn.start","input":"Continue mcp-registry-provider: task 4.5 must assert locationKey mcp-registry-provider and managed-by-location, matching spec WHEN/THEN"}
+{"ts":"2026-09-14T19:55:37Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
+{"ts":"2026-09-14T19:56:45Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md, specs/mcp-registry-provider/spec.md, design.md","input":"Task 4.5 must assert locationKey mcp-registry-provider and managed-by-location to match spec WHEN/THEN","output":"4.5 asserts both; 4.4/D2/D5/spec use AND not slash; annotation named backstage.io/managed-by-location"}
+{"ts":"2026-09-14T19:56:46Z","phase":"any","event":"decision","input":"Are locationKey and managed-by-location interchangeable for provider attribution tests?","output":"No: locationKey claims the entity ref; backstage.io/managed-by-location is catalog-visible; 4.5 asserts both"}
+{"ts":"2026-09-14T19:56:46Z","phase":"any","event":"turn.end","output":"Revised 4.5 to assert locationKey and managed-by-location; 4.4 D2 D5 spec aligned; artifacts still complete"}
+{"ts":"2026-09-14T20:13:23Z","phase":"any","event":"turn.start","input":"Grill: if a previously mapped server becomes unmappable, does skip + full mutation prune the prior entity?"}
+{"ts":"2026-09-14T20:13:23Z","phase":"any","event":"skill.invoked","name":"grilling"}
+{"ts":"2026-09-14T20:13:26Z","phase":"any","event":"turn.end","output":"Fact: skip + full mutation already prunes last-good. Asked: prune unmappable prior entity (recommended) or retain last-good?"}
+{"ts":"2026-09-14T20:39:35Z","phase":"any","event":"turn.start","input":"Continue mcp-registry-provider: if limit is unset, default to a 10 page limit per sync"}
+{"ts":"2026-09-14T20:39:35Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
+{"ts":"2026-09-14T20:41:16Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md, specs/mcp-registry-provider/spec.md, design.md, tasks.md","input":"If limit is not set, default to a 10 page limit per sync","output":"limit is optional max pages per sync, default 10; not registry ?limit=; exceeding fails the run"}
+{"ts":"2026-09-14T20:41:16Z","phase":"any","event":"decision","input":"Expose limit as config or keep pagination bounds internal?","output":"Config limit is max pages per sync, default 10 when omitted; not the registry page-size query"}
+{"ts":"2026-09-14T20:41:16Z","phase":"any","event":"turn.end","output":"Revised artifacts: omitted limit defaults to 10 pages per sync; trip fails the run; open question closed"}
+{"ts":"2026-09-14T20:45:59Z","phase":"any","event":"turn.start","input":"Continue mcp-registry-provider: rename config limit to pageLimit so it is not confused with the registry query param"}
+{"ts":"2026-09-14T20:45:59Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
+{"ts":"2026-09-14T20:47:33Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md, specs/mcp-registry-provider/spec.md, design.md, tasks.md","input":"Rename config limit to pageLimit so it is not confused with the registry query param","output":"Config key is pageLimit; registry ?limit= unchanged; D1 rejects naming the page cap limit"}
+{"ts":"2026-09-14T20:47:33Z","phase":"any","event":"decision","input":"Should the page-cap config key be limit or pageLimit?","output":"pageLimit; limit collides with the registry page-size query parameter"}
+{"ts":"2026-09-14T20:47:33Z","phase":"any","event":"turn.end","output":"Renamed config limit to pageLimit across artifacts; default 10 pages per sync unchanged"}
+{"ts":"2026-09-14T20:54:11Z","phase":"any","event":"turn.start","input":"Continue mcp-registry-provider: add pageSize config that sets ?limit=; omit the query when unset"}
+{"ts":"2026-09-14T20:54:11Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
+{"ts":"2026-09-14T20:55:33Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md, specs/mcp-registry-provider/spec.md, design.md, tasks.md","input":"Add pageSize under catalog.providers.mcpRegistry to set ?limit=; omit the query when unset","output":"pageSize maps to ?limit=; omitted leaves query unset for registry default; pageLimit stays local"}
+{"ts":"2026-09-14T20:55:33Z","phase":"any","event":"decision","input":"How should registry ?limit= page size be configured?","output":"Optional pageSize; when unset omit ?limit= and use the MCP Registry default"}
+{"ts":"2026-09-14T20:55:33Z","phase":"any","event":"turn.end","output":"Added optional pageSize as ?limit=; unset omits the query; pageLimit remains the local page cap"}
+{"ts":"2026-09-14T21:29:55Z","phase":"any","event":"turn.start","input":"Audit mcp-registry-provider artifacts for pre-implementation coherence"}
+{"ts":"2026-09-14T21:29:55Z","phase":"any","event":"skill.invoked","name":"openspec-audit-change"}
+{"ts":"2026-09-14T21:39:03Z","phase":"authoring","event":"artifact.revised","ref":"design.md","input":"Apply pass-1 audit autofix: mark defaultOwner optional in D1","output":"D1 now says optional defaultOwner; omit uses mapping default unknown"}
+{"ts":"2026-09-14T21:48:35Z","phase":"authoring","event":"artifact.revised","ref":"specs/mcp-registry-provider/spec.md, tasks.md","input":"Apply pass-2 audit autofix: nextCursor stop-set includes null","output":"Single-page scenario and task 3.6 now stop on absent, null, or empty"}
+{"ts":"2026-09-14T22:00:29Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md","input":"Apply pass-3 audit autofix: provider identity, managed-by-location, repeated cursor","output":"Proposal names getProviderName/locationKey, managed-by-location, and repeated-cursor fail"}
+{"ts":"2026-09-14T22:07:54Z","phase":"any","event":"turn.end","output":"Audit clean (no CRITICAL). Applied D1 optional defaultOwner, nextCursor null, proposal identity/cursor. Remaining: skip-vs-prune, initialDelay, schedule default, rollback, annotation value."}

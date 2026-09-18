@@ -144,6 +144,9 @@ export const x2aPluginMessages = {
       adversarialAgentLabel: 'adversarial',
       adversarialCriticalFindings: 'Critical Findings',
       adversarialWarningFindings: 'Warning Findings',
+      adversarialCompleted: 'Completed',
+      adversarialNoFindings: 'No findings',
+      adversarialResult: 'Result',
       adversarialAgents: {
         title: 'Adversarial Agents',
         placeholder: 'Choose agents…',

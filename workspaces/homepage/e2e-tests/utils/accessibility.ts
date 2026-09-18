@@ -18,8 +18,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, Page, TestInfo } from '@playwright/test';
 
 /**
- * Rule IDs to ignore when APP_MODE is 'nfs'. Used for known issues in the
- * app (e.g. list structure in third-party or shared components).
+ * Rule IDs to ignore for known issues in the app (e.g. list structure in
+ * third-party or shared components).
  */
 const IGNORED_VIOLATION_IDS = ['list', 'color-contrast'];
 

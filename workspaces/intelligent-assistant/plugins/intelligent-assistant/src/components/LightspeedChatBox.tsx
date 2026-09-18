@@ -81,7 +81,7 @@ const StyledMessageBox = styled(MessageBox, {
     ...($isNewChat
       ? {
           flex: 'none',
-          height: 'auto',
+          height: 'auto !important',
           overflow: 'visible',
         }
       : {
@@ -140,7 +140,6 @@ export const LightspeedChatBox = forwardRef(
       profileLoading,
       welcomePrompts,
       isStreaming,
-      topicRestrictionEnabled,
       displayMode,
       showSourcesChipPopover: showSourcesChipModal = false,
     }: LightspeedChatBoxProps,
@@ -220,9 +219,7 @@ export const LightspeedChatBox = forwardRef(
       >
         <div>
           <DisclaimerAlert title={t('aria.important')} variant="info" isInline>
-            {topicRestrictionEnabled
-              ? t('disclaimer.withValidation')
-              : t('disclaimer.withoutValidation')}
+            {t('disclaimer')}
           </DisclaimerAlert>
           <br />
         </div>

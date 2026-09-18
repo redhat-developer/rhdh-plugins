@@ -49,10 +49,9 @@ describe('GlobalHeader', () => {
       </GlobalHeaderProvider>,
     );
 
-    expect(screen.getByRole('navigation')).toBeInTheDocument();
-    expect(
-      screen.getByRole('navigation').querySelector('.MuiToolbar-root'),
-    ).toBeEmptyDOMElement();
+    const nav = screen.getByRole('navigation');
+    expect(nav).toBeInTheDocument();
+    expect(nav.firstElementChild).toBeEmptyDOMElement();
   });
 
   it('renders the nav element with id="global-header"', () => {

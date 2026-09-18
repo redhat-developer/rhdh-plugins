@@ -24,6 +24,10 @@
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "playwright": "sh -c 'if [ \"$1\" = test ] && [ $# -eq 1 ]; then yarn test:e2e; else exec playwright \"$@\"; fi' _",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
@@ -39,11 +43,13 @@
     "directory": "workspaces/ai-integrations"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
     "@backstage/cli": "^0.36.5",
     "@backstage/cli-defaults": "^0.1.5",
     "@backstage/e2e-test-utils": "^0.1.2",
     "@backstage/repo-tools": "^0.19.0",
     "@changesets/cli": "^2.27.1",
+    "@playwright/test": "1.63.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",

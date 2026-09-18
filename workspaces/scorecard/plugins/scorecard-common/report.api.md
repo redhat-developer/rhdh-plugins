@@ -34,6 +34,12 @@ export type AggregatedMetricValue = {
   score?: number;
 };
 
+// @public
+export type AggregatedTimeSeriesPointError = {
+  message: string;
+  count: number;
+};
+
 // @public (undocumented)
 export type AggregationConfig = {
   id: string;
@@ -181,6 +187,7 @@ export type MetricTimeSeriesPoint = {
   value: MetricValue | null;
   timestamp: string;
   error?: string;
+  thresholdEvaluation?: string | null;
 };
 
 // @public
@@ -197,6 +204,8 @@ export type MetricTimeSeriesResponse = {
     defaultVisualization?: ScorecardVisualizationType;
     collectorIds?: string[];
   };
+  thresholds?: ThresholdConfig;
+  thresholdsError?: string;
 };
 
 // @public (undocumented)
@@ -234,7 +243,7 @@ export type ScalarAggregatedTimeSeriesPoint = {
   errorCount: number;
   total: number;
   status: 'success' | 'error';
-  errors?: TimeSeriesPointError[];
+  errors?: AggregatedTimeSeriesPointError[];
   timestamp: string;
 };
 
@@ -243,6 +252,9 @@ export type ScalarAggregationResult = ScalarAggregatedMetric & {
   thresholds: ThresholdConfig;
   aggregationChartDisplayColor: string | null;
 };
+
+// @public (undocumented)
+export type ScalarAggregationType = (typeof scalarAggregationTypes)[number];
 
 // @public
 export const scalarAggregationTypes: readonly [
@@ -326,12 +338,6 @@ export type ThresholdRule = {
   expression: string;
   color?: string;
   icon?: string;
-};
-
-// @public
-export type TimeSeriesPointError = {
-  message: string;
-  count: number;
 };
 
 // @public (undocumented)

@@ -53,9 +53,8 @@ export const AI_ASSET_SPEC_TYPES: Record<string, Set<string>> = {
  */
 export function isAiAsset(entity: Entity): boolean {
   const kind = entity.kind.toLocaleLowerCase('en-US');
-  const specType = (entity.spec as Record<string, unknown> | undefined)
-    ?.type as string | undefined;
-  if (!specType) {
+  const specType = (entity.spec as Record<string, unknown> | undefined)?.type;
+  if (typeof specType !== 'string' || !specType) {
     return false;
   }
   const allowed = AI_ASSET_SPEC_TYPES[kind];

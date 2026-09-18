@@ -58,6 +58,7 @@ function HookHarness() {
   return (
     <div>
       <div data-testid="pathname">{location.pathname}</div>
+      <div data-testid="search">{location.search}</div>
       <div data-testid="display-mode">{contextValue.displayMode}</div>
       <div data-testid="is-open">
         {contextValue.isChatbotActive ? 'open' : 'closed'}
@@ -69,6 +70,7 @@ function HookHarness() {
         {contextValue.currentConversationId ?? 'none'}
       </div>
       <div data-testid="shell-view-tab">{contextValue.shellViewTab}</div>
+      <div data-testid="settings-tab">{contextValue.settingsTab ?? 'none'}</div>
       <button
         type="button"
         data-testid="toggle-button"
@@ -101,10 +103,31 @@ function HookHarness() {
       </button>
       <button
         type="button"
+        data-testid="switch-conversation"
+        onClick={() => contextValue.setCurrentConversationId('other-thread')}
+      >
+        Switch conversation
+      </button>
+      <button
+        type="button"
         data-testid="go-catalog"
         onClick={() => navigate('/catalog')}
       >
         Go catalog
+      </button>
+      <button
+        type="button"
+        data-testid="set-settings-tab"
+        onClick={() => contextValue.setSettingsTab('saved-prompts')}
+      >
+        Open saved prompts settings
+      </button>
+      <button
+        type="button"
+        data-testid="clear-settings-tab"
+        onClick={() => contextValue.setSettingsTab(null)}
+      >
+        Close settings
       </button>
       <button
         type="button"
@@ -511,6 +534,59 @@ describe('useLightspeedProviderState', () => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
           ChatbotDisplayMode.default,
         );
+      });
+    });
+
+    it('preserves search params when switching conversations in fullscreen', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter([
+        '/intelligent-assistant/conversation/conv-a?settingsTab=saved-prompts',
+      ]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'conv-a',
+        );
+        expect(screen.getByTestId('search')).toHaveTextContent(
+          '?settingsTab=saved-prompts',
+        );
+      });
+
+      screen.getByTestId('switch-conversation').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/intelligent-assistant/conversation/other-thread',
+        );
+        expect(screen.getByTestId('search')).toHaveTextContent(
+          '?settingsTab=saved-prompts',
+        );
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'other-thread',
+        );
+      });
+    });
+
+    it('exposes settingsTab state through provider context', async () => {
+      renderWithRouter(['/intelligent-assistant']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('settings-tab')).toHaveTextContent('none');
+      });
+
+      screen.getByTestId('set-settings-tab').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('settings-tab')).toHaveTextContent(
+          'saved-prompts',
+        );
+      });
+
+      screen.getByTestId('clear-settings-tab').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('settings-tab')).toHaveTextContent('none');
       });
     });
 

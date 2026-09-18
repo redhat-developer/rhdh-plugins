@@ -55,7 +55,7 @@ const graniteModel: Entity = {
     name: 'granite-model',
     description: 'IBM Granite foundation model',
     annotations: {
-      'rhdh.io/ai-asset-category': 'ai-model-server',
+      'rhdh.io/ai-asset-category': 'model-server',
       'rhdh.io/ai-asset-source': 'watsonx',
     },
   },

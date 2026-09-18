@@ -1,5 +1,63 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.4.0
+
+### Minor Changes
+
+- 947374a: Add the Learning Paths NFS module (`learningPathsModule`) with a `/learning-paths` page, Developer Hub proxy-backed data, static JSON fallback, and localized page and nav titles. Also exports `translationRef` and documents the `developerHub.proxyPath` config key.
+
+  Updated Backstage version to 1.54.6
+
+### Patch Changes
+
+- Updated dependencies [947374a]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.4.0
+
+## 1.3.0
+
+### Minor Changes
+
+- 3625dd9: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- Updated dependencies [3625dd9]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.3.0
+
+## 1.2.1
+
+### Patch Changes
+
+- d58308f: Move the empty-state action button into `EmptyCatalogGate`. Custom pages now pass an `importButtonTitle` string instead of an `action` element, and the gate renders a single "import" button. The button is only shown when the `page:catalog-import` extension is installed (its route is also used to resolve the button's href) and the user has permission to create catalog entities (`catalog.entity.create`).
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.2.1
+
+## 1.2.0
+
+### Minor Changes
+
+- 365fcd8: Moved `appDrawerExtension` and `appDrawerModule` from `app-react` into `app-defaults`. The drawer module is now available as both a named export from the main entry point and a default export via the `/app-drawer-module` subpath of `@red-hat-developer-hub/backstage-plugin-app-defaults`. `ApplicationDrawer` is now exported from the main entry point of `app-react`.
+
+### Patch Changes
+
+- 6c5ba66: Clarify the empty-state descriptions to make clear that there may be no catalog entities yet or that the user may lack permission to view any, and change the catalog and catalog graph titles from "No catalog items found" to "No catalog items available". Updated all translations (de, es, fr, it, ja).
+- Updated dependencies [365fcd8]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.2.0
+
+## 1.1.0
+
+### Minor Changes
+
+- a05b689: Add empty-state page overrides for the catalog, catalog graph, scaffolder, API docs, and TechDocs plugins.
+
+  Each override checks whether matching catalog entities exist before rendering the original page. When none are found, a translatable empty state with an illustration, an action link, and a support button is shown instead. All overrides plus the existing app defaults module are registered together through a `createFrontendFeatureLoader` default export, so a single package import loads everything. Translations are provided for English (default), German, Spanish, French, Italian, and Japanese.
+
+- f338ef4: Expose the catalog, catalog graph, scaffolder, API docs, and TechDocs empty-state plugin overrides as individual package subpath exports (for example `@red-hat-developer-hub/backstage-plugin-app-defaults/catalog-plugin-override`), matching the `./app-defaults-translations-module` convention. Each subpath default-exports its override so it can be loaded individually; the feature loader default export continues to bundle all of them.
+
+### Patch Changes
+
+- b3f837f: Updated dependency `react-router-dom` to `^6.30.6`.
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.1.0
+
 ## 1.0.0
 
 ### Major Changes

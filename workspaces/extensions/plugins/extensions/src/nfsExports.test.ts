@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { extensionsTranslationsModule } from './alpha';
-import translationsModuleDefault from './extensionsTranslationsModuleExport';
+import translations from './translations';
 
 describe('extensions NFS exports', () => {
   it('should export a translations module as a FrontendModule', () => {
-    expect(extensionsTranslationsModule).toBeDefined();
-    expect(extensionsTranslationsModule.$$type).toBe(
-      '@backstage/FrontendModule',
-    );
-  });
-
-  it('should export the translations module as default for NFS discovery', () => {
-    expect(translationsModuleDefault).toBe(extensionsTranslationsModule);
+    expect(translations).toBeDefined();
+    expect(translations.$$type).toBe('@backstage/FrontendModule');
   });
 });

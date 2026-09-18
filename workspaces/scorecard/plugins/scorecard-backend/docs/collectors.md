@@ -22,7 +22,7 @@ Collector APIs are provided by `@red-hat-developer-hub/backstage-plugin-scorecar
 
 ## Collector ID convention
 
-Collector IDs follow the `datasource:name` format (e.g.,`github:deployments`, `github:workflowRuns`).
+Collector IDs follow the `datasource:name` format (e.g.,`github:doraDeployments`, `github:doraDeploymentWorkflowRuns`).
 This distinguishes them visually from metric/provider IDs which use dot notation. Prefer to use `camelCase`
 for collector names.
 

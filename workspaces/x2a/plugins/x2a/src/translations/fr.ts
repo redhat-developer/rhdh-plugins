@@ -347,6 +347,9 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.adversarialAgentLabel': 'adversarial',
     'modulePage.phases.adversarialCriticalFindings': 'Résultats Critiques',
     'modulePage.phases.adversarialWarningFindings': "Résultats d'Avertissement",
+    'modulePage.phases.adversarialCompleted': 'Terminé',
+    'modulePage.phases.adversarialNoFindings': 'Aucun résultat',
+    'modulePage.phases.adversarialResult': 'Résultat',
     'modulePage.phases.adversarialAgents.title': 'Agents Adversariaux',
     'modulePage.phases.adversarialAgents.placeholder': 'Choisir des agents…',
     'modulePage.phases.adversarialAgents.noAgentsAvailable':

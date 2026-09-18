@@ -48,7 +48,7 @@
     "@changesets/cli": "^2.27.1",
     "@fission-ai/openspec": "^1.4.1",
     "@jest/environment-jsdom-abstract": "^30.3.0",
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.63.0",
     "@types/jest": "^30.0.0",
     "jest": "^30.3.0",
     "jsdom": "^27.1.0",

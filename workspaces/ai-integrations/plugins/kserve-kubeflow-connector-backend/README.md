@@ -177,7 +177,23 @@ metadata:
 
 Without any `rhdh.io/model-*` annotations, a single model is created using the InferenceService namespace and name (e.g. `vllm-my-service`).
 
-> **Note:** All six `rhdh.io/` control annotations are consumed during entity generation and are **not** propagated to the entity's `metadata.annotations`.
+### `rhdh.io/api-entity-ref`
+
+Sets the `spec.apiEntityRef` field on the generated entity, linking it to an existing Backstage API entity. The value is normalized to a fully qualified entity reference:
+
+- Bare name (e.g. `my-api`) → `api:default/my-api`
+- Namespace-qualified (e.g. `default/my-api` or `production/my-api`) → `api:default/my-api` or `api:production/my-api`
+- Fully qualified (e.g. `api:default/my-api`) → used as-is
+
+```yaml
+metadata:
+  annotations:
+    rhdh.io/api-entity-ref: my-api
+```
+
+When absent, the entity has no `spec.apiEntityRef` field.
+
+> **Note:** All seven `rhdh.io/` control annotations are consumed during entity generation and are **not** propagated to the entity's `metadata.annotations`.
 
 ## Development
 

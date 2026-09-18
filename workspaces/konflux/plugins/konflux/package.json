@@ -91,15 +91,7 @@
   },
   "files": [
     "dist",
-    "dist-scalprum",
     "config.d.ts"
   ],
-  "configSchema": "config.d.ts",
-  "scalprum": {
-    "name": "red-hat-developer-hub.backstage-plugin-konflux",
-    "exposedModules": {
-      "PluginRoot": "./src/index.ts",
-      "Alpha": "./src/alpha.tsx"
-    }
-  }
+  "configSchema": "config.d.ts"
 }

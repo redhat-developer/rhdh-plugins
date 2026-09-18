@@ -1,5 +1,29 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.4.0
+
+### Patch Changes
+
+- 947374a: Add the Learning Paths NFS module (`learningPathsModule`) with a `/learning-paths` page, Developer Hub proxy-backed data, static JSON fallback, and localized page and nav titles. Also exports `translationRef` and documents the `developerHub.proxyPath` config key.
+
+  Updated Backstage version to 1.54.6
+
+## 1.3.0
+
+### Minor Changes
+
+- 3625dd9: Backstage version bump to v1.54.6
+
+## 1.2.1
+
+## 1.2.0
+
+### Minor Changes
+
+- 365fcd8: Moved `appDrawerExtension` and `appDrawerModule` from `app-react` into `app-defaults`. The drawer module is now available as both a named export from the main entry point and a default export via the `/app-drawer-module` subpath of `@red-hat-developer-hub/backstage-plugin-app-defaults`. `ApplicationDrawer` is now exported from the main entry point of `app-react`.
+
+## 1.1.0
+
 ## 1.0.0
 
 ### Major Changes

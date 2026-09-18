@@ -97,3 +97,12 @@ export function replaceTemplate(
 export function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+/**
+ * Sidebar label for the Adoption Insights page.
+ * NFS uses the PageBlueprint title and OFS uses a hardcoded SidebarItem, both
+ * English "Adoption Insights" (translated page headings are separate).
+ */
+export function getAdoptionInsightsNavLabel(): string {
+  return 'Adoption Insights';
+}

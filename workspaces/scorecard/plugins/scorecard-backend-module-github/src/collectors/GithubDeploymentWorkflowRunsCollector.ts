@@ -57,7 +57,7 @@ export class GithubDeploymentWorkflowRunsCollector
   }
 
   getCollectorId(): string {
-    return 'github:deploymentWorkflowRuns';
+    return 'github:doraDeploymentWorkflowRuns';
   }
 
   getCollectorDescription(): string {

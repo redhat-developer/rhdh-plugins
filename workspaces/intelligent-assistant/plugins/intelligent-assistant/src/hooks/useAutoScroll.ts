@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 interface useAutoScrollOptions {
   deltaUp?: number;
@@ -22,17 +23,17 @@ interface useAutoScrollOptions {
 }
 
 export const useAutoScroll = (
-  containerRef: React.RefObject<HTMLElement>,
+  containerRef: RefObject<HTMLElement>,
   options: useAutoScrollOptions = {},
 ) => {
   const { deltaUp = 10, deltaDown = 60, delay = 200 } = options;
 
-  const [autoScroll, setAutoScroll] = React.useState(true);
-  const lastScrollTop = React.useRef(0);
-  const manualScrollInterrupted = React.useRef(false);
-  const debounceTimeout = React.useRef<NodeJS.Timeout | null>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const lastScrollTop = useRef(0);
+  const manualScrollInterrupted = useRef(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const onScroll = React.useCallback(() => {
+  const onScroll = useCallback(() => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -62,7 +63,7 @@ export const useAutoScroll = (
     lastScrollTop.current = currentScrollTop;
   }, [containerRef, deltaUp, deltaDown, delay]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const container = containerRef.current;
     if (!container) {
       return undefined;
@@ -75,17 +76,17 @@ export const useAutoScroll = (
     };
   }, [onScroll, containerRef]);
 
-  const resumeAutoScroll = React.useCallback(() => {
+  const resumeAutoScroll = useCallback(() => {
     manualScrollInterrupted.current = false;
     setAutoScroll(true);
   }, []);
 
-  const stopAutoScroll = React.useCallback(() => {
+  const stopAutoScroll = useCallback(() => {
     manualScrollInterrupted.current = true;
     setAutoScroll(false);
   }, []);
 
-  const scrollToTop = React.useCallback(() => {
+  const scrollToTop = useCallback(() => {
     stopAutoScroll();
     const container = containerRef.current;
     if (!container) return;
@@ -96,7 +97,7 @@ export const useAutoScroll = (
     });
   }, [stopAutoScroll, containerRef]);
 
-  const scrollToBottom = React.useCallback(() => {
+  const scrollToBottom = useCallback(() => {
     const container = containerRef.current;
     if (container) {
       container.scrollTo({

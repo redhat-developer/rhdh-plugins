@@ -32,6 +32,7 @@ import { catalogPluginOverride } from './catalog/catalogPluginOverride';
 import { catalogGraphPluginOverride } from './catalog-graph/catalogGraphPluginOverride';
 import { docsPluginOverride } from './docs/docsPluginOverride';
 import { scaffolderPluginOverride } from './scaffolder/scaffolderPluginOverride';
+import { learningPathsModule } from './learning-paths';
 
 export { appDefaultsModule };
 
@@ -39,15 +40,11 @@ export { appDefaultsTranslationsModule };
 
 export { appDefaultsTranslations };
 
-export { apiDocsPluginOverride };
+export { translationRef } from './translations';
 
-export { catalogGraphPluginOverride };
+export { appDrawerExtension, appDrawerModule } from './drawer/appDrawerModule';
 
-export { catalogPluginOverride };
-
-export { docsPluginOverride };
-
-export { scaffolderPluginOverride };
+export { learningPathsModule } from './learning-paths';
 
 /**
  * Feature loader that registers the RHDH app defaults module and all
@@ -61,6 +58,7 @@ export default createFrontendFeatureLoader({
     return [
       appDefaultsModule,
       appDefaultsTranslationsModule,
+      learningPathsModule,
       catalogPluginOverride,
       catalogGraphPluginOverride,
       scaffolderPluginOverride,

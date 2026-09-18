@@ -32,6 +32,24 @@ jest.mock('../../hooks/useTranslation', () => ({
   }),
 }));
 
+jest.mock('./WorkflowUnavailableTooltip', () => ({
+  WorkflowUnavailableTooltip: ({
+    availability,
+    children,
+  }: {
+    availability: { reason?: string };
+    children?: unknown;
+  }) => {
+    const React = require('react');
+    return React.createElement(
+      'div',
+      { 'data-testid': 'unavailable-tooltip' },
+      availability.reason,
+      children,
+    );
+  },
+}));
+
 describe('WorkflowStatus', () => {
   it('renders available status for AVAILABLE string', () => {
     render(<WorkflowStatus availability={AVAILABLE} />);
@@ -61,5 +79,23 @@ describe('WorkflowStatus', () => {
     render(<WorkflowStatus availability={UNAVAILABLE} />);
 
     expect(screen.getByText('Unavailable')).toBeInTheDocument();
+  });
+
+  it('passes availability details to the unavailable tooltip', () => {
+    render(
+      <WorkflowStatus
+        availability={false}
+        availabilityDetails={{
+          isAvailable: false,
+          urlToFetch: 'https://sonataflow.example/workflow',
+          statusCode: 503,
+          reason: 'Service unavailable',
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId('unavailable-tooltip')).toHaveTextContent(
+      'Service unavailable',
+    );
   });
 });

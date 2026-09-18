@@ -55,6 +55,18 @@ describe('isAiAsset', () => {
     expect(isAiAsset(entity('AiResource', undefined))).toBe(false);
   });
 
+  it.each([null, 42, { type: 'skill' }])(
+    'returns false when spec.type is not a string (%p)',
+    specType => {
+      const malformedEntity = {
+        ...entity('AiResource'),
+        spec: { type: specType },
+      } as Entity;
+
+      expect(isAiAsset(malformedEntity)).toBe(false);
+    },
+  );
+
   it('returns false for AiResource with unrecognized spec.type', () => {
     expect(isAiAsset(entity('AiResource', 'custom-unknown'))).toBe(false);
   });

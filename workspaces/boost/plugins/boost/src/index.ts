@@ -22,9 +22,13 @@
  */
 
 /** @public */
-export { boostPlugin as default, boostTranslationsModule } from './plugin';
+export { boostPlugin as default } from './plugin';
 /** @public */
-export { boostTranslationRef, boostTranslations } from './translations';
+export {
+  boostTranslationRef,
+  boostTranslations,
+  boostTranslationsModule,
+} from './translations';
 /** @public */
 export {
   AiCatalogFilterBlueprint,

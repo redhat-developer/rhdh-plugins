@@ -18,6 +18,7 @@ import { useCallback } from 'react';
 
 import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import {
   Card,
@@ -44,7 +45,6 @@ import { formatUpdatedLabel } from '../../utils/notebooks-utils';
 
 type NotebookCardProps = {
   notebook: NotebookSession;
-  classes: Record<string, string>;
   openNotebookMenuId: string | null;
   setOpenNotebookMenuId: React.Dispatch<React.SetStateAction<string | null>>;
   onClick: (notebook: NotebookSession) => void;
@@ -52,6 +52,80 @@ type NotebookCardProps = {
   onDelete: (sessionId: string) => void;
   t: TranslationFunction<typeof intelligentAssistantTranslationRef.T>;
 };
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  borderRadius: theme.spacing(1.5),
+  display: 'flex',
+  flexDirection: 'column',
+  '&:hover': {
+    borderColor: 'var(--pf-t--global--border--color--hover)',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    cursor: 'pointer',
+  },
+}));
+
+const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
+  padding: theme.spacing(3),
+  paddingBottom: 0,
+  alignItems: 'center',
+  '& .pf-v6-c-card__header-aside, & .pf-v6-c-card__actions': {
+    marginLeft: theme.spacing(1),
+  },
+}));
+
+const StyledDropdown = styled(Dropdown)({
+  '--pf-v6-c-menu--PaddingBlockStart': '0',
+  '--pf-v6-c-menu--PaddingBlockEnd': '0',
+});
+
+const StyledMenuToggle = styled(MenuToggle)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+}));
+
+const StyledDropdownList = styled(DropdownList)({
+  paddingTop: 0,
+  paddingBottom: 0,
+  paddingInlineStart: 0,
+});
+
+const StyledDropdownItem = styled(DropdownItem)(({ theme }) => ({
+  justifyContent: 'flex-start',
+  textAlign: 'left',
+  paddingLeft: theme.spacing(0.5),
+  paddingRight: theme.spacing(0.5),
+}));
+
+const StyledCardTitle = styled(CardTitle)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  minWidth: 0,
+  flex: 1,
+}));
+
+const TitleText = styled('span')({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  cursor: 'pointer',
+  borderRadius: 4,
+  padding: '2px 6px',
+  '&:hover': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--action--plain--hover)',
+  },
+});
+
+const CardDivider = styled('div')(({ theme }) => ({
+  borderTop: '1px solid var(--pf-t--global--border--color--default)',
+  marginTop: theme.spacing(1),
+}));
+
+const StyledCardBody = styled(CardBody)(({ theme }) => ({
+  padding: theme.spacing(3),
+  paddingTop: theme.spacing(2),
+}));
 
 const titleInputStyle: React.CSSProperties = {
   '--pf-v6-c-form-control--before--BorderStyle': 'none',
@@ -70,7 +144,6 @@ const titleInputStyle: React.CSSProperties = {
 
 export const NotebookCard = ({
   notebook,
-  classes,
   openNotebookMenuId,
   setOpenNotebookMenuId,
   onClick,
@@ -108,8 +181,7 @@ export const NotebookCard = ({
   };
 
   return (
-    <Card
-      className={classes.notebookCard}
+    <StyledCard
       component="div"
       tabIndex={0}
       aria-label={(t as Function)('notebooks.card.openAria', {
@@ -118,12 +190,10 @@ export const NotebookCard = ({
       onClick={handleCardClick}
       onKeyDown={handleCardKeyDown}
     >
-      <CardHeader
-        className={classes.notebookCardHeader}
+      <StyledCardHeader
         actions={{
           actions: (
-            <Dropdown
-              className={classes.notebookDropdownMenu}
+            <StyledDropdown
               isOpen={isMenuOpen}
               popperProps={{
                 position: 'end',
@@ -133,10 +203,9 @@ export const NotebookCard = ({
                 setOpenNotebookMenuId(isOpen ? notebook.session_id : null)
               }
               toggle={toggleRef => (
-                <MenuToggle
+                <StyledMenuToggle
                   ref={toggleRef}
                   variant="plain"
-                  className={classes.notebookMenuButton}
                   aria-label={t('aria.options.label')}
                   isExpanded={isMenuOpen}
                   onClick={event => {
@@ -149,12 +218,11 @@ export const NotebookCard = ({
                   }}
                 >
                   <EllipsisVIcon />
-                </MenuToggle>
+                </StyledMenuToggle>
               )}
             >
-              <DropdownList className={classes.notebookDropdownList}>
-                <DropdownItem
-                  className={classes.notebookDropdownItem}
+              <StyledDropdownList>
+                <StyledDropdownItem
                   icon={<PenIcon />}
                   onClick={event => {
                     event.stopPropagation();
@@ -162,9 +230,8 @@ export const NotebookCard = ({
                   }}
                 >
                   {t('notebooks.actions.rename')}
-                </DropdownItem>
-                <DropdownItem
-                  className={classes.notebookDropdownItem}
+                </StyledDropdownItem>
+                <StyledDropdownItem
                   icon={<TrashIcon />}
                   onClick={event => {
                     event.stopPropagation();
@@ -173,14 +240,13 @@ export const NotebookCard = ({
                   }}
                 >
                   {t('notebooks.actions.delete')}
-                </DropdownItem>
-              </DropdownList>
-            </Dropdown>
+                </StyledDropdownItem>
+              </StyledDropdownList>
+            </StyledDropdown>
           ),
-          className: classes.notebookCardHeaderActions,
         }}
       >
-        <CardTitle className={classes.notebookTitle}>
+        <StyledCardTitle>
           <CatalogIcon />
           {isEditing ? (
             <TextInput
@@ -194,9 +260,7 @@ export const NotebookCard = ({
               onClick={e => e.stopPropagation()}
             />
           ) : (
-            <Typography
-              component="span"
-              className={classes.notebookTitleText}
+            <TitleText
               title={t('notebooks.rename.inline.tooltip')}
               onClick={e => {
                 e.stopPropagation();
@@ -204,27 +268,30 @@ export const NotebookCard = ({
               }}
             >
               {notebook.name}
-            </Typography>
+            </TitleText>
           )}
-        </CardTitle>
-      </CardHeader>
-      <div className={classes.notebookCardDivider} />
-      <CardBody className={classes.notebookCardBody}>
+        </StyledCardTitle>
+      </StyledCardHeader>
+      <CardDivider />
+      <StyledCardBody>
         <div>
-          <div className={classes.notebookDocuments}>
-            <Typography variant="body2">
+          <div>
+            <Typography variant="body2" sx={{ pt: 1 }}>
               {(t as Function)('notebooks.documents', {
                 count: notebook.document_count ?? 0,
               })}
             </Typography>
           </div>
-          <div className={classes.notebookUpdated}>
-            <Typography variant="caption">
+          <div>
+            <Typography
+              variant="caption"
+              sx={{ display: 'block', pb: 3, pt: 2, fontStyle: 'italic' }}
+            >
               {formatUpdatedLabel(notebook.updated_at, t)}
             </Typography>
           </div>
         </div>
-      </CardBody>
-    </Card>
+      </StyledCardBody>
+    </StyledCard>
   );
 };

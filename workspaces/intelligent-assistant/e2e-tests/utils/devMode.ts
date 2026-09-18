@@ -25,6 +25,7 @@ import {
   mockedMcpServersResponse,
   modelBaseUrl,
   type McpServersListMock,
+  type SavedPromptMock,
 } from '../fixtures/responses';
 
 let mcpServersMockState: McpServersListMock;
@@ -863,5 +864,93 @@ export async function mockFeedbackReceived(page: Page) {
         response: 'feedback received',
       }),
     });
+  });
+}
+
+const savedPromptsByPage = new WeakMap<Page, SavedPromptMock[]>();
+const savedPromptsRouteGlob = `${modelBaseUrl}/v1/saved-prompts**`;
+
+const defaultSavedPromptsConfig = {
+  max_prompts_per_user: 50,
+  max_display_name_length: 255,
+  max_content_length: 10000,
+};
+
+/** Update seeded prompts for an existing mock route (used between tests). */
+export function seedSavedPrompts(page: Page, prompts: SavedPromptMock[] = []) {
+  savedPromptsByPage.set(page, [...prompts]);
+}
+
+/** Per-page in-memory saved prompts mock (starts empty unless seeded). */
+export async function mockSavedPrompts(
+  page: Page,
+  initialPrompts: SavedPromptMock[] = [],
+) {
+  seedSavedPrompts(page, initialPrompts);
+
+  await page.unroute(savedPromptsRouteGlob);
+  await page.route(savedPromptsRouteGlob, async route => {
+    const url = new URL(route.request().url());
+    const method = route.request().method();
+    const prompts = savedPromptsByPage.get(page) ?? [];
+
+    if (url.pathname.endsWith('/v1/saved-prompts/config')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(defaultSavedPromptsConfig),
+      });
+      return;
+    }
+
+    if (method === 'GET' && url.pathname.endsWith('/v1/saved-prompts')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ prompts }),
+      });
+      return;
+    }
+
+    if (method === 'POST' && url.pathname.endsWith('/v1/saved-prompts')) {
+      const body = route.request().postDataJSON() as {
+        name: string;
+        content: string;
+      };
+      const now = new Date().toISOString();
+      const created = {
+        id: randomUUID(),
+        name: body.name,
+        content: body.content,
+        created_at: now,
+        updated_at: now,
+      };
+      prompts.push(created);
+      savedPromptsByPage.set(page, prompts);
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(created),
+      });
+      return;
+    }
+
+    if (method === 'DELETE') {
+      const promptId = url.pathname.split('/').pop() ?? '';
+      const nextPrompts = prompts.filter(prompt => prompt.id !== promptId);
+      savedPromptsByPage.set(page, nextPrompts);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          prompt_id: promptId,
+          deleted: true,
+          response: 'Saved prompt deleted successfully',
+        }),
+      });
+      return;
+    }
+
+    await route.continue();
   });
 }
