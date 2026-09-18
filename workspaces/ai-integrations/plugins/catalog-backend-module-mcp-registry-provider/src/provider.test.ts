@@ -501,4 +501,173 @@ describe('McpRegistryEntityProvider', () => {
       'Updated weather description',
     );
   });
+
+  it('commits full mutation with empty entities for empty registry', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [],
+      metadata: { count: 0 },
+    };
+    const fetchFn = mockFetchForResponses([body]);
+    const connection = createMockConnection();
+
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig(),
+      createMockLogger(),
+      fetchFn,
+    );
+    await provider.connect(connection);
+    await provider.run();
+
+    expect(connection.applyMutation).toHaveBeenCalledTimes(1);
+    const mutation = (connection.applyMutation as jest.Mock).mock.calls[0][0];
+    expect(mutation.type).toBe('full');
+    expect(mutation.entities).toHaveLength(0);
+  });
+
+  it('does not update lastGoodIndex when applyMutation throws', async () => {
+    const goodBody: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+
+    const badBody: McpRegistryListResponse = {
+      servers: [
+        {
+          server: {
+            $schema:
+              'https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json',
+            name: 'test/server',
+            description: '',
+            version: '1.0.0',
+          } as any,
+        },
+      ],
+      metadata: { count: 1 },
+    };
+
+    const combinedFetch = jest.fn();
+    // First sync — succeeds and populates last-good index
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => goodBody,
+      text: async () => JSON.stringify(goodBody),
+    } as unknown as Response);
+    // Second sync — good data, but applyMutation will throw
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => goodBody,
+      text: async () => JSON.stringify(goodBody),
+    } as unknown as Response);
+    // Third sync — mapping fails, should still use last-good from first sync
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => badBody,
+      text: async () => JSON.stringify(badBody),
+    } as unknown as Response);
+
+    const connection = createMockConnection();
+    const logger = createMockLogger();
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig(),
+      logger,
+      combinedFetch,
+    );
+    await provider.connect(connection);
+
+    // First sync — succeeds, populates last-good
+    await provider.run();
+    expect(connection.applyMutation).toHaveBeenCalledTimes(1);
+
+    // Second sync — applyMutation throws
+    (connection.applyMutation as jest.Mock).mockRejectedValueOnce(
+      new Error('catalog unavailable'),
+    );
+    await expect(provider.run()).rejects.toThrow('catalog unavailable');
+
+    // Third sync — mapping fails; last-good should still be available
+    // from the first sync (applyMutation throw did not update the index)
+    (connection.applyMutation as jest.Mock).mockResolvedValueOnce(undefined);
+    await provider.run();
+    expect(connection.applyMutation).toHaveBeenCalledTimes(3);
+
+    const thirdMutation = (connection.applyMutation as jest.Mock).mock
+      .calls[2][0];
+    expect(thirdMutation.entities).toHaveLength(1);
+    expect(
+      thirdMutation.entities[0].entity.metadata.annotations[
+        'redhat.com/rhdh-mcp-registry-sync-status'
+      ],
+    ).toBe('degraded');
+  });
+
+  it('does not retain degraded entities in lastGoodIndex on subsequent syncs', async () => {
+    const goodBody: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+
+    const badBody: McpRegistryListResponse = {
+      servers: [
+        {
+          server: {
+            $schema:
+              'https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json',
+            name: 'test/server',
+            description: '',
+            version: '1.0.0',
+          } as any,
+        },
+      ],
+      metadata: { count: 1 },
+    };
+
+    const combinedFetch = jest.fn();
+    // First sync — succeeds
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => goodBody,
+      text: async () => JSON.stringify(goodBody),
+    } as unknown as Response);
+    // Second sync — mapping fails, uses last-good (degraded)
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => badBody,
+      text: async () => JSON.stringify(badBody),
+    } as unknown as Response);
+    // Third sync — mapping fails again; degraded entity from second
+    // sync should NOT be in last-good index
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => badBody,
+      text: async () => JSON.stringify(badBody),
+    } as unknown as Response);
+
+    const connection = createMockConnection();
+    const logger = createMockLogger();
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig(),
+      logger,
+      combinedFetch,
+    );
+    await provider.connect(connection);
+
+    // First sync — populates last-good
+    await provider.run();
+    // Second sync — uses last-good, commits degraded
+    await provider.run();
+    // Third sync — degraded entity from second sync should not be
+    // in last-good index, so no entity should be retained
+    await provider.run();
+
+    expect(connection.applyMutation).toHaveBeenCalledTimes(3);
+    const thirdMutation = (connection.applyMutation as jest.Mock).mock
+      .calls[2][0];
+    expect(thirdMutation.entities).toHaveLength(0);
+  });
 });

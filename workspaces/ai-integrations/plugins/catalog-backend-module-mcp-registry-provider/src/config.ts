@@ -50,6 +50,8 @@ function safeGetOptionalString(
 
 /**
  * Parsed provider configuration.
+ *
+ * @public
  */
 export interface McpRegistryProviderConfig {
   baseUrl: string;
@@ -100,7 +102,14 @@ export function readMcpRegistryProviderConfig(
     // Check if the unknown keys look like instance identifiers (they
     // would have nested config objects with their own properties)
     for (const key of unknownKeys) {
-      const nested = registryConfig.getOptionalConfig(key);
+      let nested;
+      try {
+        nested = registryConfig.getOptionalConfig(key);
+      } catch {
+        // ConfigReader throws TypeError when the value is a scalar
+        // rather than an object — skip this key silently.
+        continue;
+      }
       if (nested && nested.keys().length > 0) {
         throw new Error(
           `Invalid catalog.providers.mcpRegistry configuration: found ` +

@@ -56,6 +56,8 @@ function normalizeBaseUrl(baseUrl: string): string {
 /**
  * Entity provider that ingests MCP servers from one configured
  * MCP Registry into the Backstage catalog.
+ *
+ * @public
  */
 export class McpRegistryEntityProvider implements EntityProvider {
   private connection?: EntityProviderConnection;
@@ -129,8 +131,8 @@ export class McpRegistryEntityProvider implements EntityProvider {
     let hasDegradedEntries = false;
 
     for (const entry of entries) {
-      const serverDoc = entry.server;
       try {
+        const serverDoc = entry.server;
         // Invoke the mapping transform
         const mappingDefaults: McpServerMappingDefaults = {};
         if (defaultOwner) {
@@ -168,6 +170,10 @@ export class McpRegistryEntityProvider implements EntityProvider {
         entities.push(deferred);
       } catch (err) {
         // Per-entry failure: log and attempt last-good retention
+        const serverDoc =
+          entry !== null && entry !== undefined
+            ? (entry as McpRegistryServerEntry).server
+            : undefined;
         const serverName =
           typeof serverDoc?.name === 'string' ? serverDoc.name : undefined;
         const serverVersion =
@@ -232,7 +238,12 @@ export class McpRegistryEntityProvider implements EntityProvider {
       entities,
     });
 
-    // Update the last-good index with all successfully committed entities.
+    // Update the last-good index with successfully mapped entities only.
+    // Entities that carry sync-status "degraded" are excluded: they are
+    // last-good fallbacks from a prior cycle, so storing them back would
+    // create perpetual retention of stale data. Only "ok" entities
+    // qualify as last-good candidates.
+    //
     // The annotation keys used here ('modelcontextprotocol.io/name' and
     // 'modelcontextprotocol.io/version') are set by mapServerToEntity in
     // mcp-registry-server-mapping-common and correspond to the raw
@@ -242,6 +253,11 @@ export class McpRegistryEntityProvider implements EntityProvider {
     // must be updated in tandem.
     this.lastGoodIndex.clear();
     for (const deferred of entities) {
+      const syncStatus =
+        deferred.entity.metadata?.annotations?.[SYNC_STATUS_ANNOTATION];
+      if (syncStatus === 'degraded') {
+        continue;
+      }
       const name =
         deferred.entity.metadata?.annotations?.['modelcontextprotocol.io/name'];
       const version =
