@@ -29,13 +29,6 @@ import {
   ReferencedDocuments,
 } from '../types';
 import {
-  createBotMessage,
-  createMessage,
-  createUserMessage,
-  getConversationsData,
-  getTimestamp,
-  getTimestampVariablesString,
-  normalizeChatUserInput,
   transformDocumentsToSources as transformDocumentsToSourcesBase,
   type SourceWithRagId,
 } from './lightspeed-chatbox-message-utils';
@@ -48,8 +41,8 @@ export {
   getTimestamp,
   getTimestampVariablesString,
   normalizeChatUserInput,
-};
-export type { SourceWithRagId };
+} from './lightspeed-chatbox-message-utils';
+export type { SourceWithRagId } from './lightspeed-chatbox-message-utils';
 
 /**
  * Chat UI wrapper: adds SourcesCard `headerContent` pills from `ragSource`.

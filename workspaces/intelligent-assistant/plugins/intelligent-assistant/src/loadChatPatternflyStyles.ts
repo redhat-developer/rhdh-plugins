@@ -20,11 +20,14 @@ let loadPromise: Promise<void> | undefined;
  * Loads PatternFly chat styles on demand so they are not part of the MF sync graph.
  */
 export function loadChatPatternflyStyles(): Promise<void> {
-  if (!loadPromise) {
-    loadPromise = Promise.all([
-      import('@patternfly/react-core/dist/styles/base-no-reset.css'),
-      import('@patternfly/chatbot/dist/css/main.css'),
-    ]).then(() => undefined);
-  }
+  loadPromise ??= Promise.all([
+    import('@patternfly/react-core/dist/styles/base-no-reset.css'),
+    import('@patternfly/chatbot/dist/css/main.css'),
+  ])
+    .then(() => undefined)
+    .catch(error => {
+      loadPromise = undefined;
+      throw error;
+    });
   return loadPromise;
 }

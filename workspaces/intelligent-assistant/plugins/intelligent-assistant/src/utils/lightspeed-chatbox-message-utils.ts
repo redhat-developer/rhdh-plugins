@@ -41,7 +41,7 @@ type MessageProps = {
   content: string;
   timestamp: string;
   name?: string;
-  avatar?: string | any;
+  avatar?: string;
   isLoading?: boolean;
   error?: {
     title: string;
@@ -70,11 +70,11 @@ const escapeBulletListMarker = (line: string) => {
   if (/^\s*\u2022/u.test(line)) {
     return line;
   }
-  return line.replace(/^(\s*)([*+-])(\s)/, '$1\\$2$3');
+  return line.replace(/^(\s*)([*+-])(\s)/, String.raw`$1\$2$3`);
 };
 
 const escapeOrderedListMarker = (line: string) =>
-  line.replace(/^(\s*)(\d+)\.(\s)/, '$1$2\\.$3');
+  line.replace(/^(\s*)(\d+)\.(\s)/, String.raw`$1$2\.$3`);
 
 /**
  * When intro lines (no blank lines among them) are followed by a contiguous run of
@@ -128,14 +128,16 @@ const foldBulletListWithIntro = (s: string) =>
  * (e.g. paragraph + blank line + ordered list) so PatternFly renders one user bubble.
  */
 export const normalizeChatUserInput = (input: string): string => {
-  let s = input.replace(/\r\n/g, '\n').trim();
+  let s = input.replaceAll('\r\n', '\n').trim();
   if (!s) {
     return s;
   }
+  // Use [ \t]* (not \s*) in lookaheads so newlines cannot participate in
+  // quantifier backtracking (typescript:S8786).
   s = s.replace(/\n{3,}/g, '\n\n');
-  s = s.replace(/\n\n(?=\s*\d+\.\s)/gm, '\n');
-  s = s.replace(/\n\n(?=\s*[-*+]\s)/gm, '\n');
-  s = s.replace(/\n\n(?=\s*\u2022)/gm, '\n');
+  s = s.replace(/\n\n(?=[ \t]*\d+\.\s)/gm, '\n');
+  s = s.replace(/\n\n(?=[ \t]*[-*+]\s)/gm, '\n');
+  s = s.replace(/\n\n(?=[ \t]*\u2022)/gm, '\n');
   s = foldOrderedListWithIntro(s);
   s = foldBulletListWithIntro(s);
   return s.trim();
