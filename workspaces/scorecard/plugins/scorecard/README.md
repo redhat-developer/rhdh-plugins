@@ -288,7 +288,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    sm: { w: 4, h: 6, x: 4 }
                    xs: { w: 4, h: 6, x: 4 }
                    xxs: { w: 4, h: 6, x: 4 }
-               AggregatedCardWithAvgDeploymentFrequency:
+               AggregatedCardWithDoraDeploymentFrequency:
                  priority: 530
                  breakpoints:
                    xl: { w: 4, h: 6, x: 8 }
@@ -314,10 +314,10 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - `AggregatedCardWithTotalOpenBugs` (title: **Scorecard: Total open bugs**)
    - `AggregatedCardWithEntitiesWithOpenPrs` (title: **Scorecard: Entities with open PRs**)
    - `AggregatedCardWithAvgOpenPrs` (title: **Scorecard: Average open PRs**)
-   - `AggregatedCardWithAvgDeploymentFrequency` (title: **Scorecard: Average deployment frequency**)
-   - `AggregatedCardWithAvgChangeFailureRate` (title: **Scorecard: Average change failure rate**)
-   - `AggregatedCardWithAvgMedianLeadTimeForChanges` (title: **Scorecard: Average median lead time for changes**)
-   - `AggregatedCardWithAvgMedianTimeToRestore` (title: **Scorecard: Average median time to restore**)
+   - `AggregatedCardWithDoraDeploymentFrequency` (title: **Scorecard: Average deployment frequency**)
+   - `AggregatedCardWithDoraChangeFailureRate` (title: **Scorecard: Average change failure rate**)
+   - `AggregatedCardWithDoraMedianLeadTimeForChanges` (title: **Scorecard: Average median lead time for changes**)
+   - `AggregatedCardWithDoraMedianTimeToRestore` (title: **Scorecard: Average median time to restore**)
 
    These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
 

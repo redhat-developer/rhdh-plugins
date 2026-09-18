@@ -183,7 +183,7 @@ app:
                 sm: { w: 4, h: 6, x: 8 }
                 xs: { w: 4, h: 6, x: 8 }
                 xxs: { w: 4, h: 6, x: 8 }
-            AggregatedCardWithAvgDeploymentFrequency:
+            AggregatedCardWithDoraDeploymentFrequency:
               priority: 530
               breakpoints:
                 xl: { w: 4, h: 6, x: 8 }
@@ -192,7 +192,7 @@ app:
                 sm: { w: 4, h: 6, x: 8 }
                 xs: { w: 4, h: 6, x: 8 }
                 xxs: { w: 4, h: 6, x: 8 }
-            AggregatedCardWithAvgChangeFailureRate:
+            AggregatedCardWithDoraChangeFailureRate:
               priority: 540
               breakpoints:
                 xl: { w: 4, h: 6 }
@@ -201,7 +201,7 @@ app:
                 sm: { w: 4, h: 6 }
                 xs: { w: 4, h: 6 }
                 xxs: { w: 4, h: 6 }
-            AggregatedCardWithAvgMedianLeadTimeForChanges:
+            AggregatedCardWithDoraMedianLeadTimeForChanges:
               priority: 550
               breakpoints:
                 xl: { w: 4, h: 6, x: 4 }
@@ -210,7 +210,7 @@ app:
                 sm: { w: 4, h: 6, x: 4 }
                 xs: { w: 4, h: 6, x: 4 }
                 xxs: { w: 4, h: 6, x: 4 }
-            AggregatedCardWithAvgMedianTimeToRestore:
+            AggregatedCardWithDoraMedianTimeToRestore:
               priority: 560
               breakpoints:
                 xl: { w: 4, h: 6, x: 8 }
