@@ -33,10 +33,10 @@ export const expectScreenContextRecordingVisible = async (page: Page) => {
 
 export const expectScreenContextPausedVisible = async (
   page: Page,
-  translations: LightspeedMessages,
+  _translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByText(translations['contextChip.label.paused']),
+    page.locator('.lightspeed-page-context-label-paused'),
   ).toBeVisible();
 };
 
@@ -119,7 +119,7 @@ export const pauseScreenContextChip = async (page: Page) => {
 
 export const resumeScreenContextChip = async (
   page: Page,
-  translations: LightspeedMessages,
+  _translations: LightspeedMessages,
 ) => {
-  await page.getByText(translations['contextChip.label.paused']).click();
+  await page.locator('.lightspeed-page-context-label-paused').click();
 };
