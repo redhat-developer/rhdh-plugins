@@ -13,6 +13,8 @@ proxy:
     followRedirects: true
 
 backend:
+  auth:
+    dangerouslyDisableDefaultAuthPolicy: true
   baseUrl: http://localhost:7007
   listen:
     port: 7007
