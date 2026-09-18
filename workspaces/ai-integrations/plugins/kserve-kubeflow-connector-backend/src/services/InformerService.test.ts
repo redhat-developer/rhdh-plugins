@@ -43,6 +43,7 @@ jest.mock('@kubernetes/client-node', () => {
     listNamespacedServiceAccount: jest
       .fn()
       .mockResolvedValue({ body: { items: [] } }),
+    listNamespacedService: jest.fn().mockResolvedValue({ body: { items: [] } }),
   });
   const _informerOn = jest.fn();
   const _informerStart = jest.fn().mockResolvedValue(undefined);
@@ -117,6 +118,9 @@ describe('InformerService', () => {
         .fn()
         .mockResolvedValue({ body: { items: [] } }),
       listNamespacedServiceAccount: jest
+        .fn()
+        .mockResolvedValue({ body: { items: [] } }),
+      listNamespacedService: jest
         .fn()
         .mockResolvedValue({ body: { items: [] } }),
     });
@@ -791,6 +795,9 @@ describe('InformerService', () => {
         listNamespacedServiceAccount: jest
           .fn()
           .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedService: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
       });
 
       // informer cache empty so listLLMInferenceServices falls back to API
@@ -816,6 +823,495 @@ describe('InformerService', () => {
           'listLLMInferenceServices: Error listing from API',
         ),
         expect.anything(),
+      );
+    });
+  });
+
+  describe('Service URL fallback', () => {
+    // Helper: create an InferenceService that is Ready by condition but has
+    // no status URL — the exact scenario where the fallback should fire.
+    function makeReadyISWithoutUrl(
+      overrides: Partial<{
+        name: string;
+        namespace: string;
+        kind: string;
+        apiVersion: string;
+        resourceVersion: string;
+      }> = {},
+    ): InferenceService {
+      const kind = overrides.kind ?? 'InferenceService';
+      const isLLM = kind === 'LLMInferenceService';
+      return {
+        apiVersion:
+          overrides.apiVersion ??
+          (isLLM ? 'serving.kserve.io/v1alpha2' : 'serving.kserve.io/v1beta1'),
+        kind,
+        metadata: {
+          name: overrides.name ?? 'no-url-model',
+          namespace: overrides.namespace ?? 'test-ns',
+          resourceVersion: overrides.resourceVersion ?? '500',
+        },
+        spec: isLLM
+          ? { model: { name: 'tiny-llama', uri: 's3://bucket/model' } }
+          : {
+              predictor: { model: { modelFormat: { name: 'vllm' } } },
+            },
+        status: isLLM
+          ? { conditions: [{ type: 'Ready', status: 'True' }] }
+          : {
+              conditions: [
+                { type: 'Ready', status: 'True' },
+                { type: 'IngressReady', status: 'True' },
+                { type: 'PredictorReady', status: 'True' },
+              ],
+              modelStatus: { transitionStatus: 'UpToDate' },
+            },
+      };
+    }
+
+    // Helper: a Kubernetes Service owned by the given resource.
+    function makeOwnedService(
+      ownerName: string,
+      ownerKind: string,
+      opts: {
+        svcName?: string;
+        namespace?: string;
+        port?: number;
+        appProtocol?: string;
+        protocol?: string;
+      } = {},
+    ) {
+      return {
+        metadata: {
+          name: opts.svcName ?? `${ownerName}-predictor`,
+          namespace: opts.namespace ?? 'test-ns',
+          ownerReferences: [{ kind: ownerKind, name: ownerName }],
+        },
+        spec: {
+          ports: [
+            {
+              port: opts.port ?? 8080,
+              protocol: opts.protocol ?? 'TCP',
+              ...(opts.appProtocol
+                ? { appProtocol: opts.appProtocol }
+                : undefined),
+            },
+          ],
+        },
+      };
+    }
+
+    function setupMockWithService(
+      ownerName: string,
+      ownerKind: string,
+      svcOpts: Parameters<typeof makeOwnedService>[2] = {},
+    ) {
+      const svc = makeOwnedService(ownerName, ownerKind, svcOpts);
+      mockMakeApiClient.mockReturnValue({
+        listNamespacedCustomObject: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listClusterCustomObject: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedServiceAccount: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedService: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [svc] } }),
+      });
+    }
+
+    it('derives cluster-internal URL from owned Service for InferenceService', async () => {
+      setupMockWithService('no-url-model', 'InferenceService');
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      // Get the first 'add' handler (InferenceService informer)
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+      expect(addHandler).toBeDefined();
+
+      const is = makeReadyISWithoutUrl();
+      await addHandler(is);
+
+      // Should have reconciled successfully with the derived URL
+      expect(logger.info).toHaveBeenCalledWith(
+        'Successfully reconciled InferenceService: test-ns/no-url-model',
+      );
+      // KServe printers should have been called with the enriched clone
+      expect(KServeMock.callBackstagePrinters).toHaveBeenCalled();
+    });
+
+    it('derives cluster-internal URL from owned Service for LLMInferenceService', async () => {
+      setupMockWithService('no-url-llm', 'LLMInferenceService');
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      // LLM add handler is the second 'add' registration
+      const calls = mockInformerOn.mock.calls as any[][];
+      const llmAddHandler = calls.filter(c => c[0] === 'add')[1]?.[1];
+      expect(llmAddHandler).toBeDefined();
+
+      const is = makeReadyISWithoutUrl({
+        name: 'no-url-llm',
+        kind: 'LLMInferenceService',
+      });
+      await llmAddHandler(is);
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Successfully reconciled LLMInferenceService: test-ns/no-url-llm',
+      );
+    });
+
+    it('preserves existing status URL without attempting Service fallback', async () => {
+      // Even though there is an owned Service, it should not be consulted
+      setupMockWithService('has-url-model', 'InferenceService');
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+
+      const is: InferenceService = {
+        ...makeReadyISWithoutUrl({ name: 'has-url-model' }),
+        status: {
+          conditions: [
+            { type: 'Ready', status: 'True' },
+            { type: 'IngressReady', status: 'True' },
+            { type: 'PredictorReady', status: 'True' },
+          ],
+          modelStatus: { transitionStatus: 'UpToDate' },
+          url: 'https://has-url-model.example.com',
+        },
+      };
+
+      await addHandler(is);
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Successfully reconciled InferenceService: test-ns/has-url-model',
+      );
+      // listNamespacedService should NOT have been called since URL was already present
+      const coreClient = mockMakeApiClient.mock.results[0]?.value;
+      expect(coreClient.listNamespacedService).not.toHaveBeenCalled();
+    });
+
+    it('preserves existing status.address.url without attempting Service fallback', async () => {
+      // Even though there is an owned Service, it should not be consulted
+      setupMockWithService('has-addr-model', 'InferenceService');
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+
+      const is: InferenceService = {
+        ...makeReadyISWithoutUrl({ name: 'has-addr-model' }),
+        status: {
+          conditions: [
+            { type: 'Ready', status: 'True' },
+            { type: 'IngressReady', status: 'True' },
+            { type: 'PredictorReady', status: 'True' },
+          ],
+          modelStatus: { transitionStatus: 'UpToDate' },
+          address: { url: 'https://has-addr-model.internal.example.com' },
+        },
+      };
+
+      await addHandler(is);
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Successfully reconciled InferenceService: test-ns/has-addr-model',
+      );
+      // listNamespacedService should NOT have been called since address.url was already present
+      const coreClient = mockMakeApiClient.mock.results[0]?.value;
+      expect(coreClient.listNamespacedService).not.toHaveBeenCalled();
+    });
+
+    it('does not attempt fallback when resource is not Ready', async () => {
+      setupMockWithService('not-ready-model', 'InferenceService');
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+
+      const is: InferenceService = {
+        apiVersion: 'serving.kserve.io/v1beta1',
+        kind: 'InferenceService',
+        metadata: {
+          name: 'not-ready-model',
+          namespace: 'test-ns',
+          resourceVersion: '100',
+        },
+        spec: {
+          predictor: { model: { modelFormat: { name: 'vllm' } } },
+        },
+        status: {
+          conditions: [{ type: 'Ready', status: 'False', reason: 'Pending' }],
+        },
+      };
+
+      await addHandler(is);
+
+      // Should NOT have reconciled
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Successfully reconciled'),
+      );
+      // Should NOT have tried to look up Services
+      const coreClient = mockMakeApiClient.mock.results[0]?.value;
+      expect(coreClient.listNamespacedService).not.toHaveBeenCalled();
+    });
+
+    it('does not synthesize URL when no owned Service exists', async () => {
+      // No owned services — empty list
+      mockMakeApiClient.mockReturnValue({
+        listNamespacedCustomObject: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listClusterCustomObject: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedServiceAccount: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedService: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+      });
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+
+      await addHandler(makeReadyISWithoutUrl());
+
+      // Should NOT have reconciled — no URL could be derived
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Successfully reconciled'),
+      );
+    });
+
+    it('handles Service lookup failure gracefully', async () => {
+      mockMakeApiClient.mockReturnValue({
+        listNamespacedCustomObject: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listClusterCustomObject: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedServiceAccount: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedService: jest
+          .fn()
+          .mockRejectedValue(new Error('forbidden')),
+      });
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+
+      await addHandler(makeReadyISWithoutUrl());
+
+      // Should log the error but not crash
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('findOwnedServiceUrl: Error listing Services'),
+        expect.any(Error),
+      );
+      // Should NOT have reconciled
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Successfully reconciled'),
+      );
+    });
+
+    it('does not mutate the original informer cache object', async () => {
+      setupMockWithService('no-url-model', 'InferenceService');
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+
+      const original = makeReadyISWithoutUrl();
+      // Capture the original status to verify it is unchanged
+      const originalStatus = JSON.parse(JSON.stringify(original.status));
+
+      await addHandler(original);
+
+      // The original object's status must remain unchanged
+      expect(original.status).toEqual(originalStatus);
+      expect(original.status?.url).toBeUndefined();
+    });
+
+    it('applies fallback during innerStart background sync', async () => {
+      setupMockWithService('bg-model', 'InferenceService', {
+        svcName: 'bg-model-predictor',
+      });
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const is = makeReadyISWithoutUrl({
+        name: 'bg-model',
+        resourceVersion: '600',
+      });
+
+      // First add the IS via the add handler so it gets a catalog entry
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+      await addHandler(is);
+      expect(getModelCatalog('test-ns/bg-model')).toBeDefined();
+
+      // Now simulate background sync via delete handler (which calls innerStart)
+      // The IS is still in the informer list with no URL, but owned Service exists
+      mockInformerList.mockReturnValue([is]);
+
+      const deleteHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'delete',
+      )?.[1];
+      await deleteHandler({ metadata: { name: 'dummy', namespace: 'dummy' } });
+
+      // The entry should be preserved because the fallback made the IS "ready"
+      expect(getModelCatalog('test-ns/bg-model')).toBeDefined();
+    });
+
+    it('selects port with HTTP appProtocol over other ports', async () => {
+      const svc = {
+        metadata: {
+          name: 'multi-port-svc',
+          namespace: 'test-ns',
+          ownerReferences: [{ kind: 'InferenceService', name: 'no-url-model' }],
+        },
+        spec: {
+          ports: [
+            { port: 9090, protocol: 'TCP' },
+            { port: 8443, protocol: 'TCP', appProtocol: 'https' },
+            { port: 3000, protocol: 'TCP' },
+          ],
+        },
+      };
+
+      mockMakeApiClient.mockReturnValue({
+        listNamespacedCustomObject: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listClusterCustomObject: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedServiceAccount: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedService: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [svc] } }),
+      });
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+
+      await addHandler(makeReadyISWithoutUrl());
+
+      // Should have used the port with appProtocol 'https'
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'https://multi-port-svc.test-ns.svc.cluster.local:8443',
+        ),
+        // rest of the log args are not checked
+      );
+    });
+
+    it('omits port suffix for port 80', async () => {
+      setupMockWithService('no-url-model', 'InferenceService', { port: 80 });
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+
+      await addHandler(makeReadyISWithoutUrl());
+
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'http://no-url-model-predictor.test-ns.svc.cluster.local',
+        ),
+      );
+      // Should NOT include :80
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining(':80'),
+      );
+    });
+  });
+
+  describe('Independent informer startup', () => {
+    it('starts LLMInferenceService informer even when InferenceService informer fails', async () => {
+      // Make the first informer.start() fail, second succeed
+      let callCount = 0;
+      mockInformerStart.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.reject(new Error('CRD not found'));
+        }
+        return Promise.resolve(undefined);
+      });
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      // Should have attempted to start both informers
+      expect(mockInformerStart).toHaveBeenCalledTimes(2);
+      // Should have logged the error for the first informer
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to start InferenceService informer'),
+        expect.any(Error),
+      );
+      // The LLM informer should have started successfully
+      expect(logger.info).toHaveBeenCalledWith('LLM Informer started.');
+    });
+
+    it('starts InferenceService informer even when LLMInferenceService informer fails', async () => {
+      let callCount = 0;
+      mockInformerStart.mockImplementation(() => {
+        callCount++;
+        if (callCount === 2) {
+          return Promise.reject(new Error('CRD not found'));
+        }
+        return Promise.resolve(undefined);
+      });
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      expect(mockInformerStart).toHaveBeenCalledTimes(2);
+      expect(logger.info).toHaveBeenCalledWith('Informer started.');
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to start LLMInferenceService informer'),
+        expect.any(Error),
       );
     });
   });
