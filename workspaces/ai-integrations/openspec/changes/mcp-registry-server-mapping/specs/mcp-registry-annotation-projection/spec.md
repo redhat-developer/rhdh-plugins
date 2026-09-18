@@ -15,7 +15,7 @@ Every scalar leaf in the `server.json` document that is not consumed by a native
 #### Scenario: Unmapped scalar becomes an annotation
 
 - **WHEN** a `server.json` carries a scalar with no native home, such as `icons[0].mimeType: image/png`
-- **THEN** the entity has an annotation `modelcontextprotocol.io/icons.0.mimetype` with value `image/png`
+- **THEN** the entity has an annotation `modelcontextprotocol.io/icons.0.mimeType` with value `image/png`
 
 #### Scenario: Natively-mapped attributes are not re-projected
 
