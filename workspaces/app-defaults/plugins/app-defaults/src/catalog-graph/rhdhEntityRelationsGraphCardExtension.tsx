@@ -15,7 +15,6 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
-import { jsx } from 'react/jsx-runtime';
 import { z } from 'zod/v4';
 import {
   EntityCardBlueprint,
@@ -43,8 +42,10 @@ const rhdhEntityRelationsGraphCardConfigSchema = {
  *
  * @internal
  */
-export function makeRhdhEntityRelationsGraphCardExtension(options: {
-  name: string;
+export function makeRhdhEntityRelationsGraphCardExtension<
+  TName extends string,
+>(options: {
+  name: TName;
   attachTo: { id: string; input: 'cards' };
   filter: (entity: Entity) => boolean;
   type: EntityCardType;
@@ -60,16 +61,20 @@ export function makeRhdhEntityRelationsGraphCardExtension(options: {
       return originalFactory({
         filter,
         type,
-        loader: async () =>
-          import('@backstage/plugin-catalog-graph').then(m =>
-            jsx(m.EntityCatalogGraphCard, {
-              ...config,
-              ...(defaultDirection !== undefined
+        loader: async () => {
+          const { EntityCatalogGraphCard } = await import(
+            '@backstage/plugin-catalog-graph'
+          );
+          return (
+            <EntityCatalogGraphCard
+              {...config}
+              {...(defaultDirection !== undefined
                 ? { direction: config.direction ?? defaultDirection }
-                : {}),
-              height: config.height ?? 400,
-            }),
-          ),
+                : {})}
+              height={config.height ?? 400}
+            />
+          );
+        },
       });
     },
   });

@@ -42,6 +42,12 @@ export const entityDependenciesCatalogCardAttachments = [
     .override(dependenciesTabCards),
 ];
 
+/**
+ * Stock api-docs entity cards that belong on the Dependencies tab, not Overview.
+ * Extension IDs stay `entity-card:*` so `app.extensions` config still applies.
+ *
+ * @internal
+ */
 export const entityDependenciesApiDocsCardAttachments = [
   apiDocsPlugin
     .getExtension('entity-card:api-docs/consumed-apis')
