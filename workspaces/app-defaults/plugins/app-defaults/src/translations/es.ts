@@ -15,13 +15,13 @@
  */
 
 import { createTranslationMessages } from '@backstage/frontend-plugin-api';
-import { translationRef } from './ref';
+import { appDefaultsTranslationRef } from './ref';
 
 /**
  * @internal
  */
 export default createTranslationMessages({
-  ref: translationRef,
+  ref: appDefaultsTranslationRef,
   messages: {
     'catalog.emptyState.title': 'No hay elementos disponibles en el catálogo',
     'catalog.emptyState.description':

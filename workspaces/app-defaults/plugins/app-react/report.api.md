@@ -12,6 +12,8 @@ import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { SwappableComponentRef } from '@backstage/frontend-plugin-api';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export interface AppDrawerApi {
@@ -81,6 +83,45 @@ export interface ApplicationDrawerProps {
   children: React.ReactNode;
   contents: AppDrawerContent[];
 }
+
+// @public
+export const appReactTranslationRef: TranslationRef<
+  'plugin.app-react',
+  {
+    readonly 'catalog.entityTabGroups.Overview': 'Overview';
+    readonly 'catalog.entityTabGroups.Documentation': 'Documentation';
+    readonly 'catalog.entityTabGroups.Development': 'Development';
+    readonly 'catalog.entityTabGroups.Deployment': 'Deployment';
+    readonly 'catalog.entityTabGroups.Operation': 'Operation';
+    readonly 'catalog.entityTabGroups.Observability': 'Observability';
+    readonly 'catalog.entityTabs.Overview': 'Overview';
+    readonly 'catalog.entityTabs.Docs': 'Docs';
+    readonly 'catalog.entityTabs.API': 'API';
+    readonly 'catalog.entityTabs.Dependencies': 'Dependencies';
+    readonly 'catalog.entityTabs.Definition': 'Definition';
+    readonly 'catalog.entityTabs.APIs': 'APIs';
+    readonly 'catalog.entityTabs.TechDocs': 'TechDocs';
+    readonly 'catalog.entityTabs.Deployment Lifecycle': 'Deployment Lifecycle';
+    readonly 'catalog.entityTabs.Deployment Summary': 'Deployment Summary';
+    readonly 'catalog.entityTabs.Pipelines': 'Pipelines';
+    readonly 'catalog.entityTabs.Pull Requests': 'Pull Requests';
+    readonly 'catalog.entityTabs.Bookmarks': 'Bookmarks';
+    readonly 'catalog.entityTabs.CI/CD': 'CI/CD';
+    readonly 'catalog.entityTabs.CI/CD Statistics': 'CI/CD Statistics';
+    readonly 'catalog.entityTabs.Code Coverage': 'Code Coverage';
+    readonly 'catalog.entityTabs.Feedback': 'Feedback';
+    readonly 'catalog.entityTabs.GitHub Actions': 'GitHub Actions';
+    readonly 'catalog.entityTabs.GitHub Issues': 'GitHub Issues';
+    readonly 'catalog.entityTabs.CI/CD Security': 'CI/CD Security';
+    readonly 'catalog.entityTabs.Build Artifacts': 'Build Artifacts';
+    readonly 'catalog.entityTabs.Todo': 'Todo';
+    readonly 'catalog.entityTabs.Topology': 'Topology';
+    readonly 'catalog.entityTabs.Workflows': 'Workflows';
+  }
+>;
+
+// @public
+export const appReactTranslations: TranslationResource<'plugin.app-react'>;
 
 // @public
 export interface DrawerPanelProps {

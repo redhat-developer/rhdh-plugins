@@ -14,25 +14,11 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/frontend-plugin-api';
-
-import { appDefaultsTranslationRef } from './ref';
-
 /**
- * Translation resource for the app defaults plugin, wiring all
- * available language messages.
+ * Alpha (unstable) API surface for the RHDH app shell shared components.
  *
- * @public
+ * @packageDocumentation
  */
-export const appDefaultsTranslations = createTranslationResource({
-  ref: appDefaultsTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
-});
 
-export { appDefaultsTranslationRef };
+export { EntityHeaderBui, EntityContextMenu } from './catalog';
+export type { EntityContextMenuItemDataWithNode } from './catalog';
