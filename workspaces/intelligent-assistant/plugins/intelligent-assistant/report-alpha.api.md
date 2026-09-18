@@ -246,6 +246,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'contextChip.tooltip.line2.fullContext': string;
     readonly 'contextChip.tooltip.line2.adminLimited': string;
     readonly 'contextChip.tooltip.line2.screenshotOnly': string;
+    readonly 'contextChip.tooltip.line2.domOffNoVision': string;
     readonly 'contextChip.tooltip.line2.textOnlyNoVision': string;
     readonly 'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff': string;
     readonly 'contextChip.tooltip.line2.textOnlyCombined': string;

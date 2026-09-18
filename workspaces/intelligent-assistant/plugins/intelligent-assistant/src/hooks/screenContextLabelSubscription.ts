@@ -37,11 +37,10 @@ function scheduleNotifyScreenContextLabelListeners() {
   });
 }
 
-function isInsideScreenCaptureExclude(node: Node): boolean {
-  if (!(node instanceof Element)) {
-    return false;
-  }
-  return Boolean(node.closest('[data-screen-capture-exclude]'));
+/** @internal Exported for unit tests. */
+export function isInsideScreenCaptureExclude(node: Node): boolean {
+  const el = node instanceof Element ? node : node.parentElement;
+  return Boolean(el?.closest('[data-screen-capture-exclude]'));
 }
 
 function shouldReactToMutation(mutations: MutationRecord[]): boolean {
@@ -122,18 +121,6 @@ export function patchBrowserHistoryForScreenContext() {
   };
   window.history.replaceState = function replaceStatePatched(...args) {
     replaceState.apply(this, args);
-    notifyScreenContextLabelListeners();
-  };
-
-  const proto = window.History.prototype;
-  const protoPushState = proto.pushState;
-  const protoReplaceState = proto.replaceState;
-  proto.pushState = function historyProtoPushState(...args) {
-    protoPushState.apply(this, args);
-    notifyScreenContextLabelListeners();
-  };
-  proto.replaceState = function historyProtoReplaceState(...args) {
-    protoReplaceState.apply(this, args);
     notifyScreenContextLabelListeners();
   };
 }

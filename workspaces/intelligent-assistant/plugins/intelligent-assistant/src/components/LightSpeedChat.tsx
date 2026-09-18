@@ -124,10 +124,7 @@ import {
   getFootnoteProps,
   SortOption,
 } from '../utils/lightspeed-chatbox-utils';
-import {
-  buildScreenContextAttachments,
-  shouldAttachScreenContext,
-} from '../utils/screen-context-utils';
+import { buildScreenContextAttachments } from '../utils/screen-context-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
 import { CollapsedHistoryStrip } from './CollapsedHistoryStrip';
@@ -1086,28 +1083,6 @@ export const LightspeedChat = ({
     [models, selectedModel],
   );
 
-  const showModelVisionScreenshotIndicator = useMemo(
-    () =>
-      shouldAttachScreenContext({
-        adminEnabled: screenContextEnabled,
-        sharingEnabled: isScreenContextSharingEnabled,
-        paused: isScreenContextPaused,
-        isFullscreen: isFullscreenMode,
-        domEnabled: domExtractionEnabled,
-        screenshotsEnabled,
-        supportsVision: selectedModelSupportsVision,
-      }).attachScreenshot,
-    [
-      domExtractionEnabled,
-      isFullscreenMode,
-      isScreenContextPaused,
-      isScreenContextSharingEnabled,
-      screenContextEnabled,
-      screenshotsEnabled,
-      selectedModelSupportsVision,
-    ],
-  );
-
   let screenContextChipState: 'recording' | 'paused' | 'unavailable' =
     'recording';
   if (isFullscreenMode) {
@@ -2036,9 +2011,6 @@ export const LightspeedChat = ({
                 onSelect={handleSelectedModel}
                 disabled={isSendButtonDisabled || messages.length > 0}
                 disabledTooltip={t('modelSelector.disabledTooltip')}
-                showVisionScreenshotIndicator={
-                  showModelVisionScreenshotIndicator
-                }
               />
               {screenContextEnabled &&
                 isScreenContextSharingEnabled &&

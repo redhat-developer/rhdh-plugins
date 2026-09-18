@@ -131,13 +131,8 @@ export const useScreenContextSettings = (
       if (!user) return;
 
       setIsScreenContextSharingEnabled(enabled);
-      if (!enabled) {
-        setIsScreenContextPaused(false);
-        persistPaused(false);
-      } else {
-        setIsScreenContextPaused(false);
-        persistPaused(false);
-      }
+      setIsScreenContextPaused(false);
+      persistPaused(false);
       persistSharing(enabled);
     },
     [user, persistSharing, persistPaused],

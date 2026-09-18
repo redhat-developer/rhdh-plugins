@@ -26,11 +26,11 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menú del historial de chat',
-    'modelSelector.visionScreenshot.line1': 'Image analysis supported.',
+    'modelSelector.visionScreenshot.line1': 'Análisis de imágenes compatible.',
     'modelSelector.visionScreenshot.line2':
-      'A screenshot will be included with your message.',
+      'Se incluirá una captura de pantalla con su mensaje.',
     'modelSelector.visionScreenshot.ariaLabel':
-      'Vision model screenshot context',
+      'Contexto de captura de pantalla del modelo de visión',
     'modelSelector.disabledTooltip':
       'Cada sesión de chat solo admite un modelo. Para cambiar de modelo, abra un nuevo chat.',
     'aria.chatbotSelector': 'Selector de chatbot',
@@ -353,37 +353,39 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'settings.savedPrompts.enable': 'Habilitar prompts guardados',
     'settings.savedPrompts.enabled.description':
       'Los prompts guardados están habilitados actualmente',
-    'settings.screenContext.enable': 'Enable screen context',
-    'settings.screenContext.disable': 'Disable screen context',
+    'settings.screenContext.enable': 'Habilitar contexto de pantalla',
+    'settings.screenContext.disable': 'Deshabilitar contexto de pantalla',
     'settings.screenContext.enabled.description':
-      'Screen context sharing is currently enabled',
+      'El uso compartido del contexto de pantalla está habilitado actualmente',
     'settings.screenContext.disabled.description':
-      'Screen context sharing is currently disabled',
-    'contextChip.label.paused': 'Context: paused',
-    'contextChip.label.unavailable': 'Context: unavailable',
-    'contextChip.label.softwareTemplates': 'Software templates',
-    'contextChip.tooltip.askAbout': 'Ask about {{label}}.',
+      'El uso compartido del contexto de pantalla está deshabilitado actualmente',
+    'contextChip.label.paused': 'Contexto: en pausa',
+    'contextChip.label.unavailable': 'Contexto: no disponible',
+    'contextChip.label.softwareTemplates': 'Plantillas de software',
+    'contextChip.tooltip.askAbout': 'Pregunte sobre {{label}}.',
     'contextChip.tooltip.template':
-      'Ask how to fill in the {{label}} template.',
-    'contextChip.tooltip.search': 'Ask about your search: {{label}}.',
+      'Pregunte cómo completar la plantilla {{label}}.',
+    'contextChip.tooltip.search': 'Pregunte sobre su búsqueda: {{label}}.',
     'contextChip.tooltip.paused':
-      'Screen context is paused. Click to resume sharing your current screen with the intelligent assistant.',
+      'El contexto de pantalla está en pausa. Haga clic para reanudar el uso compartido de su pantalla actual con el asistente inteligente.',
     'contextChip.tooltip.unavailable':
-      'Screen context is not available in fullscreen mode. Switch to Overlay or Docked mode to enable it.',
+      'El contexto de pantalla no está disponible en modo de pantalla completa. Cambie al modo Superposición o Anclar a la ventana para habilitarlo.',
     'contextChip.tooltip.line2.fullContext':
-      'Page text and a screenshot will be sent with your message.',
+      'El texto de la página y una captura de pantalla se enviarán con su mensaje.',
     'contextChip.tooltip.line2.adminLimited':
-      'Screen context sharing is limited by administrator settings.',
+      'El uso compartido del contexto de pantalla está limitado por la configuración del administrador.',
     'contextChip.tooltip.line2.screenshotOnly':
-      'Text extraction is disabled by your administrator. Screenshot only.',
+      'La extracción de texto está deshabilitada por su administrador. Solo captura de pantalla.',
+    'contextChip.tooltip.line2.domOffNoVision':
+      'La extracción de texto está deshabilitada por su administrador. Su modelo no admite el análisis de imágenes.',
     'contextChip.tooltip.line2.textOnlyNoVision':
-      'Text context only - your model does not support image analysis.',
+      'Solo contexto de texto: su modelo no admite el análisis de imágenes.',
     'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
-      'Text context only - screenshot capture is disabled by your administrator.',
+      'Solo contexto de texto: la captura de pantalla está deshabilitada por su administrador.',
     'contextChip.tooltip.line2.textOnlyCombined':
-      'Text context only - your model does not support image analysis and screenshot capture is disabled by your administrator.',
-    'contextChip.aria.pause': 'Pause screen context: {{label}}',
-    'contextChip.aria.resume': 'Resume screen context',
+      'Solo contexto de texto: su modelo no admite el análisis de imágenes y la captura de pantalla está deshabilitada por su administrador.',
+    'contextChip.aria.pause': 'Pausar contexto de pantalla: {{label}}',
+    'contextChip.aria.resume': 'Reanudar contexto de pantalla',
     'savedPrompts.tab.title': 'Prompts guardados',
     'savedPrompts.disabled.title': 'Los prompts guardados están deshabilitados',
     'savedPrompts.disabled.body':

@@ -367,6 +367,8 @@ export const intelligentAssistantMessages = {
     'Screen context sharing is limited by administrator settings.',
   'contextChip.tooltip.line2.screenshotOnly':
     'Text extraction is disabled by your administrator. Screenshot only.',
+  'contextChip.tooltip.line2.domOffNoVision':
+    'Text extraction is disabled by your administrator. Your model does not support image analysis.',
   'contextChip.tooltip.line2.textOnlyNoVision':
     'Text context only - your model does not support image analysis.',
   'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':

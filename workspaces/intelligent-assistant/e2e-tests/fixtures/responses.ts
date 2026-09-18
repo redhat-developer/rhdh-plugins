@@ -27,6 +27,7 @@ export const models = [
     type: 'model',
     owned_by: 'library',
     provider_id: 'mock-provider-1',
+    supportsVision: false,
   },
   {
     identifier: 'mock-provider-1/mock-model-2',
@@ -36,6 +37,7 @@ export const models = [
     type: 'model',
     owned_by: 'library',
     provider_id: 'mock-provider-1',
+    supportsVision: true,
   },
 ];
 

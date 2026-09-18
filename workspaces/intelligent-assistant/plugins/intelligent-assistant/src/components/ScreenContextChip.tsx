@@ -96,6 +96,7 @@ const LINE2_I18N: Record<ScreenContextTooltipLine2Key, string> = {
   fullContext: 'contextChip.tooltip.line2.fullContext',
   adminLimited: 'contextChip.tooltip.line2.adminLimited',
   screenshotOnly: 'contextChip.tooltip.line2.screenshotOnly',
+  domOffNoVision: 'contextChip.tooltip.line2.domOffNoVision',
   textOnlyNoVision: 'contextChip.tooltip.line2.textOnlyNoVision',
   textOnlyAdminScreenshotsOff:
     'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff',

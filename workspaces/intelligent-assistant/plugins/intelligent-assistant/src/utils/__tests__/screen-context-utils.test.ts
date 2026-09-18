@@ -59,6 +59,18 @@ describe('screen-context-utils', () => {
         getScreenContextRouteKind('/catalog', '?filters[kind]=component'),
       ).toBe('search');
     });
+
+    it('does not treat substring param names as search keys', () => {
+      expect(
+        getScreenContextRouteKind('/catalog/default/component/foo', '?freq=5'),
+      ).toBe('default');
+      expect(
+        getScreenContextRouteKind(
+          '/catalog/default/component/foo',
+          '?longterm=1',
+        ),
+      ).toBe('default');
+    });
   });
 
   describe('getPageTitleFromDom', () => {
@@ -301,6 +313,46 @@ describe('screen-context-utils', () => {
           supportsVision: true,
         }),
       ).toBe('screenshotOnly');
+    });
+
+    it('returns adminLimited when both dom and screenshots are disabled', () => {
+      expect(
+        getScreenContextTooltipLine2Key({
+          domEnabled: false,
+          screenshotsEnabled: false,
+          supportsVision: true,
+        }),
+      ).toBe('adminLimited');
+    });
+
+    it('returns textOnlyAdminScreenshotsOff when screenshots disabled by admin', () => {
+      expect(
+        getScreenContextTooltipLine2Key({
+          domEnabled: true,
+          screenshotsEnabled: false,
+          supportsVision: true,
+        }),
+      ).toBe('textOnlyAdminScreenshotsOff');
+    });
+
+    it('returns textOnlyCombined when screenshots off and model lacks vision', () => {
+      expect(
+        getScreenContextTooltipLine2Key({
+          domEnabled: true,
+          screenshotsEnabled: false,
+          supportsVision: false,
+        }),
+      ).toBe('textOnlyCombined');
+    });
+
+    it('returns domOffNoVision when dom off, screenshots on, but model lacks vision', () => {
+      expect(
+        getScreenContextTooltipLine2Key({
+          domEnabled: false,
+          screenshotsEnabled: true,
+          supportsVision: false,
+        }),
+      ).toBe('domOffNoVision');
     });
   });
 

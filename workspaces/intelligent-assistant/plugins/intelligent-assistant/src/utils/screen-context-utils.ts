@@ -42,6 +42,7 @@ export type ScreenContextTooltipLine2Key =
   | 'fullContext'
   | 'adminLimited'
   | 'screenshotOnly'
+  | 'domOffNoVision'
   | 'textOnlyNoVision'
   | 'textOnlyAdminScreenshotsOff'
   | 'textOnlyCombined';
@@ -238,7 +239,7 @@ export function getScreenContextRouteKind(
   }
   if (
     pathname.includes('/search') ||
-    SEARCH_QUERY_PARAM_KEYS.some(key => search.includes(`${key}=`)) ||
+    SEARCH_QUERY_PARAM_KEYS.some(key => new URLSearchParams(search).has(key)) ||
     search.includes('filters[') ||
     (pathname.includes('/catalog') && /[?&](query|term|filters\[)/.test(search))
   ) {
@@ -475,6 +476,11 @@ export function getScreenContextTooltipLine2Key(
     if (adminOff) {
       return 'textOnlyAdminScreenshotsOff';
     }
+  }
+
+  // DOM off, screenshots on, but model lacks vision — nothing attaches.
+  if (!domEnabled && screenshotsEnabled && !supportsVision) {
+    return 'domOffNoVision';
   }
 
   return 'adminLimited';

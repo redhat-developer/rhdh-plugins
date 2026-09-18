@@ -26,11 +26,11 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'チャット履歴メニュー',
-    'modelSelector.visionScreenshot.line1': 'Image analysis supported.',
+    'modelSelector.visionScreenshot.line1': '画像分析に対応しています。',
     'modelSelector.visionScreenshot.line2':
-      'A screenshot will be included with your message.',
+      'メッセージにスクリーンショットが含まれます。',
     'modelSelector.visionScreenshot.ariaLabel':
-      'Vision model screenshot context',
+      'ビジョンモデルのスクリーンショットコンテキスト',
     'modelSelector.disabledTooltip':
       '各チャットセッションは1つのモデルのみをサポートしています。モデルを切り替えるには、新しいチャットを開いてください。',
     'aria.chatbotSelector': 'チャットボットセレクター',
@@ -347,37 +347,39 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'settings.savedPrompts.enable': '保存済みプロンプトを有効にする',
     'settings.savedPrompts.enabled.description':
       '保存済みプロンプトは現在有効です',
-    'settings.screenContext.enable': 'Enable screen context',
-    'settings.screenContext.disable': 'Disable screen context',
+    'settings.screenContext.enable': '画面コンテキストを有効にする',
+    'settings.screenContext.disable': '画面コンテキストを無効にする',
     'settings.screenContext.enabled.description':
-      'Screen context sharing is currently enabled',
+      '画面コンテキストの共有は現在有効です',
     'settings.screenContext.disabled.description':
-      'Screen context sharing is currently disabled',
-    'contextChip.label.paused': 'Context: paused',
-    'contextChip.label.unavailable': 'Context: unavailable',
-    'contextChip.label.softwareTemplates': 'Software templates',
-    'contextChip.tooltip.askAbout': 'Ask about {{label}}.',
+      '画面コンテキストの共有は現在無効です',
+    'contextChip.label.paused': 'コンテキスト: 一時停止中',
+    'contextChip.label.unavailable': 'コンテキスト: 利用不可',
+    'contextChip.label.softwareTemplates': 'ソフトウェアテンプレート',
+    'contextChip.tooltip.askAbout': '{{label}}について質問する。',
     'contextChip.tooltip.template':
-      'Ask how to fill in the {{label}} template.',
-    'contextChip.tooltip.search': 'Ask about your search: {{label}}.',
+      '{{label}}テンプレートの記入方法を質問する。',
+    'contextChip.tooltip.search': '検索内容について質問する: {{label}}。',
     'contextChip.tooltip.paused':
-      'Screen context is paused. Click to resume sharing your current screen with the intelligent assistant.',
+      '画面コンテキストは一時停止中です。クリックすると、現在の画面の共有をインテリジェントアシスタントに再開します。',
     'contextChip.tooltip.unavailable':
-      'Screen context is not available in fullscreen mode. Switch to Overlay or Docked mode to enable it.',
+      'フルスクリーンモードでは画面コンテキストを利用できません。有効にするには、オーバーレイまたはウィンドウにドッキングモードに切り替えてください。',
     'contextChip.tooltip.line2.fullContext':
-      'Page text and a screenshot will be sent with your message.',
+      'ページのテキストとスクリーンショットがメッセージと一緒に送信されます。',
     'contextChip.tooltip.line2.adminLimited':
-      'Screen context sharing is limited by administrator settings.',
+      '画面コンテキストの共有は管理者の設定により制限されています。',
     'contextChip.tooltip.line2.screenshotOnly':
-      'Text extraction is disabled by your administrator. Screenshot only.',
+      'テキスト抽出は管理者によって無効になっています。スクリーンショットのみ。',
+    'contextChip.tooltip.line2.domOffNoVision':
+      'テキスト抽出は管理者によって無効になっています。ご利用のモデルは画像分析に対応していません。',
     'contextChip.tooltip.line2.textOnlyNoVision':
-      'Text context only - your model does not support image analysis.',
+      'テキストコンテキストのみ - ご利用のモデルは画像分析に対応していません。',
     'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
-      'Text context only - screenshot capture is disabled by your administrator.',
+      'テキストコンテキストのみ - スクリーンショットの取得は管理者によって無効になっています。',
     'contextChip.tooltip.line2.textOnlyCombined':
-      'Text context only - your model does not support image analysis and screenshot capture is disabled by your administrator.',
-    'contextChip.aria.pause': 'Pause screen context: {{label}}',
-    'contextChip.aria.resume': 'Resume screen context',
+      'テキストコンテキストのみ - ご利用のモデルは画像分析に対応しておらず、スクリーンショットの取得も管理者によって無効になっています。',
+    'contextChip.aria.pause': '画面コンテキストを一時停止: {{label}}',
+    'contextChip.aria.resume': '画面コンテキストを再開',
     'savedPrompts.tab.title': '保存済みプロンプト',
     'savedPrompts.disabled.title': '保存済みプロンプトは無効です',
     'savedPrompts.disabled.body':
