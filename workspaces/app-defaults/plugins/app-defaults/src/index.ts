@@ -46,6 +46,19 @@ export { appDrawerExtension, appDrawerModule } from './drawer/appDrawerModule';
 
 export { learningPathsModule } from './learning-paths';
 
+export {
+  appSidebarExtension,
+  appSidebarModule,
+} from './sidebar/appSidebarModule';
+export { AppSidebar } from './sidebar/AppSidebar';
+export type { AppSidebarProps } from './sidebar/AppSidebar';
+export {
+  CompanyLogo,
+  useBrandingFullLogo,
+  useBrandingIconLogo,
+} from './sidebar/logo';
+export type { CompanyLogoProps, LogoURLs } from './sidebar/logo';
+
 /**
  * Feature loader that registers the RHDH app defaults module and all
  * plugin overrides (catalog, catalog graph, scaffolder, API docs, TechDocs)

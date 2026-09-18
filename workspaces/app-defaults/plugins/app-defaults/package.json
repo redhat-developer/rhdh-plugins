@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./app-drawer-module": "./src/appDrawerModuleExport.ts",
+    "./app-sidebar-module": "./src/appSidebarModuleExport.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
     "./catalog-plugin-override": "./src/catalogPluginOverrideExport.ts",
     "./catalog-graph-plugin-override": "./src/catalogGraphPluginOverrideExport.ts",
@@ -21,6 +22,9 @@
     "*": {
       "app-drawer-module": [
         "src/appDrawerModuleExport.ts"
+      ],
+      "app-sidebar-module": [
+        "src/appSidebarModuleExport.ts"
       ],
       "app-defaults-translations-module": [
         "src/appDefaultsTranslationsModuleExport.ts"
@@ -86,8 +90,11 @@
     "@backstage/plugin-catalog-graph": "^0.6.7",
     "@backstage/plugin-catalog-import": "^0.13.17",
     "@backstage/plugin-catalog-react": "^3.2.2",
+    "@backstage/plugin-notifications": "^0.5.20",
     "@backstage/plugin-permission-react": "^0.5.4",
     "@backstage/plugin-scaffolder": "^1.38.2",
+    "@backstage/plugin-search": "^1.7.7",
+    "@backstage/plugin-search-react": "^1.11.8",
     "@backstage/plugin-techdocs": "^1.18.0",
     "@backstage/plugin-techdocs-common": "^0.1.1",
     "@backstage/ui": "^0.17.1",
@@ -97,7 +104,8 @@
     "@remixicon/react": ">=4.6.0 <4.9.0"
   },
   "peerDependencies": {
-    "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+    "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
+    "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5",
