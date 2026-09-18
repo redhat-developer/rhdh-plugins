@@ -2,7 +2,7 @@
 
 ## 1. Shared contract and metadata mapping
 
-- [ ] 1.1 Implement and export the design D2 `SkillRecord` and `SkillSnapshot` schemas and runtime validators for both connectors and the common provider.
+- [ ] 1.1 Implement and export the design D2 `SkillRecord` and `SkillSnapshot` schemas and runtime validators from `skills-common` for both connectors and the common provider.
 - [ ] 1.2 Implement design D3's native-field mappings, precedence, optional metadata, and allowlisted extensions; add OCI SkillCard/Markdown and npx fixtures, including conflicting versions.
 - [ ] 1.3 Implement pure helpers for stable identity, catalog-valid tags, SemVer fallback, and OCI/npx reference serialization with round-trip tests; cover empty, invalid, and overlength tags using Backstage's validator.
 - [ ] 1.4 Test snapshot status invariants, unknown versions, duplicate keys, source mismatch, response/count limits, total discovery budgets, and pagination cycles; document the shared REST contract.

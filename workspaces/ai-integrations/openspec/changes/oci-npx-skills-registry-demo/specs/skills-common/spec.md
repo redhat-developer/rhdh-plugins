@@ -2,7 +2,7 @@
 
 ### Requirement: Shared normalized skill contract
 
-The SDK SHALL define and validate the `SkillRecord` and `SkillSnapshot` v1
+The `skills-common` library SHALL define and validate the `SkillRecord` and `SkillSnapshot` v1
 schemas in design D2 for both connectors and the common catalog provider. It
 SHALL provide pure normalization, identity, and reference helpers without owning
 catalog mutations, runtime storage, or scheduled tasks. Connectors SHALL emit
@@ -23,7 +23,7 @@ normalized records, not `AiResource` entities or raw native files, on
 ### Requirement: Explicit metadata normalization
 
 Connectors SHALL follow the native-to-normalized mapping and ordered precedence
-in design D3. The SDK SHALL validate normalized types and preserve the explicitly
+in design D3. The shared library SHALL validate normalized types and preserve the explicitly
 mapped `extensions.oci` or `extensions.npx` fields. Unknown native metadata SHALL
 NOT become arbitrary entity fields or annotations. Authors SHALL NOT imply
 catalog ownership and SkillCard namespaces SHALL NOT override catalog namespaces.
@@ -41,7 +41,7 @@ catalog ownership and SkillCard namespaces SHALL NOT override catalog namespaces
 
 ### Requirement: Snapshot completeness and validation
 
-The SDK SHALL enforce design D2/D6's source identity, schema version, size/count,
+The shared library SHALL enforce design D2/D6's source identity, schema version, size/count,
 status, timestamps, unique record keys, and disjoint successful/failed key sets.
 `loading` SHALL have empty arrays and a null observation time. Completed attempts
 SHALL have a UTC observation time. `ready` SHALL mean all discovery pages and
@@ -74,7 +74,7 @@ even if no failed keys are known. `failed` SHALL have no skill records.
 
 ### Requirement: Stable identity and serialized references
 
-The SDK SHALL implement design D5's identity tuple and deterministic catalog name,
+The shared library SHALL implement design D5's identity tuple and deterministic catalog name,
 SemVer fallback, and source-reference construction/parsing. OCI URI digests SHALL
 match the record digest. HTTPS artifact URLs SHALL contain neither credentials
 nor fragments; npx references SHALL serialize as `<sourceUri>#<digest>` with a

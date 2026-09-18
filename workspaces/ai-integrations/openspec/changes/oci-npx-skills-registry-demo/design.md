@@ -20,7 +20,7 @@ Agent Skills index -> npx connector-+
 ```
 
 Connectors own discovery, retrieval, integrity checks, native metadata parsing,
-and normalized snapshots. They do not construct catalog entities. The shared SDK
+and normalized snapshots. They do not construct catalog entities. The `skills-common` library
 owns schemas, validation, and pure mapping helpers; it owns no runtime scheduler,
 storage, or catalog connection. One catalog provider implementation owns
 `AiResource` construction, configured defaults, and catalog reconciliation, with

@@ -39,15 +39,15 @@ This explicitly replaces the earlier manifest-only discovery restriction.
 
 ### New Capabilities
 
-- `skills-provider-sdk`: Shared record and snapshot schemas, metadata mapping
+- `skills-common`: Shared record and snapshot schemas, metadata mapping
   rules, validation, and pure identity/reference helpers.
-- `oci-skills-provider`: Public Quay/OCTO connector and normalized REST API.
-- `npx-skills-provider`: Public npx-compatible connector and normalized REST API.
+- `oci-skills-connector`: Public Quay/OCTO connector and normalized REST API.
+- `npx-skills-connector`: Public npx-compatible connector and normalized REST API.
 - `skills-catalog-provider`: Common REST consumer, `AiResource` construction,
   and source-isolated catalog reconciliation.
 
-The existing OCI/npx capability names are retained; their role is now source
-data provision, not Backstage `EntityProvider` implementation.
+The two connectors feed `skills-catalog-provider`, the sole catalog entity
+provider capability. `skills-common` supplies the library shared by all three.
 
 ### Modified Capabilities
 
