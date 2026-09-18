@@ -310,7 +310,7 @@ describe('ScorecardApiClient', () => {
 
   describe('getAggregationTimeSeries', () => {
     const validTimeSeries = {
-      id: 'avgDeploymentFrequency',
+      id: 'deploymentFrequencyKpi',
       metricId: 'dora.deploymentFrequency',
       points: [
         {
@@ -346,12 +346,12 @@ describe('ScorecardApiClient', () => {
       });
 
       const result = await client.getAggregationTimeSeries({
-        aggregationId: 'avgDeploymentFrequency',
+        aggregationId: 'deploymentFrequencyKpi',
         ...range,
       });
 
       expect(fetchApi.fetch).toHaveBeenCalledWith(
-        'http://localhost:7007/api/scorecard/aggregations/avgDeploymentFrequency/time-series?from=2026-07-24T00%3A00%3A00.000Z&to=2026-08-23T00%3A00%3A00.000Z',
+        'http://localhost:7007/api/scorecard/aggregations/deploymentFrequencyKpi/time-series?from=2026-07-24T00%3A00%3A00.000Z&to=2026-08-23T00%3A00%3A00.000Z',
       );
       expect(result).toEqual(validTimeSeries);
     });
@@ -371,7 +371,7 @@ describe('ScorecardApiClient', () => {
     it('should throw when from or to is missing', async () => {
       await expect(
         client.getAggregationTimeSeries({
-          aggregationId: 'avgDeploymentFrequency',
+          aggregationId: 'deploymentFrequencyKpi',
           from: '',
           to: range.to,
         }),
@@ -389,7 +389,7 @@ describe('ScorecardApiClient', () => {
 
       await expect(
         client.getAggregationTimeSeries({
-          aggregationId: 'avgDeploymentFrequency',
+          aggregationId: 'deploymentFrequencyKpi',
           ...range,
         }),
       ).rejects.toThrow(
@@ -408,7 +408,7 @@ describe('ScorecardApiClient', () => {
 
       await expect(
         client.getAggregationTimeSeries({
-          aggregationId: 'avgDeploymentFrequency',
+          aggregationId: 'deploymentFrequencyKpi',
           ...range,
         }),
       ).rejects.toThrow(
@@ -658,11 +658,11 @@ describe('ScorecardApiClient', () => {
     const collectorsResponse = {
       collectors: [
         {
-          id: 'github:deploymentWorkflowRuns',
+          id: 'github:doraDeploymentWorkflowRuns',
           description: 'Collects deployments from GitHub Actions.',
         },
         {
-          id: 'jira:incidents',
+          id: 'jira:doraIncidents',
           description: 'Collects Jira incidents.',
         },
       ],

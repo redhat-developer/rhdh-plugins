@@ -242,10 +242,10 @@ describe('extractPluginName', () => {
   });
 
   it('should use the first segment of a collector id', () => {
-    expect(extractPluginName('github:deploymentWorkflowRuns', 'Unknown')).toBe(
-      'Github',
-    );
-    expect(extractPluginName('jira:incidents', 'Unknown')).toBe('Jira');
+    expect(
+      extractPluginName('github:doraDeploymentWorkflowRuns', 'Unknown'),
+    ).toBe('Github');
+    expect(extractPluginName('jira:doraIncidents', 'Unknown')).toBe('Jira');
   });
 
   it('should return the fallback when the id is missing', () => {

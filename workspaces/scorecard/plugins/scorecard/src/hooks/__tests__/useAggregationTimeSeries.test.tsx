@@ -17,8 +17,10 @@
 import { renderHook } from '@testing-library/react';
 import { useApi } from '@backstage/core-plugin-api';
 import { useQuery } from '@tanstack/react-query';
+import type { AggregatedMetricTimeSeriesResponse } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-import { useAggregationMetadata } from '../useAggregationMetadata';
+import { useAggregationTimeSeries } from '../useAggregationTimeSeries';
+import { TIME_SERIES_DEFAULT_RANGE_DAYS } from '../../utils/constants';
 
 jest.mock('@backstage/core-plugin-api');
 jest.mock('@tanstack/react-query', () => ({
@@ -37,17 +39,34 @@ jest.mock('../useTranslation', () => ({
 const mockUseApi = useApi as jest.MockedFunction<typeof useApi>;
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>;
 
-describe('useAggregationMetadata', () => {
+describe('useAggregationTimeSeries', () => {
   const mockScorecardApi = {
-    getAggregationMetadata: jest.fn(),
+    getAggregationTimeSeries: jest.fn(),
   };
 
-  const mockMeta = {
-    title: 'Title',
-    description: 'Desc',
-    type: 'number' as const,
-    history: true,
-    aggregationType: 'statusGrouped' as const,
+  const timeSeries: AggregatedMetricTimeSeriesResponse = {
+    id: 'deploymentFrequencyKpi',
+    metricId: 'dora.deploymentFrequency',
+    points: [
+      {
+        value: 10,
+        successCount: 5,
+        errorCount: 0,
+        total: 5,
+        status: 'success',
+        timestamp: '2026-08-23T00:00:00.000Z',
+      },
+    ],
+    metadata: {
+      title: 'DORA - Deployment Frequency',
+      description: 'Weekly production deploys',
+      type: 'number',
+      history: true,
+      visualization: 'sparkline',
+      aggregationType: 'average',
+    },
+    thresholds: { rules: [] },
+    aggregationChartDisplayColor: 'warning.main',
   };
 
   beforeEach(() => {
@@ -55,58 +74,21 @@ describe('useAggregationMetadata', () => {
     mockUseApi.mockReturnValue(mockScorecardApi);
   });
 
-  it('should return metadata when API succeeds', () => {
+  it('should return time series data when the query succeeds', () => {
     mockUseQuery.mockReturnValue({
       isLoading: false,
       error: null,
-      data: mockMeta,
+      data: timeSeries,
     } as any);
 
     const { result } = renderHook(() =>
-      useAggregationMetadata({ aggregationId: 'kpi1' }),
+      useAggregationTimeSeries({ aggregationId: 'deploymentFrequencyKpi' }),
     );
 
     expect(result.current).toEqual({
-      data: mockMeta,
+      data: timeSeries,
       isLoading: false,
       error: undefined,
-    });
-  });
-
-  it('should return loading state from useQuery', () => {
-    mockUseQuery.mockReturnValue({
-      isLoading: true,
-      error: null,
-      data: undefined,
-    } as any);
-
-    const { result } = renderHook(() =>
-      useAggregationMetadata({ aggregationId: 'kpi1' }),
-    );
-
-    expect(result.current).toEqual({
-      data: undefined,
-      isLoading: true,
-      error: undefined,
-    });
-  });
-
-  it('should return error when useQuery has error', () => {
-    const apiError = new Error('metadata failed');
-    mockUseQuery.mockReturnValue({
-      isLoading: false,
-      error: apiError,
-      data: undefined,
-    } as any);
-
-    const { result } = renderHook(() =>
-      useAggregationMetadata({ aggregationId: 'kpi1' }),
-    );
-
-    expect(result.current).toEqual({
-      data: undefined,
-      isLoading: false,
-      error: apiError,
     });
   });
 
@@ -117,11 +99,17 @@ describe('useAggregationMetadata', () => {
       data: undefined,
     } as any);
 
-    renderHook(() => useAggregationMetadata({ aggregationId: 'metaAgg' }));
+    renderHook(() =>
+      useAggregationTimeSeries({ aggregationId: 'deploymentFrequencyKpi' }),
+    );
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ['aggregationMetadata', 'metaAgg'],
+        queryKey: [
+          'aggregationTimeSeries',
+          'deploymentFrequencyKpi',
+          TIME_SERIES_DEFAULT_RANGE_DAYS,
+        ],
         enabled: true,
       }),
     );
@@ -134,23 +122,7 @@ describe('useAggregationMetadata', () => {
       data: undefined,
     } as any);
 
-    renderHook(() => useAggregationMetadata({ aggregationId: '' }));
-
-    expect(mockUseQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        enabled: false,
-      }),
-    );
-  });
-
-  it('should disable the query when aggregationId is whitespace only', () => {
-    mockUseQuery.mockReturnValue({
-      isLoading: false,
-      error: null,
-      data: undefined,
-    } as any);
-
-    renderHook(() => useAggregationMetadata({ aggregationId: '   ' }));
+    renderHook(() => useAggregationTimeSeries({ aggregationId: '' }));
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -167,7 +139,10 @@ describe('useAggregationMetadata', () => {
     } as any);
 
     renderHook(() =>
-      useAggregationMetadata({ aggregationId: 'kpi1', enabled: false }),
+      useAggregationTimeSeries({
+        aggregationId: 'deploymentFrequencyKpi',
+        enabled: false,
+      }),
     );
 
     expect(mockUseQuery).toHaveBeenCalledWith(
@@ -185,56 +160,49 @@ describe('useAggregationMetadata', () => {
     } as any);
 
     const { result } = renderHook(() =>
-      useAggregationMetadata({ aggregationId: 'kpi1', enabled: false }),
+      useAggregationTimeSeries({
+        aggregationId: 'deploymentFrequencyKpi',
+        enabled: false,
+      }),
     );
 
     expect(result.current.isLoading).toBe(false);
   });
 
-  it('should call getAggregationMetadata with aggregationId in queryFn', async () => {
-    mockScorecardApi.getAggregationMetadata.mockResolvedValue(mockMeta);
+  it('should call getAggregationTimeSeries with aggregationId and a 30-day range', async () => {
+    mockScorecardApi.getAggregationTimeSeries.mockResolvedValue(timeSeries);
     mockUseQuery.mockReturnValue({
       isLoading: false,
       error: null,
       data: undefined,
     } as any);
 
-    renderHook(() => useAggregationMetadata({ aggregationId: 'aggY' }));
+    renderHook(() =>
+      useAggregationTimeSeries({ aggregationId: 'deploymentFrequencyKpi' }),
+    );
 
     const queryFn = mockUseQuery.mock.calls[0][0]
       .queryFn as () => Promise<unknown>;
     await queryFn();
 
-    expect(mockScorecardApi.getAggregationMetadata).toHaveBeenCalledWith(
-      'aggY',
-    );
-  });
-
-  it('should propagate Error instances from the API', async () => {
-    const apiError = new Error('metadata failed');
-    mockScorecardApi.getAggregationMetadata.mockRejectedValue(apiError);
-    mockUseQuery.mockReturnValue({
-      isLoading: false,
-      error: null,
-      data: undefined,
-    } as any);
-
-    renderHook(() => useAggregationMetadata({ aggregationId: 'kpi1' }));
-
-    const queryFn = mockUseQuery.mock.calls[0][0]
-      .queryFn as () => Promise<unknown>;
-    await expect(queryFn()).rejects.toBe(apiError);
+    expect(mockScorecardApi.getAggregationTimeSeries).toHaveBeenCalledWith({
+      aggregationId: 'deploymentFrequencyKpi',
+      from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      to: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+    });
   });
 
   it('should wrap non-Error rejections with translated fetch error', async () => {
-    mockScorecardApi.getAggregationMetadata.mockRejectedValue(503);
+    mockScorecardApi.getAggregationTimeSeries.mockRejectedValue(503);
     mockUseQuery.mockReturnValue({
       isLoading: false,
       error: null,
       data: undefined,
     } as any);
 
-    renderHook(() => useAggregationMetadata({ aggregationId: 'kpi1' }));
+    renderHook(() =>
+      useAggregationTimeSeries({ aggregationId: 'deploymentFrequencyKpi' }),
+    );
 
     const queryFn = mockUseQuery.mock.calls[0][0]
       .queryFn as () => Promise<unknown>;

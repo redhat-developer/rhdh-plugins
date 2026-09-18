@@ -13,31 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@backstage/core-plugin-api';
+import type { AggregatedMetricTimeSeriesResponse } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardApiRef } from '../api';
+import { TIME_SERIES_DEFAULT_RANGE_DAYS } from '../utils/constants';
+import { getDefaultTimeSeriesRange } from '../utils/timeSeriesRange';
 import { useTranslation } from './useTranslation';
 import { UseResponseData } from './types';
-import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-interface UseAggregatedScorecardOptions {
+interface UseAggregationTimeSeriesOptions {
   aggregationId: string;
   enabled?: boolean;
 }
 
-export const useAggregatedScorecard = ({
+export const useAggregationTimeSeries = ({
   aggregationId,
   enabled = true,
-}: UseAggregatedScorecardOptions): UseResponseData<AggregatedMetricResult> => {
+}: UseAggregationTimeSeriesOptions): UseResponseData<AggregatedMetricTimeSeriesResponse> => {
   const { t } = useTranslation();
   const scorecardApi = useApi(scorecardApiRef);
 
+  const queryEnabled = Boolean(aggregationId?.trim()) && enabled;
+
   const { error, isLoading, data } = useQuery({
-    queryKey: ['aggregatedScorecard', aggregationId],
+    queryKey: [
+      'aggregationTimeSeries',
+      aggregationId,
+      TIME_SERIES_DEFAULT_RANGE_DAYS,
+    ],
     queryFn: async () => {
       try {
-        return await scorecardApi.getAggregatedScorecard(aggregationId);
+        const { from, to } = getDefaultTimeSeriesRange();
+        return await scorecardApi.getAggregationTimeSeries({
+          aggregationId,
+          from,
+          to,
+        });
       } catch (err) {
         if (err instanceof Error) {
           throw err;
@@ -49,12 +63,12 @@ export const useAggregatedScorecard = ({
         );
       }
     },
-    enabled: enabled,
+    enabled: queryEnabled,
   });
 
   return {
     data,
-    isLoading: enabled && isLoading,
+    isLoading: queryEnabled && isLoading,
     error: error ?? undefined,
   };
 };
