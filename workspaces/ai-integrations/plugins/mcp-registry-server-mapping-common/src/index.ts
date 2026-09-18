@@ -24,12 +24,23 @@
 
 export type {
   McpServerDocument,
+  McpServerMeta,
   McpRegistryRemote,
   McpRegistryIcon,
   McpRegistryPackage,
   McpServerRepository,
   McpServerMappingDefaults,
   McpServerMappingResult,
+  McpInput,
+  McpInputWithVariables,
+  McpKeyValueInput,
+  McpArgument,
+  McpPositionalArgument,
+  McpNamedArgument,
+  McpLocalTransport,
+  McpStdioTransport,
+  McpStreamableHttpTransport,
+  McpSseTransport,
 } from './types';
 export {
   mapServerToEntity,

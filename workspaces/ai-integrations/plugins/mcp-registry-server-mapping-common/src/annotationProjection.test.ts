@@ -33,6 +33,7 @@ import {
 } from './annotationProjection';
 import { buildLinks, trackConsumedRemotePaths } from './mapServerToEntity';
 import type { McpServerDocument } from './types';
+import { assertServerJsonSchema } from './util';
 
 /** Draft server.json schema URI used by fixtures and examples. */
 const SERVER_SCHEMA_URI =
@@ -611,13 +612,10 @@ describe('projectAnnotations', () => {
 
     it('serializes non-string scalars as strings', () => {
       const doc = makeMinimalDoc({
-        packages: [
-          {
-            registryType: 'npm',
-            identifier: 'pkg',
-            transport: { port: 8080, secure: true },
-          },
-        ],
+        _meta: {
+          port: 8080,
+          secure: true,
+        },
       });
       const { consumedPaths, reservedAnnotationKeys } =
         makeMinimalConsumed(doc);
@@ -627,12 +625,8 @@ describe('projectAnnotations', () => {
         reservedAnnotationKeys,
       );
 
-      expect(result['modelcontextprotocol.io/packages.0.transport.port']).toBe(
-        '8080',
-      );
-      expect(
-        result['modelcontextprotocol.io/packages.0.transport.secure'],
-      ).toBe('true');
+      expect(result['modelcontextprotocol.io/xmeta.port']).toBe('8080');
+      expect(result['modelcontextprotocol.io/xmeta.secure']).toBe('true');
     });
   });
 
@@ -834,19 +828,13 @@ describe('projectAnnotations', () => {
     it('truncates and hashes when name segment exceeds 63 chars', () => {
       // Create deeply nested path that exceeds 63 chars
       const doc = makeMinimalDoc({
-        packages: [
-          {
-            registryType: 'npm',
-            identifier: 'pkg',
-            transport: {
-              configuration: {
-                advancedSettings: {
-                  veryLongPropertyNameThatWillCauseThisToExceed: 'value',
-                },
-              },
+        _meta: {
+          'io.modelcontextprotocol.registry/publisher-provided': {
+            advancedSettings: {
+              veryLongPropertyNameThatWillCauseThisToExceed: 'value',
             },
           },
-        ],
+        },
       });
       const { consumedPaths, reservedAnnotationKeys } =
         makeMinimalConsumed(doc);
@@ -1056,7 +1044,6 @@ describe('projectAnnotations', () => {
             url: 'https://example.com/mcp',
             variables: {
               apiKey: {
-                name: 'apiKey',
                 isSecret: true,
                 default: 'key-12345',
                 choices: ['key-a', 'key-b'],
@@ -1080,13 +1067,13 @@ describe('projectAnnotations', () => {
       expect(allValues).not.toContain('key-b');
 
       expect(
-        result['modelcontextprotocol.io/remotes.0.variables.apikey.name'],
-      ).toBe('apiKey');
-      expect(
         result[
           'modelcontextprotocol.io/remotes.0.variables.apikey.placeholder'
         ],
       ).toBe('your-api-key');
+      expect(
+        result['modelcontextprotocol.io/remotes.0.variables.apikey.issecret'],
+      ).toBe('true');
     });
 
     it('retains default/value/choices for non-secret input', () => {
@@ -1311,7 +1298,7 @@ describe('projectAnnotations', () => {
   /* ---------------------------------------------------------------- */
 
   describe('D12 null/empty omission', () => {
-    it('omits null scalar values', () => {
+    it('rejects null scalar values during structural validation', () => {
       const doc = makeMinimalDoc({
         repository: {
           url: 'https://github.com/org/repo',
@@ -1319,21 +1306,9 @@ describe('projectAnnotations', () => {
           id: null as unknown as string,
         },
       });
-      const { consumedPaths, reservedAnnotationKeys } =
-        makeMinimalConsumed(doc);
-      const result = projectAnnotations(
-        doc,
-        consumedPaths,
-        reservedAnnotationKeys,
-      );
 
-      expect(result).not.toHaveProperty(
-        'modelcontextprotocol.io/repository.id',
-      );
-      // Non-null sibling still projects
-      expect(result['modelcontextprotocol.io/repository.source']).toBe(
-        'github',
-      );
+      // null is not a valid string field — structural validation rejects it
+      expect(() => assertServerJsonSchema(doc)).toThrow(/id to be a string/);
     });
 
     it('omits empty array (no annotations for subtree)', () => {
@@ -1370,13 +1345,7 @@ describe('projectAnnotations', () => {
 
     it('projects false as "false"', () => {
       const doc = makeMinimalDoc({
-        packages: [
-          {
-            registryType: 'npm',
-            identifier: 'pkg',
-            transport: { verbose: false },
-          },
-        ],
+        _meta: { verbose: false },
       });
       const { consumedPaths, reservedAnnotationKeys } =
         makeMinimalConsumed(doc);
@@ -1386,20 +1355,12 @@ describe('projectAnnotations', () => {
         reservedAnnotationKeys,
       );
 
-      expect(
-        result['modelcontextprotocol.io/packages.0.transport.verbose'],
-      ).toBe('false');
+      expect(result['modelcontextprotocol.io/xmeta.verbose']).toBe('false');
     });
 
     it('projects 0 as "0"', () => {
       const doc = makeMinimalDoc({
-        packages: [
-          {
-            registryType: 'npm',
-            identifier: 'pkg',
-            transport: { retries: 0 },
-          },
-        ],
+        _meta: { retries: 0 },
       });
       const { consumedPaths, reservedAnnotationKeys } =
         makeMinimalConsumed(doc);
@@ -1409,20 +1370,12 @@ describe('projectAnnotations', () => {
         reservedAnnotationKeys,
       );
 
-      expect(
-        result['modelcontextprotocol.io/packages.0.transport.retries'],
-      ).toBe('0');
+      expect(result['modelcontextprotocol.io/xmeta.retries']).toBe('0');
     });
 
     it('projects empty string as ""', () => {
       const doc = makeMinimalDoc({
-        packages: [
-          {
-            registryType: 'npm',
-            identifier: 'pkg',
-            transport: { label: '' },
-          },
-        ],
+        _meta: { label: '' },
       });
       const { consumedPaths, reservedAnnotationKeys } =
         makeMinimalConsumed(doc);
@@ -1432,9 +1385,7 @@ describe('projectAnnotations', () => {
         reservedAnnotationKeys,
       );
 
-      expect(result['modelcontextprotocol.io/packages.0.transport.label']).toBe(
-        '',
-      );
+      expect(result['modelcontextprotocol.io/xmeta.label']).toBe('');
     });
   });
 
@@ -1651,7 +1602,7 @@ describe('projectAnnotations', () => {
       const doc = makeMinimalDoc({
         repository: {
           url: 'https://github.com/org/repo',
-          id: null as unknown as string,
+          source: 'github',
         },
         icons: [],
         _meta: {},
@@ -1686,7 +1637,6 @@ describe('projectAnnotations', () => {
             headers: [{ name: 'X-Api-Key', isSecret: false, default: 'test' }],
             variables: {
               region: {
-                name: 'region',
                 isSecret: false,
                 default: 'us-east-1',
               },
@@ -1709,8 +1659,8 @@ describe('projectAnnotations', () => {
         result['modelcontextprotocol.io/remotes.0.headers.0.default'],
       ).toBe('test');
       expect(
-        result['modelcontextprotocol.io/remotes.0.variables.region.name'],
-      ).toBe('region');
+        result['modelcontextprotocol.io/remotes.0.variables.region.issecret'],
+      ).toBe('false');
       expect(
         result['modelcontextprotocol.io/remotes.0.variables.region.default'],
       ).toBe('us-east-1');
@@ -1728,10 +1678,20 @@ describe('projectAnnotations', () => {
             fileSha256: 'abc123',
             registryBaseUrl: 'https://registry.npmjs.org',
             packageArguments: [
-              { name: 'port', isSecret: false, default: '3000' },
+              {
+                type: 'named',
+                name: '--port',
+                isSecret: false,
+                default: '3000',
+              },
             ],
             runtimeArguments: [
-              { name: 'verbose', isSecret: false, default: 'true' },
+              {
+                type: 'named',
+                name: '--verbose',
+                isSecret: false,
+                default: 'true',
+              },
             ],
           },
         ],
@@ -1764,10 +1724,10 @@ describe('projectAnnotations', () => {
       );
       expect(
         result['modelcontextprotocol.io/packages.0.packagearguments.0.name'],
-      ).toBe('port');
+      ).toBe('--port');
       expect(
         result['modelcontextprotocol.io/packages.0.runtimearguments.0.name'],
-      ).toBe('verbose');
+      ).toBe('--verbose');
     });
 
     it('projects _meta with reverse-DNS keys (truncated with hash)', () => {

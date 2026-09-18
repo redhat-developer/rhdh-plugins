@@ -35,7 +35,7 @@ function makeMinimalDoc(
 }
 
 describe('assertServerJsonSchema', () => {
-  it('accepts an absolute URL whose basename is server.schema.json', () => {
+  it('accepts a structurally valid server.json document', () => {
     expect(() => assertServerJsonSchema(makeMinimalDoc())).not.toThrow();
     expect(() =>
       assertServerJsonSchema(
@@ -49,7 +49,9 @@ describe('assertServerJsonSchema', () => {
 
   it('rejects missing or non-string $schema', () => {
     expect(() =>
-      assertServerJsonSchema(makeMinimalDoc({ $schema: undefined })),
+      assertServerJsonSchema(
+        makeMinimalDoc({ $schema: undefined as unknown as string }),
+      ),
     ).toThrow(TypeError);
     expect(() =>
       assertServerJsonSchema(
@@ -71,6 +73,40 @@ describe('assertServerJsonSchema', () => {
         }),
       ),
     ).toThrow(/basename to be "server\.schema\.json"/);
+  });
+
+  it('rejects unknown top-level fields', () => {
+    expect(() =>
+      assertServerJsonSchema({
+        ...makeMinimalDoc(),
+        extraField: 'nope',
+      }),
+    ).toThrow(/unknown field "extraField"/);
+  });
+
+  it('rejects mistyped required fields', () => {
+    expect(() =>
+      assertServerJsonSchema({
+        ...makeMinimalDoc(),
+        name: 1 as unknown as string,
+      }),
+    ).toThrow(/name to be a string/);
+  });
+
+  it('rejects mistyped nested fields', () => {
+    expect(() =>
+      assertServerJsonSchema(
+        makeMinimalDoc({
+          remotes: [
+            {
+              type: 'streamable-http',
+              url: 'https://example.com/mcp',
+              headers: [{ name: 'X', isSecret: 'yes' as unknown as boolean }],
+            },
+          ],
+        }),
+      ),
+    ).toThrow(/isSecret to be a boolean/);
   });
 });
 
