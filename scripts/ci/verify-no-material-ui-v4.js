@@ -266,7 +266,9 @@ async function main() {
   process.exit(1);
 }
 
-main().catch(error => {
+try {
+  await main();
+} catch (error) {
   console.error(error.stack);
   process.exit(1);
-});
+}
