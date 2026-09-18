@@ -75,6 +75,12 @@ Documents must be structurally valid `McpServerDocument` values:
 Invalid input throws `TypeError` (or `Error` for missing required mapping
 fields) with an actionable message.
 
+## `server.json` types
+
+Field-level breakdowns of the MCP Registry **v1.8.1** `server.json` TypeScript
+shapes live in [`docs/server-json-types.md`](./docs/server-json-types.md)
+(source of truth: [`src/types.ts`](./src/types.ts)).
+
 ### Caller defaults (`McpServerMappingDefaults`)
 
 | Field                  | Default        | Purpose                                         |
