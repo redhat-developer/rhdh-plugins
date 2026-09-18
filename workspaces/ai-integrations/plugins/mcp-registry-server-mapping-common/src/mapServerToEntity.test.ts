@@ -130,10 +130,59 @@ describe('mapRemotes', () => {
     expect(result).toEqual([{ type: 'undefined', url: 'https://example.com' }]);
   });
 
+  it('uses placeholderRemoteUrl before websiteUrl for D8 placeholder', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: undefined,
+        websiteUrl: 'https://website.example.com',
+      }),
+      'https://override.example.com/mcp',
+    );
+    expect(result).toEqual([
+      { type: 'undefined', url: 'https://override.example.com/mcp' },
+    ]);
+  });
+
+  it('falls back to websiteUrl when placeholderRemoteUrl fails D11', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: [],
+        websiteUrl: 'https://example.com',
+      }),
+      'javascript:alert(1)',
+    );
+    expect(result).toEqual([{ type: 'undefined', url: 'https://example.com' }]);
+  });
+
+  it('uses placeholderRemoteUrl when websiteUrl is absent', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: undefined,
+        websiteUrl: undefined,
+      }),
+      'https://override.example.com',
+    );
+    expect(result).toEqual([
+      { type: 'undefined', url: 'https://override.example.com' },
+    ]);
+  });
+
   it('throws when no remotes and websiteUrl absent', () => {
     expect(() =>
       mapRemotes(makeMinimalDoc({ remotes: undefined, websiteUrl: undefined })),
     ).toThrow(/no valid remotes.*websiteUrl/i);
+  });
+
+  it('throws when placeholderRemoteUrl and websiteUrl both fail D11', () => {
+    expect(() =>
+      mapRemotes(
+        makeMinimalDoc({
+          remotes: undefined,
+          websiteUrl: 'javascript:alert(1)',
+        }),
+        'data:text/html,x',
+      ),
+    ).toThrow(/placeholderRemoteUrl or websiteUrl/i);
   });
 
   it('throws with type-filtered hint when all remotes have invalid type and no websiteUrl', () => {
@@ -531,12 +580,50 @@ describe('mapServerToEntity', () => {
       ]);
     });
 
+    it('uses defaults.placeholderRemoteUrl before websiteUrl', () => {
+      const { entity } = mapServerToEntity(
+        makeMinimalDoc({
+          remotes: undefined,
+          websiteUrl: 'https://website.example.com',
+        }),
+        { placeholderRemoteUrl: 'https://override.example.com/mcp' },
+      );
+      expect(entity.spec.remotes).toEqual([
+        { type: 'undefined', url: 'https://override.example.com/mcp' },
+      ]);
+    });
+
+    it('falls back to websiteUrl when defaults.placeholderRemoteUrl fails D11', () => {
+      const { entity } = mapServerToEntity(
+        makeMinimalDoc({
+          remotes: [],
+          websiteUrl: 'https://example.com',
+        }),
+        { placeholderRemoteUrl: 'javascript:alert(1)' },
+      );
+      expect(entity.spec.remotes).toEqual([
+        { type: 'undefined', url: 'https://example.com' },
+      ]);
+    });
+
     it('fails when no remotes and websiteUrl absent', () => {
       expect(() =>
         mapServerToEntity(
           makeMinimalDoc({ remotes: undefined, websiteUrl: undefined }),
         ),
       ).toThrow(/no valid remotes.*websiteUrl/i);
+    });
+
+    it('fails when placeholderRemoteUrl and websiteUrl both fail D11', () => {
+      expect(() =>
+        mapServerToEntity(
+          makeMinimalDoc({
+            remotes: undefined,
+            websiteUrl: 'javascript:alert(1)',
+          }),
+          { placeholderRemoteUrl: 'data:text/html,x' },
+        ),
+      ).toThrow(/placeholderRemoteUrl or websiteUrl/i);
     });
 
     it('fails when no remotes and websiteUrl fails D11', () => {

@@ -70,9 +70,16 @@ export function validateRequiredFields(doc: McpServerDocument): void {
  * Returns the array of entity remotes. Throws when upstream
  * minItems: 1 cannot be satisfied.
  *
+ * When no valid remotes remain, a D8 placeholder is synthesized from
+ * `placeholderRemoteUrl` (if it passes D11) before falling back to
+ * `doc.websiteUrl`.
+ *
  * @public
  */
-export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
+export function mapRemotes(
+  doc: McpServerDocument,
+  placeholderRemoteUrl?: string,
+): McpServerRemote[] {
   assertServerJsonSchema(doc);
 
   const sourceRemotes = doc.remotes ?? [];
@@ -101,8 +108,17 @@ export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
     return validRemotes;
   }
 
-  // No valid remotes — use placeholder with websiteUrl
+  // No valid remotes — D8 placeholder: caller override, then websiteUrl
   // (see openspec/changes/mcp-registry-server-mapping/design.md § D8)
+  if (isAllowedUrl(placeholderRemoteUrl)) {
+    return [
+      {
+        type: 'undefined',
+        url: placeholderRemoteUrl!.trim(),
+      },
+    ];
+  }
+
   if (isAllowedUrl(doc.websiteUrl)) {
     return [
       {
@@ -123,9 +139,10 @@ export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
       : '';
 
   throw new Error(
-    `MCP Registry server.json has no valid remotes and no valid websiteUrl ` +
-      `to use as a placeholder${typeFilteredHint}. At least one remote ` +
-      `with an http/https URL and a non-empty "type" string, or a valid ` +
+    `MCP Registry server.json has no valid remotes and no valid ` +
+      `placeholderRemoteUrl or websiteUrl to use as a placeholder` +
+      `${typeFilteredHint}. At least one remote with an http/https URL ` +
+      `and a non-empty "type" string, or a valid placeholderRemoteUrl / ` +
       `websiteUrl, is required to satisfy upstream ` +
       `spec.remotes minItems: 1 (McpServerApiEntity schema).`,
   );
@@ -288,8 +305,8 @@ export function mapServerToEntity(
     consumedPaths.push('title');
   }
 
-  // Map remotes
-  const specRemotes = mapRemotes(doc);
+  // Map remotes (caller placeholder override before websiteUrl fallback)
+  const specRemotes = mapRemotes(doc, defaults?.placeholderRemoteUrl);
 
   // Track consumed remote paths symmetrically
   consumedPaths.push(...trackConsumedRemotePaths(doc));

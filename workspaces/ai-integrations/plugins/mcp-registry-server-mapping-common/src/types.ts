@@ -218,6 +218,12 @@ export interface McpServerMappingDefaults {
   owner?: string;
   /** Entity lifecycle (default: 'production'). */
   lifecycle?: string;
+  /**
+   * Optional URL for the D8 placeholder remote when no valid remotes
+   * are present. Tried before falling back to `websiteUrl`. Must pass
+   * the emitted-URL scheme policy (D11 / `isAllowedUrl`).
+   */
+  placeholderRemoteUrl?: string;
 }
 
 /**

@@ -46,7 +46,10 @@ export interface LinksResult {
 }
 
 // @public
-export function mapRemotes(doc: McpServerDocument): McpServerRemote[];
+export function mapRemotes(
+  doc: McpServerDocument,
+  placeholderRemoteUrl?: string,
+): McpServerRemote[];
 
 // @public
 export function mapServerToEntity(
@@ -102,6 +105,7 @@ export interface McpServerDocument {
 export interface McpServerMappingDefaults {
   lifecycle?: string;
   owner?: string;
+  placeholderRemoteUrl?: string;
   prefix?: string;
 }
 
