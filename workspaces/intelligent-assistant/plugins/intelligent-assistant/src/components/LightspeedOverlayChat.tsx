@@ -17,7 +17,10 @@
 import { lazy, Suspense } from 'react';
 
 import { styled } from '@mui/material/styles';
-import { ChatbotDisplayMode, ChatbotModal } from '@patternfly/chatbot';
+import {
+  ChatbotModal,
+  type ChatbotDisplayMode as PfChatbotDisplayMode,
+} from '@patternfly/chatbot';
 
 import {
   DOCKED_CONTENT_OFFSET,
@@ -25,7 +28,9 @@ import {
   LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS,
   LIGHTSPEED_OVERLAY_MAX_WIDTH,
   LIGHTSPEED_OVERLAY_RIGHT,
+  type ChatbotDisplayMode,
 } from '../const';
+import { ChatLoadingFallback } from './ChatLoadingFallback';
 
 // Lazy-import LightspeedChatContainer so its PatternFly CSS (Button, Badge,
 // Spinner) lands in a separate chunk from ChatbotModal's CSS (Popover).
@@ -70,13 +75,13 @@ export const LightspeedOverlayChat = ({
   <StyledChatbotModal
     isOpen
     className={LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS}
-    displayMode={displayMode}
+    displayMode={displayMode as PfChatbotDisplayMode}
     disableFocusTrap
     onEscapePress={onEscapePress}
     ouiaId="LightspeedChatbotModal"
     aria-labelledby="lightspeed-chatpopup-modal"
   >
-    <Suspense fallback={null}>
+    <Suspense fallback={<ChatLoadingFallback />}>
       <LazyLightspeedChatContainer />
     </Suspense>
   </StyledChatbotModal>

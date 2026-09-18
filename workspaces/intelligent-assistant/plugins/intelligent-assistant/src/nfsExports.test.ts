@@ -17,11 +17,12 @@ import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import { createExtensionTester } from '@backstage/frontend-test-utils';
 
 import { LIGHTSPEED_PATH } from './const';
-import intelligentAssistantPlugin, {
+import {
   intelligentAssistantFABModule,
   intelligentAssistantRedirectModule,
-  intelligentAssistantTranslationsModule,
-} from './index';
+} from './fabModule';
+import intelligentAssistantPlugin from './index';
+import { intelligentAssistantTranslationsModule } from './translationsModule';
 
 // An NFS plugin that contributes nothing still boots clean: no error, no console
 // warning, exit 0. `expect(plugin).toBeDefined()` passes against all of it, which

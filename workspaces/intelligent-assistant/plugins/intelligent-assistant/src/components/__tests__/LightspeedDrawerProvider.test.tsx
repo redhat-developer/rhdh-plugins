@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { ChatbotDisplayMode } from '../../const';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import type { LightspeedDrawerContextType } from '../LightspeedDrawerContext';
 import { LightspeedDrawerProvider } from '../LightspeedDrawerProvider';

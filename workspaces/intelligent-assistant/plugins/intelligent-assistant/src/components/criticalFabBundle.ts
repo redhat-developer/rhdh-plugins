@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-import { lazy, Suspense } from 'react';
-
-import { ChatLoadingFallback } from '../components/ChatLoadingFallback';
-
-const LazyLightspeedChatContainer = lazy(() =>
-  import('../components/LightspeedChatContainer').then(m => ({
-    default: m.LightspeedChatContainer,
-  })),
-);
-
 /**
- * Thin sync boundary for AppDrawerContentBlueprint — heavy chat UI loads asynchronously.
+ * Barrel for the single critical first-paint FAB async chunk.
+ *
+ * Imported through one dynamic import (`loadCriticalFabBundle()` in
+ * `loaders.ts`) so DrawerProvider + FABContent share one async chunk.
+ *
+ * @internal
  */
-export const LazyLightspeedChatDrawerContent = () => (
-  <Suspense fallback={<ChatLoadingFallback />}>
-    <LazyLightspeedChatContainer />
-  </Suspense>
-);
+
+export { LightspeedDrawerProvider } from './LightspeedDrawerProvider';
+export { LightspeedFABContent } from './LightspeedFABContent';

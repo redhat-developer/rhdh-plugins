@@ -13,4 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { intelligentAssistantFABModule as default } from './fabModule';
+export {
+  intelligentAssistantFABModule as default,
+  intelligentAssistantRedirectModule,
+} from './fabModule';

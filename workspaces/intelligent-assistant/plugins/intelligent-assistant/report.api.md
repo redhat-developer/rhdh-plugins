@@ -11,7 +11,6 @@ import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
-import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { IconElement } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
@@ -161,15 +160,6 @@ const _default: OverridableFrontendPlugin<
   }
 >;
 export default _default;
-
-// @public (undocumented)
-export const intelligentAssistantFABModule: FrontendModule;
-
-// @public (undocumented)
-export const intelligentAssistantRedirectModule: FrontendModule;
-
-// @public
-export const intelligentAssistantTranslationsModule: FrontendModule;
 
 // (No @packageDocumentation comment for this package)
 ```

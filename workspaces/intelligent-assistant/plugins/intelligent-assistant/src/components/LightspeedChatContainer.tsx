@@ -29,6 +29,7 @@ import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
 import { loadChatPatternflyStyles } from '../loadChatPatternflyStyles';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
+import { ChatLoadingFallback } from './ChatLoadingFallback';
 import { LightspeedChat } from './LightSpeedChat';
 import {
   LcoreNotConfiguredEmptyState,
@@ -223,7 +224,7 @@ export const LightspeedChatContainer = () => {
   }, []);
 
   if (!stylesReady) {
-    return null;
+    return <ChatLoadingFallback />;
   }
 
   return (

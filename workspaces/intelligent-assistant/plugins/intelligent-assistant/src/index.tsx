@@ -36,12 +36,6 @@ import { LazyLightspeedChatDrawerContent } from './lazy/LazyLightspeedChatDrawer
 
 import './muiClassNameConfig';
 
-export {
-  intelligentAssistantFABModule,
-  intelligentAssistantRedirectModule,
-} from './fabModule';
-export { intelligentAssistantTranslationsModule } from './translationsModule';
-
 const nfsRootRouteRef = createRouteRef();
 const nfsConversationRouteRef = createSubRouteRef({
   parent: nfsRootRouteRef,

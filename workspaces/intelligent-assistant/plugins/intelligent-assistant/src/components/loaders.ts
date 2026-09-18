@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-import { lazy, Suspense } from 'react';
+type CriticalFabBundle = typeof import('./criticalFabBundle');
 
-import { ChatLoadingFallback } from '../components/ChatLoadingFallback';
+let criticalFabBundlePromise: Promise<CriticalFabBundle> | undefined;
 
-const LazyLightspeedChatContainer = lazy(() =>
-  import('../components/LightspeedChatContainer').then(m => ({
-    default: m.LightspeedChatContainer,
-  })),
-);
-
-/**
- * Thin sync boundary for AppDrawerContentBlueprint — heavy chat UI loads asynchronously.
- */
-export const LazyLightspeedChatDrawerContent = () => (
-  <Suspense fallback={<ChatLoadingFallback />}>
-    <LazyLightspeedChatContainer />
-  </Suspense>
-);
+export const loadCriticalFabBundle = (): Promise<CriticalFabBundle> => {
+  criticalFabBundlePromise ??= import('./criticalFabBundle').catch(error => {
+    criticalFabBundlePromise = undefined;
+    throw error;
+  });
+  return criticalFabBundlePromise;
+};

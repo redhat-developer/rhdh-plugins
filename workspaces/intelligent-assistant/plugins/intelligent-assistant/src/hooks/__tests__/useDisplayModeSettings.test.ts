@@ -18,9 +18,9 @@ import { createElement, ReactNode } from 'react';
 import { StorageApi, storageApiRef } from '@backstage/core-plugin-api';
 import { mockApis, TestApiProvider } from '@backstage/test-utils';
 
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
+import { ChatbotDisplayMode } from '../../const';
 import { useDisplayModeSettings } from '../useDisplayModeSettings';
 
 describe('useDisplayModeSettings', () => {

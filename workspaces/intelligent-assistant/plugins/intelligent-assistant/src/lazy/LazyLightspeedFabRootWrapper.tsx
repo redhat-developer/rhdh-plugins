@@ -16,30 +16,32 @@
 
 import { lazy, Suspense, type ReactNode } from 'react';
 
-const LazyLightspeedDrawerProvider = lazy(() =>
-  import('../components/LightspeedDrawerProvider').then(m => ({
-    default: m.LightspeedDrawerProvider,
-  })),
-);
+import { loadCriticalFabBundle } from '../components/loaders';
 
-const LazyLightspeedFABContent = lazy(() =>
-  import('../components/LightspeedFABContent').then(m => ({
-    default: m.LightspeedFABContent,
-  })),
-);
+const LazyCriticalFabRoot = lazy(async () => {
+  const { LightspeedDrawerProvider, LightspeedFABContent } =
+    await loadCriticalFabBundle();
+
+  return {
+    default: ({ children }: { children: ReactNode }) => (
+      <LightspeedDrawerProvider>
+        <LightspeedFABContent />
+        {children}
+      </LightspeedDrawerProvider>
+    ),
+  };
+});
 
 type Props = {
   children: ReactNode;
 };
 
 /**
- * App root wrapper that defers FAB + drawer provider (and chat) off the sync chunk.
+ * App root wrapper that defers FAB + drawer provider off the sync chunk.
+ * DrawerProvider and FABContent share one async chunk via loadCriticalFabBundle().
  */
 export const LazyLightspeedFabRootWrapper = ({ children }: Props) => (
   <Suspense fallback={children}>
-    <LazyLightspeedDrawerProvider>
-      <LazyLightspeedFABContent />
-      {children}
-    </LazyLightspeedDrawerProvider>
+    <LazyCriticalFabRoot>{children}</LazyCriticalFabRoot>
   </Suspense>
 );

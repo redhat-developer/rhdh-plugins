@@ -20,9 +20,12 @@ import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import { useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
-import { DOCKED_CONTENT_OFFSET, LIGHTSPEED_FAB_ELEMENT_ID } from '../const';
+import {
+  ChatbotDisplayMode,
+  DOCKED_CONTENT_OFFSET,
+  LIGHTSPEED_FAB_ELEMENT_ID,
+} from '../const';
 import { useIaChatPermission } from '../hooks/useIaChatPermission';
 import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';

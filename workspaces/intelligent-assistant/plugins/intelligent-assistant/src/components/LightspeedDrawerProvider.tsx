@@ -17,6 +17,7 @@
 import { lazy, PropsWithChildren, Suspense } from 'react';
 
 import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
+import { ChatLoadingFallback } from './ChatLoadingFallback';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 import { NotebookStreamProvider } from './notebooks/NotebookStreamProvider';
 
@@ -38,7 +39,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       <NotebookStreamProvider>
         {children}
         {shouldRenderOverlayModal && (
-          <Suspense fallback={null}>
+          <Suspense fallback={<ChatLoadingFallback variant="overlay" />}>
             <LazyLightspeedOverlayChat
               displayMode={contextValue.displayMode}
               onEscapePress={() => closeChatbot()}

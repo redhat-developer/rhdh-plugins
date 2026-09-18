@@ -25,7 +25,7 @@ export type DrawerStateExposerProps = {
 };
 
 // @public
-export const LightspeedChatContainer: () => JSX_2.Element | null;
+export const LightspeedChatContainer: () => JSX_2.Element;
 
 // @public
 export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren>;
