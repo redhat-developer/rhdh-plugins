@@ -20,7 +20,8 @@
     "pluginId": "mcp-registry-provider",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common"
+      "@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common",
+      "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider"
     ]
   },
   "sideEffects": false,
