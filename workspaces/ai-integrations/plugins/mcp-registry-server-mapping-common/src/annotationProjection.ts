@@ -545,15 +545,15 @@ export function projectAnnotations(
     consumed,
   );
 
-  // Step 2: Compute base annotation keys for each candidate
+  // Compute base annotation keys for each candidate
   const withKeys = attachBaseKeysToCandidates(candidates);
 
-  // Step 3: Detect collisions (with reserved keys and between projected)
+  // Detect collisions (with reserved keys and between projected)
   const keyGroups = groupCandidatesByBaseKey(withKeys);
 
-  // Step 4: Resolve collisions and build final annotations
+  // Resolve collisions and build final annotations
   const annotations = buildResolvedAnnotations(keyGroups, reserved);
 
-  // Step 5: Sort keys lexicographically for determinism
+  // Sort keys lexicographically for determinism
   return sortAnnotationEntries(annotations);
 }
