@@ -16,6 +16,7 @@
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import {
+  SidebarElementBlueprint,
   SidebarItemBlueprint,
   SidebarItemGroupBlueprint,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
@@ -123,9 +124,27 @@ const pluginsItem = SidebarItemBlueprint.make({
   },
 });
 
+/**
+ * Custom element that throws on render, used to demonstrate that app-defaults
+ * wraps every sidebar element in an error boundary: this element fails without
+ * taking down the rest of the sidebar.
+ */
+const CrashingElement = () => {
+  throw new Error('This sidebar element crashes on purpose.');
+};
+
+const crashingElement = SidebarElementBlueprint.make({
+  name: 'crashing',
+  params: {
+    component: CrashingElement,
+    priority: 5,
+  },
+});
+
 export const sidebarDemoModule = createFrontendModule({
   pluginId: 'app',
   extensions: [
+    crashingElement,
     helpItem,
     documentationGroup,
     docsItem,
