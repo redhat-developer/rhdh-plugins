@@ -24,6 +24,7 @@ import {
   mapServerToEntity,
   projectAnnotations,
 } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+import type { McpServerMappingDefaults } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
 import type { McpRegistryProviderConfig } from './config';
 import { fetchRegistryServers, McpRegistryClientError } from './client';
 import type { McpRegistryServerEntry } from './client';
@@ -131,10 +132,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
       const serverDoc = entry.server;
       try {
         // Invoke the mapping transform
-        const mappingDefaults: {
-          prefix?: string;
-          owner?: string;
-        } = {};
+        const mappingDefaults: McpServerMappingDefaults = {};
         if (defaultOwner) {
           mappingDefaults.owner = defaultOwner;
         }
@@ -234,7 +232,14 @@ export class McpRegistryEntityProvider implements EntityProvider {
       entities,
     });
 
-    // Update the last-good index with all successfully committed entities
+    // Update the last-good index with all successfully committed entities.
+    // The annotation keys used here ('modelcontextprotocol.io/name' and
+    // 'modelcontextprotocol.io/version') are set by mapServerToEntity in
+    // mcp-registry-server-mapping-common and correspond to the raw
+    // serverDoc.name and serverDoc.version fields used in buildLastGoodKey
+    // during failure recovery above. If the mapping library changes these
+    // annotation keys, both this rebuild and the failure recovery path
+    // must be updated in tandem.
     this.lastGoodIndex.clear();
     for (const deferred of entities) {
       const name =

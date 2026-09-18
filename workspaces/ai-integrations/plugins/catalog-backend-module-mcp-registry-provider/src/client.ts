@@ -85,6 +85,16 @@ export async function fetchRegistryServers(
   const doFetch = fetchApi ?? fetch;
 
   const endpoint = buildServersEndpoint(baseUrl, apiVersion);
+
+  let parsedEndpoint: URL;
+  try {
+    parsedEndpoint = new URL(endpoint);
+  } catch (err) {
+    throw new McpRegistryClientError(
+      `Invalid MCP Registry endpoint URL "${endpoint}": ${err}`,
+    );
+  }
+
   const allServers: McpRegistryServerEntry[] = [];
   const seenCursors = new Set<string>();
   let cursor: string | undefined;
@@ -93,7 +103,7 @@ export async function fetchRegistryServers(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     // Build request URL with query params
-    const url = new URL(endpoint);
+    const url = new URL(parsedEndpoint.toString());
     if (cursor) {
       url.searchParams.set('cursor', cursor);
     }
