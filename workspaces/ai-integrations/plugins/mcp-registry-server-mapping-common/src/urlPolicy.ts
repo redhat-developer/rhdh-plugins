@@ -21,8 +21,6 @@
  * absolute URL (relative paths, scheme-relative `//host`, scp-like
  * `git@host:path`, etc.).
  *
- * Exported for unit testing only.
- *
  * @internal
  */
 export function parseAbsoluteUrl(value: string): URL | null {

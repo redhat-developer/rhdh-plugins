@@ -138,12 +138,17 @@ export function mapRemotes(
         `"type" field is missing or empty)`
       : '';
 
+  const placeholderSources =
+    placeholderRemoteUrl !== undefined
+      ? 'placeholderRemoteUrl or websiteUrl'
+      : 'websiteUrl';
+
   throw new Error(
     `MCP Registry server.json has no valid remotes and no valid ` +
-      `placeholderRemoteUrl or websiteUrl to use as a placeholder` +
+      `${placeholderSources} to use as a placeholder` +
       `${typeFilteredHint}. At least one remote with an http/https URL ` +
-      `and a non-empty "type" string, or a valid placeholderRemoteUrl / ` +
-      `websiteUrl, is required to satisfy upstream ` +
+      `and a non-empty "type" string, or a valid ${placeholderSources}, ` +
+      `is required to satisfy upstream ` +
       `spec.remotes minItems: 1 (McpServerApiEntity schema).`,
   );
 }
