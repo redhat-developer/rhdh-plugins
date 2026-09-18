@@ -522,25 +522,14 @@ function assertPackage(value: unknown, objectDotPath: string): void {
 }
 
 /**
- * Require that `doc` is a structurally valid {@link McpServerDocument}:
- * only ServerDetail fields, correctly typed, with `$schema` identifying
- * an MCP Registry `server.schema.json` document.
+ * Require `$schema`, `name`, `description`, and `version`, and validate
+ * optional string root fields when present.
  *
- * Call at the entry of every public function that accepts
- * {@link McpServerDocument}.
+ * Exported for unit testing only.
+ *
+ * @internal
  */
-export function assertServerJsonSchema(
-  doc: unknown,
-): asserts doc is McpServerDocument {
-  if (!isPlainObject(doc)) {
-    throw new TypeError(
-      'MCP Registry server.json requires a plain object document ' +
-        `(received ${Array.isArray(doc) ? 'array' : typeof doc})`,
-    );
-  }
-
-  assertNoUnknownKeys(doc, SERVER_DETAIL_KEYS, '');
-
+export function assertRequiredRootFields(doc: Record<string, unknown>): void {
   if (!Object.hasOwn(doc, '$schema')) {
     throw new TypeError(
       'MCP Registry server.json requires $schema to be a string whose URL ' +
@@ -560,43 +549,51 @@ export function assertServerJsonSchema(
 
   assertOptionalString(doc, 'title', '');
   assertOptionalString(doc, 'websiteUrl', '');
+}
 
+/**
+ * Validate an optional root-level object array (`remotes`, `icons`,
+ * `packages`), treating `undefined`/`null` as absent.
+ *
+ * Exported for unit testing only.
+ *
+ * @internal
+ */
+export function assertOptionalObjectArray(
+  value: unknown,
+  fieldName: string,
+  assertItem: (item: unknown, objectDotPath: string) => void,
+): void {
+  if (value === undefined || value === null) {
+    return;
+  }
+  if (!Array.isArray(value)) {
+    throw new TypeError(
+      `MCP Registry server.json requires ${fieldName} to be an array at "<root>"`,
+    );
+  }
+  value.forEach((item, index) => {
+    assertItem(item, `${fieldName}.${index}`);
+  });
+}
+
+/**
+ * Validate optional ServerDetail sections when present.
+ *
+ * Exported for unit testing only.
+ *
+ * @internal
+ */
+export function assertOptionalServerDetailSections(
+  doc: Record<string, unknown>,
+): void {
   if (doc.repository !== undefined && doc.repository !== null) {
     assertRepository(doc.repository, 'repository');
   }
 
-  if (doc.remotes !== undefined && doc.remotes !== null) {
-    if (!Array.isArray(doc.remotes)) {
-      throw new TypeError(
-        'MCP Registry server.json requires remotes to be an array at "<root>"',
-      );
-    }
-    doc.remotes.forEach((remote, index) => {
-      assertRemote(remote, `remotes.${index}`);
-    });
-  }
-
-  if (doc.icons !== undefined && doc.icons !== null) {
-    if (!Array.isArray(doc.icons)) {
-      throw new TypeError(
-        'MCP Registry server.json requires icons to be an array at "<root>"',
-      );
-    }
-    doc.icons.forEach((icon, index) => {
-      assertIcon(icon, `icons.${index}`);
-    });
-  }
-
-  if (doc.packages !== undefined && doc.packages !== null) {
-    if (!Array.isArray(doc.packages)) {
-      throw new TypeError(
-        'MCP Registry server.json requires packages to be an array at "<root>"',
-      );
-    }
-    doc.packages.forEach((pkg, index) => {
-      assertPackage(pkg, `packages.${index}`);
-    });
-  }
+  assertOptionalObjectArray(doc.remotes, 'remotes', assertRemote);
+  assertOptionalObjectArray(doc.icons, 'icons', assertIcon);
+  assertOptionalObjectArray(doc.packages, 'packages', assertPackage);
 
   if (doc._meta !== undefined && doc._meta !== null) {
     if (!isPlainObject(doc._meta)) {
@@ -605,6 +602,29 @@ export function assertServerJsonSchema(
       );
     }
   }
+}
+
+/**
+ * Require that `doc` is a structurally valid {@link McpServerDocument}:
+ * only ServerDetail fields, correctly typed, with `$schema` identifying
+ * an MCP Registry `server.schema.json` document.
+ *
+ * Call at the entry of every public function that accepts
+ * {@link McpServerDocument}.
+ */
+export function assertServerJsonSchema(
+  doc: unknown,
+): asserts doc is McpServerDocument {
+  if (!isPlainObject(doc)) {
+    throw new TypeError(
+      'MCP Registry server.json requires a plain object document ' +
+        `(received ${Array.isArray(doc) ? 'array' : typeof doc})`,
+    );
+  }
+
+  assertNoUnknownKeys(doc, SERVER_DETAIL_KEYS, '');
+  assertRequiredRootFields(doc);
+  assertOptionalServerDetailSections(doc);
 }
 
 /**
