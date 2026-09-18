@@ -31,6 +31,7 @@ export interface Config {
         pageLimit?: number;
         /** @visibility backend */
         pageSize?: number;
+        /** @visibility backend */
         schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
       };
     };

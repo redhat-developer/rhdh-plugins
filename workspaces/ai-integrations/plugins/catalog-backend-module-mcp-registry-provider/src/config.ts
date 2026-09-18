@@ -31,6 +31,24 @@ const DEFAULT_API_VERSION = 'v1';
 const DEFAULT_PAGE_LIMIT = 10;
 
 /**
+ * Safely read an optional string from config, returning `undefined`
+ * when Backstage's ConfigReader throws TypeError for empty-string
+ * values from env var substitution like `${VAR:-}`.
+ */
+function safeGetOptionalString(
+  config: Config,
+  key: string,
+): string | undefined {
+  try {
+    return config.getOptionalString(key);
+  } catch {
+    // ConfigReader throws TypeError for empty-string values
+    // from env var substitution like ${VAR:-}
+    return undefined;
+  }
+}
+
+/**
  * Parsed provider configuration.
  */
 export interface McpRegistryProviderConfig {
@@ -96,7 +114,7 @@ export function readMcpRegistryProviderConfig(
   }
 
   // baseUrl is required
-  const baseUrl = registryConfig.getOptionalString('baseUrl');
+  const baseUrl = safeGetOptionalString(registryConfig, 'baseUrl');
   if (!baseUrl) {
     throw new Error(
       `Invalid catalog.providers.mcpRegistry configuration: missing ` +
@@ -105,13 +123,44 @@ export function readMcpRegistryProviderConfig(
     );
   }
 
-  const baseName = registryConfig.getOptionalString('baseName');
+  // Validate URL scheme (defense in depth against non-HTTP protocols)
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(baseUrl);
+  } catch {
+    throw new Error(
+      `Invalid catalog.providers.mcpRegistry configuration: "baseUrl" ` +
+        `is not a valid URL: "${baseUrl}". Set baseUrl to an absolute ` +
+        `HTTP(S) URL (e.g., "https://registry.example.com").`,
+    );
+  }
+  if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+    throw new Error(
+      `Invalid catalog.providers.mcpRegistry configuration: "baseUrl" ` +
+        `must use http or https protocol, got "${parsedUrl.protocol}" ` +
+        `in "${baseUrl}".`,
+    );
+  }
+
+  const baseName = safeGetOptionalString(registryConfig, 'baseName');
   const apiVersion =
-    registryConfig.getOptionalString('apiVersion') ?? DEFAULT_API_VERSION;
-  const defaultOwner = registryConfig.getOptionalString('defaultOwner');
+    safeGetOptionalString(registryConfig, 'apiVersion') ?? DEFAULT_API_VERSION;
+  const defaultOwner = safeGetOptionalString(registryConfig, 'defaultOwner');
   const pageLimit =
     registryConfig.getOptionalNumber('pageLimit') ?? DEFAULT_PAGE_LIMIT;
+  if (pageLimit < 1) {
+    throw new Error(
+      `Invalid catalog.providers.mcpRegistry configuration: "pageLimit" ` +
+        `must be at least 1, got ${pageLimit}.`,
+    );
+  }
   const pageSize = registryConfig.getOptionalNumber('pageSize');
+  if (pageSize !== undefined && pageSize < 1) {
+    throw new Error(
+      `Invalid catalog.providers.mcpRegistry configuration: "pageSize" ` +
+        `must be at least 1, got ${pageSize}.`,
+    );
+  }
 
   // Schedule: read from config or use default
   let schedule: SchedulerServiceTaskScheduleDefinition;

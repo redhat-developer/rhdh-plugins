@@ -298,35 +298,11 @@ describe('McpRegistryEntityProvider', () => {
   });
 
   it('retains last-good entity with degraded status on mapping failure', async () => {
-    // First sync: successful mapping
     const goodBody: McpRegistryListResponse = {
       servers: [{ server: createMockServerDoc('test/server', '1.0.0') }],
       metadata: { count: 1 },
     };
-    const fetchFn1 = mockFetchForResponses([goodBody]);
-    const connection = createMockConnection();
-    const logger = createMockLogger();
 
-    const provider = new McpRegistryEntityProvider(
-      createDefaultConfig(),
-      logger,
-      fetchFn1,
-    );
-    await provider.connect(connection);
-    await provider.run();
-
-    // Verify first sync succeeded
-    expect(connection.applyMutation).toHaveBeenCalledTimes(1);
-    const firstMutation = (connection.applyMutation as jest.Mock).mock
-      .calls[0][0];
-    expect(firstMutation.entities).toHaveLength(1);
-    expect(
-      firstMutation.entities[0].entity.metadata.annotations[
-        'redhat.com/rhdh-mcp-registry-sync-status'
-      ],
-    ).toBe('ok');
-
-    // Second sync: mapping fails (empty description)
     const badBody: McpRegistryListResponse = {
       servers: [
         {

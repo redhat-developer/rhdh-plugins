@@ -6,7 +6,7 @@ Deterministic transform from [MCP Registry](https://github.com/modelcontextproto
 documents to Backstage `API` entities with `spec.type: mcp-server`.
 
 This common library is a pure mapping contract (no I/O, no registry client).
-It is intended for consumers such as a future `mcp-registry-provider` catalog
+It is consumed by the `catalog-backend-module-mcp-registry-provider` catalog
 entity provider.
 
 ## Install
