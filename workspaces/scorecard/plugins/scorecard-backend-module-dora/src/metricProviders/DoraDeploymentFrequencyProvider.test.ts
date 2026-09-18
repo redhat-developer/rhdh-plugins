@@ -22,7 +22,10 @@ import {
   mockDoraSyncService,
   mockEntity,
 } from './__fixtures__';
-import { DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } from '../constants';
+import {
+  DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+} from '../constants';
 import { DEFAULT_DORA_DEPLOYMENT_FREQUENCY_THRESHOLDS } from './DoraConfig';
 
 describe('DoraDeploymentFrequencyProvider', () => {
@@ -149,11 +152,12 @@ describe('DoraDeploymentFrequencyProvider', () => {
           collector: expect.objectContaining({
             id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           }),
+          productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
         },
       );
     });
 
-    it('should calculate frequency for production environments only', async () => {
+    it('should calculate frequency from production deployments returned by the data service', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
@@ -166,16 +170,16 @@ describe('DoraDeploymentFrequencyProvider', () => {
           commitSha: 'sha-2',
           createdAt: '2026-06-04T10:00:00.000Z',
         }),
-        dbDeployment({
-          id: '102',
-          commitSha: 'sha-3',
-          environment: 'development',
-          createdAt: '2026-06-04T11:00:00.000Z',
-        }),
       ]);
 
       const results = await provider.calculateMetrics(mockEntity);
 
+      expect(mockDoraDataService.readDeployments).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+        }),
+      );
       expect(results.get('dora.deploymentFrequency')).toBe(0.4667); // (2 production deployments / 30 days) * 7
     });
 
@@ -198,7 +202,7 @@ describe('DoraDeploymentFrequencyProvider', () => {
       expect(mockDoraDataService.readDeployments).not.toHaveBeenCalled();
     });
 
-    it('should treat configured productionEnvironments as production', async () => {
+    it('should pass configured productionEnvironments to the data service', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
@@ -211,12 +215,6 @@ describe('DoraDeploymentFrequencyProvider', () => {
           commitSha: 'sha-2',
           environment: 'live',
           createdAt: '2026-06-02T10:00:00.000Z',
-        }),
-        dbDeployment({
-          id: '102',
-          commitSha: 'sha-3',
-          environment: 'production',
-          createdAt: '2026-06-03T10:00:00.000Z',
         }),
       ]);
 
@@ -238,7 +236,12 @@ describe('DoraDeploymentFrequencyProvider', () => {
 
       const results = await customProvider.calculateMetrics(mockEntity);
 
-      // production is no longer accepted; only prod + live count
+      expect(mockDoraDataService.readDeployments).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          productionEnvironments: ['prod', 'live'],
+        }),
+      );
       expect(results.get('dora.deploymentFrequency')).toBe(0.4667);
     });
   });
