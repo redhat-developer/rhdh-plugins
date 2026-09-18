@@ -1,7 +1,7 @@
 schema: spec-driven
 created: 2026-09-15
-updated: 2026-09-15
+updated: 2026-09-18
 status: draft
 notes: >-
-  Demo-only catalog entity providers for public OCI skillimage and
-  npx-compatible skill registries.
+  Demo-only public OCI and npx skill connectors, a shared REST contract,
+  and one common AiResource catalog entity provider.
