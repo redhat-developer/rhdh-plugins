@@ -365,7 +365,7 @@ sonarqube:
 # Scorecard development configuration
 scorecard:
   aggregationKPIs:
-    avgDeploymentFrequency:
+    doraDeploymentFrequencyKpi:
       title: DORA - Deployment Frequency
       type: average
       description: Tracks how often code is deployed to production over the past 30 days. Elite performers deploy on demand (multiple times per day).
@@ -381,11 +381,11 @@ scorecard:
               expression: '1-7'
               color: warning.main
               icon: scorecardWarningStatusIcon
-            - key: error
+            - key: low
               expression: '<1'
               color: error.main
               icon: scorecardErrorStatusIcon
-    changeFailureRateKpi:
+    doraChangeFailureRateKpi:
       title: DORA - Change Failure Rate
       type: average
       description: Monitors the percentage of deployments that cause a failure in production over the past 30 days. Elite performers maintain a change failure rate below 5%.
@@ -405,7 +405,7 @@ scorecard:
               expression: '>15'
               color: error.main
               icon: scorecardErrorStatusIcon
-    medianLeadTimeForChangesKpi:
+    doraMedianLeadTimeForChangesKpi:
       title: DORA - Lead Time for Changes
       type: average
       description: Measures the median time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours.
@@ -425,7 +425,7 @@ scorecard:
               expression: '>168'
               color: error.main
               icon: scorecardErrorStatusIcon
-    medianTimeToRestoreKpi:
+    doraMedianTimeToRestoreKpi:
       title: DORA - Median Time to Restore
       type: average
       description: Tracks the median time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.
@@ -434,15 +434,15 @@ scorecard:
         thresholds:
           rules:
             - key: elite
-              expression: '<24'
+              expression: '<1'
               color: success.main
               icon: scorecardSuccessStatusIcon
             - key: medium
-              expression: '24-168'
+              expression: '1-24'
               color: warning.main
               icon: scorecardWarningStatusIcon
             - key: low
-              expression: '>168'
+              expression: '>24'
               color: error.main
               icon: scorecardErrorStatusIcon
     openPrsKpi:
