@@ -748,11 +748,10 @@ export async function createRouter(
           if (model.api_model_type !== 'llm') {
             return { ...model, supportsVision: false };
           }
-          // `identifier` is already the `provider/model` key LCS and
           const cacheKey = model.identifier;
           const cached = ModelCapabilitiesCache.get(cacheKey);
           if (cached !== undefined) {
-            console.log('vision probe success', {
+            logger.debug('vision probe success', {
               ...model,
               supportsVision: cached,
             });
@@ -763,7 +762,7 @@ export async function createRouter(
           // and warm the cache in the background so the next /v1/models call
           // returns the real value.
           probeModelVisionInBackground(cacheKey);
-          console.log('vision probe failed', {
+          logger.debug('vision probe failed', {
             ...model,
             supportsVision: false,
           });
