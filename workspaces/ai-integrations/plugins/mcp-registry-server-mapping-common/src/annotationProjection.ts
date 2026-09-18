@@ -243,7 +243,7 @@ function collectScalarsFromObject(
   }
 
   // D9: check if this is an isSecret: true Input object (omit => false)
-  const isSecret = Object.prototype.hasOwnProperty.call(obj, 'isSecret')
+  const isSecret = Object.hasOwn(obj, 'isSecret')
     ? requireBooleanProperty(obj, 'isSecret', walk.dotPath)
     : false;
 

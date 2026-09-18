@@ -29,7 +29,7 @@ export function requireBooleanProperty(
   propertyName: string,
   objectDotPath: string,
 ): boolean {
-  if (!Object.prototype.hasOwnProperty.call(obj, propertyName)) {
+  if (!Object.hasOwn(obj, propertyName)) {
     throw new Error(
       `Missing required boolean property "${propertyName}" at "${formatObjectDotPath(
         objectDotPath,
@@ -38,7 +38,7 @@ export function requireBooleanProperty(
   }
   const value = obj[propertyName];
   if (typeof value !== 'boolean') {
-    throw new Error(
+    throw new TypeError(
       `${propertyName} must be a boolean at "${formatObjectDotPath(
         objectDotPath,
       )}" (received ${typeof value})`,

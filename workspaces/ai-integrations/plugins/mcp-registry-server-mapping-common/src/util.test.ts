@@ -33,6 +33,9 @@ describe('requireBooleanProperty', () => {
   it('throws when the property is present but not a boolean', () => {
     expect(() =>
       requireBooleanProperty({ isSecret: 'true' }, 'isSecret', 'input'),
+    ).toThrow(TypeError);
+    expect(() =>
+      requireBooleanProperty({ isSecret: 'true' }, 'isSecret', 'input'),
     ).toThrow('isSecret must be a boolean at "input" (received string)');
     expect(() =>
       requireBooleanProperty({ isSecret: 1 }, 'isSecret', ''),
