@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-/**
- * Missing/unknown environment is treated as production. Named environments must
- * match one of the configured production environment names (case-insensitive).
- *
- * Only successful deployments are persisted; callers filter by environment.
- */
-export function isProductionEnvironment(
-  environment: string | null | undefined,
-  productionEnvironments: string[],
-): boolean {
-  if (!environment) {
-    return true;
-  }
+import { getLearningPathFallbackData } from './getLearningPathFallbackData';
 
-  const normalizedEnvironment = environment.toLowerCase();
-  return productionEnvironments.some(
-    name => name.toLowerCase() === normalizedEnvironment,
-  );
-}
+describe('getLearningPathFallbackData', () => {
+  it('returns parsed bundled learning path data', () => {
+    const data = getLearningPathFallbackData();
+
+    expect(data.length).toBeGreaterThan(0);
+    expect(data[0]).toEqual(
+      expect.objectContaining({
+        label: expect.any(String),
+        url: expect.any(String),
+        paths: expect.any(Number),
+      }),
+    );
+  });
+});

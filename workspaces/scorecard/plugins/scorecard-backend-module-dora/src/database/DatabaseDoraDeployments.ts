@@ -27,14 +27,50 @@ import type {
   DoraDbWriteOptions,
 } from './types';
 
+/**
+ * Restricts the query to production-like environments: null/empty environment
+ * (treated as production) or a case-insensitive match against `productionEnvironments`.
+ *
+ * If `productionEnvironments` is empty the filter is skipped entirely, which has
+ * the same effect as passing `undefined` to the caller (all rows are returned).
+ *
+ * **SQLite limitation:** `LOWER()` in SQLite only folds ASCII characters (A-Z → a-z).
+ * Non-ASCII environment names (e.g. `PRÖD`) will not match a configured value that
+ * differs only in Unicode case (`pröd`) when running on SQLite. This is not a concern
+ * in practice because deployment environment names are virtually always ASCII, and
+ * SQLite is only used for local development; PostgreSQL (the production database)
+ * handles Unicode `LOWER()` correctly.
+ */
+function applyProductionEnvironmentFilter(
+  query: Knex.QueryBuilder,
+  productionEnvironments: string[],
+): void {
+  if (productionEnvironments.length === 0) {
+    return;
+  }
+  const lowered = productionEnvironments.map(name => name.toLowerCase());
+  query.andWhere(builder => {
+    builder.whereNull('environment').orWhere('environment', '');
+    builder.orWhereRaw(`LOWER(??) IN (${lowered.map(() => '?').join(', ')})`, [
+      'environment',
+      ...lowered,
+    ]);
+  });
+}
+
 export interface DoraDeploymentsStore {
   upsert(deployments: DbDoraDeploymentCreate[]): Promise<void>;
+  /**
+   * When `productionEnvironments` is provided, only rows whose environment is
+   * null, empty, or case-insensitively matches one of the names are returned.
+   */
   readByEntityCollectorAndWindow(
     catalogEntityRef: string,
     collectorId: string,
     collectorInputHash: string,
     from: Date,
     to: Date,
+    productionEnvironments?: string[],
   ): Promise<DbDoraDeployment[]>;
   markPullRequestsSynced(
     deploymentId: string,
@@ -83,15 +119,21 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
     collectorInputHash: string,
     from: Date,
     to: Date,
+    productionEnvironments?: string[],
   ): Promise<DbDoraDeployment[]> {
-    const rows = await this.dbClient<DbDoraDeploymentRow>(this.tableName)
+    const query = this.dbClient<DbDoraDeploymentRow>(this.tableName)
       .select('*')
       .where('catalog_entity_ref', catalogEntityRef)
       .andWhere('collector_id', collectorId)
       .andWhere('collector_input_hash', collectorInputHash)
       .andWhere('created_at', '>=', from)
-      .andWhere('created_at', '<=', to)
-      .orderBy('created_at', 'asc');
+      .andWhere('created_at', '<=', to);
+
+    if (productionEnvironments !== undefined) {
+      applyProductionEnvironmentFilter(query, productionEnvironments);
+    }
+
+    const rows = await query.orderBy('created_at', 'asc');
 
     return rows.map(fromDoraDeploymentRow);
   }

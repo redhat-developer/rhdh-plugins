@@ -31,7 +31,6 @@ import {
   type DoraChangeFailureRateConfig,
   parseDoraChangeFailureRateConfig,
 } from './DoraConfig';
-import { isProductionEnvironment } from './utils/deploymentFilterUtils';
 
 type DoraChangeFailureRateProviderOptions = {
   doraSyncService: DoraSyncService;
@@ -124,11 +123,12 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
     ]);
 
     const catalogEntityRef = stringifyEntityRef(entity);
-    const [deployments, incidents] = await Promise.all([
+    const [productionDeployments, incidents] = await Promise.all([
       this.doraDataService.readDeployments(catalogEntityRef, {
         windowFrom: from,
         windowTo: to,
         collector: this.config.deploymentsCollector,
+        productionEnvironments: this.config.productionEnvironments,
       }),
       this.doraDataService.readIncidents(catalogEntityRef, {
         windowFrom: from,
@@ -136,13 +136,6 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
         collector: this.config.incidentsCollector,
       }),
     ]);
-
-    const productionDeployments = deployments.filter(deployment =>
-      isProductionEnvironment(
-        deployment.environment,
-        this.config.productionEnvironments,
-      ),
-    );
 
     if (productionDeployments.length < 2) {
       throw new Error(

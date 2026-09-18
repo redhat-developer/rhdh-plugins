@@ -21,15 +21,22 @@ import {
   SidebarScrollWrapper,
   SidebarSpace,
 } from '@backstage/core-components';
-import { NavContentBlueprint } from '@backstage/plugin-app-react';
-import { SidebarLogo } from './SidebarLogo';
-import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import MenuIcon from '@mui/icons-material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
-import ChatIcon from '@mui/icons-material/Chat';
+import { useTranslationRef } from '@backstage/frontend-plugin-api';
+import {
+  NavContentBlueprint,
+  type NavContentComponentProps,
+  type NavContentNavItem,
+} from '@backstage/plugin-app-react';
 import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
+import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { translationRef } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+import ChatIcon from '@mui/icons-material/Chat';
+import MenuIcon from '@mui/icons-material/Menu';
+import SearchIcon from '@mui/icons-material/Search';
+
+import { SidebarLogo } from './SidebarLogo';
 
 const ChatDrawerItem = () => {
   const { toggleDrawer } = useAppDrawer();
@@ -42,45 +49,62 @@ const ChatDrawerItem = () => {
   );
 };
 
-export const SidebarContent = NavContentBlueprint.make({
-  params: {
-    component: ({ navItems }) => {
-      const nav = navItems.withComponent(item => (
-        <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
-      ));
+const NavSidebarItem = ({
+  item,
+  text,
+}: {
+  item: NavContentNavItem;
+  text: string;
+}) => <SidebarItem icon={() => item.icon} to={item.href} text={text} />;
 
-      nav.take('page:search');
+const AppSidebarNav = ({ navItems }: NavContentComponentProps) => {
+  const { t } = useTranslationRef(translationRef);
 
-      return (
-        <Sidebar>
-          <SidebarLogo />
-          <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-            <SidebarSearchModal />
-          </SidebarGroup>
-          <SidebarDivider />
-          <SidebarGroup label="Menu" icon={<MenuIcon />}>
-            {nav.take('page:catalog')}
-            {nav.take('page:scaffolder')}
-            <SidebarDivider />
-            <SidebarScrollWrapper>
-              {nav.rest({ sortBy: 'title' })}
-            </SidebarScrollWrapper>
-          </SidebarGroup>
-          <SidebarSpace />
-          <SidebarDivider />
-          <ChatDrawerItem />
-          <NotificationsSidebarItem />
-          <SidebarDivider />
-          <SidebarGroup
-            label="Settings"
-            icon={<UserSettingsSignInAvatar />}
-            to="/settings"
-          >
-            {nav.take('page:app-visualizer')}
-            {nav.take('page:user-settings')}
-          </SidebarGroup>
-        </Sidebar>
-      );
+  const getNavItemText = (item: NavContentNavItem) =>
+    item.href === '/learning-paths' ? t('menuItem.learningPaths') : item.title;
+
+  const nav = navItems.withComponent(item => (
+    <NavSidebarItem item={item} text={getNavItemText(item)} />
+  ));
+
+  nav.take('page:search');
+
+  return (
+    <Sidebar>
+      <SidebarLogo />
+      <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+        <SidebarSearchModal />
+      </SidebarGroup>
+      <SidebarDivider />
+      <SidebarGroup label="Menu" icon={<MenuIcon />}>
+        {nav.take('page:catalog')}
+        {nav.take('page:scaffolder')}
+        <SidebarDivider />
+        {nav.take('page:app/learning-paths')}
+        <SidebarScrollWrapper>
+          {nav.rest({ sortBy: 'title' })}
+        </SidebarScrollWrapper>
+      </SidebarGroup>
+      <SidebarSpace />
+      <SidebarDivider />
+      <ChatDrawerItem />
+      <NotificationsSidebarItem />
+      <SidebarDivider />
+      <SidebarGroup
+        label="Settings"
+        icon={<UserSettingsSignInAvatar />}
+        to="/settings"
+      >
+        {nav.take('page:app-visualizer')}
+        {nav.take('page:user-settings')}
+      </SidebarGroup>
+    </Sidebar>
+  );
+};
+
+export const SidebarContent: ReturnType<typeof NavContentBlueprint.make> =
+  NavContentBlueprint.make({
+    params: {
+      component: props => <AppSidebarNav {...props} />,
     },
-  },
-});
+  });

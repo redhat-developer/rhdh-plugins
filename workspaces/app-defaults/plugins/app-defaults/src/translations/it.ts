@@ -43,5 +43,9 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       'Non ci sono ancora entità documentate, oppure non hai il permesso di visualizzarne alcuna. La documentazione apparirà qui una volta registrate entità con annotazioni TechDocs e quando avrai accesso.',
     'docs.emptyState.importButtonTitle': 'Registra un componente',
+    'menuItem.learningPaths': 'Learning Path',
+    'learningPaths.title': 'Learning Path',
+    'learningPaths.error.title': 'Impossibile estrarre i dati.',
+    'learningPaths.error.unknownError': 'Errore sconosciuto',
   },
 });
