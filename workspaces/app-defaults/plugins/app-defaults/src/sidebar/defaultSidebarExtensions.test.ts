@@ -59,12 +59,18 @@ describe('defaultSidebarExtensions', () => {
       'sidebar-element/notifications',
       'sidebar-divider/settings',
       'sidebar-item-group/admin',
+      'sidebar-item/rbac',
       'sidebar-item-group/settings',
     ]);
+    const inputForKind = (kind: string) => {
+      if (kind === 'sidebar-item-group') return 'groups';
+      if (kind === 'sidebar-item') return 'items';
+      return 'elements';
+    };
     specs.forEach(s =>
       expect(s.attachTo).toEqual({
         id: 'nav-content:app/sidebar',
-        input: s.kind === 'sidebar-item-group' ? 'groups' : 'elements',
+        input: inputForKind(s.kind),
       }),
     );
   });

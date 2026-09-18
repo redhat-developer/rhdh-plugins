@@ -34,9 +34,9 @@ import HelpIcon from '@mui/icons-material/HelpOutline';
  * - `Docs` and `APIs` take over the auto-discovered TechDocs and API docs
  *   nav items (same `to`) and move them into the `Documentation` group.
  * - The `Documentation` group uses the default inline submenu.
- * - `App Visualizer` joins the default `Settings` group, and `RBAC` and
- *   `Plugins` join the default `Administration` group, which app-defaults
- *   keeps hidden until a module contributes an item to it.
+ * - `App Visualizer` joins the default `Settings` group, and `Plugins`
+ *   joins the default `Administration` group next to the `RBAC` item that
+ *   app-defaults ships there.
  *
  * Resulting order, top to bottom: logo, search, auto-discovered pages,
  * Documentation, [spacer], divider, Notifications, Help, divider,
@@ -101,20 +101,9 @@ const visualizerItem = SidebarItemBlueprint.make({
 });
 
 /**
- * Dummy entries for the default Administration group of app-defaults. The
- * group only becomes visible because these items reference it.
+ * Dummy entry for the default Administration group of app-defaults, added
+ * next to the RBAC item that app-defaults ships in that group.
  */
-const rbacItem = SidebarItemBlueprint.make({
-  name: 'rbac',
-  params: {
-    title: 'RBAC',
-    icon: 'security',
-    to: '/admin/rbac',
-    group: 'admin',
-    priority: 10,
-  },
-});
-
 const pluginsItem = SidebarItemBlueprint.make({
   name: 'plugins',
   params: {
@@ -202,7 +191,6 @@ export const sidebarDemoModule = createFrontendModule({
     docsItem,
     apiDocsItem,
     visualizerItem,
-    rbacItem,
     pluginsItem,
   ],
 });

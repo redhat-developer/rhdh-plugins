@@ -29,8 +29,8 @@ import type { SidebarIcon } from '../types';
  * of a {@link SidebarItemGroupBlueprint} extension to render the entry
  * inside that group's submenu.
  *
- * `title`, `icon`, `to`, `priority`, and `group` can be overridden by
- * deployers via `app-config.yaml` without changing plugin code:
+ * `title`, `icon`, `to`, `priority`, `group`, and `requiresRoute` can be
+ * overridden by deployers via `app-config.yaml` without changing plugin code:
  *
  * ```yaml
  * app:
@@ -69,6 +69,7 @@ export const SidebarItemBlueprint = createExtensionBlueprint({
     to: z.string().optional(),
     priority: z.number().optional(),
     group: z.string().optional(),
+    requiresRoute: z.boolean().optional(),
   },
   *factory(
     params: {
@@ -78,6 +79,7 @@ export const SidebarItemBlueprint = createExtensionBlueprint({
       onClick?: () => void;
       priority?: number;
       group?: string;
+      requiresRoute?: boolean;
     },
     { config, node },
   ) {
@@ -89,6 +91,7 @@ export const SidebarItemBlueprint = createExtensionBlueprint({
       onClick: params.onClick,
       priority: config.priority ?? params.priority,
       group: config.group ?? params.group,
+      requiresRoute: config.requiresRoute ?? params.requiresRoute,
     });
   },
 });

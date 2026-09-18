@@ -118,6 +118,9 @@ function toModelItem(item: SidebarItemData): SidebarModelItem {
  *   Groups default to the `inline` variant.
  * - Items referencing an unknown group fall back to the top level so that a
  *   misconfigured `group` never hides an entry.
+ * - Items flagged with `requiresRoute` are dropped unless an auto-discovered
+ *   nav item links to the same path, so an entry that points at an optional
+ *   plugin's page disappears when that plugin is not installed.
  * - Nav items auto-discovered from page extensions are merged in at the
  *   default priority unless a contributed item or group already links to the
  *   same path, which lets a plugin take over the placement of its own page.
@@ -149,8 +152,13 @@ export function buildSidebarModel({
     elements.flatMap(element => (element.to ? [element.to] : [])),
   );
 
+  const navHrefs = new Set(navItems.map(navItem => navItem.href));
+
   const topLevelItems: SidebarModelItem[] = [];
   for (const item of items) {
+    if (item.requiresRoute && !(item.to && navHrefs.has(item.to))) {
+      continue;
+    }
     if (item.to && elementPaths.has(item.to)) {
       continue;
     }
