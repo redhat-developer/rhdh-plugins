@@ -45,7 +45,7 @@ describe('SidebarItemGroupBlueprint', () => {
           icon: 'admin',
           to: '/admin',
           priority: -10,
-          submenu: 'flyout',
+          variant: 'flyout',
         },
       }),
     );
@@ -56,11 +56,11 @@ describe('SidebarItemGroupBlueprint', () => {
       icon: 'admin',
       to: '/admin',
       priority: -10,
-      submenu: 'flyout',
+      variant: 'flyout',
     });
   });
 
-  it('lets app-config override title, icon, to, priority and submenu', () => {
+  it('lets app-config override title, icon, to, priority and variant', () => {
     const tester = createExtensionTester(
       SidebarItemGroupBlueprint.make({
         name: 'admin',
@@ -72,7 +72,7 @@ describe('SidebarItemGroupBlueprint', () => {
           icon: 'settings',
           to: '/x',
           priority: 5,
-          submenu: 'flyout',
+          variant: 'flyout',
         },
       },
     );
@@ -83,7 +83,7 @@ describe('SidebarItemGroupBlueprint', () => {
       icon: 'settings',
       to: '/x',
       priority: 5,
-      submenu: 'flyout',
+      variant: 'flyout',
     });
   });
 });

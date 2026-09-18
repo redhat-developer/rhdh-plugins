@@ -184,7 +184,7 @@ function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
     }
     return <SidebarItem icon={icon} text={group.title} to={group.to} />;
   }
-  if (group.submenu === 'flyout') {
+  if (group.variant === 'flyout') {
     return <SidebarModelFlyoutGroup group={group} />;
   }
   return <SidebarModelInlineGroup group={group} />;

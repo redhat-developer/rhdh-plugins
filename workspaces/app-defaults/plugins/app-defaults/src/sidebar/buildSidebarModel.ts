@@ -18,7 +18,7 @@ import type { ComponentType, ReactElement } from 'react';
 import type { NavContentNavItem } from '@backstage/plugin-app-react';
 import type {
   SidebarElementData,
-  SidebarGroupSubmenu,
+  SidebarGroupVariant,
   SidebarIcon,
   SidebarItemData,
   SidebarItemGroupData,
@@ -44,7 +44,7 @@ export interface SidebarModelGroup {
   icon?: SidebarModelIcon;
   to?: string;
   priority: number;
-  submenu: SidebarGroupSubmenu;
+  variant: SidebarGroupVariant;
   items: SidebarModelItem[];
 }
 
@@ -115,7 +115,7 @@ function toModelItem(item: SidebarItemData): SidebarModelItem {
  * - Top-level entries (groups plus ungrouped items) are sorted by `priority`,
  *   higher first, ties broken by title.
  * - Items referencing a group are nested inside it, sorted the same way.
- *   Groups default to the `inline` submenu style.
+ *   Groups default to the `inline` variant.
  * - Items referencing an unknown group fall back to the top level so that a
  *   misconfigured `group` never hides an entry.
  * - Nav items auto-discovered from page extensions are merged in at the
@@ -140,7 +140,7 @@ export function buildSidebarModel({
       icon: group.icon,
       to: group.to,
       priority: group.priority ?? DEFAULT_PRIORITY,
-      submenu: group.submenu ?? 'inline',
+      variant: group.variant ?? 'inline',
       items: [],
     });
   }
