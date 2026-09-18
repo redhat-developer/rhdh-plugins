@@ -18,7 +18,7 @@ import { useSidebarPinState } from '@backstage/core-components';
 
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import CloseIcon from '@mui/icons-material/Close';
+import MenuIcon from '@mui/icons-material/Menu';
 
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -47,7 +47,7 @@ export const SidebarPinToggle = () => {
         size="small"
         aria-label={label}
       >
-        <CloseIcon fontSize="small" />
+        <MenuIcon fontSize="small" />
       </IconButton>
     </Tooltip>
   );
