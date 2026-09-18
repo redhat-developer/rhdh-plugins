@@ -314,10 +314,10 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - `AggregatedCardWithTotalOpenBugs` (title: **Scorecard: Total open bugs**)
    - `AggregatedCardWithEntitiesWithOpenPrs` (title: **Scorecard: Entities with open PRs**)
    - `AggregatedCardWithAvgOpenPrs` (title: **Scorecard: Average open PRs**)
-   - `AggregatedCardWithDoraDeploymentFrequency` (title: **Scorecard: Average deployment frequency**)
-   - `AggregatedCardWithDoraChangeFailureRate` (title: **Scorecard: Average change failure rate**)
-   - `AggregatedCardWithDoraMedianLeadTimeForChanges` (title: **Scorecard: Average median lead time for changes**)
-   - `AggregatedCardWithDoraMedianTimeToRestore` (title: **Scorecard: Average median time to restore**)
+   - `AggregatedCardWithDoraDeploymentFrequency` (title: **Scorecard: DORA - Deployment Frequency**)
+   - `AggregatedCardWithDoraChangeFailureRate` (title: **Scorecard: DORA - Change Failure Rate**)
+   - `AggregatedCardWithDoraMedianLeadTimeForChanges` (title: **Scorecard: DORA - Lead Time for Changes**)
+   - `AggregatedCardWithDoraMedianTimeToRestore` (title: **Scorecard: DORA - Median Time to Restore**)
 
    These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
 
@@ -354,10 +354,10 @@ The default `scorecardPlugin` registers the Scorecard page, API, entity tab, lay
 | `home-page-widget:scorecard/scorecard-total-open-bugs`                     | Homepage widget for scalar sum of open bugs.                                                                                     |
 | `home-page-widget:scorecard/scorecard-entities-with-open-prs`              | Homepage widget for scalar count of entities with open PRs.                                                                      |
 | `home-page-widget:scorecard/scorecard-avg-open-prs`                        | Homepage widget for scalar average open PRs.                                                                                     |
-| `home-page-widget:scorecard/scorecard-avg-deployment-frequency`            | Homepage widget for DORA deployment frequency sparkline (`avgDeploymentFrequency`).                                              |
-| `home-page-widget:scorecard/scorecard-avg-change-failure-rate`             | Homepage widget for DORA change failure rate sparkline (`changeFailureRateKpi`).                                                 |
-| `home-page-widget:scorecard/scorecard-avg-median-lead-time-for-changes`    | Homepage widget for DORA median lead time sparkline (`medianLeadTimeForChangesKpi`).                                             |
-| `home-page-widget:scorecard/scorecard-avg-median-time-to-restore`          | Homepage widget for DORA median time to restore sparkline (`medianTimeToRestoreKpi`).                                            |
+| `home-page-widget:scorecard/scorecard-dora-deployment-frequency`           | Homepage widget for DORA deployment frequency sparkline (`doraDeploymentFrequencyKpi`).                                          |
+| `home-page-widget:scorecard/scorecard-dora-change-failure-rate`            | Homepage widget for DORA change failure rate sparkline (`doraChangeFailureRateKpi`).                                             |
+| `home-page-widget:scorecard/scorecard-dora-median-lead-time-for-changes`   | Homepage widget for DORA median lead time sparkline (`doraMedianLeadTimeForChangesKpi`).                                         |
+| `home-page-widget:scorecard/scorecard-dora-median-time-to-restore`         | Homepage widget for DORA median time to restore sparkline (`doraMedianTimeToRestoreKpi`).                                        |
 
 ##### Migration notes (NFS graduation)
 

@@ -97,7 +97,7 @@ export const mockCatalogApi = new InMemoryCatalogClient({
 });
 
 const SPARKLINE_AGGREGATION_IDS = new Set([
-  'avgDeploymentFrequency',
+  'deploymentFrequencyKpi',
   'changeFailureRateKpi',
   'medianLeadTimeForChangesKpi',
   'medianTimeToRestoreKpi',

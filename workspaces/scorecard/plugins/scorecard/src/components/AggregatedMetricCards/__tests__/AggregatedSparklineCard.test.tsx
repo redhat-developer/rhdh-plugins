@@ -36,11 +36,11 @@ jest.mock('../../../hooks/useLanguage', () => ({
 }));
 
 const series: AggregatedMetricTimeSeriesResponse = {
-  id: 'avgDeploymentFrequency',
+  id: 'deploymentFrequencyKpi',
   metricId: 'dora.deploymentFrequency',
   metadata: {
-    title: 'Average Deployment Frequency',
-    description: 'Average weekly production deploys',
+    title: 'DORA - Deployment Frequency',
+    description: 'Weekly production deploys',
     type: 'number',
     unit: '/week',
     history: true,
@@ -108,18 +108,18 @@ describe('AggregatedSparklineCard', () => {
     render(
       <AggregatedSparklineCard
         series={series}
-        aggregationId="avgDeploymentFrequency"
-        cardTitle="Average Deployment Frequency"
-        description="Average weekly production deploys"
+        aggregationId="deploymentFrequencyKpi"
+        cardTitle="DORA - Deployment Frequency"
+        description="Weekly production deploys"
       />,
       { wrapper: TestWrapper },
     );
 
     expect(
-      screen.getByTestId('sparkline-chart-avgDeploymentFrequency'),
+      screen.getByTestId('sparkline-chart-deploymentFrequencyKpi'),
     ).toBeInTheDocument();
     expect(
-      screen.getByTestId('sparkline-threshold-legend-avgDeploymentFrequency'),
+      screen.getByTestId('sparkline-threshold-legend-deploymentFrequencyKpi'),
     ).toBeInTheDocument();
     expect(screen.getByText('Elite (>=7/week)')).toBeInTheDocument();
     expect(screen.getByText('Medium (1-7/week)')).toBeInTheDocument();
@@ -137,9 +137,9 @@ describe('AggregatedSparklineCard', () => {
     render(
       <AggregatedSparklineCard
         series={series}
-        aggregationId="avgDeploymentFrequency"
-        cardTitle="Average Deployment Frequency"
-        description="Average weekly production deploys"
+        aggregationId="deploymentFrequencyKpi"
+        cardTitle="DORA - Deployment Frequency"
+        description="Weekly production deploys"
       />,
       { wrapper: TestWrapper },
     );
@@ -168,9 +168,9 @@ describe('AggregatedSparklineCard', () => {
             },
           ],
         }}
-        aggregationId="avgDeploymentFrequency"
-        cardTitle="Average Deployment Frequency"
-        description="Average weekly production deploys"
+        aggregationId="deploymentFrequencyKpi"
+        cardTitle="DORA - Deployment Frequency"
+        description="Weekly production deploys"
       />,
       { wrapper: TestWrapper },
     );

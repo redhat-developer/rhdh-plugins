@@ -104,7 +104,7 @@ class MockScorecardApi implements ScorecardApi {
     aggregationId: string,
   ): Promise<AggregationMetadata> {
     if (
-      aggregationId === 'avgDeploymentFrequency' ||
+      aggregationId === 'deploymentFrequencyKpi' ||
       aggregationId.startsWith('dora.')
     ) {
       return {

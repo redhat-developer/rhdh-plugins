@@ -45,7 +45,7 @@ describe('useAggregationTimeSeries', () => {
   };
 
   const timeSeries: AggregatedMetricTimeSeriesResponse = {
-    id: 'avgDeploymentFrequency',
+    id: 'deploymentFrequencyKpi',
     metricId: 'dora.deploymentFrequency',
     points: [
       {
@@ -58,8 +58,8 @@ describe('useAggregationTimeSeries', () => {
       },
     ],
     metadata: {
-      title: 'Average Deployment Frequency',
-      description: 'Average weekly production deploys',
+      title: 'DORA - Deployment Frequency',
+      description: 'Weekly production deploys',
       type: 'number',
       history: true,
       visualization: 'sparkline',
@@ -82,7 +82,7 @@ describe('useAggregationTimeSeries', () => {
     } as any);
 
     const { result } = renderHook(() =>
-      useAggregationTimeSeries({ aggregationId: 'avgDeploymentFrequency' }),
+      useAggregationTimeSeries({ aggregationId: 'deploymentFrequencyKpi' }),
     );
 
     expect(result.current).toEqual({
@@ -100,14 +100,14 @@ describe('useAggregationTimeSeries', () => {
     } as any);
 
     renderHook(() =>
-      useAggregationTimeSeries({ aggregationId: 'avgDeploymentFrequency' }),
+      useAggregationTimeSeries({ aggregationId: 'deploymentFrequencyKpi' }),
     );
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         queryKey: [
           'aggregationTimeSeries',
-          'avgDeploymentFrequency',
+          'deploymentFrequencyKpi',
           TIME_SERIES_DEFAULT_RANGE_DAYS,
         ],
         enabled: true,
@@ -140,7 +140,7 @@ describe('useAggregationTimeSeries', () => {
 
     renderHook(() =>
       useAggregationTimeSeries({
-        aggregationId: 'avgDeploymentFrequency',
+        aggregationId: 'deploymentFrequencyKpi',
         enabled: false,
       }),
     );
@@ -161,7 +161,7 @@ describe('useAggregationTimeSeries', () => {
 
     const { result } = renderHook(() =>
       useAggregationTimeSeries({
-        aggregationId: 'avgDeploymentFrequency',
+        aggregationId: 'deploymentFrequencyKpi',
         enabled: false,
       }),
     );
@@ -178,7 +178,7 @@ describe('useAggregationTimeSeries', () => {
     } as any);
 
     renderHook(() =>
-      useAggregationTimeSeries({ aggregationId: 'avgDeploymentFrequency' }),
+      useAggregationTimeSeries({ aggregationId: 'deploymentFrequencyKpi' }),
     );
 
     const queryFn = mockUseQuery.mock.calls[0][0]
@@ -186,7 +186,7 @@ describe('useAggregationTimeSeries', () => {
     await queryFn();
 
     expect(mockScorecardApi.getAggregationTimeSeries).toHaveBeenCalledWith({
-      aggregationId: 'avgDeploymentFrequency',
+      aggregationId: 'deploymentFrequencyKpi',
       from: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
       to: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
     });
@@ -201,7 +201,7 @@ describe('useAggregationTimeSeries', () => {
     } as any);
 
     renderHook(() =>
-      useAggregationTimeSeries({ aggregationId: 'avgDeploymentFrequency' }),
+      useAggregationTimeSeries({ aggregationId: 'deploymentFrequencyKpi' }),
     );
 
     const queryFn = mockUseQuery.mock.calls[0][0]

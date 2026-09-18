@@ -450,16 +450,16 @@ describe('ScorecardHomepageCard', () => {
       error: undefined,
     });
 
-    render(<ScorecardHomepageCard aggregationId="avgDeploymentFrequency" />, {
+    render(<ScorecardHomepageCard aggregationId="deploymentFrequencyKpi" />, {
       wrapper: TestWrapper,
     });
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
-      aggregationId: 'avgDeploymentFrequency',
+      aggregationId: 'deploymentFrequencyKpi',
       enabled: false,
     });
     expect(useAggregationTimeSeries).toHaveBeenCalledWith({
-      aggregationId: 'avgDeploymentFrequency',
+      aggregationId: 'deploymentFrequencyKpi',
       enabled: false,
     });
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -485,7 +485,7 @@ describe('ScorecardHomepageCard', () => {
     });
     useAggregationTimeSeries.mockReturnValue({
       data: {
-        id: 'avgDeploymentFrequency',
+        id: 'deploymentFrequencyKpi',
         metricId: 'dora.deploymentFrequency',
         metadata: {
           title: 'Average Deployment Frequency',
@@ -512,16 +512,16 @@ describe('ScorecardHomepageCard', () => {
       error: undefined,
     });
 
-    render(<ScorecardHomepageCard aggregationId="avgDeploymentFrequency" />, {
+    render(<ScorecardHomepageCard aggregationId="deploymentFrequencyKpi" />, {
       wrapper: TestWrapper,
     });
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
-      aggregationId: 'avgDeploymentFrequency',
+      aggregationId: 'deploymentFrequencyKpi',
       enabled: false,
     });
     expect(useAggregationTimeSeries).toHaveBeenCalledWith({
-      aggregationId: 'avgDeploymentFrequency',
+      aggregationId: 'deploymentFrequencyKpi',
       enabled: true,
     });
     expect(screen.getByTestId('aggregated-sparkline-card')).toBeInTheDocument();
@@ -553,7 +553,7 @@ describe('ScorecardHomepageCard', () => {
     });
     useAggregationTimeSeries.mockReturnValue({
       data: {
-        id: 'avgDeploymentFrequency',
+        id: 'deploymentFrequencyKpi',
         metricId: 'dora.deploymentFrequency',
         metadata: {
           title: 'Average Deployment Frequency',
@@ -571,7 +571,7 @@ describe('ScorecardHomepageCard', () => {
       error: undefined,
     });
 
-    render(<ScorecardHomepageCard aggregationId="avgDeploymentFrequency" />, {
+    render(<ScorecardHomepageCard aggregationId="deploymentFrequencyKpi" />, {
       wrapper: TestWrapper,
     });
 
@@ -608,7 +608,7 @@ describe('ScorecardHomepageCard', () => {
       error: undefined,
     });
 
-    render(<ScorecardHomepageCard aggregationId="avgDeploymentFrequency" />, {
+    render(<ScorecardHomepageCard aggregationId="deploymentFrequencyKpi" />, {
       wrapper: TestWrapper,
     });
 

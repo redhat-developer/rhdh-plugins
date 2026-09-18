@@ -153,13 +153,13 @@ const TIME_TO_RESTORE_PROFILE: SeriesProfile = {
 };
 
 const SERIES_BY_AGGREGATION_ID: Record<string, SeriesProfile> = {
-  avgDeploymentFrequency: DEPLOYMENT_FREQUENCY_PROFILE,
+  doraDeploymentFrequency: DEPLOYMENT_FREQUENCY_PROFILE,
   'dora.deploymentFrequency': DEPLOYMENT_FREQUENCY_PROFILE,
-  changeFailureRateKpi: CHANGE_FAILURE_RATE_PROFILE,
+  doraChangeFailureRate: CHANGE_FAILURE_RATE_PROFILE,
   'dora.changeFailureRate': CHANGE_FAILURE_RATE_PROFILE,
-  medianLeadTimeForChangesKpi: LEAD_TIME_PROFILE,
+  doraMedianLeadTimeForChanges: LEAD_TIME_PROFILE,
   'dora.medianLeadTimeForChanges': LEAD_TIME_PROFILE,
-  medianTimeToRestoreKpi: TIME_TO_RESTORE_PROFILE,
+  doraMedianTimeToRestore: TIME_TO_RESTORE_PROFILE,
   'dora.medianTimeToRestore': TIME_TO_RESTORE_PROFILE,
 };
 
