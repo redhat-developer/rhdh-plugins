@@ -86,17 +86,19 @@ function getMigratedWorkspaceDirs(migratedWorkspaces) {
   return migratedWorkspaces.map(name => join(workspacesDir, name));
 }
 
-async function reportMigratedWorkspaceDrift(migratedWorkspaces) {
+async function checkMigratedWorkspaceDrift(migratedWorkspaces) {
   const workspacesDir = join(repoRoot, 'workspaces');
-  const warnings = [];
+  const violations = [];
 
   for (const workspaceName of migratedWorkspaces) {
     const workspaceDir = join(workspacesDir, workspaceName);
 
     if (!(await fileExists(workspaceDir))) {
-      warnings.push(
-        `migratedWorkspaces entry "${workspaceName}" has no workspaces/${workspaceName} directory.`,
-      );
+      violations.push({
+        type: 'policy',
+        path: `workspaces/${workspaceName}`,
+        message: `migratedWorkspaces entry "${workspaceName}" has no workspaces/${workspaceName} directory.`,
+      });
       continue;
     }
 
@@ -106,21 +108,15 @@ async function reportMigratedWorkspaceDrift(migratedWorkspaces) {
     );
 
     if (!(await fileExists(eslintSharedConfigPath))) {
-      warnings.push(
-        `migratedWorkspaces entry "${workspaceName}" is missing eslint.frontend-shared.cjs.`,
-      );
+      violations.push({
+        type: 'policy',
+        path: `workspaces/${workspaceName}/eslint.frontend-shared.cjs`,
+        message: `migratedWorkspaces entry "${workspaceName}" is missing eslint.frontend-shared.cjs.`,
+      });
     }
   }
 
-  if (warnings.length > 0) {
-    console.warn(
-      'Material UI v4 policy drift detected (scripts/ci/material-ui-v4-policy.json):\n',
-    );
-    for (const warning of warnings) {
-      console.warn(`- ${warning}`);
-    }
-    console.warn('');
-  }
+  return violations;
 }
 
 async function walkFiles(dir, predicate, files = []) {
@@ -241,9 +237,9 @@ async function checkSourceFiles(policy) {
 
 async function main() {
   const policy = await loadPolicy();
-  await reportMigratedWorkspaceDrift(policy.migratedWorkspaces);
 
   const violations = [
+    ...(await checkMigratedWorkspaceDrift(policy.migratedWorkspaces)),
     ...(await checkPackageJsonFiles(policy)),
     ...(await checkSourceFiles(policy)),
   ];
@@ -256,7 +252,7 @@ async function main() {
   }
 
   console.error(
-    `Found ${violations.length} forbidden Material UI v4 (@material-ui/*) reference(s):\n`,
+    `Found ${violations.length} Material UI v4 policy or package reference(s):\n`,
   );
 
   for (const violation of violations) {
@@ -270,4 +266,7 @@ async function main() {
   process.exit(1);
 }
 
-await main();
+main().catch(error => {
+  console.error(error.stack);
+  process.exit(1);
+});
