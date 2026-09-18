@@ -191,7 +191,12 @@ describe('VectorStoresOperator 429 retry', () => {
       }),
     );
 
-    await expect(attach()).rejects.toThrow();
+    // Capture the rejection instead of `rejects.toThrow()`: the matcher formats
+    // the error stack, which source-map-support remaps by quick-sorting the
+    // bundle's mappings and overflows the stack under CI's tighter limit.
+    const error = await attach().catch(err => err);
+
+    expect(error).toBeInstanceOf(Error);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(logger.warn).not.toHaveBeenCalled();
   });
