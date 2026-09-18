@@ -30,6 +30,8 @@ function makeMinimalDoc(
   overrides?: Partial<McpServerDocument>,
 ): McpServerDocument {
   return {
+    $schema:
+      'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
     name: 'weather',
     description: 'A weather server',
     version: '1.0.0',
@@ -63,11 +65,13 @@ describe('validateRequiredFields', () => {
 
   it('throws for multiple missing fields', () => {
     expect(() =>
-      validateRequiredFields({
-        name: '',
-        description: '',
-        version: '',
-      } as McpServerDocument),
+      validateRequiredFields(
+        makeMinimalDoc({
+          name: '',
+          description: '',
+          version: '',
+        }),
+      ),
     ).toThrow(/name.*description.*version/);
   });
 
@@ -441,11 +445,13 @@ describe('mapServerToEntity', () => {
 
     it('throws for multiple missing fields', () => {
       expect(() =>
-        mapServerToEntity({
-          name: '',
-          description: '',
-          version: '',
-        } as McpServerDocument),
+        mapServerToEntity(
+          makeMinimalDoc({
+            name: '',
+            description: '',
+            version: '',
+          }),
+        ),
       ).toThrow(/name.*description.*version/);
     });
 

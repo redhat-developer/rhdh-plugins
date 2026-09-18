@@ -14,9 +14,56 @@
  * limitations under the License.
  */
 
+import type { McpServerDocument } from './types';
+
 /** Format a dot-separated object path for error messages, using `<root>` when empty. */
 function formatObjectDotPath(objectDotPath: string): string {
   return objectDotPath.length > 0 ? objectDotPath : '<root>';
+}
+
+/**
+ * Require that `doc.$schema` identifies an MCP Registry server.json
+ * document (absolute URL whose basename is `server.schema.json`).
+ *
+ * Call at the entry of every public function that accepts
+ * {@link McpServerDocument}.
+ */
+export function assertServerJsonSchema(doc: McpServerDocument): void {
+  const { $schema } = doc;
+  if (typeof $schema !== 'string') {
+    throw new TypeError(
+      'MCP Registry server.json requires $schema to be a string whose URL ' +
+        'basename is "server.schema.json"',
+    );
+  }
+
+  const trimmed = $schema.trim();
+  if (trimmed.length === 0) {
+    throw new TypeError(
+      'MCP Registry server.json requires $schema to be a non-empty string ' +
+        'whose URL basename is "server.schema.json"',
+    );
+  }
+
+  let basename: string;
+  try {
+    const pathname = new URL(trimmed).pathname;
+    basename = pathname.split('/').filter(Boolean).at(-1) ?? '';
+  } catch {
+    throw new TypeError(
+      'MCP Registry server.json requires $schema to be an absolute URL ' +
+        `whose basename is "server.schema.json" (received ${JSON.stringify(
+          $schema,
+        )})`,
+    );
+  }
+
+  if (basename !== 'server.schema.json') {
+    throw new TypeError(
+      'MCP Registry server.json requires $schema URL basename to be ' +
+        `"server.schema.json" (received ${JSON.stringify(basename)})`,
+    );
+  }
 }
 
 /**

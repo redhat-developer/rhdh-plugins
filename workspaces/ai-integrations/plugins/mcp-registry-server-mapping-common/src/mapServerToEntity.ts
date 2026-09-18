@@ -26,6 +26,7 @@ import type {
 import { deriveMetadataName } from './identity';
 import { isAllowedUrl } from './urlPolicy';
 import { computeRepositoryUrl } from './repository';
+import { assertServerJsonSchema } from './util';
 
 /**
  * Validate required source fields and throw actionable errors.
@@ -33,6 +34,8 @@ import { computeRepositoryUrl } from './repository';
  * @public
  */
 export function validateRequiredFields(doc: McpServerDocument): void {
+  assertServerJsonSchema(doc);
+
   const missing: string[] = [];
 
   if (doc.name === undefined || doc.name === null || doc.name === '') {
@@ -70,6 +73,8 @@ export function validateRequiredFields(doc: McpServerDocument): void {
  * @public
  */
 export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
+  assertServerJsonSchema(doc);
+
   const sourceRemotes = doc.remotes ?? [];
 
   // Filter remotes whose url passes D11
@@ -149,6 +154,8 @@ export interface LinksResult {
  * @public
  */
 export function buildLinks(doc: McpServerDocument): LinksResult {
+  assertServerJsonSchema(doc);
+
   const links: Array<{ url: string; title: string }> = [];
   const consumedPaths: string[] = [];
   const reservedAnnotationKeys: string[] = [];
@@ -211,6 +218,8 @@ export function buildLinks(doc: McpServerDocument): LinksResult {
  * @public
  */
 export function trackConsumedRemotePaths(doc: McpServerDocument): string[] {
+  assertServerJsonSchema(doc);
+
   const consumedPaths: string[] = [];
   if (doc.remotes) {
     for (let i = 0; i < doc.remotes.length; i++) {
@@ -240,6 +249,8 @@ export function mapServerToEntity(
   doc: McpServerDocument,
   defaults?: McpServerMappingDefaults,
 ): McpServerMappingResult {
+  assertServerJsonSchema(doc);
+
   // Validate required fields
   validateRequiredFields(doc);
 

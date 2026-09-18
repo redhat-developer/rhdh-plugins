@@ -22,7 +22,7 @@ import {
 } from './identity';
 import type { McpServerDocument } from './types';
 import { parseAbsoluteUrl } from './urlPolicy';
-import { requireBooleanProperty } from './util';
+import { assertServerJsonSchema, requireBooleanProperty } from './util';
 
 /** Annotation key prefix for projected attributes. */
 const ANNOTATION_PREFIX = 'modelcontextprotocol.io/';
@@ -508,6 +508,10 @@ export function sortAnnotationEntries(
  * are unchanged decimal numerals. Callers constructing expected key
  * literals must account for this lowercasing.
  *
+ * `doc.$schema` must be present as a string absolute URL whose
+ * basename is `server.schema.json`, confirming an MCP Registry
+ * server.json document.
+ *
  * @param doc - The MCP Registry server.json document
  * @param consumedPaths - Dot-separated source paths already consumed by
  *   direct mapping. Array elements use zero-based decimal indices (no
@@ -525,7 +529,11 @@ export function projectAnnotations(
   consumedPaths: string[],
   reservedAnnotationKeys: string[],
 ): Record<string, string> {
+  assertServerJsonSchema(doc);
+
   const consumed = new Set(consumedPaths);
+  // Schema pointer is validation metadata, not a projected attribute
+  consumed.add('$schema');
   const reserved = new Set(reservedAnnotationKeys);
 
   // Walk the document and collect candidate scalars

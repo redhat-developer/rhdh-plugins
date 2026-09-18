@@ -34,11 +34,16 @@ import {
 import { buildLinks, trackConsumedRemotePaths } from './mapServerToEntity';
 import type { McpServerDocument } from './types';
 
+/** Draft server.json schema URI used by fixtures and examples. */
+const SERVER_SCHEMA_URI =
+  'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json';
+
 /** Minimal valid server.json document for reuse across tests. */
 function makeMinimalDoc(
   overrides?: Partial<McpServerDocument>,
 ): McpServerDocument {
   return {
+    $schema: SERVER_SCHEMA_URI,
     name: 'weather',
     description: 'A weather server',
     version: '1.0.0',
