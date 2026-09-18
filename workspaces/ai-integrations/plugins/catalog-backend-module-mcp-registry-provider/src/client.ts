@@ -100,8 +100,8 @@ export async function fetchRegistryServers(
   let cursor: string | undefined;
   let pageCount = 0;
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
+  let hasMorePages = true;
+  while (hasMorePages) {
     // Build request URL with query params
     const url = new URL(parsedEndpoint.toString());
     if (cursor) {
@@ -121,11 +121,15 @@ export async function fetchRegistryServers(
     }
 
     if (!response.ok) {
+      const MAX_BODY_LENGTH = 256;
+      const rawBody = await response.text().catch(() => '(no body)');
+      const truncatedBody =
+        rawBody.length > MAX_BODY_LENGTH
+          ? `${rawBody.substring(0, MAX_BODY_LENGTH)}…(truncated)`
+          : rawBody;
       throw new McpRegistryClientError(
         `MCP Registry returned HTTP ${response.status} for ` +
-          `${url.toString()}: ${await response
-            .text()
-            .catch(() => '(no body)')}`,
+          `${url.toString()}: ${truncatedBody}`,
       );
     }
 
@@ -153,7 +157,8 @@ export async function fetchRegistryServers(
     const nextCursor = body.metadata?.nextCursor;
     if (!nextCursor || nextCursor.length === 0) {
       // No more pages
-      break;
+      hasMorePages = false;
+      continue;
     }
 
     // Repeated cursor safeguard

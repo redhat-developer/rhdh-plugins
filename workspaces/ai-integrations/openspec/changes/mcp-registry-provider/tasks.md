@@ -30,7 +30,7 @@
 
 ## 4. Entity Provider & Scheduling
 
-- [ ] 4.1 Implement the `EntityProvider` class: `getProviderName()` = `mcp-registry-provider`, `connect()` storing the connection, and a `run()` performing one sync; at the start of each `run()`, load provider-managed entities (`locationKey` `mcp-registry-provider`) into a last-good index keyed by `modelcontextprotocol.io/name` and `modelcontextprotocol.io/version` before mapping (design D6)
+- [ ] 4.1 Implement the `EntityProvider` class: `getProviderName()` = `mcp-registry-provider`, `connect()` storing the connection, and a `run()` performing one sync; maintain an in-memory last-good index keyed by `modelcontextprotocol.io/name` and `modelcontextprotocol.io/version`, rebuilt at the end of each successful sync from committed entities with `sync-status: ok` only (design D6)
 - [ ] 4.2 Wire scheduling via `SchedulerService.createScheduledTaskRunner(schedule)` only (no synchronous `run()` from `connect()`); register the single provider when config is present
 - [ ] 4.3 Implement the full-mutation commit: on successful sync call `connection.applyMutation({ type: 'full', entities })`; on a failed run emit no mutation (preserve prior catalog state)
 - [ ] 4.4 Attach provider attribution and sync status to each entity: set mutation `locationKey` `mcp-registry-provider`, `backstage.io/managed-by-location` to `url:` + normalized `baseUrl` (trailing `/` stripped), and `redhat.com/rhdh-mcp-registry-sync-status` to `ok` or `degraded` per D8
@@ -39,7 +39,7 @@
 ## 5. Mapping Integration
 
 - [ ] 5.1 Depend on the sibling `mcp-registry-server-mapping` transform and invoke it per accumulated server, passing `defaultOwner` as the caller-override owner default and, when configured, `baseName` as the caller-override identity prefix (never reimplement the mapping)
-- [ ] 5.2 Implement per-entry failure isolation: on mapping rejection, log an actionable message; when `server.json` has `name` and `version`, include the last-good provider-managed entity (indexed at sync start) with mapping-owned fields unchanged and `redhat.com/rhdh-mcp-registry-sync-status: degraded`; on success set `ok`; otherwise omit the entry; continue the run
+- [ ] 5.2 Implement per-entry failure isolation: on mapping rejection, log an actionable message; when `server.json` has `name` and `version`, include the last-good provider-managed entity (from the in-memory index populated at end of prior sync) with mapping-owned fields unchanged and `redhat.com/rhdh-mcp-registry-sync-status: degraded`; on success set `ok`; otherwise omit the entry; continue the run
 - [ ] 5.3 Add integration tests over sample `server.json` inputs → produced `mcp-server` `API` entities, asserting `spec.owner` reflects `defaultOwner` (and the mapping default `unknown` when omitted), `metadata.name` uses `baseName` as prefix when configured (and mapping default `mcp.registry` when omitted), that one bad entry does not abort the batch, that a mapping failure on a previously synced server retains the last-good entity with `redhat.com/rhdh-mcp-registry-sync-status: degraded`, and that successful mappings set `ok`
 
 ## 6. End-to-End Verification & Docs
