@@ -32,4 +32,15 @@ describe('DcmAuth', () => {
     await expect(getDcmAccessToken()).resolves.toBe('oidc-token');
     expect(getAccessToken).toHaveBeenCalledTimes(1);
   });
+
+  it('does not clear a newer provider when an older provider is cleaned up', async () => {
+    const firstProvider = jest.fn().mockResolvedValue('first-token');
+    const secondProvider = jest.fn().mockResolvedValue('second-token');
+    const cleanupFirstProvider = setDcmAccessTokenProvider(firstProvider);
+    setDcmAccessTokenProvider(secondProvider);
+
+    cleanupFirstProvider();
+
+    await expect(getDcmAccessToken()).resolves.toBe('second-token');
+  });
 });

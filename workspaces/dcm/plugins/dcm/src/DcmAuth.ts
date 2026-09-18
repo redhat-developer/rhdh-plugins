@@ -23,6 +23,12 @@ export function setDcmAccessTokenProvider(
   provider: DcmOidcTokenProvider | undefined,
 ) {
   accessTokenProvider = provider;
+
+  return () => {
+    if (accessTokenProvider === provider) {
+      accessTokenProvider = undefined;
+    }
+  };
 }
 
 /** Gets an OIDC token when DCM authentication is enabled. */
