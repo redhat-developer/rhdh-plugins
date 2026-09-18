@@ -146,7 +146,7 @@ describe('AppSidebar', () => {
         items={[
           { id: 'users', title: 'Users', to: '/admin/users', group: 'admin' },
         ]}
-        groups={[{ id: 'admin', title: 'Administration', submenu: 'flyout' }]}
+        groups={[{ id: 'admin', title: 'Administration', variant: 'flyout' }]}
       />,
     );
 

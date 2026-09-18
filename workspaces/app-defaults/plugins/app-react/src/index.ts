@@ -50,7 +50,7 @@ export { sidebarItemGroupDataRef } from './sidebar';
 export { SidebarSpacerBlueprint } from './sidebar';
 export type {
   SidebarElementData,
-  SidebarGroupSubmenu,
+  SidebarGroupVariant,
   SidebarIcon,
   SidebarItemData,
   SidebarItemGroupData,

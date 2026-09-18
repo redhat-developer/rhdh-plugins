@@ -160,7 +160,7 @@ export const sidebarElementDataRef: ConfigurableExtensionDataRef<
 >;
 
 // @public
-export type SidebarGroupSubmenu = 'inline' | 'flyout';
+export type SidebarGroupVariant = 'inline' | 'flyout';
 
 // @public
 export type SidebarIcon = IconComponent | string;
@@ -224,7 +224,7 @@ export const SidebarItemGroupBlueprint: ExtensionBlueprint<{
     icon?: SidebarIcon;
     to?: string;
     priority?: number;
-    submenu?: SidebarGroupSubmenu;
+    variant?: SidebarGroupVariant;
   };
   output: ExtensionDataRef<SidebarItemGroupData, 'app.sidebar.item-group', {}>;
   inputs: {};
@@ -233,14 +233,14 @@ export const SidebarItemGroupBlueprint: ExtensionBlueprint<{
     icon: string | undefined;
     to: string | undefined;
     priority: number | undefined;
-    submenu: 'inline' | 'flyout' | undefined;
+    variant: 'inline' | 'flyout' | undefined;
   };
   configInput: {
     title?: string | undefined;
     icon?: string | undefined;
     to?: string | undefined;
     priority?: number | undefined;
-    submenu?: 'inline' | 'flyout' | undefined;
+    variant?: 'inline' | 'flyout' | undefined;
   };
   dataRefs: {
     group: ConfigurableExtensionDataRef<
@@ -256,9 +256,9 @@ export interface SidebarItemGroupData {
   icon?: SidebarIcon;
   id: string;
   priority?: number;
-  submenu?: SidebarGroupSubmenu;
   title: string;
   to?: string;
+  variant?: SidebarGroupVariant;
 }
 
 // @public

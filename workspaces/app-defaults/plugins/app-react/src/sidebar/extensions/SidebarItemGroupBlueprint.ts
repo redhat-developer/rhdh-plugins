@@ -18,7 +18,7 @@ import { createExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { z } from 'zod';
 
 import { sidebarItemGroupDataRef } from './sidebarItemGroupDataRef';
-import type { SidebarGroupSubmenu, SidebarIcon } from '../types';
+import type { SidebarGroupVariant, SidebarIcon } from '../types';
 
 /**
  * Blueprint for plugins to contribute a group to the app sidebar.
@@ -26,12 +26,12 @@ import type { SidebarGroupSubmenu, SidebarIcon } from '../types';
  * A group renders as a sidebar entry that collects every
  * {@link SidebarItemBlueprint} extension whose `group` matches this group's
  * `id`, ordered by `priority`. By default the items render inline in a
- * collapsible list below the entry (`submenu: 'inline'`); set
- * `submenu: 'flyout'` to render them in a hover submenu next to the sidebar
+ * collapsible list below the entry (`variant: 'inline'`); set
+ * `variant: 'flyout'` to render them in a hover submenu next to the sidebar
  * instead. Groups themselves are ordered among top-level items by
  * `priority` as well.
  *
- * `title`, `icon`, `to`, `priority`, and `submenu` can be overridden by
+ * `title`, `icon`, `to`, `priority`, and `variant` can be overridden by
  * deployers via `app-config.yaml`:
  *
  * ```yaml
@@ -40,7 +40,7 @@ import type { SidebarGroupSubmenu, SidebarIcon } from '../types';
  *     - sidebar-item-group:my-plugin/admin:
  *         config:
  *           priority: -100
- *           submenu: flyout
+ *           variant: flyout
  * ```
  *
  * @example
@@ -69,7 +69,7 @@ export const SidebarItemGroupBlueprint = createExtensionBlueprint({
     icon: z.string().optional(),
     to: z.string().optional(),
     priority: z.number().optional(),
-    submenu: z.enum(['inline', 'flyout']).optional(),
+    variant: z.enum(['inline', 'flyout']).optional(),
   },
   *factory(
     params: {
@@ -78,7 +78,7 @@ export const SidebarItemGroupBlueprint = createExtensionBlueprint({
       icon?: SidebarIcon;
       to?: string;
       priority?: number;
-      submenu?: SidebarGroupSubmenu;
+      variant?: SidebarGroupVariant;
     },
     { config },
   ) {
@@ -88,7 +88,7 @@ export const SidebarItemGroupBlueprint = createExtensionBlueprint({
       icon: config.icon ?? params.icon,
       to: config.to ?? params.to,
       priority: config.priority ?? params.priority,
-      submenu: config.submenu ?? params.submenu,
+      variant: config.variant ?? params.variant,
     });
   },
 });

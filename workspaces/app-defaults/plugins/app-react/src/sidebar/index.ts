@@ -24,7 +24,7 @@ export { SidebarItemGroupBlueprint } from './extensions/SidebarItemGroupBlueprin
 export { SidebarSpacerBlueprint } from './extensions/SidebarSpacerBlueprint';
 export type {
   SidebarElementData,
-  SidebarGroupSubmenu,
+  SidebarGroupVariant,
   SidebarIcon,
   SidebarItemData,
   SidebarItemGroupData,

@@ -63,13 +63,13 @@ export interface SidebarItemData {
  *
  * @public
  */
-export type SidebarGroupSubmenu = 'inline' | 'flyout';
+export type SidebarGroupVariant = 'inline' | 'flyout';
 
 /**
  * Sidebar group contributed by a plugin via {@link SidebarItemGroupBlueprint}.
  * Groups render as a sidebar entry that contains every
  * {@link SidebarItemData} referencing the group's `id`, either inline below
- * the entry or in a flyout submenu (see {@link SidebarGroupSubmenu}).
+ * the entry or in a flyout submenu (see {@link SidebarGroupVariant}).
  *
  * @public
  */
@@ -85,7 +85,7 @@ export interface SidebarItemGroupData {
   /** Ordering priority. Higher values render first. Defaults to `0`. */
   priority?: number;
   /** How the group presents its items. Defaults to `'inline'`. */
-  submenu?: SidebarGroupSubmenu;
+  variant?: SidebarGroupVariant;
 }
 
 /**
