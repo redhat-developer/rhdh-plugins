@@ -27,11 +27,16 @@
   "sideEffects": false,
   "scripts": {
     "build": "backstage-cli package build",
-    "lint": "backstage-cli package lint",
-    "test": "backstage-cli package test",
     "clean": "backstage-cli package clean",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
+    "postpack": "backstage-cli package postpack",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack"
+    "start": "backstage-cli package start",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "tsc": "tsc",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
     "@backstage/catalog-model": "^1.10.1"
