@@ -329,6 +329,7 @@ describe('createBotMessage', () => {
               link: expect.anything(),
               title: expect.anything(),
               ragSource: expect.anything(),
+              headerContent: expect.anything(),
             }),
           ]),
         }),
@@ -357,19 +358,21 @@ describe('transformDocumentsToSources', () => {
             link: expect.anything(),
             title: expect.anything(),
             ragSource: 'rhdh-product-docs-1_10',
+            headerContent: expect.anything(),
           }),
           expect.objectContaining({
             isExternal: true,
             link: expect.anything(),
             title: expect.anything(),
             ragSource: 'v1',
+            headerContent: expect.anything(),
           }),
         ]),
       }),
     );
   });
 
-  it('should omit ragSource when referenced document has no source', () => {
+  it('should omit headerContent when referenced document has no source', () => {
     const sources = transformDocumentsToSources([
       {
         doc_title: 'Untitled source doc',
@@ -383,6 +386,7 @@ describe('transformDocumentsToSources', () => {
       }),
     );
     expect(sources?.sources[0]).not.toHaveProperty('ragSource');
+    expect(sources?.sources[0]).not.toHaveProperty('headerContent');
   });
 
   it('should add document description in referenced documents into message sources', () => {

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { MessageProps } from '@patternfly/chatbot';
+
 import { TEMP_CONVERSATION_ID } from '../../const';
 import {
   clearSharedToolCallsCacheSessionPrefix,

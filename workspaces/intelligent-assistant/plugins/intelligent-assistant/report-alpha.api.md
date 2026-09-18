@@ -38,11 +38,6 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebooks.prompts.coreConcepts.title': string;
     readonly 'notebooks.prompts.vulnerabilities.title': string;
     readonly 'notebooks.prompts.accessIssue.title': string;
-    readonly 'footer.accuracy.label': string;
-    readonly 'conversation.category.pinnedChats': string;
-    readonly 'conversation.category.recent': string;
-    readonly 'message.options.label': string;
-    readonly 'aria.options.label': string;
     readonly 'page.title': string;
     readonly 'page.subtitle': string;
     readonly 'tabs.ariaLabel': string;
@@ -133,6 +128,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'lcore.notConfigured.backendDocs': string;
     readonly 'lcore.loadError.title': string;
     readonly 'lcore.loadError.description': string;
+    readonly 'footer.accuracy.label': string;
     readonly 'common.cancel': string;
     readonly 'common.close': string;
     readonly 'common.readMore': string;
@@ -160,6 +156,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'aria.search.placeholder': string;
     readonly 'aria.searchPreviousConversations': string;
     readonly 'aria.resize': string;
+    readonly 'aria.options.label': string;
     readonly 'aria.scroll.down': string;
     readonly 'aria.scroll.up': string;
     readonly 'aria.close': string;
@@ -196,6 +193,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'modal.title.preview': string;
     readonly 'modal.title.edit': string;
     readonly 'icon.lightspeed.alt': string;
+    readonly 'message.options.label': string;
     readonly 'file.upload.error.alreadyExists': string;
     readonly 'file.upload.error.multipleFiles': string;
     readonly 'file.upload.error.unsupportedType': string;
@@ -219,6 +217,8 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'feedback.quickResponses.negative.notHelpful': string;
     readonly 'feedback.completion.title': string;
     readonly 'feedback.completion.body': string;
+    readonly 'conversation.category.pinnedChats': string;
+    readonly 'conversation.category.recent': string;
     readonly 'conversation.category.savedPrompts': string;
     readonly 'settings.pinned.enable': string;
     readonly 'settings.pinned.disable': string;

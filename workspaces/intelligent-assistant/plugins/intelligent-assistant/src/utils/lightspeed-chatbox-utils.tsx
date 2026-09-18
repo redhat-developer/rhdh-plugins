@@ -13,12 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ChatbotFootnote, Conversation } from '@patternfly/chatbot';
+import {
+  ChatbotFootnote,
+  Conversation,
+  type SourcesCardProps,
+} from '@patternfly/chatbot';
 import { Spinner } from '@patternfly/react-core';
 import { ThumbtackIcon } from '@patternfly/react-icons';
 import { RhUiAiInfoIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-info-icon';
 
-import { ConversationList, ConversationSummary } from '../types';
+import { RagSourceLabel } from '../components/RagSourceLabel';
+import {
+  ConversationList,
+  ConversationSummary,
+  ReferencedDocuments,
+} from '../types';
 import {
   createBotMessage,
   createMessage,
@@ -27,7 +36,7 @@ import {
   getTimestamp,
   getTimestampVariablesString,
   normalizeChatUserInput,
-  transformDocumentsToSources,
+  transformDocumentsToSources as transformDocumentsToSourcesBase,
   type SourceWithRagId,
 } from './lightspeed-chatbox-message-utils';
 
@@ -39,9 +48,32 @@ export {
   getTimestamp,
   getTimestampVariablesString,
   normalizeChatUserInput,
-  transformDocumentsToSources,
 };
 export type { SourceWithRagId };
+
+/**
+ * Chat UI wrapper: adds SourcesCard `headerContent` pills from `ragSource`.
+ * Pure mapping stays in message-utils so notebookStreamStore stays CSS-clean.
+ */
+export const transformDocumentsToSources = (
+  referenced_documents: ReferencedDocuments,
+): SourcesCardProps | undefined => {
+  const result = transformDocumentsToSourcesBase(referenced_documents);
+  if (!result) {
+    return undefined;
+  }
+  return {
+    sources: result.sources.map((source: SourceWithRagId) => {
+      if (!source.ragSource) {
+        return source;
+      }
+      return {
+        ...source,
+        headerContent: <RagSourceLabel source={source.ragSource} />,
+      };
+    }),
+  };
+};
 
 export const getFootnoteProps = (
   t?: (key: string, params?: any) => string,

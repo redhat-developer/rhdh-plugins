@@ -223,9 +223,10 @@ export const getConversationsData = (
 };
 
 /**
- * Maps LCORE referenced documents to chatbot sources.
- * UI (SourcesChipModal) renders RagSourceLabel from `ragSource`; keep this
- * free of JSX so the notebook stream store stays CSS-clean.
+ * Maps LCORE referenced documents to chatbot sources (data only).
+ * Inline SourcesCard pills are attached in `lightspeed-chatbox-utils`
+ * (`headerContent`); SourcesChipModal reads `ragSource`. Keep this free of
+ * JSX so the notebook stream store stays CSS-clean.
  */
 export const transformDocumentsToSources = (
   referenced_documents: ReferencedDocuments,
