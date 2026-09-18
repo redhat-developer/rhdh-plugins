@@ -14,9 +14,7 @@ app:
         config:
           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
           defaultLanguage: 'en'
-    - nav-item:user-settings: false
-    - nav-item:search: false
-    - nav-item:home: false
+
     # The app-defaults sidebar ships the search and notifications entries
     # disabled by default; enable them here.
     - sidebar-element:app/search: true
