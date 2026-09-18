@@ -767,8 +767,8 @@ const catalogPluginOverride: OverridableFrontendPlugin<
           | (
               | 'development'
               | 'overview'
-              | 'documentation'
               | 'deployment'
+              | 'documentation'
               | 'operation'
               | 'observability'
             )
