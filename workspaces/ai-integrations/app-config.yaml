@@ -139,7 +139,26 @@ catalog:
           kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
           default-owner: '${OWNER:-default-owner}'
           default-lifecycle: '${LIFECYCLE:-production}'
-# Uncomment to use kubernetesPluginRef — the Backstage kubernetes plugin
+    mcpRegistry:
+      # Required: base URL of the MCP Registry
+      baseUrl: https://staging.registry.modelcontextprotocol.io/
+      # Optional: base name (default: mcp.registry)
+      baseName: staging.registry.modelcontextprotocol.io
+      # Optional: API version (default: v1)
+      apiVersion: v0.1
+      # Optional: default entity owner (default: unknown)
+      defaultOwner: user:development/guest
+      # Optional: max pages fetched per sync (default: 10)
+      # pageLimit: 10
+      # Optional: registry page size sent as ?limit= (omitted by default)
+      # pageSize: 50
+      # Optional: sync schedule (defaults shown below)
+      # schedule:
+      #   frequency: { minutes: 30 }
+      #   timeout: { minutes: 3 }
+      #   # Optional: defer the first sync
+      #   # initialDelay: { seconds: 15 }
+# Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 #kubernetes:
 #   serviceLocatorMethod:
