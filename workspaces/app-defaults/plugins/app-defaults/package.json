@@ -98,6 +98,7 @@
     "@backstage/plugin-permission-react": "^0.5.4",
     "@backstage/plugin-scaffolder": "^1.38.2",
     "@backstage/plugin-search": "^1.7.7",
+    "@backstage/plugin-search-react": "^1.11.8",
     "@backstage/plugin-techdocs": "^1.18.0",
     "@backstage/plugin-techdocs-common": "^0.1.1",
     "@backstage/ui": "^0.17.1",

@@ -9571,6 +9571,7 @@ __metadata:
     "@backstage/plugin-permission-react": "npm:^0.5.4"
     "@backstage/plugin-scaffolder": "npm:^1.38.2"
     "@backstage/plugin-search": "npm:^1.7.7"
+    "@backstage/plugin-search-react": "npm:^1.11.8"
     "@backstage/plugin-techdocs": "npm:^1.18.0"
     "@backstage/plugin-techdocs-common": "npm:^0.1.1"
     "@backstage/test-utils": "npm:^1.7.21"

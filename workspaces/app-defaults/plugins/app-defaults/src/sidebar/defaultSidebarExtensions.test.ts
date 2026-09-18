@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
-import { SidebarSearchModal } from '@backstage/plugin-search';
 import type { ExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { createExtensionTester } from '@backstage/frontend-test-utils';
 import {
@@ -38,6 +36,8 @@ import {
   sidebarSettingsGroup,
 } from './defaultSidebarExtensions';
 import { CompanyLogo } from './logo/CompanyLogo';
+import { SidebarNotifications } from './SidebarNotifications';
+import { SidebarSearch } from './SidebarSearch';
 
 const priorityOf = (ext: ExtensionDefinition) =>
   (createExtensionTester(ext).get(sidebarElementDataRef) as SidebarElementData)
@@ -118,16 +118,16 @@ describe('defaultSidebarExtensions', () => {
     ).toMatchObject({ component: CompanyLogo, to: undefined });
   });
 
-  it('renders the search modal and notifications components for their pages', () => {
+  it('renders the guarded search and notifications components for their pages', () => {
     expect(
       createExtensionTester(sidebarSearchElement).get(sidebarElementDataRef),
-    ).toMatchObject({ component: SidebarSearchModal, to: '/search' });
+    ).toMatchObject({ component: SidebarSearch, to: '/search' });
     expect(
       createExtensionTester(sidebarNotificationsElement).get(
         sidebarElementDataRef,
       ),
     ).toMatchObject({
-      component: NotificationsSidebarItem,
+      component: SidebarNotifications,
       to: '/notifications',
     });
   });

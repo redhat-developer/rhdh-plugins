@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
-import { SidebarSearchModal } from '@backstage/plugin-search';
 import {
   SidebarDividerBlueprint,
   SidebarElementBlueprint,
@@ -26,6 +24,8 @@ import GppMaybeOutlinedIcon from '@mui/icons-material/GppMaybeOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 
 import { CompanyLogo } from './logo/CompanyLogo';
+import { SidebarNotifications } from './SidebarNotifications';
+import { SidebarSearch } from './SidebarSearch';
 
 /**
  * Default sidebar layout shipped with the app defaults module.
@@ -74,7 +74,7 @@ export const sidebarLogoSpacer = SidebarSpacerBlueprint.make({
 export const sidebarSearchElement = SidebarElementBlueprint.make({
   name: 'search',
   params: {
-    component: SidebarSearchModal,
+    component: SidebarSearch,
     to: '/search',
     priority: 1000,
   },
@@ -102,7 +102,7 @@ export const sidebarBottomDivider = SidebarDividerBlueprint.make({
 export const sidebarNotificationsElement = SidebarElementBlueprint.make({
   name: 'notifications',
   params: {
-    component: NotificationsSidebarItem,
+    component: SidebarNotifications,
     to: '/notifications',
     priority: -40,
   },
