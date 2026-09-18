@@ -28,6 +28,24 @@ import { assertServerJsonSchema, requireBooleanProperty } from './util';
 const ANNOTATION_PREFIX = 'modelcontextprotocol.io/';
 
 /**
+ * Fields redacted from `isSecret: true` Input objects (D9).
+ *
+ * Keep in sync with `#/definitions/Input` in the draft server.json
+ * schema — specifically `Input.default`, `Input.value`, and
+ * `Input.choices` (gated by `Input.isSecret`). If the schema adds new
+ * secret-bearing fields, add them here to prevent leakage into
+ * projected annotations.
+ *
+ * Input (via `KeyValueInput` / `InputWithVariables`) appears under:
+ * - `packages[].environmentVariables[]`
+ * - `packages[].packageArguments[]` / `packages[].runtimeArguments[]`
+ * - `remotes[].headers[]` / `remotes[].variables`
+ *
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Input definition (`#/definitions/Input`)}
+ */
+const SECRET_REDACTED_FIELDS = new Set(['default', 'value', 'choices']);
+
+/**
  * Annotation key construction helpers.
  *
  * Helpers below are exported for direct unit-testing only; they are
@@ -127,24 +145,6 @@ export function isRefusedUrl(value: unknown): boolean {
   const protocol = parsed.protocol.toLocaleLowerCase('en-US');
   return protocol !== 'http:' && protocol !== 'https:';
 }
-
-/**
- * Fields redacted from `isSecret: true` Input objects (D9).
- *
- * Keep in sync with `#/definitions/Input` in the draft server.json
- * schema — specifically `Input.default`, `Input.value`, and
- * `Input.choices` (gated by `Input.isSecret`). If the schema adds new
- * secret-bearing fields, add them here to prevent leakage into
- * projected annotations.
- *
- * Input (via `KeyValueInput` / `InputWithVariables`) appears under:
- * - `packages[].environmentVariables[]`
- * - `packages[].packageArguments[]` / `packages[].runtimeArguments[]`
- * - `remotes[].headers[]` / `remotes[].variables`
- *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Input definition (`#/definitions/Input`)}
- */
-const SECRET_REDACTED_FIELDS = new Set(['default', 'value', 'choices']);
 
 /** Candidate scalar collected during the walk. */
 interface ScalarCandidate {
