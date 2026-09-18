@@ -28,6 +28,9 @@ annotations, defaults, and synchronization need one consistent implementation.
 - Managing registry sources from RHDH or crawling arbitrary Git repositories.
 - A skill marketplace, skill execution, RBAC changes, or UI changes.
 - Implementing an MLflow connector or inventing its native metadata mapping.
+- Adopting the current WIP ORAS-based OCI client. This may be revisited after
+  evaluating its compatibility with OCTO skillimages; if adopted for the POC,
+  the OpenSpec will be updated in a follow-up change before that implementation.
 - Changing the core `AiResource` schema, adding an OCI `UrlReader`, or making
   catalog processors download skill content.
 
