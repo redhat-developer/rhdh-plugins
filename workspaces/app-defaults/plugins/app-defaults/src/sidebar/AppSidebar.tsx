@@ -19,6 +19,7 @@ import { useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarItem,
+  SidebarScrollWrapper,
   SidebarSubmenu,
   SidebarSubmenuItem,
   useSidebarOpenState,
@@ -212,29 +213,51 @@ export const AppSidebar = ({
     navItems: navItems?.rest(),
   });
 
+  const renderEntry = (entry: (typeof entries)[number]) => {
+    switch (entry.kind) {
+      case 'item':
+        return <SidebarModelItemEntry key={entry.item.id} item={entry.item} />;
+      case 'group':
+        return (
+          <SidebarModelGroupEntry key={entry.group.id} group={entry.group} />
+        );
+      case 'element': {
+        const Element = entry.element.component;
+        return <Element key={entry.element.id} />;
+      }
+      default:
+        return null;
+    }
+  };
+
+  // Entries are ordered by priority (higher first). Positive-priority entries
+  // (logo, search) stay pinned above the scroll wrapper and negative-priority
+  // entries (notifications, the Administration and Settings groups, and the
+  // spacer that pushes them down) stay pinned below it. The main menu items at
+  // the default priority scroll independently inside the wrapper.
+  const entryPriority = (entry: (typeof entries)[number]) => {
+    switch (entry.kind) {
+      case 'item':
+        return entry.item.priority;
+      case 'group':
+        return entry.group.priority;
+      case 'element':
+        return entry.element.priority;
+      default:
+        return 0;
+    }
+  };
+  const topEntries = entries.filter(entry => entryPriority(entry) > 0);
+  const mainEntries = entries.filter(entry => entryPriority(entry) === 0);
+  const bottomEntries = entries.filter(entry => entryPriority(entry) < 0);
+
   return (
     <Sidebar>
-      {entries.map(entry => {
-        switch (entry.kind) {
-          case 'item':
-            return (
-              <SidebarModelItemEntry key={entry.item.id} item={entry.item} />
-            );
-          case 'group':
-            return (
-              <SidebarModelGroupEntry
-                key={entry.group.id}
-                group={entry.group}
-              />
-            );
-          case 'element': {
-            const Element = entry.element.component;
-            return <Element key={entry.element.id} />;
-          }
-          default:
-            return null;
-        }
-      })}
+      {topEntries.map(renderEntry)}
+      <SidebarScrollWrapper>
+        {mainEntries.map(renderEntry)}
+      </SidebarScrollWrapper>
+      {bottomEntries.map(renderEntry)}
     </Sidebar>
   );
 };
