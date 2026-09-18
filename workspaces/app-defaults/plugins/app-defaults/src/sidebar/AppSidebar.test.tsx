@@ -195,6 +195,28 @@ describe('AppSidebar', () => {
     expect(texts).toEqual(['Top', 'Custom element', 'Bottom']);
   });
 
+  it('contains a failing custom element behind an error boundary', async () => {
+    const Broken = () => {
+      throw new Error('boom');
+    };
+    // Silence the expected React error boundary logging for this render.
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await renderInTestApp(
+        <AppSidebar
+          items={[{ id: 'top', title: 'Top', to: '/top', priority: 10 }]}
+          groups={[]}
+          elements={[{ id: 'broken', component: Broken, priority: 0 }]}
+        />,
+      );
+    } finally {
+      errorSpy.mockRestore();
+    }
+
+    // The rest of the sidebar still renders even though the element threw.
+    expect(screen.getByRole('link', { name: 'Top' })).toBeInTheDocument();
+  });
+
   it('merges auto-discovered nav items', async () => {
     await renderInTestApp(
       <AppSidebar

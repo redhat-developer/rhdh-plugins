@@ -17,6 +17,7 @@
 import { isValidElement, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
+  ErrorBoundary,
   Sidebar,
   SidebarItem,
   SidebarScrollWrapper,
@@ -223,7 +224,11 @@ export const AppSidebar = ({
         );
       case 'element': {
         const Element = entry.element.component;
-        return <Element key={entry.element.id} />;
+        return (
+          <ErrorBoundary key={entry.element.id}>
+            <Element />
+          </ErrorBoundary>
+        );
       }
       default:
         return null;
