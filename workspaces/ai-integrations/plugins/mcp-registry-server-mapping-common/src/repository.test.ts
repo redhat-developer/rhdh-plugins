@@ -22,6 +22,7 @@ describe('computeRepositoryUrl', () => {
   it('returns undefined when repository.url fails D11', () => {
     const result = computeRepositoryUrl({
       url: 'javascript:alert(1)',
+      source: 'github',
     });
     expect(result).toBeUndefined();
   });
@@ -29,6 +30,7 @@ describe('computeRepositoryUrl', () => {
   it('returns normalized base when no subfolder', () => {
     const result = computeRepositoryUrl({
       url: 'https://github.com/org/repo',
+      source: 'github',
     });
     expect(result).toEqual({
       combinedUrl: 'https://github.com/org/repo',
@@ -39,6 +41,7 @@ describe('computeRepositoryUrl', () => {
   it('strips trailing slash from base URL', () => {
     const result = computeRepositoryUrl({
       url: 'https://github.com/org/repo/',
+      source: 'github',
     });
     expect(result?.combinedUrl).toBe('https://github.com/org/repo');
     expect(result?.originalUrl).toBe('https://github.com/org/repo/');
@@ -47,6 +50,7 @@ describe('computeRepositoryUrl', () => {
   it('strips trailing .git from base URL', () => {
     const result = computeRepositoryUrl({
       url: 'https://github.com/org/repo.git',
+      source: 'github',
     });
     expect(result?.combinedUrl).toBe('https://github.com/org/repo');
   });
@@ -54,6 +58,7 @@ describe('computeRepositoryUrl', () => {
   it('strips trailing .git/ from base URL without double-slash', () => {
     const result = computeRepositoryUrl({
       url: 'https://github.com/org/repo.git/',
+      source: 'github',
     });
     expect(result?.combinedUrl).toBe('https://github.com/org/repo');
   });
@@ -61,6 +66,7 @@ describe('computeRepositoryUrl', () => {
   it('trims whitespace from repository.url', () => {
     const result = computeRepositoryUrl({
       url: '  https://github.com/org/repo  ',
+      source: 'github',
     });
     expect(result?.originalUrl).toBe('https://github.com/org/repo');
     expect(result?.combinedUrl).toBe('https://github.com/org/repo');
@@ -69,6 +75,7 @@ describe('computeRepositoryUrl', () => {
   it('strips .git from pathname when URL has query parameters', () => {
     const result = computeRepositoryUrl({
       url: 'https://example.com/org/repo.git?ref=main',
+      source: 'github',
     });
     expect(result?.combinedUrl).toBe('https://example.com/org/repo?ref=main');
   });
@@ -76,6 +83,7 @@ describe('computeRepositoryUrl', () => {
   it('strips .git from pathname when URL has fragment', () => {
     const result = computeRepositoryUrl({
       url: 'https://example.com/org/repo.git#readme',
+      source: 'github',
     });
     expect(result?.combinedUrl).toBe('https://example.com/org/repo#readme');
   });

@@ -36,7 +36,10 @@ type SeriesProfile = {
   dailyValues: Array<number | null>;
 };
 
-const DORA_COLLECTORS = ['github:deploymentWorkflowRuns', 'jira:incidents'];
+const DORA_COLLECTORS = [
+  'github:doraDeploymentWorkflowRuns',
+  'jira:doraIncidents',
+];
 
 const DORA_RULE_COLORS = {
   elite: ScorecardThresholdRuleColors.SUCCESS,

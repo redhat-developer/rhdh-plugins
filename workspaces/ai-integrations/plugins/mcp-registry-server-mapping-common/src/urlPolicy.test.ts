@@ -16,7 +16,33 @@
 
 /* eslint-disable no-script-url */
 
-import { isAllowedUrl } from './urlPolicy';
+import { isAllowedUrl, parseAbsoluteUrl } from './urlPolicy';
+
+describe('parseAbsoluteUrl', () => {
+  it('parses absolute http/https URLs', () => {
+    const http = parseAbsoluteUrl('http://example.com/path');
+    expect(http).not.toBeNull();
+    expect(http!.protocol).toBe('http:');
+    expect(http!.hostname).toBe('example.com');
+
+    const https = parseAbsoluteUrl('https://example.com');
+    expect(https).not.toBeNull();
+    expect(https!.protocol).toBe('https:');
+  });
+
+  it('parses absolute URLs with non-http schemes', () => {
+    const parsed = parseAbsoluteUrl('javascript:alert(1)');
+    expect(parsed).not.toBeNull();
+    expect(parsed!.protocol).toBe('javascript:');
+  });
+
+  it('returns null for non-absolute URLs', () => {
+    expect(parseAbsoluteUrl('/relative/path')).toBeNull();
+    expect(parseAbsoluteUrl('//evil.example/path')).toBeNull();
+    expect(parseAbsoluteUrl('git@github.com:org/repo.git')).toBeNull();
+    expect(parseAbsoluteUrl('@scope/pkg')).toBeNull();
+  });
+});
 
 describe('isAllowedUrl (D11)', () => {
   describe('allowed schemes', () => {

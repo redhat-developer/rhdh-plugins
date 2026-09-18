@@ -42,6 +42,11 @@ import {
   aggregatedCardWithTotalOpenBugsWidget,
   aggregatedCardWithEntitiesWithOpenPrsWidget,
   aggregatedCardWithAvgOpenPrsWidget,
+  aggregatedCardWithDoraDeploymentFrequencyWidget,
+  aggregatedCardWithDoraChangeFailureRateWidget,
+  aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
+  aggregatedCardWithDoraMedianTimeToRestoreWidget,
+  aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
@@ -84,6 +89,11 @@ export default createFrontendPlugin({
     aggregatedCardWithTotalOpenBugsWidget,
     aggregatedCardWithEntitiesWithOpenPrsWidget,
     aggregatedCardWithAvgOpenPrsWidget,
+    aggregatedCardWithDoraDeploymentFrequencyWidget,
+    aggregatedCardWithDoraChangeFailureRateWidget,
+    aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
+    aggregatedCardWithDoraMedianTimeToRestoreWidget,
+    aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
   ],
   routes: {
     root: rootRouteRef,

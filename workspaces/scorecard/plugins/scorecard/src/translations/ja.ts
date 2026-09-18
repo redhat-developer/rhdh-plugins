@@ -25,6 +25,7 @@ const scorecardTranslationJa = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': '読み込み中',
+    'common.current': '現在',
     'dataSourcesDialog.title': '{{title}} ソース',
     'dataSourcesDialog.close': '閉じる',
     'dataSourcesDialog.unknownPlugin': '不明',
