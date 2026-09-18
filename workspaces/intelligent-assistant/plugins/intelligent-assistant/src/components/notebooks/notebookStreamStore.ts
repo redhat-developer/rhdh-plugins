@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { MessageProps } from '@patternfly/chatbot';
-
 import { TEMP_CONVERSATION_ID } from '../../const';
 import {
   clearSharedToolCallsCacheSessionPrefix,
@@ -29,7 +27,7 @@ import {
   getTimestamp,
   normalizeChatUserInput,
   transformDocumentsToSources,
-} from '../../utils/lightspeed-chatbox-utils';
+} from '../../utils/lightspeed-chatbox-message-utils';
 import queryClient from '../../utils/queryClient';
 import {
   applyToolResultToToolCalls,

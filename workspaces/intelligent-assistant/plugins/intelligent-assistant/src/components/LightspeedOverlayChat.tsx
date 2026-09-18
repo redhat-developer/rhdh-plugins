@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { lazy, Suspense } from 'react';
-
 import { styled } from '@mui/material/styles';
 import {
   ChatbotModal,
@@ -30,18 +28,7 @@ import {
   LIGHTSPEED_OVERLAY_RIGHT,
   type ChatbotDisplayMode,
 } from '../const';
-import { ChatLoadingFallback } from './ChatLoadingFallback';
-
-// Lazy-import LightspeedChatContainer so its PatternFly CSS (Button, Badge,
-// Spinner) lands in a separate chunk from ChatbotModal's CSS (Popover).
-// A static import puts both in the same chunk, creating an irreconcilable
-// css-extract-rspack-plugin "Conflicting order" warning that CI treats as
-// an error.
-const LazyLightspeedChatContainer = lazy(() =>
-  import('./LightspeedChatContainer').then(m => ({
-    default: m.LightspeedChatContainer,
-  })),
-);
+import { LightspeedChatContainer } from './LightspeedChatContainer';
 
 const LIGHTSPEED_OVERLAY_CHAT_Z_INDEX = 300;
 
@@ -67,6 +54,8 @@ type Props = {
 
 /**
  * Overlay chat modal — lazy-loaded from LightspeedDrawerProvider when needed.
+ * ChatContainer is imported statically so ChatbotModal and chat PatternFly CSS
+ * share one chunk order (avoids css-extract-rspack-plugin CI failures).
  */
 export const LightspeedOverlayChat = ({
   displayMode,
@@ -81,8 +70,6 @@ export const LightspeedOverlayChat = ({
     ouiaId="LightspeedChatbotModal"
     aria-labelledby="lightspeed-chatpopup-modal"
   >
-    <Suspense fallback={<ChatLoadingFallback />}>
-      <LazyLightspeedChatContainer />
-    </Suspense>
+    <LightspeedChatContainer />
   </StyledChatbotModal>
 );

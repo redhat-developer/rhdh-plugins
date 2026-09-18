@@ -28,57 +28,30 @@ jest.mock('../../hooks/useLightspeedProviderState', () => ({
   useLightspeedProviderState: () => mockUseLightspeedProviderState(),
 }));
 
-jest.mock('@patternfly/chatbot', () => {
-  const actual = jest.requireActual('@patternfly/chatbot');
-  return {
-    ...actual,
-    ChatbotModal: ({
-      children,
-      onClose,
-      onEscapePress,
-      displayMode,
-      className,
-      ouiaId,
-      'aria-labelledby': ariaLabelledBy,
-    }: {
-      children: React.ReactNode;
-      onClose?: () => void;
-      onEscapePress?: () => void;
-      displayMode: ChatbotDisplayMode;
-      className?: string;
-      ouiaId?: string;
-      'aria-labelledby'?: string;
-    }) => (
-      <div
-        data-testid="chatbot-modal"
-        data-ouia-id={ouiaId}
-        data-aria-labelledby={ariaLabelledBy}
-        data-display-mode={displayMode}
-        className={className}
+jest.mock('../LightspeedOverlayChat', () => ({
+  LightspeedOverlayChat: ({
+    displayMode,
+    onEscapePress,
+  }: {
+    displayMode: ChatbotDisplayMode;
+    onEscapePress: () => void;
+  }) => (
+    <div
+      data-testid="chatbot-modal"
+      data-ouia-id="LightspeedChatbotModal"
+      data-aria-labelledby="lightspeed-chatpopup-modal"
+      data-display-mode={displayMode}
+      className="ia-overlay-chatbot-modal"
+    >
+      <button
+        type="button"
+        data-testid="modal-escape-close"
+        onClick={() => onEscapePress()}
       >
-        {onClose ? (
-          <button type="button" data-testid="modal-close" onClick={onClose}>
-            Close
-          </button>
-        ) : null}
-        {onEscapePress ? (
-          <button
-            type="button"
-            data-testid="modal-escape-close"
-            onClick={() => onEscapePress()}
-          >
-            Escape close
-          </button>
-        ) : null}
-        {children}
-      </div>
-    ),
-  };
-});
-
-jest.mock('../LightspeedChatContainer', () => ({
-  LightspeedChatContainer: () => (
-    <div data-testid="lightspeed-chat-container">Chat Container</div>
+        Escape close
+      </button>
+      <div data-testid="lightspeed-chat-container">Chat Container</div>
+    </div>
   ),
 }));
 
