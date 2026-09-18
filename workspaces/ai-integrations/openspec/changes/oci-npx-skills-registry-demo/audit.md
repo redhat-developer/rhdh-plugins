@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-09-18T18:10:28Z
+**Last audited:** 2026-09-18T21:35:35Z
 
 Audit clean (no CRITICAL). The independent auditor returned no findings for the
 final artifacts. All required planning artifacts are present and marked done by

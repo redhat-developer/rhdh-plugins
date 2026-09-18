@@ -65,6 +65,7 @@ shared v1 contract and design D3 metadata mappings, with source type `oci`.
 It SHALL publish snapshots atomically according to design D6, report known
 failed repository keys, and retain the existing #4747 `/images` response format.
 It SHALL NOT emit `AiResource` entities or apply catalog defaults or mutations.
+Unknown source IDs SHALL return 404.
 
 #### Scenario: Normalized and raw endpoints coexist
 

@@ -4,8 +4,8 @@
 
 - [ ] 1.1 Implement and export the design D2 `SkillRecord` and `SkillSnapshot` schemas and runtime validators from `skills-common` for both connectors and the common provider.
 - [ ] 1.2 Implement design D3's native-field mappings, precedence, optional metadata, and allowlisted extensions; add OCI SkillCard/Markdown and npx fixtures, including conflicting versions.
-- [ ] 1.3 Implement pure helpers for stable identity, catalog-valid tags, SemVer fallback, and OCI/npx reference serialization with round-trip tests; cover empty, invalid, and overlength tags using Backstage's validator.
-- [ ] 1.4 Test snapshot status invariants, unknown versions, duplicate keys, source mismatch, response/count limits, total discovery budgets, and pagination cycles; document the shared REST contract.
+- [ ] 1.3 Implement pure helpers for stable identity, catalog-valid tags, SemVer fallback, and OCI/npx reference serialization with round-trip tests; cover empty, invalid, and overlength tags using Backstage's validator, plus credential-bearing and signed query URLs.
+- [ ] 1.4 Test source-discriminated extension validation, deterministic limit ordering, snapshot status invariants, unknown versions, duplicate keys, source mismatch, response/count limits, total discovery budgets, and pagination cycles; document the shared REST contract.
 
 ## 2. OCI connector and REST API
 
@@ -13,7 +13,7 @@
 - [ ] 2.2 Resolve tags once, verify digest-addressed manifests and blobs, and expose the resolved manifest digest and stable repository key.
 - [ ] 2.3 Normalize annotated-layer and tar/tar+gzip SkillCard/Markdown layouts using the shared mapping; support valid skillctl images without mandatory manifest metadata annotations.
 - [ ] 2.4 Enforce design D7's origin, timeout, concurrency, extraction, and size bounds; test integrity failures, traversal, decompression limits, non-skills, malformed candidates, and ambiguous duplicate skill files.
-- [ ] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository keys, and Backstage startup/periodic refresh scheduling; test loading, partial discovery, and empty success.
+- [ ] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository keys, and Backstage startup/periodic refresh scheduling; test unknown source IDs, loading, partial discovery, and empty success.
 
 ## 3. npx connector and REST API
 

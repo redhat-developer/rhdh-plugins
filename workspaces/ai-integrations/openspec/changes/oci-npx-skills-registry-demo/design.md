@@ -55,7 +55,14 @@ type SkillRecord = {
   lifecycle?: string; // Optional catalog lifecycle hint
   sourceUri: string; // Digest-addressed OCI URI or fragment-free HTTPS URL
   digest: string; // sha256:<64 lowercase hex digits>
-  extensions?: Record<string, unknown>; // Allowlisted native metadata by source type
+};
+
+type OciSkillRecord = SkillRecord & {
+  extensions?: { oci?: { namespace?: string; prompt?: string } };
+};
+
+type NpxSkillRecord = SkillRecord & {
+  extensions?: { npx?: { type?: 'skill-md' } };
 };
 
 type SkillSnapshot = {
@@ -63,23 +70,29 @@ type SkillSnapshot = {
   source: { id: string; type: 'oci' | 'npx' };
   status: 'loading' | 'ready' | 'partial' | 'failed';
   observedAt: string | null; // UTC completion time; null before first attempt
-  skills: SkillRecord[];
+  skills: Array<OciSkillRecord | NpxSkillRecord>;
   failedSkillKeys: string[];
 };
 ```
 
 `key`, `name`, source fields, `sourceUri`, and `digest` are non-empty and validated.
 Optional fields are omitted when absent; a registry need not supply the whole
-metadata superset. Source-specific extensions preserve only explicitly mapped
-metadata, not arbitrary source objects, credentials, local file paths, or raw
-YAML/Markdown. The common provider never parses native files. The existing
-`/images` route from #4747 can continue serving raw content separately.
+metadata superset. Snapshot validation discriminates records by `source.type`:
+OCI snapshots accept only `OciSkillRecord`, npx snapshots accept only
+`NpxSkillRecord`, and additional extension containers or keys are rejected.
+Source-specific extensions preserve only explicitly mapped metadata, not
+arbitrary source objects, credentials, local file paths, or raw YAML/Markdown.
+The common provider never parses native files. The existing `/images` route
+from #4747 can continue serving raw content separately.
 
 One response contains one bounded snapshot, with at most 1,000 records and 5 MiB
 of serialized JSON. A limit reached during discovery yields `partial`; no
-response may silently truncate data and claim `ready`. Connectors can expose the
-successfully normalized subset that fits the limits. The consumer bounds its
-response read and rejects an oversized, malformed, unsupported-version, or
+response may silently truncate data and claim `ready`. Before applying count or
+serialized-size limits, connectors sort successfully normalized records by
+stable `key` in ascending Unicode code-point order and include the longest
+prefix that fits; failed keys use the same ordering. This selection is
+independent of pagination and concurrent completion order. The consumer bounds
+its response read and rejects an oversized, malformed, unsupported-version, or
 source-mismatched snapshot without changing that source's catalog state.
 
 ### D3 — Metadata superset, native mappings, and precedence
@@ -175,16 +188,19 @@ ID or native key change creates a different identity; no cross-source deduplicat
 is implied. Duplicate `(connectorPluginId, sourceId)` consumers or duplicate
 `(source.type, source.id)` assignments are configuration errors.
 
-The provider strips one leading `v` from a valid declared semantic version;
-otherwise it emits `0.0.0+<first-12-hex-digits-of-record.digest>`. Display names go
-in `metadata.title`, not `metadata.name`.
+The provider removes at most one leading `v`, validates the resulting declared
+version as SemVer, and otherwise emits
+`0.0.0+<first-12-hex-digits-of-record.digest>`. Display names go in
+`metadata.title`, not `metadata.name`.
 
 - OCI: `sourceUri` is `oci://<registry>/<repository>@sha256:<hex>` and must agree
   with `digest`. Set `backstage.io/source-location` to `url:<sourceUri>` and
   `rhdh.io/oci-skill-ref` to `sourceUri`.
 - npx: `sourceUri` is the configured index entry's absolute HTTPS artifact URL,
-  serialized with the URL API, with credentials and fragments rejected and query
-  order preserved. Redirects do not replace this identity locator. Set
+  serialized with the URL API. URL credentials, fragments, query-string
+  credentials, and signed access tokens are rejected before the value is
+  persisted; non-sensitive query parameters retain their original order.
+  Redirects do not replace this identity locator. Set
   `backstage.io/source-location` to `url:<sourceUri>` and
   `rhdh.io/npx-skill-ref` to `<sourceUri>#<digest>`. A parser splits at the single
   literal `#`; comparison uses the serialized URL and lowercase SHA-256 digest.

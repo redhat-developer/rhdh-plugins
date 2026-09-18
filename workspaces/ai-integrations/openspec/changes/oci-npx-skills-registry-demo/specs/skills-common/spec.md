@@ -24,9 +24,11 @@ normalized records, not `AiResource` entities or raw native files, on
 
 Connectors SHALL follow the native-to-normalized mapping and ordered precedence
 in design D3. The shared library SHALL validate normalized types and preserve the explicitly
-mapped `extensions.oci` or `extensions.npx` fields. Unknown native metadata SHALL
-NOT become arbitrary entity fields or annotations. Authors SHALL NOT imply
-catalog ownership and SkillCard namespaces SHALL NOT override catalog namespaces.
+mapped `extensions.oci` or `extensions.npx` fields. Snapshot validation SHALL
+accept only the extension container matching the source type and SHALL reject
+additional extension keys. Unknown native metadata SHALL NOT become arbitrary
+entity fields or annotations. Authors SHALL NOT imply catalog ownership and
+SkillCard namespaces SHALL NOT override catalog namespaces.
 
 #### Scenario: Conflicting declared versions
 
@@ -58,7 +60,7 @@ even if no failed keys are known. `failed` SHALL have no skill records.
 #### Scenario: Snapshot limit reached
 
 - **WHEN** discovery would exceed 1,000 records or 5 MiB of serialized snapshot JSON
-- **THEN** the connector returns a bounded `partial` response
+- **THEN** the connector returns a bounded `partial` response containing the longest prefix after sorting records by stable key
 - **AND** it does not publish a truncated `ready` response
 
 #### Scenario: Unsupported schema or inconsistent status
@@ -77,8 +79,9 @@ even if no failed keys are known. `failed` SHALL have no skill records.
 The shared library SHALL implement design D5's identity tuple and deterministic catalog name,
 SemVer fallback, and source-reference construction/parsing. OCI URI digests SHALL
 match the record digest. HTTPS artifact URLs SHALL contain neither credentials
-nor fragments; npx references SHALL serialize as `<sourceUri>#<digest>` with a
-lowercase SHA-256 digest and round-trip without losing URL query parameters.
+nor fragments, query-string credentials, or signed access tokens; npx
+references SHALL serialize as `<sourceUri>#<digest>` with a lowercase SHA-256
+digest and round-trip without losing non-sensitive URL query parameters.
 
 #### Scenario: Display name or content changes
 
@@ -87,10 +90,15 @@ lowercase SHA-256 digest and round-trip without losing URL query parameters.
 
 #### Scenario: Missing declared semantic version
 
-- **WHEN** a record has no valid declared semantic version after removal of one leading `v`
+- **WHEN** a record has no valid declared semantic version after removal of at most one leading `v`
 - **THEN** its catalog version is `0.0.0+<first-12-hex-digits-of-record.digest>`
 
 #### Scenario: npx reference round trip
 
 - **WHEN** a verified artifact URL includes a query string
 - **THEN** constructing and parsing its npx reference preserves the serialized URL, query order, and digest
+
+#### Scenario: Sensitive npx query reference
+
+- **WHEN** an artifact URL contains query-string credentials or a signed access token
+- **THEN** shared validation rejects the record before catalog mapping
