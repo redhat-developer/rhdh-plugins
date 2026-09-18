@@ -4,6 +4,43 @@ set -eo pipefail
 # Prevent git from prompting for passwords interactively (no TTY in containers)
 export GIT_TERMINAL_PROMPT=0
 
+# Concatenate extra CAs with the image trust store for git/HTTPS in this Job.
+setup_extra_ca_bundle() {
+  if [ -z "${GIT_CA_BUNDLE_FILE:-}" ]; then
+    return 0
+  fi
+  if [ ! -r "${GIT_CA_BUNDLE_FILE}" ]; then
+    ERROR_MESSAGE="GIT_CA_BUNDLE_FILE is set but not readable: ${GIT_CA_BUNDLE_FILE}"
+    echo "ERROR: ${ERROR_MESSAGE}"
+    exit 1
+  fi
+
+  local store=""
+  for candidate in \
+    /etc/pki/tls/certs/ca-bundle.crt \
+    /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+    /etc/ssl/certs/ca-certificates.crt
+  do
+    if [ -r "${candidate}" ]; then
+      store="${candidate}"
+      break
+    fi
+  done
+  if [ -z "${store}" ]; then
+    ERROR_MESSAGE="Could not find image CA store to concatenate with extra git CA"
+    echo "ERROR: ${ERROR_MESSAGE}"
+    exit 1
+  fi
+
+  local combined="/tmp/x2a-ca-bundle.pem"
+  { cat "${store}"; printf '\n'; cat "${GIT_CA_BUNDLE_FILE}"; } > "${combined}"
+  export GIT_SSL_CAINFO="${combined}"
+  export SSL_CERT_FILE="${combined}"
+  export CURL_CA_BUNDLE="${combined}"
+  export REQUESTS_CA_BUNDLE="${combined}"
+  echo "Using extra CA bundle concatenated with ${store}"
+}
+
 # Track error context for the cleanup trap
 ERROR_MESSAGE=""
 ARTIFACTS=()
@@ -379,6 +416,8 @@ echo ""
 # Configure git
 git config --global user.name "${GIT_AUTHOR_NAME}"
 git config --global user.email "${GIT_AUTHOR_EMAIL}"
+
+setup_extra_ca_bundle
 
 # Clone repositories
 git_clone_repos

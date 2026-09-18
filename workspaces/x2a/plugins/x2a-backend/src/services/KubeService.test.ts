@@ -26,6 +26,7 @@ jest.mock('@kubernetes/client-node', () => ({
 
 const mockCoreV1Api = {
   createNamespacedSecret: jest.fn(),
+  createNamespacedConfigMap: jest.fn(),
   readNamespacedSecret: jest.fn(),
   deleteNamespacedSecret: jest.fn(),
   listNamespacedPod: jest.fn(),
@@ -407,6 +408,100 @@ describe('KubeService', () => {
 
       // Should clean up the orphaned job
       expect(mockBatchV1Api.deleteNamespacedJob).toHaveBeenCalled();
+    });
+
+    it('does not create a git CA ConfigMap when caBundle is unset', async () => {
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+
+      await kubeService.createJob(params);
+
+      const gitCaCalls =
+        mockCoreV1Api.createNamespacedConfigMap.mock.calls.filter((c: any) =>
+          String(c[0]?.body?.metadata?.name ?? '').startsWith('x2a-git-ca-'),
+        );
+      expect(gitCaCalls).toHaveLength(0);
+    });
+
+    it('creates a git CA ConfigMap matching the Job volume when caBundle is set', async () => {
+      const extraCa = [
+        '-----BEGIN CERTIFICATE-----',
+        'MIIBtest',
+        '-----END CERTIFICATE-----',
+      ].join('\n');
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: { ...mockConfig, git: { caBundle: extraCa } },
+      });
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+      mockCoreV1Api.createNamespacedConfigMap.mockResolvedValue({});
+
+      await kubeService.createJob(params);
+
+      const jobBody = mockBatchV1Api.createNamespacedJob.mock.calls[0][0].body;
+      const volume = jobBody.spec.template.spec.volumes.find(
+        (v: { name: string }) => v.name === 'git-ca',
+      );
+      expect(volume.configMap.name).toBe('x2a-git-ca-job-123');
+
+      expect(mockCoreV1Api.createNamespacedConfigMap).toHaveBeenCalledWith(
+        expect.objectContaining({
+          namespace: 'test-namespace',
+          body: expect.objectContaining({
+            metadata: expect.objectContaining({
+              name: 'x2a-git-ca-job-123',
+              ownerReferences: [
+                expect.objectContaining({
+                  apiVersion: 'batch/v1',
+                  kind: 'Job',
+                  name: expect.stringMatching(/^job-x2a-init-/),
+                  uid: 'uid-123',
+                }),
+              ],
+            }),
+            data: expect.objectContaining({
+              'extra-ca.pem': extraCa,
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('warns and does not set GIT_SSL_NO_VERIFY when both CA and skip are set', async () => {
+      const extraCa = [
+        '-----BEGIN CERTIFICATE-----',
+        'MIIBsecretpem',
+        '-----END CERTIFICATE-----',
+      ].join('\n');
+      const logger = mockServices.logger.mock();
+      kubeService = await KubeService.create({
+        logger,
+        config: {
+          ...mockConfig,
+          git: { caBundle: extraCa, skipSSLVerification: true },
+        },
+      });
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+      mockCoreV1Api.createNamespacedConfigMap.mockResolvedValue({});
+
+      await kubeService.createJob(params);
+
+      const jobBody = mockBatchV1Api.createNamespacedJob.mock.calls[0][0].body;
+      const env = jobBody.spec.template.spec.containers[0].env as Array<{
+        name: string;
+      }>;
+      expect(env.map(e => e.name)).not.toContain('GIT_SSL_NO_VERIFY');
+      expect(logger.warn).toHaveBeenCalledWith(
+        'x2a.git.skipSSLVerification is ignored because x2a.git.caBundle is set',
+      );
+      const logged = JSON.stringify(logger.warn.mock.calls);
+      expect(logged).not.toContain('MIIBsecretpem');
+      expect(logged).not.toContain(extraCa);
     });
   });
 

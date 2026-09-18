@@ -52,6 +52,16 @@ export interface X2AConfig {
       name: string;
       email: string;
     };
+    /**
+     * Extra PEM (issuing CA and intermediates) mounted into converter Jobs
+     * and concatenated with the image trust store for git/HTTPS.
+     */
+    caBundle?: string;
+    /**
+     * When true and caBundle is unset, disable git TLS verification in Jobs.
+     * Default false. Ignored when caBundle is set.
+     */
+    skipSSLVerification?: boolean;
   };
   credentials: {
     llm: Record<string, string>;

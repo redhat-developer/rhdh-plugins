@@ -127,6 +127,24 @@ export interface Config {
          */
         token?: string;
       };
+      /**
+       * Extra CA certificates (PEM) for git clone/push in converter Jobs.
+       * Paste issuing CA and intermediates not already in the convertor image
+       * store, not the GitLab/GitHub leaf (server) certificate. The Job
+       * concatenates this with the image trust store.
+       * Use a YAML literal block (`|`). Do not use ${ENV} substitution —
+       * it typically strips PEM newlines.
+       * @visibility secret
+       */
+      caBundle?: string;
+      /**
+       * When true, skip git TLS verification in converter Jobs
+       * (`GIT_SSL_NO_VERIFY=1`). Last resort for labs; MITM risk on all git
+       * HTTPS in the Job (source and target, including GitHub). Default false.
+       * Ignored when caBundle is set.
+       * @visibility backend
+       */
+      skipSSLVerification?: boolean;
     };
     /**
      * Credentials configuration for X2A

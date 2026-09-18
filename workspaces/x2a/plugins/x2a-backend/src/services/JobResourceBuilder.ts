@@ -25,6 +25,13 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { Phase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { X2AConfig, JobCreateParams, AAPCredentials, GitRepo } from './types';
+import {
+  GIT_CA_BUNDLE_FILE_PATH,
+  GIT_CA_DATA_KEY,
+  GIT_CA_MOUNT_PATH,
+  GIT_CA_VOLUME_NAME,
+  resolveGitTls,
+} from './gitTls';
 
 /**
  * Builds Kubernetes Job and Secret resources for X2A migration jobs
@@ -221,6 +228,7 @@ export class JobResourceBuilder {
       Phase.from(params.phase).isProjectPhase() &&
       !!params.acceptedRules &&
       params.acceptedRules.length > 0;
+    const gitTls = resolveGitTls(config, params.jobId);
 
     return {
       apiVersion: 'batch/v1',
@@ -396,6 +404,7 @@ export class JobResourceBuilder {
                     name: 'GIT_AUTHOR_EMAIL',
                     value: config.git?.author?.email,
                   },
+                  ...this.gitTlsEnv(gitTls),
                 ],
                 volumeMounts: [
                   {
@@ -420,6 +429,7 @@ export class JobResourceBuilder {
                         },
                       ]
                     : []),
+                  ...this.gitTlsVolumeMounts(gitTls),
                 ],
                 resources: {
                   requests: {
@@ -459,11 +469,53 @@ export class JobResourceBuilder {
                     },
                   ]
                 : []),
+              ...this.gitTlsVolumes(gitTls),
             ],
           },
         },
       },
     };
+  }
+
+  private static gitTlsEnv(gitTls: ReturnType<typeof resolveGitTls>) {
+    const env: { name: string; value: string }[] = [];
+    if (gitTls.gitCaConfigMapName) {
+      env.push({
+        name: 'GIT_CA_BUNDLE_FILE',
+        value: GIT_CA_BUNDLE_FILE_PATH,
+      });
+    }
+    if (gitTls.useSkip) {
+      env.push({ name: 'GIT_SSL_NO_VERIFY', value: '1' });
+    }
+    return env;
+  }
+
+  private static gitTlsVolumeMounts(gitTls: ReturnType<typeof resolveGitTls>) {
+    if (!gitTls.gitCaConfigMapName) {
+      return [];
+    }
+    return [
+      {
+        name: GIT_CA_VOLUME_NAME,
+        mountPath: GIT_CA_MOUNT_PATH,
+        readOnly: true,
+      },
+    ];
+  }
+
+  private static gitTlsVolumes(gitTls: ReturnType<typeof resolveGitTls>) {
+    if (!gitTls.gitCaConfigMapName) {
+      return [];
+    }
+    return [
+      {
+        name: GIT_CA_VOLUME_NAME,
+        configMap: {
+          name: gitTls.gitCaConfigMapName,
+        },
+      },
+    ];
   }
 
   /**
@@ -564,6 +616,39 @@ export class JobResourceBuilder {
         ownerReferences: [ownerReference],
       },
       data,
+    };
+  }
+
+  /**
+   * Extra git CA PEM for the converter Job. Owned by the Job.
+   */
+  static buildGitCaConfigMap(
+    configMapName: string,
+    pem: string,
+    jobId: string,
+    ownerReference: V1OwnerReference,
+  ): V1ConfigMap {
+    return {
+      apiVersion: 'v1',
+      kind: 'ConfigMap',
+      metadata: {
+        name: configMapName,
+        labels: {
+          'app.kubernetes.io/name': 'x2a-job',
+          'app.kubernetes.io/component': 'git-ca',
+          'app.kubernetes.io/managed-by': 'x2a-backend-plugin',
+          'x2a.redhat.com/job-id': jobId,
+        },
+        annotations: {
+          'x2a.redhat.com/created-by': 'x2a-backend-plugin',
+          'x2a.redhat.com/description':
+            'Extra CA certificates for git HTTPS in the X2A job',
+        },
+        ownerReferences: [ownerReference],
+      },
+      data: {
+        [GIT_CA_DATA_KEY]: pem,
+      },
     };
   }
 

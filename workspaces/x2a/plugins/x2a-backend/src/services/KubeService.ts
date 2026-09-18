@@ -46,20 +46,10 @@ import { Phase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { stringifyError } from '../utils';
 import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
+import { mapX2AConfig } from './mapX2AConfig';
+import { resolveGitTls } from './gitTls';
 import type { X2AConfig } from './types';
-import {
-  DEFAULT_LLM_MODEL,
-  DEFAULT_KUBERNETES_NAMESPACE,
-  DEFAULT_KUBERNETES_IMAGE,
-  DEFAULT_KUBERNETES_IMAGE_TAG,
-  DEFAULT_TTL_SECONDS_AFTER_FINISHED,
-  DEFAULT_CPU_REQUEST,
-  DEFAULT_MEMORY_REQUEST,
-  DEFAULT_CPU_LIMIT,
-  DEFAULT_MEMORY_LIMIT,
-  DEFAULT_GIT_AUTHOR_NAME,
-  DEFAULT_GIT_AUTHOR_EMAIL,
-} from './constants';
+import { DEFAULT_KUBERNETES_NAMESPACE } from './constants';
 
 /**
  * The API does not guarantee `items` order. Never use `items[0]`: a Pending
@@ -300,6 +290,13 @@ export class KubeService implements KubeServiceApi {
         ? `x2a-adversarial-agents-${params.jobId}`
         : undefined;
 
+    const gitTls = resolveGitTls(this.#config, params.jobId);
+    if (gitTls.trimmedCa && this.#config.git?.skipSSLVerification === true) {
+      this.#logger.warn(
+        'x2a.git.skipSSLVerification is ignored because x2a.git.caBundle is set',
+      );
+    }
+
     const job = JobResourceBuilder.buildJobSpec(
       params,
       this.#config,
@@ -374,6 +371,20 @@ export class KubeService implements KubeServiceApi {
         await this.#coreV1Api.createNamespacedConfigMap({
           namespace: this.#namespace,
           body: adversarialAgentsConfigMap,
+        });
+      }
+
+      if (gitTls.gitCaConfigMapName && gitTls.trimmedCa) {
+        const gitCaConfigMap = JobResourceBuilder.buildGitCaConfigMap(
+          gitTls.gitCaConfigMapName,
+          gitTls.trimmedCa,
+          params.jobId,
+          ownerReference,
+        );
+        this.#logger.info(`Creating git CA ConfigMap for job: ${params.jobId}`);
+        await this.#coreV1Api.createNamespacedConfigMap({
+          namespace: this.#namespace,
+          body: gitCaConfigMap,
         });
       }
     } catch (error: any) {
@@ -606,50 +617,7 @@ export const kubeServiceFactory = createServiceFactory({
       `Using namespace '${namespace}' from ${source} configuration`,
     );
 
-    const x2aConfig: X2AConfig = {
-      kubernetes: {
-        namespace,
-        image: rawConfig?.kubernetes?.image ?? DEFAULT_KUBERNETES_IMAGE,
-        imageTag:
-          rawConfig?.kubernetes?.imageTag ?? DEFAULT_KUBERNETES_IMAGE_TAG,
-        imagePullPolicy: rawConfig?.kubernetes?.imagePullPolicy,
-        ttlSecondsAfterFinished:
-          rawConfig?.kubernetes?.ttlSecondsAfterFinished ??
-          DEFAULT_TTL_SECONDS_AFTER_FINISHED,
-        resources: {
-          requests: {
-            cpu:
-              rawConfig?.kubernetes?.resources?.requests?.cpu ??
-              DEFAULT_CPU_REQUEST,
-            memory:
-              rawConfig?.kubernetes?.resources?.requests?.memory ??
-              DEFAULT_MEMORY_REQUEST,
-          },
-          limits: {
-            cpu:
-              rawConfig?.kubernetes?.resources?.limits?.cpu ??
-              DEFAULT_CPU_LIMIT,
-            memory:
-              rawConfig?.kubernetes?.resources?.limits?.memory ??
-              DEFAULT_MEMORY_LIMIT,
-          },
-        },
-      },
-      git: {
-        author: {
-          name: rawConfig?.git?.author?.name ?? DEFAULT_GIT_AUTHOR_NAME,
-          email: rawConfig?.git?.author?.email ?? DEFAULT_GIT_AUTHOR_EMAIL,
-        },
-      },
-      credentials: {
-        llm: rawConfig?.credentials?.llm ?? {},
-        aap: rawConfig?.credentials?.aap,
-      },
-    };
-
-    if (!x2aConfig.credentials.llm.LLM_MODEL) {
-      x2aConfig.credentials.llm.LLM_MODEL = DEFAULT_LLM_MODEL;
-    }
+    const x2aConfig = mapX2AConfig(rawConfig, namespace);
 
     if (!x2aConfig.kubernetes.image) {
       throw new Error('X2A configuration error: kubernetes.image is required');

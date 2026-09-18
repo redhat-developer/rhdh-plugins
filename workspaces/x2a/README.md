@@ -310,6 +310,29 @@ yarn dev
 
 **Warning:** `NODE_TLS_REJECT_UNAUTHORIZED=0` disables certificate verification for **all** outbound HTTPS connections in the Node.js process, not just Kubernetes. **Do not use this in production.**
 
+#### Converter Job git TLS (GitLab / private SCM)
+
+`git clone` and `git push` run **inside the converter Job**, not in the RHDH Node process. Hub settings such as `NODE_EXTRA_CA_CERTS` do **not** apply to those clones.
+
+`x2a.git.caBundle` and `x2a.git.skipSSLVerification` apply to **every** converter Job (init, analyze, migrate, publish, adversarial) and to **all git HTTPS in that Job** (source clone and target clone/push), including public hosts such as GitHub if skip is enabled.
+
+Paste the **issuing CA and any intermediates** missing from the convertor image store — not the GitLab (or GitHub) **leaf/server** certificate. A leaf cert will not fix `self-signed certificate in certificate chain`. Capture the chain with `openssl s_client -showcerts -connect gitlab.example:443` (or export the issuing CA from a browser). The Job concatenates your extras with the image trust store.
+
+Use a YAML literal block. Do **not** use `${GIT_CA_BUNDLE}` (or similar) for the PEM — environment substitution typically strips newlines.
+
+```yaml
+x2a:
+  git:
+    caBundle: |
+      -----BEGIN CERTIFICATE-----
+      ...issuing CA...
+      -----END CERTIFICATE-----
+      -----BEGIN CERTIFICATE-----
+      ...intermediate, if needed...
+      -----END CERTIFICATE-----
+    # skipSSLVerification: false  # lab-only MITM hatch; ignored when caBundle is set
+```
+
 ### Verifying Kubernetes Connection
 
 The plugin's `KubeService` provides methods to interact with Kubernetes resources. Check the logs when starting the backend to see if the Kubernetes configuration was loaded successfully:

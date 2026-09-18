@@ -920,5 +920,101 @@ describe('JobResourceBuilder', () => {
         expect(container!.args![0]).toContain('Unknown phase');
       });
     });
+
+    describe('Git TLS', () => {
+      const extraCa = [
+        '-----BEGIN CERTIFICATE-----',
+        'MIIBtest',
+        '-----END CERTIFICATE-----',
+      ].join('\n');
+
+      const env = (job: ReturnType<typeof JobResourceBuilder.buildJobSpec>) =>
+        job.spec?.template.spec?.containers![0].env ?? [];
+
+      const envValue = (
+        job: ReturnType<typeof JobResourceBuilder.buildJobSpec>,
+        name: string,
+      ) => env(job).find(e => e.name === name)?.value;
+
+      it('does not set skip or CA env by default', () => {
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+        const names = env(job).map(e => e.name);
+        expect(names).not.toContain('GIT_SSL_NO_VERIFY');
+        expect(names).not.toContain('GIT_CA_BUNDLE_FILE');
+        expect(names).not.toContain('GIT_SSL_CAINFO');
+        expect(
+          job.spec?.template.spec?.volumes?.some(v => v.name === 'git-ca'),
+        ).toBeFalsy();
+      });
+
+      it('mounts extra CA ConfigMap directory and GIT_CA_BUNDLE_FILE', () => {
+        mockConfig.git = { caBundle: extraCa };
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+        const container = job.spec?.template.spec?.containers![0];
+
+        expect(envValue(job, 'GIT_CA_BUNDLE_FILE')).toBe(
+          '/config/git-ca/extra-ca.pem',
+        );
+        expect(env(job).map(e => e.name)).not.toContain('GIT_SSL_NO_VERIFY');
+        expect(env(job).map(e => e.name)).not.toContain('GIT_SSL_CAINFO');
+        expect(container!.args![0]).toContain(
+          [
+            'setup_extra_ca_bundle',
+            '',
+            '# Clone repositories',
+            'git_clone_repos',
+          ].join('\n'),
+        );
+        expect(container!.args![0]).toContain('/tmp/x2a-ca-bundle.pem');
+        expect(container!.volumeMounts).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'git-ca',
+              mountPath: '/config/git-ca',
+              readOnly: true,
+            }),
+          ]),
+        );
+        expect(job.spec?.template.spec?.volumes).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'git-ca',
+              configMap: { name: 'x2a-git-ca-job-123' },
+            }),
+          ]),
+        );
+      });
+
+      it('sets GIT_SSL_NO_VERIFY when skip is true and no CA', () => {
+        mockConfig.git = { skipSSLVerification: true };
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+        expect(envValue(job, 'GIT_SSL_NO_VERIFY')).toBe('1');
+        expect(env(job).map(e => e.name)).not.toContain('GIT_CA_BUNDLE_FILE');
+      });
+
+      it('prefers CA over skip when both are set', () => {
+        mockConfig.git = {
+          caBundle: extraCa,
+          skipSSLVerification: true,
+        };
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+        expect(envValue(job, 'GIT_CA_BUNDLE_FILE')).toBe(
+          '/config/git-ca/extra-ca.pem',
+        );
+        expect(env(job).map(e => e.name)).not.toContain('GIT_SSL_NO_VERIFY');
+      });
+
+      it('treats whitespace-only caBundle as unset so skip can apply', () => {
+        mockConfig.git = {
+          caBundle: '   \n  ',
+          skipSSLVerification: true,
+        };
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+        expect(envValue(job, 'GIT_SSL_NO_VERIFY')).toBe('1');
+        expect(
+          job.spec?.template.spec?.volumes?.some(v => v.name === 'git-ca'),
+        ).toBeFalsy();
+      });
+    });
   });
 });

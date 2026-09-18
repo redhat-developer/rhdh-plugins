@@ -121,3 +121,11 @@ x2a:
       orgName: ${AAP_ORG_NAME:-MyOrganization}
       username: ${AAP_USERNAME}
       password: ${AAP_PASSWORD}
+  git:
+    # Extra issuing CA(s) for git clone/push in converter Jobs (not the leaf/server cert).
+    # Use a literal block. Do not use ${ENV} for PEM — it typically strips newlines.
+    # caBundle: |
+    #   -----BEGIN CERTIFICATE-----
+    #   ...
+    #   -----END CERTIFICATE-----
+    # skipSSLVerification: false

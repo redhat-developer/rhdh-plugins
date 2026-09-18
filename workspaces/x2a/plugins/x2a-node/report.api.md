@@ -255,6 +255,8 @@ export interface X2AConfig {
       name: string;
       email: string;
     };
+    caBundle?: string;
+    skipSSLVerification?: boolean;
   };
   // (undocumented)
   kubernetes: {

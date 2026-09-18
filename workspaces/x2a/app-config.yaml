@@ -232,3 +232,11 @@ x2a:
       username: ${AAP_USERNAME}
       password: ${AAP_PASSWORD}
       # skipSSLVerification: false   # Set to true for dev/test environments with self-signed certs
+  git:
+    # Extra issuing CA(s) for git clone/push in converter Jobs (not the leaf/server cert).
+    # Use a literal block. Do not use ${ENV} for PEM — it typically strips newlines.
+    # caBundle: |
+    #   -----BEGIN CERTIFICATE-----
+    #   ...
+    #   -----END CERTIFICATE-----
+    # skipSSLVerification: false  # lab-only; ignored when caBundle is set
