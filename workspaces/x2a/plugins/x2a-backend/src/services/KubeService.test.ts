@@ -18,6 +18,16 @@ import { PassThrough } from 'node:stream';
 import { mockServices } from '@backstage/backend-test-utils';
 import { X2AConfig } from './types';
 import { KubeService, choosePodForJobLogs } from './KubeService';
+import {
+  CLUSTER_CA_CONFIG_MAP_NAME,
+  CLUSTER_CA_FORBIDDEN_MESSAGE,
+  CLUSTER_CA_LABELS,
+  CLUSTER_CA_TIMEOUT_MESSAGE,
+  INJECT_TRUSTED_CABUNDLE_LABEL,
+  X2A_MANAGED_BY_LABEL,
+  X2A_MANAGED_BY_VALUE,
+  clusterCaForeignMessage,
+} from './gitTls';
 
 const mockK8sLogFn = jest.fn();
 jest.mock('@kubernetes/client-node', () => ({
@@ -27,6 +37,8 @@ jest.mock('@kubernetes/client-node', () => ({
 const mockCoreV1Api = {
   createNamespacedSecret: jest.fn(),
   createNamespacedConfigMap: jest.fn(),
+  readNamespacedConfigMap: jest.fn(),
+  patchNamespacedConfigMap: jest.fn(),
   readNamespacedSecret: jest.fn(),
   deleteNamespacedSecret: jest.fn(),
   listNamespacedPod: jest.fn(),
@@ -502,6 +514,290 @@ describe('KubeService', () => {
       const logged = JSON.stringify(logger.warn.mock.calls);
       expect(logged).not.toContain('MIIBsecretpem');
       expect(logged).not.toContain(extraCa);
+    });
+
+    const populatedClusterCm = {
+      metadata: {
+        name: CLUSTER_CA_CONFIG_MAP_NAME,
+        labels: { ...CLUSTER_CA_LABELS },
+      },
+      data: {
+        'ca-bundle.crt':
+          '-----BEGIN CERTIFICATE-----\ncluster\n-----END CERTIFICATE-----',
+      },
+    };
+
+    const advancingClock = () => {
+      let now = 0;
+      return {
+        now: () => now,
+        sleep: async (ms: number) => {
+          now += ms;
+        },
+      };
+    };
+
+    it('creates the inject ConfigMap, waits until populated, then creates the Job', async () => {
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: {
+          ...mockConfig,
+          git: { useClusterTrustedCABundle: true },
+        },
+        waitClock: advancingClock(),
+      });
+      mockCoreV1Api.readNamespacedConfigMap
+        .mockRejectedValueOnce({ statusCode: 404 })
+        .mockResolvedValue(populatedClusterCm);
+      mockCoreV1Api.createNamespacedConfigMap.mockResolvedValue({});
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+
+      await kubeService.createJob(params);
+
+      expect(mockCoreV1Api.createNamespacedConfigMap).toHaveBeenCalledWith(
+        expect.objectContaining({
+          namespace: 'test-namespace',
+          body: expect.objectContaining({
+            metadata: expect.objectContaining({
+              name: CLUSTER_CA_CONFIG_MAP_NAME,
+              labels: expect.objectContaining({
+                [INJECT_TRUSTED_CABUNDLE_LABEL]: 'true',
+                [X2A_MANAGED_BY_LABEL]: X2A_MANAGED_BY_VALUE,
+              }),
+            }),
+          }),
+        }),
+      );
+      const clusterCreate =
+        mockCoreV1Api.createNamespacedConfigMap.mock.calls[0][0];
+      expect(clusterCreate.body.metadata.ownerReferences).toBeUndefined();
+      expect(mockCoreV1Api.patchNamespacedConfigMap).not.toHaveBeenCalled();
+      expect(mockBatchV1Api.createNamespacedJob).toHaveBeenCalled();
+      const jobBody = mockBatchV1Api.createNamespacedJob.mock.calls[0][0].body;
+      const volume = jobBody.spec.template.spec.volumes.find(
+        (v: { name: string }) => v.name === 'cluster-ca',
+      );
+      expect(volume.configMap.name).toBe(CLUSTER_CA_CONFIG_MAP_NAME);
+    });
+
+    it('skips patch when the inject label is already true', async () => {
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: {
+          ...mockConfig,
+          git: { useClusterTrustedCABundle: true },
+        },
+        waitClock: advancingClock(),
+      });
+      mockCoreV1Api.readNamespacedConfigMap.mockResolvedValue(
+        populatedClusterCm,
+      );
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+
+      await kubeService.createJob(params);
+
+      expect(mockCoreV1Api.createNamespacedConfigMap).not.toHaveBeenCalled();
+      expect(mockCoreV1Api.patchNamespacedConfigMap).not.toHaveBeenCalled();
+      expect(mockBatchV1Api.createNamespacedJob).toHaveBeenCalled();
+    });
+
+    it('re-GETs on 409 and patches labels when the inject label is missing', async () => {
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: {
+          ...mockConfig,
+          git: { useClusterTrustedCABundle: true },
+        },
+        waitClock: advancingClock(),
+      });
+      const managedMissingLabel = {
+        metadata: {
+          name: CLUSTER_CA_CONFIG_MAP_NAME,
+          labels: {
+            [X2A_MANAGED_BY_LABEL]: X2A_MANAGED_BY_VALUE,
+          },
+        },
+        data: {},
+      };
+      mockCoreV1Api.readNamespacedConfigMap
+        .mockRejectedValueOnce({ statusCode: 404 })
+        .mockResolvedValueOnce(managedMissingLabel)
+        .mockResolvedValue(populatedClusterCm);
+      mockCoreV1Api.createNamespacedConfigMap.mockRejectedValue({
+        statusCode: 409,
+      });
+      mockCoreV1Api.patchNamespacedConfigMap.mockResolvedValue({});
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+
+      await kubeService.createJob(params);
+
+      const patchReq = mockCoreV1Api.patchNamespacedConfigMap.mock.calls[0][0];
+      expect(patchReq).toEqual(
+        expect.objectContaining({
+          name: CLUSTER_CA_CONFIG_MAP_NAME,
+          namespace: 'test-namespace',
+          body: Object.entries(CLUSTER_CA_LABELS).map(([key, value]) => ({
+            op: 'add',
+            path: `/metadata/labels/${key.replaceAll('/', '~1')}`,
+            value,
+          })),
+        }),
+      );
+      expect(patchReq.headers).toBeUndefined();
+      expect(patchReq.body.data).toBeUndefined();
+      expect(mockBatchV1Api.createNamespacedJob).toHaveBeenCalled();
+    });
+
+    it('does not create the Job on a foreign ConfigMap after 409', async () => {
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: {
+          ...mockConfig,
+          git: { useClusterTrustedCABundle: true },
+        },
+        waitClock: advancingClock(),
+      });
+      mockCoreV1Api.readNamespacedConfigMap
+        .mockRejectedValueOnce({ statusCode: 404 })
+        .mockResolvedValueOnce({
+          metadata: {
+            name: CLUSTER_CA_CONFIG_MAP_NAME,
+            labels: { app: 'other' },
+          },
+        });
+      mockCoreV1Api.createNamespacedConfigMap.mockRejectedValue({
+        statusCode: 409,
+      });
+
+      await expect(kubeService.createJob(params)).rejects.toThrow(
+        clusterCaForeignMessage('test-namespace'),
+      );
+      expect(mockCoreV1Api.patchNamespacedConfigMap).not.toHaveBeenCalled();
+      expect(mockBatchV1Api.createNamespacedJob).not.toHaveBeenCalled();
+    });
+
+    it('does not create the Job when inject never populates', async () => {
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: {
+          ...mockConfig,
+          git: { useClusterTrustedCABundle: true },
+        },
+        waitClock: advancingClock(),
+      });
+      mockCoreV1Api.readNamespacedConfigMap
+        .mockRejectedValueOnce({ statusCode: 404 })
+        .mockResolvedValue({
+          metadata: {
+            name: CLUSTER_CA_CONFIG_MAP_NAME,
+            labels: { ...CLUSTER_CA_LABELS },
+          },
+          data: {},
+        });
+      mockCoreV1Api.createNamespacedConfigMap.mockResolvedValue({});
+
+      await expect(kubeService.createJob(params)).rejects.toThrow(
+        CLUSTER_CA_TIMEOUT_MESSAGE,
+      );
+      expect(mockBatchV1Api.createNamespacedJob).not.toHaveBeenCalled();
+    });
+
+    it('does not create the Job on 403 while ensuring the ConfigMap', async () => {
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: {
+          ...mockConfig,
+          git: { useClusterTrustedCABundle: true },
+        },
+        waitClock: advancingClock(),
+      });
+      mockCoreV1Api.readNamespacedConfigMap.mockRejectedValue({
+        statusCode: 403,
+        message: 'forbidden',
+      });
+
+      await expect(kubeService.createJob(params)).rejects.toThrow(
+        CLUSTER_CA_FORBIDDEN_MESSAGE,
+      );
+      expect(mockBatchV1Api.createNamespacedJob).not.toHaveBeenCalled();
+    });
+
+    it('warns skip is ignored when only the cluster flag is set', async () => {
+      const logger = mockServices.logger.mock();
+      kubeService = await KubeService.create({
+        logger,
+        config: {
+          ...mockConfig,
+          git: {
+            useClusterTrustedCABundle: true,
+            skipSSLVerification: true,
+          },
+        },
+        waitClock: advancingClock(),
+      });
+      mockCoreV1Api.readNamespacedConfigMap.mockResolvedValue(
+        populatedClusterCm,
+      );
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+
+      await kubeService.createJob(params);
+
+      const jobBody = mockBatchV1Api.createNamespacedJob.mock.calls[0][0].body;
+      const env = jobBody.spec.template.spec.containers[0].env as Array<{
+        name: string;
+      }>;
+      expect(env.map(e => e.name)).not.toContain('GIT_SSL_NO_VERIFY');
+      expect(logger.warn).toHaveBeenCalledWith(
+        'x2a.git.skipSSLVerification is ignored because x2a.git.useClusterTrustedCABundle is set',
+      );
+    });
+
+    it('does not put the inject label on the extra-CA ConfigMap when both are set', async () => {
+      const extraCa = [
+        '-----BEGIN CERTIFICATE-----',
+        'MIIBextra',
+        '-----END CERTIFICATE-----',
+      ].join('\n');
+      kubeService = await KubeService.create({
+        logger: mockServices.logger.mock(),
+        config: {
+          ...mockConfig,
+          git: { useClusterTrustedCABundle: true, caBundle: extraCa },
+        },
+        waitClock: advancingClock(),
+      });
+      mockCoreV1Api.readNamespacedConfigMap.mockResolvedValue(
+        populatedClusterCm,
+      );
+      mockCoreV1Api.createNamespacedConfigMap.mockResolvedValue({});
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+
+      await kubeService.createJob(params);
+
+      const extraCalls =
+        mockCoreV1Api.createNamespacedConfigMap.mock.calls.filter((c: any) =>
+          String(c[0]?.body?.metadata?.name ?? '').startsWith('x2a-git-ca-'),
+        );
+      expect(extraCalls).toHaveLength(1);
+      expect(
+        extraCalls[0][0].body.metadata.labels[INJECT_TRUSTED_CABUNDLE_LABEL],
+      ).toBeUndefined();
+      expect(extraCalls[0][0].body.data['ca-bundle.crt']).toBeUndefined();
+      expect(extraCalls[0][0].body.metadata.ownerReferences).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ kind: 'Job', uid: 'uid-123' }),
+        ]),
+      );
     });
   });
 

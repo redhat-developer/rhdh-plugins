@@ -239,4 +239,6 @@ x2a:
     #   -----BEGIN CERTIFICATE-----
     #   ...
     #   -----END CERTIFICATE-----
-    # skipSSLVerification: false  # lab-only; ignored when caBundle is set
+    # skipSSLVerification: false  # lab-only; ignored when caBundle or useClusterTrustedCABundle is set
+    # OpenShift only: reuse cluster trust (user-ca-bundle / Proxy trustedCA) in converter Jobs.
+    # useClusterTrustedCABundle: true

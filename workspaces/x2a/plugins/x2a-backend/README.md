@@ -158,16 +158,19 @@ The plugin validates AAP credentials to ensure they are complete:
 
 Git clone/push runs in the converter Job, not the RHDH backend. Hub `NODE_EXTRA_CA_CERTS` does not apply.
 
-`x2a.git.caBundle` and `x2a.git.skipSSLVerification` apply to all converter Jobs and all git HTTPS in that Job (source and target). Paste issuing CA and intermediates, not the leaf/server cert. Use a YAML `|` block; do not substitute the PEM from an environment variable (newlines are stripped).
+`x2a.git.caBundle` and `x2a.git.skipSSLVerification` apply to all converter Jobs and all git HTTPS in that Job (source and target). Paste issuing CA and intermediates, not the leaf/server cert. Use a YAML `|` block; do not substitute the PEM from an environment variable (newlines are stripped). Extra PEM is concatenated onto the convertor **image** store.
+
+On OpenShift, `x2a.git.useClusterTrustedCABundle: true` mounts the cluster trusted CA bundle instead (label `config.openshift.io/inject-trusted-cabundle: "true"` on ConfigMap `x2a-cluster-trusted-ca`). That bundle **replaces** the image store. The injected bundle normally includes RHCOS public CAs, so GitHub / public target HTTPS still work; a replace-not-merge `user-ca-bundle` misconfig would break those clones too. Optional `caBundle` is then concatenated onto the injected bundle. The service account needs ConfigMap `get`, `create`, and `patch`. Job creation **fails** if `ca-bundle.crt` never appears, even when `caBundle` is set. Retry once CNO has populated `ca-bundle.crt`. Leave the flag false on vanilla Kubernetes / kind.
 
 ```yaml
 x2a:
   git:
+    # useClusterTrustedCABundle: true  # OpenShift only
     caBundle: |
       -----BEGIN CERTIFICATE-----
       ...issuing CA...
       -----END CERTIFICATE-----
-    # skipSSLVerification: false  # lab-only MITM hatch; ignored when caBundle is set
+    # skipSSLVerification: false  # lab-only MITM hatch; ignored when caBundle or useClusterTrustedCABundle is set
 ```
 
 ### Environment Variables

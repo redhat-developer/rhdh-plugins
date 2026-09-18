@@ -256,6 +256,7 @@ export interface X2AConfig {
       email: string;
     };
     caBundle?: string;
+    useClusterTrustedCABundle?: boolean;
     skipSSLVerification?: boolean;
   };
   // (undocumented)

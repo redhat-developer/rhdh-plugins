@@ -26,10 +26,17 @@ import fs from 'node:fs';
 import { Phase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { X2AConfig, JobCreateParams, AAPCredentials, GitRepo } from './types';
 import {
+  CLUSTER_CA_BUNDLE_FILE_PATH,
+  CLUSTER_CA_CONFIG_MAP_NAME,
+  CLUSTER_CA_DATA_KEY,
+  CLUSTER_CA_LABELS,
+  CLUSTER_CA_MOUNT_PATH,
+  CLUSTER_CA_VOLUME_NAME,
   GIT_CA_BUNDLE_FILE_PATH,
   GIT_CA_DATA_KEY,
   GIT_CA_MOUNT_PATH,
   GIT_CA_VOLUME_NAME,
+  X2A_MANAGED_BY_VALUE,
   resolveGitTls,
 } from './gitTls';
 
@@ -479,6 +486,12 @@ export class JobResourceBuilder {
 
   private static gitTlsEnv(gitTls: ReturnType<typeof resolveGitTls>) {
     const env: { name: string; value: string }[] = [];
+    if (gitTls.clusterCaConfigMapName) {
+      env.push({
+        name: 'GIT_CLUSTER_CA_FILE',
+        value: CLUSTER_CA_BUNDLE_FILE_PATH,
+      });
+    }
     if (gitTls.gitCaConfigMapName) {
       env.push({
         name: 'GIT_CA_BUNDLE_FILE',
@@ -492,30 +505,54 @@ export class JobResourceBuilder {
   }
 
   private static gitTlsVolumeMounts(gitTls: ReturnType<typeof resolveGitTls>) {
-    if (!gitTls.gitCaConfigMapName) {
-      return [];
+    const mounts: {
+      name: string;
+      mountPath: string;
+      readOnly: true;
+    }[] = [];
+    if (gitTls.clusterCaConfigMapName) {
+      mounts.push({
+        name: CLUSTER_CA_VOLUME_NAME,
+        mountPath: CLUSTER_CA_MOUNT_PATH,
+        readOnly: true,
+      });
     }
-    return [
-      {
+    if (gitTls.gitCaConfigMapName) {
+      mounts.push({
         name: GIT_CA_VOLUME_NAME,
         mountPath: GIT_CA_MOUNT_PATH,
         readOnly: true,
-      },
-    ];
+      });
+    }
+    return mounts;
   }
 
   private static gitTlsVolumes(gitTls: ReturnType<typeof resolveGitTls>) {
-    if (!gitTls.gitCaConfigMapName) {
-      return [];
+    const volumes: {
+      name: string;
+      configMap: {
+        name: string;
+        items?: { key: string; path: string }[];
+      };
+    }[] = [];
+    if (gitTls.clusterCaConfigMapName) {
+      volumes.push({
+        name: CLUSTER_CA_VOLUME_NAME,
+        configMap: {
+          name: gitTls.clusterCaConfigMapName,
+          items: [{ key: CLUSTER_CA_DATA_KEY, path: CLUSTER_CA_DATA_KEY }],
+        },
+      });
     }
-    return [
-      {
+    if (gitTls.gitCaConfigMapName) {
+      volumes.push({
         name: GIT_CA_VOLUME_NAME,
         configMap: {
           name: gitTls.gitCaConfigMapName,
         },
-      },
-    ];
+      });
+    }
+    return volumes;
   }
 
   /**
@@ -616,6 +653,26 @@ export class JobResourceBuilder {
         ownerReferences: [ownerReference],
       },
       data,
+    };
+  }
+
+  /**
+   * Long-lived OpenShift inject-trusted-cabundle ConfigMap. Not Job-owned.
+   * CNO fills `ca-bundle.crt`; do not seed data keys.
+   */
+  static buildClusterTrustedCaConfigMap(): V1ConfigMap {
+    return {
+      apiVersion: 'v1',
+      kind: 'ConfigMap',
+      metadata: {
+        name: CLUSTER_CA_CONFIG_MAP_NAME,
+        labels: { ...CLUSTER_CA_LABELS },
+        annotations: {
+          'x2a.redhat.com/created-by': X2A_MANAGED_BY_VALUE,
+          'x2a.redhat.com/description':
+            'OpenShift cluster trusted CA bundle for git HTTPS in X2A jobs',
+        },
+      },
     };
   }
 

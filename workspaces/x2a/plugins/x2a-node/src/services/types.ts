@@ -58,8 +58,17 @@ export interface X2AConfig {
      */
     caBundle?: string;
     /**
-     * When true and caBundle is unset, disable git TLS verification in Jobs.
-     * Default false. Ignored when caBundle is set.
+     * When true, mount the OpenShift-injected cluster trusted CA bundle
+     * into converter Jobs (`config.openshift.io/inject-trusted-cabundle`).
+     * OpenShift only; default false. Job creation fails if `ca-bundle.crt`
+     * never appears (not a silent no-op). Vanilla Kubernetes / kind / CI
+     * must leave this false.
+     */
+    useClusterTrustedCABundle?: boolean;
+    /**
+     * When true and neither caBundle nor useClusterTrustedCABundle is set,
+     * disable git TLS verification in Jobs.
+     * Default false. Ignored when caBundle or useClusterTrustedCABundle is set.
      */
     skipSSLVerification?: boolean;
   };

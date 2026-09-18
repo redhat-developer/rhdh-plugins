@@ -70,6 +70,8 @@ export function mapX2AConfig(
         email: rawConfig?.git?.author?.email ?? DEFAULT_GIT_AUTHOR_EMAIL,
       },
       caBundle: trimGitCaBundle(rawConfig?.git?.caBundle),
+      useClusterTrustedCABundle:
+        rawConfig?.git?.useClusterTrustedCABundle === true,
       skipSSLVerification: rawConfig?.git?.skipSSLVerification === true,
     },
     credentials: {

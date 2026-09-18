@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { trimGitCaBundle } from './gitTls';
+import {
+  CLUSTER_CA_CONFIG_MAP_NAME,
+  CLUSTER_CA_PEM_MARKER,
+  isClusterCaBundlePopulated,
+  resolveGitTls,
+  skipSslIgnoredWarning,
+  trimGitCaBundle,
+} from './gitTls';
 
 const pem = '-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----';
 
@@ -30,6 +37,88 @@ describe('trimGitCaBundle', () => {
   it('throws when a non-empty blob is not a PEM certificate', () => {
     expect(() => trimGitCaBundle('not-a-cert')).toThrow(
       'X2A configuration error: x2a.git.caBundle is set but is not a PEM certificate (missing -----BEGIN CERTIFICATE-----)',
+    );
+  });
+});
+
+describe('isClusterCaBundlePopulated', () => {
+  it('requires the PEM BEGIN marker', () => {
+    expect(
+      isClusterCaBundlePopulated({ 'ca-bundle.crt': CLUSTER_CA_PEM_MARKER }),
+    ).toBe(true);
+    expect(
+      isClusterCaBundlePopulated({ 'ca-bundle.crt': 'BEGIN CERTIFICATE' }),
+    ).toBe(false);
+    expect(isClusterCaBundlePopulated({})).toBe(false);
+  });
+});
+
+describe('resolveGitTls', () => {
+  it('defaults cluster flag off and skip off', () => {
+    const gitTls = resolveGitTls({}, 'job-1');
+    expect(gitTls.useClusterTrustedCABundle).toBe(false);
+    expect(gitTls.clusterCaConfigMapName).toBeUndefined();
+    expect(gitTls.useSkip).toBe(false);
+  });
+
+  it('names the long-lived cluster ConfigMap when the flag is true', () => {
+    const gitTls = resolveGitTls(
+      { git: { useClusterTrustedCABundle: true } },
+      'job-1',
+    );
+    expect(gitTls.useClusterTrustedCABundle).toBe(true);
+    expect(gitTls.clusterCaConfigMapName).toBe(CLUSTER_CA_CONFIG_MAP_NAME);
+    expect(gitTls.useSkip).toBe(false);
+  });
+
+  it('ignores skip when the cluster flag is set without extra CA', () => {
+    const gitTls = resolveGitTls(
+      {
+        git: { useClusterTrustedCABundle: true, skipSSLVerification: true },
+      },
+      'job-1',
+    );
+    expect(gitTls.useSkip).toBe(false);
+  });
+
+  it('sets skip only when neither CA source is active', () => {
+    expect(
+      resolveGitTls({ git: { skipSSLVerification: true } }, 'job-1').useSkip,
+    ).toBe(true);
+  });
+});
+
+describe('skipSslIgnoredWarning', () => {
+  it('names caBundle only', () => {
+    expect(
+      skipSslIgnoredWarning({
+        trimmedCa: pem,
+        useClusterTrustedCABundle: false,
+      }),
+    ).toBe(
+      'x2a.git.skipSSLVerification is ignored because x2a.git.caBundle is set',
+    );
+  });
+
+  it('names the cluster flag only', () => {
+    expect(
+      skipSslIgnoredWarning({
+        trimmedCa: undefined,
+        useClusterTrustedCABundle: true,
+      }),
+    ).toBe(
+      'x2a.git.skipSSLVerification is ignored because x2a.git.useClusterTrustedCABundle is set',
+    );
+  });
+
+  it('names both the cluster flag and caBundle', () => {
+    expect(
+      skipSslIgnoredWarning({
+        trimmedCa: pem,
+        useClusterTrustedCABundle: true,
+      }),
+    ).toBe(
+      'x2a.git.skipSSLVerification is ignored because x2a.git.useClusterTrustedCABundle is set and x2a.git.caBundle is set',
     );
   });
 });

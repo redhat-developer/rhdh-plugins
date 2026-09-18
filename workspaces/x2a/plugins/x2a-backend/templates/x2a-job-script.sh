@@ -4,41 +4,58 @@ set -eo pipefail
 # Prevent git from prompting for passwords interactively (no TTY in containers)
 export GIT_TERMINAL_PROMPT=0
 
-# Concatenate extra CAs with the image trust store for git/HTTPS in this Job.
+# Concatenate extra CAs with the image or cluster trust store for git/HTTPS.
 setup_extra_ca_bundle() {
-  if [ -z "${GIT_CA_BUNDLE_FILE:-}" ]; then
+  if [ -z "${GIT_CLUSTER_CA_FILE:-}" ] && [ -z "${GIT_CA_BUNDLE_FILE:-}" ]; then
     return 0
   fi
-  if [ ! -r "${GIT_CA_BUNDLE_FILE}" ]; then
+  if [ -n "${GIT_CLUSTER_CA_FILE:-}" ] && [ ! -r "${GIT_CLUSTER_CA_FILE}" ]; then
+    ERROR_MESSAGE="GIT_CLUSTER_CA_FILE is set but not readable: ${GIT_CLUSTER_CA_FILE}"
+    echo "ERROR: ${ERROR_MESSAGE}"
+    exit 1
+  fi
+  if [ -n "${GIT_CA_BUNDLE_FILE:-}" ] && [ ! -r "${GIT_CA_BUNDLE_FILE}" ]; then
     ERROR_MESSAGE="GIT_CA_BUNDLE_FILE is set but not readable: ${GIT_CA_BUNDLE_FILE}"
     echo "ERROR: ${ERROR_MESSAGE}"
     exit 1
   fi
 
   local store=""
-  for candidate in \
-    /etc/pki/tls/certs/ca-bundle.crt \
-    /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
-    /etc/ssl/certs/ca-certificates.crt
-  do
-    if [ -r "${candidate}" ]; then
-      store="${candidate}"
-      break
+  if [ -n "${GIT_CLUSTER_CA_FILE:-}" ]; then
+    store="${GIT_CLUSTER_CA_FILE}"
+  else
+    for candidate in \
+      /etc/pki/tls/certs/ca-bundle.crt \
+      /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+      /etc/ssl/certs/ca-certificates.crt
+    do
+      if [ -r "${candidate}" ]; then
+        store="${candidate}"
+        break
+      fi
+    done
+    if [ -z "${store}" ]; then
+      ERROR_MESSAGE="Could not find image CA store to concatenate with extra git CA"
+      echo "ERROR: ${ERROR_MESSAGE}"
+      exit 1
     fi
-  done
-  if [ -z "${store}" ]; then
-    ERROR_MESSAGE="Could not find image CA store to concatenate with extra git CA"
-    echo "ERROR: ${ERROR_MESSAGE}"
-    exit 1
   fi
 
-  local combined="/tmp/x2a-ca-bundle.pem"
-  { cat "${store}"; printf '\n'; cat "${GIT_CA_BUNDLE_FILE}"; } > "${combined}"
-  export GIT_SSL_CAINFO="${combined}"
-  export SSL_CERT_FILE="${combined}"
-  export CURL_CA_BUNDLE="${combined}"
-  export REQUESTS_CA_BUNDLE="${combined}"
-  echo "Using extra CA bundle concatenated with ${store}"
+  if [ -n "${GIT_CA_BUNDLE_FILE:-}" ]; then
+    local combined="/tmp/x2a-ca-bundle.pem"
+    { cat "${store}"; printf '\n'; cat "${GIT_CA_BUNDLE_FILE}"; } > "${combined}"
+    export GIT_SSL_CAINFO="${combined}"
+    export SSL_CERT_FILE="${combined}"
+    export CURL_CA_BUNDLE="${combined}"
+    export REQUESTS_CA_BUNDLE="${combined}"
+    echo "Using extra CA bundle concatenated with ${store}"
+  else
+    export GIT_SSL_CAINFO="${store}"
+    export SSL_CERT_FILE="${store}"
+    export CURL_CA_BUNDLE="${store}"
+    export REQUESTS_CA_BUNDLE="${store}"
+    echo "Using cluster trusted CA bundle ${store}"
+  fi
 }
 
 # Track error context for the cleanup trap

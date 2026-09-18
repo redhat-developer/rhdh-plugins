@@ -46,6 +46,7 @@ describe('mapX2AConfig', () => {
 
     expect(mapped.git?.caBundle).toBe(pem);
     expect(mapped.git?.skipSSLVerification).toBe(false);
+    expect(mapped.git?.useClusterTrustedCABundle).toBe(false);
     expect(mapped.kubernetes.namespace).toBe('mapped-ns');
   });
 
@@ -57,6 +58,7 @@ describe('mapX2AConfig', () => {
           author: { name: 'Bot', email: 'bot@example.com' },
           caBundle: '-----BEGIN CERTIFICATE-----\nX\n-----END CERTIFICATE-----',
           skipSSLVerification: true,
+          useClusterTrustedCABundle: true,
         },
       },
       'ns',
@@ -68,6 +70,7 @@ describe('mapX2AConfig', () => {
     });
     expect(mapped.git?.caBundle).toContain('BEGIN CERTIFICATE');
     expect(mapped.git?.skipSSLVerification).toBe(true);
+    expect(mapped.git?.useClusterTrustedCABundle).toBe(true);
   });
 
   it('treats whitespace-only caBundle as unset', () => {

@@ -936,14 +936,35 @@ describe('JobResourceBuilder', () => {
         name: string,
       ) => env(job).find(e => e.name === name)?.value;
 
+      it('builds a long-lived inject ConfigMap without job-id or extra PEM', () => {
+        const cm = JobResourceBuilder.buildClusterTrustedCaConfigMap();
+        expect(cm.metadata?.name).toBe('x2a-cluster-trusted-ca');
+        expect(cm.metadata?.labels).toEqual({
+          'app.kubernetes.io/name': 'x2a-cluster-trusted-ca',
+          'app.kubernetes.io/component': 'cluster-trusted-ca',
+          'app.kubernetes.io/managed-by': 'x2a-backend-plugin',
+          'config.openshift.io/inject-trusted-cabundle': 'true',
+        });
+        expect(cm.metadata?.annotations?.['x2a.redhat.com/created-by']).toBe(
+          'x2a-backend-plugin',
+        );
+        expect(cm.metadata?.labels?.['x2a.redhat.com/job-id']).toBeUndefined();
+        expect(cm.metadata?.ownerReferences).toBeUndefined();
+        expect(cm.data).toBeUndefined();
+      });
+
       it('does not set skip or CA env by default', () => {
         const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
         const names = env(job).map(e => e.name);
         expect(names).not.toContain('GIT_SSL_NO_VERIFY');
         expect(names).not.toContain('GIT_CA_BUNDLE_FILE');
+        expect(names).not.toContain('GIT_CLUSTER_CA_FILE');
         expect(names).not.toContain('GIT_SSL_CAINFO');
         expect(
           job.spec?.template.spec?.volumes?.some(v => v.name === 'git-ca'),
+        ).toBeFalsy();
+        expect(
+          job.spec?.template.spec?.volumes?.some(v => v.name === 'cluster-ca'),
         ).toBeFalsy();
       });
 
@@ -966,6 +987,10 @@ describe('JobResourceBuilder', () => {
           ].join('\n'),
         );
         expect(container!.args![0]).toContain('/tmp/x2a-ca-bundle.pem');
+        expect(container!.args![0]).toContain('GIT_CLUSTER_CA_FILE');
+        expect(container!.args![0]).toContain(
+          'Using cluster trusted CA bundle',
+        );
         expect(container!.volumeMounts).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
@@ -1014,6 +1039,75 @@ describe('JobResourceBuilder', () => {
         expect(
           job.spec?.template.spec?.volumes?.some(v => v.name === 'git-ca'),
         ).toBeFalsy();
+      });
+
+      it('mounts the cluster CA ConfigMap and GIT_CLUSTER_CA_FILE when the flag is true', () => {
+        mockConfig.git = { useClusterTrustedCABundle: true };
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+        const container = job.spec?.template.spec?.containers![0];
+
+        expect(envValue(job, 'GIT_CLUSTER_CA_FILE')).toBe(
+          '/config/cluster-ca/ca-bundle.crt',
+        );
+        expect(env(job).map(e => e.name)).not.toContain('GIT_SSL_NO_VERIFY');
+        expect(env(job).map(e => e.name)).not.toContain('GIT_SSL_CAINFO');
+        expect(container!.args![0]).toContain('GIT_CLUSTER_CA_FILE');
+        expect(container!.volumeMounts).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'cluster-ca',
+              mountPath: '/config/cluster-ca',
+              readOnly: true,
+            }),
+          ]),
+        );
+        expect(job.spec?.template.spec?.volumes).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'cluster-ca',
+              configMap: {
+                name: 'x2a-cluster-trusted-ca',
+                items: [{ key: 'ca-bundle.crt', path: 'ca-bundle.crt' }],
+              },
+            }),
+          ]),
+        );
+        expect(
+          job.spec?.template.spec?.volumes?.find(v => v.name === 'cluster-ca')
+            ?.configMap?.optional,
+        ).toBeUndefined();
+      });
+
+      it('mounts both cluster and extra CA volumes when both are set', () => {
+        mockConfig.git = {
+          useClusterTrustedCABundle: true,
+          caBundle: extraCa,
+        };
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+        expect(envValue(job, 'GIT_CLUSTER_CA_FILE')).toBe(
+          '/config/cluster-ca/ca-bundle.crt',
+        );
+        expect(envValue(job, 'GIT_CA_BUNDLE_FILE')).toBe(
+          '/config/git-ca/extra-ca.pem',
+        );
+        expect(env(job).map(e => e.name)).not.toContain('GIT_SSL_NO_VERIFY');
+        const volumeNames =
+          job.spec?.template.spec?.volumes?.map(v => v.name) ?? [];
+        expect(volumeNames).toEqual(
+          expect.arrayContaining(['cluster-ca', 'git-ca']),
+        );
+      });
+
+      it('does not set skip when the cluster flag is true', () => {
+        mockConfig.git = {
+          useClusterTrustedCABundle: true,
+          skipSSLVerification: true,
+        };
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+        expect(env(job).map(e => e.name)).not.toContain('GIT_SSL_NO_VERIFY');
+        expect(envValue(job, 'GIT_CLUSTER_CA_FILE')).toBe(
+          '/config/cluster-ca/ca-bundle.crt',
+        );
       });
     });
   });
