@@ -112,6 +112,7 @@ export const ScorecardPage = () => {
               metricId={metricId}
               showSubheader={false}
               showInfo={false}
+              isDrilldownPage
             />
           </Box>
         </Box>

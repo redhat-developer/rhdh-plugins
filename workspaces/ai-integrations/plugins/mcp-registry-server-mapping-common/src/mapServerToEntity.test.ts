@@ -30,6 +30,8 @@ function makeMinimalDoc(
   overrides?: Partial<McpServerDocument>,
 ): McpServerDocument {
   return {
+    $schema:
+      'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
     name: 'weather',
     description: 'A weather server',
     version: '1.0.0',
@@ -63,11 +65,13 @@ describe('validateRequiredFields', () => {
 
   it('throws for multiple missing fields', () => {
     expect(() =>
-      validateRequiredFields({
-        name: '',
-        description: '',
-        version: '',
-      } as McpServerDocument),
+      validateRequiredFields(
+        makeMinimalDoc({
+          name: '',
+          description: '',
+          version: '',
+        }),
+      ),
     ).toThrow(/name.*description.*version/);
   });
 
@@ -98,12 +102,14 @@ describe('mapRemotes', () => {
     const result = mapRemotes(
       makeMinimalDoc({
         remotes: [
-          { type: 'valid', url: 'https://good.com/mcp' },
-          { type: 'bad', url: 'javascript:alert(1)' },
+          { type: 'streamable-http', url: 'https://good.com/mcp' },
+          { type: 'sse', url: 'javascript:alert(1)' },
         ],
       }),
     );
-    expect(result).toEqual([{ type: 'valid', url: 'https://good.com/mcp' }]);
+    expect(result).toEqual([
+      { type: 'streamable-http', url: 'https://good.com/mcp' },
+    ]);
   });
 
   it('returns D8 placeholder when no remotes declared', () => {
@@ -126,40 +132,90 @@ describe('mapRemotes', () => {
     expect(result).toEqual([{ type: 'undefined', url: 'https://example.com' }]);
   });
 
+  it('uses placeholderRemoteUrl before websiteUrl for D8 placeholder', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: undefined,
+        websiteUrl: 'https://website.example.com',
+      }),
+      'https://override.example.com/mcp',
+    );
+    expect(result).toEqual([
+      { type: 'undefined', url: 'https://override.example.com/mcp' },
+    ]);
+  });
+
+  it('falls back to websiteUrl when placeholderRemoteUrl fails D11', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: [],
+        websiteUrl: 'https://example.com',
+      }),
+      'javascript:alert(1)',
+    );
+    expect(result).toEqual([{ type: 'undefined', url: 'https://example.com' }]);
+  });
+
+  it('uses placeholderRemoteUrl when websiteUrl is absent', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: undefined,
+        websiteUrl: undefined,
+      }),
+      'https://override.example.com',
+    );
+    expect(result).toEqual([
+      { type: 'undefined', url: 'https://override.example.com' },
+    ]);
+  });
+
   it('throws when no remotes and websiteUrl absent', () => {
     expect(() =>
       mapRemotes(makeMinimalDoc({ remotes: undefined, websiteUrl: undefined })),
     ).toThrow(/no valid remotes.*websiteUrl/i);
   });
 
-  it('throws with type-filtered hint when all remotes have invalid type and no websiteUrl', () => {
+  it('throws when placeholderRemoteUrl and websiteUrl both fail D11', () => {
+    expect(() =>
+      mapRemotes(
+        makeMinimalDoc({
+          remotes: undefined,
+          websiteUrl: 'javascript:alert(1)',
+        }),
+        'data:text/html,x',
+      ),
+    ).toThrow(/placeholderRemoteUrl or websiteUrl/i);
+  });
+
+  it('throws when remotes have invalid type and no websiteUrl', () => {
     expect(() =>
       mapRemotes(
         makeMinimalDoc({
           remotes: [
             {
-              type: undefined as unknown as string,
+              type: undefined as unknown as 'sse',
               url: 'https://a.com/mcp',
             },
-            { type: '', url: 'https://b.com/mcp' },
+            { type: '' as 'sse', url: 'https://b.com/mcp' },
           ],
           websiteUrl: undefined,
         }),
       ),
-    ).toThrow(/filtered.*type.*missing or empty/i);
+    ).toThrow(/type/);
   });
 
-  it('skips remote entries with empty string type', () => {
-    const result = mapRemotes(
-      makeMinimalDoc({
-        remotes: [
-          { type: '', url: 'https://a.com/mcp' },
-          { type: 'sse', url: 'https://b.com/mcp' },
-        ],
-        websiteUrl: 'https://example.com',
-      }),
-    );
-    expect(result).toEqual([{ type: 'sse', url: 'https://b.com/mcp' }]);
+  it('throws when a remote entry has an empty string type', () => {
+    expect(() =>
+      mapRemotes(
+        makeMinimalDoc({
+          remotes: [
+            { type: '' as 'sse', url: 'https://a.com/mcp' },
+            { type: 'sse', url: 'https://b.com/mcp' },
+          ],
+          websiteUrl: 'https://example.com',
+        }),
+      ),
+    ).toThrow(/type/);
   });
 });
 
@@ -249,8 +305,8 @@ describe('trackConsumedRemotePaths', () => {
     const paths = trackConsumedRemotePaths(
       makeMinimalDoc({
         remotes: [
-          { type: 'valid', url: 'https://good.com/mcp' },
-          { type: 'bad', url: 'javascript:alert(1)' },
+          { type: 'streamable-http', url: 'https://good.com/mcp' },
+          { type: 'sse', url: 'javascript:alert(1)' },
         ],
       }),
     );
@@ -441,11 +497,13 @@ describe('mapServerToEntity', () => {
 
     it('throws for multiple missing fields', () => {
       expect(() =>
-        mapServerToEntity({
-          name: '',
-          description: '',
-          version: '',
-        } as McpServerDocument),
+        mapServerToEntity(
+          makeMinimalDoc({
+            name: '',
+            description: '',
+            version: '',
+          }),
+        ),
       ).toThrow(/name.*description.*version/);
     });
 
@@ -476,13 +534,13 @@ describe('mapServerToEntity', () => {
       const { entity } = mapServerToEntity(
         makeMinimalDoc({
           remotes: [
-            { type: 'valid', url: 'https://good.com/mcp' },
-            { type: 'bad', url: 'javascript:alert(1)' },
+            { type: 'streamable-http', url: 'https://good.com/mcp' },
+            { type: 'sse', url: 'javascript:alert(1)' },
           ],
         }),
       );
       expect(entity.spec.remotes).toEqual([
-        { type: 'valid', url: 'https://good.com/mcp' },
+        { type: 'streamable-http', url: 'https://good.com/mcp' },
       ]);
     });
 
@@ -514,11 +572,37 @@ describe('mapServerToEntity', () => {
       const { entity } = mapServerToEntity(
         makeMinimalDoc({
           remotes: [
-            { type: 'bad1', url: 'javascript:alert(1)' },
-            { type: 'bad2', url: 'data:text/html,x' },
+            { type: 'streamable-http', url: 'javascript:alert(1)' },
+            { type: 'sse', url: 'data:text/html,x' },
           ],
           websiteUrl: 'https://example.com',
         }),
+      );
+      expect(entity.spec.remotes).toEqual([
+        { type: 'undefined', url: 'https://example.com' },
+      ]);
+    });
+
+    it('uses defaults.placeholderRemoteUrl before websiteUrl', () => {
+      const { entity } = mapServerToEntity(
+        makeMinimalDoc({
+          remotes: undefined,
+          websiteUrl: 'https://website.example.com',
+        }),
+        { placeholderRemoteUrl: 'https://override.example.com/mcp' },
+      );
+      expect(entity.spec.remotes).toEqual([
+        { type: 'undefined', url: 'https://override.example.com/mcp' },
+      ]);
+    });
+
+    it('falls back to websiteUrl when defaults.placeholderRemoteUrl fails D11', () => {
+      const { entity } = mapServerToEntity(
+        makeMinimalDoc({
+          remotes: [],
+          websiteUrl: 'https://example.com',
+        }),
+        { placeholderRemoteUrl: 'javascript:alert(1)' },
       );
       expect(entity.spec.remotes).toEqual([
         { type: 'undefined', url: 'https://example.com' },
@@ -531,6 +615,18 @@ describe('mapServerToEntity', () => {
           makeMinimalDoc({ remotes: undefined, websiteUrl: undefined }),
         ),
       ).toThrow(/no valid remotes.*websiteUrl/i);
+    });
+
+    it('fails when placeholderRemoteUrl and websiteUrl both fail D11', () => {
+      expect(() =>
+        mapServerToEntity(
+          makeMinimalDoc({
+            remotes: undefined,
+            websiteUrl: 'javascript:alert(1)',
+          }),
+          { placeholderRemoteUrl: 'data:text/html,x' },
+        ),
+      ).toThrow(/placeholderRemoteUrl or websiteUrl/i);
     });
 
     it('fails when no remotes and websiteUrl fails D11', () => {
@@ -743,6 +839,7 @@ describe('mapServerToEntity', () => {
         makeMinimalDoc({
           repository: {
             url: 'https://github.com/org/repo',
+            source: 'github',
           },
         }),
       );
@@ -758,6 +855,7 @@ describe('mapServerToEntity', () => {
         makeMinimalDoc({
           repository: {
             url: 'https://github.com/org/repo.git/',
+            source: 'github',
           },
         }),
       );
@@ -794,6 +892,7 @@ describe('mapServerToEntity', () => {
         makeMinimalDoc({
           repository: {
             url: 'https://gitlab.internal/org/repo',
+            source: 'github',
           },
         }),
       );
@@ -854,7 +953,7 @@ describe('mapServerToEntity', () => {
         makeMinimalDoc({
           title: 'Weather',
           websiteUrl: 'https://example.com',
-          repository: { url: 'https://github.com/org/repo' },
+          repository: { url: 'https://github.com/org/repo', source: 'github' },
           remotes: [
             { type: 'streamable-http', url: 'https://example.com/mcp' },
           ],
@@ -874,7 +973,7 @@ describe('mapServerToEntity', () => {
     it('supplies reserved annotation keys', () => {
       const { reservedAnnotationKeys } = mapServerToEntity(
         makeMinimalDoc({
-          repository: { url: 'https://github.com/org/repo' },
+          repository: { url: 'https://github.com/org/repo', source: 'github' },
         }),
       );
 
@@ -891,7 +990,7 @@ describe('mapServerToEntity', () => {
     it('does not include repository annotation keys when repo URL fails D11', () => {
       const { reservedAnnotationKeys } = mapServerToEntity(
         makeMinimalDoc({
-          repository: { url: 'javascript:alert(1)' },
+          repository: { url: 'javascript:alert(1)', source: 'github' },
         }),
       );
 
@@ -906,7 +1005,7 @@ describe('mapServerToEntity', () => {
     it('consumed paths and reserved keys are sorted', () => {
       const { consumedPaths, reservedAnnotationKeys } = mapServerToEntity(
         makeMinimalDoc({
-          repository: { url: 'https://github.com/org/repo' },
+          repository: { url: 'https://github.com/org/repo', source: 'github' },
         }),
       );
 
@@ -922,8 +1021,8 @@ describe('mapServerToEntity', () => {
       const { consumedPaths } = mapServerToEntity(
         makeMinimalDoc({
           remotes: [
-            { type: 'valid', url: 'https://good.com/mcp' },
-            { type: 'bad', url: 'javascript:alert(1)' },
+            { type: 'streamable-http', url: 'https://good.com/mcp' },
+            { type: 'sse', url: 'javascript:alert(1)' },
           ],
         }),
       );
@@ -937,45 +1036,36 @@ describe('mapServerToEntity', () => {
   });
 
   describe('remote.type runtime validation', () => {
-    it('skips remote entry with missing type', () => {
+    it('rejects remote entry with missing type', () => {
       const doc = makeMinimalDoc({
         remotes: [
-          { type: undefined as unknown as string, url: 'https://a.com/mcp' },
+          { type: undefined as unknown as 'sse', url: 'https://a.com/mcp' },
           { type: 'sse', url: 'https://b.com/mcp' },
         ],
         websiteUrl: 'https://example.com',
       });
-      const { entity } = mapServerToEntity(doc);
-      expect(entity.spec.remotes).toEqual([
-        { type: 'sse', url: 'https://b.com/mcp' },
-      ]);
+      expect(() => mapServerToEntity(doc)).toThrow(/type/);
     });
 
-    it('skips remote entry with empty string type', () => {
+    it('rejects remote entry with empty string type', () => {
       const doc = makeMinimalDoc({
         remotes: [
-          { type: '', url: 'https://a.com/mcp' },
+          { type: '' as 'sse', url: 'https://a.com/mcp' },
           { type: 'sse', url: 'https://b.com/mcp' },
         ],
         websiteUrl: 'https://example.com',
       });
-      const { entity } = mapServerToEntity(doc);
-      expect(entity.spec.remotes).toEqual([
-        { type: 'sse', url: 'https://b.com/mcp' },
-      ]);
+      expect(() => mapServerToEntity(doc)).toThrow(/type/);
     });
 
-    it('falls back to D8 placeholder when all remotes have invalid type', () => {
+    it('rejects when all remotes have invalid type', () => {
       const doc = makeMinimalDoc({
         remotes: [
-          { type: undefined as unknown as string, url: 'https://a.com/mcp' },
+          { type: undefined as unknown as 'sse', url: 'https://a.com/mcp' },
         ],
         websiteUrl: 'https://example.com',
       });
-      const { entity } = mapServerToEntity(doc);
-      expect(entity.spec.remotes).toEqual([
-        { type: 'undefined', url: 'https://example.com' },
-      ]);
+      expect(() => mapServerToEntity(doc)).toThrow(/type/);
     });
   });
 });

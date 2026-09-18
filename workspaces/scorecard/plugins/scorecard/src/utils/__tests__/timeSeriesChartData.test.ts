@@ -16,6 +16,7 @@
 
 import {
   formatAggregatedTimeSeriesErrors,
+  getLatestNumericSparklineValue,
   getLatestSuccessfulThresholdEvaluation,
   getSparklineYDomain,
   toAggregationSparklinePoints,
@@ -288,5 +289,45 @@ describe('getSparklineYDomain', () => {
 
   it('should return a fallback domain for empty data', () => {
     expect(getSparklineYDomain([])).toEqual([0, 1]);
+  });
+});
+
+describe('getLatestNumericSparklineValue', () => {
+  it('should return the last finite value', () => {
+    expect(
+      getLatestNumericSparklineValue([
+        { date: 'd1', dateLabel: 'Apr 27', value: 4.1, plotValue: 4.1 },
+        { date: 'd2', dateLabel: 'Apr 30', value: 4.7, plotValue: 4.7 },
+      ]),
+    ).toBe(4.7);
+  });
+
+  it('should skip trailing error days', () => {
+    expect(
+      getLatestNumericSparklineValue([
+        { date: 'd1', dateLabel: 'Apr 27', value: 4.7, plotValue: 4.7 },
+        {
+          date: 'd2',
+          dateLabel: 'Apr 30',
+          value: null,
+          plotValue: 4.7,
+          error: 'Metric data unavailable',
+        },
+      ]),
+    ).toBe(4.7);
+  });
+
+  it('should return undefined when there is no numeric value', () => {
+    expect(
+      getLatestNumericSparklineValue([
+        {
+          date: 'd1',
+          dateLabel: 'Apr 27',
+          value: null,
+          plotValue: 0,
+          error: 'Metric data unavailable',
+        },
+      ]),
+    ).toBeUndefined();
   });
 });

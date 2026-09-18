@@ -17,7 +17,10 @@
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 
-import { formatWithMetricUnit } from '../../utils/formatMetricUnit';
+import {
+  formatNumericMetricValue,
+  formatWithMetricUnit,
+} from '../../utils/formatMetricUnit';
 import type { SparklineChartPoint } from '../../utils/timeSeriesChartData';
 
 export const SPARKLINE_TOOLTIP_SEPARATOR = ' · ';
@@ -30,8 +33,12 @@ export const getSparklineTooltipLabel = (
   if (point.error) {
     return `${point.error}${SPARKLINE_TOOLTIP_SEPARATOR}${label}`;
   }
+  const valueLabel =
+    typeof point.value === 'number'
+      ? formatNumericMetricValue(point.value)
+      : String(point.value ?? '');
   return `${formatWithMetricUnit(
-    String(point.value),
+    valueLabel,
     unit,
   )}${SPARKLINE_TOOLTIP_SEPARATOR}${label}`;
 };

@@ -43,6 +43,20 @@ describe('getSparklineTooltipLabel', () => {
     expect(getSparklineTooltipLabel(point, '/week')).toBe('2.1/week · Aug 15');
   });
 
+  it('rounds noisy floats to four decimals before appending the unit', () => {
+    expect(
+      getSparklineTooltipLabel(
+        {
+          date: '2026-09-18T00:00:00.000Z',
+          dateLabel: 'Sep 18',
+          value: 0.46670000000000006,
+          plotValue: 0.46670000000000006,
+        },
+        '/week',
+      ),
+    ).toBe('0.4667/week · Sep 18');
+  });
+
   it('uses the error message when the point has no value', () => {
     expect(
       getSparklineTooltipLabel({

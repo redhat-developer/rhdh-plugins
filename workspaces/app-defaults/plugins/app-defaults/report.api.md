@@ -9,6 +9,7 @@ import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendFeatureLoader } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
+import { JSX as JSX_2 } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { ReactNode } from 'react';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
@@ -52,6 +53,19 @@ export const appDrawerExtension: OverridableExtensionDefinition<{
 
 // @public
 export const appDrawerModule: FrontendModule;
+
+// @public
+export const autoLogoutElement: OverridableExtensionDefinition<{
+  kind: 'app-root-element';
+  name: 'auto-logout';
+  config: {};
+  configInput: {};
+  output: ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>;
+  inputs: {};
+  params: {
+    element: JSX.Element;
+  };
+}>;
 
 // @public
 const _default: FrontendFeatureLoader;
