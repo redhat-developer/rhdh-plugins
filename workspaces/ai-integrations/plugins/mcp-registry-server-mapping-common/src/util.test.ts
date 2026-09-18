@@ -59,7 +59,7 @@ describe('assertServerJsonSchema', () => {
       assertServerJsonSchema(
         makeMinimalDoc({
           $schema:
-            'https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json',
+            'https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json',
         }),
       ),
     ).not.toThrow();

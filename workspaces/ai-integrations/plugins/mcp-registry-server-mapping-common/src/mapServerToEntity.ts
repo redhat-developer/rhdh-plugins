@@ -58,7 +58,7 @@ export function validateRequiredFields(doc: McpServerDocument): void {
         ', ',
       )}. ` +
         `These fields are required by the MCP server schema ` +
-        `(https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json).`,
+        `(https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json).`,
     );
   }
 }

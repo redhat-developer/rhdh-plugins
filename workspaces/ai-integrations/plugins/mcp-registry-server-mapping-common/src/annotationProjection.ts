@@ -41,7 +41,7 @@ const ANNOTATION_PREFIX = 'modelcontextprotocol.io/';
  * - `packages[].packageArguments[]` / `packages[].runtimeArguments[]`
  * - `remotes[].headers[]` / `remotes[].variables`
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Input definition (`#/definitions/Input`)}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | Input definition (`#/definitions/Input`)}
  */
 const SECRET_REDACTED_FIELDS = new Set(['default', 'value', 'choices']);
 

@@ -1,7 +1,8 @@
 # @red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common
 
 Deterministic transform from [MCP Registry](https://github.com/modelcontextprotocol/registry)
-[`server.json`](https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json)
+**v1.8.1**
+[`server.json`](https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json)
 documents to Backstage `API` entities with `spec.type: mcp-server`.
 
 This common library is a pure mapping contract (no I/O, no registry client).

@@ -20,7 +20,7 @@ import type { McpServerApiEntity } from '@backstage/catalog-model/alpha';
  * Input leaf from MCP Registry server.json (shared by env vars, headers,
  * variables, and arguments).
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Input definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | Input definition}
  * @public
  */
 export interface McpInput {
@@ -45,7 +45,7 @@ export interface McpInput {
 /**
  * Input that may declare nested `{curly_brace}` variables.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | InputWithVariables definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | InputWithVariables definition}
  * @public
  */
 export interface McpInputWithVariables extends McpInput {
@@ -56,7 +56,7 @@ export interface McpInputWithVariables extends McpInput {
 /**
  * Named key/value input (environment variable or HTTP header).
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | KeyValueInput definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | KeyValueInput definition}
  * @public
  */
 export interface McpKeyValueInput extends McpInputWithVariables {
@@ -67,7 +67,7 @@ export interface McpKeyValueInput extends McpInputWithVariables {
 /**
  * Positional command-line argument.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | PositionalArgument definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | PositionalArgument definition}
  * @public
  */
 export interface McpPositionalArgument extends McpInputWithVariables {
@@ -81,7 +81,7 @@ export interface McpPositionalArgument extends McpInputWithVariables {
 /**
  * Named command-line flag argument (`--flag={value}`).
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | NamedArgument definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | NamedArgument definition}
  * @public
  */
 export interface McpNamedArgument extends McpInputWithVariables {
@@ -95,7 +95,7 @@ export interface McpNamedArgument extends McpInputWithVariables {
 /**
  * Package or runtime argument (positional or named).
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Argument definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | Argument definition}
  * @public
  */
 export type McpArgument = McpPositionalArgument | McpNamedArgument;
@@ -103,7 +103,7 @@ export type McpArgument = McpPositionalArgument | McpNamedArgument;
 /**
  * Stdio local transport.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | StdioTransport definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | StdioTransport definition}
  * @public
  */
 export interface McpStdioTransport {
@@ -113,7 +113,7 @@ export interface McpStdioTransport {
 /**
  * Streamable HTTP transport.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | StreamableHttpTransport definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | StreamableHttpTransport definition}
  * @public
  */
 export interface McpStreamableHttpTransport {
@@ -127,7 +127,7 @@ export interface McpStreamableHttpTransport {
 /**
  * Server-Sent Events transport.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | SseTransport definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | SseTransport definition}
  * @public
  */
 export interface McpSseTransport {
@@ -141,7 +141,7 @@ export interface McpSseTransport {
 /**
  * Transport protocol configuration for local/package context.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | LocalTransport definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | LocalTransport definition}
  * @public
  */
 export type McpLocalTransport =
@@ -155,7 +155,7 @@ export type McpLocalTransport =
  * Extends streamable-http or sse transport with optional URL template
  * variables. Compatible with Backstage `McpServerRemote` (`type` + `url`).
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | RemoteTransport definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | RemoteTransport definition}
  * @public
  */
 export type McpRegistryRemote = (
@@ -170,7 +170,7 @@ export type McpRegistryRemote = (
  * Repository metadata for the MCP server source code. Enables users
  * and security experts to inspect the code, improving transparency.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Repository definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | Repository definition}
  * @public
  */
 export interface McpServerRepository {
@@ -202,7 +202,7 @@ export interface McpServerRepository {
 /**
  * An icon entry from MCP Registry server.json.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Icon definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | Icon definition}
  * @public
  */
 export interface McpRegistryIcon {
@@ -224,7 +224,7 @@ export interface McpRegistryIcon {
 /**
  * A package entry from MCP Registry server.json.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Package definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | Package definition}
  * @public
  */
 export interface McpRegistryPackage {
@@ -254,7 +254,7 @@ export interface McpRegistryPackage {
  * Extension metadata using reverse DNS namespacing for vendor-specific
  * data (`ServerDetail._meta`). Additional reverse-DNS keys are allowed.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail._meta}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | ServerDetail._meta}
  * @public
  */
 export interface McpServerMeta {
@@ -273,7 +273,7 @@ export interface McpServerMeta {
  *
  * The shape is closed: only ServerDetail properties are permitted.
  *
- * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail definition}
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | ServerDetail definition}
  * @public
  */
 export interface McpServerDocument {
@@ -281,35 +281,35 @@ export interface McpServerDocument {
    * JSON Schema URI for the server.json format. Required so callers
    * and runtime validation can confirm a Registry server.json document.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.$schema}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | ServerDetail.$schema}
    */
   $schema: string;
   /**
    * Server name in reverse-DNS format. Must contain exactly one
    * forward slash separating namespace from server name.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.name}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | ServerDetail.name}
    */
   name: string;
   /**
    * Optional human-readable title or display name for the MCP server.
    * Clients MAY choose to use this for display purposes.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.title}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | ServerDetail.title}
    */
   title?: string;
   /**
    * Clear human-readable explanation of server functionality. Should
    * focus on capabilities, not implementation details.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.description}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | ServerDetail.description}
    */
   description: string;
   /**
    * Version string for this server. SHOULD follow semantic versioning
    * (e.g., '1.0.2', '2.1.0-alpha'). Version ranges are rejected.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.version}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | ServerDetail.version}
    */
   version: string;
   /**
@@ -317,42 +317,42 @@ export interface McpServerDocument {
    * website. Provides a central link for users to learn more about
    * the server.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.websiteUrl}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | ServerDetail.websiteUrl}
    */
   websiteUrl?: string;
   /**
    * Optional repository metadata for the MCP server source code.
    * Recommended for transparency and security inspection.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Repository}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | Repository}
    */
   repository?: McpServerRepository;
   /**
    * Remote transport entries (streamable-http or sse with optional
    * variables for URL template resolution).
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | RemoteTransport}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | RemoteTransport}
    */
   remotes?: McpRegistryRemote[];
   /**
    * Optional set of sized icons that the client can display in a
    * user interface.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Icon}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | Icon}
    */
   icons?: McpRegistryIcon[];
   /**
    * Package entries for installation via registries (npm, pypi,
    * cargo, oci, etc.) or direct download.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Package}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | Package}
    */
   packages?: McpRegistryPackage[];
   /**
    * Extension metadata using reverse DNS namespacing for
    * vendor-specific data.
    *
-   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail._meta}
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json | ServerDetail._meta}
    */
   _meta?: McpServerMeta;
 }
