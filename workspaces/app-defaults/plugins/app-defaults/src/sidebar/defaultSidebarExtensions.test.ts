@@ -32,6 +32,7 @@ import {
   sidebarLogoElement,
   sidebarLogoSpacer,
   sidebarNotificationsElement,
+  sidebarSearchDivider,
   sidebarSearchElement,
   sidebarSettingsDivider,
   sidebarSettingsGroup,
@@ -52,6 +53,7 @@ describe('defaultSidebarExtensions', () => {
       'sidebar-element/logo',
       'sidebar-spacer/logo',
       'sidebar-element/search',
+      'sidebar-divider/search',
       'sidebar-spacer/bottom',
       'sidebar-divider/bottom',
       'sidebar-element/notifications',
@@ -75,6 +77,10 @@ describe('defaultSidebarExtensions', () => {
       priorityOf(sidebarSearchElement)!,
     );
     expect(priorityOf(sidebarSearchElement)).toBeGreaterThan(0);
+    expect(priorityOf(sidebarSearchDivider)).toBeLessThan(
+      priorityOf(sidebarSearchElement)!,
+    );
+    expect(priorityOf(sidebarSearchDivider)).toBeGreaterThan(0);
     expect(priorityOf(sidebarBottomSpacer)).toBeLessThan(0);
     expect(priorityOf(sidebarBottomDivider)).toBeLessThan(
       priorityOf(sidebarBottomSpacer)!,

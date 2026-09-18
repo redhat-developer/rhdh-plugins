@@ -30,7 +30,8 @@ import { CompanyLogo } from './logo/CompanyLogo';
 /**
  * Default sidebar layout shipped with the app defaults module.
  *
- * Top to bottom: the company logo, a small gap, the search modal, everything contributed at priority 0
+ * Top to bottom: the company logo, a small gap, the search modal, a divider,
+ * everything contributed at priority 0
  * (auto-discovered pages, plugin items and groups), a spacer that pushes the
  * rest to the bottom, a divider, the notifications item, a final divider,
  * the Administration group, and the Settings group. The search modal and
@@ -77,6 +78,12 @@ export const sidebarSearchElement = SidebarElementBlueprint.make({
     to: '/search',
     priority: 1000,
   },
+});
+
+/** Divider below the search. Extension ID: `sidebar-divider:app/search`. */
+export const sidebarSearchDivider = SidebarDividerBlueprint.make({
+  name: 'search',
+  params: { priority: 900 },
 });
 
 /** Pushes lower entries to the bottom. Extension ID: `sidebar-spacer:app/bottom`. */
@@ -142,6 +149,7 @@ export const defaultSidebarExtensions = [
   sidebarLogoElement,
   sidebarLogoSpacer,
   sidebarSearchElement,
+  sidebarSearchDivider,
   sidebarBottomSpacer,
   sidebarBottomDivider,
   sidebarNotificationsElement,
