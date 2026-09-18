@@ -17,6 +17,10 @@ app:
     - nav-item:user-settings: false
     - nav-item:search: false
     - nav-item:home: false
+    # The app-defaults sidebar ships the search and notifications entries
+    # disabled by default; enable them here.
+    - sidebar-element:app/search: true
+    - sidebar-element:app/notifications: true
 
 organization:
   name: My Company
