@@ -16,6 +16,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { TestApiProvider } from '@backstage/test-utils';
+import { useRouteRef } from '@backstage/frontend-plugin-api';
 import { notificationsApiRef } from '@backstage/plugin-notifications';
 import { SidebarNotifications } from './SidebarNotifications';
 
@@ -24,10 +25,25 @@ jest.mock('@backstage/plugin-notifications', () => ({
   NotificationsSidebarItem: () => <div data-testid="notifications-item" />,
 }));
 
+jest.mock('@backstage/frontend-plugin-api', () => ({
+  ...jest.requireActual('@backstage/frontend-plugin-api'),
+  useRouteRef: jest.fn(),
+}));
+
+const mockUseRouteRef = useRouteRef as jest.Mock;
 const mockNotificationsApi = {} as any;
 
+beforeEach(() => {
+  // By default the notifications page route is available.
+  mockUseRouteRef.mockReturnValue(() => '/notifications');
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
 describe('SidebarNotifications', () => {
-  it('renders the notifications item when the notifications API is available', () => {
+  it('renders the notifications item when the API and route are available', () => {
     render(
       <TestApiProvider apis={[[notificationsApiRef, mockNotificationsApi]]}>
         <SidebarNotifications />
@@ -39,6 +55,16 @@ describe('SidebarNotifications', () => {
   it('renders nothing when the notifications API is not available', () => {
     render(
       <TestApiProvider apis={[]}>
+        <SidebarNotifications />
+      </TestApiProvider>,
+    );
+    expect(screen.queryByTestId('notifications-item')).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when the notifications route is not available', () => {
+    mockUseRouteRef.mockReturnValue(undefined);
+    render(
+      <TestApiProvider apis={[[notificationsApiRef, mockNotificationsApi]]}>
         <SidebarNotifications />
       </TestApiProvider>,
     );

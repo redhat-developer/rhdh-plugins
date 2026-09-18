@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-import { useApiHolder } from '@backstage/frontend-plugin-api';
+import { useApiHolder, useRouteRef } from '@backstage/frontend-plugin-api';
+import notificationsPlugin from '@backstage/plugin-notifications/alpha';
 import {
   NotificationsSidebarItem,
   notificationsApiRef,
 } from '@backstage/plugin-notifications';
 
 /**
- * Renders the notifications sidebar item, but only when the notifications API
- * is available. Without the notifications plugin installed the entry is skipped
- * instead of crashing.
+ * Renders the notifications sidebar item, but only when the notifications
+ * plugin is installed: both its API and its page route must be available.
+ * `NotificationsSidebarItem` links to the notifications page, so without the
+ * bound route it would throw "No path for routeRef"; the entry is skipped
+ * instead of crashing the sidebar.
  *
  * @internal
  */
 export function SidebarNotifications() {
   const apis = useApiHolder();
-  if (!apis.get(notificationsApiRef)) {
+  const notificationsRoute = useRouteRef(notificationsPlugin.routes.root);
+  if (!apis.get(notificationsApiRef) || !notificationsRoute) {
     return null;
   }
   return <NotificationsSidebarItem />;
