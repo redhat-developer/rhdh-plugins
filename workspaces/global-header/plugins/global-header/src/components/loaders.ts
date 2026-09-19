@@ -57,6 +57,9 @@ export const loadDivider = async (): Promise<ComponentType<any>> =>
 export const loadNotificationButton = async (): Promise<ComponentType<any>> =>
   (await loadCriticalHeaderBundle()).NotificationButton;
 
+export const loadSidebarPinToggle = async (): Promise<ComponentType<any>> =>
+  (await loadCriticalHeaderBundle()).SidebarPinToggle;
+
 /** Dropdown trigger wrappers — same critical bundle as other first-paint UI. */
 export const loadStarredDropdown = async () =>
   (await loadCriticalHeaderBundle()).StarredDropdown;

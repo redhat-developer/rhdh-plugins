@@ -17,6 +17,7 @@
 import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
 
 import {
+  sidebarPinToggleExtension,
   companyLogoExtension,
   searchExtension,
   spacerExtension,
@@ -44,6 +45,7 @@ import {
 const globalHeaderPlugin = createFrontendPlugin({
   pluginId: 'global-header',
   extensions: [
+    sidebarPinToggleExtension,
     companyLogoExtension,
     searchExtension,
     spacerExtension,

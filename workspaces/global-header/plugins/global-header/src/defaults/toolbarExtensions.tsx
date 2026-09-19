@@ -32,10 +32,17 @@ import {
   loadNotificationButton,
   loadProfileDropdown,
   loadSearchComponent,
+  loadSidebarPinToggle,
   loadSpacer,
   loadStarredDropdown,
   loadApplicationLauncherDropdown,
 } from '../components/loaders';
+
+/** @public */
+export const sidebarPinToggleExtension = GlobalHeaderComponentBlueprint.make({
+  name: 'sidebar-pin-toggle',
+  params: { priority: 210, loader: loadSidebarPinToggle },
+});
 
 /** @public */
 export const companyLogoExtension = GlobalHeaderComponentBlueprint.make({

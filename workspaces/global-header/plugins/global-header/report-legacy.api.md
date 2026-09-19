@@ -112,6 +112,8 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'starred.noItemsSubtitle': string;
     readonly 'notifications.title': string;
     readonly 'notifications.unsupportedDismissOption': string;
+    readonly 'sidebar.pinSidebar': string;
+    readonly 'sidebar.unpinSidebar': string;
     readonly 'create.title': string;
     readonly 'create.registerComponent.title': string;
     readonly 'create.registerComponent.subtitle': string;
