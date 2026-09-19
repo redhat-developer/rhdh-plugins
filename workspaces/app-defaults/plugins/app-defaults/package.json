@@ -80,6 +80,7 @@
   },
   "dependencies": {
     "@backstage/catalog-client": "^1.16.1",
+    "@backstage/catalog-model": "^1.10.0",
     "@backstage/core-components": "^0.18.13",
     "@backstage/core-plugin-api": "^1.12.9",
     "@backstage/frontend-plugin-api": "^0.18.0",
@@ -98,7 +99,8 @@
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^",
-    "@remixicon/react": ">=4.6.0 <4.9.0"
+    "@remixicon/react": ">=4.6.0 <4.9.0",
+    "zod": "^3.25.76 || ^4.0.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"

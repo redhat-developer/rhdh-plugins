@@ -16,16 +16,33 @@
 
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import catalogGraphPlugin from '@backstage/plugin-catalog-graph/alpha';
+import { entityOverviewGraphCardExtension } from './entityOverviewGraphCardExtension';
+import { entityDependenciesGraphCardExtension } from './entityDependenciesGraphCardExtension';
 import { CustomCatalogGraphPage } from './CustomCatalogGraphPage';
 
 /**
  * Override of the Backstage catalog graph plugin that adds an empty state
- * when no catalog entities are available.
+ * when no catalog entities are available and RHDH default relations graph cards
+ * (no `app.extensions` config required).
  *
  * @public
  */
 export const catalogGraphPluginOverride = catalogGraphPlugin.withOverrides({
   extensions: [
+    catalogGraphPlugin
+      .getExtension('entity-card:catalog-graph/relations')
+      .override({
+        factory(originalFactory) {
+          // Replaced by rhdh-overview-relations / rhdh-component-dependencies-relations.
+          return originalFactory({
+            params: {
+              filter: () => false,
+            },
+          });
+        },
+      }),
+    entityOverviewGraphCardExtension,
+    entityDependenciesGraphCardExtension,
     catalogGraphPlugin.getExtension('page:catalog-graph').override({
       factory(originalFactory) {
         const original = originalFactory();

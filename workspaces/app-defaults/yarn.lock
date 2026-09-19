@@ -9555,6 +9555,7 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-app-defaults@workspace:plugins/app-defaults"
   dependencies:
     "@backstage/catalog-client": "npm:^1.16.1"
+    "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/core-components": "npm:^0.18.13"
     "@backstage/core-plugin-api": "npm:^1.12.9"
@@ -9585,6 +9586,7 @@ __metadata:
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-dom: "npm:^18.0.2"
     react-router-dom: "npm:^6.30.6"
+    zod: "npm:^3.25.76 || ^4.0.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
