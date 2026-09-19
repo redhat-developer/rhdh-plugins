@@ -15,22 +15,28 @@
  */
 
 import { createApp } from '@backstage/frontend-defaults';
+import {
+  createFrontendModule,
+  PageBlueprint,
+} from '@backstage/frontend-plugin-api';
+import { Navigate } from 'react-router-dom';
 import { navModule } from './modules/nav';
 import { signInModule } from './modules/signIn';
-import {
-  homepagePlugin,
-  homepageHomeModule,
-  homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-homepage';
-import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
+
+const homeRedirectModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    PageBlueprint.make({
+      name: 'home-redirect',
+      params: {
+        path: '/',
+        noHeader: true,
+        loader: async () => <Navigate to="/homepage" replace />,
+      },
+    }),
+  ],
+});
 
 export default createApp({
-  features: [
-    rhdhThemeModule,
-    navModule,
-    signInModule,
-    homepagePlugin,
-    homepageHomeModule,
-    homepageTranslationsModule,
-  ],
+  features: [navModule, signInModule, homeRedirectModule],
 });
