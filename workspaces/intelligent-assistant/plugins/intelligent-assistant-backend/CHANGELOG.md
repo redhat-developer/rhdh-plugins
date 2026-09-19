@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.2.1
+
+### Patch Changes
+
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.2.1
+
 ## 5.2.0
 
 ### Patch Changes
