@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 2.0.1
+
+### Patch Changes
+
+- 769d370: Improve module page UX
+- 6db5c1d: implemented adversarial agents
+- 3bf5e1b: Downstream phase jobs are automatically marked as stale when an upstream phase completes successfully.
+- e9329b1: run adversarial phase from /workspace to avoid permission denied
+- Updated dependencies [6db5c1d]
+- Updated dependencies [3bf5e1b]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.0.1
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@1.0.1
+
 ## 2.0.0
 
 ### Major Changes
