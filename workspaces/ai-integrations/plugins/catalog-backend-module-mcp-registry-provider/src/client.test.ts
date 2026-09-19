@@ -15,9 +15,14 @@
  */
 
 import {
+  buildPageRequestUrl,
   buildServersEndpoint,
+  fetchRegistryPage,
   fetchRegistryServers,
   McpRegistryClientError,
+  parseServersEndpointUrl,
+  resolveNextCursor,
+  truncateErrorBody,
 } from './client';
 import type { McpRegistryListResponse } from './client';
 import { createMockServerDoc } from './testUtils';
@@ -323,5 +328,138 @@ describe('fetchRegistryServers', () => {
     const secondUrl = fn.mock.calls[1][0] as string;
     // URL encodes the cursor, but the original value should be present
     expect(secondUrl).toContain(`cursor=${encodeURIComponent(opaqueToken)}`);
+  });
+});
+
+describe('parseServersEndpointUrl', () => {
+  it('returns a URL for a valid endpoint', () => {
+    const url = parseServersEndpointUrl('https://registry.example.com', 'v1');
+    expect(url.toString()).toBe('https://registry.example.com/v1/servers');
+  });
+
+  it('throws McpRegistryClientError for an invalid endpoint URL', () => {
+    expect(() => parseServersEndpointUrl('://bad', 'v1')).toThrow(
+      McpRegistryClientError,
+    );
+    expect(() => parseServersEndpointUrl('://bad', 'v1')).toThrow(
+      /Invalid MCP Registry endpoint URL/,
+    );
+  });
+});
+
+describe('buildPageRequestUrl', () => {
+  const endpoint = new URL('https://registry.example.com/v1/servers');
+
+  it('returns the endpoint when cursor and pageSize are omitted', () => {
+    expect(buildPageRequestUrl(endpoint).toString()).toBe(
+      'https://registry.example.com/v1/servers',
+    );
+  });
+
+  it('adds cursor and limit query params when provided', () => {
+    const url = buildPageRequestUrl(endpoint, 'abc', 25);
+    expect(url.searchParams.get('cursor')).toBe('abc');
+    expect(url.searchParams.get('limit')).toBe('25');
+  });
+
+  it('does not mutate the original endpoint URL', () => {
+    buildPageRequestUrl(endpoint, 'abc', 25);
+    expect(endpoint.search).toBe('');
+  });
+});
+
+describe('truncateErrorBody', () => {
+  it('returns the body unchanged when within the limit', () => {
+    expect(truncateErrorBody('short')).toBe('short');
+  });
+
+  it('truncates long bodies and appends a marker', () => {
+    const raw = 'a'.repeat(300);
+    const truncated = truncateErrorBody(raw, 10);
+    expect(truncated).toBe(`${'a'.repeat(10)}…(truncated)`);
+  });
+});
+
+describe('fetchRegistryPage', () => {
+  it('returns a validated list response', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => body,
+      text: async () => JSON.stringify(body),
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+      ),
+    ).resolves.toEqual(body);
+  });
+
+  it('throws when the servers field is missing', async () => {
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ metadata: {} }),
+      text: async () => '{}',
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+      ),
+    ).rejects.toThrow(/missing "servers" array/);
+  });
+
+  it('truncates non-2xx response bodies in the error', async () => {
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+      text: async () => 'x'.repeat(300),
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+      ),
+    ).rejects.toThrow(/…\(truncated\)/);
+  });
+});
+
+describe('resolveNextCursor', () => {
+  it('returns undefined when nextCursor is absent or empty', () => {
+    const seen = new Set<string>();
+    expect(resolveNextCursor(undefined, seen, 1, 10)).toBeUndefined();
+    expect(resolveNextCursor(null, seen, 1, 10)).toBeUndefined();
+    expect(resolveNextCursor('', seen, 1, 10)).toBeUndefined();
+    expect(seen.size).toBe(0);
+  });
+
+  it('returns the cursor and records it when paging continues', () => {
+    const seen = new Set<string>();
+    expect(resolveNextCursor('page-2', seen, 1, 10)).toBe('page-2');
+    expect(seen.has('page-2')).toBe(true);
+  });
+
+  it('throws on a repeated cursor', () => {
+    const seen = new Set(['page-2']);
+    expect(() => resolveNextCursor('page-2', seen, 2, 10)).toThrow(
+      /repeated cursor/,
+    );
+  });
+
+  it('throws when the page limit is exceeded with more pages remaining', () => {
+    const seen = new Set<string>();
+    expect(() => resolveNextCursor('page-2', seen, 1, 1)).toThrow(
+      /exceeded the configured page limit/,
+    );
   });
 });

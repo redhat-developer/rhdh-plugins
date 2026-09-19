@@ -15,7 +15,15 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { readMcpRegistryProviderConfig } from './config';
+import {
+  assertSingleRegistryConfig,
+  readMcpRegistryProviderConfig,
+  readOptionalPageSize,
+  readPageLimit,
+  readProviderSchedule,
+  readRequiredHttpBaseUrl,
+  safeGetOptionalString,
+} from './config';
 
 describe('readMcpRegistryProviderConfig', () => {
   it('returns undefined when catalog.providers is absent', () => {
@@ -151,7 +159,7 @@ describe('readMcpRegistryProviderConfig', () => {
     });
 
     expect(() => readMcpRegistryProviderConfig(config)).toThrow(
-      /Multiple registries are out of scope/,
+      /found keyed instance/,
     );
   });
 
@@ -209,5 +217,148 @@ describe('readMcpRegistryProviderConfig', () => {
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.apiVersion).toBe('v0');
+  });
+});
+
+describe('safeGetOptionalString', () => {
+  it('returns the string value when present', () => {
+    const config = new ConfigReader({
+      baseUrl: 'https://registry.example.com',
+    });
+    expect(safeGetOptionalString(config, 'baseUrl')).toBe(
+      'https://registry.example.com',
+    );
+  });
+
+  it('returns undefined when the key is absent', () => {
+    const config = new ConfigReader({});
+    expect(safeGetOptionalString(config, 'baseUrl')).toBeUndefined();
+  });
+
+  it('returns undefined when ConfigReader rejects an empty string', () => {
+    const config = new ConfigReader({ baseUrl: '' });
+    expect(safeGetOptionalString(config, 'baseUrl')).toBeUndefined();
+  });
+});
+
+describe('assertSingleRegistryConfig', () => {
+  it('allows a flat single-registry object', () => {
+    const config = new ConfigReader({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+    });
+    expect(() => assertSingleRegistryConfig(config)).not.toThrow();
+  });
+
+  it('ignores unknown scalar keys', () => {
+    const config = new ConfigReader({
+      baseUrl: 'https://registry.example.com',
+      extraFlag: true,
+    });
+    expect(() => assertSingleRegistryConfig(config)).not.toThrow();
+  });
+
+  it('throws when an unknown key is a nested instance object', () => {
+    const config = new ConfigReader({
+      internal: {
+        baseUrl: 'https://internal.example.com',
+      },
+    });
+    expect(() => assertSingleRegistryConfig(config)).toThrow(
+      /found keyed instance/,
+    );
+  });
+});
+
+describe('readRequiredHttpBaseUrl', () => {
+  it('returns a valid https baseUrl', () => {
+    const config = new ConfigReader({
+      baseUrl: 'https://registry.example.com',
+    });
+    expect(readRequiredHttpBaseUrl(config)).toBe(
+      'https://registry.example.com',
+    );
+  });
+
+  it('returns a valid http baseUrl', () => {
+    const config = new ConfigReader({
+      baseUrl: 'http://localhost:8080',
+    });
+    expect(readRequiredHttpBaseUrl(config)).toBe('http://localhost:8080');
+  });
+
+  it('throws when baseUrl is missing', () => {
+    const config = new ConfigReader({});
+    expect(() => readRequiredHttpBaseUrl(config)).toThrow(
+      /missing required "baseUrl"/,
+    );
+  });
+
+  it('throws when baseUrl is not a valid URL', () => {
+    const config = new ConfigReader({ baseUrl: 'not a url' });
+    expect(() => readRequiredHttpBaseUrl(config)).toThrow(/is not a valid URL/);
+  });
+
+  it('throws when baseUrl uses a non-http protocol', () => {
+    const config = new ConfigReader({ baseUrl: 'ftp://registry.example.com' });
+    expect(() => readRequiredHttpBaseUrl(config)).toThrow(
+      /must use http or https protocol/,
+    );
+  });
+});
+
+describe('readPageLimit', () => {
+  it('defaults to 10 when omitted', () => {
+    expect(readPageLimit(new ConfigReader({}))).toBe(10);
+  });
+
+  it('returns an explicit pageLimit', () => {
+    expect(readPageLimit(new ConfigReader({ pageLimit: 3 }))).toBe(3);
+  });
+
+  it('throws when pageLimit is less than 1', () => {
+    expect(() => readPageLimit(new ConfigReader({ pageLimit: 0 }))).toThrow(
+      /"pageLimit" must be at least 1/,
+    );
+  });
+});
+
+describe('readOptionalPageSize', () => {
+  it('returns undefined when omitted', () => {
+    expect(readOptionalPageSize(new ConfigReader({}))).toBeUndefined();
+  });
+
+  it('returns an explicit pageSize', () => {
+    expect(readOptionalPageSize(new ConfigReader({ pageSize: 50 }))).toBe(50);
+  });
+
+  it('throws when pageSize is less than 1', () => {
+    expect(() =>
+      readOptionalPageSize(new ConfigReader({ pageSize: 0 })),
+    ).toThrow(/"pageSize" must be at least 1/);
+  });
+});
+
+describe('readProviderSchedule', () => {
+  it('returns the default schedule when omitted', () => {
+    expect(readProviderSchedule(new ConfigReader({}))).toEqual({
+      frequency: { minutes: 30 },
+      timeout: { minutes: 3 },
+    });
+  });
+
+  it('reads an explicit schedule', () => {
+    const config = new ConfigReader({
+      schedule: {
+        frequency: { minutes: 15 },
+        timeout: { minutes: 5 },
+        initialDelay: { seconds: 30 },
+      },
+    });
+    expect(readProviderSchedule(config)).toEqual({
+      frequency: { minutes: 15 },
+      timeout: { minutes: 5 },
+      initialDelay: { seconds: 30 },
+    });
   });
 });
