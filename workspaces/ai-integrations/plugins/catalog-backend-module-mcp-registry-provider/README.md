@@ -52,7 +52,7 @@ catalog:
 
 | Option          | Required | Default                          | Description                                                                                                                                                                           |
 | --------------- | -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `baseUrl`       | Yes      | —                                | MCP Registry base URL                                                                                                                                                                 |
+| `baseUrl`       | Yes      | —                                | MCP Registry base URL. Also passed to the mapping as `placeholderRemoteUrl` when a server has no valid remotes.                                                                       |
 | `baseName`      | No       | `mcp.registry` (mapping default) | Override the mapping identity prefix for `metadata.name`                                                                                                                              |
 | `apiVersion`    | No       | `v1`                             | Registry API version slug. The servers endpoint is `<baseUrl>/<apiVersion>/servers`. Note: the live MCP Registry may serve `/v0` or `/v0.1`; set `apiVersion` to match your registry. |
 | `defaultOwner`  | No       | `unknown` (mapping default)      | Backstage entity reference used as `spec.owner`                                                                                                                                       |
@@ -73,7 +73,7 @@ The provider fully traverses the registry's cursor-based pagination, accumulatin
 
 ### Mapping
 
-Each server entry's `.server` object is transformed into an `mcp-server` API entity using the [`mcp-registry-server-mapping-common`](../mcp-registry-server-mapping-common) library. The provider passes `defaultOwner` and `baseName` as caller overrides but never reimplements the mapping rules.
+Each server entry's `.server` object is transformed into an `mcp-server` API entity using the [`mcp-registry-server-mapping-common`](../mcp-registry-server-mapping-common) library. The provider passes `defaultOwner` and `baseName` as caller overrides, and always passes the configured `baseUrl` as `placeholderRemoteUrl` so a server with no valid remotes gets a placeholder remote for that registry before falling back to `websiteUrl`. It never reimplements the mapping rules.
 
 ### Full mutation
 

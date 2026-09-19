@@ -290,9 +290,15 @@ export class McpRegistryEntityProvider implements EntityProvider {
 
   /**
    * Build mapping caller overrides from provider config.
+   *
+   * `placeholderRemoteUrl` is the target registry `baseUrl` so a server
+   * with no valid remotes still gets a D8 placeholder pointing at that
+   * registry, before the mapping falls back to `websiteUrl`.
    */
   private buildMappingDefaults(): McpServerMappingDefaults {
-    const mappingDefaults: McpServerMappingDefaults = {};
+    const mappingDefaults: McpServerMappingDefaults = {
+      placeholderRemoteUrl: this.config.baseUrl,
+    };
     if (this.config.defaultOwner) {
       mappingDefaults.owner = this.config.defaultOwner;
     }

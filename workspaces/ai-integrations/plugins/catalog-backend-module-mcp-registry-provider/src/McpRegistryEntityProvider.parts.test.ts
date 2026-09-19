@@ -255,12 +255,24 @@ describe('McpRegistryEntityProvider parts', () => {
   });
 
   describe('buildMappingDefaults', () => {
-    it('returns an empty object when overrides are omitted', () => {
+    it('uses baseUrl as placeholderRemoteUrl when other overrides are omitted', () => {
       const provider = new McpRegistryEntityProvider(
         createDefaultConfig(),
         createMockLogger(),
       );
-      expect(parts(provider).buildMappingDefaults()).toEqual({});
+      expect(parts(provider).buildMappingDefaults()).toEqual({
+        placeholderRemoteUrl: 'https://registry.example.com',
+      });
+    });
+
+    it('keeps a trailing slash on the configured baseUrl', () => {
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ baseUrl: 'https://registry.example.com/' }),
+        createMockLogger(),
+      );
+      expect(parts(provider).buildMappingDefaults()).toEqual({
+        placeholderRemoteUrl: 'https://registry.example.com/',
+      });
     });
 
     it('includes owner and prefix when configured', () => {
@@ -274,6 +286,7 @@ describe('McpRegistryEntityProvider parts', () => {
       expect(parts(provider).buildMappingDefaults()).toEqual({
         owner: 'group:default/mcp-admins',
         prefix: 'com.example.registry',
+        placeholderRemoteUrl: 'https://registry.example.com',
       });
     });
   });
@@ -340,6 +353,51 @@ describe('McpRegistryEntityProvider parts', () => {
           [SYNC_STATUS_ANNOTATION]: 'ok',
           'modelcontextprotocol.io/name': 'io.example/weather',
           'modelcontextprotocol.io/version': '1.0.0',
+        }),
+      );
+    });
+
+    it('uses the registry baseUrl as the placeholder remote when remotes are absent', () => {
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig(),
+        createMockLogger(),
+      );
+      const deferred = parts(provider).mapRegistryEntry(
+        {
+          server: createMockServerDoc('io.example/weather', '1.0.0', {
+            remotes: undefined,
+            websiteUrl: 'https://website.example.com',
+          }),
+        },
+        LOCATION,
+      );
+
+      expect(deferred.entity.spec).toEqual(
+        expect.objectContaining({
+          remotes: [{ type: 'undefined', url: 'https://registry.example.com' }],
+        }),
+      );
+    });
+
+    it('keeps a trailing slash on the placeholder remote url', () => {
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ baseUrl: 'https://registry.example.com/' }),
+        createMockLogger(),
+      );
+      const deferred = parts(provider).mapRegistryEntry(
+        {
+          server: createMockServerDoc('io.example/weather', '1.0.0', {
+            remotes: [],
+          }),
+        },
+        LOCATION,
+      );
+
+      expect(deferred.entity.spec).toEqual(
+        expect.objectContaining({
+          remotes: [
+            { type: 'undefined', url: 'https://registry.example.com/' },
+          ],
         }),
       );
     });
