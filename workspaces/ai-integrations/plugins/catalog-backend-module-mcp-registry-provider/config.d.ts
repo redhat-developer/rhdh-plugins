@@ -32,6 +32,8 @@ export interface Config {
         /** @visibility backend */
         pageSize?: number;
         /** @visibility backend */
+        maxEntries?: number;
+        /** @visibility backend */
         schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
       };
     };

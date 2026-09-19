@@ -21,5 +21,5 @@
  */
 
 export { catalogModuleMcpRegistryProvider as default } from './module';
-export { McpRegistryEntityProvider } from './provider';
+export { McpRegistryEntityProvider } from './McpRegistryEntityProvider';
 export type { McpRegistryProviderConfig } from './config';

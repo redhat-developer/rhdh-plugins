@@ -24,7 +24,7 @@ import {
   formatMappingFailureMessage,
   McpRegistryEntityProvider,
   readServerIdentity,
-} from './provider';
+} from './McpRegistryEntityProvider';
 import { createMockServerDoc } from './testUtils';
 
 const SYNC_STATUS_ANNOTATION = 'redhat.com/rhdh-mcp-registry-sync-status';
@@ -76,6 +76,7 @@ function createDefaultConfig(
     baseUrl: 'https://registry.example.com',
     apiVersion: 'v1',
     pageLimit: 10,
+    maxEntries: 5000,
     schedule: {
       frequency: { minutes: 30 },
       timeout: { minutes: 3 },
@@ -200,7 +201,7 @@ describe('McpRegistryEntityProvider parts', () => {
       const provider = new McpRegistryEntityProvider(
         createDefaultConfig(),
         createMockLogger(),
-        mockFetchForResponses([body]),
+        { fetchApi: mockFetchForResponses([body]) },
       );
 
       await expect(parts(provider).fetchRegistryEntries()).resolves.toEqual(
@@ -218,7 +219,7 @@ describe('McpRegistryEntityProvider parts', () => {
       const provider = new McpRegistryEntityProvider(
         createDefaultConfig(),
         logger,
-        fetchFn,
+        { fetchApi: fetchFn },
       );
 
       await expect(
@@ -239,7 +240,7 @@ describe('McpRegistryEntityProvider parts', () => {
       const provider = new McpRegistryEntityProvider(
         createDefaultConfig(),
         logger,
-        fetchFn,
+        { fetchApi: fetchFn },
       );
 
       await expect(

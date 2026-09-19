@@ -329,6 +329,45 @@ describe('fetchRegistryServers', () => {
     // URL encodes the cursor, but the original value should be present
     expect(secondUrl).toContain(`cursor=${encodeURIComponent(opaqueToken)}`);
   });
+
+  it('throws when maxEntries cap is exceeded', async () => {
+    const largePage: McpRegistryListResponse = {
+      servers: Array.from({ length: 100 }, (_, i) => ({
+        server: createMockServerDoc(`test/server-${i}`, '1.0.0'),
+      })),
+      metadata: { count: 100 },
+    };
+    const fn = mockFetch([{ body: largePage }]);
+
+    await expect(
+      fetchRegistryServers({
+        baseUrl: 'https://registry.example.com',
+        apiVersion: 'v1',
+        pageLimit: 10,
+        maxEntries: 50,
+        fetchApi: fn,
+      }),
+    ).rejects.toThrow(/maxEntries cap of 50/);
+  });
+
+  it('does not enforce maxEntries when unset', async () => {
+    const largePage: McpRegistryListResponse = {
+      servers: Array.from({ length: 100 }, (_, i) => ({
+        server: createMockServerDoc(`test/server-${i}`, '1.0.0'),
+      })),
+      metadata: { count: 100 },
+    };
+    const fn = mockFetch([{ body: largePage }]);
+
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      fetchApi: fn,
+    });
+
+    expect(result).toHaveLength(100);
+  });
 });
 
 describe('parseServersEndpointUrl', () => {

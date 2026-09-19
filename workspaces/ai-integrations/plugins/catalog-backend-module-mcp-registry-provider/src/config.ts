@@ -30,6 +30,9 @@ const DEFAULT_API_VERSION = 'v1';
 /** Default page limit (max pages per sync). */
 const DEFAULT_PAGE_LIMIT = 10;
 
+/** Default max entries per sync. */
+const DEFAULT_MAX_ENTRIES = 5000;
+
 /** Supported single-registry config keys under `catalog.providers.mcpRegistry`. */
 const KNOWN_MCP_REGISTRY_KEYS = new Set([
   'baseUrl',
@@ -38,6 +41,7 @@ const KNOWN_MCP_REGISTRY_KEYS = new Set([
   'defaultOwner',
   'pageLimit',
   'pageSize',
+  'maxEntries',
   'schedule',
 ]);
 
@@ -146,6 +150,23 @@ export function readPageLimit(registryConfig: Config): number {
 }
 
 /**
+ * Read `maxEntries`, applying the default and rejecting values below 1.
+ *
+ * @internal
+ */
+export function readMaxEntries(registryConfig: Config): number {
+  const maxEntries =
+    registryConfig.getOptionalNumber('maxEntries') ?? DEFAULT_MAX_ENTRIES;
+  if (maxEntries < 1) {
+    throw new Error(
+      `Invalid catalog.providers.mcpRegistry configuration: "maxEntries" ` +
+        `must be at least 1, got ${maxEntries}.`,
+    );
+  }
+  return maxEntries;
+}
+
+/**
  * Read optional `pageSize`, rejecting values below 1 when set.
  *
  * @internal
@@ -184,12 +205,21 @@ export function readProviderSchedule(
  * @public
  */
 export interface McpRegistryProviderConfig {
+  /** Base URL of the MCP Registry (required). */
   baseUrl: string;
+  /** Optional identity prefix override passed to the mapping transform. */
   baseName?: string;
+  /** Registry API version slug used in the endpoint path (default `v1`). */
   apiVersion: string;
+  /** Default entity owner ref when the mapping does not supply one. */
   defaultOwner?: string;
+  /** Maximum pages fetched per sync (default `10`). */
   pageLimit: number;
+  /** Registry `?limit=` page-size query; omitted from the request when unset. */
   pageSize?: number;
+  /** Maximum total entries accumulated across all pages per sync (default `5000`). */
+  maxEntries: number;
+  /** Schedule for the sync task. */
   schedule: SchedulerServiceTaskScheduleDefinition;
 }
 
@@ -225,6 +255,7 @@ export function readMcpRegistryProviderConfig(
     defaultOwner: safeGetOptionalString(registryConfig, 'defaultOwner'),
     pageLimit: readPageLimit(registryConfig),
     pageSize: readOptionalPageSize(registryConfig),
+    maxEntries: readMaxEntries(registryConfig),
     schedule: readProviderSchedule(registryConfig),
   };
 }

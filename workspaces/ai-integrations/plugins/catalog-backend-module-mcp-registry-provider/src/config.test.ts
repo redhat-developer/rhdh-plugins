@@ -17,6 +17,7 @@
 import { ConfigReader } from '@backstage/config';
 import {
   assertSingleRegistryConfig,
+  readMaxEntries,
   readMcpRegistryProviderConfig,
   readOptionalPageSize,
   readPageLimit,
@@ -54,6 +55,7 @@ describe('readMcpRegistryProviderConfig', () => {
     expect(result!.baseUrl).toBe('https://registry.example.com');
     expect(result!.apiVersion).toBe('v1');
     expect(result!.pageLimit).toBe(10);
+    expect(result!.maxEntries).toBe(5000);
     expect(result!.pageSize).toBeUndefined();
     expect(result!.baseName).toBeUndefined();
     expect(result!.defaultOwner).toBeUndefined();
@@ -336,6 +338,22 @@ describe('readOptionalPageSize', () => {
     expect(() =>
       readOptionalPageSize(new ConfigReader({ pageSize: 0 })),
     ).toThrow(/"pageSize" must be at least 1/);
+  });
+});
+
+describe('readMaxEntries', () => {
+  it('defaults to 5000 when omitted', () => {
+    expect(readMaxEntries(new ConfigReader({}))).toBe(5000);
+  });
+
+  it('returns an explicit maxEntries', () => {
+    expect(readMaxEntries(new ConfigReader({ maxEntries: 1000 }))).toBe(1000);
+  });
+
+  it('throws when maxEntries is less than 1', () => {
+    expect(() => readMaxEntries(new ConfigReader({ maxEntries: 0 }))).toThrow(
+      /"maxEntries" must be at least 1/,
+    );
   });
 });
 

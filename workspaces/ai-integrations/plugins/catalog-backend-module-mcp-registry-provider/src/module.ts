@@ -20,7 +20,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
 import { readMcpRegistryProviderConfig } from './config';
-import { McpRegistryEntityProvider } from './provider';
+import { McpRegistryEntityProvider } from './McpRegistryEntityProvider';
 
 /**
  * The mcp-registry-provider backend module for the catalog plugin.
@@ -56,12 +56,9 @@ export const catalogModuleMcpRegistryProvider = createBackendModule({
         const taskRunner = scheduler.createScheduledTaskRunner(
           providerConfig.schedule,
         );
-        const provider = new McpRegistryEntityProvider(
-          providerConfig,
-          logger,
-          undefined,
+        const provider = new McpRegistryEntityProvider(providerConfig, logger, {
           taskRunner,
-        );
+        });
 
         catalog.addEntityProvider(provider);
       },

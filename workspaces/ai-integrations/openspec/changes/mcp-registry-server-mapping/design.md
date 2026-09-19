@@ -70,7 +70,7 @@ Implementation tasks produce a version-pinned `mapping-reference.md` under `open
 
 **Non-Goals:**
 
-- Registry HTTP client, polling, scheduling, or an entity provider/processor (separate future change).
+- Registry HTTP client, polling, scheduling, or an entity provider/processor (implemented by `catalog-backend-module-mcp-registry-provider`).
 - Modifying the upstream `mcp-server` entity contract or its validation.
 - Reverse mapping (entity → `server.json`) beyond the scalar round-trip guarantee.
 - Executing or health-checking mapped servers, or interpreting local `packages[]` runtime details.
@@ -110,11 +110,11 @@ Implementation tasks produce a version-pinned `mapping-reference.md` under `open
 
 **Alternatives considered:** (a) Encode the version in `metadata.namespace` — rejected; fragments entity references and complicates relationships. (b) `<name>__<version>` with no prefix — rejected; leaves registry-mapped entities without a caller-controllable namespacing token in `metadata.name` (they would collide with any other `mcp-server` API that sanitizes to the same name+version).
 
-**Rationale:** A registry publishes one `server.json` per version and each becomes its own entity, so a name derived from the canonical name alone would collide across versions. The prefix distinguishes registry-mapped entities in a shared catalog and lets the future ingestion layer pass a per-source override without changing the transform.
+**Rationale:** A registry publishes one `server.json` per version and each becomes its own entity, so a name derived from the canonical name alone would collide across versions. The prefix distinguishes registry-mapped entities in a shared catalog and lets the ingestion layer (`catalog-backend-module-mcp-registry-provider`) pass a per-source override without changing the transform.
 
 ### D5: Supplying fields absent from `server.json` — owner and lifecycle
 
-**Choice:** `spec.owner` is set to the constant `unknown` by default; a caller MAY supply an override default, but the transform never fails for a missing owner (a placeholder owner keeps the output valid, and the future ingestion change can reassign ownership). `spec.lifecycle` is set to the constant `production` by default; a caller MAY supply an override default lifecycle value. Both fields use the same caller-override pattern as the identity prefix in D4.
+**Choice:** `spec.owner` is set to the constant `unknown` by default; a caller MAY supply an override default, but the transform never fails for a missing owner (a placeholder owner keeps the output valid, and the ingestion layer can reassign ownership). `spec.lifecycle` is set to the constant `production` by default; a caller MAY supply an override default lifecycle value. Both fields use the same caller-override pattern as the identity prefix in D4.
 
 **Alternatives considered:** (a) Require caller-provided owner/lifecycle and fail if absent — rejected; a pure transform should always yield a valid entity, and ownership/lifecycle assignment belongs to the ingestion layer. (b) Derive lifecycle from a `status` field — rejected; `status` is not part of the base `server.schema.json` (verified 2026-08-21 against the draft schema).
 
@@ -201,7 +201,7 @@ The scheme gate does **not** classify hosts as public vs private and does not tr
 ## Risks / Trade-offs
 
 - **63-char truncation collisions** → Deterministic hash suffix on truncation and on sanitization collisions keeps keys unique; the hash is derived from the full source path so it is stable across runs.
-- **`metadata.name` collisions across registries** (same name+version from two registries under the default prefix) → Out of scope here (no dedup). The caller-overridable prefix is the ingestion-layer lever for per-source namespacing; documented so the future ingestion change can supply distinct prefixes or otherwise dedup. Within a single `(prefix, name, version)` the per-input hash-suffix rule (lossy sanitization or truncation) keeps that identity stable and distinct from a different unsanitized triple that happens to share a sanitized stem.
+- **`metadata.name` collisions across registries** (same name+version from two registries under the default prefix) → Out of scope here (no dedup). The caller-overridable prefix is the ingestion-layer lever for per-source namespacing; documented so the ingestion layer can supply distinct prefixes or otherwise dedup. Within a single `(prefix, name, version)` the per-input hash-suffix rule (lossy sanitization or truncation) keeps that identity stable and distinct from a different unsanitized triple that happens to share a sanitized stem.
 - **Draft schema drift** → D7 fail-open projection; the mapping table is versioned against the draft and revisited when the schema changes.
 - **Lossy flattening of deep `packages[]` config** → Accepted; runtime package details are preserved as scalar-leaf annotations for discoverability, not interpreted. Round-trip fidelity is guaranteed only for scalar leaves.
 - **Secret leakage into searchable annotations** (remote `headers`/`variables`, `environmentVariables` carrying `default`/`value`/`choices`) → D9 prunes the `default`/`value`/`choices` leaves of any `isSecret: true` input from projection. This is a deliberate carve-out from scalar round-trip fidelity — those leaves are intentionally unrecoverable from the entity. Non-secret metadata on the same input still projects, so discoverability is preserved.
@@ -211,7 +211,7 @@ The scheme gate does **not** classify hosts as public vs private and does not tr
 
 ## Migration Plan
 
-Not applicable — new capabilities with no existing data or behavior to migrate. The mapping is additive and has no runtime deployment surface of its own until a future ingestion change consumes it.
+Not applicable — new capabilities with no existing data or behavior to migrate. The mapping is additive and has no runtime deployment surface of its own; consumed by `catalog-backend-module-mcp-registry-provider`.
 
 ## Open Questions
 
