@@ -33,3 +33,28 @@ type:
 
 Match the bump level to the issue's stated intent (title prefix,
 constraints), not the size of the diff.
+
+When performing a Backstage version bump (`yarn backstage-cli
+versions:bump`), check whether any `@backstage/*` dependency has a 0.x
+version with a minor version increment (e.g., `^0.17.2` → `^0.18.0`).
+Under semver 0.x conventions, minor bumps may introduce breaking
+changes. If any such packages exist:
+
+1. Check the upstream Backstage changelog or release notes for each
+   affected 0.x package.
+2. Document the findings in the PR body under a `### 0.x dependency
+   changes` section. For each package, list the version change and
+   whether breaking changes were identified.
+3. If breaking changes are found that affect consuming packages in this
+   repo, adjust the changeset bump level from `patch` to `minor` for
+   those packages and note the required migration steps.
+
+Example PR body section:
+
+```
+### 0.x dependency changes
+- @backstage/frontend-plugin-api ^0.17.2 → ^0.18.0: No breaking
+  changes affecting this workspace (new optional props added).
+- @backstage/repo-tools ^0.17.3 → ^0.19.0: No API changes affecting
+  this workspace (internal dependency removed upstream).
+```
