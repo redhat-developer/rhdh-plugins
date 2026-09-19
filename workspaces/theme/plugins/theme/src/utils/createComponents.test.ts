@@ -125,16 +125,17 @@ describe('createComponents', () => {
     const desktop = root?.['@media (min-width: 600px)'] as
       | Record<string, unknown>
       | undefined;
-    expect(desktop?.['& > main:has([class*="bui-Container"])']).toEqual(
-      expect.objectContaining({
-        display: 'flex',
-        flexDirection: 'column',
-        flex: '1 0 auto',
-        minHeight: 'calc(100vh - 2 * 1.5rem)',
-        height: 'auto',
-        maxHeight: 'none !important',
-      }),
-    );
+    expect(
+      desktop?.[
+        '& > main:not([data-backstage-core-page]):has([class*="bui-Container"])'
+      ],
+    ).toEqual({
+      display: 'flex',
+      flexDirection: 'column',
+      flex: '1 0 auto',
+      maxHeight: 'none',
+    });
+    expect(desktop?.['& > main:has([class*="bui-Container"])']).toBeUndefined();
   });
 
   it('offsets BUI dialogs below the masthead so Inspect Entity stays visible', () => {

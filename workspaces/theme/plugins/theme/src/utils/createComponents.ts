@@ -826,16 +826,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             },
             // NFS BUI entity pages wrap their content in a BUI Container inside
             // a classless <main>. The Container is flex: 1 1 0%, but that only
-            // grows when main is a flex column. Keep the main content at least
-            // viewport-height while allowing longer entity pages to grow.
-            '& > main:has([class*="bui-Container"])': {
-              display: 'flex',
-              flexDirection: 'column',
-              flex: '1 0 auto',
-              minHeight: `calc(100vh - 2 * ${general.pageInset})`,
-              height: 'auto',
-              maxHeight: 'none !important',
-            },
+            // grows when main is a flex column. Remove the base main max-height
+            // so longer entity pages can grow. Do not override Backstage Page,
+            // which uses display:grid on <main>.
+            '& > main:not([data-backstage-core-page]):has([class*="bui-Container"])':
+              {
+                display: 'flex',
+                flexDirection: 'column',
+                flex: '1 0 auto',
+                maxHeight: 'none',
+              },
             // NFS / BUI pages use Container instead of <main>. Match the content
             // well color (same token as BackstageContent) and rely on flex: 1
             // from BUI rather than 100vh so PluginHeader siblings are not overflowed.
