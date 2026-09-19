@@ -80,6 +80,23 @@ only requires a non-empty string and MUST NOT enum-validate connector-name.
 
 When writing new scenarios or reviewing spec file changes, verify that every AND/THEN bullet is a concrete assertion, not contextual guidance for human readers.
 
+### Spec-implementation consistency check
+
+After implementing code that has a corresponding openspec spec file
+(under `openspec/specs/`), verify consistency before committing:
+
+1. Re-read each behavioral contract in the spec (GIVEN/WHEN/THEN
+   scenarios, prose requirements) and confirm the implementation
+   matches. Pay special attention to error paths, fallback behavior,
+   and edge cases — these are the most common sources of divergence.
+2. If the implementation deliberately diverges from the spec (e.g., a
+   different error-handling strategy), update the spec to match the
+   actual behavior. The spec is the behavior source of truth and must
+   not describe behavior the code does not implement.
+3. If creating a new spec alongside new code, write the spec after
+   the implementation is finalized, or re-read and reconcile the spec
+   against the final code before committing.
+
 ### Cancelling or removing an openspec component
 
 When a spec, epic, or task is cancelled, apply strikethrough to the cancelled item and then verify all cross-file references using this checklist. Each step must be checked before the cancellation PR is considered complete.
