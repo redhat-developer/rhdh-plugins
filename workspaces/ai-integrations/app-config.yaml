@@ -152,6 +152,12 @@ catalog:
       # pageLimit: 10
       # Optional: registry page size sent as ?limit= (omitted by default)
       # pageSize: 50
+      # Optional: maximum total entries accumulated across all pages per sync (default: 5000)
+      # maxEntries: 5000
+      # Optional: allowlist of permitted hostnames for defense-in-depth SSRF protection.
+      # hostAllowList:
+      #   - https://registry.modelcontextprotocol.io
+      #   - https://staging.registry.modelcontextprotocol.io
       # Optional: sync schedule (defaults shown below)
       # schedule:
       #   frequency: { minutes: 30 }
