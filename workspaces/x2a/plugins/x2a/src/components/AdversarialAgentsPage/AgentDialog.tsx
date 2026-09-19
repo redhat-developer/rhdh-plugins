@@ -44,6 +44,18 @@ interface AgentDialogProps {
   agent?: AdversarialAgent;
 }
 
+const DEFAULT_PROMPT = `You are a hostile reviewer. Your job is to find [describe the specific concern, e.g. unsafe destructive operations] in the migrated Ansible content.
+
+Look for the following patterns:
+- [pattern 1]
+- [pattern 2]
+- [pattern 3]
+
+For each finding, report:
+- The file and task name where the issue occurs
+- A clear explanation of why it is a problem
+- A suggested remediation`;
+
 const PHASES = ['analyze', 'migrate'] as const;
 
 const PHASE_LABELS: Record<(typeof PHASES)[number], string> = {
@@ -72,7 +84,7 @@ export const AgentDialog = ({
   useEffect(() => {
     if (open) {
       setName(agent?.name ?? '');
-      setPrompt(agent?.prompt ?? '');
+      setPrompt(agent?.prompt ?? DEFAULT_PROMPT);
       setPhases(new Set(agent?.phases ?? []));
       setCritical(agent?.critical ?? false);
       setError(null);
