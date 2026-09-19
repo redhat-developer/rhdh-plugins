@@ -275,5 +275,34 @@ describe('AgentsTabContent', () => {
         ),
       );
     });
+
+    it('displays translated "All" label when no filter is selected', async () => {
+      await renderAgentsTab();
+
+      await waitFor(() =>
+        expect(screen.getByText('env-agent-west-1')).toBeInTheDocument(),
+      );
+
+      expect(screen.getByText('All')).toBeInTheDocument();
+    });
+
+    it('displays the selected option label after choosing a filter', async () => {
+      const listAgents = jest
+        .fn()
+        .mockResolvedValue({ agents: [MOCK_AGENT], next_page_token: '' });
+      const apis = buildApis({ listAgents });
+      await renderAgentsTab(apis);
+
+      await waitFor(() => expect(listAgents).toHaveBeenCalledTimes(1));
+
+      const filterInput = document.querySelector(
+        '[data-testid="health-filter"]',
+      ) as HTMLInputElement;
+      fireEvent.change(filterInput, { target: { value: 'ready' } });
+
+      await waitFor(() =>
+        expect(screen.getByText('Ready')).toBeInTheDocument(),
+      );
+    });
   });
 });
