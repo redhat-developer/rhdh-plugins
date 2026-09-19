@@ -14,26 +14,16 @@
  * limitations under the License.
  */
 
-import { useEffect, useLayoutEffect, type ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-
 import {
   ApiBlueprint,
   configApiRef,
   createApiFactory,
-  createFrontendModule,
   createFrontendPlugin,
   createRouteRef,
   createSubRouteRef,
   fetchApiRef,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import {
-  AppRootWrapperBlueprint,
-  TranslationBlueprint,
-} from '@backstage/plugin-app-react';
-
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
 import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
@@ -41,19 +31,10 @@ import { lightspeedApiRef } from './api/api';
 import { LightspeedApiClient } from './api/LightspeedApiClient';
 import { notebooksApiRef } from './api/notebooksApi';
 import { NotebooksApiClient } from './api/NotebooksApiClient';
-import { LightspeedChatContainer as LightspeedChatContainerElement } from './components/LightspeedChatContainer';
-import { LightspeedDrawerProvider as LightspeedProvider } from './components/LightspeedDrawerProvider';
-import { LightspeedFABContent as LightspeedFABComponent } from './components/LightspeedFABContent';
-import {
-  LIGHTSPEED_APP_DRAWER_ID,
-  LIGHTSPEED_LEGACY_PATH,
-  LIGHTSPEED_PATH,
-} from './const';
-import { lightspeedTranslations } from './translations';
+import { LIGHTSPEED_APP_DRAWER_ID, LIGHTSPEED_PATH } from './const';
+import { LazyLightspeedChatDrawerContent } from './lazy/LazyLightspeedChatDrawerContent';
 
-ClassNameGenerator.configure(componentName =>
-  componentName.startsWith('v5-') ? componentName : `v5-${componentName}`,
-);
+import './muiClassNameConfig';
 
 const nfsRootRouteRef = createRouteRef();
 const nfsConversationRouteRef = createSubRouteRef({
@@ -106,91 +87,11 @@ const intelligentAssistantDrawer = AppDrawerContentBlueprint.make({
   name: 'intelligent-assistant',
   params: {
     id: LIGHTSPEED_APP_DRAWER_ID,
-    element: <LightspeedChatContainerElement />,
+    element: <LazyLightspeedChatDrawerContent />,
     resizable: true,
     defaultWidth: 400,
     priority: 100,
   },
-});
-
-const LightspeedLegacyRedirect = ({ children }: { children: ReactNode }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (location.pathname.startsWith(LIGHTSPEED_LEGACY_PATH)) {
-      const newPath = location.pathname.replace(
-        LIGHTSPEED_LEGACY_PATH,
-        LIGHTSPEED_PATH,
-      );
-      navigate(newPath + location.search + location.hash, {
-        replace: true,
-      });
-    }
-  }, [location, navigate]);
-
-  // Workaround: PF 6.6.0 base-no-reset.css sets container-type: inline-size on :root,
-  // breaking body height. Remove after https://github.com/patternfly/patternfly-react/issues/12568
-  useLayoutEffect(() => {
-    document.documentElement.style.containerType = 'normal';
-  }, []);
-
-  return <>{children}</>;
-};
-
-const intelligentAssistantRedirect = AppRootWrapperBlueprint.make({
-  name: 'intelligent-assistant-redirect',
-  params: {
-    component: LightspeedLegacyRedirect,
-  },
-});
-
-/**
- * @public
- */
-export const intelligentAssistantRedirectModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [intelligentAssistantRedirect],
-});
-
-/**
- * Lightspeed FAB module
- * @public
- */
-const intelligentAssistantFABExtension = AppRootWrapperBlueprint.make({
-  name: 'intelligent-assistant-fab',
-  params: {
-    component: ({ children }) => (
-      <LightspeedProvider>
-        <LightspeedFABComponent />
-        {children}
-      </LightspeedProvider>
-    ),
-  },
-});
-
-/**
- * @public
- */
-export const intelligentAssistantFABModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [intelligentAssistantFABExtension, intelligentAssistantRedirect],
-});
-
-/**
- * Translation wiring for the language selector (app-config `app.extensions`).
- *
- * @public
- */
-export const intelligentAssistantTranslationsModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [
-    TranslationBlueprint.make({
-      name: 'intelligent-assistant-translations',
-      params: {
-        resource: lightspeedTranslations,
-      },
-    }),
-  ],
 });
 
 /**

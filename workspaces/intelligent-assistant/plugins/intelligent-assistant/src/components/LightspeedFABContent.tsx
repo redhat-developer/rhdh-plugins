@@ -20,9 +20,12 @@ import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import { useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
-import { DOCKED_CONTENT_OFFSET, LIGHTSPEED_FAB_ELEMENT_ID } from '../const';
+import {
+  ChatbotDisplayMode,
+  DOCKED_CONTENT_OFFSET,
+  LIGHTSPEED_FAB_ELEMENT_ID,
+} from '../const';
 import { useIaChatPermission } from '../hooks/useIaChatPermission';
 import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
@@ -83,6 +86,22 @@ export const LightspeedFABContent = () => {
     };
   }, [displayMode, theme]);
 
+  // Re-measure when the overlay opens so bottom/right track the FAB (see LIGHTSPEED_OVERLAY_*).
+  useLayoutEffect(() => {
+    if (!isChatbotActive) {
+      return undefined;
+    }
+    const fab = fabRef.current;
+    if (!fab) {
+      return undefined;
+    }
+    const syncAnchor = () =>
+      publishLightspeedFabAnchorVars({ fabElement: fab, theme });
+    syncAnchor();
+    const frame = requestAnimationFrame(syncAnchor);
+    return () => cancelAnimationFrame(frame);
+  }, [isChatbotActive, theme]);
+
   if (displayMode === ChatbotDisplayMode.embedded) {
     return null;
   }
@@ -98,7 +117,7 @@ export const LightspeedFABContent = () => {
         bottom: fabEdgeInset,
         right: fabEdgeInset,
         alignItems: 'end',
-        zIndex: theme.zIndex.tooltip,
+        zIndex: 200,
         display: 'flex',
         position: 'fixed',
         'body.docked-drawer-open &': {

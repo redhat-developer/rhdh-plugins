@@ -17,15 +17,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
-
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import type {
   LightspeedDrawerContextType,
   LightspeedEmbeddedNotebooksTarget,
 } from '../components/LightspeedDrawerContext';
-import { LIGHTSPEED_APP_DRAWER_ID, LIGHTSPEED_PATH } from '../const';
+import {
+  ChatbotDisplayMode,
+  LIGHTSPEED_APP_DRAWER_ID,
+  LIGHTSPEED_PATH,
+} from '../const';
 import type { FileContent } from '../types';
 import { useBackstageUserIdentity } from './useBackstageUserIdentity';
 import { useDisplayModeSettings } from './useDisplayModeSettings';

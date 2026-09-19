@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-import './muiClassNameConfig';
+let loadPromise: Promise<void> | undefined;
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-  LightspeedChatContainer,
-  LightspeedFAB,
-  LightspeedDrawerStateExposer,
-} from './plugin';
-export { LightspeedIcon } from './components/LightspeedIcon';
-export type {
-  DrawerStateExposerProps,
-  DrawerState,
-} from './components/LightspeedDrawerStateExposer';
+/**
+ * Loads PatternFly chat styles on demand so they are not part of the MF sync graph.
+ */
+export function loadChatPatternflyStyles(): Promise<void> {
+  loadPromise ??= Promise.all([
+    import('@patternfly/react-core/dist/styles/base-no-reset.css'),
+    import('@patternfly/chatbot/dist/css/main.css'),
+  ])
+    .then(() => undefined)
+    .catch(error => {
+      loadPromise = undefined;
+      throw error;
+    });
+  return loadPromise;
+}

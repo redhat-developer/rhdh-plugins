@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-import './muiClassNameConfig';
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-  LightspeedChatContainer,
-  LightspeedFAB,
-  LightspeedDrawerStateExposer,
-} from './plugin';
-export { LightspeedIcon } from './components/LightspeedIcon';
-export type {
-  DrawerStateExposerProps,
-  DrawerState,
-} from './components/LightspeedDrawerStateExposer';
+ClassNameGenerator.configure(componentName =>
+  componentName.startsWith('v5-') ? componentName : `v5-${componentName}`,
+);

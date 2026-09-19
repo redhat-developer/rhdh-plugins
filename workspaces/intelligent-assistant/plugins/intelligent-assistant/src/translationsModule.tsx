@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-import './muiClassNameConfig';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-  LightspeedChatContainer,
-  LightspeedFAB,
-  LightspeedDrawerStateExposer,
-} from './plugin';
-export { LightspeedIcon } from './components/LightspeedIcon';
-export type {
-  DrawerStateExposerProps,
-  DrawerState,
-} from './components/LightspeedDrawerStateExposer';
+import { lightspeedTranslations } from './translations';
+
+/**
+ * Translation wiring for the language selector (app-config `app.extensions`).
+ *
+ * @public
+ */
+export const intelligentAssistantTranslationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    TranslationBlueprint.make({
+      name: 'intelligent-assistant-translations',
+      params: {
+        resource: lightspeedTranslations,
+      },
+    }),
+  ],
+});
