@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.1.1
+
+### Patch Changes
+
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.1.1
+
 ## 9.1.0
 
 ### Minor Changes
