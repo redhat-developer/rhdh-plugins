@@ -1270,7 +1270,7 @@ describe('LightspeedChat', () => {
       ).toBeInTheDocument();
     });
 
-    it('should show PenIcon in new chat button in fullscreen mode', async () => {
+    it('should show PencilAltIcon in new chat button in fullscreen mode', async () => {
       mockUseConversations.mockReturnValue({
         data: [
           {

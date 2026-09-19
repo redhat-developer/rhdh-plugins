@@ -16,59 +16,24 @@
 
 import { styled } from '@mui/material/styles';
 import { Button, Tooltip } from '@patternfly/react-core';
-import { PenIcon } from '@patternfly/react-icons';
+import { PencilAltIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { LIGHTSPEED_FLOATING_BG } from './chatShellTokens';
 import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
 
 const Strip = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  paddingTop: theme.spacing(1.5),
-  gap: theme.spacing(1.5),
-  borderRight: '1px solid var(--pf-t--global--border--color--default)',
-  width: 48,
-  minWidth: 48,
+  gap: theme.spacing(1),
+  padding: `${theme.spacing(2)} ${theme.spacing(1)}`,
+  width: 56,
+  minWidth: 56,
   flexShrink: 0,
-  backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
   height: '100%',
 }));
-
-const IconButton = styled(Button)({
-  padding: '8px !important',
-  minWidth: 0,
-  lineHeight: 1,
-  borderRadius: '8px !important',
-  border: '1px solid var(--pf-t--global--border--color--default) !important',
-  color: 'var(--pf-t--global--icon--color--regular)',
-  '& svg': {
-    width: 18,
-    height: 18,
-  },
-  '&:hover': {
-    color: 'var(--pf-t--global--icon--color--hover) !important',
-    backgroundColor:
-      'var(--pf-t--global--background--color--action--plain--hover) !important',
-  },
-});
-
-const NewChatIconButton = styled(Button)({
-  padding: '8px !important',
-  minWidth: 0,
-  lineHeight: 1,
-  borderRadius: '8px !important',
-  border: '1px solid var(--pf-t--global--border--color--default) !important',
-  color: 'var(--pf-t--global--color--brand--default) !important',
-  '&:hover': {
-    color: 'var(--pf-t--global--color--brand--hover) !important',
-    backgroundColor:
-      'var(--pf-t--global--background--color--action--plain--hover) !important',
-  },
-  '&:disabled': {
-    color: 'var(--pf-t--global--text--color--disabled) !important',
-  },
-});
 
 type CollapsedHistoryStripProps = {
   onExpand: () => void;
@@ -86,23 +51,28 @@ export const CollapsedHistoryStrip = ({
   return (
     <Strip>
       <Tooltip content={t('tooltip.expandHistoryPanel')} position="right">
-        <IconButton
+        <Button
           variant="plain"
           onClick={onExpand}
           aria-label={t('tooltip.expandHistoryPanel')}
         >
-          <SidebarExpandIcon />
-        </IconButton>
+          <SidebarExpandIcon size={18} />
+        </Button>
       </Tooltip>
       <Tooltip content={t('tooltip.quickNewChat')} position="right">
-        <NewChatIconButton
+        <Button
           variant="plain"
           onClick={onNewChat}
           aria-label={t('tooltip.quickNewChat')}
           isDisabled={newChatDisabled}
+          style={
+            newChatDisabled
+              ? undefined
+              : { color: 'var(--pf-t--global--color--brand--default)' }
+          }
         >
-          <PenIcon />
-        </NewChatIconButton>
+          <PencilAltIcon style={{ width: 18, height: 18, display: 'block' }} />
+        </Button>
       </Tooltip>
     </Strip>
   );

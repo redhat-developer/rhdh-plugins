@@ -41,6 +41,7 @@ import { NOTEBOOK_MAX_FILES, NOTEBOOK_MAX_TITLE_LENGTH } from '../../const';
 import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
+import { DrawerCollapseIconButton } from '../PlainIconButton';
 import { FileTypeIcon } from './FileTypeIcon';
 import { SidebarCollapseIcon } from './SidebarCollapseIcon';
 
@@ -94,10 +95,6 @@ const TitleInput = styled(TextInput)({
   },
 });
 
-const CollapseButton = styled(Button)({
-  flexShrink: 0,
-});
-
 const DocumentsRow = styled('div')({
   display: 'flex',
   alignItems: 'center',
@@ -125,7 +122,7 @@ const DocumentsList = styled('div')(({ theme }) => ({
 
 const DocumentItem = styled('div')(({ theme }) => ({
   display: 'flex',
-  alignItems: 'flex-start',
+  alignItems: 'center',
   gap: theme.spacing(1),
   padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
   borderRadius: 4,
@@ -151,7 +148,10 @@ const FileName = styled(Typography)({
   lineHeight: '1.25rem',
   cursor: 'pointer',
   borderRadius: 4,
-  padding: '2px 6px',
+  padding: '0 6px',
+  display: 'flex',
+  alignItems: 'center',
+  minHeight: '2rem',
   '&:hover': {
     backgroundColor:
       'var(--pf-t--global--background--color--action--plain--hover)',
@@ -202,12 +202,14 @@ const RenameHelperText = styled('div')({
 
 const SpinnerContainer = styled('div')({
   flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
 });
 
 const KebabToggle = styled(MenuToggle)({
-  padding: 0,
   flexShrink: 0,
   visibility: 'hidden',
+  alignSelf: 'center',
 });
 
 const KebabDropdown = styled(Dropdown)({
@@ -382,13 +384,12 @@ export const DocumentSidebar = ({
           </NotebookTitle>
         )}
         <Tooltip content={t('notebook.view.sidebar.collapse')} position="right">
-          <CollapseButton
+          <DrawerCollapseIconButton
             variant="plain"
+            icon={<SidebarCollapseIcon size={24} />}
             onClick={onToggleCollapse}
             aria-label={t('notebook.view.sidebar.collapse')}
-          >
-            <SidebarCollapseIcon />
-          </CollapseButton>
+          />
         </Tooltip>
       </TitleRow>
 

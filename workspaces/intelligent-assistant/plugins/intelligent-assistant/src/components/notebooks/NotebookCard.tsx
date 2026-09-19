@@ -79,10 +79,6 @@ const StyledDropdown = styled(Dropdown)({
   '--pf-v6-c-menu--PaddingBlockEnd': '0',
 });
 
-const StyledMenuToggle = styled(MenuToggle)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-}));
-
 const StyledDropdownList = styled(DropdownList)({
   paddingTop: 0,
   paddingBottom: 0,
@@ -203,7 +199,7 @@ export const NotebookCard = ({
                 setOpenNotebookMenuId(isOpen ? notebook.session_id : null)
               }
               toggle={toggleRef => (
-                <StyledMenuToggle
+                <MenuToggle
                   ref={toggleRef}
                   variant="plain"
                   aria-label={t('aria.options.label')}
@@ -218,7 +214,7 @@ export const NotebookCard = ({
                   }}
                 >
                   <EllipsisVIcon />
-                </StyledMenuToggle>
+                </MenuToggle>
               )}
             >
               <StyledDropdownList>
