@@ -26,6 +26,11 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menu de l’historique de conversations',
+    'modelSelector.visionScreenshot.line1': "Analyse d'images prise en charge.",
+    'modelSelector.visionScreenshot.line2':
+      "Une capture d'écran sera jointe à votre message.",
+    'modelSelector.visionScreenshot.ariaLabel':
+      "Contexte de capture d'écran du modèle vision",
     'modelSelector.disabledTooltip':
       "Chaque session de chat ne prend en charge qu'un seul modèle. Pour changer de modèle, ouvrez un nouveau chat.",
     'aria.chatbotSelector': 'Sélecteur Chatbot',
@@ -354,6 +359,40 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.savedPrompts.enable': 'Activer les prompts sauvegardés',
     'settings.savedPrompts.enabled.description':
       'Les prompts sauvegardés sont actuellement activés',
+    'settings.screenContext.enable': "Activer le contexte d'écran",
+    'settings.screenContext.disable': "Désactiver le contexte d'écran",
+    'settings.screenContext.enabled.description':
+      "Le partage du contexte d'écran est actuellement activé",
+    'settings.screenContext.disabled.description':
+      "Le partage du contexte d'écran est actuellement désactivé",
+    'contextChip.label.paused': 'Contexte : en pause',
+    'contextChip.label.unavailable': 'Contexte : indisponible',
+    'contextChip.label.softwareTemplates': 'Modèles logiciels',
+    'contextChip.tooltip.askAbout': 'Posez une question sur {{label}}.',
+    'contextChip.tooltip.template':
+      'Demandez comment remplir le modèle {{label}}.',
+    'contextChip.tooltip.search':
+      'Posez une question sur votre recherche : {{label}}.',
+    'contextChip.tooltip.paused':
+      "Le contexte d'écran est en pause. Cliquez pour reprendre le partage de votre écran actuel avec l'assistant intelligent.",
+    'contextChip.tooltip.unavailable':
+      "Le contexte d'écran n'est pas disponible en mode plein écran. Passez en mode Superposition ou Ancrer à la fenêtre pour l'activer.",
+    'contextChip.tooltip.line2.fullContext':
+      "Le texte de la page et une capture d'écran seront envoyés avec votre message.",
+    'contextChip.tooltip.line2.adminLimited':
+      "Le partage du contexte d'écran est limité par les paramètres de l'administrateur.",
+    'contextChip.tooltip.line2.screenshotOnly':
+      "L'extraction de texte est désactivée par votre administrateur. Capture d'écran uniquement.",
+    'contextChip.tooltip.line2.domOffNoVision':
+      "L'extraction de texte est désactivée par votre administrateur. Votre modèle ne prend pas en charge l'analyse d'images.",
+    'contextChip.tooltip.line2.textOnlyNoVision':
+      "Contexte texte uniquement – votre modèle ne prend pas en charge l'analyse d'images.",
+    'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
+      "Contexte texte uniquement – la capture d'écran est désactivée par votre administrateur.",
+    'contextChip.tooltip.line2.textOnlyCombined':
+      "Contexte texte uniquement – votre modèle ne prend pas en charge l'analyse d'images et la capture d'écran est désactivée par votre administrateur.",
+    'contextChip.aria.pause': "Mettre en pause le contexte d'écran : {{label}}",
+    'contextChip.aria.resume': "Reprendre le contexte d'écran",
     'savedPrompts.tab.title': 'Prompts enregistrés',
     'savedPrompts.disabled.title': 'Les prompts enregistrés sont désactivés',
     'savedPrompts.disabled.body':

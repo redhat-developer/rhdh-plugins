@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Ref, useEffect, useState } from 'react';
+import { Fragment, Ref, useEffect, useMemo, useState } from 'react';
 
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -26,13 +26,22 @@ import {
   MenuToggleElement,
   Tooltip,
 } from '@patternfly/react-core';
-import { AngleDownIcon } from '@patternfly/react-icons';
+import {
+  AngleDownIcon,
+  CheckIcon,
+  OutlinedImageIcon,
+} from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 
 type MessageBarModelSelectorProps = {
   selectedModel: string;
-  models: { label: string; value: string; provider: string }[];
+  models: {
+    label: string;
+    value: string;
+    provider: string;
+    supportsVision?: boolean;
+  }[];
   onSelect: (model: string) => void;
   disabled?: boolean;
   disabledTooltip?: string;
@@ -59,10 +68,72 @@ const SelectorToggle = styled(MenuToggle)(({ theme }) => ({
   },
 }));
 
+const VisionIndicatorIcon = styled(OutlinedImageIcon)(({ theme }) => ({
+  width: 16,
+  height: 16,
+  color: theme.palette.text.secondary,
+  flexShrink: 0,
+}));
+
+const VisionIndicatorWrap = styled('span')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  lineHeight: 1,
+});
+
+/** Fixed-width slot so vision icons align across rows (empty when unsupported). */
+const VisionSlot = styled('span')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: 16,
+  height: 16,
+});
+
+/** Fixed-width slot so the select tick aligns across rows (empty when not selected). */
+const TickSlot = styled('span')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: '1em',
+  height: '1em',
+  color: theme.palette.primary.main,
+}));
+
+const ModelLabel = styled('span')({
+  flex: '1 1 auto',
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
+const ModelItemContent = styled('span')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  width: '100%',
+  minWidth: 0,
+});
+
 const StyledDropdown = styled(Dropdown)({
   '& ul, & li': {
     padding: 0,
     margin: 0,
+  },
+  '& .pf-v6-c-menu__item-main': {
+    width: '100%',
+  },
+  '& .pf-v6-c-menu__item-text': {
+    flex: '1 1 auto',
+    minWidth: 0,
+    overflow: 'hidden',
+  },
+  // We render our own fixed tick column; hide PF's conditional select icon.
+  '& .pf-v6-c-menu__item-select-icon': {
+    display: 'none',
   },
 });
 
@@ -84,6 +155,17 @@ export const MessageBarModelSelector = ({
 
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
+
+  const visionScreenshotTooltip = useMemo(
+    () => (
+      <Fragment>
+        {t('modelSelector.visionScreenshot.line1')}
+        <br />
+        {t('modelSelector.visionScreenshot.line2')}
+      </Fragment>
+    ),
+    [t],
+  );
 
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <SelectorToggle
@@ -116,15 +198,46 @@ export const MessageBarModelSelector = ({
       maxMenuHeight={models.length > 10 ? '240px' : undefined}
     >
       <DropdownList>
-        {models.map(model => (
-          <DropdownItem
-            value={model.value}
-            key={model.value}
-            isSelected={selectedModel === model.value}
-          >
-            {model.label}
-          </DropdownItem>
-        ))}
+        {models.map(model => {
+          const isSelected = selectedModel === model.value;
+          return (
+            <DropdownItem
+              value={model.value}
+              key={model.value}
+              isSelected={isSelected}
+            >
+              <ModelItemContent>
+                <ModelLabel title={model.label}>{model.label}</ModelLabel>
+                {model.supportsVision ? (
+                  <VisionSlot className="lightspeed-model-vision-slot">
+                    <Tooltip content={visionScreenshotTooltip}>
+                      <VisionIndicatorWrap
+                        aria-label={t(
+                          'modelSelector.visionScreenshot.ariaLabel',
+                        )}
+                        onClick={event => event.stopPropagation()}
+                        onMouseDown={event => event.stopPropagation()}
+                      >
+                        <VisionIndicatorIcon aria-hidden />
+                      </VisionIndicatorWrap>
+                    </Tooltip>
+                  </VisionSlot>
+                ) : (
+                  <VisionSlot
+                    className="lightspeed-model-vision-slot"
+                    aria-hidden
+                  />
+                )}
+                <TickSlot
+                  className="lightspeed-model-tick-slot"
+                  aria-hidden={!isSelected}
+                >
+                  {isSelected ? <CheckIcon aria-hidden /> : null}
+                </TickSlot>
+              </ModelItemContent>
+            </DropdownItem>
+          );
+        })}
       </DropdownList>
     </StyledDropdown>
   );
