@@ -16,6 +16,7 @@
 
 import { McpRegistryEntityProvider } from './provider';
 import type { McpRegistryProviderConfig } from './config';
+import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import type { McpRegistryListResponse } from './client';
 import { createMockServerDoc } from './testUtils';
@@ -76,6 +77,36 @@ describe('McpRegistryEntityProvider', () => {
     expect(provider.getProviderName()).toBe('mcp-registry-provider');
   });
 
+  it('registers the refresh task from connect after the catalog connection exists', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [],
+      metadata: { count: 0 },
+    };
+    const fetchFn = mockFetchForResponses([body]);
+    const connection = createMockConnection();
+    let scheduled: (() => Promise<void>) | undefined;
+    const taskRunner = {
+      run: jest.fn(async ({ fn }: { fn: () => Promise<void> }) => {
+        scheduled = fn;
+      }),
+    } as unknown as SchedulerServiceTaskRunner & {
+      run: jest.Mock;
+    };
+
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig(),
+      createMockLogger(),
+      fetchFn,
+      taskRunner,
+    );
+    await provider.connect(connection);
+
+    expect(taskRunner.run).toHaveBeenCalledTimes(1);
+    expect(scheduled).toBeDefined();
+    await scheduled!();
+    expect(connection.applyMutation).toHaveBeenCalledTimes(1);
+  });
+
   it('throws if run() is called before connect()', async () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
@@ -117,6 +148,11 @@ describe('McpRegistryEntityProvider', () => {
     ).toBe('url:https://registry.example.com');
     expect(
       entity.entity.metadata.annotations[
+        'backstage.io/managed-by-origin-location'
+      ],
+    ).toBe('url:https://registry.example.com');
+    expect(
+      entity.entity.metadata.annotations[
         'redhat.com/rhdh-mcp-registry-sync-status'
       ],
     ).toBe('ok');
@@ -144,6 +180,11 @@ describe('McpRegistryEntityProvider', () => {
     expect(
       mutation.entities[0].entity.metadata.annotations[
         'backstage.io/managed-by-location'
+      ],
+    ).toBe('url:https://registry.example.com');
+    expect(
+      mutation.entities[0].entity.metadata.annotations[
+        'backstage.io/managed-by-origin-location'
       ],
     ).toBe('url:https://registry.example.com');
   });

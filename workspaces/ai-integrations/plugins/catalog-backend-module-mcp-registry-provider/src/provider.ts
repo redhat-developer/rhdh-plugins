@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  LoggerService,
+  SchedulerServiceTaskRunner,
+} from '@backstage/backend-plugin-api';
+import {
+  ANNOTATION_LOCATION,
+  ANNOTATION_ORIGIN_LOCATION,
+} from '@backstage/catalog-model';
 import type {
   DeferredEntity,
   EntityProvider,
@@ -34,9 +41,6 @@ const PROVIDER_NAME = 'mcp-registry-provider';
 
 /** Sync status annotation key. */
 const SYNC_STATUS_ANNOTATION = 'redhat.com/rhdh-mcp-registry-sync-status';
-
-/** Managed-by-location annotation key. */
-const MANAGED_BY_LOCATION_ANNOTATION = 'backstage.io/managed-by-location';
 
 /**
  * Build a last-good lookup key from name and version.
@@ -64,6 +68,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
   private readonly config: McpRegistryProviderConfig;
   private readonly logger: LoggerService;
   private readonly fetchApi?: typeof fetch;
+  private readonly taskRunner?: SchedulerServiceTaskRunner;
 
   /**
    * Internal last-good index: keyed by `name::version`, stores the
@@ -76,10 +81,12 @@ export class McpRegistryEntityProvider implements EntityProvider {
     config: McpRegistryProviderConfig,
     logger: LoggerService,
     fetchApi?: typeof fetch,
+    taskRunner?: SchedulerServiceTaskRunner,
   ) {
     this.config = config;
     this.logger = logger;
     this.fetchApi = fetchApi;
+    this.taskRunner = taskRunner;
   }
 
   getProviderName(): string {
@@ -88,6 +95,16 @@ export class McpRegistryEntityProvider implements EntityProvider {
 
   async connect(connection: EntityProviderConnection): Promise<void> {
     this.connection = connection;
+    // The scheduler's first tick can run immediately. Register it only
+    // after the catalog connection exists so that tick can commit.
+    if (this.taskRunner) {
+      await this.taskRunner.run({
+        id: `${PROVIDER_NAME}:refresh`,
+        fn: async () => {
+          await this.run();
+        },
+      });
+    }
   }
 
   /**
@@ -158,8 +175,10 @@ export class McpRegistryEntityProvider implements EntityProvider {
           ...projectedAnnotations,
         };
 
-        // Add provider attribution annotations
-        entity.metadata.annotations[MANAGED_BY_LOCATION_ANNOTATION] =
+        // Catalog processing requires both location annotations. Without
+        // the origin annotation the entity is rejected and never listed.
+        entity.metadata.annotations[ANNOTATION_LOCATION] = managedByLocation;
+        entity.metadata.annotations[ANNOTATION_ORIGIN_LOCATION] =
           managedByLocation;
         entity.metadata.annotations[SYNC_STATUS_ANNOTATION] = 'ok';
 
@@ -200,10 +219,10 @@ export class McpRegistryEntityProvider implements EntityProvider {
             }
             retainedEntity.metadata.annotations[SYNC_STATUS_ANNOTATION] =
               'degraded';
-            // Ensure managed-by-location stays current
-            retainedEntity.metadata.annotations[
-              MANAGED_BY_LOCATION_ANNOTATION
-            ] = managedByLocation;
+            retainedEntity.metadata.annotations[ANNOTATION_LOCATION] =
+              managedByLocation;
+            retainedEntity.metadata.annotations[ANNOTATION_ORIGIN_LOCATION] =
+              managedByLocation;
 
             entities.push({
               entity: retainedEntity,
