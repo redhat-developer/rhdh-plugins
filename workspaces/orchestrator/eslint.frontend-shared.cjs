@@ -14,30 +14,4 @@
  * limitations under the License.
  */
 
-const materialUiMigrationEslintConfig = {
-  restrictedImports: [
-    {
-      name: '@material-ui/core',
-      message: 'Use @mui/material instead of Material UI v4.',
-    },
-    {
-      name: '@material-ui/lab',
-      message: 'Use @mui/material instead of Material UI v4.',
-    },
-    {
-      name: '@material-ui/styles',
-      message:
-        'Use @mui/styles, @mui/material (sx/styled), or Backstage UI instead of Material UI v4.',
-    },
-  ],
-  restrictedImportPatterns: ['@material-ui/*'],
-};
-
-/**
- * Shared ESLint config for frontend packages in the orchestrator workspace.
- */
-module.exports = packageDir =>
-  require('@backstage/cli/config/eslint-factory')(
-    packageDir,
-    materialUiMigrationEslintConfig,
-  );
+module.exports = require('../../eslint.frontend-shared.cjs');
