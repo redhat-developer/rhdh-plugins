@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/plugin-cost-management
 
+## 2.4.0
+
+### Minor Changes
+
+- ef3257c: Add a New Frontend System `/alpha` export so the plugin loads in RHDH 2.1, with Optimizations and Cost Management sidebar pages. Legacy PluginRoot exports are unchanged.
+
+### Patch Changes
+
+- @red-hat-developer-hub/plugin-cost-management-common@2.4.0
+
 ## 2.3.0
 
 ### Minor Changes
