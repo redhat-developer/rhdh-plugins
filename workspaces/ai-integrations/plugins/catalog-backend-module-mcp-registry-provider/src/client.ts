@@ -75,6 +75,12 @@ export interface FetchServersOptions {
    * malfunctioning registry returning oversized pages.
    */
   maxEntries?: number;
+  /**
+   * Optional allowlist of permitted hostnames. When set, every
+   * outbound request URL is validated against this list before
+   * fetching, providing defense-in-depth against SSRF.
+   */
+  hostAllowList?: string[];
   /** Optional fetch implementation for testing. */
   fetchApi?: typeof fetch;
 }
@@ -216,6 +222,28 @@ export function resolveNextCursor(
 }
 
 /**
+ * Validate that a URL's hostname is present in the configured allow list.
+ * Throws McpRegistryClientError when the hostname is not permitted.
+ *
+ * @internal
+ */
+export function validateUrlHostAllowList(
+  url: URL,
+  hostAllowList: string[] | undefined,
+): void {
+  if (!hostAllowList) {
+    return;
+  }
+  const hostname = url.hostname.toLowerCase();
+  if (!hostAllowList.includes(hostname)) {
+    throw new McpRegistryClientError(
+      `Request to hostname "${hostname}" blocked: not in the configured ` +
+        `hostAllowList [${hostAllowList.join(', ')}].`,
+    );
+  }
+}
+
+/**
  * Fetch all server entries from the MCP Registry using cursor
  * pagination. Accumulates entries across pages and enforces
  * pagination safeguards (page cap, repeated cursor).
@@ -226,10 +254,21 @@ export function resolveNextCursor(
 export async function fetchRegistryServers(
   options: FetchServersOptions,
 ): Promise<McpRegistryServerEntry[]> {
-  const { baseUrl, apiVersion, pageLimit, pageSize, maxEntries, fetchApi } =
-    options;
+  const {
+    baseUrl,
+    apiVersion,
+    pageLimit,
+    pageSize,
+    maxEntries,
+    hostAllowList,
+    fetchApi,
+  } = options;
   const doFetch = fetchApi ?? fetch;
   const endpoint = parseServersEndpointUrl(baseUrl, apiVersion);
+
+  // Defense-in-depth: validate endpoint hostname at runtime even
+  // though config parsing already checked baseUrl against the list.
+  validateUrlHostAllowList(endpoint, hostAllowList);
 
   const allServers: McpRegistryServerEntry[] = [];
   const seenCursors = new Set<string>();

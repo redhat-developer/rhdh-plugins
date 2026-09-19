@@ -34,6 +34,8 @@ export interface Config {
         /** @visibility backend */
         maxEntries?: number;
         /** @visibility backend */
+        hostAllowList?: string[];
+        /** @visibility backend */
         schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
       };
     };
