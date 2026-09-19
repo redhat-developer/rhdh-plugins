@@ -10,7 +10,8 @@
     "create-workspace": "rhdh-repo-tools workspace create",
     "postinstall": "husky",
     "prettier:check": "prettier --check .",
-    "prettier:fix": "prettier --write ."
+    "prettier:fix": "prettier --write .",
+    "test:ci-agent": "node --test scripts/ci/fullsend-ci-*.test.cjs"
   },
   "type": "module",
   "packageManager": "yarn@4.17.1",
@@ -25,6 +26,7 @@
     "@red-hat-developer-hub/rhdh-repo-tools": "portal:./workspaces/repo-tools/packages/cli",
     "@spotify/eslint-plugin": "^15.0.0",
     "@spotify/prettier-config": "^15.0.0",
+    "ajv": "^8.20.0",
     "array-to-table": "^1.0.1",
     "eslint": "^8.6.0",
     "eslint-plugin-notice": "^0.9.10",
@@ -37,7 +39,8 @@
     "lodash.escaperegexp": "^4.1.2",
     "node-fetch": "^2.6.7",
     "prettier": "^3.4.2",
-    "semver": "^7.7.2"
+    "semver": "^7.7.2",
+    "yaml": "^2.9.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
