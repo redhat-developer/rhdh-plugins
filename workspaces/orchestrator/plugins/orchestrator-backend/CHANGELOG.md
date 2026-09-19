@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.13.2
+
+### Patch Changes
+
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+
 ## 8.13.1
 
 ### Patch Changes
