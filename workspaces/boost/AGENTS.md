@@ -159,6 +159,25 @@ failures or config-surface drift.
 
 When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
 
+### Config declarations in entity provider packages
+
+The `ogx-entity-provider` and `kagenti-entity-provider` packages each
+maintain their own `config.d.ts` (they do not use the centralized Zod
+schema system in `boost-backend`). When adding or modifying config
+fields in these packages:
+
+1. Declare **every** field that the package's config reader function
+   reads (e.g., `readOgxEntityProviderConfig`) in the package's
+   `config.d.ts`. Backstage uses `config.d.ts` for config validation
+   and visibility enforcement — undeclared fields bypass both.
+2. Add `@visibility backend` to any field that holds secrets or
+   security-sensitive data (API keys, certificates, TLS bypass flags).
+   Add `@visibility secret` to fields that must never appear in
+   frontend config (e.g., `apiKey`).
+3. Check `boost-connector-utils` for reusable TLS and HTTP utilities
+   (`isValidPem`, `createHttpsAgent`, `safeGetOptionalString`) before
+   implementing equivalents locally.
+
 ### Wiring startup logic
 
 When adding a new initialization, migration, or validation method to
