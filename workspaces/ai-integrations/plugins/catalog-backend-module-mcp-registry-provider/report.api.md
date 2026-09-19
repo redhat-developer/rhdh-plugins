@@ -7,6 +7,7 @@ import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { EntityProvider } from '@backstage/plugin-catalog-node';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
 
 // @public
@@ -19,6 +20,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
     config: McpRegistryProviderConfig,
     logger: LoggerService,
     fetchApi?: typeof fetch,
+    taskRunner?: SchedulerServiceTaskRunner,
   );
   // (undocumented)
   connect(connection: EntityProviderConnection): Promise<void>;

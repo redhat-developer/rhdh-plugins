@@ -53,20 +53,17 @@ export const catalogModuleMcpRegistryProvider = createBackendModule({
           return;
         }
 
-        const provider = new McpRegistryEntityProvider(providerConfig, logger);
-
-        catalog.addEntityProvider(provider);
-
         const taskRunner = scheduler.createScheduledTaskRunner(
           providerConfig.schedule,
         );
+        const provider = new McpRegistryEntityProvider(
+          providerConfig,
+          logger,
+          undefined,
+          taskRunner,
+        );
 
-        await taskRunner.run({
-          id: 'mcp-registry-provider:refresh',
-          fn: async () => {
-            await provider.run();
-          },
-        });
+        catalog.addEntityProvider(provider);
       },
     });
   },

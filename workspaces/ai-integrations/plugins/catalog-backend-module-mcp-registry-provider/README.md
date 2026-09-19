@@ -8,12 +8,15 @@ Add the module to your backend:
 
 ```ts
 // packages/backend/src/index.ts
+backend.add(import('@backstage/plugin-catalog-backend-module-ai-model'));
 backend.add(
   import(
     '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider'
   ),
 );
 ```
+
+Since [Backstage 1.51.0](https://github.com/backstage/backstage/releases/tag/v1.51.0), `spec.type: mcp-server` entities (they use `spec.remotes` and omit `spec.definition`) are accepted only when `@backstage/plugin-catalog-backend-module-ai-model` is installed. Without that module the catalog keeps the generic API validator, which rejects these entities and does not list them.
 
 ## Configuration
 
@@ -82,6 +85,7 @@ On each successful sync, the provider commits a **full mutation** — the catalo
 Each entity carries:
 
 - `backstage.io/managed-by-location`: `url:<normalizedBaseUrl>`
+- `backstage.io/managed-by-origin-location`: `url:<normalizedBaseUrl>`
 - `redhat.com/rhdh-mcp-registry-sync-status`: `ok` or `degraded`
 - `modelcontextprotocol.io/name`: the server's canonical name
 - `modelcontextprotocol.io/version`: the server's version

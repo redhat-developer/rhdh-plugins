@@ -22,6 +22,11 @@ backend.add(mockServices.auth.factory());
 backend.add(mockServices.httpAuth.factory());
 
 backend.add(import('@backstage/plugin-catalog-backend'));
+// Since Backstage 1.51.0 this module registers spec.type mcp-server
+// (spec.remotes, no spec.definition). Without it,
+// BuiltinKindsEntityProcessor rejects the ingested APIs and the catalog
+// API never lists them.
+backend.add(import('@backstage/plugin-catalog-backend-module-ai-model'));
 backend.add(import('../src'));
 
 backend.start();
