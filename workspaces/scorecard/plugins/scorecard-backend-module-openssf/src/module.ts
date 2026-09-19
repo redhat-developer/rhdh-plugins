@@ -17,6 +17,7 @@ import { createBackendModule } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { createOpenSSFMetricProvider } from './metricProviders/OpenSSFMetricProvider';
 
+/** @public */
 export const scorecardOpenSFFModule = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'openssf',

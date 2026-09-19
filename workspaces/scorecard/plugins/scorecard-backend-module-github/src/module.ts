@@ -26,6 +26,7 @@ import { GithubDeploymentWorkflowRunsCollector } from './collectors/GithubDeploy
 import { GithubDeploymentsCollector } from './collectors/GithubDeploymentsCollector';
 import { GithubOpenPRsProvider } from './metricProviders/GithubOpenPRsProvider';
 
+/** @public */
 export const scorecardModuleGithub = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'github',
