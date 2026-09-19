@@ -93,4 +93,51 @@ describe('LightspeedChatBoxHeader', () => {
       screen.queryByText('MCP and Prompt Settings'),
     ).not.toBeInTheDocument();
   });
+
+  it('hides screen context kebab items when admin flag is off', () => {
+    render(
+      <LightspeedChatBoxHeader
+        {...defaultProps}
+        screenContextAdminEnabled={false}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Options'));
+    expect(screen.queryByText('Enable screen context')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Disable screen context'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('shows Enable screen context when admin on and sharing off', () => {
+    const onToggle = jest.fn();
+    render(
+      <LightspeedChatBoxHeader
+        {...defaultProps}
+        screenContextAdminEnabled
+        isScreenContextSharingEnabled={false}
+        onScreenContextSharingToggle={onToggle}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Options'));
+    fireEvent.click(screen.getByText('Enable screen context'));
+    expect(onToggle).toHaveBeenCalledWith(true);
+  });
+
+  it('shows Disable screen context when admin on and sharing on', () => {
+    const onToggle = jest.fn();
+    render(
+      <LightspeedChatBoxHeader
+        {...defaultProps}
+        screenContextAdminEnabled
+        isScreenContextSharingEnabled
+        onScreenContextSharingToggle={onToggle}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Options'));
+    fireEvent.click(screen.getByText('Disable screen context'));
+    expect(onToggle).toHaveBeenCalledWith(false);
+  });
 });

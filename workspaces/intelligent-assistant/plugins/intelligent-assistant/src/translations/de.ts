@@ -26,6 +26,11 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Chatverlauf-Menü',
+    'modelSelector.visionScreenshot.line1': 'Bildanalyse wird unterstützt.',
+    'modelSelector.visionScreenshot.line2':
+      'Ein Screenshot wird Ihrer Nachricht beigefügt.',
+    'modelSelector.visionScreenshot.ariaLabel':
+      'Screenshot-Kontext für Vision-Modell',
     'modelSelector.disabledTooltip':
       'Jede Chatsitzung unterstützt nur ein Modell. Um das Modell zu wechseln, starten Sie einen neuen Chat.',
     'aria.chatbotSelector': 'Chatbot-Auswahl',
@@ -354,6 +359,39 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'settings.savedPrompts.enable': 'Gespeicherte Prompts aktivieren',
     'settings.savedPrompts.enabled.description':
       'Gespeicherte Prompts sind derzeit aktiviert',
+    'settings.screenContext.enable': 'Bildschirmkontext aktivieren',
+    'settings.screenContext.disable': 'Bildschirmkontext deaktivieren',
+    'settings.screenContext.enabled.description':
+      'Die Freigabe des Bildschirmkontexts ist derzeit aktiviert',
+    'settings.screenContext.disabled.description':
+      'Die Freigabe des Bildschirmkontexts ist derzeit deaktiviert',
+    'contextChip.label.paused': 'Kontext: pausiert',
+    'contextChip.label.unavailable': 'Kontext: nicht verfügbar',
+    'contextChip.label.softwareTemplates': 'Software-Templates',
+    'contextChip.tooltip.askAbout': 'Fragen Sie zu {{label}}.',
+    'contextChip.tooltip.template':
+      'Fragen Sie, wie Sie das Template {{label}} ausfüllen.',
+    'contextChip.tooltip.search': 'Fragen Sie zu Ihrer Suche: {{label}}.',
+    'contextChip.tooltip.paused':
+      'Der Bildschirmkontext ist pausiert. Klicken Sie, um die Freigabe Ihres aktuellen Bildschirms an den intelligenten Assistenten fortzusetzen.',
+    'contextChip.tooltip.unavailable':
+      'Der Bildschirmkontext ist im Vollbildmodus nicht verfügbar. Wechseln Sie zum Overlay- oder Andockmodus, um ihn zu aktivieren.',
+    'contextChip.tooltip.line2.fullContext':
+      'Seitentext und ein Screenshot werden mit Ihrer Nachricht gesendet.',
+    'contextChip.tooltip.line2.adminLimited':
+      'Die Freigabe des Bildschirmkontexts ist durch Administratoreinstellungen eingeschränkt.',
+    'contextChip.tooltip.line2.screenshotOnly':
+      'Die Textextraktion ist von Ihrem Administrator deaktiviert. Nur Screenshot.',
+    'contextChip.tooltip.line2.domOffNoVision':
+      'Die Textextraktion ist von Ihrem Administrator deaktiviert. Ihr Modell unterstützt keine Bildanalyse.',
+    'contextChip.tooltip.line2.textOnlyNoVision':
+      'Nur Textkontext – Ihr Modell unterstützt keine Bildanalyse.',
+    'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
+      'Nur Textkontext – die Screenshot-Erfassung ist von Ihrem Administrator deaktiviert.',
+    'contextChip.tooltip.line2.textOnlyCombined':
+      'Nur Textkontext – Ihr Modell unterstützt keine Bildanalyse und die Screenshot-Erfassung ist von Ihrem Administrator deaktiviert.',
+    'contextChip.aria.pause': 'Bildschirmkontext pausieren: {{label}}',
+    'contextChip.aria.resume': 'Bildschirmkontext fortsetzen',
     'savedPrompts.tab.title': 'Gespeicherte Prompts',
     'savedPrompts.disabled.title': 'Gespeicherte Prompts sind deaktiviert',
     'savedPrompts.disabled.body':

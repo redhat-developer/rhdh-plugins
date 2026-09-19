@@ -88,6 +88,7 @@ const LightspeedChatContainerInner = () => {
               label: m.provider_resource_id,
               value: m.provider_resource_id,
               provider: m.provider_id,
+              supportsVision: m.supportsVision,
             }))
         : [],
     [models],

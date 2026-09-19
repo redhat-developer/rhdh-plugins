@@ -65,6 +65,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
             onEscapePress={() => closeChatbot()}
             ouiaId="LightspeedChatbotModal"
             aria-labelledby="lightspeed-chatpopup-modal"
+            data-screen-capture-exclude
           >
             <LightspeedChatContainer />
           </StyledChatbotModal>

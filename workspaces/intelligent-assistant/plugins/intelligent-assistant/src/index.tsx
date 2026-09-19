@@ -43,6 +43,9 @@ import { notebooksApiRef } from './api/notebooksApi';
 import { NotebooksApiClient } from './api/NotebooksApiClient';
 import { LightspeedChatContainer as LightspeedChatContainerElement } from './components/LightspeedChatContainer';
 import { LightspeedDrawerProvider as LightspeedProvider } from './components/LightspeedDrawerProvider';
+
+import './hooks/screenContextLabelSubscription';
+
 import { LightspeedFABContent as LightspeedFABComponent } from './components/LightspeedFABContent';
 import {
   LIGHTSPEED_APP_DRAWER_ID,
