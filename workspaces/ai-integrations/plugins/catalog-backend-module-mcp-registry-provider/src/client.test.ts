@@ -23,6 +23,7 @@ import {
   parseServersEndpointUrl,
   resolveNextCursor,
   truncateErrorBody,
+  validateUrlHostAllowList,
 } from './client';
 import type { McpRegistryListResponse } from './client';
 import { createMockServerDoc } from './testUtils';
@@ -350,6 +351,41 @@ describe('fetchRegistryServers', () => {
     ).rejects.toThrow(/maxEntries cap of 50/);
   });
 
+  it('succeeds when hostAllowList includes the baseUrl hostname', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const fn = mockFetch([{ body }]);
+
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      hostAllowList: ['registry.example.com'],
+      fetchApi: fn,
+    });
+
+    expect(result).toHaveLength(1);
+  });
+
+  it('throws when hostAllowList does not include the baseUrl hostname', async () => {
+    const fn = mockFetch([]);
+
+    await expect(
+      fetchRegistryServers({
+        baseUrl: 'https://registry.example.com',
+        apiVersion: 'v1',
+        pageLimit: 10,
+        hostAllowList: ['other.example.com'],
+        fetchApi: fn,
+      }),
+    ).rejects.toThrow(/not in the configured hostAllowList/);
+
+    // Verify no fetch was attempted
+    expect(fn).not.toHaveBeenCalled();
+  });
+
   it('does not enforce maxEntries when unset', async () => {
     const largePage: McpRegistryListResponse = {
       servers: Array.from({ length: 100 }, (_, i) => ({
@@ -470,6 +506,48 @@ describe('fetchRegistryPage', () => {
         new URL('https://registry.example.com/v1/servers'),
       ),
     ).rejects.toThrow(/…\(truncated\)/);
+  });
+});
+
+describe('validateUrlHostAllowList', () => {
+  it('does nothing when hostAllowList is undefined', () => {
+    expect(() =>
+      validateUrlHostAllowList(
+        new URL('https://registry.example.com/v1/servers'),
+        undefined,
+      ),
+    ).not.toThrow();
+  });
+
+  it('passes when hostname is in the allow list', () => {
+    expect(() =>
+      validateUrlHostAllowList(
+        new URL('https://registry.example.com/v1/servers'),
+        ['registry.example.com'],
+      ),
+    ).not.toThrow();
+  });
+
+  it('throws McpRegistryClientError when hostname is not in the allow list', () => {
+    expect(() =>
+      validateUrlHostAllowList(new URL('https://evil.example.com/v1/servers'), [
+        'registry.example.com',
+      ]),
+    ).toThrow(McpRegistryClientError);
+    expect(() =>
+      validateUrlHostAllowList(new URL('https://evil.example.com/v1/servers'), [
+        'registry.example.com',
+      ]),
+    ).toThrow(/not in the configured hostAllowList/);
+  });
+
+  it('matches case-insensitively', () => {
+    expect(() =>
+      validateUrlHostAllowList(
+        new URL('https://Registry.Example.COM/v1/servers'),
+        ['registry.example.com'],
+      ),
+    ).not.toThrow();
   });
 });
 

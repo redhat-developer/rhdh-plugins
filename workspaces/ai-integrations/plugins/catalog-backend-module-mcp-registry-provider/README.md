@@ -37,6 +37,9 @@ catalog:
       # pageLimit: 10
       # Optional: registry page size sent as ?limit= (omitted by default)
       # pageSize: 50
+      # Optional: restrict outbound requests to specific hostnames (defense-in-depth)
+      # hostAllowList:
+      #   - registry.example.com
       # Optional: sync schedule (defaults shown below)
       # schedule:
       #   frequency: { minutes: 30 }
@@ -47,15 +50,16 @@ catalog:
 
 ### Configuration options
 
-| Option         | Required | Default                          | Description                                                                                                                                                                           |
-| -------------- | -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `baseUrl`      | Yes      | —                                | MCP Registry base URL                                                                                                                                                                 |
-| `baseName`     | No       | `mcp.registry` (mapping default) | Override the mapping identity prefix for `metadata.name`                                                                                                                              |
-| `apiVersion`   | No       | `v1`                             | Registry API version slug. The servers endpoint is `<baseUrl>/<apiVersion>/servers`. Note: the live MCP Registry may serve `/v0` or `/v0.1`; set `apiVersion` to match your registry. |
-| `defaultOwner` | No       | `unknown` (mapping default)      | Backstage entity reference used as `spec.owner`                                                                                                                                       |
-| `pageLimit`    | No       | `10`                             | Maximum number of pages fetched per sync. The provider fails the sync if the registry has more pages than this limit (to prevent incomplete catalog state).                           |
-| `pageSize`     | No       | _(registry default)_             | Sent as `?limit=` on each list request. When omitted, the registry's default page size applies.                                                                                       |
-| `schedule`     | No       | 30m frequency, 3m timeout        | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. The first sync runs after one `frequency` interval unless `initialDelay` is set.                                   |
+| Option          | Required | Default                          | Description                                                                                                                                                                           |
+| --------------- | -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `baseUrl`       | Yes      | —                                | MCP Registry base URL                                                                                                                                                                 |
+| `baseName`      | No       | `mcp.registry` (mapping default) | Override the mapping identity prefix for `metadata.name`                                                                                                                              |
+| `apiVersion`    | No       | `v1`                             | Registry API version slug. The servers endpoint is `<baseUrl>/<apiVersion>/servers`. Note: the live MCP Registry may serve `/v0` or `/v0.1`; set `apiVersion` to match your registry. |
+| `defaultOwner`  | No       | `unknown` (mapping default)      | Backstage entity reference used as `spec.owner`                                                                                                                                       |
+| `pageLimit`     | No       | `10`                             | Maximum number of pages fetched per sync. The provider fails the sync if the registry has more pages than this limit (to prevent incomplete catalog state).                           |
+| `pageSize`      | No       | _(registry default)_             | Sent as `?limit=` on each list request. When omitted, the registry's default page size applies.                                                                                       |
+| `hostAllowList` | No       | _(none — all hosts allowed)_     | Array of permitted hostnames. When set, `baseUrl` hostname must be in this list and every outbound request is validated at runtime. Provides defense-in-depth against SSRF.           |
+| `schedule`      | No       | 30m frequency, 3m timeout        | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. The first sync runs after one `frequency` interval unless `initialDelay` is set.                                   |
 
 ### Multiple registries
 

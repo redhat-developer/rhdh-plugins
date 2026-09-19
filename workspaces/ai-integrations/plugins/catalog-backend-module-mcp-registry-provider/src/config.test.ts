@@ -19,11 +19,13 @@ import {
   assertSingleRegistryConfig,
   readMaxEntries,
   readMcpRegistryProviderConfig,
+  readOptionalHostAllowList,
   readOptionalPageSize,
   readPageLimit,
   readProviderSchedule,
   readRequiredHttpBaseUrl,
   safeGetOptionalString,
+  validateHostAgainstAllowList,
 } from './config';
 
 describe('readMcpRegistryProviderConfig', () => {
@@ -220,6 +222,70 @@ describe('readMcpRegistryProviderConfig', () => {
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.apiVersion).toBe('v0');
   });
+
+  it('reads hostAllowList when provided', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          mcpRegistry: {
+            baseUrl: 'https://registry.example.com',
+            hostAllowList: ['registry.example.com'],
+          },
+        },
+      },
+    });
+
+    const result = readMcpRegistryProviderConfig(config);
+    expect(result!.hostAllowList).toEqual(['registry.example.com']);
+  });
+
+  it('returns undefined hostAllowList when omitted', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          mcpRegistry: {
+            baseUrl: 'https://registry.example.com',
+          },
+        },
+      },
+    });
+
+    const result = readMcpRegistryProviderConfig(config);
+    expect(result!.hostAllowList).toBeUndefined();
+  });
+
+  it('throws when baseUrl hostname is not in hostAllowList', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          mcpRegistry: {
+            baseUrl: 'https://registry.example.com',
+            hostAllowList: ['other.example.com'],
+          },
+        },
+      },
+    });
+
+    expect(() => readMcpRegistryProviderConfig(config)).toThrow(
+      /not in the configured hostAllowList/,
+    );
+  });
+
+  it('normalizes hostAllowList entries to lowercase', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          mcpRegistry: {
+            baseUrl: 'https://Registry.Example.COM',
+            hostAllowList: ['REGISTRY.EXAMPLE.COM'],
+          },
+        },
+      },
+    });
+
+    const result = readMcpRegistryProviderConfig(config);
+    expect(result!.hostAllowList).toEqual(['registry.example.com']);
+  });
 });
 
 describe('safeGetOptionalString', () => {
@@ -354,6 +420,54 @@ describe('readMaxEntries', () => {
     expect(() => readMaxEntries(new ConfigReader({ maxEntries: 0 }))).toThrow(
       /"maxEntries" must be at least 1/,
     );
+  });
+});
+
+describe('readOptionalHostAllowList', () => {
+  it('returns undefined when omitted', () => {
+    expect(readOptionalHostAllowList(new ConfigReader({}))).toBeUndefined();
+  });
+
+  it('returns undefined for an empty array', () => {
+    expect(
+      readOptionalHostAllowList(new ConfigReader({ hostAllowList: [] })),
+    ).toBeUndefined();
+  });
+
+  it('returns normalized lowercase hostnames', () => {
+    expect(
+      readOptionalHostAllowList(
+        new ConfigReader({
+          hostAllowList: ['Registry.Example.COM', 'Other.HOST'],
+        }),
+      ),
+    ).toEqual(['registry.example.com', 'other.host']);
+  });
+});
+
+describe('validateHostAgainstAllowList', () => {
+  it('passes when hostname is in the allow list', () => {
+    expect(() =>
+      validateHostAgainstAllowList('https://registry.example.com/path', [
+        'registry.example.com',
+      ]),
+    ).not.toThrow();
+  });
+
+  it('throws when hostname is not in the allow list', () => {
+    expect(() =>
+      validateHostAgainstAllowList('https://evil.example.com', [
+        'registry.example.com',
+      ]),
+    ).toThrow(/not in the configured hostAllowList/);
+  });
+
+  it('matches case-insensitively', () => {
+    expect(() =>
+      validateHostAgainstAllowList('https://Registry.Example.COM', [
+        'registry.example.com',
+      ]),
+    ).not.toThrow();
   });
 });
 

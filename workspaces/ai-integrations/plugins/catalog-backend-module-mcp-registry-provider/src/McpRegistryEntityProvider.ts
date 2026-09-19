@@ -199,8 +199,14 @@ export class McpRegistryEntityProvider implements EntityProvider {
   private async fetchRegistryEntries(): Promise<
     McpRegistryServerEntry[] | undefined
   > {
-    const { baseUrl, apiVersion, pageLimit, pageSize, maxEntries } =
-      this.config;
+    const {
+      baseUrl,
+      apiVersion,
+      pageLimit,
+      pageSize,
+      maxEntries,
+      hostAllowList,
+    } = this.config;
     try {
       return await fetchRegistryServers({
         baseUrl,
@@ -208,6 +214,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
         pageLimit,
         pageSize,
         maxEntries,
+        hostAllowList,
         fetchApi: this.fetchApi,
       });
     } catch (err) {

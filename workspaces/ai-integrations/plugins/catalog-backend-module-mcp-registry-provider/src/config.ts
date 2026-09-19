@@ -42,6 +42,7 @@ const KNOWN_MCP_REGISTRY_KEYS = new Set([
   'pageLimit',
   'pageSize',
   'maxEntries',
+  'hostAllowList',
   'schedule',
 ]);
 
@@ -185,6 +186,42 @@ export function readOptionalPageSize(
 }
 
 /**
+ * Read optional `hostAllowList`, normalizing entries to lowercase.
+ *
+ * @internal
+ */
+export function readOptionalHostAllowList(
+  registryConfig: Config,
+): string[] | undefined {
+  const list = registryConfig.getOptionalStringArray('hostAllowList');
+  if (!list || list.length === 0) {
+    return undefined;
+  }
+  return list.map(h => h.toLowerCase());
+}
+
+/**
+ * Validate that a URL's hostname is present in the configured allow list.
+ * Throws when the hostname is not in the list.
+ *
+ * @internal
+ */
+export function validateHostAgainstAllowList(
+  url: string,
+  hostAllowList: string[],
+): void {
+  const parsed = new URL(url);
+  const hostname = parsed.hostname.toLowerCase();
+  if (!hostAllowList.includes(hostname)) {
+    throw new Error(
+      `Invalid catalog.providers.mcpRegistry configuration: the hostname ` +
+        `"${hostname}" from baseUrl "${url}" is not in the configured ` +
+        `hostAllowList [${hostAllowList.join(', ')}].`,
+    );
+  }
+}
+
+/**
  * Read the provider schedule, or the documented default when omitted.
  *
  * @internal
@@ -219,6 +256,8 @@ export interface McpRegistryProviderConfig {
   pageSize?: number;
   /** Maximum total entries accumulated across all pages per sync (default `5000`). */
   maxEntries: number;
+  /** Optional allowlist of permitted hostnames for defense-in-depth SSRF protection. */
+  hostAllowList?: string[];
   /** Schedule for the sync task. */
   schedule: SchedulerServiceTaskScheduleDefinition;
 }
@@ -246,8 +285,15 @@ export function readMcpRegistryProviderConfig(
 
   assertSingleRegistryConfig(registryConfig);
 
+  const baseUrl = readRequiredHttpBaseUrl(registryConfig);
+  const hostAllowList = readOptionalHostAllowList(registryConfig);
+
+  if (hostAllowList) {
+    validateHostAgainstAllowList(baseUrl, hostAllowList);
+  }
+
   return {
-    baseUrl: readRequiredHttpBaseUrl(registryConfig),
+    baseUrl,
     baseName: safeGetOptionalString(registryConfig, 'baseName'),
     apiVersion:
       safeGetOptionalString(registryConfig, 'apiVersion') ??
@@ -256,6 +302,7 @@ export function readMcpRegistryProviderConfig(
     pageLimit: readPageLimit(registryConfig),
     pageSize: readOptionalPageSize(registryConfig),
     maxEntries: readMaxEntries(registryConfig),
+    hostAllowList,
     schedule: readProviderSchedule(registryConfig),
   };
 }
