@@ -14,8 +14,6 @@ The plugin supports two integration modes:
   sync chunk. See the
   [New Frontend System Guide](new-frontend-system.md) for full details,
   including architecture, code examples, and API reference.
-- **Legacy Mount Points** -- Import from `/legacy` for traditional Backstage
-  apps using dynamic plugin mount points. See [Configuration](configuration.md).
 
 Deployers can also add menu items directly via `app-config.yaml` without writing any plugin code. See [Config-Driven Menu Items](new-frontend-system.md#add-items-from-app-configyaml).
 

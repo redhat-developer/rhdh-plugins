@@ -32,7 +32,7 @@ const GlobalHeaderDropdownContent = lazy(() =>
 
 /**
  * Settle delays for lazy menu items.
- * Matches the legacy OFS HelpDropdown validity tracking behaviour.
+ * Matches the old HelpDropdown validity tracking behaviour.
  */
 const VALIDITY_CHECK_MS = [500, 1500] as const;
 
