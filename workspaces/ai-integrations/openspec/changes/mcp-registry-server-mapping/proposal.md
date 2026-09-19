@@ -42,5 +42,5 @@ _(none — introduces new capabilities only; consumes the upstream Backstage `mc
 
 - **Upstream target**: `McpServerApiEntity` shape (top-level `spec.remotes[]`, no `spec.definition`) — detailed anchors in `design.md`; requirements in `specs/mcp-registry-server-mapping/spec.md`.
 - **Source**: MCP Registry draft `server.json` (version-pinned in implementation); unknown fields fail-open via projection.
-- **Consumers**: future registry entity provider; catalog search over `modelcontextprotocol.io/*` annotations.
+- **Consumers**: `catalog-backend-module-mcp-registry-provider` entity provider; catalog search over `modelcontextprotocol.io/*` annotations.
 - **Alignment**: track Backstage RFC [#32062](https://github.com/backstage/backstage/issues/32062) and registry schema drift.
