@@ -31,7 +31,7 @@ import { SidebarSearchModal } from '@backstage/plugin-search';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { translationRef } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+import { appDefaultsTranslationRef } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 import ChatIcon from '@mui/icons-material/Chat';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
@@ -58,7 +58,7 @@ const NavSidebarItem = ({
 }) => <SidebarItem icon={() => item.icon} to={item.href} text={text} />;
 
 const AppSidebarNav = ({ navItems }: NavContentComponentProps) => {
-  const { t } = useTranslationRef(translationRef);
+  const { t } = useTranslationRef(appDefaultsTranslationRef);
 
   const getNavItemText = (item: NavContentNavItem) =>
     item.href === '/learning-paths' ? t('menuItem.learningPaths') : item.title;

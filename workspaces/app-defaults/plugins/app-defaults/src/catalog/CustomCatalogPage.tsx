@@ -15,7 +15,7 @@
  */
 
 import { useTranslationRef } from '@backstage/frontend-plugin-api';
-import { translationRef } from '../translations/ref';
+import { appDefaultsTranslationRef } from '../translations/ref';
 import { EmptyCatalogGate } from './EmptyCatalogGate';
 
 /**
@@ -24,7 +24,7 @@ import { EmptyCatalogGate } from './EmptyCatalogGate';
 export function CustomCatalogPage(
   props: Readonly<{ children: React.ReactNode }>,
 ) {
-  const { t } = useTranslationRef(translationRef);
+  const { t } = useTranslationRef(appDefaultsTranslationRef);
   return (
     <EmptyCatalogGate
       emptyState={{

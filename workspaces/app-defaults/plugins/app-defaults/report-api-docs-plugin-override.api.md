@@ -360,8 +360,8 @@ const apiDocsPluginOverride: OverridableFrontendPlugin<
           | (
               | 'development'
               | 'overview'
-              | 'documentation'
               | 'deployment'
+              | 'documentation'
               | 'operation'
               | 'observability'
             )
@@ -439,8 +439,8 @@ const apiDocsPluginOverride: OverridableFrontendPlugin<
           | (
               | 'development'
               | 'overview'
-              | 'documentation'
               | 'deployment'
+              | 'documentation'
               | 'operation'
               | 'observability'
             )

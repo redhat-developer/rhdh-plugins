@@ -17,14 +17,14 @@
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { useTranslationRef } from '@backstage/frontend-plugin-api';
 import { TECHDOCS_ANNOTATION } from '@backstage/plugin-techdocs-common';
-import { translationRef } from '../translations/ref';
+import { appDefaultsTranslationRef } from '../translations/ref';
 import { EmptyCatalogGate } from '../catalog/EmptyCatalogGate';
 
 /**
  * @internal
  */
 export function CustomDocsPage(props: Readonly<{ children: React.ReactNode }>) {
-  const { t } = useTranslationRef(translationRef);
+  const { t } = useTranslationRef(appDefaultsTranslationRef);
   return (
     <EmptyCatalogGate
       filter={{

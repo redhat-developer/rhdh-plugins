@@ -39,3 +39,5 @@ export type {
   TemplateCardActionProps,
   TemplateCardBadgeData,
 } from './templateCard';
+
+export { appReactTranslations, appReactTranslationRef } from './translations';

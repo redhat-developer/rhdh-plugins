@@ -30,7 +30,7 @@ export class SidebarPage {
 
   async openLearningPaths(): Promise<void> {
     await this.page
-      .getByRole('navigation', { name: 'sidebar nav' })
+      .locator('nav[aria-label="sidebar nav"]')
       .getByRole('link', {
         name: this.translations.menuItem.learningPaths,
       })
@@ -40,9 +40,9 @@ export class SidebarPage {
   }
 
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {
-    const learningPathLinks = this.page.getByRole('article').getByRole('link');
+    const learningPathLinks = this.page.locator('article').getByRole('link');
 
-    await expect(learningPathLinks.first()).toBeVisible({ timeout: 20_000 });
+    await expect(learningPathLinks.first()).toBeVisible();
 
     for (const learningPathLink of await learningPathLinks.all()) {
       await expect(learningPathLink).toBeVisible();

@@ -7,11 +7,15 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
     "./legacy": "./src/legacy/index.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
       "legacy": [
         "src/legacy/index.ts"
       ],
@@ -52,13 +56,17 @@
     "@backstage/core-plugin-api": "^1.12.9",
     "@backstage/frontend-plugin-api": "^0.18.0",
     "@backstage/plugin-app-react": "^0.2.6",
+    "@backstage/plugin-catalog": "^2.0.8",
     "@backstage/plugin-catalog-react": "^3.2.2",
     "@backstage/plugin-permission-react": "^0.5.4",
     "@backstage/plugin-scaffolder-common": "^2.2.3",
     "@backstage/plugin-scaffolder-react": "^2.0.3",
+    "@backstage/ui": "^0.17.1",
     "@backstage/version-bridge": "^1.0.12",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "5.18.0",
+    "@remixicon/react": ">=4.6.0 <4.9.0",
+    "react-use": "^17.4.0",
     "zod": "^3.25.76 || ^4.0.0"
   },
   "peerDependencies": {

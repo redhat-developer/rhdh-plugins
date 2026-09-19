@@ -16,16 +16,16 @@
 
 import { createTranslationResource } from '@backstage/frontend-plugin-api';
 
-import { appDefaultsTranslationRef } from './ref';
+import { appReactTranslationRef } from './ref';
 
 /**
- * Translation resource for the app defaults plugin, wiring all
- * available language messages.
+ * Translation resource for the catalog entity page tab and group titles,
+ * wiring all available language messages.
  *
  * @public
  */
-export const appDefaultsTranslations = createTranslationResource({
-  ref: appDefaultsTranslationRef,
+export const appReactTranslations = createTranslationResource({
+  ref: appReactTranslationRef,
   translations: {
     de: () => import('./de'),
     es: () => import('./es'),
@@ -35,4 +35,4 @@ export const appDefaultsTranslations = createTranslationResource({
   },
 });
 
-export { appDefaultsTranslationRef };
+export { appReactTranslationRef };

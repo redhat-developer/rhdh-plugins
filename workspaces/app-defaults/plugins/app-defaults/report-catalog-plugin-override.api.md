@@ -6,7 +6,7 @@
 import { AnyApiFactory } from '@backstage/frontend-plugin-api';
 import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
 import { ApiFactory } from '@backstage/frontend-plugin-api';
-import { CatalogExportSettings } from '@backstage/plugin-catalog/alpha';
+import { CatalogExportSettings } from '@backstage/plugin-catalog';
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { EntityCardType } from '@backstage/plugin-catalog-react/alpha';
@@ -767,8 +767,8 @@ const catalogPluginOverride: OverridableFrontendPlugin<
           | (
               | 'development'
               | 'overview'
-              | 'documentation'
               | 'deployment'
+              | 'documentation'
               | 'operation'
               | 'observability'
             )

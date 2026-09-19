@@ -14,25 +14,6 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/frontend-plugin-api';
-
-import { appDefaultsTranslationRef } from './ref';
-
-/**
- * Translation resource for the app defaults plugin, wiring all
- * available language messages.
- *
- * @public
- */
-export const appDefaultsTranslations = createTranslationResource({
-  ref: appDefaultsTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
-});
-
-export { appDefaultsTranslationRef };
+export { EntityHeaderBui } from './EntityHeader/EntityHeaderBui';
+export { EntityContextMenu } from './EntityContextMenu/EntityContextMenu';
+export type { EntityContextMenuItemDataWithNode } from './EntityContextMenu/EntityContextMenu';
