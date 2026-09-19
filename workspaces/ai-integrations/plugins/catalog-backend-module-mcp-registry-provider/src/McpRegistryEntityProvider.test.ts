@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { McpRegistryEntityProvider } from './provider';
+import { McpRegistryEntityProvider } from './McpRegistryEntityProvider';
 import type { McpRegistryProviderConfig } from './config';
 import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
@@ -45,6 +45,7 @@ function createDefaultConfig(
     baseUrl: 'https://registry.example.com',
     apiVersion: 'v1',
     pageLimit: 10,
+    maxEntries: 5000,
     schedule: {
       frequency: { minutes: 30 },
       timeout: { minutes: 3 },
@@ -96,8 +97,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       createMockLogger(),
-      fetchFn,
-      taskRunner,
+      { fetchApi: fetchFn, taskRunner },
     );
     await provider.connect(connection);
 
@@ -129,7 +129,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       logger,
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -171,7 +171,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig({ baseUrl: 'https://registry.example.com/' }),
       createMockLogger(),
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -204,7 +204,7 @@ describe('McpRegistryEntityProvider', () => {
         defaultOwner: 'group:default/mcp-admins',
       }),
       createMockLogger(),
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -228,7 +228,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       createMockLogger(),
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -250,7 +250,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig({ baseName: 'com.example.registry' }),
       createMockLogger(),
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -275,7 +275,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       createMockLogger(),
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -293,7 +293,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       logger,
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -326,7 +326,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       logger,
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -382,7 +382,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider2 = new McpRegistryEntityProvider(
       createDefaultConfig(),
       logger2,
-      combinedFetch,
+      { fetchApi: combinedFetch },
     );
     await provider2.connect(connection2);
 
@@ -429,7 +429,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       logger,
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -469,7 +469,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       createMockLogger(),
-      combinedFetch,
+      { fetchApi: combinedFetch },
     );
     await provider.connect(connection);
 
@@ -506,7 +506,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       createMockLogger(),
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -532,7 +532,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       createMockLogger(),
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -554,7 +554,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       createMockLogger(),
-      fetchFn,
+      { fetchApi: fetchFn },
     );
     await provider.connect(connection);
     await provider.run();
@@ -614,7 +614,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       logger,
-      combinedFetch,
+      { fetchApi: combinedFetch },
     );
     await provider.connect(connection);
 
@@ -694,7 +694,7 @@ describe('McpRegistryEntityProvider', () => {
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
       logger,
-      combinedFetch,
+      { fetchApi: combinedFetch },
     );
     await provider.connect(connection);
 

@@ -28,15 +28,11 @@
   "scripts": {
     "build": "backstage-cli package build",
     "clean": "backstage-cli package clean",
-    "lint:check": "backstage-cli package lint",
-    "lint:fix": "backstage-cli package lint --fix",
+    "lint": "backstage-cli package lint",
     "postpack": "backstage-cli package postpack",
     "prepack": "backstage-cli package prepack",
     "start": "backstage-cli package start",
-    "test": "backstage-cli package test --passWithNoTests --coverage",
-    "tsc": "tsc",
-    "prettier:check": "prettier --ignore-unknown --check .",
-    "prettier:fix": "prettier --ignore-unknown --write ."
+    "test": "backstage-cli package test --passWithNoTests --coverage"
   },
   "dependencies": {
     "@backstage/catalog-model": "^1.10.1"

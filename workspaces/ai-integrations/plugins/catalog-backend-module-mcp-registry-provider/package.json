@@ -27,15 +27,11 @@
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
-    "lint:check": "backstage-cli package lint",
-    "lint:fix": "backstage-cli package lint --fix",
+    "lint": "backstage-cli package lint",
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack",
-    "tsc": "tsc",
-    "prettier:check": "prettier --ignore-unknown --check .",
-    "prettier:fix": "prettier --ignore-unknown --write ."
+    "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.10.0",

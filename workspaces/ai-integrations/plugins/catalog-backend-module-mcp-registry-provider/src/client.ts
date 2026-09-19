@@ -69,6 +69,12 @@ export interface FetchServersOptions {
   apiVersion: string;
   pageLimit: number;
   pageSize?: number;
+  /**
+   * Maximum total entries accumulated across all pages. When exceeded
+   * the sync aborts to prevent unbounded memory growth from a
+   * malfunctioning registry returning oversized pages.
+   */
+  maxEntries?: number;
   /** Optional fetch implementation for testing. */
   fetchApi?: typeof fetch;
 }
@@ -220,7 +226,8 @@ export function resolveNextCursor(
 export async function fetchRegistryServers(
   options: FetchServersOptions,
 ): Promise<McpRegistryServerEntry[]> {
-  const { baseUrl, apiVersion, pageLimit, pageSize, fetchApi } = options;
+  const { baseUrl, apiVersion, pageLimit, pageSize, maxEntries, fetchApi } =
+    options;
   const doFetch = fetchApi ?? fetch;
   const endpoint = parseServersEndpointUrl(baseUrl, apiVersion);
 
@@ -235,6 +242,16 @@ export async function fetchRegistryServers(
     const body = await fetchRegistryPage(doFetch, url);
     allServers.push(...body.servers);
     pagesFetched += 1;
+
+    if (maxEntries !== undefined && allServers.length > maxEntries) {
+      throw new McpRegistryClientError(
+        `MCP Registry sync accumulated ${allServers.length} entries, ` +
+          `exceeding the configured maxEntries cap of ${maxEntries}. ` +
+          `Aborting sync to prevent unbounded memory growth. ` +
+          `Increase maxEntries if the registry legitimately contains ` +
+          `more servers.`,
+      );
+    }
 
     const nextCursor = resolveNextCursor(
       body.metadata?.nextCursor,

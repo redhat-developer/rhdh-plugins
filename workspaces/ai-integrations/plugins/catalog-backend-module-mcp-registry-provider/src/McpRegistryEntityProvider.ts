@@ -115,13 +115,17 @@ export class McpRegistryEntityProvider implements EntityProvider {
   constructor(
     config: McpRegistryProviderConfig,
     logger: LoggerService,
-    fetchApi?: typeof fetch,
-    taskRunner?: SchedulerServiceTaskRunner,
+    options?: {
+      /** @internal Override the global `fetch` implementation (test seam). */
+      fetchApi?: typeof fetch;
+      /** @internal Scheduler task runner for periodic sync. */
+      taskRunner?: SchedulerServiceTaskRunner;
+    },
   ) {
     this.config = config;
     this.logger = logger;
-    this.fetchApi = fetchApi;
-    this.taskRunner = taskRunner;
+    this.fetchApi = options?.fetchApi;
+    this.taskRunner = options?.taskRunner;
   }
 
   getProviderName(): string {
@@ -145,6 +149,8 @@ export class McpRegistryEntityProvider implements EntityProvider {
   /**
    * Run one sync cycle: fetch servers from the registry, map them,
    * and commit a full mutation.
+   *
+   * @internal
    */
   async run(): Promise<void> {
     if (!this.connection) {
@@ -193,13 +199,15 @@ export class McpRegistryEntityProvider implements EntityProvider {
   private async fetchRegistryEntries(): Promise<
     McpRegistryServerEntry[] | undefined
   > {
-    const { baseUrl, apiVersion, pageLimit, pageSize } = this.config;
+    const { baseUrl, apiVersion, pageLimit, pageSize, maxEntries } =
+      this.config;
     try {
       return await fetchRegistryServers({
         baseUrl,
         apiVersion,
         pageLimit,
         pageSize,
+        maxEntries,
         fetchApi: this.fetchApi,
       });
     } catch (err) {
@@ -368,7 +376,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
     this.lastGoodIndex.clear();
     for (const deferred of entities) {
       const annotations = deferred.entity.metadata?.annotations;
-      if (annotations?.[SYNC_STATUS_ANNOTATION] === 'degraded') {
+      if (annotations?.[SYNC_STATUS_ANNOTATION] !== 'ok') {
         continue;
       }
       const name = annotations?.['modelcontextprotocol.io/name'];
