@@ -42,6 +42,7 @@ import {
   policyManagerApiRef,
   resourcesApiRef,
 } from './apis';
+import { getDcmAccessToken } from './DcmAuth';
 
 /**
  * DCM plugin instance.
@@ -64,28 +65,44 @@ export const dcmPlugin = createPlugin({
       api: catalogApiRef,
       deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
       factory({ discoveryApi, fetchApi }) {
-        return new CatalogClient({ discoveryApi, fetchApi });
+        return new CatalogClient({
+          discoveryApi,
+          fetchApi,
+          getAccessToken: getDcmAccessToken,
+        });
       },
     }),
     createApiFactory({
       api: policyManagerApiRef,
       deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
       factory({ discoveryApi, fetchApi }) {
-        return new PolicyManagerClient({ discoveryApi, fetchApi });
+        return new PolicyManagerClient({
+          discoveryApi,
+          fetchApi,
+          getAccessToken: getDcmAccessToken,
+        });
       },
     }),
     createApiFactory({
       api: agentsApiRef,
       deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
       factory({ discoveryApi, fetchApi }) {
-        return new AgentsClient({ discoveryApi, fetchApi });
+        return new AgentsClient({
+          discoveryApi,
+          fetchApi,
+          getAccessToken: getDcmAccessToken,
+        });
       },
     }),
     createApiFactory({
       api: resourcesApiRef,
       deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
       factory({ discoveryApi, fetchApi }) {
-        return new ResourcesClient({ discoveryApi, fetchApi });
+        return new ResourcesClient({
+          discoveryApi,
+          fetchApi,
+          getAccessToken: getDcmAccessToken,
+        });
       },
     }),
   ],

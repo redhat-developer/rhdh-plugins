@@ -19,7 +19,7 @@ export type { PolicyManagerApi } from './PolicyManagerApi';
 export type { AgentsApi } from './AgentsApi';
 export type { ResourcesApi } from './ResourcesApi';
 
-export { DcmBaseClient } from './DcmBaseClient';
+export { DcmBaseClient, type DcmOidcTokenProvider } from './DcmBaseClient';
 export { CatalogClient } from './CatalogClient';
 export { PolicyManagerClient } from './PolicyManagerClient';
 export { AgentsClient } from './AgentsClient';
