@@ -21,6 +21,7 @@ import {
 } from '@backstage/errors';
 import express from 'express';
 import Router from 'express-promise-router';
+import type { Config } from '@backstage/config';
 import type { CatalogMetricService } from './CatalogMetricService';
 import type { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
@@ -43,6 +44,7 @@ import {
 } from '../middlewares/validateTimeSeriesQueryParams';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
+import { isMetricEnabled, filterEnabledMetrics } from '../utils/metricUtils';
 import { AggregatedMetricMapper } from './mappers';
 import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
 import { validateAggregationIdParam } from '../middlewares/validateAggregationIdParam';
@@ -53,6 +55,7 @@ import { ThresholdResolver } from '../threshold/ThresholdResolver';
 import type { ScorecardCollectorsService } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export type ScorecardRouterOptions = {
+  config: Config;
   service: {
     aggregationsService: AggregationsService;
     catalogMetricService: CatalogMetricService;
@@ -67,6 +70,7 @@ export type ScorecardRouterOptions = {
 };
 
 export async function createRouter({
+  config,
   metricProvidersRegistry,
   service,
   catalog,
@@ -81,6 +85,25 @@ export async function createRouter({
 
   const { aggregationsService, catalogMetricService } = service;
 
+  const getProvider = (metricId: string) =>
+    metricProvidersRegistry.getProvider(metricId);
+
+  const filterEnabled = (
+    metrics: ReturnType<typeof metricProvidersRegistry.listMetrics>,
+  ) => filterEnabledMetrics(config, metrics, getProvider, logger);
+
+  /**
+   * Throw NotFoundError when a metric is disabled. Call after
+   * `getMetric()` — that already throws if the ID is unregistered.
+   */
+  const assertMetricEnabled = (metricId: string) => {
+    const metric = metricProvidersRegistry.getMetric(metricId);
+    const provider = metricProvidersRegistry.getProvider(metricId);
+    if (!isMetricEnabled(config, metric, provider)) {
+      throw new NotFoundError(`Metric not found: ${metricId}`);
+    }
+  };
+
   router.get(
     '/metrics',
     validateMetricIdsQueryParams,
@@ -94,26 +117,34 @@ export async function createRouter({
 
       if (metricIds) {
         return res.json({
-          metrics: metricProvidersRegistry.listMetrics(
-            parseCommaSeparatedString(metricIds as string),
+          metrics: filterEnabled(
+            metricProvidersRegistry.listMetrics(
+              parseCommaSeparatedString(metricIds as string),
+            ),
           ),
         });
       }
 
       if (datasource) {
         return res.json({
-          metrics: metricProvidersRegistry.listMetricsByDatasource(
-            datasource as string,
+          metrics: filterEnabled(
+            metricProvidersRegistry.listMetricsByDatasource(
+              datasource as string,
+            ),
           ),
         });
       }
 
-      return res.json({ metrics: metricProvidersRegistry.listMetrics() });
+      return res.json({
+        metrics: filterEnabled(metricProvidersRegistry.listMetrics()),
+      });
     },
   );
 
   router.get('/metrics/:metricId/collectors', async (req, res) => {
     const { metricId } = req.params;
+
+    assertMetricEnabled(metricId);
 
     const { conditions } = await authorizeConditional(
       await httpAuth.credentials(req),
@@ -220,6 +251,8 @@ export async function createRouter({
     },
     async (req, res) => {
       const { metricId } = req.params;
+
+      assertMetricEnabled(metricId);
 
       const { conditions } = await authorizeConditional(
         await httpAuth.credentials(req),
@@ -355,6 +388,8 @@ export async function createRouter({
         metricProvidersRegistry,
       );
 
+      assertMetricEnabled(aggregationConfig.metricId);
+
       const metric = metricProvidersRegistry.getMetric(
         aggregationConfig.metricId,
       );
@@ -399,6 +434,8 @@ export async function createRouter({
         metricProvidersRegistry,
       );
 
+      assertMetricEnabled(aggregationConfig.metricId);
+
       const metric = metricProvidersRegistry.getMetric(
         aggregationConfig.metricId,
       );
@@ -431,6 +468,8 @@ export async function createRouter({
         aggregationId,
         metricProvidersRegistry,
       );
+
+      assertMetricEnabled(aggregationConfig.metricId);
 
       const metric = metricProvidersRegistry.getMetric(
         aggregationConfig.metricId,
