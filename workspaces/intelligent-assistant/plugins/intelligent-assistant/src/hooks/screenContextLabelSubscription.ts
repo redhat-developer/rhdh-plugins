@@ -103,7 +103,8 @@ function ensurePageChromeObserver() {
 }
 
 /**
- * Patch at module load so we wrap Backstage / React Router history wrappers too.
+ * Patch browser history so SPA pushState/replaceState notify label listeners.
+ * Idempotent; called on first subscribe rather than at module load.
  */
 export function patchBrowserHistoryForScreenContext() {
   if (historyPatched || typeof window === 'undefined') {
@@ -125,8 +126,6 @@ export function patchBrowserHistoryForScreenContext() {
   };
 }
 
-patchBrowserHistoryForScreenContext();
-
 let cachedSnapshot = '';
 
 export function getScreenContextLabelSnapshot(): string {
@@ -143,6 +142,7 @@ export function getScreenContextLabelSnapshot(): string {
 export function subscribeToScreenContextLabel(
   onStoreChange: () => void,
 ): () => void {
+  patchBrowserHistoryForScreenContext();
   ensurePageChromeObserver();
   listeners.add(onStoreChange);
   return () => {

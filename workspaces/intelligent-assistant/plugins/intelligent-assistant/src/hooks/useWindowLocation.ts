@@ -16,17 +16,12 @@
 
 import { useSyncExternalStore } from 'react';
 
-import {
-  patchBrowserHistoryForScreenContext,
-  subscribeToScreenContextLabel,
-} from './screenContextLabelSubscription';
+import { subscribeToScreenContextLabel } from './screenContextLabelSubscription';
 
 export type WindowLocationSnapshot = {
   pathname: string;
   search: string;
 };
-
-patchBrowserHistoryForScreenContext();
 
 let cachedSnapshot: WindowLocationSnapshot = {
   pathname: '',
@@ -52,6 +47,7 @@ function subscribeToWindowLocation(onStoreChange: () => void): () => void {
 /**
  * Subscribes to browser URL changes (including history.pushState/replaceState).
  * Use when the host app navigates outside the same React Router tree as Lightspeed.
+ * History patching is installed on first subscribe via subscribeToScreenContextLabel.
  */
 export function useWindowLocation(): WindowLocationSnapshot {
   return useSyncExternalStore(

@@ -15,7 +15,6 @@
  */
 
 import type { ComponentProps } from 'react';
-import { MemoryRouter } from 'react-router-dom';
 
 import { act, render, screen } from '@testing-library/react';
 
@@ -26,11 +25,7 @@ const renderChip = (
   initialPath = '/catalog/default/component/demo',
 ) => {
   window.history.pushState({}, '', initialPath);
-  return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <ScreenContextChip {...props} />
-    </MemoryRouter>,
-  );
+  return render(<ScreenContextChip {...props} />);
 };
 
 jest.mock('../../hooks/useTranslation', () => ({

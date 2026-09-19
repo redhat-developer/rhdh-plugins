@@ -15,7 +15,6 @@
  */
 
 import { Fragment, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
 
 import { keyframes, styled } from '@mui/material/styles';
 import { Label, Tooltip } from '@patternfly/react-core';
@@ -23,6 +22,7 @@ import { PauseIcon } from '@patternfly/react-icons';
 
 import { useScreenContextLabelRevision } from '../hooks/useScreenContextLabelRevision';
 import { useTranslation } from '../hooks/useTranslation';
+import { useWindowLocation } from '../hooks/useWindowLocation';
 import {
   getScreenContextTooltipLine1Text,
   getScreenContextTooltipLine2Key,
@@ -121,12 +121,12 @@ export const ScreenContextChip = ({
   onTogglePaused,
 }: ScreenContextChipProps) => {
   const { t } = useTranslation();
-  const routerLocation = useLocation();
+  const { pathname, search } = useWindowLocation();
   useScreenContextLabelRevision();
 
   const { label: resolvedLabel, routeKind } = resolveScreenContextChipLabel({
-    pathname: routerLocation.pathname,
-    search: routerLocation.search,
+    pathname,
+    search,
   });
 
   const label = chipLabel ?? resolvedLabel;
@@ -147,7 +147,7 @@ export const ScreenContextChip = ({
       {
         chipLabel: displayLabel,
         routeKind,
-        pathname: routerLocation.pathname,
+        pathname,
       },
       (key, options) => t(key as any, options as any),
     );
@@ -168,7 +168,7 @@ export const ScreenContextChip = ({
     state,
     displayLabel,
     routeKind,
-    routerLocation.pathname,
+    pathname,
     domEnabled,
     screenshotsEnabled,
     supportsVision,
