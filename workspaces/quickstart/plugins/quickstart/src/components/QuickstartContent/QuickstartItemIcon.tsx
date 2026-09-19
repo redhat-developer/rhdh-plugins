@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-import MuiIcon from '@mui/material/Icon';
+import type { ComponentType } from 'react';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
-import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
-import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
-import PowerOutlinedIcon from '@mui/icons-material/PowerOutlined';
-import LoginIcon from '@mui/icons-material/Login';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import ControlPointOutlinedIcon from '@mui/icons-material/ControlPointOutlined';
+import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
+import LoginIcon from '@mui/icons-material/Login';
+import PowerOutlinedIcon from '@mui/icons-material/PowerOutlined';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
-import { SxProps, Theme } from '@mui/material/styles';
-import { useApp } from '@backstage/core-plugin-api';
+import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import Box from '@mui/material/Box';
+import { SxProps, Theme } from '@mui/material/styles';
+import { SvgIconProps } from '@mui/material/SvgIcon';
+
+import { QuickstartIcon } from './QuickstartIcon';
 import { LightspeedIcon } from './LightspeedIcon';
 
 export interface QuickstartItemIconProps {
@@ -33,64 +35,41 @@ export interface QuickstartItemIconProps {
   sx?: SxProps<Theme>;
 }
 
-const commonIcons: {
-  [k: string]: React.ReactNode;
-} = {
-  Admin: <AdminPanelSettingsOutlinedIcon />,
-  Rbac: <VpnKeyOutlinedIcon />,
-  Git: <FileCopyOutlinedIcon />,
-  Plugins: <PowerOutlinedIcon />,
-  Import: <LoginIcon />,
-  Catalog: <CategoryOutlinedIcon />,
-  SelfService: <ControlPointOutlinedIcon />,
-  Learning: <SchoolOutlinedIcon />,
-  Lightspeed: <LightspeedIcon />,
+const commonIcons: Record<
+  string,
+  ComponentType<SvgIconProps<'svg', object>>
+> = {
+  Admin: AdminPanelSettingsOutlinedIcon,
+  Rbac: VpnKeyOutlinedIcon,
+  Git: FileCopyOutlinedIcon,
+  Plugins: PowerOutlinedIcon,
+  Import: LoginIcon,
+  Catalog: CategoryOutlinedIcon,
+  SelfService: ControlPointOutlinedIcon,
+  Learning: SchoolOutlinedIcon,
 };
 
 export const QuickstartItemIcon = ({ icon, sx }: QuickstartItemIconProps) => {
-  const app = useApp();
   if (!icon) {
     return null;
   }
 
-  const SystemIcon = app.getSystemIcon(icon);
-  if (SystemIcon) {
+  if (icon === 'Lightspeed') {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', ...sx }}>
-        <SystemIcon fontSize="medium" />
+        <LightspeedIcon />
       </Box>
     );
   }
 
-  if (icon.startsWith('<svg')) {
-    const svgDataUri = `data:image/svg+xml;base64,${btoa(icon)}`;
+  const CommonIcon = commonIcons[icon];
+  if (CommonIcon) {
     return (
-      <MuiIcon fontSize="medium" sx={sx}>
-        <img src={svgDataUri} alt="" />
-      </MuiIcon>
+      <Box sx={{ display: 'flex', alignItems: 'center', ...sx }}>
+        <CommonIcon fontSize="medium" />
+      </Box>
     );
   }
 
-  if (
-    icon.startsWith('https://') ||
-    icon.startsWith('http://') ||
-    icon.startsWith('/') ||
-    icon.startsWith('data:image/')
-  ) {
-    return (
-      <MuiIcon
-        fontSize="medium"
-        baseClassName="material-icons-outlined"
-        sx={sx}
-      >
-        <img src={icon} alt="" height="100%" width="100%" />
-      </MuiIcon>
-    );
-  }
-
-  return (
-    <MuiIcon fontSize="medium" baseClassName="material-icons-outlined" sx={sx}>
-      {commonIcons[icon] || icon}
-    </MuiIcon>
-  );
+  return <QuickstartIcon icon={icon} size="medium" sx={sx} />;
 };

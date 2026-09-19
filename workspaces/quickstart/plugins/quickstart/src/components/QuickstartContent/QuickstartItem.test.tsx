@@ -72,9 +72,7 @@ describe('QuickstartItem)', () => {
     expect(
       screen.getByText('This is the test description'),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Start Now' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start Now' })).toBeInTheDocument();
   });
 
   it('calls handleOpen when item is clicked', async () => {
@@ -89,7 +87,7 @@ describe('QuickstartItem)', () => {
   it('calls setProgress and sets stepCompleted in localStorage on CTA click', async () => {
     await renderItem(true);
 
-    const cta = screen.getByRole('button', { name: 'Start Now' });
+    const cta = screen.getByRole('link', { name: 'Start Now' });
     fireEvent.click(cta);
 
     expect(mockSetProgress).toHaveBeenCalled();
