@@ -15,6 +15,10 @@
  */
 
 import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+import { stripTrailingSlashes } from './util';
+
+/** Max characters of an error response body included in client errors. */
+const MAX_ERROR_BODY_LENGTH = 256;
 
 /**
  * A single server entry from the MCP Registry list response.
@@ -54,8 +58,7 @@ export function buildServersEndpoint(
   baseUrl: string,
   apiVersion: string,
 ): string {
-  const normalizedBase = baseUrl.replace(/\/+$/, '');
-  return `${normalizedBase}/${apiVersion}/servers`;
+  return `${stripTrailingSlashes(baseUrl)}/${apiVersion}/servers`;
 }
 
 /**
@@ -71,6 +74,142 @@ export interface FetchServersOptions {
 }
 
 /**
+ * Parse the servers list endpoint into a URL.
+ *
+ * @internal
+ */
+export function parseServersEndpointUrl(
+  baseUrl: string,
+  apiVersion: string,
+): URL {
+  const endpoint = buildServersEndpoint(baseUrl, apiVersion);
+  try {
+    return new URL(endpoint);
+  } catch (err) {
+    throw new McpRegistryClientError(
+      `Invalid MCP Registry endpoint URL "${endpoint}": ${err}`,
+    );
+  }
+}
+
+/**
+ * Build a page request URL with optional cursor and page-size params.
+ *
+ * @internal
+ */
+export function buildPageRequestUrl(
+  endpoint: URL,
+  cursor?: string,
+  pageSize?: number,
+): URL {
+  const url = new URL(endpoint.toString());
+  if (cursor) {
+    url.searchParams.set('cursor', cursor);
+  }
+  if (pageSize !== undefined) {
+    url.searchParams.set('limit', String(pageSize));
+  }
+  return url;
+}
+
+/**
+ * Truncate an error response body for safe inclusion in log/error text.
+ *
+ * @internal
+ */
+export function truncateErrorBody(
+  rawBody: string,
+  maxLength = MAX_ERROR_BODY_LENGTH,
+): string {
+  if (rawBody.length <= maxLength) {
+    return rawBody;
+  }
+  return `${rawBody.substring(0, maxLength)}…(truncated)`;
+}
+
+/**
+ * Fetch and validate one registry list page.
+ *
+ * @internal
+ */
+export async function fetchRegistryPage(
+  doFetch: typeof fetch,
+  url: URL,
+): Promise<McpRegistryListResponse> {
+  const requestUrl = url.toString();
+
+  let response: Response;
+  try {
+    response = await doFetch(requestUrl);
+  } catch (err) {
+    throw new McpRegistryClientError(
+      `Failed to reach MCP Registry at ${requestUrl}: ${err}`,
+    );
+  }
+
+  if (!response.ok) {
+    const rawBody = await response.text().catch(() => '(no body)');
+    throw new McpRegistryClientError(
+      `MCP Registry returned HTTP ${response.status} for ` +
+        `${requestUrl}: ${truncateErrorBody(rawBody)}`,
+    );
+  }
+
+  let body: McpRegistryListResponse;
+  try {
+    body = (await response.json()) as McpRegistryListResponse;
+  } catch (err) {
+    throw new McpRegistryClientError(
+      `MCP Registry returned unparseable JSON from ${requestUrl}: ${err}`,
+    );
+  }
+
+  if (!body.servers || !Array.isArray(body.servers)) {
+    throw new McpRegistryClientError(
+      `MCP Registry response missing "servers" array from ${requestUrl}`,
+    );
+  }
+
+  return body;
+}
+
+/**
+ * Resolve the next pagination cursor, or `undefined` when paging is done.
+ * Enforces repeated-cursor and page-limit safeguards.
+ *
+ * @internal
+ */
+export function resolveNextCursor(
+  nextCursor: string | null | undefined,
+  seenCursors: Set<string>,
+  pagesFetched: number,
+  pageLimit: number,
+): string | undefined {
+  if (!nextCursor || nextCursor.length === 0) {
+    return undefined;
+  }
+
+  if (seenCursors.has(nextCursor)) {
+    throw new McpRegistryClientError(
+      `MCP Registry returned a repeated cursor "${nextCursor}" ` +
+        `during pagination. Aborting sync to prevent infinite loop.`,
+    );
+  }
+  seenCursors.add(nextCursor);
+
+  if (pagesFetched >= pageLimit) {
+    throw new McpRegistryClientError(
+      `MCP Registry pagination exceeded the configured page limit ` +
+        `of ${pageLimit} pages per sync. The registry still has more ` +
+        `pages (nextCursor present). Increase pageLimit to fetch ` +
+        `more pages.`,
+    );
+  }
+
+  return nextCursor;
+}
+
+/**
  * Fetch all server entries from the MCP Registry using cursor
  * pagination. Accumulates entries across pages and enforces
  * pagination safeguards (page cap, repeated cursor).
@@ -83,104 +222,30 @@ export async function fetchRegistryServers(
 ): Promise<McpRegistryServerEntry[]> {
   const { baseUrl, apiVersion, pageLimit, pageSize, fetchApi } = options;
   const doFetch = fetchApi ?? fetch;
-
-  const endpoint = buildServersEndpoint(baseUrl, apiVersion);
-
-  let parsedEndpoint: URL;
-  try {
-    parsedEndpoint = new URL(endpoint);
-  } catch (err) {
-    throw new McpRegistryClientError(
-      `Invalid MCP Registry endpoint URL "${endpoint}": ${err}`,
-    );
-  }
+  const endpoint = parseServersEndpointUrl(baseUrl, apiVersion);
 
   const allServers: McpRegistryServerEntry[] = [];
   const seenCursors = new Set<string>();
   let cursor: string | undefined;
-  let pageCount = 0;
-
+  let pagesFetched = 0;
   let hasMorePages = true;
+
   while (hasMorePages) {
-    // Build request URL with query params
-    const url = new URL(parsedEndpoint.toString());
-    if (cursor) {
-      url.searchParams.set('cursor', cursor);
-    }
-    if (pageSize !== undefined) {
-      url.searchParams.set('limit', String(pageSize));
-    }
-
-    let response: Response;
-    try {
-      response = await doFetch(url.toString());
-    } catch (err) {
-      throw new McpRegistryClientError(
-        `Failed to reach MCP Registry at ${url.toString()}: ${err}`,
-      );
-    }
-
-    if (!response.ok) {
-      const MAX_BODY_LENGTH = 256;
-      const rawBody = await response.text().catch(() => '(no body)');
-      const truncatedBody =
-        rawBody.length > MAX_BODY_LENGTH
-          ? `${rawBody.substring(0, MAX_BODY_LENGTH)}…(truncated)`
-          : rawBody;
-      throw new McpRegistryClientError(
-        `MCP Registry returned HTTP ${response.status} for ` +
-          `${url.toString()}: ${truncatedBody}`,
-      );
-    }
-
-    let body: McpRegistryListResponse;
-    try {
-      body = (await response.json()) as McpRegistryListResponse;
-    } catch (err) {
-      throw new McpRegistryClientError(
-        `MCP Registry returned unparseable JSON from ` +
-          `${url.toString()}: ${err}`,
-      );
-    }
-
-    if (!body.servers || !Array.isArray(body.servers)) {
-      throw new McpRegistryClientError(
-        `MCP Registry response missing "servers" array from ` +
-          `${url.toString()}`,
-      );
-    }
-
+    const url = buildPageRequestUrl(endpoint, cursor, pageSize);
+    const body = await fetchRegistryPage(doFetch, url);
     allServers.push(...body.servers);
-    pageCount++;
+    pagesFetched += 1;
 
-    // Check for next cursor
-    const nextCursor = body.metadata?.nextCursor;
-    if (!nextCursor || nextCursor.length === 0) {
-      // No more pages
+    const nextCursor = resolveNextCursor(
+      body.metadata?.nextCursor,
+      seenCursors,
+      pagesFetched,
+      pageLimit,
+    );
+    if (!nextCursor) {
       hasMorePages = false;
       continue;
     }
-
-    // Repeated cursor safeguard
-    if (seenCursors.has(nextCursor)) {
-      throw new McpRegistryClientError(
-        `MCP Registry returned a repeated cursor "${nextCursor}" ` +
-          `during pagination. Aborting sync to prevent infinite loop.`,
-      );
-    }
-    seenCursors.add(nextCursor);
-
-    // Page limit safeguard: if we've fetched pageLimit pages and
-    // there's still a nextCursor, fail the run
-    if (pageCount >= pageLimit) {
-      throw new McpRegistryClientError(
-        `MCP Registry pagination exceeded the configured page limit ` +
-          `of ${pageLimit} pages per sync. The registry still has more ` +
-          `pages (nextCursor present). Increase pageLimit to fetch ` +
-          `more pages.`,
-      );
-    }
-
     cursor = nextCursor;
   }
 

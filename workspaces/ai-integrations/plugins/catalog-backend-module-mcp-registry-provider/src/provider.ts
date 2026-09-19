@@ -21,6 +21,7 @@ import type {
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
+  type Entity,
 } from '@backstage/catalog-model';
 import type {
   DeferredEntity,
@@ -35,6 +36,7 @@ import type { McpServerMappingDefaults } from '@red-hat-developer-hub/backstage-
 import type { McpRegistryProviderConfig } from './config';
 import { fetchRegistryServers, McpRegistryClientError } from './client';
 import type { McpRegistryServerEntry } from './client';
+import { stripTrailingSlashes } from './util';
 
 /** Provider name and locationKey constant. */
 const PROVIDER_NAME = 'mcp-registry-provider';
@@ -44,17 +46,50 @@ const SYNC_STATUS_ANNOTATION = 'redhat.com/rhdh-mcp-registry-sync-status';
 
 /**
  * Build a last-good lookup key from name and version.
+ *
+ * @internal
  */
-function buildLastGoodKey(name: string, version: string): string {
+export function buildLastGoodKey(name: string, version: string): string {
   return `${name}::${version}`;
 }
 
 /**
- * Normalize baseUrl by stripping trailing slashes for use in
- * backstage.io/managed-by-location.
+ * Read optional name/version from a registry list entry.
+ *
+ * @internal
  */
-function normalizeBaseUrl(baseUrl: string): string {
-  return baseUrl.replace(/\/+$/, '');
+export function readServerIdentity(
+  entry: McpRegistryServerEntry | null | undefined,
+): {
+  name?: string;
+  version?: string;
+} {
+  const serverDoc = entry?.server;
+  return {
+    name: typeof serverDoc?.name === 'string' ? serverDoc.name : undefined,
+    version:
+      typeof serverDoc?.version === 'string' ? serverDoc.version : undefined,
+  };
+}
+
+/**
+ * Format the per-entry mapping failure warning.
+ *
+ * @internal
+ */
+export function formatMappingFailureMessage(
+  name: string | undefined,
+  version: string | undefined,
+  err: unknown,
+): string {
+  let message = 'Failed to map MCP Registry server entry';
+  if (name) {
+    message += ` "${name}"`;
+  }
+  if (version) {
+    message += ` version "${version}"`;
+  }
+  return `${message}: ${err}`;
 }
 
 /**
@@ -75,7 +110,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
    * last successfully committed DeferredEntity so that a subsequent
    * sync can retain it when mapping fails (D6).
    */
-  private lastGoodIndex = new Map<string, DeferredEntity>();
+  private readonly lastGoodIndex = new Map<string, DeferredEntity>();
 
   constructor(
     config: McpRegistryProviderConfig,
@@ -118,15 +153,49 @@ export class McpRegistryEntityProvider implements EntityProvider {
       );
     }
 
-    const { baseUrl, apiVersion, pageLimit, pageSize, baseName, defaultOwner } =
-      this.config;
-    const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
-    const managedByLocation = `url:${normalizedBaseUrl}`;
+    const managedByLocation = `url:${stripTrailingSlashes(
+      this.config.baseUrl,
+    )}`;
+    const entries = await this.fetchRegistryEntries();
+    if (!entries) {
+      return;
+    }
 
-    // Fetch all servers from the registry
-    let entries: McpRegistryServerEntry[];
+    const { entities, hasDegradedEntries } = this.mapRegistryEntries(
+      entries,
+      managedByLocation,
+    );
+
+    if (hasDegradedEntries) {
+      this.logger.warn(
+        `MCP Registry sync completed with degraded entries. ` +
+          `Some server entries could not be mapped and are using ` +
+          `last-good entities.`,
+      );
+    }
+
+    await this.connection.applyMutation({
+      type: 'full',
+      entities,
+    });
+
+    this.rebuildLastGoodIndex(entities);
+
+    this.logger.info(
+      `MCP Registry sync completed: ${entities.length} entities committed.`,
+    );
+  }
+
+  /**
+   * Fetch registry servers. Returns `undefined` when a client error
+   * aborts the sync without emitting a mutation.
+   */
+  private async fetchRegistryEntries(): Promise<
+    McpRegistryServerEntry[] | undefined
+  > {
+    const { baseUrl, apiVersion, pageLimit, pageSize } = this.config;
     try {
-      entries = await fetchRegistryServers({
+      return await fetchRegistryServers({
         baseUrl,
         apiVersion,
         pageLimit,
@@ -138,158 +207,175 @@ export class McpRegistryEntityProvider implements EntityProvider {
         this.logger.error(
           `MCP Registry sync failed (no mutation emitted): ${err.message}`,
         );
-        return;
+        return undefined;
       }
       throw err;
     }
+  }
 
-    // Map each entry, with per-entry failure isolation
+  /**
+   * Map every registry entry with per-entry failure isolation.
+   */
+  private mapRegistryEntries(
+    entries: McpRegistryServerEntry[],
+    managedByLocation: string,
+  ): { entities: DeferredEntity[]; hasDegradedEntries: boolean } {
     const entities: DeferredEntity[] = [];
     let hasDegradedEntries = false;
 
     for (const entry of entries) {
       try {
-        const serverDoc = entry.server;
-        // Invoke the mapping transform
-        const mappingDefaults: McpServerMappingDefaults = {};
-        if (defaultOwner) {
-          mappingDefaults.owner = defaultOwner;
-        }
-        if (baseName) {
-          mappingDefaults.prefix = baseName;
-        }
-
-        const mappingResult = mapServerToEntity(serverDoc, mappingDefaults);
-        const entity = mappingResult.entity;
-
-        // Apply annotation projection
-        const projectedAnnotations = projectAnnotations(
-          serverDoc,
-          mappingResult.consumedPaths,
-          mappingResult.reservedAnnotationKeys,
-        );
-
-        // Merge projected annotations with the entity's existing ones
-        entity.metadata.annotations = {
-          ...entity.metadata.annotations,
-          ...projectedAnnotations,
-        };
-
-        // Catalog processing requires both location annotations. Without
-        // the origin annotation the entity is rejected and never listed.
-        entity.metadata.annotations[ANNOTATION_LOCATION] = managedByLocation;
-        entity.metadata.annotations[ANNOTATION_ORIGIN_LOCATION] =
-          managedByLocation;
-        entity.metadata.annotations[SYNC_STATUS_ANNOTATION] = 'ok';
-
-        const deferred: DeferredEntity = {
-          entity,
-          locationKey: PROVIDER_NAME,
-        };
-        entities.push(deferred);
+        entities.push(this.mapRegistryEntry(entry, managedByLocation));
       } catch (err) {
-        // Per-entry failure: log and attempt last-good retention
-        const serverDoc =
-          entry !== null && entry !== undefined
-            ? (entry as McpRegistryServerEntry).server
-            : undefined;
-        const serverName =
-          typeof serverDoc?.name === 'string' ? serverDoc.name : undefined;
-        const serverVersion =
-          typeof serverDoc?.version === 'string'
-            ? serverDoc.version
-            : undefined;
-
-        this.logger.warn(
-          `Failed to map MCP Registry server entry` +
-            `${serverName ? ` "${serverName}"` : ''}` +
-            `${serverVersion ? ` version "${serverVersion}"` : ''}: ${err}`,
+        const retained = this.retainLastGoodOnMappingFailure(
+          entry,
+          err,
+          managedByLocation,
         );
-
-        // Last-good retention (D6): retain prior entity if name and
-        // version are present and a last-good entity exists
-        if (serverName && serverVersion) {
-          const lastGoodKey = buildLastGoodKey(serverName, serverVersion);
-          const lastGood = this.lastGoodIndex.get(lastGoodKey);
-          if (lastGood) {
-            // Use the last-good entity with degraded status
-            const retainedEntity = JSON.parse(JSON.stringify(lastGood.entity));
-            if (!retainedEntity.metadata.annotations) {
-              retainedEntity.metadata.annotations = {};
-            }
-            retainedEntity.metadata.annotations[SYNC_STATUS_ANNOTATION] =
-              'degraded';
-            retainedEntity.metadata.annotations[ANNOTATION_LOCATION] =
-              managedByLocation;
-            retainedEntity.metadata.annotations[ANNOTATION_ORIGIN_LOCATION] =
-              managedByLocation;
-
-            entities.push({
-              entity: retainedEntity,
-              locationKey: PROVIDER_NAME,
-            });
-            hasDegradedEntries = true;
-            this.logger.info(
-              `Retained last-good entity for "${serverName}" ` +
-                `version "${serverVersion}" with degraded sync status.`,
-            );
-          } else {
-            this.logger.info(
-              `No last-good entity found for "${serverName}" ` +
-                `version "${serverVersion}"; omitting from mutation.`,
-            );
-          }
+        if (retained) {
+          entities.push(retained);
+          hasDegradedEntries = true;
         }
       }
     }
 
-    if (hasDegradedEntries) {
-      this.logger.warn(
-        `MCP Registry sync completed with degraded entries. ` +
-          `Some server entries could not be mapped and are using ` +
-          `last-good entities.`,
-      );
+    return { entities, hasDegradedEntries };
+  }
+
+  /**
+   * Map one registry entry into a deferred entity with sync status `ok`.
+   */
+  private mapRegistryEntry(
+    entry: McpRegistryServerEntry,
+    managedByLocation: string,
+  ): DeferredEntity {
+    const serverDoc = entry.server;
+    const mappingResult = mapServerToEntity(
+      serverDoc,
+      this.buildMappingDefaults(),
+    );
+    const entity = mappingResult.entity;
+
+    entity.metadata.annotations = {
+      ...entity.metadata.annotations,
+      ...projectAnnotations(
+        serverDoc,
+        mappingResult.consumedPaths,
+        mappingResult.reservedAnnotationKeys,
+      ),
+    };
+
+    this.applyProviderAnnotations(entity, managedByLocation, 'ok');
+
+    return {
+      entity,
+      locationKey: PROVIDER_NAME,
+    };
+  }
+
+  /**
+   * Build mapping caller overrides from provider config.
+   */
+  private buildMappingDefaults(): McpServerMappingDefaults {
+    const mappingDefaults: McpServerMappingDefaults = {};
+    if (this.config.defaultOwner) {
+      mappingDefaults.owner = this.config.defaultOwner;
+    }
+    if (this.config.baseName) {
+      mappingDefaults.prefix = this.config.baseName;
+    }
+    return mappingDefaults;
+  }
+
+  /**
+   * Stamp provider-owned location and sync-status annotations.
+   *
+   * Catalog processing requires both location annotations. Without the
+   * origin annotation the entity is rejected and never listed.
+   */
+  private applyProviderAnnotations(
+    entity: Entity,
+    managedByLocation: string,
+    syncStatus: 'ok' | 'degraded',
+  ): void {
+    if (!entity.metadata.annotations) {
+      entity.metadata.annotations = {};
+    }
+    entity.metadata.annotations[ANNOTATION_LOCATION] = managedByLocation;
+    entity.metadata.annotations[ANNOTATION_ORIGIN_LOCATION] = managedByLocation;
+    entity.metadata.annotations[SYNC_STATUS_ANNOTATION] = syncStatus;
+  }
+
+  /**
+   * Log a mapping failure and retain a last-good entity when available (D6).
+   */
+  private retainLastGoodOnMappingFailure(
+    entry: McpRegistryServerEntry,
+    err: unknown,
+    managedByLocation: string,
+  ): DeferredEntity | undefined {
+    const { name, version } = readServerIdentity(entry);
+    this.logger.warn(formatMappingFailureMessage(name, version, err));
+
+    if (!name || !version) {
+      return undefined;
     }
 
-    // Commit full mutation
-    await this.connection.applyMutation({
-      type: 'full',
-      entities,
-    });
+    const lastGood = this.lastGoodIndex.get(buildLastGoodKey(name, version));
+    if (!lastGood) {
+      this.logger.info(
+        `No last-good entity found for "${name}" ` +
+          `version "${version}"; omitting from mutation.`,
+      );
+      return undefined;
+    }
 
-    // Update the last-good index with successfully mapped entities only.
-    // Entities that carry sync-status "degraded" are excluded: they are
-    // last-good fallbacks from a prior cycle, so storing them back would
-    // create perpetual retention of stale data. Only "ok" entities
-    // qualify as last-good candidates.
-    //
-    // The annotation keys used here ('modelcontextprotocol.io/name' and
-    // 'modelcontextprotocol.io/version') are set by mapServerToEntity in
-    // mcp-registry-server-mapping-common and correspond to the raw
-    // serverDoc.name and serverDoc.version fields used in buildLastGoodKey
-    // during failure recovery above. If the mapping library changes these
-    // annotation keys, both this rebuild and the failure recovery path
-    // must be updated in tandem.
+    const retainedEntity = structuredClone(lastGood.entity);
+    this.applyProviderAnnotations(
+      retainedEntity,
+      managedByLocation,
+      'degraded',
+    );
+
+    this.logger.info(
+      `Retained last-good entity for "${name}" ` +
+        `version "${version}" with degraded sync status.`,
+    );
+
+    return {
+      entity: retainedEntity,
+      locationKey: PROVIDER_NAME,
+    };
+  }
+
+  /**
+   * Rebuild the last-good index from successfully mapped entities only.
+   *
+   * Entities that carry sync-status "degraded" are excluded: they are
+   * last-good fallbacks from a prior cycle, so storing them back would
+   * create perpetual retention of stale data. Only "ok" entities
+   * qualify as last-good candidates.
+   *
+   * The annotation keys used here ('modelcontextprotocol.io/name' and
+   * 'modelcontextprotocol.io/version') are set by mapServerToEntity in
+   * mcp-registry-server-mapping-common and correspond to the raw
+   * serverDoc.name and serverDoc.version fields used in buildLastGoodKey
+   * during failure recovery. If the mapping library changes these
+   * annotation keys, both this rebuild and the failure recovery path
+   * must be updated in tandem.
+   */
+  private rebuildLastGoodIndex(entities: DeferredEntity[]): void {
     this.lastGoodIndex.clear();
     for (const deferred of entities) {
-      const syncStatus =
-        deferred.entity.metadata?.annotations?.[SYNC_STATUS_ANNOTATION];
-      if (syncStatus === 'degraded') {
+      const annotations = deferred.entity.metadata?.annotations;
+      if (annotations?.[SYNC_STATUS_ANNOTATION] === 'degraded') {
         continue;
       }
-      const name =
-        deferred.entity.metadata?.annotations?.['modelcontextprotocol.io/name'];
-      const version =
-        deferred.entity.metadata?.annotations?.[
-          'modelcontextprotocol.io/version'
-        ];
+      const name = annotations?.['modelcontextprotocol.io/name'];
+      const version = annotations?.['modelcontextprotocol.io/version'];
       if (name && version) {
         this.lastGoodIndex.set(buildLastGoodKey(name, version), deferred);
       }
     }
-
-    this.logger.info(
-      `MCP Registry sync completed: ${entities.length} entities committed.`,
-    );
   }
 }
