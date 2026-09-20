@@ -335,13 +335,16 @@ async function fetchOnce(
 ): Promise<Response> {
   const requestUrl = url.toString();
   assertRequestHostAllowed(url, hostAllowList);
+  let response: Response;
   try {
-    return await doFetch(requestUrl, { redirect: 'manual' });
+    response = await doFetch(requestUrl, { redirect: 'manual' });
   } catch (err) {
     throw new McpRegistryClientError(
       `Failed to reach MCP Registry at ${requestUrl}: ${err}`,
     );
   }
+  assertResponseUrlAllowed(response, hostAllowList, requestUrl);
+  return response;
 }
 
 /**
@@ -400,6 +403,29 @@ export function assertRequestHostAllowed(
         `hostAllowList [${hostAllowList.join(', ')}].`,
     );
   }
+}
+
+/**
+ * Fail closed when an allowlist is configured but the fetch response
+ * does not expose a URL, then validate that URL's hostname.
+ *
+ * @internal
+ */
+export function assertResponseUrlAllowed(
+  response: Response,
+  hostAllowList: string[] | undefined,
+  requestUrl: string,
+): void {
+  if (!hostAllowList) {
+    return;
+  }
+  if (!response.url) {
+    throw new McpRegistryClientError(
+      `MCP Registry response for ${requestUrl} is missing response.url ` +
+        `while hostAllowList is configured; refusing to proceed.`,
+    );
+  }
+  assertRequestHostAllowed(new URL(response.url), hostAllowList);
 }
 
 /**

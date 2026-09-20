@@ -17,6 +17,8 @@
 import {
   advanceAfterResolvedCursor,
   applyMaxEntriesSoftStop,
+  assertRequestHostAllowed,
+  assertResponseUrlAllowed,
   buildPageRequestUrl,
   buildServersEndpoint,
   fetchRegistryPage,
@@ -28,7 +30,6 @@ import {
   resolveNextCursor,
   resolveRedirectUrl,
   truncateErrorBody,
-  assertRequestHostAllowed,
   validateRedirectTarget,
 } from './client';
 import type { McpRegistryListResponse } from './client';
@@ -78,20 +79,24 @@ describe('fetchRegistryServers', () => {
       if (resp.throws) {
         fn.mockRejectedValueOnce(new Error('network error'));
       } else {
-        fn.mockResolvedValueOnce({
-          ok: (resp.status ?? 200) >= 200 && (resp.status ?? 200) < 300,
-          status: resp.status ?? 200,
-          json: async () => {
-            if (typeof resp.body === 'string') {
-              throw new Error('Invalid JSON');
-            }
-            return resp.body;
-          },
-          text: async () =>
-            typeof resp.body === 'string'
-              ? resp.body
-              : JSON.stringify(resp.body),
-        } as unknown as Response);
+        fn.mockImplementationOnce(async (input: RequestInfo) => {
+          const requestUrl = typeof input === 'string' ? input : String(input);
+          return {
+            ok: (resp.status ?? 200) >= 200 && (resp.status ?? 200) < 300,
+            status: resp.status ?? 200,
+            url: requestUrl,
+            json: async () => {
+              if (typeof resp.body === 'string') {
+                throw new Error('Invalid JSON');
+              }
+              return resp.body;
+            },
+            text: async () =>
+              typeof resp.body === 'string'
+                ? resp.body
+                : JSON.stringify(resp.body),
+          } as unknown as Response;
+        });
       }
     }
     return fn;
@@ -489,6 +494,7 @@ describe('fetchRegistryServers', () => {
     const fn = jest.fn().mockResolvedValueOnce({
       ok: false,
       status: 302,
+      url: 'https://registry.example.com/v1/servers',
       headers: mockHeaders({
         Location: 'https://evil.example.com/v1/servers',
       }),
@@ -522,6 +528,7 @@ describe('fetchRegistryServers', () => {
       .mockResolvedValueOnce({
         ok: false,
         status: 302,
+        url: 'https://registry.example.com/v1/servers',
         headers: mockHeaders({
           Location: 'https://registry.example.com/v1/servers?redirected=1',
         }),
@@ -531,6 +538,7 @@ describe('fetchRegistryServers', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
+        url: 'https://registry.example.com/v1/servers?redirected=1',
         headers: mockHeaders(),
         json: async () => body,
         text: async () => JSON.stringify(body),
@@ -714,6 +722,7 @@ describe('fetchRegistryPage', () => {
     const doFetch = jest.fn().mockResolvedValue({
       ok: false,
       status: 302,
+      url: 'https://registry.example.com/v1/servers',
       headers: mockHeaders({
         Location: 'https://evil.example.com/v1/servers',
       }),
@@ -731,6 +740,28 @@ describe('fetchRegistryPage', () => {
     expect(doFetch).toHaveBeenCalledTimes(1);
   });
 
+  it('throws when hostAllowList is set but response.url is absent', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: mockHeaders(),
+      json: async () => body,
+      text: async () => JSON.stringify(body),
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+        ['registry.example.com'],
+      ),
+    ).rejects.toThrow(/missing response\.url/);
+  });
+
   it('follows redirect Location when the target host is allowlisted', async () => {
     const body: McpRegistryListResponse = {
       servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
@@ -741,6 +772,7 @@ describe('fetchRegistryPage', () => {
       .mockResolvedValueOnce({
         ok: false,
         status: 301,
+        url: 'https://registry.example.com/v1/servers',
         headers: mockHeaders({ Location: '/v1/servers-mirror' }),
         json: async () => ({}),
         text: async () => '',
@@ -748,6 +780,7 @@ describe('fetchRegistryPage', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
+        url: 'https://registry.example.com/v1/servers-mirror',
         headers: mockHeaders(),
         json: async () => body,
         text: async () => JSON.stringify(body),
@@ -863,6 +896,7 @@ describe('fetchRegistryPage', () => {
       .mockResolvedValueOnce({
         ok: false,
         status: 302,
+        url: 'https://registry.example.com/v1/servers',
         headers: mockHeaders({ Location: '/hop-1' }),
         json: async () => ({}),
         text: async () => '',
@@ -870,6 +904,7 @@ describe('fetchRegistryPage', () => {
       .mockResolvedValueOnce({
         ok: false,
         status: 308,
+        url: 'https://registry.example.com/hop-1',
         headers: mockHeaders({
           Location: 'https://registry.example.com/hop-2',
         }),
@@ -879,6 +914,7 @@ describe('fetchRegistryPage', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
+        url: 'https://registry.example.com/hop-2',
         headers: mockHeaders(),
         json: async () => body,
         text: async () => JSON.stringify(body),
@@ -1040,6 +1076,45 @@ describe('assertRequestHostAllowed', () => {
       assertRequestHostAllowed(
         new URL('https://Registry.Example.COM/v1/servers'),
         ['registry.example.com'],
+      ),
+    ).not.toThrow();
+  });
+});
+
+describe('assertResponseUrlAllowed', () => {
+  it('does nothing when hostAllowList is undefined', () => {
+    expect(() =>
+      assertResponseUrlAllowed(
+        { url: '' } as Response,
+        undefined,
+        'https://registry.example.com/v1/servers',
+      ),
+    ).not.toThrow();
+  });
+
+  it('throws when response.url is missing under an allowlist', () => {
+    expect(() =>
+      assertResponseUrlAllowed(
+        { url: '' } as Response,
+        ['registry.example.com'],
+        'https://registry.example.com/v1/servers',
+      ),
+    ).toThrow(/missing response\.url/);
+  });
+
+  it('validates response.url against the allowlist', () => {
+    expect(() =>
+      assertResponseUrlAllowed(
+        { url: 'https://evil.example.com/v1/servers' } as Response,
+        ['registry.example.com'],
+        'https://registry.example.com/v1/servers',
+      ),
+    ).toThrow(/not in the configured hostAllowList/);
+    expect(() =>
+      assertResponseUrlAllowed(
+        { url: 'https://registry.example.com/v1/servers' } as Response,
+        ['registry.example.com'],
+        'https://registry.example.com/v1/servers',
       ),
     ).not.toThrow();
   });
