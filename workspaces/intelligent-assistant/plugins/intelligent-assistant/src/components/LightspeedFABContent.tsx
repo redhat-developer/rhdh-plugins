@@ -117,7 +117,7 @@ export const LightspeedFABContent = () => {
         bottom: fabEdgeInset,
         right: fabEdgeInset,
         alignItems: 'end',
-        zIndex: 200,
+        zIndex: theme.zIndex.tooltip,
         display: 'flex',
         position: 'fixed',
         'body.docked-drawer-open &': {
