@@ -18,42 +18,76 @@
 /** Stop the local MCP Registry started by deploy-mcp-registry.ts. */
 
 const { spawnSync } = require('node:child_process');
-const { existsSync, mkdtempSync, rmSync, writeFileSync } = require('node:fs');
-const { tmpdir } = require('node:os');
+const {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} = require('node:fs');
+const { homedir } = require('node:os');
 const { join } = require('node:path');
 
-const REPO_DIR = process.env.REPO_DIR?.trim() || '/tmp/mcp-registry';
+/** Fixed, typically non-writable dirs — avoid PATH-based binary lookup (S4036). */
+const SAFE_BIN_DIRS = ['/usr/bin', '/bin', '/usr/local/bin'];
+
+const CACHE_ROOT = join(homedir(), '.cache', 'rhdh-ai-integrations');
+const DEFAULT_REPO_DIR = join(CACHE_ROOT, 'mcp-registry');
+
+const REPO_DIR = process.env.REPO_DIR?.trim() || DEFAULT_REPO_DIR;
 const IMAGE =
   process.env.MCP_REGISTRY_IMAGE?.trim() ||
   'ghcr.io/modelcontextprotocol/registry:main';
 
-function commandExists(command: string): boolean {
-  return (
-    spawnSync('sh', ['-c', `command -v "${command}" >/dev/null 2>&1`])
-      .status === 0
-  );
+function findBinary(name: string): string | undefined {
+  for (const dir of SAFE_BIN_DIRS) {
+    const candidate = join(dir, name);
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return undefined;
 }
 
-function composeVersionOk(bin: string): boolean {
+function requireBinary(name: string): string {
+  const path = findBinary(name);
+  if (!path) {
+    throw new Error(
+      `command not found in ${SAFE_BIN_DIRS.join(', ')}: ${name}`,
+    );
+  }
+  return path;
+}
+
+function composeVersionOk(binPath: string): boolean {
   return (
-    spawnSync(bin, ['compose', 'version'], { stdio: 'ignore' }).status === 0
+    spawnSync(binPath, ['compose', 'version'], { stdio: 'ignore' }).status === 0
   );
 }
 
 function resolveCompose(): [string, ...string[]] {
-  if (commandExists('podman') && composeVersionOk('podman')) {
-    return ['podman', 'compose'];
+  const podman = findBinary('podman');
+  if (podman && composeVersionOk(podman)) {
+    return [podman, 'compose'];
   }
-  if (commandExists('docker') && composeVersionOk('docker')) {
-    return ['docker', 'compose'];
+  const docker = findBinary('docker');
+  if (docker && composeVersionOk(docker)) {
+    return [docker, 'compose'];
   }
   throw new Error("need 'podman compose' or 'docker compose'");
 }
 
+/** Private cache dir under $HOME — avoid world-writable /tmp (S5443). */
+function createPrivateTempDir(prefix: string): string {
+  mkdirSync(CACHE_ROOT, { recursive: true, mode: 0o700 });
+  return mkdtempSync(join(CACHE_ROOT, prefix));
+}
+
 if (!existsSync(join(REPO_DIR, '.git'))) {
   if (!existsSync(REPO_DIR)) {
+    const git = requireBinary('git');
     const result = spawnSync(
-      'git',
+      git,
       [
         'clone',
         'https://github.com/modelcontextprotocol/registry.git',
@@ -78,13 +112,12 @@ try {
   process.exit(1);
 }
 
-const overrideDir = mkdtempSync(join(tmpdir(), 'mcp-registry-'));
+const overrideDir = createPrivateTempDir('mcp-registry-');
 const overridePath = join(overrideDir, 'override.yml');
-writeFileSync(
-  overridePath,
-  `services:\n  registry:\n    image: ${IMAGE}\n`,
-  'utf8',
-);
+writeFileSync(overridePath, `services:\n  registry:\n    image: ${IMAGE}\n`, {
+  encoding: 'utf8',
+  mode: 0o600,
+});
 
 try {
   console.log(`Stopping MCP Registry in ${REPO_DIR}...`);

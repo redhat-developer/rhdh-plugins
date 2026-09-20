@@ -28,10 +28,11 @@ You can also run the script directly from the workspace root:
 node scripts/deploy-mcp-registry.ts
 ```
 
-This clones the registry into `/tmp/mcp-registry` (if needed), starts PostgreSQL
-and the registry in the background, **waits until the HTTP API responds** (seed
-import can take a few minutes when seeding from the public registry), and serves
-the API at [http://localhost:8080](http://localhost:8080).
+This clones the registry into `~/.cache/rhdh-ai-integrations/mcp-registry`
+(if needed; override with `REPO_DIR`), starts PostgreSQL and the registry in the
+background, **waits until the HTTP API responds** (seed import can take a few
+minutes when seeding from the public registry), and serves the API at
+[http://localhost:8080](http://localhost:8080).
 
 Start the registry **before** `yarn dev`. If the provider syncs while the
 registry is still importing seed data, you will see
@@ -42,7 +43,7 @@ Optional environment variables:
 
 | Variable                        | Default                                      | Description                                                                                                                                                                                                 |
 | ------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `REPO_DIR`                      | `/tmp/mcp-registry`                          | Local checkout path for the registry                                                                                                                                                                        |
+| `REPO_DIR`                      | `~/.cache/rhdh-ai-integrations/mcp-registry` | Local checkout path for the registry                                                                                                                                                                        |
 | `MCP_REGISTRY_IMAGE`            | `ghcr.io/modelcontextprotocol/registry:main` | Registry container image                                                                                                                                                                                    |
 | `MCP_REGISTRY_DATA_DIR`         | _(checkout `./data`)_                        | Host directory mounted at `/data` instead of the [default seed data](https://github.com/modelcontextprotocol/registry/blob/main/data/seed.json). When set, seeds from `data/seed.json` with validation off. |
 | `MCP_REGISTRY_URL`              | `http://localhost:8080`                      | URL probed for readiness (and typically used as `catalog.providers.mcpRegistry.baseUrl`)                                                                                                                    |
@@ -57,7 +58,7 @@ MCP_REGISTRY_DATA_DIR=./examples/mcp-registry/seed-data yarn start-mcp-registry
 View logs (example with Podman):
 
 ```bash
-podman compose -f /tmp/mcp-registry/docker-compose.yml logs -f
+podman compose -f ~/.cache/rhdh-ai-integrations/mcp-registry/docker-compose.yml logs -f
 ```
 
 ## Point the provider at localhost
@@ -97,5 +98,6 @@ Or from the workspace root:
 node scripts/undeploy-mcp-registry.ts
 ```
 
-This runs `compose down` for the same stack. The `/tmp/mcp-registry` checkout is
-left in place so the next deploy is faster.
+This runs `compose down` for the same stack. The
+`~/.cache/rhdh-ai-integrations/mcp-registry` checkout is left in place so the
+next deploy is faster.

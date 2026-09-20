@@ -32,15 +32,22 @@
 const { spawnSync } = require('node:child_process');
 const {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   rmSync,
   statSync,
   writeFileSync,
 } = require('node:fs');
-const { tmpdir } = require('node:os');
+const { homedir } = require('node:os');
 const { join, resolve } = require('node:path');
 
-const REPO_DIR = process.env.REPO_DIR?.trim() || '/tmp/mcp-registry';
+/** Fixed, typically non-writable dirs — avoid PATH-based binary lookup (S4036). */
+const SAFE_BIN_DIRS = ['/usr/bin', '/bin', '/usr/local/bin'];
+
+const CACHE_ROOT = join(homedir(), '.cache', 'rhdh-ai-integrations');
+const DEFAULT_REPO_DIR = join(CACHE_ROOT, 'mcp-registry');
+
+const REPO_DIR = process.env.REPO_DIR?.trim() || DEFAULT_REPO_DIR;
 const IMAGE =
   process.env.MCP_REGISTRY_IMAGE?.trim() ||
   'ghcr.io/modelcontextprotocol/registry:main';
@@ -51,25 +58,40 @@ const READY_TIMEOUT_MS = Number(
   process.env.MCP_REGISTRY_READY_TIMEOUT_MS?.trim() || 300_000,
 );
 
-function commandExists(command: string): boolean {
-  return (
-    spawnSync('sh', ['-c', `command -v "${command}" >/dev/null 2>&1`])
-      .status === 0
-  );
+function findBinary(name: string): string | undefined {
+  for (const dir of SAFE_BIN_DIRS) {
+    const candidate = join(dir, name);
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return undefined;
 }
 
-function composeVersionOk(bin: string): boolean {
+function requireBinary(name: string): string {
+  const path = findBinary(name);
+  if (!path) {
+    throw new Error(
+      `command not found in ${SAFE_BIN_DIRS.join(', ')}: ${name}`,
+    );
+  }
+  return path;
+}
+
+function composeVersionOk(binPath: string): boolean {
   return (
-    spawnSync(bin, ['compose', 'version'], { stdio: 'ignore' }).status === 0
+    spawnSync(binPath, ['compose', 'version'], { stdio: 'ignore' }).status === 0
   );
 }
 
 function resolveCompose(): [string, ...string[]] {
-  if (commandExists('podman') && composeVersionOk('podman')) {
-    return ['podman', 'compose'];
+  const podman = findBinary('podman');
+  if (podman && composeVersionOk(podman)) {
+    return [podman, 'compose'];
   }
-  if (commandExists('docker') && composeVersionOk('docker')) {
-    return ['docker', 'compose'];
+  const docker = findBinary('docker');
+  if (docker && composeVersionOk(docker)) {
+    return [docker, 'compose'];
   }
   throw new Error("need 'podman compose' or 'docker compose'");
 }
@@ -105,17 +127,25 @@ function buildOverrideYaml(image: string, dataDir?: string): string {
   return `${lines.join('\n')}\n`;
 }
 
+/** Private cache dir under $HOME — avoid world-writable /tmp (S5443). */
+function createPrivateTempDir(prefix: string): string {
+  mkdirSync(CACHE_ROOT, { recursive: true, mode: 0o700 });
+  return mkdtempSync(join(CACHE_ROOT, prefix));
+}
+
 /**
  * Block until the registry HTTP API answers. `compose up -d` returns before
  * migrations/seed finish; the process only listens on :8080 after import.
  */
 function waitForRegistryReady(baseUrl: string, timeoutMs: number): void {
+  const curl = requireBinary('curl');
+  const sleep = requireBinary('sleep');
   const probeUrl = `${baseUrl.replace(/\/$/, '')}/v0.1/servers?limit=1`;
   const deadline = Date.now() + timeoutMs;
   console.log(`Waiting for MCP Registry at ${probeUrl}...`);
   while (Date.now() < deadline) {
     const probe = spawnSync(
-      'curl',
+      curl,
       ['-sf', '--connect-timeout', '1', '--max-time', '3', probeUrl],
       { encoding: 'utf8' },
     );
@@ -123,7 +153,7 @@ function waitForRegistryReady(baseUrl: string, timeoutMs: number): void {
       console.log('MCP Registry is ready.');
       return;
     }
-    spawnSync('sleep', ['1']);
+    spawnSync(sleep, ['1']);
   }
   throw new Error(
     `MCP Registry did not become ready at ${probeUrl} within ${timeoutMs}ms`,
@@ -131,8 +161,9 @@ function waitForRegistryReady(baseUrl: string, timeoutMs: number): void {
 }
 
 if (!existsSync(join(REPO_DIR, '.git'))) {
+  const git = requireBinary('git');
   const result = spawnSync(
-    'git',
+    git,
     ['clone', 'https://github.com/modelcontextprotocol/registry.git', REPO_DIR],
     { stdio: 'inherit' },
   );
@@ -151,9 +182,12 @@ try {
   process.exit(1);
 }
 
-const overrideDir = mkdtempSync(join(tmpdir(), 'mcp-registry-'));
+const overrideDir = createPrivateTempDir('mcp-registry-');
 const overridePath = join(overrideDir, 'override.yml');
-writeFileSync(overridePath, buildOverrideYaml(IMAGE, dataDir), 'utf8');
+writeFileSync(overridePath, buildOverrideYaml(IMAGE, dataDir), {
+  encoding: 'utf8',
+  mode: 0o600,
+});
 
 const composeEnv = { ...process.env };
 if (dataDir) {
