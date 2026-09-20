@@ -1,0 +1,161 @@
+#!/usr/bin/env node
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Start a local MCP Registry for provider development.
+ *
+ * Upstream `make dev-compose` builds the registry image with ko into the Docker
+ * daemon. ko does not work with podman, so this script uses the published GHCR
+ * image and the upstream docker-compose.yml (postgres + registry) instead.
+ *
+ * Set MCP_REGISTRY_DATA_DIR to mount a custom host directory over /data (instead
+ * of the checkout's ./data, which includes the default seed.json). When set,
+ * seeding defaults to data/seed.json with registry validation disabled unless
+ * MCP_REGISTRY_SEED_FROM / MCP_REGISTRY_ENABLE_REGISTRY_VALIDATION are already
+ * set.
+ */
+
+const { spawnSync } = require('node:child_process');
+const {
+  existsSync,
+  mkdtempSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} = require('node:fs');
+const { tmpdir } = require('node:os');
+const { join, resolve } = require('node:path');
+
+const REPO_DIR = process.env.REPO_DIR?.trim() || '/tmp/mcp-registry';
+const IMAGE =
+  process.env.MCP_REGISTRY_IMAGE?.trim() ||
+  'ghcr.io/modelcontextprotocol/registry:main';
+const DATA_DIR = process.env.MCP_REGISTRY_DATA_DIR?.trim();
+
+function commandExists(command: string): boolean {
+  return (
+    spawnSync('sh', ['-c', `command -v "${command}" >/dev/null 2>&1`])
+      .status === 0
+  );
+}
+
+function composeVersionOk(bin: string): boolean {
+  return (
+    spawnSync(bin, ['compose', 'version'], { stdio: 'ignore' }).status === 0
+  );
+}
+
+function resolveCompose(): [string, ...string[]] {
+  if (commandExists('podman') && composeVersionOk('podman')) {
+    return ['podman', 'compose'];
+  }
+  if (commandExists('docker') && composeVersionOk('docker')) {
+    return ['docker', 'compose'];
+  }
+  throw new Error("need 'podman compose' or 'docker compose'");
+}
+
+function resolveDataDir(): string | undefined {
+  if (!DATA_DIR) {
+    return undefined;
+  }
+  const absoluteDataDir = resolve(DATA_DIR);
+  if (
+    !existsSync(absoluteDataDir) ||
+    !statSync(absoluteDataDir).isDirectory()
+  ) {
+    console.error(
+      `error: MCP_REGISTRY_DATA_DIR must be an existing directory: ${absoluteDataDir}`,
+    );
+    process.exit(1);
+  }
+  return absoluteDataDir;
+}
+
+function buildOverrideYaml(image: string, dataDir?: string): string {
+  const lines = ['services:', '  registry:', `    image: ${image}`];
+  if (dataDir) {
+    // Replace upstream ./data:/data:ro with a custom host directory.
+    // `:z` is required for Podman/SELinux so the container (uid 65532) can
+    // read the bind-mounted seed files; without it open() returns EACCES.
+    lines.push(
+      '    volumes:',
+      `      - ${JSON.stringify(`${dataDir}:/data:ro,z`)}`,
+    );
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+if (!existsSync(join(REPO_DIR, '.git'))) {
+  const result = spawnSync(
+    'git',
+    ['clone', 'https://github.com/modelcontextprotocol/registry.git', REPO_DIR],
+    { stdio: 'inherit' },
+  );
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
+
+const dataDir = resolveDataDir();
+
+let compose: [string, ...string[]];
+try {
+  compose = resolveCompose();
+} catch (error) {
+  console.error(`error: ${error instanceof Error ? error.message : error}`);
+  process.exit(1);
+}
+
+const overrideDir = mkdtempSync(join(tmpdir(), 'mcp-registry-'));
+const overridePath = join(overrideDir, 'override.yml');
+writeFileSync(overridePath, buildOverrideYaml(IMAGE, dataDir), 'utf8');
+
+const composeEnv = { ...process.env };
+if (dataDir) {
+  // Match upstream offline seeding:
+  // MCP_REGISTRY_SEED_FROM=data/seed.json MCP_REGISTRY_ENABLE_REGISTRY_VALIDATION=false
+  if (!composeEnv.MCP_REGISTRY_SEED_FROM?.trim()) {
+    composeEnv.MCP_REGISTRY_SEED_FROM = 'data/seed.json';
+  }
+  if (!composeEnv.MCP_REGISTRY_ENABLE_REGISTRY_VALIDATION?.trim()) {
+    composeEnv.MCP_REGISTRY_ENABLE_REGISTRY_VALIDATION = 'false';
+  }
+}
+
+try {
+  const seedNote = dataDir ? ` with data from ${dataDir}` : '';
+  console.log(
+    `Starting MCP Registry from ${IMAGE}${seedNote} (http://localhost:8080)...`,
+  );
+  const [bin, ...prefix] = compose;
+  const result = spawnSync(
+    bin,
+    [...prefix, '-f', 'docker-compose.yml', '-f', overridePath, 'up', '-d'],
+    { cwd: REPO_DIR, stdio: 'inherit', env: composeEnv },
+  );
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+  console.log(
+    `MCP Registry started in background. Use '${compose.join(
+      ' ',
+    )} -f ${REPO_DIR}/docker-compose.yml logs' to view logs.`,
+  );
+} finally {
+  rmSync(overrideDir, { recursive: true, force: true });
+}

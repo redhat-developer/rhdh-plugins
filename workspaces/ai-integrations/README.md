@@ -29,3 +29,8 @@ If you would like to build with `docker`, add the `--user-docker` tag like so:
 ```
 npx --yes @red-hat-developer-hub/cli@latest plugin package --tag --tag "${PLUGIN_CONTAINER_TAG}" --use-docker
 ```
+
+## Deploy MCP Registry Locally
+
+To run a local MCP Registry for provider development, see
+[Deploy MCP Registry Locally](./docs/deploy-mcp-registry-locally.md).

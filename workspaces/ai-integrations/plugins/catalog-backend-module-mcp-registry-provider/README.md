@@ -123,3 +123,8 @@ These MCP server entries have a single remote _placeholder_ field which should *
   }
 }
 ```
+
+## Deploy MCP Registry Locally
+
+To run a local MCP Registry for provider development, see
+[Deploy MCP Registry Locally](../../docs/deploy-mcp-registry-locally.md).

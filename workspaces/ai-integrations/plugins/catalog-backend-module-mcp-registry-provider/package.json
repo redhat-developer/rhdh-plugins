@@ -22,6 +22,8 @@
   },
   "scripts": {
     "start": "backstage-cli package start",
+    "start-mcp-registry": "node ../../hack/deploy-mcp-registry.ts",
+    "stop-mcp-registry": "node ../../hack/undeploy-mcp-registry.ts",
     "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
     "lint:check": "backstage-cli package lint",
