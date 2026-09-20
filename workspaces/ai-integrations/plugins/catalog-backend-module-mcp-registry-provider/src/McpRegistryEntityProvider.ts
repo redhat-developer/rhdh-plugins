@@ -114,7 +114,7 @@ export function formatMappingFailureMessage(
     message += ` "${name}"`;
   }
   if (version) {
-    message += ` version "${version}"`;
+    message += ` (version "${version}")`;
   }
   return `${message}: ${err}`;
 }

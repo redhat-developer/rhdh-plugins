@@ -19,14 +19,14 @@ import {
   assertSingleRegistryConfig,
   readMaxEntries,
   readMcpRegistryProviderConfig,
-  readOptionalHostAllowList,
+  readHostAllowList,
   readOptionalPageSize,
   readPageLimit,
   readProviderSchedule,
   readRemotesOnly,
   readRequiredHttpBaseUrl,
   safeGetOptionalString,
-  validateHostAgainstAllowList,
+  validateHostAllowList,
 } from './config';
 
 describe('readMcpRegistryProviderConfig', () => {
@@ -441,20 +441,20 @@ describe('readRemotesOnly', () => {
   });
 });
 
-describe('readOptionalHostAllowList', () => {
+describe('readHostAllowList', () => {
   it('returns undefined when omitted', () => {
-    expect(readOptionalHostAllowList(new ConfigReader({}))).toBeUndefined();
+    expect(readHostAllowList(new ConfigReader({}))).toBeUndefined();
   });
 
-  it('returns undefined for an empty array', () => {
-    expect(
-      readOptionalHostAllowList(new ConfigReader({ hostAllowList: [] })),
-    ).toBeUndefined();
+  it('returns an empty array for an empty array (deny all)', () => {
+    expect(readHostAllowList(new ConfigReader({ hostAllowList: [] }))).toEqual(
+      [],
+    );
   });
 
   it('returns normalized lowercase hostnames', () => {
     expect(
-      readOptionalHostAllowList(
+      readHostAllowList(
         new ConfigReader({
           hostAllowList: ['Registry.Example.COM', 'Other.HOST'],
         }),
@@ -463,10 +463,10 @@ describe('readOptionalHostAllowList', () => {
   });
 });
 
-describe('validateHostAgainstAllowList', () => {
+describe('validateHostAllowList', () => {
   it('passes when hostname is in the allow list', () => {
     expect(() =>
-      validateHostAgainstAllowList('https://registry.example.com/path', [
+      validateHostAllowList('https://registry.example.com/path', [
         'registry.example.com',
       ]),
     ).not.toThrow();
@@ -474,7 +474,7 @@ describe('validateHostAgainstAllowList', () => {
 
   it('throws when hostname is not in the allow list', () => {
     expect(() =>
-      validateHostAgainstAllowList('https://evil.example.com', [
+      validateHostAllowList('https://evil.example.com', [
         'registry.example.com',
       ]),
     ).toThrow(/not in the configured hostAllowList/);
@@ -482,7 +482,7 @@ describe('validateHostAgainstAllowList', () => {
 
   it('matches case-insensitively', () => {
     expect(() =>
-      validateHostAgainstAllowList('https://Registry.Example.COM', [
+      validateHostAllowList('https://Registry.Example.COM', [
         'registry.example.com',
       ]),
     ).not.toThrow();

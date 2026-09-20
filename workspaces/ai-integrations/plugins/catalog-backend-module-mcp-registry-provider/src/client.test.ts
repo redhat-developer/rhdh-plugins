@@ -23,7 +23,7 @@ import {
   parseServersEndpointUrl,
   resolveNextCursor,
   truncateErrorBody,
-  validateUrlHostAllowList,
+  validateHostAllowList,
 } from './client';
 import type { McpRegistryListResponse } from './client';
 import { createMockServerDoc } from './testUtils';
@@ -698,10 +698,10 @@ describe('fetchRegistryPage', () => {
   });
 });
 
-describe('validateUrlHostAllowList', () => {
+describe('validateHostAllowList', () => {
   it('does nothing when hostAllowList is undefined', () => {
     expect(() =>
-      validateUrlHostAllowList(
+      validateHostAllowList(
         new URL('https://registry.example.com/v1/servers'),
         undefined,
       ),
@@ -710,7 +710,7 @@ describe('validateUrlHostAllowList', () => {
 
   it('passes when hostname is in the allow list', () => {
     expect(() =>
-      validateUrlHostAllowList(
+      validateHostAllowList(
         new URL('https://registry.example.com/v1/servers'),
         ['registry.example.com'],
       ),
@@ -719,12 +719,12 @@ describe('validateUrlHostAllowList', () => {
 
   it('throws McpRegistryClientError when hostname is not in the allow list', () => {
     expect(() =>
-      validateUrlHostAllowList(new URL('https://evil.example.com/v1/servers'), [
+      validateHostAllowList(new URL('https://evil.example.com/v1/servers'), [
         'registry.example.com',
       ]),
     ).toThrow(McpRegistryClientError);
     expect(() =>
-      validateUrlHostAllowList(new URL('https://evil.example.com/v1/servers'), [
+      validateHostAllowList(new URL('https://evil.example.com/v1/servers'), [
         'registry.example.com',
       ]),
     ).toThrow(/not in the configured hostAllowList/);
@@ -732,7 +732,7 @@ describe('validateUrlHostAllowList', () => {
 
   it('matches case-insensitively', () => {
     expect(() =>
-      validateUrlHostAllowList(
+      validateHostAllowList(
         new URL('https://Registry.Example.COM/v1/servers'),
         ['registry.example.com'],
       ),

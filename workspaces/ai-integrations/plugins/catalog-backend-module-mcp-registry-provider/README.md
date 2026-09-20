@@ -4,6 +4,12 @@ A Backstage catalog backend module that ingests MCP servers from a configured [M
 
 ## Installation
 
+Install the package:
+
+```bash
+yarn add @red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider
+```
+
 Add the module to your backend:
 
 ```ts

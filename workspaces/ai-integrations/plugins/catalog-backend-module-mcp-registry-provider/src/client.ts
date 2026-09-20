@@ -221,7 +221,7 @@ export async function fetchRegistryPage(
   // Validate the actual response URL (after any redirects) against
   // the hostAllowList to prevent SSRF via redirect.
   if (response.url) {
-    validateUrlHostAllowList(new URL(response.url), hostAllowList);
+    validateHostAllowList(new URL(response.url), hostAllowList);
   }
 
   if (!response.ok) {
@@ -291,7 +291,7 @@ export function resolveNextCursor(
  *
  * @internal
  */
-export function validateUrlHostAllowList(
+export function validateHostAllowList(
   url: URL,
   hostAllowList: string[] | undefined,
 ): void {
@@ -342,7 +342,7 @@ export async function fetchRegistryServers(
 
   // Defense-in-depth: validate endpoint hostname at runtime even
   // though config parsing already checked baseUrl against the list.
-  validateUrlHostAllowList(endpoint, hostAllowList);
+  validateHostAllowList(endpoint, hostAllowList);
 
   const allServers: McpRegistryServerEntry[] = [];
   let cursor: string | undefined = startCursor;

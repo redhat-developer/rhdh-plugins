@@ -191,13 +191,17 @@ export function readOptionalPageSize(
 /**
  * Read optional `hostAllowList`, normalizing entries to lowercase.
  *
+ * Returns `undefined` when the key is absent (no filtering).
+ * Returns an empty array when configured as `[]` — semantically
+ * "deny all" (no hostname can pass validation).
+ *
  * @internal
  */
-export function readOptionalHostAllowList(
+export function readHostAllowList(
   registryConfig: Config,
 ): string[] | undefined {
   const list = registryConfig.getOptionalStringArray('hostAllowList');
-  if (!list || list.length === 0) {
+  if (!list) {
     return undefined;
   }
   return list.map(h => h.toLowerCase());
@@ -209,7 +213,7 @@ export function readOptionalHostAllowList(
  *
  * @internal
  */
-export function validateHostAgainstAllowList(
+export function validateHostAllowList(
   url: string,
   hostAllowList: string[],
 ): void {
@@ -314,10 +318,10 @@ export function readMcpRegistryProviderConfig(
   assertSingleRegistryConfig(registryConfig);
 
   const baseUrl = readRequiredHttpBaseUrl(registryConfig);
-  const hostAllowList = readOptionalHostAllowList(registryConfig);
+  const hostAllowList = readHostAllowList(registryConfig);
 
   if (hostAllowList) {
-    validateHostAgainstAllowList(baseUrl, hostAllowList);
+    validateHostAllowList(baseUrl, hostAllowList);
   }
 
   return {

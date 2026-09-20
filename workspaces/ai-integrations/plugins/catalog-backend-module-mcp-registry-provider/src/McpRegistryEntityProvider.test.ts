@@ -15,59 +15,21 @@
  */
 
 import { McpRegistryEntityProvider } from './McpRegistryEntityProvider';
-import type { McpRegistryProviderConfig } from './config';
 import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import type { McpRegistryListResponse } from './client';
-import { createMockServerDoc } from './testUtils';
-
-function createMockLogger() {
-  return {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    child: jest.fn().mockReturnThis(),
-  };
-}
+import {
+  createDefaultConfig,
+  createMockLogger,
+  createMockServerDoc,
+  mockFetchForResponses,
+} from './testUtils';
 
 function createMockConnection(): EntityProviderConnection {
   return {
     applyMutation: jest.fn(),
     refresh: jest.fn(),
   } as unknown as EntityProviderConnection;
-}
-
-function createDefaultConfig(
-  overrides?: Partial<McpRegistryProviderConfig>,
-): McpRegistryProviderConfig {
-  return {
-    baseUrl: 'https://registry.example.com',
-    apiVersion: 'v1',
-    pageLimit: 10,
-    maxEntries: 5000,
-    remotesOnly: false,
-    schedule: {
-      frequency: { minutes: 30 },
-      timeout: { minutes: 3 },
-    },
-    ...overrides,
-  };
-}
-
-function mockFetchForResponses(
-  responses: McpRegistryListResponse[],
-): jest.Mock {
-  const fn = jest.fn();
-  for (const body of responses) {
-    fn.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => body,
-      text: async () => JSON.stringify(body),
-    } as unknown as Response);
-  }
-  return fn;
 }
 
 describe('McpRegistryEntityProvider', () => {

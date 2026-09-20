@@ -17,7 +17,6 @@
 import type { Entity } from '@backstage/catalog-model';
 import type { DeferredEntity } from '@backstage/plugin-catalog-node';
 import type { McpServerMappingDefaults } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
-import type { McpRegistryProviderConfig } from './config';
 import type { McpRegistryListResponse, McpRegistryServerEntry } from './client';
 import {
   buildLastGoodKey,
@@ -26,7 +25,12 @@ import {
   McpRegistryEntityProvider,
   readServerIdentity,
 } from './McpRegistryEntityProvider';
-import { createMockServerDoc } from './testUtils';
+import {
+  createDefaultConfig,
+  createMockLogger,
+  createMockServerDoc,
+  mockFetchForResponses,
+} from './testUtils';
 
 const SYNC_STATUS_ANNOTATION = 'redhat.com/rhdh-mcp-registry-sync-status';
 const LOCATION = 'url:https://registry.example.com';
@@ -58,48 +62,6 @@ type ProviderParts = {
 
 function parts(provider: McpRegistryEntityProvider): ProviderParts {
   return provider as unknown as ProviderParts;
-}
-
-function createMockLogger() {
-  return {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    child: jest.fn().mockReturnThis(),
-  };
-}
-
-function createDefaultConfig(
-  overrides?: Partial<McpRegistryProviderConfig>,
-): McpRegistryProviderConfig {
-  return {
-    baseUrl: 'https://registry.example.com',
-    apiVersion: 'v1',
-    pageLimit: 10,
-    maxEntries: 5000,
-    remotesOnly: false,
-    schedule: {
-      frequency: { minutes: 30 },
-      timeout: { minutes: 3 },
-    },
-    ...overrides,
-  };
-}
-
-function mockFetchForResponses(
-  responses: McpRegistryListResponse[],
-): jest.Mock {
-  const fn = jest.fn();
-  for (const body of responses) {
-    fn.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => body,
-      text: async () => JSON.stringify(body),
-    } as unknown as Response);
-  }
-  return fn;
 }
 
 function makeDeferred(
@@ -210,7 +172,7 @@ describe('formatMappingFailureMessage', () => {
     expect(
       formatMappingFailureMessage('io.example/weather', '1.0.0', 'boom'),
     ).toBe(
-      'Failed to map MCP Registry server entry "io.example/weather" version "1.0.0": boom',
+      'Failed to map MCP Registry server entry "io.example/weather" (version "1.0.0"): boom',
     );
   });
 
@@ -222,7 +184,7 @@ describe('formatMappingFailureMessage', () => {
 
   it('includes only the version when name is missing', () => {
     expect(formatMappingFailureMessage(undefined, '1.0.0', 'boom')).toBe(
-      'Failed to map MCP Registry server entry version "1.0.0": boom',
+      'Failed to map MCP Registry server entry (version "1.0.0"): boom',
     );
   });
 });
