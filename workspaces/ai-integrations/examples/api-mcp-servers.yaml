@@ -1,0 +1,198 @@
+---
+# Example mcp-server API entities as produced by
+# catalog-backend-module-mcp-registry-provider from the sample registry seed
+# at examples/mcp-registry/seed-data/seed.json.
+#
+# Defaults match app-config.yaml (defaultOwner: default-owner,
+# baseUrl: http://localhost:8080/, default baseName prefix mcp.registry).
+# Provider location and sync-status annotations are included.
+#
+# Wired as a file location in app-config.yaml for local catalog review.
+# If the MCP Registry provider is also syncing the same seed, you may see
+# duplicate entities — disable one source when comparing.
+# Requires @backstage/plugin-catalog-backend-module-ai-model for mcp-server
+# API validation (Backstage 1.51+).
+
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: mcp.registry__io.example.labs-atlas-search__2.1.0-a5f4e0d4
+  description: MCP server that wraps the Atlas Search HTTP API for document discovery
+  tags:
+    - mcp
+    - ai
+  annotations:
+    backstage.io/managed-by-location: url:http://localhost:8080
+    backstage.io/managed-by-origin-location: url:http://localhost:8080
+    backstage.io/source-location: url:https://github.com/example-labs/mcp-servers
+    modelcontextprotocol.io/name: io.example.labs/atlas-search
+    modelcontextprotocol.io/packages.0.environmentvariables.0.description: Atlas Search API key
+    modelcontextprotocol.io/packages.0.environmentvariables.0.isrequired: 'true'
+    modelcontextprotocol.io/packages.0.environmentvariables.0.issecret: 'true'
+    modelcontextprotocol.io/packages.0.environmentvariables.0.name: ATLAS_SEARCH_API_KEY
+    modelcontextprotocol.io/packages.0.identifier: '@example-labs/mcp-server-atlas-search'
+    modelcontextprotocol.io/packages.0.registrybaseurl: https://registry.npmjs.org
+    modelcontextprotocol.io/packages.0.registrytype: npm
+    modelcontextprotocol.io/packages.0.transport.type: stdio
+    modelcontextprotocol.io/packages.0.version: 2.1.0
+    modelcontextprotocol.io/repository.source: github
+    modelcontextprotocol.io/repository.url: https://github.com/example-labs/mcp-servers
+    modelcontextprotocol.io/version: 2.1.0
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-14e325eb: 1.2.0
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-8a6b76b4: 2025-03-14T09:15:00Z
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provided.tool: npm-publisher
+    redhat.com/rhdh-mcp-registry-sync-status: ok
+  title: Atlas Search
+  links:
+    - url: https://labs.example.io/mcp/atlas-search
+      title: Website
+    - url: https://github.com/example-labs/mcp-servers
+      title: Source Code
+spec:
+  type: mcp-server
+  lifecycle: production
+  owner: default-owner
+  remotes:
+    - type: undefined
+      url: http://localhost:8080/
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: mcp.registry__io.github.example-labs-workspace-fs__1.4-db809cb2
+  description: MCP server for sandboxed workspace filesystem read and write operations.
+  tags:
+    - mcp
+    - ai
+  annotations:
+    backstage.io/managed-by-location: url:http://localhost:8080
+    backstage.io/managed-by-origin-location: url:http://localhost:8080
+    backstage.io/source-location: url:https://github.com/example-labs/mcp-servers
+    modelcontextprotocol.io/name: io.github.example-labs/workspace-fs
+    modelcontextprotocol.io/packages.0.environmentvariables.0.default: warn
+    modelcontextprotocol.io/packages.0.environmentvariables.0.description: Logging level (debug, info, warn, error)
+    modelcontextprotocol.io/packages.0.environmentvariables.0.name: LOG_LEVEL
+    modelcontextprotocol.io/packages.0.identifier: '@example-labs/mcp-server-workspace-fs'
+    modelcontextprotocol.io/packages.0.packagearguments.0.default: /home/developer/workspace
+    modelcontextprotocol.io/packages.0.packagearguments.0.description: Workspace root directory to expose
+    modelcontextprotocol.io/packages.0.packagearguments.0.isrepeated: 'true'
+    modelcontextprotocol.io/packages.0.packagearguments.0.isrequired: 'true'
+    modelcontextprotocol.io/packages.0.packagearguments.0.type: positional
+    modelcontextprotocol.io/packages.0.packagearguments.0.valuehint: workspace_root
+    modelcontextprotocol.io/packages.0.registrybaseurl: https://registry.npmjs.org
+    modelcontextprotocol.io/packages.0.registrytype: npm
+    modelcontextprotocol.io/packages.0.transport.type: stdio
+    modelcontextprotocol.io/packages.0.version: 1.4.1
+    modelcontextprotocol.io/packages.1.environmentvariables.0.default: warn
+    modelcontextprotocol.io/packages.1.environmentvariables.0.description: Logging level (debug, info, warn, error)
+    modelcontextprotocol.io/packages.1.environmentvariables.0.name: LOG_LEVEL
+    modelcontextprotocol.io/packages.1.identifier: ghcr.io/example-labs/workspace-fs:1.4.1
+    modelcontextprotocol.io/packages.1.packagearguments.0.type: positional
+    modelcontextprotocol.io/packages.1.packagearguments.0.value: /workspace
+    modelcontextprotocol.io/packages.1.packagearguments.0.valuehint: workspace_root
+    modelcontextprotocol.io/packages.1.registrytype: oci
+    modelcontextprotocol.io/packages.1.runtimearguments.0.description: Bind-mount a host path into the container
+    modelcontextprotocol.io/packages.1.runtimearguments.0.isrepeated: 'true'
+    modelcontextprotocol.io/packages.1.runtimearguments.0.isrequired: 'true'
+    modelcontextprotocol.io/packages.1.runtimearguments.0.name: --mount
+    modelcontextprotocol.io/packages.1.runtimearguments.0.type: named
+    modelcontextprotocol.io/packages.1.runtimearguments.0.value: type=bind,src={source_path},dst={target_path}
+    modelcontextprotocol.io/packages.1.runtimearguments.0.variables.source_path.description: Host path to mount
+    modelcontextprotocol.io/packages.1.runtimearguments.0.variables.source_path.format: filepath
+    modelcontextprotocol.io/packages.1.runtimearguments.0.variables.source_path.isrequired: 'true'
+    modelcontextprotocol.io/packages.1.runtimearguments.0.variables.target_path.default: /workspace
+    modelcontextprotocol.io/packages.1.runtimearguments.0.variables.target_path.description: Mount point inside the container under `/workspace`.
+    modelcontextprotocol.io/packages.1.runtimearguments.0.variables.target_path.isrequired: 'true'
+    modelcontextprotocol.io/packages.1.transport.type: stdio
+    modelcontextprotocol.io/repository.id: c1a2b3d4-e5f6-7890-abcd-ef1234567890
+    modelcontextprotocol.io/repository.source: github
+    modelcontextprotocol.io/repository.url: https://github.com/example-labs/mcp-servers
+    modelcontextprotocol.io/version: 1.4.1
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-14e325eb: 4.0.0
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-8a6b76b4: 2025-06-02T18:40:00Z
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-b0084041: 9f8e7d6c5b4a3210
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-eca6f5da: workspace-fs-build-2048
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-faf17705: staging
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provided.tool: ci-publisher
+    redhat.com/rhdh-mcp-registry-sync-status: ok
+  title: Workspace Filesystem
+  links:
+    - url: https://github.com/example-labs/mcp-servers
+      title: Source Code
+spec:
+  type: mcp-server
+  lifecycle: production
+  owner: default-owner
+  remotes:
+    - type: undefined
+      url: http://localhost:8080/
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: mcp.registry__io.github.example-labs-dice-weather-mcpx-cf045e19
+  description: NuGet MCP server that returns random dice rolls and sample weather snippets
+  tags:
+    - mcp
+    - ai
+  annotations:
+    backstage.io/managed-by-location: url:http://localhost:8080
+    backstage.io/managed-by-origin-location: url:http://localhost:8080
+    modelcontextprotocol.io/name: io.github.example-labs/dice-weather-mcp
+    modelcontextprotocol.io/packages.0.identifier: ExampleLabs.DiceWeatherMcp
+    modelcontextprotocol.io/packages.0.packagearguments.0.type: positional
+    modelcontextprotocol.io/packages.0.packagearguments.0.value: mcp
+    modelcontextprotocol.io/packages.0.packagearguments.1.type: positional
+    modelcontextprotocol.io/packages.0.packagearguments.1.value: start
+    modelcontextprotocol.io/packages.0.registrybaseurl: https://api.nuget.org/v3/index.json
+    modelcontextprotocol.io/packages.0.registrytype: nuget
+    modelcontextprotocol.io/packages.0.transport.type: stdio
+    modelcontextprotocol.io/packages.0.version: 1.2.0-preview.3
+    modelcontextprotocol.io/version: 1.2.0-preview.3
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-14e325eb: 2.3.1
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-8a6b76b4: 2025-01-22T11:05:00Z
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-eca6f5da: nuget-dice-weather-101
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provided.tool: nuget-publisher
+    redhat.com/rhdh-mcp-registry-sync-status: ok
+spec:
+  type: mcp-server
+  lifecycle: production
+  owner: default-owner
+  remotes:
+    - type: undefined
+      url: http://localhost:8080/
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: mcp.registry__io.example.cloud-remote-workspace__3.1.0-4744af90
+  description: Hosted MCP workspace filesystem endpoint for shared team sandboxes
+  tags:
+    - mcp
+    - ai
+  annotations:
+    backstage.io/managed-by-location: url:http://localhost:8080
+    backstage.io/managed-by-origin-location: url:http://localhost:8080
+    backstage.io/source-location: url:https://github.com/example-cloud/remote-workspace-mcp
+    modelcontextprotocol.io/name: io.example.cloud/remote-workspace
+    modelcontextprotocol.io/repository.id: a0b1c2d3-e4f5-6789-abcd-ef0123456789
+    modelcontextprotocol.io/repository.source: github
+    modelcontextprotocol.io/repository.url: https://github.com/example-cloud/remote-workspace-mcp
+    modelcontextprotocol.io/version: 3.1.0
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-14e325eb: 3.0.2
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-8a6b76b4: 2025-08-19T13:10:00Z
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-983f3ff8: eu-central-1
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-b0084041: c3b2a19087fe
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provi-bf4b1861: remote-workspace-deploy-812
+    modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provided.tool: cloud-deployer
+    redhat.com/rhdh-mcp-registry-sync-status: ok
+  links:
+    - url: https://github.com/example-cloud/remote-workspace-mcp
+      title: Source Code
+spec:
+  type: mcp-server
+  lifecycle: production
+  owner: default-owner
+  remotes:
+    - type: streamable-http
+      url: https://mcp.example.cloud/v1/workspace/http

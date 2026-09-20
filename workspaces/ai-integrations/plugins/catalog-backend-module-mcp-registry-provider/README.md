@@ -106,6 +106,10 @@ Each entity carries:
 - `modelcontextprotocol.io/name`: the server's canonical name
 - `modelcontextprotocol.io/version`: the server's version
 
+Example catalog entities matching this shape (generated from
+[`examples/mcp-registry/seed-data/seed.json`](../../examples/mcp-registry/seed-data/seed.json))
+are in [`examples/api-mcp-servers.yaml`](../../examples/api-mcp-servers.yaml).
+
 ## Non-Remote MCP Servers
 
 MCP servers without a remote deployment (package(s) only or [custom installation](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/server-json/generic-server-json.md#server-with-custom-installation-path)) can be queried via: `GET /api/catalog/entities?filter=kind=API,spec.type=mcp-server,spec.remotes.type=undefined`

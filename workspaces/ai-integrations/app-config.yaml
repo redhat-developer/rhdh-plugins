@@ -123,6 +123,16 @@ catalog:
       target: ../../examples/ai-model-server-api.yaml
       rules:
         - allow: [AiModelServerAPI]
+    # Example MCP server API entities as produced by
+    # catalog-backend-module-mcp-registry-provider from the sample registry seed
+    # at examples/mcp-registry/seed-data/seed.json.
+    #
+    # Comment out this location when deploying the MCP Registry provider against
+    # the same seed (e.g. `MCP_REGISTRY_DATA_DIR=./examples/mcp-registry/seed-data yarn start-local-mcp-registry`).
+    - type: file
+      target: ../../examples/api-mcp-servers.yaml
+      rules:
+        - allow: [API]
   providers:
     modelCatalog:
       # The field underneath should list the connector plugin ID that the entity provider accesses through
