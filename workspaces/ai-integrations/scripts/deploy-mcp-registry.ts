@@ -61,6 +61,7 @@ const IMAGE = `${IMAGE_NAME}:${IMAGE_TAG}`;
 const DATA_DIR = process.env.MCP_REGISTRY_DATA_DIR?.trim();
 const REGISTRY_URL =
   process.env.MCP_REGISTRY_URL?.trim() || 'http://localhost:8080';
+const API_VERSION = process.env.MCP_REGISTRY_API_VERSION?.trim() || 'v0.1';
 const READY_TIMEOUT_MS = Number(
   process.env.MCP_REGISTRY_READY_TIMEOUT_MS?.trim() || 300_000,
 );
@@ -147,7 +148,10 @@ function createPrivateTempDir(prefix: string): string {
 function waitForRegistryReady(baseUrl: string, timeoutMs: number): void {
   const curl = requireBinary('curl');
   const sleep = requireBinary('sleep');
-  const probeUrl = `${baseUrl.replace(/\/$/, '')}/v0.1/servers?limit=1`;
+  const probeUrl = `${baseUrl.replace(
+    /\/$/,
+    '',
+  )}/${API_VERSION}/servers?limit=1`;
   const deadline = Date.now() + timeoutMs;
   console.log(`Waiting for MCP Registry at ${probeUrl}...`);
   while (Date.now() < deadline) {
