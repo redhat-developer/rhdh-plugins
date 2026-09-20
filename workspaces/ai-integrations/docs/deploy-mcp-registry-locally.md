@@ -19,13 +19,13 @@ From the `ai-integrations` workspace root, or from
 `plugins/catalog-backend-module-mcp-registry-provider`:
 
 ```bash
-yarn start-mcp-registry
+yarn start-local-mcp-registry
 ```
 
 You can also run the script directly from the workspace root:
 
 ```bash
-node scripts/deploy-mcp-registry.ts
+node scripts/deploy-local-mcp-registry.ts
 ```
 
 This clones the registry into `~/.cache/rhdh-ai-integrations/mcp-registry`
@@ -53,12 +53,12 @@ Optional environment variables:
 | `MCP_REGISTRY_DATA_DIR`         | _(checkout `./data`)_                                  | Host directory mounted at `/data` instead of the [default seed data](https://github.com/modelcontextprotocol/registry/blob/main/data/seed.json). When set, seeds from `data/seed.json` with validation off. |
 | `MCP_REGISTRY_URL`              | `http://localhost:8080`                                | URL probed for readiness (and typically used as `catalog.providers.mcpRegistry.baseUrl`)                                                                                                                    |
 | `MCP_REGISTRY_API_VERSION`      | `v0.1`                                                 | Registry HTTP API version path segment used for the readiness probe                                                                                                                                         |
-| `MCP_REGISTRY_READY_TIMEOUT_MS` | `300000` (5m)                                          | How long `start-mcp-registry` waits for the API before failing                                                                                                                                              |
+| `MCP_REGISTRY_READY_TIMEOUT_MS` | `300000` (5m)                                          | How long `start-local-mcp-registry` waits for the API before failing                                                                                                                                        |
 
 Example with custom seed content (directory must contain `seed.json`):
 
 ```bash
-MCP_REGISTRY_DATA_DIR=./examples/mcp-registry/seed-data yarn start-mcp-registry
+MCP_REGISTRY_DATA_DIR=./examples/mcp-registry/seed-data yarn start-local-mcp-registry
 ```
 
 View logs (example with Podman):
@@ -95,13 +95,13 @@ From the workspace root or
 `plugins/catalog-backend-module-mcp-registry-provider`:
 
 ```bash
-yarn stop-mcp-registry
+yarn stop-local-mcp-registry
 ```
 
 Or from the workspace root:
 
 ```bash
-node scripts/undeploy-mcp-registry.ts
+node scripts/undeploy-local-mcp-registry.ts
 ```
 
 This runs `compose down` for the same stack. The

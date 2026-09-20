@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/** Stop the local MCP Registry started by deploy-mcp-registry.ts. */
+/** Stop the local MCP Registry started by deploy-local-mcp-registry.ts. */
 
 const { spawnSync } = require('node:child_process');
 const {
