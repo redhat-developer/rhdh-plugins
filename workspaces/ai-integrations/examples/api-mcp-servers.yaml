@@ -21,6 +21,7 @@ metadata:
   tags:
     - mcp
     - ai
+    - example
   annotations:
     backstage.io/managed-by-location: url:http://localhost:8080
     backstage.io/managed-by-origin-location: url:http://localhost:8080
@@ -64,6 +65,7 @@ metadata:
   tags:
     - mcp
     - ai
+    - example
   annotations:
     backstage.io/managed-by-location: url:http://localhost:8080
     backstage.io/managed-by-origin-location: url:http://localhost:8080
@@ -135,6 +137,7 @@ metadata:
   tags:
     - mcp
     - ai
+    - example
   annotations:
     backstage.io/managed-by-location: url:http://localhost:8080
     backstage.io/managed-by-origin-location: url:http://localhost:8080
@@ -170,6 +173,7 @@ metadata:
   tags:
     - mcp
     - ai
+    - example
   annotations:
     backstage.io/managed-by-location: url:http://localhost:8080
     backstage.io/managed-by-origin-location: url:http://localhost:8080
