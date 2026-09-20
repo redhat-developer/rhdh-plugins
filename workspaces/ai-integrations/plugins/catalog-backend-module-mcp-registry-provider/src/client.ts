@@ -403,6 +403,102 @@ export function assertRequestHostAllowed(
 }
 
 /**
+ * Soft-stop when a tipped page would push the traversal past `maxEntries`.
+ *
+ * Drops the tipping page unless it is the only content so far (then keeps
+ * it and bounds later traversals at its next cursor).
+ *
+ * @internal
+ */
+export function applyMaxEntriesSoftStop(params: {
+  serversIncludingTippedPage: McpRegistryServerEntry[];
+  tippedPageSize: number;
+  priorEntryCount: number;
+  pageCursor: string | undefined;
+  startCursor: string | undefined;
+  tippedNextCursor: string | null | undefined;
+}): { servers: McpRegistryServerEntry[]; endCursor: string | undefined } {
+  const {
+    serversIncludingTippedPage,
+    tippedPageSize,
+    priorEntryCount,
+    pageCursor,
+    startCursor,
+    tippedNextCursor,
+  } = params;
+
+  const withoutTip = serversIncludingTippedPage.slice(
+    0,
+    serversIncludingTippedPage.length - tippedPageSize,
+  );
+
+  if (priorEntryCount + withoutTip.length === 0) {
+    // Single page alone exceeds the cap — keep it so a mutation can
+    // still proceed, and bound later traversals at its next cursor.
+    return {
+      servers: serversIncludingTippedPage,
+      endCursor:
+        typeof tippedNextCursor === 'string' && tippedNextCursor.length > 0
+          ? tippedNextCursor
+          : undefined,
+    };
+  }
+
+  // Exclude the tipping page; end at the cursor used to fetch it.
+  return {
+    servers: withoutTip,
+    endCursor: pageCursor ?? startCursor,
+  };
+}
+
+/**
+ * Record a resolved next-cursor decision into `seenCursors` and map it
+ * to a pagination control action for the fetch loop.
+ *
+ * @internal
+ */
+export function advanceAfterResolvedCursor(
+  next: ResolveNextCursorResult,
+  seenCursors: Set<string>,
+  endCursor: string | undefined,
+):
+  | { action: 'complete' }
+  | { action: 'stopAtEnd' }
+  | { action: 'resume'; resumeCursor: string }
+  | { action: 'continue'; cursor: string } {
+  if (next.status === 'complete') {
+    return { action: 'complete' };
+  }
+
+  if (next.status === 'pageLimitReached') {
+    seenCursors.add(next.resumeCursor);
+    if (endCursor && next.resumeCursor === endCursor) {
+      return { action: 'stopAtEnd' };
+    }
+    return { action: 'resume', resumeCursor: next.resumeCursor };
+  }
+
+  seenCursors.add(next.cursor);
+  if (endCursor && next.cursor === endCursor) {
+    return { action: 'stopAtEnd' };
+  }
+  return { action: 'continue', cursor: next.cursor };
+}
+
+/**
+ * Whether paging should stop because the current cursor matches a
+ * previously saved maxEntries end bound.
+ *
+ * @internal
+ */
+export function isAtEndCursor(
+  cursor: string | undefined,
+  endCursor: string | undefined,
+): boolean {
+  return endCursor !== undefined && cursor === endCursor;
+}
+
+/**
  * Fetch server entries from the MCP Registry using cursor pagination.
  *
  * Fetches at most `pageLimit` pages starting from `startCursor` (or the
@@ -440,20 +536,13 @@ export async function fetchRegistryServers(
   // though config parsing already checked baseUrl against the list.
   assertRequestHostAllowed(endpoint, hostAllowList);
 
-  const allServers: McpRegistryServerEntry[] = [];
+  let allServers: McpRegistryServerEntry[] = [];
   let cursor: string | undefined = startCursor;
   let pagesFetched = 0;
-  let hasMorePages = true;
   let resumeCursor: string | undefined;
   let maxEntriesEndCursor: string | undefined;
 
-  while (hasMorePages) {
-    // Bound later traversals after a prior maxEntries soft-stop.
-    if (endCursor && cursor === endCursor) {
-      hasMorePages = false;
-      continue;
-    }
-
+  while (!isAtEndCursor(cursor, endCursor)) {
     const url = buildPageRequestUrl(endpoint, cursor, pageSize);
     const body = await fetchRegistryPage(doFetch, url, hostAllowList);
     allServers.push(...body.servers);
@@ -461,52 +550,38 @@ export async function fetchRegistryServers(
 
     const totalEntries = priorEntryCount + allServers.length;
     if (maxEntries !== undefined && totalEntries > maxEntries) {
-      const tippedPageSize = body.servers.length;
-      allServers.splice(allServers.length - tippedPageSize, tippedPageSize);
-
-      if (priorEntryCount + allServers.length === 0) {
-        // Single page alone exceeds the cap — keep it so a mutation
-        // can still proceed, and bound later traversals at its next.
-        allServers.push(...body.servers);
-        const tippedNext = body.metadata?.nextCursor;
-        maxEntriesEndCursor =
-          typeof tippedNext === 'string' && tippedNext.length > 0
-            ? tippedNext
-            : undefined;
-      } else {
-        // Exclude the tipping page; end at the cursor used to fetch it.
-        maxEntriesEndCursor = cursor ?? startCursor;
-      }
-      hasMorePages = false;
-      continue;
+      const capped = applyMaxEntriesSoftStop({
+        serversIncludingTippedPage: allServers,
+        tippedPageSize: body.servers.length,
+        priorEntryCount,
+        pageCursor: cursor,
+        startCursor,
+        tippedNextCursor: body.metadata?.nextCursor,
+      });
+      allServers = capped.servers;
+      maxEntriesEndCursor = capped.endCursor;
+      break;
     }
 
-    const next = resolveNextCursor(
-      body.metadata?.nextCursor,
+    const advance = advanceAfterResolvedCursor(
+      resolveNextCursor(
+        body.metadata?.nextCursor,
+        seenCursors,
+        pagesFetched,
+        pageLimit,
+      ),
       seenCursors,
-      pagesFetched,
-      pageLimit,
+      endCursor,
     );
-    if (next.status === 'complete') {
-      hasMorePages = false;
-      continue;
+
+    if (advance.action === 'complete' || advance.action === 'stopAtEnd') {
+      break;
     }
-    if (next.status === 'pageLimitReached') {
-      seenCursors.add(next.resumeCursor);
-      if (endCursor && next.resumeCursor === endCursor) {
-        hasMorePages = false;
-        continue;
-      }
-      resumeCursor = next.resumeCursor;
-      hasMorePages = false;
-      continue;
+    if (advance.action === 'resume') {
+      resumeCursor = advance.resumeCursor;
+      break;
     }
-    seenCursors.add(next.cursor);
-    if (endCursor && next.cursor === endCursor) {
-      hasMorePages = false;
-      continue;
-    }
-    cursor = next.cursor;
+    cursor = advance.cursor;
   }
 
   return {

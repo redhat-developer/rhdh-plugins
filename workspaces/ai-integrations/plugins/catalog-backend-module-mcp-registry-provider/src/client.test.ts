@@ -15,10 +15,13 @@
  */
 
 import {
+  advanceAfterResolvedCursor,
+  applyMaxEntriesSoftStop,
   buildPageRequestUrl,
   buildServersEndpoint,
   fetchRegistryPage,
   fetchRegistryServers,
+  isAtEndCursor,
   isRedirectStatus,
   McpRegistryClientError,
   parseServersEndpointUrl,
@@ -1080,5 +1083,100 @@ describe('resolveNextCursor', () => {
       resumeCursor: 'page-2',
     });
     expect(seen.size).toBe(0);
+  });
+});
+
+describe('applyMaxEntriesSoftStop', () => {
+  it('drops the tipping page and ends at the page cursor', () => {
+    const tipped = [{ server: createMockServerDoc('a/tip', '1.0.0') }];
+    const prior = [{ server: createMockServerDoc('a/keep', '1.0.0') }];
+    expect(
+      applyMaxEntriesSoftStop({
+        serversIncludingTippedPage: [...prior, ...tipped],
+        tippedPageSize: 1,
+        priorEntryCount: 0,
+        pageCursor: 'cursor-tip',
+        startCursor: undefined,
+        tippedNextCursor: 'cursor-next',
+      }),
+    ).toEqual({
+      servers: prior,
+      endCursor: 'cursor-tip',
+    });
+  });
+
+  it('keeps a single oversized tipped page and ends at its next cursor', () => {
+    const tipped = [
+      { server: createMockServerDoc('a/a', '1.0.0') },
+      { server: createMockServerDoc('a/b', '1.0.0') },
+    ];
+    expect(
+      applyMaxEntriesSoftStop({
+        serversIncludingTippedPage: tipped,
+        tippedPageSize: 2,
+        priorEntryCount: 0,
+        pageCursor: undefined,
+        startCursor: undefined,
+        tippedNextCursor: 'cursor-next',
+      }),
+    ).toEqual({
+      servers: tipped,
+      endCursor: 'cursor-next',
+    });
+  });
+});
+
+describe('advanceAfterResolvedCursor', () => {
+  it('maps complete without recording a cursor', () => {
+    const seen = new Set<string>();
+    expect(
+      advanceAfterResolvedCursor({ status: 'complete' }, seen, undefined),
+    ).toEqual({ action: 'complete' });
+    expect(seen.size).toBe(0);
+  });
+
+  it('records and resumes when pageLimit is reached', () => {
+    const seen = new Set<string>();
+    expect(
+      advanceAfterResolvedCursor(
+        { status: 'pageLimitReached', resumeCursor: 'cursor-2' },
+        seen,
+        undefined,
+      ),
+    ).toEqual({ action: 'resume', resumeCursor: 'cursor-2' });
+    expect(seen.has('cursor-2')).toBe(true);
+  });
+
+  it('stops at endCursor instead of resuming', () => {
+    const seen = new Set<string>();
+    expect(
+      advanceAfterResolvedCursor(
+        { status: 'pageLimitReached', resumeCursor: 'end' },
+        seen,
+        'end',
+      ),
+    ).toEqual({ action: 'stopAtEnd' });
+    expect(seen.has('end')).toBe(true);
+  });
+
+  it('continues paging and records the cursor', () => {
+    const seen = new Set<string>();
+    expect(
+      advanceAfterResolvedCursor(
+        { status: 'continue', cursor: 'cursor-2' },
+        seen,
+        undefined,
+      ),
+    ).toEqual({ action: 'continue', cursor: 'cursor-2' });
+    expect(seen.has('cursor-2')).toBe(true);
+  });
+});
+
+describe('isAtEndCursor', () => {
+  it('is true only when both values are set and equal', () => {
+    expect(isAtEndCursor('end', 'end')).toBe(true);
+    expect(isAtEndCursor('end', 'other')).toBe(false);
+    expect(isAtEndCursor(undefined, 'end')).toBe(false);
+    expect(isAtEndCursor('end', undefined)).toBe(false);
   });
 });
