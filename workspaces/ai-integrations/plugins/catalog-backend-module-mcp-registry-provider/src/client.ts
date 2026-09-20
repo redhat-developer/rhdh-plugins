@@ -20,6 +20,12 @@ import { stripTrailingSlashes } from './util';
 /** Max characters of an error response body included in client errors. */
 const MAX_ERROR_BODY_LENGTH = 256;
 
+/** Max redirect hops followed for a single page request. */
+const MAX_REDIRECTS = 10;
+
+/** HTTP statuses treated as redirects to follow manually. */
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+
 /**
  * A single server entry from the MCP Registry list response.
  */
@@ -198,7 +204,56 @@ export function truncateErrorBody(
 }
 
 /**
+ * Whether an HTTP status code is a redirect this client follows.
+ *
+ * @internal
+ */
+export function isRedirectStatus(status: number): boolean {
+  return REDIRECT_STATUSES.has(status);
+}
+
+/**
+ * Resolve a redirect `Location` header against the current request URL.
+ *
+ * @internal
+ */
+export function resolveRedirectUrl(currentUrl: URL, location: string): URL {
+  try {
+    return new URL(location, currentUrl);
+  } catch (err) {
+    throw new McpRegistryClientError(
+      `MCP Registry returned an invalid redirect Location "${location}" ` +
+        `from ${currentUrl}: ${err}`,
+    );
+  }
+}
+
+/**
+ * Validate a redirect target before following it.
+ *
+ * Requires http(s) and, when configured, an allowlisted hostname.
+ *
+ * @internal
+ */
+export function validateRedirectTarget(
+  targetUrl: URL,
+  hostAllowList?: string[],
+): void {
+  if (targetUrl.protocol !== 'http:' && targetUrl.protocol !== 'https:') {
+    throw new McpRegistryClientError(
+      `MCP Registry redirect to disallowed protocol "${targetUrl.protocol}" ` +
+        `in "${targetUrl}". Only http and https are permitted.`,
+    );
+  }
+  validateHostAllowList(targetUrl, hostAllowList);
+}
+
+/**
  * Fetch and validate one registry list page.
+ *
+ * Uses `redirect: 'manual'` and validates each `Location` header
+ * against the host allowlist before following, so SSRF via redirect
+ * cannot reach a disallowed host.
  *
  * @internal
  */
@@ -207,22 +262,34 @@ export async function fetchRegistryPage(
   url: URL,
   hostAllowList?: string[],
 ): Promise<McpRegistryListResponse> {
-  const requestUrl = url.toString();
+  let currentUrl = url;
+  let redirectsFollowed = 0;
+  let response = await fetchOnce(doFetch, currentUrl, hostAllowList);
 
-  let response: Response;
-  try {
-    response = await doFetch(requestUrl);
-  } catch (err) {
-    throw new McpRegistryClientError(
-      `Failed to reach MCP Registry at ${requestUrl}: ${err}`,
-    );
+  while (isRedirectStatus(response.status)) {
+    if (redirectsFollowed >= MAX_REDIRECTS) {
+      throw new McpRegistryClientError(
+        `MCP Registry exceeded ${MAX_REDIRECTS} redirects starting from ` +
+          `${url}. Last redirect was from ${currentUrl}.`,
+      );
+    }
+
+    const location = response.headers.get('Location');
+    if (!location) {
+      throw new McpRegistryClientError(
+        `MCP Registry returned HTTP ${response.status} without a ` +
+          `Location header from ${currentUrl}.`,
+      );
+    }
+
+    const nextUrl = resolveRedirectUrl(currentUrl, location);
+    validateRedirectTarget(nextUrl, hostAllowList);
+    redirectsFollowed += 1;
+    currentUrl = nextUrl;
+    response = await fetchOnce(doFetch, currentUrl, hostAllowList);
   }
 
-  // Validate the actual response URL (after any redirects) against
-  // the hostAllowList to prevent SSRF via redirect.
-  if (response.url) {
-    validateHostAllowList(new URL(response.url), hostAllowList);
-  }
+  const requestUrl = currentUrl.toString();
 
   if (!response.ok) {
     const rawBody = await response.text().catch(() => '(no body)');
@@ -248,6 +315,27 @@ export async function fetchRegistryPage(
   }
 
   return body;
+}
+
+/**
+ * Perform one allowlist-checked fetch with `redirect: 'manual'`.
+ *
+ * @internal
+ */
+async function fetchOnce(
+  doFetch: typeof fetch,
+  url: URL,
+  hostAllowList?: string[],
+): Promise<Response> {
+  const requestUrl = url.toString();
+  validateHostAllowList(url, hostAllowList);
+  try {
+    return await doFetch(requestUrl, { redirect: 'manual' });
+  } catch (err) {
+    throw new McpRegistryClientError(
+      `Failed to reach MCP Registry at ${requestUrl}: ${err}`,
+    );
+  }
 }
 
 /**

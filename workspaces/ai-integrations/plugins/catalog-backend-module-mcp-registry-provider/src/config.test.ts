@@ -555,4 +555,24 @@ describe('resolveMcpRegistryProviderConfig', () => {
       remotesOnly: true,
     });
   });
+
+  it('treats explicit undefined the same as omitted for defaulted fields', () => {
+    expect(
+      resolveMcpRegistryProviderConfig({
+        baseUrl: 'https://registry.example.com',
+        schedule,
+        apiVersion: undefined,
+        pageLimit: undefined,
+        maxEntries: undefined,
+        remotesOnly: undefined,
+      }),
+    ).toEqual({
+      baseUrl: 'https://registry.example.com',
+      schedule,
+      apiVersion: 'v1',
+      pageLimit: 10,
+      maxEntries: 5000,
+      remotesOnly: false,
+    });
+  });
 });

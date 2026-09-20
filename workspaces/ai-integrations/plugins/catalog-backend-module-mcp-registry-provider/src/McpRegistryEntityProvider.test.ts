@@ -41,6 +41,35 @@ describe('McpRegistryEntityProvider', () => {
     expect(provider.getProviderName()).toBe('mcp-registry-provider');
   });
 
+  it('applies documented defaults when optional config fields are omitted', () => {
+    const provider = new McpRegistryEntityProvider(
+      {
+        baseUrl: 'https://registry.example.com',
+        schedule: {
+          frequency: { minutes: 30 },
+          timeout: { minutes: 3 },
+        },
+      },
+      createMockLogger(),
+    );
+
+    const resolved = (
+      provider as unknown as {
+        config: {
+          apiVersion: string;
+          pageLimit: number;
+          maxEntries: number;
+          remotesOnly: boolean;
+        };
+      }
+    ).config;
+
+    expect(resolved.apiVersion).toBe('v1');
+    expect(resolved.pageLimit).toBe(10);
+    expect(resolved.maxEntries).toBe(5000);
+    expect(resolved.remotesOnly).toBe(false);
+  });
+
   it('registers the refresh task from connect after the catalog connection exists', async () => {
     const body: McpRegistryListResponse = {
       servers: [],

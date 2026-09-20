@@ -19,14 +19,28 @@ import {
   buildServersEndpoint,
   fetchRegistryPage,
   fetchRegistryServers,
+  isRedirectStatus,
   McpRegistryClientError,
   parseServersEndpointUrl,
   resolveNextCursor,
+  resolveRedirectUrl,
   truncateErrorBody,
   validateHostAllowList,
+  validateRedirectTarget,
 } from './client';
 import type { McpRegistryListResponse } from './client';
 import { createMockServerDoc } from './testUtils';
+
+function mockHeaders(entries: Record<string, string> = {}): Headers {
+  return {
+    get: (name: string) => {
+      const key = Object.keys(entries).find(
+        k => k.toLowerCase() === name.toLowerCase(),
+      );
+      return key ? entries[key] : null;
+    },
+  } as Headers;
+}
 
 describe('buildServersEndpoint', () => {
   it('constructs endpoint without trailing slash', () => {
@@ -441,17 +455,15 @@ describe('fetchRegistryServers', () => {
     expect(fn).not.toHaveBeenCalled();
   });
 
-  it('throws when response.url redirects to a disallowed host', async () => {
-    const body: McpRegistryListResponse = {
-      servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
-      metadata: { count: 1 },
-    };
+  it('throws when a redirect Location points to a disallowed host', async () => {
     const fn = jest.fn().mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      url: 'https://evil.example.com/v1/servers',
-      json: async () => body,
-      text: async () => JSON.stringify(body),
+      ok: false,
+      status: 302,
+      headers: mockHeaders({
+        Location: 'https://evil.example.com/v1/servers',
+      }),
+      json: async () => ({}),
+      text: async () => '',
     } as unknown as Response);
 
     await expect(
@@ -463,6 +475,52 @@ describe('fetchRegistryServers', () => {
         fetchApi: fn,
       }),
     ).rejects.toThrow(/not in the configured hostAllowList/);
+
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(fn).toHaveBeenCalledWith('https://registry.example.com/v1/servers', {
+      redirect: 'manual',
+    });
+  });
+
+  it('follows an allowlisted redirect Location before reading the body', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const fn = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 302,
+        headers: mockHeaders({
+          Location: 'https://registry.example.com/v1/servers?redirected=1',
+        }),
+        json: async () => ({}),
+        text: async () => '',
+      } as unknown as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: mockHeaders(),
+        json: async () => body,
+        text: async () => JSON.stringify(body),
+      } as unknown as Response);
+
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      hostAllowList: ['registry.example.com'],
+      fetchApi: fn,
+    });
+
+    expect(result.servers).toHaveLength(1);
+    expect(fn).toHaveBeenCalledTimes(2);
+    expect(fn).toHaveBeenNthCalledWith(
+      2,
+      'https://registry.example.com/v1/servers?redirected=1',
+      { redirect: 'manual' },
+    );
   });
 
   it('does not enforce maxEntries when unset', async () => {
@@ -588,6 +646,7 @@ describe('fetchRegistryPage', () => {
     const doFetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
+      headers: mockHeaders(),
       json: async () => body,
       text: async () => JSON.stringify(body),
     } as unknown as Response);
@@ -598,12 +657,17 @@ describe('fetchRegistryPage', () => {
         new URL('https://registry.example.com/v1/servers'),
       ),
     ).resolves.toEqual(body);
+    expect(doFetch).toHaveBeenCalledWith(
+      'https://registry.example.com/v1/servers',
+      { redirect: 'manual' },
+    );
   });
 
   it('throws when the servers field is missing', async () => {
     const doFetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
+      headers: mockHeaders(),
       json: async () => ({ metadata: {} }),
       text: async () => '{}',
     } as unknown as Response);
@@ -616,17 +680,15 @@ describe('fetchRegistryPage', () => {
     ).rejects.toThrow(/missing "servers" array/);
   });
 
-  it('throws when response.url is redirected to a disallowed host', async () => {
-    const body: McpRegistryListResponse = {
-      servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
-      metadata: { count: 1 },
-    };
+  it('throws when redirect Location points to a disallowed host', async () => {
     const doFetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      url: 'https://evil.example.com/v1/servers',
-      json: async () => body,
-      text: async () => JSON.stringify(body),
+      ok: false,
+      status: 302,
+      headers: mockHeaders({
+        Location: 'https://evil.example.com/v1/servers',
+      }),
+      json: async () => ({}),
+      text: async () => '',
     } as unknown as Response);
 
     await expect(
@@ -636,20 +698,30 @@ describe('fetchRegistryPage', () => {
         ['registry.example.com'],
       ),
     ).rejects.toThrow(/not in the configured hostAllowList/);
+    expect(doFetch).toHaveBeenCalledTimes(1);
   });
 
-  it('passes when response.url matches the hostAllowList', async () => {
+  it('follows redirect Location when the target host is allowlisted', async () => {
     const body: McpRegistryListResponse = {
       servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
       metadata: { count: 1 },
     };
-    const doFetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      url: 'https://registry.example.com/v1/servers',
-      json: async () => body,
-      text: async () => JSON.stringify(body),
-    } as unknown as Response);
+    const doFetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 301,
+        headers: mockHeaders({ Location: '/v1/servers-mirror' }),
+        json: async () => ({}),
+        text: async () => '',
+      } as unknown as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: mockHeaders(),
+        json: async () => body,
+        text: async () => JSON.stringify(body),
+      } as unknown as Response);
 
     await expect(
       fetchRegistryPage(
@@ -658,20 +730,90 @@ describe('fetchRegistryPage', () => {
         ['registry.example.com'],
       ),
     ).resolves.toEqual(body);
+    expect(doFetch).toHaveBeenNthCalledWith(
+      2,
+      'https://registry.example.com/v1/servers-mirror',
+      { redirect: 'manual' },
+    );
   });
 
-  it('skips response.url validation when hostAllowList is omitted', async () => {
+  it('throws when a redirect is missing the Location header', async () => {
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 302,
+      headers: mockHeaders(),
+      json: async () => ({}),
+      text: async () => '',
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+      ),
+    ).rejects.toThrow(/without a Location header/);
+  });
+
+  it('throws when redirect Location uses a non-http(s) protocol', async () => {
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 302,
+      headers: mockHeaders({ Location: 'file:///etc/passwd' }),
+      json: async () => ({}),
+      text: async () => '',
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+      ),
+    ).rejects.toThrow(/disallowed protocol/);
+  });
+
+  it('throws after exceeding the redirect hop limit', async () => {
+    const doFetch = jest.fn().mockImplementation(async () => ({
+      ok: false,
+      status: 302,
+      headers: mockHeaders({
+        Location: 'https://registry.example.com/v1/servers?next=1',
+      }),
+      json: async () => ({}),
+      text: async () => '',
+    }));
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+      ),
+    ).rejects.toThrow(/exceeded 10 redirects/);
+    expect(doFetch).toHaveBeenCalledTimes(11);
+  });
+
+  it('follows redirects when hostAllowList is omitted', async () => {
     const body: McpRegistryListResponse = {
       servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
       metadata: { count: 1 },
     };
-    const doFetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      url: 'https://any-host.example.com/v1/servers',
-      json: async () => body,
-      text: async () => JSON.stringify(body),
-    } as unknown as Response);
+    const doFetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 307,
+        headers: mockHeaders({
+          Location: 'https://any-host.example.com/v1/servers',
+        }),
+        json: async () => ({}),
+        text: async () => '',
+      } as unknown as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: mockHeaders(),
+        json: async () => body,
+        text: async () => JSON.stringify(body),
+      } as unknown as Response);
 
     await expect(
       fetchRegistryPage(
@@ -681,10 +823,80 @@ describe('fetchRegistryPage', () => {
     ).resolves.toEqual(body);
   });
 
+  it('follows a multi-hop redirect chain when every hop is allowlisted', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const doFetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 302,
+        headers: mockHeaders({ Location: '/hop-1' }),
+        json: async () => ({}),
+        text: async () => '',
+      } as unknown as Response)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 308,
+        headers: mockHeaders({
+          Location: 'https://registry.example.com/hop-2',
+        }),
+        json: async () => ({}),
+        text: async () => '',
+      } as unknown as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: mockHeaders(),
+        json: async () => body,
+        text: async () => JSON.stringify(body),
+      } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+        ['registry.example.com'],
+      ),
+    ).resolves.toEqual(body);
+    expect(doFetch).toHaveBeenCalledTimes(3);
+    expect(doFetch).toHaveBeenNthCalledWith(
+      2,
+      'https://registry.example.com/hop-1',
+      { redirect: 'manual' },
+    );
+    expect(doFetch).toHaveBeenNthCalledWith(
+      3,
+      'https://registry.example.com/hop-2',
+      { redirect: 'manual' },
+    );
+  });
+
+  it('throws on an invalid Location without issuing a follow-up request', async () => {
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 302,
+      headers: mockHeaders({ Location: 'http://[' }),
+      json: async () => ({}),
+      text: async () => '',
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+      ),
+    ).rejects.toThrow(/invalid redirect Location/);
+    expect(doFetch).toHaveBeenCalledTimes(1);
+  });
+
   it('truncates non-2xx response bodies in the error', async () => {
     const doFetch = jest.fn().mockResolvedValue({
       ok: false,
       status: 500,
+      headers: mockHeaders(),
       json: async () => ({}),
       text: async () => 'x'.repeat(300),
     } as unknown as Response);
@@ -695,6 +907,69 @@ describe('fetchRegistryPage', () => {
         new URL('https://registry.example.com/v1/servers'),
       ),
     ).rejects.toThrow(/…\(truncated\)/);
+  });
+});
+
+describe('redirect helpers', () => {
+  it('recognizes redirect status codes', () => {
+    expect(isRedirectStatus(301)).toBe(true);
+    expect(isRedirectStatus(302)).toBe(true);
+    expect(isRedirectStatus(303)).toBe(true);
+    expect(isRedirectStatus(307)).toBe(true);
+    expect(isRedirectStatus(308)).toBe(true);
+    expect(isRedirectStatus(200)).toBe(false);
+    expect(isRedirectStatus(404)).toBe(false);
+  });
+
+  it('resolves absolute and relative Location values', () => {
+    const current = new URL('https://registry.example.com/v1/servers');
+    expect(
+      resolveRedirectUrl(current, 'https://other.example.com/path').toString(),
+    ).toBe('https://other.example.com/path');
+    expect(resolveRedirectUrl(current, '/v2/servers').toString()).toBe(
+      'https://registry.example.com/v2/servers',
+    );
+  });
+
+  it('throws McpRegistryClientError for an invalid Location value', () => {
+    expect(() =>
+      resolveRedirectUrl(
+        new URL('https://registry.example.com/v1/servers'),
+        'http://[',
+      ),
+    ).toThrow(McpRegistryClientError);
+    expect(() =>
+      resolveRedirectUrl(
+        new URL('https://registry.example.com/v1/servers'),
+        'http://[',
+      ),
+    ).toThrow(/invalid redirect Location/);
+  });
+
+  it('rejects non-http(s) redirect targets', () => {
+    expect(() =>
+      validateRedirectTarget(new URL('ftp://registry.example.com/v1/servers')),
+    ).toThrow(/disallowed protocol/);
+  });
+
+  it('allows http(s) redirect targets and enforces hostAllowList', () => {
+    expect(() =>
+      validateRedirectTarget(
+        new URL('https://registry.example.com/v1/servers'),
+        ['registry.example.com'],
+      ),
+    ).not.toThrow();
+    expect(() =>
+      validateRedirectTarget(
+        new URL('http://registry.example.com/v1/servers'),
+        ['registry.example.com'],
+      ),
+    ).not.toThrow();
+    expect(() =>
+      validateRedirectTarget(new URL('https://evil.example.com/v1/servers'), [
+        'registry.example.com',
+      ]),
+    ).toThrow(/not in the configured hostAllowList/);
   });
 });
 
