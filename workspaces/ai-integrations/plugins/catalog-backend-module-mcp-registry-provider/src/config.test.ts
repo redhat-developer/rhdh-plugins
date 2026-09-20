@@ -164,6 +164,7 @@ describe('readMcpRegistryProviderConfig', () => {
           mcpRegistry: {
             mcpRegistry: {
               baseUrl: 'https://registry.example.com',
+              hostAllowList: ['registry.example.com'],
             },
             public: {
               baseUrl: 'https://public-registry.example.com',
@@ -235,6 +236,7 @@ describe('readMcpRegistryProviderConfig', () => {
   });
 
   it('reads hostAllowList when provided', () => {
+    const warnings: string[] = [];
     const config = new ConfigReader(
       providersConfig({
         baseUrl: 'https://registry.example.com',
@@ -242,19 +244,44 @@ describe('readMcpRegistryProviderConfig', () => {
       }),
     );
 
-    const result = readMcpRegistryProviderConfig(config);
+    const result = readMcpRegistryProviderConfig(config, message =>
+      warnings.push(message),
+    );
     expect(result!.hostAllowList).toEqual(['registry.example.com']);
+    expect(warnings).toEqual([]);
   });
 
-  it('returns undefined hostAllowList when omitted', () => {
+  it('returns undefined hostAllowList when omitted and warns', () => {
+    const warnings: string[] = [];
     const config = new ConfigReader(
       providersConfig({
         baseUrl: 'https://registry.example.com',
       }),
     );
 
-    const result = readMcpRegistryProviderConfig(config);
+    const result = readMcpRegistryProviderConfig(config, message =>
+      warnings.push(message),
+    );
     expect(result!.hostAllowList).toBeUndefined();
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/hostAllowList is not configured/);
+    expect(warnings[0]).toMatch(/SSRF/);
+  });
+
+  it('does not warn about hostAllowList when configured as empty deny-all', () => {
+    const warnings: string[] = [];
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        hostAllowList: [],
+      }),
+    );
+
+    // Empty list fails validation of baseUrl; catch before asserting warn absence.
+    expect(() =>
+      readMcpRegistryProviderConfig(config, message => warnings.push(message)),
+    ).toThrow(/not in the configured hostAllowList/);
+    expect(warnings).toEqual([]);
   });
 
   it('throws when baseUrl hostname is not in hostAllowList', () => {

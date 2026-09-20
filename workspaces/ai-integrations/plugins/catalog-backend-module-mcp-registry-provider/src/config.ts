@@ -112,7 +112,7 @@ export function assertSingleRegistryConfig(registryConfig: Config): void {
 
 /**
  * Optional warning sink used when configuration is accepted with caveats
- * (e.g. ignored extra registry instance ids).
+ * (e.g. ignored extra registry instance ids, or absent `hostAllowList`).
  *
  * @internal
  */
@@ -407,7 +407,8 @@ export function resolveMcpRegistryProviderConfig(
  *
  * Additional instance ids under `catalog.providers.mcpRegistry` are
  * ignored; pass `warn` to surface that multiple registries are not
- * supported yet.
+ * supported yet. When `hostAllowList` is omitted, `warn` is also used
+ * to recommend configuring hostname restrictions.
  *
  * @throws When a legacy flat `catalog.providers.mcpRegistry` object is
  *   used, or when `baseUrl` is missing on the reserved instance.
@@ -438,6 +439,13 @@ export function readMcpRegistryProviderConfig(
 
   if (hostAllowList) {
     validateHostAllowList(baseUrl, hostAllowList);
+  } else {
+    warn?.(
+      `${MCP_REGISTRY_INSTANCE_CONFIG_PATH}.hostAllowList is not configured; ` +
+        `outbound registry requests are not restricted by hostname. Set ` +
+        `hostAllowList to permitted registry hostnames for defense-in-depth ` +
+        `against SSRF.`,
+    );
   }
 
   return {
