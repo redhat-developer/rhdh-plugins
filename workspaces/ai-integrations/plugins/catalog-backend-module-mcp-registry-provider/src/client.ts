@@ -15,7 +15,7 @@
  */
 
 import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
-import { stripTrailingSlashes } from './util';
+import { formatErrorDetail, stripTrailingSlashes } from './util';
 
 /** Max characters of an error response body included in client errors. */
 const MAX_ERROR_BODY_LENGTH = 256;
@@ -169,7 +169,9 @@ export function parseServersEndpointUrl(
     return new URL(endpoint);
   } catch (err) {
     throw new McpRegistryClientError(
-      `Invalid MCP Registry endpoint URL "${endpoint}": ${err}`,
+      `Invalid MCP Registry endpoint URL "${endpoint}": ${formatErrorDetail(
+        err,
+      )}`,
     );
   }
 }
@@ -229,7 +231,7 @@ export function resolveRedirectUrl(currentUrl: URL, location: string): URL {
   } catch (err) {
     throw new McpRegistryClientError(
       `MCP Registry returned an invalid redirect Location "${location}" ` +
-        `from ${currentUrl}: ${err}`,
+        `from ${currentUrl}: ${formatErrorDetail(err)}`,
     );
   }
 }
@@ -310,7 +312,9 @@ export async function fetchRegistryPage(
     body = (await response.json()) as McpRegistryListResponse;
   } catch (err) {
     throw new McpRegistryClientError(
-      `MCP Registry returned unparseable JSON from ${requestUrl}: ${err}`,
+      `MCP Registry returned unparseable JSON from ${requestUrl}: ${formatErrorDetail(
+        err,
+      )}`,
     );
   }
 
@@ -340,7 +344,9 @@ async function fetchOnce(
     response = await doFetch(requestUrl, { redirect: 'manual' });
   } catch (err) {
     throw new McpRegistryClientError(
-      `Failed to reach MCP Registry at ${requestUrl}: ${err}`,
+      `Failed to reach MCP Registry at ${requestUrl}: ${formatErrorDetail(
+        err,
+      )}`,
     );
   }
   assertResponseUrlAllowed(response, hostAllowList, requestUrl);

@@ -335,8 +335,12 @@ describe('fetchRegistryServers', () => {
     ).rejects.toThrow(/repeated cursor/i);
   });
 
-  it('throws on network error', async () => {
-    const fn = mockFetch([{ throws: true }]);
+  it('throws on network error without embedding the Error constructor name', async () => {
+    const fn = jest.fn().mockRejectedValue(
+      new TypeError('fetch failed', {
+        cause: new Error('connect ECONNREFUSED 127.0.0.1:8080'),
+      }),
+    );
 
     await expect(
       fetchRegistryServers({
@@ -345,7 +349,11 @@ describe('fetchRegistryServers', () => {
         pageLimit: 10,
         fetchApi: fn,
       }),
-    ).rejects.toThrow(McpRegistryClientError);
+    ).rejects.toMatchObject({
+      name: 'McpRegistryClientError',
+      message:
+        'Failed to reach MCP Registry at https://registry.example.com/v1/servers: connect ECONNREFUSED 127.0.0.1:8080',
+    });
   });
 
   it('throws on non-2xx status', async () => {

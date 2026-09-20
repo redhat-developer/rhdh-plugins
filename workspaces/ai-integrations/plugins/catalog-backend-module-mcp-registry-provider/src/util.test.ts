@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { stripTrailingSlashes } from './util';
+import { formatErrorDetail, stripTrailingSlashes } from './util';
 
 describe('stripTrailingSlashes', () => {
   it('returns the value unchanged when there is no trailing slash', () => {
@@ -34,5 +34,23 @@ describe('stripTrailingSlashes', () => {
 
   it('returns an empty string when the value is only slashes', () => {
     expect(stripTrailingSlashes('///')).toBe('');
+  });
+});
+
+describe('formatErrorDetail', () => {
+  it('returns the Error message without the constructor name', () => {
+    expect(formatErrorDetail(new TypeError('fetch failed'))).toBe(
+      'fetch failed',
+    );
+  });
+
+  it('prefers the deepest cause message for wrapped fetch failures', () => {
+    const cause = new Error('connect ECONNREFUSED 127.0.0.1:8080');
+    const err = new TypeError('fetch failed', { cause });
+    expect(formatErrorDetail(err)).toBe('connect ECONNREFUSED 127.0.0.1:8080');
+  });
+
+  it('returns string values as-is', () => {
+    expect(formatErrorDetail('boom')).toBe('boom');
   });
 });

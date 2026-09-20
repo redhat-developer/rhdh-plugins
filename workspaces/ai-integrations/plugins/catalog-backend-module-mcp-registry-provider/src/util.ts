@@ -26,3 +26,34 @@ export function stripTrailingSlashes(value: string): string {
   }
   return end === value.length ? value : value.slice(0, end);
 }
+
+/**
+ * Format an unknown thrown value for operator-facing error text.
+ *
+ * Prefer the deepest `cause` message (Node/undici often wraps network
+ * failures as `TypeError: fetch failed` with a useful cause). Never
+ * prefixes the Error constructor name (e.g. `TypeError:`).
+ *
+ * @internal
+ */
+export function formatErrorDetail(err: unknown): string {
+  if (err instanceof Error) {
+    let current: Error = err;
+    // Walk a short cause chain for a more specific message.
+    for (let depth = 0; depth < 5; depth += 1) {
+      const cause = (current as Error & { cause?: unknown }).cause;
+      if (!(cause instanceof Error) || !cause.message) {
+        break;
+      }
+      current = cause;
+    }
+    if (current.message) {
+      return current.message;
+    }
+    return current.name || 'unknown error';
+  }
+  if (typeof err === 'string' && err.length > 0) {
+    return err;
+  }
+  return String(err);
+}

@@ -38,8 +38,8 @@ registry), and serves the API at
 
 Start the registry **before** `yarn dev`. If the provider syncs while the
 registry is still importing seed data, you will see
-`Failed to reach MCP Registry ... TypeError: fetch failed` (no mutation). Restart
-the backend after the registry is ready, or wait for the next scheduled sync.
+`Failed to reach MCP Registry ...` (no mutation). Restart the backend after the
+registry is ready, or wait for the next scheduled sync.
 
 Optional environment variables:
 

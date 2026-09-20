@@ -17,6 +17,7 @@
 import { isAllowedUrl } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 import type { McpRegistryServerEntry } from './client';
+import { formatErrorDetail } from './util';
 
 /**
  * Whether a server.json document declares at least one native remote
@@ -86,5 +87,5 @@ export function formatMappingFailureMessage(
   if (version) {
     message += ` (version "${version}")`;
   }
-  return `${message}: ${err}`;
+  return `${message}: ${formatErrorDetail(err)}`;
 }
