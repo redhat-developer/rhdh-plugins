@@ -2,13 +2,13 @@ catalog:
   providers:
     mcpRegistry:
       # Required: base URL of the MCP Registry
-      baseUrl: https://staging.registry.modelcontextprotocol.io/
+      baseUrl: '${MCP_REGISTRY_URL:-http://localhost:8080/}'
       # Optional: base name (default: mcp.registry)
-      baseName: staging.registry.modelcontextprotocol.io
+      # baseName: mcp.registry
       # Optional: API version (default: v1)
       apiVersion: v0.1
       # Optional: default entity owner (default: unknown)
-      defaultOwner: user:development/guest
+      defaultOwner: '${OWNER:-default-owner}'
       # Optional: max pages fetched per sync (default: 10)
       # pageLimit: 10
       # Optional: registry page size sent as ?limit= (omitted by default)
