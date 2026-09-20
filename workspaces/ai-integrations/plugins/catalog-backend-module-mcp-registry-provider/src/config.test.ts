@@ -15,6 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
+import type { JsonObject } from '@backstage/types';
 import {
   assertSingleRegistryConfig,
   MCP_REGISTRY_INSTANCE_ID,
@@ -26,14 +27,13 @@ import {
   readProviderSchedule,
   readRemotesOnly,
   readRequiredHttpBaseUrl,
-  readReservedRegistryInstanceConfig,
   resolveMcpRegistryProviderConfig,
   safeGetOptionalString,
   validateHostAllowList,
 } from './config';
 
 /** Nest instance options under the reserved `mcpRegistry` map key. */
-function providersConfig(instance: Record<string, unknown>) {
+function providersConfig(instance: JsonObject): JsonObject {
   return {
     catalog: {
       providers: {
