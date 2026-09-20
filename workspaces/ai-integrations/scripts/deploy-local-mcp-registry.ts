@@ -127,10 +127,8 @@ function buildOverrideYaml(image: string, dataDir?: string): string {
     // Replace upstream ./data:/data:ro with a custom host directory.
     // `:z` is required for Podman/SELinux so the container (uid 65532) can
     // read the bind-mounted seed files; without it open() returns EACCES.
-    lines.push(
-      '    volumes:',
-      `      - ${JSON.stringify(`${dataDir}:/data:ro,z`)}`,
-    );
+    const volumeMount = `${dataDir}:/data:ro,z`;
+    lines.push('    volumes:', `      - ${JSON.stringify(volumeMount)}`);
   }
   return `${lines.join('\n')}\n`;
 }
