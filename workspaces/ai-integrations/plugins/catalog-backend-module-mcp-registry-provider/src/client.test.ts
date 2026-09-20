@@ -25,7 +25,7 @@ import {
   resolveNextCursor,
   resolveRedirectUrl,
   truncateErrorBody,
-  validateHostAllowList,
+  assertRequestHostAllowed,
   validateRedirectTarget,
 } from './client';
 import type { McpRegistryListResponse } from './client';
@@ -973,10 +973,10 @@ describe('redirect helpers', () => {
   });
 });
 
-describe('validateHostAllowList', () => {
+describe('assertRequestHostAllowed', () => {
   it('does nothing when hostAllowList is undefined', () => {
     expect(() =>
-      validateHostAllowList(
+      assertRequestHostAllowed(
         new URL('https://registry.example.com/v1/servers'),
         undefined,
       ),
@@ -985,7 +985,7 @@ describe('validateHostAllowList', () => {
 
   it('passes when hostname is in the allow list', () => {
     expect(() =>
-      validateHostAllowList(
+      assertRequestHostAllowed(
         new URL('https://registry.example.com/v1/servers'),
         ['registry.example.com'],
       ),
@@ -994,12 +994,12 @@ describe('validateHostAllowList', () => {
 
   it('throws McpRegistryClientError when hostname is not in the allow list', () => {
     expect(() =>
-      validateHostAllowList(new URL('https://evil.example.com/v1/servers'), [
+      assertRequestHostAllowed(new URL('https://evil.example.com/v1/servers'), [
         'registry.example.com',
       ]),
     ).toThrow(McpRegistryClientError);
     expect(() =>
-      validateHostAllowList(new URL('https://evil.example.com/v1/servers'), [
+      assertRequestHostAllowed(new URL('https://evil.example.com/v1/servers'), [
         'registry.example.com',
       ]),
     ).toThrow(/not in the configured hostAllowList/);
@@ -1007,7 +1007,7 @@ describe('validateHostAllowList', () => {
 
   it('matches case-insensitively', () => {
     expect(() =>
-      validateHostAllowList(
+      assertRequestHostAllowed(
         new URL('https://Registry.Example.COM/v1/servers'),
         ['registry.example.com'],
       ),

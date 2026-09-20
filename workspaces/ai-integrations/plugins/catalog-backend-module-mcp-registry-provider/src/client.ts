@@ -245,7 +245,7 @@ export function validateRedirectTarget(
         `in "${targetUrl}". Only http and https are permitted.`,
     );
   }
-  validateHostAllowList(targetUrl, hostAllowList);
+  assertRequestHostAllowed(targetUrl, hostAllowList);
 }
 
 /**
@@ -328,7 +328,7 @@ async function fetchOnce(
   hostAllowList?: string[],
 ): Promise<Response> {
   const requestUrl = url.toString();
-  validateHostAllowList(url, hostAllowList);
+  assertRequestHostAllowed(url, hostAllowList);
   try {
     return await doFetch(requestUrl, { redirect: 'manual' });
   } catch (err) {
@@ -374,12 +374,13 @@ export function resolveNextCursor(
 }
 
 /**
- * Validate that a URL's hostname is present in the configured allow list.
+ * Runtime request guard: assert a URL's hostname is on the configured
+ * allow list before issuing (or following) an outbound fetch.
  * Throws McpRegistryClientError when the hostname is not permitted.
  *
  * @internal
  */
-export function validateHostAllowList(
+export function assertRequestHostAllowed(
   url: URL,
   hostAllowList: string[] | undefined,
 ): void {
@@ -430,7 +431,7 @@ export async function fetchRegistryServers(
 
   // Defense-in-depth: validate endpoint hostname at runtime even
   // though config parsing already checked baseUrl against the list.
-  validateHostAllowList(endpoint, hostAllowList);
+  assertRequestHostAllowed(endpoint, hostAllowList);
 
   const allServers: McpRegistryServerEntry[] = [];
   let cursor: string | undefined = startCursor;
