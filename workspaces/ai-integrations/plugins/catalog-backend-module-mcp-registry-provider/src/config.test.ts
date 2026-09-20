@@ -17,6 +17,7 @@
 import { ConfigReader } from '@backstage/config';
 import {
   assertSingleRegistryConfig,
+  MCP_REGISTRY_INSTANCE_ID,
   readMaxEntries,
   readMcpRegistryProviderConfig,
   readHostAllowList,
@@ -25,10 +26,24 @@ import {
   readProviderSchedule,
   readRemotesOnly,
   readRequiredHttpBaseUrl,
+  readReservedRegistryInstanceConfig,
   resolveMcpRegistryProviderConfig,
   safeGetOptionalString,
   validateHostAllowList,
 } from './config';
+
+/** Nest instance options under the reserved `mcpRegistry` map key. */
+function providersConfig(instance: Record<string, unknown>) {
+  return {
+    catalog: {
+      providers: {
+        mcpRegistry: {
+          [MCP_REGISTRY_INSTANCE_ID]: instance,
+        },
+      },
+    },
+  };
+}
 
 describe('readMcpRegistryProviderConfig', () => {
   it('returns undefined when catalog.providers is absent', () => {
@@ -44,15 +59,11 @@ describe('readMcpRegistryProviderConfig', () => {
   });
 
   it('reads a single object with baseUrl and applies defaults', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result).toBeDefined();
@@ -71,54 +82,65 @@ describe('readMcpRegistryProviderConfig', () => {
   });
 
   it('reads optional baseName', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-            baseName: 'com.example.registry',
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        baseName: 'com.example.registry',
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.baseName).toBe('com.example.registry');
   });
 
   it('reads explicit pageLimit override', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-            pageLimit: 3,
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        pageLimit: 3,
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.pageLimit).toBe(3);
   });
 
   it('reads explicit pageSize', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-            pageSize: 50,
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        pageSize: 50,
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.pageSize).toBe(50);
   });
 
   it('reads omitted pageSize as undefined', () => {
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+      }),
+    );
+
+    const result = readMcpRegistryProviderConfig(config);
+    expect(result!.pageSize).toBeUndefined();
+  });
+
+  it('throws when baseUrl is missing', () => {
+    const config = new ConfigReader(
+      providersConfig({
+        apiVersion: 'v0',
+      }),
+    );
+
+    expect(() => readMcpRegistryProviderConfig(config)).toThrow(
+      /missing required "baseUrl"/,
+    );
+  });
+
+  it('throws when a legacy flat catalog.providers.mcpRegistry object is used', () => {
     const config = new ConfigReader({
       catalog: {
         providers: {
@@ -129,33 +151,19 @@ describe('readMcpRegistryProviderConfig', () => {
       },
     });
 
-    const result = readMcpRegistryProviderConfig(config);
-    expect(result!.pageSize).toBeUndefined();
-  });
-
-  it('throws when baseUrl is missing', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            apiVersion: 'v0',
-          },
-        },
-      },
-    });
-
     expect(() => readMcpRegistryProviderConfig(config)).toThrow(
-      /missing required "baseUrl"/,
+      /must be nested under the reserved instance key/,
     );
   });
 
-  it('throws when config is a keyed map of instances', () => {
+  it('ignores additional instance ids and warns that multi-registry is unsupported', () => {
+    const warnings: string[] = [];
     const config = new ConfigReader({
       catalog: {
         providers: {
           mcpRegistry: {
-            internal: {
-              baseUrl: 'https://internal-registry.example.com',
+            mcpRegistry: {
+              baseUrl: 'https://registry.example.com',
             },
             public: {
               baseUrl: 'https://public-registry.example.com',
@@ -165,26 +173,34 @@ describe('readMcpRegistryProviderConfig', () => {
       },
     });
 
-    expect(() => readMcpRegistryProviderConfig(config)).toThrow(
-      /found keyed instance/,
+    const result = readMcpRegistryProviderConfig(config, message =>
+      warnings.push(message),
     );
+    expect(result!.baseUrl).toBe('https://registry.example.com');
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/additional instance id\(s\)/);
+    expect(warnings[0]).toMatch(/not supported yet/);
+    expect(warnings[0]).toMatch(/public/);
+  });
+
+  it('returns undefined when the providers map is empty', () => {
+    const config = new ConfigReader({
+      catalog: { providers: { mcpRegistry: {} } },
+    });
+    expect(readMcpRegistryProviderConfig(config)).toBeUndefined();
   });
 
   it('reads a custom schedule', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-            schedule: {
-              frequency: { minutes: 15 },
-              timeout: { minutes: 5 },
-              initialDelay: { seconds: 30 },
-            },
-          },
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        schedule: {
+          frequency: { minutes: 15 },
+          timeout: { minutes: 5 },
+          initialDelay: { seconds: 30 },
         },
-      },
-    });
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.schedule).toEqual({
@@ -195,79 +211,59 @@ describe('readMcpRegistryProviderConfig', () => {
   });
 
   it('reads defaultOwner', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-            defaultOwner: 'group:default/mcp-admins',
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        defaultOwner: 'group:default/mcp-admins',
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.defaultOwner).toBe('group:default/mcp-admins');
   });
 
   it('reads apiVersion override', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-            apiVersion: 'v0',
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        apiVersion: 'v0',
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.apiVersion).toBe('v0');
   });
 
   it('reads hostAllowList when provided', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-            hostAllowList: ['registry.example.com'],
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        hostAllowList: ['registry.example.com'],
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.hostAllowList).toEqual(['registry.example.com']);
   });
 
   it('returns undefined hostAllowList when omitted', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.hostAllowList).toBeUndefined();
   });
 
   it('throws when baseUrl hostname is not in hostAllowList', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://registry.example.com',
-            hostAllowList: ['other.example.com'],
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        hostAllowList: ['other.example.com'],
+      }),
+    );
 
     expect(() => readMcpRegistryProviderConfig(config)).toThrow(
       /not in the configured hostAllowList/,
@@ -275,16 +271,12 @@ describe('readMcpRegistryProviderConfig', () => {
   });
 
   it('normalizes hostAllowList entries to lowercase', () => {
-    const config = new ConfigReader({
-      catalog: {
-        providers: {
-          mcpRegistry: {
-            baseUrl: 'https://Registry.Example.COM',
-            hostAllowList: ['REGISTRY.EXAMPLE.COM'],
-          },
-        },
-      },
-    });
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://Registry.Example.COM',
+        hostAllowList: ['REGISTRY.EXAMPLE.COM'],
+      }),
+    );
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.hostAllowList).toEqual(['registry.example.com']);

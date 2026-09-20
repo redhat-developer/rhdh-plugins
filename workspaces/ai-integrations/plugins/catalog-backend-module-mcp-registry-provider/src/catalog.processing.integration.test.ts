@@ -99,12 +99,14 @@ describe('mcp-server catalog processing', () => {
               rules: [{ allow: ['API'] }],
               providers: {
                 mcpRegistry: {
-                  baseUrl: 'https://registry.example.com',
-                  apiVersion: 'v0.1',
-                  defaultOwner: 'user:default/guest',
-                  schedule: {
-                    frequency: { seconds: 1 },
-                    timeout: { seconds: 10 },
+                  mcpRegistry: {
+                    baseUrl: 'https://registry.example.com',
+                    apiVersion: 'v0.1',
+                    defaultOwner: 'user:default/guest',
+                    schedule: {
+                      frequency: { seconds: 1 },
+                      timeout: { seconds: 10 },
+                    },
                   },
                 },
               },

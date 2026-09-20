@@ -36,7 +36,17 @@ const DEFAULT_MAX_ENTRIES = 5000;
 /** Default remotesOnly when omitted. */
 const DEFAULT_REMOTES_ONLY = false;
 
-/** Supported single-registry config keys under `catalog.providers.mcpRegistry`. */
+/**
+ * Reserved instance id under `catalog.providers.mcpRegistry`.
+ * This implementation expects only this key; additional ids are rejected
+ * until multi-registry support lands.
+ */
+export const MCP_REGISTRY_INSTANCE_ID = 'mcpRegistry';
+
+/** Config path for the reserved registry instance. */
+const MCP_REGISTRY_INSTANCE_CONFIG_PATH = `catalog.providers.mcpRegistry.${MCP_REGISTRY_INSTANCE_ID}`;
+
+/** Supported single-registry config keys under the reserved instance. */
 const KNOWN_MCP_REGISTRY_KEYS = new Set([
   'baseUrl',
   'baseName',
@@ -71,7 +81,7 @@ export function safeGetOptionalString(
 }
 
 /**
- * Reject keyed multi-registry maps under `mcpRegistry`.
+ * Reject unexpected nested objects under a registry instance config.
  *
  * @internal
  */
@@ -91,13 +101,71 @@ export function assertSingleRegistryConfig(registryConfig: Config): void {
     }
     if (nested && nested.keys().length > 0) {
       throw new Error(
-        `Invalid catalog.providers.mcpRegistry configuration: found ` +
+        `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: found ` +
           `keyed instance "${key}". Configure a single registry object ` +
           `with baseUrl, baseName, apiVersion, schedule, pageLimit, ` +
           `pageSize, and defaultOwner.`,
       );
     }
   }
+}
+
+/**
+ * Optional warning sink used when configuration is accepted with caveats
+ * (e.g. ignored extra registry instance ids).
+ *
+ * @internal
+ */
+export type ConfigWarnFn = (message: string) => void;
+
+/**
+ * Resolve the reserved registry instance from the providers map.
+ *
+ * `catalog.providers.mcpRegistry` is a map of instance ids. This
+ * implementation only reads the reserved key {@link MCP_REGISTRY_INSTANCE_ID};
+ * additional ids are ignored (with an optional warning).
+ *
+ * @internal
+ */
+export function readReservedRegistryInstanceConfig(
+  providersMap: Config,
+  warn?: ConfigWarnFn,
+): Config | undefined {
+  const keys = providersMap.keys();
+  if (keys.length === 0) {
+    return undefined;
+  }
+
+  const legacyKeys = keys.filter(key => KNOWN_MCP_REGISTRY_KEYS.has(key));
+  if (legacyKeys.length > 0) {
+    throw new Error(
+      `Invalid catalog.providers.mcpRegistry configuration: registry ` +
+        `options (${legacyKeys.join(', ')}) must be nested under the ` +
+        `reserved instance key "${MCP_REGISTRY_INSTANCE_ID}" ` +
+        `(e.g. catalog.providers.mcpRegistry.${MCP_REGISTRY_INSTANCE_ID}.baseUrl).`,
+    );
+  }
+
+  const unexpectedKeys = keys.filter(key => key !== MCP_REGISTRY_INSTANCE_ID);
+  if (unexpectedKeys.length > 0) {
+    warn?.(
+      `catalog.providers.mcpRegistry has additional instance id(s) ` +
+        `[${unexpectedKeys.join(
+          ', ',
+        )}] which are ignored; multiple MCP Registry providers are not ` +
+        `supported yet. Only the reserved "${MCP_REGISTRY_INSTANCE_ID}" ` +
+        `instance is used.`,
+    );
+  }
+
+  const registryConfig = providersMap.getOptionalConfig(
+    MCP_REGISTRY_INSTANCE_ID,
+  );
+  if (!registryConfig) {
+    return undefined;
+  }
+
+  return registryConfig;
 }
 
 /**
@@ -109,7 +177,7 @@ export function readRequiredHttpBaseUrl(registryConfig: Config): string {
   const baseUrl = safeGetOptionalString(registryConfig, 'baseUrl');
   if (!baseUrl) {
     throw new Error(
-      `Invalid catalog.providers.mcpRegistry configuration: missing ` +
+      `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: missing ` +
         `required "baseUrl" field. Set baseUrl to the MCP Registry base URL ` +
         `(e.g., "https://registry.example.com").`,
     );
@@ -120,7 +188,7 @@ export function readRequiredHttpBaseUrl(registryConfig: Config): string {
     parsedUrl = new URL(baseUrl);
   } catch {
     throw new Error(
-      `Invalid catalog.providers.mcpRegistry configuration: "baseUrl" ` +
+      `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: "baseUrl" ` +
         `is not a valid URL: "${baseUrl}". Set baseUrl to an absolute ` +
         `HTTP(S) URL (e.g., "https://registry.example.com").`,
     );
@@ -128,7 +196,7 @@ export function readRequiredHttpBaseUrl(registryConfig: Config): string {
 
   if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
     throw new Error(
-      `Invalid catalog.providers.mcpRegistry configuration: "baseUrl" ` +
+      `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: "baseUrl" ` +
         `must use http or https protocol, got "${parsedUrl.protocol}" ` +
         `in "${baseUrl}".`,
     );
@@ -147,7 +215,7 @@ export function readPageLimit(registryConfig: Config): number {
     registryConfig.getOptionalNumber('pageLimit') ?? DEFAULT_PAGE_LIMIT;
   if (pageLimit < 1) {
     throw new Error(
-      `Invalid catalog.providers.mcpRegistry configuration: "pageLimit" ` +
+      `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: "pageLimit" ` +
         `must be at least 1, got ${pageLimit}.`,
     );
   }
@@ -166,7 +234,7 @@ export function readMaxEntries(registryConfig: Config): number {
     registryConfig.getOptionalNumber('maxEntries') ?? DEFAULT_MAX_ENTRIES;
   if (maxEntries < 1) {
     throw new Error(
-      `Invalid catalog.providers.mcpRegistry configuration: "maxEntries" ` +
+      `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: "maxEntries" ` +
         `must be at least 1, got ${maxEntries}.`,
     );
   }
@@ -184,7 +252,7 @@ export function readOptionalPageSize(
   const pageSize = registryConfig.getOptionalNumber('pageSize');
   if (pageSize !== undefined && pageSize < 1) {
     throw new Error(
-      `Invalid catalog.providers.mcpRegistry configuration: "pageSize" ` +
+      `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: "pageSize" ` +
         `must be at least 1, got ${pageSize}.`,
     );
   }
@@ -224,7 +292,7 @@ export function validateHostAllowList(
   const hostname = parsed.hostname.toLowerCase();
   if (!hostAllowList.includes(hostname)) {
     throw new Error(
-      `Invalid catalog.providers.mcpRegistry configuration: the hostname ` +
+      `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: the hostname ` +
         `"${hostname}" from baseUrl "${url}" is not in the configured ` +
         `hostAllowList [${hostAllowList.join(', ')}].`,
     );
@@ -333,21 +401,32 @@ export function resolveMcpRegistryProviderConfig(
 
 /**
  * Read and validate the MCP Registry provider configuration from
- * `catalog.providers.mcpRegistry`. Returns `undefined` when the
- * config key is absent (inert module).
+ * `catalog.providers.mcpRegistry.mcpRegistry` (reserved instance id).
+ * Returns `undefined` when the providers map or reserved instance is
+ * absent (inert module).
  *
- * @throws When the config is a keyed map of instances, or when
- *   `baseUrl` is missing.
+ * Additional instance ids under `catalog.providers.mcpRegistry` are
+ * ignored; pass `warn` to surface that multiple registries are not
+ * supported yet.
+ *
+ * @throws When a legacy flat `catalog.providers.mcpRegistry` object is
+ *   used, or when `baseUrl` is missing on the reserved instance.
  */
 export function readMcpRegistryProviderConfig(
   rootConfig: Config,
+  warn?: ConfigWarnFn,
 ): ResolvedMcpRegistryProviderConfig | undefined {
   const providersConfig = rootConfig.getOptionalConfig('catalog.providers');
   if (!providersConfig) {
     return undefined;
   }
 
-  const registryConfig = providersConfig.getOptionalConfig('mcpRegistry');
+  const providersMap = providersConfig.getOptionalConfig('mcpRegistry');
+  if (!providersMap) {
+    return undefined;
+  }
+
+  const registryConfig = readReservedRegistryInstanceConfig(providersMap, warn);
   if (!registryConfig) {
     return undefined;
   }

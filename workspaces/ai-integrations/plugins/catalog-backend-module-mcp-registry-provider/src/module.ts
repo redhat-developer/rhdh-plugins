@@ -43,11 +43,13 @@ export const catalogModuleMcpRegistryProvider = createBackendModule({
         scheduler: coreServices.scheduler,
       },
       async init({ catalog, config, logger, scheduler }) {
-        const providerConfig = readMcpRegistryProviderConfig(config);
+        const providerConfig = readMcpRegistryProviderConfig(config, message =>
+          logger.warn(message),
+        );
 
         if (!providerConfig) {
           logger.info(
-            'catalog.providers.mcpRegistry not configured; ' +
+            'catalog.providers.mcpRegistry.mcpRegistry not configured; ' +
               'MCP Registry provider is inactive.',
           );
           return;

@@ -51,7 +51,7 @@ Optional environment variables:
 | `MCP_REGISTRY_IMAGE_NAME`       | `ghcr.io/modelcontextprotocol/registry`                | Registry container image name (without tag)                                                                                                                                                                 |
 | `MCP_REGISTRY_IMAGE_TAG`        | `1.8.1`                                                | Registry container image tag                                                                                                                                                                                |
 | `MCP_REGISTRY_DATA_DIR`         | _(checkout `./data`)_                                  | Host directory mounted at `/data` instead of the [default seed data](https://github.com/modelcontextprotocol/registry/blob/main/data/seed.json). When set, seeds from `data/seed.json` with validation off. |
-| `MCP_REGISTRY_URL`              | `http://localhost:8080`                                | URL probed for readiness (and typically used as `catalog.providers.mcpRegistry.baseUrl`)                                                                                                                    |
+| `MCP_REGISTRY_URL`              | `http://localhost:8080`                                | URL probed for readiness (and typically used as `catalog.providers.mcpRegistry.mcpRegistry.baseUrl`)                                                                                                        |
 | `MCP_REGISTRY_API_VERSION`      | `v0.1`                                                 | Registry HTTP API version path segment used for the readiness probe                                                                                                                                         |
 | `MCP_REGISTRY_READY_TIMEOUT_MS` | `300000` (5m)                                          | How long `start-local-mcp-registry` waits for the API before failing                                                                                                                                        |
 
@@ -69,18 +69,19 @@ podman compose -f ~/.cache/rhdh-ai-integrations/mcp-registry/docker-compose.yml 
 
 ## Point the provider at localhost
 
-Configure `catalog.providers.mcpRegistry` to use the local registry. The default
-local API version is `v0.1`:
+Configure `catalog.providers.mcpRegistry.mcpRegistry` to use the local
+registry. The default local API version is `v0.1`:
 
 ```yaml
 catalog:
   providers:
     mcpRegistry:
-      baseUrl: http://localhost:8080
-      apiVersion: v0.1
-      # Optional when restricting outbound hosts:
-      # hostAllowList:
-      #   - localhost
+      mcpRegistry:
+        baseUrl: http://localhost:8080
+        apiVersion: v0.1
+        # Optional when restricting outbound hosts:
+        # hostAllowList:
+        #   - localhost
 ```
 
 Then start the workspace as usual (`yarn dev` from `workspaces/ai-integrations`).

@@ -15,35 +15,45 @@
  */
 import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
 
+/** Per-registry instance options under `catalog.providers.mcpRegistry.<id>`. */
+interface McpRegistryInstanceConfig {
+  /** @visibility backend */
+  baseUrl: string;
+  /** @visibility backend */
+  baseName?: string;
+  /** @visibility backend */
+  apiVersion?: string;
+  /** @visibility backend */
+  defaultOwner?: string;
+  /** @visibility backend */
+  pageLimit?: number;
+  /** @visibility backend */
+  pageSize?: number;
+  /** @visibility backend */
+  maxEntries?: number;
+  /**
+   * When true, only ingest servers that declare at least one native
+   * remote. Package-only / placeholder-remote servers are skipped.
+   *
+   * @visibility backend
+   */
+  remotesOnly?: boolean;
+  /** @visibility backend */
+  hostAllowList?: string[];
+  /** @visibility backend */
+  schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+}
+
 export interface Config {
   catalog?: {
     providers?: {
+      /**
+       * Map of MCP Registry provider instances. This implementation only
+       * reads the reserved `mcpRegistry` instance id; additional keys are
+       * ignored with a warning until multi-registry support lands.
+       */
       mcpRegistry?: {
-        /** @visibility backend */
-        baseUrl: string;
-        /** @visibility backend */
-        baseName?: string;
-        /** @visibility backend */
-        apiVersion?: string;
-        /** @visibility backend */
-        defaultOwner?: string;
-        /** @visibility backend */
-        pageLimit?: number;
-        /** @visibility backend */
-        pageSize?: number;
-        /** @visibility backend */
-        maxEntries?: number;
-        /**
-         * When true, only ingest servers that declare at least one native
-         * remote. Package-only / placeholder-remote servers are skipped.
-         *
-         * @visibility backend
-         */
-        remotesOnly?: boolean;
-        /** @visibility backend */
-        hostAllowList?: string[];
-        /** @visibility backend */
-        schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+        mcpRegistry?: McpRegistryInstanceConfig;
       };
     };
   };

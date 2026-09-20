@@ -32,30 +32,32 @@ Configure the provider in your `app-config.yaml`:
 catalog:
   providers:
     mcpRegistry:
-      baseUrl: https://registry.example.com
-      # Optional: override the mapping identity prefix (default: mcp.registry)
-      # baseName: com.example.registry
-      # Optional: registry API version slug (default: v1)
-      # apiVersion: v1
-      # Optional: default entity owner (default: unknown)
-      # defaultOwner: group:default/mcp-admins
-      # Optional: max pages fetched per sync (default: 10)
-      # pageLimit: 10
-      # Optional: registry page size sent as ?limit= (omitted by default)
-      # pageSize: 50
-      # Optional: max entries per complete traversal; soft-stops with end cursor (default: 5000)
-      # maxEntries: 5000
-      # Optional: ingest only servers with at least one native remote (default: false)
-      # remotesOnly: false
-      # Optional: restrict outbound requests to specific hostnames (defense-in-depth)
-      # hostAllowList:
-      #   - registry.example.com
-      # Optional: sync schedule (defaults shown below)
-      # schedule:
-      #   frequency: { minutes: 30 }
-      #   timeout: { minutes: 3 }
-      #   # Optional: defer the first sync
-      #   # initialDelay: { seconds: 15 }
+      # Reserved instance id — only this key is supported today.
+      mcpRegistry:
+        baseUrl: https://registry.example.com
+        # Optional: override the mapping identity prefix (default: mcp.registry)
+        # baseName: com.example.registry
+        # Optional: registry API version slug (default: v1)
+        # apiVersion: v1
+        # Optional: default entity owner (default: unknown)
+        # defaultOwner: group:default/mcp-admins
+        # Optional: max pages fetched per sync (default: 10)
+        # pageLimit: 10
+        # Optional: registry page size sent as ?limit= (omitted by default)
+        # pageSize: 50
+        # Optional: max entries per complete traversal; soft-stops with end cursor (default: 5000)
+        # maxEntries: 5000
+        # Optional: ingest only servers with at least one native remote (default: false)
+        # remotesOnly: false
+        # Optional: restrict outbound requests to specific hostnames (defense-in-depth)
+        # hostAllowList:
+        #   - registry.example.com
+        # Optional: sync schedule (defaults shown below)
+        # schedule:
+        #   frequency: { minutes: 30 }
+        #   timeout: { minutes: 3 }
+        #   # Optional: defer the first sync
+        #   # initialDelay: { seconds: 15 }
 ```
 
 ### Configuration options
@@ -75,7 +77,12 @@ catalog:
 
 ### Multiple registries
 
-Multiple registries are **not supported** in this implementation. Configuring a keyed map of instances (e.g., `mcpRegistry.internal` and `mcpRegistry.public`) will fail at startup with an actionable error. Use `baseName` to override the identity prefix if needed for future multi-registry support.
+`catalog.providers.mcpRegistry` is a map of instance ids so additional
+registries can be added later. This implementation only reads the reserved
+`mcpRegistry` instance (`catalog.providers.mcpRegistry.mcpRegistry`). Other
+instance ids are ignored and a warning is logged that multiple MCP Registry
+providers are not supported yet. Use `baseName` on the reserved instance to
+override the identity prefix if needed for future multi-registry support.
 
 ## Behavior
 
