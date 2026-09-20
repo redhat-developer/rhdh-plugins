@@ -37,7 +37,11 @@ import type {
   McpServerMappingDefaults,
   McpServerDocument,
 } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
-import type { McpRegistryProviderConfig } from './config';
+import {
+  resolveMcpRegistryProviderConfig,
+  type McpRegistryProviderConfig,
+  type ResolvedMcpRegistryProviderConfig,
+} from './config';
 import { fetchRegistryServers, McpRegistryClientError } from './client';
 import type { McpRegistryServerEntry } from './client';
 import { stripTrailingSlashes } from './util';
@@ -127,7 +131,7 @@ export function formatMappingFailureMessage(
  */
 export class McpRegistryEntityProvider implements EntityProvider {
   private connection?: EntityProviderConnection;
-  private readonly config: McpRegistryProviderConfig;
+  private readonly config: ResolvedMcpRegistryProviderConfig;
   private readonly logger: LoggerService;
   private readonly fetchApi?: typeof fetch;
   private readonly taskRunner?: SchedulerServiceTaskRunner;
@@ -169,7 +173,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
       taskRunner?: SchedulerServiceTaskRunner;
     },
   ) {
-    this.config = config;
+    this.config = resolveMcpRegistryProviderConfig(config);
     this.logger = logger;
     this.fetchApi = options?.fetchApi;
     this.taskRunner = options?.taskRunner;

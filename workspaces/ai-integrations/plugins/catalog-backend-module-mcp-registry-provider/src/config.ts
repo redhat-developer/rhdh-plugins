@@ -33,6 +33,9 @@ const DEFAULT_PAGE_LIMIT = 10;
 /** Default max entries per complete registry traversal (full mutation). */
 const DEFAULT_MAX_ENTRIES = 5000;
 
+/** Default remotesOnly when omitted. */
+const DEFAULT_REMOTES_ONLY = false;
+
 /** Supported single-registry config keys under `catalog.providers.mcpRegistry`. */
 const KNOWN_MCP_REGISTRY_KEYS = new Set([
   'baseUrl',
@@ -235,10 +238,12 @@ export function validateHostAllowList(
  */
 export function readRemotesOnly(registryConfig: Config): boolean {
   try {
-    return registryConfig.getOptionalBoolean('remotesOnly') ?? false;
+    return (
+      registryConfig.getOptionalBoolean('remotesOnly') ?? DEFAULT_REMOTES_ONLY
+    );
   } catch {
-    // ConfigReader can throw TypeError for empty-string env substitution.
-    return false;
+    // ConfigReader throws TypeError for empty-string env substitution.
+    return DEFAULT_REMOTES_ONLY;
   }
 }
 
@@ -258,7 +263,9 @@ export function readProviderSchedule(
 }
 
 /**
- * Parsed provider configuration.
+ * Provider configuration. Fields with documented defaults may be omitted
+ * on direct construction; the entity provider and config reader apply the
+ * same defaults as app-config parsing.
  *
  * @public
  */
@@ -268,11 +275,11 @@ export interface McpRegistryProviderConfig {
   /** Optional identity prefix override passed to the mapping transform. */
   baseName?: string;
   /** Registry API version slug used in the endpoint path (default `v1`). */
-  apiVersion: string;
+  apiVersion?: string;
   /** Default entity owner ref when the mapping does not supply one. */
   defaultOwner?: string;
   /** Maximum pages fetched per sync (default `10`); excess pages resume next sync. */
-  pageLimit: number;
+  pageLimit?: number;
   /** Registry `?limit=` page-size query; omitted from the request when unset. */
   pageSize?: number;
   /**
@@ -282,16 +289,46 @@ export interface McpRegistryProviderConfig {
    * commits the buffer, saves an end cursor, and later traversals stop
    * at that cursor until `maxEntries` is patched.
    */
-  maxEntries: number;
+  maxEntries?: number;
   /**
    * When true, only ingest servers with at least one native remote.
    * Package-only / placeholder-remote servers are skipped (default `false`).
    */
-  remotesOnly: boolean;
+  remotesOnly?: boolean;
   /** Optional allowlist of permitted hostnames for defense-in-depth SSRF protection. */
   hostAllowList?: string[];
   /** Schedule for the sync task. */
   schedule: SchedulerServiceTaskScheduleDefinition;
+}
+
+/**
+ * {@link McpRegistryProviderConfig} with defaults applied for fields
+ * that are optional on the public interface.
+ *
+ * @internal
+ */
+export type ResolvedMcpRegistryProviderConfig = McpRegistryProviderConfig & {
+  apiVersion: string;
+  pageLimit: number;
+  maxEntries: number;
+  remotesOnly: boolean;
+};
+
+/**
+ * Apply documented defaults for optional provider config fields.
+ *
+ * @internal
+ */
+export function resolveMcpRegistryProviderConfig(
+  config: McpRegistryProviderConfig,
+): ResolvedMcpRegistryProviderConfig {
+  return {
+    ...config,
+    apiVersion: config.apiVersion ?? DEFAULT_API_VERSION,
+    pageLimit: config.pageLimit ?? DEFAULT_PAGE_LIMIT,
+    maxEntries: config.maxEntries ?? DEFAULT_MAX_ENTRIES,
+    remotesOnly: config.remotesOnly ?? DEFAULT_REMOTES_ONLY,
+  };
 }
 
 /**
@@ -304,7 +341,7 @@ export interface McpRegistryProviderConfig {
  */
 export function readMcpRegistryProviderConfig(
   rootConfig: Config,
-): McpRegistryProviderConfig | undefined {
+): ResolvedMcpRegistryProviderConfig | undefined {
   const providersConfig = rootConfig.getOptionalConfig('catalog.providers');
   if (!providersConfig) {
     return undefined;

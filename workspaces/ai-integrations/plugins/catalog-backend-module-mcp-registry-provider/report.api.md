@@ -28,15 +28,15 @@ export class McpRegistryEntityProvider implements EntityProvider {
 
 // @public
 export interface McpRegistryProviderConfig {
-  apiVersion: string;
+  apiVersion?: string;
   baseName?: string;
   baseUrl: string;
   defaultOwner?: string;
   hostAllowList?: string[];
-  maxEntries: number;
-  pageLimit: number;
+  maxEntries?: number;
+  pageLimit?: number;
   pageSize?: number;
-  remotesOnly: boolean;
+  remotesOnly?: boolean;
   schedule: SchedulerServiceTaskScheduleDefinition;
 }
 ```

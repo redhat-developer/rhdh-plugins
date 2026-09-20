@@ -57,16 +57,14 @@ export function createMockLogger() {
 
 /**
  * Create a default McpRegistryProviderConfig for testing.
+ * Omits fields that have documented defaults so construction
+ * matches the app-config path.
  */
 export function createDefaultConfig(
   overrides?: Partial<McpRegistryProviderConfig>,
 ): McpRegistryProviderConfig {
   return {
     baseUrl: 'https://registry.example.com',
-    apiVersion: 'v1',
-    pageLimit: 10,
-    maxEntries: 5000,
-    remotesOnly: false,
     schedule: {
       frequency: { minutes: 30 },
       timeout: { minutes: 3 },

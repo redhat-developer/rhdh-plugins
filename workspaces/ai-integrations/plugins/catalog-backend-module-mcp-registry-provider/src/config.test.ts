@@ -25,6 +25,7 @@ import {
   readProviderSchedule,
   readRemotesOnly,
   readRequiredHttpBaseUrl,
+  resolveMcpRegistryProviderConfig,
   safeGetOptionalString,
   validateHostAllowList,
 } from './config';
@@ -509,6 +510,49 @@ describe('readProviderSchedule', () => {
       frequency: { minutes: 15 },
       timeout: { minutes: 5 },
       initialDelay: { seconds: 30 },
+    });
+  });
+});
+
+describe('resolveMcpRegistryProviderConfig', () => {
+  const schedule = {
+    frequency: { minutes: 30 },
+    timeout: { minutes: 3 },
+  };
+
+  it('fills documented defaults when optional fields are omitted', () => {
+    expect(
+      resolveMcpRegistryProviderConfig({
+        baseUrl: 'https://registry.example.com',
+        schedule,
+      }),
+    ).toEqual({
+      baseUrl: 'https://registry.example.com',
+      schedule,
+      apiVersion: 'v1',
+      pageLimit: 10,
+      maxEntries: 5000,
+      remotesOnly: false,
+    });
+  });
+
+  it('preserves explicit overrides', () => {
+    expect(
+      resolveMcpRegistryProviderConfig({
+        baseUrl: 'https://registry.example.com',
+        schedule,
+        apiVersion: 'v0',
+        pageLimit: 3,
+        maxEntries: 100,
+        remotesOnly: true,
+      }),
+    ).toEqual({
+      baseUrl: 'https://registry.example.com',
+      schedule,
+      apiVersion: 'v0',
+      pageLimit: 3,
+      maxEntries: 100,
+      remotesOnly: true,
     });
   });
 });
