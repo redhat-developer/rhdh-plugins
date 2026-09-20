@@ -278,6 +278,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
       this.endCursorMaxEntries = undefined;
     }
 
+    const seenCursorsSnapshot = new Set(this.seenCursors);
     try {
       const result = await fetchRegistryServers({
         baseUrl,
@@ -323,6 +324,12 @@ export class McpRegistryEntityProvider implements EntityProvider {
       return entries;
     } catch (err) {
       if (err instanceof McpRegistryClientError) {
+        // Restore seenCursors to pre-call state so the next sync
+        // does not carry partially mutated cursor history.
+        this.seenCursors.clear();
+        for (const c of seenCursorsSnapshot) {
+          this.seenCursors.add(c);
+        }
         this.logger.error(
           `MCP Registry sync failed (no mutation emitted): ${err.message}`,
         );

@@ -678,6 +678,77 @@ describe('McpRegistryEntityProvider', () => {
     ).toBe('degraded');
   });
 
+  it('restores seenCursors on fetch error so the next sync resumes correctly', async () => {
+    // First sync: page 1 succeeds, page 2 fails mid-pagination
+    const page1: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('io.github.user/one', '1.0.0') }],
+      metadata: { count: 3, nextCursor: 'cursor-1' },
+    };
+    // Second page fails (non-2xx)
+    const failPage = {
+      ok: false,
+      status: 500,
+      url: '',
+      json: async () => ({}),
+      text: async () => 'Internal Server Error',
+    } as unknown as Response;
+    // Retry sync: page 1 again, then page 2 succeeds
+    const retryPage1: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('io.github.user/one', '1.0.0') }],
+      metadata: { count: 3, nextCursor: 'cursor-1' },
+    };
+    const retryPage2: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('io.github.user/two', '2.0.0') }],
+      metadata: { count: 3 },
+    };
+
+    const combinedFetch = jest.fn();
+    // First sync: page 1 ok, page 2 fails
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => page1,
+      text: async () => JSON.stringify(page1),
+    } as unknown as Response);
+    combinedFetch.mockResolvedValueOnce(failPage);
+    // Retry sync: both pages ok
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => retryPage1,
+      text: async () => JSON.stringify(retryPage1),
+    } as unknown as Response);
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => retryPage2,
+      text: async () => JSON.stringify(retryPage2),
+    } as unknown as Response);
+
+    const connection = createMockConnection();
+    const logger = createMockLogger();
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig({ pageLimit: 10 }),
+      logger,
+      { fetchApi: combinedFetch },
+    );
+    await provider.connect(connection);
+
+    // First sync: fails mid-pagination (seenCursors should be restored)
+    await provider.run();
+    expect(connection.applyMutation).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('sync failed'),
+    );
+
+    // Retry sync: should succeed because seenCursors was restored,
+    // so cursor-1 is not incorrectly marked as seen
+    await provider.run();
+    expect(connection.applyMutation).toHaveBeenCalledTimes(1);
+    const mutation = (connection.applyMutation as jest.Mock).mock.calls[0][0];
+    expect(mutation.entities).toHaveLength(2);
+  });
+
   it('does not retain degraded entities in lastGoodIndex on subsequent syncs', async () => {
     const goodBody: McpRegistryListResponse = {
       servers: [{ server: createMockServerDoc('test/server', '1.0.0') }],

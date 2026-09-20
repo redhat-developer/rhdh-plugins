@@ -205,6 +205,7 @@ export function truncateErrorBody(
 export async function fetchRegistryPage(
   doFetch: typeof fetch,
   url: URL,
+  hostAllowList?: string[],
 ): Promise<McpRegistryListResponse> {
   const requestUrl = url.toString();
 
@@ -215,6 +216,12 @@ export async function fetchRegistryPage(
     throw new McpRegistryClientError(
       `Failed to reach MCP Registry at ${requestUrl}: ${err}`,
     );
+  }
+
+  // Validate the actual response URL (after any redirects) against
+  // the hostAllowList to prevent SSRF via redirect.
+  if (response.url) {
+    validateUrlHostAllowList(new URL(response.url), hostAllowList);
   }
 
   if (!response.ok) {
@@ -352,7 +359,7 @@ export async function fetchRegistryServers(
     }
 
     const url = buildPageRequestUrl(endpoint, cursor, pageSize);
-    const body = await fetchRegistryPage(doFetch, url);
+    const body = await fetchRegistryPage(doFetch, url, hostAllowList);
     allServers.push(...body.servers);
     pagesFetched += 1;
 

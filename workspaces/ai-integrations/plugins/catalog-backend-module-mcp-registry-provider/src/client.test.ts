@@ -441,6 +441,30 @@ describe('fetchRegistryServers', () => {
     expect(fn).not.toHaveBeenCalled();
   });
 
+  it('throws when response.url redirects to a disallowed host', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const fn = jest.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      url: 'https://evil.example.com/v1/servers',
+      json: async () => body,
+      text: async () => JSON.stringify(body),
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryServers({
+        baseUrl: 'https://registry.example.com',
+        apiVersion: 'v1',
+        pageLimit: 10,
+        hostAllowList: ['registry.example.com'],
+        fetchApi: fn,
+      }),
+    ).rejects.toThrow(/not in the configured hostAllowList/);
+  });
+
   it('does not enforce maxEntries when unset', async () => {
     const largePage: McpRegistryListResponse = {
       servers: Array.from({ length: 100 }, (_, i) => ({
@@ -590,6 +614,71 @@ describe('fetchRegistryPage', () => {
         new URL('https://registry.example.com/v1/servers'),
       ),
     ).rejects.toThrow(/missing "servers" array/);
+  });
+
+  it('throws when response.url is redirected to a disallowed host', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      url: 'https://evil.example.com/v1/servers',
+      json: async () => body,
+      text: async () => JSON.stringify(body),
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+        ['registry.example.com'],
+      ),
+    ).rejects.toThrow(/not in the configured hostAllowList/);
+  });
+
+  it('passes when response.url matches the hostAllowList', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      url: 'https://registry.example.com/v1/servers',
+      json: async () => body,
+      text: async () => JSON.stringify(body),
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+        ['registry.example.com'],
+      ),
+    ).resolves.toEqual(body);
+  });
+
+  it('skips response.url validation when hostAllowList is omitted', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('a/b', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const doFetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      url: 'https://any-host.example.com/v1/servers',
+      json: async () => body,
+      text: async () => JSON.stringify(body),
+    } as unknown as Response);
+
+    await expect(
+      fetchRegistryPage(
+        doFetch,
+        new URL('https://registry.example.com/v1/servers'),
+      ),
+    ).resolves.toEqual(body);
   });
 
   it('truncates non-2xx response bodies in the error', async () => {
