@@ -45,6 +45,11 @@ const IMAGE =
   process.env.MCP_REGISTRY_IMAGE?.trim() ||
   'ghcr.io/modelcontextprotocol/registry:main';
 const DATA_DIR = process.env.MCP_REGISTRY_DATA_DIR?.trim();
+const REGISTRY_URL =
+  process.env.MCP_REGISTRY_URL?.trim() || 'http://localhost:8080';
+const READY_TIMEOUT_MS = Number(
+  process.env.MCP_REGISTRY_READY_TIMEOUT_MS?.trim() || 300_000,
+);
 
 function commandExists(command: string): boolean {
   return (
@@ -100,6 +105,31 @@ function buildOverrideYaml(image: string, dataDir?: string): string {
   return `${lines.join('\n')}\n`;
 }
 
+/**
+ * Block until the registry HTTP API answers. `compose up -d` returns before
+ * migrations/seed finish; the process only listens on :8080 after import.
+ */
+function waitForRegistryReady(baseUrl: string, timeoutMs: number): void {
+  const probeUrl = `${baseUrl.replace(/\/$/, '')}/v0.1/servers?limit=1`;
+  const deadline = Date.now() + timeoutMs;
+  console.log(`Waiting for MCP Registry at ${probeUrl}...`);
+  while (Date.now() < deadline) {
+    const probe = spawnSync(
+      'curl',
+      ['-sf', '--connect-timeout', '1', '--max-time', '3', probeUrl],
+      { encoding: 'utf8' },
+    );
+    if (probe.status === 0) {
+      console.log('MCP Registry is ready.');
+      return;
+    }
+    spawnSync('sleep', ['1']);
+  }
+  throw new Error(
+    `MCP Registry did not become ready at ${probeUrl} within ${timeoutMs}ms`,
+  );
+}
+
 if (!existsSync(join(REPO_DIR, '.git'))) {
   const result = spawnSync(
     'git',
@@ -140,7 +170,7 @@ if (dataDir) {
 try {
   const seedNote = dataDir ? ` with data from ${dataDir}` : '';
   console.log(
-    `Starting MCP Registry from ${IMAGE}${seedNote} (http://localhost:8080)...`,
+    `Starting MCP Registry from ${IMAGE}${seedNote} (${REGISTRY_URL})...`,
   );
   const [bin, ...prefix] = compose;
   const result = spawnSync(
@@ -150,6 +180,12 @@ try {
   );
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
+  }
+  try {
+    waitForRegistryReady(REGISTRY_URL, READY_TIMEOUT_MS);
+  } catch (error) {
+    console.error(`error: ${error instanceof Error ? error.message : error}`);
+    process.exit(1);
   }
   console.log(
     `MCP Registry started in background. Use '${compose.join(

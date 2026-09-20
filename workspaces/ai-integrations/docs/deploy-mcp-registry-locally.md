@@ -29,16 +29,24 @@ node hack/deploy-mcp-registry.ts
 ```
 
 This clones the registry into `/tmp/mcp-registry` (if needed), starts PostgreSQL
-and the registry in the background, and serves the API at
-[http://localhost:8080](http://localhost:8080).
+and the registry in the background, **waits until the HTTP API responds** (seed
+import can take a few minutes when seeding from the public registry), and serves
+the API at [http://localhost:8080](http://localhost:8080).
+
+Start the registry **before** `yarn dev`. If the provider syncs while the
+registry is still importing seed data, you will see
+`Failed to reach MCP Registry ... TypeError: fetch failed` (no mutation). Restart
+the backend after the registry is ready, or wait for the next scheduled sync.
 
 Optional environment variables:
 
-| Variable                | Default                                      | Description                                                                                                                                                                                                 |
-| ----------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `REPO_DIR`              | `/tmp/mcp-registry`                          | Local checkout path for the registry                                                                                                                                                                        |
-| `MCP_REGISTRY_IMAGE`    | `ghcr.io/modelcontextprotocol/registry:main` | Registry container image                                                                                                                                                                                    |
-| `MCP_REGISTRY_DATA_DIR` | _(checkout `./data`)_                        | Host directory mounted at `/data` instead of the [default seed data](https://github.com/modelcontextprotocol/registry/blob/main/data/seed.json). When set, seeds from `data/seed.json` with validation off. |
+| Variable                        | Default                                      | Description                                                                                                                                                                                                 |
+| ------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `REPO_DIR`                      | `/tmp/mcp-registry`                          | Local checkout path for the registry                                                                                                                                                                        |
+| `MCP_REGISTRY_IMAGE`            | `ghcr.io/modelcontextprotocol/registry:main` | Registry container image                                                                                                                                                                                    |
+| `MCP_REGISTRY_DATA_DIR`         | _(checkout `./data`)_                        | Host directory mounted at `/data` instead of the [default seed data](https://github.com/modelcontextprotocol/registry/blob/main/data/seed.json). When set, seeds from `data/seed.json` with validation off. |
+| `MCP_REGISTRY_URL`              | `http://localhost:8080`                      | URL probed for readiness (and typically used as `catalog.providers.mcpRegistry.baseUrl`)                                                                                                                    |
+| `MCP_REGISTRY_READY_TIMEOUT_MS` | `300000` (5m)                                | How long `start-mcp-registry` waits for the API before failing                                                                                                                                              |
 
 Example with custom seed content (directory must contain `seed.json`):
 
