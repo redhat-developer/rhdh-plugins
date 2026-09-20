@@ -37,6 +37,8 @@ catalog:
       # pageLimit: 10
       # Optional: registry page size sent as ?limit= (omitted by default)
       # pageSize: 50
+      # Optional: maximum total entries accumulated across all pages per sync (default: 5000)
+      # maxEntries: 5000
       # Optional: restrict outbound requests to specific hostnames (defense-in-depth)
       # hostAllowList:
       #   - registry.example.com
@@ -58,6 +60,7 @@ catalog:
 | `defaultOwner`  | No       | `unknown` (mapping default)      | Backstage entity reference used as `spec.owner`                                                                                                                                       |
 | `pageLimit`     | No       | `10`                             | Maximum number of pages fetched per sync. The provider fails the sync if the registry has more pages than this limit (to prevent incomplete catalog state).                           |
 | `pageSize`      | No       | _(registry default)_             | Sent as `?limit=` on each list request. When omitted, the registry's default page size applies.                                                                                       |
+| `maxEntries`    | No       | `5000`                           | Maximum total server entries accumulated across all pages per sync. The provider fails the sync if this cap is exceeded.                                                              |
 | `hostAllowList` | No       | _(none — all hosts allowed)_     | Array of permitted hostnames. When set, `baseUrl` hostname must be in this list and every outbound request is validated at runtime. Provides defense-in-depth against SSRF.           |
 | `schedule`      | No       | 30m frequency, 3m timeout        | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. The first sync runs after one `frequency` interval unless `initialDelay` is set.                                   |
 
