@@ -34,10 +34,17 @@ const SAFE_BIN_DIRS = ['/usr/bin', '/bin', '/usr/local/bin'];
 const CACHE_ROOT = join(homedir(), '.cache', 'rhdh-ai-integrations');
 const DEFAULT_REPO_DIR = join(CACHE_ROOT, 'mcp-registry');
 
-const REPO_DIR = process.env.REPO_DIR?.trim() || DEFAULT_REPO_DIR;
-const IMAGE =
-  process.env.MCP_REGISTRY_IMAGE?.trim() ||
-  'ghcr.io/modelcontextprotocol/registry:main';
+const REPO_DIR = process.env.MCP_REGISTRY_REPO_DIR?.trim() || DEFAULT_REPO_DIR;
+const REPO_URL =
+  process.env.MCP_REGISTRY_REPO_URL?.trim() ||
+  'https://github.com/modelcontextprotocol/registry.git';
+const REPO_REVISION =
+  process.env.MCP_REGISTRY_REPO_REVISION?.trim() || 'v1.8.1';
+const IMAGE_NAME =
+  process.env.MCP_REGISTRY_IMAGE_NAME?.trim() ||
+  'ghcr.io/modelcontextprotocol/registry';
+const IMAGE_TAG = process.env.MCP_REGISTRY_IMAGE_TAG?.trim() || '1.8.1';
+const IMAGE = `${IMAGE_NAME}:${IMAGE_TAG}`;
 
 function findBinary(name: string): string | undefined {
   for (const dir of SAFE_BIN_DIRS) {
@@ -83,26 +90,39 @@ function createPrivateTempDir(prefix: string): string {
   return mkdtempSync(join(CACHE_ROOT, prefix));
 }
 
-if (!existsSync(join(REPO_DIR, '.git'))) {
-  if (!existsSync(REPO_DIR)) {
-    const git = requireBinary('git');
-    const result = spawnSync(
-      git,
-      [
-        'clone',
-        'https://github.com/modelcontextprotocol/registry.git',
-        REPO_DIR,
-      ],
-      { stdio: 'inherit' },
-    );
-    if (result.status !== 0) {
-      process.exit(result.status ?? 1);
-    }
-  } else {
+function runGit(args: string[], cwd?: string): void {
+  const git = requireBinary('git');
+  const result = spawnSync(git, args, {
+    cwd,
+    stdio: 'inherit',
+  });
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
+
+/** Clone the registry checkout if missing (same URL/revision as deploy). */
+function ensureRegistryCheckout(): void {
+  if (existsSync(join(REPO_DIR, '.git'))) {
+    return;
+  }
+  if (existsSync(REPO_DIR)) {
     console.error(`error: ${REPO_DIR} exists but is not a git repository`);
     process.exit(1);
   }
+  console.log(`Cloning ${REPO_URL} (${REPO_REVISION}) into ${REPO_DIR}...`);
+  runGit([
+    'clone',
+    '--branch',
+    REPO_REVISION,
+    '--depth',
+    '1',
+    REPO_URL,
+    REPO_DIR,
+  ]);
 }
+
+ensureRegistryCheckout();
 
 let compose: [string, ...string[]];
 try {

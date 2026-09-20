@@ -47,10 +47,17 @@ const SAFE_BIN_DIRS = ['/usr/bin', '/bin', '/usr/local/bin'];
 const CACHE_ROOT = join(homedir(), '.cache', 'rhdh-ai-integrations');
 const DEFAULT_REPO_DIR = join(CACHE_ROOT, 'mcp-registry');
 
-const REPO_DIR = process.env.REPO_DIR?.trim() || DEFAULT_REPO_DIR;
-const IMAGE =
-  process.env.MCP_REGISTRY_IMAGE?.trim() ||
-  'ghcr.io/modelcontextprotocol/registry:main';
+const REPO_DIR = process.env.MCP_REGISTRY_REPO_DIR?.trim() || DEFAULT_REPO_DIR;
+const REPO_URL =
+  process.env.MCP_REGISTRY_REPO_URL?.trim() ||
+  'https://github.com/modelcontextprotocol/registry.git';
+const REPO_REVISION =
+  process.env.MCP_REGISTRY_REPO_REVISION?.trim() || 'v1.8.1';
+const IMAGE_NAME =
+  process.env.MCP_REGISTRY_IMAGE_NAME?.trim() ||
+  'ghcr.io/modelcontextprotocol/registry';
+const IMAGE_TAG = process.env.MCP_REGISTRY_IMAGE_TAG?.trim() || '1.8.1';
+const IMAGE = `${IMAGE_NAME}:${IMAGE_TAG}`;
 const DATA_DIR = process.env.MCP_REGISTRY_DATA_DIR?.trim();
 const REGISTRY_URL =
   process.env.MCP_REGISTRY_URL?.trim() || 'http://localhost:8080';
@@ -160,17 +167,43 @@ function waitForRegistryReady(baseUrl: string, timeoutMs: number): void {
   );
 }
 
-if (!existsSync(join(REPO_DIR, '.git'))) {
+function runGit(args: string[], cwd?: string): void {
   const git = requireBinary('git');
-  const result = spawnSync(
-    git,
-    ['clone', 'https://github.com/modelcontextprotocol/registry.git', REPO_DIR],
-    { stdio: 'inherit' },
-  );
+  const result = spawnSync(git, args, {
+    cwd,
+    stdio: 'inherit',
+  });
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
 }
+
+/** Clone or update the registry checkout to MCP_REGISTRY_REPO_REVISION. */
+function ensureRegistryCheckout(): void {
+  if (!existsSync(join(REPO_DIR, '.git'))) {
+    if (existsSync(REPO_DIR)) {
+      console.error(`error: ${REPO_DIR} exists but is not a git repository`);
+      process.exit(1);
+    }
+    console.log(`Cloning ${REPO_URL} (${REPO_REVISION}) into ${REPO_DIR}...`);
+    runGit([
+      'clone',
+      '--branch',
+      REPO_REVISION,
+      '--depth',
+      '1',
+      REPO_URL,
+      REPO_DIR,
+    ]);
+    return;
+  }
+
+  console.log(`Checking out ${REPO_REVISION} in ${REPO_DIR}...`);
+  runGit(['fetch', '--depth', '1', 'origin', REPO_REVISION], REPO_DIR);
+  runGit(['checkout', '--force', 'FETCH_HEAD'], REPO_DIR);
+}
+
+ensureRegistryCheckout();
 
 const dataDir = resolveDataDir();
 

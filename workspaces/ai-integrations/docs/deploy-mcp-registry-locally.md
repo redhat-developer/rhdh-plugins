@@ -29,9 +29,11 @@ node scripts/deploy-mcp-registry.ts
 ```
 
 This clones the registry into `~/.cache/rhdh-ai-integrations/mcp-registry`
-(if needed; override with `REPO_DIR`), starts PostgreSQL and the registry in the
-background, **waits until the HTTP API responds** (seed import can take a few
-minutes when seeding from the public registry), and serves the API at
+(if needed; override with `MCP_REGISTRY_REPO_DIR`) at tag `v1.8.1` by default
+(override with `MCP_REGISTRY_REPO_URL` / `MCP_REGISTRY_REPO_REVISION`), starts
+PostgreSQL and the registry in the background, **waits until the HTTP API
+responds** (seed import can take a few minutes when seeding from the public
+registry), and serves the API at
 [http://localhost:8080](http://localhost:8080).
 
 Start the registry **before** `yarn dev`. If the provider syncs while the
@@ -41,13 +43,16 @@ the backend after the registry is ready, or wait for the next scheduled sync.
 
 Optional environment variables:
 
-| Variable                        | Default                                      | Description                                                                                                                                                                                                 |
-| ------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `REPO_DIR`                      | `~/.cache/rhdh-ai-integrations/mcp-registry` | Local checkout path for the registry                                                                                                                                                                        |
-| `MCP_REGISTRY_IMAGE`            | `ghcr.io/modelcontextprotocol/registry:main` | Registry container image                                                                                                                                                                                    |
-| `MCP_REGISTRY_DATA_DIR`         | _(checkout `./data`)_                        | Host directory mounted at `/data` instead of the [default seed data](https://github.com/modelcontextprotocol/registry/blob/main/data/seed.json). When set, seeds from `data/seed.json` with validation off. |
-| `MCP_REGISTRY_URL`              | `http://localhost:8080`                      | URL probed for readiness (and typically used as `catalog.providers.mcpRegistry.baseUrl`)                                                                                                                    |
-| `MCP_REGISTRY_READY_TIMEOUT_MS` | `300000` (5m)                                | How long `start-mcp-registry` waits for the API before failing                                                                                                                                              |
+| Variable                        | Default                                                | Description                                                                                                                                                                                                 |
+| ------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MCP_REGISTRY_REPO_DIR`         | `~/.cache/rhdh-ai-integrations/mcp-registry`           | Local checkout path for the registry                                                                                                                                                                        |
+| `MCP_REGISTRY_REPO_URL`         | `https://github.com/modelcontextprotocol/registry.git` | Git remote cloned into `MCP_REGISTRY_REPO_DIR`                                                                                                                                                              |
+| `MCP_REGISTRY_REPO_REVISION`    | `v1.8.1`                                               | Git branch or tag checked out for compose/config                                                                                                                                                            |
+| `MCP_REGISTRY_IMAGE_NAME`       | `ghcr.io/modelcontextprotocol/registry`                | Registry container image name (without tag)                                                                                                                                                                 |
+| `MCP_REGISTRY_IMAGE_TAG`        | `1.8.1`                                                | Registry container image tag                                                                                                                                                                                |
+| `MCP_REGISTRY_DATA_DIR`         | _(checkout `./data`)_                                  | Host directory mounted at `/data` instead of the [default seed data](https://github.com/modelcontextprotocol/registry/blob/main/data/seed.json). When set, seeds from `data/seed.json` with validation off. |
+| `MCP_REGISTRY_URL`              | `http://localhost:8080`                                | URL probed for readiness (and typically used as `catalog.providers.mcpRegistry.baseUrl`)                                                                                                                    |
+| `MCP_REGISTRY_READY_TIMEOUT_MS` | `300000` (5m)                                          | How long `start-mcp-registry` waits for the API before failing                                                                                                                                              |
 
 Example with custom seed content (directory must contain `seed.json`):
 
