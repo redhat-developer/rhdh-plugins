@@ -93,3 +93,21 @@ Each entity carries:
 - `redhat.com/rhdh-mcp-registry-sync-status`: `ok` or `degraded`
 - `modelcontextprotocol.io/name`: the server's canonical name
 - `modelcontextprotocol.io/version`: the server's version
+
+## Non-Remote MCP Servers
+
+MCP servers without a remote deployment (package(s) only or [custom installation](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/server-json/generic-server-json.md#server-with-custom-installation-path)) can be queried via: `GET /api/catalog/entities?filter=kind=API,spec.type=mcp-server,spec.remotes.type=undefined`
+
+These MCP server entries have a single remote _placeholder_ field which should **not** be parsed by a client always expecting a remote MCP Server. To filter out non-remote entries, use `POST /api/catalog/entities/by-query` with the following JSON body:
+
+```json
+{
+  "query": {
+    "$all": [
+      { "kind": "API" },
+      { "spec.type": "mcp-server" },
+      { "$not": { "spec.remotes.type": "undefined" } }
+    ]
+  }
+}
+```
