@@ -4,7 +4,8 @@
 # at examples/mcp-registry/seed-data/seed.json.
 #
 # Defaults match app-config.yaml (defaultOwner: default-owner,
-# baseUrl: http://localhost:8080/, default baseName prefix mcp.registry).
+# defaultLifecycle: production, baseUrl: http://localhost:8080/,
+# default baseName prefix mcp.registry).
 # Provider location and sync-status annotations are included.
 #
 # Wired as a file location in app-config.yaml for local catalog review.

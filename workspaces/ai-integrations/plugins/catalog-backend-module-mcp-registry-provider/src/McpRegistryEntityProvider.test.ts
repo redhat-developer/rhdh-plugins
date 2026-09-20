@@ -207,6 +207,30 @@ describe('McpRegistryEntityProvider', () => {
     );
   });
 
+  it('passes defaultLifecycle to the mapping', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [
+        { server: createMockServerDoc('io.github.user/weather', '1.0.0') },
+      ],
+      metadata: { count: 1 },
+    };
+    const fetchFn = mockFetchForResponses([body]);
+    const connection = createMockConnection();
+
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig({
+        defaultLifecycle: 'experimental',
+      }),
+      createMockLogger(),
+      { fetchApi: fetchFn },
+    );
+    await provider.connect(connection);
+    await provider.run();
+
+    const mutation = (connection.applyMutation as jest.Mock).mock.calls[0][0];
+    expect(mutation.entities[0].entity.spec.lifecycle).toBe('experimental');
+  });
+
   it('uses mapping default owner when defaultOwner is omitted', async () => {
     const body: McpRegistryListResponse = {
       servers: [
@@ -227,6 +251,28 @@ describe('McpRegistryEntityProvider', () => {
 
     const mutation = (connection.applyMutation as jest.Mock).mock.calls[0][0];
     expect(mutation.entities[0].entity.spec.owner).toBe('unknown');
+  });
+
+  it('uses mapping default lifecycle when defaultLifecycle is omitted', async () => {
+    const body: McpRegistryListResponse = {
+      servers: [
+        { server: createMockServerDoc('io.github.user/weather', '1.0.0') },
+      ],
+      metadata: { count: 1 },
+    };
+    const fetchFn = mockFetchForResponses([body]);
+    const connection = createMockConnection();
+
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig(),
+      createMockLogger(),
+      { fetchApi: fetchFn },
+    );
+    await provider.connect(connection);
+    await provider.run();
+
+    const mutation = (connection.applyMutation as jest.Mock).mock.calls[0][0];
+    expect(mutation.entities[0].entity.spec.lifecycle).toBe('production');
   });
 
   it('passes baseName as prefix override to the mapping', async () => {

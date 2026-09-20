@@ -75,6 +75,7 @@ describe('readMcpRegistryProviderConfig', () => {
     expect(result!.pageSize).toBeUndefined();
     expect(result!.baseName).toBeUndefined();
     expect(result!.defaultOwner).toBeUndefined();
+    expect(result!.defaultLifecycle).toBeUndefined();
     expect(result!.schedule).toEqual({
       frequency: { minutes: 30 },
       timeout: { minutes: 3 },
@@ -221,6 +222,18 @@ describe('readMcpRegistryProviderConfig', () => {
 
     const result = readMcpRegistryProviderConfig(config);
     expect(result!.defaultOwner).toBe('group:default/mcp-admins');
+  });
+
+  it('reads defaultLifecycle', () => {
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        defaultLifecycle: 'experimental',
+      }),
+    );
+
+    const result = readMcpRegistryProviderConfig(config);
+    expect(result!.defaultLifecycle).toBe('experimental');
   });
 
   it('reads apiVersion override', () => {

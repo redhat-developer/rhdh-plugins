@@ -364,6 +364,9 @@ export class McpRegistryEntityProvider implements EntityProvider {
     if (this.config.defaultOwner) {
       mappingDefaults.owner = this.config.defaultOwner;
     }
+    if (this.config.defaultLifecycle) {
+      mappingDefaults.lifecycle = this.config.defaultLifecycle;
+    }
     if (this.config.baseName) {
       mappingDefaults.prefix = this.config.baseName;
     }

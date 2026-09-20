@@ -26,6 +26,8 @@ interface McpRegistryInstanceConfig {
   /** @visibility backend */
   defaultOwner?: string;
   /** @visibility backend */
+  defaultLifecycle?: string;
+  /** @visibility backend */
   pageLimit?: number;
   /** @visibility backend */
   pageSize?: number;

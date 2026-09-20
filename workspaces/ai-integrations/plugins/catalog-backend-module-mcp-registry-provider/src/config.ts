@@ -52,6 +52,7 @@ const KNOWN_MCP_REGISTRY_KEYS = new Set([
   'baseName',
   'apiVersion',
   'defaultOwner',
+  'defaultLifecycle',
   'pageLimit',
   'pageSize',
   'maxEntries',
@@ -104,7 +105,7 @@ export function assertSingleRegistryConfig(registryConfig: Config): void {
         `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: found ` +
           `keyed instance "${key}". Configure a single registry object ` +
           `with baseUrl, baseName, apiVersion, schedule, pageLimit, ` +
-          `pageSize, and defaultOwner.`,
+          `pageSize, defaultOwner, and defaultLifecycle.`,
       );
     }
   }
@@ -346,6 +347,8 @@ export interface McpRegistryProviderConfig {
   apiVersion?: string;
   /** Default entity owner ref when the mapping does not supply one. */
   defaultOwner?: string;
+  /** Default entity lifecycle when the mapping does not supply one. */
+  defaultLifecycle?: string;
   /** Maximum pages fetched per sync (default `10`); excess pages resume next sync. */
   pageLimit?: number;
   /** Registry `?limit=` page-size query; omitted from the request when unset. */
@@ -455,6 +458,7 @@ export function readMcpRegistryProviderConfig(
       safeGetOptionalString(registryConfig, 'apiVersion') ??
       DEFAULT_API_VERSION,
     defaultOwner: safeGetOptionalString(registryConfig, 'defaultOwner'),
+    defaultLifecycle: safeGetOptionalString(registryConfig, 'defaultLifecycle'),
     pageLimit: readPageLimit(registryConfig),
     pageSize: readOptionalPageSize(registryConfig),
     maxEntries: readMaxEntries(registryConfig),

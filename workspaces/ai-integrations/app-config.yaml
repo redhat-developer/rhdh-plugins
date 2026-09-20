@@ -160,6 +160,8 @@ catalog:
         apiVersion: v0.1
         # Optional: default entity owner (default: unknown)
         defaultOwner: '${OWNER:-default-owner}'
+        # Optional: default entity lifecycle (default: production)
+        defaultLifecycle: '${LIFECYCLE:-production}'
         # Optional: max pages fetched per sync (default: 10)
         # pageLimit: 10
         # Optional: registry page size sent as ?limit= (omitted by default)
