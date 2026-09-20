@@ -39,6 +39,8 @@ catalog:
       # pageSize: 50
       # Optional: max entries per complete traversal; soft-stops with end cursor (default: 5000)
       # maxEntries: 5000
+      # Optional: ingest only servers with at least one native remote (default: false)
+      # remotesOnly: false
       # Optional: restrict outbound requests to specific hostnames (defense-in-depth)
       # hostAllowList:
       #   - registry.example.com
@@ -61,6 +63,7 @@ catalog:
 | `pageLimit`     | No       | `10`                             | Maximum number of pages fetched per sync. When more pages remain, the provider saves the cursor and continues on the next sync (no mutation until the registry is fully traversed).                                                 |
 | `pageSize`      | No       | _(registry default)_             | Sent as `?limit=` on each list request. When omitted, the registry's default page size applies.                                                                                                                                     |
 | `maxEntries`    | No       | `5000`                           | Maximum total server entries buffered for one complete registry traversal (spans resume syncs). When exceeded, the provider commits the buffer, saves an end cursor, and later traversals stop there until `maxEntries` is patched. |
+| `remotesOnly`   | No       | `false`                          | When `true`, skip servers that do not declare at least one native remote (non-empty type and http(s) URL). Package-only and placeholder-remote servers are omitted from the catalog.                                                |
 | `hostAllowList` | No       | _(none — all hosts allowed)_     | Array of permitted hostnames. When set, `baseUrl` hostname must be in this list and every outbound request is validated at runtime. Provides defense-in-depth against SSRF.                                                         |
 | `schedule`      | No       | 30m frequency, 3m timeout        | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. The first sync runs after one `frequency` interval unless `initialDelay` is set.                                                                                 |
 
@@ -76,7 +79,7 @@ The provider fully traverses the registry's cursor-based pagination, accumulatin
 
 ### Mapping
 
-Each server entry's `.server` object is transformed into an `mcp-server` API entity using the [`mcp-registry-server-mapping-common`](../mcp-registry-server-mapping-common) library. The provider passes `defaultOwner` and `baseName` as caller overrides, and always passes the configured `baseUrl` as `placeholderRemoteUrl` so a server with no valid remotes gets a placeholder remote for that registry before falling back to `websiteUrl`. It never reimplements the mapping rules.
+Each server entry's `.server` object is transformed into an `mcp-server` API entity using the [`mcp-registry-server-mapping-common`](../mcp-registry-server-mapping-common) library. The provider passes `defaultOwner` and `baseName` as caller overrides, and always passes the configured `baseUrl` as `placeholderRemoteUrl` so a server with no valid remotes gets a placeholder remote for that registry before falling back to `websiteUrl`. When `remotesOnly` is `true`, servers without a native remote are skipped before mapping. It never reimplements the mapping rules.
 
 ### Full mutation
 
@@ -101,7 +104,7 @@ Each entity carries:
 
 MCP servers without a remote deployment (package(s) only or [custom installation](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/server-json/generic-server-json.md#server-with-custom-installation-path)) can be queried via: `GET /api/catalog/entities?filter=kind=API,spec.type=mcp-server,spec.remotes.type=undefined`
 
-These MCP server entries have a single remote _placeholder_ field which should **not** be parsed by a client always expecting a remote MCP Server. To filter out non-remote entries, use `POST /api/catalog/entities/by-query` with the following JSON body:
+These MCP server entries have a single remote _placeholder_ field which should **not** be parsed by a client always expecting a remote MCP Server. To avoid ingesting them at all, set `remotesOnly: true` on the provider. To keep them in the catalog but filter them out at query time, use `POST /api/catalog/entities/by-query` with the following JSON body:
 
 ```json
 {

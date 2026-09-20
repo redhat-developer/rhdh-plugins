@@ -46,6 +46,7 @@ function createDefaultConfig(
     apiVersion: 'v1',
     pageLimit: 10,
     maxEntries: 5000,
+    remotesOnly: false,
     schedule: {
       frequency: { minutes: 30 },
       timeout: { minutes: 3 },

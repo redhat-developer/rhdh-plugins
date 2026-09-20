@@ -42,6 +42,7 @@ const KNOWN_MCP_REGISTRY_KEYS = new Set([
   'pageLimit',
   'pageSize',
   'maxEntries',
+  'remotesOnly',
   'hostAllowList',
   'schedule',
 ]);
@@ -224,6 +225,20 @@ export function validateHostAgainstAllowList(
 }
 
 /**
+ * Read `remotesOnly`, defaulting to `false`.
+ *
+ * @internal
+ */
+export function readRemotesOnly(registryConfig: Config): boolean {
+  try {
+    return registryConfig.getOptionalBoolean('remotesOnly') ?? false;
+  } catch {
+    // ConfigReader can throw TypeError for empty-string env substitution.
+    return false;
+  }
+}
+
+/**
  * Read the provider schedule, or the documented default when omitted.
  *
  * @internal
@@ -264,6 +279,11 @@ export interface McpRegistryProviderConfig {
    * at that cursor until `maxEntries` is patched.
    */
   maxEntries: number;
+  /**
+   * When true, only ingest servers with at least one native remote.
+   * Package-only / placeholder-remote servers are skipped (default `false`).
+   */
+  remotesOnly: boolean;
   /** Optional allowlist of permitted hostnames for defense-in-depth SSRF protection. */
   hostAllowList?: string[];
   /** Schedule for the sync task. */
@@ -310,6 +330,7 @@ export function readMcpRegistryProviderConfig(
     pageLimit: readPageLimit(registryConfig),
     pageSize: readOptionalPageSize(registryConfig),
     maxEntries: readMaxEntries(registryConfig),
+    remotesOnly: readRemotesOnly(registryConfig),
     hostAllowList,
     schedule: readProviderSchedule(registryConfig),
   };

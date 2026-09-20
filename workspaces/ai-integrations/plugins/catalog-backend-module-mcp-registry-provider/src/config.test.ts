@@ -23,6 +23,7 @@ import {
   readOptionalPageSize,
   readPageLimit,
   readProviderSchedule,
+  readRemotesOnly,
   readRequiredHttpBaseUrl,
   safeGetOptionalString,
   validateHostAgainstAllowList,
@@ -58,6 +59,7 @@ describe('readMcpRegistryProviderConfig', () => {
     expect(result!.apiVersion).toBe('v1');
     expect(result!.pageLimit).toBe(10);
     expect(result!.maxEntries).toBe(5000);
+    expect(result!.remotesOnly).toBe(false);
     expect(result!.pageSize).toBeUndefined();
     expect(result!.baseName).toBeUndefined();
     expect(result!.defaultOwner).toBeUndefined();
@@ -419,6 +421,22 @@ describe('readMaxEntries', () => {
   it('throws when maxEntries is less than 1', () => {
     expect(() => readMaxEntries(new ConfigReader({ maxEntries: 0 }))).toThrow(
       /"maxEntries" must be at least 1/,
+    );
+  });
+});
+
+describe('readRemotesOnly', () => {
+  it('defaults to false when omitted', () => {
+    expect(readRemotesOnly(new ConfigReader({}))).toBe(false);
+  });
+
+  it('returns true when remotesOnly is true', () => {
+    expect(readRemotesOnly(new ConfigReader({ remotesOnly: true }))).toBe(true);
+  });
+
+  it('returns false when remotesOnly is false', () => {
+    expect(readRemotesOnly(new ConfigReader({ remotesOnly: false }))).toBe(
+      false,
     );
   });
 });

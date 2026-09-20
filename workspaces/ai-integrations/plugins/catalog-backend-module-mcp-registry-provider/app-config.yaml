@@ -15,6 +15,8 @@ catalog:
       # pageSize: 50
       # Optional: max entries per complete traversal; soft-stops with end cursor (default: 5000)
       # maxEntries: 5000
+      # Optional: ingest only servers with at least one native remote (default: false)
+      # remotesOnly: false
       # Optional: allowlist of permitted hostnames for defense-in-depth SSRF protection.
       # hostAllowList:
       #   - https://registry.modelcontextprotocol.io

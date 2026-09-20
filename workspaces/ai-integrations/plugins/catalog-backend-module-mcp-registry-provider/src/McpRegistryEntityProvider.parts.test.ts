@@ -22,6 +22,7 @@ import type { McpRegistryListResponse, McpRegistryServerEntry } from './client';
 import {
   buildLastGoodKey,
   formatMappingFailureMessage,
+  hasNativeRemote,
   McpRegistryEntityProvider,
   readServerIdentity,
 } from './McpRegistryEntityProvider';
@@ -77,6 +78,7 @@ function createDefaultConfig(
     apiVersion: 'v1',
     pageLimit: 10,
     maxEntries: 5000,
+    remotesOnly: false,
     schedule: {
       frequency: { minutes: 30 },
       timeout: { minutes: 3 },
@@ -133,6 +135,40 @@ describe('buildLastGoodKey', () => {
     expect(buildLastGoodKey('io.example/weather', '1.0.0')).toBe(
       'io.example/weather::1.0.0',
     );
+  });
+});
+
+describe('hasNativeRemote', () => {
+  it('returns true when a remote has a non-empty type and http(s) URL', () => {
+    expect(
+      hasNativeRemote(createMockServerDoc('io.example/weather', '1.0.0')),
+    ).toBe(true);
+  });
+
+  it('returns false when remotes are missing or empty', () => {
+    expect(
+      hasNativeRemote(
+        createMockServerDoc('io.example/weather', '1.0.0', {
+          remotes: undefined,
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      hasNativeRemote(
+        createMockServerDoc('io.example/weather', '1.0.0', { remotes: [] }),
+      ),
+    ).toBe(false);
+    expect(hasNativeRemote(undefined)).toBe(false);
+  });
+
+  it('returns false for invalid remote URLs', () => {
+    expect(
+      hasNativeRemote(
+        createMockServerDoc('io.example/weather', '1.0.0', {
+          remotes: [{ type: 'streamable-http', url: 'not-a-url' }],
+        }),
+      ),
+    ).toBe(false);
   });
 });
 
@@ -678,6 +714,63 @@ describe('McpRegistryEntityProvider parts', () => {
       );
 
       expect(result).toEqual({ entities: [], hasDegradedEntries: false });
+    });
+
+    it('skips non-remote entries when remotesOnly is true', () => {
+      const logger = createMockLogger();
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ remotesOnly: true }),
+        logger,
+      );
+
+      const result = parts(provider).mapRegistryEntries(
+        [
+          { server: createMockServerDoc('remote/server', '1.0.0') },
+          {
+            server: createMockServerDoc('package/only', '1.0.0', {
+              remotes: undefined,
+            }),
+          },
+          {
+            server: createMockServerDoc('empty/remotes', '1.0.0', {
+              remotes: [],
+            }),
+          },
+        ],
+        LOCATION,
+      );
+
+      expect(result.hasDegradedEntries).toBe(false);
+      expect(result.entities).toHaveLength(1);
+      expect(
+        result.entities[0].entity.metadata.annotations?.[
+          'modelcontextprotocol.io/name'
+        ],
+      ).toBe('remote/server');
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining('remotesOnly skipped 2'),
+      );
+    });
+
+    it('does not filter non-remote entries when remotesOnly is false', () => {
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ remotesOnly: false }),
+        createMockLogger(),
+      );
+
+      const result = parts(provider).mapRegistryEntries(
+        [
+          { server: createMockServerDoc('remote/server', '1.0.0') },
+          {
+            server: createMockServerDoc('package/only', '1.0.0', {
+              remotes: undefined,
+            }),
+          },
+        ],
+        LOCATION,
+      );
+
+      expect(result.entities).toHaveLength(2);
     });
   });
 

@@ -33,6 +33,13 @@ export interface Config {
         pageSize?: number;
         /** @visibility backend */
         maxEntries?: number;
+        /**
+         * When true, only ingest servers that declare at least one native
+         * remote. Package-only / placeholder-remote servers are skipped.
+         *
+         * @visibility backend
+         */
+        remotesOnly?: boolean;
         /** @visibility backend */
         hostAllowList?: string[];
         /** @visibility backend */

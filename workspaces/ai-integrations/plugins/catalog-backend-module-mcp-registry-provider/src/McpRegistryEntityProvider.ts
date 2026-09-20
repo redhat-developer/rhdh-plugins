@@ -31,8 +31,12 @@ import type {
 import {
   mapServerToEntity,
   projectAnnotations,
+  isAllowedUrl,
 } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
-import type { McpServerMappingDefaults } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+import type {
+  McpServerMappingDefaults,
+  McpServerDocument,
+} from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
 import type { McpRegistryProviderConfig } from './config';
 import { fetchRegistryServers, McpRegistryClientError } from './client';
 import type { McpRegistryServerEntry } from './client';
@@ -43,6 +47,29 @@ const PROVIDER_NAME = 'mcp-registry-provider';
 
 /** Sync status annotation key. */
 const SYNC_STATUS_ANNOTATION = 'redhat.com/rhdh-mcp-registry-sync-status';
+
+/**
+ * Whether a server.json document declares at least one native remote
+ * (non-empty type and D11-valid URL). Matches the mapping's copy rules
+ * for remotes that become `spec.remotes` rather than D8 placeholders.
+ *
+ * @internal
+ */
+export function hasNativeRemote(doc: McpServerDocument | undefined): boolean {
+  const remotes = doc?.remotes ?? [];
+  for (const remote of remotes) {
+    if (
+      typeof remote.type === 'string' &&
+      remote.type.length > 0 &&
+      remote.url !== undefined &&
+      remote.url !== null &&
+      isAllowedUrl(remote.url)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Build a last-good lookup key from name and version.
@@ -307,6 +334,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
 
   /**
    * Map every registry entry with per-entry failure isolation.
+   * When `remotesOnly` is set, entries without a native remote are skipped.
    */
   private mapRegistryEntries(
     entries: McpRegistryServerEntry[],
@@ -314,8 +342,13 @@ export class McpRegistryEntityProvider implements EntityProvider {
   ): { entities: DeferredEntity[]; hasDegradedEntries: boolean } {
     const entities: DeferredEntity[] = [];
     let hasDegradedEntries = false;
+    let skippedNonRemote = 0;
 
     for (const entry of entries) {
+      if (this.config.remotesOnly && !hasNativeRemote(entry.server)) {
+        skippedNonRemote += 1;
+        continue;
+      }
       try {
         entities.push(this.mapRegistryEntry(entry, managedByLocation));
       } catch (err) {
@@ -329,6 +362,13 @@ export class McpRegistryEntityProvider implements EntityProvider {
           hasDegradedEntries = true;
         }
       }
+    }
+
+    if (skippedNonRemote > 0) {
+      this.logger.info(
+        `MCP Registry remotesOnly skipped ${skippedNonRemote} ` +
+          `non-remote server entr${skippedNonRemote === 1 ? 'y' : 'ies'}.`,
+      );
     }
 
     return { entities, hasDegradedEntries };

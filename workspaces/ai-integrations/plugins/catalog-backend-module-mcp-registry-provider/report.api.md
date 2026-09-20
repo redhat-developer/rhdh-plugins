@@ -36,6 +36,7 @@ export interface McpRegistryProviderConfig {
   maxEntries: number;
   pageLimit: number;
   pageSize?: number;
+  remotesOnly: boolean;
   schedule: SchedulerServiceTaskScheduleDefinition;
 }
 ```
