@@ -55,6 +55,18 @@ const PROVIDER_NAME = 'mcp-registry-provider';
 const SYNC_STATUS_ANNOTATION = 'redhat.com/rhdh-mcp-registry-sync-status';
 
 /**
+ * Optional constructor dependencies for {@link McpRegistryEntityProvider}.
+ *
+ * @public
+ */
+export interface McpRegistryEntityProviderOptions {
+  /** @internal Override the global `fetch` implementation (test seam). */
+  fetchApi?: typeof fetch;
+  /** Scheduler task runner used to periodically invoke sync. */
+  taskRunner?: SchedulerServiceTaskRunner;
+}
+
+/**
  * Entity provider that ingests MCP servers from one configured
  * MCP Registry into the Backstage catalog.
  *
@@ -97,12 +109,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
   constructor(
     config: McpRegistryProviderConfig,
     logger: LoggerService,
-    options?: {
-      /** @internal Override the global `fetch` implementation (test seam). */
-      fetchApi?: typeof fetch;
-      /** @internal Scheduler task runner for periodic sync. */
-      taskRunner?: SchedulerServiceTaskRunner;
-    },
+    options?: McpRegistryEntityProviderOptions,
   ) {
     this.config = resolveMcpRegistryProviderConfig(config);
     this.logger = logger;
