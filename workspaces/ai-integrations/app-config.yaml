@@ -158,8 +158,8 @@ catalog:
       # remotesOnly: false
       # Optional: allowlist of permitted hostnames for defense-in-depth SSRF protection.
       # hostAllowList:
-      #   - https://registry.modelcontextprotocol.io
-      #   - https://staging.registry.modelcontextprotocol.io
+      #   - registry.modelcontextprotocol.io
+      #   - staging.registry.modelcontextprotocol.io
       # Optional: sync schedule (defaults shown below)
       # schedule:
       #   frequency: { minutes: 30 }
