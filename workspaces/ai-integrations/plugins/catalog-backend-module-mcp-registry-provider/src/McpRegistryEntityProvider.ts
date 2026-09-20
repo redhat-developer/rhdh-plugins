@@ -31,12 +31,8 @@ import type {
 import {
   mapServerToEntity,
   projectAnnotations,
-  isAllowedUrl,
 } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
-import type {
-  McpServerMappingDefaults,
-  McpServerDocument,
-} from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
+import type { McpServerMappingDefaults } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 import {
   resolveMcpRegistryProviderConfig,
   type McpRegistryProviderConfig,
@@ -44,6 +40,12 @@ import {
 } from './config';
 import { fetchRegistryServers, McpRegistryClientError } from './client';
 import type { McpRegistryServerEntry } from './client';
+import {
+  buildLastGoodKey,
+  formatMappingFailureMessage,
+  hasNativeRemote,
+  readServerIdentity,
+} from './providerUtils';
 import { stripTrailingSlashes } from './util';
 
 /** Provider name and locationKey constant. */
@@ -51,77 +53,6 @@ const PROVIDER_NAME = 'mcp-registry-provider';
 
 /** Sync status annotation key. */
 const SYNC_STATUS_ANNOTATION = 'redhat.com/rhdh-mcp-registry-sync-status';
-
-/**
- * Whether a server.json document declares at least one native remote
- * (non-empty type and D11-valid URL). Matches the mapping's copy rules
- * for remotes that become `spec.remotes` rather than D8 placeholders.
- *
- * @internal
- */
-export function hasNativeRemote(doc: McpServerDocument | undefined): boolean {
-  const remotes = doc?.remotes ?? [];
-  for (const remote of remotes) {
-    if (
-      typeof remote.type === 'string' &&
-      remote.type.length > 0 &&
-      remote.url !== undefined &&
-      remote.url !== null &&
-      isAllowedUrl(remote.url)
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Build a last-good lookup key from name and version.
- *
- * @internal
- */
-export function buildLastGoodKey(name: string, version: string): string {
-  return `${name}::${version}`;
-}
-
-/**
- * Read optional name/version from a registry list entry.
- *
- * @internal
- */
-export function readServerIdentity(
-  entry: McpRegistryServerEntry | null | undefined,
-): {
-  name?: string;
-  version?: string;
-} {
-  const serverDoc = entry?.server;
-  return {
-    name: typeof serverDoc?.name === 'string' ? serverDoc.name : undefined,
-    version:
-      typeof serverDoc?.version === 'string' ? serverDoc.version : undefined,
-  };
-}
-
-/**
- * Format the per-entry mapping failure warning.
- *
- * @internal
- */
-export function formatMappingFailureMessage(
-  name: string | undefined,
-  version: string | undefined,
-  err: unknown,
-): string {
-  let message = 'Failed to map MCP Registry server entry';
-  if (name) {
-    message += ` "${name}"`;
-  }
-  if (version) {
-    message += ` (version "${version}")`;
-  }
-  return `${message}: ${err}`;
-}
 
 /**
  * Entity provider that ingests MCP servers from one configured
