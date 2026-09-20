@@ -274,9 +274,36 @@ describe('fetchRegistryServers', () => {
     expect(result.servers).toHaveLength(1);
     expect(result.servers[0].server.name).toBe('test/server-c');
     expect(result.resumeCursor).toBeUndefined();
+    expect(result.seenCursors).toEqual(new Set(['cursor-1', 'cursor-2']));
+    // Input options set must not be mutated.
+    expect(seenCursors).toEqual(new Set(['cursor-1', 'cursor-2']));
     expect(fn).toHaveBeenCalledTimes(1);
     const calledUrl = fn.mock.calls[0][0] as string;
     expect(calledUrl).toContain('cursor=cursor-2');
+  });
+
+  it('returns an updated seenCursors set without mutating the input', async () => {
+    const page1: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
+      metadata: { count: 2, nextCursor: 'cursor-1' },
+    };
+    const page2: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-b', '2.0.0') }],
+      metadata: { count: 2 },
+    };
+    const fn = mockFetch([{ body: page1 }, { body: page2 }]);
+    const seenCursors = new Set<string>();
+
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      seenCursors,
+      fetchApi: fn,
+    });
+
+    expect(result.seenCursors).toEqual(new Set(['cursor-1']));
+    expect(seenCursors.size).toBe(0);
   });
 
   it('detects repeated cursor', async () => {
@@ -1030,13 +1057,13 @@ describe('resolveNextCursor', () => {
     expect(seen.size).toBe(0);
   });
 
-  it('returns continue and records the cursor when paging continues', () => {
+  it('returns continue without mutating the seen set', () => {
     const seen = new Set<string>();
     expect(resolveNextCursor('page-2', seen, 1, 10)).toEqual({
       status: 'continue',
       cursor: 'page-2',
     });
-    expect(seen.has('page-2')).toBe(true);
+    expect(seen.size).toBe(0);
   });
 
   it('throws on a repeated cursor', () => {
@@ -1046,12 +1073,12 @@ describe('resolveNextCursor', () => {
     );
   });
 
-  it('returns pageLimitReached when more pages remain at the page cap', () => {
+  it('returns pageLimitReached without mutating the seen set', () => {
     const seen = new Set<string>();
     expect(resolveNextCursor('page-2', seen, 1, 1)).toEqual({
       status: 'pageLimitReached',
       resumeCursor: 'page-2',
     });
-    expect(seen.has('page-2')).toBe(true);
+    expect(seen.size).toBe(0);
   });
 });

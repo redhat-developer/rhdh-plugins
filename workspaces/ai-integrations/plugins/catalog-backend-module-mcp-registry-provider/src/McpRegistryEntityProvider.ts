@@ -84,7 +84,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
    */
   private resumeCursor?: string;
   private pendingEntries: McpRegistryServerEntry[] = [];
-  private readonly seenCursors = new Set<string>();
+  private seenCursors: Set<string> = new Set();
 
   /**
    * After a `maxEntries` soft-stop, later full traversals end at this
@@ -213,7 +213,6 @@ export class McpRegistryEntityProvider implements EntityProvider {
       this.endCursorMaxEntries = undefined;
     }
 
-    const seenCursorsSnapshot = new Set(this.seenCursors);
     try {
       const result = await fetchRegistryServers({
         baseUrl,
@@ -230,6 +229,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
       });
 
       this.pendingEntries.push(...result.servers);
+      this.seenCursors = result.seenCursors;
 
       if (result.resumeCursor) {
         this.resumeCursor = result.resumeCursor;
@@ -255,16 +255,12 @@ export class McpRegistryEntityProvider implements EntityProvider {
       const entries = this.pendingEntries;
       this.pendingEntries = [];
       this.resumeCursor = undefined;
-      this.seenCursors.clear();
+      this.seenCursors = new Set();
       return entries;
     } catch (err) {
       if (err instanceof McpRegistryClientError) {
-        // Restore seenCursors to pre-call state so the next sync
-        // does not carry partially mutated cursor history.
-        this.seenCursors.clear();
-        for (const c of seenCursorsSnapshot) {
-          this.seenCursors.add(c);
-        }
+        // Input seenCursors is never mutated by the client; leave
+        // this.seenCursors unchanged so the next sync can retry.
         this.logger.error(
           `MCP Registry sync failed (no mutation emitted): ${err.message}`,
         );

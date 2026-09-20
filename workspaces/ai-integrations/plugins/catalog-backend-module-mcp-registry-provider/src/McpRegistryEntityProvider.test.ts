@@ -669,7 +669,7 @@ describe('McpRegistryEntityProvider', () => {
     ).toBe('degraded');
   });
 
-  it('restores seenCursors on fetch error so the next sync resumes correctly', async () => {
+  it('leaves seenCursors unchanged on fetch error so the next sync resumes correctly', async () => {
     // First sync: page 1 succeeds, page 2 fails mid-pagination
     const page1: McpRegistryListResponse = {
       servers: [{ server: createMockServerDoc('io.github.user/one', '1.0.0') }],
@@ -680,6 +680,7 @@ describe('McpRegistryEntityProvider', () => {
       ok: false,
       status: 500,
       url: '',
+      headers: { get: () => null },
       json: async () => ({}),
       text: async () => 'Internal Server Error',
     } as unknown as Response;
@@ -698,6 +699,7 @@ describe('McpRegistryEntityProvider', () => {
     combinedFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
+      headers: { get: () => null },
       json: async () => page1,
       text: async () => JSON.stringify(page1),
     } as unknown as Response);
@@ -706,12 +708,14 @@ describe('McpRegistryEntityProvider', () => {
     combinedFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
+      headers: { get: () => null },
       json: async () => retryPage1,
       text: async () => JSON.stringify(retryPage1),
     } as unknown as Response);
     combinedFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
+      headers: { get: () => null },
       json: async () => retryPage2,
       text: async () => JSON.stringify(retryPage2),
     } as unknown as Response);
@@ -725,15 +729,15 @@ describe('McpRegistryEntityProvider', () => {
     );
     await provider.connect(connection);
 
-    // First sync: fails mid-pagination (seenCursors should be restored)
+    // First sync: fails mid-pagination (provider keeps prior seenCursors)
     await provider.run();
     expect(connection.applyMutation).not.toHaveBeenCalled();
     expect(logger.error).toHaveBeenCalledWith(
       expect.stringContaining('sync failed'),
     );
 
-    // Retry sync: should succeed because seenCursors was restored,
-    // so cursor-1 is not incorrectly marked as seen
+    // Retry sync: should succeed because the failed call did not
+    // assign result.seenCursors, so cursor-1 is not incorrectly marked
     await provider.run();
     expect(connection.applyMutation).toHaveBeenCalledTimes(1);
     const mutation = (connection.applyMutation as jest.Mock).mock.calls[0][0];

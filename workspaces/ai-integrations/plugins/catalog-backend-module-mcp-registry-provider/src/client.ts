@@ -105,9 +105,10 @@ export interface FetchServersOptions {
   /**
    * Cursors already seen in the current multi-sync traversal. Shared
    * across resume cycles so repeated-cursor detection spans syncs.
-   * Mutated in place as new cursors are observed.
+   * Treated as read-only input; the updated set is returned on
+   * {@link FetchServersResult.seenCursors}.
    */
-  seenCursors?: Set<string>;
+  seenCursors?: ReadonlySet<string>;
   /**
    * Optional allowlist of permitted hostnames. When set, every
    * outbound request URL is validated against this list before
@@ -137,6 +138,11 @@ export interface FetchServersResult {
    * remember this cursor as the end bound for later full traversals.
    */
   endCursor?: string;
+  /**
+   * Cursor set after this call, including any newly observed cursors.
+   * Callers should replace their prior set with this value on success.
+   */
+  seenCursors: Set<string>;
 }
 
 /**
@@ -344,13 +350,14 @@ async function fetchOnce(
  * Returns `complete` when paging is done, `continue` when another page
  * should be fetched in this sync, or `pageLimitReached` when this sync
  * should stop and resume from `resumeCursor` on a later sync.
- * Enforces repeated-cursor detection (still a hard error).
+ * Enforces repeated-cursor detection (still a hard error). Does not
+ * mutate `seenCursors`; the caller records new cursors.
  *
  * @internal
  */
 export function resolveNextCursor(
   nextCursor: string | null | undefined,
-  seenCursors: Set<string>,
+  seenCursors: ReadonlySet<string>,
   pagesFetched: number,
   pageLimit: number,
 ): ResolveNextCursorResult {
@@ -364,7 +371,6 @@ export function resolveNextCursor(
         `during pagination. Aborting sync to prevent infinite loop.`,
     );
   }
-  seenCursors.add(nextCursor);
 
   if (pagesFetched >= pageLimit) {
     return { status: 'pageLimitReached', resumeCursor: nextCursor };
@@ -427,7 +433,8 @@ export async function fetchRegistryServers(
   } = options;
   const doFetch = fetchApi ?? fetch;
   const endpoint = parseServersEndpointUrl(baseUrl, apiVersion);
-  const seenCursors = options.seenCursors ?? new Set<string>();
+  // Own a local copy so the caller's options set is never mutated.
+  const seenCursors = new Set(options.seenCursors);
 
   // Defense-in-depth: validate endpoint hostname at runtime even
   // though config parsing already checked baseUrl against the list.
@@ -485,6 +492,7 @@ export async function fetchRegistryServers(
       continue;
     }
     if (next.status === 'pageLimitReached') {
+      seenCursors.add(next.resumeCursor);
       if (endCursor && next.resumeCursor === endCursor) {
         hasMorePages = false;
         continue;
@@ -493,6 +501,7 @@ export async function fetchRegistryServers(
       hasMorePages = false;
       continue;
     }
+    seenCursors.add(next.cursor);
     if (endCursor && next.cursor === endCursor) {
       hasMorePages = false;
       continue;
@@ -504,5 +513,6 @@ export async function fetchRegistryServers(
     servers: allServers,
     resumeCursor,
     endCursor: maxEntriesEndCursor,
+    seenCursors,
   };
 }
