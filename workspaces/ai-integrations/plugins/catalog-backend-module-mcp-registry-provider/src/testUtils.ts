@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 
 /**
  * Create a minimal valid MCP server.json document for testing.

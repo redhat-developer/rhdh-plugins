@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common
+# @red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping
 
 ## 0.3.0
 

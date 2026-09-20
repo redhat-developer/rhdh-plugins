@@ -79,7 +79,7 @@ The provider fully traverses the registry's cursor-based pagination, accumulatin
 
 ### Mapping
 
-Each server entry's `.server` object is transformed into an `mcp-server` API entity using the [`mcp-registry-server-mapping-common`](../mcp-registry-server-mapping-common) library. The provider passes `defaultOwner` and `baseName` as caller overrides, and always passes the configured `baseUrl` as `placeholderRemoteUrl` so a server with no valid remotes gets a placeholder remote for that registry before falling back to `websiteUrl`. When `remotesOnly` is `true`, servers without a native remote are skipped before mapping. It never reimplements the mapping rules.
+Each server entry's `.server` object is transformed into an `mcp-server` API entity using the [`catalog-mcp-registry-server-mapping`](../catalog-mcp-registry-server-mapping) library. The provider passes `defaultOwner` and `baseName` as caller overrides, and always passes the configured `baseUrl` as `placeholderRemoteUrl` so a server with no valid remotes gets a placeholder remote for that registry before falling back to `websiteUrl`. When `remotesOnly` is `true`, servers without a native remote are skipped before mapping. It never reimplements the mapping rules.
 
 ### Full mutation
 

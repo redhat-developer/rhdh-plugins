@@ -16,7 +16,7 @@
 
 import type { Entity } from '@backstage/catalog-model';
 import type { DeferredEntity } from '@backstage/plugin-catalog-node';
-import type { McpServerMappingDefaults } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+import type { McpServerMappingDefaults } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 import type { McpRegistryProviderConfig } from './config';
 import type { McpRegistryListResponse, McpRegistryServerEntry } from './client';
 import {

@@ -32,11 +32,11 @@ import {
   mapServerToEntity,
   projectAnnotations,
   isAllowedUrl,
-} from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+} from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 import type {
   McpServerMappingDefaults,
   McpServerDocument,
-} from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+} from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 import type { McpRegistryProviderConfig } from './config';
 import { fetchRegistryServers, McpRegistryClientError } from './client';
 import type { McpRegistryServerEntry } from './client';
@@ -496,7 +496,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
    *
    * The annotation keys used here ('modelcontextprotocol.io/name' and
    * 'modelcontextprotocol.io/version') are set by mapServerToEntity in
-   * mcp-registry-server-mapping-common and correspond to the raw
+   * catalog-mcp-registry-server-mapping and correspond to the raw
    * serverDoc.name and serverDoc.version fields used in buildLastGoodKey
    * during failure recovery. If the mapping library changes these
    * annotation keys, both this rebuild and the failure recovery path

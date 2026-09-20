@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common
+# @red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping
 
 Deterministic transform from [MCP Registry](https://github.com/modelcontextprotocol/registry)
 **v1.8.1**
@@ -12,7 +12,7 @@ entity provider.
 ## Install
 
 ```bash
-yarn add @red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common
+yarn add @red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping
 ```
 
 ## Usage
@@ -23,8 +23,8 @@ yarn add @red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-com
 import {
   mapServerToEntity,
   projectAnnotations,
-} from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
-import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+} from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
+import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 
 const doc: McpServerDocument = {
   $schema:
@@ -115,7 +115,7 @@ From the `workspaces/ai-integrations` workspace root:
 yarn tsc
 
 # Unit tests for this package
-yarn test -- plugins/mcp-registry-server-mapping-common/src
+yarn test -- plugins/catalog-mcp-registry-server-mapping/src
 
 # Lint / API report (when public exports change)
 yarn lint:all

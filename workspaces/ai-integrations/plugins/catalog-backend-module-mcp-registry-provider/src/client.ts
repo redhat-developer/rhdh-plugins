@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 import { stripTrailingSlashes } from './util';
 
 /** Max characters of an error response body included in client errors. */

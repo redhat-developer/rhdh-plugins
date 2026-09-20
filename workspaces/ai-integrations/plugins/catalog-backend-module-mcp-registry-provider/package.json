@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider",
-  "version": "0.3.0",
+  "version": "0.1.0",
   "license": "Apache-2.0",
   "description": "The mcp-registry-provider backend module for the catalog plugin. Provides the MCP Server API catalog entities from a target MCP Registry.",
   "main": "src/index.ts",
@@ -17,12 +17,8 @@
   },
   "backstage": {
     "role": "backend-plugin-module",
-    "pluginId": "mcp-registry-provider",
-    "pluginPackage": "@backstage/plugin-catalog-backend",
-    "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider",
-      "@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common"
-    ]
+    "pluginId": "catalog",
+    "pluginPackage": "@backstage/plugin-catalog-backend"
   },
   "scripts": {
     "start": "backstage-cli package start",
@@ -42,7 +38,7 @@
     "@backstage/backend-plugin-api": "^1.10.0",
     "@backstage/catalog-model": "^1.10.0",
     "@backstage/plugin-catalog-node": "^2.2.4",
-    "@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping": "workspace:^"
   },
   "devDependencies": {
     "@backstage/backend-defaults": "^0.17.8",
