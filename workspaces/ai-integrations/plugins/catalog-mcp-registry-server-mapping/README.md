@@ -78,7 +78,8 @@ fields) with an actionable message.
 ## `server.json` types
 
 Field-level breakdowns of the MCP Registry **v1.8.1** `server.json` TypeScript
-shapes live in [`docs/server-json-types.md`](./docs/server-json-types.md)
+shapes live in
+[`docs/server-json-types.md`](../../docs/server-json-types.md)
 (source of truth: [`src/types.ts`](./src/types.ts)).
 
 ### Caller defaults (`McpServerMappingDefaults`)
@@ -103,8 +104,8 @@ Design decisions and scenarios live under
 
 ## Examples
 
-See [`examples/server-json/`](./examples/server-json/) for rewritten MCP Registry
-`server.json` fixtures useful for local testing.
+See [`examples/mcp-registry/server-json/`](../../examples/mcp-registry/server-json/)
+for rewritten MCP Registry `server.json` fixtures useful for local testing.
 
 ## Development
 
