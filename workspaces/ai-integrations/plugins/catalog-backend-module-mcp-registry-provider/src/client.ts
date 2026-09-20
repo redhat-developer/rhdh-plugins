@@ -70,11 +70,38 @@ export interface FetchServersOptions {
   pageLimit: number;
   pageSize?: number;
   /**
-   * Maximum total entries accumulated across all pages. When exceeded
-   * the sync aborts to prevent unbounded memory growth from a
-   * malfunctioning registry returning oversized pages.
+   * Maximum total entries buffered across the current registry
+   * traversal (including prior resume syncs) before a full mutation.
+   * When exceeded, paging stops gracefully: the tipping page is left
+   * out (unless it is the only page), and `endCursor` is returned so
+   * the provider can commit what was buffered and bound later
+   * traversals.
+   *
+   * Counts `priorEntryCount` plus servers fetched in this call.
    */
   maxEntries?: number;
+  /**
+   * Entry count already accumulated earlier in the current multi-sync
+   * traversal. Used with `maxEntries` so the cap spans resume cycles.
+   */
+  priorEntryCount?: number;
+  /**
+   * Cursor to resume from after a prior sync hit `pageLimit`. When
+   * omitted, the first request starts at the beginning of the list.
+   */
+  startCursor?: string;
+  /**
+   * When set (after a prior `maxEntries` soft-stop), a traversal that
+   * starts from the beginning stops when it would advance to this
+   * cursor, instead of waiting for a missing `nextCursor`.
+   */
+  endCursor?: string;
+  /**
+   * Cursors already seen in the current multi-sync traversal. Shared
+   * across resume cycles so repeated-cursor detection spans syncs.
+   * Mutated in place as new cursors are observed.
+   */
+  seenCursors?: Set<string>;
   /**
    * Optional allowlist of permitted hostnames. When set, every
    * outbound request URL is validated against this list before
@@ -84,6 +111,37 @@ export interface FetchServersOptions {
   /** Optional fetch implementation for testing. */
   fetchApi?: typeof fetch;
 }
+
+/**
+ * Result of one `fetchRegistryServers` call (up to `pageLimit` pages).
+ *
+ * @internal
+ */
+export interface FetchServersResult {
+  /** Servers fetched during this call. */
+  servers: McpRegistryServerEntry[];
+  /**
+   * When set, more pages remain after this call stopped at `pageLimit`.
+   * The next sync should pass this as `startCursor`.
+   */
+  resumeCursor?: string;
+  /**
+   * When set, this call stopped because `maxEntries` was exceeded.
+   * The provider should commit a full mutation of the buffer and
+   * remember this cursor as the end bound for later full traversals.
+   */
+  endCursor?: string;
+}
+
+/**
+ * Outcome of resolving the registry's `nextCursor` for pagination.
+ *
+ * @internal
+ */
+export type ResolveNextCursorResult =
+  | { status: 'complete' }
+  | { status: 'continue'; cursor: string }
+  | { status: 'pageLimitReached'; resumeCursor: string };
 
 /**
  * Parse the servers list endpoint into a URL.
@@ -186,8 +244,12 @@ export async function fetchRegistryPage(
 }
 
 /**
- * Resolve the next pagination cursor, or `undefined` when paging is done.
- * Enforces repeated-cursor and page-limit safeguards.
+ * Resolve the next pagination cursor for this sync.
+ *
+ * Returns `complete` when paging is done, `continue` when another page
+ * should be fetched in this sync, or `pageLimitReached` when this sync
+ * should stop and resume from `resumeCursor` on a later sync.
+ * Enforces repeated-cursor detection (still a hard error).
  *
  * @internal
  */
@@ -196,9 +258,9 @@ export function resolveNextCursor(
   seenCursors: Set<string>,
   pagesFetched: number,
   pageLimit: number,
-): string | undefined {
+): ResolveNextCursorResult {
   if (!nextCursor || nextCursor.length === 0) {
-    return undefined;
+    return { status: 'complete' };
   }
 
   if (seenCursors.has(nextCursor)) {
@@ -210,15 +272,10 @@ export function resolveNextCursor(
   seenCursors.add(nextCursor);
 
   if (pagesFetched >= pageLimit) {
-    throw new McpRegistryClientError(
-      `MCP Registry pagination exceeded the configured page limit ` +
-        `of ${pageLimit} pages per sync. The registry still has more ` +
-        `pages (nextCursor present). Increase pageLimit to fetch ` +
-        `more pages.`,
-    );
+    return { status: 'pageLimitReached', resumeCursor: nextCursor };
   }
 
-  return nextCursor;
+  return { status: 'continue', cursor: nextCursor };
 }
 
 /**
@@ -244,66 +301,112 @@ export function validateUrlHostAllowList(
 }
 
 /**
- * Fetch all server entries from the MCP Registry using cursor
- * pagination. Accumulates entries across pages and enforces
- * pagination safeguards (page cap, repeated cursor).
+ * Fetch server entries from the MCP Registry using cursor pagination.
+ *
+ * Fetches at most `pageLimit` pages starting from `startCursor` (or the
+ * beginning when unset). When more pages remain after the cap, returns
+ * those pages' servers plus a `resumeCursor` for the next sync instead
+ * of failing. When `maxEntries` would be exceeded, stops gracefully and
+ * returns `endCursor` so the provider can commit the buffer. When
+ * `endCursor` is supplied, paging stops upon reaching that cursor
+ * instead of requiring a missing `nextCursor`.
  *
  * @throws McpRegistryClientError on transport, protocol, or
- *   pagination-safeguard errors.
+ *   repeated-cursor errors.
  */
 export async function fetchRegistryServers(
   options: FetchServersOptions,
-): Promise<McpRegistryServerEntry[]> {
+): Promise<FetchServersResult> {
   const {
     baseUrl,
     apiVersion,
     pageLimit,
     pageSize,
     maxEntries,
+    priorEntryCount = 0,
+    startCursor,
+    endCursor,
     hostAllowList,
     fetchApi,
   } = options;
   const doFetch = fetchApi ?? fetch;
   const endpoint = parseServersEndpointUrl(baseUrl, apiVersion);
+  const seenCursors = options.seenCursors ?? new Set<string>();
 
   // Defense-in-depth: validate endpoint hostname at runtime even
   // though config parsing already checked baseUrl against the list.
   validateUrlHostAllowList(endpoint, hostAllowList);
 
   const allServers: McpRegistryServerEntry[] = [];
-  const seenCursors = new Set<string>();
-  let cursor: string | undefined;
+  let cursor: string | undefined = startCursor;
   let pagesFetched = 0;
   let hasMorePages = true;
+  let resumeCursor: string | undefined;
+  let maxEntriesEndCursor: string | undefined;
 
   while (hasMorePages) {
+    // Bound later traversals after a prior maxEntries soft-stop.
+    if (endCursor && cursor === endCursor) {
+      hasMorePages = false;
+      continue;
+    }
+
     const url = buildPageRequestUrl(endpoint, cursor, pageSize);
     const body = await fetchRegistryPage(doFetch, url);
     allServers.push(...body.servers);
     pagesFetched += 1;
 
-    if (maxEntries !== undefined && allServers.length > maxEntries) {
-      throw new McpRegistryClientError(
-        `MCP Registry sync accumulated ${allServers.length} entries, ` +
-          `exceeding the configured maxEntries cap of ${maxEntries}. ` +
-          `Aborting sync to prevent unbounded memory growth. ` +
-          `Increase maxEntries if the registry legitimately contains ` +
-          `more servers.`,
-      );
+    const totalEntries = priorEntryCount + allServers.length;
+    if (maxEntries !== undefined && totalEntries > maxEntries) {
+      const tippedPageSize = body.servers.length;
+      allServers.splice(allServers.length - tippedPageSize, tippedPageSize);
+
+      if (priorEntryCount + allServers.length === 0) {
+        // Single page alone exceeds the cap — keep it so a mutation
+        // can still proceed, and bound later traversals at its next.
+        allServers.push(...body.servers);
+        const tippedNext = body.metadata?.nextCursor;
+        maxEntriesEndCursor =
+          typeof tippedNext === 'string' && tippedNext.length > 0
+            ? tippedNext
+            : undefined;
+      } else {
+        // Exclude the tipping page; end at the cursor used to fetch it.
+        maxEntriesEndCursor = cursor ?? startCursor;
+      }
+      hasMorePages = false;
+      continue;
     }
 
-    const nextCursor = resolveNextCursor(
+    const next = resolveNextCursor(
       body.metadata?.nextCursor,
       seenCursors,
       pagesFetched,
       pageLimit,
     );
-    if (!nextCursor) {
+    if (next.status === 'complete') {
       hasMorePages = false;
       continue;
     }
-    cursor = nextCursor;
+    if (next.status === 'pageLimitReached') {
+      if (endCursor && next.resumeCursor === endCursor) {
+        hasMorePages = false;
+        continue;
+      }
+      resumeCursor = next.resumeCursor;
+      hasMorePages = false;
+      continue;
+    }
+    if (endCursor && next.cursor === endCursor) {
+      hasMorePages = false;
+      continue;
+    }
+    cursor = next.cursor;
   }
 
-  return allServers;
+  return {
+    servers: allServers,
+    resumeCursor,
+    endCursor: maxEntriesEndCursor,
+  };
 }

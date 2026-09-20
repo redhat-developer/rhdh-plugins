@@ -94,8 +94,9 @@ describe('fetchRegistryServers', () => {
       fetchApi: fn,
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0].server.name).toBe('test/server-a');
+    expect(result.servers).toHaveLength(1);
+    expect(result.servers[0].server.name).toBe('test/server-a');
+    expect(result.resumeCursor).toBeUndefined();
     expect(fn).toHaveBeenCalledTimes(1);
     // Verify no limit param when pageSize is omitted
     const calledUrl = fn.mock.calls[0][0] as string;
@@ -120,7 +121,8 @@ describe('fetchRegistryServers', () => {
       fetchApi: fn,
     });
 
-    expect(result).toHaveLength(2);
+    expect(result.servers).toHaveLength(2);
+    expect(result.resumeCursor).toBeUndefined();
     expect(fn).toHaveBeenCalledTimes(2);
     // Second call should include cursor
     const secondUrl = fn.mock.calls[1][0] as string;
@@ -141,7 +143,8 @@ describe('fetchRegistryServers', () => {
       fetchApi: fn,
     });
 
-    expect(result).toHaveLength(1);
+    expect(result.servers).toHaveLength(1);
+    expect(result.resumeCursor).toBeUndefined();
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
@@ -159,7 +162,8 @@ describe('fetchRegistryServers', () => {
       fetchApi: fn,
     });
 
-    expect(result).toHaveLength(1);
+    expect(result.servers).toHaveLength(1);
+    expect(result.resumeCursor).toBeUndefined();
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
@@ -188,7 +192,7 @@ describe('fetchRegistryServers', () => {
     expect(secondUrl).toContain('limit=50');
   });
 
-  it('trips on default pageLimit of 10 at the 11th page', async () => {
+  it('returns a resumeCursor when default pageLimit of 10 is reached with more pages', async () => {
     const pages = Array.from({ length: 10 }, (_, i) => ({
       body: {
         servers: [{ server: createMockServerDoc(`test/server-${i}`, '1.0.0') }],
@@ -200,26 +204,19 @@ describe('fetchRegistryServers', () => {
     }));
     const fn = mockFetch(pages);
 
-    await expect(
-      fetchRegistryServers({
-        baseUrl: 'https://registry.example.com',
-        apiVersion: 'v1',
-        pageLimit: 10,
-        fetchApi: fn,
-      }),
-    ).rejects.toThrow(McpRegistryClientError);
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      fetchApi: fn,
+    });
 
-    await expect(
-      fetchRegistryServers({
-        baseUrl: 'https://registry.example.com',
-        apiVersion: 'v1',
-        pageLimit: 10,
-        fetchApi: mockFetch(pages),
-      }),
-    ).rejects.toThrow(/page limit/i);
+    expect(result.servers).toHaveLength(10);
+    expect(result.resumeCursor).toBe('cursor-10');
+    expect(fn).toHaveBeenCalledTimes(10);
   });
 
-  it('trips on configured pageLimit', async () => {
+  it('returns a resumeCursor when configured pageLimit is reached with more pages', async () => {
     const page1: McpRegistryListResponse = {
       servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
       metadata: { count: 3, nextCursor: 'cursor-1' },
@@ -230,14 +227,42 @@ describe('fetchRegistryServers', () => {
     };
     const fn = mockFetch([{ body: page1 }, { body: page2 }]);
 
-    await expect(
-      fetchRegistryServers({
-        baseUrl: 'https://registry.example.com',
-        apiVersion: 'v1',
-        pageLimit: 2,
-        fetchApi: fn,
-      }),
-    ).rejects.toThrow(/page limit/i);
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 2,
+      fetchApi: fn,
+    });
+
+    expect(result.servers).toHaveLength(2);
+    expect(result.resumeCursor).toBe('cursor-2');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('resumes from startCursor on a follow-up fetch', async () => {
+    const page3: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-c', '3.0.0') }],
+      metadata: { count: 3 },
+    };
+    const fn = mockFetch([{ body: page3 }]);
+    const seenCursors = new Set(['cursor-1', 'cursor-2']);
+
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 2,
+      startCursor: 'cursor-2',
+      seenCursors,
+      priorEntryCount: 2,
+      fetchApi: fn,
+    });
+
+    expect(result.servers).toHaveLength(1);
+    expect(result.servers[0].server.name).toBe('test/server-c');
+    expect(result.resumeCursor).toBeUndefined();
+    expect(fn).toHaveBeenCalledTimes(1);
+    const calledUrl = fn.mock.calls[0][0] as string;
+    expect(calledUrl).toContain('cursor=cursor-2');
   });
 
   it('detects repeated cursor', async () => {
@@ -331,24 +356,54 @@ describe('fetchRegistryServers', () => {
     expect(secondUrl).toContain(`cursor=${encodeURIComponent(opaqueToken)}`);
   });
 
-  it('throws when maxEntries cap is exceeded', async () => {
+  it('soft-stops at maxEntries and returns endCursor without the tipping page', async () => {
+    const page1: McpRegistryListResponse = {
+      servers: Array.from({ length: 40 }, (_, i) => ({
+        server: createMockServerDoc(`test/server-${i}`, '1.0.0'),
+      })),
+      metadata: { count: 100, nextCursor: 'cursor-1' },
+    };
+    const page2: McpRegistryListResponse = {
+      servers: Array.from({ length: 40 }, (_, i) => ({
+        server: createMockServerDoc(`test/server-${i + 40}`, '1.0.0'),
+      })),
+      metadata: { count: 100, nextCursor: 'cursor-2' },
+    };
+    const fn = mockFetch([{ body: page1 }, { body: page2 }]);
+
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      maxEntries: 50,
+      fetchApi: fn,
+    });
+
+    expect(result.servers).toHaveLength(40);
+    expect(result.resumeCursor).toBeUndefined();
+    expect(result.endCursor).toBe('cursor-1');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps a single oversized first page and ends at its nextCursor', async () => {
     const largePage: McpRegistryListResponse = {
       servers: Array.from({ length: 100 }, (_, i) => ({
         server: createMockServerDoc(`test/server-${i}`, '1.0.0'),
       })),
-      metadata: { count: 100 },
+      metadata: { count: 100, nextCursor: 'cursor-next' },
     };
     const fn = mockFetch([{ body: largePage }]);
 
-    await expect(
-      fetchRegistryServers({
-        baseUrl: 'https://registry.example.com',
-        apiVersion: 'v1',
-        pageLimit: 10,
-        maxEntries: 50,
-        fetchApi: fn,
-      }),
-    ).rejects.toThrow(/maxEntries cap of 50/);
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      maxEntries: 50,
+      fetchApi: fn,
+    });
+
+    expect(result.servers).toHaveLength(100);
+    expect(result.endCursor).toBe('cursor-next');
   });
 
   it('succeeds when hostAllowList includes the baseUrl hostname', async () => {
@@ -366,7 +421,7 @@ describe('fetchRegistryServers', () => {
       fetchApi: fn,
     });
 
-    expect(result).toHaveLength(1);
+    expect(result.servers).toHaveLength(1);
   });
 
   it('throws when hostAllowList does not include the baseUrl hostname', async () => {
@@ -402,7 +457,52 @@ describe('fetchRegistryServers', () => {
       fetchApi: fn,
     });
 
-    expect(result).toHaveLength(100);
+    expect(result.servers).toHaveLength(100);
+    expect(result.resumeCursor).toBeUndefined();
+  });
+
+  it('counts priorEntryCount toward maxEntries soft-stop', async () => {
+    const page: McpRegistryListResponse = {
+      servers: Array.from({ length: 10 }, (_, i) => ({
+        server: createMockServerDoc(`test/server-${i}`, '1.0.0'),
+      })),
+      metadata: { count: 10, nextCursor: 'cursor-x' },
+    };
+    const fn = mockFetch([{ body: page }]);
+
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      maxEntries: 50,
+      priorEntryCount: 45,
+      startCursor: 'cursor-prior',
+      fetchApi: fn,
+    });
+
+    expect(result.servers).toHaveLength(0);
+    expect(result.endCursor).toBe('cursor-prior');
+    expect(result.resumeCursor).toBeUndefined();
+  });
+
+  it('stops at a supplied endCursor instead of walking further', async () => {
+    const page1: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
+      metadata: { count: 3, nextCursor: 'cursor-end' },
+    };
+    const fn = mockFetch([{ body: page1 }]);
+
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      endCursor: 'cursor-end',
+      fetchApi: fn,
+    });
+
+    expect(result.servers).toHaveLength(1);
+    expect(result.resumeCursor).toBeUndefined();
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -552,17 +652,26 @@ describe('validateUrlHostAllowList', () => {
 });
 
 describe('resolveNextCursor', () => {
-  it('returns undefined when nextCursor is absent or empty', () => {
+  it('returns complete when nextCursor is absent or empty', () => {
     const seen = new Set<string>();
-    expect(resolveNextCursor(undefined, seen, 1, 10)).toBeUndefined();
-    expect(resolveNextCursor(null, seen, 1, 10)).toBeUndefined();
-    expect(resolveNextCursor('', seen, 1, 10)).toBeUndefined();
+    expect(resolveNextCursor(undefined, seen, 1, 10)).toEqual({
+      status: 'complete',
+    });
+    expect(resolveNextCursor(null, seen, 1, 10)).toEqual({
+      status: 'complete',
+    });
+    expect(resolveNextCursor('', seen, 1, 10)).toEqual({
+      status: 'complete',
+    });
     expect(seen.size).toBe(0);
   });
 
-  it('returns the cursor and records it when paging continues', () => {
+  it('returns continue and records the cursor when paging continues', () => {
     const seen = new Set<string>();
-    expect(resolveNextCursor('page-2', seen, 1, 10)).toBe('page-2');
+    expect(resolveNextCursor('page-2', seen, 1, 10)).toEqual({
+      status: 'continue',
+      cursor: 'page-2',
+    });
     expect(seen.has('page-2')).toBe(true);
   });
 
@@ -573,10 +682,12 @@ describe('resolveNextCursor', () => {
     );
   });
 
-  it('throws when the page limit is exceeded with more pages remaining', () => {
+  it('returns pageLimitReached when more pages remain at the page cap', () => {
     const seen = new Set<string>();
-    expect(() => resolveNextCursor('page-2', seen, 1, 1)).toThrow(
-      /exceeded the configured page limit/,
-    );
+    expect(resolveNextCursor('page-2', seen, 1, 1)).toEqual({
+      status: 'pageLimitReached',
+      resumeCursor: 'page-2',
+    });
+    expect(seen.has('page-2')).toBe(true);
   });
 });

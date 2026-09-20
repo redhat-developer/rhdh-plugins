@@ -302,6 +302,39 @@ describe('McpRegistryEntityProvider', () => {
     expect(logger.error).toHaveBeenCalled();
   });
 
+  it('resumes pagination across syncs and mutates only when complete', async () => {
+    const page1: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('io.github.user/one', '1.0.0') }],
+      metadata: { count: 2, nextCursor: 'cursor-1' },
+    };
+    const page2: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('io.github.user/two', '2.0.0') }],
+      metadata: { count: 2 },
+    };
+    const fetchFn = mockFetchForResponses([page1, page2]);
+    const connection = createMockConnection();
+    const logger = createMockLogger();
+
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig({ pageLimit: 1 }),
+      logger,
+      { fetchApi: fetchFn },
+    );
+    await provider.connect(connection);
+
+    await provider.run();
+    expect(connection.applyMutation).not.toHaveBeenCalled();
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.stringContaining('will resume from the saved cursor'),
+    );
+
+    await provider.run();
+    expect(connection.applyMutation).toHaveBeenCalledTimes(1);
+    const mutation = (connection.applyMutation as jest.Mock).mock.calls[0][0];
+    expect(mutation.entities).toHaveLength(2);
+    expect(fetchFn.mock.calls[1][0] as string).toContain('cursor=cursor-1');
+  });
+
   it('continues sync when one entry fails mapping', async () => {
     const body: McpRegistryListResponse = {
       servers: [

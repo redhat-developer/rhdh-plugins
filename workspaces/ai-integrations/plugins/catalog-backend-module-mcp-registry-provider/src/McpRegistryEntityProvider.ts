@@ -112,6 +112,26 @@ export class McpRegistryEntityProvider implements EntityProvider {
    */
   private readonly lastGoodIndex = new Map<string, DeferredEntity>();
 
+  /**
+   * Resume state for multi-sync pagination. When a sync hits
+   * `pageLimit` with more pages remaining, entries fetched so far and
+   * the next cursor are kept here so the following sync continues
+   * instead of restarting. Cleared when a traversal reaches the end
+   * of the registry (no next cursor) or a `maxEntries` soft-stop and a
+   * full mutation is committed.
+   */
+  private resumeCursor?: string;
+  private pendingEntries: McpRegistryServerEntry[] = [];
+  private readonly seenCursors = new Set<string>();
+
+  /**
+   * After a `maxEntries` soft-stop, later full traversals end at this
+   * cursor instead of a missing `nextCursor`. Cleared when
+   * `maxEntries` is patched (value differs from when it was saved).
+   */
+  private endCursor?: string;
+  private endCursorMaxEntries?: number;
+
   constructor(
     config: McpRegistryProviderConfig,
     logger: LoggerService,
@@ -193,8 +213,18 @@ export class McpRegistryEntityProvider implements EntityProvider {
   }
 
   /**
-   * Fetch registry servers. Returns `undefined` when a client error
-   * aborts the sync without emitting a mutation.
+   * Fetch registry servers for this sync tick.
+   *
+   * Continues from `resumeCursor` when a prior sync stopped at
+   * `pageLimit`. Returns `undefined` when a client error aborts the
+   * tick without a mutation, or when more pages remain (entries are
+   * buffered until the registry is exhausted or `maxEntries` stops the
+   * traversal so a full mutation does not prune unfetched servers).
+   *
+   * Hitting `maxEntries` commits a full mutation of the buffer, saves
+   * `endCursor`, and starts the next cycle from the beginning. Later
+   * full traversals stop at that `endCursor` until `maxEntries` is
+   * patched.
    */
   private async fetchRegistryEntries(): Promise<
     McpRegistryServerEntry[] | undefined
@@ -207,16 +237,63 @@ export class McpRegistryEntityProvider implements EntityProvider {
       maxEntries,
       hostAllowList,
     } = this.config;
+
+    if (
+      this.endCursor !== undefined &&
+      this.endCursorMaxEntries !== maxEntries
+    ) {
+      this.logger.info(
+        `MCP Registry maxEntries changed from ` +
+          `${this.endCursorMaxEntries} to ${maxEntries}; ` +
+          `clearing saved endCursor.`,
+      );
+      this.endCursor = undefined;
+      this.endCursorMaxEntries = undefined;
+    }
+
     try {
-      return await fetchRegistryServers({
+      const result = await fetchRegistryServers({
         baseUrl,
         apiVersion,
         pageLimit,
         pageSize,
         maxEntries,
+        priorEntryCount: this.pendingEntries.length,
+        startCursor: this.resumeCursor,
+        endCursor: this.endCursor,
+        seenCursors: this.seenCursors,
         hostAllowList,
         fetchApi: this.fetchApi,
       });
+
+      this.pendingEntries.push(...result.servers);
+
+      if (result.resumeCursor) {
+        this.resumeCursor = result.resumeCursor;
+        this.logger.info(
+          `MCP Registry sync reached pageLimit (${pageLimit} pages); ` +
+            `buffered ${this.pendingEntries.length} entries and will ` +
+            `resume from the saved cursor on the next sync ` +
+            `(no mutation emitted).`,
+        );
+        return undefined;
+      }
+
+      if (result.endCursor) {
+        this.endCursor = result.endCursor;
+        this.endCursorMaxEntries = maxEntries;
+        this.logger.warn(
+          `MCP Registry sync reached maxEntries (${maxEntries}); ` +
+            `committing ${this.pendingEntries.length} buffered entries ` +
+            `and saving endCursor for later traversals.`,
+        );
+      }
+
+      const entries = this.pendingEntries;
+      this.pendingEntries = [];
+      this.resumeCursor = undefined;
+      this.seenCursors.clear();
+      return entries;
     } catch (err) {
       if (err instanceof McpRegistryClientError) {
         this.logger.error(

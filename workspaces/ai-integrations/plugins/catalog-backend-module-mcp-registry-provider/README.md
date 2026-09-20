@@ -37,7 +37,7 @@ catalog:
       # pageLimit: 10
       # Optional: registry page size sent as ?limit= (omitted by default)
       # pageSize: 50
-      # Optional: maximum total entries accumulated across all pages per sync (default: 5000)
+      # Optional: max entries per complete traversal; soft-stops with end cursor (default: 5000)
       # maxEntries: 5000
       # Optional: restrict outbound requests to specific hostnames (defense-in-depth)
       # hostAllowList:
@@ -52,17 +52,17 @@ catalog:
 
 ### Configuration options
 
-| Option          | Required | Default                          | Description                                                                                                                                                                           |
-| --------------- | -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `baseUrl`       | Yes      | —                                | MCP Registry base URL. Also passed to the mapping as `placeholderRemoteUrl` when a server has no valid remotes.                                                                       |
-| `baseName`      | No       | `mcp.registry` (mapping default) | Override the mapping identity prefix for `metadata.name`                                                                                                                              |
-| `apiVersion`    | No       | `v1`                             | Registry API version slug. The servers endpoint is `<baseUrl>/<apiVersion>/servers`. Note: the live MCP Registry may serve `/v0` or `/v0.1`; set `apiVersion` to match your registry. |
-| `defaultOwner`  | No       | `unknown` (mapping default)      | Backstage entity reference used as `spec.owner`                                                                                                                                       |
-| `pageLimit`     | No       | `10`                             | Maximum number of pages fetched per sync. The provider fails the sync if the registry has more pages than this limit (to prevent incomplete catalog state).                           |
-| `pageSize`      | No       | _(registry default)_             | Sent as `?limit=` on each list request. When omitted, the registry's default page size applies.                                                                                       |
-| `maxEntries`    | No       | `5000`                           | Maximum total server entries accumulated across all pages per sync. The provider fails the sync if this cap is exceeded.                                                              |
-| `hostAllowList` | No       | _(none — all hosts allowed)_     | Array of permitted hostnames. When set, `baseUrl` hostname must be in this list and every outbound request is validated at runtime. Provides defense-in-depth against SSRF.           |
-| `schedule`      | No       | 30m frequency, 3m timeout        | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. The first sync runs after one `frequency` interval unless `initialDelay` is set.                                   |
+| Option          | Required | Default                          | Description                                                                                                                                                                                                                         |
+| --------------- | -------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `baseUrl`       | Yes      | —                                | MCP Registry base URL. Also passed to the mapping as `placeholderRemoteUrl` when a server has no valid remotes.                                                                                                                     |
+| `baseName`      | No       | `mcp.registry` (mapping default) | Override the mapping identity prefix for `metadata.name`                                                                                                                                                                            |
+| `apiVersion`    | No       | `v1`                             | Registry API version slug. The servers endpoint is `<baseUrl>/<apiVersion>/servers`. Note: the live MCP Registry may serve `/v0` or `/v0.1`; set `apiVersion` to match your registry.                                               |
+| `defaultOwner`  | No       | `unknown` (mapping default)      | Backstage entity reference used as `spec.owner`                                                                                                                                                                                     |
+| `pageLimit`     | No       | `10`                             | Maximum number of pages fetched per sync. When more pages remain, the provider saves the cursor and continues on the next sync (no mutation until the registry is fully traversed).                                                 |
+| `pageSize`      | No       | _(registry default)_             | Sent as `?limit=` on each list request. When omitted, the registry's default page size applies.                                                                                                                                     |
+| `maxEntries`    | No       | `5000`                           | Maximum total server entries buffered for one complete registry traversal (spans resume syncs). When exceeded, the provider commits the buffer, saves an end cursor, and later traversals stop there until `maxEntries` is patched. |
+| `hostAllowList` | No       | _(none — all hosts allowed)_     | Array of permitted hostnames. When set, `baseUrl` hostname must be in this list and every outbound request is validated at runtime. Provides defense-in-depth against SSRF.                                                         |
+| `schedule`      | No       | 30m frequency, 3m timeout        | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. The first sync runs after one `frequency` interval unless `initialDelay` is set.                                                                                 |
 
 ### Multiple registries
 
@@ -72,7 +72,7 @@ Multiple registries are **not supported** in this implementation. Configuring a 
 
 ### Pagination
 
-The provider fully traverses the registry's cursor-based pagination, accumulating all server entries. Cursors are treated as opaque strings. The `pageLimit` configuration caps the number of pages fetched per sync — if the registry still has more pages after reaching the limit, the sync fails without committing a mutation, preserving the prior catalog state.
+The provider fully traverses the registry's cursor-based pagination, accumulating all server entries. Cursors are treated as opaque strings. The `pageLimit` configuration caps the number of pages fetched **per sync**. If the registry still has more pages after that cap, the provider saves the next cursor, buffers the entries fetched so far, and continues from that cursor on the next scheduled sync — it does **not** commit a mutation until a sync reaches the end of the registry (no `nextCursor`). When a traversal completes, the provider commits a full mutation and the following sync starts from the beginning again. The `maxEntries` configuration caps the total buffered servers for that complete traversal (not per individual sync tick). When the cap is hit, the provider commits the buffered entries, saves that stop point as an **end cursor**, and later full traversals end at that cursor instead of a missing `nextCursor`. Patching `maxEntries` clears the saved end cursor so traversal returns to normal.
 
 ### Mapping
 
@@ -80,7 +80,7 @@ Each server entry's `.server` object is transformed into an `mcp-server` API ent
 
 ### Full mutation
 
-On each successful sync, the provider commits a **full mutation** — the catalog converges to the registry's current server set. Servers removed from the registry are automatically pruned.
+When a registry traversal completes (no remaining `nextCursor`, possibly after several resume syncs), the provider commits a **full mutation** — the catalog converges to the registry's current server set. Servers removed from the registry are automatically pruned. Partial resume ticks do not mutate.
 
 ### Error handling
 

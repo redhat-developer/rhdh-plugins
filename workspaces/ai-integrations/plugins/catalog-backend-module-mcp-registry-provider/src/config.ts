@@ -30,7 +30,7 @@ const DEFAULT_API_VERSION = 'v1';
 /** Default page limit (max pages per sync). */
 const DEFAULT_PAGE_LIMIT = 10;
 
-/** Default max entries per sync. */
+/** Default max entries per complete registry traversal (full mutation). */
 const DEFAULT_MAX_ENTRIES = 5000;
 
 /** Supported single-registry config keys under `catalog.providers.mcpRegistry`. */
@@ -152,6 +152,8 @@ export function readPageLimit(registryConfig: Config): number {
 
 /**
  * Read `maxEntries`, applying the default and rejecting values below 1.
+ * Caps total servers buffered for one complete registry traversal
+ * (possibly spanning multiple resume syncs) before a full mutation.
  *
  * @internal
  */
@@ -250,11 +252,17 @@ export interface McpRegistryProviderConfig {
   apiVersion: string;
   /** Default entity owner ref when the mapping does not supply one. */
   defaultOwner?: string;
-  /** Maximum pages fetched per sync (default `10`). */
+  /** Maximum pages fetched per sync (default `10`); excess pages resume next sync. */
   pageLimit: number;
   /** Registry `?limit=` page-size query; omitted from the request when unset. */
   pageSize?: number;
-  /** Maximum total entries accumulated across all pages per sync (default `5000`). */
+  /**
+   * Maximum total entries buffered for one complete registry traversal
+   * before a full mutation (default `5000`). Spans resume syncs when
+   * `pageLimit` pauses mid-traversal. When exceeded, the provider
+   * commits the buffer, saves an end cursor, and later traversals stop
+   * at that cursor until `maxEntries` is patched.
+   */
   maxEntries: number;
   /** Optional allowlist of permitted hostnames for defense-in-depth SSRF protection. */
   hostAllowList?: string[];

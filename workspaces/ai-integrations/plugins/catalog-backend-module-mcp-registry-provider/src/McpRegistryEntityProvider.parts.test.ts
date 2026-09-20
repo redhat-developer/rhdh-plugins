@@ -209,6 +209,193 @@ describe('McpRegistryEntityProvider parts', () => {
       );
     });
 
+    it('buffers entries and returns undefined when pageLimit leaves more pages', async () => {
+      const logger = createMockLogger();
+      const page1: McpRegistryListResponse = {
+        servers: [{ server: createMockServerDoc('a/one', '1.0.0') }],
+        metadata: { count: 2, nextCursor: 'cursor-1' },
+      };
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ pageLimit: 1 }),
+        logger,
+        { fetchApi: mockFetchForResponses([page1]) },
+      );
+
+      await expect(
+        parts(provider).fetchRegistryEntries(),
+      ).resolves.toBeUndefined();
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining('will resume from the saved cursor'),
+      );
+    });
+
+    it('resumes from the saved cursor and returns all buffered entries when complete', async () => {
+      const page1: McpRegistryListResponse = {
+        servers: [{ server: createMockServerDoc('a/one', '1.0.0') }],
+        metadata: { count: 2, nextCursor: 'cursor-1' },
+      };
+      const page2: McpRegistryListResponse = {
+        servers: [{ server: createMockServerDoc('a/two', '2.0.0') }],
+        metadata: { count: 2 },
+      };
+      const fetchFn = mockFetchForResponses([page1, page2]);
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ pageLimit: 1 }),
+        createMockLogger(),
+        { fetchApi: fetchFn },
+      );
+
+      await expect(
+        parts(provider).fetchRegistryEntries(),
+      ).resolves.toBeUndefined();
+
+      await expect(parts(provider).fetchRegistryEntries()).resolves.toEqual([
+        ...page1.servers,
+        ...page2.servers,
+      ]);
+
+      const secondUrl = fetchFn.mock.calls[1][0] as string;
+      expect(secondUrl).toContain('cursor=cursor-1');
+    });
+
+    it('starts from the beginning again after a complete traversal', async () => {
+      const firstPassPage: McpRegistryListResponse = {
+        servers: [{ server: createMockServerDoc('a/one', '1.0.0') }],
+        metadata: { count: 1 },
+      };
+      const secondPassPage: McpRegistryListResponse = {
+        servers: [{ server: createMockServerDoc('a/two', '2.0.0') }],
+        metadata: { count: 1 },
+      };
+      const fetchFn = mockFetchForResponses([firstPassPage, secondPassPage]);
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ pageLimit: 1 }),
+        createMockLogger(),
+        { fetchApi: fetchFn },
+      );
+
+      await expect(parts(provider).fetchRegistryEntries()).resolves.toEqual(
+        firstPassPage.servers,
+      );
+      await expect(parts(provider).fetchRegistryEntries()).resolves.toEqual(
+        secondPassPage.servers,
+      );
+
+      const firstUrl = fetchFn.mock.calls[0][0] as string;
+      const secondUrl = fetchFn.mock.calls[1][0] as string;
+      expect(firstUrl).not.toContain('cursor=');
+      expect(secondUrl).not.toContain('cursor=');
+    });
+
+    it('commits buffered entries and saves endCursor when maxEntries is hit', async () => {
+      const logger = createMockLogger();
+      const page1: McpRegistryListResponse = {
+        servers: Array.from({ length: 3 }, (_, i) => ({
+          server: createMockServerDoc(`a/s${i}`, '1.0.0'),
+        })),
+        metadata: { count: 6, nextCursor: 'cursor-1' },
+      };
+      const page2: McpRegistryListResponse = {
+        servers: Array.from({ length: 3 }, (_, i) => ({
+          server: createMockServerDoc(`a/s${i + 3}`, '1.0.0'),
+        })),
+        metadata: { count: 6, nextCursor: 'cursor-2' },
+      };
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ maxEntries: 4, pageLimit: 10 }),
+        logger,
+        { fetchApi: mockFetchForResponses([page1, page2]) },
+      );
+
+      await expect(parts(provider).fetchRegistryEntries()).resolves.toEqual(
+        page1.servers,
+      );
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('reached maxEntries'),
+      );
+
+      const state = provider as unknown as {
+        endCursor?: string;
+        endCursorMaxEntries?: number;
+      };
+      expect(state.endCursor).toBe('cursor-1');
+      expect(state.endCursorMaxEntries).toBe(4);
+    });
+
+    it('stops later traversals at the saved endCursor', async () => {
+      const page1: McpRegistryListResponse = {
+        servers: Array.from({ length: 3 }, (_, i) => ({
+          server: createMockServerDoc(`a/s${i}`, '1.0.0'),
+        })),
+        metadata: { count: 6, nextCursor: 'cursor-1' },
+      };
+      const page2: McpRegistryListResponse = {
+        servers: Array.from({ length: 3 }, (_, i) => ({
+          server: createMockServerDoc(`a/s${i + 3}`, '1.0.0'),
+        })),
+        metadata: { count: 6, nextCursor: 'cursor-2' },
+      };
+      const secondPass: McpRegistryListResponse = {
+        servers: Array.from({ length: 3 }, (_, i) => ({
+          server: createMockServerDoc(`a/s${i}`, '1.0.0'),
+        })),
+        metadata: { count: 6, nextCursor: 'cursor-1' },
+      };
+      const fetchFn = mockFetchForResponses([page1, page2, secondPass]);
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ maxEntries: 4, pageLimit: 10 }),
+        createMockLogger(),
+        { fetchApi: fetchFn },
+      );
+
+      await parts(provider).fetchRegistryEntries();
+      await expect(parts(provider).fetchRegistryEntries()).resolves.toEqual(
+        secondPass.servers,
+      );
+      expect(fetchFn).toHaveBeenCalledTimes(3);
+    });
+
+    it('clears endCursor when maxEntries is patched', async () => {
+      const page1: McpRegistryListResponse = {
+        servers: Array.from({ length: 3 }, (_, i) => ({
+          server: createMockServerDoc(`a/s${i}`, '1.0.0'),
+        })),
+        metadata: { count: 6, nextCursor: 'cursor-1' },
+      };
+      const page2: McpRegistryListResponse = {
+        servers: Array.from({ length: 3 }, (_, i) => ({
+          server: createMockServerDoc(`a/s${i + 3}`, '1.0.0'),
+        })),
+        metadata: { count: 6, nextCursor: 'cursor-2' },
+      };
+      const provider = new McpRegistryEntityProvider(
+        createDefaultConfig({ maxEntries: 4, pageLimit: 10 }),
+        createMockLogger(),
+        { fetchApi: mockFetchForResponses([page1, page2]) },
+      );
+
+      await parts(provider).fetchRegistryEntries();
+      const state = provider as unknown as {
+        endCursor?: string;
+        endCursorMaxEntries?: number;
+        config: { maxEntries: number };
+      };
+      expect(state.endCursor).toBe('cursor-1');
+
+      state.config.maxEntries = 5000;
+      const fullPage: McpRegistryListResponse = {
+        servers: [{ server: createMockServerDoc('a/only', '1.0.0') }],
+        metadata: { count: 1 },
+      };
+      const fetchFn = mockFetchForResponses([fullPage]);
+      (provider as unknown as { fetchApi?: typeof fetch }).fetchApi = fetchFn;
+
+      await expect(parts(provider).fetchRegistryEntries()).resolves.toEqual(
+        fullPage.servers,
+      );
+      expect(state.endCursor).toBeUndefined();
+    });
+
     it('logs and returns undefined for McpRegistryClientError', async () => {
       const logger = createMockLogger();
       const fetchFn = jest.fn().mockResolvedValue({
