@@ -1,7 +1,7 @@
 # Deploy MCP Registry Locally
 
 For local provider development against a real registry instance, this workspace
-includes Node scripts under [`hack/`](../hack/) that start the upstream
+includes Node scripts under [`scripts/`](../scripts/) that start the upstream
 [MCP Registry](https://github.com/modelcontextprotocol/registry) with Podman or
 Docker Compose. They use the published
 `ghcr.io/modelcontextprotocol/registry` image instead of upstream
@@ -25,7 +25,7 @@ yarn start-mcp-registry
 You can also run the script directly from the workspace root:
 
 ```bash
-node hack/deploy-mcp-registry.ts
+node scripts/deploy-mcp-registry.ts
 ```
 
 This clones the registry into `/tmp/mcp-registry` (if needed), starts PostgreSQL
@@ -94,7 +94,7 @@ yarn stop-mcp-registry
 Or from the workspace root:
 
 ```bash
-node hack/undeploy-mcp-registry.ts
+node scripts/undeploy-mcp-registry.ts
 ```
 
 This runs `compose down` for the same stack. The `/tmp/mcp-registry` checkout is
