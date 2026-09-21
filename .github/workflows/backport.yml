@@ -129,40 +129,37 @@ jobs:
             exit 0
           fi
 
-          workspace_labels=()
-          while IFS= read -r workspace; do
-            workspace_labels+=("$workspace")
-          done < <(
-            jq -r '.pull_request.labels[].name' "$EVENT_PATH" \
-              | sed -n 's/^workspace\/\([A-Za-z0-9._-]*\)$/\1/p' \
-              | sort -u
-          )
+          if [[ ${#release_lines[@]} -ne 1 ]]; then
+            echo 'Exactly one backport-release label is required per request.' >&2
+            exit 1
+          fi
 
-          targets=()
-          for release_line in "${release_lines[@]}"; do
-            if [[ "$release_line" == release-1.9 || "$release_line" == release-1.10 ]]; then
-              if [[ ${#workspace_labels[@]} -eq 0 ]]; then
-                echo "No workspace labels found for legacy release '$release_line'." >&2
-                exit 1
-              fi
-              for workspace in "${workspace_labels[@]}"; do
-                targets+=("$release_line/$workspace")
-              done
-            else
-              targets+=("$release_line")
+          release_line="${release_lines[0]}"
+          target_branch="$release_line"
+
+          if [[ "$release_line" == release-1.9 || "$release_line" == release-1.10 ]]; then
+            workspace_labels=()
+            while IFS= read -r workspace; do
+              workspace_labels+=("$workspace")
+            done < <(
+              jq -r '.pull_request.labels[].name' "$EVENT_PATH" \
+                | sed -n 's/^workspace\/\([A-Za-z0-9._-]*\)$/\1/p' \
+                | sort -u
+            )
+
+            if [[ ${#workspace_labels[@]} -ne 1 ]]; then
+              echo "Exactly one workspace label is required for legacy release '$release_line'." >&2
+              exit 1
             fi
-          done
 
-          mapfile -t targets < <(printf '%s\n' "${targets[@]}" | sort -u)
+            target_branch="$release_line/${workspace_labels[0]}"
+          fi
 
           git config user.name 'rhdh-bot'
           git config user.email 'rhdh-bot@redhat.com'
           git fetch origin --prune
 
-          failed_targets=()
-
           process_target() {
-            local target_branch="$1"
             local backport_branch="backport/${pr_number}-to-${target_branch}"
             local backport_label="backport-${target_branch%%/*}"
             local body_file=''
@@ -251,14 +248,7 @@ jobs:
             git branch --delete --force "$backport_branch"
           }
 
-          for target_branch in "${targets[@]}"; do
-            if ! process_target "$target_branch"; then
-              failed_targets+=("$target_branch")
-              echo "Backport target '$target_branch' failed; continuing with remaining targets." >&2
-            fi
-          done
-
-          if [[ ${#failed_targets[@]} -gt 0 ]]; then
-            printf 'Failed backport targets: %s\n' "${failed_targets[*]}" >&2
+          if ! process_target; then
+            echo "Backport target '$target_branch' failed." >&2
             exit 1
           fi
