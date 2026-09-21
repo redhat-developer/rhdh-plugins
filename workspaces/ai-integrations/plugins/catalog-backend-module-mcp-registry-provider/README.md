@@ -152,7 +152,14 @@ These MCP server entries have a single remote _placeholder_ field which should *
 }
 ```
 
-## Deploy MCP Registry Locally
+## MCP Registry
+
+### Official Live Deployments
+
+To ingest MCP servers from the official MCP Registry into the catalog, see
+[Using Official MCP Registries](../../docs/using-official-mcp-registries.md).
+
+### Deploy Locally
 
 To run a local MCP Registry for provider development, see
 [Deploy MCP Registry Locally](../../docs/deploy-mcp-registry-locally.md).

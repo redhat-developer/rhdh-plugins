@@ -108,3 +108,9 @@ node scripts/undeploy-local-mcp-registry.ts
 This runs `compose down` for the same stack. The
 `~/.cache/rhdh-ai-integrations/mcp-registry` checkout is left in place so the
 next deploy is faster.
+
+## Official registries alternative
+
+To point the provider at the production or staging official MCP Registry
+instead of a local instance, see
+[Using Official MCP Registries](./using-official-mcp-registries.md).
