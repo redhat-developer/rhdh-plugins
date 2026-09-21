@@ -4,13 +4,25 @@ A Backstage catalog backend module that ingests MCP servers from a configured [M
 
 ## Installation
 
-Install the package:
+### Prerequisite
+
+Since [Backstage 1.51.0](https://github.com/backstage/backstage/releases/tag/v1.51.0), `spec.type: mcp-server` entities (they use `spec.remotes` and omit `spec.definition`) are accepted only when `@backstage/plugin-catalog-backend-module-ai-model` is installed. Without that module the catalog keeps the generic API validator, which rejects these entities and does not list them.
+
+### Install packages
+
+From your Backstage root:
 
 ```bash
-yarn add @red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider
+yarn --cwd packages/backend add \
+  @backstage/plugin-catalog-backend-module-ai-model \
+  @red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider
 ```
 
-Add the module to your backend:
+Skip the `ai-model` package if it is already installed.
+
+### Register modules
+
+Add both modules to your backend:
 
 ```ts
 // packages/backend/src/index.ts
@@ -21,8 +33,6 @@ backend.add(
   ),
 );
 ```
-
-Since [Backstage 1.51.0](https://github.com/backstage/backstage/releases/tag/v1.51.0), `spec.type: mcp-server` entities (they use `spec.remotes` and omit `spec.definition`) are accepted only when `@backstage/plugin-catalog-backend-module-ai-model` is installed. Without that module the catalog keeps the generic API validator, which rejects these entities and does not list them.
 
 ## Configuration
 
