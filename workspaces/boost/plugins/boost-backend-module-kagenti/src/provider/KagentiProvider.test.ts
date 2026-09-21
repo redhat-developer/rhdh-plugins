@@ -15,7 +15,7 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { InputItem } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { InputItem } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { KagentiProvider } from './KagentiProvider';
 import type { KagentiApiClient } from './KagentiApiClient';
 

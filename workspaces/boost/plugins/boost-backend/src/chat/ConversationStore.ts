@@ -25,7 +25,7 @@ import type {
   ConversationDetails,
   ConversationMessage,
   FeedbackRecord,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 // ---------------------------------------------------------------------------
 // Table and row types

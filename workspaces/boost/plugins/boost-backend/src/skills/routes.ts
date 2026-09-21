@@ -25,7 +25,7 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import {
   boostAccessPermission,
   boostAdminPermission,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 
 /**

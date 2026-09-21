@@ -32,7 +32,7 @@ import {
   aiCatalogAssetAccessUsageDocsPermission,
   aiCatalogAdminPermission,
   type AI_CATALOG_ASSET_RESOURCE_TYPE,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type { AiCatalogAssetResource } from './rules';
 
 // ---------------------------------------------------------------------------

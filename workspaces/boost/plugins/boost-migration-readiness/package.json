@@ -19,11 +19,7 @@
     "pluginId": "boost",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-migration-readiness",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-boost",
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
-      "@red-hat-developer-hub/backstage-plugin-boost-common",
-      "@red-hat-developer-hub/backstage-plugin-boost-connector-utils",
-      "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk",
       "@red-hat-developer-hub/backstage-plugin-boost-migration-readiness",
       "@red-hat-developer-hub/backstage-plugin-boost-node",
       "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
@@ -31,7 +27,7 @@
     ]
   },
   "dependencies": {
-    "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk": "workspace:^"
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5",

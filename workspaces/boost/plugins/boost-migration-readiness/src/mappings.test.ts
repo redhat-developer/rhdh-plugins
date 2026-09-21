@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AI_ASSET_CATEGORIES } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+import { AI_ASSET_CATEGORIES } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk';
 import { MAPPING_RULES } from './mappings';
 
 describe('MAPPING_RULES', () => {

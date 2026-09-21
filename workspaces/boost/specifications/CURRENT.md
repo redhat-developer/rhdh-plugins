@@ -7,7 +7,7 @@ PRDs and Jira analysis are background, not current truth.
 
 ## This release
 
-- `plugins/boost` — AI Catalog frontend
+- `plugins/ai-catalog` — AI Catalog frontend
 - `plugins/ogx-entity-provider`
 
 The `boost-backend` plugin and Kagenti packages are development scaffolding;
@@ -20,11 +20,12 @@ RHDH 2.1 entity-visibility contract; the current browse experience uses the
 Catalog API, and any future backend release must reconcile its selected
 permission names with the Catalog `catalog.entity.read` model.
 
-The two release packages currently require supporting packages:
-`boost-common` for the frontend taxonomy and permissions, and
-`boost-entity-provider-sdk` for OGX entity annotations and version
-normalization. These are support dependencies, not additional Boost release
-features.
+The two installable release plugins require three supporting packages:
+`ai-catalog-common` for browser-safe taxonomy and permissions,
+`ai-catalog-connector-utils` for shared connector helpers, and
+`ai-catalog-entity-provider-sdk` for OGX entity annotations and version
+normalization. These are support dependencies, not additional dynamic plugins
+or additional AI Catalog release features.
 
 ## Implemented frontend (`openspec/specs/`)
 
@@ -50,24 +51,17 @@ current behavior is captured in the focused `ogx-entity-provider` spec archived
 under `openspec/specs/`. The broader `ai-catalog-entity-model` change remains
 active and deferred; it is not the release behavior source of truth.
 
-The provider now accepts per-provider TLS settings, `caData` and
-`skipTLSVerify`, on both supported configuration paths, and the package
-declares a `config.d.ts` schema so Backstage validates these keys and enforces
-`@visibility secret` on `apiKey`. This shape was patched directly into the
-`ogx-entity-provider` spec rather than routed through a new OpenSpec change,
-because the `openspec/changes/` content is being reset.
+The standalone provider reads `ai-catalog.entityProviders.ogx` and accepts
+per-provider TLS settings, `caData`, and `skipTLSVerify`. The package declares
+a `config.d.ts` schema so Backstage validates these keys and enforces
+`@visibility secret` on `apiKey`. The deferred Boost backend retains its own
+`boost.providers.ogx` configuration; that is not a second configuration path
+for the standalone provider.
 
-## Open question for the backend team
-
-`boost.providers.ogx` was never released, and the Boost backend is outside the
-RHDH 2.1 release. Should the OGX entity provider stop supporting that fallback
-and use only `boost.entityProviders.ogx`?
-
-The TLS work extended the fallback rather than retiring it: `caData` and
-`skipTLSVerify` are read on both paths, and `config.d.ts` declares the full
-schema for both. That raises the cost of removal — the fallback code, its
-tests, the declared schema, and the OGX spec would all have to be updated
-together.
+The standalone provider intentionally does not read the old
+`boost.entityProviders.ogx` or `boost.providers.ogx` namespaces. Existing
+deferred Boost backend configuration remains available to that backend and is
+not migrated by this release rename.
 
 ## Completed frontend work
 

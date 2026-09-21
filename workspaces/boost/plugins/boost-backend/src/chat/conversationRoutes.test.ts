@@ -28,7 +28,7 @@ import type {
   ConversationDetails,
   ConversationMessage,
   FeedbackRecord,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { createConversationRoutes } from './conversationRoutes';
 
 // ---------------------------------------------------------------------------

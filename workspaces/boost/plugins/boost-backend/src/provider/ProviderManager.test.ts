@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { ProviderManager } from './ProviderManager';
 
 function createMockProvider(id: string, name?: string): AgenticProvider {

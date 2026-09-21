@@ -34,7 +34,7 @@ import {
   boostAgentUnpublishPermission,
   boostAgentWithdrawPermission,
   boostAgentDeletePermission,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import {
   authorizeLifecycleAction,
   type BoostAuthorizedRequest,

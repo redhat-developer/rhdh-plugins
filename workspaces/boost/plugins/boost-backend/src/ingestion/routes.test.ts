@@ -22,7 +22,7 @@ import type {
   PermissionsService,
 } from '@backstage/backend-plugin-api';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
-import type { ConnectorHealthStatus } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ConnectorHealthStatus } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { createIngestionHealthRoutes } from './routes';
 import type { HealthStatusService } from './HealthStatusService';
 

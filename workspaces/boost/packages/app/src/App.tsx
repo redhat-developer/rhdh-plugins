@@ -15,7 +15,7 @@
  */
 
 import { createApp } from '@backstage/frontend-defaults';
-import { boostTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-boost/translations';
+import { aiCatalogTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-ai-catalog/translations';
 import { navModule } from './modules/nav';
 import { sampleFilterModule } from './modules/sampleFilter';
 import { signInModule } from './modules/signIn';
@@ -25,6 +25,6 @@ export default createApp({
     signInModule,
     navModule,
     sampleFilterModule,
-    boostTranslationsModule,
+    aiCatalogTranslationsModule,
   ],
 });

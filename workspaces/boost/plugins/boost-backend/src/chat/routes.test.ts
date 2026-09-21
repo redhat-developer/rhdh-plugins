@@ -26,7 +26,7 @@ import type {
 import type {
   AgenticProvider,
   NormalizedStreamEvent,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { ProviderManager } from '../provider/ProviderManager';
 import { ConversationAgentCache } from './ConversationAgentCache';
 import { RateLimiter } from './RateLimiter';

@@ -13,7 +13,7 @@ app:
           defaultLanguage: en
           availableLanguages: [en, de, es, fr, it, ja]
     # Example: disable a built-in filter
-    # - ai-catalog-filter:boost/owner: false
+    # - ai-catalog-filter:ai-catalog/owner: false
 
 organization:
   name: Red Hat
@@ -77,13 +77,7 @@ catalog:
               User,
             ]
 
-boost:
-  security:
-    mode: 'development-only-no-auth'
-    adminUsers:
-      - 'user:default/admin'
-      - 'user:default/guest'
-
+ai-catalog:
   entityProviders:
     ogx:
       baseUrl: ${BOOST_OGX_URL:-http://localhost:8321}
@@ -228,6 +222,12 @@ boost:
           lifecycleStage: published
           createdBy: user:default/admin
 
+boost:
+  security:
+    mode: 'development-only-no-auth'
+    adminUsers:
+      - 'user:default/admin'
+      - 'user:default/guest'
   providers:
     ogx:
       baseUrl: ${BOOST_OGX_URL:-http://localhost:8321}

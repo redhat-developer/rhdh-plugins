@@ -2,7 +2,15 @@
   "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [],
+  "fixed": [
+    [
+      "@red-hat-developer-hub/backstage-plugin-ai-catalog",
+      "@red-hat-developer-hub/backstage-plugin-ai-catalog-common",
+      "@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils",
+      "@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk",
+      "@red-hat-developer-hub/backstage-plugin-ogx-entity-provider"
+    ]
+  ],
   "linked": [],
   "access": "public",
   "baseBranch": "main",

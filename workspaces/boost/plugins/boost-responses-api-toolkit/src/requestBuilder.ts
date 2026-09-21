@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { InputItem } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { InputItem } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type { ResponsesApiInputItem, ResponsesApiRequest } from './types';
 
 /**

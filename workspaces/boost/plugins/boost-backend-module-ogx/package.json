@@ -13,10 +13,8 @@
     "pluginId": "boost",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-backend",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-boost",
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
       "@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx",
-      "@red-hat-developer-hub/backstage-plugin-boost-common",
       "@red-hat-developer-hub/backstage-plugin-boost-node"
     ]
   },
@@ -33,7 +31,7 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.10.0",
-    "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-ai-catalog-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit": "workspace:^"
   },

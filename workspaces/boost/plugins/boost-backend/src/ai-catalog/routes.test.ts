@@ -29,7 +29,7 @@ import {
   aiCatalogAssetAccessPermission,
   aiCatalogAssetAccessUsageDocsPermission,
   aiCatalogAdminPermission,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { createAiCatalogRoutes, stripTier2Fields } from './routes';
 import type { AiCatalogAsset, AiCatalogAssetLoader } from './routes';
 import type { AiCatalogAssetResource } from './rules';

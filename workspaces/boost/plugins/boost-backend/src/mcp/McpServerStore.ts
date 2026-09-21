@@ -24,7 +24,7 @@ import type {
   McpServerRecord,
   McpTransport,
   McpAuthType,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 const TABLE_NAME = 'boost_mcp_servers';
 

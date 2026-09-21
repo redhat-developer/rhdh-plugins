@@ -19,7 +19,7 @@ import type {
   LoggerService,
 } from '@backstage/backend-plugin-api';
 import type { Knex } from 'knex';
-import type { SyncAttemptRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { SyncAttemptRecord } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 // ---------------------------------------------------------------------------
 // Table and row types

@@ -30,11 +30,11 @@ import {
 import {
   boostMcpManagePermission,
   boostAdminPermission,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type {
   McpTransport,
   McpAuthType,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type { McpServerStore } from './McpServerStore';
 
 const VALID_TRANSPORTS: readonly McpTransport[] = ['streamable-http', 'sse'];

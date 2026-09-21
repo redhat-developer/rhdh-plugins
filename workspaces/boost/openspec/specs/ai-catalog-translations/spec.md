@@ -15,7 +15,7 @@ Each supported language MUST have a complete translation file following the stan
 - **GIVEN** the plugin has English strings in `src/translations/ref.ts`
 - **WHEN** the translation story is complete
 - **THEN** `src/translations/` contains `de.ts`, `es.ts`, `fr.ts`, `it.ts`, `ja.ts`
-- **AND** each file uses `createTranslationMessages` referencing the `boostTranslationRef`
+- **AND** each file uses `createTranslationMessages` referencing the `aiCatalogTranslationRef`
 
 #### Scenario: Translation resource registers all locales
 
@@ -28,7 +28,7 @@ Each supported language MUST have a complete translation file following the stan
 
 - **GIVEN** the plugin is deployed as a dynamic plugin in RHDH
 - **WHEN** the translation module needs to be auto-discovered
-- **THEN** the `./translations` package export exposes `boostTranslationsModule` as the default export
+- **THEN** the `./translations` package export exposes `aiCatalogTranslationsModule` as the default export
 - **AND** RHDH auto-discovers the module without explicit `features` array registration
 
 ### Requirement: Complete String Coverage
@@ -50,7 +50,7 @@ Every user-facing string in the plugin MUST be translated.
 #### Scenario: All entity extension strings translated
 
 - **GIVEN** a user views an AI asset entity page in French
-- **WHEN** entity cards from the boost plugin render
+- **WHEN** entity cards from the AI Catalog plugin render
 - **THEN** AI asset details, agent instructions, and Usage card titles and actions are all in French
 
 #### Scenario: Error and empty state strings translated
