@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { DORA_PRE_WINDOW_DEPLOYMENT_CANDIDATE_LIMIT } from '../constants';
 import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
 import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
@@ -86,26 +85,13 @@ export class DefaultDoraDataService implements DoraDataService {
       productionEnvironments: string[];
     },
   ): Promise<DbDoraDeployment | undefined> {
-    const candidates = await this.deploymentsDb.readCandidatesBefore(
+    return this.deploymentsDb.readLatestByEntityCollectorBefore(
       catalogEntityRef,
       options.collector.id,
       options.collector.inputHash,
       options.before,
-      DORA_PRE_WINDOW_DEPLOYMENT_CANDIDATE_LIMIT,
+      options.productionEnvironments,
     );
-
-    return candidates.find(deployment => {
-      if (options.productionEnvironments.length === 0) {
-        return true;
-      }
-      const environment = deployment.environment;
-      if (environment === null || environment === '') {
-        return true;
-      }
-      return options.productionEnvironments.some(
-        name => name.toLowerCase() === environment.toLowerCase(),
-      );
-    });
   }
 
   async readIncidents(

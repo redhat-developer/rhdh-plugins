@@ -8,4 +8,4 @@
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf': patch
 ---
 
-Remove unused package dependencies reported by knip.
+Remove unused package dependencies reported by knip. Add the missing `@backstage/config` dependency used by threshold config helpers.

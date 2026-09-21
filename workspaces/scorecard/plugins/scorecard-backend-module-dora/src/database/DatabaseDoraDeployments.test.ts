@@ -18,6 +18,7 @@ import { TestDatabases } from '@backstage/backend-test-utils';
 import {
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
 } from '../constants';
 import { collectorInputHash } from '../service/collectorHash';
 import { createTestDatabase } from './__fixtures__';
@@ -529,16 +530,17 @@ describe('DatabaseDoraDeployments', () => {
     );
   });
 
-  describe('readCandidatesBefore', () => {
+  describe('readLatestByEntityCollectorBefore', () => {
+    const before = new Date('2026-06-01T00:00:00.000Z');
+
     it.each(databases.eachSupportedId())(
-      'returns newest rows strictly before the cutoff, limited - %p',
+      'returns the newest production row strictly before the cutoff - %p',
       async databaseId => {
         const { deployments } = await createTestDatabase(
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
         const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
-        const before = new Date('2026-06-01T00:00:00.000Z');
 
         await deployments.upsert([
           {
@@ -554,17 +556,17 @@ describe('DatabaseDoraDeployments', () => {
             catalogEntityRef: entityRef,
             collectorId,
             collectorInputHash: EMPTY_INPUT_HASH,
-            originalDeploymentId: 'dep-mid',
-            commitSha: 'sha-mid',
+            originalDeploymentId: 'dep-staging',
+            commitSha: 'sha-staging',
             environment: 'staging',
-            createdAt: new Date('2026-05-15T10:00:00.000Z'),
+            createdAt: new Date('2026-05-31T12:00:00.000Z'),
           },
           {
             catalogEntityRef: entityRef,
             collectorId,
             collectorInputHash: EMPTY_INPUT_HASH,
-            originalDeploymentId: 'dep-latest-before',
-            commitSha: 'sha-latest-before',
+            originalDeploymentId: 'dep-latest-prod',
+            commitSha: 'sha-latest-prod',
             environment: 'production',
             createdAt: new Date('2026-05-31T10:00:00.000Z'),
           },
@@ -588,18 +590,65 @@ describe('DatabaseDoraDeployments', () => {
           },
         ]);
 
-        const rows = await deployments.readCandidatesBefore(
-          entityRef,
-          collectorId,
-          EMPTY_INPUT_HASH,
-          before,
-          2,
+        await expect(
+          deployments.readLatestByEntityCollectorBefore(
+            entityRef,
+            collectorId,
+            EMPTY_INPUT_HASH,
+            before,
+            DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+          ),
+        ).resolves.toEqual(
+          expect.objectContaining({
+            originalDeploymentId: 'dep-latest-prod',
+          }),
         );
+      },
+    );
 
-        expect(rows.map(row => row.originalDeploymentId)).toEqual([
-          'dep-latest-before',
-          'dep-mid',
+    it.each(databases.eachSupportedId())(
+      'skips a burst of later non-production deploys - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-prod',
+            commitSha: 'sha-prod',
+            environment: 'production',
+            createdAt: new Date('2026-05-01T10:00:00.000Z'),
+          },
+          ...Array.from({ length: 51 }, (_, index) => ({
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: `dep-staging-${index}`,
+            commitSha: `sha-staging-${index}`,
+            environment: 'staging',
+            createdAt: new Date(Date.UTC(2026, 4, 2, 0, 0, 0) + index * 60_000),
+          })),
         ]);
+
+        await expect(
+          deployments.readLatestByEntityCollectorBefore(
+            entityRef,
+            collectorId,
+            EMPTY_INPUT_HASH,
+            before,
+            DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+          ),
+        ).resolves.toEqual(
+          expect.objectContaining({
+            originalDeploymentId: 'dep-prod',
+          }),
+        );
       },
     );
 
@@ -612,7 +661,6 @@ describe('DatabaseDoraDeployments', () => {
         const entityRef = 'component:default/service-a';
         const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
         const otherHash = collectorInputHash({ workflowName: 'Deploy B' });
-        const before = new Date('2026-06-01T00:00:00.000Z');
 
         await deployments.upsert([
           {
@@ -644,32 +692,37 @@ describe('DatabaseDoraDeployments', () => {
           },
         ]);
 
-        const emptyHashRows = await deployments.readCandidatesBefore(
-          entityRef,
-          collectorId,
-          EMPTY_INPUT_HASH,
-          before,
-          10,
+        await expect(
+          deployments.readLatestByEntityCollectorBefore(
+            entityRef,
+            collectorId,
+            EMPTY_INPUT_HASH,
+            before,
+            DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+          ),
+        ).resolves.toEqual(
+          expect.objectContaining({
+            originalDeploymentId: 'dep-empty-hash',
+          }),
         );
-        const otherHashRows = await deployments.readCandidatesBefore(
-          entityRef,
-          collectorId,
-          otherHash,
-          before,
-          10,
+        await expect(
+          deployments.readLatestByEntityCollectorBefore(
+            entityRef,
+            collectorId,
+            otherHash,
+            before,
+            DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+          ),
+        ).resolves.toEqual(
+          expect.objectContaining({
+            originalDeploymentId: 'dep-other-hash',
+          }),
         );
-
-        expect(emptyHashRows.map(row => row.originalDeploymentId)).toEqual([
-          'dep-empty-hash',
-        ]);
-        expect(otherHashRows.map(row => row.originalDeploymentId)).toEqual([
-          'dep-other-hash',
-        ]);
       },
     );
 
     it.each(databases.eachSupportedId())(
-      'returns an empty list when limit is not positive - %p',
+      'returns undefined when no production row exists before the cutoff - %p',
       async databaseId => {
         const { deployments } = await createTestDatabase(
           await databases.init(databaseId),
@@ -682,22 +735,22 @@ describe('DatabaseDoraDeployments', () => {
             catalogEntityRef: entityRef,
             collectorId,
             collectorInputHash: EMPTY_INPUT_HASH,
-            originalDeploymentId: 'dep-1',
-            commitSha: 'sha-1',
-            environment: 'production',
+            originalDeploymentId: 'dep-staging',
+            commitSha: 'sha-staging',
+            environment: 'staging',
             createdAt: new Date('2026-05-31T10:00:00.000Z'),
           },
         ]);
 
         await expect(
-          deployments.readCandidatesBefore(
+          deployments.readLatestByEntityCollectorBefore(
             entityRef,
             collectorId,
             EMPTY_INPUT_HASH,
-            new Date('2026-06-01T00:00:00.000Z'),
-            0,
+            before,
+            DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
           ),
-        ).resolves.toEqual([]);
+        ).resolves.toBeUndefined();
       },
     );
   });

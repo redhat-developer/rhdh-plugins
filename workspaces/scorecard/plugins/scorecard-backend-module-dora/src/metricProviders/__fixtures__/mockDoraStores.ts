@@ -103,7 +103,7 @@ export function dbPullRequest(partial: {
 export const mockDoraDeploymentsStore: jest.Mocked<DoraDeploymentsStore> = {
   upsert: jest.fn(),
   readByEntityCollectorAndWindow: jest.fn(),
-  readCandidatesBefore: jest.fn(),
+  readLatestByEntityCollectorBefore: jest.fn(),
   markPullRequestsSynced: jest.fn(),
   deleteOlderThan: jest.fn(),
 };

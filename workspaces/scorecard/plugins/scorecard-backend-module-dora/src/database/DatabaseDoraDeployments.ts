@@ -73,16 +73,18 @@ export interface DoraDeploymentsStore {
     productionEnvironments?: string[],
   ): Promise<DbDoraDeployment[]>;
   /**
-   * Newest deployments with `created_at` strictly before `before`, for the
-   * entity and collector identity. Callers filter to production.
+   * Newest row with `created_at` strictly before `before` for the entity and
+   * collector identity. When `productionEnvironments` is non-empty, only
+   * production-like environments are considered (same rules as
+   * {@link DoraDeploymentsStore.readByEntityCollectorAndWindow}).
    */
-  readCandidatesBefore(
+  readLatestByEntityCollectorBefore(
     catalogEntityRef: string,
     collectorId: string,
     collectorInputHash: string,
     before: Date,
-    limit: number,
-  ): Promise<DbDoraDeployment[]>;
+    productionEnvironments: string[],
+  ): Promise<DbDoraDeployment | undefined>;
   markPullRequestsSynced(
     deploymentId: string,
     pullRequestsSync: {
@@ -149,30 +151,30 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
     return rows.map(fromDoraDeploymentRow);
   }
 
-  async readCandidatesBefore(
+  async readLatestByEntityCollectorBefore(
     catalogEntityRef: string,
     collectorId: string,
     collectorInputHash: string,
     before: Date,
-    limit: number,
-  ): Promise<DbDoraDeployment[]> {
-    if (limit <= 0) {
-      return [];
-    }
-
-    const rows = await this.dbClient<DbDoraDeploymentRow>(this.tableName)
+    productionEnvironments: string[],
+  ): Promise<DbDoraDeployment | undefined> {
+    const query = this.dbClient<DbDoraDeploymentRow>(this.tableName)
       .select('*')
       .where('catalog_entity_ref', catalogEntityRef)
       .andWhere('collector_id', collectorId)
       .andWhere('collector_input_hash', collectorInputHash)
-      .andWhere('created_at', '<', before)
+      .andWhere('created_at', '<', before);
+
+    applyProductionEnvironmentFilter(query, productionEnvironments);
+
+    const row = await query
       .orderBy([
         { column: 'created_at', order: 'desc' },
         { column: 'id', order: 'desc' },
       ])
-      .limit(limit);
+      .first();
 
-    return rows.map(fromDoraDeploymentRow);
+    return row ? fromDoraDeploymentRow(row) : undefined;
   }
 
   async markPullRequestsSynced(
