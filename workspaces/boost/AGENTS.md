@@ -10,10 +10,12 @@ This workspace uses a specification-first approach. Before writing code, read th
 
 ```
 workspaces/boost/
+├── specifications/                    # Active product requirements
+│   ├── CURRENT.md                     # Release boundary and status source of truth
+│   └── boost-frontend-architecture.md # Frontend architecture specification
 ├── RHDH-2-1-Legacy-Content/       # Archived RHDH 2.1 specifications and change areas
 │   └── Pre-RHDHPLAN-15xx-Content/
 │       ├── specifications/        # Product requirements (RHDH 2.1)
-│       │   ├── CURRENT.md         # Release boundary and status (RHDH 2.1)
 │       │   ├── boost-context.md   # Project rationale, 12 design principles
 │       │   └── prd/               # Product Requirements Documents
 │       ├── agent-creation-discovery/
@@ -35,7 +37,7 @@ workspaces/boost/
 
 When implementing an issue:
 
-1. Read `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/CURRENT.md` to confirm the RHDH 2.1 release boundary and status.
+1. Read `specifications/CURRENT.md` to confirm the release boundary and status.
 2. Read `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/boost-context.md` for design principles — these are non-negotiable
 3. Find the relevant PRD in `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/prd/` for product requirements
 4. For RHDH 2.1 change areas, find the matching area in `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/` for design decisions, task breakdown, and behavioral specs. For RHDH 2.2 work, find the matching change in `openspec/changes/`.
