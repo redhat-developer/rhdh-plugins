@@ -26,6 +26,12 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menu cronologia chat',
+    'modelSelector.visionScreenshot.line1':
+      'Analisi delle immagini supportata.',
+    'modelSelector.visionScreenshot.line2':
+      'Uno screenshot verrà incluso nel messaggio.',
+    'modelSelector.visionScreenshot.ariaLabel':
+      'Contesto screenshot del modello vision',
     'modelSelector.disabledTooltip':
       'Ogni sessione di chat supporta un solo modello. Per cambiare modello, apri una nuova chat.',
     'aria.chatbotSelector': 'Selettore di chatbot',
@@ -353,6 +359,41 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'settings.savedPrompts.enable': 'Abilita prompt salvati',
     'settings.savedPrompts.enabled.description':
       'I prompt salvati sono attualmente abilitati',
+    'settings.screenContext.enable': 'Abilita contesto dello schermo',
+    'settings.screenContext.disable': 'Disabilita contesto dello schermo',
+    'settings.screenContext.enabled.description':
+      'La condivisione del contesto dello schermo è attualmente abilitata',
+    'settings.screenContext.disabled.description':
+      'La condivisione del contesto dello schermo è attualmente disabilitata',
+    'contextChip.label.paused': 'Contesto: in pausa',
+    'contextChip.label.unavailable': 'Contesto: non disponibile',
+    'contextChip.label.softwareTemplates': 'Template software',
+    'contextChip.tooltip.askAbout': 'Chiedi informazioni su {{label}}.',
+    'contextChip.tooltip.template':
+      'Chiedi come compilare il template {{label}}.',
+    'contextChip.tooltip.search':
+      'Chiedi informazioni sulla ricerca: {{label}}.',
+    'contextChip.tooltip.paused':
+      "Il contesto dello schermo è in pausa. Fai clic per riprendere la condivisione dello schermo corrente con l'assistente intelligente.",
+    'contextChip.tooltip.unavailable':
+      'Il contesto dello schermo non è disponibile in modalità schermo intero. Passa alla modalità Sovrapposizione o Aggancia alla finestra per abilitarlo.',
+    'contextChip.tooltip.line2.fullContext':
+      'Il testo della pagina e uno screenshot verranno inviati con il messaggio.',
+    'contextChip.tooltip.line2.adminLimited':
+      "La condivisione del contesto dello schermo è limitata dalle impostazioni dell'amministratore.",
+    'contextChip.tooltip.line2.screenshotOnly':
+      "L'estrazione del testo è disabilitata dall'amministratore. Solo screenshot.",
+    'contextChip.tooltip.line2.domOffNoVision':
+      "L'estrazione del testo è disabilitata dall'amministratore. Il modello non supporta l'analisi delle immagini.",
+    'contextChip.tooltip.line2.textOnlyNoVision':
+      "Solo contesto testuale: il modello non supporta l'analisi delle immagini.",
+    'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
+      "Solo contesto testuale: l'acquisizione di screenshot è disabilitata dall'amministratore.",
+    'contextChip.tooltip.line2.textOnlyCombined':
+      "Solo contesto testuale: il modello non supporta l'analisi delle immagini e l'acquisizione di screenshot è disabilitata dall'amministratore.",
+    'contextChip.aria.pause':
+      'Metti in pausa il contesto dello schermo: {{label}}',
+    'contextChip.aria.resume': 'Riprendi il contesto dello schermo',
     'savedPrompts.tab.title': 'Prompt salvati',
     'savedPrompts.disabled.title': 'I prompt salvati sono disabilitati',
     'savedPrompts.disabled.body':

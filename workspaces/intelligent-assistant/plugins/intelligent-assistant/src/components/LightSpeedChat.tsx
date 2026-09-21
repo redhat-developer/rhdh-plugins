@@ -100,6 +100,7 @@ import {
   useSavedPromptActions,
   useSavedPrompts,
   useSavedPromptsSettings,
+  useScreenContextSettings,
   useSettingsPanelUrlState,
   useSortSettings,
   useStopConversation,
@@ -117,13 +118,13 @@ import {
   isSavedPromptConversationId,
   SAVED_PROMPT_CONVERSATION_ID_PREFIX,
 } from '../utils/buildConversationHistoryGroups';
-import { extractPageContext } from '../utils/dom-extractor';
 import {
   ChatbotFootnoteWithIcon,
   getCategorizeMessages,
   getFootnoteProps,
   SortOption,
 } from '../utils/lightspeed-chatbox-utils';
+import { buildScreenContextAttachments } from '../utils/screen-context-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
 import { CollapsedHistoryStrip } from './CollapsedHistoryStrip';
@@ -144,6 +145,7 @@ import {
 } from './notebooks/SidebarCollapseIcon';
 import { RenameConversationModal } from './RenameConversationModal';
 import { SavedPromptMenuItems } from './SavedPromptMenuItems';
+import { ScreenContextChip } from './ScreenContextChip';
 import { SettingsPanel } from './SettingsPanel';
 import { ToastAlertGroup } from './ToastAlertGroup';
 
@@ -363,6 +365,15 @@ const StyledMessageBar = styled(MessageBar)(({ theme }) => ({
     display: 'none',
   },
 }));
+
+const MessageBarActionsRow = styled('div')({
+  display: 'flex',
+  flex: '1 1 0',
+  minWidth: 0,
+  overflow: 'hidden',
+  alignItems: 'center',
+  gap: 8,
+});
 
 const StyledSelectList = styled(SelectList)({
   padding: 0,
@@ -593,7 +604,12 @@ type LightspeedChatProps = {
   avatar?: string;
   profileLoading: boolean;
   handleSelectedModel: (item: string) => void;
-  models: { label: string; value: string; provider: string }[];
+  models: {
+    label: string;
+    value: string;
+    provider: string;
+    supportsVision?: boolean;
+  }[];
 };
 
 export const LightspeedChat = ({
@@ -625,6 +641,10 @@ export const LightspeedChat = ({
     configApi.getOptionalNumber(
       'intelligent-assistant.screen-context.dom-extraction.maxChars',
     ) ?? 8000;
+  const screenshotsEnabled =
+    configApi.getOptionalBoolean(
+      'intelligent-assistant.screen-context.screenshots.enabled',
+    ) ?? true;
 
   const notebooksRouteMatch = useMatch(`${LIGHTSPEED_PATH}/notebooks`);
   const notebookViewRouteMatch = useMatch(
@@ -1051,6 +1071,26 @@ export const LightspeedChat = ({
   const { isSavedPromptsEnabled, handleSavedPromptsToggle } =
     useSavedPromptsSettings(user);
 
+  const {
+    isScreenContextSharingEnabled,
+    isScreenContextPaused,
+    handleScreenContextSharingToggle,
+    toggleScreenContextPaused,
+  } = useScreenContextSettings(user);
+
+  const selectedModelSupportsVision = useMemo(
+    () => models.find(m => m.value === selectedModel)?.supportsVision ?? false,
+    [models, selectedModel],
+  );
+
+  let screenContextChipState: 'recording' | 'paused' | 'unavailable' =
+    'recording';
+  if (isFullscreenMode) {
+    screenContextChipState = 'unavailable';
+  } else if (isScreenContextPaused) {
+    screenContextChipState = 'paused';
+  }
+
   const { selectedSort, handleSortChange } = useSortSettings(user);
 
   const {
@@ -1296,29 +1336,32 @@ export const LightspeedChat = ({
         prompt: message.toString(),
       }),
     );
-    const allAttachments = getAttachments(fileContents);
 
-    if (screenContextEnabled && domExtractionEnabled) {
-      try {
-        const domContext = extractPageContext({
-          maxChars: domExtractionMaxChars,
-        });
-        if (domContext) {
-          allAttachments.push({
-            attachment_type: 'configuration',
-            content_type: 'text/plain',
-            content: domContext,
-          });
-        }
-      } catch {
-        // DOM extraction failure is non-fatal; proceed without page context
-      }
-    }
-
-    handleInputPrompt(message.toString(), allAttachments);
+    const messageText = message.toString();
     setIsSendButtonDisabled(true);
-    setFileContents([]);
-    setDraftMessage('');
+
+    void (async () => {
+      const allAttachments = getAttachments(fileContents);
+      try {
+        const screenAttachments = await buildScreenContextAttachments({
+          adminEnabled: screenContextEnabled,
+          sharingEnabled: isScreenContextSharingEnabled,
+          paused: isScreenContextPaused,
+          isFullscreen: isFullscreenMode,
+          domEnabled: domExtractionEnabled,
+          screenshotsEnabled,
+          supportsVision: selectedModelSupportsVision,
+          domExtractionMaxChars,
+        });
+        allAttachments.push(...screenAttachments);
+      } catch {
+        // Screen context failure is non-fatal
+      }
+
+      handleInputPrompt(messageText, allAttachments);
+      setFileContents([]);
+      setDraftMessage('');
+    })();
   };
 
   const handleApplySavedPrompt = useCallback(
@@ -1961,13 +2004,26 @@ export const LightspeedChat = ({
             },
           }}
           additionalActions={
-            <MessageBarModelSelector
-              selectedModel={selectedModel}
-              models={models}
-              onSelect={handleSelectedModel}
-              disabled={isSendButtonDisabled || messages.length > 0}
-              disabledTooltip={t('modelSelector.disabledTooltip')}
-            />
+            <MessageBarActionsRow>
+              <MessageBarModelSelector
+                selectedModel={selectedModel}
+                models={models}
+                onSelect={handleSelectedModel}
+                disabled={isSendButtonDisabled || messages.length > 0}
+                disabledTooltip={t('modelSelector.disabledTooltip')}
+              />
+              {screenContextEnabled &&
+                isScreenContextSharingEnabled &&
+                showChatPanel && (
+                  <ScreenContextChip
+                    state={screenContextChipState}
+                    domEnabled={domExtractionEnabled}
+                    screenshotsEnabled={screenshotsEnabled}
+                    supportsVision={selectedModelSupportsVision}
+                    onTogglePaused={toggleScreenContextPaused}
+                  />
+                )}
+            </MessageBarActionsRow>
           }
           forceMultilineLayout
           allowedFileTypes={supportedFileTypes}
@@ -2075,6 +2131,7 @@ export const LightspeedChat = ({
         isCompact={!isFullscreenMode}
         compactDrawerOpen={!isFullscreenMode && isChatHistoryDrawerOpen}
         mcpDrawerFix={isSettingsOpen && !isChatHistoryDrawerOpen}
+        data-screen-capture-exclude
       >
         {showCompactSettings ? (
           settingsPanel
@@ -2176,6 +2233,9 @@ export const LightspeedChat = ({
                 setDisplayMode={setDisplayModeFromHeader}
                 displayMode={displayMode}
                 onPinnedChatsToggle={handlePinningChatsToggle}
+                screenContextAdminEnabled={screenContextEnabled}
+                isScreenContextSharingEnabled={isScreenContextSharingEnabled}
+                onScreenContextSharingToggle={handleScreenContextSharingToggle}
                 onMcpSettingsClick={() => {
                   openSettings(
                     mcpToolsPermissionResolved

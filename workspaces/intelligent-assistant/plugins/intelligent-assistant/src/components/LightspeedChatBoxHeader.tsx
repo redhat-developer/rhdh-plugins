@@ -54,6 +54,9 @@ type LightspeedChatBoxHeaderProps = {
   onPinnedChatsToggle: (state: boolean) => void;
   isSavedPromptsEnabled: boolean;
   onSavedPromptsToggle: (state: boolean) => void;
+  screenContextAdminEnabled?: boolean;
+  isScreenContextSharingEnabled?: boolean;
+  onScreenContextSharingToggle?: (state: boolean) => void;
   onMcpSettingsClick: () => void;
   isModelSelectorDisabled?: boolean;
   hideModelSelector?: boolean;
@@ -99,6 +102,9 @@ export const LightspeedChatBoxHeader = ({
   onPinnedChatsToggle,
   isSavedPromptsEnabled,
   onSavedPromptsToggle,
+  screenContextAdminEnabled = false,
+  isScreenContextSharingEnabled = false,
+  onScreenContextSharingToggle,
   onMcpSettingsClick,
   isModelSelectorDisabled = false,
   hideModelSelector = false,
@@ -288,6 +294,32 @@ export const LightspeedChatBoxHeader = ({
                     {t('settings.savedPrompts.enable')}
                   </DropdownItem>
                 )}
+                {screenContextAdminEnabled &&
+                  (isScreenContextSharingEnabled ? (
+                    <DropdownItem
+                      value="disableScreenContext"
+                      key="disableScreenContext"
+                      icon={<ToggleOnOutlinedIcon sx={{ marginTop: '8px' }} />}
+                      description={t(
+                        'settings.screenContext.enabled.description',
+                      )}
+                      onClick={() => onScreenContextSharingToggle?.(false)}
+                    >
+                      {t('settings.screenContext.disable')}
+                    </DropdownItem>
+                  ) : (
+                    <DropdownItem
+                      value="enableScreenContext"
+                      key="enableScreenContext"
+                      icon={<ToggleOffOutlinedIcon sx={{ marginTop: '8px' }} />}
+                      description={t(
+                        'settings.screenContext.disabled.description',
+                      )}
+                      onClick={() => onScreenContextSharingToggle?.(true)}
+                    >
+                      {t('settings.screenContext.enable')}
+                    </DropdownItem>
+                  ))}
                 <DropdownItem
                   value="mcpSettings"
                   key="mcpSettings"
