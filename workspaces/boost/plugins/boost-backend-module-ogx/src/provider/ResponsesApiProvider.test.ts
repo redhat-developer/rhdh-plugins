@@ -15,7 +15,7 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { NormalizedStreamEvent } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { NormalizedStreamEvent } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { ResponsesApiProvider } from './ResponsesApiProvider';
 
 function createMockLogger(): LoggerService {

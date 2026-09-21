@@ -2,11 +2,11 @@
 
 ## Overview
 
-`plugins/boost` is the frontend plugin for the boost workspace in RHDH (`workspaces/boost/plugins/boost`). It is a multi-domain plugin that will grow to cover AI catalog discovery, agentic chat, agent lifecycle management, and platform administration. The AI Catalog ([RHDHPLAN-1509](https://redhat.atlassian.net/browse/RHDHPLAN-1509)) is the first feature delivered; the other domains remain future work.
+`plugins/ai-catalog` is the frontend plugin for the boost workspace in RHDH (`workspaces/boost/plugins/ai-catalog`). It is a multi-domain plugin that will grow to cover AI catalog discovery, agentic chat, agent lifecycle management, and platform administration. The AI Catalog ([RHDHPLAN-1509](https://redhat.atlassian.net/browse/RHDHPLAN-1509)) is the first feature delivered; the other domains remain future work.
 
 The plugin follows the NFS (New Frontend System) model with Blueprints. The AI Catalog uses `PageBlueprint` and `EntityCardBlueprint`, and adds a standalone page for marketplace-style browse. Chat, admin, and other domains are future work.
 
-The boost backend already provides 30+ API routes across chat/streaming, conversations, agent lifecycle, MCP management, skills marketplace, and admin configuration. The **AI Catalog frontend does not call those routes**; browse and entity cards use `catalogApiRef`. A Boost API client for `/api/boost` is future work, not present in `plugins/boost` today.
+The boost backend already provides 30+ API routes across chat/streaming, conversations, agent lifecycle, MCP management, skills marketplace, and admin configuration. The **AI Catalog frontend does not call those routes**; browse and entity cards use `catalogApiRef`. A Boost API client for `/api/boost` is future work, not present in `plugins/ai-catalog` today.
 
 ## Design Principles
 
@@ -58,7 +58,7 @@ Each domain boundary has an error boundary so a failure in one surface (e.g., ca
 ## Plugin Structure
 
 ```
-plugins/boost/
+plugins/ai-catalog/
   src/
     index.ts                    # NFS entry point (createFrontendPlugin)
     plugin.tsx                  # Frontend plugin assembly

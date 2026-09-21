@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { AIAssetCategory } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+import type { AIAssetCategory } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk';
 
 /**
  * Minimal catalog entity shape returned by the Backstage catalog API.

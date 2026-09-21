@@ -31,7 +31,7 @@ import {
   AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY,
   AI_CATALOG_RULE_IS_FROM_CONNECTOR,
   AI_CATALOG_RULE_IS_IN_TENANT,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 // ---------------------------------------------------------------------------
 // Resource reference + filter types

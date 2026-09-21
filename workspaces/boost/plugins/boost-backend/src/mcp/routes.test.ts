@@ -24,7 +24,7 @@ import type {
 } from '@backstage/backend-plugin-api';
 import { createMcpServerRoutes } from './routes';
 import type { McpServerStore } from './McpServerStore';
-import type { McpServerRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { McpServerRecord } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 // ---------------------------------------------------------------------------
 // Helpers

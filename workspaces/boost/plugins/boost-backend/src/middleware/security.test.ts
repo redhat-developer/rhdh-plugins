@@ -24,7 +24,7 @@ import {
 import type { Request, Response } from 'express';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { NotAllowedError } from '@backstage/errors';
-import { boostAgentRegisterPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import { boostAgentRegisterPermission } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 function createMockLogger(): LoggerService {
   return {

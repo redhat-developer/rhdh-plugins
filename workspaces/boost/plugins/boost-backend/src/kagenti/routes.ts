@@ -24,7 +24,7 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import {
   boostKagentiAdminPermission,
   boostAdminPermission,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { NotAllowedError } from '@backstage/errors';
 
 /**

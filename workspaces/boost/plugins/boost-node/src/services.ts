@@ -15,7 +15,7 @@
  */
 
 import { createServiceRef } from '@backstage/backend-plugin-api';
-import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 /**
  * Service ref for the active AI provider. Other Backstage plugins

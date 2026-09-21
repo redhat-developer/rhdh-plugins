@@ -23,7 +23,7 @@ import type { Knex } from 'knex';
 import type {
   ToolRecord,
   LifecycleStage,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 const TABLE_NAME = 'boost_tools';
 

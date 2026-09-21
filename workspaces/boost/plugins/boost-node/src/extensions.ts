@@ -15,7 +15,7 @@
  */
 
 import { createExtensionPoint } from '@backstage/backend-plugin-api';
-import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 /**
  * Interface for the boost provider extension point. Backend modules

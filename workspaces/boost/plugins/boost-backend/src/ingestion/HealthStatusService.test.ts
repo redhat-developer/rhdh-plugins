@@ -15,7 +15,7 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { SyncAttemptRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { SyncAttemptRecord } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { HealthStatusService } from './HealthStatusService';
 import { ErrorClassifier } from './ErrorClassifier';
 import type { SyncAttemptsStore } from './SyncAttemptsStore';

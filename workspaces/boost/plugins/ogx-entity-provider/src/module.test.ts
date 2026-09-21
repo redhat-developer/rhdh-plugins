@@ -19,9 +19,9 @@ import { ConfigReader } from '@backstage/config';
 import { readOgxEntityProviderConfig } from './module';
 
 describe('readOgxEntityProviderConfig', () => {
-  it('reads caData and skipTLSVerify from boost.entityProviders.ogx', () => {
+  it('reads TLS settings from ai-catalog.entityProviders.ogx', () => {
     const config = new ConfigReader({
-      boost: {
+      'ai-catalog': {
         entityProviders: {
           ogx: {
             baseUrl: 'https://ogx.example.com',
@@ -42,9 +42,9 @@ describe('readOgxEntityProviderConfig', () => {
     expect(result.skipTLSVerify).toBe(true);
   });
 
-  it('reads agent configuration from boost.entityProviders.ogx', () => {
+  it('reads agent configuration from ai-catalog.entityProviders.ogx', () => {
     const config = new ConfigReader({
-      boost: {
+      'ai-catalog': {
         entityProviders: {
           ogx: {
             baseUrl: 'https://ogx.example.com',
@@ -86,47 +86,9 @@ describe('readOgxEntityProviderConfig', () => {
     ]);
   });
 
-  it('reads caData and skipTLSVerify from fallback boost.providers.ogx', () => {
-    const config = new ConfigReader({
-      boost: {
-        providers: {
-          ogx: {
-            baseUrl: 'https://ogx-fallback.example.com',
-            caData: 'PEM-CERT-DATA',
-            skipTLSVerify: false,
-          },
-        },
-      },
-    });
-
-    const result = readOgxEntityProviderConfig(config);
-
-    expect(result.baseUrl).toBe('https://ogx-fallback.example.com');
-    expect(result.caData).toBe('PEM-CERT-DATA');
-    expect(result.skipTLSVerify).toBe(false);
-  });
-
-  it('returns undefined for caData and skipTLSVerify when not configured', () => {
-    const config = new ConfigReader({
-      boost: {
-        entityProviders: {
-          ogx: {
-            baseUrl: 'http://localhost:8321',
-          },
-        },
-      },
-    });
-
-    const result = readOgxEntityProviderConfig(config);
-
-    expect(result.baseUrl).toBe('http://localhost:8321');
-    expect(result.caData).toBeUndefined();
-    expect(result.skipTLSVerify).toBeUndefined();
-  });
-
   it('treats empty optional environment values as undefined', () => {
     const config = new ConfigReader({
-      boost: {
+      'ai-catalog': {
         entityProviders: {
           ogx: {
             baseUrl: 'http://localhost:8321',
@@ -154,36 +116,44 @@ describe('readOgxEntityProviderConfig', () => {
   });
 
   it('falls back to localhost when no OGX config is present', () => {
-    const config = new ConfigReader({});
+    const result = readOgxEntityProviderConfig(new ConfigReader({}));
 
-    const result = readOgxEntityProviderConfig(config);
-
-    expect(result.baseUrl).toBe('http://localhost:8321');
-    expect(result.caData).toBeUndefined();
-    expect(result.skipTLSVerify).toBeUndefined();
+    expect(result).toEqual({ baseUrl: 'http://localhost:8321' });
   });
 
-  it('prefers entityProviders.ogx over providers.ogx', () => {
+  it('ignores legacy Boost configuration namespaces', () => {
     const config = new ConfigReader({
       boost: {
         entityProviders: {
-          ogx: {
-            baseUrl: 'https://primary.example.com',
-            caData: 'PRIMARY-CA',
-          },
+          ogx: { baseUrl: 'https://legacy-entity-provider.example.com' },
         },
         providers: {
-          ogx: {
-            baseUrl: 'https://fallback.example.com',
-            caData: 'FALLBACK-CA',
-          },
+          ogx: { baseUrl: 'https://legacy-provider.example.com' },
         },
       },
     });
 
     const result = readOgxEntityProviderConfig(config);
 
-    expect(result.baseUrl).toBe('https://primary.example.com');
-    expect(result.caData).toBe('PRIMARY-CA');
+    expect(result).toEqual({ baseUrl: 'http://localhost:8321' });
+  });
+
+  it('prefers the AI Catalog namespace when legacy and new values coexist', () => {
+    const config = new ConfigReader({
+      boost: {
+        entityProviders: {
+          ogx: { baseUrl: 'https://legacy.example.com' },
+        },
+      },
+      'ai-catalog': {
+        entityProviders: {
+          ogx: { baseUrl: 'https://ai-catalog.example.com' },
+        },
+      },
+    });
+
+    const result = readOgxEntityProviderConfig(config);
+
+    expect(result.baseUrl).toBe('https://ai-catalog.example.com');
   });
 });

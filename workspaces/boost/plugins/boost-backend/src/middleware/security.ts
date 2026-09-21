@@ -29,7 +29,7 @@ import {
   type PermissionCondition,
 } from '@backstage/plugin-permission-common';
 import { NotAllowedError } from '@backstage/errors';
-import { boostAdminPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import { boostAdminPermission } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 // ---------------------------------------------------------------------------
 // Security mode validation

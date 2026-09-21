@@ -18,7 +18,7 @@ import type {
   CacheService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import type { ApprovalRequest } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ApprovalRequest } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 /**
  * Options for creating a BackendApprovalStore.

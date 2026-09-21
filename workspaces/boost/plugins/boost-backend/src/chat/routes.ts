@@ -25,11 +25,11 @@ import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
   boostChatCreatePermission,
   boostAdminPermission,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type {
   InputItem,
   NormalizedStreamEvent,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type { ProviderManager } from '../provider/ProviderManager';
 import type { ConversationAgentCache } from './ConversationAgentCache';
 import type { RateLimiter } from './RateLimiter';

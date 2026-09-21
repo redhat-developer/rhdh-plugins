@@ -18,7 +18,7 @@ import { ConflictError, NotFoundError } from '@backstage/errors';
 import type {
   AgenticProvider,
   ProviderDescriptor,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 /**
  * Manages registered AI providers and tracks the active provider.

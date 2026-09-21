@@ -15,7 +15,7 @@
  */
 
 import { ErrorClassifier } from './ErrorClassifier';
-import type { ErrorType } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ErrorType } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 describe('ErrorClassifier', () => {
   describe('guidanceFor', () => {
