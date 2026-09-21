@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import { render, screen } from '@testing-library/react';
+import type { ComponentProps } from 'react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import type { AggregatedMetricTimeSeriesResponse } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { AggregatedSparklineCard } from '../AggregatedSparklineCard';
+import { useMetricCollectors } from '../../../hooks/useMetricCollectors';
 
 jest.mock('recharts', () => {
   const actual = jest.requireActual('recharts');
@@ -34,6 +36,59 @@ jest.mock('recharts', () => {
 jest.mock('../../../hooks/useLanguage', () => ({
   useLanguage: () => 'en',
 }));
+
+jest.mock('../../../hooks/useMetricCollectors', () => ({
+  useMetricCollectors: jest.fn(),
+}));
+
+jest.mock('../../MetricGroupCard/MetricGroupCardMenu', () => ({
+  MetricGroupCardMenu: ({
+    actions,
+  }: {
+    actions: Array<{ id: string; label: string; onClick: () => void }>;
+  }) => (
+    <div data-testid="homepage-sparkline-menu">
+      {actions.map(action => (
+        <button
+          key={action.id}
+          data-testid={`menu-action-${action.id}`}
+          onClick={action.onClick}
+        >
+          {action.label}
+        </button>
+      ))}
+    </div>
+  ),
+}));
+
+jest.mock('../../MetricGroupCard/DataSourcesDialog', () => ({
+  DataSourcesDialog: ({
+    title,
+    rows,
+    isLoading,
+    error,
+    buckets,
+  }: {
+    title: string;
+    rows: Array<{ plugin: string; metricId: string }>;
+    isLoading?: boolean;
+    error?: Error;
+    buckets?: unknown[];
+  }) => (
+    <div data-testid="data-sources-dialog">
+      <span data-testid="dialog-title">{title}</span>
+      <span data-testid="dialog-metric-id">{rows[0]?.metricId ?? ''}</span>
+      <span data-testid="dialog-collectors">
+        {rows.map(row => row.plugin).join(',')}
+      </span>
+      <span data-testid="dialog-loading">{String(Boolean(isLoading))}</span>
+      <span data-testid="dialog-error">{error?.message ?? ''}</span>
+      <span data-testid="dialog-legend">{String(Boolean(buckets))}</span>
+    </div>
+  ),
+}));
+
+const useMetricCollectorsMock = useMetricCollectors as jest.Mock;
 
 const series: AggregatedMetricTimeSeriesResponse = {
   id: 'deploymentFrequencyKpi',
@@ -103,17 +158,32 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   </BrowserRouter>
 );
 
+const renderCard = (
+  props: Partial<ComponentProps<typeof AggregatedSparklineCard>> = {},
+) =>
+  render(
+    <AggregatedSparklineCard
+      series={series}
+      aggregationId="deploymentFrequencyKpi"
+      cardTitle="DORA - Deployment Frequency"
+      description="Weekly production deploys"
+      {...props}
+    />,
+    { wrapper: TestWrapper },
+  );
+
 describe('AggregatedSparklineCard', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useMetricCollectorsMock.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: undefined,
+    });
+  });
+
   it('renders the sparkline, threshold legend, and last-day entity counts', () => {
-    render(
-      <AggregatedSparklineCard
-        series={series}
-        aggregationId="deploymentFrequencyKpi"
-        cardTitle="DORA - Deployment Frequency"
-        description="Weekly production deploys"
-      />,
-      { wrapper: TestWrapper },
-    );
+    renderCard();
 
     expect(
       screen.getByTestId('sparkline-chart-deploymentFrequencyKpi'),
@@ -131,18 +201,24 @@ describe('AggregatedSparklineCard', () => {
     expect(
       screen.getByTestId('scorecard-homepage-card-info'),
     ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('menu-action-view-data-sources'),
+    ).toBeInTheDocument();
+  });
+
+  it('hides the info button and data sources menu when showInfo is false', () => {
+    renderCard({ showInfo: false });
+
+    expect(
+      screen.queryByTestId('scorecard-homepage-card-info'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('menu-action-view-data-sources'),
+    ).not.toBeInTheDocument();
   });
 
   it('colors each legend item from its threshold rule', () => {
-    render(
-      <AggregatedSparklineCard
-        series={series}
-        aggregationId="deploymentFrequencyKpi"
-        cardTitle="DORA - Deployment Frequency"
-        description="Weekly production deploys"
-      />,
-      { wrapper: TestWrapper },
-    );
+    renderCard();
 
     const swatches = screen.getAllByTestId('sparkline-threshold-color');
     expect(swatches).toHaveLength(3);
@@ -152,31 +228,67 @@ describe('AggregatedSparklineCard', () => {
   });
 
   it('still lists every threshold when the backend does not send a chart color', () => {
-    render(
-      <AggregatedSparklineCard
-        series={{
-          ...series,
-          aggregationChartDisplayColor: null,
-          points: [
-            {
-              value: 12,
-              successCount: 3,
-              errorCount: 0,
-              total: 3,
-              status: 'success',
-              timestamp: '2026-08-23T00:00:00.000Z',
-            },
-          ],
-        }}
-        aggregationId="deploymentFrequencyKpi"
-        cardTitle="DORA - Deployment Frequency"
-        description="Weekly production deploys"
-      />,
-      { wrapper: TestWrapper },
-    );
+    renderCard({
+      series: {
+        ...series,
+        aggregationChartDisplayColor: null,
+        points: [
+          {
+            value: 12,
+            successCount: 3,
+            errorCount: 0,
+            total: 3,
+            status: 'success',
+            timestamp: '2026-08-23T00:00:00.000Z',
+          },
+        ],
+      },
+    });
 
     expect(screen.getByText('Elite (>=7/week)')).toBeInTheDocument();
     expect(screen.getByText('Medium (1-7/week)')).toBeInTheDocument();
     expect(screen.getByText('Error (<1/week)')).toBeInTheDocument();
+  });
+  it('opens the data sources dialog with collectors after the menu click', () => {
+    useMetricCollectorsMock.mockReturnValue({
+      data: [
+        {
+          id: 'github:doraDeploymentWorkflowRuns',
+          description: 'Collects deployments from GitHub Actions.',
+        },
+        {
+          id: 'jira:doraIncidents',
+          description: 'Collects Jira incidents.',
+        },
+      ],
+      isLoading: false,
+      error: undefined,
+    });
+
+    renderCard();
+
+    expect(screen.queryByTestId('data-sources-dialog')).not.toBeInTheDocument();
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'dora.deploymentFrequency',
+      false,
+    );
+
+    fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
+
+    expect(screen.getByTestId('data-sources-dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('dialog-title')).toHaveTextContent(
+      'DORA - Deployment Frequency',
+    );
+    expect(screen.getByTestId('dialog-metric-id')).toHaveTextContent(
+      'dora.deploymentFrequency',
+    );
+    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent(
+      'GitHub,Jira',
+    );
+    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('false');
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'dora.deploymentFrequency',
+      true,
+    );
   });
 });

@@ -2,7 +2,8 @@
 
 Shared UI components and extension APIs for the RHDH app shell. Provides the
 application drawer system that lets plugins contribute persistent side panels
-with host-owned state, and the extensible scaffolder template card.
+with host-owned state, the extensible scaffolder template card, and the
+blueprints for contributing entries to the priority-ordered app sidebar.
 
 ## Installation
 
@@ -133,6 +134,159 @@ function MyDrawerContent() {
 }
 ```
 
+### Contributing Sidebar Items and Groups
+
+The sidebar is rendered by the `nav-content:app/sidebar` extension from
+`@red-hat-developer-hub/backstage-plugin-app-defaults`. Plugins contribute
+entries with `SidebarItemBlueprint` and groups with `SidebarItemGroupBlueprint`:
+
+```typescript
+import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
+import {
+  SidebarItemBlueprint,
+  SidebarItemGroupBlueprint,
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
+
+const adminGroup = SidebarItemGroupBlueprint.make({
+  name: 'admin',
+  params: {
+    id: 'admin',
+    title: 'Administration',
+    icon: 'admin', // system icon key registered via IconBundleBlueprint
+    priority: -100,
+  },
+});
+
+const usersItem = SidebarItemBlueprint.make({
+  name: 'users',
+  params: {
+    title: 'Users',
+    icon: 'group',
+    to: '/admin/users',
+    group: 'admin',
+    priority: 10,
+  },
+});
+
+export default createFrontendPlugin({
+  pluginId: 'my-plugin',
+  extensions: [adminGroup, usersItem],
+});
+```
+
+`SidebarItemBlueprint` parameters:
+
+| Param      | Type                      | Required | Description                                                |
+| ---------- | ------------------------- | -------- | ---------------------------------------------------------- |
+| `title`    | `string`                  | Yes      | Text shown next to the icon                                |
+| `icon`     | `IconComponent \| string` | No       | Icon component or system icon key (fallback: generic icon) |
+| `to`       | `string`                  | No       | Link target. Required for items inside a group             |
+| `onClick`  | `() => void`              | No       | Action handler for items that do not navigate              |
+| `priority` | `number`                  | No       | Ordering, higher renders first (default: `0`)              |
+| `group`    | `string`                  | No       | `id` of the group to render the item in                    |
+
+`SidebarItemGroupBlueprint` parameters:
+
+| Param      | Type                      | Required | Description                                                |
+| ---------- | ------------------------- | -------- | ---------------------------------------------------------- |
+| `id`       | `string`                  | Yes      | Identifier referenced by `SidebarItemBlueprint.group`      |
+| `title`    | `string`                  | Yes      | Text shown next to the icon                                |
+| `icon`     | `IconComponent \| string` | No       | Icon component or system icon key (fallback: generic icon) |
+| `to`       | `string`                  | No       | Optional link target for the group entry itself            |
+| `priority` | `number`                  | No       | Ordering, higher renders first (default: `0`)              |
+
+### Contributing Custom Sidebar Elements
+
+Entries that need their own React component, such as the search modal or the
+notifications item, use `SidebarElementBlueprint`. The component renders at
+the top level in the slot determined by `priority`; elements cannot be placed
+inside a group.
+
+```typescript
+import { SidebarElementBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
+
+const notificationsElement = SidebarElementBlueprint.make({
+  name: 'notifications',
+  params: {
+    component: NotificationsSidebarItem,
+    priority: -50,
+  },
+});
+```
+
+`SidebarElementBlueprint` parameters:
+
+| Param       | Type                | Required | Description                                   |
+| ----------- | ------------------- | -------- | --------------------------------------------- |
+| `component` | `ComponentType<{}>` | Yes      | Component rendered in place of a regular item |
+| `priority`  | `number`            | No       | Ordering, higher renders first (default: `0`) |
+
+Only `priority` can be overridden from `app-config.yaml`
+(`sidebar-element:<plugin>/<name>`).
+
+### Spacers and Dividers
+
+`SidebarSpacerBlueprint` and `SidebarDividerBlueprint` are ready-made elements
+from `@backstage/core-components`. A spacer is a fixed 8px gap
+(`SidebarSpacer`); with `grow: true` it becomes the flexible `SidebarSpace`
+that pushes everything with a lower priority to the bottom of the sidebar. A
+divider draws a horizontal line. Both take a `priority`, and the spacer a
+`grow` flag, overridable via `sidebar-spacer:<plugin>/<name>` and
+`sidebar-divider:<plugin>/<name>`.
+
+```typescript
+import {
+  SidebarDividerBlueprint,
+  SidebarSpacerBlueprint,
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
+
+// Everything below priority -30 sits at the bottom, separated by a line.
+const bottomSpacer = SidebarSpacerBlueprint.make({
+  name: 'bottom',
+  params: { priority: -30, grow: true },
+});
+const bottomDivider = SidebarDividerBlueprint.make({
+  name: 'bottom',
+  params: { priority: -35 },
+});
+```
+
+Ordering rules:
+
+- Top-level entries (groups, ungrouped items and custom elements) are sorted
+  by `priority`, higher first, ties broken by title (or extension id for
+  elements).
+- Items inside a group are sorted the same way and render below the group
+  entry or in a flyout submenu, depending on the group's `submenu` option. An
+  item whose `group` is not registered renders at the top level.
+- Nav items that Backstage auto-discovers from page extensions are merged in at
+  priority `0`. Declaring an item or group with the same `to` as an
+  auto-discovered page replaces it, so a plugin can retitle, regroup, or
+  reprioritize its own page.
+- A group without items and without a `to` is not rendered, so a host can
+  register empty groups (like the default `admin` group) that only appear once
+  a plugin contributes an item to them.
+- A custom element with a `to` hides every item and auto-discovered page with
+  the same `to`, so for example the search modal replaces the plain search
+  page entry.
+
+Deployers can override placement per item in `app-config.yaml`:
+
+```yaml
+app:
+  extensions:
+    - sidebar-item:my-plugin/users:
+        config:
+          title: People
+          priority: 50
+          group: directory
+    - sidebar-item-group:my-plugin/admin:
+        config:
+          priority: -10
+          submenu: flyout
+```
+
 ## Exports
 
 ### Main entry (`@red-hat-developer-hub/backstage-plugin-app-react`)
@@ -141,6 +295,10 @@ function MyDrawerContent() {
 - `appDrawerContentDataRef` -- extension data ref
 - `appDrawerExtension` -- drawer wrapper extension
 - `appDrawerModule` -- frontend module (registers the drawer wrapper extension)
+- `SidebarItemBlueprint` / `sidebarItemDataRef` -- blueprint and data ref for sidebar entries
+- `SidebarItemGroupBlueprint` / `sidebarItemGroupDataRef` -- blueprint and data ref for sidebar groups
+- `SidebarElementBlueprint` / `sidebarElementDataRef` -- blueprint and data ref for custom sidebar components
+- `SidebarSpacerBlueprint` / `SidebarDividerBlueprint` -- ready-made spacer and divider elements
 - `TemplateCardActionBlueprint` -- blueprint for custom template card actions
 - `TemplateCardBadgeBlueprint` -- blueprint for template card badges
 - `templateCardExtension` -- extensible scaffolder template card component
@@ -148,6 +306,7 @@ function MyDrawerContent() {
 - `useAppDrawer` -- hook to control drawers
 - `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
 - `TemplateCardActionData` / `TemplateCardActionProps` / `TemplateCardBadgeData` types
+- `SidebarIcon` / `SidebarItemData` / `SidebarItemGroupData` / `SidebarElementData` types
 
 ### Legacy entry (`@red-hat-developer-hub/backstage-plugin-app-react/legacy`)
 

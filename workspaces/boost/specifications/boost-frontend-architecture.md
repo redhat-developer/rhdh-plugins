@@ -111,9 +111,14 @@ plugins/boost/
       entityFiltering.ts
       entityLinks.ts
       usageActions.ts
-    translations/               # English scaffold; locales are a remaining change
+    translations/               # i18n: en (ref), de, es, fr, it, ja
       index.ts
       ref.ts
+      de.ts
+      es.ts
+      fr.ts
+      it.ts
+      ja.ts
 ```
 
 There is no `BoostApiClient`, `useFeatureFlags`, `usePermissions`, or `chat/` / `admin/` source tree in this plugin today.
@@ -303,18 +308,18 @@ The AI Catalog is the first domain. Here is how future capabilities map to surfa
 
 ## Technology Stack
 
-| Layer             | Technology                                                                                                      |
-| ----------------- | --------------------------------------------------------------------------------------------------------------- |
-| Component library | BUI (`@backstage/ui`) for new components, MUI v5 fallback where BUI lacks coverage, `@remixicon/react` icons    |
-| Chat UI           | `@patternfly/chatbot` for conversational interfaces                                                             |
-| Styling           | CSS Modules with `--bui-*` CSS variables                                                                        |
-| Frontend system   | NFS Blueprints (`createFrontendPlugin`, `PageBlueprint`, `EntityCardBlueprint`, etc.)                           |
-| State             | React hooks + URL params for filters; streaming reducer for chat events                                         |
-| API               | `catalogApiRef` for catalog entity queries; `fetchApi` for authenticated fetches. No Boost API client yet       |
-| Testing           | Unit: `TestApiProvider` + `renderInTestApp`; Playwright E2E covers primary browse flows in `e2e-tests/` on NFS. |
-| i18n              | `TranslationBlueprint` + `useTranslationRef`; 5 locales planned (de, es, fr, it, ja)                            |
-| Dynamic plugins   | NFS Module Federation via `rhdh-cli plugin export`; no Scalprum (NFS-only plugin)                               |
-| Accessibility     | WCAG 2.1 AA, keyboard navigation, screen reader support                                                         |
+| Layer             | Technology                                                                                                                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Component library | BUI (`@backstage/ui`) for new components, MUI v5 fallback where BUI lacks coverage, `@remixicon/react` icons                                                                                 |
+| Chat UI           | `@patternfly/chatbot` for conversational interfaces                                                                                                                                          |
+| Styling           | CSS Modules with `--bui-*` CSS variables                                                                                                                                                     |
+| Frontend system   | NFS Blueprints (`createFrontendPlugin`, `PageBlueprint`, `EntityCardBlueprint`, etc.)                                                                                                        |
+| State             | React hooks + URL params for filters; streaming reducer for chat events                                                                                                                      |
+| API               | `catalogApiRef` for catalog entity queries; `fetchApi` for authenticated fetches. No Boost API client yet                                                                                    |
+| Testing           | Unit: `TestApiProvider` + `renderInTestApp`; Playwright E2E covers primary browse flows in `e2e-tests/` on NFS.                                                                              |
+| i18n              | `TranslationBlueprint` + `useTranslationRef`; 6 locales (en + de, es, fr, it, ja). Category badge labels (`categoryMeta.ts`) are not translated — they are entity-type taxonomy identifiers. |
+| Dynamic plugins   | NFS Module Federation via `rhdh-cli plugin export`; no Scalprum (NFS-only plugin)                                                                                                            |
+| Accessibility     | WCAG 2.1 AA, keyboard navigation, screen reader support                                                                                                                                      |
 
 ---
 

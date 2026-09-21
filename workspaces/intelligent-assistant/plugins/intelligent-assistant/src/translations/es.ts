@@ -26,6 +26,11 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menú del historial de chat',
+    'modelSelector.visionScreenshot.line1': 'Análisis de imágenes compatible.',
+    'modelSelector.visionScreenshot.line2':
+      'Se incluirá una captura de pantalla con su mensaje.',
+    'modelSelector.visionScreenshot.ariaLabel':
+      'Contexto de captura de pantalla del modelo de visión',
     'modelSelector.disabledTooltip':
       'Cada sesión de chat solo admite un modelo. Para cambiar de modelo, abra un nuevo chat.',
     'aria.chatbotSelector': 'Selector de chatbot',
@@ -348,6 +353,39 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'settings.savedPrompts.enable': 'Habilitar prompts guardados',
     'settings.savedPrompts.enabled.description':
       'Los prompts guardados están habilitados actualmente',
+    'settings.screenContext.enable': 'Habilitar contexto de pantalla',
+    'settings.screenContext.disable': 'Deshabilitar contexto de pantalla',
+    'settings.screenContext.enabled.description':
+      'El uso compartido del contexto de pantalla está habilitado actualmente',
+    'settings.screenContext.disabled.description':
+      'El uso compartido del contexto de pantalla está deshabilitado actualmente',
+    'contextChip.label.paused': 'Contexto: en pausa',
+    'contextChip.label.unavailable': 'Contexto: no disponible',
+    'contextChip.label.softwareTemplates': 'Plantillas de software',
+    'contextChip.tooltip.askAbout': 'Pregunte sobre {{label}}.',
+    'contextChip.tooltip.template':
+      'Pregunte cómo completar la plantilla {{label}}.',
+    'contextChip.tooltip.search': 'Pregunte sobre su búsqueda: {{label}}.',
+    'contextChip.tooltip.paused':
+      'El contexto de pantalla está en pausa. Haga clic para reanudar el uso compartido de su pantalla actual con el asistente inteligente.',
+    'contextChip.tooltip.unavailable':
+      'El contexto de pantalla no está disponible en modo de pantalla completa. Cambie al modo Superposición o Anclar a la ventana para habilitarlo.',
+    'contextChip.tooltip.line2.fullContext':
+      'El texto de la página y una captura de pantalla se enviarán con su mensaje.',
+    'contextChip.tooltip.line2.adminLimited':
+      'El uso compartido del contexto de pantalla está limitado por la configuración del administrador.',
+    'contextChip.tooltip.line2.screenshotOnly':
+      'La extracción de texto está deshabilitada por su administrador. Solo captura de pantalla.',
+    'contextChip.tooltip.line2.domOffNoVision':
+      'La extracción de texto está deshabilitada por su administrador. Su modelo no admite el análisis de imágenes.',
+    'contextChip.tooltip.line2.textOnlyNoVision':
+      'Solo contexto de texto: su modelo no admite el análisis de imágenes.',
+    'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
+      'Solo contexto de texto: la captura de pantalla está deshabilitada por su administrador.',
+    'contextChip.tooltip.line2.textOnlyCombined':
+      'Solo contexto de texto: su modelo no admite el análisis de imágenes y la captura de pantalla está deshabilitada por su administrador.',
+    'contextChip.aria.pause': 'Pausar contexto de pantalla: {{label}}',
+    'contextChip.aria.resume': 'Reanudar contexto de pantalla',
     'savedPrompts.tab.title': 'Prompts guardados',
     'savedPrompts.disabled.title': 'Los prompts guardados están deshabilitados',
     'savedPrompts.disabled.body':

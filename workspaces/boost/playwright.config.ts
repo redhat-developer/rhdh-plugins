@@ -16,9 +16,8 @@
 
 import { defineConfig } from '@playwright/test';
 
-// Boost is NFS-only (no legacy app), so APP_MODE is not used. English-only
-// until per-locale test_yamls land (RHIDP-15480 follow-up).
-const LOCALES = ['en'] as const;
+// Boost is NFS-only (no legacy app), so APP_MODE is not used.
+const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,

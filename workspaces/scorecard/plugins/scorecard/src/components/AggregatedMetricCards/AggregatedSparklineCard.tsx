@@ -20,18 +20,21 @@ import type { AggregatedMetricTimeSeriesResponse } from '@red-hat-developer-hub/
 
 import { CardWrapper } from '../Common/CardWrapper';
 import { SparklineChart } from '../SparklineChart';
+import { SparklineDataSources } from '../SparklineChart/SparklineDataSources';
 import { CardInfoButton } from './components/CardInfoButton';
 import { CardSubheader } from './components/CardSubheader';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTranslation } from '../../hooks/useTranslation';
-import { formatDate } from '../../utils/entityTableUtils';
 import {
   getThresholdRuleColor,
   resolveStatusColor,
   SCORECARD_ERROR_STATE_COLOR,
   toAggregationSparklinePoints,
 } from '../../utils';
-import { toSparklineChartModel } from '../../utils/sparklineChartModel';
+import {
+  formatSparklineDateLabel,
+  toSparklineChartModel,
+} from '../../utils/sparklineChartModel';
 import type { AggregatedMetricCardBaseProps } from './types';
 
 export type AggregatedSparklineCardProps = AggregatedMetricCardBaseProps & {
@@ -62,9 +65,10 @@ export const AggregatedSparklineCard = ({
           getThresholdRuleColor(thresholdRules, rule.key) === chartColorToken,
       )?.key
     : undefined;
-  const chartColor = chartColorToken
-    ? resolveStatusColor(theme, chartColorToken)
-    : SCORECARD_ERROR_STATE_COLOR;
+  const chartColor = resolveStatusColor(
+    theme,
+    chartColorToken ?? SCORECARD_ERROR_STATE_COLOR,
+  );
 
   const unit = series.metadata.unit;
   const fallbackErrorLabel = t('errors.metricDataUnavailable');
@@ -76,11 +80,7 @@ export const AggregatedSparklineCard = ({
           fallbackErrorLabel,
         ),
         formatDateLabel: timestamp =>
-          formatDate(
-            new Date(timestamp),
-            { month: 'short', day: 'numeric' },
-            locale,
-          ),
+          formatSparklineDateLabel(timestamp, locale),
         matchingThresholdKey,
         chartColor,
         unit,
@@ -112,10 +112,18 @@ export const AggregatedSparklineCard = ({
       />
     ) : null;
 
-  const info =
-    showInfo && lastPoint ? (
-      <CardInfoButton timestamp={lastPoint.timestamp} />
-    ) : null;
+  const info = showInfo ? (
+    <SparklineDataSources
+      title={cardTitle}
+      metricId={series.metricId}
+      lastSyncedTimestamp={lastPoint?.timestamp}
+      extraInfo={
+        lastPoint ? (
+          <CardInfoButton timestamp={lastPoint.timestamp} marginRight={0} />
+        ) : null
+      }
+    />
+  ) : null;
 
   return (
     <CardWrapper

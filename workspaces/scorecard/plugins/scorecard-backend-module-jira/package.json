@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira",
-  "version": "4.3.1",
+  "version": "4.4.0",
   "license": "Apache-2.0",
   "description": "The jira backend module for the scorecard plugin.",
   "main": "src/index.ts",
@@ -41,7 +41,6 @@
     "@backstage/backend-plugin-api": "^1.10.0",
     "@backstage/catalog-client": "^1.16.1",
     "@backstage/catalog-model": "^1.10.0",
-    "@backstage/plugin-catalog-node": "^2.2.4",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^",
     "zod": "^3.22.4"

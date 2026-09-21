@@ -1,0 +1,534 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type {
+  LoggerService,
+  SchedulerServiceTaskRunner,
+} from '@backstage/backend-plugin-api';
+import {
+  ANNOTATION_LOCATION,
+  ANNOTATION_ORIGIN_LOCATION,
+  type Entity,
+} from '@backstage/catalog-model';
+import type {
+  DeferredEntity,
+  EntityProvider,
+  EntityProviderConnection,
+} from '@backstage/plugin-catalog-node';
+import {
+  mapServerToEntity,
+  projectAnnotations,
+} from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
+import type { McpServerMappingDefaults } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
+import {
+  resolveMcpRegistryProviderConfig,
+  type McpRegistryProviderConfig,
+  type ResolvedMcpRegistryProviderConfig,
+} from './config';
+import { fetchRegistryServers, McpRegistryClientError } from './client';
+import type { McpRegistryServerEntry } from './client';
+import {
+  buildLastGoodKey,
+  formatMappingFailureMessage,
+  hasNativeRemote,
+  readServerIdentity,
+} from './providerUtils';
+import { stripTrailingSlashes } from './util';
+
+/** Provider name and locationKey constant. */
+const PROVIDER_NAME = 'mcp-registry-provider';
+
+/** Sync status annotation key. */
+const SYNC_STATUS_ANNOTATION = 'redhat.com/rhdh-mcp-registry-sync-status';
+
+/**
+ * Optional constructor dependencies for {@link McpRegistryEntityProvider}.
+ *
+ * @public
+ */
+export interface McpRegistryEntityProviderOptions {
+  /**
+   * @internal Override the global `fetch` implementation (test seam).
+   * Kept non-private so tests can inject it; stripped from published types.
+   */
+  fetchApi?: typeof fetch;
+  /** Scheduler task runner used to periodically invoke sync. */
+  taskRunner?: SchedulerServiceTaskRunner;
+}
+
+/**
+ * Entity provider that ingests MCP servers from one configured
+ * MCP Registry into the Backstage catalog.
+ *
+ * @public
+ */
+export class McpRegistryEntityProvider implements EntityProvider {
+  private connection?: EntityProviderConnection;
+  private readonly config: ResolvedMcpRegistryProviderConfig;
+  private readonly logger: LoggerService;
+  private readonly fetchApi?: typeof fetch;
+  private readonly taskRunner?: SchedulerServiceTaskRunner;
+
+  /**
+   * Internal last-good index: keyed by `name::version`, stores the
+   * last successfully committed DeferredEntity so that a subsequent
+   * sync can retain it when mapping fails (D6).
+   */
+  private readonly lastGoodIndex = new Map<string, DeferredEntity>();
+
+  /**
+   * Resume state for multi-sync pagination. When a sync hits
+   * `pageLimit` with more pages remaining, entries fetched so far and
+   * the next cursor are kept here so the following sync continues
+   * instead of restarting. Cleared when a traversal reaches the end
+   * of the registry (no next cursor) or a `maxEntries` soft-stop and a
+   * full mutation is committed.
+   */
+  private resumeCursor?: string;
+  private pendingEntries: McpRegistryServerEntry[] = [];
+  private seenCursors: Set<string> = new Set();
+
+  /**
+   * After a `maxEntries` soft-stop, later full traversals end at this
+   * cursor instead of a missing `nextCursor`. Cleared when
+   * `maxEntries` is patched (value differs from when it was saved).
+   */
+  private endCursor?: string;
+  private endCursorMaxEntries?: number;
+
+  constructor(
+    config: McpRegistryProviderConfig,
+    logger: LoggerService,
+    options?: McpRegistryEntityProviderOptions,
+  ) {
+    this.config = resolveMcpRegistryProviderConfig(config);
+    this.logger = logger;
+    this.fetchApi = options?.fetchApi;
+    this.taskRunner = options?.taskRunner;
+  }
+
+  getProviderName(): string {
+    return PROVIDER_NAME;
+  }
+
+  async connect(connection: EntityProviderConnection): Promise<void> {
+    this.connection = connection;
+    // The scheduler's first tick can run immediately. Register it only
+    // after the catalog connection exists so that tick can commit.
+    if (this.taskRunner) {
+      await this.taskRunner.run({
+        id: `${PROVIDER_NAME}:refresh`,
+        fn: async () => {
+          await this.run();
+        },
+      });
+    }
+  }
+
+  /**
+   * Run one sync cycle: fetch servers from the registry, map them,
+   * and commit a full mutation.
+   *
+   * Intentionally not TypeScript-`private` so unit tests can invoke it
+   * directly; `@internal` keeps it out of the published API surface.
+   *
+   * @internal
+   */
+  async run(): Promise<void> {
+    if (!this.connection) {
+      throw new Error(
+        'McpRegistryEntityProvider not initialized; call connect() first.',
+      );
+    }
+
+    const managedByLocation = `url:${stripTrailingSlashes(
+      this.config.baseUrl,
+    )}`;
+    const entries = await this.fetchRegistryEntries();
+    if (!entries) {
+      return;
+    }
+
+    const { entities: mappedEntities, hasDegradedEntries: mappingDegraded } =
+      this.mapRegistryEntries(entries, managedByLocation);
+
+    const { entities, hasDegradedEntries } = this.appendSoftStopRetained(
+      mappedEntities,
+      mappingDegraded,
+      managedByLocation,
+    );
+
+    if (hasDegradedEntries) {
+      this.logger.warn(
+        `MCP Registry sync completed with degraded entries. ` +
+          `Some previously synced servers could not be refreshed ` +
+          `(mapping/formatting failure or maxEntries soft-stop window) ` +
+          `and are using last-good entities.`,
+      );
+    }
+
+    await this.connection.applyMutation({
+      type: 'full',
+      entities,
+    });
+
+    this.rebuildLastGoodIndex(entities);
+
+    this.logger.info(
+      `MCP Registry sync completed: ${entities.length} entities committed.`,
+    );
+  }
+
+  /**
+   * Fetch registry servers for this sync tick.
+   *
+   * Continues from `resumeCursor` when a prior sync stopped at
+   * `pageLimit`. Returns `undefined` when a client error aborts the
+   * tick without a mutation, or when more pages remain (entries are
+   * buffered until the registry is exhausted or `maxEntries` stops the
+   * traversal so a full mutation does not prune unfetched servers).
+   *
+   * Hitting `maxEntries` commits a full mutation of the buffer, saves
+   * `endCursor`, and starts the next cycle from the beginning. Later
+   * full traversals stop at that `endCursor` until `maxEntries` is
+   * patched.
+   */
+  private async fetchRegistryEntries(): Promise<
+    McpRegistryServerEntry[] | undefined
+  > {
+    const {
+      baseUrl,
+      apiVersion,
+      pageLimit,
+      pageSize,
+      latestVersion,
+      maxEntries,
+      hostAllowList,
+    } = this.config;
+
+    if (
+      this.endCursor !== undefined &&
+      this.endCursorMaxEntries !== maxEntries
+    ) {
+      this.logger.info(
+        `MCP Registry maxEntries changed from ` +
+          `${this.endCursorMaxEntries} to ${maxEntries}; ` +
+          `clearing saved endCursor.`,
+      );
+      this.endCursor = undefined;
+      this.endCursorMaxEntries = undefined;
+    }
+
+    try {
+      const result = await fetchRegistryServers({
+        baseUrl,
+        apiVersion,
+        pageLimit,
+        pageSize,
+        latestVersion,
+        maxEntries,
+        priorEntryCount: this.pendingEntries.length,
+        startCursor: this.resumeCursor,
+        endCursor: this.endCursor,
+        seenCursors: this.seenCursors,
+        hostAllowList,
+        fetchApi: this.fetchApi,
+      });
+
+      this.pendingEntries.push(...result.servers);
+      this.seenCursors = result.seenCursors;
+
+      if (result.resumeCursor) {
+        this.resumeCursor = result.resumeCursor;
+        this.logger.info(
+          `MCP Registry sync reached pageLimit (${pageLimit} pages); ` +
+            `buffered ${this.pendingEntries.length} entries and will ` +
+            `resume from the saved cursor on the next sync ` +
+            `(no mutation emitted).`,
+        );
+        return undefined;
+      }
+
+      if (result.endCursor) {
+        this.endCursor = result.endCursor;
+        this.endCursorMaxEntries = maxEntries;
+        this.logger.warn(
+          `MCP Registry sync reached maxEntries (${maxEntries}); ` +
+            `committing ${this.pendingEntries.length} buffered entries ` +
+            `and saving endCursor for later traversals.`,
+        );
+      }
+
+      // Clear pagination state before returning so applyMutation failures
+      // start a fresh traversal on the next sync (intended, covered by tests).
+      const entries = this.pendingEntries;
+      this.pendingEntries = [];
+      this.resumeCursor = undefined;
+      this.seenCursors = new Set();
+      return entries;
+    } catch (err) {
+      if (err instanceof McpRegistryClientError) {
+        // Input seenCursors is never mutated by the client; leave
+        // this.seenCursors unchanged so the next sync can retry.
+        this.logger.error(
+          `MCP Registry sync failed (no mutation emitted): ${err.message}`,
+        );
+        return undefined;
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Map every registry entry with per-entry failure isolation.
+   * When `remotesOnly` is set, entries without a native remote are skipped.
+   */
+  private mapRegistryEntries(
+    entries: McpRegistryServerEntry[],
+    managedByLocation: string,
+  ): { entities: DeferredEntity[]; hasDegradedEntries: boolean } {
+    const entities: DeferredEntity[] = [];
+    let hasDegradedEntries = false;
+    let skippedNonRemote = 0;
+
+    for (const entry of entries) {
+      if (this.config.remotesOnly && !hasNativeRemote(entry.server)) {
+        skippedNonRemote += 1;
+        continue;
+      }
+      try {
+        entities.push(this.mapRegistryEntry(entry, managedByLocation));
+      } catch (err) {
+        const retained = this.retainLastGoodOnMappingFailure(
+          entry,
+          err,
+          managedByLocation,
+        );
+        if (retained) {
+          entities.push(retained);
+          hasDegradedEntries = true;
+        }
+      }
+    }
+
+    if (skippedNonRemote > 0) {
+      this.logger.info(
+        `MCP Registry remotesOnly skipped ${skippedNonRemote} ` +
+          `non-remote server entr${skippedNonRemote === 1 ? 'y' : 'ies'}.`,
+      );
+    }
+
+    return { entities, hasDegradedEntries };
+  }
+
+  /**
+   * When a `maxEntries` soft-stop is active (`endCursor` set), retain
+   * last-good entities that fell outside the truncated window so a full
+   * mutation does not prune them. Mark retained copies as degraded.
+   *
+   * Full traversals without an end bound continue to prune servers that
+   * are absent from the registry.
+   */
+  private appendSoftStopRetained(
+    mappedEntities: DeferredEntity[],
+    hasDegradedEntries: boolean,
+    managedByLocation: string,
+  ): { entities: DeferredEntity[]; hasDegradedEntries: boolean } {
+    if (this.endCursor === undefined || this.lastGoodIndex.size === 0) {
+      return { entities: mappedEntities, hasDegradedEntries };
+    }
+
+    const seenKeys = new Set<string>();
+    for (const deferred of mappedEntities) {
+      const annotations = deferred.entity.metadata?.annotations;
+      const name = annotations?.['modelcontextprotocol.io/name'];
+      const version = annotations?.['modelcontextprotocol.io/version'];
+      if (name && version) {
+        seenKeys.add(buildLastGoodKey(name, version));
+      }
+    }
+
+    const entities = [...mappedEntities];
+    let degraded = hasDegradedEntries;
+
+    for (const [key, lastGood] of this.lastGoodIndex) {
+      if (seenKeys.has(key)) {
+        continue;
+      }
+      const retainedEntity = structuredClone(lastGood.entity);
+      this.applyProviderAnnotations(
+        retainedEntity,
+        managedByLocation,
+        'degraded',
+      );
+      entities.push({
+        entity: retainedEntity,
+        locationKey: PROVIDER_NAME,
+      });
+      degraded = true;
+      this.logger.warn(
+        `Retaining last-good entity for "${key}" with degraded sync ` +
+          `status; it fell outside the maxEntries soft-stop window.`,
+      );
+    }
+
+    return { entities, hasDegradedEntries: degraded };
+  }
+
+  /**
+   * Map one registry entry into a deferred entity with sync status `ok`.
+   */
+  private mapRegistryEntry(
+    entry: McpRegistryServerEntry,
+    managedByLocation: string,
+  ): DeferredEntity {
+    const serverDoc = entry.server;
+    const mappingResult = mapServerToEntity(
+      serverDoc,
+      this.buildMappingDefaults(),
+    );
+    const entity = mappingResult.entity;
+
+    entity.metadata.annotations = {
+      ...entity.metadata.annotations,
+      ...projectAnnotations(
+        serverDoc,
+        mappingResult.consumedPaths,
+        mappingResult.reservedAnnotationKeys,
+      ),
+    };
+
+    this.applyProviderAnnotations(entity, managedByLocation, 'ok');
+
+    return {
+      entity,
+      locationKey: PROVIDER_NAME,
+    };
+  }
+
+  /**
+   * Build mapping caller overrides from provider config.
+   *
+   * `placeholderRemoteUrl` is the target registry `baseUrl` so a server
+   * with no valid remotes still gets a D8 placeholder pointing at that
+   * registry, before the mapping falls back to `websiteUrl`.
+   */
+  private buildMappingDefaults(): McpServerMappingDefaults {
+    const mappingDefaults: McpServerMappingDefaults = {
+      placeholderRemoteUrl: this.config.baseUrl,
+    };
+    if (this.config.defaultOwner) {
+      mappingDefaults.owner = this.config.defaultOwner;
+    }
+    if (this.config.defaultLifecycle) {
+      mappingDefaults.lifecycle = this.config.defaultLifecycle;
+    }
+    if (this.config.baseName) {
+      mappingDefaults.prefix = this.config.baseName;
+    }
+    return mappingDefaults;
+  }
+
+  /**
+   * Stamp provider-owned location and sync-status annotations.
+   *
+   * Catalog processing requires both location annotations. Without the
+   * origin annotation the entity is rejected and never listed.
+   */
+  private applyProviderAnnotations(
+    entity: Entity,
+    managedByLocation: string,
+    syncStatus: 'ok' | 'degraded',
+  ): void {
+    if (!entity.metadata.annotations) {
+      entity.metadata.annotations = {};
+    }
+    entity.metadata.annotations[ANNOTATION_LOCATION] = managedByLocation;
+    entity.metadata.annotations[ANNOTATION_ORIGIN_LOCATION] = managedByLocation;
+    entity.metadata.annotations[SYNC_STATUS_ANNOTATION] = syncStatus;
+  }
+
+  /**
+   * Log a mapping failure and retain a last-good entity when available (D6).
+   */
+  private retainLastGoodOnMappingFailure(
+    entry: McpRegistryServerEntry,
+    err: unknown,
+    managedByLocation: string,
+  ): DeferredEntity | undefined {
+    const { name, version } = readServerIdentity(entry);
+    this.logger.warn(formatMappingFailureMessage(name, version, err));
+
+    if (!name || !version) {
+      return undefined;
+    }
+
+    const lastGood = this.lastGoodIndex.get(buildLastGoodKey(name, version));
+    if (!lastGood) {
+      this.logger.info(
+        `No last-good entity found for "${name}" ` +
+          `version "${version}"; omitting from mutation.`,
+      );
+      return undefined;
+    }
+
+    const retainedEntity = structuredClone(lastGood.entity);
+    this.applyProviderAnnotations(
+      retainedEntity,
+      managedByLocation,
+      'degraded',
+    );
+
+    this.logger.info(
+      `Retained last-good entity for "${name}" ` +
+        `version "${version}" with degraded sync status.`,
+    );
+
+    return {
+      entity: retainedEntity,
+      locationKey: PROVIDER_NAME,
+    };
+  }
+
+  /**
+   * Rebuild the last-good index from every committed entity that has a
+   * registry identity (`ok` and `degraded` alike).
+   *
+   * Degraded entries stay indexed so they can be re-added on later syncs
+   * until the server is refreshed successfully (`ok`) or omitted from the
+   * mutation entirely (true prune after a full traversal without soft-stop
+   * retention).
+   *
+   * The annotation keys used here ('modelcontextprotocol.io/name' and
+   * 'modelcontextprotocol.io/version') are set by mapServerToEntity in
+   * catalog-mcp-registry-server-mapping and correspond to the raw
+   * serverDoc.name and serverDoc.version fields used in buildLastGoodKey
+   * during failure recovery. If the mapping library changes these
+   * annotation keys, both this rebuild and the failure recovery path
+   * must be updated in tandem.
+   */
+  private rebuildLastGoodIndex(entities: DeferredEntity[]): void {
+    this.lastGoodIndex.clear();
+    for (const deferred of entities) {
+      const annotations = deferred.entity.metadata?.annotations;
+      const name = annotations?.['modelcontextprotocol.io/name'];
+      const version = annotations?.['modelcontextprotocol.io/version'];
+      if (name && version) {
+        this.lastGoodIndex.set(buildLastGoodKey(name, version), deferred);
+      }
+    }
+  }
+}

@@ -194,8 +194,8 @@ export const SkillBundleMetadataSchema: z.ZodObject<
   {
     name: string;
     version: string;
-    tags?: string[] | undefined;
     description?: string | undefined;
+    tags?: string[] | undefined;
     author?: string | undefined;
     runtime?:
       | {
@@ -212,8 +212,8 @@ export const SkillBundleMetadataSchema: z.ZodObject<
   {
     name: string;
     version: string;
-    tags?: string[] | undefined;
     description?: string | undefined;
+    tags?: string[] | undefined;
     author?: string | undefined;
     runtime?:
       | {

@@ -94,6 +94,11 @@ backend.add(
 );
 backend.add(
   import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider'
+  ),
+);
+backend.add(
+  import(
     '@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend'
   ),
 );

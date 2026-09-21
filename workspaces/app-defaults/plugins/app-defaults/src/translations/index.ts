@@ -16,7 +16,7 @@
 
 import { createTranslationResource } from '@backstage/frontend-plugin-api';
 
-import { translationRef } from './ref';
+import { appDefaultsTranslationRef } from './ref';
 
 /**
  * Translation resource for the app defaults plugin, wiring all
@@ -25,7 +25,7 @@ import { translationRef } from './ref';
  * @public
  */
 export const appDefaultsTranslations = createTranslationResource({
-  ref: translationRef,
+  ref: appDefaultsTranslationRef,
   translations: {
     de: () => import('./de'),
     es: () => import('./es'),
@@ -35,4 +35,4 @@ export const appDefaultsTranslations = createTranslationResource({
   },
 });
 
-export { translationRef };
+export { appDefaultsTranslationRef };

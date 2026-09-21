@@ -10,14 +10,17 @@ app:
     - page:catalog:
         config:
           path: /
-          title: 'Home'
     - api:app/app-language:
         config:
           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
           defaultLanguage: 'en'
-    - nav-item:user-settings: false
-    - nav-item:search: false
-    - nav-item:home: false
+
+    # The app-defaults sidebar ships the search and notifications entries
+    # disabled by default; enable them here.
+    - sidebar-element:app/search: true
+    - sidebar-element:app/notifications: true
+    # Demo element that throws on render; keep it disabled by default.
+    - sidebar-element:app/crashing: false
 
 organization:
   name: My Company

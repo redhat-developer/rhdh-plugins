@@ -11,12 +11,12 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const boostTranslationRef: TranslationRef<
   'plugin.boost',
   {
-    readonly 'nav.aiCatalog': string;
-    readonly 'catalog.table.name': string;
-    readonly 'catalog.table.type': string;
-    readonly 'catalog.table.provider': string;
-    readonly 'catalog.table.owner': string;
-    readonly 'catalog.table.description': string;
+    readonly 'catalog.page.title': string;
+    readonly 'catalog.toolbar.allPrefix': string;
+    readonly 'catalog.toolbar.search': string;
+    readonly 'catalog.toolbar.viewGrid': string;
+    readonly 'catalog.toolbar.viewTable': string;
+    readonly 'catalog.toolbar.filters': string;
     readonly 'catalog.filter.title': string;
     readonly 'catalog.filter.all': string;
     readonly 'catalog.filter.type': string;
@@ -24,17 +24,6 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.filter.owner': string;
     readonly 'catalog.filter.tag': string;
     readonly 'catalog.filter.clearAll': string;
-    readonly 'catalog.page.title': string;
-    readonly 'catalog.error.title': string;
-    readonly 'catalog.error.description': string;
-    readonly 'catalog.error.retry': string;
-    readonly 'catalog.toolbar.search': string;
-    readonly 'catalog.toolbar.filters': string;
-    readonly 'catalog.toolbar.allPrefix': string;
-    readonly 'catalog.toolbar.viewGrid': string;
-    readonly 'catalog.toolbar.viewTable': string;
-    readonly 'catalog.card.yes': string;
-    readonly 'catalog.card.no': string;
     readonly 'catalog.card.assetDetailsTitle': string;
     readonly 'catalog.card.descriptionLabel': string;
     readonly 'catalog.card.viewDetails': string;
@@ -65,6 +54,13 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.card.handoffDescriptionTitle': string;
     readonly 'catalog.card.handoffTargetsTitle': string;
     readonly 'catalog.card.ragEnabledLabel': string;
+    readonly 'catalog.card.yes': string;
+    readonly 'catalog.card.no': string;
+    readonly 'catalog.table.type': string;
+    readonly 'catalog.table.provider': string;
+    readonly 'catalog.table.owner': string;
+    readonly 'catalog.table.name': string;
+    readonly 'catalog.table.description': string;
     readonly 'catalog.empty.title': string;
     readonly 'catalog.empty.description': string;
     readonly 'catalog.empty.refresh': string;
@@ -72,6 +68,10 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.emptyFiltered.title': string;
     readonly 'catalog.emptyFiltered.description': string;
     readonly 'catalog.emptyFiltered.clearFilters': string;
+    readonly 'catalog.error.title': string;
+    readonly 'catalog.error.description': string;
+    readonly 'catalog.error.retry': string;
+    readonly 'nav.aiCatalog': string;
   }
 >;
 

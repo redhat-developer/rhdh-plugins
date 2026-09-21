@@ -5913,7 +5913,7 @@ __metadata:
     jsdom: "npm:^27.1.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.8"
     react: "npm:^18.3.1"
     typescript: "npm:~5.8.0"
   languageName: unknown
@@ -9443,7 +9443,7 @@ __metadata:
     markitdown-ts: "npm:^0.0.10"
     msw: "npm:2.14.6"
     multer: "npm:^2.2.0"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.8"
     supertest: "npm:6.3.4"
   languageName: unknown
   linkType: soft
@@ -9456,7 +9456,7 @@ __metadata:
     "@backstage/plugin-permission-common": "npm:^0.9.10"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.0"
     "@spotify/prettier-config": "npm:^15.0.0"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.8"
   peerDependencies:
     "@backstage/plugin-permission-common": ^0.9.10
   languageName: unknown
@@ -9495,7 +9495,7 @@ __metadata:
     "@testing-library/user-event": "npm:14.6.1"
     html2canvas-pro: "npm:^1.5.0"
     monaco-editor: "npm:^0.56.0"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.8"
     react: "npm:^18.0.0"
     react-dom: "npm:^18.0.0"
     react-dropzone: "npm:^14.4.0"
@@ -28763,12 +28763,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.9.6":
-  version: 3.9.6
-  resolution: "prettier@npm:3.9.6"
+"prettier@npm:3.9.8":
+  version: 3.9.8
+  resolution: "prettier@npm:3.9.8"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/9f7ddae234035868f3daab3dc34e6de7e54622185afb017378029f0c09a9c023248ccf6f34def0b17a0538e18c47aa1b3188bab72965d1bf735919baa0747e99
+  checksum: 10c0/257e5ef11ba5006d0b0712271705701c065c8003e07763f996ce185d39633902f3fe1f814839eed76f75c97b6d5376d6157bd9f44db18cacb1dbdcb263cc66ae
   languageName: node
   linkType: hard
 

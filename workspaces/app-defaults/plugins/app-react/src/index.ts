@@ -39,3 +39,21 @@ export type {
   TemplateCardActionProps,
   TemplateCardBadgeData,
 } from './templateCard';
+
+export { appReactTranslations, appReactTranslationRef } from './translations';
+
+export { SidebarDividerBlueprint } from './sidebar';
+export { SidebarElementBlueprint } from './sidebar';
+export { sidebarElementDataRef } from './sidebar';
+export { SidebarItemBlueprint } from './sidebar';
+export { sidebarItemDataRef } from './sidebar';
+export { SidebarItemGroupBlueprint } from './sidebar';
+export { sidebarItemGroupDataRef } from './sidebar';
+export { SidebarSpacerBlueprint } from './sidebar';
+export type {
+  SidebarElementData,
+  SidebarGroupVariant,
+  SidebarIcon,
+  SidebarItemData,
+  SidebarItemGroupData,
+} from './sidebar';

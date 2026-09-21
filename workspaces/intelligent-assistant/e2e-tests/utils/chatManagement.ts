@@ -307,9 +307,11 @@ export const openChatbotSettings = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await page
-    .getByRole('button', { name: translations['aria.options.label'] })
-    .click();
+  const options = page
+    .locator('.pf-chatbot__header')
+    .getByRole('button', { name: translations['aria.options.label'] });
+  await expect(options).toBeVisible({ timeout: 15_000 });
+  await options.click();
 };
 
 export const verifyChatbotSettingsVisible = async (

@@ -19,6 +19,7 @@ import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import type { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardTranslationRef } from '../translations';
+import { formatDate } from './entityTableUtils';
 import {
   getSparklineLineStyle,
   toSparklineLegendItems,
@@ -36,6 +37,12 @@ export type SparklineChartModel = {
   strokeDasharray?: string;
   legendItems: SparklineLegendItem[];
 };
+
+export const formatSparklineDateLabel = (
+  timestamp: string,
+  locale: string,
+): string =>
+  formatDate(new Date(timestamp), { month: 'short', day: 'numeric' }, locale);
 
 /**
  * Shared sparkline view-model for entity and homepage cards.
