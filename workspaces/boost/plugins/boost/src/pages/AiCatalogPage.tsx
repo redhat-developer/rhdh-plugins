@@ -15,6 +15,7 @@
  */
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Header } from '@backstage/core-components';
 import type { SortDescriptor } from '@backstage/ui';
 
 import { CatalogErrorBoundary } from '../components/catalog/CatalogErrorBoundary';
@@ -178,6 +179,7 @@ export const AiCatalogPage = ({ filters }: AiCatalogPageProps) => {
       title={t('catalog.error.title')}
       retryLabel={t('catalog.error.retry')}
     >
+      <Header title={t('catalog.page.title')} />
       <AiCatalogPageContent filters={filters} />
     </CatalogErrorBoundary>
   );

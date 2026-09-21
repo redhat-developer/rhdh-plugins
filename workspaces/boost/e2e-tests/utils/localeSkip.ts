@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/frontend-defaults';
-import { boostTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-boost/translations';
-import { navModule } from './modules/nav';
-import { sampleFilterModule } from './modules/sampleFilter';
-import { signInModule } from './modules/signIn';
+import { test, type TestInfo } from '@playwright/test';
 
-export default createApp({
-  features: [
-    signInModule,
-    navModule,
-    sampleFilterModule,
-    boostTranslationsModule,
-  ],
-});
+/**
+ * Skips the current test when the project (locale) is in the given list.
+ * Call at the start of a test so it still runs on other locales.
+ */
+export function skipIfLocales(
+  testInfo: TestInfo,
+  locales: string[],
+  reason: string,
+): void {
+  if (locales.includes(testInfo.project.name)) {
+    test.skip(true, reason);
+  }
+}
