@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "license": "Apache-2.0",
   "description": "Common library that provides a deterministic transformation functions for transforming an MCP Registry server.json into Backstage mcp-server API entity (direct field mapping).",
   "main": "src/index.ts",
