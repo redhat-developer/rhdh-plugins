@@ -10,6 +10,7 @@
     "./global-header-module": "./src/globalHeaderModuleExport.ts",
     "./global-header-translations-module": "./src/globalHeaderTranslationsModuleExport.ts",
     "./components": "./src/componentsExport.ts",
+    "./blueprints": "./src/blueprintsExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -28,6 +29,9 @@
       ],
       "components": [
         "src/componentsExport.ts"
+      ],
+      "blueprints": [
+        "src/blueprintsExport.ts"
       ],
       "package.json": [
         "package.json"

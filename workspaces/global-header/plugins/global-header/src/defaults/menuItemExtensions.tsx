@@ -25,7 +25,7 @@
  * @internal
  */
 
-import { GlobalHeaderMenuItemBlueprint } from '../extensions/blueprints';
+import { GlobalHeaderMenuItemBlueprint } from '../extensions/menuItemBlueprint';
 
 // ---------------------------------------------------------------------------
 // Profile dropdown items
