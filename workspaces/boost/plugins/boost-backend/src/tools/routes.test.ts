@@ -24,7 +24,7 @@ import type {
 } from '@backstage/backend-plugin-api';
 import { createToolRoutes } from './routes';
 import type { ToolLifecycleStore } from './ToolLifecycleStore';
-import type { ToolRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ToolRecord } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 // ---------------------------------------------------------------------------
 // Helpers

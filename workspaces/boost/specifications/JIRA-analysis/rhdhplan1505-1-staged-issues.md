@@ -41,19 +41,19 @@ Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI iss
 For now, we will be employing the RHDH process convention used for our Jira tracking for upstream work, where we'll remove RHIDP stories from sprints as needed, and put into Waiting, if there are sprint wide gaps for implementing various stages of a story.
 But as we progress, if further break up of a story is more seamless, we'll pursue that. But in other words, we will be honoring the Story granularity conventions in the RHDH skills used to craft our stories.
 
-| RHIDP Story                                   | Started (definition/foundation)                                                 | Completed (adoption/extension)                       | Referenced after completion                   |
-| --------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------- |
-| RHIDP-15255 (Annotation Scheme)               | Issue 2 — define annotations + validator                                        | Issue 8 — update providers to emit annotations       | —                                             |
-| RHIDP-15260 (SDK Package)                     | Issue 2 — create package + interfaces                                           | Issue 8 — delta sync framework + publish             | —                                             |
-| RHIDP-15273 (Graduated Visibility)            | Issue 23 — SkillBundle filtered-skill UX                                        | Issue 24 — RequirePermission gating on entity detail | —                                             |
-| RHIDP-15280 (Audit Logging)                   | Issue 21 — define + emit audit events                                           | Issue 29 — analytics REST API consuming audit data   | —                                             |
-| RHIDP-15306 (Admin Permission + Default-Deny) | Issue 3 — define `ai-catalog.admin` permission                                  | Issue 20 — implement default-deny config             | —                                             |
-| RHIDP-15316 (Shared Infra)                    | Issue 1 — build `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` | Issue 1                                              | Issues 13, 16 (integrate CA bundle utility)   |
-| RHIDP-15335 (Health API)                      | Issue 5 — health API + data model                                               | Issue 26 — force sync routes using health data       | Issue 6.3 (#4285, runtimeEnabled handoff)     |
-| RHIDP-15259 (SDK Interface)                   | Issue 2 — define `AIAssetEntityProvider` interface                              | Issue 2                                              | Issue 8 (providers compile against interface) |
-| RHIDP-15302 (Migration Design)                | Issue 4 (#4042) / PR #4221 — `migration-plan.md` (8.1–8.4)                      | Issue 4 (#4042) — architect sign-off (8.5–8.6)       | Issue 4.1 (#4223/#4225) closed without merge  |
-| RHIDP-15346 / 15347 (Annotation Spec + CLI)   | Issue 4.2 (#4220) — split from original issue 4                                 | Issue 4.2                                            | —                                             |
-| RHIDP-15340 (Connector Config Schemas)        | Issue 6 (#4044) — Zod leaves + resolver                                         | Issues 6.1 (#4313), 6.2 (#4286)                      | Issue 6.3 (#4285, health reader)              |
+| RHIDP Story                                   | Started (definition/foundation)                                                      | Completed (adoption/extension)                       | Referenced after completion                   |
+| --------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------- |
+| RHIDP-15255 (Annotation Scheme)               | Issue 2 — define annotations + validator                                             | Issue 8 — update providers to emit annotations       | —                                             |
+| RHIDP-15260 (SDK Package)                     | Issue 2 — create package + interfaces                                                | Issue 8 — delta sync framework + publish             | —                                             |
+| RHIDP-15273 (Graduated Visibility)            | Issue 23 — SkillBundle filtered-skill UX                                             | Issue 24 — RequirePermission gating on entity detail | —                                             |
+| RHIDP-15280 (Audit Logging)                   | Issue 21 — define + emit audit events                                                | Issue 29 — analytics REST API consuming audit data   | —                                             |
+| RHIDP-15306 (Admin Permission + Default-Deny) | Issue 3 — define `ai-catalog.admin` permission                                       | Issue 20 — implement default-deny config             | —                                             |
+| RHIDP-15316 (Shared Infra)                    | Issue 1 — build `@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils` | Issue 1                                              | Issues 13, 16 (integrate CA bundle utility)   |
+| RHIDP-15335 (Health API)                      | Issue 5 — health API + data model                                                    | Issue 26 — force sync routes using health data       | Issue 6.3 (#4285, runtimeEnabled handoff)     |
+| RHIDP-15259 (SDK Interface)                   | Issue 2 — define `AIAssetEntityProvider` interface                                   | Issue 2                                              | Issue 8 (providers compile against interface) |
+| RHIDP-15302 (Migration Design)                | Issue 4 (#4042) / PR #4221 — `migration-plan.md` (8.1–8.4)                           | Issue 4 (#4042) — architect sign-off (8.5–8.6)       | Issue 4.1 (#4223/#4225) closed without merge  |
+| RHIDP-15346 / 15347 (Annotation Spec + CLI)   | Issue 4.2 (#4220) — split from original issue 4                                      | Issue 4.2                                            | —                                             |
+| RHIDP-15340 (Connector Config Schemas)        | Issue 6 (#4044) — Zod leaves + resolver                                              | Issues 6.1 (#4313), 6.2 (#4286)                      | Issue 6.3 (#4285, health reader)              |
 
 ---
 
@@ -70,7 +70,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4039
 **RHIDP Stories:** RHIDP-15265, RHIDP-15266, RHIDP-15329, RHIDP-15330
 **Feature:** RHDHPLAN-1510 — Epic RHIDP-15316
 
-Create the `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` shared package providing CA bundle resolution, fault isolation wrappers (including `createSafeRefresh()` for scheduled refresh callbacks), enable/disable patterns, and configurable endpoint/credential validation. All entity-provider connectors (MCP Registry, RHOAI, OCI Skill) depend on this package. Includes reference app-config YAML for air-gapped deployment with Helm and Operator CR examples.
+Create the `@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils` shared package providing CA bundle resolution, fault isolation wrappers (including `createSafeRefresh()` for scheduled refresh callbacks), enable/disable patterns, and configurable endpoint/credential validation. All entity-provider connectors (MCP Registry, RHOAI, OCI Skill) depend on this package. Includes reference app-config YAML for air-gapped deployment with Helm and Operator CR examples.
 
 **Config note:** `ai-catalog.providers.<id>.enabled` controls **startup registration** (YAML-only). `boost.connectors.<id>.enabled` controls **runtime sync-skip** (db-overridable). Do not treat them as the same flag — see `openspec/changes/connector-config-hot-reload/design.md`.
 
@@ -78,7 +78,7 @@ Create the `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` share
 
 From `openspec/changes/connector-shared-infrastructure/tasks.md` group 1 (RHIDP-15329):
 
-- 1.1 Create `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` package with `package.json`, TypeScript config, and README
+- 1.1 Create `@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils` package with `package.json`, TypeScript config, and README
 - 1.2 Define `loadCaBundle(connectorConfig: Config): Buffer | undefined` function signature — caller passes the Config subtree containing the `tls` block
 - 1.3 Implement caFile resolution — read CA from `tls.caFile` within the provided Config subtree
 - 1.4 Implement caSecret resolution — read CA from `tls.caSecret.$env` within the provided Config subtree
@@ -157,7 +157,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4040
 **RHIDP Stories:** RHIDP-15255, RHIDP-15259, RHIDP-15303
 **Feature:** RHDHPLAN-1507 — Epic RHIDP-15258
 
-Create the `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` package with the AI Asset annotation scheme (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`), version normalization utility, CatalogProcessor validator, `AIAssetEntityProvider` interface definition, `Neo4jSyncAdapter` interface, and `SkillBundleMetadata` type. This issue establishes all type contracts — the delta sync framework and package publishing are in Issue 8.
+Create the `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk` package with the AI Asset annotation scheme (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source`), version normalization utility, CatalogProcessor validator, `AIAssetEntityProvider` interface definition, `Neo4jSyncAdapter` interface, and `SkillBundleMetadata` type. This issue establishes all type contracts — the delta sync framework and package publishing are in Issue 8.
 
 ### Tasks
 
@@ -173,7 +173,7 @@ From `openspec/changes/ai-catalog-entity-model/tasks.md` group 1 (RHIDP-15255):
 
 From `openspec/changes/ai-catalog-entity-model/tasks.md` group 2 (RHIDP-15259, RHIDP-15260 — package+interface):
 
-- 2.1 Create `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` package with `package.json`, `tsconfig.json`, `README.md`
+- 2.1 Create `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk` package with `package.json`, `tsconfig.json`, `README.md`
 - 2.2 Define `AIAssetEntityProvider` TypeScript interface with required methods: `connect()`, `* entities()`, `getProviderName()`, `getProviderId()`
 - 2.3 Define optional `delta(cursor?: string)` method for incremental sync pattern
 - 2.4 Export annotation constants: `AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION`
@@ -367,7 +367,7 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 1 (RHIDP-15335
 
 From `openspec/changes/ingestion-health-dashboard/tasks.md` group 2 (RHIDP-15335):
 
-- 2.1 Define `ConnectorHealthStatus` type in `plugins/boost-common/src/types/ingestion-health.ts`
+- 2.1 Define `ConnectorHealthStatus` type in `plugins/ai-catalog-common/src/types/ingestion-health.ts`
 - 2.2 Implement `GET /api/boost/ingestion-health` route returning array of connector health objects
 - 2.3 Implement health status derivation logic in `HealthStatusService.deriveStatus(attempts)` (healthy/degraded/failing/unknown based on last 3 attempts; unknown = zero sync attempts recorded)
 - 2.4 Add `?includeDisabled=true` query parameter support
@@ -703,7 +703,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4048
 **RHIDP Stories:** RHIDP-15297
 **Feature:** RHDHPLAN-1507 — Epic RHIDP-15294
 
-Add multi-registry configuration support (distinct credentials, CA bundles, and sync schedules per registry instance), K8s pull secret loader with Docker `config.json` parsing, custom CA bundle integration via shared `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`, and air-gapped registry support with no external DNS resolution.
+Add multi-registry configuration support (distinct credentials, CA bundles, and sync schedules per registry instance), K8s pull secret loader with Docker `config.json` parsing, custom CA bundle integration via shared `@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils`, and air-gapped registry support with no external DNS resolution.
 
 ### Tasks
 
@@ -819,7 +819,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4051
 **Feature:** RHDHPLAN-1510 — Epic RHIDP-15313
 **Cross-feature dependency:** RHIDP-15318 depends on RHIDP-15655 (Implement MCP Registry entity provider, RHDHPLAN-393). The upstream community provider must exist as the integration target for TLS/credential wrapping.
 
-Integrate shared CA bundle utility (`loadCaBundle()`) from `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`, implement K8s Secret-based authentication (Basic Auth and Bearer token), Secret data caching with 5-minute TTL and invalidation on 401, and per-connector TLS configuration isolation.
+Integrate shared CA bundle utility (`loadCaBundle()`) from `@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils`, implement K8s Secret-based authentication (Basic Auth and Bearer token), Secret data caching with 5-minute TTL and invalidation on 401, and per-connector TLS configuration isolation.
 
 ### Tasks
 

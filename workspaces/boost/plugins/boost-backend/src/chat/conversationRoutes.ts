@@ -27,7 +27,7 @@ import {
   boostChatReadPermission,
   boostChatCreatePermission,
   boostAdminPermission,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type { ConversationStore } from './ConversationStore';
 
 /**

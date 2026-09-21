@@ -183,7 +183,7 @@ All frontend components and UI flows must align with RHDH usability and visual d
 
 The chat experience spans the full plugin stack:
 
-**Frontend (`plugins/boost/src/`):**
+**Frontend (`plugins/ai-catalog/src/`):**
 
 - `ChatContainer` orchestrates the chat experience (welcome vs thread mode)
 - `StreamingMessage` with `StreamingProgress` for real-time rendering
@@ -210,7 +210,7 @@ Boost builds composable from the start, avoiding augment's monolithic frontend p
 - `BackendApprovalStore` / `BackendApprovalHandler`: HITL continuation
 - Streaming pipeline: `createStreamEventForwarder` → provider → `NormalizedStreamEvent` → SSE
 
-**Common (`plugins/boost-common/`):**
+**Common (`plugins/ai-catalog-common/`):**
 
 - `NormalizedStreamEvent` union type covering all stream event categories
 - Permission contracts: `boostAccessPermission`, `boostAdminPermission`

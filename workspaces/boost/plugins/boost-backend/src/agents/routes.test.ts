@@ -24,7 +24,7 @@ import type {
 } from '@backstage/backend-plugin-api';
 import { createAgentRoutes } from './routes';
 import type { AgentLifecycleStore } from './AgentLifecycleStore';
-import type { AgentRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { AgentRecord } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 // ---------------------------------------------------------------------------
 // Helpers

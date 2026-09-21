@@ -90,7 +90,7 @@ All packages live at `rhdh-plugins/workspaces/boost/plugins/`:
 
 **Backstage — Static Plugin:**
 
-1. Install npm packages: `@red-hat-developer-hub/backstage-plugin-boost`, `@red-hat-developer-hub/backstage-plugin-boost-backend`, `@red-hat-developer-hub/backstage-plugin-boost-common`, `@red-hat-developer-hub/backstage-plugin-boost-node`
+1. Install npm packages: `@red-hat-developer-hub/backstage-plugin-ai-catalog`, `@red-hat-developer-hub/backstage-plugin-boost-backend`, `@red-hat-developer-hub/backstage-plugin-ai-catalog-common`, `@red-hat-developer-hub/backstage-plugin-boost-node`
 2. Optionally install provider modules: `@red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack`, `@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti`
 3. Register frontend route, sidebar entry, and icon
 4. Register backend plugin and provider modules in backend startup

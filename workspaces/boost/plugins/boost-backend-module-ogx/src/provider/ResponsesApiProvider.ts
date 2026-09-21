@@ -20,7 +20,7 @@ import type {
   InputItem,
   NormalizedStreamEvent,
   ProviderDescriptor,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import {
   buildResponsesApiRequest,
   extractTextFromResponse,

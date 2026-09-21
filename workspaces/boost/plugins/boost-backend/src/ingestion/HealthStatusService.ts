@@ -22,7 +22,7 @@ import type {
   ErrorSummary,
   ErrorType,
   SyncMetrics,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type { SyncAttemptsStore } from './SyncAttemptsStore';
 import type {
   ConnectorConfigReader,

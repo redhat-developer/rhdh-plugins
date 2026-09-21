@@ -1,6 +1,6 @@
 # Reference App-Config for AI Catalog Connectors
 #
-# This file demonstrates the configurable fields for Boost AI catalog
+# This file demonstrates the configurable fields for AI Catalog
 # connectors under ai-catalog.providers (RHOAI MCP Catalog, OCI Skill
 # Registry). Copy the relevant sections into your app-config.yaml and
 # adjust values for your deployment environment.
@@ -12,7 +12,7 @@
 # Each connector reads its own Config subtree — shared utilities do not
 # hard-code config paths.
 #
-# See also: workspaces/boost/plugins/boost-connector-utils/README.md
+# See also: workspaces/boost/plugins/ai-catalog-connector-utils/README.md
 
 # --------------------------------------------------------------------------
 # Internet-Connected Deployment (default)

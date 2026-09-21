@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { AIAssetCategory } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+import type { AIAssetCategory } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk';
 import type { MappingRule } from './types';
 
 /**

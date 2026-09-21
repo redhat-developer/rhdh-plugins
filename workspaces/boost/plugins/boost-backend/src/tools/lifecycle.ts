@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 /**
  * Valid lifecycle transitions for Kagenti tools.

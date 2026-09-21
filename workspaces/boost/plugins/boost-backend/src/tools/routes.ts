@@ -26,8 +26,8 @@ import {
   boostToolDemotePermission,
   boostToolPublishPermission,
   boostToolUnpublishPermission,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
-import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
+import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import { authorizeLifecycleAction } from '../middleware/security';
 import type { ToolLifecycleStore } from './ToolLifecycleStore';
 import { isValidToolTransition } from './lifecycle';

@@ -126,7 +126,7 @@ async function loadTwoAssetCatalog(page: Page) {
   await expect(catalogCount(page, 2)).toBeVisible();
 }
 
-test.describe('Boost AI Catalog', () => {
+test.describe('AI Catalog', () => {
   test('renders the AI Catalog heading after guest sign-in', async ({
     page,
   }, testInfo) => {

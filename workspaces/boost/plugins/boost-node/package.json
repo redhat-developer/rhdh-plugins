@@ -16,11 +16,7 @@
     "pluginId": "boost",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-node",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-boost",
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
-      "@red-hat-developer-hub/backstage-plugin-boost-common",
-      "@red-hat-developer-hub/backstage-plugin-boost-connector-utils",
-      "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk",
       "@red-hat-developer-hub/backstage-plugin-boost-migration-readiness",
       "@red-hat-developer-hub/backstage-plugin-boost-node",
       "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
@@ -29,7 +25,7 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.10.0",
-    "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-ai-catalog-common": "workspace:^"
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5"

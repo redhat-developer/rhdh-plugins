@@ -22,12 +22,12 @@ import {
 import { createConditionAuthorizer } from '@backstage/plugin-permission-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
-import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import {
   boostAdminPermission,
   boostPermissions,
   aiCatalogResourcePermissions,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import {
   boostAiProviderServiceRef,
   boostProviderExtensionPoint,

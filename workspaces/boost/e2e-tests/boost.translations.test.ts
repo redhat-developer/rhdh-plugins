@@ -17,7 +17,7 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 
 import { runAccessibilityTests } from './utils/accessibility';
-import { getTranslations, type BoostMessages } from './utils/translations';
+import { getTranslations, type AiCatalogMessages } from './utils/translations';
 
 const LOCALE_DISPLAY_NAMES: Record<string, string> = {
   en: 'English',
@@ -102,7 +102,7 @@ async function signInAndSwitchLocale(
   }
 }
 
-test.describe('Boost AI Catalog translations', () => {
+test.describe('AI Catalog translations', () => {
   test('renders representative strings in the configured locale', async ({
     page,
   }) => {
@@ -110,7 +110,7 @@ test.describe('Boost AI Catalog translations', () => {
       () => globalThis.navigator.language,
     );
     const baseLocale = currentLocale.split('-')[0];
-    const translations: BoostMessages = getTranslations(baseLocale);
+    const translations: AiCatalogMessages = getTranslations(baseLocale);
 
     await mockCatalogEntities(page, [skillEntity]);
     await signInAndSwitchLocale(page, currentLocale);
@@ -141,7 +141,7 @@ test.describe('Boost AI Catalog translations', () => {
       () => globalThis.navigator.language,
     );
     const baseLocale = currentLocale.split('-')[0];
-    const translations: BoostMessages = getTranslations(baseLocale);
+    const translations: AiCatalogMessages = getTranslations(baseLocale);
 
     await mockCatalogEntities(page, []);
     await signInAndSwitchLocale(page, currentLocale);

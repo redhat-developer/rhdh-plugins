@@ -16,18 +16,18 @@
 
 // These translation files are not exported by the package, so relative imports are necessary for e2e tests
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { boostMessages } from '../../plugins/boost/src/translations/ref.js';
-import boostTranslationDe from '../../plugins/boost/src/translations/de.js';
-import boostTranslationEs from '../../plugins/boost/src/translations/es.js';
-import boostTranslationFr from '../../plugins/boost/src/translations/fr.js';
-import boostTranslationIt from '../../plugins/boost/src/translations/it.js';
-import boostTranslationJa from '../../plugins/boost/src/translations/ja.js';
+import { aiCatalogMessages } from '../../plugins/ai-catalog/src/translations/ref.js';
+import aiCatalogTranslationDe from '../../plugins/ai-catalog/src/translations/de.js';
+import aiCatalogTranslationEs from '../../plugins/ai-catalog/src/translations/es.js';
+import aiCatalogTranslationFr from '../../plugins/ai-catalog/src/translations/fr.js';
+import aiCatalogTranslationIt from '../../plugins/ai-catalog/src/translations/it.js';
+import aiCatalogTranslationJa from '../../plugins/ai-catalog/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
-export type BoostMessages = typeof boostMessages;
+export type AiCatalogMessages = typeof aiCatalogMessages;
 
 function transformFlatMessagesIntoTree(
-  flatMessages: typeof boostTranslationDe.messages,
+  flatMessages: typeof aiCatalogTranslationDe.messages,
 ) {
   const messages = {} as Record<string, any>;
   for (const key of Object.keys(flatMessages)) {
@@ -40,24 +40,24 @@ function transformFlatMessagesIntoTree(
     current[path[path.length - 1]] =
       flatMessages[key as keyof typeof flatMessages];
   }
-  return messages as BoostMessages;
+  return messages as AiCatalogMessages;
 }
 
-export function getTranslations(locale: string): BoostMessages {
+export function getTranslations(locale: string): AiCatalogMessages {
   switch (locale) {
     case 'en':
-      return boostMessages;
+      return aiCatalogMessages;
     case 'de':
-      return transformFlatMessagesIntoTree(boostTranslationDe.messages);
+      return transformFlatMessagesIntoTree(aiCatalogTranslationDe.messages);
     case 'es':
-      return transformFlatMessagesIntoTree(boostTranslationEs.messages);
+      return transformFlatMessagesIntoTree(aiCatalogTranslationEs.messages);
     case 'fr':
-      return transformFlatMessagesIntoTree(boostTranslationFr.messages);
+      return transformFlatMessagesIntoTree(aiCatalogTranslationFr.messages);
     case 'it':
-      return transformFlatMessagesIntoTree(boostTranslationIt.messages);
+      return transformFlatMessagesIntoTree(aiCatalogTranslationIt.messages);
     case 'ja':
-      return transformFlatMessagesIntoTree(boostTranslationJa.messages);
+      return transformFlatMessagesIntoTree(aiCatalogTranslationJa.messages);
     default:
-      return boostMessages;
+      return aiCatalogMessages;
   }
 }

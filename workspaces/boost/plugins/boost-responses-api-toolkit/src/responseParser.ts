@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { NormalizedStreamEvent } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { NormalizedStreamEvent } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type { ResponsesApiResponse, ResponsesApiStreamEvent } from './types';
 
 /**

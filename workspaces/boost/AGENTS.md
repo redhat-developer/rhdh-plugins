@@ -197,18 +197,19 @@ Connector schema migrations (`migrateConnectorSchemas` in
 
 ### Package structure
 
-| Package                        | Purpose                                                                                       |
-| ------------------------------ | --------------------------------------------------------------------------------------------- |
-| `boost`                        | Chat UI, agent gallery, admin panels, composable routable extensions                          |
-| `boost-common`                 | Shared types, permissions (browser-safe, `common-library` role)                               |
-| `boost-node`                   | `boostAiProviderServiceRef`, extension points (`node-library` role)                           |
-| `boost-connector-utils`        | Shared connector utils (`node-library` role) — CA bundle, fault isolation, startup validation |
-| `boost-backend`                | Core routes, services, middleware, ProviderManager                                            |
-| `boost-backend-module-ogx`     | OGX provider module                                                                           |
-| `boost-backend-module-kagenti` | Kagenti provider module                                                                       |
-| `ogx-entity-provider`          | Independently deployable catalog entity provider                                              |
-| `kagenti-entity-provider`      | Independently deployable catalog entity provider                                              |
-| `boost-migration-readiness`    | Migration-readiness CLI tool (`node-library` role with custom CLI build)                      |
+| Package                          | Purpose                                                                                       |
+| -------------------------------- | --------------------------------------------------------------------------------------------- |
+| `ai-catalog`                     | AI Catalog browse UI and composable routable extensions                                       |
+| `ai-catalog-common`              | Shared types, permissions (browser-safe, `common-library` role)                               |
+| `boost-node`                     | `boostAiProviderServiceRef`, extension points (`node-library` role)                           |
+| `ai-catalog-connector-utils`     | Shared connector utils (`node-library` role) — CA bundle, fault isolation, startup validation |
+| `boost-backend`                  | Core routes, services, middleware, ProviderManager                                            |
+| `boost-backend-module-ogx`       | OGX provider module                                                                           |
+| `boost-backend-module-kagenti`   | Kagenti provider module                                                                       |
+| `ai-catalog-entity-provider-sdk` | Shared entity-provider SDK (`node-library` role) — annotations, validation, and sync adapters |
+| `ogx-entity-provider`            | Independently deployable catalog entity provider                                              |
+| `kagenti-entity-provider`        | Independently deployable catalog entity provider                                              |
+| `boost-migration-readiness`      | Migration-readiness CLI tool (`node-library` role with custom CLI build)                      |
 
 ### CLI binary packages
 
@@ -287,10 +288,10 @@ value is an empty string (e.g., from env var substitution like
 `${UNSET_ENV_VAR:-}`), rather than returning `undefined`. When reading
 config values that may come from environment variable substitution, use
 `safeGetOptionalString` from
-`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`:
+`@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils`:
 
 ```ts
-import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
+import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils';
 
 const endpoint = safeGetOptionalString(config, 'endpoint');
 ```

@@ -20,7 +20,7 @@ import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import {
   buildAiAssetCatalogFilter,
   isAiAsset,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 import type { AiCatalogAsset, AiCatalogAssetLoader } from './routes';
 import type { AiCatalogAssetResource } from './rules';
 

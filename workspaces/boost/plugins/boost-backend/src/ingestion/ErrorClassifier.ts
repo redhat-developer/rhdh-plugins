@@ -17,7 +17,7 @@
 import type {
   ErrorType,
   ErrorSummary,
-} from '@red-hat-developer-hub/backstage-plugin-boost-common';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-common';
 
 /**
  * Options for error classification.
