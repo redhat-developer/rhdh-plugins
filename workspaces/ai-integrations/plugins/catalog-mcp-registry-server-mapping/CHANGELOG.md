@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping
 
+## 0.4.0
+
+### Minor Changes
+
+- 4bb6232: Rename the mapping common library to `catalog-mcp-registry-server-mapping` (package, directory, and `pluginId`) to match workspace naming conventions. Consumers of `@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common` should update to the new package name.
+
 ## 0.3.0
 
 ### Minor Changes
