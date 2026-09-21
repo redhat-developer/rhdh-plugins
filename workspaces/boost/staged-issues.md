@@ -1,5 +1,10 @@
 # Boost Backend Implementation — Staged GitHub Issues
 
+> **Note:** This file references specifications and openspec change areas from the
+> RHDH 2.1 development cycle that have been archived to
+> `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/`. All paths below reflect
+> the archived locations.
+
 These issues implement the boost backend in dependency order. Each issue is scoped for a single fullsend `/fs-code` run. Frontend/UI work is excluded and will be covered in a separate set of issues.
 
 ---
@@ -16,7 +21,7 @@ Scaffold the `boost-common` package (`backstage.role: common-library`) with the 
 
 ### Tasks
 
-From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` section 1:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/tasks.md` section 1:
 
 - 1.1 Define `AgenticProvider`, `ProviderDescriptor`, `ProviderCapabilities` interfaces in `boost-common`
 - 1.2 Define `NormalizedStreamEvent` union type in `boost-common`
@@ -25,7 +30,7 @@ From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` section 1:
 - 1.6 Verify no provider-specific types in common package
 - 1.7 Verify `boost-common` has no dependency on `@backstage/backend-plugin-api`
 
-From `openspec/changes/security-safety-governance/tasks.md` section 1:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/tasks.md` section 1:
 
 - 1.1 Define 16 permissions in `boost-common/src/permissions.ts`
 - 1.2 Define resource types `boost-agent` and `boost-tool`
@@ -34,10 +39,10 @@ From `openspec/changes/security-safety-governance/tasks.md` section 1:
 
 ### Specifications
 
-- `openspec/changes/pluggable-ai-platform-architecture/design.md` — Decision 1 (serviceRef in boost-node, types in boost-common), Decision 5 (type boundaries)
-- `openspec/changes/pluggable-ai-platform-architecture/specs/provider-abstraction/spec.md`
-- `openspec/changes/security-safety-governance/specs/fine-grained-permissions/spec.md`
-- `specifications/boost-context.md` — Design Principles (read before implementing)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/design.md` — Decision 1 (serviceRef in boost-node, types in boost-common), Decision 5 (type boundaries)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/specs/provider-abstraction/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/specs/fine-grained-permissions/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/boost-context.md` — Design Principles (read before implementing)
 
 ---
 
@@ -54,11 +59,11 @@ Scaffold the `boost-backend` package with the core plugin registration, `Provide
 
 ### Tasks
 
-From `openspec/changes/pluggable-ai-platform-architecture/tasks.md`:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/tasks.md`:
 
 - 1.5 Register default service factory in `boost-backend/plugin.ts` resolving to `ProviderManager.getActiveProvider()`
 
-From `openspec/changes/security-safety-governance/tasks.md` sections 2 and 9:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/tasks.md` sections 2 and 9:
 
 - 2.1 Create `authorizeLifecycleAction(permission, resourceLoader)` middleware
 - 2.2 Implement fine-grained permission check → DENY → 403 pattern
@@ -70,10 +75,10 @@ From `openspec/changes/security-safety-governance/tasks.md` sections 2 and 9:
 
 ### Specifications
 
-- `openspec/changes/pluggable-ai-platform-architecture/design.md` — Decision 1 (serviceRef in boost-node, factory in boost-backend)
-- `openspec/changes/pluggable-ai-platform-architecture/specs/provider-hot-swap/spec.md`
-- `openspec/changes/security-safety-governance/design.md` — Decision 1 (middleware), Decision 3 (layered self-approval)
-- `openspec/changes/security-safety-governance/specs/access-control/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/design.md` — Decision 1 (serviceRef in boost-node, factory in boost-backend)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/specs/provider-hot-swap/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/design.md` — Decision 1 (middleware), Decision 3 (layered self-approval)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/specs/access-control/spec.md`
 
 ---
 
@@ -90,7 +95,7 @@ Implement the runtime configuration engine: `RuntimeConfigResolver` with cacheSe
 
 ### Tasks
 
-From `openspec/changes/platform-operations-deployment/tasks.md` sections 1 and 2:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/tasks.md` sections 1 and 2:
 
 - 1.1 All backend services depend on `coreServices.cache`
 - 1.2 `RuntimeConfigResolver` with 30s TTL and immediate invalidation
@@ -105,9 +110,9 @@ From `openspec/changes/platform-operations-deployment/tasks.md` sections 1 and 2
 
 ### Specifications
 
-- `openspec/changes/platform-operations-deployment/design.md` — Decisions 1-3
-- `openspec/changes/platform-operations-deployment/specs/runtime-config/spec.md`
-- `openspec/changes/platform-operations-deployment/specs/cache-migration/spec.md` — RuntimeConfigResolver scenario
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/design.md` — Decisions 1-3
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/specs/runtime-config/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/specs/cache-migration/spec.md` — RuntimeConfigResolver scenario
 
 ---
 
@@ -124,20 +129,20 @@ Implement agent CRUD routes with 4-stage lifecycle (Draft → Pending → Publis
 
 ### Tasks
 
-From `openspec/changes/security-safety-governance/tasks.md` section 3:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/tasks.md` section 3:
 
 - 3.1-3.7 Implement all agent routes with fine-grained permissions
 
-From `openspec/changes/agent-creation-discovery/tasks.md` section 4:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/tasks.md` section 4:
 
 - 4.1 Implement 4-stage lifecycle as the only model
 - 4.2 Document cascading delete behavior
 
 ### Specifications
 
-- `openspec/changes/security-safety-governance/specs/fine-grained-permissions/spec.md` — Agent permission scenarios
-- `openspec/changes/agent-creation-discovery/design.md` — Decision 5 (lifecycle with ownership)
-- `openspec/changes/agent-creation-discovery/specs/agent-creation-paths/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/specs/fine-grained-permissions/spec.md` — Agent permission scenarios
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/design.md` — Decision 5 (lifecycle with ownership)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/specs/agent-creation-paths/spec.md`
 
 ---
 
@@ -156,7 +161,7 @@ Implement Kagenti tool lifecycle routes (`boost.tool.*` permissions), MCP server
 
 ### Tasks
 
-From `openspec/changes/security-safety-governance/tasks.md` sections 4 and 5:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/tasks.md` sections 4 and 5:
 
 - 4.1-4.4 Implement Kagenti tool lifecycle routes with `boost.tool.*` permissions
 - 5.1 Implement Kagenti admin routes with `boost.kagenti.admin`
@@ -165,8 +170,8 @@ MCP server registration (admin panel CRUD, connection test, auth chain config) �
 
 ### Specifications
 
-- `openspec/changes/security-safety-governance/specs/fine-grained-permissions/spec.md` — Kagenti tool permission scenarios, infrastructure permissions
-- `openspec/changes/agent-creation-discovery/specs/mcp-tools/spec.md` — MCP server registration and auth chain (separate from Kagenti tool lifecycle)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/specs/fine-grained-permissions/spec.md` — Kagenti tool permission scenarios, infrastructure permissions
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/specs/mcp-tools/spec.md` — MCP server registration and auth chain (separate from Kagenti tool lifecycle)
 
 ---
 
@@ -183,16 +188,16 @@ Implement the SSE streaming endpoint, normalized stream event processing, and th
 
 ### Tasks
 
-From `openspec/changes/platform-operations-deployment/tasks.md`:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/tasks.md`:
 
 - 1.8 Conversation-agent maps: session-scoped cacheService
 - 1.9 Rate limiter state: per-window cacheService
 
 ### Specifications
 
-- `openspec/changes/pluggable-ai-platform-architecture/specs/normalized-streaming/spec.md`
-- `openspec/changes/ai-chat-interaction-experience/specs/streaming-chat/spec.md`
-- `openspec/changes/pluggable-ai-platform-architecture/design.md` — Decision 3 (cacheService for all caches)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/specs/normalized-streaming/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/ai-chat-interaction-experience/specs/streaming-chat/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/design.md` — Decision 3 (cacheService for all caches)
 
 ---
 
@@ -209,14 +214,14 @@ Implement conversation persistence (DB tables `boost_sessions`, `boost_messages`
 
 ### Tasks
 
-From `openspec/changes/platform-operations-deployment/tasks.md`:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/tasks.md`:
 
 - 1.3 `ConversationRegistry`: 24h TTL via cacheService
 
 ### Specifications
 
-- `openspec/changes/ai-chat-interaction-experience/specs/conversation-history/spec.md`
-- `openspec/changes/platform-operations-deployment/specs/cache-migration/spec.md` — ConversationRegistry scenario
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/ai-chat-interaction-experience/specs/conversation-history/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/specs/cache-migration/spec.md` — ConversationRegistry scenario
 
 ---
 
@@ -233,14 +238,14 @@ Implement the human-in-the-loop approval service for tool calls, including built
 
 ### Tasks
 
-From `openspec/changes/platform-operations-deployment/tasks.md`:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/tasks.md`:
 
 - 1.10 HITL approval state: request-scoped cacheService
 
 ### Specifications
 
-- `openspec/changes/ai-chat-interaction-experience/specs/hitl-approval/spec.md`
-- `openspec/changes/security-safety-governance/specs/access-control/spec.md` — SonataFlow trust boundary scenarios
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/ai-chat-interaction-experience/specs/hitl-approval/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/specs/access-control/spec.md` — SonataFlow trust boundary scenarios
 
 ---
 
@@ -257,15 +262,15 @@ Implement the RAG knowledge pipeline backend: document ingestion, vector store i
 
 ### Tasks
 
-From `openspec/changes/platform-operations-deployment/tasks.md`:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/tasks.md`:
 
 - 1.4 `DocumentSyncService` content hashes: cacheService with long TTL
 
 ### Specifications
 
-- `openspec/changes/ai-chat-interaction-experience/specs/rag-knowledge/spec.md`
-- `openspec/changes/platform-operations-deployment/specs/rag-pipelines/spec.md`
-- `openspec/changes/platform-operations-deployment/specs/cache-migration/spec.md` — DocumentSyncService scenario
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/ai-chat-interaction-experience/specs/rag-knowledge/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/specs/rag-pipelines/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/specs/cache-migration/spec.md` — DocumentSyncService scenario
 
 ---
 
@@ -282,7 +287,7 @@ Create the Llama Stack provider module as an independent `createBackendModule` w
 
 ### Tasks
 
-From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` sections 2 and 3:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/tasks.md` sections 2 and 3:
 
 - 2.1 Create `boost-backend-module-llamastack` package
 - 2.2 Implement `ResponsesApiProvider` and `ResponsesApiProviderFactory`
@@ -291,16 +296,16 @@ From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` sections 2 a
 - 3.8 Implement client manager cache as identity-keyed cacheService
 - 3b.2 Define Llama Stack-specific types in module only
 
-From `openspec/changes/platform-operations-deployment/tasks.md`:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/tasks.md`:
 
 - 1.5 Provider session maps: cacheService with session-appropriate TTL
 - 1.6 `ClientManager`: identity-keyed cacheService
 
 ### Specifications
 
-- `openspec/changes/pluggable-ai-platform-architecture/specs/provider-packaging/spec.md` — Llama Stack module scenarios
-- `openspec/changes/pluggable-ai-platform-architecture/specs/multi-agent-orchestration/spec.md`
-- `openspec/changes/pluggable-ai-platform-architecture/design.md` — Decision 2 (modules not plugins), Decision 3 (cacheService)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/specs/provider-packaging/spec.md` — Llama Stack module scenarios
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/specs/multi-agent-orchestration/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/design.md` — Decision 2 (modules not plugins), Decision 3 (cacheService)
 
 ---
 
@@ -317,7 +322,7 @@ Create the Kagenti provider module as an independent `createBackendModule` with 
 
 ### Tasks
 
-From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` sections 2 and 3:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/tasks.md` sections 2 and 3:
 
 - 2.3 Create `boost-backend-module-kagenti` package
 - 2.4 Implement `KagentiProvider` and `KagentiProviderFactory`
@@ -329,8 +334,8 @@ From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` sections 2 a
 
 ### Specifications
 
-- `openspec/changes/pluggable-ai-platform-architecture/specs/provider-packaging/spec.md` — Kagenti module scenarios
-- `openspec/changes/pluggable-ai-platform-architecture/design.md` — Decision 2 (modules not plugins), Decision 3 (cacheService)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/specs/provider-packaging/spec.md` — Kagenti module scenarios
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/design.md` — Decision 2 (modules not plugins), Decision 3 (cacheService)
 
 ---
 
@@ -349,7 +354,7 @@ Create independently deployable entity provider packages (`kagenti-entity-provid
 
 ### Tasks
 
-From `openspec/changes/agent-creation-discovery/tasks.md` sections 1 and 2:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/tasks.md` sections 1 and 2:
 
 - 1a.1-1a.6 kagenti-entity-provider package
 - 1b.1-1b.6 llamastack-entity-provider package
@@ -360,8 +365,8 @@ From `openspec/changes/agent-creation-discovery/tasks.md` sections 1 and 2:
 
 ### Specifications
 
-- `openspec/changes/agent-creation-discovery/specs/catalog-entities/spec.md`
-- `openspec/changes/agent-creation-discovery/design.md` — Decisions 1-3 (kinds, deployment modes, catalog as source of truth)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/specs/catalog-entities/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/design.md` — Decisions 1-3 (kinds, deployment modes, catalog as source of truth)
 
 ---
 
@@ -378,7 +383,7 @@ Implement `KeycloakAuthClient` for service-account Kagenti authentication via OA
 
 ### Tasks
 
-From `openspec/changes/security-safety-governance/tasks.md` section 7:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/tasks.md` section 7:
 
 - ~~7.1 Create `KeycloakAuthClient` implementing OAuth2 Client Credentials Grant~~ ✅ PR #3648
 - ~~7.2 Add token caching with configurable expiry buffer (`tokenExpiryBufferSeconds`, default: 60)~~ ✅ PR #3648
@@ -392,8 +397,8 @@ From `openspec/changes/security-safety-governance/tasks.md` section 7:
 
 ### Specifications
 
-- `openspec/changes/security-safety-governance/specs/access-control/spec.md` — Service-account auth scenarios
-- `openspec/changes/security-safety-governance/design.md` — Decision 4 (KeycloakAuthClient with max-1-retry)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/specs/access-control/spec.md` — Service-account auth scenarios
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/design.md` — Decision 4 (KeycloakAuthClient with max-1-retry)
 
 ---
 
@@ -410,7 +415,7 @@ Extract toolscope as `@red-hat-developer-hub/backstage-plugin-boost-toolscope` (
 
 ### Tasks
 
-From `openspec/changes/agent-creation-discovery/tasks.md` section 3:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/tasks.md` section 3:
 
 - 3.1 Create `@red-hat-developer-hub/backstage-plugin-boost-toolscope` package (29 files)
 - 3.2 Define `CacheAdapter` interface
@@ -418,15 +423,15 @@ From `openspec/changes/agent-creation-discovery/tasks.md` section 3:
 - 3.4 Create Backstage `CacheAdapter` wrapping `coreServices.cache`
 - 3.5 Import `@red-hat-developer-hub/backstage-plugin-boost-toolscope` from `boost-backend`
 
-From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` section 5:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/tasks.md` section 5:
 
 - 5.1 Create `@red-hat-developer-hub/backstage-plugin-boost-toolscope` with injectable cache interface
 - 5.2 Create `@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit`
 
 ### Specifications
 
-- `openspec/changes/pluggable-ai-platform-architecture/specs/provider-packaging/spec.md` — Toolscope extraction scenario
-- `openspec/changes/agent-creation-discovery/design.md` — Decision 4 (standalone npm package)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/specs/provider-packaging/spec.md` — Toolscope extraction scenario
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/design.md` — Decision 4 (standalone npm package)
 
 ---
 
@@ -443,33 +448,33 @@ Configure all boost packages for RHDH dynamic plugin export (OCI), create deploy
 
 ### Tasks
 
-From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` section 6:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/tasks.md` section 6:
 
 - 6.1 Configure `boost-backend-module-llamastack` for RHDH dynamic plugin export (OCI)
 - 6.2 Configure `boost-backend-module-kagenti` for RHDH dynamic plugin export (OCI)
 - 6.3 Create `dynamic-plugins.yaml` examples for modular deployment
 
-From `openspec/changes/security-safety-governance/tasks.md` section 8:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/tasks.md` section 8:
 
 - 8.2 Encrypt sensitive values in admin config DB
 
-From `openspec/changes/agent-creation-discovery/tasks.md` section 5:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/tasks.md` section 5:
 
 - 5.1 Implement proxy routes to external skills catalog backend
 - 5.3 Implement K8s manifest generation with OCI init containers
 - 5.4 Add deployment progress polling
 - 5.6 Route chat to skill agents via `chatEndpoint` field
 
-From `openspec/changes/platform-operations-deployment/tasks.md` section 3:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/tasks.md` section 3:
 
 - 3.1 Document all 25+ configurable keys with scope
 - 3.2 Add schema documentation to Zod definitions
 
 ### Specifications
 
-- `openspec/changes/platform-operations-deployment/specs/deployment/spec.md`
-- `openspec/changes/platform-operations-deployment/specs/white-label/spec.md`
-- `openspec/changes/agent-creation-discovery/design.md` — Decision 6 (skills marketplace consumer)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/specs/deployment/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/specs/white-label/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/design.md` — Decision 6 (skills marketplace consumer)
 
 ---
 
@@ -484,7 +489,7 @@ Refactor the skills marketplace routes introduced in issue 15 to read runtimes f
 
 ### Tasks
 
-From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` section 8:
+From `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/tasks.md` section 8:
 
 - 8a.3 Add proxy tests for `GET /skills` and `GET /skills/domains` (mock fetch, verify URL construction, query param forwarding, feature gate, permission checks, non-JSON handling)
 - 8b.1 Add `boost.skillsMarketplace.runtimes[]` Zod schema to `schemas.ts` (`yaml-only` scope) with fields: `id`, `name`, `description`, `image`, `language`, `footprint`, `features[]`, `status`
@@ -496,8 +501,8 @@ From `openspec/changes/pluggable-ai-platform-architecture/tasks.md` section 8:
 
 ### Specifications
 
-- `openspec/changes/pluggable-ai-platform-architecture/tasks.md` — Section 8 (Skills Marketplace Integration)
-- `openspec/changes/agent-creation-discovery/design.md` — Decision 6 (skills marketplace consumer)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/pluggable-ai-platform-architecture/tasks.md` — Section 8 (Skills Marketplace Integration)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/design.md` — Decision 6 (skills marketplace consumer)
 
 ---
 
@@ -522,7 +527,7 @@ Refactor `KeycloakAuthClient` in `kagenti-entity-provider` to use Backstage `cac
 
 ### Specifications
 
-- `specifications/boost-context.md` — Design Principle 1 (Backstage cacheService from Day One)
-- `specifications/prd/pluggable-ai-platform-architecture.md` — Cache migration table
-- `openspec/changes/security-safety-governance/specs/access-control/spec.md` — Service-account auth scenarios
-- `openspec/changes/platform-operations-deployment/specs/cache-migration/spec.md`
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/boost-context.md` — Design Principle 1 (Backstage cacheService from Day One)
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/prd/pluggable-ai-platform-architecture.md` — Cache migration table
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/security-safety-governance/specs/access-control/spec.md` — Service-account auth scenarios
+- `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/platform-operations-deployment/specs/cache-migration/spec.md`
