@@ -54,7 +54,7 @@
     "@microsoft/tsdoc": "^0.17.0",
     "@microsoft/tsdoc-config": "^0.18.0",
     "@playwright/test": "1.63.0",
-    "@red-hat-developer-hub/cli": "2.0.3",
+    "@red-hat-developer-hub/cli": "2.0.8",
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^27.0.0",
     "concurrently": "^9.0.0",
