@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider
 
+## 0.2.1
+
+### Patch Changes
+
+- 0c71a1f: Align `@backstage/catalog-model` dependency version with the embedded workspace package.
+
 ## 0.2.0
 
 ### Minor Changes
