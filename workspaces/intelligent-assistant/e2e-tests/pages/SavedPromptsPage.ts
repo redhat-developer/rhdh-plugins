@@ -318,7 +318,10 @@ export class SavedPromptsPage {
       .getByRole('menuitem', { name: this.t['settings.mcp.label'] })
       .click();
     await this.page
-      .getByRole('button', { name: this.t['savedPrompts.tab.title'] })
+      .getByRole('button', {
+        name: this.t['savedPrompts.tab.title'],
+        exact: true,
+      })
       .click();
     await expect(this.newPromptButton()).toBeVisible();
   }

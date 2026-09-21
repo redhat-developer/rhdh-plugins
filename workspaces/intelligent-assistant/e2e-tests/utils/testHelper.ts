@@ -73,13 +73,6 @@ export const waitForChatbotVisible = async (page: Page) => {
       return;
     }
     await ensureGuestSession(page);
-    if (
-      !page.url().includes('/intelligent-assistant') &&
-      !(await chatbot.isVisible().catch(() => false))
-    ) {
-      await page.goto('/intelligent-assistant');
-      await ensureGuestSession(page);
-    }
     if (await chatbot.isVisible().catch(() => false)) {
       return;
     }
