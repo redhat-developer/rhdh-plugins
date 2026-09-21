@@ -24,10 +24,14 @@ export {
   TIME_SERIES_DEFAULT_RANGE_DAYS,
 } from './constants';
 export { getLastUpdatedLabel } from './entityTableUtils';
-export { formatWithMetricUnit } from './formatMetricUnit';
+export {
+  formatNumericMetricValue,
+  formatWithMetricUnit,
+} from './formatMetricUnit';
 export { getDefaultTimeSeriesRange } from './timeSeriesRange';
 export {
   formatAggregatedTimeSeriesErrors,
+  getLatestNumericSparklineValue,
   getLatestSuccessfulThresholdEvaluation,
   getSparklineYDomain,
   toAggregationSparklinePoints,

@@ -24,7 +24,7 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import type { SxProps, Theme } from '@mui/material/styles';
 
-import { translationRef } from '../../translations/ref';
+import { appDefaultsTranslationRef } from '../../translations/ref';
 import { useLearningPathData } from '../hooks/useLearningPathData';
 import { LearningPathLink } from '../types';
 import { ErrorReport } from './ErrorReport';
@@ -65,7 +65,7 @@ const learningPathLengthInfo = (path: LearningPathLink) => {
 };
 
 const LearningPathCards = () => {
-  const { t } = useTranslationRef(translationRef);
+  const { t } = useTranslationRef(appDefaultsTranslationRef);
 
   const { data, error, isLoading } = useLearningPathData();
 

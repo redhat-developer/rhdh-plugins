@@ -6069,7 +6069,7 @@ __metadata:
     jsdom: "npm:^27.1.0"
     knip: "npm:^5.40.0"
     node-gyp: "npm:^9.0.0"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.7"
     typescript: "npm:~5.8.0"
   languageName: unknown
   linkType: soft
@@ -9610,7 +9610,7 @@ __metadata:
     lodash: "npm:^4.18.1"
     luxon: "npm:^3.7.2"
     openapi-backend: "npm:^5.10.5"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.7"
     supertest: "npm:^7.2.2"
     zod: "npm:^4.3.6"
   peerDependencies:
@@ -9651,7 +9651,7 @@ __metadata:
     "@types/json-schema": "npm:7.0.15"
     "@types/react": "npm:^18.2.58"
     json-schema: "npm:^0.4.0"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.7"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
@@ -9681,7 +9681,7 @@ __metadata:
     json-schema: "npm:^0.4.0"
     json-schema-library: "npm:^9.0.0"
     lodash: "npm:^4.18.1"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.7"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-dom: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-router-dom: "npm:^6.3.0"
@@ -9780,7 +9780,7 @@ __metadata:
     json-schema-library: "npm:^9.0.0"
     lodash: "npm:^4.18.1"
     luxon: "npm:^3.7.2"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.7"
     react: "npm:^18.0.0"
     react-dom: "npm:^18.0.0"
     react-router-dom: "npm:^6.3.0"
@@ -18049,7 +18049,7 @@ __metadata:
     "@backstage/plugin-auth-node": "npm:^0.7.4"
     "@backstage/types": "npm:^1.2.2"
     express: "npm:^4.17.1"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.7"
     typescript: "npm:5.6.3"
   languageName: unknown
   linkType: soft
@@ -18065,7 +18065,7 @@ __metadata:
     "@backstage/integration-react": "npm:^1.2.21"
     "@mui/material": "npm:^5.17.1"
     "@types/react": "npm:^18.0.0"
-    prettier: "npm:3.9.6"
+    prettier: "npm:3.9.7"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-router: "npm:^6.30.4"
@@ -28870,12 +28870,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.9.6":
-  version: 3.9.6
-  resolution: "prettier@npm:3.9.6"
+"prettier@npm:3.9.7":
+  version: 3.9.7
+  resolution: "prettier@npm:3.9.7"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/9f7ddae234035868f3daab3dc34e6de7e54622185afb017378029f0c09a9c023248ccf6f34def0b17a0538e18c47aa1b3188bab72965d1bf735919baa0747e99
+  checksum: 10c0/3bb72e3fd0292695fe1b808a7a3b67a0d68842c780f01ebca7ff1cf2fe05055478dccb513a8d022be59b3494497b4a3b6dc059baee116c1debe69bded535567b
   languageName: node
   linkType: hard
 

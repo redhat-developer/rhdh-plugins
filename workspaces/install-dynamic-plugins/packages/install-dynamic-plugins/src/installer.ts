@@ -42,7 +42,9 @@ import {
   filterDisabledOciPlugins,
   mergePlugin,
   preMergeOciDisabledState,
+  resolveInheritPackage,
 } from './merger';
+import { isOciInherit, tryParseOciRegistryAndPath } from './oci-key';
 import { computePluginHash } from './plugin-hash';
 import { Skopeo } from './skopeo';
 import { extractPluginName } from './plugin-name';
@@ -287,6 +289,50 @@ export function resolveRefPlugins(
   }
 }
 
+/**
+ * Resolve `{{inherit}}` entries against the unfiltered include lists. This has
+ * to happen before the disabled pre-merge pass: a disabled catalog entry is a
+ * valid inheritance base that a higher-precedence main entry can re-enable.
+ */
+export function resolveInheritPlugins(
+  mainPlugins: PluginSpec[],
+  includeLists: IncludePluginList[],
+): void {
+  const pluginsWithInherit = mainPlugins.filter(plugin =>
+    isOciInherit(plugin.package),
+  );
+  if (pluginsWithInherit.length === 0) return;
+
+  const candidates = includeLists.flatMap(([sourceFile, plugins]) =>
+    plugins.map(plugin => ({
+      package: plugin.package,
+      disabled: isPluginDisabled(plugin),
+      sourceFile,
+    })),
+  );
+
+  for (const plugin of pluginsWithInherit) {
+    const requestedPackage = plugin.package;
+    const requested = tryParseOciRegistryAndPath(requestedPackage);
+    const disabledPathless =
+      isPluginDisabled(plugin) && requested?.path === null;
+    try {
+      plugin.package = resolveInheritPackage(requestedPackage, candidates, {
+        preservePathless: disabledPathless,
+      });
+      log(
+        `\n======= Resolved {{inherit}} plugin '${requestedPackage}' to '${plugin.package}'`,
+      );
+    } catch (error) {
+      if (!disabledPathless) throw error;
+      const reason = error instanceof Error ? error.message : String(error);
+      log(
+        `WARNING: Skipping unresolved disabled {{inherit}} plugin configuration '${requestedPackage}': ${reason}`,
+      );
+    }
+  }
+}
+
 /** Resolve include paths, substitute the catalog-index placeholder, merge
  * everything into a single `PluginMap`, and compute change-detection hashes.
  *
@@ -335,11 +381,19 @@ async function loadAllPlugins(
   const mainPlugins = content.plugins ?? [];
 
   resolveRefPlugins(mainPlugins, includeLists);
+  // Collision validation must use the packages the user declared. Resolving
+  // an inherit reference replaces its requested registry with the catalog's
+  // registry, which must not create a synthetic same-level name collision.
+  const mainPackagesForNameCollision = mainPlugins.map(
+    plugin => plugin.package,
+  );
+  resolveInheritPlugins(mainPlugins, includeLists);
 
   const disabledRegistries = preMergeOciDisabledState(
     includeLists,
     mainPlugins,
     configFileAbs,
+    mainPackagesForNameCollision,
   );
 
   for (const [inc, plugins] of includeLists) {

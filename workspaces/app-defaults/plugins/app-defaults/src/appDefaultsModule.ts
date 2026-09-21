@@ -16,23 +16,38 @@
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { templateCardExtension } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import {
+  appReactTranslations,
+  templateCardExtension,
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { autoLogoutElement } from './autoLogout/autoLogoutExtension';
 import { appDrawerExtension } from './drawer/appDrawerModule';
 import { commonIconsExtension } from './icons/commonIconsExtension';
+import { appSidebarExtension } from './sidebar/appSidebarModule';
+import { defaultSidebarExtensions } from './sidebar/defaultSidebarExtensions';
 import { appDefaultsTranslations } from './translations';
 
 /**
  * RHDH app module for `pluginId: 'app'`.
- * Provides the application drawer, the extensible scaffolder template card,
- * and the common RHDH icon catalog (`IconBundleBlueprint`).
+ * Provides the application drawer, the priority-ordered sidebar, the
+ * extensible scaffolder template card, the common RHDH icon catalog
+ * (`IconBundleBlueprint`), and the AutoLogout mechanism (disabled by default;
+ * opt-in via `auth.autologout.enabled: true`).
  * Default-export this module for dynamic frontend loading.
  *
  * @public
  */
 export const appDefaultsModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [appDrawerExtension, templateCardExtension, commonIconsExtension],
+  extensions: [
+    appDrawerExtension,
+    appSidebarExtension,
+    ...defaultSidebarExtensions,
+    templateCardExtension,
+    commonIconsExtension,
+    autoLogoutElement,
+  ],
 });
 
 const appDefaultsTranslation = TranslationBlueprint.make({
@@ -41,15 +56,23 @@ const appDefaultsTranslation = TranslationBlueprint.make({
   },
 });
 
+const appReactTranslation = TranslationBlueprint.make({
+  name: 'app-react',
+  params: {
+    resource: appReactTranslations,
+  },
+});
+
 /**
  * RHDH app translations module for `pluginId: 'app'`.
- * Registers the app defaults translation resource. Must be installed
- * separately because `TranslationBlueprint` is restricted to `pluginId: 'app'`.
+ * Registers the app defaults translation resource and the app-react resource
+ * (catalog entity tab/group titles). Must be installed separately because
+ * `TranslationBlueprint` is restricted to `pluginId: 'app'`.
  * Default-export this module for dynamic frontend loading.
  *
  * @public
  */
 export const appDefaultsTranslationsModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [appDefaultsTranslation],
+  extensions: [appDefaultsTranslation, appReactTranslation],
 });

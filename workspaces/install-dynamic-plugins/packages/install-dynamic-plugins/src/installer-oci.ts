@@ -45,7 +45,7 @@ function splitOciPackage(
   /* istanbul ignore next -- unreachable on the install path: OCI_REGEX rejects
      a leading or trailing `!` (oci-key.test.ts `invalidCases`), and a package
      with no `!` at all has one appended by the merger before it gets here
-     (merger.ts, `!plugin.package.includes('!')` and resolveInherit). Kept so
+     (merger.ts, `!plugin.package.includes('!')` and resolveInheritPackage). Kept so
      this function stays total if either changes. */
   if (!imagePart || !pluginPath) return null;
   return { imagePart, pluginPath };

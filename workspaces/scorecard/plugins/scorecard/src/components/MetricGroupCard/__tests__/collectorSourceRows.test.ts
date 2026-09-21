@@ -29,11 +29,11 @@ describe('toCollectorSourceRows', () => {
     const rows = toCollectorSourceRows(
       [
         {
-          id: 'github:deploymentWorkflowRuns',
+          id: 'github:doraDeploymentWorkflowRuns',
           description: 'Collects deployments from GitHub Actions.',
         },
         {
-          id: 'jira:incidents',
+          id: 'jira:doraIncidents',
           description: 'Collects Jira incidents.',
         },
       ],

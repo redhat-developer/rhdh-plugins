@@ -29,7 +29,6 @@ import {
   type DoraDeploymentFrequencyConfig,
   parseDoraDeploymentFrequencyConfig,
 } from './DoraConfig';
-import { isProductionEnvironment } from './utils/deploymentFilterUtils';
 
 type DoraDeploymentFrequencyProviderOptions = {
   doraSyncService: DoraSyncService;
@@ -108,17 +107,14 @@ export class DoraDeploymentFrequencyProvider
       collector: this.config.deploymentsCollector,
     });
 
-    const deployments = (
-      await this.doraDataService.readDeployments(stringifyEntityRef(entity), {
+    const deployments = await this.doraDataService.readDeployments(
+      stringifyEntityRef(entity),
+      {
         windowFrom: from,
         windowTo: to,
         collector: this.config.deploymentsCollector,
-      })
-    ).filter(deployment =>
-      isProductionEnvironment(
-        deployment.environment,
-        this.config.productionEnvironments,
-      ),
+        productionEnvironments: this.config.productionEnvironments,
+      },
     );
 
     if (deployments.length === 0) {
