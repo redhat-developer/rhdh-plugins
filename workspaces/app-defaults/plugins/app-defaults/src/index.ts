@@ -51,6 +51,19 @@ export { learningPathsModule } from './learning-paths';
 
 export { catalogModule } from './catalog/catalogModule';
 
+export {
+  appSidebarExtension,
+  appSidebarModule,
+} from './sidebar/appSidebarModule';
+export { AppSidebar } from './sidebar/AppSidebar';
+export type { AppSidebarProps } from './sidebar/AppSidebar';
+export {
+  CompanyLogo,
+  useBrandingFullLogo,
+  useBrandingIconLogo,
+} from './sidebar/logo';
+export type { CompanyLogoProps, LogoURLs } from './sidebar/logo';
+
 /**
  * Feature loader that registers the RHDH app defaults module, the catalog
  * entity header layout that localizes the catalog tab titles, and all plugin

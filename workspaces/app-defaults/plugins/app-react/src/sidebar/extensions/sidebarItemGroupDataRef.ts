@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { SidebarContent } from './Sidebar';
+import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
 
-export const navModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [SidebarContent],
-});
+import type { SidebarItemGroupData } from '../types';
+
+/**
+ * Extension data ref carrying a sidebar group from a plugin to the sidebar.
+ *
+ * @public
+ */
+export const sidebarItemGroupDataRef =
+  createExtensionDataRef<SidebarItemGroupData>().with({
+    id: 'app.sidebar.item-group',
+  });

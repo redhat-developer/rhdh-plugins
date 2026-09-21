@@ -359,9 +359,9 @@ const apiDocsPluginOverride: OverridableFrontendPlugin<
         group?:
           | (
               | 'development'
+              | 'documentation'
               | 'overview'
               | 'deployment'
-              | 'documentation'
               | 'operation'
               | 'observability'
             )
@@ -438,9 +438,9 @@ const apiDocsPluginOverride: OverridableFrontendPlugin<
         group?:
           | (
               | 'development'
+              | 'documentation'
               | 'overview'
               | 'deployment'
-              | 'documentation'
               | 'operation'
               | 'observability'
             )

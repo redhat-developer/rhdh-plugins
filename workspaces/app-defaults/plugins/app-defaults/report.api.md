@@ -10,8 +10,14 @@ import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendFeatureLoader } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
+import { JSX as JSX_3 } from 'react/jsx-runtime';
+import { NavContentComponent } from '@backstage/plugin-app-react';
+import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { ReactNode } from 'react';
+import { SidebarElementData } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { SidebarItemGroupData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -81,6 +87,70 @@ export const appDrawerExtension: OverridableExtensionDefinition<{
 export const appDrawerModule: FrontendModule;
 
 // @public
+export const AppSidebar: (input: AppSidebarProps) => JSX_3.Element;
+
+// @public
+export const appSidebarExtension: OverridableExtensionDefinition<{
+  config: {};
+  configInput: {};
+  output: ExtensionDataRef<
+    NavContentComponent,
+    'core.nav-content.component',
+    {}
+  >;
+  inputs: {
+    items: ExtensionInput<
+      ConfigurableExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+    groups: ExtensionInput<
+      ConfigurableExtensionDataRef<
+        SidebarItemGroupData,
+        'app.sidebar.item-group',
+        {}
+      >,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+    elements: ExtensionInput<
+      ConfigurableExtensionDataRef<
+        SidebarElementData,
+        'app.sidebar.element',
+        {}
+      >,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+  };
+  kind: 'nav-content';
+  name: 'sidebar';
+  params: {
+    component: NavContentComponent;
+  };
+}>;
+
+// @public
+export const appSidebarModule: FrontendModule;
+
+// @public
+export interface AppSidebarProps {
+  elements?: SidebarElementData[];
+  groups: SidebarItemGroupData[];
+  items: SidebarItemData[];
+  navItems?: NavContentNavItems;
+}
+
+// @public
 export const autoLogoutElement: OverridableExtensionDefinition<{
   kind: 'app-root-element';
   name: 'auto-logout';
@@ -97,11 +167,38 @@ export const autoLogoutElement: OverridableExtensionDefinition<{
 export const catalogModule: FrontendModule;
 
 // @public
+export const CompanyLogo: (input: CompanyLogoProps) => JSX_3.Element;
+
+// @public
+export interface CompanyLogoProps {
+  fullLogo?: LogoURLs;
+  height?: string | number;
+  iconLogo?: LogoURLs;
+  to?: string;
+  width?: string | number;
+}
+
+// @public
 const _default: FrontendFeatureLoader;
 export default _default;
 
 // @public
 export const learningPathsModule: FrontendModule;
+
+// @public
+export type LogoURLs =
+  | {
+      light: string;
+      dark: string;
+    }
+  | string
+  | undefined;
+
+// @public
+export const useBrandingFullLogo: (logo?: LogoURLs) => string | undefined;
+
+// @public
+export const useBrandingIconLogo: (logo?: LogoURLs) => string | undefined;
 
 // (No @packageDocumentation comment for this package)
 ```

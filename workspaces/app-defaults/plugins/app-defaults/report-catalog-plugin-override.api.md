@@ -766,9 +766,9 @@ const catalogPluginOverride: OverridableFrontendPlugin<
         group?:
           | (
               | 'development'
+              | 'documentation'
               | 'overview'
               | 'deployment'
-              | 'documentation'
               | 'operation'
               | 'observability'
             )
