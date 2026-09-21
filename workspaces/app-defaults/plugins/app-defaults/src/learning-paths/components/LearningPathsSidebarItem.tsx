@@ -19,7 +19,7 @@ import { SidebarItem } from '@backstage/core-components';
 import SchoolIcon from '@mui/icons-material/School';
 
 import { learningPathsRouteRef } from '../routes';
-import { translationRef } from '../../translations/ref';
+import { appDefaultsTranslationRef } from '../../translations/ref';
 
 /**
  * Sidebar item for the Learning Paths page. Renders a Backstage `SidebarItem`
@@ -29,7 +29,7 @@ import { translationRef } from '../../translations/ref';
  * @internal
  */
 export function LearningPathsSidebarItem() {
-  const { t } = useTranslationRef(translationRef);
+  const { t } = useTranslationRef(appDefaultsTranslationRef);
   const routeLink = useRouteRef(learningPathsRouteRef);
   if (!routeLink) {
     return null;
