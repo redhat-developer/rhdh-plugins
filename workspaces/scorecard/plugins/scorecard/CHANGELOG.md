@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.4.0
+
+### Minor Changes
+
+- aabab35: Add sparkline charts on the entity Scorecard tab for metrics whose `defaultVisualization` is `sparkline` (for example DORA). Each card shows a 30-day trend, a threshold legend, and a View data sources dialog for collectors. Legend and line color come from the time-series threshold rules.
+- 6037d87: Add sparkline charts on the Scorecard homepage for aggregations whose visualization is `sparkline` (for example DORA). Each card shows a 30-day trend and a threshold legend. Legend and line color come from the time-series threshold rules.
+
+### Patch Changes
+
+- 8c690d2: Remove unused package dependencies reported by knip. Add the missing `@backstage/config` dependency used by threshold config helpers.
+- 73e2c67: Add a View data sources menu on homepage sparkline cards, next to the last-updated info button.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.0
+
 ## 4.3.1
 
 ### Patch Changes

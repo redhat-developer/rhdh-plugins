@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 4.4.0
+
+### Patch Changes
+
+- 8c690d2: Remove unused package dependencies reported by knip. Add the missing `@backstage/config` dependency used by threshold config helpers.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.0
+
 ## 4.3.1
 
 ### Patch Changes
