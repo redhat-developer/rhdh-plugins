@@ -31,3 +31,4 @@ export {
   GlobalHeaderMenuItemBlueprint,
   type MenuItemParams,
 } from './extensions/menuItemBlueprint';
+export type { GlobalHeaderMenuItemData } from './types';

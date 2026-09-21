@@ -19,11 +19,14 @@ import { z } from 'zod';
 
 import {
   createExtensionBlueprint,
-  ExtensionBoundary,
   type AppNode,
 } from '@backstage/frontend-plugin-api';
 
 import { globalHeaderMenuItemDataRef } from './dataRefs';
+import {
+  resolveLazyComponent,
+  resolveSyncComponent,
+} from './resolveExtensionComponent';
 
 /**
  * Params accepted by {@link GlobalHeaderMenuItemBlueprint}.
@@ -63,27 +66,6 @@ export interface MenuItemParams {
   sectionLink?: string;
   /** Display text for the section header link. */
   sectionLinkLabel?: string;
-}
-
-function resolveLazyComponent(
-  node: AppNode,
-  loader: () => Promise<ComponentType<any>>,
-): ComponentType<any> {
-  return ExtensionBoundary.lazyComponent(node, async () => {
-    const Comp = await loader();
-    return (props: any) => <Comp {...props} />;
-  });
-}
-
-function resolveSyncComponent(
-  node: AppNode,
-  Comp: ComponentType<any>,
-): ComponentType<any> {
-  return (props: any) => (
-    <ExtensionBoundary node={node}>
-      <Comp {...props} />
-    </ExtensionBoundary>
-  );
 }
 
 function resolveMenuItemComponent(

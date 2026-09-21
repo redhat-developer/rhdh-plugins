@@ -19,7 +19,6 @@ import { z } from 'zod';
 
 import {
   createExtensionBlueprint,
-  ExtensionBoundary,
   type AppNode,
 } from '@backstage/frontend-plugin-api';
 
@@ -28,6 +27,10 @@ import {
   loadCriticalHeaderBundle,
   loadHeaderIconButton,
 } from '../components/loaders';
+import {
+  resolveLazyComponent,
+  resolveSyncComponent,
+} from './resolveExtensionComponent';
 
 // Re-export menu-item blueprint from its thin module so existing
 // `from './blueprints'` / package-root imports keep working.
@@ -70,30 +73,6 @@ export interface ToolbarComponentParams {
 // ---------------------------------------------------------------------------
 // Data-driven component factories
 // ---------------------------------------------------------------------------
-
-function resolveLazyComponent(
-  node: AppNode,
-  loader: () => Promise<ComponentType<any>>,
-): ComponentType<any> {
-  // ExtensionBoundary.lazyComponent wraps each resolved component in its own
-  // ExtensionBoundary + Suspense (Progress fallback) — suspending items do not
-  // bubble to the app-root Suspense around LazyGlobalHeader.
-  return ExtensionBoundary.lazyComponent(node, async () => {
-    const Comp = await loader();
-    return (props: any) => <Comp {...props} />;
-  });
-}
-
-function resolveSyncComponent(
-  node: AppNode,
-  Comp: ComponentType<any>,
-): ComponentType<any> {
-  return (props: any) => (
-    <ExtensionBoundary node={node}>
-      <Comp {...props} />
-    </ExtensionBoundary>
-  );
-}
 
 /**
  * Data-driven toolbar UI is loaded asynchronously so HeaderIconButton / MUI
