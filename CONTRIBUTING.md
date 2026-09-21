@@ -133,7 +133,7 @@ There are two release flows:
 
 ### Automated backports
 
-To request a backport from `main`, add the appropriate backport label to the pull request before merging. You can add a repository-wide release label by commenting `/backport release-2.1`; this adds `backport-release-2.1` and creates a PR targeting `release-2.1` after the source PR is merged. For the legacy 1.9 and 1.10 release branches, include the workspace in the command, for example `/backport release-1.10/orchestrator`; this adds `backport-release-1.10/orchestrator` and targets `release-1.10/orchestrator`. The workflow cherry-picks the merged commit into a new branch and opens a pull request for review. If the cherry-pick conflicts, the workflow reports the failure; resolve it manually on a branch based on the target release branch and open the backport pull request.
+To request a backport from `main`, comment `/backport release-2.1`, `/backport release-1.10`, or `/backport release-1.9` on the pull request before merging. The 2.x label targets the repository-wide branch directly, such as `release-2.1`. For the legacy 1.9 and 1.10 release branches, the workflow reads the PR's `workspace/<name>` labels and targets the corresponding branches, such as `release-1.10/orchestrator`. The workflow creates the release label when needed, cherry-picks all commits from the source pull request into a new branch, and opens a pull request for review. If a legacy PR has no workspace label or the cherry-pick conflicts, resolve it manually on a branch based on the target release branch and open the backport pull request.
 
 ### Recommended: `release-x.y/{plugin}` branches
 

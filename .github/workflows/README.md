@@ -10,7 +10,7 @@ Handles the release process for a specific workspace from a specified branch (de
 
 ## [backport.yml](./backport.yml)
 
-Creates backport pull requests when a pull request merged into `main` has one or more backport labels. Labels can be added manually or by commenting `/backport release-x.y` on the pull request before it is merged. Repository-wide release lines use labels such as `backport-release-2.1`, targeting `release-2.1`. Legacy 1.9 and 1.10 releases use labels such as `backport-release-1.10/orchestrator`, targeting `release-1.10/orchestrator`. The workflow cherry-picks the merged commit into a uniquely named branch and opens a pull request for normal review. Missing release branches are reported and skipped.
+Creates backport pull requests when a pull request merged into `main` has a backport label. Comment `/backport release-2.1`, `/backport release-1.10`, or `/backport release-1.9` on the pull request before it is merged. The 2.x label targets the repository-wide branch directly, such as `release-2.1`. The 1.9 and 1.10 labels use the PR's `workspace/<name>` labels to target branches such as `release-1.10/orchestrator`. The workflow creates the release label when needed, cherry-picks all commits from the source pull request into uniquely named branches, and opens pull requests for normal review. Missing release branches are reported and skipped; a legacy request without workspace labels fails so it is not silently under-backported.
 
 ## [release_workspace_version.yml](./release_workspace_version.yml)
 

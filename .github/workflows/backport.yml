@@ -27,15 +27,15 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: read
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - name: Add requested release labels
+      - name: Add requested release label
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const command =
-              /(?:^|\n)\s*\/backport\s+(release-(?:(?:[2-9]|[1-9]\d+)\.\d+|1\.(?:9|10)\/[A-Za-z0-9._-]+))\s*$/gm;
+              /(?:^|\n)\s*\/backport\s+(release-(?:(?:[2-9]|[1-9]\d+)\.\d+|1\.(?:9|10)))\s*$/gm;
             const labels = [...context.payload.comment.body.matchAll(command)].map(
               match => `backport-${match[1]}`,
             );
@@ -44,6 +44,22 @@ jobs:
             if (uniqueLabels.length === 0) {
               core.info('No backport command found in the comment.');
               return;
+            }
+
+            for (const label of uniqueLabels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label,
+                  color: '1D76DB',
+                  description: 'Release line requested for an automated backport',
+                });
+              } catch (error) {
+                if (error.status !== 422) {
+                  throw error;
+                }
+              }
             }
 
             await github.rest.issues.addLabels({
@@ -90,8 +106,7 @@ jobs:
           done < <(
             gh api --paginate \
               "repos/$GITHUB_REPOSITORY/pulls/$pr_number/commits" \
-              --jq '.[].sha' \
-              | tac
+              --jq '.[].sha'
           )
 
           if [[ ${#source_commits[@]} -eq 0 ]]; then
@@ -99,19 +114,46 @@ jobs:
             exit 1
           fi
 
-          labels=()
-          while IFS= read -r label; do
-            labels+=("$label")
+          release_lines=()
+          while IFS= read -r release_line; do
+            release_lines+=("$release_line")
           done < <(
             jq -r '.pull_request.labels[].name' "$EVENT_PATH" \
-              | grep -E '^backport-release-(([2-9]|[1-9][0-9]+)\.[0-9]+|1\.(9|10)/[A-Za-z0-9._-]+)$' \
+              | grep -E '^backport-release-((([2-9]|[1-9][0-9]+)\.[0-9]+)|(1\.(9|10)))$' \
+              | sed 's/^backport-//' \
               | sort -u
           )
 
-          if [[ ${#labels[@]} -eq 0 ]]; then
-            echo 'No backport-release-x.y labels found; nothing to do.'
+          if [[ ${#release_lines[@]} -eq 0 ]]; then
+            echo 'No backport-release labels found; nothing to do.'
             exit 0
           fi
+
+          workspace_labels=()
+          while IFS= read -r workspace; do
+            workspace_labels+=("$workspace")
+          done < <(
+            jq -r '.pull_request.labels[].name' "$EVENT_PATH" \
+              | sed -n 's/^workspace\/\([A-Za-z0-9._-]*\)$/\1/p' \
+              | sort -u
+          )
+
+          targets=()
+          for release_line in "${release_lines[@]}"; do
+            if [[ "$release_line" == release-1.9 || "$release_line" == release-1.10 ]]; then
+              if [[ ${#workspace_labels[@]} -eq 0 ]]; then
+                echo "No workspace labels found for legacy release '$release_line'." >&2
+                exit 1
+              fi
+              for workspace in "${workspace_labels[@]}"; do
+                targets+=("$release_line/$workspace")
+              done
+            else
+              targets+=("$release_line")
+            fi
+          done
+
+          mapfile -t targets < <(printf '%s\n' "${targets[@]}" | sort -u)
 
           git config user.name 'rhdh-bot'
           git config user.email 'rhdh-bot@redhat.com'
@@ -127,12 +169,12 @@ jobs:
             fi
           }
 
-          for label in "${labels[@]}"; do
-            release_branch="${label#backport-}"
-            backport_branch="backport/${pr_number}-to-${release_branch}"
+          for target_branch in "${targets[@]}"; do
+            backport_branch="backport/${pr_number}-to-${target_branch}"
+            backport_label="backport-${target_branch%%/*}"
 
-            if ! git ls-remote --exit-code origin "refs/heads/$release_branch" >/dev/null; then
-              echo "Release branch '$release_branch' does not exist; skipping '$label'." >&2
+            if ! git ls-remote --exit-code origin "refs/heads/$target_branch" >/dev/null; then
+              echo "Release branch '$target_branch' does not exist; skipping." >&2
               continue
             fi
 
@@ -140,12 +182,12 @@ jobs:
               existing_pr=$(gh pr list \
                 --repo "$GITHUB_REPOSITORY" \
                 --head "$backport_branch" \
-                --base "$release_branch" \
+                --base "$target_branch" \
                 --state all \
                 --json number \
                 --jq '.[0].number // empty')
               if [[ -n "$existing_pr" ]]; then
-                echo "Backport PR #$existing_pr already exists for '$release_branch'; skipping."
+                echo "Backport PR #$existing_pr already exists for '$target_branch'; skipping."
               else
                 echo "Branch '$backport_branch' already exists without a backport PR; refusing to overwrite." >&2
                 exit 1
@@ -153,7 +195,7 @@ jobs:
               continue
             fi
 
-            git switch --detach "origin/$release_branch"
+            git switch --detach "origin/$target_branch"
             git switch --create "$backport_branch"
 
             branch_pushed=false
@@ -169,18 +211,18 @@ jobs:
             branch_pushed=true
 
             body_file=$(mktemp)
-            printf '%s\n\nSource pull request: %s\nTarget release branch: `%s`\n\nPlease resolve any conflicts and complete the normal review before merging.\n' \
-              "This pull request was created automatically from #${pr_number}." \
+            printf 'This pull request backports [#%s](%s) to `%s`.\n\nPlease resolve any conflicts and complete the normal review before merging.\n' \
+              "$pr_number" \
               "$pr_url" \
-              "$release_branch" > "$body_file"
+              "$target_branch" > "$body_file"
 
             gh pr create \
               --repo "$GITHUB_REPOSITORY" \
-              --base "$release_branch" \
+              --base "$target_branch" \
               --head "$backport_branch" \
               --title "Backport #${pr_number}: ${pr_title}" \
               --body-file "$body_file" \
-              --label "$label"
+              --label "$backport_label"
 
             rm -f "$body_file"
             body_file=''
