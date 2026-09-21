@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora
 
+## 0.2.0
+
+### Minor Changes
+
+- 8c690d2: Median lead time and change failure rate now use the latest successful production deployment before the 30-day window as the boundary for the first in-window deploy.
+
+### Patch Changes
+
+- 2600f2c: Filter DORA deployments by production environment in the database when reading metrics, instead of loading all environments and filtering in memory.
+- Updated dependencies [8c690d2]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.4.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.0
+
 ## 0.1.1
 
 ### Patch Changes
