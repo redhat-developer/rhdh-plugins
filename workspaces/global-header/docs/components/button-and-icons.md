@@ -1,5 +1,9 @@
 # Generic header button and icons
 
+> **Deprecated:** The `mountPoints` examples on this page targeted the Old
+> Frontend System. That integration and the `/legacy` export have been removed.
+> Use the [New Frontend System Guide](../new-frontend-system.md) instead.
+
 ## HeaderButton
 
 Displays a button to link a internal or external page.
@@ -137,7 +141,7 @@ RHDH loads plugins via Module Federation. **Plugins must not assume the host imp
 
 | Approach                                                                                                               | Verdict                              |
 | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| Host registers icons via `app.getSystemIcon` / `CommonIcons` (OFS) or NFS `IconBundleBlueprint`                        | Preferred                            |
+| Host registers icons via `app.getSystemIcon` / `CommonIcons` or NFS `IconBundleBlueprint`                              | Preferred                            |
 | `globalHeaderModule` registers the [global-header system icons](#global-header-system-icons) via `IconBundleBlueprint` | Automatic when the module is enabled |
 | Inline SVG or image URL in config                                                                                      | Supported without host registration  |
 
