@@ -34,6 +34,7 @@
 - 815580b: fix: additional CVE patches and dependency updates for 2.2.1
 
   Covers the following changes merged after the initial CVE patch (558b7c3):
+
   - chore(deps): update rhdh cost management dependencies (patch) (#3000) — bumps
     `@aws-sdk/core/fast-xml-parser` to 4.5.6, `request/form-data` to 2.5.5,
     `request/tough-cookie` to 4.1.4, `typeorm` to 0.3.29, and `file-type` to 21.3.4
@@ -64,12 +65,14 @@
 ### Minor Changes
 
 - ce8cb07: Add authorization, input validation, and confirmation dialog for Apply Recommendation workflow.
+
   - New `ros.apply` permission required to execute the Apply Recommendation workflow
   - New backend `POST /apply-recommendation` endpoint validates `resourceType` against server-side allowlist and checks `ros.apply` permission before forwarding to Orchestrator
   - Workflow execution now routes through the cost-management backend instead of directly to the Orchestrator plugin, enabling server-side authorization and audit logging
   - Confirmation dialog added before workflow execution to prevent accidental clicks
 
 - ab26a80: Move Cost Management data fetching server-side to eliminate token exposure and RBAC bypass
+
   - Added secure backend proxy (`/api/cost-management/proxy/*`) that authenticates requests via Backstage httpAuth, checks RBAC permissions, retrieves SSO tokens internally, and injects server-side cluster/project filters before forwarding to the Cost Management API
   - Removed `/token` endpoint that exposed SSO service account credentials to the browser
   - Removed `dangerously-allow-unauthenticated` proxy configuration from `app-config.dynamic.yaml`
