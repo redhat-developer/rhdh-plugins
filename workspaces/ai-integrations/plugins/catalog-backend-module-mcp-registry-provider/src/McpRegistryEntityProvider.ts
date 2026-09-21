@@ -214,6 +214,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
       apiVersion,
       pageLimit,
       pageSize,
+      latestVersion,
       maxEntries,
       hostAllowList,
     } = this.config;
@@ -237,6 +238,7 @@ export class McpRegistryEntityProvider implements EntityProvider {
         apiVersion,
         pageLimit,
         pageSize,
+        latestVersion,
         maxEntries,
         priorEntryCount: this.pendingEntries.length,
         startCursor: this.resumeCursor,

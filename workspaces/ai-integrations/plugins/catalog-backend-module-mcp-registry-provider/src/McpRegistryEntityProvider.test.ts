@@ -62,6 +62,7 @@ describe('McpRegistryEntityProvider', () => {
           pageLimit: number;
           maxEntries: number;
           remotesOnly: boolean;
+          latestVersion: boolean;
         };
       }
     ).config;
@@ -70,6 +71,7 @@ describe('McpRegistryEntityProvider', () => {
     expect(resolved.pageLimit).toBe(10);
     expect(resolved.maxEntries).toBe(5000);
     expect(resolved.remotesOnly).toBe(false);
+    expect(resolved.latestVersion).toBe(false);
   });
 
   it('registers the refresh task from connect after the catalog connection exists', async () => {

@@ -76,6 +76,11 @@ export interface FetchServersOptions {
   pageLimit: number;
   pageSize?: number;
   /**
+   * When true, each list request includes `?version=latest`. When false
+   * or omitted, the `version` query parameter is left unset.
+   */
+  latestVersion?: boolean;
+  /**
    * Maximum total entries buffered across the current registry
    * traversal (including prior resume syncs) before a full mutation.
    * When exceeded, paging stops gracefully: the tipping page is left
@@ -177,7 +182,8 @@ export function parseServersEndpointUrl(
 }
 
 /**
- * Build a page request URL with optional cursor and page-size params.
+ * Build a page request URL with optional cursor, page-size, and
+ * latest-version query params.
  *
  * @internal
  */
@@ -185,6 +191,7 @@ export function buildPageRequestUrl(
   endpoint: URL,
   cursor?: string,
   pageSize?: number,
+  latestVersion?: boolean,
 ): URL {
   const url = new URL(endpoint.toString());
   if (cursor) {
@@ -192,6 +199,9 @@ export function buildPageRequestUrl(
   }
   if (pageSize !== undefined) {
     url.searchParams.set('limit', String(pageSize));
+  }
+  if (latestVersion) {
+    url.searchParams.set('version', 'latest');
   }
   return url;
 }
@@ -552,6 +562,7 @@ export async function fetchRegistryServers(
     apiVersion,
     pageLimit,
     pageSize,
+    latestVersion,
     maxEntries,
     priorEntryCount = 0,
     startCursor,
@@ -575,7 +586,7 @@ export async function fetchRegistryServers(
   let maxEntriesEndCursor: string | undefined;
 
   while (!isAtEndCursor(cursor, endCursor)) {
-    const url = buildPageRequestUrl(endpoint, cursor, pageSize);
+    const url = buildPageRequestUrl(endpoint, cursor, pageSize, latestVersion);
     const body = await fetchRegistryPage(doFetch, url, hostAllowList);
     allServers.push(...body.servers);
     pagesFetched += 1;

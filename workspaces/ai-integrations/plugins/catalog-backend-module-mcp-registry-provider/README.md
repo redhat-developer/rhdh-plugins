@@ -61,6 +61,8 @@ catalog:
         # maxEntries: 5000
         # Optional: ingest only servers with at least one native remote (default: false)
         # remotesOnly: false
+        # Optional: request only the latest version of each server via ?version=latest (default: false)
+        # latestVersion: false
         # Optional: restrict outbound requests to specific hostnames (defense-in-depth)
         # hostAllowList:
         #   - registry.example.com
@@ -85,6 +87,7 @@ catalog:
 | `pageSize`         | No       | _(registry default)_             | Sent as `?limit=` on each list request. When omitted, the registry's default page size applies.                                                                                                                                                                                                                                                                                                 |
 | `maxEntries`       | No       | `5000`                           | Maximum total server entries buffered for one complete registry traversal (spans resume syncs). When exceeded, the provider commits the buffer, saves an end cursor, and later traversals stop there until `maxEntries` is patched.                                                                                                                                                             |
 | `remotesOnly`      | No       | `false`                          | When `true`, skip servers that do not declare at least one native remote (non-empty type and http(s) URL). Package-only and placeholder-remote servers are omitted from the catalog.                                                                                                                                                                                                            |
+| `latestVersion`    | No       | `false`                          | When `true`, each list request includes `?version=latest` (for example `<baseUrl>/<apiVersion>/servers?version=latest`). When `false` or omitted, the `version` query parameter is left unset.                                                                                                                                                                                                  |
 | `hostAllowList`    | No       | _(none — all hosts allowed)_     | Array of permitted hostnames. When set, `baseUrl` hostname must be in this list and every outbound request (including each redirect `Location` and `response.url`) is validated at runtime. Missing `response.url` fails closed. Redirects are followed manually so disallowed hosts are never contacted. Provides defense-in-depth against SSRF. When omitted, a warning is logged at startup. |
 | `schedule`         | No       | 30m frequency, 3m timeout        | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. The first sync runs after one `frequency` interval unless `initialDelay` is set.                                                                                                                                                                                                                                             |
 

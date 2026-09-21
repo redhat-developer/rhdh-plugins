@@ -40,6 +40,13 @@ interface McpRegistryInstanceConfig {
    * @visibility backend
    */
   remotesOnly?: boolean;
+  /**
+   * When true, list requests include `?version=latest` so the registry
+   * returns only the latest version of each server.
+   *
+   * @visibility backend
+   */
+  latestVersion?: boolean;
   /** @visibility backend */
   hostAllowList?: string[];
   /** @visibility backend */

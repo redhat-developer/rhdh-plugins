@@ -26,6 +26,7 @@ import {
   readPageLimit,
   readProviderSchedule,
   readRemotesOnly,
+  readLatestVersion,
   readRequiredHttpBaseUrl,
   resolveMcpRegistryProviderConfig,
   safeGetOptionalString,
@@ -72,6 +73,7 @@ describe('readMcpRegistryProviderConfig', () => {
     expect(result!.pageLimit).toBe(10);
     expect(result!.maxEntries).toBe(5000);
     expect(result!.remotesOnly).toBe(false);
+    expect(result!.latestVersion).toBe(false);
     expect(result!.pageSize).toBeUndefined();
     expect(result!.baseName).toBeUndefined();
     expect(result!.defaultOwner).toBeUndefined();
@@ -236,6 +238,18 @@ describe('readMcpRegistryProviderConfig', () => {
     expect(result!.defaultLifecycle).toBe('experimental');
   });
 
+  it('reads latestVersion', () => {
+    const config = new ConfigReader(
+      providersConfig({
+        baseUrl: 'https://registry.example.com',
+        latestVersion: true,
+      }),
+    );
+
+    const result = readMcpRegistryProviderConfig(config);
+    expect(result!.latestVersion).toBe(true);
+  });
+
   it('reads apiVersion override', () => {
     const config = new ConfigReader(
       providersConfig({
@@ -371,7 +385,7 @@ describe('assertSingleRegistryConfig', () => {
       /found keyed instance/,
     );
     expect(() => assertSingleRegistryConfig(config)).toThrow(
-      /maxEntries, remotesOnly, hostAllowList/,
+      /remotesOnly, latestVersion, hostAllowList/,
     );
   });
 });
@@ -477,6 +491,24 @@ describe('readRemotesOnly', () => {
   });
 });
 
+describe('readLatestVersion', () => {
+  it('defaults to false when omitted', () => {
+    expect(readLatestVersion(new ConfigReader({}))).toBe(false);
+  });
+
+  it('returns true when latestVersion is true', () => {
+    expect(readLatestVersion(new ConfigReader({ latestVersion: true }))).toBe(
+      true,
+    );
+  });
+
+  it('returns false when latestVersion is false', () => {
+    expect(readLatestVersion(new ConfigReader({ latestVersion: false }))).toBe(
+      false,
+    );
+  });
+});
+
 describe('readHostAllowList', () => {
   it('returns undefined when omitted', () => {
     expect(readHostAllowList(new ConfigReader({}))).toBeUndefined();
@@ -568,6 +600,7 @@ describe('resolveMcpRegistryProviderConfig', () => {
       pageLimit: 10,
       maxEntries: 5000,
       remotesOnly: false,
+      latestVersion: false,
     });
   });
 
@@ -580,6 +613,7 @@ describe('resolveMcpRegistryProviderConfig', () => {
         pageLimit: 3,
         maxEntries: 100,
         remotesOnly: true,
+        latestVersion: true,
       }),
     ).toEqual({
       baseUrl: 'https://registry.example.com',
@@ -588,6 +622,7 @@ describe('resolveMcpRegistryProviderConfig', () => {
       pageLimit: 3,
       maxEntries: 100,
       remotesOnly: true,
+      latestVersion: true,
     });
   });
 
@@ -600,6 +635,7 @@ describe('resolveMcpRegistryProviderConfig', () => {
         pageLimit: undefined,
         maxEntries: undefined,
         remotesOnly: undefined,
+        latestVersion: undefined,
       }),
     ).toEqual({
       baseUrl: 'https://registry.example.com',
@@ -608,6 +644,7 @@ describe('resolveMcpRegistryProviderConfig', () => {
       pageLimit: 10,
       maxEntries: 5000,
       remotesOnly: false,
+      latestVersion: false,
     });
   });
 });

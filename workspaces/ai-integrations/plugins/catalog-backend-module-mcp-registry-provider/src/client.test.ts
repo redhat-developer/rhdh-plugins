@@ -214,6 +214,47 @@ describe('fetchRegistryServers', () => {
     expect(secondUrl).toContain('limit=50');
   });
 
+  it('sends version=latest when latestVersion is true', async () => {
+    const page1: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const fn = mockFetch([{ body: page1 }]);
+
+    await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v0.1',
+      pageLimit: 10,
+      latestVersion: true,
+      fetchApi: fn,
+    });
+
+    const requestUrl = fn.mock.calls[0][0] as string;
+    expect(requestUrl).toBe(
+      'https://registry.example.com/v0.1/servers?version=latest',
+    );
+  });
+
+  it('omits version query param when latestVersion is false', async () => {
+    const page1: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const fn = mockFetch([{ body: page1 }]);
+
+    await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v0.1',
+      pageLimit: 10,
+      latestVersion: false,
+      fetchApi: fn,
+    });
+
+    const requestUrl = fn.mock.calls[0][0] as string;
+    expect(requestUrl).toBe('https://registry.example.com/v0.1/servers');
+    expect(requestUrl).not.toContain('version=');
+  });
+
   it('returns a resumeCursor when default pageLimit of 10 is reached with more pages', async () => {
     const pages = Array.from({ length: 10 }, (_, i) => ({
       body: {
@@ -685,10 +726,21 @@ describe('buildPageRequestUrl', () => {
     const url = buildPageRequestUrl(endpoint, 'abc', 25);
     expect(url.searchParams.get('cursor')).toBe('abc');
     expect(url.searchParams.get('limit')).toBe('25');
+    expect(url.searchParams.get('version')).toBeNull();
+  });
+
+  it('adds version=latest when latestVersion is true', () => {
+    const url = buildPageRequestUrl(endpoint, undefined, undefined, true);
+    expect(url.searchParams.get('version')).toBe('latest');
+  });
+
+  it('omits version when latestVersion is false', () => {
+    const url = buildPageRequestUrl(endpoint, undefined, undefined, false);
+    expect(url.searchParams.get('version')).toBeNull();
   });
 
   it('does not mutate the original endpoint URL', () => {
-    buildPageRequestUrl(endpoint, 'abc', 25);
+    buildPageRequestUrl(endpoint, 'abc', 25, true);
     expect(endpoint.search).toBe('');
   });
 });

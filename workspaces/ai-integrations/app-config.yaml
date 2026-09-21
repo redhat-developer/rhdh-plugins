@@ -170,6 +170,8 @@ catalog:
         # maxEntries: 5000
         # Optional: ingest only servers with at least one native remote (default: false)
         # remotesOnly: false
+        # Optional: request only the latest version of each server via ?version=latest (default: false)
+        # latestVersion: false
         # Optional: allowlist of permitted hostnames for defense-in-depth SSRF protection.
         # hostAllowList:
         #   - registry.modelcontextprotocol.io

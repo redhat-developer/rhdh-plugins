@@ -36,6 +36,9 @@ const DEFAULT_MAX_ENTRIES = 5000;
 /** Default remotesOnly when omitted. */
 const DEFAULT_REMOTES_ONLY = false;
 
+/** Default latestVersion when omitted. */
+const DEFAULT_LATEST_VERSION = false;
+
 /**
  * Reserved instance id under `catalog.providers.mcpRegistry`.
  * This implementation expects only this key; additional ids are rejected
@@ -57,6 +60,7 @@ const KNOWN_MCP_REGISTRY_KEYS = new Set([
   'pageSize',
   'maxEntries',
   'remotesOnly',
+  'latestVersion',
   'hostAllowList',
   'schedule',
 ]);
@@ -317,6 +321,25 @@ export function readRemotesOnly(registryConfig: Config): boolean {
 }
 
 /**
+ * Read `latestVersion`, defaulting to `false`.
+ *
+ * When true, list requests include `?version=latest`.
+ *
+ * @internal
+ */
+export function readLatestVersion(registryConfig: Config): boolean {
+  try {
+    return (
+      registryConfig.getOptionalBoolean('latestVersion') ??
+      DEFAULT_LATEST_VERSION
+    );
+  } catch {
+    // ConfigReader throws TypeError for empty-string env substitution.
+    return DEFAULT_LATEST_VERSION;
+  }
+}
+
+/**
  * Read the provider schedule, or the documented default when omitted.
  *
  * @internal
@@ -366,6 +389,11 @@ export interface McpRegistryProviderConfig {
    * Package-only / placeholder-remote servers are skipped (default `false`).
    */
   remotesOnly?: boolean;
+  /**
+   * When true, list requests include `?version=latest` so the registry
+   * returns only the latest version of each server (default `false`).
+   */
+  latestVersion?: boolean;
   /** Optional allowlist of permitted hostnames for defense-in-depth SSRF protection. */
   hostAllowList?: string[];
   /** Schedule for the sync task. */
@@ -383,6 +411,7 @@ export type ResolvedMcpRegistryProviderConfig = McpRegistryProviderConfig & {
   pageLimit: number;
   maxEntries: number;
   remotesOnly: boolean;
+  latestVersion: boolean;
 };
 
 /**
@@ -399,6 +428,7 @@ export function resolveMcpRegistryProviderConfig(
     pageLimit: config.pageLimit ?? DEFAULT_PAGE_LIMIT,
     maxEntries: config.maxEntries ?? DEFAULT_MAX_ENTRIES,
     remotesOnly: config.remotesOnly ?? DEFAULT_REMOTES_ONLY,
+    latestVersion: config.latestVersion ?? DEFAULT_LATEST_VERSION,
   };
 }
 
@@ -463,6 +493,7 @@ export function readMcpRegistryProviderConfig(
     pageSize: readOptionalPageSize(registryConfig),
     maxEntries: readMaxEntries(registryConfig),
     remotesOnly: readRemotesOnly(registryConfig),
+    latestVersion: readLatestVersion(registryConfig),
     hostAllowList,
     schedule: readProviderSchedule(registryConfig),
   };
