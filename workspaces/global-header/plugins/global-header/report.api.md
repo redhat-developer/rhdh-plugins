@@ -311,6 +311,23 @@ export const defaultMenuItemExtensions: (
 export const defaultToolbarExtensions: (
   | OverridableExtensionDefinition<{
       kind: 'gh-component';
+      name: 'sidebar-pin-toggle';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>
+  | OverridableExtensionDefinition<{
+      kind: 'gh-component';
       name: 'company-logo';
       config: {
         priority: number | undefined;
@@ -751,6 +768,23 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
       inputs: {};
       params: ToolbarComponentParams;
     }>;
+    'gh-component:global-header/sidebar-pin-toggle': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'sidebar-pin-toggle';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
     'gh-component:global-header/spacer': OverridableExtensionDefinition<{
       kind: 'gh-component';
       name: 'spacer';
@@ -1006,6 +1040,8 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'starred.noItemsSubtitle': string;
     readonly 'notifications.title': string;
     readonly 'notifications.unsupportedDismissOption': string;
+    readonly 'sidebar.pinSidebar': string;
+    readonly 'sidebar.unpinSidebar': string;
     readonly 'create.title': string;
     readonly 'create.registerComponent.title': string;
     readonly 'create.registerComponent.subtitle': string;
@@ -1241,6 +1277,25 @@ export const settingsMenuItemExtension: OverridableExtensionDefinition<{
   >;
   inputs: {};
   params: MenuItemParams;
+}>;
+
+// @public (undocumented)
+export const sidebarPinToggleExtension: OverridableExtensionDefinition<{
+  kind: 'gh-component';
+  name: 'sidebar-pin-toggle';
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  output: ExtensionDataRef<
+    GlobalHeaderComponentData,
+    'global-header.component',
+    {}
+  >;
+  inputs: {};
+  params: ToolbarComponentParams;
 }>;
 
 // @public (undocumented)
