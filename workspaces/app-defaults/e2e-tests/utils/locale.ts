@@ -37,16 +37,20 @@ export async function switchToLocale(
   locale: string,
 ): Promise<void> {
   const baseLocale = locale.split('-')[0];
-  if (baseLocale === 'en') {
-    return;
+
+  if (baseLocale !== 'en') {
+    const displayName = getLocaleDisplayName(locale);
+
+    await page
+      .locator('nav[aria-label="sidebar nav"]')
+      .getByRole('link', { name: 'Settings' })
+      .click();
+    await page.getByRole('button', { name: 'English' }).click();
+    await page.getByRole('option', { name: displayName }).click();
   }
 
-  const displayName = getLocaleDisplayName(locale);
-  const settingsLink = page.getByRole('link', { name: 'Settings' });
-
-  await settingsLink.waitFor({ state: 'visible', timeout: 10_000 });
-  await settingsLink.click();
-  await page.getByRole('button', { name: 'English' }).click();
-  await page.getByRole('option', { name: displayName }).click();
-  await page.goto('/');
+  await page
+    .locator('nav[aria-label="sidebar nav"]')
+    .getByRole('link', { name: 'Catalog', exact: true })
+    .click();
 }

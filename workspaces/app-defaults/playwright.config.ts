@@ -21,7 +21,7 @@ import { LOCALES } from './e2e-tests/utils/locale';
 const baseConfig = `${__dirname}/app-config.yaml`;
 
 export default defineConfig({
-  timeout: 2 * 60 * 1000,
+  timeout: 20 * 1000,
 
   expect: {
     timeout: 5000,

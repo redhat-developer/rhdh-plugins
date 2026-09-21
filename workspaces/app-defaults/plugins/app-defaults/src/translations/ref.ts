@@ -21,7 +21,7 @@ import { createTranslationRef } from '@backstage/frontend-plugin-api';
  *
  * @public
  */
-export const translationRef = createTranslationRef({
+export const appDefaultsTranslationRef = createTranslationRef({
   id: 'plugin.app-defaults',
   messages: {
     catalog: {
