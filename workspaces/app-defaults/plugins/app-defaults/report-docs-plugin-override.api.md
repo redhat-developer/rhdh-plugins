@@ -215,8 +215,8 @@ const docsPluginOverride: OverridableFrontendPlugin<
         group?:
           | (
               | 'development'
-              | 'documentation'
               | 'overview'
+              | 'documentation'
               | 'deployment'
               | 'operation'
               | 'observability'
