@@ -230,6 +230,64 @@ export async function createRouter(
   );
   const lcsBaseUrl = `http://${DEFAULT_LIGHTSPEED_SERVICE_HOST}:${port}`;
 
+  // Vision probes currently in flight, so a burst of /v1/models requests
+  // triggers at most one background probe per model. Warming the cache off the
+  // request path keeps /v1/models fast even when a probe hits its timeout.
+  const inFlightVisionProbes = new Set<string>();
+  const probeModelVisionInBackground = (cacheKey: string): void => {
+    if (inFlightVisionProbes.has(cacheKey)) return;
+    inFlightVisionProbes.add(cacheKey);
+    probeModelVisionSupport(lcsBaseUrl, cacheKey)
+      .catch(error => {
+        logger.warn(
+          `Background vision probe failed for ${cacheKey}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      })
+      .finally(() => {
+        inFlightVisionProbes.delete(cacheKey);
+      });
+  };
+
+  // Pre-warms the vision cache by fetching the current LCS model list and
+  // probing any llm not already cached. Runs at startup and self-heals: because
+  // it only probes cache misses, it re-probes models that are new in the LCS
+  // list or whose previous probe failed and was not cached, while leaving
+  // already-known models untouched.
+  const warmModelVisionCache = async (): Promise<void> => {
+    const upstream = await fetch(`${lcsBaseUrl}/v1/models`);
+    if (!upstream.ok) {
+      logger.warn(
+        `Vision cache warm-up skipped: LCS /v1/models returned ${upstream.status}`,
+      );
+      return;
+    }
+    const data = (await upstream.json()) as {
+      models?: Array<{ identifier: string; api_model_type?: string }>;
+    };
+    const models = Array.isArray(data.models) ? data.models : [];
+    for (const model of models) {
+      if (
+        model.api_model_type === 'llm' &&
+        !ModelCapabilitiesCache.has(model.identifier)
+      ) {
+        probeModelVisionInBackground(model.identifier);
+      }
+    }
+  };
+
+  // Warm at load so the first /v1/models request is already enriched. Fire-and-
+  // forget: LCS may not be reachable yet, and a cold cache still self-heals via
+  // the per-request background probe on cache miss.
+  warmModelVisionCache().catch(error => {
+    logger.warn(
+      `Vision cache warm-up failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  });
+
   const apiProxy = createProxyMiddleware({
     target: lcsBaseUrl,
     changeOrigin: true,
@@ -685,32 +743,31 @@ export async function createRouter(
         };
         const models = Array.isArray(data.models) ? data.models : [];
 
-        const enriched = await Promise.all(
-          models.map(async model => {
-            // Only LLMs can be vision-capable; skip probing embeddings etc.
-            if (model.api_model_type !== 'llm') {
-              return { ...model, supportsVision: false };
-            }
-            // `identifier` is already the `provider/model` key LCS and
-            // /v1/validate-model-vision use — do not re-prefix with provider_id.
-            const cacheKey = model.identifier;
-            try {
-              const supportsVision = await probeModelVisionSupport(
-                lcsBaseUrl,
-                cacheKey,
-              );
-              return { ...model, supportsVision };
-            } catch (error) {
-              // One failed probe must not fail the whole list.
-              logger.warn(
-                `Vision probe failed for ${cacheKey}: ${
-                  error instanceof Error ? error.message : String(error)
-                }`,
-              );
-              return { ...model, supportsVision: false };
-            }
-          }),
-        );
+        const enriched = models.map(model => {
+          // Only LLMs can be vision-capable; skip probing embeddings etc.
+          if (model.api_model_type !== 'llm') {
+            return { ...model, supportsVision: false };
+          }
+          const cacheKey = model.identifier;
+          const cached = ModelCapabilitiesCache.get(cacheKey);
+          if (cached !== undefined) {
+            logger.debug('vision probe success', {
+              ...model,
+              supportsVision: cached,
+            });
+            return { ...model, supportsVision: cached };
+          }
+          // Cache miss: never block the list on a probe (up to
+          // VISION_PROBE_TIMEOUT_MS each). Report the conservative default now
+          // and warm the cache in the background so the next /v1/models call
+          // returns the real value.
+          probeModelVisionInBackground(cacheKey);
+          logger.debug('vision probe failed', {
+            ...model,
+            supportsVision: false,
+          });
+          return { ...model, supportsVision: false };
+        });
 
         response.json({ ...data, models: enriched });
       } catch (error) {
