@@ -72,6 +72,19 @@ export interface DoraDeploymentsStore {
     to: Date,
     productionEnvironments?: string[],
   ): Promise<DbDoraDeployment[]>;
+  /**
+   * Newest row with `created_at` strictly before `before` for the entity and
+   * collector identity. When `productionEnvironments` is non-empty, only
+   * production-like environments are considered (same rules as
+   * {@link DoraDeploymentsStore.readByEntityCollectorAndWindow}).
+   */
+  readLatestByEntityCollectorBefore(
+    catalogEntityRef: string,
+    collectorId: string,
+    collectorInputHash: string,
+    before: Date,
+    productionEnvironments: string[],
+  ): Promise<DbDoraDeployment | undefined>;
   markPullRequestsSynced(
     deploymentId: string,
     pullRequestsSync: {
@@ -136,6 +149,32 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
     const rows = await query.orderBy('created_at', 'asc');
 
     return rows.map(fromDoraDeploymentRow);
+  }
+
+  async readLatestByEntityCollectorBefore(
+    catalogEntityRef: string,
+    collectorId: string,
+    collectorInputHash: string,
+    before: Date,
+    productionEnvironments: string[],
+  ): Promise<DbDoraDeployment | undefined> {
+    const query = this.dbClient<DbDoraDeploymentRow>(this.tableName)
+      .select('*')
+      .where('catalog_entity_ref', catalogEntityRef)
+      .andWhere('collector_id', collectorId)
+      .andWhere('collector_input_hash', collectorInputHash)
+      .andWhere('created_at', '<', before);
+
+    applyProductionEnvironmentFilter(query, productionEnvironments);
+
+    const row = await query
+      .orderBy([
+        { column: 'created_at', order: 'desc' },
+        { column: 'id', order: 'desc' },
+      ])
+      .first();
+
+    return row ? fromDoraDeploymentRow(row) : undefined;
   }
 
   async markPullRequestsSynced(

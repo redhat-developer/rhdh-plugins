@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-import type { DoraDataService } from '../../service/DoraDataService';
+import type { DbDoraDeployment } from '../../database/types';
 
-export const mockDoraDataService: jest.Mocked<DoraDataService> = {
-  readDeployments: jest.fn(),
-  readLatestProductionDeploymentBefore: jest.fn(),
-  readIncidents: jest.fn(),
-  readPullRequestsForDeployment: jest.fn(),
-};
+/**
+ * Puts the latest pre-window production deployment in front of in-window
+ * production deployments so existing pairing loops can score the first
+ * in-window deploy.
+ */
+export function prependPreWindowDeployment(
+  preWindow: DbDoraDeployment | undefined,
+  inWindowProduction: DbDoraDeployment[],
+): DbDoraDeployment[] {
+  return preWindow ? [preWindow, ...inWindowProduction] : inWindowProduction;
+}

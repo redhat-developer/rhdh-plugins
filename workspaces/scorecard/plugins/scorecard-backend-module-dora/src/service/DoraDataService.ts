@@ -36,6 +36,17 @@ export interface DoraDataService {
     catalogEntityRef: string,
     options: WindowOptions & CollectorCallOptions & EnvironmentFilterOptions,
   ): Promise<DbDoraDeployment[]>;
+  /**
+   * Latest successful production deployment with `createdAt` strictly before
+   * `before`, if one exists for this entity and collector identity.
+   */
+  readLatestProductionDeploymentBefore(
+    catalogEntityRef: string,
+    options: CollectorCallOptions & {
+      before: Date;
+      productionEnvironments: string[];
+    },
+  ): Promise<DbDoraDeployment | undefined>;
   readIncidents(
     catalogEntityRef: string,
     options: WindowOptions & CollectorCallOptions,
@@ -63,6 +74,22 @@ export class DefaultDoraDataService implements DoraDataService {
       options.collector.inputHash,
       options.windowFrom,
       options.windowTo,
+      options.productionEnvironments,
+    );
+  }
+
+  async readLatestProductionDeploymentBefore(
+    catalogEntityRef: string,
+    options: CollectorCallOptions & {
+      before: Date;
+      productionEnvironments: string[];
+    },
+  ): Promise<DbDoraDeployment | undefined> {
+    return this.deploymentsDb.readLatestByEntityCollectorBefore(
+      catalogEntityRef,
+      options.collector.id,
+      options.collector.inputHash,
+      options.before,
       options.productionEnvironments,
     );
   }
