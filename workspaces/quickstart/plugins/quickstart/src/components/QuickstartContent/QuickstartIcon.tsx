@@ -38,6 +38,40 @@ const flexSx = (sx?: SxProps<Theme>): SxProps<Theme> =>
     ? [{ display: 'flex', alignItems: 'center' }, sx]
     : { display: 'flex', alignItems: 'center' }) as SxProps<Theme>;
 
+const toInlineSvgDataUri = (rawSvg: string): string =>
+  `data:image/svg+xml;base64,${btoa(rawSvg)}`;
+
+const isRemoteOrPathImage = (value: string): boolean =>
+  /^(https?:\/\/|\/|data:image\/)/.test(value);
+
+type QuickstartImageIconProps = {
+  src: string;
+  size: SvgIconProps['fontSize'];
+  sx?: SxProps<Theme>;
+  outlined?: boolean;
+};
+
+/** Renders an icon from an image `src` (URL, path, or data URI). */
+const QuickstartImageIcon = ({
+  src,
+  size,
+  sx,
+  outlined = true,
+}: QuickstartImageIconProps) => (
+  <MuiIcon
+    fontSize={size}
+    {...(outlined ? { baseClassName: 'material-icons-outlined' } : {})}
+    sx={sx}
+  >
+    <Box
+      component="img"
+      src={src}
+      alt=""
+      sx={{ height: '100%', width: '100%' }}
+    />
+  </MuiIcon>
+);
+
 /**
  * Renders quickstart icons from system icons, image/SVG URLs, or Material
  * ligatures for legacy config ids. Falls back to a MUI outlined widget icon.
@@ -64,25 +98,18 @@ export const QuickstartIcon = ({
   }
 
   if (icon.startsWith('<svg')) {
-    const svgDataUri = `data:image/svg+xml;base64,${btoa(icon)}`;
     return (
-      <MuiIcon fontSize={size} sx={sx}>
-        <img src={svgDataUri} alt="" />
-      </MuiIcon>
+      <QuickstartImageIcon
+        src={toInlineSvgDataUri(icon)}
+        size={size}
+        sx={sx}
+        outlined={false}
+      />
     );
   }
 
-  if (
-    icon.startsWith('https://') ||
-    icon.startsWith('http://') ||
-    icon.startsWith('/') ||
-    icon.startsWith('data:image/')
-  ) {
-    return (
-      <MuiIcon fontSize={size} baseClassName="material-icons-outlined" sx={sx}>
-        <img src={icon} alt="" height="100%" width="100%" />
-      </MuiIcon>
-    );
+  if (isRemoteOrPathImage(icon)) {
+    return <QuickstartImageIcon src={icon} size={size} sx={sx} />;
   }
 
   if (shouldUseMaterialLigature(icon)) {
