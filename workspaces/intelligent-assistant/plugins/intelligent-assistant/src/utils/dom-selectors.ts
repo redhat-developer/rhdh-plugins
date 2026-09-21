@@ -48,10 +48,42 @@ export const NOISE_SELECTOR = NOISE_SELECTORS.join(', ');
 // ── Header ──
 
 export const PLUGIN_NAME_SELECTOR = '.bui-PluginHeaderToolbarName';
+/** BUI NFS plugin header name area (hashed class names). */
+export const PLUGIN_HEADER_TOOLBAR_NAME_SELECTOR =
+  '.bui-PluginHeaderToolbarName, [class*="bui-PluginHeaderToolbarName"]';
+/** Breadcrumbs inside BUI plugin header toolbar (Settings → General, etc.). */
+export const PLUGIN_HEADER_BREADCRUMBS_SELECTOR =
+  '#Breadcrumbs, nav[aria-label="Breadcrumbs"], nav[aria-label="breadcrumb" i], [class*="PluginHeaderBreadcrumbs"]';
 export const PAGE_TITLE_SELECTOR = '.bui-HeaderTitle';
+
+/** BUI / NFS header title (class may be hashed). */
+export const PAGE_TITLE_SCOPED_SELECTORS = [
+  PAGE_TITLE_SELECTOR,
+  '[class*="bui-HeaderTitle"]',
+] as const;
+
+/** Software template entity page (scaffolder) info card title. */
+export const TEMPLATE_INFO_CARD_TITLE_SELECTORS = [
+  '[class*="BackstageInfoCard-headerTitle"]',
+  '[class*="MuiCardHeader-title"]',
+] as const;
+
+/** Legacy Backstage core-components Header title. */
+export const LEGACY_PAGE_TITLE_SELECTORS = [
+  '[data-testid="header-title"]',
+  '[class*="Header-title"]',
+  'header h1',
+] as const;
+
+/** Roots to search for page chrome (exclude Lightspeed overlay). */
+export const PAGE_CHROME_ROOT_SELECTORS = [
+  '#root main',
+  'main[class*="BackstagePage-root"]',
+  '#root',
+] as const;
 export const ACTIVE_TAB_SELECTOR = '[role="tab"][aria-selected="true"]';
 export const BREADCRUMB_SELECTOR =
-  '[aria-label="breadcrumb"], [class*="MuiBreadcrumbs-root"], [class*="bui-HeaderBreadcrumb"]';
+  '[aria-label="Breadcrumbs"], [aria-label="breadcrumb" i], [class*="MuiBreadcrumbs-root"], [class*="bui-HeaderBreadcrumb"], [class*="PluginHeaderBreadcrumbs"], #Breadcrumbs';
 export const ACTIVE_NAV_SELECTOR = '[aria-current="page"]';
 
 // ── Tabs ──
