@@ -120,4 +120,4 @@ do not add RBAC behavior to this release.
 Done: inventory; archive implemented frontend, OGX, and E2E work; classify the
 remaining OpenSpecs; and align workspace documentation with the current code.
 
-Remaining current-release OpenSpec work: frontend translations.
+All current-release OpenSpec work is complete.

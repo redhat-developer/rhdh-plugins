@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD - created by archiving change ai-catalog-frontend-translations. Update Purpose after archive.
+Provide German, Spanish, French, Italian, and Japanese translations for the AI Catalog frontend plugin, ensuring complete string coverage and placeholder preservation across all supported RHDH locales.
 
 ## Requirements
 

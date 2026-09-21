@@ -26,7 +26,9 @@ import boostTranslationJa from '../../plugins/boost/src/translations/ja.js';
 
 export type BoostMessages = typeof boostMessages;
 
-function transformFlatMessagesIntoTree(flatMessages: Record<string, string>) {
+function transformFlatMessagesIntoTree(
+  flatMessages: typeof boostTranslationDe.messages,
+) {
   const messages = {} as Record<string, any>;
   for (const key of Object.keys(flatMessages)) {
     const path = key.split('.');
