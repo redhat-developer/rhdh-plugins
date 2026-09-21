@@ -8,6 +8,10 @@ app:
           redirects:
             - from: /
               to: /ai-catalog
+    - api:app/app-language:
+        config:
+          defaultLanguage: en
+          availableLanguages: [en, de, es, fr, it, ja]
     # Example: disable a built-in filter
     # - ai-catalog-filter:boost/owner: false
 

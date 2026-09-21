@@ -46,6 +46,7 @@ export const aiCatalogPage = PageBlueprint.makeWithOverrides({
       path: '/ai-catalog',
       routeRef: rootRouteRef,
       title: 'AI Catalog',
+      noHeader: true,
       loader: () =>
         import('../pages/AiCatalogPage').then(m => (
           <m.AiCatalogPage filters={filterDefs} />

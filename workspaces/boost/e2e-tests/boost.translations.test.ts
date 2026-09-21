@@ -19,6 +19,15 @@ import { expect, test, type Page, type Route } from '@playwright/test';
 import { runAccessibilityTests } from './utils/accessibility';
 import { getTranslations, type BoostMessages } from './utils/translations';
 
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  de: 'Deutsch',
+  es: 'Español',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
 const skillEntity = {
   apiVersion: 'backstage.io/v1alpha1',
   kind: 'AiResource',
@@ -64,28 +73,32 @@ async function mockCatalogEntities(page: Page, items: unknown[]) {
 }
 
 /**
- * Sign in as a guest and wait for the app shell to render.
- *
- * Locale switching is handled by Playwright's project-level `locale`
- * config, which sets `navigator.language`. The Backstage translation
- * system reads the browser locale automatically — no Settings UI
- * interaction is needed.
+ * Sign in as a guest, switch the app language through Settings, and wait for
+ * the authenticated app shell to render.
  */
-async function signInAsGuest(page: Page): Promise<void> {
+async function signInAndSwitchLocale(
+  page: Page,
+  locale: string,
+): Promise<void> {
   page.on('dialog', dialog => dialog.accept());
   await page.goto('/');
   const enter = page.getByRole('button', { name: 'Enter' });
-  // The sidebar link text is host-app chrome (always English)
-  const sidebarLink = page
-    .getByRole('navigation', { name: 'sidebar nav' })
-    .getByRole('link', { name: 'AI Catalog' });
-  await expect(enter.or(sidebarLink).first()).toBeVisible({
+  const settingsLink = page.getByRole('link', { name: 'Settings' });
+  await expect(enter.or(settingsLink).first()).toBeVisible({
     timeout: 30_000,
   });
   if (await enter.isVisible()) {
     await enter.click();
-    // Wait for session initialization: sidebar renders after auth completes
-    await sidebarLink.waitFor({ state: 'visible', timeout: 30_000 });
+    await settingsLink.waitFor({ state: 'visible', timeout: 30_000 });
+  }
+
+  const baseLocale = locale.split('-')[0];
+  if (baseLocale !== 'en') {
+    await settingsLink.click();
+    await page.getByRole('button', { name: 'English' }).click();
+    await page
+      .getByRole('option', { name: LOCALE_DISPLAY_NAMES[baseLocale] })
+      .click();
   }
 }
 
@@ -100,16 +113,20 @@ test.describe('Boost AI Catalog translations', () => {
     const translations: BoostMessages = getTranslations(baseLocale);
 
     await mockCatalogEntities(page, [skillEntity]);
-    await signInAsGuest(page);
+    await signInAndSwitchLocale(page, currentLocale);
 
-    await page.goto('/ai-catalog');
+    await page.getByRole('link', { name: translations.nav.aiCatalog }).click();
 
-    // Verify the page heading renders in the selected locale
+    // This heading is rendered by the page component so it updates at runtime.
     await expect(
       page.getByRole('heading', { name: translations.catalog.page.title }),
-    ).toBeVisible({ timeout: 20_000 });
-
-    // Verify the search toolbar renders in the selected locale
+    ).toBeVisible();
+    // Verify translated controls from both the filter sidebar and toolbar.
+    await expect(
+      page.getByRole('navigation', {
+        name: translations.catalog.filter.title,
+      }),
+    ).toBeVisible();
     await expect(
       page.getByRole('searchbox', {
         name: translations.catalog.toolbar.search,
@@ -127,16 +144,15 @@ test.describe('Boost AI Catalog translations', () => {
     const translations: BoostMessages = getTranslations(baseLocale);
 
     await mockCatalogEntities(page, []);
-    await signInAsGuest(page);
+    await signInAndSwitchLocale(page, currentLocale);
 
-    await page.goto('/ai-catalog');
-
-    await expect(
-      page.getByRole('heading', { name: translations.catalog.page.title }),
-    ).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('link', { name: translations.nav.aiCatalog }).click();
 
     await expect(
       page.getByText(translations.catalog.empty.title),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: translations.catalog.empty.refresh }),
     ).toBeVisible();
 
     // Accessibility check on the empty state avoids the known
