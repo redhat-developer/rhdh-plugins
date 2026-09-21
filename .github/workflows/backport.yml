@@ -91,7 +91,7 @@ jobs:
 
       - name: Create backport pull requests
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
           EVENT_PATH: ${{ github.event_path }}
         run: |
           set -euo pipefail
@@ -159,23 +159,26 @@ jobs:
           git config user.email 'rhdh-bot@redhat.com'
           git fetch origin --prune
 
-          cleanup_branch() {
-            if [[ -n "${body_file:-}" ]]; then
-              rm -f "$body_file"
-            fi
-            if [[ "${branch_pushed:-false}" == true ]]; then
-              echo "Removing orphaned backport branch '$backport_branch'." >&2
-              git push origin --delete "$backport_branch" || true
-            fi
-          }
+          failed_targets=()
 
-          for target_branch in "${targets[@]}"; do
-            backport_branch="backport/${pr_number}-to-${target_branch}"
-            backport_label="backport-${target_branch%%/*}"
+          process_target() {
+            local target_branch="$1"
+            local backport_branch="backport/${pr_number}-to-${target_branch}"
+            local backport_label="backport-${target_branch%%/*}"
+            local body_file=''
+            local branch_pushed=false
+
+            cleanup_branch() {
+              rm -f "$body_file"
+              if [[ "$branch_pushed" == true ]]; then
+                echo "Removing orphaned backport branch '$backport_branch'." >&2
+                git push origin --delete "$backport_branch" || true
+              fi
+            }
 
             if ! git ls-remote --exit-code origin "refs/heads/$target_branch" >/dev/null; then
               echo "Release branch '$target_branch' does not exist; skipping." >&2
-              continue
+              return 0
             fi
 
             if git ls-remote --exit-code origin "refs/heads/$backport_branch" >/dev/null; then
@@ -188,26 +191,41 @@ jobs:
                 --jq '.[0].number // empty')
               if [[ -n "$existing_pr" ]]; then
                 echo "Backport PR #$existing_pr already exists for '$target_branch'; skipping."
-              else
-                echo "Branch '$backport_branch' already exists without a backport PR; refusing to overwrite." >&2
-                exit 1
+                return 0
               fi
-              continue
+              echo "Branch '$backport_branch' already exists without a backport PR; refusing to overwrite." >&2
+              return 1
             fi
 
-            git switch --detach "origin/$target_branch"
-            git switch --create "$backport_branch"
-
-            branch_pushed=false
-            body_file=''
-            trap cleanup_branch EXIT
+            if ! git switch --detach "origin/$target_branch" || \
+              ! git switch --create "$backport_branch"; then
+              return 1
+            fi
 
             for source_commit in "${source_commits[@]}"; do
-              git fetch origin "$source_commit"
-              git cherry-pick "$source_commit"
+              if ! git fetch origin "$source_commit"; then
+                cleanup_branch
+                return 1
+              fi
+
+              parent_count=$(git rev-list --parents -n 1 "$source_commit" | wc -w | tr -d ' ')
+              if [[ "$parent_count" -gt 2 ]]; then
+                if ! git cherry-pick -m 1 "$source_commit"; then
+                  git cherry-pick --abort || true
+                  cleanup_branch
+                  return 1
+                fi
+              elif ! git cherry-pick "$source_commit"; then
+                git cherry-pick --abort || true
+                cleanup_branch
+                return 1
+              fi
             done
 
-            git push --set-upstream origin "$backport_branch"
+            if ! git push --set-upstream origin "$backport_branch"; then
+              cleanup_branch
+              return 1
+            fi
             branch_pushed=true
 
             body_file=$(mktemp)
@@ -216,18 +234,31 @@ jobs:
               "$pr_url" \
               "$target_branch" > "$body_file"
 
-            gh pr create \
+            if ! gh pr create \
               --repo "$GITHUB_REPOSITORY" \
               --base "$target_branch" \
               --head "$backport_branch" \
               --title "Backport #${pr_number}: ${pr_title}" \
               --body-file "$body_file" \
-              --label "$backport_label"
+              --label "$backport_label"; then
+              cleanup_branch
+              return 1
+            fi
 
             rm -f "$body_file"
-            body_file=''
             branch_pushed=false
-            trap - EXIT
             git switch --detach "origin/main"
             git branch --delete --force "$backport_branch"
+          }
+
+          for target_branch in "${targets[@]}"; do
+            if ! process_target "$target_branch"; then
+              failed_targets+=("$target_branch")
+              echo "Backport target '$target_branch' failed; continuing with remaining targets." >&2
+            fi
           done
+
+          if [[ ${#failed_targets[@]} -gt 0 ]]; then
+            printf 'Failed backport targets: %s\n' "${failed_targets[*]}" >&2
+            exit 1
+          fi
