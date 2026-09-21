@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ResponseErrorPanel } from '@backstage/core-components';
@@ -22,31 +22,24 @@ import { ResponseErrorPanel } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { ScorecardQueryProvider } from '../../api';
 import { CardWrapper } from '../Common/CardWrapper';
 import { CardLoading } from '../Common/CardLoading';
-import { DataSourcesDialog } from '../MetricGroupCard/DataSourcesDialog';
-import { MetricGroupCardMenu } from '../MetricGroupCard/MetricGroupCardMenu';
 import { SparklineChart } from '../SparklineChart';
+import { SparklineDataSources } from '../SparklineChart/SparklineDataSources';
 import { useLanguage } from '../../hooks/useLanguage';
-import { useMetricCollectors } from '../../hooks/useMetricCollectors';
 import { useMetricTimeSeries } from '../../hooks/useMetricTimeSeries';
 import { useTranslation } from '../../hooks/useTranslation';
-import { formatDate } from '../../utils/entityTableUtils';
+import { getStatusConfig, resolveStatusColor } from '../../utils';
 import {
-  getLastUpdatedLabel,
-  getStatusConfig,
-  resolveStatusColor,
-} from '../../utils';
-import { toSparklineChartModel } from '../../utils/sparklineChartModel';
+  formatSparklineDateLabel,
+  toSparklineChartModel,
+} from '../../utils/sparklineChartModel';
 import {
   getLatestSuccessfulThresholdEvaluation,
   toMetricSparklinePoints,
 } from '../../utils/timeSeriesChartData';
-import { toCollectorSourceRows } from '../MetricGroupCard/collectorSourceRows';
-import { MISSING_EVALUATION_LABEL } from '../MetricGroupCard/thresholdBucketUtils';
 
 export type EntitySparklineCardProps = {
   metric: MetricResult;
@@ -62,35 +55,12 @@ const EntitySparklineCardContent = ({
   const theme = useTheme();
   const locale = useLanguage();
   const { t } = useTranslation();
-  const [dataSourcesOpen, setDataSourcesOpen] = useState(false);
-  const handleOpenDataSources = useCallback(() => setDataSourcesOpen(true), []);
-  const handleCloseDataSources = useCallback(
-    () => setDataSourcesOpen(false),
-    [],
-  );
-  const menuActions = useMemo(
-    () => [
-      {
-        id: 'view-data-sources',
-        label: t('metricGroupCard.viewDataSources'),
-        icon: <InfoOutlinedIcon fontSize="small" />,
-        onClick: handleOpenDataSources,
-      },
-    ],
-    [t, handleOpenDataSources],
-  );
   const {
     data: series,
     isLoading,
     error: seriesError,
   } = useMetricTimeSeries(metric.id);
   const collectorIds = metric.metadata.collectorIds ?? [];
-  const shouldFetchCollectors = dataSourcesOpen && collectorIds.length > 0;
-  const {
-    data: collectors,
-    isLoading: collectorsLoading,
-    error: collectorsError,
-  } = useMetricCollectors(metric.id, shouldFetchCollectors);
 
   const unit = series?.metadata.unit ?? metric.metadata.unit;
   const thresholdRules = series?.thresholds?.rules;
@@ -109,11 +79,7 @@ const EntitySparklineCardContent = ({
           fallbackErrorLabel,
         ),
         formatDateLabel: timestamp =>
-          formatDate(
-            new Date(timestamp),
-            { month: 'short', day: 'numeric' },
-            locale,
-          ),
+          formatSparklineDateLabel(timestamp, locale),
         matchingThresholdKey,
         chartColor: resolveStatusColor(
           theme,
@@ -138,25 +104,6 @@ const EntitySparklineCardContent = ({
       t,
     ],
   );
-
-  const sourceRows = useMemo(() => {
-    const unevaluatedStatus = getStatusConfig({
-      evaluation: null,
-      thresholdStatus: undefined,
-      metricStatus: undefined,
-      thresholdRules: [],
-    });
-
-    return toCollectorSourceRows(collectors ?? [], {
-      metricId: metric.id,
-      lastSynced: metric.result?.timestamp
-        ? getLastUpdatedLabel(metric.result.timestamp, locale)
-        : MISSING_EVALUATION_LABEL,
-      emptyValue: t('dataSourcesDialog.collectorEmptyValue'),
-      unavailableStatus: t('dataSourcesDialog.collectorUnavailableStatus'),
-      statusColor: unevaluatedStatus.color,
-    });
-  }, [collectors, metric.id, metric.result?.timestamp, locale, t]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -204,33 +151,23 @@ const EntitySparklineCardContent = ({
   };
 
   return (
-    <>
-      <CardWrapper
-        role="article"
-        title={title}
-        description={description}
-        width="100%"
-        childrenHeight="auto"
-        info={
-          <MetricGroupCardMenu
-            ariaLabel={t('metricGroupCard.menuAriaLabel')}
-            actions={menuActions}
-          />
-        }
-      >
-        {renderContent()}
-      </CardWrapper>
-      {dataSourcesOpen && (
-        <DataSourcesDialog
-          open={dataSourcesOpen}
-          onClose={handleCloseDataSources}
+    <CardWrapper
+      role="article"
+      title={title}
+      description={description}
+      width="100%"
+      childrenHeight="auto"
+      info={
+        <SparklineDataSources
           title={title}
-          rows={sourceRows}
-          isLoading={shouldFetchCollectors && collectorsLoading}
-          error={shouldFetchCollectors ? collectorsError : undefined}
+          metricId={metric.id}
+          lastSyncedTimestamp={metric.result?.timestamp}
+          fetchEnabled={collectorIds.length > 0}
         />
-      )}
-    </>
+      }
+    >
+      {renderContent()}
+    </CardWrapper>
   );
 };
 
