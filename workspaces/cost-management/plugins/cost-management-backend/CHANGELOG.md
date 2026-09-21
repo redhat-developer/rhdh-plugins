@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/plugin-cost-management-backend
 
+## 2.4.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/plugin-cost-management-common@2.4.0
+
 ## 2.3.0
 
 ### Minor Changes
