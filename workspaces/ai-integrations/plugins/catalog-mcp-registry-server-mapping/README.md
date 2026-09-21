@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common
+# @red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping
 
 Deterministic transform from [MCP Registry](https://github.com/modelcontextprotocol/registry)
 **v1.8.1**
@@ -6,13 +6,13 @@ Deterministic transform from [MCP Registry](https://github.com/modelcontextproto
 documents to Backstage `API` entities with `spec.type: mcp-server`.
 
 This common library is a pure mapping contract (no I/O, no registry client).
-It is intended for consumers such as a future `mcp-registry-provider` catalog
+It is consumed by the `catalog-backend-module-mcp-registry-provider` catalog
 entity provider.
 
 ## Install
 
 ```bash
-yarn add @red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common
+yarn add @red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping
 ```
 
 ## Usage
@@ -23,8 +23,8 @@ yarn add @red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-com
 import {
   mapServerToEntity,
   projectAnnotations,
-} from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
-import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common';
+} from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
+import type { McpServerDocument } from '@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping';
 
 const doc: McpServerDocument = {
   $schema:
@@ -78,7 +78,8 @@ fields) with an actionable message.
 ## `server.json` types
 
 Field-level breakdowns of the MCP Registry **v1.8.1** `server.json` TypeScript
-shapes live in [`docs/server-json-types.md`](./docs/server-json-types.md)
+shapes live in
+[`docs/server-json-types.md`](../../docs/server-json-types.md)
 (source of truth: [`src/types.ts`](./src/types.ts)).
 
 ### Caller defaults (`McpServerMappingDefaults`)
@@ -103,8 +104,8 @@ Design decisions and scenarios live under
 
 ## Examples
 
-See [`examples/server-json/`](./examples/server-json/) for rewritten MCP Registry
-`server.json` fixtures useful for local testing.
+See [`examples/mcp-registry/server-json/`](../../examples/mcp-registry/server-json/)
+for rewritten MCP Registry `server.json` fixtures useful for local testing.
 
 ## Development
 
@@ -115,7 +116,7 @@ From the `workspaces/ai-integrations` workspace root:
 yarn tsc
 
 # Unit tests for this package
-yarn test -- plugins/mcp-registry-server-mapping-common/src
+yarn test -- plugins/catalog-mcp-registry-server-mapping/src
 
 # Lint / API report (when public exports change)
 yarn lint:all
