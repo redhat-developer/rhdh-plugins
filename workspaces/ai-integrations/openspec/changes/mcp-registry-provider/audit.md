@@ -1,6 +1,6 @@
 ## Audit Report: mcp-registry-provider
 
-**Last audited:** 2026-09-19T00:00:00Z
+**Last audited:** 2026-09-15T18:03:43Z
 
 ### Summary
 
