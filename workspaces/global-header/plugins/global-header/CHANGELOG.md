@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 3.1.0
+
+### Minor Changes
+
+- 14feff1: Add a `/blueprints` package export that exposes only `GlobalHeaderMenuItemBlueprint`, so consumer plugins can register help/menu items without pulling the critical header UI bundle (and its `MarkdownContent` / syntax-highlighter transitive graph) into their Module Federation async chunks.
+
 ## 3.0.0
 
 ### Major Changes
