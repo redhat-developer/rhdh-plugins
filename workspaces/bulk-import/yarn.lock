@@ -10885,9 +10885,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator@npm:6.2.0":
-  version: 6.2.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator@npm:6.2.0"
+"@red-hat-developer-hub/backstage-plugin-orchestrator@npm:6.2.1":
+  version: 6.2.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator@npm:6.2.1"
   dependencies:
     "@backstage/catalog-model": "npm:^1.9.0"
     "@backstage/core-components": "npm:^0.18.13"
@@ -10925,7 +10925,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 10c0/918fefa7e496b302f818c18387e5d0f6eb0d2669c7e024d62dc771ab84489166d15079114593c082cc0402d84e052b845da018b369c3a7cc980c1df3985fcae7
+  checksum: 10c0/cfa47985512418a72e4d48fe269d30cb8e59de1dff7887342cf29510abc7756617977f309792549adb3a5838d26631c5b375e0e277c50839c7ab0ea90d95f75c
   languageName: node
   linkType: hard
 
@@ -16121,7 +16121,7 @@ __metadata:
     "@playwright/test": "npm:1.63.0"
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.0"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.1"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:2.2.0"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
     "@spotify/prettier-config": "npm:^15.0.0"
@@ -16212,7 +16212,7 @@ __metadata:
     "@playwright/test": "npm:1.63.0"
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.0"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.1"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:2.2.0"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
     "@spotify/prettier-config": "npm:^15.0.0"
