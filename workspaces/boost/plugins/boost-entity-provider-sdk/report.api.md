@@ -196,13 +196,13 @@ export const SkillBundleMetadataSchema: z.ZodObject<
     version: string;
     description?: string | undefined;
     tags?: string[] | undefined;
+    author?: string | undefined;
     runtime?:
       | {
           language: string;
           dependencies?: Record<string, string> | undefined;
         }
       | undefined;
-    author?: string | undefined;
     mcp?:
       | {
           servers: string[];
@@ -214,13 +214,13 @@ export const SkillBundleMetadataSchema: z.ZodObject<
     version: string;
     description?: string | undefined;
     tags?: string[] | undefined;
+    author?: string | undefined;
     runtime?:
       | {
           language: string;
           dependencies?: Record<string, string> | undefined;
         }
       | undefined;
-    author?: string | undefined;
     mcp?:
       | {
           servers: string[];
