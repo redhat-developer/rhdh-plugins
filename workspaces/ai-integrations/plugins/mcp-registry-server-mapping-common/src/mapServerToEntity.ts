@@ -26,6 +26,7 @@ import type {
 import { deriveMetadataName } from './identity';
 import { isAllowedUrl } from './urlPolicy';
 import { computeRepositoryUrl } from './repository';
+import { assertServerJsonSchema } from './util';
 
 /**
  * Validate required source fields and throw actionable errors.
@@ -33,6 +34,8 @@ import { computeRepositoryUrl } from './repository';
  * @public
  */
 export function validateRequiredFields(doc: McpServerDocument): void {
+  assertServerJsonSchema(doc);
+
   const missing: string[] = [];
 
   if (doc.name === undefined || doc.name === null || doc.name === '') {
@@ -55,7 +58,7 @@ export function validateRequiredFields(doc: McpServerDocument): void {
         ', ',
       )}. ` +
         `These fields are required by the MCP server schema ` +
-        `(https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json).`,
+        `(https://raw.githubusercontent.com/modelcontextprotocol/registry/v1.8.1/docs/reference/server-json/draft/server.schema.json).`,
     );
   }
 }
@@ -67,9 +70,18 @@ export function validateRequiredFields(doc: McpServerDocument): void {
  * Returns the array of entity remotes. Throws when upstream
  * minItems: 1 cannot be satisfied.
  *
+ * When no valid remotes remain, a D8 placeholder is synthesized from
+ * `placeholderRemoteUrl` (if it passes D11) before falling back to
+ * `doc.websiteUrl`.
+ *
  * @public
  */
-export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
+export function mapRemotes(
+  doc: McpServerDocument,
+  placeholderRemoteUrl?: string,
+): McpServerRemote[] {
+  assertServerJsonSchema(doc);
+
   const sourceRemotes = doc.remotes ?? [];
 
   // Filter remotes whose url passes D11
@@ -96,8 +108,17 @@ export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
     return validRemotes;
   }
 
-  // No valid remotes — use placeholder with websiteUrl
+  // No valid remotes — D8 placeholder: caller override, then websiteUrl
   // (see openspec/changes/mcp-registry-server-mapping/design.md § D8)
+  if (isAllowedUrl(placeholderRemoteUrl)) {
+    return [
+      {
+        type: 'undefined',
+        url: placeholderRemoteUrl!.trim(),
+      },
+    ];
+  }
+
   if (isAllowedUrl(doc.websiteUrl)) {
     return [
       {
@@ -117,11 +138,17 @@ export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
         `"type" field is missing or empty)`
       : '';
 
+  const placeholderSources =
+    placeholderRemoteUrl !== undefined
+      ? 'placeholderRemoteUrl or websiteUrl'
+      : 'websiteUrl';
+
   throw new Error(
-    `MCP Registry server.json has no valid remotes and no valid websiteUrl ` +
-      `to use as a placeholder${typeFilteredHint}. At least one remote ` +
-      `with an http/https URL and a non-empty "type" string, or a valid ` +
-      `websiteUrl, is required to satisfy upstream ` +
+    `MCP Registry server.json has no valid remotes and no valid ` +
+      `${placeholderSources} to use as a placeholder` +
+      `${typeFilteredHint}. At least one remote with an http/https URL ` +
+      `and a non-empty "type" string, or a valid ${placeholderSources}, ` +
+      `is required to satisfy upstream ` +
       `spec.remotes minItems: 1 (McpServerApiEntity schema).`,
   );
 }
@@ -149,6 +176,8 @@ export interface LinksResult {
  * @public
  */
 export function buildLinks(doc: McpServerDocument): LinksResult {
+  assertServerJsonSchema(doc);
+
   const links: Array<{ url: string; title: string }> = [];
   const consumedPaths: string[] = [];
   const reservedAnnotationKeys: string[] = [];
@@ -183,9 +212,8 @@ export function buildLinks(doc: McpServerDocument): LinksResult {
       });
 
       // backstage.io/source-location annotation
-      annotations[
-        'backstage.io/source-location'
-      ] = `url:${repoResult.combinedUrl}`;
+      annotations['backstage.io/source-location'] =
+        `url:${repoResult.combinedUrl}`;
       reservedAnnotationKeys.push('backstage.io/source-location');
 
       // Dedicated repository.url annotation (unnormalized)
@@ -211,6 +239,8 @@ export function buildLinks(doc: McpServerDocument): LinksResult {
  * @public
  */
 export function trackConsumedRemotePaths(doc: McpServerDocument): string[] {
+  assertServerJsonSchema(doc);
+
   const consumedPaths: string[] = [];
   if (doc.remotes) {
     for (let i = 0; i < doc.remotes.length; i++) {
@@ -240,6 +270,8 @@ export function mapServerToEntity(
   doc: McpServerDocument,
   defaults?: McpServerMappingDefaults,
 ): McpServerMappingResult {
+  assertServerJsonSchema(doc);
+
   // Validate required fields
   validateRequiredFields(doc);
 
@@ -277,8 +309,8 @@ export function mapServerToEntity(
     consumedPaths.push('title');
   }
 
-  // Map remotes
-  const specRemotes = mapRemotes(doc);
+  // Map remotes (caller placeholder override before websiteUrl fallback)
+  const specRemotes = mapRemotes(doc, defaults?.placeholderRemoteUrl);
 
   // Track consumed remote paths symmetrically
   consumedPaths.push(...trackConsumedRemotePaths(doc));

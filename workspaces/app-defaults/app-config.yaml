@@ -10,6 +10,14 @@ app:
     - page:catalog:
         config:
           path: /
+          title: 'Home'
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+          defaultLanguage: 'en'
+    - nav-item:user-settings: false
+    - nav-item:search: false
+    - nav-item:home: false
 
 organization:
   name: My Company

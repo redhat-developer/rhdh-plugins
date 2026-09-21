@@ -27,17 +27,31 @@ function skipLintStagedEslintPrettier(file) {
   return base === '.eslintrc.js' || base === '.lintstagedrc.cjs';
 }
 
+function skipLintStagedEslint(file) {
+  const normalized = file.replace(/\\/g, '/');
+  if (skipLintStagedEslintPrettier(file)) {
+    return true;
+  }
+  return (
+    normalized.includes('/e2e-tests/') ||
+    normalized.endsWith('/playwright.config.ts')
+  );
+}
+
 module.exports = {
   '*.{js,jsx,ts,tsx,mjs,cjs}': filenames => {
-    const filtered = filenames.filter(f => !skipLintStagedEslintPrettier(f));
-    if (!filtered.length) {
+    const forPrettier = filenames.filter(f => !skipLintStagedEslintPrettier(f));
+    const forEslint = forPrettier.filter(f => !skipLintStagedEslint(f));
+    if (!forPrettier.length) {
       return [];
     }
-    const quoted = filtered.map(f => JSON.stringify(f));
-    return [
-      `eslint --fix ${quoted.join(' ')}`,
-      `prettier --write ${quoted.join(' ')}`,
-    ];
+    const quotedPrettier = forPrettier.map(f => JSON.stringify(f));
+    const commands = [`prettier --write ${quotedPrettier.join(' ')}`];
+    if (forEslint.length) {
+      const quotedEslint = forEslint.map(f => JSON.stringify(f));
+      commands.unshift(`eslint --fix ${quotedEslint.join(' ')}`);
+    }
+    return commands;
   },
   '*.{json,md}': ['prettier --write'],
 };

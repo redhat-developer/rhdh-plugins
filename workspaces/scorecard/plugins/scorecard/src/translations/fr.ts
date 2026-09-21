@@ -25,6 +25,7 @@ const scorecardTranslationFr = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Chargement',
+    'common.current': 'actuel',
     'dataSourcesDialog.title': '{{title}} sources',
     'dataSourcesDialog.close': 'Fermer',
     'dataSourcesDialog.unknownPlugin': 'Inconnu',

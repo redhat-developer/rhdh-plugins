@@ -410,6 +410,37 @@ test.describe('Intelligent assistant conversation', () => {
         await sharedPage.keyboard.press('Escape');
       });
 
+      test('Vision models show screenshot indicator in the dropdown list only', async () => {
+        const visionAriaLabel =
+          translations['modelSelector.visionScreenshot.ariaLabel'];
+        const toggle = sharedPage.locator(
+          `button[aria-label="${translations['aria.chatbotSelector']}"]`,
+        );
+
+        await expect(toggle.getByLabel(visionAriaLabel)).toHaveCount(0);
+
+        await toggle.click();
+
+        const visionItem = sharedPage.getByRole('menuitem', {
+          name: /mock-model-2/,
+        });
+        await expect(visionItem.getByLabel(visionAriaLabel)).toBeVisible();
+
+        const textItem = sharedPage.getByRole('menuitem', {
+          name: 'mock-model-1',
+        });
+        await expect(textItem.getByLabel(visionAriaLabel)).toHaveCount(0);
+
+        await expect(
+          visionItem.locator('.lightspeed-model-tick-slot'),
+        ).toBeVisible();
+        await expect(
+          textItem.locator('.lightspeed-model-tick-slot'),
+        ).toBeVisible();
+
+        await sharedPage.keyboard.press('Escape');
+      });
+
       test('Model selector becomes disabled after sending a message', async () => {
         await sendMessage(
           LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,

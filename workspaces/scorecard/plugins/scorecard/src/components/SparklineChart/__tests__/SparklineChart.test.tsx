@@ -19,6 +19,12 @@ import { render, screen } from '@testing-library/react';
 import { SparklineChart } from '../SparklineChart';
 import type { SparklineChartPoint } from '../../../utils/timeSeriesChartData';
 
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: () => ({
+    t: (key: string) => (key === 'common.current' ? 'current' : key),
+  }),
+}));
+
 jest.mock('recharts', () => {
   const actual = jest.requireActual('recharts');
   return {
@@ -58,6 +64,9 @@ describe('SparklineChart', () => {
     expect(screen.getByTestId('sparkline-chart-demo')).toBeInTheDocument();
     expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
     expect(screen.getByTestId('sparkline-tooltip-slot')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('sparkline-current-value'),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByTestId('sparkline-threshold-color'),
     ).not.toBeInTheDocument();
@@ -111,5 +120,58 @@ describe('SparklineChart', () => {
     expect(screen.getByText('Medium (1-7/week)')).toBeInTheDocument();
     expect(screen.getByText('Low (<1/week)')).toBeInTheDocument();
     expect(screen.getAllByTestId('sparkline-threshold-color')).toHaveLength(3);
+  });
+
+  it('should use the latest successful value when the last day is an error', () => {
+    render(
+      <SparklineChart
+        data={[
+          {
+            date: '2026-04-27T00:00:00.000Z',
+            dateLabel: 'Apr 27',
+            value: 4.7,
+            plotValue: 4.7,
+          },
+          {
+            date: '2026-04-30T00:00:00.000Z',
+            dateLabel: 'Apr 30',
+            value: null,
+            plotValue: 4.7,
+            error: 'Metric data unavailable',
+          },
+        ]}
+        color="#2e7d32"
+        testId="sparkline-chart-demo"
+        showCurrentValue
+      />,
+    );
+
+    expect(
+      screen.getByTestId('sparkline-current-value-number'),
+    ).toHaveTextContent('4.7');
+    expect(screen.getByText('current')).toBeInTheDocument();
+  });
+
+  it('should hide the current value when every point is an error', () => {
+    render(
+      <SparklineChart
+        data={[
+          {
+            date: '2026-04-30T00:00:00.000Z',
+            dateLabel: 'Apr 30',
+            value: null,
+            plotValue: 0,
+            error: 'Metric data unavailable',
+          },
+        ]}
+        color="#d32f2f"
+        testId="sparkline-chart-demo"
+        showCurrentValue
+      />,
+    );
+
+    expect(
+      screen.queryByTestId('sparkline-current-value'),
+    ).not.toBeInTheDocument();
   });
 });

@@ -132,7 +132,7 @@ const metric: MetricResult = {
     unit: '%',
     history: true,
     defaultVisualization: 'sparkline',
-    collectorIds: ['github:deploymentWorkflowRuns', 'jira:incidents'],
+    collectorIds: ['github:doraDeploymentWorkflowRuns', 'jira:doraIncidents'],
   },
   result: {
     value: 4.2,
@@ -455,11 +455,11 @@ describe('EntitySparklineCard', () => {
     useMetricCollectorsMock.mockReturnValue({
       data: [
         {
-          id: 'github:deploymentWorkflowRuns',
+          id: 'github:doraDeploymentWorkflowRuns',
           description: 'Collects deployments from GitHub Actions.',
         },
         {
-          id: 'jira:incidents',
+          id: 'jira:doraIncidents',
           description: 'Collects Jira incidents.',
         },
       ],

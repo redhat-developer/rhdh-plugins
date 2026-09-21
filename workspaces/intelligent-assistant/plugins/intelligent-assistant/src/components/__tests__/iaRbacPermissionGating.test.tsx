@@ -20,6 +20,7 @@ import {
   configApiRef,
   IdentityApi,
   identityApiRef,
+  storageApiRef,
 } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { mockApis, TestApiProvider } from '@backstage/test-utils';
@@ -361,6 +362,7 @@ const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
       apis={[
         [identityApiRef, identityApi],
         [configApiRef, configApi],
+        [storageApiRef, mockApis.storage()],
         [lightspeedApiRef, mockLightspeedApi],
         [notebooksApiRef, mockNotebooksApi],
       ]}
@@ -393,6 +395,7 @@ const setupLightspeedChatContainer = (
       apis={[
         [identityApiRef, identityApi],
         [configApiRef, configApi],
+        [storageApiRef, mockApis.storage()],
         [lightspeedApiRef, mockLightspeedApi],
         [notebooksApiRef, mockNotebooksApi],
       ]}

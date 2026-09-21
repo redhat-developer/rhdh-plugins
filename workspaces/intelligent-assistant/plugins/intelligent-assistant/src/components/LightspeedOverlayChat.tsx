@@ -69,6 +69,7 @@ export const LightspeedOverlayChat = ({
     onEscapePress={onEscapePress}
     ouiaId="LightspeedChatbotModal"
     aria-labelledby="lightspeed-chatpopup-modal"
+    data-screen-capture-exclude
   >
     <LightspeedChatContainer />
   </StyledChatbotModal>

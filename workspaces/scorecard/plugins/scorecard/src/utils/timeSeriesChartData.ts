@@ -175,6 +175,24 @@ export const toSparklineChartData = (
   }));
 };
 
+/**
+ * Latest finite metric value, skipping trailing error / empty days.
+ */
+export const getLatestNumericSparklineValue = (
+  points: SparklineChartPoint[],
+): number | undefined => {
+  for (let index = points.length - 1; index >= 0; index -= 1) {
+    const point = points[index];
+    if (point.error) {
+      continue;
+    }
+    if (typeof point.value === 'number' && Number.isFinite(point.value)) {
+      return point.value;
+    }
+  }
+  return undefined;
+};
+
 export const getSparklineYDomain = (
   points: SparklineChartPoint[],
 ): [number, number] => {

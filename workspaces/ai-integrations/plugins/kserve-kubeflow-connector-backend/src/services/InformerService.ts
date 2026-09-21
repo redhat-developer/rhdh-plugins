@@ -67,6 +67,11 @@ const INF_SVC_Ready_CONDITION = 'Ready';
 // Only the 'Ready' condition is shared; there is no modelStatus.transitionStatus.
 const LLM_INF_SVC_Ready_CONDITION = 'Ready';
 
+// Common HTTP-related appProtocol values recognized for Service port selection
+const HTTP_APP_PROTOCOLS = new Set(['http', 'https', 'h2c']);
+// Standard HTTP ports preferred when no appProtocol hint is available
+const PREFERRED_HTTP_PORTS = new Set([80, 443, 8080, 8443]);
+
 function buildImportKeyAndURI(
   namespace: string,
   name: string,
@@ -76,6 +81,151 @@ function buildImportKeyAndURI(
   const importKey = `${sanitizedNs}/${sanitizedName}`;
   const uri = `/models/${importKey}`;
   return [importKey, uri];
+}
+
+// Deep-clone an InferenceService so the informer cache object is never mutated.
+function cloneInferenceService(is: InferenceService): InferenceService {
+  const clone = structuredClone(is);
+  return clone;
+}
+
+// Check whether the Ready condition is present and True, independent of
+// other conditions (IngressReady, PredictorReady) or transitionStatus.
+function hasReadyConditionTrue(is: InferenceService): boolean {
+  return (
+    is.status?.conditions?.some(
+      c => c.type === 'Ready' && c.status === 'True',
+    ) ?? false
+  );
+}
+
+// Select the best usable port from a Kubernetes Service.  Prefers ports
+// with an HTTP-related appProtocol, then common HTTP port numbers, then
+// falls back to the first TCP port.
+function selectServicePort(
+  ports: Array<{
+    port: number;
+    protocol?: string;
+    appProtocol?: string;
+    name?: string;
+  }>,
+): { port: number; https: boolean } | undefined {
+  const tcpPorts = ports.filter(p => !p.protocol || p.protocol === 'TCP');
+  if (tcpPorts.length === 0) return undefined;
+
+  // Prefer ports with an HTTP-related appProtocol
+  for (const p of tcpPorts) {
+    if (p.appProtocol && HTTP_APP_PROTOCOLS.has(p.appProtocol.toLowerCase())) {
+      return { port: p.port, https: p.appProtocol.toLowerCase() === 'https' };
+    }
+  }
+
+  // Prefer well-known HTTP ports
+  for (const p of tcpPorts) {
+    if (PREFERRED_HTTP_PORTS.has(p.port)) {
+      return { port: p.port, https: p.port === 443 || p.port === 8443 };
+    }
+  }
+
+  // Fall back to the first TCP port
+  return { port: tcpPorts[0].port, https: false };
+}
+
+// Find a Kubernetes Service in the same namespace owned by the given
+// resource and derive a cluster-internal URL from it.
+async function findOwnedServiceUrl(
+  coreClient: k8s.CoreV1Api,
+  namespace: string,
+  name: string,
+  kind: string,
+  logger: LoggerService,
+): Promise<string | undefined> {
+  try {
+    const response = await coreClient.listNamespacedService(namespace);
+    const services = response.body.items;
+
+    for (const svc of services) {
+      const ownerMatch = svc.metadata?.ownerReferences?.some(
+        ref => ref.kind === kind && ref.name === name,
+      );
+      if (!ownerMatch) continue;
+
+      const ports = svc.spec?.ports;
+      if (!ports || ports.length === 0) continue;
+
+      const selected = selectServicePort(ports);
+      if (!selected) continue;
+
+      const svcName = svc.metadata?.name;
+      if (!svcName) continue;
+
+      const scheme = selected.https ? 'https' : 'http';
+      const portSuffix =
+        (selected.port === 80 && !selected.https) ||
+        (selected.port === 443 && selected.https)
+          ? ''
+          : `:${selected.port}`;
+      const url = `${scheme}://${svcName}.${namespace}.svc.cluster.local${portSuffix}`;
+
+      logger.info(
+        `findOwnedServiceUrl: Derived cluster-internal URL ${url} from Service ${namespace}/${svcName} for ${kind} ${namespace}/${name}`,
+      );
+      return url;
+    }
+
+    logger.debug(
+      `findOwnedServiceUrl: No owned Service found for ${kind} ${namespace}/${name}`,
+    );
+  } catch (error) {
+    logger.error(
+      `findOwnedServiceUrl: Error listing Services for ${kind} ${namespace}/${name}`,
+      error as Error,
+    );
+  }
+  return undefined;
+}
+
+// Enrich an InferenceService with a cluster-internal URL derived from an
+// owned Kubernetes Service when the resource is Ready but has no status URL.
+// Returns a clone with the derived URL set, or the original object unchanged.
+async function enrichWithServiceUrl(
+  is: InferenceService,
+  coreClient: k8s.CoreV1Api | undefined,
+  logger: LoggerService,
+  kind: string,
+): Promise<InferenceService> {
+  // Preserve existing status URL — no fallback needed
+  if (is.status?.url || is.status?.address?.url) {
+    return is;
+  }
+
+  if (!coreClient) {
+    return is;
+  }
+
+  // Only attempt fallback when the Ready condition is True
+  if (!hasReadyConditionTrue(is)) {
+    return is;
+  }
+
+  const url = await findOwnedServiceUrl(
+    coreClient,
+    is.metadata.namespace,
+    is.metadata.name,
+    kind,
+    logger,
+  );
+  if (!url) {
+    return is;
+  }
+
+  // Clone to avoid mutating the informer cache object
+  const enriched = cloneInferenceService(is);
+  if (!enriched.status) {
+    enriched.status = {};
+  }
+  enriched.status.url = url;
+  return enriched;
 }
 
 // When auth is configured, a service account is created whose name is prefixed with
@@ -311,9 +461,18 @@ async function reconcileInferenceService(
 
   logger.debug(`Reconciling ${kind}: ${namespace}/${name}`);
 
+  // Attempt Service URL fallback before readiness check — may return a
+  // clone with a derived cluster-internal URL when the original has none.
+  const enriched = await enrichWithServiceUrl(
+    is,
+    config.coreClient,
+    logger,
+    kind,
+  );
+
   const ready = isLLM
-    ? isLLMInferenceServiceReady(is, logger)
-    : isInferenceServiceReady(is, logger);
+    ? isLLMInferenceServiceReady(enriched, logger)
+    : isInferenceServiceReady(enriched, logger);
   if (!ready) {
     logger.debug(
       `${kind} ${namespace}/${name} is not ready yet, will retry later`,
@@ -335,7 +494,7 @@ async function reconcileInferenceService(
   const catalogData = await callKServeBackstagePrinters(
     config.defaultOwner || 'default-owner',
     config.defaultLifecycle || 'production',
-    is,
+    enriched,
     authentication,
     logger,
   );
@@ -527,7 +686,14 @@ async function innerStart(
         is.metadata.namespace,
         is.metadata.name,
       );
-      if (isInferenceServiceReady(is, logger)) {
+      // Apply Service URL fallback before readiness check
+      const enriched = await enrichWithServiceUrl(
+        is,
+        config.coreClient,
+        logger,
+        'InferenceService',
+      );
+      if (isInferenceServiceReady(enriched, logger)) {
         logger.debug(
           `innerStart: Adding importKey ${importKey} for ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
         );
@@ -572,7 +738,14 @@ async function innerStart(
         is.metadata.namespace,
         is.metadata.name,
       );
-      if (isLLMInferenceServiceReady(is, logger)) {
+      // Apply Service URL fallback before readiness check
+      const enriched = await enrichWithServiceUrl(
+        is,
+        config.coreClient,
+        logger,
+        'LLMInferenceService',
+      );
+      if (isLLMInferenceServiceReady(enriched, logger)) {
         logger.debug(
           `innerStart: Adding importKey ${importKey} for ready KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
         );
@@ -882,9 +1055,18 @@ export const setupInformer = async (
 
   registerInformerHandlers(config.informer, client, config);
 
+  // Start each informer independently so a missing CRD or startup
+  // failure for one does not prevent the other from running.
   logger.info('Starting informer for InferenceServices...');
-  await config.informer.start();
-  logger.info('Informer started.');
+  try {
+    await config.informer.start();
+    logger.info('Informer started.');
+  } catch (error) {
+    logger.error(
+      'Failed to start InferenceService informer — v1beta1 resources will not be discovered',
+      error as Error,
+    );
+  }
 
   // Informer for LLMInferenceService (serving.kserve.io/v1alpha2)
   const llmListFn: k8s.ListPromise<InferenceService> = () =>
@@ -903,8 +1085,15 @@ export const setupInformer = async (
   registerInformerHandlers(llmInformer, client, config, true);
 
   logger.info('Starting informer for LLMInferenceServices...');
-  await llmInformer.start();
-  logger.info('LLM Informer started.');
+  try {
+    await llmInformer.start();
+    logger.info('LLM Informer started.');
+  } catch (error) {
+    logger.error(
+      'Failed to start LLMInferenceService informer — v1alpha2 resources will not be discovered',
+      error as Error,
+    );
+  }
 
   // Background polling supplements both informers since there is no
   // re-list / re-sync in the TypeScript informer.

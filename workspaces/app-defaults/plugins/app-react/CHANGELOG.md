@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.5.0
+
+## 1.4.0
+
+### Patch Changes
+
+- 947374a: Add the Learning Paths NFS module (`learningPathsModule`) with a `/learning-paths` page, Developer Hub proxy-backed data, static JSON fallback, and localized page and nav titles. Also exports `translationRef` and documents the `developerHub.proxyPath` config key.
+
+  Updated Backstage version to 1.54.6
+
 ## 1.3.0
 
 ### Minor Changes

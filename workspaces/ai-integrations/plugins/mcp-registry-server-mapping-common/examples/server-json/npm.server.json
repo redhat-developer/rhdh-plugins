@@ -1,0 +1,40 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.example.labs/atlas-search",
+  "description": "MCP server that wraps the Atlas Search HTTP API for document discovery",
+  "title": "Atlas Search",
+  "websiteUrl": "https://labs.example.io/mcp/atlas-search",
+  "repository": {
+    "url": "https://github.com/example-labs/mcp-servers",
+    "source": "github"
+  },
+  "version": "2.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@example-labs/mcp-server-atlas-search",
+      "version": "2.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "ATLAS_SEARCH_API_KEY",
+          "description": "Atlas Search API key",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "tool": "npm-publisher",
+      "version": "1.2.0",
+      "build_info": {
+        "timestamp": "2025-03-14T09:15:00Z"
+      }
+    }
+  }
+}
