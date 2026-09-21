@@ -71,6 +71,22 @@ configuration paths are not compatibility aliases. Deferred Boost backend
 contracts such as `/api/boost`, `boost.providers.ogx`, and `BOOST_*` environment
 variables remain unchanged.
 
+Update configured frontend extension IDs from `page:boost/ai-catalog` to
+`page:ai-catalog/ai-catalog`, and replace the `boost` namespace in
+`ai-catalog-filter:boost/{category,owner,provider,tags}` and
+`entity-card:boost/{ai-asset-details,agent-instructions,usage}` with `ai-catalog`.
+The route remains `/ai-catalog`; existing catalog entities need no migration.
+Import `aiCatalogTranslationRef`, `aiCatalogTranslations`, and
+`aiCatalogTranslationsModule` instead of their `boost`-prefixed exports.
+The `./translations` entry point still exports the translation module as its
+default, and translation overrides now target `plugin.ai-catalog`.
+Custom CSS overrides must use `--ai-catalog-*` instead of `--boost-*`.
+
+For standalone OGX, move the endpoint, credentials, TLS, agents, and refresh
+settings together to `ai-catalog.entityProviders.ogx`. A configured block requires
+`baseUrl`; an absent block retains the localhost default. The old paths are
+ignored, including when old and new values coexist.
+
 ## Compatibility
 
 This workspace is aligned with **Backstage 1.54.6** (see [`backstage.json`](backstage.json)).

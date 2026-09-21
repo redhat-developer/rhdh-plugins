@@ -14,3 +14,8 @@
 ---
 
 Rename the first-release AI Catalog package family and update consumers to the new public package identities.
+
+Move standalone OGX configuration to `ai-catalog.entityProviders.ogx`; the old
+Boost configuration paths are no longer read by this module. Update frontend
+extension IDs to the `ai-catalog` namespace and translation overrides to
+`plugin.ai-catalog`. See the workspace README's consumer migration instructions.
