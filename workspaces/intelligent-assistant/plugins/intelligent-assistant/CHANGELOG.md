@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.0
+
+### Minor Changes
+
+- 0f9a3e8: Add screen context UX: kebab opt-in, context chip (recording/paused/unavailable), and gated DOM and screenshot attachments on send per RHIDP-14319.
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.0
+
 ## 5.2.0
 
 ### Minor Changes
