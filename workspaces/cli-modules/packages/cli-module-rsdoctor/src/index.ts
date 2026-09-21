@@ -15,7 +15,7 @@
  */
 
 /**
- * CLI module for the Backstage CLI.
+ * Backstage CLI module that adds Rsdoctor bundle analysis commands.
  *
  * @packageDocumentation
  */
@@ -27,9 +27,33 @@ export default createCliModule({
   packageJson,
   init: async reg => {
     reg.addCommand({
-      path: ['example'],
-      description: 'An example command',
-      execute: { loader: () => import('./commands/example') },
+      path: ['rsdoctor', 'build'],
+      description:
+        'Build the current frontend package with Rspack and generate an Rsdoctor report',
+      execute: { loader: () => import('./commands/build') },
+    });
+    reg.addCommand({
+      path: ['rsdoctor', 'start'],
+      description:
+        'Start the dev server of the current frontend package with a live Rsdoctor report',
+      execute: { loader: () => import('./commands/start') },
+    });
+    reg.addCommand({
+      path: ['rsdoctor', 'analyze'],
+      description: 'Open the Rsdoctor report of a previous build',
+      execute: { loader: () => import('./commands/analyze') },
+    });
+    reg.addCommand({
+      path: ['rsdoctor', 'check'],
+      description:
+        'Check the sizes of a previous build against the size budgets without rebuilding',
+      execute: { loader: () => import('./commands/check') },
+    });
+    reg.addCommand({
+      path: ['rsdoctor', 'diff'],
+      description:
+        'Compare the bundle sizes of two builds and optionally generate the Rsdoctor bundle diff',
+      execute: { loader: () => import('./commands/diff') },
     });
   },
 });
