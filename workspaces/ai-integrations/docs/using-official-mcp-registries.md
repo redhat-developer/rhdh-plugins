@@ -72,7 +72,7 @@ for `pageLimit`, `pageSize`, `maxEntries`, `schedule`, and related settings.
 
 **Note**: The [Production](https://registry.modelcontextprotocol.io) environment has
 _over 5000 entries_ so it is recommended to review [provider configuration options](../plugins/catalog-backend-module-mcp-registry-provider/README.md#configuration-options) to
-configure a setup that respects rate limiting and that works for you.
+configure a setup that respects rate limiting and that works for your deployment resources.
 
 ## How the provider uses the official API
 
