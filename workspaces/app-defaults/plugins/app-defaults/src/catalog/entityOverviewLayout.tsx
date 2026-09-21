@@ -39,6 +39,10 @@ const rightColumn = {
   xs: '1 / -1',
 } as const;
 
+const fullWidthColumn = {
+  xs: '1 / -1',
+} as const;
+
 /**
  * RHDH overview layout: NFS-composed cards with info (About, Links) on the left
  * and content cards on the right, matching RHDH 1.10 / demo.backstage.io.
@@ -56,10 +60,12 @@ export const EntityOverviewLayout = ({ cards }: EntityContentLayoutProps) => {
 
   const hasInfo = infoCards.length > 0;
   const hasContent = contentCards.length > 0;
-  // Legacy RHDH keeps About/Links in the left band even when Overview has no
-  // right-column cards (e.g. components after dependency cards move off Overview).
-  const infoColumn = leftColumn;
-  const contentColumn = rightColumn;
+  // Two-column layout only when both groups are present; otherwise the
+  // non-empty group spans full width so Overview isn't left with blank space
+  // (e.g. components after dependency cards move off Overview).
+  const useTwoColumns = hasInfo && hasContent;
+  const infoColumn = useTwoColumns ? leftColumn : fullWidthColumn;
+  const contentColumn = useTwoColumns ? rightColumn : fullWidthColumn;
 
   return (
     <Grid container>

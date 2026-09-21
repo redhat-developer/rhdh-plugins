@@ -30,6 +30,10 @@ const listColumn = {
   xs: '1 / -1',
 } as const;
 
+const fullWidthColumn = {
+  xs: '1 / -1',
+} as const;
+
 const gridItemSx = {
   minWidth: 0,
   maxWidth: '100%',
@@ -51,15 +55,26 @@ export const EntityDependenciesLayout = ({
     card => card.type && card.type !== 'info' && card.type !== 'content',
   );
 
+  const hasInfo = infoCards.length > 0;
+  const hasLists = listCards.length > 0;
+  // Two-column layout only when both groups are present; otherwise the
+  // non-empty group spans full width (e.g. list cards after the graph card
+  // is disabled, or graph-only when list cards are absent).
+  const useTwoColumns = hasInfo && hasLists;
+  const infoColumn = useTwoColumns ? graphColumn : fullWidthColumn;
+  const contentColumn = useTwoColumns ? listColumn : fullWidthColumn;
+
   return (
     <Grid container>
-      {infoCards.length > 0 ? (
+      {hasInfo ? (
         <Grid
           item
           sx={{
             ...gridItemSx,
-            gridColumn: graphColumn,
-            gridRow: { md: '1 / span 6', lg: '1 / span 6' },
+            gridColumn: infoColumn,
+            gridRow: useTwoColumns
+              ? { md: '1 / span 6', lg: '1 / span 6' }
+              : undefined,
           }}
         >
           <Grid container>
@@ -79,7 +94,7 @@ export const EntityDependenciesLayout = ({
         <Grid
           item
           key={card.element.key ?? index}
-          sx={{ ...gridItemSx, gridColumn: listColumn }}
+          sx={{ ...gridItemSx, gridColumn: contentColumn }}
         >
           {card.element}
         </Grid>

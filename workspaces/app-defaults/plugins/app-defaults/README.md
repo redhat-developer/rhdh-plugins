@@ -126,12 +126,12 @@ To show one of these on Overview again, override its attachment back to `entity-
 
 ### Disabled or replaced on Overview
 
-| Extension                                                         | Default behavior                                |
-| ----------------------------------------------------------------- | ----------------------------------------------- |
-| `entity-card:catalog-graph/relations`                             | Disabled in `catalog-graph-plugin-override`     |
-| `entity-card:catalog-graph/rhdh-overview-relations`               | Overview graph for **API** and **System** only  |
-| `entity-card:catalog-graph/rhdh-component-dependencies-relations` | Dependencies graph for **components** only      |
-| `entity-card:api-docs/definition`                                 | Hidden on Overview (`api-docs-plugin-override`) |
+| Extension                                                         | Default behavior                                                          |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `entity-card:catalog-graph/relations`                             | Hidden via factory filter; restore with `config.useOriginalFactory: true` |
+| `entity-card:catalog-graph/rhdh-overview-relations`               | Overview graph for **API** and **System** only                            |
+| `entity-card:catalog-graph/rhdh-component-dependencies-relations` | Dependencies graph for **components** only                                |
+| `entity-card:api-docs/definition`                                 | Hidden on Overview (`api-docs-plugin-override`)                           |
 
 Optional tuning (height, direction):
 
@@ -146,7 +146,18 @@ app:
 ### Reverting to stock Backstage NFS entity UX
 
 1. **Overview columns only**: disable `entity-content-layout:catalog/rhdh` (exact disable syntax depends on your app’s extension config; omit the layout extension from app-defaults by not loading `catalogPluginOverride`, or override with stock layout).
-2. **Stock relations card**: set `entity-card:catalog-graph/relations: true` (or remove `false`) and disable both `rhdh-*-relations` extensions.
+2. **Stock relations card**: restore the original factory and disable both `rhdh-*-relations` extensions:
+
+```yaml
+app:
+  extensions:
+    - entity-card:catalog-graph/relations:
+        config:
+          useOriginalFactory: true
+    - entity-card:catalog-graph/rhdh-overview-relations: false
+    - entity-card:catalog-graph/rhdh-component-dependencies-relations: false
+```
+
 3. **Overview cards**: remove card attachment overrides by not loading app-defaults catalog / api-docs overrides, or re-attach cards to Overview in your own overrides.
 4. **Tabs**: disable `entity-content:catalog/rhdh-component-dependencies` and `entity-content:catalog/rhdh-system-diagram` in `app.extensions`.
 

@@ -16,6 +16,7 @@
 
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import catalogGraphPlugin from '@backstage/plugin-catalog-graph/alpha';
+import { z } from 'zod/v4';
 import { entityOverviewGraphCardExtension } from './entityOverviewGraphCardExtension';
 import { entityDependenciesGraphCardExtension } from './entityDependenciesGraphCardExtension';
 import { CustomCatalogGraphPage } from './CustomCatalogGraphPage';
@@ -32,7 +33,15 @@ export const catalogGraphPluginOverride = catalogGraphPlugin.withOverrides({
     catalogGraphPlugin
       .getExtension('entity-card:catalog-graph/relations')
       .override({
-        factory(originalFactory) {
+        configSchema: {
+          // When true, call the stock factory (no hide filter) so the card can
+          // be restored without removing catalog-graph-plugin-override.
+          useOriginalFactory: z.boolean().optional(),
+        },
+        factory(originalFactory, { config }) {
+          if (config.useOriginalFactory) {
+            return originalFactory();
+          }
           // Replaced by rhdh-overview-relations / rhdh-component-dependencies-relations.
           return originalFactory({
             params: {
