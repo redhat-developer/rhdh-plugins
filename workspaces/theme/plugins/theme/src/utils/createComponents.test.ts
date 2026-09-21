@@ -106,18 +106,38 @@ describe('createComponents', () => {
     const desktop = root?.['@media (min-width: 600px)'] as
       | Record<string, unknown>
       | undefined;
+    expect(desktop).toEqual(
+      expect.objectContaining({
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        height: '100vh',
+        maxHeight: '100vh',
+        overscrollBehavior: 'none',
+        paddingTop: '1.5rem',
+        paddingRight: '1.5rem',
+        paddingBottom: '1.5rem',
+      }),
+    );
     expect(
-      desktop?.["& > [class*='MuiLinearProgress-root'], & > main"],
+      desktop?.[
+        "& > [class*='MuiLinearProgress-root'], & > main, & > [class*='RHDHPageMainContainer']"
+      ],
     ).toEqual(
       expect.objectContaining({
         backgroundColor: '#292929',
-        minHeight: 'calc(100vh - 2 * 1.5rem)',
-        maxHeight: 'calc(100vh - 2 * 1.5rem)',
+        borderRadius: '1rem',
+        margin: 0,
+        flex: '1 1 auto',
+        minHeight: 0,
+        overflowY: 'auto',
+        overscrollBehaviorY: 'contain',
+        display: 'flex',
+        flexDirection: 'column',
       }),
     );
   });
 
-  it('makes NFS BUI main a flex column so nested Containers can grow', () => {
+  it('makes NFS BUI main a flex column without unlocking viewport height', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
       | Record<string, unknown>
@@ -125,14 +145,14 @@ describe('createComponents', () => {
     const desktop = root?.['@media (min-width: 600px)'] as
       | Record<string, unknown>
       | undefined;
-    expect(desktop?.['& > main:has([class*="bui-Container"])']).toEqual(
+    expect(
+      desktop?.[
+        "& > [class*='MuiLinearProgress-root'], & > main, & > [class*='RHDHPageMainContainer']"
+      ],
+    ).toEqual(
       expect.objectContaining({
         display: 'flex',
         flexDirection: 'column',
-        flex: '1 0 auto',
-        minHeight: 'calc(100vh - 2 * 1.5rem)',
-        height: 'auto',
-        maxHeight: 'none !important',
       }),
     );
   });
@@ -154,7 +174,9 @@ describe('createComponents', () => {
       | Record<string, unknown>
       | undefined;
     expect(
-      desktop?.["& > [class*='bui-Container']:not([class*='bui-Header'])"],
+      desktop?.[
+        "& > [class*='bui-Container']:not([class*='bui-Header']), & > [class*='RHDHPageMainContainer'] [class*='bui-Container']:not([class*='bui-Header'])"
+      ],
     ).toEqual(
       expect.objectContaining({
         backgroundColor: '#292929',
@@ -171,7 +193,9 @@ describe('createComponents', () => {
       | Record<string, unknown>
       | undefined;
     expect(
-      desktop?.['& > article, & > [class*="BackstageContent-root"]'],
+      desktop?.[
+        '& > article, & > [class*="BackstageContent-root"], & > [class*="RHDHPageMainContainer"] > article, & > [class*="RHDHPageMainContainer"] > [class*="BackstageContent-root"]'
+      ],
     ).toEqual(
       expect.objectContaining({
         flex: 1,

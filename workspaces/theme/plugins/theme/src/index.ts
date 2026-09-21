@@ -28,7 +28,7 @@ import './assets/fonts/font.min.css';
 import './assets/bui/tokens.css';
 import './assets/bui/component-overrides.css';
 
-export { LogoFull, LogoIcon } from './components';
+export { LogoFull, LogoIcon, PageMainContainer } from './components';
 
 /**
  * RHDH themes as NFS extensions (ThemeBlueprint).
