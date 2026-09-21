@@ -23,6 +23,7 @@
           {
             "name": "ATLAS_SEARCH_API_KEY",
             "description": "Atlas Search API key",
+            "value": "1234567890",
             "isRequired": true,
             "isSecret": true
           }
