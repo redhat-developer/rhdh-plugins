@@ -163,14 +163,33 @@ jobs:
             local backport_branch="backport/${pr_number}-to-${target_branch}"
             local backport_label="backport-${target_branch%%/*}"
             local body_file=''
-            local branch_pushed=false
 
             cleanup_branch() {
               rm -f "$body_file"
-              if [[ "$branch_pushed" == true ]]; then
-                echo "Removing orphaned backport branch '$backport_branch'." >&2
-                git push origin --delete "$backport_branch" || true
+
+              if ! git ls-remote --exit-code origin "refs/heads/$backport_branch" >/dev/null; then
+                return 0
               fi
+
+              local existing_pr
+              if ! existing_pr=$(gh pr list \
+                --repo "$GITHUB_REPOSITORY" \
+                --head "$backport_branch" \
+                --base "$target_branch" \
+                --state all \
+                --json number \
+                --jq '.[0].number // empty'); then
+                echo "Unable to determine whether backport PR exists for '$backport_branch'; preserving the branch." >&2
+                return 1
+              fi
+
+              if [[ -n "$existing_pr" ]]; then
+                echo "Backport PR #$existing_pr exists; preserving branch '$backport_branch'." >&2
+                return 0
+              fi
+
+              echo "Removing orphaned backport branch '$backport_branch'." >&2
+              git push origin --delete "$backport_branch"
             }
 
             if ! git ls-remote --exit-code origin "refs/heads/$target_branch" >/dev/null; then
@@ -220,10 +239,9 @@ jobs:
             done
 
             if ! git push --set-upstream origin "$backport_branch"; then
-              cleanup_branch
+              cleanup_branch || true
               return 1
             fi
-            branch_pushed=true
 
             body_file=$(mktemp)
             printf 'This pull request backports [#%s](%s) to `%s`.\n\nPlease resolve any conflicts and complete the normal review before merging.\n' \
@@ -238,12 +256,11 @@ jobs:
               --title "Backport #${pr_number}: ${pr_title}" \
               --body-file "$body_file" \
               --label "$backport_label"; then
-              cleanup_branch
+              cleanup_branch || true
               return 1
             fi
 
             rm -f "$body_file"
-            branch_pushed=false
             git switch --detach "origin/main"
             git branch --delete --force "$backport_branch"
           }
