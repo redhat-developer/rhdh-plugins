@@ -73,7 +73,12 @@ together.
 
 Frontend translations (de, es, fr, it, ja) are implemented and archived
 in `openspec/specs/ai-catalog-translations/`. Playwright locale coverage
-is included.
+is included. Runtime verification of locale switching and English fallback
+(archived tasks 10–11) is deferred to a live RHDH environment; Backstage's
+`createTranslationRef` provides English fallback by design.
+
+Category badge labels (`categoryMeta.ts`) are entity-type taxonomy
+identifiers and are intentionally not covered by the translation resource.
 
 There is no remaining active frontend work in `openspec/changes/`.
 

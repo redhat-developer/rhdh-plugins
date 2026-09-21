@@ -16,19 +16,8 @@
 
 import { expect, test, type Page, type Route } from '@playwright/test';
 
+import { runAccessibilityTests } from './utils/accessibility';
 import { getTranslations, type BoostMessages } from './utils/translations';
-
-/**
- * Locale display names used in the RHDH Settings language selector.
- */
-const LOCALE_DISPLAY_NAMES: Record<string, string> = {
-  en: 'English',
-  de: 'Deutsch',
-  es: 'Español',
-  fr: 'Français',
-  it: 'Italiano',
-  ja: '日本語',
-};
 
 const skillEntity = {
   apiVersion: 'backstage.io/v1alpha1',
@@ -74,35 +63,36 @@ async function mockCatalogEntities(page: Page, items: unknown[]) {
   });
 }
 
-async function signInAndSwitchLocale(
-  page: Page,
-  locale: string,
-): Promise<void> {
+/**
+ * Sign in as a guest and wait for the app shell to render.
+ *
+ * Locale switching is handled by Playwright's project-level `locale`
+ * config, which sets `navigator.language`. The Backstage translation
+ * system reads the browser locale automatically — no Settings UI
+ * interaction is needed.
+ */
+async function signInAsGuest(page: Page): Promise<void> {
   page.on('dialog', dialog => dialog.accept());
   await page.goto('/');
   const enter = page.getByRole('button', { name: 'Enter' });
-  const settingsLink = page.getByRole('link', { name: 'Settings' });
-  await expect(enter.or(settingsLink).first()).toBeVisible({
+  // The sidebar link text is host-app chrome (always English)
+  const sidebarLink = page
+    .getByRole('navigation', { name: 'sidebar nav' })
+    .getByRole('link', { name: 'AI Catalog' });
+  await expect(enter.or(sidebarLink).first()).toBeVisible({
     timeout: 30_000,
   });
   if (await enter.isVisible()) {
     await enter.click();
-  }
-
-  const baseLocale = locale.split('-')[0];
-  if (baseLocale !== 'en') {
-    const displayName = LOCALE_DISPLAY_NAMES[baseLocale];
-    await settingsLink.waitFor({ state: 'visible', timeout: 10_000 });
-    await settingsLink.click();
-    await page.getByRole('button', { name: 'English' }).click();
-    await page.getByRole('option', { name: displayName }).click();
+    // Wait for session initialization: sidebar renders after auth completes
+    await sidebarLink.waitFor({ state: 'visible', timeout: 30_000 });
   }
 }
 
 test.describe('Boost AI Catalog translations', () => {
   test('renders representative strings in the configured locale', async ({
     page,
-  }) => {
+  }, testInfo) => {
     const currentLocale = await page.evaluate(
       () => globalThis.navigator.language,
     );
@@ -110,7 +100,7 @@ test.describe('Boost AI Catalog translations', () => {
     const translations: BoostMessages = getTranslations(baseLocale);
 
     await mockCatalogEntities(page, [skillEntity]);
-    await signInAndSwitchLocale(page, currentLocale);
+    await signInAsGuest(page);
 
     await page.goto('/ai-catalog');
 
@@ -126,15 +116,13 @@ test.describe('Boost AI Catalog translations', () => {
       }),
     ).toBeVisible();
 
-    // Verify the sidebar navigation label
-    await expect(
-      page
-        .getByRole('navigation', { name: 'sidebar nav' })
-        .getByRole('link', { name: translations.nav.aiCatalog }),
-    ).toBeVisible();
+    // Accessibility check covers every locale project, including non-English
+    await runAccessibilityTests(page, testInfo);
   });
 
-  test('renders empty state in the configured locale', async ({ page }) => {
+  test('renders empty state in the configured locale', async ({
+    page,
+  }, testInfo) => {
     const currentLocale = await page.evaluate(
       () => globalThis.navigator.language,
     );
@@ -142,7 +130,7 @@ test.describe('Boost AI Catalog translations', () => {
     const translations: BoostMessages = getTranslations(baseLocale);
 
     await mockCatalogEntities(page, []);
-    await signInAndSwitchLocale(page, currentLocale);
+    await signInAsGuest(page);
 
     await page.goto('/ai-catalog');
 

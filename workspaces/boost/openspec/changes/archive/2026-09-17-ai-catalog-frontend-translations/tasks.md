@@ -9,5 +9,5 @@
 - [x] 7. Register lazy locale imports in `src/translations/index.ts`
 - [x] 8. Audit user-facing strings against `ref.ts`
 - [x] 9. Preserve interpolation placeholders in all locale files
-- [ ] 10. Verify locale switching in the dev app
-- [ ] 11. Verify English fallback for missing keys
+- [ ] 10. ~~Verify locale switching in the dev app~~ — deferred: requires a live RHDH instance with the Settings language selector
+- [ ] 11. ~~Verify English fallback for missing keys~~ — deferred: requires a live RHDH instance; Backstage's `createTranslationRef` provides English fallback by design
