@@ -101,7 +101,7 @@ override the identity prefix if needed for future multi-registry support.
 
 ### Pagination
 
-The provider fully traverses the registry's cursor-based pagination, accumulating all server entries. Cursors are treated as opaque strings. The `pageLimit` configuration caps the number of pages fetched **per sync**. If the registry still has more pages after that cap, the provider saves the next cursor, buffers the entries fetched so far, and continues from that cursor on the next scheduled sync — it does **not** commit a mutation until a sync reaches the end of the registry (no `nextCursor`). When a traversal completes, the provider commits a full mutation and the following sync starts from the beginning again. The `maxEntries` configuration caps the total buffered servers for that complete traversal (not per individual sync tick). When the cap is hit, the provider commits the buffered entries, saves that stop point as an **end cursor**, and later full traversals end at that cursor instead of a missing `nextCursor`. Patching `maxEntries` clears the saved end cursor so traversal returns to normal.
+The provider fully traverses the registry's cursor-based pagination, accumulating all server entries. Cursors are treated as opaque strings. The `pageLimit` configuration caps the number of pages fetched **per sync**. If the registry still has more pages after that cap, the provider saves the next cursor, buffers the entries fetched so far, and continues from that cursor on the next scheduled sync — it does **not** commit a mutation until a sync reaches the end of the registry (no `nextCursor`). When a traversal completes, the provider commits a full mutation and the following sync starts from the beginning again. The `maxEntries` configuration caps the total buffered servers for that complete traversal (not per individual sync tick). When the cap is hit, the provider commits the buffered entries, saves that stop point as an **end cursor**, and later full traversals end at that cursor instead of a missing `nextCursor`. Servers that were committed earlier but fall outside the soft-stop window on a later sync (for example when new registry entries shift page listings) are retained from last-good with `redhat.com/rhdh-mcp-registry-sync-status: degraded` instead of being pruned. Patching `maxEntries` clears the saved end cursor so traversal returns to normal.
 
 ### Mapping
 
@@ -113,7 +113,8 @@ When a registry traversal completes (no remaining `nextCursor`, possibly after s
 
 ### Error handling
 
-- **Per-entry failures**: If a single server entry fails mapping, the provider logs the error and continues. If a last-good entity exists for that server (matched by `name` and `version`), it is retained with `redhat.com/rhdh-mcp-registry-sync-status: degraded`.
+- **Per-entry failures**: If a single server entry fails mapping or formatting validation (for example an invalid or malformed `server.json`), the provider logs the error and continues. If a last-good entity exists for that server (matched by `name` and `version`), it is retained with `redhat.com/rhdh-mcp-registry-sync-status: degraded` and re-added on later syncs until mapping succeeds again.
+- **Soft-stop window shifts**: While an end cursor from `maxEntries` is active, previously synced servers that are no longer inside the truncated window are retained the same way (`degraded`) and re-added on later syncs until they appear in the soft-stop window again.
 - **Registry-level failures**: Transport errors, non-2xx responses, unparseable JSON, or pagination safeguard trips abort the sync — no mutation is committed, preserving the prior catalog state.
 
 ### Annotations

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import { McpRegistryEntityProvider } from './McpRegistryEntityProvider';
 import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
@@ -790,7 +792,7 @@ describe('McpRegistryEntityProvider', () => {
     expect(mutation.entities).toHaveLength(2);
   });
 
-  it('does not retain degraded entities in lastGoodIndex on subsequent syncs', async () => {
+  it('keeps re-adding degraded entities on subsequent syncs until refreshed', async () => {
     const goodBody: McpRegistryListResponse = {
       servers: [{ server: createMockServerDoc('test/server', '1.0.0') }],
       metadata: { count: 1 },
@@ -819,42 +821,302 @@ describe('McpRegistryEntityProvider', () => {
       json: async () => goodBody,
       text: async () => JSON.stringify(goodBody),
     } as unknown as Response);
-    // Second sync — mapping fails, uses last-good (degraded)
+    // Second and third syncs — mapping fails; degraded last-good is re-added
     combinedFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => badBody,
       text: async () => JSON.stringify(badBody),
     } as unknown as Response);
-    // Third sync — mapping fails again; degraded entity from second
-    // sync should NOT be in last-good index
     combinedFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => badBody,
       text: async () => JSON.stringify(badBody),
+    } as unknown as Response);
+    // Fourth sync — mapping succeeds again
+    combinedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => goodBody,
+      text: async () => JSON.stringify(goodBody),
     } as unknown as Response);
 
     const connection = createMockConnection();
-    const logger = createMockLogger();
     const provider = new McpRegistryEntityProvider(
       createDefaultConfig(),
-      logger,
+      createMockLogger(),
       { fetchApi: combinedFetch },
     );
     await provider.connect(connection);
 
-    // First sync — populates last-good
     await provider.run();
-    // Second sync — uses last-good, commits degraded
     await provider.run();
-    // Third sync — degraded entity from second sync should not be
-    // in last-good index, so no entity should be retained
+    await provider.run();
     await provider.run();
 
+    expect(connection.applyMutation).toHaveBeenCalledTimes(4);
+    const secondMutation = (connection.applyMutation as jest.Mock).mock
+      .calls[1][0];
+    const thirdMutation = (connection.applyMutation as jest.Mock).mock
+      .calls[2][0];
+    const fourthMutation = (connection.applyMutation as jest.Mock).mock
+      .calls[3][0];
+
+    expect(secondMutation.entities).toHaveLength(1);
+    expect(
+      secondMutation.entities[0].entity.metadata.annotations?.[
+        'redhat.com/rhdh-mcp-registry-sync-status'
+      ],
+    ).toBe('degraded');
+    expect(thirdMutation.entities).toHaveLength(1);
+    expect(
+      thirdMutation.entities[0].entity.metadata.annotations?.[
+        'redhat.com/rhdh-mcp-registry-sync-status'
+      ],
+    ).toBe('degraded');
+    expect(fourthMutation.entities).toHaveLength(1);
+    expect(
+      fourthMutation.entities[0].entity.metadata.annotations?.[
+        'redhat.com/rhdh-mcp-registry-sync-status'
+      ],
+    ).toBe('ok');
+  });
+
+  it('retains last-good as degraded when maxEntries soft-stop drops a previously synced seed server after a listing shift', async () => {
+    const seedDocs = JSON.parse(
+      readFileSync(
+        resolve(
+          __dirname,
+          '../../../examples/mcp-registry/seed-data/seed.json',
+        ),
+        'utf8',
+      ),
+    ) as Array<{ name: string; version: string }>;
+
+    expect(seedDocs).toHaveLength(4);
+    const [atlas, workspaceFs, diceWeather, remoteWorkspace] = seedDocs;
+    const inserted = createMockServerDoc('io.example.labs/new-front', '0.1.0');
+
+    // pageSize=1 so maxEntries=3 soft-stops after three servers and
+    // saves an end cursor at the fourth page's request cursor.
+    const firstPassPages: McpRegistryListResponse[] = [
+      {
+        servers: [{ server: atlas as any }],
+        metadata: { count: 4, nextCursor: 'cursor-1' },
+      },
+      {
+        servers: [{ server: workspaceFs as any }],
+        metadata: { count: 4, nextCursor: 'cursor-2' },
+      },
+      {
+        servers: [{ server: diceWeather as any }],
+        metadata: { count: 4, nextCursor: 'cursor-3' },
+      },
+      {
+        servers: [{ server: remoteWorkspace as any }],
+        metadata: { count: 4, nextCursor: 'cursor-4' },
+      },
+    ];
+
+    // New entry at the front shifts listings; traversal still stops at
+    // endCursor cursor-3, so dice-weather falls out of the window.
+    const secondPassPages: McpRegistryListResponse[] = [
+      {
+        servers: [{ server: inserted }],
+        metadata: { count: 5, nextCursor: 'cursor-1' },
+      },
+      {
+        servers: [{ server: atlas as any }],
+        metadata: { count: 5, nextCursor: 'cursor-2' },
+      },
+      {
+        servers: [{ server: workspaceFs as any }],
+        metadata: { count: 5, nextCursor: 'cursor-3' },
+      },
+    ];
+
+    const fetchFn = mockFetchForResponses([
+      ...firstPassPages,
+      ...secondPassPages,
+      ...secondPassPages,
+    ]);
+    const connection = createMockConnection();
+    const logger = createMockLogger();
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig({
+        maxEntries: 3,
+        pageSize: 1,
+        pageLimit: 10,
+        defaultOwner: 'default-owner',
+      }),
+      logger,
+      { fetchApi: fetchFn },
+    );
+    await provider.connect(connection);
+
+    await provider.run();
+    expect(connection.applyMutation).toHaveBeenCalledTimes(1);
+    const firstMutation = (connection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    const firstNames = firstMutation.entities.map(
+      (d: { entity: { metadata: { annotations?: Record<string, string> } } }) =>
+        d.entity.metadata.annotations?.['modelcontextprotocol.io/name'],
+    );
+    expect(firstNames).toEqual([
+      atlas.name,
+      workspaceFs.name,
+      diceWeather.name,
+    ]);
+    expect(
+      firstMutation.entities.every(
+        (d: {
+          entity: { metadata: { annotations?: Record<string, string> } };
+        }) =>
+          d.entity.metadata.annotations?.[
+            'redhat.com/rhdh-mcp-registry-sync-status'
+          ] === 'ok',
+      ),
+    ).toBe(true);
+
+    await provider.run();
+    expect(connection.applyMutation).toHaveBeenCalledTimes(2);
+    const secondMutation = (connection.applyMutation as jest.Mock).mock
+      .calls[1][0];
+    const secondByName = new Map(
+      secondMutation.entities.map(
+        (d: {
+          entity: { metadata: { annotations?: Record<string, string> } };
+        }) => [
+          d.entity.metadata.annotations?.['modelcontextprotocol.io/name'],
+          d.entity.metadata.annotations?.[
+            'redhat.com/rhdh-mcp-registry-sync-status'
+          ],
+        ],
+      ),
+    );
+
+    expect(secondByName.get(inserted.name)).toBe('ok');
+    expect(secondByName.get(atlas.name)).toBe('ok');
+    expect(secondByName.get(workspaceFs.name)).toBe('ok');
+    expect(secondByName.get(diceWeather.name)).toBe('degraded');
+    expect(secondByName.has(remoteWorkspace.name)).toBe(false);
+    expect(secondMutation.entities).toHaveLength(4);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('degraded entries'),
+    );
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining(diceWeather.name),
+    );
+
+    // Third sync: still outside the window — degraded must be re-added.
+    await provider.run();
     expect(connection.applyMutation).toHaveBeenCalledTimes(3);
     const thirdMutation = (connection.applyMutation as jest.Mock).mock
       .calls[2][0];
-    expect(thirdMutation.entities).toHaveLength(0);
+    const thirdByName = new Map(
+      thirdMutation.entities.map(
+        (d: {
+          entity: { metadata: { annotations?: Record<string, string> } };
+        }) => [
+          d.entity.metadata.annotations?.['modelcontextprotocol.io/name'],
+          d.entity.metadata.annotations?.[
+            'redhat.com/rhdh-mcp-registry-sync-status'
+          ],
+        ],
+      ),
+    );
+    expect(thirdMutation.entities).toHaveLength(4);
+    expect(thirdByName.get(diceWeather.name)).toBe('degraded');
+  });
+
+  it('retains last-good as degraded on formatting/mapping failure while maxEntries soft-stop is active', async () => {
+    const seedDocs = JSON.parse(
+      readFileSync(
+        resolve(
+          __dirname,
+          '../../../examples/mcp-registry/seed-data/seed.json',
+        ),
+        'utf8',
+      ),
+    ) as Array<{ name: string; version: string }>;
+
+    const [atlas, workspaceFs, diceWeather, remoteWorkspace] = seedDocs;
+
+    const firstPassPages: McpRegistryListResponse[] = [
+      {
+        servers: [{ server: atlas as any }],
+        metadata: { count: 4, nextCursor: 'cursor-1' },
+      },
+      {
+        servers: [{ server: workspaceFs as any }],
+        metadata: { count: 4, nextCursor: 'cursor-2' },
+      },
+      {
+        servers: [{ server: diceWeather as any }],
+        metadata: { count: 4, nextCursor: 'cursor-3' },
+      },
+      {
+        servers: [{ server: remoteWorkspace as any }],
+        metadata: { count: 4, nextCursor: 'cursor-4' },
+      },
+    ];
+
+    // Soft-stop window still covers atlas + workspace-fs + dice-weather,
+    // but dice-weather's payload is now malformed so mapping fails.
+    const malformedDice = {
+      $schema:
+        'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json',
+      name: diceWeather.name,
+      description: '',
+      version: diceWeather.version,
+    };
+    const secondPassPages: McpRegistryListResponse[] = [
+      {
+        servers: [{ server: atlas as any }],
+        metadata: { count: 4, nextCursor: 'cursor-1' },
+      },
+      {
+        servers: [{ server: workspaceFs as any }],
+        metadata: { count: 4, nextCursor: 'cursor-2' },
+      },
+      {
+        servers: [{ server: malformedDice as any }],
+        metadata: { count: 4, nextCursor: 'cursor-3' },
+      },
+    ];
+
+    const fetchFn = mockFetchForResponses([
+      ...firstPassPages,
+      ...secondPassPages,
+    ]);
+    const connection = createMockConnection();
+    const provider = new McpRegistryEntityProvider(
+      createDefaultConfig({
+        maxEntries: 3,
+        pageSize: 1,
+        pageLimit: 10,
+      }),
+      createMockLogger(),
+      { fetchApi: fetchFn },
+    );
+    await provider.connect(connection);
+
+    await provider.run();
+    await provider.run();
+
+    const secondMutation = (connection.applyMutation as jest.Mock).mock
+      .calls[1][0];
+    const diceEntity = secondMutation.entities.find(
+      (d: { entity: { metadata: { annotations?: Record<string, string> } } }) =>
+        d.entity.metadata.annotations?.['modelcontextprotocol.io/name'] ===
+        diceWeather.name,
+    );
+    expect(diceEntity).toBeDefined();
+    expect(
+      diceEntity.entity.metadata.annotations?.[
+        'redhat.com/rhdh-mcp-registry-sync-status'
+      ],
+    ).toBe('degraded');
   });
 });

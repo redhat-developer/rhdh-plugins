@@ -712,7 +712,7 @@ describe('McpRegistryEntityProvider parts', () => {
   });
 
   describe('rebuildLastGoodIndex', () => {
-    it('indexes ok entities and skips degraded ones', () => {
+    it('indexes both ok and degraded entities', () => {
       const provider = new McpRegistryEntityProvider(
         createDefaultConfig(),
         createMockLogger(),
@@ -722,17 +722,17 @@ describe('McpRegistryEntityProvider parts', () => {
 
       parts(provider).rebuildLastGoodIndex([ok, degraded]);
 
-      expect(parts(provider).lastGoodIndex.size).toBe(1);
+      expect(parts(provider).lastGoodIndex.size).toBe(2);
       expect(
         parts(provider).lastGoodIndex.get(
           buildLastGoodKey('ok/server', '1.0.0'),
         ),
       ).toBe(ok);
       expect(
-        parts(provider).lastGoodIndex.has(
+        parts(provider).lastGoodIndex.get(
           buildLastGoodKey('bad/server', '1.0.0'),
         ),
-      ).toBe(false);
+      ).toBe(degraded);
     });
 
     it('skips entities missing name or version annotations', () => {

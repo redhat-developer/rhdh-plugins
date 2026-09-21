@@ -156,16 +156,21 @@ export class McpRegistryEntityProvider implements EntityProvider {
       return;
     }
 
-    const { entities, hasDegradedEntries } = this.mapRegistryEntries(
-      entries,
+    const { entities: mappedEntities, hasDegradedEntries: mappingDegraded } =
+      this.mapRegistryEntries(entries, managedByLocation);
+
+    const { entities, hasDegradedEntries } = this.appendSoftStopRetained(
+      mappedEntities,
+      mappingDegraded,
       managedByLocation,
     );
 
     if (hasDegradedEntries) {
       this.logger.warn(
         `MCP Registry sync completed with degraded entries. ` +
-          `Some server entries could not be mapped and are using ` +
-          `last-good entities.`,
+          `Some previously synced servers could not be refreshed ` +
+          `(mapping/formatting failure or maxEntries soft-stop window) ` +
+          `and are using last-good entities.`,
       );
     }
 
@@ -320,6 +325,60 @@ export class McpRegistryEntityProvider implements EntityProvider {
   }
 
   /**
+   * When a `maxEntries` soft-stop is active (`endCursor` set), retain
+   * last-good entities that fell outside the truncated window so a full
+   * mutation does not prune them. Mark retained copies as degraded.
+   *
+   * Full traversals without an end bound continue to prune servers that
+   * are absent from the registry.
+   */
+  private appendSoftStopRetained(
+    mappedEntities: DeferredEntity[],
+    hasDegradedEntries: boolean,
+    managedByLocation: string,
+  ): { entities: DeferredEntity[]; hasDegradedEntries: boolean } {
+    if (this.endCursor === undefined || this.lastGoodIndex.size === 0) {
+      return { entities: mappedEntities, hasDegradedEntries };
+    }
+
+    const seenKeys = new Set<string>();
+    for (const deferred of mappedEntities) {
+      const annotations = deferred.entity.metadata?.annotations;
+      const name = annotations?.['modelcontextprotocol.io/name'];
+      const version = annotations?.['modelcontextprotocol.io/version'];
+      if (name && version) {
+        seenKeys.add(buildLastGoodKey(name, version));
+      }
+    }
+
+    const entities = [...mappedEntities];
+    let degraded = hasDegradedEntries;
+
+    for (const [key, lastGood] of this.lastGoodIndex) {
+      if (seenKeys.has(key)) {
+        continue;
+      }
+      const retainedEntity = structuredClone(lastGood.entity);
+      this.applyProviderAnnotations(
+        retainedEntity,
+        managedByLocation,
+        'degraded',
+      );
+      entities.push({
+        entity: retainedEntity,
+        locationKey: PROVIDER_NAME,
+      });
+      degraded = true;
+      this.logger.warn(
+        `Retaining last-good entity for "${key}" with degraded sync ` +
+          `status; it fell outside the maxEntries soft-stop window.`,
+      );
+    }
+
+    return { entities, hasDegradedEntries: degraded };
+  }
+
+  /**
    * Map one registry entry into a deferred entity with sync status `ok`.
    */
   private mapRegistryEntry(
@@ -435,12 +494,13 @@ export class McpRegistryEntityProvider implements EntityProvider {
   }
 
   /**
-   * Rebuild the last-good index from successfully mapped entities only.
+   * Rebuild the last-good index from every committed entity that has a
+   * registry identity (`ok` and `degraded` alike).
    *
-   * Entities that carry sync-status "degraded" are excluded: they are
-   * last-good fallbacks from a prior cycle, so storing them back would
-   * create perpetual retention of stale data. Only "ok" entities
-   * qualify as last-good candidates.
+   * Degraded entries stay indexed so they can be re-added on later syncs
+   * until the server is refreshed successfully (`ok`) or omitted from the
+   * mutation entirely (true prune after a full traversal without soft-stop
+   * retention).
    *
    * The annotation keys used here ('modelcontextprotocol.io/name' and
    * 'modelcontextprotocol.io/version') are set by mapServerToEntity in
@@ -454,9 +514,6 @@ export class McpRegistryEntityProvider implements EntityProvider {
     this.lastGoodIndex.clear();
     for (const deferred of entities) {
       const annotations = deferred.entity.metadata?.annotations;
-      if (annotations?.[SYNC_STATUS_ANNOTATION] !== 'ok') {
-        continue;
-      }
       const name = annotations?.['modelcontextprotocol.io/name'];
       const version = annotations?.['modelcontextprotocol.io/version'];
       if (name && version) {
