@@ -29,7 +29,6 @@ import {
   verifyFeedbackButtons,
   submitFeedback,
   assertClipboardContains,
-  openLightspeed,
   waitForChatbotVisible,
 } from './utils/testHelper';
 import {

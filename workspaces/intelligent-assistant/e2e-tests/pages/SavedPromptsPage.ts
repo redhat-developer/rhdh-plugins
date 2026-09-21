@@ -230,6 +230,8 @@ export class SavedPromptsPage {
     await expect(
       this.chatbotRegion().getByRole('heading', {
         name: this.t['settings.panel.title'],
+        exact: true,
+        level: 2,
       }),
     ).toBeVisible();
     await expect(this.newPromptButton()).toBeVisible();

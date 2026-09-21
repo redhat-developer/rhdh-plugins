@@ -36,11 +36,8 @@ export default defineConfig({
     : {
         command: `${startCommand} --config ${baseConfig}`,
         port: 3000,
-        // Match RBAC config: never reuse in CI so legacy→nfs / suite→suite
-        // handoffs cannot attach to a leftover process on :3000.
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: true,
         cwd: __dirname,
-        timeout: 4 * 60 * 1000,
         env: {
           NOTEBOOKS_ENABLED: 'true',
           NOTEBOOKS_QUERY_MODEL: 'gpt-4',

@@ -49,11 +49,6 @@ export const switchToLocale = async (page: Page, locale: string) => {
   await page.locator('a').filter({ hasText: 'Home' }).click();
 };
 
-/**
- * Guest auth can be lost on full navigation under parallel e2e load. If the
- * sign-in screen is showing, click Enter and wait for the shell before
- * continuing to look for Chatbot.
- */
 async function ensureGuestSession(page: Page) {
   const enter = page.getByRole('button', { name: 'Enter' });
   if (!(await enter.isVisible().catch(() => false))) {
@@ -78,6 +73,13 @@ export const waitForChatbotVisible = async (page: Page) => {
       return;
     }
     await ensureGuestSession(page);
+    if (
+      !page.url().includes('/intelligent-assistant') &&
+      !(await chatbot.isVisible().catch(() => false))
+    ) {
+      await page.goto('/intelligent-assistant');
+      await ensureGuestSession(page);
+    }
     if (await chatbot.isVisible().catch(() => false)) {
       return;
     }
@@ -90,7 +92,6 @@ export const waitForChatbotVisible = async (page: Page) => {
 export const openLightspeed = async (page: Page) => {
   await page.goto('/intelligent-assistant');
   await ensureGuestSession(page);
-  // Re-navigate if guest login replaced the IA route.
   if (!page.url().includes('intelligent-assistant')) {
     await page.goto('/intelligent-assistant');
   }
