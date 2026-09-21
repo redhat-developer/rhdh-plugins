@@ -370,6 +370,9 @@ describe('assertSingleRegistryConfig', () => {
     expect(() => assertSingleRegistryConfig(config)).toThrow(
       /found keyed instance/,
     );
+    expect(() => assertSingleRegistryConfig(config)).toThrow(
+      /maxEntries, remotesOnly, hostAllowList/,
+    );
   });
 });
 

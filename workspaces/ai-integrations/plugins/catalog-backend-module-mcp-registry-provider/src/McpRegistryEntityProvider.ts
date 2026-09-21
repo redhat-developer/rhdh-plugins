@@ -60,7 +60,10 @@ const SYNC_STATUS_ANNOTATION = 'redhat.com/rhdh-mcp-registry-sync-status';
  * @public
  */
 export interface McpRegistryEntityProviderOptions {
-  /** @internal Override the global `fetch` implementation (test seam). */
+  /**
+   * @internal Override the global `fetch` implementation (test seam).
+   * Kept non-private so tests can inject it; stripped from published types.
+   */
   fetchApi?: typeof fetch;
   /** Scheduler task runner used to periodically invoke sync. */
   taskRunner?: SchedulerServiceTaskRunner;
@@ -138,6 +141,9 @@ export class McpRegistryEntityProvider implements EntityProvider {
   /**
    * Run one sync cycle: fetch servers from the registry, map them,
    * and commit a full mutation.
+   *
+   * Intentionally not TypeScript-`private` so unit tests can invoke it
+   * directly; `@internal` keeps it out of the published API surface.
    *
    * @internal
    */
@@ -264,6 +270,8 @@ export class McpRegistryEntityProvider implements EntityProvider {
         );
       }
 
+      // Clear pagination state before returning so applyMutation failures
+      // start a fresh traversal on the next sync (intended, covered by tests).
       const entries = this.pendingEntries;
       this.pendingEntries = [];
       this.resumeCursor = undefined;

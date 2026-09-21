@@ -33,7 +33,7 @@ import { McpRegistryEntityProvider } from './McpRegistryEntityProvider';
  */
 export const catalogModuleMcpRegistryProvider = createBackendModule({
   pluginId: 'catalog',
-  moduleId: 'catalog-backend-module-mcp-registry-provider',
+  moduleId: 'mcp-registry-provider',
   register(env) {
     env.registerInit({
       deps: {

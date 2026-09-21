@@ -632,6 +632,28 @@ describe('fetchRegistryServers', () => {
     expect(result.resumeCursor).toBeUndefined();
     expect(fn).toHaveBeenCalledTimes(1);
   });
+
+  it('returns zero servers when startCursor already matches endCursor', async () => {
+    const page1: McpRegistryListResponse = {
+      servers: [{ server: createMockServerDoc('test/server-a', '1.0.0') }],
+      metadata: { count: 1 },
+    };
+    const fn = mockFetch([{ body: page1 }]);
+
+    const result = await fetchRegistryServers({
+      baseUrl: 'https://registry.example.com',
+      apiVersion: 'v1',
+      pageLimit: 10,
+      startCursor: 'cursor-end',
+      endCursor: 'cursor-end',
+      fetchApi: fn,
+    });
+
+    expect(result.servers).toHaveLength(0);
+    expect(result.resumeCursor).toBeUndefined();
+    expect(result.endCursor).toBeUndefined();
+    expect(fn).not.toHaveBeenCalled();
+  });
 });
 
 describe('parseServersEndpointUrl', () => {

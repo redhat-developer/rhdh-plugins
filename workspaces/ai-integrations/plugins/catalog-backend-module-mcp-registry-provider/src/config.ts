@@ -101,11 +101,11 @@ export function assertSingleRegistryConfig(registryConfig: Config): void {
       continue;
     }
     if (nested && nested.keys().length > 0) {
+      const knownKeys = [...KNOWN_MCP_REGISTRY_KEYS].join(', ');
       throw new Error(
         `Invalid ${MCP_REGISTRY_INSTANCE_CONFIG_PATH} configuration: found ` +
           `keyed instance "${key}". Configure a single registry object ` +
-          `with baseUrl, baseName, apiVersion, schedule, pageLimit, ` +
-          `pageSize, defaultOwner, and defaultLifecycle.`,
+          `with known keys: ${knownKeys}.`,
       );
     }
   }
