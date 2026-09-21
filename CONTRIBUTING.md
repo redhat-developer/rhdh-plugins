@@ -131,6 +131,10 @@ There are two release flows:
 - **1.x legacy backports** use per-plugin branches such as `release-1.10/{plugin}`.
 - **2.1 and later repository-wide releases** use a single branch for the release line, such as `release-2.1`.
 
+### Automated backports
+
+To request a backport from `main`, add the appropriate backport label to the pull request before merging. You can add a repository-wide release label by commenting `/backport release-2.1`; this adds `backport-release-2.1` and creates a PR targeting `release-2.1` after the source PR is merged. For the legacy 1.9 and 1.10 release branches, include the workspace in the command, for example `/backport release-1.10/orchestrator`; this adds `backport-release-1.10/orchestrator` and targets `release-1.10/orchestrator`. The workflow cherry-picks the merged commit into a new branch and opens a pull request for review. If the cherry-pick conflicts, the workflow reports the failure; resolve it manually on a branch based on the target release branch and open the backport pull request.
+
 ### Recommended: `release-x.y/{plugin}` branches
 
 This approach uses per-release branches (e.g., `release-1.10/my-plugin`), eliminating the shared `workspace/{plugin}` branch as an intermediary. Multiple backports to different releases can proceed concurrently without blocking each other.
