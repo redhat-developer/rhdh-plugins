@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-boost
+# @red-hat-developer-hub/backstage-plugin-ai-catalog
 
 ## 0.6.0
 
