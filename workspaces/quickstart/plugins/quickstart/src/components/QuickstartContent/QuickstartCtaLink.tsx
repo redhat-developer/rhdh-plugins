@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Button, ButtonLink } from '@backstage/ui';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../../utils';
 import { QuickstartItemCtaData } from '../../types';
-import { QuickstartIcon } from './QuickstartIcon';
 
 export type QuickstartCtaLinkProps = {
   cta?: QuickstartItemCtaData;
@@ -30,7 +31,7 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
 
   if (!cta) {
     return (
-      <Button variant="secondary" onPress={onClick}>
+      <Button color="primary" variant="outlined" onClick={onClick}>
         {t('button.gotIt')}
       </Button>
     );
@@ -42,22 +43,31 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
 
   if (isExternalLink) {
     return (
-      <ButtonLink
+      <Button
+        color="primary"
+        variant="outlined"
+        component="a"
         href={cta.link}
         target="_blank"
         rel="noopener noreferrer"
-        variant="secondary"
-        onPress={onClick}
-        iconEnd={<QuickstartIcon icon="open_in_new" size="small" />}
+        onClick={onClick}
+        endIcon={<OpenInNewIcon sx={{ fontSize: 15 }} />}
+        sx={{ gap: '5px' }}
       >
         {finalText}
-      </ButtonLink>
+      </Button>
     );
   }
 
   return (
-    <ButtonLink href={cta.link} variant="secondary" onPress={onClick}>
+    <Button
+      color="primary"
+      variant="outlined"
+      component={Link}
+      to={cta.link}
+      onClick={onClick}
+    >
       {finalText}
-    </ButtonLink>
+    </Button>
   );
 };

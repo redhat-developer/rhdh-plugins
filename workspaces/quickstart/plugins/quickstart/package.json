@@ -42,7 +42,6 @@
     "@backstage/plugin-app-react": "^0.2.6",
     "@backstage/plugin-permission-react": "^0.5.4",
     "@backstage/theme": "^0.7.3",
-    "@backstage/ui": "^0.17.1",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
     "@patternfly/react-icons": "^6.5.0",

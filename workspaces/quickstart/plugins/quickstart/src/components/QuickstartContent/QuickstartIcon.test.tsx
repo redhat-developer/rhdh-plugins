@@ -111,12 +111,12 @@ describe('QuickstartIcon', () => {
     expect(screen.getByText('settings')).toHaveClass('material-icons-outlined');
   });
 
-  it('renders Shapes fallback for invalid icon ids', () => {
+  it('renders MUI fallback for invalid icon ids', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     render(<QuickstartIcon icon="NotAValidIcon" />);
 
-    expect(screen.getByTestId('ShapesOutlinedIcon')).toBeInTheDocument();
+    expect(screen.getByTestId('QuickstartIconFallback')).toBeInTheDocument();
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('NotAValidIcon'),
     );

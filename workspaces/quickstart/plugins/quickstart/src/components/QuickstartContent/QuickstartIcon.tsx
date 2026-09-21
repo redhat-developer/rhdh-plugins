@@ -15,12 +15,12 @@
  */
 
 import { useApp } from '@backstage/core-plugin-api';
+import WidgetsOutlinedIcon from '@mui/icons-material/WidgetsOutlined';
 import Box from '@mui/material/Box';
 import MuiIcon from '@mui/material/Icon';
 import { SxProps, Theme } from '@mui/material/styles';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 
-import { ShapesOutlinedIcon } from '../../icons/ShapesOutlinedIcon';
 import {
   resolveQuickstartIconId,
   shouldUseMaterialLigature,
@@ -39,9 +39,8 @@ const flexSx = (sx?: SxProps<Theme>): SxProps<Theme> =>
     : { display: 'flex', alignItems: 'center' }) as SxProps<Theme>;
 
 /**
- * Renders a quickstart icon using the same resolution order as global-header
- * `HeaderIcon`, with an extra Material-ligature step for legacy quickstart
- * config ids and lowercase icon names.
+ * Renders quickstart icons from system icons, image/SVG URLs, or Material
+ * ligatures for legacy config ids. Falls back to a MUI outlined widget icon.
  */
 export const QuickstartIcon = ({
   icon,
@@ -101,7 +100,10 @@ export const QuickstartIcon = ({
 
   return (
     <Box aria-hidden sx={flexSx(sx)}>
-      <ShapesOutlinedIcon fontSize={size} />
+      <WidgetsOutlinedIcon
+        data-testid="QuickstartIconFallback"
+        fontSize={size}
+      />
     </Box>
   );
 };

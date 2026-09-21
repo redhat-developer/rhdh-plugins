@@ -9295,7 +9295,6 @@ __metadata:
     "@backstage/plugin-permission-react": "npm:^0.5.4"
     "@backstage/test-utils": "npm:^1.7.21"
     "@backstage/theme": "npm:^0.7.3"
-    "@backstage/ui": "npm:^0.17.1"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
     "@patternfly/react-icons": "npm:^6.5.0"

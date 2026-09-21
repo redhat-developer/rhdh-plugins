@@ -189,8 +189,8 @@ describe('QuickstartItemIcon', () => {
     expect(icon).not.toHaveStyle({ marginRight: '8px' });
   });
 
-  it('should render Shapes fallback for invalid icon ids', () => {
+  it('should render MUI fallback for invalid icon ids', () => {
     render(<QuickstartItemIcon icon="NotAValidIcon" />);
-    expect(screen.getByTestId('ShapesOutlinedIcon')).toBeInTheDocument();
+    expect(screen.getByTestId('QuickstartIconFallback')).toBeInTheDocument();
   });
 });
