@@ -143,7 +143,7 @@ To show one of these on Overview again, override its attachment back to `entity-
 | `entity-card:catalog-graph/relations`                             | Hidden via factory filter; restore with `config.useOriginalFactory: true` |
 | `entity-card:catalog-graph/rhdh-overview-relations`               | Overview graph for **API** and **System** only                            |
 | `entity-card:catalog-graph/rhdh-component-dependencies-relations` | Dependencies graph for **components** only                                |
-| `entity-card:api-docs/definition`                                 | Hidden on Overview (`api-docs-plugin-override`)                           |
+| `entity-card:api-docs/definition`                                 | Hidden via factory filter; restore with `config.useOriginalFactory: true` |
 
 Optional tuning (height, direction):
 
@@ -170,8 +170,18 @@ app:
     - entity-card:catalog-graph/rhdh-component-dependencies-relations: false
 ```
 
-3. **Overview cards**: remove card attachment overrides by not loading app-defaults catalog / api-docs overrides, or re-attach cards to Overview in your own overrides.
-4. **Tabs**: disable `entity-content:catalog/rhdh-component-dependencies` and `entity-content:catalog/rhdh-system-diagram` in `app.extensions`.
+3. **API Definition card on Overview**: restore the stock factory (Definition tab content is unchanged):
+
+```yaml
+app:
+  extensions:
+    - entity-card:api-docs/definition:
+        config:
+          useOriginalFactory: true
+```
+
+4. **Overview cards**: remove card attachment overrides by not loading app-defaults catalog / api-docs overrides, or re-attach cards to Overview in your own overrides.
+5. **Tabs**: disable `entity-content:catalog/rhdh-component-dependencies` and `entity-content:catalog/rhdh-system-diagram` in `app.extensions`.
 
 Reference: [Migrating entity pages to the new frontend system](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/migrating-entity-pages-to-the-new-frontend-system.md) (RHDH product docs).
 

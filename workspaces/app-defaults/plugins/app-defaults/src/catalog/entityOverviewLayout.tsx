@@ -60,12 +60,11 @@ export const EntityOverviewLayout = ({ cards }: EntityContentLayoutProps) => {
 
   const hasInfo = infoCards.length > 0;
   const hasContent = contentCards.length > 0;
-  // Two-column layout only when both groups are present; otherwise the
-  // non-empty group spans full width so Overview isn't left with blank space
-  // (e.g. components after dependency cards move off Overview).
-  const useTwoColumns = hasInfo && hasContent;
-  const infoColumn = useTwoColumns ? leftColumn : fullWidthColumn;
-  const contentColumn = useTwoColumns ? rightColumn : fullWidthColumn;
+  // Info always stays in the left column (never stretches full width).
+  // Content uses the right column when info is present; otherwise it spans
+  // full width (e.g. after dependency cards move off Overview).
+  const infoColumn = leftColumn;
+  const contentColumn = hasInfo ? rightColumn : fullWidthColumn;
 
   return (
     <Grid container>

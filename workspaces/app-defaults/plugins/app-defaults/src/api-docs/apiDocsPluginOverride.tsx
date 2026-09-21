@@ -16,6 +16,7 @@
 
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import apiDocsPlugin from '@backstage/plugin-api-docs/alpha';
+import { z } from 'zod/v4';
 import { CustomApiDocsPage } from './CustomApiDocsPage';
 import { entityDependenciesApiDocsCardAttachments } from '../catalog/entityDependenciesCardAttachments';
 
@@ -25,6 +26,7 @@ import { entityDependenciesApiDocsCardAttachments } from '../catalog/entityDepen
  *
  * Stock NFS also registers `entity-card:api-docs/definition` on Overview; RHDH
  * shows API definition only on the Definition tab (`entity-content:api-docs/definition`).
+ * Restore the Overview card with `config.useOriginalFactory: true`.
  *
  * @public
  */
@@ -32,7 +34,15 @@ export const apiDocsPluginOverride = apiDocsPlugin.withOverrides({
   extensions: [
     ...entityDependenciesApiDocsCardAttachments,
     apiDocsPlugin.getExtension('entity-card:api-docs/definition').override({
-      factory(originalFactory) {
+      configSchema: {
+        // When true, call the stock factory (no hide filter) so the card can
+        // be restored on Overview without removing api-docs-plugin-override.
+        useOriginalFactory: z.boolean().optional(),
+      },
+      factory(originalFactory, { config }) {
+        if (config.useOriginalFactory) {
+          return originalFactory();
+        }
         return originalFactory({
           params: {
             filter: () => false,
