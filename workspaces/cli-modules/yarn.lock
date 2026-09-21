@@ -2865,6 +2865,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/cli-module-rsdoctor@workspace:packages/cli-module-rsdoctor":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/cli-module-rsdoctor@workspace:packages/cli-module-rsdoctor"
+  dependencies:
+    "@backstage/cli": "npm:^0.36.5"
+    "@backstage/cli-common": "npm:^0.3.0"
+    "@backstage/cli-node": "npm:^0.3.4"
+    cleye: "npm:^2.6.0"
+  bin:
+    cli-module-rsdoctor: bin/backstage-cli-module-rsdoctor
+  languageName: unknown
+  linkType: soft
+
 "@rollup/plugin-commonjs@npm:^26.0.0":
   version: 26.0.3
   resolution: "@rollup/plugin-commonjs@npm:26.0.3"

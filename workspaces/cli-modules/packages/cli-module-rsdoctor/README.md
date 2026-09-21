@@ -1,0 +1,5 @@
+# @red-hat-developer-hub/cli-module-rsdoctor
+
+A CLI module that adds commands to the Backstage CLI.
+
+_This package was created through the Backstage CLI_
