@@ -37,8 +37,8 @@ export interface McpRegistryProviderConfig {
   apiVersion?: string;
   baseName?: string;
   baseUrl: string;
-  defaultOwner?: string;
   defaultLifecycle?: string;
+  defaultOwner?: string;
   hostAllowList?: string[];
   maxEntries?: number;
   pageLimit?: number;
