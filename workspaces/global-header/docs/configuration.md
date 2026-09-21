@@ -1,5 +1,11 @@
 # Configuration
 
+> **Deprecated:** The Scalprum / Old Frontend System mount-point examples below
+> (`application/header`, and `global.header/*` in the component docs) no longer
+> apply to this plugin. The `/legacy` export has been removed. Prefer the
+> [New Frontend System Guide](new-frontend-system.md) to extend or customize the
+> header.
+
 The Red Hat Developer Hub Global Header can be configured via [dynamic plugins](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/index.md) and [dynamic plugin mount points](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/frontend-plugin-wiring.md).
 
 It is the RHDH default "[application header](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/frontend-plugin-wiring.md#adding-application-header)" implementation that customers can extend or replace.

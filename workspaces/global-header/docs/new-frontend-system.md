@@ -7,9 +7,10 @@ The NFS surface is **stable** on the package root
 components live on a separate `/components` **package subpath** so they stay off
 the root Module Federation sync chunk. Other dynamic plugins import that
 subpath at compile/export time (typically from a file reached only via a
-blueprint `loader`); it is not a host-loaded federated remote. Prefer `/legacy`
-only for Old Frontend System (mount-point) apps. `/alpha` is a deprecated
-translations-only shim — do not use it for the plugin, module, or blueprints.
+blueprint `loader`); it is not a host-loaded federated remote.
+
+`/alpha` is a deprecated translations-only shim — do not use it for the plugin,
+module, or blueprints.
 
 This guide explains how to:
 
@@ -415,5 +416,4 @@ from the global-header package root.
 | ------------------ | ----------------------------------------------------------------- |
 | Package root (`.`) | NFS plugin, module, blueprints, hooks, translations               |
 | `/components`      | Building-block UI package subpath only (not a loaded NFS feature) |
-| `/legacy`          | Deprecated OFS / mount-point API                                  |
 | `/alpha`           | Deprecated translations re-export only (not an NFS entry)         |
