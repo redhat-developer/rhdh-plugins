@@ -9243,9 +9243,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:3.0.0"
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:3.1.0"
   dependencies:
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/core-components": "npm:^0.18.13"
@@ -9275,7 +9275,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 10c0/29f3d6ee62425c889781cacb7601c119b46fe2c85eeefc6327182ce274a06ba8996f2bd39a92f19e90260ef5792aa48282a9cb94045702a0ce92e4ac8a0e9a36
+  checksum: 10c0/49f607d144051fac3e2c8ed4e15bfd46c7c996427358cb9013c606b974ea6807702a78b235da44ff6d4ed75bfcdd9e5297478876173d0f21d16edcbb5254bc26
   languageName: node
   linkType: hard
 
@@ -9299,7 +9299,7 @@ __metadata:
     "@mui/material": "npm:5.18.0"
     "@patternfly/react-icons": "npm:^6.5.0"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^1.0.0"
-    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^3.0.0"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^3.1.0"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
@@ -13542,7 +13542,7 @@ __metadata:
     "@mui/material": "npm:5.18.0"
     "@mui/styles": "npm:5.18.0"
     "@playwright/test": "npm:1.61.1"
-    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^3.0.0"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^3.1.0"
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
     "@testing-library/dom": "npm:^9.0.0"
@@ -13602,7 +13602,7 @@ __metadata:
     "@mui/material": "npm:5.18.0"
     "@playwright/test": "npm:1.61.1"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^1.0.0"
-    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^3.0.0"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^3.1.0"
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.11"
     "@testing-library/dom": "npm:^9.0.0"
