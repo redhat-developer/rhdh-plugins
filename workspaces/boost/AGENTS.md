@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Boost is a clean-room reimplementation of the Augment agentic developer portal for Red Hat Developer Hub (RHDH). It is a Backstage plugin workspace — not a fork of Augment. The project context, design principles, and relationship to Augment are documented in `specifications/boost-context.md`. Read that file before making any implementation decisions.
+Boost is a clean-room reimplementation of the Augment agentic developer portal for Red Hat Developer Hub (RHDH). It is a Backstage plugin workspace — not a fork of Augment. The project context, design principles, and relationship to Augment are documented in `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/boost-context.md` (archived from the RHDH 2.1 development cycle). Read that file before making any implementation decisions.
 
 ## Specification-driven development
 
@@ -10,21 +10,16 @@ This workspace uses a specification-first approach. Before writing code, read th
 
 ```
 workspaces/boost/
-├── specifications/                # Product requirements
-│   ├── CURRENT.md                 # Release boundary and status source of truth
-│   ├── boost-context.md           # Project rationale, 12 design principles, upstream monitoring
-│   └── prd/                       # Product Requirements Documents (one per capability area)
-│       ├── use-case-index.md      # All 25 use cases at a glance
-│       ├── ai-chat-interaction-experience.md
-│       ├── agent-creation-discovery.md
-│       ├── pluggable-ai-platform-architecture.md
-│       ├── platform-operations-deployment.md
-│       └── security-safety-governance.md
-├── openspec/                      # Implementation specifications
-│   ├── specs/                     # Implemented behavior and release source of truth
-│   └── changes/                   # One directory per capability area:
-│       ├── ai-chat-interaction-experience/
+├── specifications/                    # Active product requirements
+│   ├── CURRENT.md                     # Release boundary and status source of truth
+│   └── boost-frontend-architecture.md # Frontend architecture specification
+├── RHDH-2-1-Legacy-Content/       # Archived RHDH 2.1 specifications and change areas
+│   └── Pre-RHDHPLAN-15xx-Content/
+│       ├── specifications/        # Product requirements (RHDH 2.1)
+│       │   ├── boost-context.md   # Project rationale, 12 design principles
+│       │   └── prd/               # Product Requirements Documents
 │       ├── agent-creation-discovery/
+│       ├── ai-chat-interaction-experience/
 │       ├── pluggable-ai-platform-architecture/
 │       ├── platform-operations-deployment/
 │       └── security-safety-governance/
@@ -32,6 +27,9 @@ workspaces/boost/
 │           ├── design.md          # Architecture decisions
 │           ├── tasks.md           # Implementation task breakdown
 │           └── specs/             # Behavioral specs (Given/When/Then)
+├── openspec/                      # Implementation specifications (RHDH 2.2)
+│   ├── specs/                     # Implemented behavior and release source of truth
+│   └── changes/                   # One directory per capability area (RHDH 2.2 cycle)
 ├── plugins/                       # Plugin packages (implementation target)
 └── scripts/                       # Dev/deployment helper scripts
     └── load-secrets.sh            # Loads env vars from K8s secrets for local dev
@@ -40,9 +38,9 @@ workspaces/boost/
 When implementing an issue:
 
 1. Read `specifications/CURRENT.md` to confirm the release boundary and status.
-2. Read `specifications/boost-context.md` for design principles — these are non-negotiable
-3. Find the relevant PRD in `specifications/prd/` for product requirements
-4. Find the matching change in `openspec/changes/` for active design decisions, task breakdown, and behavioral specs
+2. Read `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/boost-context.md` for design principles — these are non-negotiable
+3. Find the relevant PRD in `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/prd/` for product requirements
+4. For RHDH 2.1 change areas, find the matching area in `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/` for design decisions, task breakdown, and behavioral specs. For RHDH 2.2 work, find the matching change in `openspec/changes/`.
 5. If the capability is already implemented, use the corresponding `openspec/specs/` document as the behavior source of truth. The `specs/` subdirectories under an active change are planning acceptance criteria and must not silently override it.
 
 ### OpenSpec scenario step discipline
@@ -100,7 +98,7 @@ When a spec, epic, or task is cancelled, apply strikethrough to the cancelled it
 # From the openspec change area directory, search for references to the
 # cancelled spec slug across all openspec and specification files:
 grep -rn "rbac-admin-ui\|RBAC Admin UI\|RHIDP-15304" \
-  workspaces/boost/openspec/ workspaces/boost/specifications/
+  workspaces/boost/openspec/ workspaces/boost/RHDH-2-1-Legacy-Content/
 ```
 
 Replace the slug, display name, and ticket ID with those of the spec being cancelled. Review each match and update or strike references as appropriate.
@@ -329,14 +327,14 @@ Every feature ships with tests. Integration tests use real database and cache ba
 
 ### Relative markdown links
 
-When creating or modifying relative links (`../` paths) between files in different directory subtrees (especially between `openspec/` and `specifications/`), verify each link resolves to an existing file. Count the directory levels from the source file to the nearest common ancestor directory, then from the ancestor to the target. Use `ls` or `stat` on the resolved path to confirm it exists before committing.
+When creating or modifying relative links (`../` paths) between files in different directory subtrees (especially between `openspec/` and `RHDH-2-1-Legacy-Content/`), verify each link resolves to an existing file. Count the directory levels from the source file to the nearest common ancestor directory, then from the ancestor to the target. Use `ls` or `stat` on the resolved path to confirm it exists before committing.
 
-The `openspec/changes/` tree can be 5–7 levels deep under `workspaces/boost/`, while `specifications/` is only 1 level deep — miscounting `../` levels between these subtrees is the most common documentation error.
+The `openspec/changes/` tree can be 5–7 levels deep under `workspaces/boost/`, while `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/` is 3 levels deep — miscounting `../` levels between these subtrees is the most common documentation error.
 
-For example, a file at `openspec/changes/area/specs/group/spec.md` (6 levels deep) linking to `specifications/design.md` (1 level deep) requires 6 `../` segments to reach `workspaces/boost/`, then `specifications/design.md`:
+For example, a file at `openspec/changes/area/specs/group/spec.md` (6 levels deep) linking to `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/design.md` (3 levels deep) requires 6 `../` segments to reach `workspaces/boost/`, then the full path:
 
 ```
-../../../../../../specifications/design.md
+../../../../../../RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/design.md
 ```
 
 Always verify:

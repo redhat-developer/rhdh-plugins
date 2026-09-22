@@ -13,7 +13,7 @@
 This document is the formal specification of all RHDH AI Asset annotations,
 entity kind/`spec.type` pairings, and upstream Backstage entity kind mappings.
 It covers all seven AI-asset categories per
-[ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md)
+[ai-catalog-entity-model/design.md Decision 1](../../../openspec/changes/ai-catalog-entity-model/design.md)
 (the authoritative source of truth for current RHDH AI Asset entity mappings).
 
 MCP servers are kind-aligned with upstream (`McpServerApiEntity`,
@@ -134,7 +134,7 @@ metadata:
 Each AI asset category maps to a Backstage entity kind and `spec.type` value.
 The table below reflects the **actual entity model as implemented** by
 connectors. It is based on
-[ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md)
+[ai-catalog-entity-model/design.md Decision 1](../../../openspec/changes/ai-catalog-entity-model/design.md)
 but documents the current connector-emitted kinds for `agent` and
 `model-server`, which have diverged from Decision 1's reference mapping
 (see notes column).
@@ -334,7 +334,7 @@ actual migration is future work.
 ## Cross-References
 
 - **Source of truth (current entity mappings):**
-  [ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md)
+  [ai-catalog-entity-model/design.md Decision 1](../../../openspec/changes/ai-catalog-entity-model/design.md)
 - **Supplementary (catalog entity taxonomy):**
   `boost-common/src/aiAssetTaxonomy.ts` (`AI_ASSET_SPEC_TYPES`)
 - **Annotation constants (SDK):**

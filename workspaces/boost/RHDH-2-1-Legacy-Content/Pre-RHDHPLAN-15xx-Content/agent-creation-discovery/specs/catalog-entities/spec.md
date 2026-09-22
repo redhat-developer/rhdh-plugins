@@ -6,12 +6,12 @@
 > This file documents entity-provider deployment for the agent-creation-discovery
 > change. For AI-asset category definitions, `spec.type` values, and upstream
 > kind mappings (the seven readiness categories), see
-> [ai-catalog-entity-model/design.md Decision 1](../../../ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds).
+> [ai-catalog-entity-model/design.md Decision 1](../../../../../openspec/changes/ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds).
 > The `vector-store` and `ai-tool` rows in the table below are vestiges of the
 > Augment POC and are **not** in RHDHPLAN-1507 / RHDHPLAN-1513 readiness scope
 > (confirmed in [#4042 gate comment §0](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)).
 > See also the published
-> [annotation specification](../../../../../specifications/annotation-specification.md),
+> [annotation specification](../../../specifications/annotation-specification.md),
 > which cross-references Decision 1 as primary and `AI_ASSET_SPEC_TYPES` for
 > browse taxonomy including non-annotation types.
 

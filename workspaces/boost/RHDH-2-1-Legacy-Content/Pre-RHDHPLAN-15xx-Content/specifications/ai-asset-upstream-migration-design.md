@@ -14,7 +14,7 @@ The RHIDP-15302 migration design document (mapping tables, field-level
 transforms, consumer-facing impact, backward compatibility, and
 sign-off) lives in OpenSpec:
 
-**[openspec/changes/ai-catalog-entity-model/specs/migration-readiness/migration-plan.md](../openspec/changes/ai-catalog-entity-model/specs/migration-readiness/migration-plan.md)**
+**[openspec/changes/ai-catalog-entity-model/specs/migration-readiness/migration-plan.md](../../../openspec/changes/ai-catalog-entity-model/specs/migration-readiness/migration-plan.md)**
 
 Do **not** duplicate mapping or transformation tables here. Update the
 OpenSpec `migration-plan.md` file and keep this stub as a link only.
@@ -22,7 +22,7 @@ OpenSpec `migration-plan.md` file and keep this stub as a link only.
 ## Scope
 
 The migration design document covers all seven AI-asset categories per
-[Decision 1](../openspec/changes/ai-catalog-entity-model/design.md):
+[Decision 1](../../../openspec/changes/ai-catalog-entity-model/design.md):
 `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`,
 `model-server`. For each category it documents:
 
@@ -43,7 +43,7 @@ vestiges).
 ## Related
 
 - Behavioral requirements (Given/When/Then):
-  [migration-readiness/spec.md](../openspec/changes/ai-catalog-entity-model/specs/migration-readiness/spec.md)
+  [migration-readiness/spec.md](../../../openspec/changes/ai-catalog-entity-model/specs/migration-readiness/spec.md)
 - Reconciled mapping tables:
   [#4189](https://github.com/redhat-developer/rhdh-plugins/pull/4189)
 - Sibling track (annotation publish + CLI):

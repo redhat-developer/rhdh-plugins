@@ -64,7 +64,7 @@ Runtime branding customization: name, logo, colors, welcome screen, and featured
 
 ## Key Design Principles
 
-These principles are informed by the Augment reference prototype's experience (see `specifications/boost-context.md`):
+These principles are informed by the Augment reference prototype's experience (see `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/boost-context.md`):
 
 1. **Backstage-native services over custom infrastructure** — `cacheService`, `permissions`, `httpAuth`, `configApi` instead of bespoke equivalents
 2. **Schema-driven validation over hand-written validators** — Zod as single source of truth eliminates the drift between config schemas and validation logic
