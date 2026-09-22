@@ -88,6 +88,8 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
+    # Key must be frontend-visible (app-auth config.d.ts) so SignInPage can
+    # discover it after #4716; otherwise e2e never sees the Enter button.
     guest: {}
 
 # Frontend-visible override: auth.providers is backend-only and is stripped
