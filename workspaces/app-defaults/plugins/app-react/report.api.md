@@ -89,6 +89,19 @@ export interface ApplicationDrawerProps {
 export const appReactTranslationRef: TranslationRef<
   'plugin.app-react',
   {
+    readonly 'pages.Create': 'Self-Service';
+    readonly 'pages.Home': 'Home';
+    readonly 'pages.Catalog': 'Catalog';
+    readonly 'pages.APIs': 'APIs';
+    readonly 'pages.Docs': 'Docs';
+    readonly 'pages.Learning Paths': 'Learning Paths';
+    readonly 'pages.Settings': 'Settings';
+    readonly 'pages.Notifications': 'Notifications';
+    readonly 'pages.Search': 'Search';
+    readonly 'pages.Catalog Graph': 'Catalog Graph';
+    readonly 'pages.Administration': 'Administration';
+    readonly 'pages.RBAC': 'RBAC';
+    readonly 'pages.Plugins': 'Plugins';
     readonly 'catalog.entityTabGroups.Overview': 'Overview';
     readonly 'catalog.entityTabGroups.Documentation': 'Documentation';
     readonly 'catalog.entityTabGroups.Development': 'Development';
@@ -118,19 +131,6 @@ export const appReactTranslationRef: TranslationRef<
     readonly 'catalog.entityTabs.Todo': 'Todo';
     readonly 'catalog.entityTabs.Topology': 'Topology';
     readonly 'catalog.entityTabs.Workflows': 'Workflows';
-    readonly 'pages.Catalog': 'Catalog';
-    readonly 'pages.Settings': 'Settings';
-    readonly 'pages.Administration': 'Administration';
-    readonly 'pages.RBAC': 'RBAC';
-    readonly 'pages.Learning Paths': 'Learning Paths';
-    readonly 'pages.Home': 'Home';
-    readonly 'pages.APIs': 'APIs';
-    readonly 'pages.Create': 'Create';
-    readonly 'pages.Docs': 'Docs';
-    readonly 'pages.Notifications': 'Notifications';
-    readonly 'pages.Search': 'Search';
-    readonly 'pages.Catalog Graph': 'Catalog Graph';
-    readonly 'pages.Plugins': 'Plugins';
   }
 >;
 

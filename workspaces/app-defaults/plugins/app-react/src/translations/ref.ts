@@ -35,7 +35,7 @@ export const appReactTranslationRef = createTranslationRef({
       Home: 'Home',
       Catalog: 'Catalog',
       APIs: 'APIs',
-      Create: 'Create',
+      Create: 'Self-Service',
       Docs: 'Docs',
       'Learning Paths': 'Learning Paths',
       Settings: 'Settings',

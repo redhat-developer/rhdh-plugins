@@ -27,7 +27,7 @@ export default createTranslationMessages({
     'pages.Home': 'ホーム',
     'pages.Catalog': 'カタログ',
     'pages.APIs': 'API',
-    'pages.Create': '作成',
+    'pages.Create': 'セルフサービス',
     'pages.Docs': 'ドキュメント',
     'pages.Learning Paths': 'ラーニングパス',
     'pages.Settings': '設定',
