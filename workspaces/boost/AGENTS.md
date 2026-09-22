@@ -115,7 +115,7 @@ Each AI provider (`boost-backend-module-ogx`, `boost-backend-module-kagenti`) is
 
 ### Capability checks, not identity checks
 
-Frontend rendering decisions use `ProviderCapabilities` interface checks. Never use `providerId === 'string'` comparisons.
+Frontend rendering decisions use capability-based interface checks. Never use `providerId === 'string'` comparisons.
 
 ### Permissions as sole authorization
 
@@ -310,7 +310,6 @@ const endpoint = safeGetOptionalString(config, 'endpoint');
   - `AiResource` — agents, skills, rules (NOT `AIResource`)
   - `AiModelServerAPI` — model servers (`spec.type: ai-model-server`)
   - `API` — MCP servers (`spec.type: mcp-server`)
-  - `Resource` — tools (`spec.type: ai-tool`), vector stores (`spec.type: vector-store`)
 
 ### Testing
 

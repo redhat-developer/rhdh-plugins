@@ -41,7 +41,7 @@ UX designs for the full boost experience are evolving. The architecture separate
 
 ### 4. Capability-Based Feature Gating
 
-UI rendering decisions use `ProviderCapabilities` interface checks, never `providerId === 'string'` comparisons. This is a non-negotiable design principle inherited from the boost backend architecture.
+UI rendering decisions use capability-based interface checks, never `providerId === 'string'` comparisons. This is a non-negotiable design principle inherited from the boost backend architecture.
 
 Feature flags (`boost.features.*` in `app-config.yaml`) control visibility of entire domains. Disabled features are not rendered, not just hidden.
 
@@ -144,7 +144,7 @@ flowchart LR
 
 **Key hook**: `useAiAssets(filters)` wraps `catalogApi.getEntities()` with filters matching the entity model:
 
-- Kind + type combinations: `AiResource` with `skill`/`rule`/`agent`, `AiModelServerAPI` with `ai-model-server`, `API` with `mcp-server`, and `Resource` with `ai-tool`/`vector-store`
+- Kind + type combinations: `AiResource` with `skill`/`rule`/`agent`, `AiModelServerAPI` with `ai-model-server`, `API` with `mcp-server`
 - Annotation filters on `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-source`
 - Metadata filters on `spec.lifecycle`, `metadata.tags`, `spec.owner`
 
@@ -159,7 +159,7 @@ flowchart LR
   SSE -->|"type: done"| Persist["POST /conversations/:id/messages"]
 ```
 
-**Stream event types** (`NormalizedStreamEvent` from `boost-common`): `text`, `reasoning`, `tool_call`, `tool_result`, `rag_result`, `handoff`, `approval`, `form`, `auth`, `artifact`, `citation`, `error`, `done`
+**Stream event types**: `text`, `reasoning`, `tool_call`, `tool_result`, `rag_result`, `handoff`, `approval`, `form`, `auth`, `artifact`, `citation`, `error`, `done`
 
 **Rate limiting**: 60 req/min per user; `429` response with `Retry-After` header.
 
@@ -191,7 +191,7 @@ Lifecycle actions are permission-gated per agent ID. Self-approval is prevented 
 
 ### MCP Server Management (future)
 
-Full CRUD at `/mcp/servers` plus `POST /mcp/servers/:id/test` for connection testing. Uses `McpServerRecord` type with transport (`streamable-http`, `sse`) and auth type (`oauth-client-credentials`, `k8s-service-account`, `static-headers`, `infrastructure-mtls`, `none`).
+Full CRUD at `/mcp/servers` plus `POST /mcp/servers/:id/test` for connection testing. MCP server records use transport (`streamable-http`, `sse`) and auth type (`oauth-client-credentials`, `k8s-service-account`, `static-headers`, `infrastructure-mtls`, `none`).
 
 ### Skills Marketplace (future)
 
@@ -215,7 +215,7 @@ Read-only `GET /config/status` currently. Frontend-visible config keys include `
 ## Permissions
 
 The frontend's primary Boost permission set contains 23 `boost.*` permissions
-from `boost-common`:
+defined in `boost-backend`:
 
 | Scope                | Permissions                                                                                                                        |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -257,8 +257,6 @@ Boost's entity model (Decision 1 in the agent-creation-discovery design) uses up
 | Agents        | `AiResource`       | `agent`           |                                                                  |
 | Model Servers | `AiModelServerAPI` | `ai-model-server` |                                                                  |
 | MCP Servers   | `API`              | `mcp-server`      | Upstream. Has `spec.remotes` list                                |
-| Tools         | `Resource`         | `ai-tool`         | Boost-defined (Kagenti-specific)                                 |
-| Vector Stores | `Resource`         | `vector-store`    | Boost-defined                                                    |
 
 Boost-defined entities carry `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, and `rhdh.io/ai-asset-source` annotations as an interim bridge (RHDHPLAN-1507). Custom `CatalogProcessor` validators support both current and future kinds during upstream transitions.
 
