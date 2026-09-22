@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 import { createDevApp } from '@backstage/dev-utils';
-import { dcmAuthDisabledOidcApiFactory, dcmPlugin, DcmPage } from '../src';
+import { dcmAuthDisabledApiFactory, dcmPlugin, DcmPage } from '../src';
 import { dcmTranslations } from '../src/translations';
 
 createDevApp()
-  .registerApi(dcmAuthDisabledOidcApiFactory)
+  .registerApi(dcmAuthDisabledApiFactory)
   .registerPlugin(dcmPlugin)
   .addTranslationResource(dcmTranslations)
   .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])

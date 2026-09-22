@@ -22,8 +22,10 @@ export {
   resourcesApiRef,
 } from './apis';
 export {
-  dcmAuthDisabledOidcApiFactory,
-  oidcAuthApiRef,
+  dcmAuthApiRef,
+  dcmAuthDisabledApiFactory,
+  dcmOidcAuthApiFactory,
+  type DcmAuthApi,
 } from './api/AuthApiRefs';
 export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
 export { RhdhLogoFull } from './components/RhdhLogoFull';

@@ -8,6 +8,7 @@ import { ApiFactory } from '@backstage/core-plugin-api';
 import { ApiRef } from '@backstage/core-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import type { CatalogApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import type { DcmOidcTokenProvider } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OAuthApi } from '@backstage/core-plugin-api';
 import { OpenIdConnectApi } from '@backstage/core-plugin-api';
@@ -26,10 +27,23 @@ export const agentsApiRef: ApiRef<AgentsApi>;
 export const catalogApiRef: ApiRef<CatalogApi>;
 
 // @public
-export const dcmAuthDisabledOidcApiFactory: ApiFactory<
-  OAuthApi & OpenIdConnectApi,
-  OAuthApi & OpenIdConnectApi,
-  {}
+export type DcmAuthApi = {
+  getAccessToken?: DcmOidcTokenProvider;
+};
+
+// @public
+export const dcmAuthApiRef: ApiRef<DcmAuthApi>;
+
+// @public
+export const dcmAuthDisabledApiFactory: ApiFactory<DcmAuthApi, DcmAuthApi, {}>;
+
+// @public
+export const dcmOidcAuthApiFactory: ApiFactory<
+  DcmAuthApi,
+  DcmAuthApi,
+  {
+    oidcAuthApi: OAuthApi & OpenIdConnectApi;
+  }
 >;
 
 // @public
@@ -61,9 +75,6 @@ export const dcmTranslations: TranslationResource;
 
 // @public
 export function isDarkMode(theme: Theme): boolean;
-
-// @public
-export const oidcAuthApiRef: ApiRef<OAuthApi & OpenIdConnectApi>;
 
 // @public
 export const policyManagerApiRef: ApiRef<PolicyManagerApi>;

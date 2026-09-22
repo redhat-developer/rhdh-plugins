@@ -22,33 +22,49 @@ import {
   type OAuthApi,
   type OpenIdConnectApi,
 } from '@backstage/core-plugin-api';
+import type { DcmOidcTokenProvider } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 
-/** RHDH's OIDC API, provided by the host application. */
-export const oidcAuthApiRef: ApiRef<OAuthApi & OpenIdConnectApi> = createApiRef<
+/** Provides the optional access-token provider used by DCM API clients. @public */
+export type DcmAuthApi = {
+  getAccessToken?: DcmOidcTokenProvider;
+};
+
+/** DCM's auth API, provided by the host application. @public */
+export const dcmAuthApiRef: ApiRef<DcmAuthApi> = createApiRef<DcmAuthApi>({
+  id: 'plugin.dcm.auth',
+});
+
+const oidcAuthApiRef: ApiRef<OAuthApi & OpenIdConnectApi> = createApiRef<
   OAuthApi & OpenIdConnectApi
 >({
   id: 'internal.auth.oidc',
 });
 
 /**
- * Fallback OIDC API for standalone and development apps with DCM auth disabled.
+ * DCM auth API factory for standalone and development apps with DCM auth disabled.
  *
  * @public
  */
-export const dcmAuthDisabledOidcApiFactory: ApiFactory<
-  OAuthApi & OpenIdConnectApi,
-  OAuthApi & OpenIdConnectApi,
-  {}
+export const dcmAuthDisabledApiFactory: ApiFactory<DcmAuthApi, DcmAuthApi, {}> =
+  createApiFactory({
+    api: dcmAuthApiRef,
+    deps: {},
+    factory: () => ({}),
+  });
+
+/**
+ * DCM auth API factory that adapts the host application's OIDC API.
+ *
+ * @public
+ */
+export const dcmOidcAuthApiFactory: ApiFactory<
+  DcmAuthApi,
+  DcmAuthApi,
+  { oidcAuthApi: OAuthApi & OpenIdConnectApi }
 > = createApiFactory({
-  api: oidcAuthApiRef,
-  deps: {},
-  factory: () =>
-    ({
-      getAccessToken: () =>
-        Promise.reject(
-          new Error(
-            'DCM authentication is enabled, but the host does not provide internal.auth.oidc.',
-          ),
-        ),
-    } as OAuthApi & OpenIdConnectApi),
+  api: dcmAuthApiRef,
+  deps: { oidcAuthApi: oidcAuthApiRef },
+  factory: ({ oidcAuthApi }) => ({
+    getAccessToken: oidcAuthApi.getAccessToken.bind(oidcAuthApi),
+  }),
 });
