@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.1
+
+### Patch Changes
+
+- 9dc3351: Split Module Federation entry points and lazy-load chat UI so NFS, FAB, and translations remotes ship minimal synchronous bundles.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.1
+
 ## 5.3.0
 
 ### Minor Changes

@@ -17,8 +17,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { storageApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
-
+import { ChatbotDisplayMode } from '../const';
 import { isGuestUser } from '../utils/user-utils';
 
 const BUCKET_NAME = 'lightspeed';

@@ -69,6 +69,9 @@ yarn test:all
 # Run Playwright e2e tests (starts the dev app unless PLAYWRIGHT_URL is set)
 yarn test:e2e
 
+# Run AI Catalog performance benchmarks (see performance/ai-catalog.md)
+yarn test:e2e:performance
+
 # Build all plugins
 yarn build:all
 ```

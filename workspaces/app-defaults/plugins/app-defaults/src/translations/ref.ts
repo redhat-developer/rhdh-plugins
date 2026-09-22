@@ -64,9 +64,6 @@ export const appDefaultsTranslationRef = createTranslationRef({
         importButtonTitle: 'Register a component',
       },
     },
-    menuItem: {
-      learningPaths: 'Learning Paths',
-    },
     learningPaths: {
       title: 'Learning Paths',
       error: {

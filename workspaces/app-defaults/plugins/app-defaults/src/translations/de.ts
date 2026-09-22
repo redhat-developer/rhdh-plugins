@@ -43,7 +43,6 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       'Es sind noch keine Entitys dokumentiert, oder Sie haben keine Berechtigung, welche anzuzeigen. Die Dokumentation wird hier angezeigt, sobald Entitys mit TechDocs-Annotationen registriert sind und Sie Zugriff darauf haben.',
     'docs.emptyState.importButtonTitle': 'Komponente registrieren',
-    'menuItem.learningPaths': 'Lernpfade',
     'learningPaths.title': 'Lernpfade',
     'learningPaths.error.title': 'Daten konnten nicht abgerufen werden.',
     'learningPaths.error.unknownError': 'Unbekannter Fehler',

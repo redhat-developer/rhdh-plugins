@@ -16,4 +16,5 @@
 
 export * from './LogoFull';
 export * from './LogoIcon';
+export * from './PageMainContainer';
 export * from './ThemeProvider';

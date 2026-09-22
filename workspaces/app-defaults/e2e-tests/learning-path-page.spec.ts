@@ -17,8 +17,8 @@
 import { expect, test } from '@playwright/test';
 
 import { switchToLocale } from './utils/locale';
-import { SidebarPage } from './utils/sidebar-page';
-import { getLearningPathsTranslations } from './utils/translations';
+import { LearningPathPage } from './utils/learning-path-page';
+import { getE2eTranslations } from './utils/translations';
 
 test.describe('Learning Paths', () => {
   test.beforeEach(async ({ page, locale }) => {
@@ -29,22 +29,22 @@ test.describe('Learning Paths', () => {
 
     await page.goto('/');
     await page.getByRole('button', { name: 'Enter' }).click();
-    await switchToLocale(page, locale);
+    await switchToLocale(page, locale!);
   });
 
   test('learning path cards link to external resources in a new tab', async ({
     page,
     locale,
   }) => {
-    const sidebarPage = new SidebarPage(page, locale);
-    const translations = getLearningPathsTranslations(locale);
+    const sidebarPage = new LearningPathPage(page, locale);
+    const translations = getE2eTranslations(locale!);
 
     await sidebarPage.openLearningPaths();
 
     await expect(page).toHaveURL(/\/learning-paths\/?$/);
     await expect(
       page.locator('nav[aria-label="sidebar nav"]').getByRole('link', {
-        name: translations.menuItem.learningPaths,
+        name: translations.learningPathTitle,
       }),
     ).toBeVisible();
 

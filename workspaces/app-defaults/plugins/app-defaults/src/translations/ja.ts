@@ -43,7 +43,6 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       'ドキュメント化されたエンティティーがまだ存在しないか、表示権限がありません。TechDocs のアノテーションが付いたエンティティーが登録され、アクセス権が付与されると、ここにドキュメントが表示されます。',
     'docs.emptyState.importButtonTitle': 'コンポーネントを登録',
-    'menuItem.learningPaths': 'ラーニングパス',
     'learningPaths.title': 'ラーニングパス',
     'learningPaths.error.title': 'データを取得できませんでした。',
     'learningPaths.error.unknownError': '不明なエラー',

@@ -20,6 +20,10 @@ const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
 const baseConfig = `${__dirname}/app-config.yaml`;
 const rbacE2eConfig = `${__dirname}/app-config.e2e-rbac.yaml`;
+/** Dedicated ports — must match app-config.e2e-rbac.yaml (avoid reusing :3000). */
+const rbacFrontendPort = 3001;
+const rbacBaseURL =
+  process.env.PLAYWRIGHT_URL ?? `http://localhost:${rbacFrontendPort}`;
 
 /**
  * Isolated Playwright config for RBAC permission gating e2e.
@@ -37,8 +41,9 @@ export default defineConfig({
     ? []
     : {
         command: `${startCommand} --config ${baseConfig} --config ${rbacE2eConfig}`,
-        port: 3000,
-        reuseExistingServer: !process.env.CI,
+        url: `http://localhost:${rbacFrontendPort}`,
+        // Never reuse main e2e / yarn start — those lack permission.enabled.
+        reuseExistingServer: false,
         cwd: __dirname,
         timeout: 4 * 60 * 1000,
         env: {
@@ -61,7 +66,7 @@ export default defineConfig({
   ],
 
   use: {
-    baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
+    baseURL: rbacBaseURL,
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
     permissions: ['clipboard-read', 'clipboard-write'],
