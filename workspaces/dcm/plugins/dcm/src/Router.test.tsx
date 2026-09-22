@@ -22,10 +22,6 @@ jest.mock('./pages/data-center/DataCenterPage', () => ({
   DataCenterPage: () => <div>DataCenterPage</div>,
 }));
 
-jest.mock('./DcmAuth', () => ({
-  setDcmAccessTokenProvider: jest.fn(),
-}));
-
 describe('Router', () => {
   it('renders DataCenterPage on the default route', () => {
     render(wrapInTestApp(<Router />));

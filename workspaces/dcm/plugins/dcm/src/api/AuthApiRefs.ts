@@ -15,7 +15,9 @@
  */
 
 import {
+  createApiFactory,
   createApiRef,
+  type ApiFactory,
   type ApiRef,
   type OAuthApi,
   type OpenIdConnectApi,
@@ -26,4 +28,27 @@ export const oidcAuthApiRef: ApiRef<OAuthApi & OpenIdConnectApi> = createApiRef<
   OAuthApi & OpenIdConnectApi
 >({
   id: 'internal.auth.oidc',
+});
+
+/**
+ * Fallback OIDC API for standalone and development apps with DCM auth disabled.
+ *
+ * @public
+ */
+export const dcmAuthDisabledOidcApiFactory: ApiFactory<
+  OAuthApi & OpenIdConnectApi,
+  OAuthApi & OpenIdConnectApi,
+  {}
+> = createApiFactory({
+  api: oidcAuthApiRef,
+  deps: {},
+  factory: () =>
+    ({
+      getAccessToken: () =>
+        Promise.reject(
+          new Error(
+            'DCM authentication is enabled, but the host does not provide internal.auth.oidc.',
+          ),
+        ),
+    } as OAuthApi & OpenIdConnectApi),
 });

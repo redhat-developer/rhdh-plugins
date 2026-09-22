@@ -24,8 +24,10 @@ import {
   configApiRef,
   createApiFactory,
 } from '@backstage/core-plugin-api';
+import { dcmAuthDisabledOidcApiFactory } from '@red-hat-developer-hub/backstage-plugin-dcm';
 
 export const apis: AnyApiFactory[] = [
+  dcmAuthDisabledOidcApiFactory,
   createApiFactory({
     api: scmIntegrationsApiRef,
     deps: { configApi: configApiRef },

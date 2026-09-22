@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 import {
+  configApiRef,
   createApiFactory,
   createPlugin,
   createRoutableExtension,
   discoveryApiRef,
   fetchApiRef,
+  type ConfigApi,
+  type OAuthApi,
+  type OpenIdConnectApi,
 } from '@backstage/core-plugin-api';
 import {
   AgentsClient,
   CatalogClient,
   PolicyManagerClient,
   ResourcesClient,
+  type DcmOidcTokenProvider,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 
 import {
@@ -42,7 +47,26 @@ import {
   policyManagerApiRef,
   resourcesApiRef,
 } from './apis';
-import { getDcmAccessToken } from './DcmAuth';
+import { oidcAuthApiRef } from './api/AuthApiRefs';
+
+export function getDcmAccessTokenProvider(
+  configApi: ConfigApi,
+  oidcAuthApi?: OAuthApi & OpenIdConnectApi,
+): DcmOidcTokenProvider | undefined {
+  const authEnabled = configApi.getOptionalBoolean('dcm.auth.enabled') ?? true;
+  if (!authEnabled) {
+    return undefined;
+  }
+  if (!oidcAuthApi) {
+    return () =>
+      Promise.reject(
+        new Error(
+          'DCM authentication is enabled, but the host does not provide internal.auth.oidc.',
+        ),
+      );
+  }
+  return oidcAuthApi.getAccessToken.bind(oidcAuthApi);
+}
 
 /**
  * DCM plugin instance.
@@ -63,45 +87,65 @@ export const dcmPlugin = createPlugin({
   apis: [
     createApiFactory({
       api: catalogApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
+      deps: {
+        configApi: configApiRef,
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        oidcAuthApi: oidcAuthApiRef,
+      },
+      factory({ configApi, discoveryApi, fetchApi, oidcAuthApi }) {
         return new CatalogClient({
           discoveryApi,
           fetchApi,
-          getAccessToken: getDcmAccessToken,
+          getAccessToken: getDcmAccessTokenProvider(configApi, oidcAuthApi),
         });
       },
     }),
     createApiFactory({
       api: policyManagerApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
+      deps: {
+        configApi: configApiRef,
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        oidcAuthApi: oidcAuthApiRef,
+      },
+      factory({ configApi, discoveryApi, fetchApi, oidcAuthApi }) {
         return new PolicyManagerClient({
           discoveryApi,
           fetchApi,
-          getAccessToken: getDcmAccessToken,
+          getAccessToken: getDcmAccessTokenProvider(configApi, oidcAuthApi),
         });
       },
     }),
     createApiFactory({
       api: agentsApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
+      deps: {
+        configApi: configApiRef,
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        oidcAuthApi: oidcAuthApiRef,
+      },
+      factory({ configApi, discoveryApi, fetchApi, oidcAuthApi }) {
         return new AgentsClient({
           discoveryApi,
           fetchApi,
-          getAccessToken: getDcmAccessToken,
+          getAccessToken: getDcmAccessTokenProvider(configApi, oidcAuthApi),
         });
       },
     }),
     createApiFactory({
       api: resourcesApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
+      deps: {
+        configApi: configApiRef,
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        oidcAuthApi: oidcAuthApiRef,
+      },
+      factory({ configApi, discoveryApi, fetchApi, oidcAuthApi }) {
         return new ResourcesClient({
           discoveryApi,
           fetchApi,
-          getAccessToken: getDcmAccessToken,
+          getAccessToken: getDcmAccessTokenProvider(configApi, oidcAuthApi),
         });
       },
     }),

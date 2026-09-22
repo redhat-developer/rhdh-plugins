@@ -21,6 +21,10 @@ export {
   agentsApiRef,
   resourcesApiRef,
 } from './apis';
+export {
+  dcmAuthDisabledOidcApiFactory,
+  oidcAuthApiRef,
+} from './api/AuthApiRefs';
 export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
 export { RhdhLogoFull } from './components/RhdhLogoFull';
 export { RhdhLogoIcon } from './components/RhdhLogoIcon';
