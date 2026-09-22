@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import { runAccessibilityTests } from './utils/accessibility';
+import { mockCatalogEntities } from './utils/catalogMocks';
 import { getTranslations, type AiCatalogMessages } from './utils/translations';
 
 const LOCALE_DISPLAY_NAMES: Record<string, string> = {
@@ -42,35 +43,6 @@ const skillEntity = {
   },
   spec: { type: 'skill', lifecycle: 'production', owner: 'team-ai-platform' },
 };
-
-function isCatalogEntitiesPath(url: URL): boolean {
-  return (
-    url.pathname.endsWith('/api/catalog/entities') &&
-    !url.pathname.includes('/by-query')
-  );
-}
-
-async function mockCatalogEntities(page: Page, items: unknown[]) {
-  const fulfillItemsWrapper = async (route: Route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ items }),
-    });
-
-  await page.route('**/api/catalog/entities/by-query**', fulfillItemsWrapper);
-  await page.route(isCatalogEntitiesPath, async route => {
-    if (route.request().method() === 'GET') {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(items),
-      });
-      return;
-    }
-    await fulfillItemsWrapper(route);
-  });
-}
 
 /**
  * Sign in as a guest, switch the app language through Settings, and wait for

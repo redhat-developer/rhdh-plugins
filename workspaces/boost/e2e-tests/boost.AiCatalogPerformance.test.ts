@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
+import { mockCatalogEntities, signInAsGuest } from './utils/catalogMocks';
 
 const ENTITY_COUNT = 500;
 const PAGE_SIZE = 20;
@@ -56,47 +58,6 @@ function createPerformanceEntities() {
       },
     };
   });
-}
-
-function isCatalogEntitiesPath(url: URL): boolean {
-  return (
-    url.pathname.endsWith('/api/catalog/entities') &&
-    !url.pathname.includes('/by-query')
-  );
-}
-
-async function mockCatalogEntities(page: Page, items: unknown[]) {
-  const fulfillItemsWrapper = async (route: Route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ items }),
-    });
-
-  await page.route('**/api/catalog/entities/by-query**', fulfillItemsWrapper);
-  await page.route(isCatalogEntitiesPath, async route => {
-    if (route.request().method() === 'GET') {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(items),
-      });
-      return;
-    }
-    await fulfillItemsWrapper(route);
-  });
-}
-
-async function signInAsGuest(page: Page) {
-  page.on('dialog', dialog => dialog.accept());
-  await page.goto('/ai-catalog');
-  const enter = page.getByRole('button', { name: 'Enter' });
-  const heading = page.getByRole('heading', { name: 'AI Catalog' });
-  await expect(enter.or(heading).first()).toBeVisible({ timeout: 30_000 });
-  if (await enter.isVisible()) {
-    await enter.click();
-    await expect(heading).toBeVisible({ timeout: 20_000 });
-  }
 }
 
 test.describe('AI Catalog performance', () => {
@@ -141,8 +102,6 @@ test.describe('AI Catalog performance', () => {
         filterResponseMs: FILTER_TARGET_MS,
       },
     };
-
-    console.log(`AI Catalog performance: ${JSON.stringify(results)}`);
 
     await testInfo.attach('ai-catalog-performance.json', {
       body: JSON.stringify(results, null, 2),
