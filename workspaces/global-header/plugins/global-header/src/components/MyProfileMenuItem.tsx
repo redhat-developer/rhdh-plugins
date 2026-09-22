@@ -28,7 +28,7 @@ import { useTranslation } from '../hooks/useTranslation';
 /**
  * Custom component for the "My Profile" menu item.
  * Dynamically resolves the catalog URL from the user's identity and
- * returns `null` for guest users, matching legacy ProfileDropdown behavior.
+ * returns `null` for guest users, matching old ProfileDropdown behavior.
  *
  * @internal
  */
@@ -71,12 +71,17 @@ export const MyProfileMenuItem = ({
       onClick={handleClose}
       disableRipple
       disableTouchRipple
-      sx={{ py: 0.5, color: 'inherit', textDecoration: 'none' }}
+      sx={{
+        py: 0.5,
+        px: 0,
+        width: '100%',
+        boxSizing: 'border-box',
+        display: 'flex',
+        color: 'inherit',
+        textDecoration: 'none',
+      }}
     >
-      <MenuItemLinkContent
-        icon="account_circle"
-        label={t('profile.myProfile')}
-      />
+      <MenuItemLinkContent icon="account" label={t('profile.myProfile')} />
     </MenuItem>
   );
 };

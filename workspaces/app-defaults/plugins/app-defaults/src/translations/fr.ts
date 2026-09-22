@@ -15,13 +15,13 @@
  */
 
 import { createTranslationMessages } from '@backstage/frontend-plugin-api';
-import { translationRef } from './ref';
+import { appDefaultsTranslationRef } from './ref';
 
 /**
  * @internal
  */
 export default createTranslationMessages({
-  ref: translationRef,
+  ref: appDefaultsTranslationRef,
   messages: {
     'catalog.emptyState.title': 'Aucun élément disponible dans le catalogue',
     'catalog.emptyState.description':
@@ -44,5 +44,9 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       "Il n'y a pas encore d'entités documentées, ou vous n'avez pas la permission d'en voir. La documentation apparaîtra ici une fois que des entités avec des annotations TechDocs seront enregistrées et que vous y aurez accès.",
     'docs.emptyState.importButtonTitle': 'Enregistrer un composant',
+    'menuItem.learningPaths': "Parcours d'apprentissage",
+    'learningPaths.title': "Parcours d'apprentissage",
+    'learningPaths.error.title': 'Impossible de récupérer les données',
+    'learningPaths.error.unknownError': 'Erreur inconnue',
   },
 });

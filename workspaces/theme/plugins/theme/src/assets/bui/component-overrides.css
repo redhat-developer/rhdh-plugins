@@ -1,3 +1,16 @@
+/*
+ * Page-inset shell: never scroll the document on desktop. Wheel/trackpad
+ * chaining from the main well must not move html/body/#root.
+ */
+@media (min-width: 600px) {
+  html:has(body[data-theme-name]),
+  html:has(body[data-theme-name]) #root {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+
 body[data-theme-name='light'][data-theme-mode='light'],
 body[data-theme-name='dark'][data-theme-mode='dark'],
 body[data-theme-name='light-customized'][data-theme-mode='light'],
@@ -6,6 +19,15 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
    * Override some Backstage UI component styles to match the PatternFly design.
    */
   background-color: var(--bui-redhat-theme-page-inset-bg);
+
+  /*
+   * Keep scrolling inside the main well (pairs with html/#root rule above).
+   */
+  @media (min-width: 600px) {
+    overflow: hidden;
+    overscroll-behavior: none;
+    height: 100%;
+  }
 
   /*
    * Align Accordion to https://www.patternfly.org/components/accordion
@@ -104,16 +126,28 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
     --bg-active: var(--bui-bg-solid-pressed);
     --fg: var(--bui-fg-solid);
   }
+  /* Our unlayered `background` shorthand beats BUI's layered :hover
+   * background-color, so flip the tokens on hover like ButtonLink does. */
+  .bui-Button[data-variant='primary']:hover,
+  .bui-Button[data-variant='primary'][data-hovered] {
+    --bg: var(--bui-bg-solid-hover);
+  }
+  .bui-Button[data-variant='primary']:active,
+  .bui-Button[data-variant='primary'][data-pressed] {
+    --bg: var(--bui-bg-solid-pressed);
+  }
   .bui-Button[data-variant='secondary'] {
     --bg: transparent;
     --bg-hover: transparent;
     --bg-active: transparent;
     --fg: var(--bui-bg-solid);
     border: 1px solid var(--bui-bg-solid);
-    &:hover {
-      border-color: var(--bui-bg-solid-hover);
-      outline: 1px solid var(--bui-bg-solid-hover);
-    }
+  }
+  .bui-Button[data-variant='secondary']:hover,
+  .bui-Button[data-variant='secondary'][data-hovered] {
+    --fg: var(--bui-bg-solid-hover);
+    border-color: var(--bui-bg-solid-hover);
+    outline: 1px solid var(--bui-bg-solid-hover);
   }
   .bui-Button[data-variant='tertiary'] {
     --bg: transparent;
@@ -121,14 +155,20 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
     --bg-active: transparent;
     --fg: var(--bui-bg-solid);
     border: 1px solid var(--pf-v6-c-button--m-tertiary--BorderColor, #c7c7c7);
-    &:hover {
-      border-color: var(--pf-v6-c-button--hover--BorderColor, #c7c7c7);
-      outline: 1px solid var(--bui-bg-solid-hover);
-    }
+  }
+  .bui-Button[data-variant='tertiary']:hover,
+  .bui-Button[data-variant='tertiary'][data-hovered] {
+    --fg: var(--bui-bg-solid-hover);
+    border-color: var(--pf-v6-c-button--hover--BorderColor, #c7c7c7);
+    outline: 1px solid var(--bui-bg-solid-hover);
   }
 
   .bui-Button[data-variant='primary'][data-destructive='true'] {
     --bg: var(--pf-v6-c-button--m-danger--BackgroundColor, #f0561d);
+  }
+  .bui-Button[data-variant='primary'][data-destructive='true']:hover,
+  .bui-Button[data-variant='primary'][data-destructive='true'][data-hovered] {
+    --bg: var(--pf-v6-c-button--m-danger--hover--BackgroundColor, #c72300);
   }
   .bui-Button[data-variant='secondary'][data-destructive='true'] {
     --fg: var(--pf-v6-c-button--m-danger--Color, #f89b78);
@@ -161,14 +201,18 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   .bui-ButtonLink,
   .bui-ButtonLink[data-variant='primary'] {
     --bg: transparent;
-    --bg-hover: var(--bui-bg-neutral-1-hover);
+    --bg-hover: transparent;
     --bg-active: transparent;
-    --fg: var(--pf-t--global--icon--color--brand--default, #0066cc);
+    --fg: var(--pf-t--global--link--color--default, #0066cc);
 
     font-weight: var(--bui-font-weight-regular);
   }
   .bui-ButtonLink[data-variant='primary'] {
     font-weight: var(--bui-font-weight-bold);
+  }
+  .bui-ButtonLink:hover,
+  .bui-ButtonLink[data-hovered] {
+    --fg: var(--pf-v6-c-button--hover--Color, #004d99);
   }
   .bui-ButtonLink[data-disabled='true'] {
     --bg: transparent;
@@ -323,14 +367,28 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   }
 
   /*
-   * Use heading font family for title-level text
+   * Use heading font family, weight, and PF Content line-heights for title-level text
    * PatternFly uses "Red Hat Display" for headings and "Red Hat Text" for body.
+   * Line heights: --pf-v6-c-content--h*--LineHeight 1.3; body/small 1.5.
    */
   .bui-Text[data-variant='title-large'],
   .bui-Text[data-variant='title-medium'],
   .bui-Text[data-variant='title-small'],
   .bui-Text[data-variant='title-x-small'] {
     font-family: var(--bui-redhat-theme-font-heading);
+    line-height: var(--pf-v6-c-content--h1--LineHeight, 1.3);
+  }
+  .bui-Text[data-variant^='title'][data-weight='regular'] {
+    font-weight: var(--bui-redhat-theme-font-weight-heading-regular);
+  }
+  .bui-Text[data-variant^='title'][data-weight='bold'] {
+    font-weight: var(--bui-redhat-theme-font-weight-heading-bold);
+  }
+  .bui-Text[data-variant='body-large'],
+  .bui-Text[data-variant='body-medium'],
+  .bui-Text[data-variant='body-small'],
+  .bui-Text[data-variant='body-x-small'] {
+    line-height: var(--pf-v6-c-content--LineHeight, 1.5);
   }
   .bui-DialogHeaderTitle {
     font-family: var(--bui-redhat-theme-font-heading);
@@ -378,23 +436,34 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
     border-radius: var(--bui-radius-full);
     font-weight: var(--bui-font-weight-bold);
     min-width: 2rem;
+    background-color: var(--pf-v6-c-badge--m-read--BackgroundColor, #e0e0e0);
   }
 
   /*
    * Align form controls to https://www.patternfly.org/components/forms/form-control
    */
+  .bui-FieldLabel {
+    font-weight: var(--pf-v6-c-form__label-text--FontWeight, 600);
+  }
   .bui-Input,
   .bui-PasswordFieldInputWrapper,
   .bui-SearchFieldInputWrapper,
   .bui-SearchAutocomplete,
   .bui-ComboboxInput,
   .bui-DatePickerGroup {
-    border: 1px solid var(--bui-border-2);
+    border: 1px solid
+      var(--pf-t--global--border--color--control--default, #8c8c8c);
     border-radius: var(--bui-radius-2);
     background-color: var(
       --pf-t--global--background--color--control--default,
       var(--bui-bg-neutral-1)
     );
+  }
+  .bui-Input::placeholder,
+  .bui-PasswordFieldInput::placeholder,
+  .bui-SearchFieldInputWrapper input::placeholder,
+  .bui-ComboboxInput::placeholder {
+    color: var(--pf-v6-c-form-control--m-placeholder--Color, #4d4d4d);
   }
   .bui-Input,
   .bui-PasswordFieldInput {
@@ -473,11 +542,30 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
     &,
     & .bui-Popover,
     & .bui-PopoverContent {
-      background: var(--bui-redhat-theme-bg-floating);
+      background: var(
+        --pf-v6-c-popover__content--BackgroundColor,
+        var(--bui-redhat-theme-bg-floating)
+      );
     }
     & .bui-Popover {
+      --bui-bg-app: var(
+        --pf-v6-c-popover__content--BackgroundColor,
+        var(--bui-redhat-theme-bg-floating)
+      );
+      --bui-bg-neutral-1: var(
+        --pf-v6-c-popover__content--BackgroundColor,
+        var(--bui-redhat-theme-bg-floating)
+      );
+      --bui-border-1: var(
+        --pf-v6-c-popover__content--BackgroundColor,
+        var(--bui-redhat-theme-bg-floating)
+      );
       margin: 0;
-      border: 1px solid var(--bui-border-1);
+      border: none;
+      box-shadow: var(
+        --pf-t--global--box-shadow--md,
+        0px 4px 10px 0px rgba(41, 41, 41, 0.15)
+      );
     }
     & .bui-PopoverContent {
       padding: var(--bui-space-1);
@@ -525,6 +613,16 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   .bui-TableRow {
     border-bottom: 1px solid var(--bui-border-1);
   }
+  .bui-TableRow:hover {
+    background-color: var(
+      --pf-v6-c-table__tr--m-clickable--BackgroundColor,
+      #f2f2f2
+    );
+  }
+  .bui-TableHead[data-sort-direction='ascending'] .bui-TableHeadSortButton,
+  .bui-TableHead[data-sort-direction='descending'] .bui-TableHeadSortButton {
+    color: var(--pf-t--global--color--brand--clicked, #004d99);
+  }
 
   /*
    * Align Link to https://www.patternfly.org/components/content (links)
@@ -537,24 +635,79 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
    * Align Menu to https://www.patternfly.org/components/menu
    */
   .bui-MenuPopover {
+    border: none;
     border-radius: var(--bui-radius-3);
     padding: var(--bui-space-1);
     background-color: var(--bui-redhat-theme-bg-floating);
+    box-shadow: var(
+      --pf-v6-c-menu--BoxShadow,
+      0px 4px 10px 0px rgba(41, 41, 41, 0.15)
+    );
   }
+
+  .bui-MenuInner {
+    background-color: var(--bui-redhat-theme-bg-floating);
+    & .bui-MenuContent {
+      padding-block: 0;
+      background-color: var(--bui-redhat-theme-bg-floating);
+    }
+  }
+
   .bui-MenuItem {
     border-radius: var(--bui-radius-2);
+    margin-inline: 0;
   }
+
+  .bui-MenuSection {
+    padding-inline: 0;
+  }
+
   .bui-MenuSectionHeader {
+    font-size: var(--bui-font-size-2);
+    padding-inline-start: var(--bui-space-2);
+    padding-inline-end: var(--bui-space-2);
+    padding-top: var(--bui-space-2);
+    padding-bottom: var(--bui-space-2);
     text-transform: none;
     letter-spacing: normal;
     font-weight: var(--bui-font-weight-bold);
   }
+  .bui-MenuSeparator {
+    background: var(--pf-t--global--border--color--default, #e0e0e0);
+    margin-inline: 0;
+  }
 
   /*
    * Align Popover to https://www.patternfly.org/components/popover
+   * PF uses shadow without border; content surface is white / gray-70 dark.
+   *
+   * Arrow SVG fills come from --bui-bg-app / --bui-bg-neutral-1 / --bui-border-1
+   * (same as Tooltip). Override those on the root so the arrow matches the shell —
+   * property-level `background` alone leaves the arrow on page --bui-bg-app and it
+   * disappears into the inset gray. With border removed, pull the arrow in further
+   * so it does not leave a hairline gap at the join.
    */
   .bui-Popover {
     --popover-border-radius: var(--bui-radius-5);
+    --bui-bg-app: var(--pf-v6-c-popover__content--BackgroundColor, #ffffff);
+    --bui-bg-neutral-1: var(
+      --pf-v6-c-popover__content--BackgroundColor,
+      #ffffff
+    );
+    --bui-border-1: var(--pf-v6-c-popover__content--BackgroundColor, #ffffff);
+    border: none;
+    box-shadow: var(
+      --pf-t--global--box-shadow--md,
+      0px 4px 10px 0px rgba(41, 41, 41, 0.15)
+    );
+    background: var(--bui-bg-app);
+  }
+  .bui-PopoverContent {
+    background: var(--bui-bg-neutral-1);
+  }
+  .bui-PopoverArrow svg {
+    /* BUI default -2px assumes a 1px border; border:none needs a deeper overlap. */
+    --popover-arrow-overlap: -4px;
   }
 
   /*
@@ -562,6 +715,16 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
    */
   .bui-Radio {
     font-size: var(--bui-font-size-3);
+  }
+
+  /*
+   * Align Checkbox disabled state to PatternFly
+   */
+  .bui-Checkbox[data-disabled] .bui-CheckboxIndicator {
+    background-color: light-dark(
+      rgba(239, 239, 239, 0.3),
+      rgba(59, 59, 59, 0.3)
+    );
   }
 
   /*
@@ -605,30 +768,32 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
 
   /*
    * Align Tooltip to https://www.patternfly.org/components/tooltip
-   * PatternFly tooltips use inverse (dark) background with light text.
+   * PatternFly tooltips use inverse background with contrasting text.
+   *
+   * BUI paints the shell/arrow from --bui-bg-app / --bui-bg-neutral-1 / --bui-border-1
+   * and text from --bui-fg-primary. Override those tokens on the tooltip root so
+   * background, text, and arrow stay in sync (property-level background overrides
+   * lose to BUI module CSS). With border removed, deepen arrow overlap to close
+   * the hairline gap at the arrow join.
    */
   .bui-Tooltip {
     --tooltip-border-radius: var(--bui-radius-2);
-    background-color: var(--bui-black);
+    --bui-bg-app: var(--pf-v6-c-tooltip__content--BackgroundColor, #292929);
+    --bui-bg-neutral-1: var(
+      --pf-v6-c-tooltip__content--BackgroundColor,
+      #292929
+    );
+    --bui-border-1: var(--pf-v6-c-tooltip__arrow--BackgroundColor, #292929);
+    --bui-fg-primary: var(--pf-v6-c-tooltip__content--Color, #ffffff);
     border: none;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     max-width: 300px;
     font-size: var(--bui-font-size-2);
     text-align: center;
   }
-  .bui-TooltipContent {
-    color: var(--bui-white);
-  }
   .bui-TooltipArrow svg {
-    use:nth-of-type(1) {
-      fill: var(--bui-black);
-    }
-    use:nth-of-type(2) {
-      fill: var(--bui-black);
-    }
-    path {
-      fill: var(--bui-black);
-    }
+    /* BUI default -2px assumes a 1px border; border:none needs a deeper overlap. */
+    --tooltip-arrow-overlap: -4px;
   }
 
   /*
@@ -666,67 +831,12 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   }
 
   /*
-   * BUI elements inside BackstageSidebarPage should use the page background
-   * so they blend with the content area rather than the shell background.
+   * Page inset / rounded content well:
+   * Prefer a PatternFly-style main container (`RHDHPageMainContainer` /
+   * `#rhdh-page-main-container`) beside the sidebar — see createComponents.ts.
+   * Do not clip/round BackstageSidebarPage-root itself; that fights scrolling
+   * when Header + Containers are loose siblings of nav (BUI pages).
    */
-  [class*='BackstageSidebarPage-root']:has(> nav):not(
-      :has([class*='BackstagePage-root-'])
-    ) {
-    background-color: var(--bui-redhat-theme-bg-primary);
-
-    /* Right edge page inset corners */
-    max-width: 100%;
-    box-sizing: border-box;
-    height: 100vh;
-    border-width: var(--bui-redhat-theme-page-inset)
-      var(--bui-redhat-theme-page-inset) var(--bui-redhat-theme-page-inset) 0;
-    border-style: solid;
-    border-color: var(--bui-redhat-theme-page-inset-bg);
-    clip-path: xywh(
-      0 var(--bui-redhat-theme-page-inset)
-        calc(100% - var(--bui-redhat-theme-page-inset))
-        calc(100% - 2 * var(--bui-redhat-theme-page-inset)) round 0 1rem 1rem 0
-    );
-
-    /*
-     * A terrible hack for the left edge page inset corners
-     * Very difficult to get "inside border radius", so instead we use two overlapping
-     * borders, one with border radius.
-     *
-     * To prevent content overlap a clip-path is used.
-     */
-    &:before,
-    &:after {
-      content: '';
-      display: absolute;
-      width: 100%;
-      height: calc(100% - var(--bui-redhat-theme-page-inset) * 2);
-      top: 0;
-      margin: calc(var(--bui-redhat-theme-page-inset)) 0;
-      position: fixed;
-      clip-path: polygon(
-        0% 100%,
-        0% 1em,
-        1em 0%,
-        0% 0%,
-        0% calc(100% - 1em),
-        1em 100%
-      );
-    }
-
-    &:before {
-      border-left: var(--bui-redhat-theme-page-inset) solid
-        var(--bui-redhat-theme-page-inset-bg);
-      z-index: 0;
-    }
-
-    &:after {
-      border-left: var(--bui-redhat-theme-page-inset) solid
-        var(--bui-redhat-theme-bg-primary);
-      border-radius: 1em;
-      z-index: 1;
-    }
-  }
 }
 
 body[data-theme-name='light'][data-theme-mode='light'],
@@ -746,5 +856,82 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   }
   .bui-DialogHeader > .bui-Button[slot='close'] {
     color: var(--bui-white);
+  }
+
+  .bui-ButtonLink,
+  .bui-ButtonLink[data-variant='primary'] {
+    --fg: var(--pf-v6-c-button--m-primary--BackgroundColor, #92c5f9);
+  }
+  .bui-ButtonLink:hover,
+  .bui-ButtonLink[data-hovered] {
+    --fg: var(--pf-v6-c-button--hover--Color, #e0f0ff);
+  }
+
+  .bui-TableRow:hover {
+    background-color: var(
+      --pf-v6-c-table__tr--m-clickable--BackgroundColor,
+      #383838
+    );
+  }
+  .bui-TableHead[data-sort-direction='ascending'] .bui-TableHeadSortButton,
+  .bui-TableHead[data-sort-direction='descending'] .bui-TableHeadSortButton {
+    color: var(--pf-t--global--color--brand--clicked, #b9dafc);
+  }
+
+  .bui-MenuSeparator {
+    background: var(--pf-t--global--border--color--default, #4d4d4d);
+  }
+  .bui-MenuItem[data-color='danger'] {
+    color: var(--pf-v6-c-menu__item--Color, #f89b78);
+  }
+
+  .bui-Input,
+  .bui-PasswordFieldInputWrapper,
+  .bui-SearchFieldInputWrapper,
+  .bui-SearchAutocomplete,
+  .bui-ComboboxInput,
+  .bui-DatePickerGroup {
+    border-color: var(--pf-t--global--border--color--control--default, #a3a3a3);
+  }
+  .bui-Input::placeholder,
+  .bui-PasswordFieldInput::placeholder,
+  .bui-SearchFieldInputWrapper input::placeholder,
+  .bui-ComboboxInput::placeholder {
+    color: var(--pf-v6-c-form-control--m-placeholder--Color, #c7c7c7);
+  }
+
+  .bui-SelectPopover .bui-Popover,
+  .bui-ComboboxPopover .bui-Popover,
+  .bui-Popover {
+    --bui-bg-app: var(--pf-v6-c-popover__content--BackgroundColor, #383838);
+    --bui-bg-neutral-1: var(
+      --pf-v6-c-popover__content--BackgroundColor,
+      #383838
+    );
+    --bui-border-1: var(--pf-v6-c-popover__content--BackgroundColor, #383838);
+    box-shadow: var(
+      --pf-t--global--box-shadow--md,
+      0px 4px 10px 0px rgba(0, 0, 0, 0.5)
+    );
+    background: var(--bui-bg-app);
+  }
+  .bui-SelectPopover .bui-PopoverContent,
+  .bui-ComboboxPopover .bui-PopoverContent,
+  .bui-PopoverContent {
+    background: var(--bui-bg-neutral-1);
+  }
+
+  .bui-Tooltip {
+    --bui-bg-app: var(--pf-v6-c-tooltip__content--BackgroundColor, #ffffff);
+    --bui-bg-neutral-1: var(
+      --pf-v6-c-tooltip__content--BackgroundColor,
+      #ffffff
+    );
+    --bui-border-1: var(--pf-v6-c-tooltip__arrow--BackgroundColor, #ffffff);
+    --bui-fg-primary: var(--pf-v6-c-tooltip__content--Color, #292929);
+  }
+
+  .bui-Badge {
+    background-color: var(--pf-v6-c-badge--m-read--BackgroundColor, #4d4d4d);
   }
 }

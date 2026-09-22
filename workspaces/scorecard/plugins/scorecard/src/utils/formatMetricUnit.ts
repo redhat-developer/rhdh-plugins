@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
+/** Matches DORA providers that persist values with `Number(value.toFixed(4))`. */
+const METRIC_VALUE_DISPLAY_DECIMALS = 4;
+
+/**
+ * Rounds a metric number for display so IEEE-754 noise (e.g. `0.46670000000000006`)
+ * matches the 4-decimal values shown in the entities table.
+ */
+export function formatNumericMetricValue(value: number): string {
+  if (!Number.isFinite(value)) {
+    return String(value);
+  }
+  return String(Number(value.toFixed(METRIC_VALUE_DISPLAY_DECIMALS)));
+}
+
 /**
  * Appends a metric display unit to a threshold expression or value.
  * Units starting with `%` or `/` are concatenated without a leading space.

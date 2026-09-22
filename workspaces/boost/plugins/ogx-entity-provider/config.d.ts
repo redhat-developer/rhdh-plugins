@@ -19,10 +19,10 @@
  *
  * Declares the config paths read by readOgxEntityProviderConfig so that
  * Backstage validates and enforces visibility on these keys even if
- * the module is loaded independently of boost-backend.
+ * the module is loaded independently of the deferred Boost backend.
  */
 export interface Config {
-  boost?: {
+  'ai-catalog'?: {
     /** Entity-provider-specific config (standalone deployment). */
     entityProviders?: {
       /** OGX entity provider connection. */
@@ -47,33 +47,39 @@ export interface Config {
          * @configScope yaml-only
          */
         skipTLSVerify?: boolean;
-      };
-    };
-
-    /** Provider module config (composed deployment). */
-    providers?: {
-      /** OGX provider connection. */
-      ogx?: {
-        /**
-         * Base URL of the OGX API endpoint.
+        /** Upstream refresh interval for model entities, in seconds.
          * @configScope yaml-only
          */
-        baseUrl?: string;
-        /**
-         * API key for authenticated endpoints.
-         * @visibility secret
-         */
-        apiKey?: string;
-        /**
-         * PEM-encoded CA certificate or certificate bundle used to verify the OGX endpoint.
-         * @visibility backend
-         */
-        caData?: string;
-        /**
-         * Disable TLS certificate verification. Development use only.
+        modelRefreshIntervalSeconds?: number;
+        /** Upstream refresh interval for agent entities, in seconds.
          * @configScope yaml-only
          */
-        skipTLSVerify?: boolean;
+        agentRefreshIntervalSeconds?: number;
+        /** ID of the default/entry-point agent.
+         * @configScope yaml-only
+         */
+        defaultAgent?: string;
+        /** Maximum number of agent turns in a conversation.
+         * @configScope yaml-only
+         */
+        maxAgentTurns?: number;
+        /** Static agents to publish as catalog entities.
+         * @configScope yaml-only
+         */
+        agents?: Array<{
+          id: string;
+          name: string;
+          version?: string;
+          description?: string;
+          instructions?: string;
+          model?: string;
+          tools?: string[];
+          handoffs?: string[];
+          handoffDescription?: string;
+          enableRAG?: boolean;
+          createdBy?: string;
+          lifecycleStage?: 'draft' | 'pending' | 'published' | 'archived';
+        }>;
       };
     };
   };

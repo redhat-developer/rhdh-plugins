@@ -1,0 +1,123 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { useMemo } from 'react';
+import type { Entity } from '@backstage/catalog-model';
+import {
+  Cell,
+  type ColumnConfig,
+  type SortState,
+  type TableItem,
+  CellText,
+  Table,
+} from '@backstage/ui';
+
+import { useTranslation } from '../../hooks/useTranslation';
+import { getCategoryMeta } from '../../utils/categoryMeta';
+import { entityHref } from '../../utils/entityLinks';
+import { getProvider, getSpecField } from '../../utils/entityFields';
+import { AssetTypeBadge } from './AssetTypeBadge';
+import styles from './AiCatalogTable.module.css';
+
+interface AiAssetRow extends TableItem {
+  title: string;
+  categoryLabel: string;
+  entity: Entity;
+  owner: string;
+  provider: string;
+  description: string;
+  href: string;
+}
+
+function toRows(entities: Entity[]): AiAssetRow[] {
+  return entities.map(entity => ({
+    id: entity.metadata.uid ?? entity.metadata.name,
+    title: entity.metadata.title ?? entity.metadata.name,
+    categoryLabel: getCategoryMeta(getSpecField(entity, 'type')).label,
+    entity,
+    owner: getSpecField(entity, 'owner') ?? '',
+    provider: getProvider(entity) ?? '',
+    description: entity.metadata.description ?? '',
+    href: entityHref(entity),
+  }));
+}
+
+function renderAssetTypeCell(item: AiAssetRow) {
+  return (
+    <Cell>
+      <AssetTypeBadge entity={item.entity} />
+    </Cell>
+  );
+}
+
+export interface AiCatalogTableProps {
+  readonly entities: Entity[];
+  readonly sort: SortState;
+}
+
+export const AiCatalogTable = ({ entities, sort }: AiCatalogTableProps) => {
+  const { t } = useTranslation();
+  const rows = useMemo(() => toRows(entities), [entities]);
+
+  const columns: ColumnConfig<AiAssetRow>[] = useMemo(
+    () => [
+      {
+        id: 'title',
+        label: t('catalog.table.name'),
+        cell: item => <CellText title={item.title} href={item.href} />,
+        isRowHeader: true,
+        isSortable: true,
+      },
+      {
+        id: 'categoryLabel',
+        label: t('catalog.table.type'),
+        cell: renderAssetTypeCell,
+        isSortable: true,
+      },
+      {
+        id: 'provider',
+        label: t('catalog.table.provider'),
+        cell: item => <CellText title={item.provider} />,
+        isSortable: true,
+      },
+      {
+        id: 'owner',
+        label: t('catalog.table.owner'),
+        cell: item => <CellText title={item.owner} />,
+        isSortable: true,
+      },
+      {
+        id: 'description',
+        label: t('catalog.table.description'),
+        cell: item => <CellText title={item.description} color="secondary" />,
+      },
+    ],
+    [t],
+  );
+
+  return (
+    <div className={styles.tableViewport}>
+      <Table
+        data={rows}
+        columnConfig={columns}
+        pagination={{ type: 'none' }}
+        sort={sort}
+        rowConfig={{ getHref: item => item.href }}
+        className={styles.table}
+      />
+    </div>
+  );
+};

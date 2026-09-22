@@ -15,13 +15,13 @@
  */
 
 import { createTranslationMessages } from '@backstage/frontend-plugin-api';
-import { translationRef } from './ref';
+import { appDefaultsTranslationRef } from './ref';
 
 /**
  * @internal
  */
 export default createTranslationMessages({
-  ref: translationRef,
+  ref: appDefaultsTranslationRef,
   messages: {
     'catalog.emptyState.title': 'Keine Katalogeinträge verfügbar',
     'catalog.emptyState.description':
@@ -43,5 +43,9 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       'Es gibt noch keine dokumentierten Einträge oder Sie haben keine Berechtigung, welche anzuzeigen. Dokumentation erscheint hier, sobald Einträge mit TechDocs-Annotationen registriert sind und Sie Zugriff haben.',
     'docs.emptyState.importButtonTitle': 'Komponente registrieren',
+    'menuItem.learningPaths': 'Lernpfade',
+    'learningPaths.title': 'Lernpfade',
+    'learningPaths.error.title': 'Daten konnten nicht abgerufen werden.',
+    'learningPaths.error.unknownError': 'Unbekannter Fehler',
   },
 });

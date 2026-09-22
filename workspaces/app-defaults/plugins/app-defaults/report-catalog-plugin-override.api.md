@@ -6,12 +6,14 @@
 import { AnyApiFactory } from '@backstage/frontend-plugin-api';
 import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
 import { ApiFactory } from '@backstage/frontend-plugin-api';
-import { CatalogExportSettings } from '@backstage/plugin-catalog/alpha';
+import { CatalogExportSettings } from '@backstage/plugin-catalog';
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { EntityCardType } from '@backstage/plugin-catalog-react/alpha';
 import { EntityContentLayoutProps } from '@backstage/plugin-catalog-react/alpha';
+import { EntityContextMenuItemData } from '@backstage/plugin-catalog-react/alpha';
 import { EntityContextMenuItemParams } from '@backstage/plugin-catalog-react/alpha';
+import { EntityHeaderLayoutProps } from '@backstage/plugin-catalog-react/alpha';
 import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
@@ -787,13 +789,17 @@ const catalogPluginOverride: OverridableFrontendPlugin<
         filter?: FilterPredicate | undefined;
       };
       output:
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             (entity: Entity) => boolean,
             'catalog.entity-filter-function',
             {
               optional: true;
             }
+          >
+        | ExtensionDataRef<
+            EntityContextMenuItemData,
+            'catalog.entity-context-menu-item-data',
+            {}
           >;
       inputs: {};
       params: EntityContextMenuItemParams;
@@ -808,13 +814,17 @@ const catalogPluginOverride: OverridableFrontendPlugin<
         filter?: FilterPredicate | undefined;
       };
       output:
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             (entity: Entity) => boolean,
             'catalog.entity-filter-function',
             {
               optional: true;
             }
+          >
+        | ExtensionDataRef<
+            EntityContextMenuItemData,
+            'catalog.entity-context-menu-item-data',
+            {}
           >;
       inputs: {};
       params: EntityContextMenuItemParams;
@@ -829,13 +839,17 @@ const catalogPluginOverride: OverridableFrontendPlugin<
         filter?: FilterPredicate | undefined;
       };
       output:
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             (entity: Entity) => boolean,
             'catalog.entity-filter-function',
             {
               optional: true;
             }
+          >
+        | ExtensionDataRef<
+            EntityContextMenuItemData,
+            'catalog.entity-context-menu-item-data',
+            {}
           >;
       inputs: {};
       params: EntityContextMenuItemParams;
@@ -1099,6 +1113,25 @@ const catalogPluginOverride: OverridableFrontendPlugin<
             internal: false;
           }
         >;
+        headerLayouts: ExtensionInput<
+          | ConfigurableExtensionDataRef<
+              (entity: Entity) => boolean,
+              'catalog.entity-filter-function',
+              {
+                optional: true;
+              }
+            >
+          | ConfigurableExtensionDataRef<
+              (props: EntityHeaderLayoutProps) => JSX_2.Element,
+              'catalog.entity-header-layout.component',
+              {}
+            >,
+          {
+            singleton: false;
+            optional: false;
+            internal: false;
+          }
+        >;
         headers: ExtensionInput<
           | ConfigurableExtensionDataRef<
               (entity: Entity) => boolean,
@@ -1170,7 +1203,11 @@ const catalogPluginOverride: OverridableFrontendPlugin<
           }
         >;
         contextMenuItems: ExtensionInput<
-          | ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+          | ConfigurableExtensionDataRef<
+              EntityContextMenuItemData,
+              'catalog.entity-context-menu-item-data',
+              {}
+            >
           | ConfigurableExtensionDataRef<
               (entity: Entity) => boolean,
               'catalog.entity-filter-function',

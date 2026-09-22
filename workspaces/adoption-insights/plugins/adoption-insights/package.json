@@ -98,15 +98,6 @@
   },
   "files": [
     "app-config.dynamic.yaml",
-    "dist",
-    "dist-scalprum"
-  ],
-  "scalprum": {
-    "name": "red-hat-developer-hub.backstage-plugin-adoption-insights",
-    "exposedModules": {
-      "PluginRoot": "./src/index.tsx",
-      "Legacy": "./src/legacy.ts",
-      "Alpha": "./src/alpha.ts"
-    }
-  }
+    "dist"
+  ]
 }

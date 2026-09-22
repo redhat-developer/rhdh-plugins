@@ -18,6 +18,7 @@ import type { DoraDataService } from '../../service/DoraDataService';
 
 export const mockDoraDataService: jest.Mocked<DoraDataService> = {
   readDeployments: jest.fn(),
+  readLatestProductionDeploymentBefore: jest.fn(),
   readIncidents: jest.fn(),
   readPullRequestsForDeployment: jest.fn(),
 };

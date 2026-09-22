@@ -46,6 +46,7 @@ import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import {
   LogoFull,
   LogoIcon,
+  PageMainContainer,
 } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 const SidebarLogo = () => {
@@ -121,6 +122,6 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarSettings />
       </SidebarGroup>
     </Sidebar>
-    {children}
+    <PageMainContainer>{children}</PageMainContainer>
   </SidebarPage>
 );

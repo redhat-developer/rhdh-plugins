@@ -23,20 +23,12 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha.ts",
-    "./legacy": "./src/legacy.ts",
     "./homepage-translations-module": "./src/homepageTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "sideEffects": false,
   "typesVersions": {
     "*": {
-      "alpha": [
-        "src/alpha.ts"
-      ],
-      "legacy": [
-        "src/legacy.ts"
-      ],
       "homepage-translations-module": [
         "src/homepageTranslationsModuleExport.ts"
       ],
@@ -45,18 +37,8 @@
       ]
     }
   },
-  "scalprum": {
-    "name": "red-hat-developer-hub.backstage-plugin-homepage",
-    "exposedModules": {
-      "PluginRoot": "./src/index.ts",
-      "Alpha": "./src/alpha.ts",
-      "Legacy": "./src/legacy.ts",
-      "HomepageTranslationsModule": "./src/homepageTranslationsModuleExport.ts"
-    }
-  },
   "scripts": {
     "start": "backstage-cli package start",
-    "start:legacy": "backstage-cli package start --entrypoint dev/legacy.tsx",
     "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
     "test": "backstage-cli package test",
@@ -81,7 +63,6 @@
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-homepage-common": "workspace:^",
-    "@scalprum/react-core": "0.11.3",
     "react-grid-layout": "1.5.4",
     "react-use": "17.6.1",
     "zod": "^3.25.76 || ^4.0.0"
@@ -100,7 +81,6 @@
     "@backstage/plugin-search": "^1.7.7",
     "@backstage/test-utils": "^1.7.21",
     "@backstage/ui": "^0.17.1",
-    "@openshift/dynamic-plugin-sdk": "5.0.1",
     "@red-hat-developer-hub/backstage-plugin-theme": "^1.2.0",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "14.3.1",
@@ -110,7 +90,6 @@
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "files": [
-    "app-config.dynamic.yaml",
     "dist"
   ]
 }

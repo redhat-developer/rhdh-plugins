@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend
 
+## 0.3.0
+
+### Minor Changes
+
+- b194796: Add cluster-internal Service URL fallback for KServe resources without a status URL. When an InferenceService or LLMInferenceService is Ready but has no status.url or status.address.url, the connector now discovers an owned Kubernetes Service in the same namespace and derives a cluster-internal endpoint from it. The original informer cache object is never mutated; a clone carries the enriched URL through reconciliation. Informer startup is now independent — a missing CRD for one resource kind no longer prevents the other from starting.
+
+## 0.2.0
+
+### Minor Changes
+
+- e15e722: Add support for the `rhdh.io/api-entity-ref` annotation on KServe InferenceServices. The annotation value is normalized to a fully qualified entity reference and set as `spec.apiEntityRef` on the generated `AiModelServerAPI` entity.
+- 5d966c4: Add LLMInferenceService (serving.kserve.io/v1alpha2) discovery support alongside existing InferenceService watching.
+
 ## 0.1.6
 
 ### Patch Changes

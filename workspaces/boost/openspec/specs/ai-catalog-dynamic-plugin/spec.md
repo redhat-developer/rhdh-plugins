@@ -2,12 +2,12 @@
 
 > **Status: Implemented** — Current RHDH 2.1 release source of truth.
 >
-> **Scope:** Dynamic-plugin packaging for `plugins/boost` through the RHDH
+> **Scope:** Dynamic-plugin packaging for `plugins/ai-catalog` through the RHDH
 > overlay export pipeline.
 
 ## Purpose
 
-This specification describes how the shipped `plugins/boost` frontend is
+This specification describes how the shipped `plugins/ai-catalog` frontend is
 registered and exported as an RHDH dynamic plugin through the overlay CI
 pipeline.
 
@@ -25,7 +25,7 @@ tooling.
 
 #### Scenario: Package has no local dynamic-export output
 
-- **GIVEN** `plugins/boost/package.json`
+- **GIVEN** `plugins/ai-catalog/package.json`
 - **THEN** its scripts do not define `export-dynamic`
 - **AND** its published `files` do not include `dist-dynamic/`
 
@@ -36,23 +36,25 @@ The OCI-packaged plugin MUST load correctly in an RHDH deployment.
 #### Scenario: Plugin loads with Module Federation
 
 - **GIVEN** an RHDH deployment with `ENABLE_STANDARD_MODULE_FEDERATION=true`
-- **AND** the boost frontend dynamic plugin is installed via `dynamic-plugins.yaml` with `enabled: true`
+- **AND** the AI Catalog frontend dynamic plugin is installed via `dynamic-plugins.yaml` with `enabled: true`
 - **WHEN** a user navigates to the RHDH instance
 - **THEN** the "AI Catalog" nav item appears in the sidebar
 - **AND** navigating to `/ai-catalog` renders the browse page
 
 #### Scenario: Entity page extensions mount
 
-- **GIVEN** the boost frontend dynamic plugin is installed
+- **GIVEN** the AI Catalog frontend dynamic plugin is installed
 - **WHEN** a user navigates to a catalog entity page for an AI asset
-- **THEN** the Summary, Adoption, and Version cards render when their required entity data exists
-- **AND** the Usage tab (`entity-content:boost/usage`) is present on AI assets
+- **THEN** the AI asset details, agent instructions, and Usage cards render when their required entity data exists
+- **AND** they use the `entity-card:ai-catalog/ai-asset-details`,
+  `entity-card:ai-catalog/agent-instructions`, and `entity-card:ai-catalog/usage`
+  extension IDs
 
 #### Scenario: Extensions absent on non-AI entities
 
-- **GIVEN** the boost frontend dynamic plugin is installed
+- **GIVEN** the AI Catalog frontend dynamic plugin is installed
 - **WHEN** a user navigates to a catalog entity page for a non-AI entity (e.g., a regular Component)
-- **THEN** no boost entity cards are rendered
+- **THEN** no AI Catalog entity cards are rendered
 
 ### Requirement: Adopter Overrides
 
@@ -60,20 +62,20 @@ Deployers MUST be able to customize the plugin via `app.extensions` in `app-conf
 
 #### Scenario: Disable an entity card
 
-- **GIVEN** the deployer sets `entity-card:boost/adoption: false` in `app.extensions`
+- **GIVEN** the deployer sets `entity-card:ai-catalog/ai-asset-details: false` in `app.extensions`
 - **WHEN** a user views an AI asset entity page
-- **THEN** the Download/Adopt Card is not rendered
-- **AND** other boost cards still render
+- **THEN** the AI asset details card is not rendered
+- **AND** other AI Catalog cards still render
 
 #### Scenario: Change entity filter on a card
 
-- **GIVEN** the deployer sets `entity-card:boost/summary` with a `config.filter` that excludes AI asset kinds
+- **GIVEN** the deployer sets `entity-card:ai-catalog/ai-asset-details` with a `config.filter` that excludes AI asset kinds
 - **WHEN** a user views an AiResource entity page
-- **THEN** the summary card is not rendered (filter excludes AiResource)
+- **THEN** the AI asset details card is not rendered (filter excludes AiResource)
 
 #### Scenario: Disable the page
 
-- **GIVEN** the deployer sets `page:boost/ai-catalog: false` in `app.extensions`
+- **GIVEN** the deployer sets `page:ai-catalog/ai-catalog: false` in `app.extensions`
 - **WHEN** a user views the RHDH sidebar
 - **THEN** the "AI Catalog" nav item is not present
 - **AND** navigating to `/ai-catalog` shows a 404 or redirects

@@ -44,6 +44,7 @@ export type Components = UnifiedThemeOptions['components'] & {
   CatalogReactUserListPicker?: Component;
   PrivateTabIndicator?: Component;
   RHDHPageWithoutFixHeight?: Component;
+  RHDHPageMainContainer?: Component;
 };
 
 export const createComponents = (themeConfig: ThemeConfig): Components => {
@@ -96,9 +97,27 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
             maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
           },
+        html: {
+          '@media (min-width: 600px)': {
+            height: '100%',
+            overflow: 'hidden',
+            overscrollBehavior: 'none',
+          },
+        },
         body: {
           ...(backstageStyles.body as CSSObject),
           fontFamily: redHatFonts.text,
+          '@media (min-width: 600px)': {
+            height: '100%',
+            overflow: 'hidden',
+            overscrollBehavior: 'none',
+          },
+        },
+        '#root': {
+          '@media (min-width: 600px)': {
+            height: '100%',
+            overflow: 'hidden',
+          },
         },
         'h1, h2, h3, h4, h5, h6': {
           fontFamily: redHatFonts.heading,
@@ -289,6 +308,15 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         root: {
           textTransform: 'none',
+        },
+      },
+    };
+    components.MuiToggleButtonGroup = {
+      styleOverrides: {
+        root: {
+          flexWrap: 'wrap',
+          rowGap: '8px',
+          maxWidth: '100%',
         },
       },
     };
@@ -793,76 +821,97 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '@media (min-width: 600px)': {
             backgroundColor:
               general.pageInsetBackgroundColor ?? general.appBarBackgroundColor,
-            // Prevents the main content from scrolling weird
-            overflowY: 'auto',
-            // Cancel out the spacing produced by the page inset border when
-            // the sidebar is present
-            '& nav': {
-              "& ~ main, & ~ [class*='MuiLinearProgress-root']": {
-                marginLeft: '0 !important',
+            // Fixed viewport shell. Inset uses padding (border-box) so in-flow
+            // children still respect Backstage's paddingLeft for the sidebar.
+            // Do not position the main well absolutely — that ignores drawer padding.
+            boxSizing: 'border-box',
+            height: '100vh',
+            maxHeight: '100vh',
+            minHeight: '0 !important',
+            overflow: 'hidden',
+            overscrollBehavior: 'none',
+            paddingTop: general.pageInset,
+            paddingRight: general.pageInset,
+            paddingBottom: general.pageInset,
+            // PatternFly `.pf-v6-c-page__main-container` equivalent + classic <main>
+            "& > [class*='MuiLinearProgress-root'], & > main, & > [class*='RHDHPageMainContainer']":
+              {
+                // Match PF border-radius; clip-path also rounds the scrollbar track.
+                borderRadius: '1rem',
+                clipPath: 'rect(0 100% 100% 0 round 1rem)',
+                margin: 0,
+                // Fill the inset well so short pages use mainSectionBackgroundColor
+                // (#292929) instead of leaving a pageInset (#151515) band below content.
+                backgroundColor: general.mainSectionBackgroundColor,
+                // Flex-fill the padded content box; minHeight:0 enables internal scroll.
+                flex: '1 1 auto',
+                minHeight: 0,
+                alignSelf: 'stretch',
+                width: '100%',
+                // Scroll only inside this well; contain so wheel/trackpad does not
+                // chain to the document once you hit the top/bottom.
+                overflowY: 'auto',
+                overscrollBehaviorY: 'contain',
+                display: 'flex',
+                flexDirection: 'column',
               },
-            },
-            "& > [class*='MuiLinearProgress-root'], & > main": {
-              // clip-path clips the scrollbar properly in Chrome compared to
-              // border-radius. 1rem is the hardcoded border-radius of the page content.
-              clipPath: 'rect(0 100% 100% 0 round 1rem)',
-              // Emulate the PatternFly 6 page inset using a margin
-              margin: general.pageInset,
-              // Fill the inset well so short pages use mainSectionBackgroundColor
-              // (#292929) instead of leaving a pageInset (#151515) band below content.
-              backgroundColor: general.mainSectionBackgroundColor,
-              minHeight: `calc(100vh - 2 * ${general.pageInset})`,
-              // Prevent overflow in the main container due to the margin
-              maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
-            },
-            // NFS BUI entity pages wrap their content in a BUI Container inside
-            // a classless <main>. The Container is flex: 1 1 0%, but that only
-            // grows when main is a flex column. Keep the main content at least
-            // viewport-height while allowing longer entity pages to grow.
-            '& > main:has([class*="bui-Container"])': {
-              display: 'flex',
-              flexDirection: 'column',
-              flex: '1 0 auto',
-              minHeight: `calc(100vh - 2 * ${general.pageInset})`,
-              height: 'auto',
-              maxHeight: 'none !important',
-            },
             // NFS / BUI pages use Container instead of <main>. Match the content
             // well color (same token as BackstageContent) and rely on flex: 1
             // from BUI rather than 100vh so PluginHeader siblings are not overflowed.
-            "& > [class*='bui-Container']:not([class*='bui-Header'])": {
-              backgroundColor: general.mainSectionBackgroundColor,
-            },
+            "& > [class*='bui-Container']:not([class*='bui-Header']), & > [class*='RHDHPageMainContainer'] [class*='bui-Container']:not([class*='bui-Header'])":
+              {
+                backgroundColor: general.mainSectionBackgroundColor,
+              },
             // When a BackstagePage-root is present, the MUI page already has
             // its own header; hide the sibling BUI PluginHeader to avoid duplication.
-            "&:has([class*='BackstagePage-root']) > .bui-PluginHeader": {
-              display: 'none',
-            },
+            "&:has([class*='BackstagePage-root']) > .bui-PluginHeader, &:has([class*='BackstagePage-root']) > [class*='RHDHPageMainContainer'] > .bui-PluginHeader":
+              {
+                display: 'none',
+              },
             // Settings and other pages render BackstageContent as <article>.
             // Grow it to fill the flex column so pageInset doesn't show as a band.
-            '& > article, & > [class*="BackstageContent-root"]': {
-              flex: 1,
-              backgroundColor: general.mainSectionBackgroundColor,
+            '& > article, & > [class*="BackstageContent-root"], & > [class*="RHDHPageMainContainer"] > article, & > [class*="RHDHPageMainContainer"] > [class*="BackstageContent-root"]':
+              {
+                flex: 1,
+                backgroundColor: general.mainSectionBackgroundColor,
+              },
+            // Prevent TechDocs double scrollbar: unlock the main well and let this
+            // shell scroll instead (ToC has its own scrollbar).
+            "&:has(> main:has([data-testid='techdocs-native-shadowroot']))": {
+              overflowY: 'auto',
+              overscrollBehaviorY: 'contain',
             },
-            // Prevent TechDocs double scrollbar: the page-inset max-height puts
-            // <main>'s scrollbar at the same position as the ToC sidebar scrollbar.
-            // Letting <main> expand moves the scroll to the parent root instead.
             "& > main:has([data-testid='techdocs-native-shadowroot'])": {
               height: 'auto !important',
               maxHeight: 'none !important',
+              flex: '0 0 auto',
               borderRadius: '1rem',
               marginRight: '0.5rem',
             },
             // The Backstage suspense is an MUI LinearProgress that is not wrapped by
-            // a `main`. We need to give it 100vh height to fill the page for the page
-            // inset to look right.
+            // a `main`. Fill the padded shell like the main well.
             "& > [class*='MuiLinearProgress-root']": {
               backgroundColor: general.mainSectionBackgroundColor,
-              height: '100vh',
               "& > [class*='MuiLinearProgress-']": {
                 height: '0.5rem !important',
               },
             },
+          },
+        },
+      },
+    };
+    // PatternFly `.pf-v6-c-page__main-container` — fixed inset frame beside sidebar
+    components.RHDHPageMainContainer = {
+      styleOverrides: {
+        root: {
+          '@media (min-width: 600px)': {
+            // Inherits height/radius/overflow via BackstageSidebarPage
+            // `> RHDHPageMainContainer` selectors; flex column stacks BUI chrome.
+            display: 'flex',
+            flexDirection: 'column',
+            flex: '1 1 auto',
+            minHeight: 0,
+            minWidth: 0,
           },
         },
       },

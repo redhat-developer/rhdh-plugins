@@ -29,9 +29,11 @@ import {
 import { appDefaultsTranslations } from './translations';
 import { apiDocsPluginOverride } from './api-docs/apiDocsPluginOverride';
 import { catalogPluginOverride } from './catalog/catalogPluginOverride';
+import { catalogModule } from './catalog/catalogModule';
 import { catalogGraphPluginOverride } from './catalog-graph/catalogGraphPluginOverride';
 import { docsPluginOverride } from './docs/docsPluginOverride';
 import { scaffolderPluginOverride } from './scaffolder/scaffolderPluginOverride';
+import { learningPathsModule } from './learning-paths';
 
 export { appDefaultsModule };
 
@@ -39,12 +41,34 @@ export { appDefaultsTranslationsModule };
 
 export { appDefaultsTranslations };
 
+export { appDefaultsTranslationRef } from './translations';
+
+export { autoLogoutElement } from './autoLogout/autoLogoutExtension';
+
 export { appDrawerExtension, appDrawerModule } from './drawer/appDrawerModule';
 
+export { learningPathsModule } from './learning-paths';
+
+export { catalogModule } from './catalog/catalogModule';
+
+export {
+  appSidebarExtension,
+  appSidebarModule,
+} from './sidebar/appSidebarModule';
+export { AppSidebar } from './sidebar/AppSidebar';
+export type { AppSidebarProps } from './sidebar/AppSidebar';
+export {
+  CompanyLogo,
+  useBrandingFullLogo,
+  useBrandingIconLogo,
+} from './sidebar/logo';
+export type { CompanyLogoProps, LogoURLs } from './sidebar/logo';
+
 /**
- * Feature loader that registers the RHDH app defaults module and all
- * plugin overrides (catalog, catalog graph, scaffolder, API docs, TechDocs)
- * that add empty-state pages when no entities are available.
+ * Feature loader that registers the RHDH app defaults module, the catalog
+ * entity header layout that localizes the catalog tab titles, and all plugin
+ * overrides (catalog, catalog graph, scaffolder, API docs, TechDocs) that add
+ * empty-state pages when no entities are available.
  *
  * @public
  */
@@ -53,7 +77,9 @@ export default createFrontendFeatureLoader({
     return [
       appDefaultsModule,
       appDefaultsTranslationsModule,
+      learningPathsModule,
       catalogPluginOverride,
+      catalogModule,
       catalogGraphPluginOverride,
       scaffolderPluginOverride,
       apiDocsPluginOverride,

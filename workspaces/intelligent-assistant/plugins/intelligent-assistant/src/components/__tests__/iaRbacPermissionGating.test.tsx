@@ -20,6 +20,7 @@ import {
   configApiRef,
   IdentityApi,
   identityApiRef,
+  storageApiRef,
 } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { mockApis, TestApiProvider } from '@backstage/test-utils';
@@ -166,6 +167,54 @@ jest.mock('../../hooks/useSortSettings', () => ({
   }),
 }));
 
+jest.mock('../../hooks/useSavedPromptsSettings', () => ({
+  useSavedPromptsSettings: jest.fn().mockReturnValue({
+    isSavedPromptsEnabled: true,
+    handleSavedPromptsToggle: jest.fn(),
+  }),
+}));
+
+jest.mock('../../hooks/useSavedPrompts', () => ({
+  useSavedPrompts: jest.fn().mockReturnValue({
+    savedPrompts: [],
+    config: { maxPrompts: 10, maxPromptLength: 500 },
+    loading: false,
+    error: null,
+    createPrompt: jest.fn(),
+    deletePrompt: jest.fn(),
+  }),
+}));
+
+jest.mock('../../hooks/useSavedPromptActions', () => ({
+  useSavedPromptActions: jest.fn().mockReturnValue({
+    sendDirectly: jest.fn(),
+    requestDelete: jest.fn(),
+    promptToDelete: null,
+    closeDeleteModal: jest.fn(),
+    confirmDelete: jest.fn(),
+    isDeleting: false,
+    deleteError: null,
+    isDeleteModalOpen: false,
+  }),
+}));
+
+jest.mock('../../hooks/useConversationHistoryGroups', () => ({
+  useConversationHistoryGroups: jest.fn().mockReturnValue({
+    conversationGroups: {},
+    hasNoSearchResults: false,
+  }),
+}));
+
+jest.mock('../../hooks/useSettingsPanelUrlState', () => ({
+  useSettingsPanelUrlState: jest.fn().mockReturnValue({
+    isOpen: false,
+    activeTab: 'mcp-servers',
+    openSettings: jest.fn(),
+    closeSettings: jest.fn(),
+    setActiveTab: jest.fn(),
+  }),
+}));
+
 jest.mock('@patternfly/chatbot', () => {
   const actual = jest.requireActual('@patternfly/chatbot');
   return {
@@ -281,6 +330,8 @@ const fabContextValue = {
   setShellViewTab: jest.fn(),
   activeNotebookId: undefined,
   setActiveNotebookId: jest.fn(),
+  settingsTab: null,
+  setSettingsTab: jest.fn(),
 };
 
 const chatDrawerContextValue = {
@@ -301,6 +352,8 @@ const chatDrawerContextValue = {
   setShellViewTab: jest.fn(),
   activeNotebookId: undefined,
   setActiveNotebookId: jest.fn(),
+  settingsTab: null,
+  setSettingsTab: jest.fn(),
 };
 
 const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
@@ -309,6 +362,7 @@ const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
       apis={[
         [identityApiRef, identityApi],
         [configApiRef, configApi],
+        [storageApiRef, mockApis.storage()],
         [lightspeedApiRef, mockLightspeedApi],
         [notebooksApiRef, mockNotebooksApi],
       ]}
@@ -341,6 +395,7 @@ const setupLightspeedChatContainer = (
       apis={[
         [identityApiRef, identityApi],
         [configApiRef, configApi],
+        [storageApiRef, mockApis.storage()],
         [lightspeedApiRef, mockLightspeedApi],
         [notebooksApiRef, mockNotebooksApi],
       ]}
@@ -529,7 +584,7 @@ describe('IA RBAC permission gating scenarios', () => {
       });
 
       await userEvent.click(screen.getByLabelText('Options'));
-      expect(screen.getByText('MCP settings')).toBeInTheDocument();
+      expect(screen.getByText('MCP and Prompt Settings')).toBeInTheDocument();
     });
   });
 
@@ -538,7 +593,7 @@ describe('IA RBAC permission gating scenarios', () => {
       mockPermissions(SCENARIOS['6-mcp-denied']);
     });
 
-    it('hides MCP settings from the header menu', async () => {
+    it('shows prompt-only settings in the header menu', async () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
@@ -548,7 +603,10 @@ describe('IA RBAC permission gating scenarios', () => {
       });
 
       await userEvent.click(screen.getByLabelText('Options'));
-      expect(screen.queryByText('MCP settings')).not.toBeInTheDocument();
+      expect(screen.getByText('Prompt Settings')).toBeInTheDocument();
+      expect(
+        screen.queryByText('MCP and Prompt Settings'),
+      ).not.toBeInTheDocument();
     });
   });
 });

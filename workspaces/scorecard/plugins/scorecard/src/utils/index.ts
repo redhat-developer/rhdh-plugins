@@ -21,9 +21,28 @@ export {
 export {
   SCORECARD_ENTITIES_TABLE_HEADERS,
   SCORECARD_ERROR_STATE_COLOR,
+  TIME_SERIES_DEFAULT_RANGE_DAYS,
 } from './constants';
 export { getLastUpdatedLabel } from './entityTableUtils';
-export { formatWithMetricUnit } from './formatMetricUnit';
+export {
+  formatNumericMetricValue,
+  formatWithMetricUnit,
+} from './formatMetricUnit';
+export { getDefaultTimeSeriesRange } from './timeSeriesRange';
+export {
+  formatAggregatedTimeSeriesErrors,
+  getLatestNumericSparklineValue,
+  getLatestSuccessfulThresholdEvaluation,
+  getSparklineYDomain,
+  toAggregationSparklinePoints,
+  toMetricSparklinePoints,
+  toSparklineChartData,
+} from './timeSeriesChartData';
+export type {
+  SparklineChartPoint,
+  TimeSeriesChartInputPoint,
+} from './timeSeriesChartData';
+export { isSparklineVisualization } from './metricVisualization';
 export {
   isDistributionAggregationResult,
   isScalarAggregationResult,
@@ -40,6 +59,16 @@ export {
   resolveStatusColor,
 } from './statusUtils';
 export { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
+export {
+  formatThresholdLegendLabel,
+  getSparklineLineStyle,
+  toSparklineLegendItems,
+  SPARKLINE_DASHED_STROKE,
+  SPARKLINE_DOTTED_STROKE,
+} from './sparklineLegend';
+export type { SparklineLegendItem } from './sparklineLegend';
+export { toSparklineChartModel } from './sparklineChartModel';
+export type { SparklineChartModel } from './sparklineChartModel';
 export {
   resolveMetricTranslation,
   extractPluginName,

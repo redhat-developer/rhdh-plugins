@@ -7,24 +7,25 @@ PRDs and Jira analysis are background, not current truth.
 
 ## This release
 
-- `plugins/boost` — AI Catalog frontend
+- `plugins/ai-catalog` — AI Catalog frontend
 - `plugins/ogx-entity-provider`
 
 The `boost-backend` plugin and Kagenti packages are development scaffolding;
 they are not released for RHDH 2.1. Browse and entity cards use
 `catalogApiRef` only and do not call a Boost backend.
 
-The unreleased backend and the current Usage tab still contain project-specific
+The unreleased backend and the current Usage card still contain project-specific
 permission checks, currently named `ai-catalog.*`. These checks are not the
 RHDH 2.1 entity-visibility contract; the current browse experience uses the
 Catalog API, and any future backend release must reconcile its selected
 permission names with the Catalog `catalog.entity.read` model.
 
-The two release packages currently require supporting packages:
-`boost-common` for the frontend taxonomy and permissions, and
-`boost-entity-provider-sdk` for OGX entity annotations and version
-normalization. These are support dependencies, not additional Boost release
-features.
+The two installable release plugins require three supporting packages:
+`ai-catalog-common` for browser-safe taxonomy and permissions,
+`ai-catalog-connector-utils` for shared connector helpers, and
+`ai-catalog-entity-provider-sdk` for OGX entity annotations and version
+normalization. These are support dependencies, not additional dynamic plugins
+or additional AI Catalog release features.
 
 ## Implemented frontend (`openspec/specs/`)
 
@@ -35,12 +36,13 @@ Archived from `ai-catalog-frontend` (snapshot:
 | --------------------------------- | ------------------------------------------------------------ |
 | `ai-catalog-browse-view`          | `/ai-catalog` card/table, search, pagination                 |
 | `ai-catalog-filter-customization` | NFS `AiCatalogFilterBlueprint` (type, provider, owner, tags) |
-| `ai-catalog-entity-extensions`    | Summary, Adoption, Version cards; Usage tab                  |
+| `ai-catalog-entity-extensions`    | AI asset details, agent instructions, and Usage cards        |
 | `ai-catalog-dynamic-plugin`       | Overlay export in `rhdh-plugin-export-overlays`              |
 
-On `main` today: Usage tab is a Boost entity-content tab (it may link to
-TechDocs; it is not the Catalog TechDocs tab). There is no Boost API client
-and no catalog download proxy.
+The current frontend uses composable entity cards for AI asset details, agent
+instructions, and supported usage actions. It does not add a separate Boost
+Usage tab or duplicate the host application's standard TechDocs tab. There is
+no Boost API client and no catalog download proxy.
 
 ## OGX provider status
 
@@ -49,33 +51,30 @@ current behavior is captured in the focused `ogx-entity-provider` spec archived
 under `openspec/specs/`. The broader `ai-catalog-entity-model` change remains
 active and deferred; it is not the release behavior source of truth.
 
-The provider now accepts per-provider TLS settings, `caData` and
-`skipTLSVerify`, on both supported configuration paths, and the package
-declares a `config.d.ts` schema so Backstage validates these keys and enforces
-`@visibility secret` on `apiKey`. This shape was patched directly into the
-`ogx-entity-provider` spec rather than routed through a new OpenSpec change,
-because the `openspec/changes/` content is being reset.
+The standalone provider reads `ai-catalog.entityProviders.ogx` and accepts
+per-provider TLS settings, `caData`, and `skipTLSVerify`. The package declares
+a `config.d.ts` schema so Backstage validates these keys and enforces
+`@visibility secret` on `apiKey`. The deferred Boost backend retains its own
+`boost.providers.ogx` configuration; that is not a second configuration path
+for the standalone provider.
 
-## Open question for the backend team
+The standalone provider intentionally does not read the old
+`boost.entityProviders.ogx` or `boost.providers.ogx` namespaces. Existing
+deferred Boost backend configuration remains available to that backend and is
+not migrated by this release rename.
 
-`boost.providers.ogx` was never released, and the Boost backend is outside the
-RHDH 2.1 release. Should the OGX entity provider stop supporting that fallback
-and use only `boost.entityProviders.ogx`?
+## Completed frontend work
 
-The TLS work extended the fallback rather than retiring it: `caData` and
-`skipTLSVerify` are read on both paths, and `config.d.ts` declares the full
-schema for both. That raises the cost of removal — the fallback code, its
-tests, the declared schema, and the OGX spec would all have to be updated
-together.
+Frontend translations (de, es, fr, it, ja) are implemented and archived
+in `openspec/specs/ai-catalog-translations/`. Playwright locale coverage
+is included. Runtime verification of locale switching and English fallback
+(archived tasks 10–11) is deferred to a live RHDH environment; Backstage's
+`createTranslationRef` provides English fallback by design.
 
-## Active remaining frontend work (`openspec/changes/`)
+Category badge labels (`categoryMeta.ts`) are entity-type taxonomy
+identifiers and are intentionally not covered by the translation resource.
 
-| Change                             | Status              |
-| ---------------------------------- | ------------------- |
-| `ai-catalog-frontend-translations` | 1/11 — locale files |
-
-Playwright coverage from PR #4501 is implemented. Its test-infrastructure
-change is archived without adding a product-behavior spec.
+There is no remaining active frontend work in `openspec/changes/`.
 
 ## RBAC follow-on work
 
@@ -120,4 +119,4 @@ do not add RBAC behavior to this release.
 Done: inventory; archive implemented frontend, OGX, and E2E work; classify the
 remaining OpenSpecs; and align workspace documentation with the current code.
 
-Remaining current-release OpenSpec work: frontend translations.
+All current-release OpenSpec work is complete.

@@ -52,12 +52,17 @@ type LightspeedChatBoxHeaderProps = {
   models: { label: string; value: string; provider: string }[];
   isPinningChatsEnabled: boolean;
   onPinnedChatsToggle: (state: boolean) => void;
+  isSavedPromptsEnabled: boolean;
+  onSavedPromptsToggle: (state: boolean) => void;
+  screenContextAdminEnabled?: boolean;
+  isScreenContextSharingEnabled?: boolean;
+  onScreenContextSharingToggle?: (state: boolean) => void;
   onMcpSettingsClick: () => void;
   isModelSelectorDisabled?: boolean;
   hideModelSelector?: boolean;
   /** When false, omits pinned-chats and MCP entries (Chat tab only). */
   showChatTabOptions?: boolean;
-  /** When false, hides MCP settings from the header menu. */
+  /** When false, shows prompt-only settings label and opens saved-prompts tab. */
   showMcpSettings?: boolean;
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
@@ -95,6 +100,11 @@ export const LightspeedChatBoxHeader = ({
   models,
   isPinningChatsEnabled,
   onPinnedChatsToggle,
+  isSavedPromptsEnabled,
+  onSavedPromptsToggle,
+  screenContextAdminEnabled = false,
+  isScreenContextSharingEnabled = false,
+  onScreenContextSharingToggle,
   onMcpSettingsClick,
   isModelSelectorDisabled = false,
   hideModelSelector = false,
@@ -261,19 +271,70 @@ export const LightspeedChatBoxHeader = ({
                     {t('settings.pinned.enable')}
                   </DropdownItem>
                 )}
-                {showMcpSettings && (
+                {isSavedPromptsEnabled ? (
                   <DropdownItem
-                    value="mcpSettings"
-                    key="mcpSettings"
-                    icon={<McpSettingsIcon />}
-                    onClick={onMcpSettingsClick}
+                    value="disableSavedPrompts"
+                    key="disableSavedPrompts"
+                    icon={<ToggleOnOutlinedIcon sx={{ marginTop: '8px' }} />}
+                    description={t('settings.savedPrompts.enabled.description')}
+                    onClick={() => onSavedPromptsToggle(false)}
                   >
-                    {t('settings.mcp.label')}
-                    <Label color="purple" isCompact style={{ marginLeft: 8 }}>
-                      {t('settings.mcp.badge')}
-                    </Label>
+                    {t('settings.savedPrompts.disable')}
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    value="enableSavedPrompts"
+                    key="enableSavedPrompts"
+                    icon={<ToggleOffOutlinedIcon sx={{ marginTop: '8px' }} />}
+                    description={t(
+                      'settings.savedPrompts.disabled.description',
+                    )}
+                    onClick={() => onSavedPromptsToggle(true)}
+                  >
+                    {t('settings.savedPrompts.enable')}
                   </DropdownItem>
                 )}
+                {screenContextAdminEnabled &&
+                  (isScreenContextSharingEnabled ? (
+                    <DropdownItem
+                      value="disableScreenContext"
+                      key="disableScreenContext"
+                      icon={<ToggleOnOutlinedIcon sx={{ marginTop: '8px' }} />}
+                      description={t(
+                        'settings.screenContext.enabled.description',
+                      )}
+                      onClick={() => onScreenContextSharingToggle?.(false)}
+                    >
+                      {t('settings.screenContext.disable')}
+                    </DropdownItem>
+                  ) : (
+                    <DropdownItem
+                      value="enableScreenContext"
+                      key="enableScreenContext"
+                      icon={<ToggleOffOutlinedIcon sx={{ marginTop: '8px' }} />}
+                      description={t(
+                        'settings.screenContext.disabled.description',
+                      )}
+                      onClick={() => onScreenContextSharingToggle?.(true)}
+                    >
+                      {t('settings.screenContext.enable')}
+                    </DropdownItem>
+                  ))}
+                <DropdownItem
+                  value="mcpSettings"
+                  key="mcpSettings"
+                  icon={<McpSettingsIcon />}
+                  onClick={onMcpSettingsClick}
+                >
+                  {t(
+                    showMcpSettings
+                      ? 'settings.mcp.label'
+                      : 'settings.prompt.label',
+                  )}
+                  <Label color="purple" isCompact style={{ marginLeft: 8 }}>
+                    {t('settings.mcp.badge')}
+                  </Label>
+                </DropdownItem>
               </DropdownList>
             </DropdownGroup>
           </>

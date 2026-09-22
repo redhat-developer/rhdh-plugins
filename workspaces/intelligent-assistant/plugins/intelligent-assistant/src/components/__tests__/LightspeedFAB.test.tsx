@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { fireEvent, render, screen } from '@testing-library/react';
 
+import { ChatbotDisplayMode } from '../../const';
 import { useIaChatPermission } from '../../hooks/useIaChatPermission';
 import { useIaNotebooksPermission } from '../../hooks/useIaNotebooksPermission';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
@@ -62,6 +62,8 @@ describe('LightspeedFAB', () => {
     setShellViewTab: jest.fn(),
     activeNotebookId: undefined,
     setActiveNotebookId: jest.fn(),
+    settingsTab: null,
+    setSettingsTab: jest.fn(),
     ...overrides,
   });
 

@@ -123,6 +123,16 @@ catalog:
       target: ../../examples/ai-model-server-api.yaml
       rules:
         - allow: [AiModelServerAPI]
+    # Example MCP server API entities as produced by
+    # catalog-backend-module-mcp-registry-provider from the sample registry seed
+    # at examples/mcp-registry/seed-data/seed.json.
+    #
+    # Comment out this location when deploying the MCP Registry provider against
+    # the same seed (e.g. `MCP_REGISTRY_DATA_DIR=./examples/mcp-registry/seed-data yarn start-local-mcp-registry`).
+    - type: file
+      target: ../../examples/api-mcp-servers.yaml
+      rules:
+        - allow: [API]
   providers:
     modelCatalog:
       # The field underneath should list the connector plugin ID that the entity provider accesses through
@@ -139,7 +149,40 @@ catalog:
           kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
           default-owner: '${OWNER:-default-owner}'
           default-lifecycle: '${LIFECYCLE:-production}'
-# Uncomment to use kubernetesPluginRef — the Backstage kubernetes plugin
+    mcpRegistry:
+      # Reserved instance id — only this key is supported today.
+      mcpRegistry:
+        # Required: base URL of the MCP Registry
+        baseUrl: '${MCP_REGISTRY_URL:-http://localhost:8080/}'
+        # Optional: base name (default: mcp.registry)
+        # baseName: mcp.registry
+        # Optional: API version (default: v1)
+        apiVersion: v0.1
+        # Optional: default entity owner (default: unknown)
+        defaultOwner: '${OWNER:-default-owner}'
+        # Optional: default entity lifecycle (default: production)
+        defaultLifecycle: '${LIFECYCLE:-production}'
+        # Optional: max pages fetched per sync (default: 10)
+        # pageLimit: 10
+        # Optional: registry page size sent as ?limit= (omitted by default)
+        # pageSize: 50
+        # Optional: max entries per complete traversal; soft-stops with end cursor (default: 5000)
+        # maxEntries: 5000
+        # Optional: ingest only servers with at least one native remote (default: false)
+        # remotesOnly: false
+        # Optional: request only the latest version of each server via ?version=latest (default: false)
+        # latestVersion: false
+        # Optional: allowlist of permitted hostnames for defense-in-depth SSRF protection.
+        # hostAllowList:
+        #   - registry.modelcontextprotocol.io
+        #   - staging.registry.modelcontextprotocol.io
+        # Optional: sync schedule (defaults shown below)
+        # schedule:
+        #   frequency: { minutes: 30 }
+        #   timeout: { minutes: 3 }
+        #   # Optional: defer the first sync
+        #   # initialDelay: { seconds: 15 }
+# Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 #kubernetes:
 #   serviceLocatorMethod:

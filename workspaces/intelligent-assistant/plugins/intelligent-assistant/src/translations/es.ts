@@ -26,6 +26,11 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menú del historial de chat',
+    'modelSelector.visionScreenshot.line1': 'Análisis de imágenes compatible.',
+    'modelSelector.visionScreenshot.line2':
+      'Se incluirá una captura de pantalla con su mensaje.',
+    'modelSelector.visionScreenshot.ariaLabel':
+      'Contexto de captura de pantalla del modelo de visión',
     'modelSelector.disabledTooltip':
       'Cada sesión de chat solo admite un modelo. Para cambiar de modelo, abra un nuevo chat.',
     'aria.chatbotSelector': 'Selector de chatbot',
@@ -68,6 +73,7 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
       'Mensaje del usuario: {{prompt}}. El mensaje del bot se está cargando.',
     'conversation.category.pinnedChats': 'Chats fijados',
     'conversation.category.recent': 'Chats',
+    'conversation.category.savedPrompts': 'Prompts guardados',
     'conversation.delete': 'Eliminar',
     'conversation.delete.confirm.action': 'Eliminar',
     'conversation.delete.confirm.message':
@@ -247,6 +253,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebook.view.documents.maxReached':
       'Se permiten un máximo de 10 recursos. Elimina un recurso para subir uno nuevo.',
     'notebook.view.documents.uploading': 'Subiendo recurso',
+    'notebook.view.documents.uploadsInProgress':
+      'Espere a que se completen las cargas actuales antes de agregar más recursos.',
     'notebook.view.input.disabledTooltip':
       'Selecciona al menos un recurso cargado para comenzar a chatear',
     'notebook.view.input.placeholder': 'Pregunta sobre tus recursos...',
@@ -330,13 +338,92 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'settings.displayMode.label': 'Modo de visualización',
     'settings.displayMode.overlay': 'Superposición',
     'settings.mcp.badge': 'Nuevo',
-    'settings.mcp.label': 'Configuración de MCP',
+    'settings.panel.title': 'Configuración',
+    'settings.mcp.label': 'Configuración de MCP y Prompts',
+    'settings.prompt.label': 'Configuración de Prompts',
     'settings.pinned.disable': 'Deshabilitar chats fijados',
     'settings.pinned.disabled.description':
       'Los chats fijados están deshabilitados actualmente',
     'settings.pinned.enable': 'Habilitar chats fijados',
     'settings.pinned.enabled.description':
       'Los chats fijados están habilitados actualmente',
+    'settings.savedPrompts.disable': 'Deshabilitar prompts guardados',
+    'settings.savedPrompts.disabled.description':
+      'Los prompts guardados están deshabilitados actualmente',
+    'settings.savedPrompts.enable': 'Habilitar prompts guardados',
+    'settings.savedPrompts.enabled.description':
+      'Los prompts guardados están habilitados actualmente',
+    'settings.screenContext.enable': 'Habilitar contexto de pantalla',
+    'settings.screenContext.disable': 'Deshabilitar contexto de pantalla',
+    'settings.screenContext.enabled.description':
+      'El uso compartido del contexto de pantalla está habilitado actualmente',
+    'settings.screenContext.disabled.description':
+      'El uso compartido del contexto de pantalla está deshabilitado actualmente',
+    'contextChip.label.paused': 'Contexto: en pausa',
+    'contextChip.label.unavailable': 'Contexto: no disponible',
+    'contextChip.label.softwareTemplates': 'Plantillas de software',
+    'contextChip.tooltip.askAbout': 'Pregunte sobre {{label}}.',
+    'contextChip.tooltip.template':
+      'Pregunte cómo completar la plantilla {{label}}.',
+    'contextChip.tooltip.search': 'Pregunte sobre su búsqueda: {{label}}.',
+    'contextChip.tooltip.paused':
+      'El contexto de pantalla está en pausa. Haga clic para reanudar el uso compartido de su pantalla actual con el asistente inteligente.',
+    'contextChip.tooltip.unavailable':
+      'El contexto de pantalla no está disponible en modo de pantalla completa. Cambie al modo Superposición o Anclar a la ventana para habilitarlo.',
+    'contextChip.tooltip.line2.fullContext':
+      'El texto de la página y una captura de pantalla se enviarán con su mensaje.',
+    'contextChip.tooltip.line2.adminLimited':
+      'El uso compartido del contexto de pantalla está limitado por la configuración del administrador.',
+    'contextChip.tooltip.line2.screenshotOnly':
+      'La extracción de texto está deshabilitada por su administrador. Solo captura de pantalla.',
+    'contextChip.tooltip.line2.domOffNoVision':
+      'La extracción de texto está deshabilitada por su administrador. Su modelo no admite el análisis de imágenes.',
+    'contextChip.tooltip.line2.textOnlyNoVision':
+      'Solo contexto de texto: su modelo no admite el análisis de imágenes.',
+    'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
+      'Solo contexto de texto: la captura de pantalla está deshabilitada por su administrador.',
+    'contextChip.tooltip.line2.textOnlyCombined':
+      'Solo contexto de texto: su modelo no admite el análisis de imágenes y la captura de pantalla está deshabilitada por su administrador.',
+    'contextChip.aria.pause': 'Pausar contexto de pantalla: {{label}}',
+    'contextChip.aria.resume': 'Reanudar contexto de pantalla',
+    'savedPrompts.tab.title': 'Prompts guardados',
+    'savedPrompts.disabled.title': 'Los prompts guardados están deshabilitados',
+    'savedPrompts.disabled.body':
+      'Los prompts guardados están ocultos en el panel del historial de chat. Habilítelos para mostrar sus prompts en la barra lateral.',
+    'savedPrompts.disabled.enableLink': 'Habilitar prompts guardados',
+    'savedPrompts.count.zero': 'Sin prompts',
+    'savedPrompts.count_one': '1 prompt',
+    'savedPrompts.count_other': '{{count}} prompts',
+    'savedPrompts.newPrompt': '+ Nuevo prompt',
+    'savedPrompts.form.titleLabel': 'Título',
+    'savedPrompts.form.titlePlaceholder': 'Título del prompt',
+    'savedPrompts.form.contentLabel': 'Prompt',
+    'savedPrompts.form.contentPlaceholder': 'Contenido del prompt',
+    'savedPrompts.form.save': 'Guardar',
+    'savedPrompts.form.cancel': 'Cancelar',
+    'savedPrompts.validation.titleMaxLength':
+      'El título debe tener {{max}} caracteres o menos.',
+    'savedPrompts.validation.contentMaxLength':
+      'El prompt debe tener {{max}} caracteres o menos.',
+    'savedPrompts.limitReached':
+      'Se alcanzó el límite de prompts. Elimine un prompt existente para crear uno nuevo.',
+    'savedPrompts.actions.apply': 'Aplicar en el cuadro de entrada',
+    'savedPrompts.actions.send': 'Enviar directamente',
+    'savedPrompts.actions.sendDisabledStreaming':
+      'Espere a que finalice la respuesta',
+    'savedPrompts.actions.delete': 'Eliminar',
+    'savedPrompts.actions.menuAriaLabel': 'Acciones para {{name}}',
+    'savedPrompts.delete.confirm.title': '¿Eliminar «{{name}}»?',
+    'savedPrompts.delete.confirm.message':
+      'Este prompt guardado se eliminará permanentemente.',
+    'savedPrompts.delete.confirm.action': 'Eliminar',
+    'savedPrompts.empty.description':
+      'Guarde los prompts que usa con frecuencia para reutilizarlos rápidamente en sus conversaciones sin volver a escribirlos. Los prompts guardados también aparecen en el panel del historial del chat para un acceso rápido.',
+    'savedPrompts.sidebar.showAll': 'Mostrar todo',
+    'savedPrompts.sidebar.showLess': 'Mostrar menos',
+    'savedPrompts.sidebar.openSettings':
+      'Abrir configuración de prompts guardados',
+    'savedPrompts.sidebar.empty': 'Aún no hay prompts guardados',
     'sort.alphabeticalAsc': 'Nombre (A-Z)',
     'sort.alphabeticalDesc': 'Nombre (Z-A)',
     'sort.label': 'Ordenar conversaciones',
@@ -379,6 +466,7 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'tooltip.quickNewChat': 'Nuevo chat',
     'tooltip.responseRecorded': 'Respuesta grabada',
     'tooltip.send': 'Enviar',
+    'tooltip.settings': 'Opciones del chatbot',
     'user.guest': 'Invitado',
     'user.loading': '...',
   },

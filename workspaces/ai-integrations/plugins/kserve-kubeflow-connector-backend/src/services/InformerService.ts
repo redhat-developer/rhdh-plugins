@@ -35,6 +35,10 @@ const INFERENCE_SERVICE_GROUP = 'serving.kserve.io';
 const INFERENCE_SERVICE_VERSION = 'v1beta1';
 const INFERENCE_SERVICE_PLURAL = 'inferenceservices';
 
+const LLM_INFERENCE_SERVICE_GROUP = 'serving.kserve.io';
+const LLM_INFERENCE_SERVICE_VERSION = 'v1alpha2';
+const LLM_INFERENCE_SERVICE_PLURAL = 'llminferenceservices';
+
 interface ModelCardMetadata {
   content: string;
   resourceVersion: string;
@@ -59,6 +63,15 @@ const INF_SVC_IngressReady_CONDITION = 'IngressReady';
 const INF_SVC_PredictorReady_CONDITION = 'PredictorReady';
 const INF_SVC_Ready_CONDITION = 'Ready';
 
+// LLMInferenceService (v1alpha2) has a different condition set from InferenceService.
+// Only the 'Ready' condition is shared; there is no modelStatus.transitionStatus.
+const LLM_INF_SVC_Ready_CONDITION = 'Ready';
+
+// Common HTTP-related appProtocol values recognized for Service port selection
+const HTTP_APP_PROTOCOLS = new Set(['http', 'https', 'h2c']);
+// Standard HTTP ports preferred when no appProtocol hint is available
+const PREFERRED_HTTP_PORTS = new Set([80, 443, 8080, 8443]);
+
 function buildImportKeyAndURI(
   namespace: string,
   name: string,
@@ -70,6 +83,151 @@ function buildImportKeyAndURI(
   return [importKey, uri];
 }
 
+// Deep-clone an InferenceService so the informer cache object is never mutated.
+function cloneInferenceService(is: InferenceService): InferenceService {
+  const clone = structuredClone(is);
+  return clone;
+}
+
+// Check whether the Ready condition is present and True, independent of
+// other conditions (IngressReady, PredictorReady) or transitionStatus.
+function hasReadyConditionTrue(is: InferenceService): boolean {
+  return (
+    is.status?.conditions?.some(
+      c => c.type === 'Ready' && c.status === 'True',
+    ) ?? false
+  );
+}
+
+// Select the best usable port from a Kubernetes Service.  Prefers ports
+// with an HTTP-related appProtocol, then common HTTP port numbers, then
+// falls back to the first TCP port.
+function selectServicePort(
+  ports: Array<{
+    port: number;
+    protocol?: string;
+    appProtocol?: string;
+    name?: string;
+  }>,
+): { port: number; https: boolean } | undefined {
+  const tcpPorts = ports.filter(p => !p.protocol || p.protocol === 'TCP');
+  if (tcpPorts.length === 0) return undefined;
+
+  // Prefer ports with an HTTP-related appProtocol
+  for (const p of tcpPorts) {
+    if (p.appProtocol && HTTP_APP_PROTOCOLS.has(p.appProtocol.toLowerCase())) {
+      return { port: p.port, https: p.appProtocol.toLowerCase() === 'https' };
+    }
+  }
+
+  // Prefer well-known HTTP ports
+  for (const p of tcpPorts) {
+    if (PREFERRED_HTTP_PORTS.has(p.port)) {
+      return { port: p.port, https: p.port === 443 || p.port === 8443 };
+    }
+  }
+
+  // Fall back to the first TCP port
+  return { port: tcpPorts[0].port, https: false };
+}
+
+// Find a Kubernetes Service in the same namespace owned by the given
+// resource and derive a cluster-internal URL from it.
+async function findOwnedServiceUrl(
+  coreClient: k8s.CoreV1Api,
+  namespace: string,
+  name: string,
+  kind: string,
+  logger: LoggerService,
+): Promise<string | undefined> {
+  try {
+    const response = await coreClient.listNamespacedService(namespace);
+    const services = response.body.items;
+
+    for (const svc of services) {
+      const ownerMatch = svc.metadata?.ownerReferences?.some(
+        ref => ref.kind === kind && ref.name === name,
+      );
+      if (!ownerMatch) continue;
+
+      const ports = svc.spec?.ports;
+      if (!ports || ports.length === 0) continue;
+
+      const selected = selectServicePort(ports);
+      if (!selected) continue;
+
+      const svcName = svc.metadata?.name;
+      if (!svcName) continue;
+
+      const scheme = selected.https ? 'https' : 'http';
+      const portSuffix =
+        (selected.port === 80 && !selected.https) ||
+        (selected.port === 443 && selected.https)
+          ? ''
+          : `:${selected.port}`;
+      const url = `${scheme}://${svcName}.${namespace}.svc.cluster.local${portSuffix}`;
+
+      logger.info(
+        `findOwnedServiceUrl: Derived cluster-internal URL ${url} from Service ${namespace}/${svcName} for ${kind} ${namespace}/${name}`,
+      );
+      return url;
+    }
+
+    logger.debug(
+      `findOwnedServiceUrl: No owned Service found for ${kind} ${namespace}/${name}`,
+    );
+  } catch (error) {
+    logger.error(
+      `findOwnedServiceUrl: Error listing Services for ${kind} ${namespace}/${name}`,
+      error as Error,
+    );
+  }
+  return undefined;
+}
+
+// Enrich an InferenceService with a cluster-internal URL derived from an
+// owned Kubernetes Service when the resource is Ready but has no status URL.
+// Returns a clone with the derived URL set, or the original object unchanged.
+async function enrichWithServiceUrl(
+  is: InferenceService,
+  coreClient: k8s.CoreV1Api | undefined,
+  logger: LoggerService,
+  kind: string,
+): Promise<InferenceService> {
+  // Preserve existing status URL — no fallback needed
+  if (is.status?.url || is.status?.address?.url) {
+    return is;
+  }
+
+  if (!coreClient) {
+    return is;
+  }
+
+  // Only attempt fallback when the Ready condition is True
+  if (!hasReadyConditionTrue(is)) {
+    return is;
+  }
+
+  const url = await findOwnedServiceUrl(
+    coreClient,
+    is.metadata.namespace,
+    is.metadata.name,
+    kind,
+    logger,
+  );
+  if (!url) {
+    return is;
+  }
+
+  // Clone to avoid mutating the informer cache object
+  const enriched = cloneInferenceService(is);
+  if (!enriched.status) {
+    enriched.status = {};
+  }
+  enriched.status.url = url;
+  return enriched;
+}
+
 // When auth is configured, a service account is created whose name is prefixed with
 // the inference service's name, and with the inference service set as an owner reference
 async function getAuthentication(
@@ -77,6 +235,7 @@ async function getAuthentication(
   namespace: string,
   inferenceServiceName: string,
   logger: LoggerService,
+  kind: string = 'InferenceService',
 ): Promise<boolean> {
   if (!coreClient) {
     logger.debug(
@@ -89,14 +248,13 @@ async function getAuthentication(
     const response = await coreClient.listNamespacedServiceAccount(namespace);
     const found = response.body.items.some(sa =>
       sa.metadata?.ownerReferences?.some(
-        ref =>
-          ref.kind === 'InferenceService' && ref.name === inferenceServiceName,
+        ref => ref.kind === kind && ref.name === inferenceServiceName,
       ),
     );
 
     if (found) {
       logger.debug(
-        `getAuthentication: Found ServiceAccount with InferenceService owner reference for ${namespace}/${inferenceServiceName}`,
+        `getAuthentication: Found ServiceAccount with ${kind} owner reference for ${namespace}/${inferenceServiceName}`,
       );
     }
 
@@ -154,6 +312,57 @@ async function listInferenceServices(
   }
 }
 
+// Falls back to direct API — LLMInferenceService informer cache is not stored on config
+async function listLLMInferenceServices(
+  client: k8s.CustomObjectsApi,
+  logger: LoggerService,
+  informer?: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
+): Promise<InferenceService[]> {
+  if (informer) {
+    const cachedList = informer.list() as InferenceService[];
+    if (cachedList?.length > 0) {
+      logger.debug(
+        `listLLMInferenceServices: Got ${cachedList.length} LLMInferenceServices from informer cache`,
+      );
+      return cachedList;
+    }
+  }
+
+  logger.debug(
+    'listLLMInferenceServices: Informer cache empty, falling back to API',
+  );
+  try {
+    const response = await client.listNamespacedCustomObject(
+      LLM_INFERENCE_SERVICE_GROUP,
+      LLM_INFERENCE_SERVICE_VERSION,
+      '',
+      LLM_INFERENCE_SERVICE_PLURAL,
+    );
+
+    const items = (response.body as any).items as InferenceService[];
+    logger.debug(
+      `listLLMInferenceServices: Got ${
+        items?.length || 0
+      } LLMInferenceServices from API`,
+    );
+    return items || [];
+  } catch (error: any) {
+    const statusCode = error?.statusCode ?? error?.response?.statusCode;
+    if (statusCode === 404 || statusCode === 503) {
+      // CRD not installed on this cluster — not an error condition
+      logger.warn(
+        `listLLMInferenceServices: LLMInferenceService CRD not available (${statusCode}), skipping`,
+      );
+    } else {
+      logger.error(
+        'listLLMInferenceServices: Error listing from API',
+        error as Error,
+      );
+    }
+    return [];
+  }
+}
+
 function isInferenceServiceReady(
   is: InferenceService,
   logger: LoggerService,
@@ -200,40 +409,97 @@ function isInferenceServiceReady(
   return true;
 }
 
+// LLMInferenceService (v1alpha2) has no modelStatus.transitionStatus and uses a
+// different condition set. Only the 'Ready' condition and a status URL are checked.
+function isLLMInferenceServiceReady(
+  is: InferenceService,
+  logger: LoggerService,
+): boolean {
+  const id = `${is.metadata.namespace}/${is.metadata.name}`;
+
+  if (!is.status) {
+    logger.debug(`LLMInferenceService ${id} has no status`);
+    return false;
+  }
+
+  if (!is.status.conditions?.length) {
+    logger.debug(`LLMInferenceService ${id} has no conditions`);
+    return false;
+  }
+
+  const readyCondition = is.status.conditions.find(
+    c => c.type === LLM_INF_SVC_Ready_CONDITION,
+  );
+  if (!readyCondition) {
+    logger.debug(`LLMInferenceService ${id} has no Ready condition`);
+    return false;
+  }
+  if (readyCondition.status !== 'True') {
+    logger.debug(
+      `LLMInferenceService ${id} Ready condition is not True: ${readyCondition.status} (${readyCondition.reason})`,
+    );
+    return false;
+  }
+
+  if (!is.status.url && !is.status.address?.url) {
+    logger.debug(`LLMInferenceService ${id} has no URL`);
+    return false;
+  }
+
+  return true;
+}
+
 async function reconcileInferenceService(
   is: InferenceService,
   config: ReconcilerConfig,
+  isLLM: boolean = false,
 ): Promise<void> {
   const namespace = is.metadata.namespace;
   const name = is.metadata.name;
   const logger = config.logger!;
+  const kind = isLLM ? 'LLMInferenceService' : 'InferenceService';
 
-  logger.info(`Reconciling InferenceService: ${namespace}/${name}`);
+  logger.debug(`Reconciling ${kind}: ${namespace}/${name}`);
 
-  if (!isInferenceServiceReady(is, logger)) {
+  // Attempt Service URL fallback before readiness check — may return a
+  // clone with a derived cluster-internal URL when the original has none.
+  const enriched = await enrichWithServiceUrl(
+    is,
+    config.coreClient,
+    logger,
+    kind,
+  );
+
+  const ready = isLLM
+    ? isLLMInferenceServiceReady(enriched, logger)
+    : isInferenceServiceReady(enriched, logger);
+  if (!ready) {
     logger.debug(
-      `InferenceService ${namespace}/${name} is not ready yet, will retry later`,
+      `${kind} ${namespace}/${name} is not ready yet, will retry later`,
     );
     return;
   }
+
+  logger.info(`Reconciling ${kind}: ${namespace}/${name}`);
 
   const authentication = await getAuthentication(
     config.coreClient,
     namespace,
     name,
     logger,
+    kind,
   );
 
   logger.debug(`Calling backstage printers for ${namespace}/${name}`);
   const catalogData = await callKServeBackstagePrinters(
     config.defaultOwner || 'default-owner',
     config.defaultLifecycle || 'production',
-    is,
+    enriched,
     authentication,
     logger,
   );
   logger.debug(
-    `Generated KServe catalog data with ${
+    `Generated ${kind} catalog data with ${
       catalogData.models.length
     } models and ${catalogData.modelServer ? 1 : 0} model servers`,
   );
@@ -261,7 +527,7 @@ async function reconcileInferenceService(
     logger,
   );
 
-  logger.info(`Successfully reconciled InferenceService: ${namespace}/${name}`);
+  logger.info(`Successfully reconciled ${kind}: ${namespace}/${name}`);
 }
 
 // Use metadata.resourceVersion instead of status condition timestamps
@@ -392,6 +658,8 @@ async function processModelCatalog(
 async function innerStart(
   client: k8s.CustomObjectsApi,
   config: ReconcilerConfig,
+  llmInformer?: k8s.Informer<InferenceService> &
+    k8s.ObjectCache<InferenceService>,
 ): Promise<void> {
   const logger = config.logger!;
   logger.debug('innerStart: Beginning reconciliation sync');
@@ -418,7 +686,14 @@ async function innerStart(
         is.metadata.namespace,
         is.metadata.name,
       );
-      if (isInferenceServiceReady(is, logger)) {
+      // Apply Service URL fallback before readiness check
+      const enriched = await enrichWithServiceUrl(
+        is,
+        config.coreClient,
+        logger,
+        'InferenceService',
+      );
+      if (isInferenceServiceReady(enriched, logger)) {
         logger.debug(
           `innerStart: Adding importKey ${importKey} for ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
         );
@@ -442,6 +717,48 @@ async function innerStart(
   } catch (error) {
     logger.error(
       'innerStart: Error listing KServe InferenceServices',
+      error as Error,
+    );
+  }
+
+  logger.debug('innerStart: Listing all KServe LLMInferenceServices');
+
+  try {
+    const llmInferenceServices = await listLLMInferenceServices(
+      client,
+      logger,
+      llmInformer,
+    );
+    logger.debug(
+      `innerStart: Found ${llmInferenceServices.length} KServe LLMInferenceServices`,
+    );
+
+    for (const is of llmInferenceServices) {
+      const [importKey] = buildImportKeyAndURI(
+        is.metadata.namespace,
+        is.metadata.name,
+      );
+      // Apply Service URL fallback before readiness check
+      const enriched = await enrichWithServiceUrl(
+        is,
+        config.coreClient,
+        logger,
+        'LLMInferenceService',
+      );
+      if (isLLMInferenceServiceReady(enriched, logger)) {
+        logger.debug(
+          `innerStart: Adding importKey ${importKey} for ready KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+        keys.add(importKey);
+      } else {
+        logger.debug(
+          `innerStart: Skipping importKey ${importKey} for non-ready KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+      }
+    }
+  } catch (error) {
+    logger.error(
+      'innerStart: Error listing KServe LLMInferenceServices',
       error as Error,
     );
   }
@@ -598,18 +915,20 @@ function registerInformerHandlers(
   informer: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
   client: k8s.CustomObjectsApi,
   config: ReconcilerConfig,
+  isLLM: boolean = false,
 ): void {
   const logger = config.logger!;
+  const kind = isLLM ? 'LLMInferenceService' : 'InferenceService';
 
   informer.on('add', async (obj: InferenceService) => {
     logger.debug(
-      `Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+      `${kind} Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
     );
     try {
-      await reconcileInferenceService(obj, config);
+      await reconcileInferenceService(obj, config, isLLM);
     } catch (error) {
       logger.error(
-        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Error reconciling ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
         error as Error,
       );
     }
@@ -617,13 +936,13 @@ function registerInformerHandlers(
 
   informer.on('update', async (obj: InferenceService) => {
     logger.debug(
-      `Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+      `${kind} Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
     );
     try {
-      await reconcileInferenceService(obj, config);
+      await reconcileInferenceService(obj, config, isLLM);
     } catch (error) {
       logger.error(
-        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Error reconciling ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
         error as Error,
       );
     }
@@ -631,26 +950,26 @@ function registerInformerHandlers(
 
   informer.on('delete', async (obj: InferenceService) => {
     logger.debug(
-      `Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+      `${kind} Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
     );
     try {
       logger.debug(
-        `Initiating delete processing for ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Initiating delete processing for ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
       );
-      await innerStart(client, config);
+      await innerStart(client, config, isLLM ? informer : undefined);
       logger.debug(
-        `Delete processing completed for ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Delete processing completed for ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
       );
     } catch (error) {
       logger.error(
-        `Error during delete processing for ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Error during delete processing for ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
         error as Error,
       );
     }
   });
 
   informer.on('error', (err: any) => {
-    logger.error('Informer error', err as Error);
+    logger.error(`${kind} Informer error`, err as Error);
     setTimeout(() => {
       informer.start();
     }, 5000);
@@ -661,6 +980,8 @@ function startBackgroundPolling(
   client: k8s.CustomObjectsApi,
   config: ReconcilerConfig,
   logger: LoggerService,
+  llmInformer?: k8s.Informer<InferenceService> &
+    k8s.ObjectCache<InferenceService>,
 ): void {
   const pollingInterval = parseInt(
     process.env.POLLING_INTERVAL || '600000',
@@ -674,7 +995,7 @@ function startBackgroundPolling(
     (config.informer as any).__pollingTimer = setInterval(async () => {
       try {
         logger.debug('Background polling: Calling innerStart');
-        await innerStart(client, config);
+        await innerStart(client, config, llmInformer);
       } catch (error) {
         logger.error(
           'Background polling: Error during innerStart',
@@ -718,6 +1039,7 @@ export const setupInformer = async (
     logger.error('Error setting up catalog route', error as Error);
   }
 
+  // Informer for InferenceService (serving.kserve.io/v1beta1)
   const listFn: k8s.ListPromise<InferenceService> = () =>
     client.listClusterCustomObject(
       INFERENCE_SERVICE_GROUP,
@@ -733,13 +1055,49 @@ export const setupInformer = async (
 
   registerInformerHandlers(config.informer, client, config);
 
+  // Start each informer independently so a missing CRD or startup
+  // failure for one does not prevent the other from running.
   logger.info('Starting informer for InferenceServices...');
-  await config.informer.start();
-  logger.info('Informer started.');
+  try {
+    await config.informer.start();
+    logger.info('Informer started.');
+  } catch (error) {
+    logger.error(
+      'Failed to start InferenceService informer — v1beta1 resources will not be discovered',
+      error as Error,
+    );
+  }
 
-  // Background polling supplements the informer since there is no
+  // Informer for LLMInferenceService (serving.kserve.io/v1alpha2)
+  const llmListFn: k8s.ListPromise<InferenceService> = () =>
+    client.listClusterCustomObject(
+      LLM_INFERENCE_SERVICE_GROUP,
+      LLM_INFERENCE_SERVICE_VERSION,
+      LLM_INFERENCE_SERVICE_PLURAL,
+    ) as any;
+
+  const llmInformer = k8s.makeInformer(
+    kc,
+    `/apis/${LLM_INFERENCE_SERVICE_GROUP}/${LLM_INFERENCE_SERVICE_VERSION}/${LLM_INFERENCE_SERVICE_PLURAL}`,
+    llmListFn,
+  );
+
+  registerInformerHandlers(llmInformer, client, config, true);
+
+  logger.info('Starting informer for LLMInferenceServices...');
+  try {
+    await llmInformer.start();
+    logger.info('LLM Informer started.');
+  } catch (error) {
+    logger.error(
+      'Failed to start LLMInferenceService informer — v1alpha2 resources will not be discovered',
+      error as Error,
+    );
+  }
+
+  // Background polling supplements both informers since there is no
   // re-list / re-sync in the TypeScript informer.
-  startBackgroundPolling(client, config, logger);
+  startBackgroundPolling(client, config, logger, llmInformer);
 
   return config.informer;
 };

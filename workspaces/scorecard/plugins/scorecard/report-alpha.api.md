@@ -24,6 +24,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.description': string;
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
+    readonly 'common.current': string;
     readonly 'common.loading': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.missingAggregationId': string;
@@ -110,6 +111,9 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'dataSourcesDialog.close': string;
     readonly 'dataSourcesDialog.unknownPlugin': string;
     readonly 'dataSourcesDialog.statusTooltip': string;
+    readonly 'dataSourcesDialog.collectorStatusTooltip': string;
+    readonly 'dataSourcesDialog.collectorEmptyValue': string;
+    readonly 'dataSourcesDialog.collectorUnavailableStatus': string;
     readonly 'dataSourcesDialog.columns.plugin': string;
     readonly 'dataSourcesDialog.columns.check': string;
     readonly 'dataSourcesDialog.columns.value': string;

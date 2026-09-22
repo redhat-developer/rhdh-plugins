@@ -2,7 +2,7 @@
 
 > **Status: Implemented** — Current RHDH 2.1 release source of truth.
 >
-> **Scope:** The `plugins/boost` filter extension contract and built-in AI
+> **Scope:** The `plugins/ai-catalog` filter extension contract and built-in AI
 > Catalog filters.
 
 ## Purpose
@@ -32,10 +32,10 @@ A `FilterDefinition` interface MUST define the contract, and a Blueprint MUST wr
 - **GIVEN** a filter created via `AiCatalogFilterBlueprint.make`
 - **THEN** it outputs a `FilterDefinition` via a single extension data ref
 - **AND** the extension kind is `ai-catalog-filter`
-- **AND** the extension attaches to `page:boost/ai-catalog` input `filters`
+- **AND** the extension attaches to `page:ai-catalog/ai-catalog` input `filters`
 - **AND** the Blueprint has no `config` schema (no deployer YAML config per filter)
 
-#### Scenario: FilterSidebar renders generic Select for each filter
+#### Scenario: CatalogFilters renders generic Select for each filter
 
 - **WHEN** the filter sidebar renders
 - **THEN** it maps over resolved `FilterDefinition[]` and renders a `<Select>` for each
@@ -57,7 +57,7 @@ Existing hardcoded filters MUST be converted to `FilterDefinition` objects regis
 - **GIVEN** the 4 built-in filter definitions (category, provider, owner, tags)
 - **THEN** each is a plain object in `src/filters/builtInFilterDefinitions.ts`
 - **AND** no filter has its own React component file
-- **AND** all share the same generic `<Select>` rendering in `FilterSidebar`
+- **AND** all share the same generic `<Select>` rendering in `CatalogFilters`
 
 ### Requirement: Disable Filters via app-config
 
@@ -65,7 +65,7 @@ Deployers MUST be able to disable any built-in filter using NFS extension disabl
 
 #### Scenario: Disable a single filter
 
-- **GIVEN** the deployer sets `ai-catalog-filter:boost/owner: false` in `app.extensions`
+- **GIVEN** the deployer sets `ai-catalog-filter:ai-catalog/owner: false` in `app.extensions`
 - **WHEN** the developer navigates to `/ai-catalog`
 - **THEN** the owner filter is not rendered in the sidebar
 - **AND** the `owner` URL param has no effect on filtering
@@ -73,7 +73,7 @@ Deployers MUST be able to disable any built-in filter using NFS extension disabl
 
 #### Scenario: Disable multiple filters
 
-- **GIVEN** the deployer disables both `ai-catalog-filter:boost/tags` and `ai-catalog-filter:boost/owner`
+- **GIVEN** the deployer disables both `ai-catalog-filter:ai-catalog/tags` and `ai-catalog-filter:ai-catalog/owner`
 - **WHEN** the developer navigates to `/ai-catalog`
 - **THEN** neither filter appears in the sidebar
 - **AND** the category and provider filters render normally
@@ -92,7 +92,7 @@ Third-party plugins MUST be able to contribute new filters by providing a `Filte
 
 #### Scenario: Third-party filter appears in sidebar
 
-- **GIVEN** a third-party plugin registers a filter via `createFrontendModule({ pluginId: 'boost' })` using `AiCatalogFilterBlueprint.make`
+- **GIVEN** a third-party plugin registers a filter via `createFrontendModule({ pluginId: 'ai-catalog' })` using `AiCatalogFilterBlueprint.make`
 - **AND** the filter provides a `FilterDefinition` with `urlParam: 'team'`, `getOptions`, and `matchEntity`
 - **WHEN** the developer navigates to `/ai-catalog`
 - **THEN** the custom "team" filter appears as a `<Select>` in the sidebar alongside built-in filters

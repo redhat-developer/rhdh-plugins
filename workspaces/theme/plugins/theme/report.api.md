@@ -5,12 +5,16 @@
 ```ts
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { PropsWithChildren } from 'react';
 
 // @public (undocumented)
 export const LogoFull: (props: React.ComponentProps<'svg'>) => JSX_2.Element;
 
 // @public (undocumented)
 export const LogoIcon: (props: React.ComponentProps<'svg'>) => JSX_2.Element;
+
+// @public (undocumented)
+export const PageMainContainer: (input: PropsWithChildren) => JSX_2.Element;
 
 // @public
 const rhdhThemeModule: FrontendModule;

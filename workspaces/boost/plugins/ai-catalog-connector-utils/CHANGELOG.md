@@ -1,0 +1,36 @@
+# @red-hat-developer-hub/backstage-plugin-boost-connector-utils
+
+## 0.8.0
+
+### Minor Changes
+
+- 110e2d1: Rename the first-release AI Catalog package family and update consumers to the new public package identities.
+
+  Move standalone OGX configuration to `ai-catalog.entityProviders.ogx`; the old
+  Boost configuration paths are no longer read by this module. Update frontend
+  extension IDs to the `ai-catalog` namespace and translation overrides to
+  `plugin.ai-catalog`. See the workspace README's consumer migration instructions.
+
+## 0.3.2
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+
+## 0.3.1
+
+### Patch Changes
+
+- 0e772a4: bump workspace to Backstage 1.54.4
+
+## 0.3.0
+
+### Minor Changes
+
+- 238427a: Entity-Provider SDK — Types, Interfaces, Annotation Validation
+
+## 0.2.0
+
+### Minor Changes
+
+- 3745c61: Initial release of shared utilities for Boost AI catalog connector entity providers. Provides CA bundle resolution, fault isolation wrappers, enable/disable config guards, and startup validation for air-gapped deployments.

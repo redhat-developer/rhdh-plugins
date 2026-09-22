@@ -1,5 +1,47 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.1
+
+### Patch Changes
+
+- 9dc3351: Split Module Federation entry points and lazy-load chat UI so NFS, FAB, and translations remotes ship minimal synchronous bundles.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.1
+
+## 5.3.0
+
+### Minor Changes
+
+- 0f9a3e8: Add screen context UX: kebab opt-in, context chip (recording/paused/unavailable), and gated DOM and screenshot attachments on send per RHIDP-14319.
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.0
+
+## 5.2.0
+
+### Minor Changes
+
+- d477924: Add Saved Prompts: create, list, and delete personal prompt templates from a settings panel (with enable/disable toggle and backend limit validation). Saved prompts appear in the chat history sidebar with search, expand/collapse, show all/less, a gear shortcut to settings, click-to-apply into the message input, and kebab actions (apply, send directly, delete). Settings state is shared between the sidebar and panel; fullscreen mode syncs the open tab via URL.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.2.0
+
+## 5.1.0
+
+### Minor Changes
+
+- c37b5f1: Gate Intelligent Assistant UI by consolidated RBAC permissions (`intelligent-assistant.chat`, `intelligent-assistant.notebooks`, `intelligent-assistant.mcp.tools`, `intelligent-assistant.skills`). Features are hidden when access is denied instead of showing permission-denied screens or read-only MCP mode.
+
+### Patch Changes
+
+- a9d54a1: Add createExtensionTester coverage for the NFS extensions and modules
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.1.0
+
 ## 5.0.2
 
 ### Patch Changes

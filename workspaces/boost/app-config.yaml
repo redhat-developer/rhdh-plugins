@@ -8,8 +8,12 @@ app:
           redirects:
             - from: /
               to: /ai-catalog
+    - api:app/app-language:
+        config:
+          defaultLanguage: en
+          availableLanguages: [en, de, es, fr, it, ja]
     # Example: disable a built-in filter
-    # - ai-catalog-filter:boost/owner: false
+    # - ai-catalog-filter:ai-catalog/owner: false
 
 organization:
   name: Red Hat
@@ -51,6 +55,7 @@ catalog:
         - Component
         - System
         - Group
+        - User
         - Resource
         - Location
         - Template
@@ -61,15 +66,18 @@ catalog:
     - type: file
       target: ../../fixtures/ai-catalog-fixtures.yaml
       rules:
-        - allow: [AiResource, AiModelServerAPI, API, Component, Resource, Group]
+        - allow:
+            [
+              AiResource,
+              AiModelServerAPI,
+              API,
+              Component,
+              Resource,
+              Group,
+              User,
+            ]
 
-boost:
-  security:
-    mode: 'development-only-no-auth'
-    adminUsers:
-      - 'user:default/admin'
-      - 'user:default/guest'
-
+ai-catalog:
   entityProviders:
     ogx:
       baseUrl: ${BOOST_OGX_URL:-http://localhost:8321}
@@ -111,6 +119,7 @@ boost:
             - procurement
           model: ${BOOST_MODEL:-}
           lifecycleStage: published
+          createdBy: user:default/admin
         - id: legal
           name: Legal
           description: Handles questions about software licenses, embargoes, privacy/PII, contracts, policies, procedures, or compliance
@@ -123,6 +132,7 @@ boost:
           enableRAG: true
           model: ${BOOST_MODEL:-}
           lifecycleStage: published
+          createdBy: user:default/admin
         - id: support
           name: Software Support
           description: Handles technical support questions about OpenShift/Kubernetes, deployment, permissions, performance, and FantaCo products
@@ -135,6 +145,7 @@ boost:
           enableRAG: true
           model: ${BOOST_MODEL:-}
           lifecycleStage: published
+          createdBy: user:default/admin
         - id: hr
           name: Human Resources
           description: Handles questions about employee benefits, health care, vacation/PTO, retirement, workspaces, and compensation
@@ -157,6 +168,7 @@ boost:
           enableRAG: true
           model: ${BOOST_MODEL:-}
           lifecycleStage: published
+          createdBy: user:default/admin
         - id: sales
           name: Sales
           description: Handles questions about sales territories, leads, discounting, quotas, CRM, and performance metrics
@@ -183,6 +195,7 @@ boost:
           enableRAG: true
           model: ${BOOST_MODEL:-}
           lifecycleStage: published
+          createdBy: user:default/admin
         - id: procurement
           name: Procurement
           description: Handles questions about competitive bidding, vendor evaluation, procurement ethics, and approval processes
@@ -207,7 +220,14 @@ boost:
           enableRAG: true
           model: ${BOOST_MODEL:-}
           lifecycleStage: published
+          createdBy: user:default/admin
 
+boost:
+  security:
+    mode: 'development-only-no-auth'
+    adminUsers:
+      - 'user:default/admin'
+      - 'user:default/guest'
   providers:
     ogx:
       baseUrl: ${BOOST_OGX_URL:-http://localhost:8321}

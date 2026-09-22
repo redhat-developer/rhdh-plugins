@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { MessageProps } from '@patternfly/chatbot';
+import type { MessageProps } from '@patternfly/chatbot';
 
 import { TEMP_CONVERSATION_ID } from '../../const';
 import {
@@ -29,7 +29,7 @@ import {
   getTimestamp,
   normalizeChatUserInput,
   transformDocumentsToSources,
-} from '../../utils/lightspeed-chatbox-utils';
+} from '../../utils/lightspeed-chatbox-message-utils';
 import queryClient from '../../utils/queryClient';
 import {
   applyToolResultToToolCalls,

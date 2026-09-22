@@ -54,6 +54,7 @@ export const scorecardMessages = {
   // Common UI
   common: {
     loading: 'Loading',
+    current: 'current',
   },
 
   // Error messages
@@ -216,6 +217,10 @@ export const scorecardMessages = {
     unknownPlugin: 'Unknown',
     statusTooltip:
       'Value {{value}} matches threshold {{status}} {{expression}}',
+    collectorStatusTooltip:
+      'This collector provides input data only. The {{metric}} check value is calculated from collectors and shown on the scorecard card.',
+    collectorEmptyValue: '--',
+    collectorUnavailableStatus: 'N/A',
     columns: {
       plugin: 'PLUGIN',
       check: 'CHECK',

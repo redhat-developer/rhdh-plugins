@@ -17,6 +17,9 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
 
 import { runAccessibilityTests } from './utils/accessibility';
+import { skipIfLocales } from './utils/localeSkip';
+
+const NON_EN = ['de', 'es', 'fr', 'it', 'ja'];
 
 /**
  * Locators from Playwright MCP against the live NFS app. After catalog load
@@ -123,10 +126,11 @@ async function loadTwoAssetCatalog(page: Page) {
   await expect(catalogCount(page, 2)).toBeVisible();
 }
 
-test.describe('Boost AI Catalog', () => {
+test.describe('AI Catalog', () => {
   test('renders the AI Catalog heading after guest sign-in', async ({
     page,
   }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await mockCatalogEntities(page, []);
     await signInAsGuest(page);
 
@@ -144,7 +148,8 @@ test.describe('Boost AI Catalog', () => {
 
   test('shows catalog assets when the catalog API returns items', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await mockCatalogEntities(page, [skillEntity]);
     await signInAsGuest(page);
 
@@ -158,7 +163,8 @@ test.describe('Boost AI Catalog', () => {
 
   test('shows the catalog error state when the catalog API fails', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await page.route('**/api/catalog/**', route => route.abort());
     await signInAsGuest(page);
 
@@ -168,13 +174,12 @@ test.describe('Boost AI Catalog', () => {
 
   test('Type filter keeps only matching cards and sets type in the URL', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await loadTwoAssetCatalog(page);
 
-    const filters = page.getByRole('navigation', { name: 'AI Catalog' });
-    await filters
-      .getByRole('button', { name: 'Select an option Type' })
-      .click();
+    const filters = page.getByRole('navigation', { name: 'Filters' });
+    await filters.getByRole('button', { name: 'All Type' }).click();
 
     const typeListbox = page.getByRole('listbox', { name: 'Type' });
     await expect(typeListbox).toBeVisible();
@@ -189,11 +194,21 @@ test.describe('Boost AI Catalog', () => {
     await expect(
       filters.getByRole('button', { name: 'Skills Type' }),
     ).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await filters.getByRole('button', { name: 'Skills Type' }).click();
+    await page
+      .getByRole('listbox', { name: 'Type' })
+      .getByRole('option', { name: 'All', exact: true })
+      .click();
+    await expect.poll(() => queryParam(page, 'type')).toBeNull();
+    await expect(catalogCount(page, 2)).toBeVisible();
   });
 
   test('search keeps only matching cards and sets q in the URL', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await loadTwoAssetCatalog(page);
 
     await page.getByRole('searchbox', { name: 'Search' }).fill('Code Review');
@@ -202,11 +217,54 @@ test.describe('Boost AI Catalog', () => {
     await expect(catalogCount(page, 1)).toBeVisible();
     await expect(skillDetailsLink(page)).toBeVisible();
     await expect(agentDetailsLink(page)).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Clear all' }).click();
+    await expect.poll(() => queryParam(page, 'q')).toBeNull();
+    await expect(catalogCount(page, 2)).toBeVisible();
+  });
+
+  test('uses a mobile filter drawer on smaller screens', async ({
+    page,
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
+    await page.setViewportSize({ width: 768, height: 900 });
+    await loadTwoAssetCatalog(page);
+
+    const filterButton = page.getByRole('button', { name: 'Filters' });
+    await expect(filterButton).toBeVisible();
+    await filterButton.click();
+
+    const dialog = page.getByRole('dialog', { name: 'Filters' });
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole('navigation', { name: 'Filters' }),
+    ).toBeVisible();
+    await runAccessibilityTests(
+      page,
+      testInfo,
+      'mobile-filter-drawer-accessibility.json',
+      { disableRules: ['nested-interactive', 'color-contrast'] },
+    );
+
+    await dialog.getByRole('button', { name: 'All Type' }).click();
+    await page
+      .getByRole('listbox', { name: 'Type' })
+      .getByRole('option', { name: 'Skills', exact: true })
+      .click();
+    await page.keyboard.press('Escape');
+
+    await expect.poll(() => queryParam(page, 'type')).toBe('skill');
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByRole('button', { name: 'Close' }).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(filterButton).toBeFocused();
   });
 
   test('table view lists both assets in the data table and sets view=table', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await loadTwoAssetCatalog(page);
 
     await page.getByRole('radio', { name: 'Table view' }).click();
@@ -228,7 +286,8 @@ test.describe('Boost AI Catalog', () => {
 
   test('empty filtered state clears search and restores both cards', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await loadTwoAssetCatalog(page);
 
     await page.getByRole('searchbox', { name: 'Search' }).fill('zzznomatch');

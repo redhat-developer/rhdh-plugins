@@ -9,9 +9,12 @@ import { ExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
+import type { IconComponent } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { SwappableComponentRef } from '@backstage/frontend-plugin-api';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export interface AppDrawerApi {
@@ -83,6 +86,45 @@ export interface ApplicationDrawerProps {
 }
 
 // @public
+export const appReactTranslationRef: TranslationRef<
+  'plugin.app-react',
+  {
+    readonly 'catalog.entityTabGroups.Overview': 'Overview';
+    readonly 'catalog.entityTabGroups.Documentation': 'Documentation';
+    readonly 'catalog.entityTabGroups.Development': 'Development';
+    readonly 'catalog.entityTabGroups.Deployment': 'Deployment';
+    readonly 'catalog.entityTabGroups.Operation': 'Operation';
+    readonly 'catalog.entityTabGroups.Observability': 'Observability';
+    readonly 'catalog.entityTabs.Overview': 'Overview';
+    readonly 'catalog.entityTabs.Docs': 'Docs';
+    readonly 'catalog.entityTabs.API': 'API';
+    readonly 'catalog.entityTabs.Dependencies': 'Dependencies';
+    readonly 'catalog.entityTabs.Definition': 'Definition';
+    readonly 'catalog.entityTabs.APIs': 'APIs';
+    readonly 'catalog.entityTabs.TechDocs': 'TechDocs';
+    readonly 'catalog.entityTabs.Deployment Lifecycle': 'Deployment Lifecycle';
+    readonly 'catalog.entityTabs.Deployment Summary': 'Deployment Summary';
+    readonly 'catalog.entityTabs.Pipelines': 'Pipelines';
+    readonly 'catalog.entityTabs.Pull Requests': 'Pull Requests';
+    readonly 'catalog.entityTabs.Bookmarks': 'Bookmarks';
+    readonly 'catalog.entityTabs.CI/CD': 'CI/CD';
+    readonly 'catalog.entityTabs.CI/CD Statistics': 'CI/CD Statistics';
+    readonly 'catalog.entityTabs.Code Coverage': 'Code Coverage';
+    readonly 'catalog.entityTabs.Feedback': 'Feedback';
+    readonly 'catalog.entityTabs.GitHub Actions': 'GitHub Actions';
+    readonly 'catalog.entityTabs.GitHub Issues': 'GitHub Issues';
+    readonly 'catalog.entityTabs.CI/CD Security': 'CI/CD Security';
+    readonly 'catalog.entityTabs.Build Artifacts': 'Build Artifacts';
+    readonly 'catalog.entityTabs.Todo': 'Todo';
+    readonly 'catalog.entityTabs.Topology': 'Topology';
+    readonly 'catalog.entityTabs.Workflows': 'Workflows';
+  }
+>;
+
+// @public
+export const appReactTranslations: TranslationResource<'plugin.app-react'>;
+
+// @public
 export interface DrawerPanelProps {
   children: React.ReactNode;
   drawerWidth?: number;
@@ -92,6 +134,210 @@ export interface DrawerPanelProps {
   minWidth?: number;
   onWidthChange?: (width: number) => void;
 }
+
+// @public
+export const SidebarDividerBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-divider';
+  params: {
+    priority?: number;
+  };
+  output: ExtensionDataRef<SidebarElementData, 'app.sidebar.element', {}>;
+  inputs: {};
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  dataRefs: {
+    element: ConfigurableExtensionDataRef<
+      SidebarElementData,
+      'app.sidebar.element',
+      {}
+    >;
+  };
+}>;
+
+// @public
+export const SidebarElementBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-element';
+  params: {
+    component: ComponentType<{}>;
+    to?: string;
+    priority?: number;
+  };
+  output: ExtensionDataRef<SidebarElementData, 'app.sidebar.element', {}>;
+  inputs: {};
+  config: {
+    to: string | undefined;
+    priority: number | undefined;
+  };
+  configInput: {
+    to?: string | undefined;
+    priority?: number | undefined;
+  };
+  dataRefs: {
+    element: ConfigurableExtensionDataRef<
+      SidebarElementData,
+      'app.sidebar.element',
+      {}
+    >;
+  };
+}>;
+
+// @public
+export interface SidebarElementData {
+  component: ComponentType<{}>;
+  id: string;
+  priority?: number;
+  to?: string;
+}
+
+// @public
+export const sidebarElementDataRef: ConfigurableExtensionDataRef<
+  SidebarElementData,
+  'app.sidebar.element',
+  {}
+>;
+
+// @public
+export type SidebarGroupVariant = 'inline' | 'flyout';
+
+// @public
+export type SidebarIcon = IconComponent | string;
+
+// @public
+export const SidebarItemBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-item';
+  params: {
+    title: string;
+    icon?: SidebarIcon;
+    to?: string;
+    onClick?: () => void;
+    priority?: number;
+    group?: string;
+    requiresRoute?: boolean;
+  };
+  output: ExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>;
+  inputs: {};
+  config: {
+    title: string | undefined;
+    icon: string | undefined;
+    to: string | undefined;
+    priority: number | undefined;
+    group: string | undefined;
+    requiresRoute: boolean | undefined;
+  };
+  configInput: {
+    title?: string | undefined;
+    icon?: string | undefined;
+    to?: string | undefined;
+    priority?: number | undefined;
+    group?: string | undefined;
+    requiresRoute?: boolean | undefined;
+  };
+  dataRefs: {
+    item: ConfigurableExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>;
+  };
+}>;
+
+// @public
+export interface SidebarItemData {
+  group?: string;
+  icon?: SidebarIcon;
+  id: string;
+  onClick?: () => void;
+  priority?: number;
+  requiresRoute?: boolean;
+  title: string;
+  to?: string;
+}
+
+// @public
+export const sidebarItemDataRef: ConfigurableExtensionDataRef<
+  SidebarItemData,
+  'app.sidebar.item',
+  {}
+>;
+
+// @public
+export const SidebarItemGroupBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-item-group';
+  params: {
+    id: string;
+    title: string;
+    icon?: SidebarIcon;
+    to?: string;
+    priority?: number;
+    variant?: SidebarGroupVariant;
+  };
+  output: ExtensionDataRef<SidebarItemGroupData, 'app.sidebar.item-group', {}>;
+  inputs: {};
+  config: {
+    title: string | undefined;
+    icon: string | undefined;
+    to: string | undefined;
+    priority: number | undefined;
+    variant: 'inline' | 'flyout' | undefined;
+  };
+  configInput: {
+    title?: string | undefined;
+    icon?: string | undefined;
+    to?: string | undefined;
+    priority?: number | undefined;
+    variant?: 'inline' | 'flyout' | undefined;
+  };
+  dataRefs: {
+    group: ConfigurableExtensionDataRef<
+      SidebarItemGroupData,
+      'app.sidebar.item-group',
+      {}
+    >;
+  };
+}>;
+
+// @public
+export interface SidebarItemGroupData {
+  icon?: SidebarIcon;
+  id: string;
+  priority?: number;
+  title: string;
+  to?: string;
+  variant?: SidebarGroupVariant;
+}
+
+// @public
+export const sidebarItemGroupDataRef: ConfigurableExtensionDataRef<
+  SidebarItemGroupData,
+  'app.sidebar.item-group',
+  {}
+>;
+
+// @public
+export const SidebarSpacerBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-spacer';
+  params: {
+    priority?: number;
+    grow?: boolean;
+  };
+  output: ExtensionDataRef<SidebarElementData, 'app.sidebar.element', {}>;
+  inputs: {};
+  config: {
+    priority: number | undefined;
+    grow: boolean | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+    grow?: boolean | undefined;
+  };
+  dataRefs: {
+    element: ConfigurableExtensionDataRef<
+      SidebarElementData,
+      'app.sidebar.element',
+      {}
+    >;
+  };
+}>;
 
 // @public
 export const TemplateCardActionBlueprint: ExtensionBlueprint<{

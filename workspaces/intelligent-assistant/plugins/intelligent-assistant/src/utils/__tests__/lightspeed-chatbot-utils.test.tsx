@@ -328,8 +328,8 @@ describe('createBotMessage', () => {
               isExternal: true,
               link: expect.anything(),
               title: expect.anything(),
-              headerContent: expect.anything(),
               ragSource: expect.anything(),
+              headerContent: expect.anything(),
             }),
           ]),
         }),
@@ -385,8 +385,8 @@ describe('transformDocumentsToSources', () => {
         title: 'Untitled source doc',
       }),
     );
-    expect(sources?.sources[0]).not.toHaveProperty('headerContent');
     expect(sources?.sources[0]).not.toHaveProperty('ragSource');
+    expect(sources?.sources[0]).not.toHaveProperty('headerContent');
   });
 
   it('should add document description in referenced documents into message sources', () => {

@@ -161,7 +161,18 @@ Intelligent assistant supports multiple **display modes** from Settings (for exa
 
 ### Screen Context
 
-When enabled, the assistant automatically captures structured page context from the current RHDH viewport and attaches it to each message. This provides the LLM with headings, tables, alerts, form fields, filters, and other on-screen content for more accurate, context-aware responses.
+Screen context attaches structured page content from the current RHDH viewport to chat messages (headings, tables, alerts, form fields, filters, and optional screenshots) so the LLM can give more accurate, context-aware responses.
+
+Enablement has two levels:
+
+1. **Administrator** — set `screen-context.enabled: true` in `app-config.yaml` (default: `false`).
+2. **User** — opt in from the chatbot options (kebab) menu with **Enable screen context**. Sharing is off until the user opts in.
+
+When sharing is on, a **context chip** in the message bar shows the current page label and state:
+
+- **Recording** — context will be attached on send; click the chip to pause.
+- **Paused** — context is not attached; click to resume.
+- **Unavailable** — fullscreen mode; switch to Overlay or Docked to use screen context.
 
 Configure in `app-config.yaml`:
 
@@ -176,22 +187,30 @@ intelligent-assistant:
       maxChars: 8000 # Max characters extracted per page (default: 8000)
 ```
 
-- `screen-context.enabled` — enables the full screen-context feature (DOM extraction and optional screenshots).
+- `screen-context.enabled` — enables the full screen-context feature (DOM extraction and optional screenshots). Users must still opt in via the kebab menu.
+- `screen-context.screenshots.enabled` — toggles screenshot capture. Screenshots are only attached when the selected model supports vision (`supportsVision`).
 - `screen-context.dom-extraction.enabled` — toggles DOM text extraction independently of screenshots.
 - `screen-context.dom-extraction.maxChars` — caps the extracted text size to control LLM token usage.
 
 Form fields are emitted as cleaned HTML to preserve label/input structure; all other sections are plain text.
 
-### MCP servers settings
+### Settings panel
 
-Intelligent assistant includes an MCP servers settings panel where users can:
+Open the settings panel from the chatbot options menu (**MCP and Prompt Settings**). The panel has two tabs:
+
+- **MCP servers** — manage MCP server connections
+- **Saved prompts** — create, view, and delete reusable prompts
+
+#### MCP servers
+
+From the MCP servers tab, users can:
 
 - View configured MCP servers and current status
 - Enable or disable eligible servers
 - Configure a personal token per server
 - See inline status and validation feedback
 
-#### Token validation behavior
+##### Token validation behavior
 
 When configuring a server token in the settings modal, the token is validated
 automatically after typing stops briefly. The input shows inline feedback:
@@ -200,6 +219,22 @@ automatically after typing stops briefly. The input shows inline feedback:
 - Error: `Authorization failed. Try again.`
 
 Users can then save the configuration after validation feedback is displayed.
+
+#### Saved prompts
+
+From the Saved prompts tab, users can:
+
+- Create prompts with a title and prompt body
+- Delete saved prompts they no longer need
+- Enable or disable the saved prompts feature (when disabled, prompts are hidden from the chat history sidebar)
+
+Saved prompts also appear in the **chat history sidebar** under **Saved prompts**, where users can apply a prompt to the input box, send it directly, or open settings from the section gear icon.
+
+When saved prompts are enabled, they can also surface in the welcome prompt area using priority-based selection alongside app-config and default sample prompts.
+
+#### PatternFly Chatbot dependency
+
+Saved prompts sidebar integration requires `@patternfly/chatbot@6.9.0-prerelease.2` (or newer) for `ConversationGroup` APIs used in chat history navigation. Upgrade to the stable `6.9.0` release when it is available.
 
 ### Notebooks (Developer Preview)
 

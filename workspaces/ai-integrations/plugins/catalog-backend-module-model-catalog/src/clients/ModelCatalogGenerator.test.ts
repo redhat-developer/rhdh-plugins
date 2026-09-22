@@ -688,7 +688,290 @@ describe('Model Catalog Generator', () => {
     expect((entities[0].spec as any).system).toBeUndefined();
   });
 
-  it('should set all five annotation overrides together', () => {
+  it('should set apiEntityRef from bare string annotation with api:default/ prefix', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-bare-service',
+        owner: 'example-user',
+        description: 'Service with bare api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': 'my-api',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBe('api:default/my-api');
+    // Control annotation must not leak into metadata
+    expect(
+      entities[0].metadata.annotations?.['rhdh.io/api-entity-ref'],
+    ).toBeUndefined();
+  });
+
+  it('should set apiEntityRef from default-prefixed annotation', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-default-service',
+        owner: 'example-user',
+        description: 'Service with default-prefixed api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': 'default/my-api',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBe('api:default/my-api');
+    // Control annotation must not leak into metadata
+    expect(
+      entities[0].metadata.annotations?.['rhdh.io/api-entity-ref'],
+    ).toBeUndefined();
+  });
+
+  it('should set apiEntityRef from fully qualified annotation as-is', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-full-service',
+        owner: 'example-user',
+        description: 'Service with fully qualified api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': 'api:default/my-api',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBe('api:default/my-api');
+    // Control annotation must not leak into metadata
+    expect(
+      entities[0].metadata.annotations?.['rhdh.io/api-entity-ref'],
+    ).toBeUndefined();
+  });
+
+  it('should pass through fully qualified non-default namespace ref', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-nondefault-service',
+        owner: 'example-user',
+        description: 'Service with non-default namespace api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': 'api:production/my-api',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBe(
+      'api:production/my-api',
+    );
+  });
+
+  it('should prepend api: to namespace-qualified ref without kind', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-ns-service',
+        owner: 'example-user',
+        description: 'Service with namespace-qualified api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': 'production/my-api',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBe(
+      'api:production/my-api',
+    );
+  });
+
+  it('should trim whitespace from api-entity-ref annotation value', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-whitespace-service',
+        owner: 'example-user',
+        description: 'Service with whitespace in api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': '  my-api  ',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBe('api:default/my-api');
+  });
+
+  it('should not set apiEntityRef when annotation is whitespace-only', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-whitespace-only-service',
+        owner: 'example-user',
+        description: 'Service with whitespace-only api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': '   ',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBeUndefined();
+  });
+
+  it('should not set apiEntityRef when annotation has wrong kind', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-wrong-kind-service',
+        owner: 'example-user',
+        description: 'Service with wrong-kind api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': 'component:default/my-api',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBeUndefined();
+  });
+
+  it('should not set apiEntityRef when annotation is absent', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'no-api-ref-service',
+        owner: 'example-user',
+        description: 'Service without api-entity-ref',
+        lifecycle: 'production',
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBeUndefined();
+  });
+
+  it('should set all six annotation overrides together', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {
         name: 'all-overrides-service',
@@ -701,6 +984,7 @@ describe('Model Catalog Generator', () => {
           'rhdh.io/default': 'gpt-4',
           'rhdh.io/owner': 'team-ai',
           'rhdh.io/lifecycle': 'experimental',
+          'rhdh.io/api-entity-ref': 'my-api',
         },
         API: {
           url: 'https://api.example.com',
@@ -731,6 +1015,7 @@ describe('Model Catalog Generator', () => {
     expect(spec.models.default).toBe('gpt-4');
     expect(spec.owner).toBe('user:team-ai');
     expect(spec.lifecycle).toBe('experimental');
+    expect(spec.apiEntityRef).toBe('api:default/my-api');
     // Control annotations must not leak into metadata
     expect(entities[0].metadata.annotations).toBeUndefined();
   });

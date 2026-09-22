@@ -9,5 +9,8 @@ import { FrontendModule } from '@backstage/frontend-plugin-api';
 const intelligentAssistantFABModule: FrontendModule;
 export default intelligentAssistantFABModule;
 
+// @public (undocumented)
+export const intelligentAssistantRedirectModule: FrontendModule;
+
 // (No @packageDocumentation comment for this package)
 ```

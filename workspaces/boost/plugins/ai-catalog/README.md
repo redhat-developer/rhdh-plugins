@@ -1,0 +1,30 @@
+# @red-hat-developer-hub/backstage-plugin-ai-catalog
+
+Frontend plugin for AI Catalog in Red Hat Developer Hub. Provides the AI Catalog browse page and entity-page extensions for AI assets.
+
+## Features
+
+- **AI Catalog browse page** at `/ai-catalog` — card grid for discovering AI skills, rules, MCP servers, agents, and models
+- **Entity-page extensions** — AI asset details, agent instructions, and Usage cards on AI asset entity pages. Usage actions copy or open supported source and endpoint URLs; standard TechDocs remain provided by the host application.
+- **`isAiAsset` filter** — condition filter for NFS Blueprints that matches all AI asset entity kind/type combinations
+
+## Public API
+
+| Export                        | Type                  | Description                                         |
+| ----------------------------- | --------------------- | --------------------------------------------------- |
+| `default` (aiCatalogPlugin)   | `FrontendPlugin`      | The NFS plugin with all pages and entity extensions |
+| `aiCatalogTranslationsModule` | `FrontendModule`      | Translation module (install separately in app)      |
+| `aiCatalogTranslationRef`     | `TranslationRef`      | Translation reference for i18n                      |
+| `aiCatalogTranslations`       | `TranslationResource` | Translation resource with locale support            |
+
+## Getting started
+
+Start the dev app from the workspace root:
+
+```bash
+cd workspaces/boost
+yarn install
+yarn start
+```
+
+Navigate to [/ai-catalog](http://localhost:3000/ai-catalog) to see the AI Catalog page.

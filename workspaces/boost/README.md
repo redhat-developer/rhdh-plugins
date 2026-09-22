@@ -2,61 +2,49 @@
 
 This workspace contains the Boost plugin family for Red Hat Developer Hub.
 
-## Why Boost Exists
-
-Boost is a clean-room reimplementation of the [Augment](../augment/) plugin. This effort:
-
-- Initially serves as a litmus test for our organization's agentic SDLC initiatives that are based on [Fullsend](https://github.com/fullsend-ai/fullsend).
-- Subsequently provides a comparison with Augment as it evolves in parallel via work from Red Hat Consulting, where we can see how differences in RHDH architectural alignment and accumulated technical debt impact how well each plugin addresses customer requirements.
-  - As Augment remains the reference prototype and source of requirements, being able to properly translate those requirements into Boost will be an interesting subplot of this exercise.
-
-The rationale for this approach is documented in detail in [`specifications/boost-context.md`](specifications/boost-context.md).
-
-For the current release boundary and the status of every OpenSpec area, see
-[`specifications/CURRENT.md`](specifications/CURRENT.md). It is the source of
-truth for what is implemented, remaining, follow-on, or consolidated.
-
-## Directory Structure
-
-This workspace uses a specification-driven layout that differs from other workspaces in the repo:
-
-```
-workspaces/boost/
-├── specifications/              # Product requirements
-│   ├── boost-context.md         # Project rationale, principles, and relationship to Augment
-│   └── prd/                     # Product Requirements Documents (one per capability area)
-├── openspec/                    # Implementation specifications (OpenSpec format)
-│   └── changes/                 # One directory per change, each containing:
-│       ├── .openspec.yaml       #   Change metadata and status
-│       ├── proposal.md          #   Problem statement and approach
-│       ├── design.md            #   Architecture decisions
-│       ├── tasks.md             #   Implementation task breakdown
-│       └── specs/               #   Behavioral specs (Given/When/Then scenarios)
-└── plugins/                     # Plugin packages
-```
-
-**`specifications/`** contains the product-level requirements — what Boost must do and why. The PRDs are organized by capability area: AI chat, agent discovery, platform architecture, security, and operations. [`CURRENT.md`](specifications/CURRENT.md) records the active release scope and status.
-
-**`openspec/`** contains the implementation-level specifications — how each capability area will be built. Implemented behavior lives in `openspec/specs/`; active planning lives in `openspec/changes/`. Each active change includes a proposal, design decisions, task breakdown, and behavioral specs that serve as acceptance criteria.
-
-The current release contains the AI Catalog frontend plugin and OGX entity
-provider. Backend, connector, chat, and platform OpenSpecs are follow-on
-planning unless [`CURRENT.md`](specifications/CURRENT.md) says otherwise.
-
 ## Plugins
 
-| Plugin                       | Package                                                                | Description                                                                |
-| ---------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| boost                        | `@red-hat-developer-hub/backstage-plugin-boost`                        | Frontend plugin — AI Catalog browse page and entity extensions             |
-| boost-backend                | `@red-hat-developer-hub/backstage-plugin-boost-backend`                | Backend plugin — chat, agent lifecycle, MCP, admin APIs                    |
-| boost-common                 | `@red-hat-developer-hub/backstage-plugin-boost-common`                 | Shared types and permissions                                               |
-| boost-node                   | `@red-hat-developer-hub/backstage-plugin-boost-node`                   | Node library — service refs and extension points                           |
-| boost-connector-utils        | `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`        | Shared CA/fault-isolation/startup helpers for AI catalog connectors        |
-| boost-backend-module-ogx     | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx`     | OGX provider module                                                        |
-| boost-backend-module-kagenti | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti` | Kagenti provider module                                                    |
-| ogx-entity-provider          | `@red-hat-developer-hub/backstage-plugin-ogx-entity-provider`          | OGX catalog entity provider                                                |
-| kagenti-entity-provider      | `@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider`      | Kagenti catalog entity provider                                            |
-| boost-migration-readiness    | `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness`    | Read-only CLI assessing AI asset entities against upstream Backstage kinds |
+| Plugin                         | Package                                                                  | Description                                                                |
+| ------------------------------ | ------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| ai-catalog                     | `@red-hat-developer-hub/backstage-plugin-ai-catalog`                     | Frontend plugin — AI Catalog browse page and entity extensions             |
+| boost-backend                  | `@red-hat-developer-hub/backstage-plugin-boost-backend`                  | Backend plugin — chat, agent lifecycle, MCP, admin APIs                    |
+| ai-catalog-common              | `@red-hat-developer-hub/backstage-plugin-ai-catalog-common`              | Shared types and permissions                                               |
+| boost-node                     | `@red-hat-developer-hub/backstage-plugin-boost-node`                     | Node library — service refs and extension points                           |
+| ai-catalog-connector-utils     | `@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils`     | Shared CA/fault-isolation/startup helpers for AI Catalog connectors        |
+| ai-catalog-entity-provider-sdk | `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk` | SDK for AI Catalog entity providers                                        |
+| boost-backend-module-ogx       | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx`       | OGX provider module                                                        |
+| boost-backend-module-kagenti   | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti`   | Kagenti provider module                                                    |
+| ogx-entity-provider            | `@red-hat-developer-hub/backstage-plugin-ogx-entity-provider`            | OGX catalog entity provider                                                |
+| kagenti-entity-provider        | `@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider`        | Kagenti catalog entity provider                                            |
+| boost-migration-readiness      | `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness`      | Read-only CLI assessing AI asset entities against upstream Backstage kinds |
+
+## Consumer migration
+
+For the first release, install `@red-hat-developer-hub/backstage-plugin-ai-catalog`
+and `@red-hat-developer-hub/backstage-plugin-ogx-entity-provider`; the common,
+connector-utils, and entity-provider-sdk packages are supporting dependencies.
+Update frontend imports and the dynamic-plugin export path from `boost` to
+`ai-catalog`, and configure the standalone OGX provider under
+`ai-catalog.entityProviders.ogx`. The old package names and standalone Boost
+configuration paths are not compatibility aliases. Deferred Boost backend
+contracts such as `/api/boost`, `boost.providers.ogx`, and `BOOST_*` environment
+variables remain unchanged.
+
+Update configured frontend extension IDs from `page:boost/ai-catalog` to
+`page:ai-catalog/ai-catalog`, and replace the `boost` namespace in
+`ai-catalog-filter:boost/{category,owner,provider,tags}` and
+`entity-card:boost/{ai-asset-details,agent-instructions,usage}` with `ai-catalog`.
+The route remains `/ai-catalog`; existing catalog entities need no migration.
+Import `aiCatalogTranslationRef`, `aiCatalogTranslations`, and
+`aiCatalogTranslationsModule` instead of their `boost`-prefixed exports.
+The `./translations` entry point still exports the translation module as its
+default, and translation overrides now target `plugin.ai-catalog`.
+Custom CSS overrides must use `--ai-catalog-*` instead of `--boost-*`.
+
+For standalone OGX, move the endpoint, credentials, TLS, agents, and refresh
+settings together to `ai-catalog.entityProviders.ogx`. A configured block requires
+`baseUrl`; an absent block retains the localhost default. The old paths are
+ignored, including when old and new values coexist.
 
 ## Compatibility
 

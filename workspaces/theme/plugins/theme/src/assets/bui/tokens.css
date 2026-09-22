@@ -72,7 +72,8 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   *
   * BUI "Body Medium" = --bui-font-size-3 is 0.875rem but we aligned with --pf-t--global--font--size--md which is 1rem.
   *
-  * TODO: Check line height.
+  * Line heights are applied per Text variant in component-overrides.css to match PatternFly Content
+  * (--pf-v6-c-content--h*--LineHeight: 1.3, --pf-v6-c-content--LineHeight: 1.5).
   */
   --bui-font-size-1: var(
     --pf-t--global--font--size--xs,
@@ -175,7 +176,8 @@ body[data-theme-name='light-customized'][data-theme-mode='light'] {
   );
 
   /* Neutral background colors */
-  /* --bui-bg-app: #f8f8f8; */
+  /* App / outer-shell surface — PF masthead background */
+  --bui-bg-app: var(--pf-v6-c-masthead--BackgroundColor, #f2f2f2);
 
   --bui-bg-neutral-1: #fff;
   --bui-bg-neutral-1-hover: oklch(0% 0 0 / 6%);
@@ -347,6 +349,9 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   ); /* PF dark gray-40 */
 
   /* Neutral background colors */
+  /* App / outer-shell surface — PF masthead background (dark) */
+  --bui-bg-app: var(--pf-v6-c-masthead--BackgroundColor, #151515);
+
   --bui-bg-neutral-1: oklch(100% 0 0 / 10%);
   --bui-bg-neutral-1-hover: oklch(100% 0 0 / 14%);
   --bui-bg-neutral-1-pressed: oklch(100% 0 0 / 20%);

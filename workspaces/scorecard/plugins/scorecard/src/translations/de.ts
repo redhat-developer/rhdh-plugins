@@ -25,11 +25,16 @@ const scorecardTranslationDe = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Ladevorgang',
+    'common.current': 'aktuell',
     'dataSourcesDialog.title': '{{title}} Quellen',
     'dataSourcesDialog.close': 'Schließen',
     'dataSourcesDialog.unknownPlugin': 'Unbekannt',
     'dataSourcesDialog.statusTooltip':
       'Wert {{value}} entspricht Schwellenwert {{status}} {{expression}}',
+    'dataSourcesDialog.collectorStatusTooltip':
+      'Dieser Collector liefert nur Eingabedaten. Der {{metric}}-Check-Wert wird aus Collectors berechnet und auf der Scorecard-Karte angezeigt.',
+    'dataSourcesDialog.collectorEmptyValue': '--',
+    'dataSourcesDialog.collectorUnavailableStatus': 'k. A.',
     'dataSourcesDialog.columns.plugin': 'PLUGIN',
     'dataSourcesDialog.columns.check': 'PRÜFUNG',
     'dataSourcesDialog.columns.value': 'WERT',

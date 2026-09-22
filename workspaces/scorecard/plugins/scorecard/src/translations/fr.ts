@@ -25,11 +25,16 @@ const scorecardTranslationFr = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Chargement',
+    'common.current': 'actuel',
     'dataSourcesDialog.title': '{{title}} sources',
     'dataSourcesDialog.close': 'Fermer',
     'dataSourcesDialog.unknownPlugin': 'Inconnu',
     'dataSourcesDialog.statusTooltip':
       'Valeur {{value}} correspond au seuil {{status}} {{expression}}',
+    'dataSourcesDialog.collectorStatusTooltip':
+      "Ce collecteur fournit uniquement des données d'entrée. La valeur du check {{metric}} est calculée à partir des collecteurs et affichée sur la carte scorecard.",
+    'dataSourcesDialog.collectorEmptyValue': '--',
+    'dataSourcesDialog.collectorUnavailableStatus': 'N/A',
     'dataSourcesDialog.columns.plugin': 'PLUGIN',
     'dataSourcesDialog.columns.check': 'VÉRIFICATION',
     'dataSourcesDialog.columns.value': 'VALEUR',

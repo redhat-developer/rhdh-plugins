@@ -231,12 +231,33 @@ export class ScorecardDrillDownPage {
     }
   }
 
-  private getEntityLink(entitySlug: string): Locator {
+  private getEntityRow(entitySlug: string): Locator {
     const slug = encodeURIComponent(entitySlug);
     return this.getEntitiesTable()
       .locator('tbody')
-      .locator(`a[href*="/catalog/default/component/${slug}"]`)
+      .locator('tr')
+      .filter({
+        has: this.page.locator(`a[href*="/catalog/default/component/${slug}"]`),
+      });
+  }
+
+  private getEntityLink(entitySlug: string): Locator {
+    return this.getEntityRow(entitySlug)
+      .locator(`a[href*="/catalog/default/component/"]`)
       .first();
+  }
+
+  async expectEntityMetricValueUnavailable(entitySlug: string): Promise<void> {
+    const unavailableText =
+      this.translations.entitiesPage.entitiesTable.unavailable;
+    await expect(this.getEntityRow(entitySlug)).toContainText(unavailableText);
+  }
+
+  async expectEntityMetricValueVisible(
+    entitySlug: string,
+    value: string | number,
+  ): Promise<void> {
+    await expect(this.getEntityRow(entitySlug)).toContainText(String(value));
   }
 
   async clickEntityLink(entitySlug: string) {

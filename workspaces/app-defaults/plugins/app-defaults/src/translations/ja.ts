@@ -15,13 +15,13 @@
  */
 
 import { createTranslationMessages } from '@backstage/frontend-plugin-api';
-import { translationRef } from './ref';
+import { appDefaultsTranslationRef } from './ref';
 
 /**
  * @internal
  */
 export default createTranslationMessages({
-  ref: translationRef,
+  ref: appDefaultsTranslationRef,
   messages: {
     'catalog.emptyState.title': 'カタログアイテムがありません',
     'catalog.emptyState.description':
@@ -43,5 +43,9 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       'ドキュメント化されたエンティティがまだ存在しないか、閲覧する権限がありません。TechDocs アノテーションを持つエンティティが登録され、アクセス権を得ると、ここにドキュメントが表示されます。',
     'docs.emptyState.importButtonTitle': 'コンポーネントを登録',
+    'menuItem.learningPaths': 'ラーニングパス',
+    'learningPaths.title': 'ラーニングパス',
+    'learningPaths.error.title': 'データを取得できませんでした。',
+    'learningPaths.error.unknownError': '不明なエラー',
   },
 });

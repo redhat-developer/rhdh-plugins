@@ -9695,7 +9695,6 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog@workspace:plugins/scorecard-backend-module-catalog"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.10.0"
-    "@backstage/backend-test-utils": "npm:^1.11.6"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/config": "npm:^1.3.8"
@@ -9758,13 +9757,11 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck@workspace:plugins/scorecard-backend-module-filecheck"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.10.0"
-    "@backstage/backend-test-utils": "npm:^1.11.6"
     "@backstage/catalog-client": "npm:^1.16.1"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/config": "npm:^1.3.8"
     "@backstage/errors": "npm:^1.3.1"
-    "@backstage/integration": "npm:^2.1.1"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
   languageName: unknown
@@ -9781,7 +9778,6 @@ __metadata:
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/config": "npm:^1.3.8"
     "@backstage/integration": "npm:^2.1.1"
-    "@backstage/plugin-catalog-node": "npm:^2.2.4"
     "@octokit/graphql": "npm:^9.0.1"
     "@octokit/rest": "npm:^20.1.1"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
@@ -9800,7 +9796,6 @@ __metadata:
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/config": "npm:^1.3.8"
-    "@backstage/plugin-catalog-node": "npm:^2.2.4"
     "@backstage/types": "npm:^1.2.2"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
@@ -9813,7 +9808,6 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf@workspace:plugins/scorecard-backend-module-openssf"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.10.0"
-    "@backstage/backend-test-utils": "npm:^1.11.6"
     "@backstage/catalog-client": "npm:^1.16.1"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"
@@ -9883,8 +9877,8 @@ __metadata:
     "@backstage/backend-test-utils": "npm:^1.11.6"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"
+    "@backstage/config": "npm:^1.3.8"
     "@backstage/errors": "npm:^1.3.1"
-    "@backstage/plugin-catalog-node": "npm:^2.2.4"
     "@backstage/types": "npm:^1.2.2"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     zod: "npm:^3.22.4"
@@ -9898,7 +9892,6 @@ __metadata:
     "@backstage/catalog-client": "npm:^1.16.1"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"
-    "@backstage/core-app-api": "npm:^1.20.4"
     "@backstage/core-components": "npm:^0.18.13"
     "@backstage/core-plugin-api": "npm:^1.12.9"
     "@backstage/dev-utils": "npm:^1.1.26"
@@ -9908,10 +9901,7 @@ __metadata:
     "@backstage/plugin-app-react": "npm:^0.2.6"
     "@backstage/plugin-catalog": "npm:^2.0.8"
     "@backstage/plugin-catalog-react": "npm:^3.2.2"
-    "@backstage/plugin-home": "npm:^0.9.9"
     "@backstage/plugin-home-react": "npm:^0.1.41"
-    "@backstage/plugin-permission-react": "npm:^0.5.4"
-    "@backstage/plugin-user-settings": "npm:^0.9.6"
     "@backstage/test-utils": "npm:^1.7.21"
     "@backstage/theme": "npm:^0.7.3"
     "@backstage/ui": "npm:^0.17.1"
@@ -9925,7 +9915,6 @@ __metadata:
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
     date-fns: "npm:^4.1.0"
-    msw: "npm:^1.0.0"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-dom: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-use: "npm:^17.2.4"
@@ -15288,7 +15277,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aws-ssl-profiles@npm:^1.1.1":
+"aws-ssl-profiles@npm:^1.1.2":
   version: 1.1.2
   resolution: "aws-ssl-profiles@npm:1.1.2"
   checksum: 10c0/e5f59a4146fe3b88ad2a84f814886c788557b80b744c8cbcb1cbf8cf5ba19cc006a7a12e88819adc614ecda9233993f8f1d1f3b612cbc2f297196df9e8f4f66e
@@ -22139,7 +22128,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iconv-lite@npm:0.6.3, iconv-lite@npm:^0.6.2, iconv-lite@npm:^0.6.3":
+"iconv-lite@npm:0.6.3, iconv-lite@npm:^0.6.2":
   version: 0.6.3
   resolution: "iconv-lite@npm:0.6.3"
   dependencies:
@@ -22157,7 +22146,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iconv-lite@npm:^0.7.2, iconv-lite@npm:~0.7.0":
+"iconv-lite@npm:^0.7.2, iconv-lite@npm:^0.7.3, iconv-lite@npm:~0.7.0":
   version: 0.7.3
   resolution: "iconv-lite@npm:0.7.3"
   dependencies:
@@ -24956,7 +24945,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"long@npm:^5.0.0, long@npm:^5.2.1, long@npm:^5.3.2":
+"long@npm:^5.0.0, long@npm:^5.3.2":
   version: 5.3.2
   resolution: "long@npm:5.3.2"
   checksum: 10c0/7130fe1cbce2dca06734b35b70d380ca3f70271c7f8852c922a7c62c86c4e35f0c39290565eca7133c625908d40e126ac57c02b1b1a4636b9457d77e1e60b981
@@ -25053,10 +25042,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru.min@npm:^1.0.0":
-  version: 1.1.1
-  resolution: "lru.min@npm:1.1.1"
-  checksum: 10c0/9bb1380dd9fdb155632122dfd2beb26e0c624ac141c4e95d551b66b5c523f2b7c4cdcc0b98a86419d59bc5d3af91c5699439ad06ec07f01b43d5aee51e1b34e8
+"lru.min@npm:^1.1.0, lru.min@npm:^1.1.4":
+  version: 1.1.5
+  resolution: "lru.min@npm:1.1.5"
+  checksum: 10c0/28580d8d03728ad4dc0fce4a8f56c3a5b8e25fbf51b0c4c64ca0cf7da5a2032b6d7c5ae206b42fbb271a85bc1686b22c9d1a1a675c54b68e797a396f72af9ae4
   languageName: node
   linkType: hard
 
@@ -26460,7 +26449,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:^1.0.0, msw@npm:^1.0.1":
+"msw@npm:^1.0.1":
   version: 1.3.5
   resolution: "msw@npm:1.3.5"
   dependencies:
@@ -26526,19 +26515,19 @@ __metadata:
   linkType: hard
 
 "mysql2@npm:^3.0.0":
-  version: 3.12.0
-  resolution: "mysql2@npm:3.12.0"
+  version: 3.24.4
+  resolution: "mysql2@npm:3.24.4"
   dependencies:
-    aws-ssl-profiles: "npm:^1.1.1"
-    denque: "npm:^2.1.0"
+    aws-ssl-profiles: "npm:^1.1.2"
     generate-function: "npm:^2.3.1"
-    iconv-lite: "npm:^0.6.3"
-    long: "npm:^5.2.1"
-    lru.min: "npm:^1.0.0"
-    named-placeholders: "npm:^1.1.3"
-    seq-queue: "npm:^0.0.5"
-    sqlstring: "npm:^2.3.2"
-  checksum: 10c0/2791072ce0ed6f75cc782d5a1abd4fc55bdf5860122be0f55dbc92756118d8490c30bf0f9357dcee205b900d177baecc4243bd12aa6730de396d94cc7320b827
+    iconv-lite: "npm:^0.7.3"
+    long: "npm:^5.3.2"
+    lru.min: "npm:^1.1.4"
+    named-placeholders: "npm:^1.1.6"
+    sql-escaper: "npm:^1.5.1"
+  peerDependencies:
+    "@types/node": ">= 8"
+  checksum: 10c0/12205aeb5d5a6902aa02b6e5ef6b717eb695db48bed07a2ded80f726fe05379c13118452da5f23788114b0a3d8976883e5f5e097e482426349977866d822b00d
   languageName: node
   linkType: hard
 
@@ -26553,12 +26542,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"named-placeholders@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "named-placeholders@npm:1.1.3"
+"named-placeholders@npm:^1.1.6":
+  version: 1.1.6
+  resolution: "named-placeholders@npm:1.1.6"
   dependencies:
-    lru-cache: "npm:^7.14.1"
-  checksum: 10c0/cd83b4bbdf358b2285e3c51260fac2039c9d0546632b8a856b3eeabd3bfb3d5b597507ab319b97c281a4a70d748f38bc66fa218a61cb44f55ad997ad5d9c9935
+    lru.min: "npm:^1.1.0"
+  checksum: 10c0/65b7ffaf932a371602e4153808601e8f377d7fc85fa15b491ee821418e52ab4950155b840803a6eaf3d5b94d6e8aedc1bee723475541cb4713feb3544dca9336
   languageName: node
   linkType: hard
 
@@ -31341,13 +31330,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"seq-queue@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "seq-queue@npm:0.0.5"
-  checksum: 10c0/ec870fc392f0e6e99ec0e551c3041c1a66144d1580efabae7358e572de127b0ad2f844c95a4861d2e6203f836adea4c8196345b37bed55331ead8f22d99ac84c
-  languageName: node
-  linkType: hard
-
 "serialize-error@npm:^8.0.1, serialize-error@npm:^8.1.0":
   version: 8.1.0
   resolution: "serialize-error@npm:8.1.0"
@@ -31894,17 +31876,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sql-escaper@npm:^1.5.1":
+  version: 1.5.2
+  resolution: "sql-escaper@npm:1.5.2"
+  checksum: 10c0/44a3dec22687b25b4f2866dbf736dbf85397475ab0ece65e0e0cd7da002cd1e9c8e45325e0e64c373278a77e23aa734f8b168e3a0b08dd824ab6675b77895aa1
+  languageName: node
+  linkType: hard
+
 "sql-highlight@npm:^6.1.0":
   version: 6.1.0
   resolution: "sql-highlight@npm:6.1.0"
   checksum: 10c0/9614f4608bfde8ea7bf9b2fe9233dcc99a619c91cbc3f5cd85a6fb5ad4b2177f4ac8ca4a0191f4243ff8aea3b6f2a1229efc88635298269e0049b2ac08bde263
-  languageName: node
-  linkType: hard
-
-"sqlstring@npm:^2.3.2":
-  version: 2.3.3
-  resolution: "sqlstring@npm:2.3.3"
-  checksum: 10c0/3b5dd7badb3d6312f494cfa6c9a381ee630fbe3dbd571c4c9eb8ecdb99a7bf5a1f7a5043191d768797f6b3c04eed5958ac6a5f948b998f0a138294c6d3125fbd
   languageName: node
   linkType: hard
 

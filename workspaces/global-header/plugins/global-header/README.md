@@ -6,7 +6,7 @@ A configurable and extensible global header for [Red Hat Developer Hub](https://
 
 - Sticky header bar with company logo, search, notifications, and user profile
 - Dropdown menus for application launcher, help/support, and user profile
-- Extensible via the **new frontend system** (extension blueprints) or **legacy mount points**
+- Extensible via the **new frontend system** (extension blueprints)
 - Config-driven menu items via `app-config.yaml` (no code required)
 - Full i18n/translation support
 - Themeable (light/dark mode, custom branding)
@@ -21,13 +21,14 @@ yarn --cwd packages/app add @red-hat-developer-hub/backstage-plugin-global-heade
 
 ### New Frontend System
 
-Import the plugin and module in your NFS app:
+The NFS plugin is available from the package root (`.`). Import the
+plugin and module in your NFS app:
 
 ```typescript
 import { createApp } from '@backstage/frontend-defaults';
 import globalHeaderPlugin, {
   globalHeaderModule,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export default createApp({
   features: [
@@ -38,11 +39,16 @@ export default createApp({
 });
 ```
 
-Other plugins can contribute toolbar items and dropdown menu items using `GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint`. See the [New Frontend System documentation](../../docs/new-frontend-system.md) for detailed examples and API reference.
+> `/alpha` is deprecated and translations-only — use the root import for NFS.
 
-### Legacy (Mount Points)
-
-For legacy Backstage apps using dynamic plugin mount points, see the [Configuration documentation](../../docs/configuration.md).
+Other plugins can contribute toolbar items and dropdown menu items using
+`GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint` from the
+root. Building-block UI (`GlobalHeaderMenuItem`, `GlobalHeaderDropdown`,
+…) must be imported from the `/components` package subpath (from a file reached
+only via a blueprint `loader`) so MUI-heavy UI stays off the root NFS sync
+chunk. See the
+[New Frontend System documentation](../../docs/new-frontend-system.md) for
+detailed examples and API reference.
 
 ## Configuration
 
@@ -81,7 +87,7 @@ app:
 ## Documentation
 
 - [New Frontend System Guide](../../docs/new-frontend-system.md) -- Blueprints, building blocks, and integration guide for plugin authors
-- [Configuration](../../docs/configuration.md) -- Dynamic plugin setup for legacy apps
+- [Configuration](../../docs/configuration.md) -- Dynamic plugin setup
 - [Components](../../docs/components/) -- HeaderButton, HeaderIconButton, Spacer, Divider reference
 
 ## Development

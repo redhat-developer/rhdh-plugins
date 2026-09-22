@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { ChatbotDisplayMode } from '../../const';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import type { LightspeedDrawerContextType } from '../LightspeedDrawerContext';
 import { LightspeedDrawerProvider } from '../LightspeedDrawerProvider';
@@ -28,57 +28,30 @@ jest.mock('../../hooks/useLightspeedProviderState', () => ({
   useLightspeedProviderState: () => mockUseLightspeedProviderState(),
 }));
 
-jest.mock('@patternfly/chatbot', () => {
-  const actual = jest.requireActual('@patternfly/chatbot');
-  return {
-    ...actual,
-    ChatbotModal: ({
-      children,
-      onClose,
-      onEscapePress,
-      displayMode,
-      className,
-      ouiaId,
-      'aria-labelledby': ariaLabelledBy,
-    }: {
-      children: React.ReactNode;
-      onClose?: () => void;
-      onEscapePress?: () => void;
-      displayMode: ChatbotDisplayMode;
-      className?: string;
-      ouiaId?: string;
-      'aria-labelledby'?: string;
-    }) => (
-      <div
-        data-testid="chatbot-modal"
-        data-ouia-id={ouiaId}
-        data-aria-labelledby={ariaLabelledBy}
-        data-display-mode={displayMode}
-        className={className}
+jest.mock('../LightspeedOverlayChat', () => ({
+  LightspeedOverlayChat: ({
+    displayMode,
+    onEscapePress,
+  }: {
+    displayMode: ChatbotDisplayMode;
+    onEscapePress: () => void;
+  }) => (
+    <div
+      data-testid="chatbot-modal"
+      data-ouia-id="LightspeedChatbotModal"
+      data-aria-labelledby="lightspeed-chatpopup-modal"
+      data-display-mode={displayMode}
+      className="ia-overlay-chatbot-modal"
+    >
+      <button
+        type="button"
+        data-testid="modal-escape-close"
+        onClick={() => onEscapePress()}
       >
-        {onClose ? (
-          <button type="button" data-testid="modal-close" onClick={onClose}>
-            Close
-          </button>
-        ) : null}
-        {onEscapePress ? (
-          <button
-            type="button"
-            data-testid="modal-escape-close"
-            onClick={() => onEscapePress()}
-          >
-            Escape close
-          </button>
-        ) : null}
-        {children}
-      </div>
-    ),
-  };
-});
-
-jest.mock('../LightspeedChatContainer', () => ({
-  LightspeedChatContainer: () => (
-    <div data-testid="lightspeed-chat-container">Chat Container</div>
+        Escape close
+      </button>
+      <div data-testid="lightspeed-chat-container">Chat Container</div>
+    </div>
   ),
 }));
 
@@ -101,6 +74,8 @@ function baseContextValue(): LightspeedDrawerContextType {
     setShellViewTab: jest.fn(),
     activeNotebookId: undefined,
     setActiveNotebookId: jest.fn(),
+    settingsTab: null,
+    setSettingsTab: jest.fn(),
   };
 }
 
@@ -159,7 +134,7 @@ describe('LightspeedDrawerProvider', () => {
     expect(screen.queryByTestId('chatbot-modal')).not.toBeInTheDocument();
   });
 
-  it('renders ChatbotModal with LightspeedChatContainer when shouldRenderOverlayModal is true', () => {
+  it('renders ChatbotModal with LightspeedChatContainer when shouldRenderOverlayModal is true', async () => {
     const closeChatbot = jest.fn();
     mockUseLightspeedProviderState.mockReturnValue({
       contextValue: {
@@ -176,7 +151,7 @@ describe('LightspeedDrawerProvider', () => {
       </LightspeedDrawerProvider>,
     );
 
-    const modal = screen.getByTestId('chatbot-modal');
+    const modal = await waitFor(() => screen.getByTestId('chatbot-modal'));
     expect(modal).toHaveAttribute(
       'data-display-mode',
       ChatbotDisplayMode.default,
@@ -205,7 +180,10 @@ describe('LightspeedDrawerProvider', () => {
       </LightspeedDrawerProvider>,
     );
 
-    await user.click(screen.getByTestId('modal-escape-close'));
+    const escapeClose = await waitFor(() =>
+      screen.getByTestId('modal-escape-close'),
+    );
+    await user.click(escapeClose);
     expect(closeChatbot).toHaveBeenCalledTimes(1);
   });
 });

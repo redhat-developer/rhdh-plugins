@@ -19,6 +19,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
+import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils';
 
 import { OgxModelEntityProvider } from './providers/OgxModelEntityProvider';
 import { OgxAgentEntityProvider } from './providers/OgxAgentEntityProvider';
@@ -40,11 +41,11 @@ const DEFAULT_AGENT_REFRESH_SECONDS = 300;
  * Independently deployable as an RHDH dynamic plugin — emits a model
  * server entity (kind: AiModelServerAPI, spec.type: ai-model-server)
  * and agents (kind: AiResource, spec.type: agent) as Backstage catalog
- * entities without requiring the full boost plugin.
+ * entities without requiring the deferred Boost backend.
  *
  * Configuration (app-config.yaml):
  * ```yaml
- * boost:
+ * ai-catalog:
  *   entityProviders:
  *     ogx:
  *       baseUrl: http://localhost:8321
@@ -122,39 +123,23 @@ export const catalogModuleOgxEntityProvider = createBackendModule({
 export function readOgxEntityProviderConfig(
   config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,
 ): OgxEntityProviderConfig {
-  // Try the entity-provider-specific config first
-  const epConfig = config.getOptionalConfig('boost.entityProviders.ogx');
+  const epConfig = config.getOptionalConfig('ai-catalog.entityProviders.ogx');
 
   if (epConfig) {
     return {
       baseUrl: epConfig.getString('baseUrl'),
-      apiKey: epConfig.getOptionalString('apiKey'),
+      apiKey: safeGetOptionalString(epConfig, 'apiKey'),
       modelRefreshIntervalSeconds: epConfig.getOptionalNumber(
         'modelRefreshIntervalSeconds',
       ),
       agentRefreshIntervalSeconds: epConfig.getOptionalNumber(
         'agentRefreshIntervalSeconds',
       ),
-      defaultAgent: epConfig.getOptionalString('defaultAgent'),
+      defaultAgent: safeGetOptionalString(epConfig, 'defaultAgent'),
       maxAgentTurns: epConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(epConfig),
-      caData: epConfig.getOptionalString('caData'),
+      caData: safeGetOptionalString(epConfig, 'caData'),
       skipTLSVerify: epConfig.getOptionalBoolean('skipTLSVerify'),
-    };
-  }
-
-  // Fall back to the provider module config for composed mode
-  const providerConfig = config.getOptionalConfig('boost.providers.ogx');
-
-  if (providerConfig) {
-    return {
-      baseUrl: providerConfig.getString('baseUrl'),
-      apiKey: providerConfig.getOptionalString('apiKey'),
-      defaultAgent: providerConfig.getOptionalString('defaultAgent'),
-      maxAgentTurns: providerConfig.getOptionalNumber('maxAgentTurns'),
-      agents: readAgentConfigs(providerConfig),
-      caData: providerConfig.getOptionalString('caData'),
-      skipTLSVerify: providerConfig.getOptionalBoolean('skipTLSVerify'),
     };
   }
 
@@ -186,17 +171,21 @@ function readAgentConfigs(
   return agentConfigs.map(agentConfig => ({
     id: agentConfig.getString('id'),
     name: agentConfig.getString('name'),
-    description: agentConfig.getOptionalString('description'),
-    instructions: agentConfig.getOptionalString('instructions'),
-    model: agentConfig.getOptionalString('model'),
+    version: safeGetOptionalString(agentConfig, 'version'),
+    description: safeGetOptionalString(agentConfig, 'description'),
+    instructions: safeGetOptionalString(agentConfig, 'instructions'),
+    model: safeGetOptionalString(agentConfig, 'model'),
     tools: agentConfig.getOptionalStringArray('tools'),
     handoffs: agentConfig.getOptionalStringArray('handoffs'),
-    handoffDescription: agentConfig.getOptionalString('handoffDescription'),
+    handoffDescription: safeGetOptionalString(
+      agentConfig,
+      'handoffDescription',
+    ),
     enableRAG: agentConfig.has('enableRAG')
       ? String(agentConfig.getOptional('enableRAG')) === 'true'
       : undefined,
-    createdBy: agentConfig.getOptionalString('createdBy'),
-    lifecycleStage: agentConfig.getOptionalString('lifecycleStage') as
+    createdBy: safeGetOptionalString(agentConfig, 'createdBy'),
+    lifecycleStage: safeGetOptionalString(agentConfig, 'lifecycleStage') as
       | 'draft'
       | 'pending'
       | 'published'

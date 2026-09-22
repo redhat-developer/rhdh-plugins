@@ -1,0 +1,109 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type { Entity } from '@backstage/catalog-model';
+
+const AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source';
+
+function getSpecObject(entity: Entity): Record<string, unknown> | undefined {
+  return typeof entity.spec === 'object' && entity.spec !== null
+    ? (entity.spec as Record<string, unknown>)
+    : undefined;
+}
+
+export function getSpecField(
+  entity: Entity,
+  field: string,
+): string | undefined {
+  const value = getSpecObject(entity)?.[field];
+  return typeof value === 'string' ? value : undefined;
+}
+
+/** Returns a spec string when it adds information beyond the entity description. */
+export function getDistinctSpecField(
+  entity: Entity,
+  field: string,
+): string | undefined {
+  const value = getSpecField(entity, field);
+  const description = entity.metadata.description ?? '';
+  return value && value.trim() !== description.trim() ? value : undefined;
+}
+
+function getUniqueStrings(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return Array.from(
+    new Set(
+      value.flatMap(item => {
+        if (typeof item !== 'string' || item.trim().length === 0) return [];
+        return [item.trim()];
+      }),
+    ),
+  );
+}
+
+/** Returns unique, non-empty string values from a list-valued spec field. */
+export function getStringArraySpecField(
+  entity: Entity,
+  field: string,
+): string[] {
+  return getUniqueStrings(getSpecObject(entity)?.[field]);
+}
+
+export interface EntityRemote {
+  url: string;
+  type?: string;
+}
+
+/** Returns valid remote entries from an entity's spec.remotes field. */
+export function getSpecRemotes(entity: Entity): EntityRemote[] {
+  const value = getSpecObject(entity)?.remotes;
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap(remote => {
+    if (typeof remote !== 'object' || remote === null) return [];
+    const entry = remote as Record<string, unknown>;
+    const url = typeof entry.url === 'string' ? entry.url.trim() : '';
+    if (!url) return [];
+    const type =
+      typeof entry.type === 'string' && entry.type.trim().length > 0
+        ? entry.type.trim()
+        : undefined;
+
+    return [{ url, ...(type && { type }) }];
+  });
+}
+
+export function getModelsAvailable(entity: Entity): string[] {
+  const models = getSpecObject(entity)?.models;
+  if (typeof models !== 'object' || models === null) return [];
+  return getUniqueStrings((models as Record<string, unknown>).available);
+}
+
+/** Returns the provider facet from the AI asset source annotation. */
+export function getProvider(entity: Entity): string | undefined {
+  return entity.metadata.annotations?.[AI_ASSET_SOURCE_ANNOTATION];
+}
+
+/** Returns an agent's configured model from the typed spec field. */
+export function getAgentModel(entity: Entity): string | undefined {
+  return getSpecField(entity, 'model');
+}
+
+/** Returns the target entity references configured for an agent's handoffs. */
+export function getHandoffRefs(entity: Entity): string[] {
+  return getStringArraySpecField(entity, 'handoffs');
+}

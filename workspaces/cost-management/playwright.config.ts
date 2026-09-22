@@ -24,7 +24,9 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   ...(process.env.PLAYWRIGHT_URL
     ? {
-        globalSetup: require.resolve('./packages/app/e2e-tests/global-setup'),
+        globalSetup: require.resolve(
+          './packages/app-legacy/e2e-tests/global-setup',
+        ),
       }
     : {}),
 
@@ -38,7 +40,7 @@ export default defineConfig({
     ? []
     : [
         {
-          command: 'yarn start-app',
+          command: 'yarn workspace app-legacy start',
           port: 3000,
           reuseExistingServer: true,
           timeout: 120_000,
@@ -77,7 +79,7 @@ export default defineConfig({
     // Merge-gate safe: runs against the local dev server in CI
     {
       name: 'chromium',
-      testDir: 'packages/app/e2e-tests',
+      testDir: 'packages/app-legacy/e2e-tests',
       testMatch: /app\.test\.ts$/,
       use: {
         channel: 'chrome',
@@ -90,7 +92,7 @@ export default defineConfig({
       ? [
           {
             name: 'live',
-            testDir: 'packages/app/e2e-tests',
+            testDir: 'packages/app-legacy/e2e-tests',
             testMatch: /^(?!app\.test\.ts$).*\.test\.ts$/,
             use: {
               channel: 'chrome' as const,

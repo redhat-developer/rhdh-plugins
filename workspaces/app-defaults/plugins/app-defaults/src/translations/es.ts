@@ -15,13 +15,13 @@
  */
 
 import { createTranslationMessages } from '@backstage/frontend-plugin-api';
-import { translationRef } from './ref';
+import { appDefaultsTranslationRef } from './ref';
 
 /**
  * @internal
  */
 export default createTranslationMessages({
-  ref: translationRef,
+  ref: appDefaultsTranslationRef,
   messages: {
     'catalog.emptyState.title': 'No hay elementos disponibles en el catálogo',
     'catalog.emptyState.description':
@@ -44,5 +44,9 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       'Todavía no hay entidades documentadas, o no tiene permiso para ver ninguna. La documentación aparecerá aquí una vez que se registren entidades con anotaciones de TechDocs y tenga acceso.',
     'docs.emptyState.importButtonTitle': 'Registrar un componente',
+    'menuItem.learningPaths': 'Rutas de aprendizaje',
+    'learningPaths.title': 'Rutas de aprendizaje',
+    'learningPaths.error.title': 'No se pudieron extraer los datos.',
+    'learningPaths.error.unknownError': 'Error desconocido',
   },
 });
