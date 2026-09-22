@@ -32,7 +32,7 @@ export class SidebarPage {
     await this.page
       .locator('nav[aria-label="sidebar nav"]')
       .getByRole('link', {
-        name: this.translations.menuItem.learningPaths,
+        name: this.translations.title,
       })
       .click();
 

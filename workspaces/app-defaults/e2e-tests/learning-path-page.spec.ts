@@ -44,7 +44,7 @@ test.describe('Learning Paths', () => {
     await expect(page).toHaveURL(/\/learning-paths\/?$/);
     await expect(
       page.locator('nav[aria-label="sidebar nav"]').getByRole('link', {
-        name: translations.menuItem.learningPaths,
+        name: translations.title,
       }),
     ).toBeVisible();
 

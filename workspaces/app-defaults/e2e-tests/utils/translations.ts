@@ -14,46 +14,27 @@
  * limitations under the License.
  */
 
+/**
+ * Localized Learning Paths labels used by e2e tests. Sidebar nav title comes
+ * from app-react `pages.Learning Paths`; page strings from app-defaults
+ * `learningPaths.*`.
+ */
 export type LearningPathsE2eMessages = {
-  menuItem: {
-    learningPaths: string;
-  };
-  learningPaths: {
-    title: string;
-  };
+  /** Localized sidebar / page title (`pages.Learning Paths`). */
+  title: string;
 };
 
 const enMessages: LearningPathsE2eMessages = {
-  menuItem: {
-    learningPaths: 'Learning Paths',
-  },
-  learningPaths: {
-    title: 'Learning Paths',
-  },
+  title: 'Learning Paths',
 };
 
 const localeMessages: Record<string, LearningPathsE2eMessages> = {
   en: enMessages,
-  de: {
-    menuItem: { learningPaths: 'Lernpfade' },
-    learningPaths: { title: 'Lernpfade' },
-  },
-  es: {
-    menuItem: { learningPaths: 'Rutas de aprendizaje' },
-    learningPaths: { title: 'Rutas de aprendizaje' },
-  },
-  fr: {
-    menuItem: { learningPaths: "Parcours d'apprentissage" },
-    learningPaths: { title: "Parcours d'apprentissage" },
-  },
-  it: {
-    menuItem: { learningPaths: 'Learning Path' },
-    learningPaths: { title: 'Learning Path' },
-  },
-  ja: {
-    menuItem: { learningPaths: 'ラーニングパス' },
-    learningPaths: { title: 'ラーニングパス' },
-  },
+  de: { title: 'Lernpfade' },
+  es: { title: 'Rutas de aprendizaje' },
+  fr: { title: "Parcours d'apprentissage" },
+  it: { title: 'Learning Path' },
+  ja: { title: 'ラーニングパス' },
 };
 
 export function getLearningPathsTranslations(

@@ -23,14 +23,12 @@ import {
   ApiBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import { SidebarElementBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import SchoolIcon from '@mui/icons-material/School';
 
 import {
   LearningPathApiClient,
   learningPathApiRef,
 } from './api/LearningPathApiClient';
-import { LearningPathsSidebarItem } from './components/LearningPathsSidebarItem';
 import { learningPathsRouteRef } from './routes';
 
 const learningPathsApi = ApiBlueprint.make({
@@ -50,6 +48,10 @@ const learningPathsApi = ApiBlueprint.make({
     ),
 });
 
+/**
+ * Learning Paths page. Its English `title` is localized by the app sidebar
+ * via the `pages.Learning Paths` key in app-react translations.
+ */
 const learningPathsPage = PageBlueprint.make({
   name: 'learning-paths',
   params: {
@@ -65,24 +67,11 @@ const learningPathsPage = PageBlueprint.make({
 });
 
 /**
- * Custom sidebar element for the Learning Paths page. Its `to` matches the
- * page path, so it replaces the plain auto-discovered nav item with the
- * localized {@link LearningPathsSidebarItem}.
- */
-const learningPathsSidebarItem = SidebarElementBlueprint.make({
-  name: 'learning-paths',
-  params: {
-    component: LearningPathsSidebarItem,
-    to: '/learning-paths',
-  },
-});
-
-/**
  * RHDH Learning Paths page and API for the new frontend system (`pluginId: app`).
  *
  * @public
  */
 export const learningPathsModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [learningPathsApi, learningPathsPage, learningPathsSidebarItem],
+  extensions: [learningPathsApi, learningPathsPage],
 });
