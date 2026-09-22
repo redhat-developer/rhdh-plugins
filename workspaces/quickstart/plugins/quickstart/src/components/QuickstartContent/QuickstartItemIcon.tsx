@@ -35,6 +35,15 @@ export interface QuickstartItemIconProps {
   sx?: SxProps<Theme>;
 }
 
+/**
+ * Legacy PascalCase step-type ids → MUI outlined components for the drawer.
+ *
+ * Checked before `QuickstartIcon` so step rows keep the historical OFS glyphs.
+ * These are intentionally separate from `quickstartLegacyIconAliases`, which
+ * maps the same keys to system / Material ligature ids for the generic
+ * `QuickstartIcon` path (help menu, CTAs, etc.). Updating one map does not
+ * update the other — keep both in sync when adding a new legacy id.
+ */
 const commonIcons: Record<
   string,
   ComponentType<SvgIconProps<'svg', object>>
@@ -62,6 +71,7 @@ export const QuickstartItemIcon = ({ icon, sx }: QuickstartItemIconProps) => {
     );
   }
 
+  // Prefer commonIcons over system icons so legacy step ids keep OFS MUI glyphs.
   const CommonIcon = commonIcons[icon];
   if (CommonIcon) {
     return (
