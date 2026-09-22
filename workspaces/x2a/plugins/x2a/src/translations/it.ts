@@ -48,7 +48,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'projectDetailsCard.title': 'Dettagli del progetto',
     'projectDetailsCard.name': 'Nome',
     'projectDetailsCard.status': 'Stato',
-    'projectDetailsCard.ownedBy': 'Proprietario',
+    'projectDetailsCard.ownedBy': 'Di proprietà di',
     'projectDetailsCard.dirName': 'Nome della directory',
     'projectDetailsCard.description': 'Descrizione',
     'projectDetailsCard.sourceRepo': 'Repository sorgente',
@@ -57,26 +57,22 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'editProjectDialog.title': 'Modifica progetto',
     'editProjectDialog.cancel': 'Annulla',
     'editProjectDialog.update': 'Aggiorna',
-    'editProjectDialog.updateError': 'Aggiornamento del progetto non riuscito',
-    'editProjectDialog.ownerChangeWarningTitle':
-      'Conferma trasferimento di proprietà',
-    'editProjectDialog.ownerChangeWarning':
-      "La modifica del proprietario potrebbe causare la perdita dell'accesso a questo progetto se i propri permessi non coprono il nuovo proprietario. Un amministratore può ripristinare l'accesso se necessario.",
+    'editProjectDialog.updateError': 'Impossibile aggiornare il progetto',
+    'editProjectDialog.ownerChangeWarningTitle': 'Conferma il trasferimento di proprietà',
+    'editProjectDialog.ownerChangeWarning': "La modifica del proprietario potrebbe comportare la perdita dell'accesso a questo progetto se le tue autorizzazioni non includono il nuovo proprietario. Un amministratore può ripristinare l'accesso se necessario.",
     'editProjectDialog.ownerChangeConfirm': 'Trasferisci proprietà',
     'editProjectDialog.nameRequired': 'Il nome è obbligatorio',
-    'editProjectDialog.ownerFormatHint':
-      'Deve essere un riferimento di entità Backstage, ad es. user:default/nome o group:default/team',
+    'editProjectDialog.ownerFormatHint': 'Deve essere un riferimento entità di Backstage, ad esempio user:default/name o group:default/team',
     'projectModulesCard.title': 'Moduli ({{count}})',
     'projectModulesCard.noModules': 'Nessun modulo trovato finora...',
     'projectModulesCard.toReview': 'rivedere',
     'projectModulesCard.published': 'pubblicato',
-    'projectModulesCard.spinner':
-      'Fase di scoperta in esecuzione e aggiornamento dell’elenco moduli dal piano di migrazione…',
+    'projectModulesCard.spinner': "Esecuzione della fase di rilevamento e aggiornamento dell'elenco dei moduli dal piano di migrazione…",
     'projectPage.title': 'Progetto',
     'projectPage.actionsTooltip':
       'Clicca per aprire il menu per le azioni del progetto',
     'projectPage.deleteError': "Errore nell'eliminazione del progetto",
-    'projectPage.deleteProject': 'Elimina',
+    'projectPage.deleteProject': 'Elimina questo progetto',
     'projectPage.deleteConfirm.title': 'Eliminare il progetto "{{name}}"?',
     'projectPage.deleteConfirm.message':
       'Questo progetto, tutti i suoi moduli e job saranno eliminati permanentemente. Questa azione non può essere annullata. Gli artefatti persistiti nel repository di destinazione saranno preservati.',
@@ -85,7 +81,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'projectTable.deleteError': "Errore nell'eliminazione del progetto",
     'project.description': 'Descrizione',
     'project.id': 'ID',
-    'project.ownedBy': 'Proprietario',
+    'project.ownedBy': 'Di proprietà di',
     'project.dirName': 'Nome della directory',
     'project.statuses.none': '-',
     'project.statuses.created': 'Creato',
@@ -142,7 +138,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'module.statuses.success': 'Successo',
     'module.statuses.error': 'Errore',
     'module.statuses.cancelled': 'Annullato',
-    'module.statuses.stale': 'Non aggiornato',
+    'module.statuses.stale': 'Obsoleto',
     'module.statuses.removed': 'Rimosso',
     'artifact.types.migrated_sources': 'Sorgenti migrate',
     'artifact.types.project_metadata': 'Metadati del progetto',
@@ -170,7 +166,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.phases.statuses.success': 'Successo',
     'modulePage.phases.statuses.error': 'Errore',
     'modulePage.phases.statuses.cancelled': 'Annullato',
-    'modulePage.phases.statuses.stale': 'Non aggiornato',
+    'modulePage.phases.statuses.stale': 'Obsoleto',
     'modulePage.phases.reanalyzeInstructions':
       "Il piano di migrazione del modulo è già presente. Se il piano di migrazione complessivo del progetto è stato aggiornato, riavvia l'analisi per riflettere le modifiche.",
     'modulePage.phases.rerunAnalyze':
@@ -197,7 +193,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.phases.cancelError':
       "Errore nell'annullamento della fase per il modulo",
     'modulePage.phases.attempts': 'Tentativi',
-    'modulePage.phases.totalElapsed': 'Durata totale',
+    'modulePage.phases.totalElapsed': 'Tempo totale trascorso',
     'modulePage.phases.commitId': 'Ultimo ID commit',
     'modulePage.phases.viewLog': 'Visualizza log',
     'modulePage.phases.hideLog': 'Nascondi log',
@@ -217,8 +213,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.phases.telemetry.totalOutputTokens': 'Token di output totali',
     'modulePage.phases.resyncMigrationPlanInstructions':
       "Sincronizza l'elenco dei moduli con il piano di migrazione.",
-    'modulePage.phases.staleInstructions':
-      'Il risultato di questa fase non è aggiornato perché una fase precedente è stata rieseguita. Rieseguire per aggiornare.',
+    'modulePage.phases.staleInstructions': 'Il risultato di questa fase è obsoleto perché una fase upstream è stata rieseguita. Esegui nuovamente per aggiornare.',
     'time.duration.daysAndHours': '{{days}}g {{hours}}h',
     'time.duration.daysOnly': '{{days}}g',
     'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}min',
@@ -236,7 +231,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'time.jobTiming.finished': 'Terminato {{timeAgo}} (durata {{duration}})',
     'bulkRun.projectAction': 'Esegui tutti i moduli',
     'bulkRun.globalAction': 'Esegui tutto',
-    'bulkRun.projectPageAction': 'Esegui tutto',
+    'bulkRun.projectPageAction': 'Esegui tutti i moduli',
     'bulkRun.projectConfirm.title':
       'Eseguire tutti i moduli nel progetto "{{name}}"?',
     'bulkRun.projectConfirm.message':
@@ -285,48 +280,40 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Errore nel riavvio della fase di inizializzazione del progetto "{{name}}"',
     'retriggerInit.errorStart':
       "Errore nell'avvio dell'inizializzazione del progetto",
-    'resyncMigrationPlan.action': 'Risincronizza il piano di migrazione',
+    'resyncMigrationPlan.action': 'Risincronizza piano di migrazione',
     'resyncMigrationPlan.confirm.title':
       'Risincronizzare il piano di migrazione per "{{name}}"?',
-    'resyncMigrationPlan.confirm.message':
-      'Questa operazione rileggerà il piano di migrazione dal repository di destinazione e aggiornerà la lista dei moduli di conseguenza. I nuovi moduli verranno aggiunti e quelli non più presenti nel piano verranno contrassegnati come rimossi. Se apporti modifiche al documento, ad esempio rimuovendo un modulo, assicurati che il documento resti coerente.',
-    'resyncMigrationPlan.confirm.warning':
-      'I moduli contrassegnati come rimossi manterranno la cronologia dei job ma non saranno più idonei per nuove esecuzioni di fase. Questa azione non può essere annullata per i moduli rimossi a meno che non vengano nuovamente aggiunti al piano di migrazione.',
+    'resyncMigrationPlan.confirm.message': "Questo comando rileggerà il piano di migrazione dal repository di destinazione e aggiornerà di conseguenza l'elenco dei moduli. Verranno aggiunti nuovi moduli e quelli non più previsti nel progetto verranno contrassegnati come rimossi. Se apporti modifiche al documento, come ad esempio la rimozione di un modulo, assicurati che il documento mantenga la coerenza.",
+    'resyncMigrationPlan.confirm.warning': 'I moduli contrassegnati come rimossi manterranno la cronologia delle attività svolte, ma non saranno più idonei per nuove esecuzioni delle fasi. Questa operazione non può essere annullata per i moduli rimossi, a meno che non vengano riaggiunti al piano di migrazione.',
     'resyncMigrationPlan.confirm.confirmButton': 'Risincronizza',
-    'resyncMigrationPlan.running':
-      'Risincronizzazione della lista moduli dal piano di migrazione…',
-    'resyncMigrationPlan.error':
-      'Errore nella risincronizzazione del piano di migrazione per il progetto "{{name}}"',
-    'resyncMigrationPlan.errorStart':
-      "Errore nell'avvio della risincronizzazione del piano di migrazione",
-    'scaffolder.rulesAcceptance.loadingRules': 'Caricamento regole...',
+    'resyncMigrationPlan.running': "Risincronizzazione dell'elenco dei moduli dal piano di migrazione in corso…",
+    'resyncMigrationPlan.error': 'Impossibile risincronizzare il piano di migrazione per il progetto "{{name}}"',
+    'resyncMigrationPlan.errorStart': 'Impossibile avviare la risincronizzazione del piano di migrazione',
+    'scaffolder.rulesAcceptance.loadingRules': 'Caricamento delle regole in corso...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'Nessuna regola configurata.',
     'scaffolder.rulesAcceptance.required': 'obbligatorio',
-    'scaffolder.rulesAcceptance.fetchError':
-      'Errore nel caricamento delle regole',
+    'scaffolder.rulesAcceptance.fetchError': 'Impossibile recuperare le regole',
     'rulesPage.title': 'Regole di conversione',
     'rulesPage.subtitle':
       'Gestisci le regole che i progetti devono accettare al momento della creazione.',
     'rulesPage.addRule': 'Aggiungi regola',
-    'rulesPage.manageRules': 'Gestisci regole',
-    'rulesPage.notAllowed': 'Non hai il permesso di gestire le regole.',
+    'rulesPage.manageRules': 'Gestisci le regole',
+    'rulesPage.notAllowed': "Non disponi dell'autorizzazione per gestire le regole.",
     'rulesPage.table.id': 'ID',
     'rulesPage.table.title': 'Titolo',
     'rulesPage.table.description': 'Descrizione',
     'rulesPage.table.required': 'Obbligatorio',
     'rulesPage.table.optional': 'Opzionale',
-    'rulesPage.table.createdAt': 'Creato',
+    'rulesPage.table.createdAt': 'Creata',
     'rulesPage.table.editRule': 'Modifica regola',
-    'rulesPage.table.deleteRule': 'Elimina regola',
-    'rulesPage.table.noRules': 'Nessuna regola definita ancora.',
+    'rulesPage.table.deleteRule': 'Elimina la regola',
+    'rulesPage.table.noRules': 'Non sono ancora state definite regole.',
     'rulesPage.deleteConfirm.title': 'Eliminare la regola "{{title}}"?',
-    'rulesPage.deleteConfirm.message':
-      'Questa regola verrà eliminata permanentemente. I progetti esistenti che hanno già accettato questa regola non saranno interessati.',
+    'rulesPage.deleteConfirm.message': 'Questa regola verrà eliminata definitivamente. I progetti esistenti che hanno già accettato questa regola non saranno interessati.',
     'rulesPage.deleteConfirm.confirm': 'Elimina',
     'rulesPage.deleteConfirm.cancel': 'Annulla',
-    'rulesPage.deleteConfirm.deleteError':
-      "Errore nell'eliminazione della regola",
+    'rulesPage.deleteConfirm.deleteError': 'Impossibile eliminare la regola',
     'rulesPage.dialog.createTitle': 'Crea regola',
     'rulesPage.dialog.editTitle': 'Modifica regola',
     'rulesPage.dialog.titleField': 'Titolo',
@@ -334,39 +321,31 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'rulesPage.dialog.requiredField': 'Obbligatorio per tutti i progetti',
     'rulesPage.dialog.save': 'Salva',
     'rulesPage.dialog.cancel': 'Annulla',
-    'rulesPage.dialog.createError': 'Errore nella creazione della regola',
-    'rulesPage.dialog.updateError': "Errore nell'aggiornamento della regola",
-    'modulePage.phases.runAdversarialReview': 'Esegui revisione avversariale',
-    'modulePage.phases.adversarialReview': 'Revisione Avversariale',
-    'modulePage.phases.adversarialNoRuns': 'Nessuna esecuzione ancora',
-    'modulePage.phases.adversarialRunning':
-      'La revisione avversariale è in corso…',
-    'modulePage.phases.adversarialCriticalAgentsWarning':
-      'Gli agenti avversariali critici sono configurati ma non sono stati ancora eseguiti per questa fase.',
-    'modulePage.phases.adversarialAgentLabel': 'avversariale',
-    'modulePage.phases.adversarialCriticalFindings': 'Risultati Critici',
-    'modulePage.phases.adversarialWarningFindings': 'Risultati di Avviso',
+    'rulesPage.dialog.createError': 'Impossibile creare la regola',
+    'rulesPage.dialog.updateError': 'Impossibile aggiornare la regola',
+    'modulePage.phases.runAdversarialReview': 'Esegui revisione adversarial',
+    'modulePage.phases.adversarialReview': 'Revisione adversarial',
+    'modulePage.phases.adversarialNoRuns': 'Nessuna esecuzione',
+    'modulePage.phases.adversarialRunning': 'È in corso la procedura di revisione adversarial…',
+    'modulePage.phases.adversarialCriticalAgentsWarning': 'Gli agenti adversarial critici sono stati configurati ma non sono stati eseguiti in questa fase.',
+    'modulePage.phases.adversarialAgentLabel': 'adversarial',
+    'modulePage.phases.adversarialCriticalFindings': 'Risultati critici',
+    'modulePage.phases.adversarialWarningFindings': "Risultati dell'avviso",
     'modulePage.phases.adversarialCompleted': 'Completato',
     'modulePage.phases.adversarialNoFindings': 'Nessun risultato',
     'modulePage.phases.adversarialResult': 'Esito',
-    'modulePage.phases.adversarialAgents.title': 'Agenti Avversariali',
-    'modulePage.phases.adversarialAgents.placeholder': 'Scegliere gli agenti…',
-    'modulePage.phases.adversarialAgents.noAgentsAvailable':
-      'Nessun agente avversariale disponibile per questa fase. Creare agenti nella pagina Agenti Avversariali.',
-    'modulePage.phases.adversarialAgents.loadingError':
-      'Errore nel caricamento degli agenti avversariali',
-    'modulePage.phases.adversarialRunError':
-      "Errore nell'avvio della revisione avversariale",
-    'artifact.types.adversarial_report': 'Report Avversariale',
-    'artifact.types.adversarial_report_json': 'Report Avversariale (JSON)',
-    'adversarialAgentsPage.title': 'Agenti Avversariali',
-    'adversarialAgentsPage.subtitle':
-      'Gestire gli agenti IA che esaminano i risultati della migrazione per individuare problemi di sicurezza, lacune funzionali e problemi di correttezza.',
-    'adversarialAgentsPage.manageAdversarialAgents':
-      'Gestisci agenti avversariali',
+    'modulePage.phases.adversarialAgents.title': 'Agenti adversarial',
+    'modulePage.phases.adversarialAgents.placeholder': 'Scegli gli agenti…',
+    'modulePage.phases.adversarialAgents.noAgentsAvailable': 'In questa fase non sono disponibili agenti adversarial. Crea gli agenti nella pagina Agenti adversarial.',
+    'modulePage.phases.adversarialAgents.loadingError': 'Impossibile caricare gli agenti adversarial',
+    'modulePage.phases.adversarialRunError': 'Impossibile avviare la revisione adversarial',
+    'artifact.types.adversarial_report': 'Report adversarial',
+    'artifact.types.adversarial_report_json': 'Report adversarial (JSON)',
+    'adversarialAgentsPage.title': 'Agenti adversarial',
+    'adversarialAgentsPage.subtitle': 'Gestisci agenti di intelligenza artificiale che esaminano gli output della migrazione per individuare problemi di sicurezza, lacune funzionali e correttezza.',
+    'adversarialAgentsPage.manageAdversarialAgents': 'Gestisci agenti adversarial',
     'adversarialAgentsPage.addAgent': 'Aggiungi agente',
-    'adversarialAgentsPage.notAllowed':
-      "Non si dispone dell'autorizzazione per gestire gli agenti avversariali.",
+    'adversarialAgentsPage.notAllowed': "Non disponi dell'autorizzazione per gestire agenti adversarial.",
     'adversarialAgentsPage.table.name': 'Nome',
     'adversarialAgentsPage.table.prompt': 'Prompt',
     'adversarialAgentsPage.table.phases': 'Fasi',
@@ -377,48 +356,34 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'adversarialAgentsPage.table.createdBy': 'Creato da',
     'adversarialAgentsPage.table.editAgent': 'Modifica agente',
     'adversarialAgentsPage.table.deleteAgent': 'Elimina agente',
-    'adversarialAgentsPage.table.noAgents':
-      'Nessun agente avversariale definito.',
-    'adversarialAgentsPage.table.fetchError':
-      'Errore nel recupero degli agenti avversariali',
-    'adversarialAgentsPage.deleteConfirm.title':
-      'Eliminare l\'agente "{{name}}"?',
-    'adversarialAgentsPage.deleteConfirm.message':
-      'Questa azione non può essere annullata.',
+    'adversarialAgentsPage.table.noAgents': 'Non sono ancora stati definiti agenti adversarial.',
+    'adversarialAgentsPage.table.fetchError': 'Impossibile recuperare gli agenti adversarial',
+    'adversarialAgentsPage.deleteConfirm.title': 'Eliminare l\'agente "{{name}}"?',
+    'adversarialAgentsPage.deleteConfirm.message': "L'azione non può essere annullata.",
     'adversarialAgentsPage.deleteConfirm.confirm': 'Elimina',
     'adversarialAgentsPage.deleteConfirm.cancel': 'Annulla',
-    'adversarialAgentsPage.deleteConfirm.deleteError':
-      "Errore nell'eliminazione dell'agente",
-    'adversarialAgentsPage.dialog.createTitle': 'Crea agente avversariale',
-    'adversarialAgentsPage.dialog.editTitle': 'Modifica agente avversariale',
+    'adversarialAgentsPage.deleteConfirm.deleteError': "Impossibile eliminare l'agente",
+    'adversarialAgentsPage.dialog.createTitle': 'Crea agente adversarial',
+    'adversarialAgentsPage.dialog.editTitle': 'Modifica agente adversarial',
     'adversarialAgentsPage.dialog.nameField': 'Nome',
-    'adversarialAgentsPage.dialog.namePlaceholder':
-      'es., Verifica escalation privilegi',
+    'adversarialAgentsPage.dialog.namePlaceholder': "ad esempio Controllo dell'escalation dei privilegi",
     'adversarialAgentsPage.dialog.promptField': 'Prompt',
-    'adversarialAgentsPage.dialog.promptPlaceholder':
-      'Descrivere cosa deve verificare questo agente...',
-    'adversarialAgentsPage.dialog.promptHelper':
-      'Essere specifici su cosa cercare e come segnalare i risultati (50-5000 caratteri)',
-    'adversarialAgentsPage.dialog.promptCharacterCount':
-      '/5000 caratteri (min 50)',
+    'adversarialAgentsPage.dialog.promptPlaceholder': 'Descrivi cosa dovrebbe controllare questo agente...',
+    'adversarialAgentsPage.dialog.promptHelper': 'Definisci chiaramente cosa cercare e come riportare i risultati (50-5000 caratteri)',
+    'adversarialAgentsPage.dialog.promptCharacterCount': '/5000 caratteri (minimo 50)',
     'adversarialAgentsPage.dialog.phasesField': 'Fasi del flusso di lavoro',
-    'adversarialAgentsPage.dialog.phasesHelper':
-      'Selezionare le fasi del flusso di lavoro in cui viene eseguito questo agente',
-    'adversarialAgentsPage.dialog.phaseAnalyze': 'Analizzare',
-    'adversarialAgentsPage.dialog.phaseMigrate': 'Migrare',
+    'adversarialAgentsPage.dialog.phasesHelper': 'Seleziona in quali fasi del flusso di lavoro viene eseguito questo agente',
+    'adversarialAgentsPage.dialog.phaseAnalyze': 'Analizza',
+    'adversarialAgentsPage.dialog.phaseMigrate': 'Migra',
     'adversarialAgentsPage.dialog.criticalField': 'Agente critico',
     'adversarialAgentsPage.dialog.criticalHelper':
       'Gli agenti critici producono risultati di gravità critica; gli agenti non critici producono avvisi',
-    'adversarialAgentsPage.dialog.nameValidation':
-      'Il nome deve contenere tra 3 e 100 caratteri',
-    'adversarialAgentsPage.dialog.phasesValidation':
-      'È richiesta almeno una fase',
+    'adversarialAgentsPage.dialog.nameValidation': 'Il nome deve essere compreso tra 3 e 100 caratteri',
+    'adversarialAgentsPage.dialog.phasesValidation': 'È obbligatoria almeno una fase',
     'adversarialAgentsPage.dialog.save': 'Salva',
     'adversarialAgentsPage.dialog.cancel': 'Annulla',
-    'adversarialAgentsPage.dialog.createError':
-      "Errore nella creazione dell'agente",
-    'adversarialAgentsPage.dialog.updateError':
-      "Errore nell'aggiornamento dell'agente",
+    'adversarialAgentsPage.dialog.createError': "Impossibile creare l'agente",
+    'adversarialAgentsPage.dialog.updateError': "Impossibile aggiornare l'agente",
   },
 });
 

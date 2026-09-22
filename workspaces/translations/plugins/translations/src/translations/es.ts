@@ -37,7 +37,9 @@ const translationsTranslationEs = createTranslationMessages({
     'common.noData': 'No hay datos disponibles',
     'common.refresh': 'Actualizar',
     'language.displayFormat': '{{displayName}} ({{code}})',
-  },
+      'table.headers.key': 'Clave',
+    'table.headers.refId': 'ID de referencia',
+},
 });
 
 export default translationsTranslationEs;

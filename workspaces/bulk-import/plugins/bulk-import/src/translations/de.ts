@@ -117,7 +117,7 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Pull Request konnte nicht abgerufen werden. Unten wurde ein neues YAML generiert.',
     'previewFile.invalidEntityYaml':
       'Der YAML-Code der Entity in Ihrem Pull Request ist ungültig (leere Datei oder fehlende Werte für apiVersion, kind oder metadata.name). Unten wurde ein neues YAML generiert.',
-    'previewFile.keyValuePlaceholder': 'Schlüssel1: Wert1; Schlüssel2: Wert2',
+    'previewFile.keyValuePlaceholder': 'key1: value1; key2: value2',
     'previewFile.prCreationUnsuccessful':
       'Die PR-Erstellung war für einige Repositorys nicht erfolgreich. Klicken Sie auf „Bearbeiten“, um den Grund anzuzeigen.',
     'previewFile.preview': 'Vorschau',
@@ -272,7 +272,9 @@ const bulkImportTranslationDe = createTranslationMessages({
     'workflows.workflowPending': 'Ausstehend',
     'workflows.workflowSuspended': 'Ausgesetzt',
     'workflows.workflowsFor': 'Workflows für {{importJobStatusId}}',
-  },
+      'repositories.logInToViewProjects': 'Anmelden, um Projekte anzuzeigen',
+    'repositories.logInToViewRepositories': 'Anmelden, um Repositorys anzuzeigen',
+},
 });
 
 export default bulkImportTranslationDe;

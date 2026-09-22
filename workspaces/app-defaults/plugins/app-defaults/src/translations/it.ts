@@ -23,29 +23,29 @@ import { appDefaultsTranslationRef } from './ref';
 export default createTranslationMessages({
   ref: appDefaultsTranslationRef,
   messages: {
-    'catalog.emptyState.title': 'Nessun elemento disponibile nel catalogo',
-    'catalog.emptyState.description':
-      'Non ci sono ancora entità nel catalogo, oppure non hai il permesso di visualizzarne alcuna. Appariranno qui una volta registrate e quando avrai accesso.',
+    'catalog.emptyState.title': 'Nessun elemento del catalogo disponibile',
+    'catalog.emptyState.description': 'Non sono ancora presenti entità del catalogo, oppure non disponi dell\'autorizzazione per visualizzarle. Una volta registrate e dopo aver ottenuto l\'accesso, appariranno qui.',
     'catalog.emptyState.importButtonTitle': 'Registra un componente',
-    'catalogGraph.emptyState.title': 'Nessun elemento disponibile nel catalogo',
-    'catalogGraph.emptyState.description':
-      'Non ci sono ancora entità nel catalogo, oppure non hai il permesso di visualizzarne alcuna. Il grafo del catalogo apparirà qui una volta registrate e quando avrai accesso.',
+    'catalogGraph.emptyState.title': 'Nessun elemento del catalogo disponibile',
+    'catalogGraph.emptyState.description': 'Non sono ancora presenti entità del catalogo, oppure non disponi dell\'autorizzazione per visualizzarle. Il grafico del catalogo apparirà qui una volta che saranno registrate e avrai accesso.',
     'catalogGraph.emptyState.importButtonTitle': 'Registra un componente',
     'scaffolder.emptyState.title': 'Nessun modello disponibile',
-    'scaffolder.emptyState.description':
-      'Non ci sono ancora modelli software, oppure non hai il permesso di visualizzarne alcuno. Appariranno qui una volta registrati e quando avrai accesso.',
+    'scaffolder.emptyState.description': 'Non sono ancora disponibili modelli software, oppure non disponi dell\'autorizzazione per visualizzarli. Una volta registrati e dopo aver ottenuto l\'accesso, appariranno qui.',
     'scaffolder.emptyState.importButtonTitle': 'Registra un modello',
     'apiDocs.emptyState.title': 'Nessuna API disponibile',
-    'apiDocs.emptyState.description':
-      'Non ci sono ancora API, oppure non hai il permesso di visualizzarne alcuna. Appariranno qui una volta registrate e quando avrai accesso.',
+    'apiDocs.emptyState.description': 'Non sono ancora disponibili API, oppure non disponi dell\'autorizzazione per visualizzarle. Una volta registrate e dopo aver ottenuto l\'accesso, appariranno qui.',
     'apiDocs.emptyState.importButtonTitle': "Registra un'API",
     'docs.emptyState.title': 'Nessuna documentazione disponibile',
-    'docs.emptyState.description':
-      'Non ci sono ancora entità documentate, oppure non hai il permesso di visualizzarne alcuna. La documentazione apparirà qui una volta registrate entità con annotazioni TechDocs e quando avrai accesso.',
+    'docs.emptyState.description': 'Non sono ancora presenti entità documentate, oppure non disponi dell\'autorizzazione per visualizzarle. La documentazione apparirà qui una volta che le entità con annotazioni TechDocs saranno registrate e avrai accesso.',
     'docs.emptyState.importButtonTitle': 'Registra un componente',
     'menuItem.learningPaths': 'Learning Path',
     'learningPaths.title': 'Learning Path',
     'learningPaths.error.title': 'Impossibile estrarre i dati.',
     'learningPaths.error.unknownError': 'Errore sconosciuto',
-  },
+      'apiDocs.emptyState.action': 'Registra un\'API',
+    'catalog.emptyState.action': 'Registra un componente',
+    'catalogGraph.emptyState.action': 'Vai al catalogo',
+    'docs.emptyState.action': 'Scopri di più',
+    'scaffolder.emptyState.action': 'Registra un modello',
+},
 });

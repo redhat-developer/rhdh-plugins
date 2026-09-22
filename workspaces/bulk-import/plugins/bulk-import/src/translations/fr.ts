@@ -120,7 +120,7 @@ const bulkImportTranslationFr = createTranslationMessages({
       "Impossible de récupérer la requête d'extraction. Un nouveau fichier YAML a été généré ci-dessous.",
     'previewFile.invalidEntityYaml':
       "L'entité YAML dans votre demande d'extraction est invalide (fichier vide ou apiVersion, kind ou metadata.name manquants). Un nouveau fichier YAML a été généré ci-dessous.",
-    'previewFile.keyValuePlaceholder': 'clé1: valeur1; clé2: valeur2',
+    'previewFile.keyValuePlaceholder': 'clé1 : valeur1 ; clé2 : valeur2',
     'previewFile.prCreationUnsuccessful':
       'La création de R a échoué pour certains référentiels. Cliquez sur « Modifier » pour voir la raison.',
     'previewFile.preview': 'Aperçu',
@@ -274,7 +274,9 @@ const bulkImportTranslationFr = createTranslationMessages({
     'workflows.workflowPending': 'En attente',
     'workflows.workflowSuspended': 'Suspendu',
     'workflows.workflowsFor': 'Flux de travail pour {{importJobStatusId}}',
-  },
+      'repositories.logInToViewProjects': 'Connectez-vous pour consulter les projets',
+    'repositories.logInToViewRepositories': 'Connectez-vous pour consulter les dépôts',
+},
 });
 
 export default bulkImportTranslationFr;

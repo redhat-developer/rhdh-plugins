@@ -26,17 +26,16 @@ const scorecardTranslationIt = createTranslationMessages({
   messages: {
     'common.loading': 'Caricamento',
     'common.current': 'attuale',
-    'dataSourcesDialog.title': '{{title}} sorgenti',
-    'dataSourcesDialog.close': 'Chiudere',
+    'dataSourcesDialog.title': '{{title}} fonti',
+    'dataSourcesDialog.close': 'Chiudi',
     'dataSourcesDialog.unknownPlugin': 'Sconosciuto',
-    'dataSourcesDialog.statusTooltip':
-      'Valore {{value}} corrisponde alla soglia {{status}} {{expression}}',
+    'dataSourcesDialog.statusTooltip': 'Il valore {{value}} corrisponde alla soglia {{status}} {{expression}}',
     'dataSourcesDialog.collectorStatusTooltip':
       'Questo collector fornisce solo dati di input. Il valore del check {{metric}} viene calcolato dai collector e mostrato sulla scheda scorecard.',
     'dataSourcesDialog.collectorEmptyValue': '--',
     'dataSourcesDialog.collectorUnavailableStatus': 'N/D',
     'dataSourcesDialog.columns.plugin': 'PLUGIN',
-    'dataSourcesDialog.columns.check': 'VERIFICA',
+    'dataSourcesDialog.columns.check': 'CONTROLLO',
     'dataSourcesDialog.columns.value': 'VALORE',
     'dataSourcesDialog.columns.status': 'STATO',
     'dataSourcesDialog.columns.lastSynced': 'ULTIMA SINCRONIZZAZIONE',
@@ -91,10 +90,8 @@ const scorecardTranslationIt = createTranslationMessages({
     'metric.weightedStatusScoreCenterTooltipMaxLabel':
       'Punteggio massimo possibile',
     'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Punteggio totale',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
-      '{{status}}: {{count}} entity, score: {{score}}',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
-      '{{status}}: {{count}} entities, score: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one': '{{status}}: {{count}} entità, punteggio: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other': '{{status}}: {{count}} entità, punteggio: {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} entità, ciascuna {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
@@ -103,19 +100,14 @@ const scorecardTranslationIt = createTranslationMessages({
       'Punteggio totale {{total}}',
     'metric.drillDownCalculationFailures':
       'Si è verificato un errore durante il calcolo di questa metrica da parte di una o più entità.',
-    'metric.dora.deploymentFrequency.description':
-      'Monitora la frequenza con cui il codice viene distribuito correttamente in produzione negli ultimi 30 giorni. I team di elite effettuano il deployment on demand (più volte al giorno).',
+    'metric.dora.deploymentFrequency.description': 'Tiene traccia della frequenza con cui il codice è stato distribuito con successo in produzione negli ultimi 30 giorni. I deployment dalle prestazioni migliori vengono attivati su richiesta (più volte al giorno).',
     'metric.dora.deploymentFrequency.title': 'DORA - Frequenza di deployment',
-    'metric.dora.medianLeadTimeForChanges.description':
-      'Misura il tempo mediano dal commit del codice al deployment in produzione negli ultimi 30 giorni. I team di elite hanno un tempo di consegna inferiore a 24 ore.',
-    'metric.dora.medianLeadTimeForChanges.title':
-      'DORA - Tempo mediano di consegna delle modifiche',
-    'metric.dora.changeFailureRate.description':
-      'Monitora la percentuale di deployment che causano un errore in produzione negli ultimi 30 giorni. I team di elite mantengono un tasso di fallimento delle modifiche inferiore al 5%.',
+    'metric.dora.medianLeadTimeForChanges.description': 'Misura il tempo mediano intercorso tra il commit del codice e il deployment in produzione negli ultimi 30 giorni. Le prestazioni migliori registrano tempi inferiori alle 24 ore.',
+    'metric.dora.medianLeadTimeForChanges.title': 'DORA - Tempo medio di preavviso per le modifiche',
+    'metric.dora.changeFailureRate.description': 'Monitora la percentuale di deployment che hanno causato un errore in produzione negli ultimi 30 giorni. Le prestazioni migliori corrispondono a un tasso di fallimento delle modifiche inferiore al 5%.',
     'metric.dora.changeFailureRate.title':
       'DORA - Tasso di fallimento delle modifiche',
-    'metric.dora.medianTimeToRestore.description':
-      "Monitora il tempo mediano per ripristinare il servizio dopo un incidente negli ultimi 30 giorni. I team di elite ripristinano il servizio in meno di un'ora.",
+    'metric.dora.medianTimeToRestore.description': 'Tiene traccia del tempo mediano necessario per ripristinare il servizio dopo un incidente negli ultimi 30 giorni. Le prestazioni migliori ripristinano il servizio in meno di un\'ora.',
     'metric.dora.medianTimeToRestore.title':
       'DORA - Tempo mediano di ripristino',
     'metric.filecheck.description':
@@ -185,7 +177,7 @@ const scorecardTranslationIt = createTranslationMessages({
     'metric.sonarqube.securityReviewRating.title':
       'Valutazione di sicurezza di SonarQube',
     'metricGroupCard.menuAriaLabel': 'Altre opzioni',
-    'metricGroupCard.viewDataSources': 'Visualizza sorgenti',
+    'metricGroupCard.viewDataSources': 'Visualizza le fonti dei dati',
     'notFound.altText': 'Pagina non trovata',
     'notFound.contactSupport': 'Contatta il supporto',
     'notFound.description':
@@ -203,8 +195,8 @@ const scorecardTranslationIt = createTranslationMessages({
     'thresholds.entities_other': '{{count}} entità',
     'thresholds.error': 'Errore',
     'thresholds.exist': 'Esiste',
-    'thresholds.low': 'Basso',
-    'thresholds.medium': 'Medio',
+    'thresholds.low': 'Bassa',
+    'thresholds.medium': 'Media',
     'thresholds.missing': 'Mancante',
     'thresholds.noEntities': 'Nessuna entità nello stato {{category}}',
     'thresholds.success': 'Successo',

@@ -54,14 +54,11 @@ const orchestratorTranslationIt = createTranslationMessages({
     'duration.months': '{{count}} mesi',
     'duration.seconds': '{{count}} secondi',
     'duration.years': '{{count}} anni',
-    'emptyState.illustrationAlt':
-      'Illustrazione senza flussi di lavoro o esecuzioni',
-    'emptyState.runs.description':
-      'Le esecuzioni dei flussi di lavoro appariranno qui una volta eseguiti i flussi.',
+    'emptyState.illustrationAlt': 'Nessuna illustrazione di flussi di lavoro o esecuzioni',
+    'emptyState.runs.description': 'Una volta eseguiti, i flussi di lavoro verranno visualizzati qui.',
     'emptyState.runs.runWorkflow': 'Esegui un flusso di lavoro',
-    'emptyState.runs.title': 'Nessuna esecuzione ancora',
-    'emptyState.workflows.description':
-      'Per iniziare, aggiungi un nuovo flusso di lavoro.',
+    'emptyState.runs.title': 'Nessuna esecuzione',
+    'emptyState.workflows.description': 'Aggiungi un nuovo flusso di lavoro per iniziare.',
     'emptyState.workflows.title': 'Nessun flusso di lavoro aggiunto',
     'emptyState.workflows.viewDocumentation': 'Visualizza documentazione',
     'formDecorator.error':
@@ -107,7 +104,7 @@ const orchestratorTranslationIt = createTranslationMessages({
     'run.inputs': 'Input',
     'run.logs.noLogsAvailable':
       "Nessun log disponibile per l'esecuzione di questo flusso di lavoro.",
-    'run.logs.title': 'Log del workflow {{processName}}',
+    'run.logs.title': 'Log del flusso di lavoro {{processName}}',
     'run.logs.viewLogs': 'Visualizza log',
     'run.messages.eventTriggered':
       "È stato inviato un evento per attivare questo flusso di lavoro. Apparirà all'avvio dell'esecuzione.",
@@ -117,21 +114,18 @@ const orchestratorTranslationIt = createTranslationMessages({
     'run.status.aborted': "L'esecuzione è stata interrotta {{time}} fa.",
     'run.status.abortedWithoutTime': "L'esecuzione è stata interrotta.",
     'run.status.completed': 'Esecuzione completata',
-    'run.status.completedAt': 'Esecuzione completata il {{time}}',
-    'run.status.completedWithMessage':
-      'Esecuzione completata il {{time}} con messaggio',
-    'run.status.failed': "L'esecuzione non è riuscita il {{time}}",
-    'run.status.failedAt': "L'esecuzione non è riuscita il {{time}}",
+    'run.status.completedAt': 'Esecuzione completata alle {{time}}',
+    'run.status.completedWithMessage': 'Esecuzione completata alle {{time}} con messaggio',
+    'run.status.failed': 'L\'esecuzione non è riuscita alle {{time}}',
+    'run.status.failedAt': 'L\'esecuzione non è riuscita alle {{time}}',
     'run.status.noAdditionalInfo':
       'Il flusso di lavoro non forniva ulteriori informazioni sullo stato.',
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
       "I risultati verranno visualizzati qui al termine dell'esecuzione.",
-    'run.status.running':
-      'Il flusso di lavoro è in esecuzione. Iniziata il {{time}}',
+    'run.status.running': 'Il flusso di lavoro è in esecuzione. Iniziato alle {{time}}',
     'run.status.runningWaitingAtNode':
       'Il flusso di lavoro è in esecuzione - in attesa al nodo {{node}} da {{formattedTime}}',
-    'run.status.workflowIsRunning':
-      'Il flusso di lavoro è in esecuzione. Iniziata il {{time}}',
+    'run.status.workflowIsRunning': 'Il flusso di lavoro è in esecuzione. Iniziato alle {{time}}',
     'run.suggestedNextWorkflow': 'Flusso di lavoro successivo suggerito',
     'run.suggestedNextWorkflows': 'Flussi di lavoro successivi suggeriti',
     'run.title': 'Esegui flusso di lavoro',
@@ -143,7 +137,7 @@ const orchestratorTranslationIt = createTranslationMessages({
     'table.actions.runAsEvent': 'Esegui come evento',
     'table.actions.viewInputSchema': 'Visualizza schema di input',
     'table.actions.viewRuns': 'Visualizza esecuzioni',
-    'table.actions.viewRunVariables': 'Visualizza variabili di esecuzione',
+    'table.actions.viewRunVariables': 'Visualizza le variabili di esecuzione',
     'table.filters.started': 'Iniziato',
     'table.filters.entity': 'Entità',
     'table.filters.runBy': 'Eseguito da',
@@ -152,7 +146,7 @@ const orchestratorTranslationIt = createTranslationMessages({
     'table.filters.startedOptions.today': 'Oggi',
     'table.filters.startedOptions.yesterday': 'Ieri',
     'table.filters.status': 'Stato',
-    'table.filters.placeholder': 'Filtra',
+    'table.filters.placeholder': 'Filtro',
     'table.filters.clearAll': 'Cancella tutto',
     'table.headers.description': 'Descrizione',
     'table.headers.duration': 'Durata',
@@ -199,12 +193,10 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.buttons.running': 'In esecuzione...',
     'workflow.definition': 'Definizione del flusso di lavoro',
     'workflow.inputSchema': 'Schema di input',
-    'workflow.inputSchemaDescription':
-      'Definisce i campi dati richiesti e la validazione per questo flusso di lavoro.',
+    'workflow.inputSchemaDescription': 'Definisce i campi dati obbligatori e la convalida per questo flusso di lavoro.',
     'workflow.successRatio': 'Tasso di successo',
-    'workflow.successRatioDescription':
-      'Quota di esecuzioni completate rispetto a quelle fallite per questo flusso di lavoro.',
-    'workflow.runSuccess': 'Successo delle esecuzioni',
+    'workflow.successRatioDescription': 'Percentuale di esecuzioni completate rispetto alle esecuzioni non riuscite per questo flusso di lavoro.',
+    'workflow.runSuccess': 'Esecuzione riuscita',
     'workflow.ofTotal': 'di {{totalCount}}',
     'workflow.statsSuccess': 'Successo',
     'workflow.statsFailed': 'Non riuscito',
@@ -240,18 +232,14 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.status.unavailable': 'Non disponibile',
     'workflow.unavailable.title': 'Flusso di lavoro non disponibile',
     'workflow.unavailable.runTooltip': 'Flusso di lavoro non disponibile',
-    'workflow.unavailable.requestFailed':
-      'Richiesta HTTP GET a {{url}} non riuscita.',
+    'workflow.unavailable.requestFailed': 'La richiesta HTTP GET a {{url}} non è riuscita.',
     'workflow.unavailable.statusCodeLine': 'Codice di stato: {{statusCode}}',
-    'workflow.unavailable.statusTextLine': 'Testo di stato: {{reason}}',
-    'samlSso.title': 'Sessione GitHub SAML SSO scaduta',
+    'workflow.unavailable.statusTextLine': 'Testo dello stato: {{reason}}',
+    'samlSso.title': 'Sessione SSO SAML di GitHub scaduta',
     'samlSso.reauthorizeButton': 'Riautorizza SSO',
-    'samlSso.body':
-      'La sessione GitHub SAML SSO è scaduta. La tua organizzazione richiede una sessione SAML attiva per accedere alle sue risorse.',
-    'samlSso.reauthorizeHint':
-      "Fai clic su 'Riautorizza SSO' per riautenticarti con il provider di identità della tua organizzazione.",
-    'samlSso.fallbackHint':
-      'Disconnettiti e accedi nuovamente da Impostazioni > Provider di autenticazione per ristabilire la sessione SAML.',
+    'samlSso.body': 'La tua sessione SSO SAML di GitHub è scaduta. La tua organizzazione necessita di una sessione SAML attiva per accedere alle sue risorse.',
+    'samlSso.reauthorizeHint': 'Fai clic su "Riautorizza SSO" per autenticarti nuovamente con il provider di identità della tua organizzazione.',
+    'samlSso.fallbackHint': 'Effettua il logout e accedi nuovamente da Impostazioni > Provider di autenticazione per ristabilire la sessione SAML.',
   },
 });
 

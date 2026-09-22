@@ -23,30 +23,29 @@ import { appDefaultsTranslationRef } from './ref';
 export default createTranslationMessages({
   ref: appDefaultsTranslationRef,
   messages: {
-    'catalog.emptyState.title': 'Aucun élément disponible dans le catalogue',
-    'catalog.emptyState.description':
-      "Il n'y a pas encore d'entités dans le catalogue, ou vous n'avez pas la permission d'en voir. Elles apparaîtront ici une fois enregistrées et que vous y aurez accès.",
+    'catalog.emptyState.title': 'Aucun article du catalogue disponible',
+    'catalog.emptyState.description': 'Il n\'y a pas encore d\'entités de catalogue, ou vous n\'avez pas l\'autorisation d\'en consulter. Elles apparaîtront ici une fois qu\'elles seront enregistrées et que vous y aurez accès.',
     'catalog.emptyState.importButtonTitle': 'Enregistrer un composant',
-    'catalogGraph.emptyState.title':
-      'Aucun élément disponible dans le catalogue',
-    'catalogGraph.emptyState.description':
-      "Il n'y a pas encore d'entités dans le catalogue, ou vous n'avez pas la permission d'en voir. Le graphe du catalogue apparaîtra ici une fois qu'elles seront enregistrées et que vous y aurez accès.",
+    'catalogGraph.emptyState.title': 'Aucun article du catalogue disponible',
+    'catalogGraph.emptyState.description': 'Il n\'y a pas encore d\'entités de catalogue, ou vous n\'avez pas l\'autorisation d\'en consulter. Le graphique du catalogue apparaîtra ici une fois qu\'ils seront enregistrés et que vous y aurez accès.',
     'catalogGraph.emptyState.importButtonTitle': 'Enregistrer un composant',
     'scaffolder.emptyState.title': 'Aucun modèle disponible',
-    'scaffolder.emptyState.description':
-      "Il n'y a pas encore de modèles de logiciels, ou vous n'avez pas la permission d'en voir. Ils apparaîtront ici une fois enregistrés et que vous y aurez accès.",
+    'scaffolder.emptyState.description': 'Il n\'existe pas encore de modèles de logiciels, ou vous n\'avez pas l\'autorisation d\'en consulter. Elles apparaîtront ici une fois qu\'elles seront enregistrées et que vous y aurez accès.',
     'scaffolder.emptyState.importButtonTitle': 'Enregistrer un modèle',
     'apiDocs.emptyState.title': 'Aucune API disponible',
-    'apiDocs.emptyState.description':
-      "Il n'y a pas encore d'API, ou vous n'avez pas la permission d'en voir. Elles apparaîtront ici une fois enregistrées et que vous y aurez accès.",
+    'apiDocs.emptyState.description': 'Il n\'existe pas encore d\'API, ou vous n\'avez pas l\'autorisation d\'en consulter. Elles apparaîtront ici une fois qu\'elles seront enregistrées et que vous y aurez accès.',
     'apiDocs.emptyState.importButtonTitle': 'Enregistrer une API',
     'docs.emptyState.title': 'Aucune documentation disponible',
-    'docs.emptyState.description':
-      "Il n'y a pas encore d'entités documentées, ou vous n'avez pas la permission d'en voir. La documentation apparaîtra ici une fois que des entités avec des annotations TechDocs seront enregistrées et que vous y aurez accès.",
+    'docs.emptyState.description': 'Aucune entité n\'est encore documentée, ou vous n\'avez pas l\'autorisation d\'en consulter. La documentation apparaîtra ici une fois que les entités comportant des annotations TechDocs seront enregistrées et que vous y aurez accès.',
     'docs.emptyState.importButtonTitle': 'Enregistrer un composant',
     'menuItem.learningPaths': "Parcours d'apprentissage",
     'learningPaths.title': "Parcours d'apprentissage",
     'learningPaths.error.title': 'Impossible de récupérer les données',
     'learningPaths.error.unknownError': 'Erreur inconnue',
-  },
+      'apiDocs.emptyState.action': 'Enregistrer une API',
+    'catalog.emptyState.action': 'Enregistrer un composant',
+    'catalogGraph.emptyState.action': 'Accéder au catalogue',
+    'docs.emptyState.action': 'En savoir plus',
+    'scaffolder.emptyState.action': 'Enregistrer un modèle',
+},
 });

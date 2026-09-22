@@ -54,16 +54,14 @@ const orchestratorTranslationFr = createTranslationMessages({
     'duration.months': '{{count}} mois',
     'duration.seconds': '{{count}} secondes',
     'duration.years': '{{count}} années',
-    'emptyState.illustrationAlt':
-      'Illustration sans flux de travail ni exécutions',
-    'emptyState.runs.description':
-      'Les exécutions de flux de travail apparaîtront ici une fois les flux exécutés.',
+    'emptyState.illustrationAlt': 'Aucune illustration de flux de travail ou d\'exécution',
+    'emptyState.runs.description': 'Les flux de travail s\'afficheront ici une fois exécutés.',
     'emptyState.runs.runWorkflow': 'Exécuter un flux de travail',
-    'emptyState.runs.title': 'Aucune exécution pour le moment',
+    'emptyState.runs.title': 'Pas encore de runs',
     'emptyState.workflows.description':
       'Pour commencer, ajoutez un nouveau flux de travail.',
     'emptyState.workflows.title': 'Aucun flux de travail ajouté pour le moment',
-    'emptyState.workflows.viewDocumentation': 'Voir la documentation',
+    'emptyState.workflows.viewDocumentation': 'Afficher la documentation',
     'formDecorator.error':
       'Le décorateur de formulaire doit fournir des données de contexte.',
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
@@ -107,31 +105,28 @@ const orchestratorTranslationFr = createTranslationMessages({
     'run.inputs': 'Entrées',
     'run.logs.noLogsAvailable':
       "Aucun journal n'est disponible pour cette exécution de workflow.",
-    'run.logs.title': 'Journaux du workflow {{processName}}',
+    'run.logs.title': 'Journaux de flux de travail {{processName}}',
     'run.logs.viewLogs': 'Afficher les journaux',
     'run.messages.eventTriggered':
       'Un événement a été envoyé pour déclencher ce flux de travail. Il apparaîtra une fois la course commencée.',
     'run.pageTitle': '{{processName}} exécuter',
     'run.results': 'Résultats',
     'run.retrigger': 'Redéclenchement',
-    'run.status.aborted': "L'exécution a été interrompue il y a {{time}}.",
+    'run.status.aborted': 'L\'exécution a été interrompue il y a {{time}} temps.',
     'run.status.abortedWithoutTime': "L'exécution a été interrompue.",
     'run.status.completed': 'Exécution terminée',
-    'run.status.completedAt': 'Exécution terminée le {{time}}',
-    'run.status.completedWithMessage':
-      'Exécution terminée le {{time}} avec le message',
-    'run.status.failed': "L'exécution a échoué le {{time}}",
-    'run.status.failedAt': "L'exécution a échoué le {{time}}",
+    'run.status.completedAt': 'Exécution terminée à {{time}}',
+    'run.status.completedWithMessage': 'Exécution terminée à {{time}} avec le message',
+    'run.status.failed': 'L\'exécution a échoué à {{time}}',
+    'run.status.failedAt': 'L\'exécution a échoué à {{time}}',
     'run.status.noAdditionalInfo':
       "Le flux de travail n'a fourni aucune information supplémentaire concernant l'état.",
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
       "Les résultats s'afficheront ici une fois l'exécution terminée.",
-    'run.status.running':
-      "Le flux de travail est en cours d'exécution. Débuté le {{time}}",
+    'run.status.running': 'Le flux de travail est en cours d\'exécution. Commencé à {{time}}',
     'run.status.runningWaitingAtNode':
       "Le flux de travail est en cours d'exécution - en attente sur le nœud {{node}} depuis {{formattedTime}}",
-    'run.status.workflowIsRunning':
-      "Le flux de travail est en cours d'exécution. Débuté le {{time}}",
+    'run.status.workflowIsRunning': 'Le flux de travail est en cours d\'exécution. Commencé à {{time}}',
     'run.suggestedNextWorkflow': 'Flux de travail suivant suggéré',
     'run.suggestedNextWorkflows': 'Flux de travail suivants suggérés',
     'run.title': 'Exécuter le flux de travail',
@@ -146,19 +141,19 @@ const orchestratorTranslationFr = createTranslationMessages({
     'table.actions.viewRunVariables': "Afficher les variables d'exécution",
     'table.filters.started': 'Démarré',
     'table.filters.entity': 'Entité',
-    'table.filters.runBy': 'Exécuté par',
+    'table.filters.runBy': 'Géré par',
     'table.filters.startedOptions.last7days': 'Les 7 derniers jours',
     'table.filters.startedOptions.thisMonth': 'Ce mois-ci',
     'table.filters.startedOptions.today': "Aujourd'hui",
     'table.filters.startedOptions.yesterday': 'Hier',
     'table.filters.status': 'Statut',
-    'table.filters.placeholder': 'Filtrer',
-    'table.filters.clearAll': 'Tout effacer',
+    'table.filters.placeholder': 'Filtre',
+    'table.filters.clearAll': 'Effacer tout',
     'table.headers.description': 'Description',
     'table.headers.duration': 'Durée',
     'table.headers.lastRun': 'Dernière exécution',
     'table.headers.lastRunStatus': 'Statut de la dernière exécution',
-    'table.headers.runsLastMonth': 'Exécutions (dernier mois)',
+    'table.headers.runsLastMonth': 'Courses (le mois dernier)',
     'table.headers.successRatio': 'Taux de réussite',
     'table.headers.name': 'Nom',
     'table.headers.runStatus': "État d'exécution",
@@ -166,7 +161,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'table.headers.status': 'Statut',
     'table.headers.version': 'Version',
     'table.headers.entity': 'Entité',
-    'table.headers.runBy': 'Exécuté par',
+    'table.headers.runBy': 'Géré par',
     'table.headers.workflowName': 'Nom du flux de travail',
     'table.headers.workflowStatus': 'État du flux de travail',
     'table.status.aborted': 'Avorté',
@@ -189,7 +184,7 @@ const orchestratorTranslationFr = createTranslationMessages({
       "L'utilisateur n'est pas autorisé à exécuter le flux de travail.",
     'tooltips.workflowDown':
       "Le flux de travail est actuellement indisponible ou en état d'erreur.",
-    'workflow.buttons.entireWorkflow': 'Flux de travail entier',
+    'workflow.buttons.entireWorkflow': 'Flux de travail complet',
     'workflow.buttons.fromFailurePoint': 'À partir du point de défaillance',
     'workflow.buttons.run': 'Exécuter',
     'workflow.buttons.runAgain': 'Exécuter à nouveau',
@@ -204,10 +199,10 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.successRatio': 'Taux de réussite',
     'workflow.successRatioDescription':
       'Part des exécutions réussies par rapport aux exécutions échouées pour ce flux de travail.',
-    'workflow.runSuccess': 'Réussite des exécutions',
-    'workflow.ofTotal': 'sur {{totalCount}}',
-    'workflow.statsSuccess': 'Réussite',
-    'workflow.statsFailed': 'Échec',
+    'workflow.runSuccess': 'Réussir la course',
+    'workflow.ofTotal': 'de {{totalCount}}',
+    'workflow.statsSuccess': 'Succès',
+    'workflow.statsFailed': 'Ayant échoué',
     'workflow.details': 'Détails',
     'workflow.errors.abortFailed':
       "L'annulation a échoué : l'exécution est déjà terminée.",
@@ -221,7 +216,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.fields.entity': 'Entité',
     'workflow.fields.runStatus': "État d'exécution",
     'workflow.fields.started': 'Démarré',
-    'workflow.fields.runBy': 'Exécuté par',
+    'workflow.fields.runBy': 'Géré par',
     'workflow.fields.version': 'Version',
     'workflow.fields.workflow': 'Flux de travail',
     'workflow.fields.workflowId': "ID d'exécution",
@@ -240,18 +235,14 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.status.unavailable': 'Indisponible',
     'workflow.unavailable.title': 'Flux de travail indisponible',
     'workflow.unavailable.runTooltip': 'Flux de travail indisponible',
-    'workflow.unavailable.requestFailed':
-      'La requête HTTP GET vers {{url}} a échoué.',
-    'workflow.unavailable.statusCodeLine': 'Code de statut : {{statusCode}}',
-    'workflow.unavailable.statusTextLine': 'Texte de statut : {{reason}}',
-    'samlSso.title': 'Session GitHub SAML SSO expirée',
-    'samlSso.reauthorizeButton': 'Réautoriser SSO',
-    'samlSso.body':
-      'Votre session GitHub SAML SSO a expiré. Votre organisation nécessite une session SAML active pour accéder à ses ressources.',
-    'samlSso.reauthorizeHint':
-      "Cliquez sur 'Réautoriser SSO' pour vous réauthentifier auprès du fournisseur d'identité de votre organisation.",
-    'samlSso.fallbackHint':
-      "Veuillez vous déconnecter et vous reconnecter depuis Paramètres > Fournisseurs d'authentification pour rétablir votre session SAML.",
+    'workflow.unavailable.requestFailed': 'La requête HTTP GET adressée à {{url}} a échoué.',
+    'workflow.unavailable.statusCodeLine': 'Code d\'état : {{statusCode}}',
+    'workflow.unavailable.statusTextLine': 'Texte du statut : {{reason}}',
+    'samlSso.title': 'Session d\'authentification unique SAML GitHub expirée',
+    'samlSso.reauthorizeButton': 'Réautoriser l\'authentification unique (SSO)',
+    'samlSso.body': 'Votre session d\'authentification unique SAML GitHub a expiré. Votre organisation a besoin d\'une session SAML active pour accéder à ses ressources.',
+    'samlSso.reauthorizeHint': 'Cliquez sur « Réautoriser l\'authentification unique » pour vous réauthentifier auprès du fournisseur d\'identité de votre organisation.',
+    'samlSso.fallbackHint': 'Veuillez vous déconnecter puis vous reconnecter via Paramètres > Fournisseurs d\'authentification pour rétablir votre session SAML.',
   },
 });
 

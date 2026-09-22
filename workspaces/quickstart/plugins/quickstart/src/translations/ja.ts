@@ -77,7 +77,7 @@ const quickstartTranslationJa = createTranslationMessages({
     'steps.getStartedWithLightspeed.ctaTitle': '詳細',
     'steps.getStartedWithLightspeed.description':
       'AI チャット機能を使用して、問題のトラブルシューティング、コードの生成、プラットフォームのリソースに関する学習を行うことができます。',
-    'steps.getStartedWithLightspeed.title': 'Intelligent Assistant の使用開始',
+    'steps.getStartedWithLightspeed.title': 'Intelligent Assistant を使い始める',
     'steps.importApplication.ctaTitle': 'インポート',
     'steps.importApplication.description':
       '既存のコードやサービスをカタログにインポートして整理し、開発者ポータルからアクセスできます。',
@@ -95,9 +95,8 @@ const quickstartTranslationJa = createTranslationMessages({
       '不正アクセスからアカウントを保護するために、セキュアなログイン認証情報を設定します。',
     'steps.setupAuthentication.title': '認証の設定',
     'steps.setupLightspeed.ctaTitle': '詳細',
-    'steps.setupLightspeed.description':
-      'サポートされている大規模言語モデル (LLM) に Intelligent Assistant を接続し、権限を設定することで、AI によるアシスタント機能を開発者に提供できます。',
-    'steps.setupLightspeed.title': 'Intelligent Assistant のセットアップ',
+    'steps.setupLightspeed.description': 'Intelligent Assistant をサポート対象の大規模言語モデル (LLM) に接続し、開発者に AI 支援機能を提供するための権限を設定します。',
+    'steps.setupLightspeed.title': 'Intelligent Assistant をセットアップする',
   },
 });
 

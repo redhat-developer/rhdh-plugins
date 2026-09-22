@@ -32,12 +32,14 @@ const translationsTranslationDe = createTranslationMessages({
     'export.title': 'Übersetzungen',
     'export.downloadButton': 'Standardübersetzungen herunterladen (Englisch)',
     'export.filename': 'translations-{{timestamp}}.json',
-    'common.loading': 'Ladevorgang läuft...',
+    'common.loading': 'Wird geladen...',
     'common.error': 'Es ist ein Fehler aufgetreten',
     'common.noData': 'Keine Daten verfügbar',
     'common.refresh': 'Aktualisieren',
     'language.displayFormat': '{{displayName}} ({{code}})',
-  },
+      'table.headers.key': 'Schlüssel',
+    'table.headers.refId': 'Referenz-ID',
+},
 });
 
 export default translationsTranslationDe;
