@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import { runAccessibilityTests } from './utils/accessibility';
+import { mockCatalogEntities, signInAsGuest } from './utils/catalogMocks';
 import { skipIfLocales } from './utils/localeSkip';
 
 const NON_EN = ['de', 'es', 'fr', 'it', 'ja'];
@@ -75,47 +76,6 @@ function agentDetailsLink(page: Page) {
 
 function catalogCount(page: Page, n: number) {
   return page.getByText(`All (${n})`, { exact: true });
-}
-
-function isCatalogEntitiesPath(url: URL): boolean {
-  return (
-    url.pathname.endsWith('/api/catalog/entities') &&
-    !url.pathname.includes('/by-query')
-  );
-}
-
-async function mockCatalogEntities(page: Page, items: unknown[]) {
-  const fulfillItemsWrapper = async (route: Route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ items }),
-    });
-
-  await page.route('**/api/catalog/entities/by-query**', fulfillItemsWrapper);
-  await page.route(isCatalogEntitiesPath, async route => {
-    if (route.request().method() === 'GET') {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(items),
-      });
-      return;
-    }
-    await fulfillItemsWrapper(route);
-  });
-}
-
-async function signInAsGuest(page: Page) {
-  page.on('dialog', dialog => dialog.accept());
-  await page.goto('/ai-catalog');
-  const enter = page.getByRole('button', { name: 'Enter' });
-  const heading = page.getByRole('heading', { name: 'AI Catalog' });
-  await expect(enter.or(heading).first()).toBeVisible({ timeout: 30_000 });
-  if (await enter.isVisible()) {
-    await enter.click();
-    await expect(heading).toBeVisible({ timeout: 20_000 });
-  }
 }
 
 async function loadTwoAssetCatalog(page: Page) {

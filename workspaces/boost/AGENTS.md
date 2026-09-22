@@ -369,6 +369,7 @@ Do not link to the document root when the display text references a specific sec
 | Prettier            | `yarn prettier:fix`                            |
 | Test                | `CI=true yarn test --watchAll=false`           |
 | Playwright e2e      | `yarn test:e2e`                                |
+| Perf benchmarks     | `yarn test:e2e:performance`                    |
 | API reports         | `yarn tsc:full && yarn build:api-reports:only` |
 | OpenSpec validation | `yarn openspec:validate`                       |
 
