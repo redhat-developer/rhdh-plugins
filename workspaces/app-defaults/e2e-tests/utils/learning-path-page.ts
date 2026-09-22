@@ -16,23 +16,20 @@
 
 import { expect, Page } from '@playwright/test';
 
-import {
-  getLearningPathsTranslations,
-  LearningPathsE2eMessages,
-} from './translations';
+import { getE2eTranslations, E2eTranslations } from './translations';
 
-export class SidebarPage {
-  private readonly translations: LearningPathsE2eMessages;
+export class LearningPathPage {
+  private readonly translations: E2eTranslations;
 
   constructor(private readonly page: Page, locale = 'en') {
-    this.translations = getLearningPathsTranslations(locale);
+    this.translations = getE2eTranslations(locale);
   }
 
   async openLearningPaths(): Promise<void> {
     await this.page
       .locator('nav[aria-label="sidebar nav"]')
       .getByRole('link', {
-        name: this.translations.title,
+        name: this.translations.learningPathTitle,
       })
       .click();
 

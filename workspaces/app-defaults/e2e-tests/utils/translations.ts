@@ -14,32 +14,57 @@
  * limitations under the License.
  */
 
-/**
- * Localized Learning Paths labels used by e2e tests. Sidebar nav title comes
- * from app-react `pages.Learning Paths`; page strings from app-defaults
- * `learningPaths.*`.
- */
-export type LearningPathsE2eMessages = {
+export type E2eTranslations = {
+  languageDropdownTitle: string;
+  catalogSideBarTitle: string;
+  overviewTabTitle: string;
   /** Localized sidebar / page title (`pages.Learning Paths`). */
-  title: string;
+  learningPathTitle: string;
 };
 
-const enMessages: LearningPathsE2eMessages = {
-  title: 'Learning Paths',
+const localeMessages: Record<string, E2eTranslations> = {
+  en: {
+    languageDropdownTitle: 'English',
+    catalogSideBarTitle: 'Catalog',
+    overviewTabTitle: 'Overview',
+    learningPathTitle: 'Learning Paths',
+  },
+  de: {
+    languageDropdownTitle: 'Deutsch',
+    catalogSideBarTitle: 'Katalog',
+    overviewTabTitle: 'Übersicht',
+    learningPathTitle: 'Lernpfade',
+  },
+  es: {
+    languageDropdownTitle: 'Español',
+    catalogSideBarTitle: 'Catálogo',
+    overviewTabTitle: 'Resumen',
+    learningPathTitle: 'Rutas de aprendizaje',
+  },
+  fr: {
+    languageDropdownTitle: 'Français',
+    catalogSideBarTitle: 'Catalogue',
+    overviewTabTitle: 'Aperçu',
+    learningPathTitle: "Parcours d'apprentissage",
+  },
+  it: {
+    languageDropdownTitle: 'Italiano',
+    catalogSideBarTitle: 'Catalogo',
+    overviewTabTitle: 'Panoramica',
+    learningPathTitle: 'Learning Path',
+  },
+  ja: {
+    languageDropdownTitle: '日本語',
+    catalogSideBarTitle: 'カタログ',
+    overviewTabTitle: '概要',
+    learningPathTitle: 'ラーニングパス',
+  },
 };
 
-const localeMessages: Record<string, LearningPathsE2eMessages> = {
-  en: enMessages,
-  de: { title: 'Lernpfade' },
-  es: { title: 'Rutas de aprendizaje' },
-  fr: { title: "Parcours d'apprentissage" },
-  it: { title: 'Learning Path' },
-  ja: { title: 'ラーニングパス' },
-};
-
-export function getLearningPathsTranslations(
-  locale = 'en',
-): LearningPathsE2eMessages {
+export function getE2eTranslations(locale: string): E2eTranslations {
   const baseLocale = locale.split('-')[0];
-  return localeMessages[baseLocale] ?? enMessages;
+  const messages = localeMessages[baseLocale];
+  if (!messages)
+    throw new Error(`No e2e messages found for base locale ${baseLocale}`);
+  return messages;
 }
