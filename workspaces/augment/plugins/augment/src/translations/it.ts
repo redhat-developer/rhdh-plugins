@@ -92,7 +92,8 @@ const augmentTranslationIt = createTranslationMessages({
     'chatInput.stopGeneration': 'Stop generation',
     'chatInput.stopMessageGeneration': 'Stop message generation',
     'chatInput.sendMessage': 'Send message',
-    'chatInput.selectAgentPrompt': 'Seleziona un agente per iniziare a chattare',
+    'chatInput.selectAgentPrompt':
+      'Seleziona un agente per iniziare a chattare',
     'welcomeScreen.logoAlt': 'Application logo',
     'welcomeScreen.emptyPromptHint': 'Type a question below to get started',
     'welcomeScreen.logoError':
@@ -130,7 +131,8 @@ const augmentTranslationIt = createTranslationMessages({
     'agentInfo.connecting': 'Connecting...',
     'agentInfo.ready': 'Ready',
     'agentInfo.offline': 'Offline',
-    'agentInfo.selectAgentHint': 'Seleziona un agente per visualizzare i dettagli',
+    'agentInfo.selectAgentHint':
+      'Seleziona un agente per visualizzare i dettagli',
     'agentInfo.team': 'Team ({{count}})',
     'agentInfo.defaultAgent': 'Default agent',
     'agentInfo.vectorRag': 'Vector RAG',
@@ -258,18 +260,23 @@ const augmentTranslationIt = createTranslationMessages({
     'keyboardShortcuts.showHelp': 'Show this help',
     'keyboardShortcuts.approveTool': 'Approve tool execution',
     'keyboardShortcuts.rejectTool': 'Reject tool execution',
-    'keyboardShortcuts.navigateMessages': 'Passa da un messaggio all\'altro',
+    'keyboardShortcuts.navigateMessages': "Passa da un messaggio all'altro",
     'confirmDialog.confirm': 'Confirm',
     'confirmDialog.cancel': 'Cancel',
     'onboardingBanner.dismissAriaLabel': 'Ignora la guida di onboarding',
-    'onboardingBanner.title': 'Incontra i tuoi agenti di intelligenza artificiale',
-    'onboardingBanner.subtitle': '{{appName}} ti mette in contatto con agenti di intelligenza artificiale specializzati. Ecco come iniziare:',
+    'onboardingBanner.title':
+      'Incontra i tuoi agenti di intelligenza artificiale',
+    'onboardingBanner.subtitle':
+      '{{appName}} ti mette in contatto con agenti di intelligenza artificiale specializzati. Ecco come iniziare:',
     'onboardingBanner.step1Title': 'Scegli un agente',
-    'onboardingBanner.step1Description': 'Scegli un agente di intelligenza artificiale adatto al tuo compito',
+    'onboardingBanner.step1Description':
+      'Scegli un agente di intelligenza artificiale adatto al tuo compito',
     'onboardingBanner.step2Title': 'Chiedi qualsiasi cosa',
-    'onboardingBanner.step2Description': 'Descrivi in linguaggio naturale ciò di cui hai bisogno',
+    'onboardingBanner.step2Description':
+      'Descrivi in linguaggio naturale ciò di cui hai bisogno',
     'onboardingBanner.step3Title': 'Ottieni risultati',
-    'onboardingBanner.step3Description': 'Gli agenti utilizzano strumenti e conoscenze per fornire',
+    'onboardingBanner.step3Description':
+      'Gli agenti utilizzano strumenti e conoscenze per fornire',
     'agentGallery.heading': 'Agenti',
     'agentGallery.searchPlaceholder': 'Cerca agenti...',
     'agentGallery.searchAriaLabel': 'Cerca agenti',
@@ -281,8 +288,9 @@ const augmentTranslationIt = createTranslationMessages({
     'agentGallery.noAgentsInCategory': 'Nessun agente in questa categoria',
     'agentGallery.retry': 'Riprova',
     'agentGallery.noAgentsTitle': 'Nessun agente disponibile al momento',
-    'agentGallery.noAgentsHint': 'Chiedi al tuo amministratore di distribuire gli agenti',
-    'agentDetail.closeAriaLabel': 'Chiudi dettagli dell\'agente',
+    'agentGallery.noAgentsHint':
+      'Chiedi al tuo amministratore di distribuire gli agenti',
+    'agentDetail.closeAriaLabel': "Chiudi dettagli dell'agente",
     'agentDetail.about': 'Informazioni',
     'agentDetail.skillsWithCount': 'Abilità ({{count}})',
     'agentDetail.skillFallback': 'Abilità {{n}}',
@@ -300,13 +308,17 @@ const augmentTranslationIt = createTranslationMessages({
     'formRequestCard.cancel': 'Annulla',
     'formRequestCard.submit': 'Invia',
     'authRequiredCard.oauthTitle': 'Autenticazione obbligatoria',
-    'authRequiredCard.oauthSubtitle': 'Questo agente richiede il tuo accesso per continuare',
+    'authRequiredCard.oauthSubtitle':
+      'Questo agente richiede il tuo accesso per continuare',
     'authRequiredCard.signIn': 'Accedi',
-    'authRequiredCard.afterSignInHint': 'Dopo aver effettuato l\'accesso, clicca qui sotto per continuare:',
-    'authRequiredCard.signedIn': 'Ho effettuato l\'accesso',
-    'authRequiredCard.noUrlHint': 'Completa la procedura di autenticazione per procedere.',
+    'authRequiredCard.afterSignInHint':
+      "Dopo aver effettuato l'accesso, clicca qui sotto per continuare:",
+    'authRequiredCard.signedIn': "Ho effettuato l'accesso",
+    'authRequiredCard.noUrlHint':
+      'Completa la procedura di autenticazione per procedere.',
     'authRequiredCard.credentialsTitle': 'Credenziali obbligatorie',
-    'authRequiredCard.credentialsSubtitle': 'Questo agente necessita di credenziali per procedere',
+    'authRequiredCard.credentialsSubtitle':
+      'Questo agente necessita di credenziali per procedere',
     'authRequiredCard.submitCredentials': 'Invia le credenziali',
     'artifact.defaultName': 'Artefatto',
     'artifact.expand': 'espandi',

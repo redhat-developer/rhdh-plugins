@@ -54,11 +54,14 @@ const orchestratorTranslationDe = createTranslationMessages({
     'duration.months': '{{count}} Monate',
     'duration.seconds': '{{count}} Sekunden',
     'duration.years': '{{count}} Jahre',
-    'emptyState.illustrationAlt': 'Keine Workflow- oder Ausführungsillustration',
-    'emptyState.runs.description': 'Workflow-Ausführungen werden hier angezeigt, nachdem Workflows ausgeführt wurden.',
+    'emptyState.illustrationAlt':
+      'Keine Workflow- oder Ausführungsillustration',
+    'emptyState.runs.description':
+      'Workflow-Ausführungen werden hier angezeigt, nachdem Workflows ausgeführt wurden.',
     'emptyState.runs.runWorkflow': 'Einen Workflow ausführen',
     'emptyState.runs.title': 'Noch keine Ausführungen',
-    'emptyState.workflows.description': 'Um zu beginnen, fügen Sie einen neuen Workflow hinzu.',
+    'emptyState.workflows.description':
+      'Um zu beginnen, fügen Sie einen neuen Workflow hinzu.',
     'emptyState.workflows.title': 'Noch keine Workflows hinzugefügt',
     'emptyState.workflows.viewDocumentation': 'Dokumentation anzeigen',
     'formDecorator.error':
@@ -115,7 +118,8 @@ const orchestratorTranslationDe = createTranslationMessages({
     'run.status.abortedWithoutTime': 'Die Ausführung wurde abgebrochen.',
     'run.status.completed': 'Lauf abgeschlossen',
     'run.status.completedAt': 'Ausführung um {{time}} abgeschlossen',
-    'run.status.completedWithMessage': 'Ausführung um {{time}} abgeschlossen mit Meldung',
+    'run.status.completedWithMessage':
+      'Ausführung um {{time}} abgeschlossen mit Meldung',
     'run.status.failed': 'Ausführung um {{time}} fehlgeschlagen',
     'run.status.failedAt': 'Ausführung um {{time}} fehlgeschlagen',
     'run.status.noAdditionalInfo':
@@ -125,7 +129,8 @@ const orchestratorTranslationDe = createTranslationMessages({
     'run.status.running': 'Workflow wird ausgeführt. Gestartet um {{time}}',
     'run.status.runningWaitingAtNode':
       'Der Workflow wird ausgeführt – wartet seit {{formattedTime}} am Knoten {{node}}',
-    'run.status.workflowIsRunning': 'Workflow wird ausgeführt. Gestartet um {{time}}',
+    'run.status.workflowIsRunning':
+      'Workflow wird ausgeführt. Gestartet um {{time}}',
     'run.suggestedNextWorkflow': 'Vorgeschlagener nächster Arbeitsablauf',
     'run.suggestedNextWorkflows': 'Empfohlene nächste Arbeitsabläufe',
     'run.title': 'Workflow ausführen',
@@ -193,9 +198,11 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.buttons.running': 'Wird ausgeführt...',
     'workflow.definition': 'Workflow-Definition',
     'workflow.inputSchema': 'Eingabeschema',
-    'workflow.inputSchemaDescription': 'Definiert die erforderlichen Datenfelder und die Validierung für diesen Workflow.',
+    'workflow.inputSchemaDescription':
+      'Definiert die erforderlichen Datenfelder und die Validierung für diesen Workflow.',
     'workflow.successRatio': 'Erfolgsquote',
-    'workflow.successRatioDescription': 'Anteil der abgeschlossenen im Vergleich zu den fehlgeschlagenen Ausführungen für diesen Workflow.',
+    'workflow.successRatioDescription':
+      'Anteil der abgeschlossenen im Vergleich zu den fehlgeschlagenen Ausführungen für diesen Workflow.',
     'workflow.runSuccess': 'Ausführung erfolgreich',
     'workflow.ofTotal': 'von {{totalCount}}',
     'workflow.statsSuccess': 'Erfolg',
@@ -233,14 +240,18 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.status.unavailable': 'Nicht verfügbar',
     'workflow.unavailable.title': 'Nicht verfügbarer Workflow',
     'workflow.unavailable.runTooltip': 'Nicht verfügbarer Workflow',
-    'workflow.unavailable.requestFailed': 'HTTP-GET-Anforderung an {{url}} fehlgeschlagen.',
+    'workflow.unavailable.requestFailed':
+      'HTTP-GET-Anforderung an {{url}} fehlgeschlagen.',
     'workflow.unavailable.statusCodeLine': 'Statuscode: {{statusCode}}',
     'workflow.unavailable.statusTextLine': 'Statusmeldung: {{reason}}',
     'samlSso.title': 'GitHub-SAML-SSO-Sitzung abgelaufen',
     'samlSso.reauthorizeButton': 'SSO erneut autorisieren',
-    'samlSso.body': 'Ihre GitHub-SAML-SSO-Sitzung ist abgelaufen. Ihre Organisation benötigt eine aktive SAML-Sitzung, um auf zugehörige Ressourcen zugreifen zu können.',
-    'samlSso.reauthorizeHint': 'Klicken Sie auf „SSO erneut autorisieren“, um sich erneut bei dem Identitätsanbieter Ihrer Organisation zu authentifizieren.',
-    'samlSso.fallbackHint': 'Melden Sie sich unter Einstellungen > Authentifizierungsanbieter ab und anschließend wieder an, um Ihre SAML-Sitzung wiederherzustellen.',
+    'samlSso.body':
+      'Ihre GitHub-SAML-SSO-Sitzung ist abgelaufen. Ihre Organisation benötigt eine aktive SAML-Sitzung, um auf zugehörige Ressourcen zugreifen zu können.',
+    'samlSso.reauthorizeHint':
+      'Klicken Sie auf „SSO erneut autorisieren“, um sich erneut bei dem Identitätsanbieter Ihrer Organisation zu authentifizieren.',
+    'samlSso.fallbackHint':
+      'Melden Sie sich unter Einstellungen > Authentifizierungsanbieter ab und anschließend wieder an, um Ihre SAML-Sitzung wiederherzustellen.',
   },
 });
 

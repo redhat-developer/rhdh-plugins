@@ -29,7 +29,8 @@ const scorecardTranslationJa = createTranslationMessages({
     'dataSourcesDialog.title': '{{title}} ソース',
     'dataSourcesDialog.close': '閉じる',
     'dataSourcesDialog.unknownPlugin': '不明',
-    'dataSourcesDialog.statusTooltip': '値 {{value}} はしきい値 {{status}} {{expression}} と一致します',
+    'dataSourcesDialog.statusTooltip':
+      '値 {{value}} はしきい値 {{status}} {{expression}} と一致します',
     'dataSourcesDialog.collectorStatusTooltip':
       'このコレクターは入力データのみを提供します。{{metric}} チェック値はコレクターから計算され、スコアカードのカードに表示されます。',
     'dataSourcesDialog.collectorEmptyValue': '--',
@@ -88,8 +89,10 @@ const scorecardTranslationJa = createTranslationMessages({
       'カタログにユーザーエンティティーが見つかりません。',
     'metric.weightedStatusScoreCenterTooltipMaxLabel': '最高スコア',
     'metric.weightedStatusScoreCenterTooltipTotalLabel': '合計スコア',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one': '{{status}}: {{count}} エンティティー、スコア: {{score}}',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other': '{{status}}: {{count}} エンティティー、スコア: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} エンティティー、スコア: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} エンティティー、スコア: {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} 個のエンティティー、各 {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
@@ -97,13 +100,18 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.weightedStatusScoreLegendTooltipRowTotal': '合計スコア {{total}}',
     'metric.drillDownCalculationFailures':
       'このメトリクスの計算中に 1 つ以上のエンティティーが失敗しました。',
-    'metric.dora.deploymentFrequency.description': '過去 30 日間に、コードが実稼働環境に正常にデプロイされた頻度を追跡します。Elite パフォーマーは、オンデマンドで (1 日に複数回) デプロイを実行します。',
+    'metric.dora.deploymentFrequency.description':
+      '過去 30 日間に、コードが実稼働環境に正常にデプロイされた頻度を追跡します。Elite パフォーマーは、オンデマンドで (1 日に複数回) デプロイを実行します。',
     'metric.dora.deploymentFrequency.title': 'DORA - デプロイメントの頻度',
-    'metric.dora.medianLeadTimeForChanges.description': '過去 30 日間における、コードコミットから実稼働環境へのデプロイメントまでの所要時間の中央値を計測します。Elite パフォーマーのリードタイムは 24 時間未満です。',
-    'metric.dora.medianLeadTimeForChanges.title': 'DORA - 変更のリードタイムの中央値',
-    'metric.dora.changeFailureRate.description': '過去 30 日間の実稼働環境において、障害を引き起こしたデプロイメントの割合を監視します。Elite パフォーマーの変更失敗率は 5% 未満を維持しています。',
+    'metric.dora.medianLeadTimeForChanges.description':
+      '過去 30 日間における、コードコミットから実稼働環境へのデプロイメントまでの所要時間の中央値を計測します。Elite パフォーマーのリードタイムは 24 時間未満です。',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - 変更のリードタイムの中央値',
+    'metric.dora.changeFailureRate.description':
+      '過去 30 日間の実稼働環境において、障害を引き起こしたデプロイメントの割合を監視します。Elite パフォーマーの変更失敗率は 5% 未満を維持しています。',
     'metric.dora.changeFailureRate.title': 'DORA - 変更失敗率',
-    'metric.dora.medianTimeToRestore.description': '過去 30 日間のインシデント発生後における、サービス復元時間の中央値を追跡します。Elite パフォーマーは、1 時間未満でサービスを復元します。',
+    'metric.dora.medianTimeToRestore.description':
+      '過去 30 日間のインシデント発生後における、サービス復元時間の中央値を追跡します。Elite パフォーマーは、1 時間未満でサービスを復元します。',
     'metric.dora.medianTimeToRestore.title': 'DORA - 復元時間の中央値',
     'metric.filecheck.description':
       'リポジトリー内に {{name}} ファイルが存在するかどうかを確認します。',

@@ -29,7 +29,8 @@ const scorecardTranslationDe = createTranslationMessages({
     'dataSourcesDialog.title': '{{title}} Quellen',
     'dataSourcesDialog.close': 'Schließen',
     'dataSourcesDialog.unknownPlugin': 'Unbekannt',
-    'dataSourcesDialog.statusTooltip': 'Wert {{value}} entspricht dem Schwellenwert {{status}} {{expression}}',
+    'dataSourcesDialog.statusTooltip':
+      'Wert {{value}} entspricht dem Schwellenwert {{status}} {{expression}}',
     'dataSourcesDialog.collectorStatusTooltip':
       'Dieser Collector liefert nur Eingabedaten. Der {{metric}}-Check-Wert wird aus Collectors berechnet und auf der Scorecard-Karte angezeigt.',
     'dataSourcesDialog.collectorEmptyValue': '--',
@@ -88,22 +89,32 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.weightedStatusScoreCenterTooltipMaxLabel':
       'Maximal erreichbare Punktzahl',
     'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Gesamtpunktzahl',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one': '{{status}}: {{count}} Entity, Punktzahl: {{score}}',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other': '{{status}}: {{count}} Entitys, Punktzahl: {{score}}',
-    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one': '{{count}} Entity, jeweils {{score}}',
-    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other': '{{count}} Entitys, jeweils {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} Entity, Punktzahl: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} Entitys, Punktzahl: {{score}}',
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
+      '{{count}} Entity, jeweils {{score}}',
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
+      '{{count}} Entitys, jeweils {{score}}',
     'metric.weightedStatusScoreLegendTooltipRowTotal':
       'Gesamtpunktzahl {{total}}',
     'metric.drillDownCalculationFailures':
       'Bei der Berechnung dieser Kennzahl ist ein oder mehrere Fehler aufgetreten.',
-    'metric.dora.deploymentFrequency.description': 'Erfasst, wie oft Code in den letzten 30 Tagen erfolgreich in der Produktion deployt wurde. Top-Performer werden bedarfsgesteuert deployt (mehrmals täglich).',
+    'metric.dora.deploymentFrequency.description':
+      'Erfasst, wie oft Code in den letzten 30 Tagen erfolgreich in der Produktion deployt wurde. Top-Performer werden bedarfsgesteuert deployt (mehrmals täglich).',
     'metric.dora.deploymentFrequency.title': 'DORA – Deployment-Häufigkeit',
-    'metric.dora.medianLeadTimeForChanges.description': 'Misst die mittlere Zeitdauer vom Code-Commit bis zum produktiven Deployment in den letzten 30 Tagen. Top-Performer haben eine Vorlaufzeit von weniger als 24 Stunden.',
-    'metric.dora.medianLeadTimeForChanges.title': 'DORA – Mittlere Vorlaufzeit für Änderungen',
-    'metric.dora.changeFailureRate.description': 'Überwacht den Prozentsatz der Deployments, die in den letzten 30 Tagen zu einem Produktionsausfall geführt haben. Top-Performer weisen eine Änderungsfehlerrate von unter 5 % auf.',
+    'metric.dora.medianLeadTimeForChanges.description':
+      'Misst die mittlere Zeitdauer vom Code-Commit bis zum produktiven Deployment in den letzten 30 Tagen. Top-Performer haben eine Vorlaufzeit von weniger als 24 Stunden.',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA – Mittlere Vorlaufzeit für Änderungen',
+    'metric.dora.changeFailureRate.description':
+      'Überwacht den Prozentsatz der Deployments, die in den letzten 30 Tagen zu einem Produktionsausfall geführt haben. Top-Performer weisen eine Änderungsfehlerrate von unter 5 % auf.',
     'metric.dora.changeFailureRate.title': 'DORA – Änderungsfehlerrate',
-    'metric.dora.medianTimeToRestore.description': 'Verfolgt die mittlere Zeitdauer bis zur Wiederherstellung des Dienstes nach einem Vorfall in den letzten 30 Tagen. Top-Performer stellen den Service in weniger als einer Stunde wieder her.',
-    'metric.dora.medianTimeToRestore.title': 'DORA – Mittlere Wiederherstellungszeit',
+    'metric.dora.medianTimeToRestore.description':
+      'Verfolgt die mittlere Zeitdauer bis zur Wiederherstellung des Dienstes nach einem Vorfall in den letzten 30 Tagen. Top-Performer stellen den Service in weniger als einer Stunde wieder her.',
+    'metric.dora.medianTimeToRestore.title':
+      'DORA – Mittlere Wiederherstellungszeit',
     'metric.filecheck.description':
       'Prüft, ob die Datei {{name}} im Repository existiert.',
     'metric.filecheck.title': 'Dateiprüfung: {{name}}',
@@ -118,43 +129,56 @@ const scorecardTranslationDe = createTranslationMessages({
     'aggregation.sum': 'Summe',
     'aggregation.count': 'Anzahl',
     'aggregation.average': 'Durchschnitt',
-    'metric.jira.openIssues.description': 'Zeigt die Anzahl der kritischen, blockierenden Probleme an, die aktuell in Jira offen sind.',
+    'metric.jira.openIssues.description':
+      'Zeigt die Anzahl der kritischen, blockierenden Probleme an, die aktuell in Jira offen sind.',
     'metric.jira.openIssues.title': 'Offene blockierende Jira-Tickets',
     'metric.lastUpdated': 'Letzte Aktualisierung: {{timestamp}}',
     'metric.lastUpdatedNotAvailable': 'Letzte Aktualisierung: Nicht verfügbar',
     'metric.someEntitiesNotReportingValues':
       'Einige Organisationen melden keine Werte, die sich auf diese Kennzahl beziehen.',
-    'metric.sonarqube.codeCoverage.description': 'Codeabdeckung gesamt in SonarQube in Prozent.',
+    'metric.sonarqube.codeCoverage.description':
+      'Codeabdeckung gesamt in SonarQube in Prozent.',
     'metric.sonarqube.codeCoverage.title': 'SonarQube-Codeabdeckung',
-    'metric.sonarqube.codeDuplications.description': 'Anteil doppelter Zeilen in SonarQube in Prozent.',
+    'metric.sonarqube.codeDuplications.description':
+      'Anteil doppelter Zeilen in SonarQube in Prozent.',
     'metric.sonarqube.codeDuplications.title': 'SonarQube-Codeduplizierungen',
     'metric.sonarqube.maintainabilityIssues.description':
       'Anzahl offener Code-Smells in SonarQube.',
     'metric.sonarqube.maintainabilityIssues.title':
       'SonarQube-Wartbarkeitsprobleme',
-    'metric.sonarqube.maintainabilityRating.description': 'Bewertung der SonarQube-Wartbarkeit.',
+    'metric.sonarqube.maintainabilityRating.description':
+      'Bewertung der SonarQube-Wartbarkeit.',
     'metric.sonarqube.maintainabilityRating.title':
       'SonarQube-Wartbarkeitsbewertung',
-    'metric.sonarqube.openIssues.description': 'Anzahl der offenen Probleme (OFFEN, BESTÄTIGT, WIEDERERÖFFNET) in SonarQube.',
+    'metric.sonarqube.openIssues.description':
+      'Anzahl der offenen Probleme (OFFEN, BESTÄTIGT, WIEDERERÖFFNET) in SonarQube.',
     'metric.sonarqube.openIssues.title': 'Offene Probleme in SonarQube',
     'metric.sonarqube.qualityGate.description':
       'Ob das Projekt die SonarQube-Qualitätsprüfung besteht.',
-    'metric.sonarqube.qualityGate.title': 'Status der SonarQube-Qualitätsprüfung',
-    'metric.sonarqube.reliabilityIssues.description': 'Anzahl offener Probleme in SonarQube.',
-    'metric.sonarqube.reliabilityIssues.title': 'SonarQube-Zuverlässigkeit – Probleme',
-    'metric.sonarqube.reliabilityRating.description': 'Bewertung der SonarQube-Zuverlässigkeit.',
+    'metric.sonarqube.qualityGate.title':
+      'Status der SonarQube-Qualitätsprüfung',
+    'metric.sonarqube.reliabilityIssues.description':
+      'Anzahl offener Probleme in SonarQube.',
+    'metric.sonarqube.reliabilityIssues.title':
+      'SonarQube-Zuverlässigkeit – Probleme',
+    'metric.sonarqube.reliabilityRating.description':
+      'Bewertung der SonarQube-Zuverlässigkeit.',
     'metric.sonarqube.reliabilityRating.title':
       'SonarQube-Zuverlässigkeitsbewertung',
     'metric.sonarqube.securityHotspots.description':
       'Anzahl der in SonarQube zu überprüfenden Sicherheits-Hotspots.',
-    'metric.sonarqube.securityHotspots.title': 'Sicherheits-Hotspots in SonarQube',
+    'metric.sonarqube.securityHotspots.title':
+      'Sicherheits-Hotspots in SonarQube',
     'metric.sonarqube.securityIssues.description':
       'Anzahl offener Sicherheitslücken in SonarQube.',
     'metric.sonarqube.securityIssues.title': 'SonarQube-Sicherheitsprobleme',
-    'metric.sonarqube.securityRating.description': 'Bewertung der SonarQube-Sicherheit.',
+    'metric.sonarqube.securityRating.description':
+      'Bewertung der SonarQube-Sicherheit.',
     'metric.sonarqube.securityRating.title': 'SonarQube-Sicherheitsbewertung',
-    'metric.sonarqube.securityReviewRating.description': 'Bewertung der SonarQube-Sicherheitsprüfung.',
-    'metric.sonarqube.securityReviewRating.title': 'SonarQube-Sicherheitsprüfung – Bewertung',
+    'metric.sonarqube.securityReviewRating.description':
+      'Bewertung der SonarQube-Sicherheitsprüfung.',
+    'metric.sonarqube.securityReviewRating.title':
+      'SonarQube-Sicherheitsprüfung – Bewertung',
     'metricGroupCard.menuAriaLabel': 'Mehr Optionen',
     'metricGroupCard.viewDataSources': 'Datenquellen anzeigen',
     'notFound.altText': 'Seite nicht gefunden',

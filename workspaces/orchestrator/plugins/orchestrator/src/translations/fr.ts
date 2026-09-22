@@ -54,8 +54,10 @@ const orchestratorTranslationFr = createTranslationMessages({
     'duration.months': '{{count}} mois',
     'duration.seconds': '{{count}} secondes',
     'duration.years': '{{count}} années',
-    'emptyState.illustrationAlt': 'Aucune illustration de flux de travail ou d\'exécution',
-    'emptyState.runs.description': 'Les flux de travail s\'afficheront ici une fois exécutés.',
+    'emptyState.illustrationAlt':
+      "Aucune illustration de flux de travail ou d'exécution",
+    'emptyState.runs.description':
+      "Les flux de travail s'afficheront ici une fois exécutés.",
     'emptyState.runs.runWorkflow': 'Exécuter un flux de travail',
     'emptyState.runs.title': 'Pas encore de runs',
     'emptyState.workflows.description':
@@ -112,21 +114,25 @@ const orchestratorTranslationFr = createTranslationMessages({
     'run.pageTitle': '{{processName}} exécuter',
     'run.results': 'Résultats',
     'run.retrigger': 'Redéclenchement',
-    'run.status.aborted': 'L\'exécution a été interrompue il y a {{time}} temps.',
+    'run.status.aborted':
+      "L'exécution a été interrompue il y a {{time}} temps.",
     'run.status.abortedWithoutTime': "L'exécution a été interrompue.",
     'run.status.completed': 'Exécution terminée',
     'run.status.completedAt': 'Exécution terminée à {{time}}',
-    'run.status.completedWithMessage': 'Exécution terminée à {{time}} avec le message',
-    'run.status.failed': 'L\'exécution a échoué à {{time}}',
-    'run.status.failedAt': 'L\'exécution a échoué à {{time}}',
+    'run.status.completedWithMessage':
+      'Exécution terminée à {{time}} avec le message',
+    'run.status.failed': "L'exécution a échoué à {{time}}",
+    'run.status.failedAt': "L'exécution a échoué à {{time}}",
     'run.status.noAdditionalInfo':
       "Le flux de travail n'a fourni aucune information supplémentaire concernant l'état.",
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
       "Les résultats s'afficheront ici une fois l'exécution terminée.",
-    'run.status.running': 'Le flux de travail est en cours d\'exécution. Commencé à {{time}}',
+    'run.status.running':
+      "Le flux de travail est en cours d'exécution. Commencé à {{time}}",
     'run.status.runningWaitingAtNode':
       "Le flux de travail est en cours d'exécution - en attente sur le nœud {{node}} depuis {{formattedTime}}",
-    'run.status.workflowIsRunning': 'Le flux de travail est en cours d\'exécution. Commencé à {{time}}',
+    'run.status.workflowIsRunning':
+      "Le flux de travail est en cours d'exécution. Commencé à {{time}}",
     'run.suggestedNextWorkflow': 'Flux de travail suivant suggéré',
     'run.suggestedNextWorkflows': 'Flux de travail suivants suggérés',
     'run.title': 'Exécuter le flux de travail',
@@ -235,14 +241,18 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.status.unavailable': 'Indisponible',
     'workflow.unavailable.title': 'Flux de travail indisponible',
     'workflow.unavailable.runTooltip': 'Flux de travail indisponible',
-    'workflow.unavailable.requestFailed': 'La requête HTTP GET adressée à {{url}} a échoué.',
-    'workflow.unavailable.statusCodeLine': 'Code d\'état : {{statusCode}}',
+    'workflow.unavailable.requestFailed':
+      'La requête HTTP GET adressée à {{url}} a échoué.',
+    'workflow.unavailable.statusCodeLine': "Code d'état : {{statusCode}}",
     'workflow.unavailable.statusTextLine': 'Texte du statut : {{reason}}',
-    'samlSso.title': 'Session d\'authentification unique SAML GitHub expirée',
-    'samlSso.reauthorizeButton': 'Réautoriser l\'authentification unique (SSO)',
-    'samlSso.body': 'Votre session d\'authentification unique SAML GitHub a expiré. Votre organisation a besoin d\'une session SAML active pour accéder à ses ressources.',
-    'samlSso.reauthorizeHint': 'Cliquez sur « Réautoriser l\'authentification unique » pour vous réauthentifier auprès du fournisseur d\'identité de votre organisation.',
-    'samlSso.fallbackHint': 'Veuillez vous déconnecter puis vous reconnecter via Paramètres > Fournisseurs d\'authentification pour rétablir votre session SAML.',
+    'samlSso.title': "Session d'authentification unique SAML GitHub expirée",
+    'samlSso.reauthorizeButton': "Réautoriser l'authentification unique (SSO)",
+    'samlSso.body':
+      "Votre session d'authentification unique SAML GitHub a expiré. Votre organisation a besoin d'une session SAML active pour accéder à ses ressources.",
+    'samlSso.reauthorizeHint':
+      "Cliquez sur « Réautoriser l'authentification unique » pour vous réauthentifier auprès du fournisseur d'identité de votre organisation.",
+    'samlSso.fallbackHint':
+      "Veuillez vous déconnecter puis vous reconnecter via Paramètres > Fournisseurs d'authentification pour rétablir votre session SAML.",
   },
 });
 

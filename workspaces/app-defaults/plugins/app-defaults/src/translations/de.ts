@@ -24,28 +24,28 @@ export default createTranslationMessages({
   ref: appDefaultsTranslationRef,
   messages: {
     'catalog.emptyState.title': 'Keine Katalogelemente verfügbar',
-    'catalog.emptyState.description': 'Es sind noch keine Katalog-Entitys vorhanden, oder Sie haben keine Berechtigung, welche anzuzeigen. Sie werden hier angezeigt, sobald sie registriert sind und Sie Zugriff darauf haben.',
+    'catalog.emptyState.description':
+      'Es sind noch keine Katalog-Entitys vorhanden, oder Sie haben keine Berechtigung, welche anzuzeigen. Sie werden hier angezeigt, sobald sie registriert sind und Sie Zugriff darauf haben.',
     'catalog.emptyState.importButtonTitle': 'Komponente registrieren',
     'catalogGraph.emptyState.title': 'Keine Katalogelemente verfügbar',
-    'catalogGraph.emptyState.description': 'Es sind noch keine Katalog-Entitys vorhanden, oder Sie haben keine Berechtigung, welche anzuzeigen. Die Kataloggrafik wird hier angezeigt, sobald sie registriert sind und Sie Zugriff darauf haben.',
+    'catalogGraph.emptyState.description':
+      'Es sind noch keine Katalog-Entitys vorhanden, oder Sie haben keine Berechtigung, welche anzuzeigen. Die Kataloggrafik wird hier angezeigt, sobald sie registriert sind und Sie Zugriff darauf haben.',
     'catalogGraph.emptyState.importButtonTitle': 'Komponente registrieren',
     'scaffolder.emptyState.title': 'Keine Vorlagen verfügbar',
-    'scaffolder.emptyState.description': 'Es sind noch keine Softwarevorlagen vorhanden, oder Sie haben keine Berechtigung, welche anzuzeigen. Sie werden hier angezeigt, sobald sie registriert sind und Sie Zugriff darauf haben.',
+    'scaffolder.emptyState.description':
+      'Es sind noch keine Softwarevorlagen vorhanden, oder Sie haben keine Berechtigung, welche anzuzeigen. Sie werden hier angezeigt, sobald sie registriert sind und Sie Zugriff darauf haben.',
     'scaffolder.emptyState.importButtonTitle': 'Vorlage registrieren',
     'apiDocs.emptyState.title': 'Keine APIs verfügbar',
-    'apiDocs.emptyState.description': 'Es gibt noch keine APIs, oder Sie haben keine Berechtigung, welche anzuzeigen. Sie werden hier angezeigt, sobald sie registriert sind und Sie Zugriff darauf haben.',
+    'apiDocs.emptyState.description':
+      'Es gibt noch keine APIs, oder Sie haben keine Berechtigung, welche anzuzeigen. Sie werden hier angezeigt, sobald sie registriert sind und Sie Zugriff darauf haben.',
     'apiDocs.emptyState.importButtonTitle': 'API registrieren',
     'docs.emptyState.title': 'Keine Dokumentation verfügbar',
-    'docs.emptyState.description': 'Es sind noch keine Entitys dokumentiert, oder Sie haben keine Berechtigung, welche anzuzeigen. Die Dokumentation wird hier angezeigt, sobald Entitys mit TechDocs-Annotationen registriert sind und Sie Zugriff darauf haben.',
+    'docs.emptyState.description':
+      'Es sind noch keine Entitys dokumentiert, oder Sie haben keine Berechtigung, welche anzuzeigen. Die Dokumentation wird hier angezeigt, sobald Entitys mit TechDocs-Annotationen registriert sind und Sie Zugriff darauf haben.',
     'docs.emptyState.importButtonTitle': 'Komponente registrieren',
     'menuItem.learningPaths': 'Lernpfade',
     'learningPaths.title': 'Lernpfade',
     'learningPaths.error.title': 'Daten konnten nicht abgerufen werden.',
     'learningPaths.error.unknownError': 'Unbekannter Fehler',
-      'apiDocs.emptyState.action': 'API registrieren',
-    'catalog.emptyState.action': 'Eine Komponente registrieren',
-    'catalogGraph.emptyState.action': 'Zum Katalog',
-    'docs.emptyState.action': 'Weitere Informationen',
-    'scaffolder.emptyState.action': 'Vorlage registrieren',
-},
+  },
 });

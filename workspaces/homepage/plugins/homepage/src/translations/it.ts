@@ -27,7 +27,8 @@ const homepageTranslationIt = createTranslationMessages({
     'header.welcome': 'Bentornato/a!',
     'header.welcomePersonalized': 'Bentornato/a, {{name}}!',
     'header.local': 'Locale',
-    'homePage.empty': 'Nessun widget della pagina iniziale configurato o trovato.',
+    'homePage.empty':
+      'Nessun widget della pagina iniziale configurato o trovato.',
     'search.placeholder': 'Ricerca',
     'search.clearButton': 'Cancella',
     'quickAccess.title': 'Accesso rapido',
@@ -37,9 +38,11 @@ const homepageTranslationIt = createTranslationMessages({
     'featuredDocs.learnMore': ' Per saperne di più',
     'starredEntities.title': 'Entità del catalogo contrassegnate da una stella',
     'recentlyVisited.title': 'Visitato di recente',
-    'recentlyVisited.description': 'Accesso rapido alle entità e alle pagine visualizzate di recente',
+    'recentlyVisited.description':
+      'Accesso rapido alle entità e alle pagine visualizzate di recente',
     'topVisited.title': 'I più visitati',
-    'topVisited.description': 'I servizi e le entità a cui accedi più frequentemente',
+    'topVisited.description':
+      'I servizi e le entità a cui accedi più frequentemente',
     'templates.title': 'Esplora i modelli',
     'templates.fetchError': 'Impossibile recuperare i dati.',
     'templates.error': 'Errore sconosciuto',

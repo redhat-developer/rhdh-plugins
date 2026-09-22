@@ -29,7 +29,8 @@ const scorecardTranslationEs = createTranslationMessages({
     'dataSourcesDialog.title': 'Fuentes de {{title}}',
     'dataSourcesDialog.close': 'Cerrar',
     'dataSourcesDialog.unknownPlugin': 'Desconocido',
-    'dataSourcesDialog.statusTooltip': 'El valor {{value}} coincide con el umbral {{status}} {{expression}}',
+    'dataSourcesDialog.statusTooltip':
+      'El valor {{value}} coincide con el umbral {{status}} {{expression}}',
     'dataSourcesDialog.collectorStatusTooltip':
       'Este recopilador proporciona solo datos de entrada. El valor del check {{metric}} se calcula a partir de los recopiladores y se muestra en la tarjeta de scorecard.',
     'dataSourcesDialog.collectorEmptyValue': '--',
@@ -89,8 +90,10 @@ const scorecardTranslationEs = createTranslationMessages({
     'metric.weightedStatusScoreCenterTooltipMaxLabel':
       'Puntuación máxima posible',
     'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Puntuación total',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one': '{{status}}: {{count}} entidad, puntuación: {{score}}',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other': '{{status}}: {{count}} entidades, puntuación: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} entidad, puntuación: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} entidades, puntuación: {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} entidad, cada una con {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
@@ -99,14 +102,22 @@ const scorecardTranslationEs = createTranslationMessages({
       'Puntuación total {{total}}',
     'metric.drillDownCalculationFailures':
       'No se pudieron validar una o más entidades cuando se calculó esta métrica.',
-    'metric.dora.deploymentFrequency.description': 'Registra la frecuencia con la que el código se implementa correctamente en producción durante los últimos 30 días. Los profesionales de élite implementan bajo demanda (varias veces al día).',
-    'metric.dora.deploymentFrequency.title': 'DORA: frecuencia de implementación',
-    'metric.dora.medianLeadTimeForChanges.description': 'Mide el tiempo medio transcurrido desde la confirmación del código hasta su implementación en producción durante los últimos 30 días. Los profesionales de élite tienen un tiempo de entrega inferior a 24 horas.',
-    'metric.dora.medianLeadTimeForChanges.title': 'DORA: tiempo medio de entrega de cambios',
-    'metric.dora.changeFailureRate.description': 'Controla el porcentaje de implementaciones que provocan fallos en producción durante los últimos 30 días. Los profesionales de élite mantienen una tasa de fallos en los cambios inferior al 5 %.',
-    'metric.dora.changeFailureRate.title': 'DORA: tasa de fallos en los cambios',
-    'metric.dora.medianTimeToRestore.description': 'Registra el tiempo medio necesario para restablecer el servicio tras un incidente en los últimos 30 días. Los profesionales de élite restablecen el servicio en menos de una hora.',
-    'metric.dora.medianTimeToRestore.title': 'DORA: tiempo medio de recuperación',
+    'metric.dora.deploymentFrequency.description':
+      'Registra la frecuencia con la que el código se implementa correctamente en producción durante los últimos 30 días. Los profesionales de élite implementan bajo demanda (varias veces al día).',
+    'metric.dora.deploymentFrequency.title':
+      'DORA: frecuencia de implementación',
+    'metric.dora.medianLeadTimeForChanges.description':
+      'Mide el tiempo medio transcurrido desde la confirmación del código hasta su implementación en producción durante los últimos 30 días. Los profesionales de élite tienen un tiempo de entrega inferior a 24 horas.',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA: tiempo medio de entrega de cambios',
+    'metric.dora.changeFailureRate.description':
+      'Controla el porcentaje de implementaciones que provocan fallos en producción durante los últimos 30 días. Los profesionales de élite mantienen una tasa de fallos en los cambios inferior al 5 %.',
+    'metric.dora.changeFailureRate.title':
+      'DORA: tasa de fallos en los cambios',
+    'metric.dora.medianTimeToRestore.description':
+      'Registra el tiempo medio necesario para restablecer el servicio tras un incidente en los últimos 30 días. Los profesionales de élite restablecen el servicio en menos de una hora.',
+    'metric.dora.medianTimeToRestore.title':
+      'DORA: tiempo medio de recuperación',
     'metric.filecheck.description':
       'Comprueba si el archivo {{name}} existe en el repositorio.',
     'metric.filecheck.title': 'Verificación de archivo: {{name}}',

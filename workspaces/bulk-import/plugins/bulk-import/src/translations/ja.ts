@@ -268,9 +268,7 @@ const bulkImportTranslationJa = createTranslationMessages({
     'workflows.workflowPending': '保留中',
     'workflows.workflowSuspended': '一時停止中',
     'workflows.workflowsFor': '{{importJobStatusId}} のワークフロー',
-      'repositories.logInToViewProjects': 'プロジェクトを表示するにはログインします',
-    'repositories.logInToViewRepositories': 'リポジトリーを表示するにはログインします',
-},
+  },
 });
 
 export default bulkImportTranslationJa;

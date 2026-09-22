@@ -31,7 +31,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'メッセージにスクリーンショットが含まれます。',
     'modelSelector.visionScreenshot.ariaLabel':
       'ビジョンモデルのスクリーンショットコンテキスト',
-    'modelSelector.disabledTooltip': '各チャットセッションは、1 つのモデルのみをサポートします。モデルを切り替えるには、新しいチャットを開きます。',
+    'modelSelector.disabledTooltip':
+      '各チャットセッションは、1 つのモデルのみをサポートします。モデルを切り替えるには、新しいチャットを開きます。',
     'aria.chatbotSelector': 'チャットボットセレクター',
     'aria.close': 'チャットボットを閉じる',
     'aria.closeDrawerPanel': 'ドロワーパネルを閉じる',
@@ -42,10 +43,12 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'aria.scroll.up': '一番上に戻る',
     'aria.search.placeholder': '検索',
     'aria.searchPreviousConversations': '以前の会話の検索',
-    'attach.menu.description': 'JSON、YAML、または TXT ファイルをアタッチします',
+    'attach.menu.description':
+      'JSON、YAML、または TXT ファイルをアタッチします',
     'attach.menu.title': '割り当て',
     'button.newChat': '新しいチャット',
-    'chatbox.emptyState.noPinnedChats': 'チャットをピン留めして上部に固定します',
+    'chatbox.emptyState.noPinnedChats':
+      'チャットをピン留めして上部に固定します',
     'chatbox.emptyState.noRecentChats': '最近のチャットがありません',
     'chatbox.emptyState.noResults.body':
       '検索クエリーを調整して再試行してください。スペルを確認するか、より一般的な用語をお試しください。',
@@ -74,7 +77,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'conversation.category.savedPrompts': '保存済みプロンプト',
     'conversation.delete': '削除',
     'conversation.delete.confirm.action': '削除',
-    'conversation.delete.confirm.message': 'このチャットはここに表示されなくなります。これにより、アクティビティーからプロンプト、応答、フィードバックなどの関連するアクティビティーも削除されます。',
+    'conversation.delete.confirm.message':
+      'このチャットはここに表示されなくなります。これにより、アクティビティーからプロンプト、応答、フィードバックなどの関連するアクティビティーも削除されます。',
     'conversation.delete.confirm.title': '"{{chatName}}" を削除しますか?',
     'conversation.removeFromPinnedChats': '固定解除',
     'conversation.rename': '名前の変更',
@@ -83,7 +87,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'conversation.rename.placeholder': 'チャット名',
     disclaimer:
       'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
-    'error.context.fileAttachment': 'useFileAttachmentContext は FileAttachmentContextProvider 内で使用する必要があります',
+    'error.context.fileAttachment':
+      'useFileAttachmentContext は FileAttachmentContextProvider 内で使用する必要があります',
     'feedback.completion.body':
       'ご回答を受け取りました。ご意見をお聞かせいただきありがとうございました!',
     'feedback.completion.title': 'フィードバックを送信しました',
@@ -115,11 +120,15 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'footer.accuracy.label':
       'AI によって生成されたコンテンツは、使用する前に必ず確認してください。',
     'icon.lightspeed.alt': 'Intelligent Assistant アイコン',
-    'lcore.loadError.description': 'Intelligent Assistant のバックエンドはモデルリストを返しませんでした。サービスが稼働していてアクセス可能であることを確認してから、再試行してください。',
+    'lcore.loadError.description':
+      'Intelligent Assistant のバックエンドはモデルリストを返しませんでした。サービスが稼働していてアクセス可能であることを確認してから、再試行してください。',
     'lcore.loadError.title': 'モデルを読み込めませんでした',
-    'lcore.notConfigured.backendDocs': 'Intelligent Assistant のバックエンドセットアップ',
-    'lcore.notConfigured.description': 'Intelligent Assistant には、登録済みの LLM が必要です。セットアップを完了するには、組織のプラットフォーム管理者に問い合わせてください。',
-    'lcore.notConfigured.developerLightspeedDocs': 'Developer Hub Intelligent Assistant の設定',
+    'lcore.notConfigured.backendDocs':
+      'Intelligent Assistant のバックエンドセットアップ',
+    'lcore.notConfigured.description':
+      'Intelligent Assistant には、登録済みの LLM が必要です。セットアップを完了するには、組織のプラットフォーム管理者に問い合わせてください。',
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Developer Hub Intelligent Assistant の設定',
     'lcore.notConfigured.title': 'まず LLM を接続してください',
     'mcp.settings.closeAriaLabel': 'MCP 設定を閉じる',
     'mcp.settings.closeConfigureModalAriaLabel': '設定モーダルを閉じる',
@@ -129,23 +138,31 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.enabled': '有効化済み',
     'mcp.settings.enterToken': 'トークンの入力',
     'mcp.settings.loading': 'MCP サーバーを読み込んでいます...',
-    'mcp.settings.modalDescription': '認証情報は暗号化され、操作はお客様の正確な権限に基づいて実行されます。',
-    'mcp.settings.modalDescriptionDcr': 'このサーバーは動的クライアント登録 (DCR) を使用しています。トークンは Backstage のアイデンティティーを使用して自動的に発行されます — 手動でのトークン入力は不要です。',
+    'mcp.settings.modalDescription':
+      '認証情報は暗号化され、操作はお客様の正確な権限に基づいて実行されます。',
+    'mcp.settings.modalDescriptionDcr':
+      'このサーバーは動的クライアント登録 (DCR) を使用しています。トークンは Backstage のアイデンティティーを使用して自動的に発行されます — 手動でのトークン入力は不要です。',
     'mcp.settings.authenticationToken': '認証トークン',
     'mcp.settings.modal.authenticationHeading': '認証',
-    'mcp.settings.modal.credentialMode.organization': '組織のデフォルトトークンを使用する',
-    'mcp.settings.modal.credentialMode.organizationDescription': '管理者によって設定されたトークンを使用します。',
+    'mcp.settings.modal.credentialMode.organization':
+      '組織のデフォルトトークンを使用する',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      '管理者によって設定されたトークンを使用します。',
     'mcp.settings.modal.credentialMode.personal': '個人トークンを使用する',
     'mcp.settings.modal.toolsHeading': 'ツール ({{count}})',
     'mcp.settings.modal.loadingTools': 'ツールを読み込んでいます...',
     'mcp.settings.modal.fetchingStatus': 'ステータスを取得中...',
     'mcp.settings.modal.loadingStatus': '切断中...',
-    'mcp.settings.modal.tokenRemovedWarning': 'トークンは削除されました。この MCP サーバーを再度使用するには、新しいトークンを入力してください。',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'トークンは削除されました。この MCP サーバーを再度使用するには、新しいトークンを入力してください。',
     'mcp.settings.modal.noToolsAvailable': '利用できるツールはありません。',
     'mcp.settings.modal.toolsLoadFailed': 'ツールの読み込みに失敗しました。',
-    'mcp.settings.modal.enabledDescription': 'このサーバーはアクティブで、チャットで利用可能です。',
-    'mcp.settings.modal.enabledDescriptionOff': 'このサーバーは無効化されており、チャットは利用できません。',
-    'mcp.settings.modal.enabledDescriptionTokenRequired': 'このサーバーは現在無効化されています。有効化するためのトークンを入力します。',
+    'mcp.settings.modal.enabledDescription':
+      'このサーバーはアクティブで、チャットで利用可能です。',
+    'mcp.settings.modal.enabledDescriptionOff':
+      'このサーバーは無効化されており、チャットは利用できません。',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'このサーバーは現在無効化されています。有効化するためのトークンを入力します。',
     'mcp.settings.name': '名前',
     'mcp.settings.noneAvailable': '利用可能な MCP サーバーがありません。',
     'mcp.settings.personalAccessToken': 'Personal Access Token',
@@ -164,11 +181,15 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.toggleServerAriaLabel': '{{serverName}} の切り替え',
     'mcp.settings.token.clearAriaLabel': 'トークン入力のクリア',
     'mcp.settings.token.connectionSuccessful': '接続成功',
-    'mcp.settings.token.invalidCredentials': '認証情報が無効です。サーバーの URL とトークンを確認してください。',
-    'mcp.settings.token.savingAndValidating': 'トークンを保存して検証しています...',
-    'mcp.settings.token.urlUnavailableForValidation': 'サーバーの URL が利用できないため、トークンを検証できません。',
+    'mcp.settings.token.invalidCredentials':
+      '認証情報が無効です。サーバーの URL とトークンを確認してください。',
+    'mcp.settings.token.savingAndValidating':
+      'トークンを保存して検証しています...',
+    'mcp.settings.token.urlUnavailableForValidation':
+      'サーバーの URL が利用できないため、トークンを検証できません。',
     'mcp.settings.token.validating': 'トークンを検証しています...',
-    'mcp.settings.token.validationFailed': '検証に失敗しました。サーバーの URL とトークンを確認してください。',
+    'mcp.settings.token.validationFailed':
+      '検証に失敗しました。サーバーの URL とトークンを確認してください。',
     'menu.newConversation': '新しいチャット',
     'message.options.label': 'オプション',
     'modal.cancel': 'キャンセル',
@@ -179,74 +200,93 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'modal.title.preview': '添付ファイルのプレビュー',
     'notebook.document.rename': '名前の変更',
     'notebook.document.rename.tooltip': 'クリックして名前を変更する',
-    'notebook.document.rename.error': '"{{documentName}}" の名前変更に失敗しました。',
+    'notebook.document.rename.error':
+      '"{{documentName}}" の名前変更に失敗しました。',
     'notebook.document.rename.conflict': '名前はすでに存在します。',
     'notebook.document.rename.tooLong': '名前が長すぎます (最大 255 文字)。',
     'notebook.document.delete': '削除',
     'notebook.document.delete.action': '削除',
-    'notebook.document.delete.description': 'このノートブックから <documentName/> を削除してもよろしいですか?この操作は元に戻せません。',
-    'notebook.document.delete.success': '"{{documentName}}" が正常に削除されました。',
+    'notebook.document.delete.description':
+      'このノートブックから <documentName/> を削除してもよろしいですか?この操作は元に戻せません。',
+    'notebook.document.delete.success':
+      '"{{documentName}}" が正常に削除されました。',
     'notebook.document.delete.title': 'リソースを削除しますか?',
     'notebook.overwrite.modal.action': 'アップロード ({{count}})',
     'notebook.overwrite.modal.back': '戻る',
-    'notebook.overwrite.modal.description': 'このノートブックにはすでに {{duplicateCount}} 個のファイルが存在します。 重複にかかわらず、新たに {{newCount}} 個のリソースが追加されます。',
+    'notebook.overwrite.modal.description':
+      'このノートブックにはすでに {{duplicateCount}} 個のファイルが存在します。 重複にかかわらず、新たに {{newCount}} 個のリソースが追加されます。',
     'notebook.overwrite.modal.ignore': '重複ファイルを無視する',
     'notebook.overwrite.modal.replace': '既存のファイルを置き換える',
     'notebook.overwrite.modal.title': 'ファイルがすでに存在します',
     'notebook.overwrite.modal.title.one': 'ファイルがすでに存在します',
     'notebook.overwrite.modal.title.other': 'ファイルはすでに存在します',
-    'notebook.overwrite.modal.description.one': 'このノートブックにはすでに {{duplicateCount}} 個のファイルが存在します。 重複にかかわらず、新たに {{newCount}} 個のリソースが追加されます。',
-    'notebook.overwrite.modal.description.other': 'このノートブックにはすでに {{duplicateCount}} 個のファイルが存在します。 重複にかかわらず、新たに {{newCount}} 個のリソースが追加されます。',
+    'notebook.overwrite.modal.description.one':
+      'このノートブックにはすでに {{duplicateCount}} 個のファイルが存在します。 重複にかかわらず、新たに {{newCount}} 個のリソースが追加されます。',
+    'notebook.overwrite.modal.description.other':
+      'このノートブックにはすでに {{duplicateCount}} 個のファイルが存在します。 重複にかかわらず、新たに {{newCount}} 個のリソースが追加されます。',
     'notebook.upload.error.fileTooLarge':
       'アップロードエラー: ファイルサイズが 25 MB の制限を超えています。',
-    'notebook.upload.error.tooManyFiles': 'アップロードエラー: アップロードできるファイルは最大 {{max}} 件です。',
-    'notebook.upload.error.unsupportedType': 'アップロードエラー: 非対応形式のファイルが見つかりました。対応形式のファイルだけをアップロードしてください。',
+    'notebook.upload.error.tooManyFiles':
+      'アップロードエラー: アップロードできるファイルは最大 {{max}} 件です。',
+    'notebook.upload.error.unsupportedType':
+      'アップロードエラー: 非対応形式のファイルが見つかりました。対応形式のファイルだけをアップロードしてください。',
     'notebook.upload.failed': '"{{fileName}}" のアップロードに失敗しました。',
     'notebook.upload.modal.addButton': '追加 ({{count}})',
     'notebook.upload.modal.addButtonEmpty': '追加',
     'notebook.upload.modal.browseButton': 'アップロード',
-    'notebook.upload.modal.dragDropTitle': 'ファイルをここにドラッグアンドドロップするか、クリックしてファイルを選択します',
-    'notebook.upload.modal.infoText': '対応ファイル形式: .md、.txt、.pdf、.json、.yaml、.log',
+    'notebook.upload.modal.dragDropTitle':
+      'ファイルをここにドラッグアンドドロップするか、クリックしてファイルを選択します',
+    'notebook.upload.modal.infoText':
+      '対応ファイル形式: .md、.txt、.pdf、.json、.yaml、.log',
     'notebook.upload.modal.maxFileSize': '最大ファイルサイズは 25 MB です。',
     'notebook.upload.modal.supportedFormats': '対応フォーマット:',
     'notebook.upload.modal.removeFile': '{{fileName}} の削除',
-    'notebook.upload.modal.selectedFiles': '{{count}} / {{max}} 個のファイルを選択済み',
+    'notebook.upload.modal.selectedFiles':
+      '{{count}} / {{max}} 個のファイルを選択済み',
     'notebook.upload.modal.separator': 'または',
     'notebook.upload.modal.title': 'リソースを追加する',
     'notebook.view.close': 'ノートブックを閉じる',
     'notebook.view.documents.add': '追加',
     'notebook.view.documents.count_one': '{{count}} 個のリソース',
     'notebook.view.documents.count_other': '{{count}} 個のリソース',
-    'notebook.view.documents.maxReached': '最大 10 個のリソースが許可されます。新しいリソースをアップロードするには、リソースを削除してください。',
+    'notebook.view.documents.maxReached':
+      '最大 10 個のリソースが許可されます。新しいリソースをアップロードするには、リソースを削除してください。',
     'notebook.view.documents.uploading': 'リソースをアップロードする',
-    'notebook.view.documents.uploadsInProgress': 'リソースを追加する前に、現在のアップロードが完了するまでお待ちください。',
-    'notebook.view.input.disabledTooltip': 'チャットを始めるには、読み込み済みのリソースを 1 つ以上選択してください',
+    'notebook.view.documents.uploadsInProgress':
+      'リソースを追加する前に、現在のアップロードが完了するまでお待ちください。',
+    'notebook.view.input.disabledTooltip':
+      'チャットを始めるには、読み込み済みのリソースを 1 つ以上選択してください',
     'notebook.view.input.placeholder': 'リソースについて質問します...',
     'notebook.view.sidebar.collapse': 'サイドバーを折りたたむ',
     'notebook.view.sidebar.expand': 'サイドバーを展開する',
     'notebook.view.sidebar.resize': 'サイドバーのサイズを変更する',
     'notebook.view.title': '無題のノートブック',
     'notebook.view.upload.action': 'リソースを追加する',
-    'notebook.view.processing.description': 'ファイルはインデックス化されています。処理が完了したら、質問を開始できます。',
+    'notebook.view.processing.description':
+      'ファイルはインデックス化されています。処理が完了したら、質問を開始できます。',
     'notebook.view.processing.heading': 'リソースの処理中...',
     'notebook.view.upload.heading': 'リソースを追加して使い始めます',
     'notebooks.actions.delete': '削除',
     'notebooks.actions.rename': '名前の変更',
     'notebooks.card.openAria': 'ノートブック {{name}} を開く',
     'notebooks.delete.action': '削除',
-    'notebooks.delete.message': 'このノートブックはここに表示されなくなります。これにより、アクティビティーからプロンプト、応答、フィードバックなどの関連するアクティビティーも削除されます。',
+    'notebooks.delete.message':
+      'このノートブックはここに表示されなくなります。これにより、アクティビティーからプロンプト、応答、フィードバックなどの関連するアクティビティーも削除されます。',
     'notebooks.delete.title': '{{name}} を削除しますか?',
     'notebooks.delete.toast': 'ノートが削除されました!',
     'notebooks.documents_one': '{{count}} 個のリソース',
     'notebooks.documents_other': '{{count}} 個のリソース',
     'notebooks.empty.action': '新しいノートブックの作成',
-    'notebooks.empty.description': 'ソースを整理し、AI を活用したインサイトを生成するには、新しいノートブックを作成してください。',
+    'notebooks.empty.description':
+      'ソースを整理し、AI を活用したインサイトを生成するには、新しいノートブックを作成してください。',
     'notebooks.empty.title': 'ノートブックが作成されていません',
-    'notebooks.prompts.accessIssue.title': 'アクセスに関する問題でサポートが必要です',
+    'notebooks.prompts.accessIssue.title':
+      'アクセスに関する問題でサポートが必要です',
     'notebooks.prompts.coreConcepts.title': 'コアコンセプトは何ですか?',
     'notebooks.prompts.vulnerabilities.title': '重大な脆弱性を表示します',
     'notebooks.rename.inline.tooltip': 'クリックして名前を変更する',
-    'notebooks.rename.inline.error': '"{{notebookName}}" の名前変更に失敗しました。',
+    'notebooks.rename.inline.error':
+      '"{{notebookName}}" の名前変更に失敗しました。',
     'notebooks.title': 'マイノートブック',
     'notebooks.updated.days': '{{days}} 日前に更新',
     'notebooks.updated.on': '更新日',
@@ -387,7 +427,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'sort.oldest': '日付 (古い順)',
     'sources.chip.label_one': '{{count}} 件のソース',
     'sources.chip.label_other': '{{count}} 件のソース',
-    'sources.modal.description': '以下のソースは、この AI の回答の生成および補足情報の提供に使用されました:',
+    'sources.modal.description':
+      '以下のソースは、この AI の回答の生成および補足情報の提供に使用されました:',
     'sources.modal.title': 'ソース',
     'sources.popover.closeAriaLabel': 'ソースを閉じる',
     'tabs.ariaLabel': 'Intelligent Assistant ビュー',
@@ -424,15 +465,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'tooltip.settings': 'チャットボットのオプション',
     'user.guest': 'ゲスト',
     'user.loading': '...',
-      'disclaimer': 'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
-    'icon.permissionRequired.alt': '権限不足アイコン',
-    'mcp.settings.readOnlyAccess': 'MCP サーバーへの読み取り専用アクセス権をお持ちです。',
-    'permission.notebooks.goBack': '戻る',
-    'permission.required.description': '<subject/> を表示するには、管理者に連絡して<permissions/> 権限を付与してもらう必要があります。',
-    'permission.required.title': '権限の不足',
-    'permission.subject.notebooks': 'Intelligent Assistant ノートブック',
-    'permission.subject.plugin': 'Intelligent Assistant プラグイン',
-},
+  },
 });
 
 export default intelligentAssistantTranslationJa;

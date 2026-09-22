@@ -54,11 +54,14 @@ const orchestratorTranslationJa = createTranslationMessages({
     'duration.months': '{{count}} カ月',
     'duration.seconds': '{{count}} 秒',
     'duration.years': '{{count}} 年',
-    'emptyState.illustrationAlt': 'ワークフローまたは実行結果のイラストはありません',
-    'emptyState.runs.description': 'ワークフローの実行結果は、ワークフローが実行されるとここに表示されます。',
+    'emptyState.illustrationAlt':
+      'ワークフローまたは実行結果のイラストはありません',
+    'emptyState.runs.description':
+      'ワークフローの実行結果は、ワークフローが実行されるとここに表示されます。',
     'emptyState.runs.runWorkflow': 'ワークフローを実行する',
     'emptyState.runs.title': 'まだ実行されていません',
-    'emptyState.workflows.description': '開始するには、新しいワークフローを追加します。',
+    'emptyState.workflows.description':
+      '開始するには、新しいワークフローを追加します。',
     'emptyState.workflows.title': 'ワークフローはまだ追加されていません',
     'emptyState.workflows.viewDocumentation': 'ドキュメントの表示',
     'formDecorator.error':
@@ -114,7 +117,8 @@ const orchestratorTranslationJa = createTranslationMessages({
     'run.status.abortedWithoutTime': '実行が中断されました。',
     'run.status.completed': '実行完了',
     'run.status.completedAt': '実行は {{time}} に完了しました',
-    'run.status.completedWithMessage': '実行は {{time}} メッセージを伴って完了しました',
+    'run.status.completedWithMessage':
+      '実行は {{time}} メッセージを伴って完了しました',
     'run.status.failed': '実行は {{time}} に失敗しました',
     'run.status.failedAt': '実行は {{time}} に失敗しました',
     'run.status.noAdditionalInfo':
@@ -124,7 +128,8 @@ const orchestratorTranslationJa = createTranslationMessages({
     'run.status.running': 'ワークフローは実行中です。{{time}} に開始しました',
     'run.status.runningWaitingAtNode':
       'ワークフローは実行中です - ノード {{node}} で {{formattedTime}} から待機しています',
-    'run.status.workflowIsRunning': 'ワークフローは実行中です。{{time}} に開始しました',
+    'run.status.workflowIsRunning':
+      'ワークフローは実行中です。{{time}} に開始しました',
     'run.suggestedNextWorkflow': '推奨される次のワークフロー',
     'run.suggestedNextWorkflows': '推奨される次のワークフロー',
     'run.title': 'ワークフローの実行',
@@ -191,9 +196,11 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.buttons.running': '実行中...',
     'workflow.definition': 'ワークフロー定義',
     'workflow.inputSchema': '入力スキーマ',
-    'workflow.inputSchemaDescription': 'このワークフローに必要なデータフィールドと検証ルールを定義します。',
+    'workflow.inputSchemaDescription':
+      'このワークフローに必要なデータフィールドと検証ルールを定義します。',
     'workflow.successRatio': '成功率',
-    'workflow.successRatioDescription': 'このワークフローにおける、完了した実行数と失敗した実行数の割合。',
+    'workflow.successRatioDescription':
+      'このワークフローにおける、完了した実行数と失敗した実行数の割合。',
     'workflow.runSuccess': '実行成功',
     'workflow.ofTotal': '{{totalCount}} 件中',
     'workflow.statsSuccess': '成功',
@@ -230,14 +237,18 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.status.unavailable': '利用不可',
     'workflow.unavailable.title': '利用できないワークフロー',
     'workflow.unavailable.runTooltip': '利用できないワークフロー',
-    'workflow.unavailable.requestFailed': '{{url}} への HTTP GET リクエストが失敗しました。',
+    'workflow.unavailable.requestFailed':
+      '{{url}} への HTTP GET リクエストが失敗しました。',
     'workflow.unavailable.statusCodeLine': 'ステータスコード: {{statusCode}}',
     'workflow.unavailable.statusTextLine': 'ステータステキスト: {{reason}}',
     'samlSso.title': 'GitHub SAML SSO セッションの有効期限が切れました',
     'samlSso.reauthorizeButton': 'SSO を再認可する',
-    'samlSso.body': 'GitHub SAML SSO セッションの有効期限が切れました。組織のリソースにアクセスするには、アクティブな SAML セッションが必要です。',
-    'samlSso.reauthorizeHint': '組織のアイデンティティプロバイダーで再認証を行うには、「SSO を再認可する」をクリックします。',
-    'samlSso.fallbackHint': 'SAML セッションを再確立するには、設定 > 認証プロバイダーから一度サインアウトし、再度サインインしてください。',
+    'samlSso.body':
+      'GitHub SAML SSO セッションの有効期限が切れました。組織のリソースにアクセスするには、アクティブな SAML セッションが必要です。',
+    'samlSso.reauthorizeHint':
+      '組織のアイデンティティプロバイダーで再認証を行うには、「SSO を再認可する」をクリックします。',
+    'samlSso.fallbackHint':
+      'SAML セッションを再確立するには、設定 > 認証プロバイダーから一度サインアウトし、再度サインインしてください。',
   },
 });
 

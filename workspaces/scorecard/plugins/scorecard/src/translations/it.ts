@@ -29,7 +29,8 @@ const scorecardTranslationIt = createTranslationMessages({
     'dataSourcesDialog.title': '{{title}} fonti',
     'dataSourcesDialog.close': 'Chiudi',
     'dataSourcesDialog.unknownPlugin': 'Sconosciuto',
-    'dataSourcesDialog.statusTooltip': 'Il valore {{value}} corrisponde alla soglia {{status}} {{expression}}',
+    'dataSourcesDialog.statusTooltip':
+      'Il valore {{value}} corrisponde alla soglia {{status}} {{expression}}',
     'dataSourcesDialog.collectorStatusTooltip':
       'Questo collector fornisce solo dati di input. Il valore del check {{metric}} viene calcolato dai collector e mostrato sulla scheda scorecard.',
     'dataSourcesDialog.collectorEmptyValue': '--',
@@ -90,8 +91,10 @@ const scorecardTranslationIt = createTranslationMessages({
     'metric.weightedStatusScoreCenterTooltipMaxLabel':
       'Punteggio massimo possibile',
     'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Punteggio totale',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one': '{{status}}: {{count}} entità, punteggio: {{score}}',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other': '{{status}}: {{count}} entità, punteggio: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} entità, punteggio: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} entità, punteggio: {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} entità, ciascuna {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
@@ -100,14 +103,19 @@ const scorecardTranslationIt = createTranslationMessages({
       'Punteggio totale {{total}}',
     'metric.drillDownCalculationFailures':
       'Si è verificato un errore durante il calcolo di questa metrica da parte di una o più entità.',
-    'metric.dora.deploymentFrequency.description': 'Tiene traccia della frequenza con cui il codice è stato distribuito con successo in produzione negli ultimi 30 giorni. I deployment dalle prestazioni migliori vengono attivati su richiesta (più volte al giorno).',
+    'metric.dora.deploymentFrequency.description':
+      'Tiene traccia della frequenza con cui il codice è stato distribuito con successo in produzione negli ultimi 30 giorni. I deployment dalle prestazioni migliori vengono attivati su richiesta (più volte al giorno).',
     'metric.dora.deploymentFrequency.title': 'DORA - Frequenza di deployment',
-    'metric.dora.medianLeadTimeForChanges.description': 'Misura il tempo mediano intercorso tra il commit del codice e il deployment in produzione negli ultimi 30 giorni. Le prestazioni migliori registrano tempi inferiori alle 24 ore.',
-    'metric.dora.medianLeadTimeForChanges.title': 'DORA - Tempo medio di preavviso per le modifiche',
-    'metric.dora.changeFailureRate.description': 'Monitora la percentuale di deployment che hanno causato un errore in produzione negli ultimi 30 giorni. Le prestazioni migliori corrispondono a un tasso di fallimento delle modifiche inferiore al 5%.',
+    'metric.dora.medianLeadTimeForChanges.description':
+      'Misura il tempo mediano intercorso tra il commit del codice e il deployment in produzione negli ultimi 30 giorni. Le prestazioni migliori registrano tempi inferiori alle 24 ore.',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - Tempo medio di preavviso per le modifiche',
+    'metric.dora.changeFailureRate.description':
+      'Monitora la percentuale di deployment che hanno causato un errore in produzione negli ultimi 30 giorni. Le prestazioni migliori corrispondono a un tasso di fallimento delle modifiche inferiore al 5%.',
     'metric.dora.changeFailureRate.title':
       'DORA - Tasso di fallimento delle modifiche',
-    'metric.dora.medianTimeToRestore.description': 'Tiene traccia del tempo mediano necessario per ripristinare il servizio dopo un incidente negli ultimi 30 giorni. Le prestazioni migliori ripristinano il servizio in meno di un\'ora.',
+    'metric.dora.medianTimeToRestore.description':
+      "Tiene traccia del tempo mediano necessario per ripristinare il servizio dopo un incidente negli ultimi 30 giorni. Le prestazioni migliori ripristinano il servizio in meno di un'ora.",
     'metric.dora.medianTimeToRestore.title':
       'DORA - Tempo mediano di ripristino',
     'metric.filecheck.description':

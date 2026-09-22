@@ -25,7 +25,8 @@ const quickstartTranslationIt = createTranslationMessages({
   ref: translationsTestTranslationRef,
   messages: {
     'page.title': 'Plugin di prova delle traduzioni',
-    'page.subtitle': 'Un plugin per testare le funzionalità di traduzione e i18next',
+    'page.subtitle':
+      'Un plugin per testare le funzionalità di traduzione e i18next',
     'essentials.key': 'valore della chiave',
     'essentials.look.deep': 'valore look deep',
     'interpolation.key': '{{what}} è {{how}}',

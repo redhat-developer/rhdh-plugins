@@ -54,11 +54,14 @@ const orchestratorTranslationEs = createTranslationMessages({
     'duration.months': '{{count}} meses',
     'duration.seconds': '{{count}} segundos',
     'duration.years': '{{count}} años',
-    'emptyState.illustrationAlt': 'Sin flujos de trabajo ni ilustraciones de ejecuciones',
-    'emptyState.runs.description': 'Las ejecuciones de los flujos de trabajo aparecerán aquí una vez que se hayan ejecutado.',
+    'emptyState.illustrationAlt':
+      'Sin flujos de trabajo ni ilustraciones de ejecuciones',
+    'emptyState.runs.description':
+      'Las ejecuciones de los flujos de trabajo aparecerán aquí una vez que se hayan ejecutado.',
     'emptyState.runs.runWorkflow': 'Ejecutar un flujo de trabajo',
     'emptyState.runs.title': 'Aún no hay ejecuciones',
-    'emptyState.workflows.description': 'Para empezar, agregue un nuevo flujo de trabajo.',
+    'emptyState.workflows.description':
+      'Para empezar, agregue un nuevo flujo de trabajo.',
     'emptyState.workflows.title': 'Aún no se agregaron flujos de trabajo',
     'emptyState.workflows.viewDocumentation': 'Ver documentación',
     'formDecorator.error':
@@ -115,17 +118,20 @@ const orchestratorTranslationEs = createTranslationMessages({
     'run.status.abortedWithoutTime': 'Se interrumpió la ejecución.',
     'run.status.completed': 'Ejecución completada',
     'run.status.completedAt': 'La ejecución finalizó a las {{time}}',
-    'run.status.completedWithMessage': 'La ejecución finalizó a las {{time}} con el mensaje',
+    'run.status.completedWithMessage':
+      'La ejecución finalizó a las {{time}} con el mensaje',
     'run.status.failed': 'La ejecución falló a las {{time}}',
     'run.status.failedAt': 'La ejecución falló a las {{time}}',
     'run.status.noAdditionalInfo':
       'El flujo de trabajo no proporcionó información adicional sobre el estado.',
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
       'Los resultados se mostrarán aquí una vez que se complete la ejecución.',
-    'run.status.running': 'El flujo de trabajo está en ejecución. Comenzó a las {{time}}',
+    'run.status.running':
+      'El flujo de trabajo está en ejecución. Comenzó a las {{time}}',
     'run.status.runningWaitingAtNode':
       'El flujo de trabajo está en ejecución; esperando en el nodo {{node}} desde {{formattedTime}}',
-    'run.status.workflowIsRunning': 'El flujo de trabajo está en ejecución. Comenzó a las {{time}}',
+    'run.status.workflowIsRunning':
+      'El flujo de trabajo está en ejecución. Comenzó a las {{time}}',
     'run.suggestedNextWorkflow': 'Próximo flujo de trabajo sugerido',
     'run.suggestedNextWorkflows': 'Próximos flujos de trabajo sugeridos',
     'run.title': 'Ejecutar flujo de trabajo',
@@ -194,9 +200,11 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.buttons.running': 'En ejecución...',
     'workflow.definition': 'Definición de flujo de trabajo',
     'workflow.inputSchema': 'Esquema de entrada',
-    'workflow.inputSchemaDescription': 'Define los campos de datos obligatorios y la validación para este flujo de trabajo.',
+    'workflow.inputSchemaDescription':
+      'Define los campos de datos obligatorios y la validación para este flujo de trabajo.',
     'workflow.successRatio': 'Índice de éxito',
-    'workflow.successRatioDescription': 'Porcentaje de ejecuciones completadas frente a ejecuciones fallidas para este flujo de trabajo.',
+    'workflow.successRatioDescription':
+      'Porcentaje de ejecuciones completadas frente a ejecuciones fallidas para este flujo de trabajo.',
     'workflow.runSuccess': 'Ejecución correcta',
     'workflow.ofTotal': 'de {{totalCount}}',
     'workflow.statsSuccess': 'Éxito',
@@ -237,11 +245,15 @@ const orchestratorTranslationEs = createTranslationMessages({
       'La solicitud HTTP GET a {{url}} falló.',
     'workflow.unavailable.statusCodeLine': 'Código de estado: {{statusCode}}',
     'workflow.unavailable.statusTextLine': 'Texto de estado: {{reason}}',
-    'samlSso.title': 'La sesión de inicio de sesión único (SSO) SAML de GitHub ha caducado',
+    'samlSso.title':
+      'La sesión de inicio de sesión único (SSO) SAML de GitHub ha caducado',
     'samlSso.reauthorizeButton': 'Volver a autorizar SSO',
-    'samlSso.body': 'Su sesión de inicio de sesión único (SSO) SAML de GitHub ha caducado. Su organización requiere una sesión SAML activa para acceder a los recursos.',
-    'samlSso.reauthorizeHint': 'Haga clic en "Volver a autorizar SSO" para volver a autenticarse con el proveedor de identidad de su organización.',
-    'samlSso.fallbackHint': 'Cierre sesión y vuelva a iniciarla desde "Configuración > Proveedores de autenticación" para restablecer su sesión SAML.',
+    'samlSso.body':
+      'Su sesión de inicio de sesión único (SSO) SAML de GitHub ha caducado. Su organización requiere una sesión SAML activa para acceder a los recursos.',
+    'samlSso.reauthorizeHint':
+      'Haga clic en "Volver a autorizar SSO" para volver a autenticarse con el proveedor de identidad de su organización.',
+    'samlSso.fallbackHint':
+      'Cierre sesión y vuelva a iniciarla desde "Configuración > Proveedores de autenticación" para restablecer su sesión SAML.',
   },
 });
 

@@ -53,9 +53,11 @@ const dcmTranslationEs: TranslationMessages<
     'deleteDialog.title': 'Eliminar {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Eliminar',
     'deleteDialog.cancelButton': 'Cancelar',
-    'deleteDialog.body': '¿Está seguro de que quiere eliminar {{resourceName}}? Esta acción no se puede deshacer.',
+    'deleteDialog.body':
+      '¿Está seguro de que quiere eliminar {{resourceName}}? Esta acción no se puede deshacer.',
     'agents.emptyTitle': 'No hay agentes registrados',
-    'agents.emptyDescription': 'Los agentes del entorno se registran en el plano de control y envían señales periódicas. Registre un agente para permitir que DCM gestione las cargas de trabajo en entornos externos.',
+    'agents.emptyDescription':
+      'Los agentes del entorno se registran en el plano de control y envían señales periódicas. Registre un agente para permitir que DCM gestione las cargas de trabajo en entornos externos.',
     'agents.registerButton': 'Registro',
     'agents.entityLabel': 'Agentes',
     'agents.registerDialogTitle': 'Registrar agente',
@@ -74,19 +76,24 @@ const dcmTranslationEs: TranslationMessages<
     'agents.filter.healthUnavailable': 'No disponible',
     'agents.form.nameLabel': 'Nombre*',
     'agents.form.namePlaceholder': 'p. ej., env-agent-west-1',
-    'agents.form.nameHelper': 'Identificador único de slug: solo letras minúsculas, números y guiones',
+    'agents.form.nameHelper':
+      'Identificador único de slug: solo letras minúsculas, números y guiones',
     'agents.form.environmentLabel': 'Entorno*',
     'agents.form.environmentPlaceholder': 'p. ej., producción',
     'agents.form.environmentHelper': 'Etiqueta de entorno del agente',
     'agents.form.serviceTypesLabel': 'Tipos de servicio*',
-    'agents.form.serviceTypesHelper': 'Tipos de servicio que este agente puede proporcionar',
+    'agents.form.serviceTypesHelper':
+      'Tipos de servicio que este agente puede proporcionar',
     'agents.form.costLabel': 'Costo*',
-    'agents.form.costHelper': 'Ponderación de costo relativo utilizada para decisiones de colocación',
+    'agents.form.costHelper':
+      'Ponderación de costo relativo utilizada para decisiones de colocación',
     'agents.form.topicNameLabel': 'Nombre del tema*',
     'agents.form.topicNamePlaceholder': 'p. ej., dcm.agent.env-agent-west-1',
-    'agents.form.topicNameHelper': 'Nombre del tema NATS: debe comenzar con dcm.agent.',
+    'agents.form.topicNameHelper':
+      'Nombre del tema NATS: debe comenzar con dcm.agent.',
     'policies.emptyTitle': 'No se definieron políticas',
-    'policies.emptyDescription': 'Cree políticas OPA Rego para aplicar reglas de gobernanza a los recursos de DCM. Las políticas pueden tener un alcance global o por usuario.',
+    'policies.emptyDescription':
+      'Cree políticas OPA Rego para aplicar reglas de gobernanza a los recursos de DCM. Las políticas pueden tener un alcance global o por usuario.',
     'policies.createButton': 'Crear',
     'policies.entityLabel': 'Políticas',
     'policies.createDialogTitle': 'Crear política',
@@ -110,33 +117,41 @@ const dcmTranslationEs: TranslationMessages<
     'policies.form.displayNameLabel': 'Nombre para mostrar*',
     'policies.form.displayNameHelper': 'Nombre comprensible de esta política',
     'policies.form.descriptionLabel': 'Descripción',
-    'policies.form.descriptionHelper': 'Opcional: describa el propósito de esta política',
+    'policies.form.descriptionHelper':
+      'Opcional: describa el propósito de esta política',
     'policies.form.policyTypeLabel': 'Tipo de política*',
-    'policies.form.policyTypeGlobal': 'GLOBAL: se aplica a todas las solicitudes',
+    'policies.form.policyTypeGlobal':
+      'GLOBAL: se aplica a todas las solicitudes',
     'policies.form.policyTypeUser': 'USUARIO: se aplica por usuario',
     'policies.form.priorityLabel': 'Prioridad-',
-    'policies.form.priorityHelper': '1 (máximo) - 1000 (mínimo), valor predeterminado 500: debe ser único por tipo de política',
+    'policies.form.priorityHelper':
+      '1 (máximo) - 1000 (mínimo), valor predeterminado 500: debe ser único por tipo de política',
     'policies.form.regoCodeLabel': 'Código de Rego*',
-    'policies.form.regoCodeHelper': 'El gerente de colocación evalúa la política OPA Rego.',
+    'policies.form.regoCodeHelper':
+      'El gerente de colocación evalúa la política OPA Rego.',
     'policies.form.regoCodePlaceholder': 'package dcm.placement',
     'policies.form.enabledLabel': 'Activado',
     'serviceTypes.emptyTitle': 'No se definieron tipos de servicio',
-    'serviceTypes.emptyDescription': 'Los tipos de servicio definen el esquema de plantilla para los elementos del catálogo.',
+    'serviceTypes.emptyDescription':
+      'Los tipos de servicio definen el esquema de plantilla para los elementos del catálogo.',
     'serviceTypes.cardTitle': 'Tipos de servicio ({{count}})',
     'serviceTypes.columns.serviceType': 'Tipo de servicio',
     'serviceTypes.columns.apiVersion': 'Versión de API',
     'serviceTypes.columns.path': 'Ruta',
     'serviceTypes.columns.created': 'Creado',
     'catalogItems.emptyTitle': 'No se definieron elementos del catálogo',
-    'catalogItems.emptyDescription': 'Los elementos del catálogo son plantillas de servicio que los desarrolladores pueden configurar. Cada elemento del catálogo hace referencia a uno o más tipos de servicio y define los campos disponibles para su personalización.',
+    'catalogItems.emptyDescription':
+      'Los elementos del catálogo son plantillas de servicio que los desarrolladores pueden configurar. Cada elemento del catálogo hace referencia a uno o más tipos de servicio y define los campos disponibles para su personalización.',
     'catalogItems.createButton': 'Crear',
     'catalogItems.entityLabel': 'Elementos del catálogo',
     'catalogItems.createDrawerTitle': 'Crear elemento del catálogo',
     'catalogItems.editDrawerTitle': 'Modificar elemento del catálogo',
     'catalogItems.saveButton': 'Guardar',
     'catalogItems.createSuccess': 'Elemento del catálogo creado correctamente.',
-    'catalogItems.updateSuccess': 'Elemento del catálogo actualizado correctamente.',
-    'catalogItems.deleteSuccess': 'Elemento del catálogo eliminado correctamente.',
+    'catalogItems.updateSuccess':
+      'Elemento del catálogo actualizado correctamente.',
+    'catalogItems.deleteSuccess':
+      'Elemento del catálogo eliminado correctamente.',
     'catalogItems.deleteLabel': 'elemento del catálogo',
     'catalogItems.columns.displayName': 'Nombre para mostrar',
     'catalogItems.columns.apiVersion': 'Versión de API',
@@ -148,63 +163,82 @@ const dcmTranslationEs: TranslationMessages<
     'catalogItems.resourceCount_one': '1 recurso',
     'catalogItems.resourceCount_other': '{{count}} recursos',
     'catalogItems.form.importButton': 'Importar desde archivo',
-    'catalogItems.form.importTooltip': 'Completar el formulario a partir de la definición de un elemento de catálogo en formato JSON o YAML',
-    'catalogItems.form.importError': 'No se pudo importar el archivo; compruebe que sea un archivo JSON o YAML válido.',
+    'catalogItems.form.importTooltip':
+      'Completar el formulario a partir de la definición de un elemento de catálogo en formato JSON o YAML',
+    'catalogItems.form.importError':
+      'No se pudo importar el archivo; compruebe que sea un archivo JSON o YAML válido.',
     'catalogItems.form.displayNameLabel': 'Nombre para mostrar*',
-    'catalogItems.form.displayNameHelper': 'Nombre comprensible para este elemento del catálogo (máximo 63 caracteres)',
+    'catalogItems.form.displayNameHelper':
+      'Nombre comprensible para este elemento del catálogo (máximo 63 caracteres)',
     'catalogItems.form.apiVersionLabel': 'Versión de API*',
-    'catalogItems.form.apiVersionHelper': 'Debe seguir el patrón v<number>[alpha|beta][number], p. ej., v1, v1alpha1',
+    'catalogItems.form.apiVersionHelper':
+      'Debe seguir el patrón v<number>[alpha|beta][number], p. ej., v1, v1alpha1',
     'catalogItems.form.serviceTypeLabel': 'Tipo de servicio*',
-    'catalogItems.form.serviceTypeHelperEdit': 'No se puede cambiar el tipo de servicio después de crearlo',
-    'catalogItems.form.serviceTypeHelperNoTypes': 'No hay tipos de servicio disponibles; cree uno en la pestaña Tipos de servicio',
-    'catalogItems.form.serviceTypeHelperDefault': 'Seleccione el tipo de servicio en el que se basa este recurso',
+    'catalogItems.form.serviceTypeHelperEdit':
+      'No se puede cambiar el tipo de servicio después de crearlo',
+    'catalogItems.form.serviceTypeHelperNoTypes':
+      'No hay tipos de servicio disponibles; cree uno en la pestaña Tipos de servicio',
+    'catalogItems.form.serviceTypeHelperDefault':
+      'Seleccione el tipo de servicio en el que se basa este recurso',
     'catalogItems.form.fieldsLabel': 'Campos*',
     'catalogItems.form.fieldsCaption': '(se requiere al menos uno)',
-    'catalogItems.form.fieldsErrorEmpty': 'Agregue al menos un campo con una ruta no vacía.',
+    'catalogItems.form.fieldsErrorEmpty':
+      'Agregue al menos un campo con una ruta no vacía.',
     'catalogItems.form.fieldAddButton': 'Agregar campo',
-    'catalogItems.form.fieldAddTooltip': 'Complete la ruta del último campo antes de agregar uno nuevo',
+    'catalogItems.form.fieldAddTooltip':
+      'Complete la ruta del último campo antes de agregar uno nuevo',
     'catalogItems.form.fieldPathLabel': 'Ruta*',
     'catalogItems.form.fieldPathHelper': 'p. ej., config.replicas',
     'catalogItems.form.fieldDisplayNameLabel': 'Nombre para mostrar',
     'catalogItems.form.fieldEditableLabel': 'Editable',
     'catalogItems.form.fieldDefaultValueLabel': 'Valor predeterminado',
-    'catalogItems.form.fieldDefaultValueHelper': 'Cualquier valor JSON, p. ej., 42, "hello", true, [1,2]',
+    'catalogItems.form.fieldDefaultValueHelper':
+      'Cualquier valor JSON, p. ej., 42, "hello", true, [1,2]',
     'catalogItems.form.fieldRemoveAriaLabel': 'Eliminar campo',
     'catalogItems.form.schemaLabel': 'Esquema de validación',
     'catalogItems.form.schemaEditButton': 'Modificar JSON',
     'catalogItems.form.schemaAddButton': 'Agregar JSON',
     'catalogItems.form.schemaDialogTitle': 'Esquema de validación',
-    'catalogItems.form.schemaDialogHelper': 'Objeto de esquema JSON, p. ej., {"type":"integer","minimum":0}',
+    'catalogItems.form.schemaDialogHelper':
+      'Objeto de esquema JSON, p. ej., {"type":"integer","minimum":0}',
     'catalogItems.form.schemaDialogCancel': 'Cancelar',
     'catalogItems.form.schemaDialogApply': 'Aplicar',
-    'catalogItems.form.schemaMustBeObject': 'Debe ser un objeto JSON, no una matriz ni un objeto primitivo',
+    'catalogItems.form.schemaMustBeObject':
+      'Debe ser un objeto JSON, no una matriz ni un objeto primitivo',
     'catalogItems.form.schemaInvalidJson': 'Sintaxis JSON no válida',
     'catalogItems.wizard.tabOverview': 'Visión general',
     'catalogItems.wizard.tabApi': 'API',
     'catalogItems.wizard.tabResources': 'Recursos',
-    'catalogItems.wizard.resourcesDescription': 'Agregue uno o más recursos. Cada recurso hace referencia a un tipo de servicio y define sus propias opciones de configuración de campo.',
+    'catalogItems.wizard.resourcesDescription':
+      'Agregue uno o más recursos. Cada recurso hace referencia a un tipo de servicio y define sus propias opciones de configuración de campo.',
     'catalogItems.wizard.resourcesRequired': 'Se requiere al menos un recurso.',
     'catalogItems.wizard.addResourceButton': 'Agregar recurso',
     'catalogItems.wizard.removeResource': 'Eliminar recurso',
     'catalogItems.wizard.unnamedResource': '(sin nombre)',
     'catalogItems.wizard.resourceNameLabel': 'Nombre del recurso*',
-    'catalogItems.wizard.resourceNameHelper': 'Identificador único dentro de este elemento del catálogo, p. ej., app, ordersDb',
+    'catalogItems.wizard.resourceNameHelper':
+      'Identificador único dentro de este elemento del catálogo, p. ej., app, ordersDb',
     'catalogItems.wizard.requiresResourcesLabel': 'Requiere recursos',
-    'catalogItems.wizard.requiresResourcesHelper': 'Seleccionar otros recursos que deben aprovisionarse antes que este',
-    'catalogItems.wizard.apiVersionImmutable': 'La versión de la API no se puede cambiar después de crearla',
+    'catalogItems.wizard.requiresResourcesHelper':
+      'Seleccionar otros recursos que deben aprovisionarse antes que este',
+    'catalogItems.wizard.apiVersionImmutable':
+      'La versión de la API no se puede cambiar después de crearla',
     'instances.emptyTitle': 'No se aprovisionaron instancias',
-    'instances.emptyDescription': 'Las instancias de elementos del catálogo representan servicios aprovisionados. Cree una instancia a partir de un elemento del catálogo para aprovisionar un servicio en un agente de entorno registrado.',
+    'instances.emptyDescription':
+      'Las instancias de elementos del catálogo representan servicios aprovisionados. Cree una instancia a partir de un elemento del catálogo para aprovisionar un servicio en un agente de entorno registrado.',
     'instances.createButton': 'Crear',
     'instances.entityLabel': 'Instancias de elementos del catálogo',
     'instances.createDialogTitle': 'Crear instancia de elemento del catálogo',
-    'instances.rehydrateSuccess': 'La instancia de elemento del catálogo se restauró correctamente.',
+    'instances.rehydrateSuccess':
+      'La instancia de elemento del catálogo se restauró correctamente.',
     'instances.deleteLabel': 'instancia',
     'instances.rehydrateTooltip': 'Restaurar',
     'instances.rehydrateAriaLabel': 'Restaurar instancia',
     'instances.deleteTooltip': 'Eliminar',
     'instances.deleteAriaLabel': 'Eliminar instancia',
     'instances.rehydrateDialogTitle': '¿Restaurar instancia?',
-    'instances.rehydrateDialogBody': 'La restauración de {{instanceName}} volverá a aprovisionar el recurso y puede asignarle un nuevo ID de recurso. Esta acción no se puede deshacer.',
+    'instances.rehydrateDialogBody':
+      'La restauración de {{instanceName}} volverá a aprovisionar el recurso y puede asignarle un nuevo ID de recurso. Esta acción no se puede deshacer.',
     'instances.rehydrateDialogFallbackName': 'esta instancia',
     'instances.rehydrateDialogCancel': 'Cancelar',
     'instances.rehydrateDialogConfirm': 'Restaurar',
@@ -214,19 +248,26 @@ const dcmTranslationEs: TranslationMessages<
     'instances.columns.apiVersion': 'Versión de API',
     'instances.columns.created': 'Creado',
     'instances.form.displayNameLabel': 'Nombre para mostrar*',
-    'instances.form.displayNameHelper': 'Nombre comprensible para esta instancia aprovisionada (máximo 63 caracteres)',
+    'instances.form.displayNameHelper':
+      'Nombre comprensible para esta instancia aprovisionada (máximo 63 caracteres)',
     'instances.form.catalogItemLabel': 'Elemento del catálogo*',
     'instances.form.catalogItemSelect': 'Seleccionar un elemento del catálogo…',
-    'instances.form.catalogItemHelperNoItems': 'No hay elementos del catálogo disponibles; cree uno en la pestaña Elementos del catálogo',
-    'instances.form.catalogItemHelperDefault': 'Seleccionar el elemento del catálogo desde el que desea aprovisionar una instancia',
+    'instances.form.catalogItemHelperNoItems':
+      'No hay elementos del catálogo disponibles; cree uno en la pestaña Elementos del catálogo',
+    'instances.form.catalogItemHelperDefault':
+      'Seleccionar el elemento del catálogo desde el que desea aprovisionar una instancia',
     'instances.form.apiVersionLabel': 'Versión de API*',
-    'instances.form.apiVersionHelper': 'Debe seguir el patrón v<number>[alpha|beta][number], p. ej., v1, v1alpha1',
+    'instances.form.apiVersionHelper':
+      'Debe seguir el patrón v<number>[alpha|beta][number], p. ej., v1, v1alpha1',
     'instances.form.fieldValuesSection': 'Valores de campo',
-    'instances.form.fieldValuesSectionHint': '(campos editables definidos por este elemento del catálogo)',
-    'instances.form.noEditableFields': 'Este recurso no tiene campos editables.',
+    'instances.form.fieldValuesSectionHint':
+      '(campos editables definidos por este elemento del catálogo)',
+    'instances.form.noEditableFields':
+      'Este recurso no tiene campos editables.',
     'instances.wizard.tabOverview': 'Visión general',
     'resources.emptyTitle': 'No se encontraron recursos',
-    'resources.emptyDescription': 'Aquí aparecerán las instancias de tipo de servicio aprovisionadas a través de DCM.',
+    'resources.emptyDescription':
+      'Aquí aparecerán las instancias de tipo de servicio aprovisionadas a través de DCM.',
     'resources.cardTitle': 'Recursos ({{count}})',
     'resources.columns.id': 'ID',
     'resources.columns.serviceType': 'Tipo de servicio',
@@ -238,52 +279,81 @@ const dcmTranslationEs: TranslationMessages<
     'copyButton.failed': 'Error al copiar',
     'copyButton.ariaLabel': 'Copiar en el portapapeles',
     'validation.agent.nameRequired': 'El nombre es obligatorio',
-    'validation.agent.namePattern': 'Solo se permiten letras minúsculas, números y guiones (debe empezar con una letra)',
+    'validation.agent.namePattern':
+      'Solo se permiten letras minúsculas, números y guiones (debe empezar con una letra)',
     'validation.agent.environmentRequired': 'Se requiere entorno',
     'validation.agent.serviceTypesRequired':
       'Se requiere al menos un tipo de servicio',
     'validation.agent.costRequired': 'Se requiere un costo',
     'validation.agent.topicNameRequired': 'Se requiere el nombre del tema',
-    'validation.agent.topicNamePattern': 'El nombre del tema debe comenzar con dcm.agent.',
+    'validation.agent.topicNamePattern':
+      'El nombre del tema debe comenzar con dcm.agent.',
     'validation.policy.displayNameRequired': 'Se requiere nombre para mostrar',
-    'validation.policy.displayNameEmpty': 'El nombre para mostrar no puede estar vacío',
-    'validation.policy.displayNameMax': 'El nombre para mostrar debe tener como máximo 255 caracteres',
-    'validation.policy.descriptionMax': 'La descripción debe tener un máximo de 255 caracteres',
+    'validation.policy.displayNameEmpty':
+      'El nombre para mostrar no puede estar vacío',
+    'validation.policy.displayNameMax':
+      'El nombre para mostrar debe tener como máximo 255 caracteres',
+    'validation.policy.descriptionMax':
+      'La descripción debe tener un máximo de 255 caracteres',
     'validation.policy.policyTypeRequired': 'Se requiere el tipo de política',
     'validation.policy.policyTypeOneOf': 'Debe ser GLOBAL o USUARIO',
     'validation.policy.priorityType': 'La prioridad debe ser un número',
     'validation.policy.priorityRequired': 'Se requiere prioridad',
-    'validation.policy.priorityInteger': 'La prioridad debe ser un número entero',
+    'validation.policy.priorityInteger':
+      'La prioridad debe ser un número entero',
     'validation.policy.priorityMin': 'La prioridad debe ser al menos 1',
     'validation.policy.priorityMax': 'La prioridad debe ser como máximo 1000',
     'validation.policy.regoCodeRequired': 'Se requiere código de Rego',
     'validation.policy.regoCodeEmpty': 'El código de Rego no puede estar vacío',
-    'validation.policy.regoCodePackage': 'Debe contener una declaración de paquete, p. ej., "package dcm.placement"',
-    'validation.catalogItem.displayNameRequired': 'Se requiere nombre para mostrar',
-    'validation.catalogItem.displayNameEmpty': 'El nombre para mostrar no puede estar vacío',
-    'validation.catalogItem.displayNameMax': 'El nombre para mostrar debe tener como máximo 63 caracteres',
-    'validation.catalogItem.apiVersionRequired': 'Se requiere la versión de la API',
-    'validation.catalogItem.apiVersionPattern': 'Debe seguir el patrón v<number>[alpha|beta][number], p. ej., v1, v1alpha1',
-    'validation.catalogItem.serviceTypeRequired': 'Se requiere un tipo de servicio',
-    'validation.catalogItem.resourceNameRequired': 'Se requiere el nombre del recurso',
-    'validation.catalogItem.resourceNameDuplicate': 'El nombre del recurso debe ser único dentro del elemento del catálogo',
-    'validation.catalogItem.resourceNamePattern': 'Solo se permiten letras, números, guiones y guiones bajos (debe comenzar con una letra)',
-    'validation.catalogItem.requiresResourcesCycle': 'Se detectó una dependencia circular: este recurso se requiere indirectamente a sí mismo',
+    'validation.policy.regoCodePackage':
+      'Debe contener una declaración de paquete, p. ej., "package dcm.placement"',
+    'validation.catalogItem.displayNameRequired':
+      'Se requiere nombre para mostrar',
+    'validation.catalogItem.displayNameEmpty':
+      'El nombre para mostrar no puede estar vacío',
+    'validation.catalogItem.displayNameMax':
+      'El nombre para mostrar debe tener como máximo 63 caracteres',
+    'validation.catalogItem.apiVersionRequired':
+      'Se requiere la versión de la API',
+    'validation.catalogItem.apiVersionPattern':
+      'Debe seguir el patrón v<number>[alpha|beta][number], p. ej., v1, v1alpha1',
+    'validation.catalogItem.serviceTypeRequired':
+      'Se requiere un tipo de servicio',
+    'validation.catalogItem.resourceNameRequired':
+      'Se requiere el nombre del recurso',
+    'validation.catalogItem.resourceNameDuplicate':
+      'El nombre del recurso debe ser único dentro del elemento del catálogo',
+    'validation.catalogItem.resourceNamePattern':
+      'Solo se permiten letras, números, guiones y guiones bajos (debe comenzar con una letra)',
+    'validation.catalogItem.requiresResourcesCycle':
+      'Se detectó una dependencia circular: este recurso se requiere indirectamente a sí mismo',
     'validation.catalogItem.resourcesRequired':
       'Se requiere al menos un recurso',
-    'validation.catalogItem.duplicatePath': 'Ruta duplicada: las rutas deben ser únicas',
-    'validation.catalogItem.invalidJson': 'JSON no válido: corrija la sintaxis o utilice un valor de cadena simple',
-    'validation.catalogItem.schemaMustBeObject': 'Debe ser un objeto JSON, p. ej., {"type":"integer"}',
-    'validation.catalogItem.schemaMinMaxConflict': 'el mínimo ({{min}}) no debe superar el máximo ({{max}})',
-    'validation.catalogItem.defaultBelowMin': 'El valor predeterminado ({{value}}) está por debajo del mínimo del esquema ({{min}})',
-    'validation.catalogItem.defaultAboveMax': 'El valor predeterminado ({{value}}) supera el máximo del esquema ({{max}})',
+    'validation.catalogItem.duplicatePath':
+      'Ruta duplicada: las rutas deben ser únicas',
+    'validation.catalogItem.invalidJson':
+      'JSON no válido: corrija la sintaxis o utilice un valor de cadena simple',
+    'validation.catalogItem.schemaMustBeObject':
+      'Debe ser un objeto JSON, p. ej., {"type":"integer"}',
+    'validation.catalogItem.schemaMinMaxConflict':
+      'el mínimo ({{min}}) no debe superar el máximo ({{max}})',
+    'validation.catalogItem.defaultBelowMin':
+      'El valor predeterminado ({{value}}) está por debajo del mínimo del esquema ({{min}})',
+    'validation.catalogItem.defaultAboveMax':
+      'El valor predeterminado ({{value}}) supera el máximo del esquema ({{max}})',
     'validation.catalogItem.schemaInvalidJson': 'Sintaxis JSON no válida',
-    'validation.instance.displayNameRequired': 'Se requiere nombre para mostrar',
-    'validation.instance.displayNameEmpty': 'El nombre para mostrar no puede estar vacío',
-    'validation.instance.displayNameMax': 'El nombre para mostrar debe tener como máximo 63 caracteres',
-    'validation.instance.catalogItemRequired': 'Se requiere un elemento del catálogo',
-    'validation.instance.apiVersionRequired': 'Se requiere la versión de la API',
-    'validation.instance.apiVersionPattern': 'Debe seguir el patrón v<number>[alpha|beta][number], p. ej., v1, v1alpha1',
+    'validation.instance.displayNameRequired':
+      'Se requiere nombre para mostrar',
+    'validation.instance.displayNameEmpty':
+      'El nombre para mostrar no puede estar vacío',
+    'validation.instance.displayNameMax':
+      'El nombre para mostrar debe tener como máximo 63 caracteres',
+    'validation.instance.catalogItemRequired':
+      'Se requiere un elemento del catálogo',
+    'validation.instance.apiVersionRequired':
+      'Se requiere la versión de la API',
+    'validation.instance.apiVersionPattern':
+      'Debe seguir el patrón v<number>[alpha|beta][number], p. ej., v1, v1alpha1',
     'validation.instance.fieldRequired': 'Este campo es obligatorio',
     'validation.instance.fieldMustBeNumber': 'Debe ser un número válido',
     'validation.instance.fieldMin': 'Debe ser al menos {{min}}',

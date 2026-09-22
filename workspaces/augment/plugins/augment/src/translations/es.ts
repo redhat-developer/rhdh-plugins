@@ -92,7 +92,8 @@ const augmentTranslationEs = createTranslationMessages({
     'chatInput.stopGeneration': 'Stop generation',
     'chatInput.stopMessageGeneration': 'Stop message generation',
     'chatInput.sendMessage': 'Send message',
-    'chatInput.selectAgentPrompt': 'Seleccionar un agente para empezar a chatear',
+    'chatInput.selectAgentPrompt':
+      'Seleccionar un agente para empezar a chatear',
     'welcomeScreen.logoAlt': 'Application logo',
     'welcomeScreen.emptyPromptHint': 'Type a question below to get started',
     'welcomeScreen.logoError':
@@ -263,13 +264,17 @@ const augmentTranslationEs = createTranslationMessages({
     'confirmDialog.cancel': 'Cancel',
     'onboardingBanner.dismissAriaLabel': 'Descartar la guía de incorporación',
     'onboardingBanner.title': 'Conozca a los agentes de IA',
-    'onboardingBanner.subtitle': '{{appName}} le permite conectarse con agentes de IA especializados. Aquí le explicamos cómo empezar:',
+    'onboardingBanner.subtitle':
+      '{{appName}} le permite conectarse con agentes de IA especializados. Aquí le explicamos cómo empezar:',
     'onboardingBanner.step1Title': 'Elegir un agente',
-    'onboardingBanner.step1Description': 'Elija un agente de IA que se adapte a la tarea',
+    'onboardingBanner.step1Description':
+      'Elija un agente de IA que se adapte a la tarea',
     'onboardingBanner.step2Title': 'Pregunte lo que quiera',
-    'onboardingBanner.step2Description': 'Describa lo que necesita en lenguaje natural',
+    'onboardingBanner.step2Description':
+      'Describa lo que necesita en lenguaje natural',
     'onboardingBanner.step3Title': 'Obtener resultados',
-    'onboardingBanner.step3Description': 'Los agentes utilizan herramientas y conocimientos para dar respuesta',
+    'onboardingBanner.step3Description':
+      'Los agentes utilizan herramientas y conocimientos para dar respuesta',
     'agentGallery.heading': 'Agentes',
     'agentGallery.searchPlaceholder': 'Buscar agentes…',
     'agentGallery.searchAriaLabel': 'Buscar agentes',
@@ -277,11 +282,13 @@ const augmentTranslationEs = createTranslationMessages({
     'agentGallery.tabRecent': 'Reciente',
     'agentGallery.tabPinned': 'Fijado',
     'agentGallery.listAriaLabel': 'Agentes disponibles',
-    'agentGallery.noMatchSearch': 'No se encontraron agentes que coincidan con su búsqueda',
+    'agentGallery.noMatchSearch':
+      'No se encontraron agentes que coincidan con su búsqueda',
     'agentGallery.noAgentsInCategory': 'No hay agentes en esta categoría',
     'agentGallery.retry': 'Reintentar',
     'agentGallery.noAgentsTitle': 'Aún no hay agentes disponibles',
-    'agentGallery.noAgentsHint': 'Solicite a su administrador que implemente los agentes',
+    'agentGallery.noAgentsHint':
+      'Solicite a su administrador que implemente los agentes',
     'agentDetail.closeAriaLabel': 'Cerrar detalles del agente',
     'agentDetail.about': 'Acerca de',
     'agentDetail.skillsWithCount': 'Habilidades ({{count}})',
@@ -300,13 +307,17 @@ const augmentTranslationEs = createTranslationMessages({
     'formRequestCard.cancel': 'Cancelar',
     'formRequestCard.submit': 'Enviar',
     'authRequiredCard.oauthTitle': 'Autenticación requerida',
-    'authRequiredCard.oauthSubtitle': 'Este agente requiere que usted inicie sesión para continuar',
+    'authRequiredCard.oauthSubtitle':
+      'Este agente requiere que usted inicie sesión para continuar',
     'authRequiredCard.signIn': 'Iniciar sesión',
-    'authRequiredCard.afterSignInHint': 'Después de iniciar sesión, haga clic abajo para continuar:',
+    'authRequiredCard.afterSignInHint':
+      'Después de iniciar sesión, haga clic abajo para continuar:',
     'authRequiredCard.signedIn': 'Inicié sesión',
-    'authRequiredCard.noUrlHint': 'Complete el proceso de autenticación para continuar.',
+    'authRequiredCard.noUrlHint':
+      'Complete el proceso de autenticación para continuar.',
     'authRequiredCard.credentialsTitle': 'Credenciales requeridas',
-    'authRequiredCard.credentialsSubtitle': 'Este agente necesita credenciales para continuar',
+    'authRequiredCard.credentialsSubtitle':
+      'Este agente necesita credenciales para continuar',
     'authRequiredCard.submitCredentials': 'Enviar credenciales',
     'artifact.defaultName': 'Artefacto',
     'artifact.expand': 'expandir',

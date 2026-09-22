@@ -33,7 +33,8 @@ const quickstartTranslationJa = createTranslationMessages({
     'interpolation.complex.message': 'こちらが {{link}} です。',
     'interpolation.complex.linkText': 'リンク',
     'formatting.intlNumber': '一部の {{val, number}}',
-    'formatting.intlNumberWithOptions': '一部の {{val, number(minimumFractionDigits: 2)}}',
+    'formatting.intlNumberWithOptions':
+      '一部の {{val, number(minimumFractionDigits: 2)}}',
     'formatting.intlDateTime': '{{val, datetime}} 時点',
     'formatting.intlRelativeTime': 'Lorem {{val, relativetime}}',
     'formatting.intlRelativeTimeWithOptions':

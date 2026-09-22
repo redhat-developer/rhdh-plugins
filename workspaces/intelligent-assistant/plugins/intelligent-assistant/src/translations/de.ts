@@ -31,7 +31,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Ein Screenshot wird Ihrer Nachricht beigefügt.',
     'modelSelector.visionScreenshot.ariaLabel':
       'Screenshot-Kontext für Vision-Modell',
-    'modelSelector.disabledTooltip': 'Jede Chatsitzung unterstützt nur ein Modell. Um das Modell zu wechseln, öffnen Sie einen neuen Chat.',
+    'modelSelector.disabledTooltip':
+      'Jede Chatsitzung unterstützt nur ein Modell. Um das Modell zu wechseln, öffnen Sie einen neuen Chat.',
     'aria.chatbotSelector': 'Chatbot-Auswahl',
     'aria.close': 'Chatbot schließen',
     'aria.closeDrawerPanel': 'Leistenbereich schließen',
@@ -45,13 +46,15 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'attach.menu.description': 'JSON-, YAML- oder TXT-Datei anhängen',
     'attach.menu.title': 'Anhängen',
     'button.newChat': 'Neuer Chat',
-    'chatbox.emptyState.noPinnedChats': 'Chats anheften, damit sie immer oben bleiben',
+    'chatbox.emptyState.noPinnedChats':
+      'Chats anheften, damit sie immer oben bleiben',
     'chatbox.emptyState.noRecentChats': 'Keine kürzlichen Chats',
     'chatbox.emptyState.noResults.body':
       'Passen Sie Ihre Suchanfrage an, und versuchen Sie es erneut. Überprüfen Sie Ihre Rechtschreibung, oder versuchen Sie es mit einem allgemeineren Begriff.',
     'chatbox.emptyState.noResults.title': 'Keine Ergebnisse gefunden',
     'chatbox.fileUpload.failed': 'Datei-Upload fehlgeschlagen',
-    'chatbox.fileUpload.infoText': 'Unterstützte Dateitypen: .txt, .yaml und .json. Die max. Dateigröße beträgt 25 MB.',
+    'chatbox.fileUpload.infoText':
+      'Unterstützte Dateitypen: .txt, .yaml und .json. Die max. Dateigröße beträgt 25 MB.',
     'chatbox.header.title': 'Intelligenter Assistent im Developer Hub',
     'chatbox.message.placeholder': 'Nachricht senden',
     'chatbox.provider.other': 'Andere',
@@ -73,7 +76,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'conversation.category.savedPrompts': 'Gespeicherte Prompts',
     'conversation.delete': 'Löschen',
     'conversation.delete.confirm.action': 'Löschen',
-    'conversation.delete.confirm.message': 'Dieser Chat wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Prompts, Antworten und Feedback aus Ihren Aktivitäten gelöscht.',
+    'conversation.delete.confirm.message':
+      'Dieser Chat wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Prompts, Antworten und Feedback aus Ihren Aktivitäten gelöscht.',
     'conversation.delete.confirm.title': '„{{chatName}}“ löschen?',
     'conversation.removeFromPinnedChats': 'Lösen',
     'conversation.rename': 'Umbenennen',
@@ -81,13 +85,15 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'conversation.rename.confirm.title': 'Chat umbenennen?',
     'conversation.rename.placeholder': 'Chatname',
     disclaimer:
-      'Diese Funktion nutzt KI-Technologie. Geben Sie bei Ihrer Eingabe keine persönlichen oder sonstigen sensiblen Informationen an. Interaktionen können dazu genutzt werden, die Produkte oder Dienstleistungen von Red Hat zu verbessern.',
-    'error.context.fileAttachment': 'useFileAttachmentContext muss innerhalb eines FileAttachmentContextProvider liegen.',
+      'Dieses Feature nutzt KI-Technologie. Geben Sie bei Ihrer Eingabe keine persönlichen oder sonstigen sensiblen Informationen an. Interaktionen können dazu genutzt werden, die Produkte oder Dienstleistungen von Red Hat zu verbessern.',
+    'error.context.fileAttachment':
+      'useFileAttachmentContext muss innerhalb eines FileAttachmentContextProvider liegen.',
     'feedback.completion.body':
       'Wir haben Ihre Antwort erhalten. Vielen Dank für Ihr Feedback!',
     'feedback.completion.title': 'Feedback übermittelt',
     'feedback.form.submitWord': 'Absenden',
-    'feedback.form.textAreaPlaceholder': 'Geben Sie optional zusätzliches Feedback an.',
+    'feedback.form.textAreaPlaceholder':
+      'Geben Sie optional zusätzliches Feedback an.',
     'feedback.form.title': 'Warum haben Sie diese Bewertung gewählt?',
     'feedback.quickResponses.negative.didntAnswer':
       'Meine Frage wurde nicht beantwortet',
@@ -104,47 +110,64 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'feedback.tooltips.listen': 'Abhören',
     'feedback.tooltips.listening': 'Wird abgehört',
     'file.upload.error.alreadyExists': 'Datei ist bereits vorhanden.',
-    'file.upload.error.fileTooLarge': 'Ihre Datei ist zu groß. Stellen Sie sicher, dass Ihre Datei kleiner als 25 MB ist.',
+    'file.upload.error.fileTooLarge':
+      'Ihre Datei ist zu groß. Stellen Sie sicher, dass Ihre Datei kleiner als 25 MB ist.',
     'file.upload.error.multipleFiles': 'Es wurden mehrere Dateien hochgeladen.',
     'file.upload.error.readFailed':
       'Datei konnte nicht gelesen werden: {{errorMessage}}',
-    'file.upload.error.unsupportedType': 'Nicht unterstützter Dateityp. Unterstützte Dateitypen: .txt, .yaml und .json.',
-    'footer.accuracy.label': 'KI-generierte Inhalte sollten vor der Verwendung stets geprüft werden.',
+    'file.upload.error.unsupportedType':
+      'Nicht unterstützter Dateityp. Unterstützte Dateitypen: .txt, .yaml und .json.',
+    'footer.accuracy.label':
+      'KI-generierte Inhalte sollten vor der Verwendung stets geprüft werden.',
     'icon.lightspeed.alt': 'Symbol „Intelligenter Assistent“',
-    'lcore.loadError.description': 'Das Backend des intelligenten Assistenten hat keine Modellliste zurückgegeben. Überprüfen Sie, ob der Dienst aktiv und erreichbar ist, und versuchen Sie es dann erneut.',
+    'lcore.loadError.description':
+      'Das Backend des intelligenten Assistenten hat keine Modellliste zurückgegeben. Überprüfen Sie, ob der Dienst aktiv und erreichbar ist, und versuchen Sie es dann erneut.',
     'lcore.loadError.title': 'Modelle konnten nicht geladen werden',
-    'lcore.notConfigured.backendDocs': 'Einrichtung des Backends des intelligente Assistenten',
-    'lcore.notConfigured.description': 'Für den intelligenten Assistenten muss ein LLM registriert sein. Wenden Sie sich an den Plattformadministrator Ihrer Organisation, um die Einrichtung abzuschließen.',
-    'lcore.notConfigured.developerLightspeedDocs': 'Konfiguration des intelligenten Assistenten im Developer Hub',
-    'lcore.notConfigured.title': 'Stellen Sie eine Verbindung mit einem LLM her, um loszulegen',
+    'lcore.notConfigured.backendDocs':
+      'Einrichtung des Backends des intelligente Assistenten',
+    'lcore.notConfigured.description':
+      'Für den intelligenten Assistenten muss ein LLM registriert sein. Wenden Sie sich an den Plattformadministrator Ihrer Organisation, um die Einrichtung abzuschließen.',
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Konfiguration des intelligenten Assistenten im Developer Hub',
+    'lcore.notConfigured.title':
+      'Stellen Sie eine Verbindung mit einem LLM her, um loszulegen',
     'mcp.settings.closeAriaLabel': 'MCP-Einstellungen schließen',
     'mcp.settings.closeConfigureModalAriaLabel':
       'Konfigurationsdialog schließen',
-    'mcp.settings.configureServerTitle': 'Einstellungen für {{serverName}}-MCP-Server',
+    'mcp.settings.configureServerTitle':
+      'Einstellungen für {{serverName}}-MCP-Server',
     'mcp.settings.edit': 'Bearbeiten',
     'mcp.settings.editServerAriaLabel': '{{serverName}} bearbeiten',
     'mcp.settings.enabled': 'Aktiviert',
     'mcp.settings.enterToken': 'Geben Sie Ihr Token ein',
     'mcp.settings.loading': 'MCP-Server werden geladen...',
-    'mcp.settings.modalDescription': 'Anmeldedaten werden verschlüsselt; bei Vorgängen werden exakt Ihre Berechtigungen verwendet.',
-    'mcp.settings.modalDescriptionDcr': 'Dieser Server verwendet Dynamic Client Registration (DCR). Token werden automatisch unter Verwendung Ihrer Backstage-Identität erstellt – es ist kein manueller Token erforderlich.',
+    'mcp.settings.modalDescription':
+      'Anmeldedaten werden verschlüsselt; bei Vorgängen werden exakt Ihre Berechtigungen verwendet.',
+    'mcp.settings.modalDescriptionDcr':
+      'Dieser Server verwendet Dynamic Client Registration (DCR). Token werden automatisch unter Verwendung Ihrer Backstage-Identität erstellt – es ist kein manueller Token erforderlich.',
     'mcp.settings.authenticationToken': 'Authentifizierungstoken',
     'mcp.settings.modal.authenticationHeading': 'Authentifizierung',
-    'mcp.settings.modal.credentialMode.organization': 'Standardtoken der Organisation verwenden',
-    'mcp.settings.modal.credentialMode.organizationDescription': 'Verwendet das von Ihrem Administrator konfigurierte Token.',
-    'mcp.settings.modal.credentialMode.personal': 'Persönliches Token verwenden',
+    'mcp.settings.modal.credentialMode.organization':
+      'Standardtoken der Organisation verwenden',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      'Verwendet das von Ihrem Administrator konfigurierte Token.',
+    'mcp.settings.modal.credentialMode.personal':
+      'Persönliches Token verwenden',
     'mcp.settings.modal.toolsHeading': 'Tools ({{count}})',
     'mcp.settings.modal.loadingTools': 'Tools werden geladen...',
     'mcp.settings.modal.fetchingStatus': 'Status wird abgerufen...',
     'mcp.settings.modal.loadingStatus': 'Verbindung wird getrennt...',
-    'mcp.settings.modal.tokenRemovedWarning': 'Das Token wurde entfernt. Um diesen MCP-Server erneut zu verwenden, stellen Sie ein neues Token bereit.',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'Das Token wurde entfernt. Um diesen MCP-Server erneut zu verwenden, stellen Sie ein neues Token bereit.',
     'mcp.settings.modal.noToolsAvailable': 'Es sind keine Tools verfügbar.',
-    'mcp.settings.modal.toolsLoadFailed': 'Die Tools konnten nicht geladen werden.',
+    'mcp.settings.modal.toolsLoadFailed':
+      'Die Tools konnten nicht geladen werden.',
     'mcp.settings.modal.enabledDescription':
       'Dieser Server ist aktiv und im Chat verfügbar.',
     'mcp.settings.modal.enabledDescriptionOff':
       'Dieser Server ist deaktiviert und im Chat nicht verfügbar.',
-    'mcp.settings.modal.enabledDescriptionTokenRequired': 'Dieser Server ist derzeit deaktiviert. Geben Sie ein Token zur Aktivierung an.',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'Dieser Server ist derzeit deaktiviert. Geben Sie ein Token zur Aktivierung an.',
     'mcp.settings.name': 'Name',
     'mcp.settings.noneAvailable': 'Es sind keine MCP-Server verfügbar.',
     'mcp.settings.personalAccessToken': 'Persönliches Zugriffstoken',
@@ -168,7 +191,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Ungültige Anmeldedaten. Überprüfen Sie Server-URL und Token.',
     'mcp.settings.token.savingAndValidating':
       'Token wird gespeichert und validiert...',
-    'mcp.settings.token.urlUnavailableForValidation': 'Das Token konnte nicht validiert werden, da die Server-URL nicht verfügbar ist.',
+    'mcp.settings.token.urlUnavailableForValidation':
+      'Das Token konnte nicht validiert werden, da die Server-URL nicht verfügbar ist.',
     'mcp.settings.token.validating': 'Token wird validiert...',
     'mcp.settings.token.validationFailed':
       'Validierung fehlgeschlagen. Überprüfen Sie Server-URL und Token.',
@@ -182,32 +206,42 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'modal.title.preview': 'Vorschau des Anhangs anzeigen',
     'notebook.document.rename': 'Umbenennen',
     'notebook.document.rename.tooltip': 'Zum Umbenennen klicken',
-    'notebook.document.rename.error': 'Das Umbenennen von „{{documentName}}“ ist fehlgeschlagen.',
+    'notebook.document.rename.error':
+      'Das Umbenennen von „{{documentName}}“ ist fehlgeschlagen.',
     'notebook.document.rename.conflict': 'Name ist bereits vorhanden.',
     'notebook.document.rename.tooLong': 'Name zu lang (max. 255 Zeichen).',
     'notebook.document.delete': 'Löschen',
     'notebook.document.delete.action': 'Entfernen',
-    'notebook.document.delete.description': 'Möchten Sie <documentName/> wirklich aus diesem Notizbuch entfernen? Diese Aktion kann nicht rückgängig gemacht werden.',
-    'notebook.document.delete.success': '„{{documentName}}“ erfolgreich entfernt.',
+    'notebook.document.delete.description':
+      'Möchten Sie <documentName/> wirklich aus diesem Notizbuch entfernen? Diese Aktion kann nicht rückgängig gemacht werden.',
+    'notebook.document.delete.success':
+      '„{{documentName}}“ erfolgreich entfernt.',
     'notebook.document.delete.title': 'Ressource entfernen?',
     'notebook.overwrite.modal.action': 'Hochladen ({{count}})',
     'notebook.overwrite.modal.back': 'Zurück',
-    'notebook.overwrite.modal.description': '{{duplicateCount}} Dateien sind bereits in diesem Notizbuch vorhanden. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
+    'notebook.overwrite.modal.description':
+      '{{duplicateCount}} Dateien sind bereits in diesem Notizbuch vorhanden. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
     'notebook.overwrite.modal.ignore': 'Doppelte Dateien ignorieren',
     'notebook.overwrite.modal.replace': 'Vorhandene Dateien ersetzen',
     'notebook.overwrite.modal.title': 'Datei ist bereits vorhanden',
     'notebook.overwrite.modal.title.one': 'Datei ist bereits vorhanden',
     'notebook.overwrite.modal.title.other': 'Dateien sind bereits vorhanden',
-    'notebook.overwrite.modal.description.one': '{{duplicateCount}} Datei ist bereits in diesem Notizbuch vorhanden. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
-    'notebook.overwrite.modal.description.other': '{{duplicateCount}} Dateien sind bereits in diesem Notizbuch vorhanden. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
-    'notebook.upload.error.fileTooLarge': 'Upload-Fehler: Die Dateigröße überschreitet das Limit von 25 MB.',
-    'notebook.upload.error.tooManyFiles': 'Upload-Fehler: Max. {{max}} Dateien zulässig.',
-    'notebook.upload.error.unsupportedType': 'Upload-Fehler: Nicht unterstützte Dateitypen gefunden. Laden Sie nur unterstützte Dateitypen hoch.',
+    'notebook.overwrite.modal.description.one':
+      '{{duplicateCount}} Datei ist bereits in diesem Notizbuch vorhanden. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
+    'notebook.overwrite.modal.description.other':
+      '{{duplicateCount}} Dateien sind bereits in diesem Notizbuch vorhanden. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
+    'notebook.upload.error.fileTooLarge':
+      'Upload-Fehler: Die Dateigröße überschreitet das Limit von 25 MB.',
+    'notebook.upload.error.tooManyFiles':
+      'Upload-Fehler: Max. {{max}} Dateien zulässig.',
+    'notebook.upload.error.unsupportedType':
+      'Upload-Fehler: Nicht unterstützte Dateitypen gefunden. Laden Sie nur unterstützte Dateitypen hoch.',
     'notebook.upload.failed': 'Upload von „{{fileName}}“ fehlgeschlagen.',
     'notebook.upload.modal.addButton': 'Hinzufügen ({{count}})',
     'notebook.upload.modal.addButtonEmpty': 'Hinzufügen',
     'notebook.upload.modal.browseButton': 'Hochladen',
-    'notebook.upload.modal.dragDropTitle': 'Dateien per Drag &amp; Drop hierher ziehen oder zum Durchsuchen klicken',
+    'notebook.upload.modal.dragDropTitle':
+      'Dateien per Drag &amp; Drop hierher ziehen oder zum Durchsuchen klicken',
     'notebook.upload.modal.infoText':
       'Akzeptierte Dateitypen: .md, .txt, .pdf, .json, .yaml, .log',
     'notebook.upload.modal.maxFileSize': 'Die max. Dateigröße beträgt 25 MB.',
@@ -221,37 +255,47 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.view.documents.add': 'Hinzufügen',
     'notebook.view.documents.count_one': '{{count}} Ressource',
     'notebook.view.documents.count_other': '{{count}} Ressourcen',
-    'notebook.view.documents.maxReached': 'Es sind max. 10 Ressourcen zulässig. Um eine neue Ressource hochzuladen, muss eine Ressource gelöscht werden.',
+    'notebook.view.documents.maxReached':
+      'Es sind max. 10 Ressourcen zulässig. Um eine neue Ressource hochzuladen, muss eine Ressource gelöscht werden.',
     'notebook.view.documents.uploading': 'Ressource wird hochgeladen',
-    'notebook.view.documents.uploadsInProgress': 'Warten Sie, bis die aktuellen Uploads abgeschlossen sind, bevor Sie weitere Ressourcen hinzufügen.',
+    'notebook.view.documents.uploadsInProgress':
+      'Warten Sie, bis die aktuellen Uploads abgeschlossen sind, bevor Sie weitere Ressourcen hinzufügen.',
     'notebook.view.input.disabledTooltip':
       'Wählen Sie mindestens eine geladene Ressource aus, um den Chat zu starten',
-    'notebook.view.input.placeholder': 'Stellen Sie Fragen zu Ihren Ressourcen...',
+    'notebook.view.input.placeholder':
+      'Stellen Sie Fragen zu Ihren Ressourcen...',
     'notebook.view.sidebar.collapse': 'Sidebar ausblenden',
     'notebook.view.sidebar.expand': 'Sidebar einblenden',
     'notebook.view.sidebar.resize': 'Sidebar vergrößern/verkleinern',
     'notebook.view.title': 'Unbenanntes Notizbuch',
     'notebook.view.upload.action': 'Ressource hinzufügen',
-    'notebook.view.processing.description': 'Ihre Dateien werden indiziert. Sie können Fragen stellen, sobald die Verarbeitung abgeschlossen ist.',
+    'notebook.view.processing.description':
+      'Ihre Dateien werden indiziert. Sie können Fragen stellen, sobald die Verarbeitung abgeschlossen ist.',
     'notebook.view.processing.heading': 'Ressourcen werden verarbeitet...',
-    'notebook.view.upload.heading': 'Fügen Sie eine Ressource hinzu, um loszulegen',
+    'notebook.view.upload.heading':
+      'Fügen Sie eine Ressource hinzu, um loszulegen',
     'notebooks.actions.delete': 'Löschen',
     'notebooks.actions.rename': 'Umbenennen',
     'notebooks.card.openAria': 'Notizbuch {{name}} öffnen',
     'notebooks.delete.action': 'Löschen',
-    'notebooks.delete.message': 'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Prompts, Antworten und Feedback aus Ihren Aktivitäten gelöscht.',
+    'notebooks.delete.message':
+      'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Prompts, Antworten und Feedback aus Ihren Aktivitäten gelöscht.',
     'notebooks.delete.title': '{{name}} löschen?',
     'notebooks.delete.toast': 'Notizbuch gelöscht!',
     'notebooks.documents_one': '{{count}} Ressource',
     'notebooks.documents_other': '{{count}} Ressourcen',
     'notebooks.empty.action': 'Neues Notizbuch erstellen',
-    'notebooks.empty.description': 'Erstellen Sie ein neues Notizbuch, um Ihre Quellen zu organisieren und KI-gestützte Erkenntnisse zu generieren.',
+    'notebooks.empty.description':
+      'Erstellen Sie ein neues Notizbuch, um Ihre Quellen zu organisieren und KI-gestützte Erkenntnisse zu generieren.',
     'notebooks.empty.title': 'Keine Notizbücher erstellt',
-    'notebooks.prompts.accessIssue.title': 'Ich benötige Hilfe bei einem Zugriffsproblem',
+    'notebooks.prompts.accessIssue.title':
+      'Ich benötige Hilfe bei einem Zugriffsproblem',
     'notebooks.prompts.coreConcepts.title': 'Was sind die Kernkonzepte?',
-    'notebooks.prompts.vulnerabilities.title': 'Meine kritischen Schwachstellen anzeigen',
+    'notebooks.prompts.vulnerabilities.title':
+      'Meine kritischen Schwachstellen anzeigen',
     'notebooks.rename.inline.tooltip': 'Zum Umbenennen klicken',
-    'notebooks.rename.inline.error': 'Das Umbenennen von „{{notebookName}}“ ist fehlgeschlagen.',
+    'notebooks.rename.inline.error':
+      'Das Umbenennen von „{{notebookName}}“ ist fehlgeschlagen.',
     'notebooks.title': 'Meine Notizbücher',
     'notebooks.updated.days': 'Aktualisiert vor {{days}} Tagen',
     'notebooks.updated.on': 'Aktualisiert am',
@@ -265,7 +309,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'prompts.codeReadability.message':
       'Können Sie mir Techniken vorschlagen, mit denen ich meinen Code lesbarer und wartungsfreundlicher gestalten kann?',
     'prompts.codeReadability.title': 'Hilfe zur Lesbarkeit des Codes erhalten',
-    'prompts.debugging.message': 'Meine Anwendung gibt einen Fehler bei der Verbindung mit der Datenbank aus. Können Sie mir helfen, das Problem zu ermitteln?',
+    'prompts.debugging.message':
+      'Meine Anwendung gibt einen Fehler bei der Verbindung mit der Datenbank aus. Können Sie mir helfen, das Problem zu ermitteln?',
     'prompts.debugging.title': 'Hilfe beim Debuggen erhalten',
     'prompts.developmentConcept.message':
       'Können Sie erklären, wie eine Microservices-Architektur funktioniert und welche Vorteile sie gegenüber einem monolithischen Design bietet?',
@@ -273,7 +318,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'prompts.documentation.message':
       'Können Sie die Dokumentation zur Implementierung der OAuth 2.0-Authentifizierung in einer Webanwendung zusammenfassen?',
     'prompts.documentation.title': 'Dokumentationszusammenfassung',
-    'prompts.eventDriven.message': 'Können Sie erklären, was ereignisgesteuerte Architektur ist und wann ihre Verwendung in der Softwareentwicklung von Vorteil ist?',
+    'prompts.eventDriven.message':
+      'Können Sie erklären, was ereignisgesteuerte Architektur ist und wann ihre Verwendung in der Softwareentwicklung von Vorteil ist?',
     'prompts.eventDriven.title': 'Ereignisgesteuerte Architektur erläutern',
     'prompts.gitWorkflows.message':
       'Ich möchte Änderungen am Code in einem anderen Branch vornehmen, ohne meine bestehende Arbeit zu verlieren. Wie geht man dabei mit Git vor?',
@@ -281,7 +327,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'prompts.openshift.message':
       'Können Sie mich bei der Erstellung eines neuen Deployments in OpenShift für eine containerisierte Anwendung unterstützen?',
     'prompts.openshift.title': 'OpenShift-Deployment erstellen',
-    'prompts.rhdh.message': 'Können Sie mich bei den ersten Schritten zur Nutzung des Developer Hub als Entwickler unterstützen, z. B. beim Erkunden des Softwarekatalogs und beim Hinzufügen meines Dienstes?',
+    'prompts.rhdh.message':
+      'Können Sie mich bei den ersten Schritten zur Nutzung des Developer Hub als Entwickler unterstützen, z. B. beim Erkunden des Softwarekatalogs und beim Hinzufügen meines Dienstes?',
     'prompts.rhdh.title': 'Erste Schritte mit Red Hat Developer Hub',
     'prompts.sortingAlgorithms.message':
       'Können Sie den Unterschied zwischen Quicksort und Mergesort erklären und wann man welchen Algorithmus verwendet?',
@@ -303,7 +350,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'settings.mcp.label': 'MCP-Einstellungen',
     'settings.prompt.label': 'Prompt-Einstellungen',
     'settings.pinned.disable': 'Angeheftete Chats deaktivieren',
-    'settings.pinned.disabled.description': 'Angeheftete Chats sind derzeit deaktiviert',
+    'settings.pinned.disabled.description':
+      'Angeheftete Chats sind derzeit deaktiviert',
     'settings.pinned.enable': 'Angeheftete Chats aktivieren',
     'settings.pinned.enabled.description':
       'Angeheftete Chats sind derzeit aktiviert',
@@ -391,7 +439,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'sort.oldest': 'Datum (ältestes zuerst)',
     'sources.chip.label_one': '{{count}} Quelle',
     'sources.chip.label_other': '{{count}} Quellen',
-    'sources.modal.description': 'Zur Generierung dieser KI-Antwort und zur Bereitstellung unterstützender Informationen wurden die folgenden Quellen verwendet:',
+    'sources.modal.description':
+      'Zur Generierung dieser KI-Antwort und zur Bereitstellung unterstützender Informationen wurden die folgenden Quellen verwendet:',
     'sources.modal.title': 'Quellen',
     'sources.popover.closeAriaLabel': 'Quellen schließen',
     'tabs.ariaLabel': 'Ansichten des intelligenten Assistenten',
@@ -428,15 +477,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'tooltip.settings': 'Chatbot-Optionen',
     'user.guest': 'Gast',
     'user.loading': '...',
-      'disclaimer': 'Dieses Feature nutzt KI-Technologie. Geben Sie bei Ihrer Eingabe keine persönlichen oder sonstigen sensiblen Informationen an. Interaktionen können dazu genutzt werden, die Produkte oder Dienstleistungen von Red Hat zu verbessern.',
-    'icon.permissionRequired.alt': 'Symbol „Berechtigung erforderlich“',
-    'mcp.settings.readOnlyAccess': 'Sie haben Lesezugriff auf die MCP-Server.',
-    'permission.notebooks.goBack': 'Zurück',
-    'permission.required.description': 'Um <subject/> anzuzeigen, wenden Sie sich an den Administrator, um die Berechtigung <permissions/> zu erhalten.',
-    'permission.required.title': 'Fehlende Berechtigungen',
-    'permission.subject.notebooks': 'die Notizbücher des intelligenten Assistenten',
-    'permission.subject.plugin': 'das Plugin des intelligenten Assistenten',
-},
+  },
 });
 
 export default intelligentAssistantTranslationDe;

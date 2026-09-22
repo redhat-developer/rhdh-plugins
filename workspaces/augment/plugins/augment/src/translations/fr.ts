@@ -92,7 +92,8 @@ const augmentTranslationFr = createTranslationMessages({
     'chatInput.stopGeneration': 'Stop generation',
     'chatInput.stopMessageGeneration': 'Stop message generation',
     'chatInput.sendMessage': 'Send message',
-    'chatInput.selectAgentPrompt': 'Sélectionnez un agent pour commencer à discuter.',
+    'chatInput.selectAgentPrompt':
+      'Sélectionnez un agent pour commencer à discuter.',
     'welcomeScreen.logoAlt': 'Application logo',
     'welcomeScreen.emptyPromptHint': 'Type a question below to get started',
     'welcomeScreen.logoError':
@@ -261,15 +262,19 @@ const augmentTranslationFr = createTranslationMessages({
     'keyboardShortcuts.navigateMessages': 'Naviguer entre les messages',
     'confirmDialog.confirm': 'Confirm',
     'confirmDialog.cancel': 'Cancel',
-    'onboardingBanner.dismissAriaLabel': 'Rejeter le guide d\'intégration',
+    'onboardingBanner.dismissAriaLabel': "Rejeter le guide d'intégration",
     'onboardingBanner.title': 'Rencontrez vos agents IA',
-    'onboardingBanner.subtitle': '{{appName}} vous met en relation avec des agents IA spécialisés. Voici comment commencer :',
+    'onboardingBanner.subtitle':
+      '{{appName}} vous met en relation avec des agents IA spécialisés. Voici comment commencer :',
     'onboardingBanner.step1Title': 'Choisissez un agent',
-    'onboardingBanner.step1Description': 'Choisissez un agent IA adapté à votre tâche',
-    'onboardingBanner.step2Title': 'Posez n\'importe quelle question',
-    'onboardingBanner.step2Description': 'Décrivez vos besoins en langage naturel',
+    'onboardingBanner.step1Description':
+      'Choisissez un agent IA adapté à votre tâche',
+    'onboardingBanner.step2Title': "Posez n'importe quelle question",
+    'onboardingBanner.step2Description':
+      'Décrivez vos besoins en langage naturel',
     'onboardingBanner.step3Title': 'Obtenir des résultats',
-    'onboardingBanner.step3Description': 'Les agents utilisent des outils et des connaissances pour livrer',
+    'onboardingBanner.step3Description':
+      'Les agents utilisent des outils et des connaissances pour livrer',
     'agentGallery.heading': 'Agents',
     'agentGallery.searchPlaceholder': 'Agents de recherche...',
     'agentGallery.searchAriaLabel': 'Agents de recherche',
@@ -281,8 +286,9 @@ const augmentTranslationFr = createTranslationMessages({
     'agentGallery.noAgentsInCategory': 'Aucun agent dans cette catégorie',
     'agentGallery.retry': 'Réessayer',
     'agentGallery.noAgentsTitle': 'Aucun agent disponible pour le moment',
-    'agentGallery.noAgentsHint': 'Demandez à votre administrateur de déployer des agents',
-    'agentDetail.closeAriaLabel': 'Détails de l\'agent',
+    'agentGallery.noAgentsHint':
+      'Demandez à votre administrateur de déployer des agents',
+    'agentDetail.closeAriaLabel': "Détails de l'agent",
     'agentDetail.about': 'À propos',
     'agentDetail.skillsWithCount': 'Compétences ({{count}})',
     'agentDetail.skillFallback': 'Compétence {{n}}',
@@ -300,14 +306,19 @@ const augmentTranslationFr = createTranslationMessages({
     'formRequestCard.cancel': 'Annuler',
     'formRequestCard.submit': 'Envoyer',
     'authRequiredCard.oauthTitle': 'Authentification requise',
-    'authRequiredCard.oauthSubtitle': 'Cet agent a besoin que vous vous connectiez pour continuer.',
+    'authRequiredCard.oauthSubtitle':
+      'Cet agent a besoin que vous vous connectiez pour continuer.',
     'authRequiredCard.signIn': 'Se connecter',
-    'authRequiredCard.afterSignInHint': 'Après vous être connecté(e), cliquez ci-dessous pour continuer :',
+    'authRequiredCard.afterSignInHint':
+      'Après vous être connecté(e), cliquez ci-dessous pour continuer :',
     'authRequiredCard.signedIn': 'Je me suis connecté(e)',
-    'authRequiredCard.noUrlHint': 'Veuillez terminer le processus d\'authentification pour continuer.',
+    'authRequiredCard.noUrlHint':
+      "Veuillez terminer le processus d'authentification pour continuer.",
     'authRequiredCard.credentialsTitle': 'Qualifications requises',
-    'authRequiredCard.credentialsSubtitle': 'Cet agent a besoin d\'identifiants pour continuer.',
-    'authRequiredCard.submitCredentials': 'Soumettre les informations d\'identification',
+    'authRequiredCard.credentialsSubtitle':
+      "Cet agent a besoin d'identifiants pour continuer.",
+    'authRequiredCard.submitCredentials':
+      "Soumettre les informations d'identification",
     'artifact.defaultName': 'Artefact',
     'artifact.expand': 'Développer',
     'artifact.collapse': 'Réduire',

@@ -92,7 +92,8 @@ const augmentTranslationJa = createTranslationMessages({
     'chatInput.stopGeneration': 'Stop generation',
     'chatInput.stopMessageGeneration': 'Stop message generation',
     'chatInput.sendMessage': 'Send message',
-    'chatInput.selectAgentPrompt': 'チャットを開始するには、エージェントを選択します',
+    'chatInput.selectAgentPrompt':
+      'チャットを開始するには、エージェントを選択します',
     'welcomeScreen.logoAlt': 'Application logo',
     'welcomeScreen.emptyPromptHint': 'Type a question below to get started',
     'welcomeScreen.logoError':
@@ -204,7 +205,8 @@ const augmentTranslationJa = createTranslationMessages({
     'agentsPanel.saveSuccess': 'Configuration saved.',
     'agentsPanel.reset': 'Reset',
     'agentsPanel.noAgentsTitle': 'No agents configured',
-    'agentsPanel.noAgentsSubtitle': '使い始めるには、最初のエージェントを作成します。',
+    'agentsPanel.noAgentsSubtitle':
+      '使い始めるには、最初のエージェントを作成します。',
     'agentsPanel.createFirstAgent': 'Create Your First Agent',
     'agentsPanel.selectAgent': 'Select an agent from the list',
     'agentsPanel.topology': 'Topology',
@@ -263,13 +265,16 @@ const augmentTranslationJa = createTranslationMessages({
     'confirmDialog.cancel': 'Cancel',
     'onboardingBanner.dismissAriaLabel': 'オンボーディングガイドを閉じる',
     'onboardingBanner.title': 'AI エージェントの概要',
-    'onboardingBanner.subtitle': '{{appName}} は、特定分野に特化した AI エージェントとの連携を可能にします。開始方法は次のとおりです:',
+    'onboardingBanner.subtitle':
+      '{{appName}} は、特定分野に特化した AI エージェントとの連携を可能にします。開始方法は次のとおりです:',
     'onboardingBanner.step1Title': 'エージェントを選択する',
-    'onboardingBanner.step1Description': 'タスクに適した AI エージェントを選択する',
+    'onboardingBanner.step1Description':
+      'タスクに適した AI エージェントを選択する',
     'onboardingBanner.step2Title': '何でも質問してください',
     'onboardingBanner.step2Description': '自然言語で必要な内容を記述する',
     'onboardingBanner.step3Title': '結果を取得する',
-    'onboardingBanner.step3Description': 'エージェントはツールとナレッジを活用して結果を出力します',
+    'onboardingBanner.step3Description':
+      'エージェントはツールとナレッジを活用して結果を出力します',
     'agentGallery.heading': 'エージェント',
     'agentGallery.searchPlaceholder': 'エージェントを検索中...',
     'agentGallery.searchAriaLabel': 'エージェントを検索する',
@@ -278,7 +283,8 @@ const augmentTranslationJa = createTranslationMessages({
     'agentGallery.tabPinned': '固定',
     'agentGallery.listAriaLabel': '利用可能なエージェント',
     'agentGallery.noMatchSearch': '検索条件に一致するエージェントはありません',
-    'agentGallery.noAgentsInCategory': 'このカテゴリーにはエージェントはありません',
+    'agentGallery.noAgentsInCategory':
+      'このカテゴリーにはエージェントはありません',
     'agentGallery.retry': '再試行',
     'agentGallery.noAgentsTitle': '利用可能なエージェントはまだありません',
     'agentGallery.noAgentsHint': '管理者にエージェントのデプロイを依頼する',
@@ -300,13 +306,17 @@ const augmentTranslationJa = createTranslationMessages({
     'formRequestCard.cancel': 'キャンセル',
     'formRequestCard.submit': '送信',
     'authRequiredCard.oauthTitle': '認証は必須です',
-    'authRequiredCard.oauthSubtitle': '続行するには、このエージェントにサインインする必要があります',
+    'authRequiredCard.oauthSubtitle':
+      '続行するには、このエージェントにサインインする必要があります',
     'authRequiredCard.signIn': 'サインイン',
-    'authRequiredCard.afterSignInHint': 'サインイン後、下記をクリックして続行します:',
+    'authRequiredCard.afterSignInHint':
+      'サインイン後、下記をクリックして続行します:',
     'authRequiredCard.signedIn': 'サインインを完了しました',
-    'authRequiredCard.noUrlHint': '続行するには、認証フローを完了してください。',
+    'authRequiredCard.noUrlHint':
+      '続行するには、認証フローを完了してください。',
     'authRequiredCard.credentialsTitle': '認証情報は必須です',
-    'authRequiredCard.credentialsSubtitle': '処理を続行するには、このエージェントに認証情報が必要です',
+    'authRequiredCard.credentialsSubtitle':
+      '処理を続行するには、このエージェントに認証情報が必要です',
     'authRequiredCard.submitCredentials': '認証情報を送信する',
     'artifact.defaultName': 'アーティファクト',
     'artifact.expand': '展開する',

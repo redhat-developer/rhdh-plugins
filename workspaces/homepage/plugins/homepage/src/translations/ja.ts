@@ -27,7 +27,8 @@ const homepageTranslationJa = createTranslationMessages({
     'header.welcome': 'おかえりなさい!',
     'header.welcomePersonalized': 'おかえりなさい、{{name}}!',
     'header.local': 'ローカル',
-    'homePage.empty': 'ホームページウィジェットが設定されていないか、見つかりません。',
+    'homePage.empty':
+      'ホームページウィジェットが設定されていないか、見つかりません。',
     'search.placeholder': '検索',
     'search.clearButton': 'クリア',
     'quickAccess.title': 'クイックアクセス',
@@ -37,7 +38,8 @@ const homepageTranslationJa = createTranslationMessages({
     'featuredDocs.learnMore': ' 詳細',
     'starredEntities.title': '星印付きカタログエンティティー',
     'recentlyVisited.title': '最近表示した項目',
-    'recentlyVisited.description': '最近表示したエンティティーやページにすばやくアクセスします',
+    'recentlyVisited.description':
+      '最近表示したエンティティーやページにすばやくアクセスします',
     'topVisited.title': '最も表示した項目',
     'topVisited.description': '最も頻繁にアクセスするエンティティーとサービス',
     'templates.title': 'テンプレートの探索',

@@ -37,9 +37,7 @@ const translationsTranslationDe = createTranslationMessages({
     'common.noData': 'Keine Daten verfügbar',
     'common.refresh': 'Aktualisieren',
     'language.displayFormat': '{{displayName}} ({{code}})',
-      'table.headers.key': 'Schlüssel',
-    'table.headers.refId': 'Referenz-ID',
-},
+  },
 });
 
 export default translationsTranslationDe;

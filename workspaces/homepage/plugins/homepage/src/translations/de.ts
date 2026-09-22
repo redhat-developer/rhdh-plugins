@@ -27,7 +27,8 @@ const homepageTranslationDe = createTranslationMessages({
     'header.welcome': 'Willkommen zurück!',
     'header.welcomePersonalized': 'Willkommen zurück, {{name}}!',
     'header.local': 'Lokal',
-    'homePage.empty': 'Es wurden keine Widgets für die Startseite konfiguriert oder gefunden.',
+    'homePage.empty':
+      'Es wurden keine Widgets für die Startseite konfiguriert oder gefunden.',
     'search.placeholder': 'Suchen',
     'search.clearButton': 'Löschen',
     'quickAccess.title': 'Schnellzugriff',
@@ -37,9 +38,11 @@ const homepageTranslationDe = createTranslationMessages({
     'featuredDocs.learnMore': ' Mehr erfahren',
     'starredEntities.title': 'Mit Sternchen versehene Katalog-Entitys',
     'recentlyVisited.title': 'Zuletzt angesehen',
-    'recentlyVisited.description': 'Schnellzugriff auf kürzlich angesehene Elemente und Seiten',
+    'recentlyVisited.description':
+      'Schnellzugriff auf kürzlich angesehene Elemente und Seiten',
     'topVisited.title': 'Meistbesucht',
-    'topVisited.description': 'Ihre am häufigsten aufgerufenen Entitys und Services',
+    'topVisited.description':
+      'Ihre am häufigsten aufgerufenen Entitys und Services',
     'templates.title': 'Vorlagen erkunden',
     'templates.fetchError': 'Daten konnten nicht abgerufen werden.',
     'templates.error': 'Unbekannter Fehler',

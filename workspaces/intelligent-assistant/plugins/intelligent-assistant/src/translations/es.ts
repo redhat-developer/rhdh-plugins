@@ -31,7 +31,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
       'Se incluirá una captura de pantalla con su mensaje.',
     'modelSelector.visionScreenshot.ariaLabel':
       'Contexto de captura de pantalla del modelo de visión',
-    'modelSelector.disabledTooltip': 'Cada sesión de chat admite un solo modelo. Para cambiar de modelo, abra un nuevo chat.',
+    'modelSelector.disabledTooltip':
+      'Cada sesión de chat admite un solo modelo. Para cambiar de modelo, abra un nuevo chat.',
     'aria.chatbotSelector': 'Selector de chatbot',
     'aria.close': 'Cerrar chatbot',
     'aria.closeDrawerPanel': 'Cerrar el panel lateral',
@@ -45,7 +46,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'attach.menu.description': 'Adjuntar un archivo JSON, YAML o TXT',
     'attach.menu.title': 'Adjuntar',
     'button.newChat': 'Nuevo chat',
-    'chatbox.emptyState.noPinnedChats': 'Fijar los chats para mantenerlos en la parte superior',
+    'chatbox.emptyState.noPinnedChats':
+      'Fijar los chats para mantenerlos en la parte superior',
     'chatbox.emptyState.noRecentChats': 'No hay chats recientes',
     'chatbox.emptyState.noResults.body':
       'Ajuste su solicitud de búsqueda y vuelva a intentarlo. Revise la ortografía o pruebe con un término más general.',
@@ -74,7 +76,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'conversation.category.savedPrompts': 'Prompts guardados',
     'conversation.delete': 'Eliminar',
     'conversation.delete.confirm.action': 'Eliminar',
-    'conversation.delete.confirm.message': 'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada, como las indicaciones, las respuestas y los comentarios, de su actividad.',
+    'conversation.delete.confirm.message':
+      'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada, como las indicaciones, las respuestas y los comentarios, de su actividad.',
     'conversation.delete.confirm.title': '¿Eliminar "{{chatName}}"?',
     'conversation.removeFromPinnedChats': 'Quitar fijación',
     'conversation.rename': 'Cambiar el nombre',
@@ -105,7 +108,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'feedback.tooltips.listen': 'Escuchar',
     'feedback.tooltips.listening': 'Escuchando',
     'file.upload.error.alreadyExists': 'El archivo ya existe.',
-    'file.upload.error.fileTooLarge': 'El tamaño del archivo es demasiado grande. Asegúrese de que el archivo tenga menos de 25 MB.',
+    'file.upload.error.fileTooLarge':
+      'El tamaño del archivo es demasiado grande. Asegúrese de que el archivo tenga menos de 25 MB.',
     'file.upload.error.multipleFiles': 'Subió más de un archivo.',
     'file.upload.error.readFailed':
       'No se pudo leer el archivo: {{errorMessage}}',
@@ -114,23 +118,30 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'footer.accuracy.label':
       'Revise siempre el contenido generado con IA antes de usarlo.',
     'icon.lightspeed.alt': 'icono de asistente inteligente',
-    'lcore.loadError.description': 'El back-end del asistente inteligente no devolvió una lista de modelos. Compruebe que el servicio esté en funcionamiento y que pueda accederse a él y, luego, vuelva a intentarlo.',
+    'lcore.loadError.description':
+      'El back-end del asistente inteligente no devolvió una lista de modelos. Compruebe que el servicio esté en funcionamiento y que pueda accederse a él y, luego, vuelva a intentarlo.',
     'lcore.loadError.title': 'No se pudieron cargar los modelos',
-    'lcore.notConfigured.backendDocs': 'Configuración de back-end del asistente inteligente',
-    'lcore.notConfigured.description': 'El asistente inteligente requiere un LLM registrado. Comuníquese con el administrador de la plataforma de su organización para completar la configuración.',
-    'lcore.notConfigured.developerLightspeedDocs': 'Configuración del asistente inteligente de Developer Hub',
+    'lcore.notConfigured.backendDocs':
+      'Configuración de back-end del asistente inteligente',
+    'lcore.notConfigured.description':
+      'El asistente inteligente requiere un LLM registrado. Comuníquese con el administrador de la plataforma de su organización para completar la configuración.',
+    'lcore.notConfigured.developerLightspeedDocs':
+      'Configuración del asistente inteligente de Developer Hub',
     'lcore.notConfigured.title': 'Conecte un LLM para comenzar',
     'mcp.settings.closeAriaLabel': 'Cerrar configuración de MCP',
     'mcp.settings.closeConfigureModalAriaLabel':
       'Cerrar modal de configuración',
-    'mcp.settings.configureServerTitle': 'Configuración del servidor MCP {{serverName}}',
+    'mcp.settings.configureServerTitle':
+      'Configuración del servidor MCP {{serverName}}',
     'mcp.settings.edit': 'Modificar',
     'mcp.settings.editServerAriaLabel': 'Modificar {{serverName}}',
     'mcp.settings.enabled': 'Activado',
     'mcp.settings.enterToken': 'Ingresar su token',
     'mcp.settings.loading': 'Cargando servidores MCP…',
-    'mcp.settings.modalDescription': 'Las credenciales están cifradas y las operaciones utilizan los permisos asignados a su usuario.',
-    'mcp.settings.modalDescriptionDcr': 'Este servidor utiliza el Registro dinámico de clientes (DCR). Los tokens se generan automáticamente mediante su identidad de Backstage; no se necesita ningún token manual.',
+    'mcp.settings.modalDescription':
+      'Las credenciales están cifradas y las operaciones utilizan los permisos asignados a su usuario.',
+    'mcp.settings.modalDescriptionDcr':
+      'Este servidor utiliza el Registro dinámico de clientes (DCR). Los tokens se generan automáticamente mediante su identidad de Backstage; no se necesita ningún token manual.',
     'mcp.settings.authenticationToken': 'Token de autenticación',
     'mcp.settings.modal.authenticationHeading': 'Autenticación',
     'mcp.settings.modal.credentialMode.organization':
@@ -142,7 +153,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.modal.loadingTools': 'Cargando herramientas…',
     'mcp.settings.modal.fetchingStatus': 'Extrayendo estado…',
     'mcp.settings.modal.loadingStatus': 'Desconectando…',
-    'mcp.settings.modal.tokenRemovedWarning': 'El token se eliminó. Para volver a utilizar este servidor MCP, proporcione un nuevo token.',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'El token se eliminó. Para volver a utilizar este servidor MCP, proporcione un nuevo token.',
     'mcp.settings.modal.noToolsAvailable': 'No hay herramientas disponibles.',
     'mcp.settings.modal.toolsLoadFailed':
       'No se pudieron cargar las herramientas.',
@@ -150,7 +162,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
       'Este servidor está activo y disponible en el chat.',
     'mcp.settings.modal.enabledDescriptionOff':
       'Este servidor está deshabilitado y no está disponible en el chat.',
-    'mcp.settings.modal.enabledDescriptionTokenRequired': 'Este servidor está actualmente deshabilitado. Proporcione un token para habilitarlo.',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'Este servidor está actualmente deshabilitado. Proporcione un token para habilitarlo.',
     'mcp.settings.name': 'Nombre',
     'mcp.settings.noneAvailable': 'No hay servidores MCP disponibles.',
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
@@ -170,11 +183,14 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.toggleServerAriaLabel': 'Alternar {{serverName}}',
     'mcp.settings.token.clearAriaLabel': 'Borrar entrada de token',
     'mcp.settings.token.connectionSuccessful': 'Conexión exitosa',
-    'mcp.settings.token.invalidCredentials': 'Credenciales no válidas. Verifique el URL del servidor y el token.',
+    'mcp.settings.token.invalidCredentials':
+      'Credenciales no válidas. Verifique el URL del servidor y el token.',
     'mcp.settings.token.savingAndValidating': 'Guardando y validando token…',
-    'mcp.settings.token.urlUnavailableForValidation': 'No se pudo validar el token porque el URL del servidor no está disponible.',
+    'mcp.settings.token.urlUnavailableForValidation':
+      'No se pudo validar el token porque el URL del servidor no está disponible.',
     'mcp.settings.token.validating': 'Validando token…',
-    'mcp.settings.token.validationFailed': 'No se pudo validar. Verifique el URL del servidor y el token.',
+    'mcp.settings.token.validationFailed':
+      'No se pudo validar. Verifique el URL del servidor y el token.',
     'menu.newConversation': 'Nuevo chat',
     'message.options.label': 'Opciones',
     'modal.cancel': 'Cancelar',
@@ -185,35 +201,47 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'modal.title.preview': 'Previsualizar archivo adjunto',
     'notebook.document.rename': 'Cambiar el nombre',
     'notebook.document.rename.tooltip': 'Hacer clic para cambiar el nombre',
-    'notebook.document.rename.error': 'No se pudo cambiar el nombre de "{{documentName}}".',
+    'notebook.document.rename.error':
+      'No se pudo cambiar el nombre de "{{documentName}}".',
     'notebook.document.rename.conflict': 'El nombre ya existe.',
-    'notebook.document.rename.tooLong': 'El nombre es demasiado largo (máximo 255).',
+    'notebook.document.rename.tooLong':
+      'El nombre es demasiado largo (máximo 255).',
     'notebook.document.delete': 'Eliminar',
     'notebook.document.delete.action': 'Eliminar',
-    'notebook.document.delete.description': '¿Está seguro de que quiere eliminar <documentName/> de este cuaderno? Esta acción no se puede deshacer.',
-    'notebook.document.delete.success': '"{{documentName}}" eliminado correctamente.',
+    'notebook.document.delete.description':
+      '¿Está seguro de que quiere eliminar <documentName/> de este cuaderno? Esta acción no se puede deshacer.',
+    'notebook.document.delete.success':
+      '"{{documentName}}" eliminado correctamente.',
     'notebook.document.delete.title': '¿Eliminar recurso?',
     'notebook.overwrite.modal.action': 'Cargar ({{count}})',
     'notebook.overwrite.modal.back': 'Atrás',
-    'notebook.overwrite.modal.description': 'Ya existen {{duplicateCount}} archivos en este cuaderno. Se agregarán {{newCount}} nuevos recursos de todos modos.',
+    'notebook.overwrite.modal.description':
+      'Ya existen {{duplicateCount}} archivos en este cuaderno. Se agregarán {{newCount}} nuevos recursos de todos modos.',
     'notebook.overwrite.modal.ignore': 'Ignorar archivos duplicados',
     'notebook.overwrite.modal.replace': 'Reemplazar archivos existentes',
     'notebook.overwrite.modal.title': 'El archivo ya existe',
     'notebook.overwrite.modal.title.one': 'El archivo ya existe',
     'notebook.overwrite.modal.title.other': 'Los archivos ya existen',
-    'notebook.overwrite.modal.description.one': 'Ya existe {{duplicateCount}} archivo en este cuaderno. Se agregarán {{newCount}} nuevos recursos de todos modos.',
-    'notebook.overwrite.modal.description.other': 'Ya existen {{duplicateCount}} archivos en este cuaderno. Se agregarán {{newCount}} nuevos recursos de todos modos.',
-    'notebook.upload.error.fileTooLarge': 'Error de carga: el tamaño del archivo supera el límite de 25 MB.',
-    'notebook.upload.error.tooManyFiles': 'Error de carga: se permite un máximo de {{max}} archivos.',
-    'notebook.upload.error.unsupportedType': 'Error de carga: se encontraron tipos de archivo no compatibles. Cargue solo archivos de tipos compatibles.',
+    'notebook.overwrite.modal.description.one':
+      'Ya existe {{duplicateCount}} archivo en este cuaderno. Se agregarán {{newCount}} nuevos recursos de todos modos.',
+    'notebook.overwrite.modal.description.other':
+      'Ya existen {{duplicateCount}} archivos en este cuaderno. Se agregarán {{newCount}} nuevos recursos de todos modos.',
+    'notebook.upload.error.fileTooLarge':
+      'Error de carga: el tamaño del archivo supera el límite de 25 MB.',
+    'notebook.upload.error.tooManyFiles':
+      'Error de carga: se permite un máximo de {{max}} archivos.',
+    'notebook.upload.error.unsupportedType':
+      'Error de carga: se encontraron tipos de archivo no compatibles. Cargue solo archivos de tipos compatibles.',
     'notebook.upload.failed': 'No se pudo cargar "{{fileName}}".',
     'notebook.upload.modal.addButton': 'Agregar ({{count}})',
     'notebook.upload.modal.addButtonEmpty': 'Agregar',
     'notebook.upload.modal.browseButton': 'Cargar',
-    'notebook.upload.modal.dragDropTitle': 'Arrastre y suelte los archivos aquí, o haga clic para explorar',
+    'notebook.upload.modal.dragDropTitle':
+      'Arrastre y suelte los archivos aquí, o haga clic para explorar',
     'notebook.upload.modal.infoText':
       'Tipos de archivo aceptados: .md, .txt, .pdf, .json, .yaml, .log',
-    'notebook.upload.modal.maxFileSize': 'El tamaño máximo del archivo es de 25 MB.',
+    'notebook.upload.modal.maxFileSize':
+      'El tamaño máximo del archivo es de 25 MB.',
     'notebook.upload.modal.supportedFormats': 'Formatos compatibles:',
     'notebook.upload.modal.removeFile': 'Eliminar {{fileName}}',
     'notebook.upload.modal.selectedFiles':
@@ -224,36 +252,45 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebook.view.documents.add': 'Agregar',
     'notebook.view.documents.count_one': '{{count}} recurso',
     'notebook.view.documents.count_other': '{{count}} recursos',
-    'notebook.view.documents.maxReached': 'Se permite un máximo de 10 recursos. Para subir un nuevo recurso, elimine uno existente.',
+    'notebook.view.documents.maxReached':
+      'Se permite un máximo de 10 recursos. Para subir un nuevo recurso, elimine uno existente.',
     'notebook.view.documents.uploading': 'Cargando recurso',
-    'notebook.view.documents.uploadsInProgress': 'Espere a que finalicen las cargas actuales antes de agregar más recursos.',
-    'notebook.view.input.disabledTooltip': 'Seleccione al menos un recurso cargado para comenzar a chatear',
+    'notebook.view.documents.uploadsInProgress':
+      'Espere a que finalicen las cargas actuales antes de agregar más recursos.',
+    'notebook.view.input.disabledTooltip':
+      'Seleccione al menos un recurso cargado para comenzar a chatear',
     'notebook.view.input.placeholder': 'Preguntar por los recursos…',
     'notebook.view.sidebar.collapse': 'Contraer barra lateral',
     'notebook.view.sidebar.expand': 'Expandir barra lateral',
     'notebook.view.sidebar.resize': 'Cambiar el tamaño de la barra lateral',
     'notebook.view.title': 'Cuaderno sin título',
     'notebook.view.upload.action': 'Agregar un recurso',
-    'notebook.view.processing.description': 'Sus archivos están siendo indexados. Podrá empezar a hacer preguntas cuando termine el procesamiento.',
+    'notebook.view.processing.description':
+      'Sus archivos están siendo indexados. Podrá empezar a hacer preguntas cuando termine el procesamiento.',
     'notebook.view.processing.heading': 'Procesando recursos…',
     'notebook.view.upload.heading': 'Agregar un recurso para empezar',
     'notebooks.actions.delete': 'Eliminar',
     'notebooks.actions.rename': 'Cambiar el nombre',
     'notebooks.card.openAria': 'Abrir el cuaderno {{name}}',
     'notebooks.delete.action': 'Eliminar',
-    'notebooks.delete.message': 'Este cuaderno ya no aparecerá aquí. Esto también eliminará la actividad relacionada, como las indicaciones, las respuestas y los comentarios, de su actividad.',
+    'notebooks.delete.message':
+      'Este cuaderno ya no aparecerá aquí. Esto también eliminará la actividad relacionada, como las indicaciones, las respuestas y los comentarios, de su actividad.',
     'notebooks.delete.title': '¿Desea eliminar {{name}}?',
     'notebooks.delete.toast': 'Cuaderno eliminado',
     'notebooks.documents_one': '{{count}} recurso',
     'notebooks.documents_other': '{{count}} recursos',
     'notebooks.empty.action': 'Crear un nuevo cuaderno',
-    'notebooks.empty.description': 'Cree un nuevo cuaderno para organizar sus fuentes y generar información valiosa mediante IA.',
+    'notebooks.empty.description':
+      'Cree un nuevo cuaderno para organizar sus fuentes y generar información valiosa mediante IA.',
     'notebooks.empty.title': 'No se han creado cuadernos',
     'notebooks.prompts.accessIssue.title': 'Ayúdame con un problema de acceso',
-    'notebooks.prompts.coreConcepts.title': '¿Cuáles son los conceptos básicos?',
-    'notebooks.prompts.vulnerabilities.title': 'Muestra mis vulnerabilidades críticas',
+    'notebooks.prompts.coreConcepts.title':
+      '¿Cuáles son los conceptos básicos?',
+    'notebooks.prompts.vulnerabilities.title':
+      'Muestra mis vulnerabilidades críticas',
     'notebooks.rename.inline.tooltip': 'Hacer clic para cambiar el nombre',
-    'notebooks.rename.inline.error': 'No se pudo cambiar el nombre de "{{notebookName}}".',
+    'notebooks.rename.inline.error':
+      'No se pudo cambiar el nombre de "{{notebookName}}".',
     'notebooks.title': 'Mis cuadernos',
     'notebooks.updated.days': 'Actualizado hace {{days}} días',
     'notebooks.updated.on': 'Actualizado el',
@@ -398,7 +435,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'sort.oldest': 'Fecha (la más antigua primero)',
     'sources.chip.label_one': '{{count}} fuente',
     'sources.chip.label_other': '{{count}} fuentes',
-    'sources.modal.description': 'Las siguientes fuentes se utilizaron para generar esta respuesta de IA y proporcionar información de respaldo:',
+    'sources.modal.description':
+      'Las siguientes fuentes se utilizaron para generar esta respuesta de IA y proporcionar información de respaldo:',
     'sources.modal.title': 'Fuentes',
     'sources.popover.closeAriaLabel': 'Cerrar fuentes',
     'tabs.ariaLabel': 'Vistas del asistente inteligente',
@@ -435,15 +473,7 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'tooltip.settings': 'Opciones de chatbot',
     'user.guest': 'Invitado',
     'user.loading': '...',
-      'disclaimer': 'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
-    'icon.permissionRequired.alt': 'icono de permiso requerido',
-    'mcp.settings.readOnlyAccess': 'Tiene acceso de solo lectura a los servidores MCP.',
-    'permission.notebooks.goBack': 'Volver',
-    'permission.required.description': 'Para ver <subject/>, comuníquese con su administrador a fin de que le otorgue el permiso <permissions/>.',
-    'permission.required.title': 'Permisos faltantes',
-    'permission.subject.notebooks': 'cuadernos del asistente inteligente',
-    'permission.subject.plugin': 'complemento del asistente inteligente',
-},
+  },
 });
 
 export default intelligentAssistantTranslationEs;

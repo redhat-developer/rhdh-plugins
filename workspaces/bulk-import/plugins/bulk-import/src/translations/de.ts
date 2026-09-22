@@ -272,9 +272,7 @@ const bulkImportTranslationDe = createTranslationMessages({
     'workflows.workflowPending': 'Ausstehend',
     'workflows.workflowSuspended': 'Ausgesetzt',
     'workflows.workflowsFor': 'Workflows für {{importJobStatusId}}',
-      'repositories.logInToViewProjects': 'Anmelden, um Projekte anzuzeigen',
-    'repositories.logInToViewRepositories': 'Anmelden, um Repositorys anzuzeigen',
-},
+  },
 });
 
 export default bulkImportTranslationDe;

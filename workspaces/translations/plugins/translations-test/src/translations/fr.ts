@@ -25,18 +25,21 @@ const quickstartTranslationFr = createTranslationMessages({
   ref: translationsTestTranslationRef,
   messages: {
     'page.title': 'Plugin de test de traductions',
-    'page.subtitle': 'Un plugin pour tester les fonctionnalités de traduction et les fonctionnalités i18next',
+    'page.subtitle':
+      'Un plugin pour tester les fonctionnalités de traduction et les fonctionnalités i18next',
     'essentials.key': 'valeur de la clé',
-    'essentials.look.deep': 'valeur de l\'analyse approfondie',
+    'essentials.look.deep': "valeur de l'analyse approfondie",
     'interpolation.key': '{{what}} est {{how}}',
     'interpolation.nested.key': '{{what}} est {{how.value}}',
     'interpolation.complex.message': 'Voici un {{link}}.',
     'interpolation.complex.linkText': 'lien',
     'formatting.intlNumber': 'Certains {{val, nombre}}',
-    'formatting.intlNumberWithOptions': 'Certains {{val, nombre(minimumFractionDigits: 2)}}',
+    'formatting.intlNumberWithOptions':
+      'Certains {{val, nombre(minimumFractionDigits: 2)}}',
     'formatting.intlDateTime': 'Sur le {{val, datetime}}',
     'formatting.intlRelativeTime': 'Lorem {{val, temps relatif}}',
-    'formatting.intlRelativeTimeWithOptions': 'Lorem {{val, temps relatif (trimestre)}}',
+    'formatting.intlRelativeTimeWithOptions':
+      'Lorem {{val, temps relatif (trimestre)}}',
     'formatting.intlRelativeTimeWithOptionsExplicit':
       'Lorem {{val, relativetime(range: quarter; style: narrow;)}}',
     'plurals.key_zero': 'zéro',

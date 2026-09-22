@@ -27,7 +27,8 @@ const homepageTranslationEs = createTranslationMessages({
     'header.welcome': '¡Bienvenido de vuelta!',
     'header.welcomePersonalized': '¡Bienvenido de vuelta, {{name}}!',
     'header.local': 'Local',
-    'homePage.empty': 'No se configuraron ni encontraron widgets para la página de inicio.',
+    'homePage.empty':
+      'No se configuraron ni encontraron widgets para la página de inicio.',
     'search.placeholder': 'Buscar',
     'search.clearButton': 'Borrar',
     'quickAccess.title': 'Acceso rápido',
@@ -40,7 +41,8 @@ const homepageTranslationEs = createTranslationMessages({
     'recentlyVisited.description':
       'Acceso rápido a entidades y páginas vistas recientemente',
     'topVisited.title': 'Más visitados',
-    'topVisited.description': 'Entidades y servicios a los que accede con mayor frecuencia',
+    'topVisited.description':
+      'Entidades y servicios a los que accede con mayor frecuencia',
     'templates.title': 'Explorar plantillas',
     'templates.fetchError': 'No se pudieron obtener los datos.',
     'templates.error': 'Error desconocido',

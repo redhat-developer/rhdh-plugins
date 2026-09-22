@@ -29,7 +29,8 @@ const scorecardTranslationFr = createTranslationMessages({
     'dataSourcesDialog.title': 'Sources {{title}}',
     'dataSourcesDialog.close': 'Fermer',
     'dataSourcesDialog.unknownPlugin': 'Inconnu',
-    'dataSourcesDialog.statusTooltip': 'La valeur {{value}} correspond au seuil {{status}} {{expression}}',
+    'dataSourcesDialog.statusTooltip':
+      'La valeur {{value}} correspond au seuil {{status}} {{expression}}',
     'dataSourcesDialog.collectorStatusTooltip':
       "Ce collecteur fournit uniquement des données d'entrée. La valeur du check {{metric}} est calculée à partir des collecteurs et affichée sur la carte scorecard.",
     'dataSourcesDialog.collectorEmptyValue': '--',
@@ -89,8 +90,10 @@ const scorecardTranslationFr = createTranslationMessages({
       'Entité utilisateur introuvable dans le catalogue.',
     'metric.weightedStatusScoreCenterTooltipMaxLabel': 'Score maximal possible',
     'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Score total',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one': '{{status}}: entité {{count}}, score: {{score}}',
-    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other': '{{status}}: {{count}} entités, score: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
+      '{{status}}: entité {{count}}, score: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} entités, score: {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       'Entité {{count}}, chaque {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
@@ -98,14 +101,21 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.weightedStatusScoreLegendTooltipRowTotal': 'Score total {{total}}',
     'metric.drillDownCalculationFailures':
       'Une ou plusieurs entités ont rencontré une erreur lors du calcul de cette métrique.',
-    'metric.dora.deploymentFrequency.description': 'Permet de suivre la fréquence à laquelle le code est déployé avec succès en production au cours des 30 derniers jours. Les athlètes d\'élite interviennent à la demande (plusieurs fois par jour).',
+    'metric.dora.deploymentFrequency.description':
+      "Permet de suivre la fréquence à laquelle le code est déployé avec succès en production au cours des 30 derniers jours. Les athlètes d'élite interviennent à la demande (plusieurs fois par jour).",
     'metric.dora.deploymentFrequency.title': 'DORA - Fréquence de déploiement',
-    'metric.dora.medianLeadTimeForChanges.description': 'Mesure le temps médian entre la validation du code et son déploiement en production au cours des 30 derniers jours. Les artistes de haut niveau ont un délai de préavis inférieur à 24 heures.',
-    'metric.dora.medianLeadTimeForChanges.title': 'DORA - Délai médian de modification',
-    'metric.dora.changeFailureRate.description': 'Surveille le pourcentage de déploiements ayant entraîné une défaillance en production au cours des 30 derniers jours. Les entreprises les plus performantes maintiennent un taux d\'échec du changement inférieur à 5 %.',
-    'metric.dora.changeFailureRate.title': 'DORA - Taux d\'échec de modification',
-    'metric.dora.medianTimeToRestore.description': 'Permet de suivre le délai médian de rétablissement du service après un incident au cours des 30 derniers jours. Nos techniciens d\'élite rétablissent le service en moins d\'une heure.',
-    'metric.dora.medianTimeToRestore.title': 'DORA - Temps médian de restauration',
+    'metric.dora.medianLeadTimeForChanges.description':
+      'Mesure le temps médian entre la validation du code et son déploiement en production au cours des 30 derniers jours. Les artistes de haut niveau ont un délai de préavis inférieur à 24 heures.',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - Délai médian de modification',
+    'metric.dora.changeFailureRate.description':
+      "Surveille le pourcentage de déploiements ayant entraîné une défaillance en production au cours des 30 derniers jours. Les entreprises les plus performantes maintiennent un taux d'échec du changement inférieur à 5 %.",
+    'metric.dora.changeFailureRate.title':
+      "DORA - Taux d'échec de modification",
+    'metric.dora.medianTimeToRestore.description':
+      "Permet de suivre le délai médian de rétablissement du service après un incident au cours des 30 derniers jours. Nos techniciens d'élite rétablissent le service en moins d'une heure.",
+    'metric.dora.medianTimeToRestore.title':
+      'DORA - Temps médian de restauration',
     'metric.filecheck.description':
       'Vérifie si le fichier {{name}} existe dans le référentiel.',
     'metric.filecheck.title': 'Vérification du fichier : {{name}}',

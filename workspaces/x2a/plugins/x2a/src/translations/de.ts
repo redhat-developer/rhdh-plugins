@@ -59,15 +59,18 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'editProjectDialog.updateError': 'Projekt konnte nicht aktualisiert werden',
     'editProjectDialog.ownerChangeWarningTitle':
       'Eigentumsübertragung bestätigen',
-    'editProjectDialog.ownerChangeWarning': 'Ein Eigentümerwechsel kann dazu führen, dass Sie den Zugriff auf dieses Projekt verlieren, wenn Ihre Berechtigungen den neuen Eigentümer nicht abdecken. Ein Administrator kann den Zugriff bei Bedarf wiederherstellen.',
+    'editProjectDialog.ownerChangeWarning':
+      'Ein Eigentümerwechsel kann dazu führen, dass Sie den Zugriff auf dieses Projekt verlieren, wenn Ihre Berechtigungen den neuen Eigentümer nicht abdecken. Ein Administrator kann den Zugriff bei Bedarf wiederherstellen.',
     'editProjectDialog.ownerChangeConfirm': 'Eigentum übertragen',
     'editProjectDialog.nameRequired': 'Name ist erforderlich',
-    'editProjectDialog.ownerFormatHint': 'Muss eine Backstage-Entität-Referenz sein, z. B. user:default/name oder group:default/team',
+    'editProjectDialog.ownerFormatHint':
+      'Muss eine Backstage-Entität-Referenz sein, z. B. user:default/name oder group:default/team',
     'projectModulesCard.title': 'Module ({{count}})',
     'projectModulesCard.noModules': 'Noch keine Module gefunden...',
     'projectModulesCard.toReview': 'überprüfen',
     'projectModulesCard.published': 'veröffentlicht',
-    'projectModulesCard.spinner': 'Die Erkennungsphase wird ausgeführt und die Modulliste anhand des Migrationsplans aktualisiert…',
+    'projectModulesCard.spinner':
+      'Die Erkennungsphase wird ausgeführt und die Modulliste anhand des Migrationsplans aktualisiert…',
     'projectPage.title': 'Projekt',
     'projectPage.actionsTooltip':
       'Klicken Sie, um das Menü für Projektaktionen zu öffnen',
@@ -206,11 +209,14 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.telemetry.inputTokens': 'Eingabe-Tokens',
     'modulePage.phases.telemetry.outputTokens': 'Ausgabe-Tokens',
     'modulePage.phases.telemetry.toolCalls': 'Anzahl der Werkzeugaufrufe',
-    'modulePage.phases.telemetry.totalInputTokens': 'Gesamtzahl der Eingabe-Token',
-    'modulePage.phases.telemetry.totalOutputTokens': 'Gesamtzahl der Ausgabe-Token',
+    'modulePage.phases.telemetry.totalInputTokens':
+      'Gesamtzahl der Eingabe-Token',
+    'modulePage.phases.telemetry.totalOutputTokens':
+      'Gesamtzahl der Ausgabe-Token',
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Modulliste synchronisieren, um sie an den Migrationsplan anzupassen.',
-    'modulePage.phases.staleInstructions': 'Dieses Phasenergebnis ist veraltet, da eine vorgelagerte Phase erneut ausgeführt wurde. Zum Aktualisieren erneut ausführen.',
+    'modulePage.phases.staleInstructions':
+      'Dieses Phasenergebnis ist veraltet, da eine vorgelagerte Phase erneut ausgeführt wurde. Zum Aktualisieren erneut ausführen.',
     'time.duration.daysAndHours': '{{days}}T {{hours}}Std',
     'time.duration.daysOnly': '{{days}}T',
     'time.duration.hoursAndMinutes': '{{hours}}Std {{minutes}}Min',
@@ -275,19 +281,28 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'retriggerInit.errorStart':
       'Fehler beim Starten der Projektinitialisierung',
     'resyncMigrationPlan.action': 'Migrationsplan erneut synchronisieren',
-    'resyncMigrationPlan.confirm.title': 'Migrationsplan für „{{name}}“ erneut synchronisieren?',
-    'resyncMigrationPlan.confirm.message': 'Dadurch wird der Migrationsplan aus dem Ziel-Repository erneut gelesen und die Modulliste entsprechend aktualisiert. Neue Module werden hinzugefügt und Module, die nicht mehr im Plan enthalten sind, werden als entfernt markiert. Wenn Sie Änderungen am Dokument vornehmen, z. B. ein Modul entfernen, achten Sie darauf, dass das Dokument weiterhin schlüssig bleibt.',
-    'resyncMigrationPlan.confirm.warning': 'Als entfernt markierte Module behalten ihre Auftragsverlauf, können aber nicht mehr für neue Phasenausführungen verwendet werden. Diese Aktion kann für entfernte Module nicht rückgängig gemacht werden, es sei denn, sie werden dem Migrationsplan erneut hinzugefügt.',
+    'resyncMigrationPlan.confirm.title':
+      'Migrationsplan für „{{name}}“ erneut synchronisieren?',
+    'resyncMigrationPlan.confirm.message':
+      'Dadurch wird der Migrationsplan aus dem Ziel-Repository erneut gelesen und die Modulliste entsprechend aktualisiert. Neue Module werden hinzugefügt und Module, die nicht mehr im Plan enthalten sind, werden als entfernt markiert. Wenn Sie Änderungen am Dokument vornehmen, z. B. ein Modul entfernen, achten Sie darauf, dass das Dokument weiterhin schlüssig bleibt.',
+    'resyncMigrationPlan.confirm.warning':
+      'Als entfernt markierte Module behalten ihre Auftragsverlauf, können aber nicht mehr für neue Phasenausführungen verwendet werden. Diese Aktion kann für entfernte Module nicht rückgängig gemacht werden, es sei denn, sie werden dem Migrationsplan erneut hinzugefügt.',
     'resyncMigrationPlan.confirm.confirmButton': 'Erneut synchronisieren',
-    'resyncMigrationPlan.running': 'Modulliste wird aus dem Migrationsplan erneut synchronisiert…',
-    'resyncMigrationPlan.error': 'Erneute Synchronisierung des Migrationsplans für Projekt „{{name}}“ fehlgeschlagen',
-    'resyncMigrationPlan.errorStart': 'Erneute Synchronisierung des Migrationsplans konnte nicht gestartet werden',
+    'resyncMigrationPlan.running':
+      'Modulliste wird aus dem Migrationsplan erneut synchronisiert…',
+    'resyncMigrationPlan.error':
+      'Erneute Synchronisierung des Migrationsplans für Projekt „{{name}}“ fehlgeschlagen',
+    'resyncMigrationPlan.errorStart':
+      'Erneute Synchronisierung des Migrationsplans konnte nicht gestartet werden',
     'scaffolder.rulesAcceptance.loadingRules': 'Regeln werden geladen...',
-    'scaffolder.rulesAcceptance.noRulesConfigured': 'Es sind keine Regeln konfiguriert.',
+    'scaffolder.rulesAcceptance.noRulesConfigured':
+      'Es sind keine Regeln konfiguriert.',
     'scaffolder.rulesAcceptance.required': 'erforderlich',
-    'scaffolder.rulesAcceptance.fetchError': 'Regeln konnten nicht abgerufen werden',
+    'scaffolder.rulesAcceptance.fetchError':
+      'Regeln konnten nicht abgerufen werden',
     'rulesPage.title': 'Konvertierungsregeln',
-    'rulesPage.subtitle': 'Verwalten Sie Regeln, die Projekte bei ihrer Erstellung akzeptieren müssen.',
+    'rulesPage.subtitle':
+      'Verwalten Sie Regeln, die Projekte bei ihrer Erstellung akzeptieren müssen.',
     'rulesPage.addRule': 'Regel hinzufügen',
     'rulesPage.manageRules': 'Regeln verwalten',
     'rulesPage.notAllowed':
@@ -302,7 +317,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'rulesPage.table.deleteRule': 'Regel löschen',
     'rulesPage.table.noRules': 'Es wurden noch keine Regeln definiert.',
     'rulesPage.deleteConfirm.title': 'Regel „{{title}}“ löschen?',
-    'rulesPage.deleteConfirm.message': 'Diese Regel wird dauerhaft gelöscht. Vorhandene Projekte, die diese Regel bereits akzeptiert haben, sind davon nicht betroffen.',
+    'rulesPage.deleteConfirm.message':
+      'Diese Regel wird dauerhaft gelöscht. Vorhandene Projekte, die diese Regel bereits akzeptiert haben, sind davon nicht betroffen.',
     'rulesPage.deleteConfirm.confirm': 'Löschen',
     'rulesPage.deleteConfirm.cancel': 'Abbrechen',
     'rulesPage.deleteConfirm.deleteError': 'Regel konnte nicht gelöscht werden',
@@ -315,11 +331,13 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Abbrechen',
     'rulesPage.dialog.createError': 'Regel konnte nicht erstellt werden',
     'rulesPage.dialog.updateError': 'Regel konnte nicht aktualisiert werden',
-    'modulePage.phases.runAdversarialReview': 'Gegnerische Überprüfung ausführen',
+    'modulePage.phases.runAdversarialReview':
+      'Gegnerische Überprüfung ausführen',
     'modulePage.phases.adversarialReview': 'Gegnerische Überprüfung',
     'modulePage.phases.adversarialNoRuns': 'Noch keine Ausführungen',
     'modulePage.phases.adversarialRunning': 'Gegnerische Überprüfung läuft…',
-    'modulePage.phases.adversarialCriticalAgentsWarning': 'Kritische gegnerische Agents sind konfiguriert, wurden aber für diese Phase noch nicht ausgeführt.',
+    'modulePage.phases.adversarialCriticalAgentsWarning':
+      'Kritische gegnerische Agents sind konfiguriert, wurden aber für diese Phase noch nicht ausgeführt.',
     'modulePage.phases.adversarialAgentLabel': 'gegnerisch',
     'modulePage.phases.adversarialCriticalFindings': 'Kritische Befunde',
     'modulePage.phases.adversarialWarningFindings': 'Warnungsbefunde',
@@ -328,16 +346,22 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.adversarialResult': 'Ergebnis',
     'modulePage.phases.adversarialAgents.title': 'Gegnerische Agents',
     'modulePage.phases.adversarialAgents.placeholder': 'Agents auswählen…',
-    'modulePage.phases.adversarialAgents.noAgentsAvailable': 'Für diese Phase stehen keine gegnerischen Agents zur Verfügung. Erstellen Sie Agents auf der Seite „Gegnerische Agents“.',
-    'modulePage.phases.adversarialAgents.loadingError': 'Laden der gegnerischen Agents fehlgeschlagen',
-    'modulePage.phases.adversarialRunError': 'Gegnerische Überprüfung konnte nicht gestartet werden',
+    'modulePage.phases.adversarialAgents.noAgentsAvailable':
+      'Für diese Phase stehen keine gegnerischen Agents zur Verfügung. Erstellen Sie Agents auf der Seite „Gegnerische Agents“.',
+    'modulePage.phases.adversarialAgents.loadingError':
+      'Laden der gegnerischen Agents fehlgeschlagen',
+    'modulePage.phases.adversarialRunError':
+      'Gegnerische Überprüfung konnte nicht gestartet werden',
     'artifact.types.adversarial_report': 'Gegnerischer Bericht',
     'artifact.types.adversarial_report_json': 'Gegnerischer Bericht (JSON)',
     'adversarialAgentsPage.title': 'Gegnerische Agents',
-    'adversarialAgentsPage.subtitle': 'Verwalten Sie KI-Agents, die Migrationsergebnisse auf Sicherheitsrisiken, Funktionslücken und Korrektheitsprobleme überprüfen.',
-    'adversarialAgentsPage.manageAdversarialAgents': 'Gegnerische Agents verwalten',
+    'adversarialAgentsPage.subtitle':
+      'Verwalten Sie KI-Agents, die Migrationsergebnisse auf Sicherheitsrisiken, Funktionslücken und Korrektheitsprobleme überprüfen.',
+    'adversarialAgentsPage.manageAdversarialAgents':
+      'Gegnerische Agents verwalten',
     'adversarialAgentsPage.addAgent': 'Agent hinzufügen',
-    'adversarialAgentsPage.notAllowed': 'Sie haben keine Berechtigung zum Verwalten generischer Agents.',
+    'adversarialAgentsPage.notAllowed':
+      'Sie haben keine Berechtigung zum Verwalten generischer Agents.',
     'adversarialAgentsPage.table.name': 'Name',
     'adversarialAgentsPage.table.prompt': 'Prompt',
     'adversarialAgentsPage.table.phases': 'Phasen',
@@ -348,37 +372,47 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'adversarialAgentsPage.table.createdBy': 'Erstellt von',
     'adversarialAgentsPage.table.editAgent': 'Agent bearbeiten',
     'adversarialAgentsPage.table.deleteAgent': 'Agent löschen',
-    'adversarialAgentsPage.table.noAgents': 'Es wurden noch keine gegnerischen Agents definiert.',
-    'adversarialAgentsPage.table.fetchError': 'Gegnerische Agents konnten nicht abgerufen werden',
+    'adversarialAgentsPage.table.noAgents':
+      'Es wurden noch keine gegnerischen Agents definiert.',
+    'adversarialAgentsPage.table.fetchError':
+      'Gegnerische Agents konnten nicht abgerufen werden',
     'adversarialAgentsPage.deleteConfirm.title': 'Agent „{{name}}“ löschen?',
     'adversarialAgentsPage.deleteConfirm.message':
       'Diese Aktion kann nicht rückgängig gemacht werden.',
     'adversarialAgentsPage.deleteConfirm.confirm': 'Löschen',
     'adversarialAgentsPage.deleteConfirm.cancel': 'Abbrechen',
-    'adversarialAgentsPage.deleteConfirm.deleteError': 'Agent konnte nicht gelöscht werden',
+    'adversarialAgentsPage.deleteConfirm.deleteError':
+      'Agent konnte nicht gelöscht werden',
     'adversarialAgentsPage.dialog.createTitle': 'Gegnerischen Agent erstellen',
     'adversarialAgentsPage.dialog.editTitle': 'Gegnerischen Agent bearbeiten',
     'adversarialAgentsPage.dialog.nameField': 'Name',
-    'adversarialAgentsPage.dialog.namePlaceholder': 'z. B. Überprüfung der Rechteerweiterung',
+    'adversarialAgentsPage.dialog.namePlaceholder':
+      'z. B. Überprüfung der Rechteerweiterung',
     'adversarialAgentsPage.dialog.promptField': 'Prompt',
-    'adversarialAgentsPage.dialog.promptPlaceholder': 'Beschreiben Sie, worauf dieser Agent achten sollte...',
-    'adversarialAgentsPage.dialog.promptHelper': 'Beschreiben Sie genau, wonach gesucht und wie Ergebnisse zurückgegeben werden sollen (50–5.000 Zeichen)',
-    'adversarialAgentsPage.dialog.promptCharacterCount': '/5.000 Zeichen (mind. 50)',
+    'adversarialAgentsPage.dialog.promptPlaceholder':
+      'Beschreiben Sie, worauf dieser Agent achten sollte...',
+    'adversarialAgentsPage.dialog.promptHelper':
+      'Beschreiben Sie genau, wonach gesucht und wie Ergebnisse zurückgegeben werden sollen (50–5.000 Zeichen)',
+    'adversarialAgentsPage.dialog.promptCharacterCount':
+      '/5.000 Zeichen (mind. 50)',
     'adversarialAgentsPage.dialog.phasesField': 'Workflow-Phasen',
     'adversarialAgentsPage.dialog.phasesHelper':
       'Wählen Sie aus, in welchen Workflow-Phasen dieser Agent ausgeführt wird',
     'adversarialAgentsPage.dialog.phaseAnalyze': 'Analysieren',
     'adversarialAgentsPage.dialog.phaseMigrate': 'Migrieren',
     'adversarialAgentsPage.dialog.criticalField': 'Kritischer Agent',
-    'adversarialAgentsPage.dialog.criticalHelper': 'Kritische Agents erzeugen Befunde mit dem Schweregrad „kritisch“; nicht kritische Agents erzeugen Warnungen',
+    'adversarialAgentsPage.dialog.criticalHelper':
+      'Kritische Agents erzeugen Befunde mit dem Schweregrad „kritisch“; nicht kritische Agents erzeugen Warnungen',
     'adversarialAgentsPage.dialog.nameValidation':
       'Der Name muss zwischen 3 und 100 Zeichen lang sein',
     'adversarialAgentsPage.dialog.phasesValidation':
       'Mindestens eine Phase ist erforderlich',
     'adversarialAgentsPage.dialog.save': 'Speichern',
     'adversarialAgentsPage.dialog.cancel': 'Abbrechen',
-    'adversarialAgentsPage.dialog.createError': 'Agent konnte nicht erstellt werden',
-    'adversarialAgentsPage.dialog.updateError': 'Agent-Aktualisierung fehlgeschlagen',
+    'adversarialAgentsPage.dialog.createError':
+      'Agent konnte nicht erstellt werden',
+    'adversarialAgentsPage.dialog.updateError':
+      'Agent-Aktualisierung fehlgeschlagen',
   },
 });
 

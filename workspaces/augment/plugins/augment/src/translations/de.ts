@@ -92,7 +92,8 @@ const augmentTranslationDe = createTranslationMessages({
     'chatInput.stopGeneration': 'Stop generation',
     'chatInput.stopMessageGeneration': 'Stop message generation',
     'chatInput.sendMessage': 'Send message',
-    'chatInput.selectAgentPrompt': 'Wählen Sie einen Agent aus, um den Chat zu starten',
+    'chatInput.selectAgentPrompt':
+      'Wählen Sie einen Agent aus, um den Chat zu starten',
     'welcomeScreen.logoAlt': 'Application logo',
     'welcomeScreen.emptyPromptHint': 'Type a question below to get started',
     'welcomeScreen.logoError':
@@ -130,7 +131,8 @@ const augmentTranslationDe = createTranslationMessages({
     'agentInfo.connecting': 'Connecting...',
     'agentInfo.ready': 'Ready',
     'agentInfo.offline': 'Offline',
-    'agentInfo.selectAgentHint': 'Wählen Sie einen Agent aus, um Details anzuzeigen',
+    'agentInfo.selectAgentHint':
+      'Wählen Sie einen Agent aus, um Details anzuzeigen',
     'agentInfo.team': 'Team ({{count}})',
     'agentInfo.defaultAgent': 'Default agent',
     'agentInfo.vectorRag': 'Vector RAG',
@@ -204,7 +206,8 @@ const augmentTranslationDe = createTranslationMessages({
     'agentsPanel.saveSuccess': 'Configuration saved.',
     'agentsPanel.reset': 'Reset',
     'agentsPanel.noAgentsTitle': 'No agents configured',
-    'agentsPanel.noAgentsSubtitle': 'Erstellen Sie Ihren ersten Agent, um loszulegen.',
+    'agentsPanel.noAgentsSubtitle':
+      'Erstellen Sie Ihren ersten Agent, um loszulegen.',
     'agentsPanel.createFirstAgent': 'Create Your First Agent',
     'agentsPanel.selectAgent': 'Select an agent from the list',
     'agentsPanel.topology': 'Topology',
@@ -263,13 +266,17 @@ const augmentTranslationDe = createTranslationMessages({
     'confirmDialog.cancel': 'Cancel',
     'onboardingBanner.dismissAriaLabel': 'Onboarding-Anleitung schließen',
     'onboardingBanner.title': 'Lernen Sie Ihre KI-Agents kennen',
-    'onboardingBanner.subtitle': '{{appName}} verbindet Sie mit spezialisierten KI-Agents. Dies sind Ihre ersten Schritte:',
+    'onboardingBanner.subtitle':
+      '{{appName}} verbindet Sie mit spezialisierten KI-Agents. Dies sind Ihre ersten Schritte:',
     'onboardingBanner.step1Title': 'Einen Agent wählen',
-    'onboardingBanner.step1Description': 'Wählen Sie einen KI-Agent, der zu Ihrer Aufgabe passt',
+    'onboardingBanner.step1Description':
+      'Wählen Sie einen KI-Agent, der zu Ihrer Aufgabe passt',
     'onboardingBanner.step2Title': 'Fragen Sie alles',
-    'onboardingBanner.step2Description': 'Beschreiben Sie Ihre Anforderung in natürlicher Sprache',
+    'onboardingBanner.step2Description':
+      'Beschreiben Sie Ihre Anforderung in natürlicher Sprache',
     'onboardingBanner.step3Title': 'Ergebnisse abrufen',
-    'onboardingBanner.step3Description': 'Agents nutzen Tools und Wissen, um Antworten zu liefern',
+    'onboardingBanner.step3Description':
+      'Agents nutzen Tools und Wissen, um Antworten zu liefern',
     'agentGallery.heading': 'Agents',
     'agentGallery.searchPlaceholder': 'Agents suchen...',
     'agentGallery.searchAriaLabel': 'Agents suchen',
@@ -281,7 +288,8 @@ const augmentTranslationDe = createTranslationMessages({
     'agentGallery.noAgentsInCategory': 'Keine Agents in dieser Kategorie',
     'agentGallery.retry': 'Erneut versuchen',
     'agentGallery.noAgentsTitle': 'Noch keine Agents verfügbar',
-    'agentGallery.noAgentsHint': 'Bitten Sie Ihren Administrator, Agents bereitzustellen',
+    'agentGallery.noAgentsHint':
+      'Bitten Sie Ihren Administrator, Agents bereitzustellen',
     'agentDetail.closeAriaLabel': 'Agent-Details schließen',
     'agentDetail.about': 'Info',
     'agentDetail.skillsWithCount': 'Fähigkeiten ({{count}})',
@@ -300,13 +308,17 @@ const augmentTranslationDe = createTranslationMessages({
     'formRequestCard.cancel': 'Abbrechen',
     'formRequestCard.submit': 'Absenden',
     'authRequiredCard.oauthTitle': 'Authentifizierung erforderlich',
-    'authRequiredCard.oauthSubtitle': 'Dieser Agent erfordert, dass Sie sich anmelden, um fortzufahren.',
+    'authRequiredCard.oauthSubtitle':
+      'Dieser Agent erfordert, dass Sie sich anmelden, um fortzufahren.',
     'authRequiredCard.signIn': 'Anmelden',
-    'authRequiredCard.afterSignInHint': 'Klicken Sie nach der Anmeldung unten, um fortzufahren:',
+    'authRequiredCard.afterSignInHint':
+      'Klicken Sie nach der Anmeldung unten, um fortzufahren:',
     'authRequiredCard.signedIn': 'Ich habe mich angemeldet',
-    'authRequiredCard.noUrlHint': 'Schließen Sie den Authentifizierungsvorgang ab, um fortzufahren.',
+    'authRequiredCard.noUrlHint':
+      'Schließen Sie den Authentifizierungsvorgang ab, um fortzufahren.',
     'authRequiredCard.credentialsTitle': 'Erforderliche Anmeldedaten',
-    'authRequiredCard.credentialsSubtitle': 'Dieser Agent benötigt Anmeldedaten, um fortzufahren.',
+    'authRequiredCard.credentialsSubtitle':
+      'Dieser Agent benötigt Anmeldedaten, um fortzufahren.',
     'authRequiredCard.submitCredentials': 'Anmeldedaten übermitteln',
     'artifact.defaultName': 'Artefakt',
     'artifact.expand': 'Einblenden',
