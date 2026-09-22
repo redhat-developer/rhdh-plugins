@@ -22,6 +22,7 @@ import { useTheme } from '@mui/material/styles';
 
 import { QuickstartIcon } from './components/QuickstartContent/QuickstartIcon';
 import { QUICKSTART_DRAWER_ID } from './const';
+import { useTranslation } from './hooks/useTranslation';
 
 /**
  * Help-dropdown menu item that toggles the Quick start drawer.
@@ -38,6 +39,7 @@ export const QuickstartHelpMenuItem = ({
   handleClose?: () => void;
 }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { toggleDrawer } = useAppDrawer();
 
   const handleClick = () => {
@@ -88,7 +90,7 @@ export const QuickstartHelpMenuItem = ({
             }}
           />
           <Typography variant="body2" color={theme.palette.text.primary}>
-            Quick start
+            {t('button.quickstart')}
           </Typography>
         </Box>
       </Box>
