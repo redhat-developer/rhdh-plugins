@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend
 
+## 0.8.3
+
+### Patch Changes
+
+- 110e2d1: Rename the first-release AI Catalog package family and update consumers to the new public package identities.
+
+  Move standalone OGX configuration to `ai-catalog.entityProviders.ogx`; the old
+  Boost configuration paths are no longer read by this module. Update frontend
+  extension IDs to the `ai-catalog` namespace and translation overrides to
+  `plugin.ai-catalog`. See the workspace README's consumer migration instructions.
+
+- Updated dependencies [110e2d1]
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-common@0.8.0
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.2.4
+
 ## 0.8.2
 
 ### Patch Changes
