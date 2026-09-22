@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-/**
- * SDK for AI asset entity providers.
- *
- * Exports annotation constants and version normalization for the
- * AI catalog entity model.
- *
- * @packageDocumentation
- */
-
-export {
+import {
   AI_ASSET_CATEGORY_ANNOTATION,
-  AI_ASSET_VERSION_ANNOTATION,
   AI_ASSET_SOURCE_ANNOTATION,
+  AI_ASSET_VERSION_ANNOTATION,
 } from './annotations';
 
-export { normalizeAIAssetVersion } from './normalizeAIAssetVersion';
+describe('annotation constants', () => {
+  it('AI_ASSET_CATEGORY_ANNOTATION has the correct value', () => {
+    expect(AI_ASSET_CATEGORY_ANNOTATION).toBe('rhdh.io/ai-asset-category');
+  });
+
+  it('AI_ASSET_SOURCE_ANNOTATION has the correct value', () => {
+    expect(AI_ASSET_SOURCE_ANNOTATION).toBe('rhdh.io/ai-asset-source');
+  });
+
+  it('AI_ASSET_VERSION_ANNOTATION has the correct value', () => {
+    expect(AI_ASSET_VERSION_ANNOTATION).toBe('rhdh.io/ai-asset-version');
+  });
+});
