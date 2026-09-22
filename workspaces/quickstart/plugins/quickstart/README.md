@@ -129,10 +129,10 @@ Each quickstart item supports the following properties:
 
 - `title` (required): The display title for the quickstart step
 - `description` (required): A brief description of what the step covers
-- `icon` (optional): Icon identifier (supports Material UI icons)
+- `icon` (optional): Step icon. Supported values: built-in ids (`Admin`, `Rbac`, `Git`, `Plugins`, `Import`, `Catalog`, `SelfService`, `Learning`, `Lightspeed`), registered system icon ids, Material Icons ligature names (e.g. `home`, `school`), an image URL, or an inline SVG string
 - `roles` (optional): Array of user roles that should see this quickstart item. Supported values: `['admin', 'developer']`. If not specified, defaults to `['admin']`
 - `cta` (optional): Call-to-action object with:
-  - `text`: Button text
+  - `text`: CTA label text
   - `link`: Target URL or route
 
 ## Role-Based Access Control (RBAC)

@@ -120,7 +120,7 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.importApplication.ctaTitle,
       '/bulk-import',
     );
-    await uiHelper.clickButtonByText(
+    await uiHelper.clickLinkByText(
       translations.steps.importApplication.ctaTitle,
       {
         exact: true,
@@ -131,7 +131,7 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.learnAboutCatalog.ctaTitle,
       '/catalog',
     );
-    await uiHelper.clickButtonByText(
+    await uiHelper.clickLinkByText(
       translations.steps.learnAboutCatalog.ctaTitle,
     );
     await uiHelper.verifyHeading('My Company Catalog');
@@ -142,7 +142,7 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.exploreSelfServiceTemplates.ctaTitle,
       '/create',
     );
-    await uiHelper.clickButtonByText(
+    await uiHelper.clickLinkByText(
       translations.steps.exploreSelfServiceTemplates.ctaTitle,
     );
     await expect(page).toHaveURL(/\/create/);
@@ -151,7 +151,7 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.findAllLearningPaths.ctaTitle,
       '/learning-paths',
     );
-    await uiHelper.clickButtonByText(
+    await uiHelper.clickLinkByText(
       translations.steps.findAllLearningPaths.ctaTitle,
     );
     const progress100Pattern = new RegExp(

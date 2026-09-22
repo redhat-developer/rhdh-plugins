@@ -15,7 +15,11 @@
  */
 import { expect, test, TestInfo } from '@playwright/test';
 import { UIhelper, switchToLocale } from './utils/helper';
-import { getTranslations, QuickstartMessages } from './utils/translations';
+import {
+  getProgressPattern,
+  getTranslations,
+  QuickstartMessages,
+} from './utils/translations';
 import { runAccessibilityTests } from './utils/accessibility';
 
 test.describe('Test Quick Start plugin', () => {
@@ -103,7 +107,7 @@ test.describe('Test Quick Start plugin', () => {
       .locator('..'); // List
     // Find the CTA button within this specific List container to avoid matching the setupAuthentication button
     const configureGitCta = parentList
-      .getByRole('button', { name: translations.steps.configureGit.ctaTitle })
+      .getByRole('link', { name: translations.steps.configureGit.ctaTitle })
       .first();
     await configureGitCta.waitFor({ state: 'visible' });
     const href = await configureGitCta.getAttribute('href');
@@ -133,7 +137,7 @@ test.describe('Test Quick Start plugin', () => {
       .locator('..')
       .locator('..');
     const setupLightspeedCta = setupLightspeedParentList
-      .getByRole('button', {
+      .getByRole('link', {
         name: translations.steps.setupLightspeed.ctaTitle,
       })
       .first();
@@ -147,13 +151,11 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.managePlugins.ctaTitle,
       '/extensions',
     );
-    await uiHelper.clickButtonByText(translations.steps.managePlugins.ctaTitle);
+    await uiHelper.clickLinkByText(translations.steps.managePlugins.ctaTitle);
     await expect(page).toHaveURL(/extensions/);
 
-    const progressPattern = new RegExp(
-      translations.footer.progress.replace('{{progress}}', '\\d+'),
-    );
-    await uiHelper.verifyText(progressPattern);
+    await expect(page.getByRole('progressbar')).toBeVisible();
+    await uiHelper.verifyText(getProgressPattern(translations.footer.progress));
     await uiHelper.clickButtonByText(translations.footer.hide);
     await expect(
       page.getByRole('button', { name: translations.footer.hide }),
