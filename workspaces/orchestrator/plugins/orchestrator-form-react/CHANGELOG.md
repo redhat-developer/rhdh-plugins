@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.12.2
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.2
+
 ## 2.12.1
 
 ### Patch Changes
