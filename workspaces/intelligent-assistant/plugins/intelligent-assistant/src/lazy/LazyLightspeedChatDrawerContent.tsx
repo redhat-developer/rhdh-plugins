@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-import './muiClassNameConfig';
+import { lazy, Suspense } from 'react';
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-  LightspeedChatContainer,
-  LightspeedFAB,
-  LightspeedDrawerStateExposer,
-} from './plugin';
-export { LightspeedIcon } from './components/LightspeedIcon';
-export type {
-  DrawerStateExposerProps,
-  DrawerState,
-} from './components/LightspeedDrawerStateExposer';
+import { ChatLoadingFallback } from '../components/ChatLoadingFallback';
+
+const LazyLightspeedChatContainer = lazy(() =>
+  import('../components/LightspeedChatContainer').then(m => ({
+    default: m.LightspeedChatContainer,
+  })),
+);
+
+/**
+ * Thin sync boundary for AppDrawerContentBlueprint — heavy chat UI loads asynchronously.
+ */
+export const LazyLightspeedChatDrawerContent = () => (
+  <Suspense fallback={<ChatLoadingFallback />}>
+    <LazyLightspeedChatContainer />
+  </Suspense>
+);

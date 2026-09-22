@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-import './muiClassNameConfig';
+/**
+ * Barrel for the single critical first-paint FAB async chunk.
+ *
+ * Imported through one dynamic import (`loadCriticalFabBundle()` in
+ * `loaders.ts`) so DrawerProvider + FABContent share one async chunk.
+ *
+ * @internal
+ */
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-  LightspeedChatContainer,
-  LightspeedFAB,
-  LightspeedDrawerStateExposer,
-} from './plugin';
-export { LightspeedIcon } from './components/LightspeedIcon';
-export type {
-  DrawerStateExposerProps,
-  DrawerState,
-} from './components/LightspeedDrawerStateExposer';
+export { LightspeedDrawerProvider } from './LightspeedDrawerProvider';
+export { LightspeedFABContent } from './LightspeedFABContent';

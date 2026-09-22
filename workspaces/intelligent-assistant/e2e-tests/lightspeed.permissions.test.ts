@@ -22,7 +22,10 @@ import {
   waitForIaPermissionAuthorize,
   type IaPermissionMatrix,
 } from './utils/iaPermissionsE2e';
-import { bootstrapLightspeedRbacE2ePage } from './utils/lightspeedE2eSetup';
+import {
+  bootstrapLightspeedRbacE2ePage,
+  loginAsGuest,
+} from './utils/lightspeedE2eSetup';
 
 async function withPermissionScenario(
   browser: Browser,
@@ -32,8 +35,10 @@ async function withPermissionScenario(
   const boot = await bootstrapLightspeedRbacE2ePage(browser, matrix);
   const permissions = new IaRbacPermissionsPage(boot.page, boot.translations);
   try {
+    const authorizeSettled = waitForIaPermissionAuthorize(boot.page);
     await boot.page.goto('/');
-    await waitForIaPermissionAuthorize(boot.page);
+    await loginAsGuest(boot.page);
+    await authorizeSettled;
     await run(permissions);
   } finally {
     await boot.page.context().close();

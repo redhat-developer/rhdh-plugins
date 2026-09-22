@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-import './muiClassNameConfig';
+type CriticalFabBundle = typeof import('./criticalFabBundle');
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-  LightspeedChatContainer,
-  LightspeedFAB,
-  LightspeedDrawerStateExposer,
-} from './plugin';
-export { LightspeedIcon } from './components/LightspeedIcon';
-export type {
-  DrawerStateExposerProps,
-  DrawerState,
-} from './components/LightspeedDrawerStateExposer';
+let criticalFabBundlePromise: Promise<CriticalFabBundle> | undefined;
+
+export const loadCriticalFabBundle = (): Promise<CriticalFabBundle> => {
+  criticalFabBundlePromise ??= import('./criticalFabBundle').catch(error => {
+    criticalFabBundlePromise = undefined;
+    throw error;
+  });
+  return criticalFabBundlePromise;
+};

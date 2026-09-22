@@ -1,5 +1,20 @@
-# Playwright overlay: enable the permission framework so the UI calls
-# POST /api/permission/authorize (required for RBAC e2e route mocks).
+# Playwright overlay for RBAC permission gating e2e.
+#
+# Uses dedicated ports so this suite never reuses the main e2e / yarn start
+# server (which has permission.enabled off). Without that, the FAB appears
+# via the allow-all default and waitForIaPermissionAuthorize times out.
+app:
+  baseUrl: http://localhost:3001
+
+backend:
+  baseUrl: http://localhost:7008
+  listen:
+    port: 7008
+  cors:
+    origin: http://localhost:3001
+
+# Enable the permission framework so the UI calls POST /api/permission/authorize
+# (required for RBAC e2e route mocks).
 permission:
   enabled: true
   rbac:

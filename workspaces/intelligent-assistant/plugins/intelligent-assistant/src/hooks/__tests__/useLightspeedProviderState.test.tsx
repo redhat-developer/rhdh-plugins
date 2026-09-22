@@ -16,10 +16,9 @@
 
 import { MemoryRouter, useLocation, useNavigate } from 'react-router-dom';
 
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { render, screen, waitFor } from '@testing-library/react';
 
-import { LIGHTSPEED_APP_DRAWER_ID } from '../../const';
+import { ChatbotDisplayMode, LIGHTSPEED_APP_DRAWER_ID } from '../../const';
 import { useBackstageUserIdentity } from '../useBackstageUserIdentity';
 import { useDisplayModeSettings } from '../useDisplayModeSettings';
 import { useLightspeedProviderState } from '../useLightspeedProviderState';
