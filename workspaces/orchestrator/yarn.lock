@@ -2824,8 +2824,8 @@ __metadata:
   linkType: hard
 
 "@backstage/backend-defaults@npm:^0.13.1":
-  version: 0.13.1
-  resolution: "@backstage/backend-defaults@npm:0.13.1"
+  version: 0.13.3
+  resolution: "@backstage/backend-defaults@npm:0.13.3"
   dependencies:
     "@aws-sdk/abort-controller": "npm:^3.347.0"
     "@aws-sdk/client-codecommit": "npm:^3.350.0"
@@ -2889,7 +2889,7 @@ __metadata:
     rate-limit-redis: "npm:^4.2.0"
     raw-body: "npm:^2.4.1"
     selfsigned: "npm:^2.0.0"
-    tar: "npm:^6.1.12"
+    tar: "npm:^7.4.3"
     triple-beam: "npm:^1.4.1"
     uuid: "npm:^11.0.0"
     winston: "npm:^3.2.1"
@@ -2903,13 +2903,13 @@ __metadata:
   peerDependenciesMeta:
     "@google-cloud/cloud-sql-connector":
       optional: true
-  checksum: 10c0/65eccb6c089cebfec9721faac166717f0dc35679b21a3f84b0428f555c054d4d90ef43b10016a5933e60d574c39558905c0384f0b7566f93591249a5f386bded
+  checksum: 10c0/8f5020e2429f7bbc40f71f010db586560974f60510bddff92682b298bd05b5664517d4785802c8f153b25f6663c885d0860bb4f9b2dbb09f14ec6bc6bb5bf357
   languageName: node
   linkType: hard
 
 "@backstage/backend-defaults@npm:^0.16.0":
-  version: 0.16.0
-  resolution: "@backstage/backend-defaults@npm:0.16.0"
+  version: 0.16.1
+  resolution: "@backstage/backend-defaults@npm:0.16.1"
   dependencies:
     "@aws-sdk/abort-controller": "npm:^3.347.0"
     "@aws-sdk/client-codecommit": "npm:^3.350.0"
@@ -2991,7 +2991,7 @@ __metadata:
       optional: true
     better-sqlite3:
       optional: true
-  checksum: 10c0/2baa5887860fb0e7ae5f8ff9d450f737011e8673373ac384dbdf550d61511ac404d5d41264e01cc256f3bc2be3d478ba8b93413c0f9b0f6184adaf5d0c9bafb8
+  checksum: 10c0/fbda2749b83a26d54b51bac579608fda1210bf018a6acb3d16c45468f817ace0190483aff9dfd74b945a091632af84705b8b622bce707a0f6bc2dc5b13283ad7
   languageName: node
   linkType: hard
 
@@ -37876,7 +37876,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^6.1.11, tar@npm:^6.1.12, tar@npm:^6.1.2, tar@npm:^6.2.1":
+"tar@npm:^6.1.11, tar@npm:^6.1.2, tar@npm:^6.2.1":
   version: 6.2.1
   resolution: "tar@npm:6.2.1"
   dependencies:
@@ -37890,7 +37890,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^7.0.0, tar@npm:^7.5.6":
+"tar@npm:^7.0.0, tar@npm:^7.4.3, tar@npm:^7.5.6":
   version: 7.5.22
   resolution: "tar@npm:7.5.22"
   dependencies:
