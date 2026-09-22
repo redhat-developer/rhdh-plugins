@@ -27,6 +27,25 @@ import { createTranslationRef } from '@backstage/frontend-plugin-api';
 export const appReactTranslationRef = createTranslationRef({
   id: 'plugin.app-react',
   messages: {
+    // Common page / sidebar item titles, keyed by the English title so the
+    // sidebar can look them up dynamically (see `AppSidebar` in
+    // `@red-hat-developer-hub/backstage-plugin-app-defaults`). Titles without a
+    // matching entry fall through to their original English label.
+    pages: {
+      Home: 'Home',
+      Catalog: 'Catalog',
+      APIs: 'APIs',
+      Create: 'Create',
+      Docs: 'Docs',
+      'Learning Paths': 'Learning Paths',
+      Settings: 'Settings',
+      Notifications: 'Notifications',
+      Search: 'Search',
+      'Catalog Graph': 'Catalog Graph',
+      Administration: 'Administration',
+      RBAC: 'RBAC',
+      Plugins: 'Plugins',
+    },
     catalog: {
       // Catalog entity page group titles, keyed by the English group title.
       entityTabGroups: {

@@ -95,12 +95,12 @@ export const appReactTranslationRef: TranslationRef<
     readonly 'catalog.entityTabGroups.Deployment': 'Deployment';
     readonly 'catalog.entityTabGroups.Operation': 'Operation';
     readonly 'catalog.entityTabGroups.Observability': 'Observability';
-    readonly 'catalog.entityTabs.Overview': 'Overview';
+    readonly 'catalog.entityTabs.APIs': 'APIs';
     readonly 'catalog.entityTabs.Docs': 'Docs';
+    readonly 'catalog.entityTabs.Overview': 'Overview';
     readonly 'catalog.entityTabs.API': 'API';
     readonly 'catalog.entityTabs.Dependencies': 'Dependencies';
     readonly 'catalog.entityTabs.Definition': 'Definition';
-    readonly 'catalog.entityTabs.APIs': 'APIs';
     readonly 'catalog.entityTabs.TechDocs': 'TechDocs';
     readonly 'catalog.entityTabs.Deployment Lifecycle': 'Deployment Lifecycle';
     readonly 'catalog.entityTabs.Deployment Summary': 'Deployment Summary';
@@ -118,6 +118,19 @@ export const appReactTranslationRef: TranslationRef<
     readonly 'catalog.entityTabs.Todo': 'Todo';
     readonly 'catalog.entityTabs.Topology': 'Topology';
     readonly 'catalog.entityTabs.Workflows': 'Workflows';
+    readonly 'pages.Catalog': 'Catalog';
+    readonly 'pages.Settings': 'Settings';
+    readonly 'pages.Administration': 'Administration';
+    readonly 'pages.RBAC': 'RBAC';
+    readonly 'pages.Learning Paths': 'Learning Paths';
+    readonly 'pages.Home': 'Home';
+    readonly 'pages.APIs': 'APIs';
+    readonly 'pages.Create': 'Create';
+    readonly 'pages.Docs': 'Docs';
+    readonly 'pages.Notifications': 'Notifications';
+    readonly 'pages.Search': 'Search';
+    readonly 'pages.Catalog Graph': 'Catalog Graph';
+    readonly 'pages.Plugins': 'Plugins';
   }
 >;
 
