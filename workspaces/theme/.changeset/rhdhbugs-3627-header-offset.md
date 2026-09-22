@@ -2,4 +2,4 @@
 '@red-hat-developer-hub/backstage-plugin-theme': patch
 ---
 
-Reserve the global header height in page-shell 100vh rules and offset the fixed sidebar so top navigation tabs are not covered by the masthead.
+Size page-shell rules for the 100vh flex app shell and keep a static offset for the fixed sidebar below the masthead.

@@ -87,11 +87,13 @@ describe('createComponents', () => {
     });
   });
 
-  it('sets BackstageSidebarPage minHeight to fill the viewport below the masthead', () => {
+  it('sets BackstageSidebarPage to fill the flex parent without growing the document', () => {
     const actual = createComponents({});
     expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
       expect.objectContaining({
-        minHeight: 'calc(100vh - var(--rhdh-global-header-height, 0px))',
+        flex: '1 1 auto',
+        minHeight: 0,
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
       }),
@@ -110,8 +112,8 @@ describe('createComponents', () => {
       expect.objectContaining({
         boxSizing: 'border-box',
         overflow: 'hidden',
-        height: 'calc(100vh - var(--rhdh-global-header-height, 0px))',
-        maxHeight: 'calc(100vh - var(--rhdh-global-header-height, 0px))',
+        height: '100%',
+        maxHeight: '100%',
         overscrollBehavior: 'none',
         paddingTop: '1.5rem',
         paddingRight: '1.5rem',
@@ -152,10 +154,8 @@ describe('createComponents', () => {
     expect(withHeader?.["& main, & [class*='MuiLinearProgress-root']"]).toEqual(
       expect.objectContaining({
         marginTop: '0 !important',
-        minHeight:
-          'calc(100vh - var(--rhdh-global-header-height, 0px) - 1.5rem) !important',
-        maxHeight:
-          'calc(100vh - var(--rhdh-global-header-height, 0px) - 1.5rem) !important',
+        minHeight: 'calc(100% - 1.5rem) !important',
+        maxHeight: 'calc(100% - 1.5rem) !important',
       }),
     );
     expect(withHeader?.['& main:not([data-backstage-core-page])']).toEqual(
@@ -198,7 +198,10 @@ describe('createComponents', () => {
     const actual = createComponents({});
     expect(actual.BackstageSidebar?.styleOverrides?.drawer).toEqual(
       expect.objectContaining({
-        top: 'var(--rhdh-global-header-height, 0px)',
+        top: 'var(--rhdh-global-header-height, 64px) !important',
+        height:
+          'calc(100vh - var(--rhdh-global-header-height, 64px)) !important',
+        bottom: '0 !important',
       }),
     );
   });

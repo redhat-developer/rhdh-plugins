@@ -15,12 +15,14 @@
  */
 
 /**
- * Sticky AppBar is z-index 1100. BUI Dialog overlay is 1000 and
- * InspectEntityDialog uses height 100vh, so the masthead covers the
- * title and close control (RHDHBUGS-3603).
+ * Keep Inspect Entity / BUI dialogs below the masthead (RHDHBUGS-3603).
+ *
+ * BUI DialogOverlay defaults to `inset: 0` and z-index 1000. Override inset
+ * so the backdrop starts under the header, and raise z-index above the page
+ * while the masthead itself stays above the overlay via AppBar z-index.
  *
  * 64px fallback matches the MUI Toolbar default when
- * --rhdh-global-header-height is unset.
+ * `--rhdh-global-header-height` is unset.
  *
  * A raw style tag is used instead of MUI GlobalStyles so NFS demo apps
  * and dynamic-plugin bundles pick this up without depending on a shared
@@ -28,7 +30,11 @@
  */
 export const GLOBAL_HEADER_DIALOG_OFFSET_CSS = `
 [class*="bui-DialogOverlay"] {
+  inset: var(--rhdh-global-header-height, 64px) 0 0 0 !important;
   top: var(--rhdh-global-header-height, 64px) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
   height: calc(100% - var(--rhdh-global-header-height, 64px)) !important;
   z-index: 1300;
 }

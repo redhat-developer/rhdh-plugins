@@ -17,10 +17,7 @@
 import { render, screen } from '@testing-library/react';
 
 import { GlobalHeaderProvider } from '../extensions/GlobalHeaderContext';
-import {
-  GLOBAL_HEADER_HEIGHT_VAR,
-  GlobalHeaderLayout,
-} from './GlobalHeaderLayout';
+import { GlobalHeaderLayout } from './GlobalHeaderLayout';
 
 jest.mock('@backstage/core-components', () => ({
   ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
@@ -28,32 +25,7 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-class ResizeObserverMock {
-  callback: ResizeObserverCallback;
-  constructor(callback: ResizeObserverCallback) {
-    this.callback = callback;
-  }
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
 describe('GlobalHeaderLayout', () => {
-  const originalResizeObserver = global.ResizeObserver;
-
-  beforeAll(() => {
-    global.ResizeObserver =
-      ResizeObserverMock as unknown as typeof ResizeObserver;
-  });
-
-  afterAll(() => {
-    global.ResizeObserver = originalResizeObserver;
-  });
-
-  afterEach(() => {
-    document.documentElement.style.removeProperty(GLOBAL_HEADER_HEIGHT_VAR);
-  });
-
   it('renders the header above page content using the legacy layout ids', () => {
     render(
       <GlobalHeaderProvider components={[]} menuItems={[]}>
@@ -71,41 +43,17 @@ describe('GlobalHeaderLayout', () => {
     expect(screen.getByText('page content')).toBeInTheDocument();
   });
 
-  it('publishes the measured header height as a CSS custom property', () => {
-    const offsetDescriptor = Object.getOwnPropertyDescriptor(
-      HTMLElement.prototype,
-      'offsetHeight',
+  it('does not publish a measured header height on the document', () => {
+    render(
+      <GlobalHeaderProvider components={[]} menuItems={[]}>
+        <GlobalHeaderLayout>child</GlobalHeaderLayout>
+      </GlobalHeaderProvider>,
     );
-    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
-      configurable: true,
-      get() {
-        return (this as HTMLElement).id ===
-          'rhdh-above-sidebar-header-container'
-          ? 64
-          : 0;
-      },
-    });
 
-    try {
-      render(
-        <GlobalHeaderProvider components={[]} menuItems={[]}>
-          <GlobalHeaderLayout>child</GlobalHeaderLayout>
-        </GlobalHeaderProvider>,
-      );
-
-      expect(
-        document.documentElement.style.getPropertyValue(
-          GLOBAL_HEADER_HEIGHT_VAR,
-        ),
-      ).toBe('64px');
-    } finally {
-      if (offsetDescriptor) {
-        Object.defineProperty(
-          HTMLElement.prototype,
-          'offsetHeight',
-          offsetDescriptor,
-        );
-      }
-    }
+    expect(
+      document.documentElement.style.getPropertyValue(
+        '--rhdh-global-header-height',
+      ),
+    ).toBe('');
   });
 });

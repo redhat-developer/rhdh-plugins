@@ -81,6 +81,11 @@ export const ApplicationDrawer = ({
     <>
       <div
         style={{
+          flex: 1,
+          minHeight: 0,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
           transition: `margin-right 225ms cubic-bezier(${
             isOpen ? '0, 0, 0.2, 1' : '0.4, 0, 0.6, 1'
           })`,
