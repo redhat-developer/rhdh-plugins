@@ -17,8 +17,8 @@
 /**
  * SDK for AI asset entity providers.
  *
- * Exports annotation constants and version normalization for the
- * AI catalog entity model.
+ * Exports annotation constants, validation utilities, interface
+ * contracts, and adapter types for the AI catalog entity model.
  *
  * @packageDocumentation
  */
@@ -27,6 +27,38 @@ export {
   AI_ASSET_CATEGORY_ANNOTATION,
   AI_ASSET_VERSION_ANNOTATION,
   AI_ASSET_SOURCE_ANNOTATION,
+  AI_ASSET_CATEGORIES,
+  AIAssetCategorySchema,
+  type AIAssetCategory,
 } from './annotations';
 
 export { normalizeAIAssetVersion } from './normalizeAIAssetVersion';
+
+export { validateAIAssetEntity } from './validateAIAssetEntity';
+
+export { AIAssetValidator } from './AIAssetValidator';
+
+export {
+  type AIAssetEntityProvider,
+  type DeltaResult,
+} from './AIAssetEntityProvider';
+
+export {
+  RELATIONSHIP_TYPES,
+  type RelationshipType,
+  type Neo4jSyncAdapter,
+} from './Neo4jSyncAdapter';
+
+export {
+  SkillBundleMetadataSchema,
+  type SkillBundleMetadata,
+} from './SkillBundleMetadata';
+
+export {
+  DeltaSyncManager,
+  InMemoryCursorStore,
+  type CursorState,
+  type CursorStore,
+  type ApplyDeltaOptions,
+  type DeltaSyncManagerOptions,
+} from './DeltaSyncManager';
