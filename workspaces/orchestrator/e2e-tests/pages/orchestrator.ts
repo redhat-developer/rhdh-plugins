@@ -228,13 +228,20 @@ export class Orchestrator {
       ),
     ).toBeVisible({ timeout: 60_000 });
 
-    const resultsText =
-      this.locale === 'ja'
-        ? `${this.translations.run.results}${this.translations.table.actions.run}`
-        : `${this.translations.run.results}${this.translations.run.status.completed}`;
+    // Results card title and completed alert are separate nodes. Successful
+    // runs render run.status.completedAt (with a timestamp), not the bare
+    // run.status.completed string — so do not rely on concatenated text.
+    await expect(
+      this.page.getByText(this.translations.run.results, { exact: true }),
+    ).toBeVisible();
+    const completedAtPattern = this.translations.run.status.completedAt
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace('\\{\\{time\\}\\}', '.+');
+    await expect(
+      this.page.getByText(new RegExp(completedAtPattern)),
+    ).toBeVisible();
 
     const instanceDetailTexts = [
-      resultsText,
       `${this.translations.workflow.fields.workflow}${displayWorkflowName}`,
       `${this.translations.workflow.fields.workflowStatus} ${this.translations.workflow.status.available}`,
     ];
