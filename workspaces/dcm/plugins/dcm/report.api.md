@@ -8,6 +8,7 @@ import { ApiFactory } from '@backstage/core-plugin-api';
 import { ApiRef } from '@backstage/core-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import type { CatalogApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { ConfigApi } from '@backstage/core-plugin-api';
 import type { DcmOidcTokenProvider } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OAuthApi } from '@backstage/core-plugin-api';
@@ -30,6 +31,15 @@ export const catalogApiRef: ApiRef<CatalogApi>;
 export type DcmAuthApi = {
   getAccessToken?: DcmOidcTokenProvider;
 };
+
+// @public
+export const dcmAuthApiFactory: ApiFactory<
+  DcmAuthApi,
+  DcmAuthApi,
+  {
+    configApi: ConfigApi;
+  }
+>;
 
 // @public
 export const dcmAuthApiRef: ApiRef<DcmAuthApi>;

@@ -42,7 +42,7 @@ import {
   policyManagerApiRef,
   resourcesApiRef,
 } from './apis';
-import { dcmAuthApiRef, dcmOidcAuthApiFactory } from './api/AuthApiRefs';
+import { dcmAuthApiFactory, dcmAuthApiRef } from './api/AuthApiRefs';
 
 /**
  * DCM plugin instance.
@@ -61,7 +61,7 @@ export const dcmPlugin = createPlugin({
     resources: resourcesRouteRef,
   },
   apis: [
-    dcmOidcAuthApiFactory,
+    dcmAuthApiFactory,
     createApiFactory({
       api: catalogApiRef,
       deps: {

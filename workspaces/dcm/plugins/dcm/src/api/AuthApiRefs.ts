@@ -15,10 +15,12 @@
  */
 
 import {
+  configApiRef,
   createApiFactory,
   createApiRef,
   type ApiFactory,
   type ApiRef,
+  type ConfigApi,
   type OAuthApi,
   type OpenIdConnectApi,
 } from '@backstage/core-plugin-api';
@@ -41,6 +43,38 @@ const oidcAuthApiRef: ApiRef<OAuthApi & OpenIdConnectApi> = createApiRef<
 });
 
 /**
+ * DCM auth API factory that selects the safe, token-free implementation from
+ * configuration. It intentionally has no OIDC dependency so auth-disabled
+ * hosts do not need to provide `internal.auth.oidc`.
+ *
+ * @public
+ */
+export const dcmAuthApiFactory: ApiFactory<
+  DcmAuthApi,
+  DcmAuthApi,
+  { configApi: ConfigApi }
+> = createApiFactory({
+  api: dcmAuthApiRef,
+  deps: { configApi: configApiRef },
+  factory: ({ configApi }) => {
+    const authEnabled =
+      configApi.getOptionalBoolean('dcm.auth.enabled') ?? true;
+    if (!authEnabled) {
+      return {};
+    }
+
+    return {
+      getAccessToken: () =>
+        Promise.reject(
+          new Error(
+            'DCM authentication is enabled, but the host does not provide a DCM OIDC auth API factory.',
+          ),
+        ),
+    };
+  },
+});
+
+/**
  * DCM auth API factory for standalone and development apps with DCM auth disabled.
  *
  * @public
@@ -54,6 +88,8 @@ export const dcmAuthDisabledApiFactory: ApiFactory<DcmAuthApi, DcmAuthApi, {}> =
 
 /**
  * DCM auth API factory that adapts the host application's OIDC API.
+ *
+ * Register this at application scope when DCM authentication is enabled.
  *
  * @public
  */

@@ -22,6 +22,7 @@ export {
   resourcesApiRef,
 } from './apis';
 export {
+  dcmAuthApiFactory,
   dcmAuthApiRef,
   dcmAuthDisabledApiFactory,
   dcmOidcAuthApiFactory,

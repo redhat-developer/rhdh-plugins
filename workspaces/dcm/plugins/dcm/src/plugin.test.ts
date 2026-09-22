@@ -15,16 +15,18 @@
  */
 import { ApiFactoryRegistry, ApiResolver } from '@backstage/core-app-api';
 import {
+  configApiRef,
   createApiFactory,
   createApiRef,
   discoveryApiRef,
   fetchApiRef,
+  type ConfigApi,
   type OAuthApi,
   type OpenIdConnectApi,
 } from '@backstage/core-plugin-api';
 import {
+  dcmAuthApiFactory,
   dcmAuthApiRef,
-  dcmAuthDisabledApiFactory,
   dcmOidcAuthApiFactory,
 } from './api/AuthApiRefs';
 import {
@@ -35,6 +37,10 @@ import {
 } from './apis';
 import { dcmPlugin } from './plugin';
 
+const oidcAuthApiRef = createApiRef<OAuthApi & OpenIdConnectApi>({
+  id: 'internal.auth.oidc',
+});
+
 function expectDcmApisToResolve(resolver: ApiResolver) {
   expect(resolver.get(catalogApiRef)).toBeDefined();
   expect(resolver.get(policyManagerApiRef)).toBeDefined();
@@ -42,13 +48,11 @@ function expectDcmApisToResolve(resolver: ApiResolver) {
   expect(resolver.get(resourcesApiRef)).toBeDefined();
 }
 
-const oidcAuthApiRef = createApiRef<OAuthApi & OpenIdConnectApi>({
-  id: 'internal.auth.oidc',
-});
-
-function createDcmApiResolver(
-  authApiFactory: typeof dcmAuthDisabledApiFactory,
-) {
+function createDcmApiResolver(options: {
+  authEnabled: boolean;
+  oidcAuthApi?: OAuthApi & OpenIdConnectApi;
+  useOidcAdapter?: boolean;
+}) {
   const registry = new ApiFactoryRegistry();
 
   for (const factory of dcmPlugin.getApis()) {
@@ -56,17 +60,33 @@ function createDcmApiResolver(
   }
   registry.register(
     'default',
+    createApiFactory(configApiRef, {
+      getOptionalBoolean: jest.fn().mockReturnValue(options.authEnabled),
+    } as unknown as ConfigApi),
+  );
+  registry.register(
+    'default',
     createApiFactory(discoveryApiRef, {
       getBaseUrl: jest.fn().mockResolvedValue('http://localhost/api/dcm'),
     }),
   );
-  registry.register(
-    'default',
-    createApiFactory(fetchApiRef, { fetch: jest.fn() }),
-  );
-  registry.register('app', authApiFactory);
+  const fetch = jest.fn().mockResolvedValue({
+    status: 200,
+    ok: true,
+    json: async () => ({}),
+  });
+  registry.register('default', createApiFactory(fetchApiRef, { fetch }));
+  if (options.oidcAuthApi) {
+    registry.register(
+      'default',
+      createApiFactory(oidcAuthApiRef, options.oidcAuthApi),
+    );
+  }
+  if (options.useOidcAdapter) {
+    registry.register('app', dcmOidcAuthApiFactory);
+  }
 
-  return new ApiResolver(registry);
+  return { fetch, registry, resolver: new ApiResolver(registry) };
 }
 
 describe('dcm', () => {
@@ -74,26 +94,37 @@ describe('dcm', () => {
     expect(dcmPlugin).toBeDefined();
   });
 
-  it('resolves DCM APIs with a DCM-specific auth-disabled factory', () => {
-    const resolver = createDcmApiResolver(dcmAuthDisabledApiFactory);
+  it('resolves all DCM APIs without an OIDC API when DCM auth is disabled', () => {
+    const { resolver } = createDcmApiResolver({ authEnabled: false });
 
     expectDcmApisToResolve(resolver);
     expect(resolver.get(dcmAuthApiRef)?.getAccessToken).toBeUndefined();
   });
 
-  it('keeps the host OIDC API separate from the auth-disabled DCM factory', () => {
-    const registry = new ApiFactoryRegistry();
+  it('does not select the host OIDC API when DCM auth is disabled', async () => {
+    const getAccessToken = jest.fn().mockResolvedValue('oidc-token');
     const oidcAuthApi = {
-      getAccessToken: jest.fn(),
+      getAccessToken,
       getIdToken: jest.fn(),
     } as unknown as OAuthApi & OpenIdConnectApi;
+    const { fetch, resolver } = createDcmApiResolver({
+      authEnabled: false,
+      oidcAuthApi,
+    });
 
-    registry.register('default', createApiFactory(oidcAuthApiRef, oidcAuthApi));
-    registry.register('default', dcmOidcAuthApiFactory);
-    registry.register('app', dcmAuthDisabledApiFactory);
+    expectDcmApisToResolve(resolver);
+    expect(resolver.get(dcmAuthApiRef)?.getAccessToken).toBeUndefined();
+    await Promise.all([
+      resolver.get(catalogApiRef)?.listServiceTypes(),
+      resolver.get(policyManagerApiRef)?.listPolicies(),
+      resolver.get(agentsApiRef)?.listAgents(),
+      resolver.get(resourcesApiRef)?.listServiceTypeInstances(),
+    ]);
 
-    expect(registry.get(oidcAuthApiRef)?.factory({})).toBe(oidcAuthApi);
-    expect(registry.get(dcmAuthApiRef)).toBe(dcmAuthDisabledApiFactory);
+    expect(getAccessToken).not.toHaveBeenCalled();
+    for (const [, init] of fetch.mock.calls) {
+      expect(init.headers).not.toHaveProperty('X-DCM-OIDC-Token');
+    }
   });
 
   it('adapts the host OIDC access token for DCM auth-enabled clients', async () => {
@@ -102,34 +133,50 @@ describe('dcm', () => {
       getAccessToken,
       getIdToken: jest.fn(),
     } as unknown as OAuthApi & OpenIdConnectApi;
-    const registry = new ApiFactoryRegistry();
-
-    for (const factory of dcmPlugin.getApis()) {
-      registry.register('default', factory);
-    }
-    registry.register(
-      'default',
-      createApiFactory(discoveryApiRef, {
-        getBaseUrl: jest.fn().mockResolvedValue('http://localhost/api/dcm'),
-      }),
-    );
-    registry.register(
-      'default',
-      createApiFactory(fetchApiRef, { fetch: jest.fn() }),
-    );
-    registry.register('default', createApiFactory(oidcAuthApiRef, oidcAuthApi));
-
-    const resolver = new ApiResolver(registry);
+    const { fetch, resolver } = createDcmApiResolver({
+      authEnabled: true,
+      oidcAuthApi,
+      useOidcAdapter: true,
+    });
 
     expectDcmApisToResolve(resolver);
+    await Promise.all([
+      resolver.get(catalogApiRef)?.listServiceTypes(),
+      resolver.get(policyManagerApiRef)?.listPolicies(),
+      resolver.get(agentsApiRef)?.listAgents(),
+      resolver.get(resourcesApiRef)?.listServiceTypeInstances(),
+    ]);
+
+    expect(getAccessToken).toHaveBeenCalledTimes(4);
+    for (const [, init] of fetch.mock.calls) {
+      expect(init.headers).toHaveProperty('X-DCM-OIDC-Token', 'oidc-token');
+    }
+  });
+
+  it('fails explicitly when DCM auth is enabled without an OIDC adapter', async () => {
+    const { resolver } = createDcmApiResolver({ authEnabled: true });
 
     const dcmAuthApi = resolver.get(dcmAuthApiRef);
     if (!dcmAuthApi?.getAccessToken) {
-      throw new Error(
-        'Expected the DCM OIDC auth API to provide an access token',
-      );
+      throw new Error('Expected an actionable DCM OIDC auth API error');
     }
-    await expect(dcmAuthApi.getAccessToken()).resolves.toBe('oidc-token');
-    expect(getAccessToken).toHaveBeenCalledTimes(1);
+
+    await expect(dcmAuthApi.getAccessToken()).rejects.toThrow(
+      'DCM authentication is enabled, but the host does not provide a DCM OIDC auth API factory.',
+    );
+  });
+
+  it('lets the app-scoped DCM OIDC adapter override the config-only default', () => {
+    const { registry } = createDcmApiResolver({
+      authEnabled: true,
+      oidcAuthApi: {
+        getAccessToken: jest.fn(),
+        getIdToken: jest.fn(),
+      } as unknown as OAuthApi & OpenIdConnectApi,
+      useOidcAdapter: true,
+    });
+
+    expect(registry.get(dcmAuthApiRef)).toBe(dcmOidcAuthApiFactory);
+    expect(registry.get(oidcAuthApiRef)).not.toBe(dcmAuthApiFactory);
   });
 });
