@@ -95,17 +95,7 @@ backend.add(import('@backstage/plugin-search-backend'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 
-// Boost plugins
-backend.add(import('@red-hat-developer-hub/backstage-plugin-boost-backend'));
-backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx'),
-);
-backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti'),
-);
-backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider'),
-);
+// Boost catalog entity provider
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-ogx-entity-provider'),
 );
