@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 3.0.0
+
+### Major Changes
+
+- 860ea4f: Remove the `/legacy` subpath export and the legacy frontend system plugin implementation.
+
+### Minor Changes
+
+- ad959e1: Give the homepage NFS plugin its own configurable page (`page:homepage`) so it works without community `@backstage/plugin-home`, and apply persona-based `homepage.defaultWidgets` filtering only on that page via homepage-backend. When `homepageHomeModule` is installed, the same widgets are also registered on community `page:home` (without the RH layout / homepage-backend filtering). Community `page:home` and `page:homepage` can be enabled or disabled independently via app-config.
+
+### Patch Changes
+
+- d378db5: Remove the deprecated `/alpha` subpath export now that NFS modules have graduated to the primary package entry point.
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+
 ## 2.0.0
 
 ### Major Changes
