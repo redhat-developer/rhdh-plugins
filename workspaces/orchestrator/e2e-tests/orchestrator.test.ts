@@ -119,6 +119,47 @@ test.describe('Orchestrator workflow runs', () => {
     }
   });
 
+  // mock empty overview so SWR never caches real workflows for this case
+  test('Empty state when no workflows are configured', async () => {
+    const overviewRoute = '**/api/orchestrator/v2/workflows/overview**';
+    await sharedPage.route(overviewRoute, async route => {
+      if (route.request().method() !== 'POST') {
+        await route.continue();
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ overviews: [], paginationInfo: {} }),
+      });
+    });
+
+    try {
+      // Full reload clears persisted SWR cache from parent beforeEach's real fetch
+      await sharedPage.reload({ waitUntil: 'domcontentloaded' });
+      await sharedPage
+        .getByRole('heading', { name: translations.page.title })
+        .first()
+        .waitFor({ state: 'visible', timeout: 30_000 });
+      await orchestrator.navigateToWorkflowRunTab(
+        translations.page.tabs.workflows,
+      );
+      await expect(
+        sharedPage.getByText(translations.emptyState.workflows.title),
+      ).toBeVisible({ timeout: 60_000 });
+      await expect(
+        sharedPage.getByText(translations.emptyState.workflows.description),
+      ).toBeVisible();
+      await expect(
+        sharedPage.getByRole('link', {
+          name: translations.emptyState.workflows.viewDocumentation,
+        }),
+      ).toBeVisible();
+    } finally {
+      await sharedPage.unroute(overviewRoute);
+    }
+  });
+
   test.describe('Orchestrator > Workflow runs page', () => {
     test.beforeEach(async () => {
       const workflowsOverviewResponse = sharedPage.waitForResponse(
@@ -147,6 +188,25 @@ test.describe('Orchestrator workflow runs', () => {
         translations.table.headers.successRatio,
         'Actions',
       ]);
+
+      // Verify Input-schema action is removed from Workflows table
+      await expect(
+        sharedPage.getByRole('columnheader', {
+          name: translations.table.actions.viewInputSchema,
+        }),
+      ).not.toBeVisible();
+
+      // Workflows (x) count on the Workflows tab
+      const workflowsCountTab = sharedPage.getByRole('tab', {
+        name: countHeadingPattern(translations.table.title.workflows),
+      });
+      await expect(workflowsCountTab).toBeVisible();
+      const workflowCount = parseCountFromHeading(
+        (await workflowsCountTab.textContent()) ?? '',
+        translations.table.title.workflows,
+      );
+      expect(workflowCount).toBeGreaterThan(0);
+
       const workflowName = 'Hello World workflow';
       await orchestrator.searchWorkflow(workflowName);
       await expect(
@@ -164,6 +224,63 @@ test.describe('Orchestrator workflow runs', () => {
       await expect(
         sharedPage.getByRole('row', { name: workflowName }),
       ).toContainText('1.0');
+
+      // Empty runs state for a workflow with no prior runs
+      const zeroRunWorkflow = 'Assessment Workflow';
+      await orchestrator.searchWorkflow(zeroRunWorkflow);
+      await orchestrator.openWorkflowFromTable(zeroRunWorkflow);
+      await orchestrator.navigateToWorkflowRunTab(
+        translations.page.tabs.workflowRuns,
+      );
+      await expect(
+        sharedPage.getByText(translations.emptyState.runs.title),
+      ).toBeVisible();
+    });
+
+    test('Run details status remains Running after navigate away and back', async () => {
+      const workflowName = 'Wait or Error';
+
+      await orchestrator.searchWorkflow(workflowName);
+      await orchestrator.openWorkflowFromTable(workflowName);
+      await orchestrator.clickRunWorkflowFromDetails();
+
+      // Data Input Schema: State = Wait
+      const stateField = sharedPage.getByLabel('State', { exact: true });
+      await expect(stateField).toBeVisible({ timeout: 30_000 });
+      await stateField.click();
+      await sharedPage
+        .getByRole('option', { name: 'Wait', exact: true })
+        .click();
+      await orchestrator.submitWorkflowRunForm();
+
+      await expect(sharedPage).toHaveURL(/\/orchestrator\/instances\/.+/, {
+        timeout: 60_000,
+      });
+      await expect(
+        sharedPage.getByText(translations.table.status.running, {
+          exact: true,
+        }),
+      ).toBeVisible({ timeout: 30_000 });
+
+      // Navigate away via direct runs URL → latest Running run
+      await sharedPage.goto('/orchestrator/workflows/wait-or-error/runs');
+      await sharedPage
+        .getByTestId('loading-indicator')
+        .waitFor({ state: 'hidden', timeout: 60_000 });
+
+      const runningRow = sharedPage
+        .getByRole('row')
+        .filter({ hasText: translations.table.status.running })
+        .first();
+      await expect(runningRow).toBeVisible({ timeout: 30_000 });
+      await runningRow.getByRole('link').first().click();
+
+      await expect(sharedPage).toHaveURL(/\/orchestrator\/instances\/.+/);
+      await expect(
+        sharedPage.getByText(translations.table.status.running, {
+          exact: true,
+        }),
+      ).toBeVisible();
     });
 
     test('Run Test Object Type Support in ui:props workflow', async () => {
@@ -180,6 +297,11 @@ test.describe('Orchestrator workflow runs', () => {
       await expect(sharedPage).toHaveURL(/\/orchestrator\/instances\/.+/);
       await orchestratorHelper.verifyBreadcrumbLink(workflowName);
       await orchestrator.verifyUiPropsWorkflowInstanceDetails(workflowName);
+      await expect(
+        sharedPage.getByRole('button', {
+          name: translations.run.logs.viewLogs,
+        }),
+      ).toBeVisible();
       await orchestrator.verifyUiPropsWorkflowRunVariables(workflowInputs);
     });
 
@@ -251,6 +373,187 @@ test.describe('Orchestrator workflow runs', () => {
         .click();
       await orchestratorHelper.clickButton(translations.workflow.buttons.run);
       await orchestratorHelper.verifyBreadcrumbLink('Hello World Workflow');
+    });
+
+    // Aborted vs Completed on progress graph
+    test('Progress graph distinguishes aborted vs completed steps', async () => {
+      const workflowName = 'Wait or Error';
+
+      await orchestrator.searchWorkflow(workflowName);
+      await orchestrator.openWorkflowFromTable(workflowName);
+      await orchestrator.clickRunWorkflowFromDetails();
+
+      const stateField = sharedPage.getByLabel('State', { exact: true });
+      await expect(stateField).toBeVisible({ timeout: 30_000 });
+      await stateField.click();
+      await sharedPage
+        .getByRole('option', { name: 'Wait', exact: true })
+        .click();
+      await orchestrator.submitWorkflowRunForm();
+
+      await expect(sharedPage).toHaveURL(/\/orchestrator\/instances\/.+/, {
+        timeout: 60_000,
+      });
+      await expect(
+        sharedPage.getByText(translations.table.status.running, {
+          exact: true,
+        }),
+      ).toBeVisible({ timeout: 30_000 });
+
+      await sharedPage
+        .getByRole('button', { name: translations.run.abort.button })
+        .click();
+      const abortDialog = sharedPage.getByRole('dialog');
+      await expect(
+        abortDialog.getByText(translations.run.abort.title),
+      ).toBeVisible();
+      // de/es: abort.button === common.cancel, so pick the first (confirm) action
+      await abortDialog
+        .getByRole('button', { name: translations.run.abort.button })
+        .first()
+        .click();
+
+      await expect(
+        sharedPage
+          .getByText(translations.table.status.aborted, { exact: true })
+          .first(),
+      ).toBeVisible({ timeout: 60_000 });
+
+      const graph = sharedPage.locator('.react-flow').first();
+      await expect(graph).toBeVisible();
+
+      const completedNode = graph.locator('.react-flow__node', {
+        hasText: 'ChooseOnState',
+      });
+      await expect(
+        completedNode.getByText(translations.table.status.completed, {
+          exact: true,
+        }),
+      ).toBeVisible();
+
+      const abortedNode = graph.locator('.react-flow__node', {
+        hasText: 'WaitFlow',
+      });
+      await expect(
+        abortedNode.getByText(translations.table.status.aborted, {
+          exact: true,
+        }),
+      ).toBeVisible();
+    });
+
+    test('Unavailable workflow shows tooltip and disables Run', async () => {
+      // Simulate ping failure (PR #3632 / ansible-job-template) via overview mocks.
+      // Real YAML delete + SonataFlow restart forces a Maven rebuild and exceeds
+      // health timeouts; mocks keep the suite stable without a dedicated fixture.
+      const workflowId = 'ansible-job-template';
+      const workflowName = 'Ansible Job Template';
+      const unavailableAvailability = {
+        isAvailable: false,
+        statusCode: 503,
+        urlToFetch: `http://localhost:8899/management/processes/${workflowId}`,
+        reason: 'Service Unavailable',
+      };
+
+      const markUnavailable = <T extends Record<string, unknown>>(
+        overview: T,
+      ) => ({
+        ...overview,
+        workflowId,
+        name: workflowName,
+        isAvailable: false,
+        availability: unavailableAvailability,
+      });
+
+      const overviewListRoute = '**/api/orchestrator/v2/workflows/overview';
+      const overviewByIdRoute = `**/api/orchestrator/v2/workflows/${workflowId}/overview**`;
+
+      await sharedPage.route(overviewListRoute, async route => {
+        if (route.request().method() !== 'POST') {
+          await route.continue();
+          return;
+        }
+        const response = await route.fetch();
+        const body = (await response.json()) as {
+          overviews?: Record<string, unknown>[];
+          paginationInfo?: unknown;
+        };
+        const overviews = (body.overviews ?? []).map(overview =>
+          overview.workflowId === workflowId
+            ? markUnavailable(overview)
+            : overview,
+        );
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ...body, overviews }),
+        });
+      });
+
+      await sharedPage.route(overviewByIdRoute, async route => {
+        if (route.request().method() !== 'GET') {
+          await route.continue();
+          return;
+        }
+        const response = await route.fetch();
+        const existing = (await response.json()) as Record<string, unknown>;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(markUnavailable(existing)),
+        });
+      });
+
+      try {
+        await sharedPage.reload({ waitUntil: 'domcontentloaded' });
+        await sharedPage
+          .getByRole('heading', { name: translations.page.title })
+          .first()
+          .waitFor({ state: 'visible', timeout: 30_000 });
+        await orchestrator.navigateToWorkflowRunTab(
+          translations.page.tabs.workflows,
+        );
+        await orchestrator.searchWorkflow(workflowName);
+
+        const workflowRow = sharedPage.getByRole('row').filter({
+          has: sharedPage.getByRole('link', {
+            name: new RegExp(
+              `^${workflowName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+              'i',
+            ),
+          }),
+        });
+        await expect(
+          workflowRow.getByText(translations.workflow.status.unavailable, {
+            exact: true,
+          }),
+        ).toBeVisible();
+
+        await workflowRow
+          .getByText(translations.workflow.status.unavailable, { exact: true })
+          .hover();
+        const tooltip = sharedPage.getByRole('tooltip');
+        await expect(
+          tooltip.getByText(translations.workflow.unavailable.title),
+        ).toBeVisible();
+        // Material Table run action has no accessible name when disabled
+        await expect(workflowRow.getByRole('button').first()).toBeDisabled();
+
+        await orchestrator.openWorkflowFromTable(workflowName);
+        await expect(
+          sharedPage.getByText(translations.workflow.status.unavailable, {
+            exact: true,
+          }),
+        ).toBeVisible();
+        // Tooltip becomes the accessible name when Run is disabled for availability
+        await expect(
+          sharedPage.getByRole('button', {
+            name: translations.workflow.unavailable.runTooltip,
+          }),
+        ).toBeDisabled();
+      } finally {
+        await sharedPage.unroute(overviewListRoute);
+        await sharedPage.unroute(overviewByIdRoute);
+      }
     });
 
     test('Backward navigation in multi-step stepper', async () => {
@@ -458,7 +761,28 @@ test.describe('Orchestrator workflow runs', () => {
         ),
       ).toBeVisible();
       await runAccessibilityTests(sharedPage, testInfo);
+      // Run by / Entity filters on All runs
+      await expect(
+        sharedPage.getByLabel(translations.table.filters.runBy),
+      ).toBeVisible();
+      await expect(
+        sharedPage.getByLabel(translations.table.filters.entity),
+      ).toBeVisible();
       await orchestrator.verifyWorkflowRunTabDetails();
+
+      // Verify Entity link navigates to catalog entity page
+      const entityLink = sharedPage
+        .getByRole('row')
+        .first()
+        .getByRole('link', { name: /my-component/i });
+      if (await entityLink.isVisible()) {
+        await entityLink.click();
+        await expect(sharedPage).toHaveURL(/\/catalog\//);
+        await orchestrator.navigateToOrchestrator();
+        await orchestrator.navigateToWorkflowRunTab(
+          translations.page.tabs.allRuns,
+        );
+      }
     });
 
     test('All runs tab workflow details validation', async () => {

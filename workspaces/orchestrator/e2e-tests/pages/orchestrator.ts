@@ -97,17 +97,29 @@ export class Orchestrator {
 
   async searchWorkflow(workflowName: string) {
     await this.orchestratorHelper.searchInputPlaceholder(workflowName);
-    await expect(
-      this.page.getByRole('row', { name: workflowName }),
-    ).toBeVisible();
+    await expect(this.workflowTableRow(workflowName)).toBeVisible();
   }
 
   async openWorkflowFromTable(workflowName: string) {
-    await this.page
-      .getByRole('row', { name: workflowName })
-      .getByRole('link', { name: workflowName })
+    const namePattern = new RegExp(
+      `^${workflowName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+      'i',
+    );
+    await this.workflowTableRow(workflowName)
+      .getByRole('link', { name: namePattern })
       .click();
-    await this.orchestratorHelper.verifyHeading(workflowName);
+    await this.orchestratorHelper.verifyHeading(namePattern);
+  }
+
+  /** Row for a workflow name; exact link match avoids substring clashes. */
+  private workflowTableRow(workflowName: string) {
+    const namePattern = new RegExp(
+      `^${workflowName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+      'i',
+    );
+    return this.page.getByRole('row').filter({
+      has: this.page.getByRole('link', { name: namePattern }),
+    });
   }
 
   async clickRunWorkflowFromDetails() {
@@ -254,6 +266,7 @@ export class Orchestrator {
       this.translations.workflow.fields.duration,
       this.translations.workflow.fields.started,
       this.translations.workflow.fields.description,
+      this.translations.workflow.fields.runBy, // Run by on workflow instance detail page (RHIDP-15924)
     ];
     for (const heading of instanceDetailHeadings) {
       await expect(
@@ -270,10 +283,12 @@ export class Orchestrator {
     return `"${fieldName}": "${escapedValue}"`;
   }
 
+  // View run variables opens modal (RHIDP-15924)
   async verifyUiPropsWorkflowRunVariables(inputs: UiPropsWorkflowInputs) {
     await this.orchestratorHelper.clickLink(
       this.translations.run.viewVariables,
     );
+    // Verify modal/dialog is open with run variables
     await expect(
       this.page.getByText(`{ "name": "${inputs.name}"`),
     ).toBeVisible();
@@ -458,11 +473,20 @@ export class Orchestrator {
     await expect(
       this.page.getByText(this.translations.workflow.progress, { exact: true }),
     ).toBeVisible();
+    // Read-only progress graph on run details (RHIDP-15924)
+    await expect(this.page.locator('.react-flow').first()).toBeVisible();
     await expect(
       this.page
         .locator('div')
         .filter({ hasText: this.translations.table.status.completed })
         .first(),
+    ).toBeVisible();
+
+    // Verify Run by field on workflow run details page (RHIDP-15924)
+    await expect(
+      this.page.getByRole('heading', {
+        name: this.translations.workflow.fields.runBy,
+      }),
     ).toBeVisible();
   }
 
@@ -496,6 +520,20 @@ export class Orchestrator {
     await expect(this.page.locator('pre').first()).toBeVisible();
     await expect(
       this.page.getByRole('button', { name: 'Copy' }).first(),
+    ).toBeVisible();
+
+    // Verify Input schema card on details page (RHIDP-15924)
+    await expect(
+      this.page.getByText(this.translations.workflow.inputSchema, {
+        exact: true,
+      }),
+    ).toBeVisible();
+
+    // Verify Success ratio card on workflow details (RHIDP-15924)
+    await expect(
+      this.page.getByText(this.translations.workflow.successRatio, {
+        exact: true,
+      }),
     ).toBeVisible();
   }
 
