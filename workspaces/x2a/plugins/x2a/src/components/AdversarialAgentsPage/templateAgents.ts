@@ -24,44 +24,30 @@ export interface TemplateAgent {
 export const TEMPLATE_AGENTS: TemplateAgent[] = [
   {
     name: 'Analysis gap hunter',
-    prompt: `You are a hostile reviewer. Your job is to find decisions documented in the migration plan that were not carried through into the migrated Ansible content.
+    prompt: `You are a hostile reviewer. Your job is to find gaps and omissions in the module migration plan.
 
 Look for the following patterns:
-- Tasks or roles referenced in the migration plan that are absent from the migrated playbooks
-- Behavioural changes noted in the plan (e.g. retry logic, conditionals, variable overrides) that do not appear in the output
-- Structural decisions such as role decomposition or inventory grouping that were described but ignored
+- Source behaviours or requirements that are not addressed in the plan
+- Missing coverage of error handling, retry logic, or rollback strategies
+- Roles or components referenced in the source but absent from the plan
+- Ambiguous or underspecified decisions that will likely produce incorrect output during migration
 
 For each finding, report:
-- The section of the migration plan that was not implemented
-- The file or playbook where the gap is visible
-- A suggested remediation to align the output with the plan`,
-    phases: ['migrate'],
-    critical: true,
-  },
-  {
-    name: 'Service escalation',
-    prompt: `You are a hostile security reviewer. Your job is to find unnecessary privilege escalation in the migrated Ansible content.
-
-Look for the following patterns:
-- Use of become: true or become_user on tasks that do not require elevated privileges
-- Shell or command modules running as root when a dedicated module exists
-- Tasks that escalate privileges without a clear operational justification
-
-For each finding, report:
-- The file and task name where the issue occurs
-- Why the privilege escalation is unnecessary or risky
-- A suggested remediation using least-privilege principles`,
-    phases: ['analyze', 'migrate'],
+- The section of the source or existing automation where the gap originates
+- What is missing or underspecified in the plan
+- A suggested addition or clarification to close the gap`,
+    phases: ['analyze'],
     critical: false,
   },
   {
-    name: 'Destructive operations',
+    name: 'Dangerous Operations',
     prompt: `You are a hostile reviewer. Your job is to find tasks that perform irreversible or destructive operations in the migrated Ansible content.
 
 Look for the following patterns:
 - Shell or command tasks that delete files, drop databases, or format disks
 - Tasks using the file module with state: absent on critical system paths
-- Operations that cannot be safely rolled back or re-run
+- Service stop or disable tasks that could cause outages if run out of sequence
+- Operations that cannot be safely rolled back or re-run idempotently
 
 For each finding, report:
 - The file and task name where the issue occurs
@@ -71,19 +57,55 @@ For each finding, report:
     critical: true,
   },
   {
-    name: 'Deprecated modules',
-    prompt: `You are a hostile reviewer. Your job is to find the use of deprecated or removed Ansible modules in the migrated Ansible content.
+    name: 'Secrets & Credential Handling',
+    prompt: `You are a hostile security reviewer. Your job is to find hardcoded secrets, credentials, and sensitive data in the migrated Ansible content.
 
 Look for the following patterns:
-- Use of modules removed in recent Ansible or ansible.builtin versions
-- Use of modules with known replacements (e.g. yum instead of ansible.builtin.dnf)
-- Collection imports referencing outdated namespaces
+- Hardcoded passwords, API keys, or tokens in task arguments or variables
+- Sensitive values passed as plain text instead of using Ansible Vault or environment variables
+- Credentials stored in group_vars or host_vars without encryption
+- Use of no_log: false on tasks that handle sensitive data
 
 For each finding, report:
-- The file and task name where the deprecated module is used
-- The current recommended replacement module
-- A suggested remediation`,
-    phases: ['analyze'],
+- The file and task name where the issue occurs
+- The type of sensitive data exposed
+- A suggested remediation using Ansible Vault or environment variables`,
+    phases: ['analyze', 'migrate'],
+    critical: true,
+  },
+  {
+    name: 'Idempotency Checker',
+    prompt: `You are a hostile reviewer. Your job is to find tasks in the migrated Ansible content that are not safe to rerun on a live system.
+
+Look for the following patterns:
+- Shell or command tasks without a creates or removes guard that would run unconditionally on every execution
+- lineinfile or blockinfile tasks without a precise regexp that could duplicate content on repeated runs
+- Service restart tasks triggered unconditionally rather than via a handler
+- File or directory creation tasks that do not check for prior existence
+- Package installation tasks that do not pin a version and may silently upgrade
+
+For each finding, report:
+- The file and task name where the issue occurs
+- Why the task is not idempotent and what would happen on a repeated run
+- A suggested remediation to make the task safe to rerun`,
+    phases: ['migrate'],
     critical: false,
+  },
+  {
+    name: 'Privilege Escalation Gate',
+    prompt: `You are a hostile security reviewer. Your job is to find unnecessary or unsafe privilege escalation in the migrated Ansible content.
+
+Look for the following patterns:
+- Use of become: true or become_user on tasks that do not require elevated privileges
+- Shell or command modules running as root when a dedicated Ansible module exists
+- Tasks that escalate privileges without a clear operational justification
+- Missing become_user scoping when become: true is legitimately required
+
+For each finding, report:
+- The file and task name where the issue occurs
+- Why the privilege escalation is unnecessary or risky
+- A suggested remediation using least-privilege principles`,
+    phases: ['migrate'],
+    critical: true,
   },
 ];
