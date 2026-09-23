@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 9.1.1
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- fe07a78: Updated dependency `@openapitools/openapi-generator-cli` to `2.41.0`.
+  Updated dependency `@playwright/test` to `1.63.0`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.1.1
+
 ## 9.1.0
 
 ### Minor Changes
