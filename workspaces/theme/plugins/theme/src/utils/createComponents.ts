@@ -44,7 +44,6 @@ export type Components = UnifiedThemeOptions['components'] & {
   CatalogReactUserListPicker?: Component;
   PrivateTabIndicator?: Component;
   RHDHPageWithoutFixHeight?: Component;
-  RHDHPageMainContainer?: Component;
 };
 
 export const createComponents = (themeConfig: ThemeConfig): Components => {
@@ -813,105 +812,98 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           // height; without a min-height here the page-inset background stops
           // early and body/html shows through (RHDHBUGS-3498).
           minHeight: '100vh',
-          // Let BUI Container's flex: 1 grow into the remaining viewport below
-          // PluginHeader / Header slots (those slots set flex: none).
-          display: 'flex',
-          flexDirection: 'column',
-          // Controls the page inset as in PF6 -- only in desktop view
+          // Controls the page inset as in PF6 -- only in desktop view.
+          // CSS-only: SidebarPage is the sole scrollport so BUI siblings
+          // (PluginHeader + Containers) and classic <main> share one rounded
+          // well without an extra DOM wrapper (PageMainContainer).
           '@media (min-width: 600px)': {
-            backgroundColor:
-              general.pageInsetBackgroundColor ?? general.appBarBackgroundColor,
-            // Fixed viewport shell. Inset uses padding (border-box) so in-flow
-            // children still respect Backstage's paddingLeft for the sidebar.
-            // Do not position the main well absolutely — that ignores drawer padding.
             boxSizing: 'border-box',
             height: '100vh',
             maxHeight: '100vh',
             minHeight: '0 !important',
-            overflow: 'hidden',
-            overscrollBehavior: 'none',
-            paddingTop: general.pageInset,
-            paddingRight: general.pageInset,
-            paddingBottom: general.pageInset,
-            // PatternFly `.pf-v6-c-page__main-container` equivalent + classic <main>
-            "& > [class*='MuiLinearProgress-root'], & > main, & > [class*='RHDHPageMainContainer']":
-              {
-                // Match PF border-radius; clip-path also rounds the scrollbar track.
-                borderRadius: '1rem',
-                clipPath: 'rect(0 100% 100% 0 round 1rem)',
-                margin: 0,
-                // Fill the inset well so short pages use mainSectionBackgroundColor
-                // (#292929) instead of leaving a pageInset (#151515) band below content.
-                backgroundColor: general.mainSectionBackgroundColor,
-                // Flex-fill the padded content box; minHeight:0 enables internal scroll.
-                flex: '1 1 auto',
-                minHeight: 0,
-                alignSelf: 'stretch',
-                width: '100%',
-                // Scroll only inside this well; contain so wheel/trackpad does not
-                // chain to the document once you hit the top/bottom.
-                overflowY: 'auto',
-                overscrollBehaviorY: 'contain',
-                display: 'flex',
-                flexDirection: 'column',
-              },
-            // NFS / BUI pages use Container instead of <main>. Match the content
-            // well color (same token as BackstageContent) and rely on flex: 1
-            // from BUI rather than 100vh so PluginHeader siblings are not overflowed.
-            "& > [class*='bui-Container']:not([class*='bui-Header']), & > [class*='RHDHPageMainContainer'] [class*='bui-Container']:not([class*='bui-Header'])":
-              {
-                backgroundColor: general.mainSectionBackgroundColor,
-              },
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            // Inset frame via borders (not padding) so the content box aligns
+            // with Backstage's paddingLeft drawer offset and still shows the
+            // page-inset color around the well.
+            backgroundColor: general.mainSectionBackgroundColor,
+            borderStyle: 'solid',
+            borderColor:
+              general.pageInsetBackgroundColor ?? general.appBarBackgroundColor,
+            borderWidth: `${general.pageInset} ${general.pageInset} ${general.pageInset} 0`,
+            // Sticky PF corner masks: paint page-inset only in the region
+            // outside a normal convex 1rem radius (circle centered inside the
+            // well, not at the corner — that produced inverted "bites").
+            // ::before is first-in-tree so `position: sticky; top: 0` stays on
+            // the visible well (an ::after at the end of a long page would not).
+            '&::before': {
+              content: '""',
+              position: 'sticky',
+              top: 0,
+              display: 'block',
+              width: '100%',
+              height: `calc(100vh - 2 * ${general.pageInset})`,
+              marginBottom: `calc(0px - (100vh - 2 * ${general.pageInset}))`,
+              pointerEvents: 'none',
+              zIndex: 2,
+              // Each layer is a 1rem corner tile. Transparent inside the arc,
+              // inset color in the square outside it → convex card corner.
+              backgroundImage: [
+                `radial-gradient(circle at 100% 100%, transparent 1rem, ${
+                  general.pageInsetBackgroundColor ??
+                  general.appBarBackgroundColor
+                } 1.01rem)`,
+                `radial-gradient(circle at 0% 100%, transparent 1rem, ${
+                  general.pageInsetBackgroundColor ??
+                  general.appBarBackgroundColor
+                } 1.01rem)`,
+                `radial-gradient(circle at 100% 0%, transparent 1rem, ${
+                  general.pageInsetBackgroundColor ??
+                  general.appBarBackgroundColor
+                } 1.01rem)`,
+                `radial-gradient(circle at 0% 0%, transparent 1rem, ${
+                  general.pageInsetBackgroundColor ??
+                  general.appBarBackgroundColor
+                } 1.01rem)`,
+              ].join(', '),
+              backgroundPosition:
+                'top left, top right, bottom left, bottom right',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1rem 1rem',
+            },
+            // No nested scroll/radius on children — the shell scrolls as one.
+            "& > [class*='MuiLinearProgress-root'], & > main": {
+              margin: 0,
+              borderRadius: 0,
+              clipPath: 'none',
+              backgroundColor: general.mainSectionBackgroundColor,
+              overflow: 'visible',
+              height: 'auto',
+              maxHeight: 'none',
+            },
+            "& > [class*='bui-Container']:not([class*='bui-Header'])": {
+              backgroundColor: general.mainSectionBackgroundColor,
+            },
             // When a BackstagePage-root is present, the MUI page already has
             // its own header; hide the sibling BUI PluginHeader to avoid duplication.
-            "&:has([class*='BackstagePage-root']) > .bui-PluginHeader, &:has([class*='BackstagePage-root']) > [class*='RHDHPageMainContainer'] > .bui-PluginHeader":
-              {
-                display: 'none',
-              },
-            // Settings and other pages render BackstageContent as <article>.
-            // Grow it to fill the flex column so pageInset doesn't show as a band.
-            '& > article, & > [class*="BackstageContent-root"], & > [class*="RHDHPageMainContainer"] > article, & > [class*="RHDHPageMainContainer"] > [class*="BackstageContent-root"]':
-              {
-                flex: 1,
-                backgroundColor: general.mainSectionBackgroundColor,
-              },
-            // Prevent TechDocs double scrollbar: unlock the main well and let this
-            // shell scroll instead (ToC has its own scrollbar).
-            "&:has(> main:has([data-testid='techdocs-native-shadowroot']))": {
-              overflowY: 'auto',
-              overscrollBehaviorY: 'contain',
+            "&:has([class*='BackstagePage-root']) > .bui-PluginHeader": {
+              display: 'none',
             },
+            '& > article, & > [class*="BackstageContent-root"]': {
+              backgroundColor: general.mainSectionBackgroundColor,
+            },
+            // TechDocs ToC has its own scrollbar — avoid forcing a nested main well.
             "& > main:has([data-testid='techdocs-native-shadowroot'])": {
               height: 'auto !important',
               maxHeight: 'none !important',
-              flex: '0 0 auto',
-              borderRadius: '1rem',
               marginRight: '0.5rem',
             },
-            // The Backstage suspense is an MUI LinearProgress that is not wrapped by
-            // a `main`. Fill the padded shell like the main well.
             "& > [class*='MuiLinearProgress-root']": {
-              backgroundColor: general.mainSectionBackgroundColor,
               "& > [class*='MuiLinearProgress-']": {
                 height: '0.5rem !important',
               },
             },
-          },
-        },
-      },
-    };
-    // PatternFly `.pf-v6-c-page__main-container` — fixed inset frame beside sidebar
-    components.RHDHPageMainContainer = {
-      styleOverrides: {
-        root: {
-          '@media (min-width: 600px)': {
-            // Inherits height/radius/overflow via BackstageSidebarPage
-            // `> RHDHPageMainContainer` selectors; flex column stacks BUI chrome.
-            display: 'flex',
-            flexDirection: 'column',
-            flex: '1 1 auto',
-            minHeight: 0,
-            minWidth: 0,
           },
         },
       },

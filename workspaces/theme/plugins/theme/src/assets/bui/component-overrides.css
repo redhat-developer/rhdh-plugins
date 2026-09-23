@@ -832,10 +832,10 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
 
   /*
    * Page inset / rounded content well:
-   * Prefer a PatternFly-style main container (`RHDHPageMainContainer` /
-   * `#rhdh-page-main-container`) beside the sidebar — see createComponents.ts.
-   * Do not clip/round BackstageSidebarPage-root itself; that fights scrolling
-   * when Header + Containers are loose siblings of nav (BUI pages).
+   * BackstageSidebarPage is the sole scrollport. Sticky ::before corner masks
+   * (see createComponents.ts) fake PF `.pf-v6-c-page__main-container` rounding
+   * for both classic <main> and fragmented BUI Header + Container siblings —
+   * no extra DOM wrapper required.
    */
 }
 
