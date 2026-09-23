@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-import { ErrorBoundary } from '@backstage/core-components';
-import { Routes, Route } from 'react-router-dom';
-import { DcmClientsProvider } from './api/DcmClientsContext';
-import { DataCenterPage } from './pages/data-center/DataCenterPage';
+const defaultDcmClientMarker = Symbol('defaultDcmClient');
 
-/**
- * Plugin-level router. All DCM routes are defined here (app mounts at /dcm/*).
- *
- * @public
- */
-export function Router() {
-  return (
-    <ErrorBoundary>
-      <DcmClientsProvider>
-        <Routes>
-          <Route path="*" element={<DataCenterPage />} />
-        </Routes>
-      </DcmClientsProvider>
-    </ErrorBoundary>
+type DefaultDcmClient = {
+  [defaultDcmClientMarker]: true;
+};
+
+/** @internal */
+export function markDefaultDcmClient<T extends object>(client: T): T {
+  Object.defineProperty(client, defaultDcmClientMarker, { value: true });
+  return client;
+}
+
+/** @internal */
+export function isDefaultDcmClient(
+  client: object | undefined,
+): client is DefaultDcmClient {
+  return Boolean(
+    client && (client as DefaultDcmClient)[defaultDcmClientMarker],
   );
 }
