@@ -832,8 +832,8 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
 
   /*
    * Page inset / rounded content well:
-   * BackstageSidebarPage is the sole scrollport. Sticky ::before corner masks
-   * (see createComponents.ts) fake PF `.pf-v6-c-page__main-container` rounding
+   * BackstageSidebarPage is the sole scrollport. createComponents.ts applies
+   * margin inset + clip-path so the scrollbar is clipped into the rounded well
    * for both classic <main> and fragmented BUI Header + Container siblings —
    * no extra DOM wrapper required.
    */

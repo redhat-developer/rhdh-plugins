@@ -96,7 +96,7 @@ describe('createComponents', () => {
     );
   });
 
-  it('uses SidebarPage as the PF page-inset scrollport with sticky corner masks', () => {
+  it('clips the SidebarPage scrollport so the scrollbar follows the rounded well', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
       | Record<string, unknown>
@@ -108,13 +108,17 @@ describe('createComponents', () => {
       expect.objectContaining({
         boxSizing: 'border-box',
         overflowY: 'auto',
-        height: '100vh',
-        maxHeight: '100vh',
+        width: 'calc(100% - 1.5rem) !important',
+        marginTop: '1.5rem',
+        marginRight: '1.5rem',
+        marginBottom: '1.5rem',
+        marginLeft: 0,
+        height: 'calc(100vh - 2 * 1.5rem)',
+        maxHeight: 'calc(100vh - 2 * 1.5rem)',
         overscrollBehavior: 'contain',
         backgroundColor: '#292929',
-        borderStyle: 'solid',
-        borderColor: '#151515',
-        borderWidth: '1.5rem 1.5rem 1.5rem 0',
+        borderRadius: '1rem',
+        clipPath: 'inset(0 round 1rem)',
       }),
     );
     expect(desktop?.['&::before']).toEqual(
@@ -123,7 +127,6 @@ describe('createComponents', () => {
         top: 0,
         pointerEvents: 'none',
         zIndex: 2,
-        height: 'calc(100vh - 2 * 1.5rem)',
       }),
     );
     expect(
@@ -133,6 +136,21 @@ describe('createComponents', () => {
         backgroundColor: '#292929',
         borderRadius: 0,
         overflow: 'visible',
+      }),
+    );
+    expect(desktop?.['& .fullscreen']).toEqual(
+      expect.objectContaining({
+        position: 'relative',
+      }),
+    );
+    expect(
+      desktop?.[
+        '& .fullscreen > .MuiIconButton-root, & .fullscreen .MuiIconButton-root[class*="fullscreenButton"]'
+      ],
+    ).toEqual(
+      expect.objectContaining({
+        top: '0.5rem !important',
+        right: '0.5rem !important',
       }),
     );
   });
@@ -146,9 +164,7 @@ describe('createComponents', () => {
       | Record<string, unknown>
       | undefined;
     expect(JSON.stringify(desktop)).not.toContain('RHDHPageMainContainer');
-    expect(desktop?.['&::before']).toBeDefined();
   });
-
   it('offsets BUI dialogs below the masthead so Inspect Entity stays visible', () => {
     const actual = createComponents({});
     const overrides = actual.MuiCssBaseline?.styleOverrides;
