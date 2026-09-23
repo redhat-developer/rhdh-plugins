@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-bulk-import-common [0.2.0](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.1.0...@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.2.0) (2024-07-25)
 
+## 7.3.8
+
+### Patch Changes
+
+- 9b69b61: Release coordinated 7.3.8 patch versions of the bulk import packages.
+
 ## 7.3.7
 
 ## 7.3.6

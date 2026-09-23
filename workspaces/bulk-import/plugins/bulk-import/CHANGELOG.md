@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.3.8
+
+### Patch Changes
+
+- 9b69b61: Release coordinated 7.3.8 patch versions of the bulk import packages.
+- Updated dependencies [9b69b61]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.8
+
 ## 7.3.7
 
 ### Patch Changes
