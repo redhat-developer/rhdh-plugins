@@ -34,6 +34,8 @@ import { EntityContentBlueprint } from '@backstage/plugin-catalog-react/alpha';
 
 import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
+import { SidebarItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+
 import { orchestratorApiRef, OrchestratorClient } from './api';
 import OrchestratorIcon from './components/OrchestratorIcon';
 import {
@@ -65,6 +67,18 @@ export const orchestratorPage = PageBlueprint.make({
     icon: <OrchestratorIcon />,
     noHeader: true,
     loader: () => import('./components/Router').then(m => <m.Router />),
+  },
+});
+
+/**
+ * Orchestrator page extension for the new frontend system.
+ * @public
+ */
+export const orchestratorSidebarItem = SidebarItemBlueprint.make({
+  params: {
+    title: 'Orchestrator',
+    to: '/orchestrator',
+    group: 'admin',
   },
 });
 
@@ -128,7 +142,12 @@ const orchestratorTranslation = TranslationBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'orchestrator',
-  extensions: [orchestratorPage, orchestratorApi, orchestratorEntityContent],
+  extensions: [
+    orchestratorPage,
+    orchestratorSidebarItem,
+    orchestratorApi,
+    orchestratorEntityContent,
+  ],
   routes: {
     root: orchestratorRootRouteRef,
     workflow: workflowRouteRef,
