@@ -116,6 +116,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '@media (min-width: 600px)': {
             height: '100%',
             overflow: 'hidden',
+            // Shows through SidebarPage's page-inset margin (clip-path well).
+            backgroundColor:
+              general.pageInsetBackgroundColor ??
+              general.appBarBackgroundColor ??
+              theme.palette.background.default,
+          },
+        },
+        '#rhdh-sidebar-layout': {
+          '@media (min-width: 600px)': {
+            backgroundColor:
+              general.pageInsetBackgroundColor ??
+              general.appBarBackgroundColor ??
+              theme.palette.background.default,
           },
         },
         'h1, h2, h3, h4, h5, h6': {
@@ -778,6 +791,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '@media (min-width: 600px)': {
             '#rhdh-above-sidebar-header-container:has(*) ~ #rhdh-sidebar-layout':
               {
+                // Page inset is margin on SidebarPage; don't double-gap under the masthead.
+                "& [class*='BackstageSidebarPage-root']": {
+                  marginTop: '0 !important',
+                },
                 "& main, & [class*='MuiLinearProgress-root']": {
                   marginTop: '0 !important',
                 },
@@ -816,27 +833,38 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           // CSS-only: SidebarPage is the sole scrollport so BUI siblings
           // (PluginHeader + Containers) and classic <main> share one rounded
           // well without an extra DOM wrapper (PageMainContainer).
+          //
+          // Scrollbar clipping: border-radius alone does not clip Chromium
+          // scrollbars. clip-path on this same scrollport does. Margin (not
+          // border) forms the page inset so the clipped edge is the well
+          // edge — the overflow/scrollbar edge — not the outer border-box.
+          //
+          // Backstage SidebarPage sets width:100%; horizontal margins would
+          // otherwise overflow and get clipped (right gutter disappears).
+          // Left rounding sits after paddingLeft (drawer spacer), so sticky
+          // corner masks still paint the visible left curve against the sidebar.
           '@media (min-width: 600px)': {
             boxSizing: 'border-box',
-            height: '100vh',
-            maxHeight: '100vh',
+            // Override Backstage `width: 100%` so margin-right is not pushed
+            // off-screen by the parent overflow:hidden.
+            width: `calc(100% - ${general.pageInset}) !important`,
+            marginTop: general.pageInset,
+            marginRight: general.pageInset,
+            marginBottom: general.pageInset,
+            marginLeft: 0,
+            height: `calc(100vh - 2 * ${general.pageInset})`,
+            maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
             minHeight: '0 !important',
             overflowX: 'hidden',
             overflowY: 'auto',
             overscrollBehavior: 'contain',
-            // Inset frame via borders (not padding) so the content box aligns
-            // with Backstage's paddingLeft drawer offset and still shows the
-            // page-inset color around the well.
             backgroundColor: general.mainSectionBackgroundColor,
-            borderStyle: 'solid',
-            borderColor:
-              general.pageInsetBackgroundColor ?? general.appBarBackgroundColor,
-            borderWidth: `${general.pageInset} ${general.pageInset} ${general.pageInset} 0`,
-            // Sticky PF corner masks: paint page-inset only in the region
-            // outside a normal convex 1rem radius (circle centered inside the
-            // well, not at the corner — that produced inverted "bites").
-            // ::before is first-in-tree so `position: sticky; top: 0` stays on
-            // the visible well (an ::after at the end of a long page would not).
+            borderRadius: '1rem',
+            // Clips the scrollbar into the rounded well (border-radius cannot).
+            clipPath: 'inset(0 round 1rem)',
+            // Visible left corners: clip-path rounds the border-box (under the
+            // drawer spacer). Sticky masks paint the curve at the content edge
+            // after paddingLeft where it meets the sidebar.
             '&::before': {
               content: '""',
               position: 'sticky',
@@ -847,8 +875,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               marginBottom: `calc(0px - (100vh - 2 * ${general.pageInset}))`,
               pointerEvents: 'none',
               zIndex: 2,
-              // Each layer is a 1rem corner tile. Transparent inside the arc,
-              // inset color in the square outside it → convex card corner.
               backgroundImage: [
                 `radial-gradient(circle at 100% 100%, transparent 1rem, ${
                   general.pageInsetBackgroundColor ??
@@ -904,6 +930,20 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
                 height: '0.5rem !important',
               },
             },
+            // DependencyGraph's IconButton is `position:absolute; right:0` but
+            // `.fullscreen` is not positioned. Our clip-path on SidebarPage
+            // becomes the absolute containing block, so the control sticks to
+            // the page-well corner. Re-contain it to the graph, then inset it
+            // slightly so the 1rem curve does not shear the icon.
+            '& .fullscreen': {
+              position: 'relative',
+            },
+            '& .fullscreen > .MuiIconButton-root, & .fullscreen .MuiIconButton-root[class*="fullscreenButton"]':
+              {
+                top: '0.5rem !important',
+                right: '0.5rem !important',
+                zIndex: 3,
+              },
           },
         },
       },
