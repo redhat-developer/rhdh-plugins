@@ -54,11 +54,32 @@ EOF
 # Prefer podman; fall back to docker.
 _pocker="$(command -v podman || command -v docker)"
 
+# Path to the rhdh-cli binary, populated by _ensure_rhdh_cli.
+_rhdh_cli_bin=""
+
+function _ensure_rhdh_cli {
+  # Install the CLI with lifecycle scripts disabled so Sonar does not flag
+  # on-demand npx installs that execute package install scripts.
+  if [[ -n "$_rhdh_cli_bin" && -x "$_rhdh_cli_bin" ]]; then
+    return 0
+  fi
+  local cli_prefix
+  cli_prefix="$(mktemp -d)"
+  npm install @red-hat-developer-hub/cli@latest --ignore-scripts --prefix "$cli_prefix"
+  _rhdh_cli_bin="$cli_prefix/node_modules/.bin/rhdh-cli"
+  if [[ ! -x "$_rhdh_cli_bin" ]]; then
+    echo "Error: failed to install rhdh-cli at $_rhdh_cli_bin" >&2
+    exit 1
+  fi
+  return 0
+}
+
 function _export_plugin {
   local plugin_dir="$1"
   echo "Exporting plugin: $plugin_dir"
+  _ensure_rhdh_cli
   cd "$workspace_dir/$plugin_dir"
-  npx @red-hat-developer-hub/cli@latest plugin export \
+  "$_rhdh_cli_bin" plugin export \
     --embed-package @red-hat-developer-hub/backstage-plugin-dcm-common
   cd "$workspace_dir"
   return 0
@@ -69,7 +90,8 @@ function _package_dynamic_plugins {
   if [[ "$_pocker" =~ docker$ ]]; then
     args+=( --container-tool docker )
   fi
-  npx @red-hat-developer-hub/cli@latest plugin package "${args[@]}" "$@"
+  _ensure_rhdh_cli
+  "$_rhdh_cli_bin" plugin package "${args[@]}" "$@"
   return 0
 }
 
@@ -116,7 +138,7 @@ function _build_oci {
   _update_version
 
   echo "Installing dependencies..."
-  yarn install
+  YARN_ENABLE_SCRIPTS=false yarn install
 
   yarn tsc
   yarn build:all
