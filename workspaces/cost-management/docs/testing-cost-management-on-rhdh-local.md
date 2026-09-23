@@ -26,28 +26,22 @@ Add to your `.env` file:
 RHDH_IMAGE=quay.io/rhdh-community/rhdh:next
 ```
 
-Available image tags:
-
-| Tag        | Description                | Backstage Version | Use Case                                                      |
-| ---------- | -------------------------- | ----------------- | ------------------------------------------------------------- |
-| `1.9`      | Current GA (stable)        | ~1.36.x           | Customer-facing compatibility testing                         |
-| `next`     | Nightly from `main` branch | ~1.49.x           | Development/testing of plugins built against latest Backstage |
-| `next-1.9` | Nightly patches for 1.9    | ~1.36.x           | Testing 1.9 patches                                           |
-| `1.10`     | **Not available yet**      | N/A               | Will be created when 1.10 goes GA                             |
-
-For more details on available images, see `rhdh-local/docs/rhdh-local-guide/container-image-guide.md`.
+For a full list of available image tags and how to switch between community, nightly, and commercially supported builds, see the [Container Image Guide](https://github.com/redhat-developer/rhdh-local/blob/main/docs/rhdh-local-guide/container-image-guide.md) in the `rhdh-local` repo.
 
 ## Setup
 
 ### 1. Dynamic Plugins Configuration (Pre-install Method)
 
-The override file has been created at:
+Create a `dynamic-plugins.override.yaml` from the example template:
 
-```
-rhdh-local/configs/dynamic-plugins/dynamic-plugins.override.yaml
+```bash
+cd rhdh-local/configs/dynamic-plugins/
+cp dynamic-plugins.override.example.yaml dynamic-plugins.override.yaml
 ```
 
-It configures both the frontend and backend cost-management plugins from the Quay registry:
+> **Important:** Keep both `dynamic-plugins.yaml` and `dynamic-plugins.override.yaml`. Make changes only in `dynamic-plugins.override.yaml` for cost management. The override file's `includes` directive loads the default config, so if you remove or replace `dynamic-plugins.yaml`, RHDH Local will **not** load the default plugins (Extensions, Lightspeed, Tech Radar, Quay, etc.).
+
+Add the cost-management plugin entries to the `plugins` section in `dynamic-plugins.override.yaml`. It should configure both the frontend and backend cost-management plugins from the Quay registry:
 
 - **Frontend**: `oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.2.0!red-hat-developer-hub-plugin-cost-management`
 - **Backend**: `oci://quay.io/redhat-resource-optimization/dynamic-plugins:2.2.0!red-hat-developer-hub-plugin-cost-management-backend`
@@ -60,7 +54,7 @@ The frontend plugin configuration includes:
 
 ### 2. Environment Variables
 
-Create a `.env` file in the `rhdh-local/` root (or add to the existing one):
+Create a `.env` file in the `rhdh-local/` root (or add to the existing one). The `.env` file is gitignored and must be created locally:
 
 ```bash
 # Use the next image to match plugin's Backstage version
@@ -75,7 +69,16 @@ These are referenced by the backend plugin's `pluginConfig` via `${CM_CLIENT_ID}
 
 ### 3. App Config
 
-The `configs/app-config/app-config.local.yaml` contains two important sections:
+Create a local app-config from the example template:
+
+```bash
+cd rhdh-local/configs/app-config/
+cp app-config.local.example.yaml app-config.local.yaml
+```
+
+> **Note:** `app-config.local.yaml` is gitignored and must be created locally from the example template.
+
+Then add the following sections to `app-config.local.yaml`:
 
 **Cost Management backend config** — required for the backend plugin to authenticate with the Red Hat API:
 
@@ -148,6 +151,8 @@ loaded dynamic backend plugin 'red-hat-developer-hub-plugin-cost-management-back
 ### Access RHDH
 
 Open **http://localhost:7008** in your browser.
+
+> **Note:** The host port `7008` is mapped to container port `7007` in `compose.yaml` (`7008:7007`). The `BASE_URL` in `rhdh-local/default.env` is set to `http://localhost:7008` to match. If you've customized the port mapping, adjust the URL accordingly.
 
 Verify:
 
@@ -230,7 +235,7 @@ podman login quay.io
 podman login ghcr.io
 ```
 
-For GHCR, set `REGISTRY_AUTH_FILE` in `.env` if needed (see `docs/rhdh-local-guide/container-image-guide.md`).
+For GHCR, set `REGISTRY_AUTH_FILE` in `.env` if needed (see the [Container Image Guide](https://github.com/redhat-developer/rhdh-local/blob/main/docs/rhdh-local-guide/container-image-guide.md)).
 
 ### Backend plugin errors (401/403)
 
