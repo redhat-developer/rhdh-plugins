@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.4.1
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.1
+
 ## 4.4.0
 
 ### Minor Changes
