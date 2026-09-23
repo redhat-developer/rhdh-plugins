@@ -90,6 +90,9 @@ auth:
     # See https://backstage.io/docs/auth/guest/provider
     guest: {}
 
+# Frontend-visible override: auth.providers is backend-only and is stripped
+# from the browser config, so SignInPage cannot discover guest from providers.
+# Required after #4716 for local yarn start and Playwright e2e guest login.
 signInPage: guest
 
 scaffolder:
