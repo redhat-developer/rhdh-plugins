@@ -94,14 +94,14 @@ For more information about schedule configuration options, see the [Metric Colle
 
 The following metric providers are available:
 
-| Provider       | Metric ID                                                                                                       | Title                       | Description                                                                                                                     | Type    |
-| -------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **GitHub**     | `github.openPRs`                                                                                                | GitHub open PRs             | Count of open Pull Requests in GitHub                                                                                           | number  |
-| **Filecheck**  | `filecheck.*`                                                                                                   | File Checks                 | Checks whether specific files (e.g., `README.md`, `LICENSE`, `CODEOWNERS`) exist in a repository.                               | boolean |
-| **Jira**       | `jira.openIssues`                                                                                               | Jira open issues            | The number of opened issues in Jira                                                                                             | number  |
-| **OpenSSF**    | `openssf.*`                                                                                                     | OpenSSF Security Scorecards | 18 security metrics from OpenSSF Scorecards (e.g., `openssf.codeReview`, `openssf.maintained`). Each returns a score from 0-10. | number  |
-| **Dependabot** | `dependabot.*`                                                                                                  | Dependabot Alerts           | Critical, High, Medium and Low CVE Alerts                                                                                       | number  |
-| **DORA**       | `dora.deploymentFrequency`, `dora.medianLeadTimeForChanges`, `dora.meanTimeToRestore`, `dora.changeFailureRate` | DORA Metrics                | Software delivery performance metrics based on DORA (DevOps Research and Assessment)                                            | number  |
+| Provider       | Metric ID                                                                                                         | Title                       | Description                                                                                                                     | Type    |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **GitHub**     | `github.openPRs`                                                                                                  | GitHub open PRs             | Count of open Pull Requests in GitHub                                                                                           | number  |
+| **Filecheck**  | `filecheck.*`                                                                                                     | File Checks                 | Checks whether specific files (e.g., `README.md`, `LICENSE`, `CODEOWNERS`) exist in a repository.                               | boolean |
+| **Jira**       | `jira.openIssues`                                                                                                 | Jira open issues            | The number of opened issues in Jira                                                                                             | number  |
+| **OpenSSF**    | `openssf.*`                                                                                                       | OpenSSF Security Scorecards | 18 security metrics from OpenSSF Scorecards (e.g., `openssf.codeReview`, `openssf.maintained`). Each returns a score from 0-10. | number  |
+| **Dependabot** | `dependabot.*`                                                                                                    | Dependabot Alerts           | Critical, High, Medium and Low CVE Alerts                                                                                       | number  |
+| **DORA**       | `dora.deploymentFrequency`, `dora.medianLeadTimeForChanges`, `dora.medianTimeToRestore`, `dora.changeFailureRate` | DORA Metrics                | Software delivery performance metrics based on DORA (DevOps Research and Assessment)                                            | number  |
 
 To use these providers, install the corresponding backend modules:
 
@@ -309,6 +309,10 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service?
 
 Returns daily time-series points for one metric on a catalog entity. Each point is the latest sample (`MAX(id)` among success or calculation-error rows) for that UTC calendar day. On a mixed day the later sample wins, so a later error is returned as `{ "value": null, "error": "..." }` (and clients can gap a sparkline). Days with no rows (or only null without `error_message`) are omitted. Returns `200` with `points: []` when the entity and metric are authorized but no data exists in the range.
 
+The response also includes entity-resolved `thresholds` (provider defaults, then app-config, then entity annotation overrides) for sparkline legend rendering. Successful points include `thresholdEvaluation`: the matched threshold rule key from **read-time** evaluation of the point's `value` against those current `thresholds` (e.g. `success`, `warning`, `error`). This keeps legend keys and point classifications consistent when config changes. Calculation-error points omit `thresholdEvaluation`. When no rule matches, `thresholdEvaluation` is `null` (no per-point `error`). Threshold evaluation failures set that point's `error` (with `thresholdEvaluation` `null`).
+
+When entity threshold resolution fails (e.g. malformed annotation overrides), the response omits `thresholds`, sets top-level `thresholdsError` with the failure message, and leaves successful points unclassified (`thresholdEvaluation` `null`, no per-point `error`). There is no silent fallback to app-config / provider defaults.
+
 #### Path Parameters
 
 | Parameter   | Type   | Required | Description                        |
@@ -350,14 +354,35 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service/
     "defaultVisualization": "donut"
   },
   "points": [
-    { "value": 8, "timestamp": "2026-04-27T23:10:00.000Z" },
+    {
+      "value": 8,
+      "timestamp": "2026-04-27T23:10:00.000Z",
+      "thresholdEvaluation": "success"
+    },
     {
       "value": null,
       "timestamp": "2026-04-28T16:00:00.000Z",
       "error": "GitHub API 500"
     },
-    { "value": 7, "timestamp": "2026-04-29T22:55:00.000Z" }
-  ]
+    {
+      "value": 25,
+      "timestamp": "2026-04-29T22:55:00.000Z",
+      "thresholdEvaluation": "warning"
+    },
+    {
+      "value": 12,
+      "timestamp": "2026-04-30T18:00:00.000Z",
+      "thresholdEvaluation": null,
+      "error": "Error: Invalid threshold expression"
+    }
+  ],
+  "thresholds": {
+    "rules": [
+      { "key": "success", "expression": "<10" },
+      { "key": "warning", "expression": "10-50" },
+      { "key": "error", "expression": ">50" }
+    ]
+  }
 }
 ```
 
@@ -396,11 +421,11 @@ curl -X GET "{{url}}/api/scorecard/metrics/dora.changeFailureRate/collectors" \
 {
   "collectors": [
     {
-      "id": "github:deployments",
+      "id": "github:doraDeployments",
       "description": "Collects GitHub deployments."
     },
     {
-      "id": "jira:incidents",
+      "id": "jira:doraIncidents",
       "description": "Collects Jira incidents."
     }
   ]

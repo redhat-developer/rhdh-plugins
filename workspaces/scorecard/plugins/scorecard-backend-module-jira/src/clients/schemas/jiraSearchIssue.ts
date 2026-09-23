@@ -22,6 +22,7 @@ export const jiraSearchIssueSchema = z
     fields: z
       .object({
         created: z.string(),
+        updated: z.string(),
         resolutiondate: z.string().nullable().optional(),
       })
       .passthrough(),

@@ -54,6 +54,7 @@ export const scorecardMessages = {
   // Common UI
   common: {
     loading: 'Loading',
+    current: 'current',
   },
 
   // Error messages
@@ -89,17 +90,17 @@ export const scorecardMessages = {
     'dora.medianLeadTimeForChanges': {
       title: 'DORA - Median Lead Time for Changes',
       description:
-        'Measures the time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours',
+        'Measures the median time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours.',
     },
     'dora.changeFailureRate': {
       title: 'DORA - Change Failure Rate',
       description:
         'Monitors the percentage of deployments that cause a failure in production over the past 30 days. Elite performers maintain a change failure rate below 5%.',
     },
-    'dora.meanTimeToRestore': {
-      title: 'DORA - Mean Time to Restore',
+    'dora.medianTimeToRestore': {
+      title: 'DORA - Median Time to Restore',
       description:
-        'Tracks the average time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.',
+        'Tracks the median time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.',
     },
     'github.openPRs': {
       title: 'GitHub open PRs',
@@ -216,6 +217,10 @@ export const scorecardMessages = {
     unknownPlugin: 'Unknown',
     statusTooltip:
       'Value {{value}} matches threshold {{status}} {{expression}}',
+    collectorStatusTooltip:
+      'This collector provides input data only. The {{metric}} check value is calculated from collectors and shown on the scorecard card.',
+    collectorEmptyValue: '--',
+    collectorUnavailableStatus: 'N/A',
     columns: {
       plugin: 'PLUGIN',
       check: 'CHECK',

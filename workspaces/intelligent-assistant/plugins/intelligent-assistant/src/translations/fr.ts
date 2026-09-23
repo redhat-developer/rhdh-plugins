@@ -26,6 +26,11 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menu de l’historique de conversations',
+    'modelSelector.visionScreenshot.line1': "Analyse d'images prise en charge.",
+    'modelSelector.visionScreenshot.line2':
+      "Une capture d'écran sera jointe à votre message.",
+    'modelSelector.visionScreenshot.ariaLabel':
+      "Contexte de capture d'écran du modèle vision",
     'modelSelector.disabledTooltip':
       "Chaque session de chat ne prend en charge qu'un seul modèle. Pour changer de modèle, ouvrez un nouveau chat.",
     'aria.chatbotSelector': 'Sélecteur Chatbot',
@@ -68,6 +73,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Message en provenance de l’utilisateur: {{prompt}}. Message en provenance du Bot en cours de chargement.',
     'conversation.category.pinnedChats': 'Chats épinglés',
     'conversation.category.recent': 'Chats',
+    'conversation.category.savedPrompts': 'Prompts enregistrés',
     'conversation.delete': 'Supprimer',
     'conversation.delete.confirm.action': 'Supprimer',
     'conversation.delete.confirm.message':
@@ -78,9 +84,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'conversation.rename.confirm.action': 'Renommer',
     'conversation.rename.confirm.title': 'Renommer la conversation ?',
     'conversation.rename.placeholder': 'Nom de la conversation',
-    'disclaimer.withValidation':
-      'Cette fonctionnalité utilise la technologie AI. Ne pas inclure d’informations personnelles ou toute autre information sensible dans vos entrées de données. Des interactions pourront être utilisées pour améliorer les produits ou services de Red Hat.',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'Cette fonctionnalité utilise la technologie AI. Ne pas inclure d’informations personnelles ou toute autre information sensible dans vos entrées de données. Des interactions pourront être utilisées pour améliorer les produits ou services de Red Hat.',
     'error.context.fileAttachment':
       'useFileAttachmentContext doit être dans un FileAttachmentContextProvider',
@@ -117,7 +121,6 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'footer.accuracy.label':
       'Toujours vérifier le contenu AI généré avant utilisation.',
     'icon.lightspeed.alt': 'Icône de l\u2019assistant intelligent',
-    'icon.permissionRequired.alt': 'icône d’autorisation requise',
     'lcore.loadError.description':
       "Le backend de l\u2019assistant intelligent n'a pas renvoyé de liste de modèles. Vérifiez que le service est démarré et joignable, puis réessayez.",
     'lcore.loadError.title': 'Impossible de charger les modèles',
@@ -166,8 +169,6 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.name': 'Nom',
     'mcp.settings.noneAvailable': 'Aucun serveur MCP disponible.',
     'mcp.settings.personalAccessToken': "Jeton d'accès personnel",
-    'mcp.settings.readOnlyAccess':
-      'Vous disposez d’un accès en lecture seule aux serveurs MCP.',
     'mcp.settings.removePersonalToken': 'Supprimer le jeton personnel',
     'mcp.settings.savedToken': 'Jeton enregistré',
     'mcp.settings.selectedCount':
@@ -256,6 +257,8 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.view.documents.maxReached':
       'Maximum 10 ressources autorisées. Supprimez une ressource pour en charger une nouvelle.',
     'notebook.view.documents.uploading': 'Chargement de la ressource',
+    'notebook.view.documents.uploadsInProgress':
+      "Veuillez attendre la fin des téléversements en cours avant d'ajouter d'autres ressources.",
     'notebook.view.input.disabledTooltip':
       'Sélectionnez au moins une ressource chargée pour commencer à discuter',
     'notebook.view.input.placeholder':
@@ -298,13 +301,6 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebooks.updated.yesterday': 'Mis à jour il y a 1 jour',
     'page.subtitle': 'Assistant de développement AI-POWERED',
     'page.title': 'Assistant intelligent',
-    'permission.notebooks.goBack': 'Retour',
-    'permission.required.description':
-      "Pour afficher <subject/>, veuillez contacter votre administrateur pour qu'il vous donne la permission <permissions/>.",
-    'permission.required.title': 'Autorisations manquantes',
-    'permission.subject.notebooks':
-      'les carnets de l\u2019assistant intelligent',
-    'permission.subject.plugin': 'le plugin de l\u2019assistant intelligent',
     'prompts.codeOptimization.message':
       'Pourriez-vous me suggérer les façons d’optimiser le code pour le rendre plus performant ?',
     'prompts.codeOptimization.title': 'Suggestions d’Optmisation de Code',
@@ -348,13 +344,93 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.displayMode.label': "Mode d'affichage",
     'settings.displayMode.overlay': 'Superposition',
     'settings.mcp.badge': 'Nouveau',
-    'settings.mcp.label': 'Paramètres MCP',
+    'settings.panel.title': 'Paramètres',
+    'settings.mcp.label': 'Paramètres MCP et Prompts',
+    'settings.prompt.label': 'Paramètres de prompts',
     'settings.pinned.disable': 'Désactiver les conversations épinglées',
     'settings.pinned.disabled.description':
       'Les conversations épinglées sont actuellement désactivées',
     'settings.pinned.enable': 'Activer les conversations épinglées',
     'settings.pinned.enabled.description':
       'Les conversation épinglées sont actuellement activées',
+    'settings.savedPrompts.disable': 'Désactiver les prompts sauvegardés',
+    'settings.savedPrompts.disabled.description':
+      'Les prompts sauvegardés sont actuellement désactivés',
+    'settings.savedPrompts.enable': 'Activer les prompts sauvegardés',
+    'settings.savedPrompts.enabled.description':
+      'Les prompts sauvegardés sont actuellement activés',
+    'settings.screenContext.enable': "Activer le contexte d'écran",
+    'settings.screenContext.disable': "Désactiver le contexte d'écran",
+    'settings.screenContext.enabled.description':
+      "Le partage du contexte d'écran est actuellement activé",
+    'settings.screenContext.disabled.description':
+      "Le partage du contexte d'écran est actuellement désactivé",
+    'contextChip.label.paused': 'Contexte : en pause',
+    'contextChip.label.unavailable': 'Contexte : indisponible',
+    'contextChip.label.softwareTemplates': 'Modèles logiciels',
+    'contextChip.tooltip.askAbout': 'Posez une question sur {{label}}.',
+    'contextChip.tooltip.template':
+      'Demandez comment remplir le modèle {{label}}.',
+    'contextChip.tooltip.search':
+      'Posez une question sur votre recherche : {{label}}.',
+    'contextChip.tooltip.paused':
+      "Le contexte d'écran est en pause. Cliquez pour reprendre le partage de votre écran actuel avec l'assistant intelligent.",
+    'contextChip.tooltip.unavailable':
+      "Le contexte d'écran n'est pas disponible en mode plein écran. Passez en mode Superposition ou Ancrer à la fenêtre pour l'activer.",
+    'contextChip.tooltip.line2.fullContext':
+      "Le texte de la page et une capture d'écran seront envoyés avec votre message.",
+    'contextChip.tooltip.line2.adminLimited':
+      "Le partage du contexte d'écran est limité par les paramètres de l'administrateur.",
+    'contextChip.tooltip.line2.screenshotOnly':
+      "L'extraction de texte est désactivée par votre administrateur. Capture d'écran uniquement.",
+    'contextChip.tooltip.line2.domOffNoVision':
+      "L'extraction de texte est désactivée par votre administrateur. Votre modèle ne prend pas en charge l'analyse d'images.",
+    'contextChip.tooltip.line2.textOnlyNoVision':
+      "Contexte texte uniquement – votre modèle ne prend pas en charge l'analyse d'images.",
+    'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
+      "Contexte texte uniquement – la capture d'écran est désactivée par votre administrateur.",
+    'contextChip.tooltip.line2.textOnlyCombined':
+      "Contexte texte uniquement – votre modèle ne prend pas en charge l'analyse d'images et la capture d'écran est désactivée par votre administrateur.",
+    'contextChip.aria.pause': "Mettre en pause le contexte d'écran : {{label}}",
+    'contextChip.aria.resume': "Reprendre le contexte d'écran",
+    'savedPrompts.tab.title': 'Prompts enregistrés',
+    'savedPrompts.disabled.title': 'Les prompts enregistrés sont désactivés',
+    'savedPrompts.disabled.body':
+      "Les prompts enregistrés sont masqués dans le panneau d'historique des conversations. Activez-les pour afficher vos prompts dans la barre latérale.",
+    'savedPrompts.disabled.enableLink': 'Activer les prompts enregistrés',
+    'savedPrompts.count.zero': 'Aucun prompt',
+    'savedPrompts.count_one': '1 prompt',
+    'savedPrompts.count_other': '{{count}} prompts',
+    'savedPrompts.newPrompt': '+ Nouveau prompt',
+    'savedPrompts.form.titleLabel': 'Titre',
+    'savedPrompts.form.titlePlaceholder': 'Titre du prompt',
+    'savedPrompts.form.contentLabel': 'Prompt',
+    'savedPrompts.form.contentPlaceholder': 'Contenu du prompt',
+    'savedPrompts.form.save': 'Enregistrer',
+    'savedPrompts.form.cancel': 'Annuler',
+    'savedPrompts.validation.titleMaxLength':
+      'Le titre doit contenir {{max}} caractères ou moins.',
+    'savedPrompts.validation.contentMaxLength':
+      'Le prompt doit contenir {{max}} caractères ou moins.',
+    'savedPrompts.limitReached':
+      'Limite de prompts atteinte. Supprimez un prompt existant pour en créer un nouveau.',
+    'savedPrompts.actions.apply': 'Appliquer dans la zone de saisie',
+    'savedPrompts.actions.send': 'Envoyer directement',
+    'savedPrompts.actions.sendDisabledStreaming':
+      'Attendez la fin de la réponse',
+    'savedPrompts.actions.delete': 'Supprimer',
+    'savedPrompts.actions.menuAriaLabel': 'Actions pour {{name}}',
+    'savedPrompts.delete.confirm.title': 'Supprimer « {{name}} » ?',
+    'savedPrompts.delete.confirm.message':
+      'Ce prompt sauvegardé sera définitivement supprimé.',
+    'savedPrompts.delete.confirm.action': 'Supprimer',
+    'savedPrompts.empty.description':
+      'Enregistrez les prompts fréquemment utilisés pour les réutiliser rapidement dans vos conversations sans les retaper. Les prompts sauvegardés apparaissent également dans le panneau d’historique du chat pour un accès rapide.',
+    'savedPrompts.sidebar.showAll': 'Tout afficher',
+    'savedPrompts.sidebar.showLess': 'Afficher moins',
+    'savedPrompts.sidebar.openSettings':
+      'Ouvrir les paramètres des prompts enregistrés',
+    'savedPrompts.sidebar.empty': 'Aucun prompt enregistré pour le moment',
     'sort.alphabeticalAsc': 'Nom (A-Z)',
     'sort.alphabeticalDesc': 'Nom (Z-A)',
     'sort.label': 'Trier les conversations',
@@ -397,6 +473,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'tooltip.quickNewChat': 'Nouveau chat',
     'tooltip.responseRecorded': 'Réponse enregistrée',
     'tooltip.send': 'Envoyer',
+    'tooltip.settings': 'Options du chatbot',
     'user.guest': 'Invité',
     'user.loading': '...',
   },

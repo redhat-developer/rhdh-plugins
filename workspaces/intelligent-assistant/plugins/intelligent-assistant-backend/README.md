@@ -79,18 +79,29 @@ All nested keys (`servicePort`, `systemPrompt`, `prompts`, `mcpServers`, `notebo
 
 #### 4. RBAC policy names
 
-Update permission names in your `rbac-policy.csv`:
+Update permission names in your `rbac-policy.csv`. Intelligent Assistant uses four
+feature-level permissions. In CSV policies, grant each with action **`use`** (not
+`read`, `create`, `update`, or `manage`).
 
-| Before                     | After                                    |
-| -------------------------- | ---------------------------------------- |
-| `lightspeed.chat.read`     | `intelligent-assistant.chat.access`      |
-| `lightspeed.chat.create`   | `intelligent-assistant.chat.use`         |
-| `lightspeed.chat.delete`   | `intelligent-assistant.chat.manage`      |
-| `lightspeed.chat.update`   | `intelligent-assistant.chat.manage`      |
-| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use`    |
-|                            | `intelligent-assistant.notebooks.manage` |
-| `lightspeed.mcp.read`      | `mcp.tools.use`                          |
-| `lightspeed.mcp.manage`    | `mcp.tools.manage`                       |
+| Before                     | After (CSV action: `use`)         |
+| -------------------------- | --------------------------------- |
+| `lightspeed.chat.read`     | `intelligent-assistant.chat`      |
+| `lightspeed.chat.create`   | `intelligent-assistant.chat`      |
+| `lightspeed.chat.delete`   | `intelligent-assistant.chat`      |
+| `lightspeed.chat.update`   | `intelligent-assistant.chat`      |
+| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks` |
+| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.tools` |
+| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.tools` |
+
+| Permission                        | Backend scope                                    |
+| --------------------------------- | ------------------------------------------------ |
+| `intelligent-assistant.chat`      | Chat APIs (models, conversations, prompts, etc.) |
+| `intelligent-assistant.notebooks` | Notebooks `/v1/*` APIs                           |
+| `intelligent-assistant.mcp.tools` | MCP server list and settings APIs                |
+| `intelligent-assistant.skills`    | Skills list API                                  |
+
+The frontend plugin gates UI with the same four permissions; see
+[Intelligent Assistant Frontend README](../intelligent-assistant/README.md#permission-framework-support).
 
 #### 5. OFS dynamic plugin configuration
 
@@ -333,17 +344,14 @@ The Intelligent Assistant Backend plugin has support for the permission framewor
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access intelligent-assistant backend API, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, intelligent-assistant.chat.access, use, allow
-p, role:default/team_a, intelligent-assistant.chat.use, use, allow
-p, role:default/team_a, intelligent-assistant.chat.manage, use, allow
+p, role:default/team_a, intelligent-assistant.chat, use, allow
+p, role:default/team_a, intelligent-assistant.notebooks, use, allow
+p, role:default/team_a, intelligent-assistant.mcp.tools, use, allow
+p, role:default/team_a, intelligent-assistant.skills, use, allow
 
-# Required for Notebooks feature (if enabled)
-p, role:default/team_a, intelligent-assistant.notebooks.use, use, allow
-p, role:default/team_a, intelligent-assistant.notebooks.manage, use, allow
-
-# Required for MCP server management (if configured)
-p, role:default/team_a, mcp.tools.use, use, allow
-p, role:default/team_a, mcp.tools.manage, use, allow
+# Often required when MCP tools query the catalog (see workspace rbac-policy.csv)
+p, role:default/team_a, catalog.entity.read, read, allow
+p, role:default/team_a, catalog.location.read, read, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 
@@ -456,21 +464,14 @@ When enabled, Notebooks exposes the following REST API endpoints:
 **Notes**:
 
 - All endpoints require authentication (user context is automatically provided by Backstage)
-- All `/v1/*` endpoints require notebooks permissions:
-  - `intelligent-assistant.notebooks.use` for list/read/create session, upload document, and query endpoints
-  - `intelligent-assistant.notebooks.manage` for update/delete session and document endpoints
+- All `/v1/*` endpoints require the `intelligent-assistant.notebooks` permission
 - Document endpoints verify session ownership before allowing operations
 - `documentId` in paths is the document title (URL-encoded for special characters)
 
 #### Permission Framework Support for Notebooks
 
-When RBAC is enabled, users need the following permissions to use Notebooks:
-
-```CSV
-p, role:default/team_a, intelligent-assistant.notebooks.use, use, allow
-p, role:default/team_a, intelligent-assistant.notebooks.manage, use, allow
-
-g, user:default/<your-user-name>, role:default/team_a
-```
-
-Add this to your `rbac-policy.csv` file along with the existing intelligent-assistant permissions.
+When RBAC is enabled, Notebooks backend routes require
+`intelligent-assistant.notebooks` with action `use`. Include that line in the
+[Permission Framework Support](#permission-framework-support) policy block above
+(along with `intelligent-assistant.chat` if users should open the assistant from
+the FAB).

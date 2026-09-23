@@ -1,5 +1,8 @@
 # Proposal: RHOAI MCP Catalog Connector
 
+> **Workspace status:** Follow-on RHOAI connector implementation; not part of
+> the current RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 Red Hat OpenShift AI (RHOAI) is Red Hat's enterprise AI platform for model development, deployment, and serving. RHOAI 3.4 introduces a developer-preview MCP (Model Context Protocol) catalog that lists MCP servers available within the platform. Customers building AI applications need catalog visibility into these MCP servers — but they exist outside the RHDH catalog today. Without this connector, teams lack discoverability and metadata tracking for RHOAI-managed MCP servers.
@@ -12,7 +15,10 @@ Boost must surface RHOAI's MCP catalog as first-class API entities in the RHDH c
 >
 > - **RHDHPLAN-393 complementary:** The RHOAI MCP catalog source and the MCP Registry connector (RHIDP-15313) serve different MCP server discovery paths — no ingestion duplication. RHDHPLAN-393 provides upstream MCP Registry; RHIDP-15313 adds productization. This connector ingests RHOAI-managed MCP servers separately.
 > - **RHDHPLAN-404 dependency:** Provides extended API entity schema that this connector leverages for MCP server entities (`kind: API, spec.type: mcp-server`). Model Registry integration (Kubeflow API) is handled under RHDHPLAN-404, not this connector.
-> - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector emits MCP server entities only; MCP resource discovery is out of scope for now.
+> - **MCP resource mapping is outside this current Boost release:** mapping
+>   MCP resources (tools, prompts) remains broader follow-on work. This
+>   connector emits MCP server entities only; MCP resource discovery is out of
+>   scope here.
 > - **Llamastack/OGX:** New RHDHPLAN-1510 scope — Boost adds Llamastack/OGX as additional model information source alongside RHOAI. Separate connector work.
 
 ## What Boost Builds

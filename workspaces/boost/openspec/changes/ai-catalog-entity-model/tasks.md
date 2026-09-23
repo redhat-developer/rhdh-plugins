@@ -49,9 +49,9 @@
 ## 5. Provider Implementations (P1) — _RHIDP-15258_
 
 - [ ] 5.1 ~~Update Kagenti provider to emit entities with all three required annotations~~ **DO NOT IMPLEMENT** — Kagenti is out of scope for this change (RHIDP-15255)
-- [ ] 5.2 Update OGX provider (`plugins/ogx-entity-provider`, formerly LlamaStack) to emit entities with all three required annotations (RHIDP-15255)
+- [x] 5.2 OGX provider annotation emission is covered by the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md); its model and agent providers emit category, source, and normalized-version annotations (RHIDP-15255)
 - [ ] 5.3 ~~Verify Kagenti provider compiles against SDK interface without errors~~ **DO NOT IMPLEMENT** — Kagenti is out of scope for this change (RHIDP-15259)
-- [ ] 5.4 Verify OGX provider (`plugins/ogx-entity-provider`, formerly LlamaStack) compiles against SDK interface without errors (RHIDP-15259)
+- [x] 5.4 Verify that the OGX providers use Backstage `EntityProvider` and the SDK annotation/version utilities; this is covered by the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md) and its targeted test suite (RHIDP-15259)
 
 ## 6. Air-Gapped Deployment Support (P1) — _Moved to RHIDP-15316 (RHDHPLAN-1510)_
 
@@ -104,7 +104,7 @@
 ## 10. Verify
 
 - [ ] 10.1 Verify all three annotations are enforced by CatalogProcessor validator (reject entities with missing/invalid values)
-- [ ] 10.2 Verify OGX provider (`plugins/ogx-entity-provider`) emits entities with all required annotations
+- [x] 10.2 Verify OGX provider annotation emission through the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md); targeted model and agent tests cover category, source, and normalized-version annotations
 - [ ] 10.3 Verify delta sync framework falls back to full refresh when cursor invalid
 - [ ] 10.4 Verify custom CA bundles are honored for TLS connections in air-gapped deployment
 - [ ] 10.5 Verify startup validation rejects plaintext credentials with descriptive error

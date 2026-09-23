@@ -24,6 +24,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.description': string;
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
+    readonly 'common.current': string;
     readonly 'common.loading': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.missingAggregationId': string;
@@ -45,8 +46,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.dora.medianLeadTimeForChanges.description': string;
     readonly 'metric.dora.changeFailureRate.title': string;
     readonly 'metric.dora.changeFailureRate.description': string;
-    readonly 'metric.dora.meanTimeToRestore.title': string;
-    readonly 'metric.dora.meanTimeToRestore.description': string;
+    readonly 'metric.dora.medianTimeToRestore.title': string;
+    readonly 'metric.dora.medianTimeToRestore.description': string;
     readonly 'metric.github.openPRs.title': string;
     readonly 'metric.github.openPRs.description': string;
     readonly 'metric.jira.openIssues.title': string;
@@ -110,6 +111,9 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'dataSourcesDialog.close': string;
     readonly 'dataSourcesDialog.unknownPlugin': string;
     readonly 'dataSourcesDialog.statusTooltip': string;
+    readonly 'dataSourcesDialog.collectorStatusTooltip': string;
+    readonly 'dataSourcesDialog.collectorEmptyValue': string;
+    readonly 'dataSourcesDialog.collectorUnavailableStatus': string;
     readonly 'dataSourcesDialog.columns.plugin': string;
     readonly 'dataSourcesDialog.columns.check': string;
     readonly 'dataSourcesDialog.columns.value': string;

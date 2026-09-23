@@ -8,6 +8,18 @@
 
 Read-only CLI command that enumerates AI Asset catalog entities and reports migration readiness. Per-entity report shows current kind/type → target RFC kind, transformation requirements, and confidence level. No destructive changes — read-only analysis only.
 
+## ADDED Requirements
+
+### Requirement: Migration-readiness tooling is read-only
+
+The tooling MUST report migration readiness without modifying catalog entities.
+
+#### Scenario: Tooling performs a dry run
+
+- **WHEN** the migration-readiness command is executed
+- **THEN** it reports entity mappings and transformation requirements
+- **AND** it leaves the catalog unchanged
+
 ---
 
 ## Scenario: CLI enumerates AI Asset entities from catalog API

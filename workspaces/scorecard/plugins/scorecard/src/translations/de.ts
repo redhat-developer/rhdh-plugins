@@ -25,11 +25,16 @@ const scorecardTranslationDe = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Ladevorgang',
+    'common.current': 'aktuell',
     'dataSourcesDialog.title': '{{title}} Quellen',
     'dataSourcesDialog.close': 'Schließen',
     'dataSourcesDialog.unknownPlugin': 'Unbekannt',
     'dataSourcesDialog.statusTooltip':
       'Wert {{value}} entspricht Schwellenwert {{status}} {{expression}}',
+    'dataSourcesDialog.collectorStatusTooltip':
+      'Dieser Collector liefert nur Eingabedaten. Der {{metric}}-Check-Wert wird aus Collectors berechnet und auf der Scorecard-Karte angezeigt.',
+    'dataSourcesDialog.collectorEmptyValue': '--',
+    'dataSourcesDialog.collectorUnavailableStatus': 'k. A.',
     'dataSourcesDialog.columns.plugin': 'PLUGIN',
     'dataSourcesDialog.columns.check': 'PRÜFUNG',
     'dataSourcesDialog.columns.value': 'WERT',
@@ -100,16 +105,16 @@ const scorecardTranslationDe = createTranslationMessages({
       'Erfasst, wie oft Code in den letzten 30 Tagen erfolgreich in die Produktion bereitgestellt wurde. Elite-Performer stellen bei Bedarf bereit (mehrmals täglich).',
     'metric.dora.deploymentFrequency.title': 'DORA - Bereitstellungshäufigkeit',
     'metric.dora.medianLeadTimeForChanges.description':
-      'Misst die Zeit vom Code-Commit bis zur Produktionsbereitstellung über die letzten 30 Tage. Elite-Performer haben eine Vorlaufzeit von weniger als 24 Stunden.',
+      'Misst die mediane Zeit vom Code-Commit bis zur Produktionsbereitstellung über die letzten 30 Tage. Elite-Performer haben eine Vorlaufzeit von weniger als 24 Stunden.',
     'metric.dora.medianLeadTimeForChanges.title':
-      'DORA - Mittlere Vorlaufzeit für Änderungen',
+      'DORA - Mediane Vorlaufzeit für Änderungen',
     'metric.dora.changeFailureRate.description':
       'Überwacht den Prozentsatz der Bereitstellungen, die in den letzten 30 Tagen einen Fehler in der Produktion verursachen. Elite-Performer halten die Änderungsfehlerrate unter 5 %.',
     'metric.dora.changeFailureRate.title': 'DORA - Änderungsfehlerrate',
-    'metric.dora.meanTimeToRestore.description':
-      'Erfasst die durchschnittliche Zeit zur Wiederherstellung des Dienstes nach einem Vorfall über die letzten 30 Tage. Elite-Performer stellen den Dienst in weniger als einer Stunde wieder her.',
-    'metric.dora.meanTimeToRestore.title':
-      'DORA - Mittlere Zeit bis zur Wiederherstellung',
+    'metric.dora.medianTimeToRestore.description':
+      'Erfasst die mediane Zeit zur Wiederherstellung des Dienstes nach einem Vorfall über die letzten 30 Tage. Elite-Performer stellen den Dienst in weniger als einer Stunde wieder her.',
+    'metric.dora.medianTimeToRestore.title':
+      'DORA - Mediane Zeit bis zur Wiederherstellung',
     'metric.filecheck.description':
       'Prüft, ob die Datei {{name}} im Repository existiert.',
     'metric.filecheck.title': 'Dateiprüfung: {{name}}',

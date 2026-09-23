@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend
 
+## 0.6.3
+
+### Patch Changes
+
+- 6088511: Backstage version bump to v1.54.6
+
 ## 0.6.2
 
 ### Patch Changes

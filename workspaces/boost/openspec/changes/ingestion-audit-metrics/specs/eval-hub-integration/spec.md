@@ -5,6 +5,18 @@
 > **Coverage:** Eval Hub endpoint configuration, quality score ingestion, per-skill score storage, aggregate distribution computation, graceful handling when Eval Hub unavailable, multiple eval backend support, score refresh cycle  
 > **Consolidation (2026-07-08):** Eval Hub quality score integration is now part of the expanded RHIDP-15277 epic (AI Catalog RBAC Audit Logging, RHDHPLAN-1508). Eval Hub API stability remains the primary integration risk.
 
+## ADDED Requirements
+
+### Requirement: Consolidated traceability
+
+This file MUST remain a traceability snapshot and MUST NOT be implemented as
+an independent change; RHIDP-15277 is the authoritative owner.
+
+#### Scenario: Consolidated scope is routed to the owner
+
+- **WHEN** work is planned for Eval Hub quality scores
+- **THEN** it is tracked under RHIDP-15277 rather than this change
+
 ## Scenarios
 
 ### Scenario 1: Eval Hub endpoint configuration via app-config

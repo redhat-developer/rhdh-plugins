@@ -2,8 +2,20 @@
 
 > **Status:** 🔀 CONSOLIDATED into RHIDP-15277 (RHDHPLAN-1508)  
 > **Story:** RHIDP-15344 (Closed — absorbed by RHIDP-15277 epic scope)  
-> **Coverage:** Sync history endpoint, quality scores endpoint, match coverage endpoint, Neo4j sync status, RBAC gating, pagination, date range filtering  
+> **Coverage:** Sync history endpoint, quality scores endpoint, match coverage endpoint, Neo4j sync status, deployment-policy authorization, pagination, date range filtering
 > **Consolidation (2026-07-08):** Analytics metrics REST API scope is now part of the expanded RHIDP-15277 epic (AI Catalog RBAC Audit Logging, RHDHPLAN-1508), which includes RBAC-gated analytics data exposure alongside audit logging.
+
+## ADDED Requirements
+
+### Requirement: Consolidated traceability
+
+This file MUST remain a traceability snapshot and MUST NOT be implemented as
+an independent change; RHIDP-15277 is the authoritative owner.
+
+#### Scenario: Consolidated scope is routed to the owner
+
+- **WHEN** work is planned for the analytics API
+- **THEN** it is tracked under RHIDP-15277 rather than this change
 
 ## Scenarios
 
@@ -43,15 +55,15 @@
 **AND** `last_sync` is the timestamp of the last successful Neo4j sync  
 **AND** `entity_count` is the count of entities in Neo4j (if connected)
 
-### Scenario 5: RBAC gating on all endpoints
+### Scenario 5: Authorization gating on all endpoints
 
-**GIVEN** a user without `ai-catalog.admin` permission  
+**GIVEN** a user without `boost.admin`
 **WHEN** the user calls `GET /api/boost/admin/analytics/sync-history`  
 **THEN** the response is `403 Forbidden`  
 **AND** the error message indicates missing permission  
 **AND** no analytics data is leaked in the error response
 
-**GIVEN** a user with `ai-catalog.admin` permission  
+**GIVEN** a user with `boost.admin`
 **WHEN** the user calls `GET /api/boost/admin/analytics/sync-history`  
 **THEN** the response is `200 OK` with analytics data
 

@@ -152,6 +152,8 @@ Non-lifecycle functional areas MUST have dedicated permissions for access contro
 
 ### Requirement: 3-Tier Evaluation Model Consistency
 
+The implementation MUST satisfy the scenarios below.
+
 Boost implements the 3-tier permission evaluation model (ALLOW/DENY/CONDITIONAL) for agent list endpoints. The augment workspace is expected to converge on the same pattern when it adds agent list permissions — today augment defines only `augment.access` and `augment.admin`. This is architectural alignment on the pattern, not shared implementation — each workspace maintains its own clean-room code.
 
 #### Scenario: Boost 3-tier evaluation model

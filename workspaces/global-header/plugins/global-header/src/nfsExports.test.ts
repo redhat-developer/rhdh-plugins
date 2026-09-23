@@ -15,6 +15,8 @@
  */
 import { globalHeaderTranslationsModule } from './index';
 import translationsModuleDefault from './globalHeaderTranslationsModuleExport';
+import * as componentsExport from './componentsExport';
+import * as blueprintsExport from './blueprintsExport';
 
 describe('global-header NFS exports', () => {
   it('should export a translations module as a FrontendModule', () => {
@@ -26,5 +28,15 @@ describe('global-header NFS exports', () => {
 
   it('should export the translations module as default for NFS discovery', () => {
     expect(translationsModuleDefault).toBe(globalHeaderTranslationsModule);
+  });
+
+  it('should export /components building blocks without a default FrontendModule', () => {
+    expect(componentsExport.GlobalHeaderMenuItem).toBeDefined();
+    expect(componentsExport.GlobalHeaderIconButton).toBeDefined();
+    expect(componentsExport.GlobalHeaderDropdown).toBeDefined();
+  });
+
+  it('should export /blueprints menu item API without critical header UI', () => {
+    expect(blueprintsExport.GlobalHeaderMenuItemBlueprint).toBeDefined();
   });
 });

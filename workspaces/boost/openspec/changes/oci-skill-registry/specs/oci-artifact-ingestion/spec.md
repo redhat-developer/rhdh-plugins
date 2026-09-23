@@ -10,6 +10,8 @@ The OCI Skill Registry connector fetches OCI image manifests from OCI-compliant 
 
 ### Requirement: Fetch OCI Image Manifests
 
+The implementation MUST satisfy the scenarios below.
+
 The connector calls the OCI Distribution Spec API to retrieve image manifests for all tags in a configured namespace.
 
 #### Scenario: List tags in a namespace
@@ -31,6 +33,8 @@ The connector calls the OCI Distribution Spec API to retrieve image manifests fo
 - **AND** continues processing other tags without aborting the sync
 
 ### Requirement: Download `skillcard.yaml` from Image Layers
+
+The implementation MUST satisfy the scenarios below.
 
 The connector downloads layer blobs and extracts the `skillcard.yaml` file.
 
@@ -56,6 +60,8 @@ The connector downloads layer blobs and extracts the `skillcard.yaml` file.
 - **AND** logs warning: `Multiple skillcard.yaml files found in myorg/skills:v1.0.0, using first occurrence`
 
 ### Requirement: Validate `skillcard.yaml` Against SDK Schema
+
+The implementation MUST satisfy the scenarios below.
 
 The connector validates the parsed YAML against the SDK schema, rejecting skills with missing required fields.
 
@@ -94,6 +100,8 @@ The connector validates the parsed YAML against the SDK schema, rejecting skills
 
 ### Requirement: Emit `AIResource` Entities with AI Skill Annotations
 
+The implementation MUST satisfy the scenarios below.
+
 The connector emits Backstage entities with `kind: AIResource`, `spec.type: skill`, and the required annotation set.
 
 #### Scenario: Emit entity for valid skill
@@ -125,6 +133,8 @@ The connector emits Backstage entities with `kind: AIResource`, `spec.type: skil
 
 ### Requirement: Full-Sync Performance Target
 
+The implementation MUST meet the defined full-sync performance target.
+
 > _Added from RHIDP-15294 updated ACs (2026-07-08 consolidation)_
 
 The connector MUST complete a full sync of 2,000 OCI images within 5 minutes using manifest-only fetching.
@@ -151,6 +161,8 @@ The connector MUST complete a full sync of 2,000 OCI images within 5 minutes usi
 - **AND** the sync still completes (does not abort on timeout)
 
 ### Requirement: Support Tag Enumeration Discovery
+
+The implementation MUST satisfy the scenarios below.
 
 The connector discovers all skill artifacts in a configured OCI namespace by enumerating tags.
 

@@ -25,11 +25,16 @@ const scorecardTranslationJa = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': '読み込み中',
+    'common.current': '現在',
     'dataSourcesDialog.title': '{{title}} ソース',
     'dataSourcesDialog.close': '閉じる',
     'dataSourcesDialog.unknownPlugin': '不明',
     'dataSourcesDialog.statusTooltip':
       '値 {{value}} はしきい値 {{status}} {{expression}} に一致します',
+    'dataSourcesDialog.collectorStatusTooltip':
+      'このコレクターは入力データのみを提供します。{{metric}} チェック値はコレクターから計算され、スコアカードのカードに表示されます。',
+    'dataSourcesDialog.collectorEmptyValue': '--',
+    'dataSourcesDialog.collectorUnavailableStatus': '該当なし',
     'dataSourcesDialog.columns.plugin': 'PLUGIN',
     'dataSourcesDialog.columns.check': 'チェック',
     'dataSourcesDialog.columns.value': '値',
@@ -99,15 +104,15 @@ const scorecardTranslationJa = createTranslationMessages({
       '過去 30 日間にコードが本番環境に正常にデプロイされた頻度を追跡します。エリートパフォーマーはオンデマンドでデプロイします (1 日に複数回)。',
     'metric.dora.deploymentFrequency.title': 'DORA - デプロイ頻度',
     'metric.dora.medianLeadTimeForChanges.description':
-      '過去 30 日間におけるコードコミットから本番デプロイまでの時間を測定します。エリートパフォーマーのリードタイムは 24 時間未満です。',
+      '過去 30 日間におけるコードコミットから本番デプロイまでの時間の中央値を測定します。エリートパフォーマーのリードタイムは 24 時間未満です。',
     'metric.dora.medianLeadTimeForChanges.title':
       'DORA - 変更のリードタイム中央値',
     'metric.dora.changeFailureRate.description':
       '過去 30 日間に本番環境での障害を引き起こしたデプロイの割合を監視します。エリートパフォーマーは変更失敗率を 5% 未満に維持します。',
     'metric.dora.changeFailureRate.title': 'DORA - 変更失敗率',
-    'metric.dora.meanTimeToRestore.description':
-      '過去 30 日間におけるインシデント後のサービス復旧までの平均時間を追跡します。エリートパフォーマーは 1 時間未満でサービスを復旧します。',
-    'metric.dora.meanTimeToRestore.title': 'DORA - 平均復旧時間',
+    'metric.dora.medianTimeToRestore.description':
+      '過去 30 日間におけるインシデント後のサービス復旧時間の中央値を追跡します。エリートパフォーマーは 1 時間未満でサービスを復旧します。',
+    'metric.dora.medianTimeToRestore.title': 'DORA - 復旧時間の中央値',
     'metric.filecheck.description':
       'リポジトリー内に {{name}} ファイルが存在するかどうかを確認します。',
     'metric.filecheck.title': 'ファイルチェック: {{name}}',

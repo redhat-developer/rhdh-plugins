@@ -23,6 +23,7 @@ import {
   openChatHistoryDrawer,
   closeChatHistoryDrawer,
   expectBackstagePageVisible,
+  waitForBackstageCatalogReady,
   expectChatbotControlsVisible,
   verifyDisplayModeMenuOptions,
   expectChatInputAreaVisible,
@@ -61,7 +62,8 @@ test.describe('Intelligent assistant UI', () => {
 
   test.describe('Chatbot Display Modes', () => {
     test.beforeEach(async () => {
-      await sharedPage.goto('/');
+      await sharedPage.goto('/catalog');
+      await waitForBackstageCatalogReady(sharedPage);
     });
 
     test('should display chatbot in overlay mode with backstage page visible', async () => {
@@ -123,7 +125,7 @@ test.describe('Intelligent assistant UI', () => {
     await expect(sharedPage.getByLabel('Scrollable message log'))
       .toMatchAriaSnapshot(`
       - 'heading "Info alert: ${translations['aria.important']}" [level=4]'
-      - text: ${translations['disclaimer.withValidation']}
+      - text: ${translations['disclaimer']}
       `);
   });
 
@@ -167,7 +169,7 @@ test.describe('Intelligent assistant UI', () => {
       .toMatchAriaSnapshot(`
       - region "Scrollable message log":
         - 'heading "Info alert: ${translations['aria.important']}" [level=4]'
-        - text: ${translations['disclaimer.withValidation']}
+        - text: ${translations['disclaimer']}
         - heading "${greeting} ${translations['chatbox.welcome.description']}" [level=1]
         - button /.+/
         - text: /.+/

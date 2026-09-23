@@ -18,17 +18,19 @@ import { createApp } from '@backstage/frontend-defaults';
 import { navModule } from './modules/nav';
 import { signInModule } from './modules/signIn';
 import {
-  homePageModule,
+  homepagePlugin,
+  homepageHomeModule,
   homepageTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-homepage';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 export default createApp({
   features: [
     rhdhThemeModule,
     navModule,
     signInModule,
-    homePageModule,
+    homepagePlugin,
+    homepageHomeModule,
     homepageTranslationsModule,
   ],
 });

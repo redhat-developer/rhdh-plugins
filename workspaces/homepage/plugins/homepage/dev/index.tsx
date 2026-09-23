@@ -45,11 +45,13 @@ import {
   catalogApiRef,
   starredEntitiesApiRef,
 } from '@backstage/plugin-catalog-react';
+import homePlugin from '@backstage/plugin-home/alpha';
 import {
-  homePageModule,
+  homepagePlugin,
+  homepageHomeModule,
   homepageTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-homepage';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 import { quickAccessApiRef } from '../src/api';
 import { visitsApiRef } from '@backstage/plugin-home';
 import {
@@ -153,7 +155,9 @@ const app = createApp({
     devNavModule,
     catalogPlugin,
     searchPlugin,
-    homePageModule,
+    homePlugin,
+    homepagePlugin,
+    homepageHomeModule,
     homepageTranslationsModule,
     homepageApiMocksModule,
     catalogDevModule,

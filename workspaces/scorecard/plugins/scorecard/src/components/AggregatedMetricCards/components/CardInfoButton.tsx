@@ -24,7 +24,13 @@ import { getLastUpdatedLabel } from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useLanguage } from '../../../hooks/useLanguage';
 
-export const CardInfoButton = ({ timestamp }: { timestamp: string }) => {
+export const CardInfoButton = ({
+  timestamp,
+  marginRight = 2,
+}: {
+  timestamp: string;
+  marginRight?: number;
+}) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const locale = useLanguage();
@@ -32,7 +38,14 @@ export const CardInfoButton = ({ timestamp }: { timestamp: string }) => {
   const lastUpdatedLabel = getLastUpdatedLabel(timestamp, locale);
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', height: '100%', mr: 2 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        height: '100%',
+        mr: marginRight,
+      }}
+    >
       <Tooltip
         title={
           <Box sx={{ textAlign: 'center' }}>

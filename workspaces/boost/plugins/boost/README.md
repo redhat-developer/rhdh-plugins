@@ -1,11 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-boost
 
-Frontend plugin for the Boost AI platform in Red Hat Developer Hub. Provides the AI Catalog browse page and entity page extensions for AI assets.
+Frontend plugin for the Boost AI platform in Red Hat Developer Hub. Provides the AI Catalog browse page and entity-page extensions for AI assets.
 
 ## Features
 
 - **AI Catalog browse page** at `/ai-catalog` — card grid for discovering AI skills, rules, MCP servers, agents, and models
-- **Entity page extensions** — summary card, download/adopt card, version list card, and usage tab on AI asset entity pages
+- **Entity-page extensions** — AI asset details, agent instructions, and Usage cards on AI asset entity pages. Usage actions copy or open supported source and endpoint URLs; standard TechDocs remain provided by the host application.
 - **`isAiAsset` filter** — condition filter for NFS Blueprints that matches all AI asset entity kind/type combinations
 
 ## Public API

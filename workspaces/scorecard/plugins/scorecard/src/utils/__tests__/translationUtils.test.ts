@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { resolveMetricTranslation } from '../translationUtils';
+import {
+  getTranslatedTextWithFallback,
+  resolveMetricTranslation,
+  extractPluginName,
+} from '../translationUtils';
 
 type MockT = (key: string, params?: Record<string, string>) => string;
 
@@ -172,5 +176,79 @@ describe('resolveMetricTranslation', () => {
         'Fallback Title',
       ),
     ).toBe('File check: readme');
+  });
+});
+
+describe('getTranslatedTextWithFallback', () => {
+  it('returns fallback without calling t when translationKey is undefined', () => {
+    const t = jest.fn();
+
+    expect(
+      getTranslatedTextWithFallback(t as any, undefined, 'Code Quality'),
+    ).toBe('Code Quality');
+    expect(t).not.toHaveBeenCalled();
+  });
+
+  it('returns translated text when the key resolves', () => {
+    const t = createMockT({
+      'groups.codeQuality.title': 'Qualität',
+    });
+
+    expect(
+      getTranslatedTextWithFallback(
+        t as any,
+        'groups.codeQuality.title',
+        'Code Quality',
+      ),
+    ).toBe('Qualität');
+  });
+
+  it('returns fallback when translation is missing (t returns the key)', () => {
+    const t = createMockT({});
+
+    expect(
+      getTranslatedTextWithFallback(
+        t as any,
+        'groups.missing.title',
+        'Code Quality',
+      ),
+    ).toBe('Code Quality');
+  });
+
+  it('returns undefined when there is no key and fallback is undefined', () => {
+    const t = jest.fn();
+
+    expect(
+      getTranslatedTextWithFallback(t as any, undefined, undefined),
+    ).toBeUndefined();
+    expect(t).not.toHaveBeenCalled();
+  });
+
+  it('returns undefined when the key is missing and fallback is undefined', () => {
+    const t = createMockT({});
+
+    expect(
+      getTranslatedTextWithFallback(
+        t as any,
+        'groups.missing.description',
+        undefined,
+      ),
+    ).toBeUndefined();
+  });
+});
+describe('extractPluginName', () => {
+  it('should use the first segment of a dotted metric id', () => {
+    expect(extractPluginName('github.openPRs', 'Unknown')).toBe('Github');
+  });
+
+  it('should use the first segment of a collector id', () => {
+    expect(
+      extractPluginName('github:doraDeploymentWorkflowRuns', 'Unknown'),
+    ).toBe('Github');
+    expect(extractPluginName('jira:doraIncidents', 'Unknown')).toBe('Jira');
+  });
+
+  it('should return the fallback when the id is missing', () => {
+    expect(extractPluginName(undefined, 'Unknown')).toBe('Unknown');
   });
 });

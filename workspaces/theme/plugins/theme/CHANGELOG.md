@@ -1,5 +1,36 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.2.2
+
+### Patch Changes
+
+- ef6ab36: Wrap toggle button items to prevent clipped overflow (RHDHBUGS-3622)
+
+  This is a global `MuiToggleButtonGroup` theme override — it applies to every `ToggleButtonGroup` in RHDH, including those in dynamic plugins. Groups with two items will not wrap in practice, but consumers with wider groups should be aware.
+
+## 1.2.1
+
+### Patch Changes
+
+- 61f08f2: Fix the RHDH entity-page layout so content can grow beyond the viewport without
+  being clipped by the main content container.
+
+## 1.2.0
+
+### Minor Changes
+
+- e8c4cd7: feat: allow customers to customize BUI components via app-config (RHIDP-14510)
+
+  Adds two new `app.branding` configuration options:
+
+  - `customCSS`: raw CSS string injected as global styles (use at your own risk)
+  - `theme.{light|dark}.bui.tokens`: per-theme structured token overrides mapping to BUI CSS custom properties (`--bui-*`), allowing different values for light and dark themes
+
+### Patch Changes
+
+- a8731b1: Update theme workspace dependencies to Backstage 1.54.6.
+- 1a55424: Offset Backstage UI dialogs such as Inspect Entity below the global header so their title and close control stay visible.
+
 ## 1.1.0
 
 ### Minor Changes

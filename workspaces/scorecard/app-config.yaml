@@ -63,6 +63,16 @@ app:
                 xs: { w: 4, h: 6 }
                 xxs: { w: 4, h: 6 }
 
+            AggregatedCardWithDeprecatedDoraChangeFailureRate:
+              priority: 415
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
+
             AggregatedCardWithDefaultAggregation:
               priority: 420
               breakpoints:
@@ -164,6 +174,51 @@ app:
                 sm: { w: 4, h: 6, x: 4 }
                 xs: { w: 4, h: 6, x: 4 }
                 xxs: { w: 4, h: 6, x: 4 }
+            AggregatedCardWithInvalidMetricId:
+              priority: 525
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
+            AggregatedCardWithDoraDeploymentFrequency:
+              priority: 530
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
+            AggregatedCardWithDoraChangeFailureRate:
+              priority: 540
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+            AggregatedCardWithDoraMedianLeadTimeForChanges:
+              priority: 550
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
+            AggregatedCardWithDoraMedianTimeToRestore:
+              priority: 560
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
 
 organization:
   name: My Company
@@ -310,6 +365,86 @@ sonarqube:
 # Scorecard development configuration
 scorecard:
   aggregationKPIs:
+    doraDeploymentFrequencyKpi:
+      title: DORA - Deployment Frequency
+      type: average
+      description: Tracks how often code is deployed to production over the past 30 days. Elite performers deploy on demand (multiple times per day).
+      metricId: dora.deploymentFrequency
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '>=7'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '1-7'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: low
+              expression: '<1'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+    doraChangeFailureRateKpi:
+      title: DORA - Change Failure Rate
+      type: average
+      description: Monitors the percentage of deployments that cause a failure in production over the past 30 days. Elite performers maintain a change failure rate below 5%.
+      metricId: dora.changeFailureRate
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '<5'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '5-15'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: low
+              expression: '>15'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+    doraMedianLeadTimeForChangesKpi:
+      title: DORA - Lead Time for Changes
+      type: average
+      description: Measures the median time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours.
+      metricId: dora.medianLeadTimeForChanges
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '<24'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '24-168'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: low
+              expression: '>168'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+    doraMedianTimeToRestoreKpi:
+      title: DORA - Median Time to Restore
+      type: average
+      description: Tracks the median time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.
+      metricId: dora.medianTimeToRestore
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '<1'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '1-24'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: low
+              expression: '>24'
+              color: error.main
+              icon: scorecardErrorStatusIcon
     openPrsKpi:
       title: GitHub Open PRs KPI
       type: statusGrouped
@@ -370,48 +505,6 @@ scorecard:
       description: This KPI provides a mean open issues count per entity.
       type: average
       metricId: jira.openIssues
-    avgDeploymentFrequency:
-      title: Average Deployment Frequency
-      description: This KPI provides average weekly production deploys over a 30-day window per entity.
-      type: average
-      metricId: dora.deploymentFrequency
-      options:
-        thresholds:
-          rules:
-            - key: elite
-              expression: '>=7'
-              color: success.main
-              icon: scorecardSuccessStatusIcon
-            - key: medium
-              expression: '1-7'
-              color: warning.main
-              icon: scorecardWarningStatusIcon
-            - key: error
-              expression: '<1'
-              color: error.main
-              icon: scorecardErrorStatusIcon
-    avgEliteDeploymentFrequency:
-      title: Average Elite Deployment Frequency
-      description: This KPI provides average elite weekly production deploys over a 30-day window per entity.
-      type: average
-      metricId: dora.deploymentFrequency
-      options:
-        thresholds:
-          rules:
-            - key: elite
-              expression: '>=7'
-              color: success.main
-              icon: scorecardSuccessStatusIcon
-            - key: medium
-              expression: '1-7'
-              color: warning.main
-              icon: scorecardWarningStatusIcon
-            - key: error
-              expression: '<1'
-              color: error.main
-              icon: scorecardErrorStatusIcon
-      filter:
-        status: elite
     entitiesWithOpenPrs:
       title: Entities with Open PRs
       description: This KPI provides a count of entities with a stored open-prs value.
@@ -481,6 +574,30 @@ scorecard:
   #     except:
   #       - openssf.maintained
 
+  plugins:
+    dora:
+      # Optional DORA source-data retention and freshness controls
+      # dataRetentionDays: 365
+      # staleAfterMs: 60000
+      # deploymentLookbackMs: 172800000
+      # incidentLookbackMs: 300000
+
+      productionEnvironments: ['production']
+      collectors:
+        deployments:
+          id: github:doraDeployments
+          # Uncomment the following to use workflow runs
+          # id: github:doraDeploymentWorkflowRuns
+          # input:
+          #   workflowName: Create Test Deployment on PR Merge
+        deploymentPullRequests:
+          id: github:doraDeploymentPullRequests
+        incidents:
+          id: jira:doraIncidents
+          # Optional: override default Incident issue type
+          # input:
+          #   issueType: CustomIncident
+
   metricProviders:
     jira:
       openIssues:
@@ -515,65 +632,28 @@ scorecard:
           files:
             license: 'LICENSE'
             codeowners: 'CODEOWNERS'
+            readme: 'README.md'
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
     dora:
       deploymentFrequency:
-        options:
-          collectors:
-            deployments:
-              id: github:deployments
-              # Uncomment the following to use workflow runs
-              # id: github:deploymentWorkflowRuns
-              # input:
-              #   workflowName: Create Test Deployment on PR Merge
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
       medianLeadTimeForChanges:
-        options:
-          collectors:
-            deployments:
-              id: github:deployments
-              # Uncomment the following to use workflow runs
-              # id: github:deploymentWorkflowRuns
-              # input:
-              #   workflowName: Create Test Deployment on PR Merge
-            deploymentPullRequests:
-              id: github:deploymentPullRequests
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
       changeFailureRate:
-        options:
-          collectors:
-            deployments:
-              id: github:deployments
-              # Uncomment the following to use workflow runs
-              # id: github:deploymentWorkflowRuns
-              # input:
-              #   workflowName: Create Test Deployment on PR Merge
-            incidents:
-              id: jira:incidents
-              # Optional: override default Incident issue type
-              # input:
-              #   issueType: ServiceIncident
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
-      meanTimeToRestore:
-        options:
-          collectors:
-            incidents:
-              id: jira:incidents
-              # Optional: override default Incident issue type
-              # input:
-              #   issueType: ServiceIncident
+      medianTimeToRestore:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }

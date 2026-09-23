@@ -133,7 +133,9 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
              groups:
                codeQuality:
                  title: 'Code Quality'
+                 titleKey: groups.codeQuality.title
                  description: 'SonarQube code quality metrics'
+                 descriptionKey: groups.codeQuality.description
                  metrics:
                    - sonarqube.reliabilityIssues
                    - sonarqube.codeCoverage
@@ -147,11 +149,13 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
 
    **Groups config schema:**
 
-   | Field         | Type       | Required | Description                                          |
-   | ------------- | ---------- | -------- | ---------------------------------------------------- |
-   | `title`       | `string`   | Yes      | Display title for the group card.                    |
-   | `description` | `string`   | No       | Optional description shown below the title.          |
-   | `metrics`     | `string[]` | Yes      | Ordered list of metric IDs to include in this group. |
+   | Field            | Type       | Required | Description                                                                                      |
+   | ---------------- | ---------- | -------- | ------------------------------------------------------------------------------------------------ |
+   | `title`          | `string`   | Yes      | Display title for the group card. Used when `titleKey` is omitted or the translation is missing. |
+   | `titleKey`       | `string`   | No       | Translation key under `plugin.scorecard` (for example `groups.codeQuality.title`).               |
+   | `description`    | `string`   | No       | Optional description shown below the title. Used when `descriptionKey` is omitted or missing.    |
+   | `descriptionKey` | `string`   | No       | Translation key under `plugin.scorecard` (for example `groups.codeQuality.description`).         |
+   | `metrics`        | `string[]` | Yes      | Ordered list of metric IDs to include in this group.                                             |
 
    **Behavior:**
 
@@ -284,11 +288,21 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    sm: { w: 4, h: 6, x: 4 }
                    xs: { w: 4, h: 6, x: 4 }
                    xxs: { w: 4, h: 6, x: 4 }
+               AggregatedCardWithDoraDeploymentFrequency:
+                 priority: 530
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 8 }
+                   lg: { w: 4, h: 6, x: 8 }
+                   md: { w: 4, h: 6, x: 8 }
+                   sm: { w: 4, h: 6, x: 8 }
+                   xs: { w: 4, h: 6, x: 8 }
+                   xxs: { w: 4, h: 6, x: 8 }
    ```
 
-   The home module contributes twelve widgets:
+   The home module contributes these widgets:
 
    - `AggregatedCardWithDeprecatedMetricId` (title: **Scorecard: With deprecated metricId property (Jira)**)
+   - `AggregatedCardWithDeprecatedDoraChangeFailureRate` (title: **Scorecard: With deprecated metricId property (DORA change failure rate)**)
    - `AggregatedCardWithDefaultAggregation` (title: **Scorecard: With default aggregation config (GitHub)**)
    - `AggregatedCardWithJiraOpenIssues` (title: **Scorecard: Jira open blocking tickets**)
    - `AggregatedCardWithGithubOpenPrs` (title: **Scorecard: GitHub open PRs**)
@@ -300,6 +314,10 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - `AggregatedCardWithTotalOpenBugs` (title: **Scorecard: Total open bugs**)
    - `AggregatedCardWithEntitiesWithOpenPrs` (title: **Scorecard: Entities with open PRs**)
    - `AggregatedCardWithAvgOpenPrs` (title: **Scorecard: Average open PRs**)
+   - `AggregatedCardWithDoraDeploymentFrequency` (title: **Scorecard: DORA - Deployment Frequency**)
+   - `AggregatedCardWithDoraChangeFailureRate` (title: **Scorecard: DORA - Change Failure Rate**)
+   - `AggregatedCardWithDoraMedianLeadTimeForChanges` (title: **Scorecard: DORA - Lead Time for Changes**)
+   - `AggregatedCardWithDoraMedianTimeToRestore` (title: **Scorecard: DORA - Median Time to Restore**)
 
    These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
 
@@ -317,24 +335,29 @@ The default `scorecardPlugin` registers the Scorecard page, API, entity tab, lay
 
 **Extension IDs**
 
-| Extension ID                                                       | Description                                                                                                                      |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `api:scorecard`                                                    | Scorecard API (auto-discovered when the plugin is installed).                                                                    |
-| `page:scorecard`                                                   | Scorecard entities / drill-down page.                                                                                            |
-| `entity-content:scorecard/entity-content-scorecard`                | Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type. |
-| `scorecard-layout:scorecard/scorecard-entity-layout-grid`          | Grid layout with metric group cards (disabled by default). Enable via `app.extensions` and define `groups` (see step 6).         |
-| `home-page-widget:scorecard/scorecard-deprecated-metric-id`        | Homepage widget using deprecated `metricId` (Jira open issues).                                                                  |
-| `home-page-widget:scorecard/scorecard-default-aggregation`         | Homepage widget using default aggregation (GitHub open PRs).                                                                     |
-| `home-page-widget:scorecard/scorecard-jira-open-issues`            | Homepage widget for Jira open blocking tickets.                                                                                  |
-| `home-page-widget:scorecard/scorecard-github-open-prs`             | Homepage widget for GitHub open PRs.                                                                                             |
-| `home-page-widget:scorecard/scorecard-github-filecheck-license`    | Homepage widget for file check "License".                                                                                        |
-| `home-page-widget:scorecard/scorecard-github-filecheck-codeowners` | Homepage widget for file check "Codeowners".                                                                                     |
-| `home-page-widget:scorecard/scorecard-github-open-prs-weighted`    | Homepage widget for weighted GitHub open PRs health.                                                                             |
-| `home-page-widget:scorecard/scorecard-max-open-prs`                | Homepage widget for scalar max open PRs.                                                                                         |
-| `home-page-widget:scorecard/scorecard-min-open-prs`                | Homepage widget for scalar min open PRs.                                                                                         |
-| `home-page-widget:scorecard/scorecard-total-open-bugs`             | Homepage widget for scalar sum of open bugs.                                                                                     |
-| `home-page-widget:scorecard/scorecard-entities-with-open-prs`      | Homepage widget for scalar count of entities with open PRs.                                                                      |
-| `home-page-widget:scorecard/scorecard-avg-open-prs`                | Homepage widget for scalar average open PRs.                                                                                     |
+| Extension ID                                                               | Description                                                                                                                      |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `api:scorecard`                                                            | Scorecard API (auto-discovered when the plugin is installed).                                                                    |
+| `page:scorecard`                                                           | Scorecard entities / drill-down page.                                                                                            |
+| `entity-content:scorecard/entity-content-scorecard`                        | Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type. |
+| `scorecard-layout:scorecard/scorecard-entity-layout-grid`                  | Grid layout with metric group cards (disabled by default). Enable via `app.extensions` and define `groups` (see step 6).         |
+| `home-page-widget:scorecard/scorecard-deprecated-metric-id`                | Homepage widget using deprecated `metricId` (Jira open issues).                                                                  |
+| `home-page-widget:scorecard/scorecard-deprecated-dora-change-failure-rate` | Homepage widget using deprecated `metricId` (DORA change failure rate).                                                          |
+| `home-page-widget:scorecard/scorecard-default-aggregation`                 | Homepage widget using default aggregation (GitHub open PRs).                                                                     |
+| `home-page-widget:scorecard/scorecard-jira-open-issues`                    | Homepage widget for Jira open blocking tickets.                                                                                  |
+| `home-page-widget:scorecard/scorecard-github-open-prs`                     | Homepage widget for GitHub open PRs.                                                                                             |
+| `home-page-widget:scorecard/scorecard-github-filecheck-license`            | Homepage widget for file check "License".                                                                                        |
+| `home-page-widget:scorecard/scorecard-github-filecheck-codeowners`         | Homepage widget for file check "Codeowners".                                                                                     |
+| `home-page-widget:scorecard/scorecard-github-open-prs-weighted`            | Homepage widget for weighted GitHub open PRs health.                                                                             |
+| `home-page-widget:scorecard/scorecard-max-open-prs`                        | Homepage widget for scalar max open PRs.                                                                                         |
+| `home-page-widget:scorecard/scorecard-min-open-prs`                        | Homepage widget for scalar min open PRs.                                                                                         |
+| `home-page-widget:scorecard/scorecard-total-open-bugs`                     | Homepage widget for scalar sum of open bugs.                                                                                     |
+| `home-page-widget:scorecard/scorecard-entities-with-open-prs`              | Homepage widget for scalar count of entities with open PRs.                                                                      |
+| `home-page-widget:scorecard/scorecard-avg-open-prs`                        | Homepage widget for scalar average open PRs.                                                                                     |
+| `home-page-widget:scorecard/scorecard-dora-deployment-frequency`           | Homepage widget for DORA deployment frequency sparkline (`doraDeploymentFrequencyKpi`).                                          |
+| `home-page-widget:scorecard/scorecard-dora-change-failure-rate`            | Homepage widget for DORA change failure rate sparkline (`doraChangeFailureRateKpi`).                                             |
+| `home-page-widget:scorecard/scorecard-dora-median-lead-time-for-changes`   | Homepage widget for DORA median lead time sparkline (`doraMedianLeadTimeForChangesKpi`).                                         |
+| `home-page-widget:scorecard/scorecard-dora-median-time-to-restore`         | Homepage widget for DORA median time to restore sparkline (`doraMedianTimeToRestoreKpi`).                                        |
 
 ##### Migration notes (NFS graduation)
 
@@ -505,7 +528,9 @@ The plugin exports **`ScorecardHomepageCard`** from `@red-hat-developer-hub/back
 
 #### Backend configuration
 
-Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId` (default status-grouped aggregation).
+Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId`. The default type is **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**, otherwise **`statusGrouped`**. A missing custom KPI key that is not a registered metric id returns **404**; the homepage card shows that error instead of staying in a loading state.
+
+NFS `HomePageWidgetBlueprint`s are catalog presets with hardcoded ids. They are not the only way to put a card on the homepage: Dynamic Home Page / app-legacy can pass any `aggregationId`. Metric-id widgets (for example `filecheck.codeowners` or `dora.changeFailureRate`) work without an `aggregationKPIs` row. Custom KPI keys such as `avgDeploymentFrequency`, `licenseFileExistsKpi`, or `changeFailureRateKpi` must exist in app-config (or the metadata API returns 404).
 
 Supported scorecard aggregation types (see [Entity Aggregation — Aggregation types](../scorecard-backend/docs/aggregation.md#aggregation-types)):
 
@@ -513,7 +538,7 @@ Supported scorecard aggregation types (see [Entity Aggregation — Aggregation t
 - [`weightedStatusScore`](../scorecard-backend/docs/aggregation.md#weighted-status-score-type) — weighted portfolio health percentage (donut); requires `options.statusScores`.
 - Scalar types ([`sum`](../scorecard-backend/docs/aggregation.md#sum-type), [`average`](../scorecard-backend/docs/aggregation.md#average-type), [`max`](../scorecard-backend/docs/aggregation.md#max-type), [`min`](../scorecard-backend/docs/aggregation.md#min-type), [`count`](../scorecard-backend/docs/aggregation.md#count-type)) — roll up latest numeric metric values; number metrics only. Optional [`filter.status`](../scorecard-backend/docs/aggregation.md#status-filter-scalar-types) limits the rollup to a threshold status.
 
-**Scalar KPI types** (`sum`, `average`, `max`, `min`, `count`) are fully supported by **`GET /aggregations/:aggregationId`**, including optional **`filter.status`** and **`options.thresholds`**. **`AggregatedMetricCard`** chooses the UI from the **result shape**: a numeric `value` renders **`ScalarStatCard`** (large number, optional description, aggregation-type label, threshold tile color); a `values` array renders the existing pie/donut cards; anything else shows **`UnsupportedAggregationType`**. Unknown scalar type names still render **`ScalarStatCard`** when the payload is scalar-shaped.
+**Scalar KPI types** (`sum`, `average`, `max`, `min`, `count`) are fully supported by **`GET /aggregations/:aggregationId`**, including optional **`filter.status`** and **`options.thresholds`**. **`ScorecardHomepageCard`** first loads **`GET /aggregations/:aggregationId/metadata`**. When **`metadata.visualization`** is **`sparkline`**, it fetches **`GET /aggregations/:aggregationId/time-series`** and renders **`AggregatedSparklineCard`**. Otherwise **`AggregatedMetricCard`** chooses the UI from the snapshot **result shape**: a numeric `value` renders **`ScalarStatCard`** (large number, optional description, aggregation-type label, threshold tile color); a `values` array renders the existing pie/donut cards; anything else shows **`UnsupportedAggregationType`**. Unknown scalar type names still render **`ScalarStatCard`** when the payload is scalar-shaped.
 
 **Terminology:** Scalar **`average`** (mean of numeric metric values) is distinct from the former weighted KPI type also named `average`, which was renamed to **`weightedStatusScore`**. Update app-config **`type: average`** entries for weighted health scoring to **`type: weightedStatusScore`** and migrate API consumers from **`result.averageScore`** to **`result.weightedStatusScore`**.
 
@@ -524,7 +549,7 @@ Configure a scalar KPI such as **`maxOpenPrs`** under **`scorecard.aggregationKP
 The supported model is **a single `aggregationId` string** whose value is either:
 
 - a **KPI key** from **`scorecard.aggregationKPIs`** in app-config (custom title, description, type, backing metric), or
-- a **metric id** when you have no KPI row for that card (default **statusGrouped** aggregation and metric-defined metadata).
+- a **metric id** when you have no KPI row for that card (default **`average`** when the metric is a sparkline, otherwise **`statusGrouped`**).
 
 | Prop                | Status       | Description                                                                                                                          |
 | ------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -605,14 +630,19 @@ Translation keys follow this pattern:
 
 - **Metric titles**: `metric.{metric-id}.title`
 - **Metric descriptions**: `metric.{metric-id}.description`
+- **Layout group titles**: set `titleKey` on the group in app-config (for example `groups.codeQuality.title`)
+- **Layout group descriptions**: set `descriptionKey` on the group (for example `groups.codeQuality.description`)
 
-Use the same pattern with a **KPI id** as `{metric-id}` when localizing **`aggregationKPIs`** titles (for example **`metric.openIssuesKpi.title`**).
+Use the same `metric.{id}.{field}` pattern with a **KPI id** as `{metric-id}` when localizing **`aggregationKPIs`** titles (for example **`metric.openIssuesKpi.title`**).
+
+Group titles and descriptions do **not** use the `metric.{id}.{field}` convention. They are customer-defined in `scorecard-layout` config, so you pass explicit `titleKey` / `descriptionKey` values. Provide translations in plugin locale files or via RHDH `i18n.overrides` under `plugin.scorecard`. If a key is omitted or not found, the UI shows the group's `title` / `description` strings and never the raw key.
 
 ### 3. Fallback Behavior
 
 If a translation key is not found, the plugin will automatically fall back to:
 
 - The original `title` and `description` values from the metric definition
+- For layout groups: the `title` and `description` values from app-config
 - For thresholds: capitalized versions of the threshold keys
 
 ### Example: Adding GitHub Open PRs Translation

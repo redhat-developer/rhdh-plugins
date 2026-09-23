@@ -20,10 +20,11 @@ import { log } from './log';
 import { type OciImageCache } from './image-cache';
 import { npmPluginKey } from './npm-key';
 import {
+  isOciInherit,
   ociPluginKey,
-  type ParsedOciKey,
   tryParseOciRegistryAndPath,
 } from './oci-key';
+import { extractPluginName } from './plugin-name';
 import { isOciUrl, OCI_PROTO } from './protocols';
 import {
   type DynamicPluginsConfig,
@@ -164,9 +165,31 @@ async function mergeOciPlugin(
 ): Promise<void> {
   let parsed = await ociPluginKey(plugin.package, imageCache);
 
-  if (parsed.inherit && parsed.resolvedPath === null) {
-    parsed = resolveInherit(plugin, allPlugins, parsed);
-  } else if (!plugin.package.includes('!') && parsed.resolvedPath) {
+  if (parsed.inherit) {
+    // The normal installer resolves inherit references from the raw include
+    // lists before filtering. Keep this fallback for direct mergePlugin users,
+    // using the entries they have already merged as the candidate set.
+    if (level === 0) {
+      throw new InstallException(
+        `Cannot use {{inherit}} in included plugin configuration '${plugin.package}' in ${configFile}. ` +
+          `Define a concrete tag or digest in included files.`,
+      );
+    }
+    const pluginName = extractPluginName(plugin.package);
+    plugin.package = resolveInheritPackage(
+      plugin.package,
+      Object.values(allPlugins).map(base => ({
+        package: base.package,
+        disabled: isPluginDisabled(base),
+      })),
+    );
+    parsed = await ociPluginKey(plugin.package, imageCache);
+    log(
+      `\n======= Inheriting version \`${parsed.version}\` and plugin path \`${parsed.resolvedPath ?? ''}\` for '${pluginName ?? plugin.package}'`,
+    );
+  }
+
+  if (!plugin.package.includes('!') && parsed.resolvedPath) {
     plugin.package = `${plugin.package}!${parsed.resolvedPath}`;
   }
 
@@ -174,12 +197,6 @@ async function mergeOciPlugin(
 
   const existing = allPlugins[parsed.pluginKey];
   if (!existing) {
-    if (parsed.inherit) {
-      throw new InstallException(
-        `ERROR: {{inherit}} tag is set and there is currently no resolved tag or digest ` +
-          `for ${plugin.package} in ${configFile}.`,
-      );
-    }
     log(
       `\n======= Adding new dynamic plugin configuration for version \`${parsed.version}\` of ${parsed.pluginKey}`,
     );
@@ -188,81 +205,200 @@ async function mergeOciPlugin(
     return;
   }
 
-  log(`\n======= Overriding dynamic plugin configuration ${parsed.pluginKey}`);
+  const enabledReplacesDisabledAtSameLevel =
+    existing.last_modified_level === level &&
+    isPluginDisabled(existing) &&
+    !isPluginDisabled(plugin);
   if (existing.last_modified_level === level) {
-    throw new InstallException(
-      `Duplicate plugin configuration for ${plugin.package} found in ${configFile}.`,
-    );
-  }
-
-  if (!parsed.inherit) {
-    existing.package = plugin.package;
-    if (existing.version !== parsed.version) {
+    if (isPluginDisabled(plugin)) {
       log(
-        `INFO: Overriding version for ${parsed.pluginKey} from \`${existing.version ?? ''}\` to \`${parsed.version}\``,
+        `WARNING: Skipping duplicate disabled plugin configuration for ${plugin.package} in ${configFile}`,
+      );
+      return;
+    }
+    if (!isPluginDisabled(existing)) {
+      throw new InstallException(
+        `Duplicate plugin configuration for ${plugin.package} found in ${configFile}.`,
       );
     }
-    existing.version = parsed.version;
   }
+
+  log(`\n======= Overriding dynamic plugin configuration ${parsed.pluginKey}`);
+  existing.package = plugin.package;
+  if (existing.version !== parsed.version) {
+    log(
+      `INFO: Overriding version for ${parsed.pluginKey} from \`${existing.version ?? ''}\` to \`${parsed.version}\``,
+    );
+  }
+  existing.version = parsed.version;
   copyPluginFields(plugin, existing, [
     'package',
     'version',
     'last_modified_level',
   ]);
+  if (
+    enabledReplacesDisabledAtSameLevel &&
+    typeof plugin.enabled !== 'boolean' &&
+    typeof plugin.disabled !== 'boolean'
+  ) {
+    delete existing.enabled;
+    delete existing.disabled;
+  }
   existing.last_modified_level = level;
 }
 
+export type InheritCandidate = {
+  package: string;
+  disabled?: boolean;
+  sourceFile?: string;
+};
+
+type ParsedInheritCandidate = InheritCandidate & {
+  image: string;
+  path: string | null;
+  registry: string;
+};
+
+function formatInheritCandidates(candidates: ParsedInheritCandidate[]): string {
+  return candidates
+    .map(candidate => {
+      const source = candidate.sourceFile
+        ? ` (in ${candidate.sourceFile})`
+        : '';
+      return `  - ${candidate.package}${source}`;
+    })
+    .join('\n');
+}
+
+function ambiguousInheritError(
+  pluginName: string,
+  candidates: ParsedInheritCandidate[],
+  hint: string,
+): InstallException {
+  return new InstallException(
+    `Cannot use {{inherit}} for '${pluginName}': multiple included plugin configurations ` +
+      `share this final OCI segment:\n${formatInheritCandidates(candidates)}\n${hint}`,
+  );
+}
+
 /**
- * Resolve `{{inherit}}` without a plugin path — finds a single previously-
- * merged plugin from the same image, adopts its version + path, and mutates
- * `plugin.package` in place. Throws with a helpful message when zero or
- * multiple matches are found.
+ * Resolve one `{{inherit}}` package by the final OCI path segment, matching the
+ * operator's lookup behaviour. The returned package is concrete, so callers
+ * resume the existing full registry + plugin-path merge semantics afterwards.
  */
-function resolveInherit(
-  plugin: Plugin,
-  allPlugins: PluginMap,
-  parsed: ParsedOciKey,
-): ParsedOciKey {
-  const prefix = `${parsed.pluginKey}:!`;
-  const matches = Object.keys(allPlugins).filter(k => k.startsWith(prefix));
+export function resolveInheritPackage(
+  packageUrl: string,
+  candidates: ReadonlyArray<InheritCandidate>,
+  options: { preservePathless?: boolean } = {},
+): string {
+  const requested = tryParseOciRegistryAndPath(packageUrl);
+  const pluginName = extractPluginName(packageUrl);
+  if (!requested || !pluginName || !isOciInherit(packageUrl)) {
+    throw new InstallException(
+      `Cannot resolve invalid {{inherit}} OCI package '${packageUrl}'`,
+    );
+  }
+
+  const matchesByIdentity = new Map<string, ParsedInheritCandidate>();
+  for (const candidate of candidates) {
+    // Disabled catalog entries intentionally remain eligible: a
+    // higher-precedence inherit entry may re-enable one.
+    const parsed = tryParseOciRegistryAndPath(candidate.package);
+    if (
+      !parsed ||
+      isOciInherit(candidate.package) ||
+      extractPluginName(candidate.package) !== pluginName
+    ) {
+      continue;
+    }
+    const separator = candidate.package.indexOf('!');
+    const match: ParsedInheritCandidate = {
+      ...candidate,
+      image:
+        separator === -1
+          ? candidate.package
+          : candidate.package.slice(0, separator),
+      path: parsed.path,
+      registry: parsed.registry,
+    };
+    const identity = `${match.image}\0${match.path ?? ''}`;
+    const existing = matchesByIdentity.get(identity);
+    if (
+      !existing ||
+      (existing.disabled === true && candidate.disabled !== true)
+    ) {
+      matchesByIdentity.set(identity, match);
+    }
+  }
+
+  const uniqueMatches = [...matchesByIdentity.values()];
+  const enabledMatches = uniqueMatches.filter(
+    candidate => candidate.disabled !== true,
+  );
+  // Disabled candidates do not make an enabled match ambiguous. When every
+  // candidate is disabled, retain them so a unique base can be re-enabled.
+  const matches = enabledMatches.length > 0 ? enabledMatches : uniqueMatches;
+
   if (matches.length === 0) {
     throw new InstallException(
-      `Cannot use {{inherit}} for ${parsed.pluginKey}: no existing plugin ` +
-        `configuration found. Ensure a plugin from this image is defined in an ` +
-        `included file with an explicit version.`,
+      `Cannot use {{inherit}} for '${pluginName}': no existing plugin configuration found. ` +
+        `Ensure a plugin named '${pluginName}' is defined in an included file with an explicit version.`,
     );
   }
-  if (matches.length > 1) {
-    const formatted = matches
-      .map(m => {
-        const baseVersion = allPlugins[m]?.version ?? '';
-        const registryPart = m.split(':!')[0] ?? '';
-        const pathPart = m.split(':!').at(-1) ?? '';
-        return `  - ${registryPart}:${baseVersion}!${pathPart}`;
-      })
-      .join('\n');
-    throw new InstallException(
-      `Cannot use {{inherit}} for ${parsed.pluginKey}: multiple plugins from ` +
-        `this image are defined in the included files:\n${formatted}\n` +
-        `Please specify which plugin configuration to inherit from using: ` +
-        `${parsed.pluginKey}:{{inherit}}!<plugin_path>`,
+
+  if (new Set(matches.map(candidate => candidate.registry)).size > 1) {
+    throw ambiguousInheritError(
+      pluginName,
+      matches,
+      'The last OCI path segment must identify a single image in included files.',
     );
   }
-  const matchedKey = matches[0] as string;
-  const basePlugin = allPlugins[matchedKey];
-  if (!basePlugin?.version) {
-    throw new InstallException(
-      `Internal: inherited plugin ${matchedKey} has no version`,
+
+  let selected: ParsedInheritCandidate;
+  if (requested.path) {
+    const exactPathMatches = matches.filter(
+      candidate => candidate.path === requested.path,
     );
+    if (exactPathMatches.length === 1) {
+      selected = exactPathMatches[0] as ParsedInheritCandidate;
+    } else if (exactPathMatches.length > 1) {
+      throw ambiguousInheritError(
+        pluginName,
+        exactPathMatches,
+        `The explicit plugin path '${requested.path}' does not identify a single included configuration.`,
+      );
+    } else if (new Set(matches.map(candidate => candidate.image)).size === 1) {
+      // The operator allows an explicit user path to replace the catalog path.
+      selected = matches[0] as ParsedInheritCandidate;
+    } else {
+      throw ambiguousInheritError(
+        pluginName,
+        matches,
+        `Specify a plugin path that identifies one included configuration.`,
+      );
+    }
+  } else {
+    if (options.preservePathless) {
+      // Disabled pathless entries operate on the image repository, whose
+      // pre-merge identity intentionally excludes version and plugin path.
+      // The registry check above already guarantees one concrete repository,
+      // so any matching version can carry that identity into disabled filtering.
+      selected = matches[0] as ParsedInheritCandidate;
+      return selected.image;
+    }
+    if (matches.length > 1) {
+      throw ambiguousInheritError(
+        pluginName,
+        matches,
+        `Specify which plugin to inherit using '${packageUrl}!<plugin-path>'.`,
+      );
+    }
+    selected = matches[0] as ParsedInheritCandidate;
   }
-  const version = basePlugin.version;
-  const resolvedPath = matchedKey.split(':!').at(-1) ?? '';
-  const registryPart = matchedKey.split(':!')[0] ?? '';
-  plugin.package = `${registryPart}:${version}!${resolvedPath}`;
-  log(
-    `\n======= Inheriting version \`${version}\` and plugin path \`${resolvedPath}\` for ${matchedKey}`,
-  );
-  return { pluginKey: matchedKey, version, inherit: true, resolvedPath };
+
+  return requested.path
+    ? `${selected.image}!${requested.path}`
+    : selected.package;
 }
 
 function doMerge(
@@ -334,10 +470,18 @@ function isObjectEqual(
 
 type EntryState = { disabled: boolean; level: number };
 
+type NameEntry = {
+  disabled: boolean;
+  package: string;
+  registry: string;
+  sourceFile: string;
+};
+
 type PreMergeState = {
   perEntryState: Map<string, EntryState>;
   pathlessRegistries: Map<string, string>;
   definedPaths: Map<string, Map<string, string>>;
+  namesByLevel: Map<string, NameEntry>;
 };
 
 function entryKeyOf(registry: string, path: string | null): string {
@@ -366,9 +510,10 @@ function logInvalidOciFormat(
 }
 
 /**
- * Record the entry's disabled state at its level. Returns `false` when the
- * entry is a duplicate at the same level (warning logged for disabled-dups,
- * throws for enabled-dups) so the caller can skip recording its path/source.
+ * Record the entry's disabled state at its level. At the same level, disabled
+ * entries are ignored, an enabled entry replaces a disabled one, and two
+ * enabled entries throw. Returns `false` when the caller should skip recording
+ * the duplicate's path/source.
  */
 function recordEntryState(
   state: PreMergeState,
@@ -387,11 +532,15 @@ function recordEntryState(
   }
   if (existing.level === level) {
     const pathSuffix = path ? `!${path}` : '';
-    if (!disabled) {
+    if (!disabled && !existing.disabled) {
       throw new InstallException(
         `Duplicate OCI plugin configuration for ${registry}${pathSuffix} ` +
           `found at the same level in ${sourceFile}: ${pkg}`,
       );
+    }
+    if (!disabled) {
+      state.perEntryState.set(key, { disabled: false, level });
+      return true;
     }
     log(
       `WARNING: Skipping duplicate disabled OCI plugin configuration for ${registry}${pathSuffix} in ${sourceFile}`,
@@ -420,14 +569,87 @@ function recordRegistryPath(
   bucket.set(path, sourceFile);
 }
 
+/**
+ * Reject ambiguous same-level image-name collisions between enabled entries
+ * while retaining concrete registry/path identity for normal merging. Disabled
+ * entries only warn and never hide a later collision between enabled entries.
+ * Multiple explicit plugin paths from the same image remain valid until
+ * RHIDP-16807 removes that syntax.
+ */
+function recordNameAtLevel(
+  state: PreMergeState,
+  registry: string,
+  level: number,
+  disabled: boolean,
+  pkg: string,
+  sourceFile: string,
+): void {
+  const pluginName = extractPluginName(pkg);
+  if (!pluginName) return;
+  const key = `${level}\0${pluginName}`;
+  const existing = state.namesByLevel.get(key);
+  if (!existing) {
+    state.namesByLevel.set(key, {
+      disabled,
+      package: pkg,
+      registry,
+      sourceFile,
+    });
+    return;
+  }
+  if (existing.registry === registry) {
+    if (existing.disabled && !disabled) {
+      state.namesByLevel.set(key, {
+        disabled,
+        package: pkg,
+        registry,
+        sourceFile,
+      });
+    }
+    return;
+  }
+  if (disabled) {
+    log(
+      `WARNING: Ignoring disabled OCI plugin configuration '${pkg}' (in ${sourceFile}) ` +
+        `when checking the plugin name '${pluginName}' against '${existing.package}' (in ${existing.sourceFile})`,
+    );
+    return;
+  }
+  if (existing.disabled) {
+    log(
+      `WARNING: Ignoring disabled OCI plugin configuration '${existing.package}' (in ${existing.sourceFile}) ` +
+        `when checking the plugin name '${pluginName}' against '${pkg}' (in ${sourceFile})`,
+    );
+    state.namesByLevel.set(key, {
+      disabled,
+      package: pkg,
+      registry,
+      sourceFile,
+    });
+    return;
+  }
+  throw new InstallException(
+    `Duplicate OCI plugin configurations '${existing.package}' (in ${existing.sourceFile}) and ` +
+      `'${pkg}' (in ${sourceFile}) both resolve to the plugin name '${pluginName}'. ` +
+      `The last OCI path segment must identify a single image at each merge level.`,
+  );
+}
+
 function processOciEntry(
   state: PreMergeState,
   plugin: PluginSpec,
   level: number,
   sourceFile: string,
+  packageForNameCollision = plugin.package,
 ): void {
   const pkg = plugin.package;
   if (typeof pkg !== 'string' || !isOciUrl(pkg)) return;
+  if (level === 0 && isOciInherit(pkg)) {
+    throw new InstallException(
+      `Cannot use {{inherit}} in included plugin configuration '${pkg}' in ${sourceFile}. ` +
+        `Only top-level dynamic plugin configuration may use {{inherit}}.`,
+    );
+  }
   const disabled = isPluginDisabled(plugin);
   const parsed = tryParseOciRegistryAndPath(pkg);
   if (!parsed) {
@@ -435,6 +657,17 @@ function processOciEntry(
     return;
   }
   const { registry, path } = parsed;
+  const collisionPackage = tryParseOciRegistryAndPath(packageForNameCollision);
+  if (collisionPackage) {
+    recordNameAtLevel(
+      state,
+      collisionPackage.registry,
+      level,
+      disabled,
+      packageForNameCollision,
+      sourceFile,
+    );
+  }
   if (
     !recordEntryState(state, registry, path, level, disabled, pkg, sourceFile)
   )
@@ -512,6 +745,7 @@ function computeDisabledRegistries(state: PreMergeState): Set<string> {
  * Throws an `InstallException` for:
  *   - invalid OCI package strings on enabled entries,
  *   - duplicate enabled OCI entries declared at the same level,
+ *   - different same-level images that share a final OCI path segment,
  *   - path-less enabled references that collide with multiple explicit-path
  *     entries from the same image (ambiguous).
  *
@@ -523,17 +757,28 @@ export function preMergeOciDisabledState(
   includePluginLists: ReadonlyArray<IncludePluginList>,
   mainPlugins: ReadonlyArray<PluginSpec>,
   mainConfigFile: string,
+  mainPackagesForNameCollision: ReadonlyArray<string> = mainPlugins.map(
+    plugin => plugin.package,
+  ),
 ): Set<string> {
   const state: PreMergeState = {
     perEntryState: new Map(),
     pathlessRegistries: new Map(),
     definedPaths: new Map(),
+    namesByLevel: new Map(),
   };
   for (const [file, plugins] of includePluginLists) {
     for (const plugin of plugins) processOciEntry(state, plugin, 0, file);
   }
-  for (const plugin of mainPlugins)
-    processOciEntry(state, plugin, 1, mainConfigFile);
+  for (const [index, plugin] of mainPlugins.entries()) {
+    processOciEntry(
+      state,
+      plugin,
+      1,
+      mainConfigFile,
+      mainPackagesForNameCollision[index],
+    );
+  }
 
   validateAmbiguousPathless(state);
   return computeDisabledRegistries(state);

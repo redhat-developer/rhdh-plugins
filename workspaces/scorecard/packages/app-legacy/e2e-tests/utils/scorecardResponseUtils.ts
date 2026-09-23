@@ -322,6 +322,20 @@ export const jiraMetricMetadataResponse = {
   ],
 };
 
+/** Response for GET /api/scorecard/metrics?metricIds=github.openPRs (metric metadata only). */
+export const githubMetricMetadataResponse = {
+  metrics: [
+    {
+      id: 'github.openPRs',
+      title: 'GitHub open PRs',
+      description:
+        'Current count of open Pull Requests for a given GitHub repository.',
+      type: 'number',
+      history: true,
+    },
+  ],
+};
+
 // SonarQube scorecard responses
 
 function sonarqubeNumberMetric(
@@ -606,6 +620,14 @@ export const jiraAggregatedResponse = {
   },
 };
 
+export const jiraPartiallyAggregatedResponse = {
+  ...jiraAggregatedResponse,
+  result: {
+    ...jiraAggregatedResponse.result,
+    calculationErrorCount: 2,
+  },
+};
+
 export const emptyJiraAggregatedResponse = {
   id: 'jira.openIssues',
   status: 'success',
@@ -846,6 +868,30 @@ export const jiraEntitiesDrillDownResponse = {
   },
 };
 
+/** Mock response for GitHub entities drill-down when aggregation has no data (empty list). */
+export const githubEntitiesDrillDownNoDataResponse = {
+  metricId: 'github.openPRs',
+  metricMetadata: {
+    title: 'GitHub open PRs',
+    description:
+      'Current count of open Pull Requests for a given GitHub repository.',
+    type: 'number',
+  },
+  entities: [],
+  pagination: {
+    page: 1,
+    pageSize: 5,
+    total: 0,
+    totalPages: 0,
+    isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 0,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
+};
+
 /** Mock response for Jira entities drill-down when aggregation has no data (empty list). */
 export const jiraEntitiesDrillDownNoDataResponse = {
   metricId: 'jira.openIssues',
@@ -940,3 +986,165 @@ export const fileCheckScorecardResponse = [
     },
   },
 ];
+
+export const licenseFileExistsKpiMetadataResponse = {
+  title: 'License File Exists KPI',
+  description:
+    'This KPI provides information about whether the license file exists in the repository.',
+  type: 'boolean',
+  history: true,
+  aggregationType: 'statusGrouped',
+};
+
+const FILECHECK_BOOLEAN_THRESHOLDS = {
+  rules: [
+    { key: 'exist', expression: '==true' },
+    { key: 'missing', expression: '==false' },
+  ],
+};
+
+/** Matches `scorecard.aggregationKPIs.licenseFileExistsKpi` in app-config.yaml */
+export const licenseFileExistsAggregatedResponse = {
+  id: 'filecheck.license',
+  status: 'success' as const,
+  metadata: {
+    ...licenseFileExistsKpiMetadataResponse,
+  },
+  result: {
+    values: [
+      { count: 7, name: 'exist' },
+      { count: 3, name: 'missing' },
+    ],
+    total: 10,
+    timestamp: '2026-01-24T14:10:32.776Z',
+    thresholds: FILECHECK_BOOLEAN_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
+  },
+};
+
+export const emptyLicenseFileExistsAggregatedResponse = {
+  ...licenseFileExistsAggregatedResponse,
+  result: {
+    total: 0,
+    values: [
+      { count: 0, name: 'exist' },
+      { count: 0, name: 'missing' },
+    ],
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: FILECHECK_BOOLEAN_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
+  },
+};
+
+export const githubEntitiesDrillDownWithCalculationErrorsResponse = {
+  ...githubEntitiesDrillDownResponse,
+  entityHealth: {
+    totalEntities: 10,
+    calculationErrorCount: 2,
+    countsArePartial: true,
+  },
+};
+
+export const jiraEntitiesDrillDownWithCalculationErrorsResponse = {
+  ...jiraEntitiesDrillDownResponse,
+  entityHealth: {
+    totalEntities: 4,
+    calculationErrorCount: 2,
+    countsArePartial: true,
+  },
+};
+
+export const githubEntitiesDrillDownWithUnavailableRowsResponse = {
+  metricId: 'github.openPRs',
+  metricMetadata: githubEntitiesDrillDownResponse.metricMetadata,
+  entities: [
+    {
+      entityRef: 'component:default/all-scorecards-service',
+      entityNamespace: 'default',
+      entityName: 'all-scorecards-service',
+      entityKind: 'Component',
+      owner: 'user:development/guest',
+      metricValue: null,
+      timestamp: '2026-03-12T08:09:29.732Z',
+      status: null,
+    },
+    {
+      entityRef: 'component:default/red-hat-developer-hub',
+      entityNamespace: 'default',
+      entityName: 'red-hat-developer-hub',
+      entityKind: 'Component',
+      owner: 'group:default/red-hat',
+      metricValue: 50,
+      timestamp: '2026-03-12T08:09:29.663Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/github-scorecard-only-service',
+      entityNamespace: 'default',
+      entityName: 'github-scorecard-only-service',
+      entityKind: 'Component',
+      owner: 'group:development/guests',
+      metricValue: null,
+      timestamp: '2026-03-12T08:09:29.652Z',
+      status: null,
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 5,
+    total: 3,
+    totalPages: 1,
+    isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 3,
+    calculationErrorCount: 2,
+    countsArePartial: true,
+  },
+};
+
+export const weightedKpiEntitiesDrillDownResponse = {
+  metricId: 'github.openPRs',
+  metricMetadata: {
+    title: 'GitHub Open PRs KPI (weighted health)',
+    description:
+      'Weighted health score for open PRs by threshold status across your entities.',
+    type: 'number',
+  },
+  entities: [
+    {
+      entityRef: 'component:default/red-hat-developer-hub',
+      entityNamespace: 'default',
+      entityName: 'red-hat-developer-hub',
+      entityKind: 'Component',
+      owner: 'group:default/red-hat',
+      metricValue: 9,
+      timestamp: '2026-03-12T08:09:29.732Z',
+      status: 'success',
+    },
+    {
+      entityRef: 'component:default/all-scorecards-service',
+      entityNamespace: 'default',
+      entityName: 'all-scorecards-service',
+      entityKind: 'Component',
+      owner: 'user:development/guest',
+      metricValue: 46,
+      timestamp: '2026-03-12T08:09:29.663Z',
+      status: 'warning',
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 5,
+    total: 2,
+    totalPages: 1,
+    isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 2,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
+};

@@ -99,11 +99,5 @@
     "dist",
     "config.d.ts"
   ],
-  "scalprum": {
-    "name": "red-hat-developer-hub.backstage-plugin-augment",
-    "exposedModules": {
-      "PluginRoot": "./src/index.ts"
-    }
-  },
   "configSchema": "config.d.ts"
 }

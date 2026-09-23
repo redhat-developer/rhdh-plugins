@@ -166,6 +166,37 @@ describe('calculateModuleStatus', () => {
     ).toBe('success');
   });
 
+  describe('stale status', () => {
+    it('returns stale when the most-advanced phase is stale', () => {
+      expect(
+        calculateModuleStatus({
+          analyze: job('success'),
+          migrate: job('stale'),
+        }).status,
+      ).toBe('stale');
+    });
+
+    it('returns stale when publish is stale', () => {
+      expect(
+        calculateModuleStatus({
+          analyze: job('success'),
+          migrate: job('success'),
+          publish: job('stale'),
+        }).status,
+      ).toBe('stale');
+    });
+
+    it('returns stale when migrate and publish are stale', () => {
+      expect(
+        calculateModuleStatus({
+          analyze: job('success'),
+          migrate: job('stale'),
+          publish: job('stale'),
+        }).status,
+      ).toBe('stale');
+    });
+  });
+
   describe('errorDetails', () => {
     it('returns errorDetails from analyze job when only analyze is provided', () => {
       const result = calculateModuleStatus({

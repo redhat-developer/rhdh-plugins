@@ -7,7 +7,6 @@
   },
   "scripts": {
     "start": "backstage-cli repo start",
-    "start:legacy": "yarn start app-legacy backend",
     "start-backend": "yarn workspace backend start",
     "build:backend": "yarn workspace backend build",
     "tsc": "tsc",
@@ -23,11 +22,8 @@
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
-    "test:e2e": "yarn test:e2e:all",
-    "test:e2e:legacy": "APP_MODE=legacy playwright test",
-    "test:e2e:nfs": "APP_MODE=nfs playwright test",
-    "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
-    "playwright": "bash -c 'if [[ \"$*\" == \"test\" ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _",
+    "test:e2e": "playwright test",
+    "playwright": "playwright",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
@@ -45,6 +41,7 @@
     "directory": "workspaces/homepage"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@backstage/cli": "^0.36.5",
     "@backstage/cli-defaults": "^0.1.5",
     "@backstage/e2e-test-utils": "^0.1.2",
@@ -62,6 +59,7 @@
     "typescript": "~5.8.0"
   },
   "resolutions": {
+    "@backstage/frontend-plugin-api": "^0.18.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"

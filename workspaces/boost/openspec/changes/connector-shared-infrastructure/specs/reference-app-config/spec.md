@@ -18,6 +18,8 @@ None. This is a new reference configuration artifact.
 
 ### Requirement: MCP Registry Connector Configuration
 
+The implementation MUST satisfy the scenarios below.
+
 The reference YAML must demonstrate MCP Registry connector configuration fields.
 
 #### Scenario: MCP Registry with mirror endpoint and custom CA
@@ -41,6 +43,8 @@ The reference YAML must demonstrate MCP Registry connector configuration fields.
 - **AND** the `endpoint` field is documented as optional (falls back to public registry when omitted)
 
 ### Requirement: RHOAI MCP Catalog Connector Configuration
+
+The implementation MUST satisfy the scenarios below.
 
 The reference YAML must demonstrate RHOAI connector configuration fields.
 
@@ -70,6 +74,8 @@ The reference YAML must demonstrate RHOAI connector configuration fields.
 - **AND** the `auth.secretRef` format documents both `name` and `namespace` fields
 
 ### Requirement: OCI Skill Registry Connector Configuration
+
+The implementation MUST satisfy the scenarios below.
 
 The reference YAML must demonstrate OCI Skill connector configuration fields.
 
@@ -103,6 +109,8 @@ The reference YAML must demonstrate OCI Skill connector configuration fields.
 
 ### Requirement: Air-Gapped Deployment Variant
 
+The implementation MUST satisfy the scenarios below.
+
 The reference YAML must include a complete air-gapped deployment variant.
 
 #### Scenario: All connectors in air-gapped environment
@@ -118,6 +126,8 @@ The reference YAML must include a complete air-gapped deployment variant.
 
 ### Requirement: Inline Documentation
 
+The implementation MUST satisfy the scenarios below.
+
 Every configurable field must have a brief inline comment.
 
 #### Scenario: Field-level documentation
@@ -131,6 +141,8 @@ Every configurable field must have a brief inline comment.
 - **AND** the reference YAML is self-documenting without requiring external documentation
 
 ### Requirement: File Location
+
+The implementation MUST satisfy the scenarios below.
 
 The reference YAML must be discoverable in the repository.
 

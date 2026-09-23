@@ -16,7 +16,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { TextField } from '@material-ui/core';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
@@ -27,6 +26,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { useConversations } from '../hooks/useConversations';
@@ -93,7 +93,10 @@ export const RenameConversationModal = ({
       aria-describedby="rename-modal-confirmation"
       fullWidth
     >
-      <DialogTitle sx={{ p: '16px 20px', fontStyle: 'inherit' }}>
+      <DialogTitle
+        id="rename-modal"
+        sx={{ p: '16px 20px', fontStyle: 'inherit' }}
+      >
         <Box
           sx={{
             display: 'flex',
@@ -128,7 +131,7 @@ export const RenameConversationModal = ({
           onChange={handleChatNameChange}
           fullWidth
           value={chatName}
-          style={{ marginTop: '10px' }}
+          sx={{ mt: '10px' }}
           variant="outlined"
           InputProps={{
             autoFocus: true,
@@ -145,11 +148,11 @@ export const RenameConversationModal = ({
         />
       </DialogContent>
       {isError && (
-        <Box maxWidth="650px" marginLeft="20px" marginRight="20px">
+        <Box sx={{ maxWidth: '650px', mx: '20px' }}>
           <Alert severity="error">{String(error)}</Alert>
         </Box>
       )}
-      <DialogActions style={{ justifyContent: 'left', padding: '20px' }}>
+      <DialogActions sx={{ justifyContent: 'left', p: '20px' }}>
         <Button
           variant="contained"
           sx={{

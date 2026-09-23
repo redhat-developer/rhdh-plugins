@@ -176,9 +176,54 @@ const _default: OverridableFrontendPlugin<
       inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
+    'home-page-widget:scorecard/scorecard-deprecated-dora-change-failure-rate': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-deprecated-dora-change-failure-rate';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
     'home-page-widget:scorecard/scorecard-deprecated-metric-id': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-deprecated-metric-id';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-change-failure-rate': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-change-failure-rate';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-deployment-frequency': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-deployment-frequency';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-median-lead-time-for-changes': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-median-lead-time-for-changes';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-median-time-to-restore': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-median-time-to-restore';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
@@ -360,7 +405,9 @@ const _default: OverridableFrontendPlugin<
           {
             title: string;
             metrics: string[];
+            titleKey?: string | undefined;
             description?: string | undefined;
+            descriptionKey?: string | undefined;
           }
         >;
       };
@@ -371,7 +418,9 @@ const _default: OverridableFrontendPlugin<
               {
                 title: string;
                 metrics: string[];
+                titleKey?: string | undefined;
                 description?: string | undefined;
+                descriptionKey?: string | undefined;
               }
             >
           | undefined;
@@ -395,7 +444,9 @@ export interface ScorecardLayoutProps {
     string,
     {
       title: string;
+      titleKey?: string;
       description?: string;
+      descriptionKey?: string;
       metrics: string[];
     }
   >;
@@ -419,6 +470,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.description': string;
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
+    readonly 'common.current': string;
     readonly 'common.loading': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.missingAggregationId': string;
@@ -440,8 +492,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.dora.medianLeadTimeForChanges.description': string;
     readonly 'metric.dora.changeFailureRate.title': string;
     readonly 'metric.dora.changeFailureRate.description': string;
-    readonly 'metric.dora.meanTimeToRestore.title': string;
-    readonly 'metric.dora.meanTimeToRestore.description': string;
+    readonly 'metric.dora.medianTimeToRestore.title': string;
+    readonly 'metric.dora.medianTimeToRestore.description': string;
     readonly 'metric.github.openPRs.title': string;
     readonly 'metric.github.openPRs.description': string;
     readonly 'metric.jira.openIssues.title': string;
@@ -505,6 +557,9 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'dataSourcesDialog.close': string;
     readonly 'dataSourcesDialog.unknownPlugin': string;
     readonly 'dataSourcesDialog.statusTooltip': string;
+    readonly 'dataSourcesDialog.collectorStatusTooltip': string;
+    readonly 'dataSourcesDialog.collectorEmptyValue': string;
+    readonly 'dataSourcesDialog.collectorUnavailableStatus': string;
     readonly 'dataSourcesDialog.columns.plugin': string;
     readonly 'dataSourcesDialog.columns.check': string;
     readonly 'dataSourcesDialog.columns.value': string;

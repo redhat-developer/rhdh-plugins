@@ -16,8 +16,8 @@
 
 import {
   joinJqlClauses,
-  toIsoDateTime,
-  toJiraDateTime,
+  jiraDateTimeToIso,
+  toJiraEpochMillis,
   validateIdentifier,
   validateJQLValue,
 } from './utils';
@@ -53,10 +53,10 @@ describe('utils', () => {
         joinJqlClauses([
           'project = "INC"',
           'type = Incident',
-          'created >= "2026-06-01 00:00"',
+          'created >= 1780272000000',
         ]),
       ).toBe(
-        '(project = "INC") AND (type = Incident) AND (created >= "2026-06-01 00:00")',
+        '(project = "INC") AND (type = Incident) AND (created >= 1780272000000)',
       );
     });
 
@@ -81,17 +81,15 @@ describe('utils', () => {
     });
   });
 
-  describe('toJiraDateTime', () => {
-    it('should convert ISO datetime to Jira datetime format', () => {
-      expect(toJiraDateTime('2026-06-01T10:05:00.000Z')).toBe(
-        '2026-06-01 10:05',
-      );
+  describe('toJiraEpochMillis', () => {
+    it('should convert ISO datetime to Unix epoch milliseconds', () => {
+      expect(toJiraEpochMillis('2026-06-01T10:05:00.000Z')).toBe(1780308300000);
     });
   });
 
-  describe('toIsoDateTime', () => {
-    it('should normalize Jira datetime offset without colon', () => {
-      expect(toIsoDateTime('2026-07-15T18:21:34.862+0530')).toBe(
+  describe('jiraDateTimeToIso', () => {
+    it('should reformat Jira datetime with colon-less offset to ISO-8601', () => {
+      expect(jiraDateTimeToIso('2026-07-15T18:21:34.862+0530')).toBe(
         '2026-07-15T12:51:34.862Z',
       );
     });

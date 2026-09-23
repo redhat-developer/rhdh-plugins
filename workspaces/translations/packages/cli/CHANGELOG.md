@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/translations-cli
 
+## 0.3.0
+
+### Minor Changes
+
+- 71cd222: Backstage version bump to v1.54.6
+
 ## 0.2.0
 
 ### Minor Changes

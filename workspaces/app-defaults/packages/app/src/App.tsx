@@ -15,29 +15,27 @@
  */
 
 import { createApp } from '@backstage/frontend-defaults';
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
-import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
 import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth';
-import { appDefaultsModule } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+import appDefaultsFeatureLoader from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations';
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
-import { navModule } from './modules/nav';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 import { drawerDemoModule } from './modules/drawer-demo';
+import { sidebarDemoModule } from './modules/sidebar-demo';
 import { templateCardDemoModule } from './modules/template-card-demo';
 
 export default createApp({
   features: [
-    catalogPlugin,
-    scaffolderPlugin,
-    navModule,
+    // Production path: feature loader with the app defaults module
+    // (drawer + sidebar + template card + common icons) plus the catalog,
+    // catalog graph, scaffolder, API docs, and TechDocs empty-state overrides.
+    appDefaultsFeatureLoader,
     appAuthModule,
     appIntegrationsModule,
-    // Production path: one module (drawer + template card + common icons)
-    appDefaultsModule,
     drawerDemoModule,
+    sidebarDemoModule,
     templateCardDemoModule,
     globalHeaderModule,
     globalHeaderTranslationsModule,

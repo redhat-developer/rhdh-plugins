@@ -1,5 +1,8 @@
 # AI Asset Upstream Migration Design
 
+> **Workspace scope:** Follow-on RHDH schema-alignment planning. This is not a
+> current RHDH 2.1 Boost frontend or OGX release deliverable.
+
 > **Status: Ready for Review** | **Last updated: 2026-09-03**
 
 **Story:** RHIDP-15302 | **Feature:** RHDHPLAN-1507 | **Epic:** RHIDP-15258

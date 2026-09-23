@@ -1,5 +1,38 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 3.1.0
+
+### Minor Changes
+
+- 14feff1: Add a `/blueprints` package export that exposes only `GlobalHeaderMenuItemBlueprint`, so consumer plugins can register help/menu items without pulling the critical header UI bundle (and its `MarkdownContent` / syntax-highlighter transitive graph) into their Module Federation async chunks.
+
+## 3.0.0
+
+### Major Changes
+
+- 7d3c5ec: **BREAKING**: Import building blocks (`GlobalHeaderIconButton`, `GlobalHeaderMenuItem`, `GlobalHeaderDropdown`) only from `@red-hat-developer-hub/backstage-plugin-global-header/components` — they are no longer re-exported from the root entry or deprecated `/alpha` (which now exports translations only). Prefer dynamic `import()` inside blueprint loaders.
+
+  **BREAKING**: `CompanyLogo`, `CompanyLogoProps`, and `LogoURLs` are no longer exported from the package root. Import them from `@red-hat-developer-hub/backstage-plugin-global-header/components` instead.
+
+  **BREAKING**: `useBrandingFullLogo` is no longer part of the public API. Use `CompanyLogo` (or its `logo` prop) for header branding; the hook is now internal to the plugin.
+
+  **BREAKING**: `HeaderIcon` no longer falls back to Material Icons ligatures for unknown ids — unregistered ids render a Material Symbols Outlined `shapes` fallback. Register icons via host `app.getSystemIcon`, `globalHeaderModule`'s `IconBundleBlueprint`, or use inline SVG / image URLs. Update `globalHeader.menuItems[].icon` and `globalHeader.components[].icon` values that relied on ligatures (e.g. `menu_book`, `waving_hand`, `hub`) to registered system-icon ids (see docs/components/button-and-icons.md) or SVG/URL.
+
+  Building-block UI lives on the `/components` package subpath (`src/componentsExport.ts`) so the AppBar and heavy MUI UI stay off the root NFS sync chunk. Other plugins import it at compile/export time into their own async chunks (via a blueprint `loader`); it is not a host-loaded Module Federation feature. The root entry still registers outlined system icons via `IconBundleBlueprint` (twelve `@mui/icons-material` modules — much smaller than the full AppBar bundle).
+
+  `globalHeaderModule` registers system icon ids (`article`, `bugReport`, `quiz`, `forum`, `dashboard`, etc.) as outlined MUI SVGs for config and default extensions.
+
+  First-paint header widgets (AppBar, logo, search input, spacers, icon buttons, dropdown triggers) share a single critical async chunk via `loadCriticalHeaderBundle()` in `src/components/loaders.ts`, backed by `criticalHeaderBundle.ts` re-exporting the canonical component tree. Dropdown menu contents stay on separate interaction `import()` split points and are not required for first paint.
+
+## 2.0.1
+
+### Patch Changes
+
+- 0eea6a1: Update global-header workspace dependencies to Backstage 1.54.6 and migrate extension blueprint config schemas to the new `configSchema` API.
+- 62277a6: Honor `app.branding.fullLogo` in the default header by removing hardcoded RHDH logos, resolving branding via `useBrandingFullLogo` in `CompanyLogo` (with types extracted to fix a circular dependency).
+- 3e1316d: Fix accessibility violations: resolve nested interactive controls in search results and starred dropdown, add missing accessible names, and fix aria-expanded attribute
+- 1a55424: Offset Backstage UI dialogs such as Inspect Entity below the sticky global header so their title and close control stay visible.
+
 ## 2.0.0
 
 ### Major Changes
