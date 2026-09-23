@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 1.0.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
