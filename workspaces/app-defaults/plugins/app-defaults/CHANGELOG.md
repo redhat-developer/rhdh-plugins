@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.8.1
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.8.1
+
 ## 1.8.0
 
 ### Minor Changes
