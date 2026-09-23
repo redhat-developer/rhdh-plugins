@@ -42,6 +42,7 @@ import {
   policyManagerApiRef,
   resourcesApiRef,
 } from './apis';
+import { dcmAuthApiFactory, dcmAuthApiRef } from './api/AuthApiRefs';
 
 /**
  * DCM plugin instance.
@@ -60,32 +61,65 @@ export const dcmPlugin = createPlugin({
     resources: resourcesRouteRef,
   },
   apis: [
+    dcmAuthApiFactory,
     createApiFactory({
       api: catalogApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
-        return new CatalogClient({ discoveryApi, fetchApi });
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        dcmAuthApi: dcmAuthApiRef,
+      },
+      factory({ discoveryApi, fetchApi, dcmAuthApi }) {
+        return new CatalogClient({
+          discoveryApi,
+          fetchApi,
+          getAccessToken: dcmAuthApi.getAccessToken,
+        });
       },
     }),
     createApiFactory({
       api: policyManagerApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
-        return new PolicyManagerClient({ discoveryApi, fetchApi });
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        dcmAuthApi: dcmAuthApiRef,
+      },
+      factory({ discoveryApi, fetchApi, dcmAuthApi }) {
+        return new PolicyManagerClient({
+          discoveryApi,
+          fetchApi,
+          getAccessToken: dcmAuthApi.getAccessToken,
+        });
       },
     }),
     createApiFactory({
       api: agentsApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
-        return new AgentsClient({ discoveryApi, fetchApi });
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        dcmAuthApi: dcmAuthApiRef,
+      },
+      factory({ discoveryApi, fetchApi, dcmAuthApi }) {
+        return new AgentsClient({
+          discoveryApi,
+          fetchApi,
+          getAccessToken: dcmAuthApi.getAccessToken,
+        });
       },
     }),
     createApiFactory({
       api: resourcesApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
-        return new ResourcesClient({ discoveryApi, fetchApi });
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        dcmAuthApi: dcmAuthApiRef,
+      },
+      factory({ discoveryApi, fetchApi, dcmAuthApi }) {
+        return new ResourcesClient({
+          discoveryApi,
+          fetchApi,
+          getAccessToken: dcmAuthApi.getAccessToken,
+        });
       },
     }),
   ],
