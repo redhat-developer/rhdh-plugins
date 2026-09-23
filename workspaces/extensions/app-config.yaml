@@ -1,22 +1,17 @@
 app:
   title: Backstage App
   baseUrl: http://localhost:3000
+
   packages: all
 
   extensions:
-    - page:catalog:
-        config:
-          path: /
     - api:app/app-language:
         config:
           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
           defaultLanguage: 'en'
-    - nav-item:user-settings: false
-    - nav-item:search: false
-    - nav-item:home: false
-    - nav-item:catalog:
+    - page:home:
         config:
-          title: 'Home'
+          path: /
 
 organization:
   name: My Company
