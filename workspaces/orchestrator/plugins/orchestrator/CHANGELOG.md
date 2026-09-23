@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 6.2.3
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+
 ## 6.2.2
 
 ### Patch Changes
