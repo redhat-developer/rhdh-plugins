@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.2
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.2
+
 ## 5.3.1
 
 ### Patch Changes
