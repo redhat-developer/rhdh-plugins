@@ -74,6 +74,20 @@ g, user:default/<login-id/user-name>, role:default/team_a
    );
    ```
 
+4. Register the bulk import translations in `packages/app/src/App.tsx`:
+
+   ```tsx
+   import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+
+   const app = createApp({
+     __experimentalTranslations: {
+       availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
+       resources: [bulkImportTranslations],
+     },
+     // ...other app options
+   });
+   ```
+
 ## On Behalf of User Access
 
 The Bulk Import plugin can fetch repository and organization listings **on behalf of the signed-in user** using their OAuth credentials, so that users see only the repositories and organizations they personally have access to.
@@ -121,12 +135,15 @@ If you're using Backstage's new frontend system, add the plugin to your app:
 
 ```tsx
 // packages/app/src/App.tsx
-import bulkImportPlugin from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+import bulkImportPlugin, {
+  bulkImportTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 
 export default createApp({
   features: [
     // ...other plugins
     bulkImportPlugin,
+    bulkImportTranslationsModule,
   ],
 });
 ```
@@ -135,6 +152,7 @@ The plugin will automatically provide:
 
 - Bulk Import page at `/bulk-import` with all existing features
 - A "Bulk import" navigation item in the sidebar
+- Translations for German, Spanish, French, Italian, and Japanese when the app is configured to use those languages
 
 ### Extensions
 
