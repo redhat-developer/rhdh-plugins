@@ -109,26 +109,29 @@ export function DcmClientsProvider({ children }: { children: ReactNode }) {
       return { agentsApi, catalogApi, policyManagerApi, resourcesApi };
     }
 
-    const getAccessToken = getAccessTokenProvider(authEnabled, oidcAuthApi);
-    const options = { discoveryApi, fetchApi, getAccessToken };
+    const createClientOptions = () => ({
+      discoveryApi,
+      fetchApi,
+      getAccessToken: getAccessTokenProvider(authEnabled, oidcAuthApi),
+    });
 
     return {
       agentsApi:
         agentsApi && !isDefaultDcmClient(agentsApi)
           ? agentsApi
-          : new AgentsClient(options),
+          : new AgentsClient(createClientOptions()),
       catalogApi:
         catalogApi && !isDefaultDcmClient(catalogApi)
           ? catalogApi
-          : new CatalogClient(options),
+          : new CatalogClient(createClientOptions()),
       policyManagerApi:
         policyManagerApi && !isDefaultDcmClient(policyManagerApi)
           ? policyManagerApi
-          : new PolicyManagerClient(options),
+          : new PolicyManagerClient(createClientOptions()),
       resourcesApi:
         resourcesApi && !isDefaultDcmClient(resourcesApi)
           ? resourcesApi
-          : new ResourcesClient(options),
+          : new ResourcesClient(createClientOptions()),
     };
   }, [
     apiHolder,

@@ -168,6 +168,35 @@ describe('DcmClientsProvider', () => {
     },
   );
 
+  it('uses fully custom DCM clients without requiring OIDC during fallback', async () => {
+    const agentsApi = { listAgents: jest.fn().mockResolvedValue({}) };
+    const catalogApi = { listServiceTypes: jest.fn().mockResolvedValue({}) };
+    const policyManagerApi = { listPolicies: jest.fn().mockResolvedValue({}) };
+    const resourcesApi = {
+      listServiceTypeInstances: jest.fn().mockResolvedValue({}),
+    };
+    const { fetch, render: renderProviderWithCustomClients } = renderProvider({
+      authEnabled: true,
+      clients: ['agentsApi', 'catalogApi', 'policyManagerApi', 'resourcesApi'],
+      hostApis: [
+        [agentsApiRef, agentsApi],
+        [catalogApiRef, catalogApi],
+        [policyManagerApiRef, policyManagerApi],
+        [resourcesApiRef, resourcesApi],
+      ] as Array<[ApiRef<unknown>, Partial<unknown>]>,
+    });
+
+    renderProviderWithCustomClients();
+
+    await waitFor(() => {
+      expect(agentsApi.listAgents).toHaveBeenCalledTimes(1);
+      expect(catalogApi.listServiceTypes).toHaveBeenCalledTimes(1);
+      expect(policyManagerApi.listPolicies).toHaveBeenCalledTimes(1);
+      expect(resourcesApi.listServiceTypeInstances).toHaveBeenCalledTimes(1);
+    });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('uses host DCM clients without requiring OIDC when DCM auth is disabled', async () => {
     const catalogApi = { listServiceTypes: jest.fn().mockResolvedValue({}) };
     const { fetch, render: renderProviderWithoutAuth } = renderProvider({
