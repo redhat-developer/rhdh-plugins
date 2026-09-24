@@ -78,7 +78,7 @@ jobs:
               --fullsend-dir .fullsend
           }
 
-          # Jira's Team field uses an Atlassian team ID, not its display name.
+          # Jira Team "RHDH AI" uses this Atlassian ID in cf[10001], not its display name.
           RHDH_AI_TEAM_ID='ec74d716-af36-4b3c-950f-f79213d08f71-1087'
           poll_project RHDHPLAN "${RHDH_AI_TEAM_ID}"
           poll_project RHIDP "${RHDH_AI_TEAM_ID}"
