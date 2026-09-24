@@ -8,6 +8,8 @@ version: "1"
 # directories before every run. Keep repo-owned agents under rhdh/ so their
 # harnesses and resources remain intact.
 agents:
+    - name: triage
+      source: rhdh/harness/triage-jira.yaml
     - name: code
       source: rhdh/harness/code.yaml
     - name: fix

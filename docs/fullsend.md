@@ -2,7 +2,7 @@
 
 ## What is fullsend?
 
-[Fullsend](https://github.com/fullsend-ai/fullsend) is an agentic SDLC platform that provides AI-powered agents for triage, code review, code generation, and retrospectives. It runs as a GitHub Actions pipeline, triggered by GitHub events, and uses Vertex AI (Anthropic Claude) for inference.
+[Fullsend](https://github.com/fullsend-ai/fullsend) is an agentic SDLC platform that provides AI-powered agents for triage, code review, code generation, and retrospectives. It runs as a GitHub Actions pipeline, triggered by GitHub events or the Jira poller, and uses Vertex AI (Anthropic Claude) for inference.
 
 ## Pilot scope
 
@@ -56,6 +56,38 @@ Available commands:
 | `/fs-review` | Run review on a PR |
 | `/fs-fix` | Fix issues flagged in a review |
 | `/fs-fix-stop` | Disable fix agent for a PR (adds `fullsend-no-fix` label) |
+
+### Jira pilot for RHDH AI
+
+The [Jira poll workflow](../.github/workflows/fullsend-poll-jira.yml) checks
+every five minutes for `/fs-triage` and `/fs-code` comments on RHIDP and
+RHDHPLAN work items. It polls each project separately so Fullsend can check
+the command author's Jira project role. The existing GitHub Fullsend commands
+are unchanged.
+
+Each Jira query requires all of these gates:
+
+- Project: `RHIDP` or `RHDHPLAN`.
+- Jira `Team`: `RHDH AI`.
+- Labels: both `fullsend` (agent opt-in) and `fullsend-rhdh-plugins` (target
+  this repository).
+- Status category is not Done.
+
+The second label prevents another team's `fullsend` work items from being
+routed to this repository. Add both labels to an eligible Jira work item
+before posting a command. `/fs-triage` does not automatically start coding;
+use `/fs-code` explicitly when implementation is ready. Grillme and spec
+commands are not part of this Jira pilot.
+
+To expand the cohort, add a project/team pair to the `poll_project` calls in
+the workflow. Keep the two label gates, and use a distinct target label if
+another repository adopts Jira polling.
+
+Before enabling the scheduled workflow, configure the Actions variable
+`JIRA_BASE_URL` and secrets `JIRA_TOKEN` and `JIRA_USER_EMAIL`. The workflow
+fails visibly when any are missing. Its existing Fullsend GCP and mint
+credentials are also required for the downstream agents. Confirm the Jira
+instance accepts the `"Team" = "RHDH AI"` clause before rollout.
 
 ## Coexistence with PR Agent
 

@@ -22,3 +22,16 @@ host_files:
     dest: /sandbox/workspace/bin/yarn
   - src: rhdh/env/yarn-proxy.env
     dest: /sandbox/workspace/.env.d/yarn-proxy.env
+# A Jira work item has no GitHub issue number. Keep generated PRs on main.
+env:
+  runner:
+    CODE_ALLOWED_TARGET_BRANCHES: "main"
+
+# The Jira poller evaluates explicit CEL triggers. GitHub /fs-code continues
+# to use Fullsend's built-in stage router.
+trigger: >
+  event.source.system == "jira"
+    && event.transition.kind == "comment_added"
+    && has(event.transition.comment.command)
+    && event.transition.comment.command == "/fs-code"
+    && event.entity.kind == "work_item"
