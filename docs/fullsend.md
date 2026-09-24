@@ -69,19 +69,16 @@ Each Jira query requires all of these gates:
 
 - Project: `RHIDP` or `RHDHPLAN`.
 - Jira `Team`: `RHDH AI`.
-- Labels: both `fullsend` (agent opt-in) and `fullsend-rhdh-plugins` (target
-  this repository).
+- Label: `fullsend` (agent opt-in).
 - Status category is not Done.
 
-The second label prevents another team's `fullsend` work items from being
-routed to this repository. Add both labels to an eligible Jira work item
-before posting a command. `/fs-triage` does not automatically start coding;
-use `/fs-code` explicitly when implementation is ready. Grillme and spec
-commands are not part of this Jira pilot.
+Add the `fullsend` label to an eligible Jira work item before posting a
+command. `/fs-triage` does not automatically start coding; use `/fs-code`
+explicitly when implementation is ready. Grillme and spec commands are not
+part of this Jira pilot.
 
 To expand the cohort, add a project/team pair to the `poll_project` calls in
-the workflow. Keep the two label gates, and use a distinct target label if
-another repository adopts Jira polling.
+the workflow. Keep the `fullsend` opt-in label for each cohort.
 
 Before enabling the scheduled workflow, configure the Actions variable
 `JIRA_BASE_URL` and secrets `JIRA_TOKEN` and `JIRA_USER_EMAIL`. The workflow

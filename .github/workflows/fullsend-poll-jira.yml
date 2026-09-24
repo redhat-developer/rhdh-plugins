@@ -64,9 +64,9 @@ jobs:
             local team="$2"
             local output="dispatches-${project,,}.json"
             # Keep each gate explicit. To enroll another team/project, add one
-            # poll_project call below; keep both labels to target this repo.
-            local jql="project = ${project} AND \"Team\" = \"${team}\" AND labels = \"fullsend\" AND labels = \"fullsend-rhdh-plugins\" AND statusCategory != Done ORDER BY updated DESC"
-            echo "Polling ${project} for ${team} issues targeted at ${TARGET_REPO}"
+            # poll_project call below; retain the fullsend opt-in label.
+            local jql="project = ${project} AND \"Team\" = \"${team}\" AND labels = \"fullsend\" AND statusCategory != Done ORDER BY updated DESC"
+            echo "Polling ${project} for ${team}; dispatching matches to ${TARGET_REPO}"
             fullsend poll \
               --input-driver jira-poll \
               --mode slash \
