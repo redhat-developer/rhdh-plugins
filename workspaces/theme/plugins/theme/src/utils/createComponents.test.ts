@@ -96,6 +96,15 @@ describe('createComponents', () => {
     );
   });
 
+  it('paints BackstageSidebarPage with mainSectionBackgroundColor on all viewports', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
+      expect.objectContaining({
+        backgroundColor: '#292929',
+      }),
+    );
+  });
+
   it('clips the SidebarPage scrollport so the scrollbar follows the rounded well', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
@@ -116,7 +125,6 @@ describe('createComponents', () => {
         height: 'calc(100vh - 2 * 1.5rem)',
         maxHeight: 'calc(100vh - 2 * 1.5rem)',
         overscrollBehavior: 'contain',
-        backgroundColor: '#292929',
         borderRadius: '1rem',
         clipPath: 'inset(0 round 1rem)',
       }),

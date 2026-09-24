@@ -829,6 +829,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           // height; without a min-height here the page-inset background stops
           // early and body/html shows through (RHDHBUGS-3498).
           minHeight: '100vh',
+          // All viewports: paint the content well. Page-inset chrome below is
+          // desktop-only; without this, mobile falls through to body
+          // (--bui-bg-app / page-inset) instead of mainSectionBackgroundColor.
+          backgroundColor: general.mainSectionBackgroundColor,
           // Controls the page inset as in PF6 -- only in desktop view.
           // CSS-only: SidebarPage is the sole scrollport so BUI siblings
           // (PluginHeader + Containers) and classic <main> share one rounded
@@ -858,7 +862,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             overflowX: 'hidden',
             overflowY: 'auto',
             overscrollBehavior: 'contain',
-            backgroundColor: general.mainSectionBackgroundColor,
             borderRadius: '1rem',
             // Clips the scrollbar into the rounded well (border-radius cannot).
             clipPath: 'inset(0 round 1rem)',
