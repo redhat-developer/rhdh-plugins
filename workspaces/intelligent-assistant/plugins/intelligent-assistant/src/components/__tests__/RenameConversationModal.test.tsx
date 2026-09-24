@@ -235,4 +235,21 @@ describe('RenameConversationModal', () => {
       expect(input).toHaveValue('');
     });
   });
+
+  test('should scope the dialog to the container when isCompact', () => {
+    const { container } = render(
+      <div style={{ position: 'relative' }}>
+        <RenameConversationModal
+          isOpen
+          onClose={onClose}
+          conversationId={conversationId}
+          isCompact
+        />
+      </div>,
+    );
+
+    const dialogRoot = container.querySelector('.MuiDialog-root');
+    expect(dialogRoot).toBeInTheDocument();
+    expect(dialogRoot).toHaveStyle({ position: 'absolute' });
+  });
 });
