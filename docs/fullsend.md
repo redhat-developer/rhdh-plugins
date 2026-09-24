@@ -68,7 +68,7 @@ are unchanged.
 Each Jira query requires all of these gates:
 
 - Project: `RHIDP` or `RHDHPLAN`.
-- Jira `Team`: `RHDH AI`.
+- Jira `Team`: `RHDH AI`, selected by `cf[10001]` and its Atlassian team ID.
 - Label: `fullsend` (agent opt-in).
 - Status category is not Done.
 
@@ -83,8 +83,9 @@ the workflow. Keep the `fullsend` opt-in label for each cohort.
 Before enabling the scheduled workflow, configure the Actions variable
 `JIRA_BASE_URL` and secrets `JIRA_TOKEN` and `JIRA_USER_EMAIL`. The workflow
 fails visibly when any are missing. Its existing Fullsend GCP and mint
-credentials are also required for the downstream agents. Confirm the Jira
-instance accepts the `"Team" = "RHDH AI"` clause before rollout.
+credentials are also required for the downstream agents. The RHDH AI team ID
+comes from Parasol's poller for `https://stage-redhat.atlassian.net`; verify
+the ID if `JIRA_BASE_URL` points to a different Jira instance.
 
 ## Coexistence with PR Agent
 

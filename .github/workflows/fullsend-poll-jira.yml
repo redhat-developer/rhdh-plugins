@@ -61,12 +61,12 @@ jobs:
 
           poll_project() {
             local project="$1"
-            local team="$2"
+            local team_id="$2"
             local output="dispatches-${project,,}.json"
             # Keep each gate explicit. To enroll another team/project, add one
-            # poll_project call below; retain the fullsend opt-in label.
-            local jql="project = ${project} AND \"Team\" = \"${team}\" AND labels = \"fullsend\" AND statusCategory != Done ORDER BY updated DESC"
-            echo "Polling ${project} for ${team}; dispatching matches to ${TARGET_REPO}"
+            # poll_project call below with its Atlassian team ID.
+            local jql="project = ${project} AND cf[10001] = \"${team_id}\" AND labels = \"fullsend\" AND statusCategory != Done ORDER BY updated DESC"
+            echo "Polling ${project} for team ${team_id}; dispatching matches to ${TARGET_REPO}"
             fullsend poll \
               --input-driver jira-poll \
               --mode slash \
@@ -78,8 +78,10 @@ jobs:
               --fullsend-dir .fullsend
           }
 
-          poll_project RHDHPLAN 'RHDH AI'
-          poll_project RHIDP 'RHDH AI'
+          # Jira's Team field uses an Atlassian team ID, not its display name.
+          RHDH_AI_TEAM_ID='ec74d716-af36-4b3c-950f-f79213d08f71-1087'
+          poll_project RHDHPLAN "${RHDH_AI_TEAM_ID}"
+          poll_project RHIDP "${RHDH_AI_TEAM_ID}"
 
           jq -s 'add' dispatches-*.json > dispatches.json
           echo "Dispatch count: $(jq 'length' dispatches.json)"
