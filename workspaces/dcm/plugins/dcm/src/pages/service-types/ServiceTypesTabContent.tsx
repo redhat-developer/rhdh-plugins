@@ -18,11 +18,11 @@ import { useMemo, useState } from 'react';
 import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
 import { usePaginatedFetch } from '../../hooks/usePaginatedFetch';
 import { TableColumn, Progress } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
+
 import { Box, Button, Chip, Typography } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import type { ServiceType } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { catalogApiRef } from '../../apis';
+import { useDcmClients } from '../../api/DcmClientsContext';
 import { DcmSearchTableCard } from '../../components/dcmTabListHelpers';
 import { useDcmStyles } from '../../components/dcmStyles';
 import emptyIllustration from '../../assets/environments-empty-state.png';
@@ -34,7 +34,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 
 export function ServiceTypesTabContent() {
   const classes = useDcmStyles();
-  const catalogApi = useApi(catalogApiRef);
+  const { catalogApi } = useDcmClients();
   const { t } = useTranslation();
 
   const [pageSize, setPageSize] = usePersistedPageSize('service-types');

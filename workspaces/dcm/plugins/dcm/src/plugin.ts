@@ -43,6 +43,7 @@ import {
   resourcesApiRef,
 } from './apis';
 import { dcmAuthApiFactory, dcmAuthApiRef } from './api/AuthApiRefs';
+import { markDefaultDcmClient } from './api/DefaultDcmClient';
 
 /**
  * DCM plugin instance.
@@ -70,11 +71,13 @@ export const dcmPlugin = createPlugin({
         dcmAuthApi: dcmAuthApiRef,
       },
       factory({ discoveryApi, fetchApi, dcmAuthApi }) {
-        return new CatalogClient({
-          discoveryApi,
-          fetchApi,
-          getAccessToken: dcmAuthApi.getAccessToken,
-        });
+        return markDefaultDcmClient(
+          new CatalogClient({
+            discoveryApi,
+            fetchApi,
+            getAccessToken: dcmAuthApi.getAccessToken,
+          }),
+        );
       },
     }),
     createApiFactory({
@@ -85,11 +88,13 @@ export const dcmPlugin = createPlugin({
         dcmAuthApi: dcmAuthApiRef,
       },
       factory({ discoveryApi, fetchApi, dcmAuthApi }) {
-        return new PolicyManagerClient({
-          discoveryApi,
-          fetchApi,
-          getAccessToken: dcmAuthApi.getAccessToken,
-        });
+        return markDefaultDcmClient(
+          new PolicyManagerClient({
+            discoveryApi,
+            fetchApi,
+            getAccessToken: dcmAuthApi.getAccessToken,
+          }),
+        );
       },
     }),
     createApiFactory({
@@ -100,11 +105,13 @@ export const dcmPlugin = createPlugin({
         dcmAuthApi: dcmAuthApiRef,
       },
       factory({ discoveryApi, fetchApi, dcmAuthApi }) {
-        return new AgentsClient({
-          discoveryApi,
-          fetchApi,
-          getAccessToken: dcmAuthApi.getAccessToken,
-        });
+        return markDefaultDcmClient(
+          new AgentsClient({
+            discoveryApi,
+            fetchApi,
+            getAccessToken: dcmAuthApi.getAccessToken,
+          }),
+        );
       },
     }),
     createApiFactory({
@@ -115,11 +122,13 @@ export const dcmPlugin = createPlugin({
         dcmAuthApi: dcmAuthApiRef,
       },
       factory({ discoveryApi, fetchApi, dcmAuthApi }) {
-        return new ResourcesClient({
-          discoveryApi,
-          fetchApi,
-          getAccessToken: dcmAuthApi.getAccessToken,
-        });
+        return markDefaultDcmClient(
+          new ResourcesClient({
+            discoveryApi,
+            fetchApi,
+            getAccessToken: dcmAuthApi.getAccessToken,
+          }),
+        );
       },
     }),
   ],

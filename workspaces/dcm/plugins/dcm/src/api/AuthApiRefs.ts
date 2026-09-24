@@ -42,6 +42,21 @@ const oidcAuthApiRef: ApiRef<OAuthApi & OpenIdConnectApi> = createApiRef<
   id: 'internal.auth.oidc',
 });
 
+const defaultAuthApiMarker = Symbol('defaultDcmAuthApi');
+
+type DefaultDcmAuthApi = DcmAuthApi & {
+  [defaultAuthApiMarker]: true;
+};
+
+/** @internal */
+export function isDefaultDcmAuthApi(
+  authApi: DcmAuthApi | undefined,
+): authApi is DefaultDcmAuthApi {
+  return Boolean(
+    authApi && (authApi as DefaultDcmAuthApi)[defaultAuthApiMarker],
+  );
+}
+
 /**
  * DCM auth API factory that selects the safe, token-free implementation from
  * configuration. It intentionally has no OIDC dependency so auth-disabled
@@ -64,6 +79,7 @@ export const dcmAuthApiFactory: ApiFactory<
     }
 
     return {
+      [defaultAuthApiMarker]: true,
       getAccessToken: () =>
         Promise.reject(
           new Error(
