@@ -1,0 +1,41 @@
+{
+  "name": "@red-hat-developer-hub/cli-module-rsdoctor",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "description": "Backstage CLI module that adds Rsdoctor bundle analysis commands",
+  "main": "index.cjs",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "cli-module"
+  },
+  "scripts": {
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@backstage/cli-common": "^0.3.0",
+    "@backstage/cli-module-build": "^0.1.7",
+    "@backstage/cli-node": "^0.3.4",
+    "@rsdoctor/cli": "^1.6.3",
+    "@rsdoctor/core": "^1.6.3",
+    "@rsdoctor/rspack-plugin": "^1.6.3",
+    "@rsdoctor/types": "^1.6.3",
+    "cleye": "^2.6.0"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.36.5"
+  },
+  "files": [
+    "dist"
+  ]
+}
