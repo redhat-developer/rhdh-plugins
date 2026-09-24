@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.3
+
+### Patch Changes
+
+- 377efe3: Updated dependency `@patternfly/chatbot` to `6.9.0-prerelease.4`.
+  Updated dependency `@patternfly/react-core` to `6.6.1`.
+- a669321: Updated dependency `@testing-library/user-event` to `14.6.7`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.3
+
 ## 5.3.2
 
 ### Patch Changes
