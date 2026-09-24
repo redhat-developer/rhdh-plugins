@@ -11,17 +11,13 @@ on:
     - cron: "*/5 * * * *"
   workflow_dispatch: {}
 
-permissions:
-  actions: write
-  contents: write
-  id-token: write
-  issues: write
-  packages: read
-  pull-requests: write
+permissions: {}
 
 jobs:
   poll:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     concurrency:
       group: fullsend-jira-poll
       cancel-in-progress: false
@@ -122,6 +118,13 @@ jobs:
     name: Harness
     needs: poll
     if: needs.poll.outputs.has_dispatches == 'true'
+    permissions:
+      actions: write
+      contents: write
+      id-token: write
+      issues: write
+      packages: read
+      pull-requests: write
     uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@d5f36921ac754705619f38c637ef692873809fbc # v0.43.0
     with:
       matrix: ${{ needs.poll.outputs.matrix }}
