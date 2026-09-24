@@ -135,6 +135,7 @@ function _is_prerelease_version {
 
 function _build_oci {
   _assert_version_is_set
+  clean
   _update_version
 
   echo "Installing dependencies..."
