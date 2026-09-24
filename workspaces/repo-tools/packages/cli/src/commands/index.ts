@@ -17,13 +17,25 @@ import { Command } from 'commander';
 import { exitWithError } from '../lib/errors';
 import { assertError } from '@backstage/errors';
 
+type ActionFunc = (...args: any[]) => Promise<void>;
+type ActionExports<TModule extends object> = {
+  [KName in keyof TModule as TModule[KName] extends ActionFunc
+    ? KName
+    : never]: TModule[KName];
+};
+
 // Wraps an action function so that it always exits and handles errors
-function lazy(
-  getActionFunc: () => Promise<(...args: any[]) => Promise<void>>,
+export function lazy<TModule extends object>(
+  moduleLoader: () => Promise<TModule>,
+  exportName: keyof ActionExports<TModule>,
 ): (...args: any[]) => Promise<never> {
   return async (...args: any[]) => {
     try {
-      const actionFunc = await getActionFunc();
+      const mod = await moduleLoader();
+      const actualModule = (
+        mod as unknown as { default: ActionExports<TModule> }
+      ).default;
+      const actionFunc = actualModule[exportName] as ActionFunc;
       await actionFunc(...args);
 
       process.exit(0);
@@ -47,14 +59,12 @@ export const registerCommands = (program: Command) => {
     .option('--maintainers <names...>', 'List of maintainers', value =>
       value.split(','),
     )
-    .action(
-      lazy(() => import('./plugin/janus-migration').then(m => m.default)),
-    );
+    .action(lazy(() => import('./plugin/janus-migration'), 'default'));
 
   program
     .command('workspace')
     .command('create')
-    .action(lazy(() => import('./workspace/create').then(m => m.default)));
+    .action(lazy(() => import('./workspace/create'), 'default'));
 
   const lintCommand = program
     .command('lint [command]')
@@ -64,9 +74,5 @@ export const registerCommands = (program: Command) => {
     .description(
       'Lint backend plugin packages for legacy exports and make sure it conforms to the new export pattern',
     )
-    .action(
-      lazy(() =>
-        import('./lint/lint-legacy-backend-exports').then(m => m.lint),
-      ),
-    );
+    .action(lazy(() => import('./lint/lint-legacy-backend-exports'), 'lint'));
 };
