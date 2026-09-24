@@ -26,7 +26,7 @@ export const scorecardOpenSFFModule = createBackendModule({
         metrics: scorecardMetricsExtensionPoint,
       },
       async init({ metrics }) {
-        metrics.addMetricProvider(...createOpenSSFMetricProvider());
+        metrics.addMetricProvider(createOpenSSFMetricProvider());
       },
     });
   },
