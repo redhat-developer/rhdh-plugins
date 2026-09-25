@@ -338,7 +338,7 @@ test.describe('Orchestrator workflow runs', () => {
       await orchestrator.verifySampleRetryTest();
     });
 
-    test('Add workflow run by entity', async () => {
+    test('Add workflow run by entity', async ({}, testInfo) => {
       await orchestrator.navigateToCatalog();
       await expect(
         sharedPage
@@ -356,8 +356,25 @@ test.describe('Orchestrator workflow runs', () => {
           .first()
           .click();
       } else {
+        // Copied values from https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/src/translations
+        // until app-defaults (or Backstage) support that plugins add their own translations
+        // for catalog entity tab titles.
+        const baseLocale =
+          typeof testInfo.project.use.locale === 'string'
+            ? testInfo.project.use.locale.split('-')[0]
+            : 'en';
+        const workflowTranslationsFromAppReact = {
+          de: 'Workflows',
+          en: 'Workflows',
+          es: 'Workflows',
+          fr: 'Workflows',
+          it: 'Workflow',
+          ja: 'ワークフロー',
+        } as Record<string, string>;
+        const workflowsTabTitle =
+          workflowTranslationsFromAppReact[baseLocale] || 'Workflows';
         await sharedPage
-          .getByRole('link', { name: 'Workflows' })
+          .getByRole('link', { name: workflowsTabTitle })
           .first()
           .click();
       }
