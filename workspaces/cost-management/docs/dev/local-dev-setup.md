@@ -185,7 +185,7 @@ With `yarn start` running, open **http://localhost:3000**, sign in (guest or Git
 
 The plugin doesn't ship an RBAC engine — it only consumes Backstage's abstract `PermissionsService`. Locally, `packages/backend/src/index.ts` explicitly adds `@backstage-community/plugin-rbac-backend`, reading policies from `policy.local.csv`. In RHDH production, RHDH provides its own RBAC backend instead — the plugin code is identical either way.
 
-Full permission/policy reference: [docs/rbac.md](./rbac.md).
+Full permission/policy reference: [docs/rbac.md](../rbac.md).
 
 ---
 
@@ -194,7 +194,7 @@ Full permission/policy reference: [docs/rbac.md](./rbac.md).
 Once a change works in the local dev shell, validate it inside an actual RHDH instance, loading the plugin as a **dynamic plugin** (OCI image) the way a customer would:
 
 - **[`rhdh-local`](https://github.com/redhat-developer/rhdh-local)** — Podman/Docker Compose-based local RHDH stack. For step-by-step setup (pre-install via override file, or the Extensions Catalog install flow), see [docs/testing-cost-management-on-rhdh-local.md](./testing-cost-management-on-rhdh-local.md).
-- **A real RHDH cluster** (Operator/Helm) — see [docs/dynamic-plugin.md](./dynamic-plugin.md) for the ConfigMap/Secret setup
+- **A real RHDH cluster** (Operator/Helm) — see [docs/dynamic-plugin.md](../dynamic-plugin.md) for the ConfigMap/Secret setup
 
 See it in action: [Demo recording: Testing Cost Management plugin with rhdh-local](https://drive.google.com/file/d/1d2Es7n8sAm8dRY0dIfVkFJFBW6asKaJk/view?usp=drive_web).
 
@@ -228,13 +228,13 @@ Run from `workspaces/cost-management/`:
 
 ## File Reference
 
-| File                                            | Purpose                                                                         |
-| ----------------------------------------------- | ------------------------------------------------------------------------------- |
-| `app-config.yaml`                               | Base Backstage config (committed)                                               |
-| `app-config.local.yaml`                         | Personal local overrides + secrets (git-ignored)                                |
-| `policy.local.csv`                              | Local RBAC policy rules                                                         |
-| `packages/app/`, `packages/backend/`            | Throwaway dev shell (not shipped)                                               |
-| `plugins/cost-management*/`                     | Published plugin code (frontend, backend, common)                               |
-| `docs/rbac.md`                                  | Full RBAC permission and policy reference                                       |
-| `docs/dynamic-plugin.md`                        | Installing the plugin as an RHDH dynamic plugin                                 |
-| `docs/testing-cost-management-on-rhdh-local.md` | Testing the plugin locally via `rhdh-local` (pre-install or Extensions Catalog) |
+| File                                                | Purpose                                                                         |
+| --------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `app-config.yaml`                                   | Base Backstage config (committed)                                               |
+| `app-config.local.yaml`                             | Personal local overrides + secrets (git-ignored)                                |
+| `policy.local.csv`                                  | Local RBAC policy rules                                                         |
+| `packages/app/`, `packages/backend/`                | Throwaway dev shell (not shipped)                                               |
+| `plugins/cost-management*/`                         | Published plugin code (frontend, backend, common)                               |
+| `docs/rbac.md`                                      | Full RBAC permission and policy reference                                       |
+| `docs/dynamic-plugin.md`                            | Installing the plugin as an RHDH dynamic plugin                                 |
+| `docs/dev/testing-cost-management-on-rhdh-local.md` | Testing the plugin locally via `rhdh-local` (pre-install or Extensions Catalog) |
