@@ -64,6 +64,9 @@ export class I18nextTranslationApi implements TranslationApi {
 export interface I18nextTranslationApiOptions {
   // (undocumented)
   languageApi: AppLanguageApi;
+  loadJsonTranslations?: () => Promise<
+    Record<string, Record<string, Record<string, string>>>
+  >;
   // (undocumented)
   resources?: Array<TranslationMessages | TranslationResource>;
 }

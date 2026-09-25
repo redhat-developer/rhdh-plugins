@@ -28,8 +28,14 @@ type:
 - `patch` for bug fixes, refactors, chores, and internal improvements
   with no user-facing behavior change.
 - `minor` for new features or capabilities visible to plugin consumers.
-- `major` for breaking API changes (removed exports, changed interfaces,
-  dropped support).
+- `major` for breaking API changes that affect runtime behavior or
+  remove existing capabilities (removed exports, narrowed types,
+  removed required fields, dropped support).
+- `minor` is also acceptable for additive or widening type changes
+  on `@public` interfaces that maintain runtime/JSON compatibility
+  (new optional or required fields on response types, type widening
+  from `string` to `string | null`). These changes are TypeScript
+  compile-time breaking but runtime-compatible.
 
 Match the bump level to the issue's stated intent (title prefix,
 constraints), not the size of the diff.

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 2.0.2
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+
 ## 2.0.1
 
 ### Patch Changes

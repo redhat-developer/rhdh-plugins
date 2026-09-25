@@ -16,7 +16,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
+
 import {
   Box,
   Chip,
@@ -51,7 +51,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 import type { Policy } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { policyManagerApiRef } from '../../apis';
+import { useDcmClients } from '../../api/DcmClientsContext';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
@@ -92,7 +92,7 @@ function replacePolicyById(id: string, updated: Policy) {
 
 export function PoliciesTabContent() {
   const classes = useStyles();
-  const policyApi = useApi(policyManagerApiRef);
+  const { policyManagerApi: policyApi } = useDcmClients();
   const { t } = useTranslation();
 
   /** IDs currently being toggled (to show per-row spinner). */

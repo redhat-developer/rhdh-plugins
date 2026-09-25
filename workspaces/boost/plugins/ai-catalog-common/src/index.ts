@@ -15,19 +15,10 @@
  */
 
 /**
- * Common types and utilities for AI Catalog and the deferred Boost backend.
+ * Common types and utilities for the AI Catalog plugin.
  *
  * @packageDocumentation
  */
 
-/**
- * The plugin ID retained by the deferred Boost backend contracts.
- *
- * @public
- */
-export const BOOST_PLUGIN_ID = 'boost';
-
-export * from './types';
 export * from './permissions';
-export * from './ingestion-health';
 export * from './aiAssetTaxonomy';

@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.9.0
+
+## 1.8.1
+
+## 1.8.0
+
+### Minor Changes
+
+- 379ab12: Localize sidebar item titles via a new `pages` translation namespace (looked up by English label), relabel Create as Self-Service, and drop the dedicated Learning Paths sidebar item so it uses the shared pages i18n.
+
 ## 1.7.0
 
 ### Minor Changes

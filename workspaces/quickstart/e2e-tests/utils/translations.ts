@@ -42,6 +42,13 @@ function transformFlatMessagesIntoTree(
   return messages as QuickstartMessages;
 }
 
+/** Matches localized footer progress text, including decimal percentages. */
+export function getProgressPattern(footerProgressTemplate: string): RegExp {
+  return new RegExp(
+    footerProgressTemplate.replace('{{progress}}', '\\d+(?:\\.\\d+)?'),
+  );
+}
+
 export function getTranslations(locale: string) {
   const languageCode = locale.split('-')[0].toLowerCase();
 

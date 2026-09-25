@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { z } from 'zod';
-
 /**
  * Annotation key for the AI asset category.
  *
@@ -36,34 +34,3 @@ export const AI_ASSET_VERSION_ANNOTATION = 'rhdh.io/ai-asset-version';
  * @public
  */
 export const AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source';
-
-/**
- * Zod schema for the allowed AI asset category values.
- *
- * @public
- */
-export const AIAssetCategorySchema = z.enum([
-  'agent',
-  'skill',
-  'rule',
-  'skill-bundle',
-  'mcp-server',
-  'ai-model',
-  'model-server',
-]);
-
-/**
- * Allowed AI asset category values.
- *
- * @public
- */
-export type AIAssetCategory = z.infer<typeof AIAssetCategorySchema>;
-
-/**
- * Array of all allowed AI asset category values, for display in
- * error messages and documentation.
- *
- * @public
- */
-export const AI_ASSET_CATEGORIES: readonly AIAssetCategory[] =
-  AIAssetCategorySchema.options;

@@ -16,6 +16,7 @@
 
 import { ErrorBoundary } from '@backstage/core-components';
 import { Routes, Route } from 'react-router-dom';
+import { DcmClientsProvider } from './api/DcmClientsContext';
 import { DataCenterPage } from './pages/data-center/DataCenterPage';
 
 /**
@@ -26,9 +27,11 @@ import { DataCenterPage } from './pages/data-center/DataCenterPage';
 export function Router() {
   return (
     <ErrorBoundary>
-      <Routes>
-        <Route path="*" element={<DataCenterPage />} />
-      </Routes>
+      <DcmClientsProvider>
+        <Routes>
+          <Route path="*" element={<DataCenterPage />} />
+        </Routes>
+      </DcmClientsProvider>
     </ErrorBoundary>
   );
 }

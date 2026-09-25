@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-ai-catalog
 
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies [0186935]
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-common@1.0.0
+
 ## 0.8.0
 
 ### Minor Changes

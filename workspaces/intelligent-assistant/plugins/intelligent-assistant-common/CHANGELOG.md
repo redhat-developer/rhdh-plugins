@@ -1,5 +1,9 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common
 
+## 5.3.3
+
+## 5.3.2
+
 ## 5.3.1
 
 ## 5.3.0

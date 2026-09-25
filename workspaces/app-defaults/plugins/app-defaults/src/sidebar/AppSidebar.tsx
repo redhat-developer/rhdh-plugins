@@ -25,13 +25,19 @@ import {
   SidebarSubmenuItem,
   useSidebarOpenState,
 } from '@backstage/core-components';
-import { iconsApiRef, useApi } from '@backstage/frontend-plugin-api';
+import {
+  configApiRef,
+  iconsApiRef,
+  useApi,
+  useTranslationRef,
+} from '@backstage/frontend-plugin-api';
 import type { IconComponent } from '@backstage/frontend-plugin-api';
 import type { NavContentNavItems } from '@backstage/plugin-app-react';
-import type {
-  SidebarElementData,
-  SidebarItemData,
-  SidebarItemGroupData,
+import {
+  appReactTranslationRef,
+  type SidebarElementData,
+  type SidebarItemData,
+  type SidebarItemGroupData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
@@ -45,6 +51,10 @@ import {
   type SidebarModelIcon,
   type SidebarModelItem,
 } from './buildSidebarModel';
+import {
+  readConfigSidebarGroups,
+  readConfigSidebarItems,
+} from './readSidebarConfig';
 
 /**
  * Props for {@link AppSidebar}.
@@ -60,6 +70,27 @@ export interface AppSidebarProps {
   elements?: SidebarElementData[];
   /** Nav items auto-discovered by Backstage from page extensions. */
   navItems?: NavContentNavItems;
+}
+
+/**
+ * Returns a function that localizes a sidebar title. Titles are looked up
+ * dynamically under the `pages.<title>` keys of the app-react translations
+ * (keyed by the English title); unknown titles — including those contributed
+ * by plugins we do not know about — fall through unchanged. i18next uses `.`
+ * as its key separator, so any dot in the title is replaced with `_`.
+ */
+function useTranslateTitle(): (title: string) => string {
+  const { t } = useTranslationRef(appReactTranslationRef);
+  return useMemo(() => {
+    const translate = t as unknown as (
+      key: string,
+      options: { defaultValue: string },
+    ) => string;
+    return (title: string) =>
+      translate(`pages.${title.replaceAll('.', '_')}`, {
+        defaultValue: title,
+      });
+  }, [t]);
 }
 
 function useSidebarIcon(icon: SidebarModelIcon | undefined): IconComponent {
@@ -82,28 +113,33 @@ function useSidebarIcon(icon: SidebarModelIcon | undefined): IconComponent {
 
 function SidebarModelItemEntry({ item }: { item: SidebarModelItem }) {
   const icon = useSidebarIcon(item.icon);
+  const translate = useTranslateTitle();
+  const text = translate(item.title);
   if (item.to) {
     return (
       <SidebarItem
         icon={icon}
-        text={item.title}
+        text={text}
         to={item.to}
         onClick={item.onClick}
       />
     );
   }
   return (
-    <SidebarItem
-      icon={icon}
-      text={item.title}
-      onClick={() => item.onClick?.()}
-    />
+    <SidebarItem icon={icon} text={text} onClick={() => item.onClick?.()} />
   );
 }
 
 function SidebarModelSubmenuItem({ item }: { item: SidebarModelItem }) {
   const icon = useSidebarIcon(item.icon);
-  return <SidebarSubmenuItem title={item.title} to={item.to} icon={icon} />;
+  const translate = useTranslateTitle();
+  return (
+    <SidebarSubmenuItem
+      title={translate(item.title)}
+      to={item.to}
+      icon={icon}
+    />
+  );
 }
 
 function isActivePath(pathname: string, to: string | undefined): boolean {
@@ -118,6 +154,8 @@ function isActivePath(pathname: string, to: string | undefined): boolean {
 
 function SidebarModelInlineGroup({ group }: { group: SidebarModelGroup }) {
   const icon = useSidebarIcon(group.icon);
+  const translate = useTranslateTitle();
+  const title = translate(group.title);
   const { pathname } = useLocation();
   const { isOpen: isSidebarOpen } = useSidebarOpenState();
   const hasActiveItem = group.items.some(item =>
@@ -140,16 +178,11 @@ function SidebarModelInlineGroup({ group }: { group: SidebarModelGroup }) {
   return (
     <>
       {group.to ? (
-        <SidebarItem
-          icon={icon}
-          text={group.title}
-          to={group.to}
-          onClick={toggle}
-        >
+        <SidebarItem icon={icon} text={title} to={group.to} onClick={toggle}>
           {arrow}
         </SidebarItem>
       ) : (
-        <SidebarItem icon={icon} text={group.title} onClick={toggle}>
+        <SidebarItem icon={icon} text={title} onClick={toggle}>
           {arrow}
         </SidebarItem>
       )}
@@ -166,9 +199,11 @@ function SidebarModelInlineGroup({ group }: { group: SidebarModelGroup }) {
 
 function SidebarModelFlyoutGroup({ group }: { group: SidebarModelGroup }) {
   const icon = useSidebarIcon(group.icon);
+  const translate = useTranslateTitle();
+  const title = translate(group.title);
   return (
-    <SidebarItem icon={icon} text={group.title} to={group.to}>
-      <SidebarSubmenu title={group.title}>
+    <SidebarItem icon={icon} text={title} to={group.to}>
+      <SidebarSubmenu title={title}>
         {group.items.map(item => (
           <SidebarModelSubmenuItem key={item.id} item={item} />
         ))}
@@ -179,11 +214,14 @@ function SidebarModelFlyoutGroup({ group }: { group: SidebarModelGroup }) {
 
 function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
   const icon = useSidebarIcon(group.icon);
+  const translate = useTranslateTitle();
   if (group.items.length === 0) {
     if (!group.to) {
       return null;
     }
-    return <SidebarItem icon={icon} text={group.title} to={group.to} />;
+    return (
+      <SidebarItem icon={icon} text={translate(group.title)} to={group.to} />
+    );
   }
   if (group.variant === 'flyout') {
     return <SidebarModelFlyoutGroup group={group} />;
@@ -199,6 +237,11 @@ function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
  * nav items auto-discovered from page extensions are merged in unless a
  * contributed item already links to the same path.
  *
+ * Items and groups declared under `app.sidebar` in `app-config.yaml` are
+ * merged into the same model, so deployers can add entries without writing a
+ * plugin. They are appended after the contributed ones, which lets a
+ * configured group override a contributed group with the same `id`.
+ *
  * @public
  */
 export const AppSidebar = ({
@@ -207,9 +250,19 @@ export const AppSidebar = ({
   elements,
   navItems,
 }: AppSidebarProps) => {
+  const configApi = useApi(configApiRef);
+  const configItems = useMemo(
+    () => readConfigSidebarItems(configApi),
+    [configApi],
+  );
+  const configGroups = useMemo(
+    () => readConfigSidebarGroups(configApi),
+    [configApi],
+  );
+
   const entries = buildSidebarModel({
-    items,
-    groups,
+    items: [...items, ...configItems],
+    groups: [...groups, ...configGroups],
     elements,
     navItems: navItems?.rest(),
   });

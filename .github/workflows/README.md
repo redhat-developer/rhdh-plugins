@@ -8,6 +8,10 @@ Triggered on pull requests, this workflow runs tests on the target branch, focus
 
 Handles the release process for a specific workspace from a specified branch (default: `main`). It either creates a "Version Packages" pull request if changesets are present or releases the packages within the workspace if they haven't been published yet. For more details on how changesets work, refer to the [Changesets documentation](https://github.com/changesets/changesets).
 
+## [backport.yml](./backport.yml)
+
+Creates a backport pull request when a pull request merged into `main` has one backport label. Comment exactly one of `/backport release-2.1`, `/backport release-1.10`, or `/backport release-1.9` on the pull request before it is merged. The 2.x label targets the repository-wide branch directly, such as `release-2.1`. The 1.9 and 1.10 labels require exactly one PR `workspace/<name>` label to select a branch such as `release-1.10/orchestrator`. The workflow creates the release label when needed, cherry-picks all commits from the source pull request, and opens a pull request for normal review. Missing release branches are reported and skipped; ambiguous release or workspace labels fail explicitly.
+
 ## [release_workspace_version.yml](./release_workspace_version.yml)
 
 Handles prior-version releases. The legacy 1.x flow is triggered by pull requests merged into per-plugin release branches such as `release-1.10/orchestrator`. The old `workspace/<workspace>` backport path is not supported.

@@ -26,407 +26,323 @@ const dcmTranslationJa: TranslationMessages<
 > = createTranslationMessages({
   ref: dcmTranslationRef,
   messages: {
-    'page.title': '\u30c7\u30fc\u30bf\u30bb\u30f3\u30bf\u30fc',
-    'page.tabs.agents': '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8',
-    'page.tabs.policies': '\u30dd\u30ea\u30b7\u30fc',
-    'page.tabs.serviceTypes': '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
-    'page.tabs.catalogItems':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0',
-    'page.tabs.instances': '\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9',
-    'page.tabs.resources': '\u30ea\u30bd\u30fc\u30b9',
-    'common.retry': '\u518d\u8a66\u884c',
-    'common.refresh': '\u66f4\u65b0',
-    'common.search': '\u691c\u7d22',
-    'common.clearSearch': '\u691c\u7d22\u3092\u30af\u30ea\u30a2',
-    'common.edit': '\u7de8\u96c6',
-    'common.delete': '\u524a\u9664',
-    'common.actions': '\u30a2\u30af\u30b7\u30e7\u30f3',
-    'common.cancel': '\u30ad\u30e3\u30f3\u30bb\u30eb',
-    'common.save': '\u4fdd\u5b58',
-    'common.saving': '\u4fdd\u5b58\u4e2d\u2026',
-    'common.close': '\u9589\u3058\u308b',
-    'common.rows': '\u884c',
-    'common.previousPage': '\u524d\u3078',
-    'common.nextPage': '\u6b21\u3078',
-    'common.next': '\u6b21\u3078',
-    'common.back': '\u623b\u308b',
-    'common.loadingMore': '\u8aad\u307f\u8fbc\u307f\u4e2d\u2026',
-    'deleteDialog.title': '{{resourceLabel}}\u3092\u524a\u9664',
-    'deleteDialog.confirmButton': '\u524a\u9664',
-    'deleteDialog.cancelButton': '\u30ad\u30e3\u30f3\u30bb\u30eb',
+    'page.title': 'データセンター',
+    'page.tabs.agents': 'エージェント',
+    'page.tabs.policies': 'ポリシー',
+    'page.tabs.serviceTypes': 'サービスタイプ',
+    'page.tabs.catalogItems': 'カタログ項目',
+    'page.tabs.instances': 'インスタンス',
+    'page.tabs.resources': 'リソース',
+    'common.retry': '再試行',
+    'common.refresh': '更新',
+    'common.search': '検索',
+    'common.clearSearch': '検索のクリア',
+    'common.edit': '編集',
+    'common.delete': '削除',
+    'common.actions': 'アクション',
+    'common.cancel': 'キャンセル',
+    'common.save': '保存',
+    'common.saving': '保存中…',
+    'common.close': '閉じる',
+    'common.rows': '行',
+    'common.previousPage': '前へ',
+    'common.nextPage': '次へ',
+    'common.next': '次へ',
+    'common.back': '戻る',
+    'common.loadingMore': 'さらに読み込み中…',
+    'deleteDialog.title': '{{resourceLabel}} を削除する',
+    'deleteDialog.confirmButton': '削除',
+    'deleteDialog.cancelButton': 'キャンセル',
     'deleteDialog.body':
-      '{{resourceName}}\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f\u3053\u306e\u64cd\u4f5c\u306f\u5143\u306b\u623b\u305b\u307e\u305b\u3093\u3002',
-    'agents.emptyTitle':
-      '\u767b\u9332\u6e08\u307f\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306a\u3057',
+      '{{resourceName}} を削除してもよろしいですか?この操作は元に戻せません。',
+    'agents.emptyTitle': '登録されたエージェントはありません',
     'agents.emptyDescription':
-      '\u74b0\u5883\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306f\u30b3\u30f3\u30c8\u30ed\u30fc\u30eb\u30d7\u30ec\u30fc\u30f3\u306b\u767b\u9332\u3057\u3001\u5b9a\u671f\u7684\u306b\u30cf\u30fc\u30c8\u30d3\u30fc\u30c8\u3092\u9001\u4fe1\u3057\u307e\u3059\u3002',
-    'agents.registerButton': '\u767b\u9332',
-    'agents.entityLabel': '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8',
-    'agents.registerDialogTitle':
-      '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u3092\u767b\u9332',
-    'agents.createSuccess':
-      '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u3092\u6b63\u5e38\u306b\u767b\u9332\u3057\u307e\u3057\u305f\u3002',
-    'agents.columns.name': '\u540d\u524d',
-    'agents.columns.environment': '\u74b0\u5883',
-    'agents.columns.serviceTypes': '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
-    'agents.columns.cost': '\u30b3\u30b9\u30c8',
-    'agents.columns.topic': 'Topic',
-    'agents.columns.health': '\u30d8\u30eb\u30b9',
-    'agents.columns.lastHeartbeat':
-      '\u6700\u5f8c\u306e\u30cf\u30fc\u30c8\u30d3\u30fc\u30c8',
-    'agents.filter.healthLabel':
-      '\u30d8\u30eb\u30b9\u30b9\u30c6\u30fc\u30bf\u30b9',
+      '環境エージェントはコントロールプレーンに登録され、定期的なハートビートを送信します。DCM が外部環境上のワークロードを管理できるようにするには、エージェントを登録します。',
+    'agents.registerButton': '登録する',
+    'agents.entityLabel': 'エージェント',
+    'agents.registerDialogTitle': 'エージェントを登録する',
+    'agents.createSuccess': 'エージェントが正常に登録されました。',
+    'agents.columns.name': '名前',
+    'agents.columns.environment': '環境',
+    'agents.columns.serviceTypes': 'サービスタイプ',
+    'agents.columns.cost': 'コスト',
+    'agents.columns.topic': 'トピック',
+    'agents.columns.health': '健全性',
+    'agents.columns.lastHeartbeat': '最後のハートビート',
+    'agents.filter.healthLabel': '健全性ステータス',
     'agents.filter.healthAll': 'すべて',
     'agents.filter.healthReady': '準備完了',
-    'agents.filter.healthCongested': '輻輳',
+    'agents.filter.healthCongested': '混雑中',
     'agents.filter.healthUnavailable': '利用不可',
-    'agents.form.nameLabel': '\u540d\u524d *',
-    'agents.form.namePlaceholder': '\u4f8b: env-agent-west-1',
+    'agents.form.nameLabel': '名前 *',
+    'agents.form.namePlaceholder': '例: env-agent-west-1',
     'agents.form.nameHelper':
-      '\u4e00\u610f\u306e\u30b9\u30e9\u30b0\u2014\u5c0f\u6587\u5b57\u3001\u6570\u5b57\u3001\u30cf\u30a4\u30d5\u30f3\u306e\u307f',
-    'agents.form.environmentLabel': '\u74b0\u5883 *',
-    'agents.form.environmentPlaceholder': '\u4f8b: production',
-    'agents.form.environmentHelper':
-      '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306e\u74b0\u5883\u30e9\u30d9\u30eb',
-    'agents.form.serviceTypesLabel':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7 *',
+      '固有のスラッグ識別子 ― 小文字、数字、ハイフンのみ',
+    'agents.form.environmentLabel': '環境 *',
+    'agents.form.environmentPlaceholder': '例: production',
+    'agents.form.environmentHelper': 'エージェントの環境ラベル',
+    'agents.form.serviceTypesLabel': 'サービスタイプ *',
     'agents.form.serviceTypesHelper':
-      '\u3053\u306e\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u304c\u63d0\u4f9b\u3067\u304d\u308b\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
-    'agents.form.costLabel': '\u30b3\u30b9\u30c8 *',
-    'agents.form.costHelper':
-      '\u30d7\u30ec\u30fc\u30b9\u30e1\u30f3\u30c8\u306e\u76f8\u5bfe\u30b3\u30b9\u30c8\u91cd\u307f',
-    'agents.form.topicNameLabel': 'Topic\u540d *',
-    'agents.form.topicNamePlaceholder': '\u4f8b: dcm.agent.env-agent-west-1',
+      'このエージェントが提供できるサービスタイプ',
+    'agents.form.costLabel': 'コスト *',
+    'agents.form.costHelper': '配置決定に使用される相対コスト重み',
+    'agents.form.topicNameLabel': 'トピック名 *',
+    'agents.form.topicNamePlaceholder': '例: dcm.agent.env-agent-west-1',
     'agents.form.topicNameHelper':
-      'NATS Topic\u540d\u2014dcm.agent.\u3067\u59cb\u307e\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'policies.emptyTitle': '\u30dd\u30ea\u30b7\u30fc\u306a\u3057',
+      'NATS トピック名 — dcm.agent で始まる必要があります。',
+    'policies.emptyTitle': '定義されているポリシーはありません',
     'policies.emptyDescription':
-      'DCM \u30ea\u30bd\u30fc\u30b9\u306b\u5bfe\u3059\u308b\u30ac\u30d0\u30ca\u30f3\u30b9\u30eb\u30fc\u30eb\u3092\u5f37\u5236\u3059\u308b OPA Rego \u30dd\u30ea\u30b7\u30fc\u3092\u4f5c\u6210\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
-    'policies.createButton': '\u4f5c\u6210',
-    'policies.entityLabel': '\u30dd\u30ea\u30b7\u30fc',
-    'policies.createDialogTitle': '\u30dd\u30ea\u30b7\u30fc\u3092\u4f5c\u6210',
-    'policies.editDialogTitle': '\u30dd\u30ea\u30b7\u30fc\u3092\u7de8\u96c6',
-    'policies.saveButton': '\u4fdd\u5b58',
-    'policies.createSuccess':
-      '\u30dd\u30ea\u30b7\u30fc\u3092\u6b63\u5e38\u306b\u4f5c\u6210\u3057\u307e\u3057\u305f\u3002',
-    'policies.updateSuccess':
-      '\u30dd\u30ea\u30b7\u30fc\u3092\u6b63\u5e38\u306b\u66f4\u65b0\u3057\u307e\u3057\u305f\u3002',
-    'policies.deleteSuccess':
-      '\u30dd\u30ea\u30b7\u30fc\u3092\u6b63\u5e38\u306b\u524a\u9664\u3057\u307e\u3057\u305f\u3002',
-    'policies.deleteLabel': '\u30dd\u30ea\u30b7\u30fc',
-    'policies.enabledYes': '\u306f\u3044',
-    'policies.enabledNo': '\u3044\u3044\u3048',
-    'policies.toggleDisable':
-      '\u30dd\u30ea\u30b7\u30fc\u3092\u7121\u52b9\u5316',
-    'policies.toggleEnable': '\u30dd\u30ea\u30b7\u30fc\u3092\u6709\u52b9\u5316',
-    'policies.toggleDisableAria': '\u7121\u52b9\u5316',
-    'policies.toggleEnableAria': '\u6709\u52b9\u5316',
-    'policies.columns.displayName': '\u8868\u793a\u540d',
-    'policies.columns.type': '\u30bf\u30a4\u30d7',
-    'policies.columns.priority': '\u512a\u5148\u5ea6',
-    'policies.columns.enabled': '\u6709\u52b9',
-    'policies.columns.description': '\u8a73\u7d30',
-    'policies.form.displayNameLabel': '\u8868\u793a\u540d *',
-    'policies.form.displayNameHelper':
-      '\u3053\u306e\u30dd\u30ea\u30b7\u30fc\u306e\u8aad\u307f\u3084\u3059\u3044\u540d\u524d',
-    'policies.form.descriptionLabel': '\u8aac\u660e',
-    'policies.form.descriptionHelper':
-      '\u4efb\u610f \u2014 \u3053\u306e\u30dd\u30ea\u30b7\u30fc\u306e\u76ee\u7684\u3092\u8aac\u660e\u3057\u3066\u304f\u3060\u3055\u3044',
-    'policies.form.policyTypeLabel':
-      '\u30dd\u30ea\u30b7\u30fc\u30bf\u30a4\u30d7 *',
+      'DCM リソースにガバナンスルールを適用するための OPA Rego ポリシーを作成します。ポリシーのスコープは、グローバルにまたはユーザーごとに指定できます。',
+    'policies.createButton': '作成',
+    'policies.entityLabel': 'ポリシー',
+    'policies.createDialogTitle': 'ポリシーを作成する',
+    'policies.editDialogTitle': 'ポリシーを編集する',
+    'policies.saveButton': '保存',
+    'policies.createSuccess': 'ポリシーが正常に作成されました。',
+    'policies.updateSuccess': 'ポリシーが正常に更新されました。',
+    'policies.deleteSuccess': 'ポリシーが正常に削除されました。',
+    'policies.deleteLabel': 'ポリシー',
+    'policies.enabledYes': 'Yes',
+    'policies.enabledNo': 'No',
+    'policies.toggleDisable': 'ポリシーを無効にする',
+    'policies.toggleEnable': 'ポリシーを有効にする',
+    'policies.toggleDisableAria': '無効化',
+    'policies.toggleEnableAria': '有効化',
+    'policies.columns.displayName': '表示名',
+    'policies.columns.type': 'タイプ',
+    'policies.columns.priority': '優先度',
+    'policies.columns.enabled': '有効化済み',
+    'policies.columns.description': '説明',
+    'policies.form.displayNameLabel': '表示名 *',
+    'policies.form.displayNameHelper': 'このポリシーの人間可読名',
+    'policies.form.descriptionLabel': '説明',
+    'policies.form.descriptionHelper': '任意 — このポリシーの目的を説明します',
+    'policies.form.policyTypeLabel': 'ポリシータイプ *',
     'policies.form.policyTypeGlobal':
-      'GLOBAL \u2014 \u3059\u3079\u3066\u306e\u30ea\u30af\u30a8\u30b9\u30c8\u306b\u9069\u7528',
-    'policies.form.policyTypeUser':
-      'USER \u2014 \u30e6\u30fc\u30b6\u30fc\u3054\u3068\u306b\u9069\u7528',
-    'policies.form.priorityLabel': '\u512a\u5148\u5ea6 *',
+      'GLOBAL — すべてのリクエストに適用されます',
+    'policies.form.policyTypeUser': 'USER — ユーザーごとに適用されます',
+    'policies.form.priorityLabel': '優先度 *',
     'policies.form.priorityHelper':
-      '1\uff08\u6700\u9ad8\uff09\u2013 1000\uff08\u6700\u4f4e\uff09\u3001\u30c7\u30d5\u30a9\u30eb\u30c8 500',
-    'policies.form.regoCodeLabel': 'Rego \u30b3\u30fc\u30c9 *',
+      '1 (最優先) – 1000 (最低)、デフォルトは 500 — ポリシータイプごとに一意である必要があります',
+    'policies.form.regoCodeLabel': 'Rego コード *',
     'policies.form.regoCodeHelper':
-      'Placement Manager \u306b\u3088\u308a\u8a55\u4fa1\u3055\u308c\u308b OPA Rego \u30dd\u30ea\u30b7\u30fc\u3002',
+      'Placement Manager によって評価される OPA Rego ポリシー。',
     'policies.form.regoCodePlaceholder': 'package dcm.placement',
-    'policies.form.enabledLabel': '\u6709\u52b9',
-    'serviceTypes.emptyTitle':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u306a\u3057',
+    'policies.form.enabledLabel': '有効化済み',
+    'serviceTypes.emptyTitle': '定義されているサービスタイプはありません',
     'serviceTypes.emptyDescription':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u306f\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u306e\u30c6\u30f3\u30d7\u30ec\u30fc\u30c8\u30b9\u30ad\u30fc\u30de\u3092\u5b9a\u7fa9\u3057\u307e\u3059\u3002',
-    'serviceTypes.cardTitle':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7 ({{count}})',
-    'serviceTypes.columns.serviceType':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
-    'serviceTypes.columns.apiVersion': 'API \u30d0\u30fc\u30b8\u30e7\u30f3',
-    'serviceTypes.columns.path': '\u30d1\u30b9',
-    'serviceTypes.columns.created': '\u4f5c\u6210\u65e5',
-    'catalogItems.emptyTitle':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u306a\u3057',
+      'サービスタイプは、カタログ項目のテンプレートスキーマを定義します。',
+    'serviceTypes.cardTitle': 'サービスタイプ ({{count}})',
+    'serviceTypes.columns.serviceType': 'サービスタイプ',
+    'serviceTypes.columns.apiVersion': 'API バージョン',
+    'serviceTypes.columns.path': 'パス',
+    'serviceTypes.columns.created': '作成済み',
+    'catalogItems.emptyTitle': '定義されているカタログ項目はありません',
     'catalogItems.emptyDescription':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u306f\u958b\u767a\u8005\u304c\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u3067\u304d\u308b\u30b5\u30fc\u30d3\u30b9\u30c6\u30f3\u30d7\u30ec\u30fc\u30c8\u3067\u3059\u3002',
-    'catalogItems.createButton': '\u4f5c\u6210',
-    'catalogItems.entityLabel':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0',
-    'catalogItems.createDrawerTitle':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u3092\u4f5c\u6210',
-    'catalogItems.editDrawerTitle':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u3092\u7de8\u96c6',
-    'catalogItems.saveButton': '\u4fdd\u5b58',
-    'catalogItems.createSuccess':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u3092\u6b63\u5e38\u306b\u4f5c\u6210\u3057\u307e\u3057\u305f\u3002',
-    'catalogItems.updateSuccess':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u3092\u6b63\u5e38\u306b\u66f4\u65b0\u3057\u307e\u3057\u305f\u3002',
-    'catalogItems.deleteSuccess':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u3092\u6b63\u5e38\u306b\u524a\u9664\u3057\u307e\u3057\u305f\u3002',
-    'catalogItems.deleteLabel':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0',
-    'catalogItems.columns.displayName': '\u8868\u793a\u540d',
-    'catalogItems.columns.apiVersion': 'API \u30d0\u30fc\u30b8\u30e7\u30f3',
-    'catalogItems.columns.resources': '\u30ea\u30bd\u30fc\u30b9',
-    'catalogItems.columns.fields': '\u30d5\u30a3\u30fc\u30eb\u30c9',
-    'catalogItems.columns.created': '\u4f5c\u6210\u65e5',
-    'catalogItems.fieldCount_one': '1 \u30d5\u30a3\u30fc\u30eb\u30c9',
-    'catalogItems.fieldCount_other': '{{count}} \u30d5\u30a3\u30fc\u30eb\u30c9',
-    'catalogItems.resourceCount_one': '1 \u30ea\u30bd\u30fc\u30b9',
-    'catalogItems.resourceCount_other': '{{count}} \u30ea\u30bd\u30fc\u30b9',
-    'catalogItems.form.importButton':
-      '\u30d5\u30a1\u30a4\u30eb\u304b\u3089\u30a4\u30f3\u30dd\u30fc\u30c8',
+      'カタログ項目とは、開発者がプロビジョニングできるサービステンプレートのことです。各カタログ項目は、1 つ以上のサービスタイプを参照し、カスタマイズ可能なフィールドを定義します。',
+    'catalogItems.createButton': '作成',
+    'catalogItems.entityLabel': 'カタログ項目',
+    'catalogItems.createDrawerTitle': 'カタログ項目を作成する',
+    'catalogItems.editDrawerTitle': 'カタログ項目を編集する',
+    'catalogItems.saveButton': '保存',
+    'catalogItems.createSuccess': 'カタログ項目が正常に作成されました。',
+    'catalogItems.updateSuccess': 'カタログ項目が正常に更新されました。',
+    'catalogItems.deleteSuccess': 'カタログ項目が正常に削除されました。',
+    'catalogItems.deleteLabel': 'カタログ項目',
+    'catalogItems.columns.displayName': '表示名',
+    'catalogItems.columns.apiVersion': 'API バージョン',
+    'catalogItems.columns.resources': 'リソース',
+    'catalogItems.columns.fields': 'フィールド',
+    'catalogItems.columns.created': '作成済み',
+    'catalogItems.fieldCount_one': '1 つのフィールド',
+    'catalogItems.fieldCount_other': '{{count}} 個のフィールド',
+    'catalogItems.resourceCount_one': '1 つのリソース',
+    'catalogItems.resourceCount_other': '{{count}} 個のリソース',
+    'catalogItems.form.importButton': 'ファイルからインポートする',
     'catalogItems.form.importTooltip':
-      'JSON \u307e\u305f\u306f YAML \u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u5b9a\u7fa9\u304b\u3089\u30d5\u30a9\u30fc\u30e0\u3092\u5165\u529b',
+      'JSON または YAML カタログ項目の定義からフォームに入力します',
     'catalogItems.form.importError':
-      '\u30d5\u30a1\u30a4\u30eb\u306e\u30a4\u30f3\u30dd\u30fc\u30c8\u306b\u5931\u6557\u3057\u307e\u3057\u305f \u2014 \u6709\u52b9\u306a JSON \u307e\u305f\u306f YAML \u3067\u3042\u308b\u3053\u3068\u3092\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
-    'catalogItems.form.displayNameLabel': '\u8868\u793a\u540d *',
+      'ファイルのインポートに失敗しました — 有効な JSON または YAML 形式であることを確認してください。',
+    'catalogItems.form.displayNameLabel': '表示名 *',
     'catalogItems.form.displayNameHelper':
-      '\u3053\u306e\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u306e\u8aad\u307f\u3084\u3059\u3044\u540d\u524d\uff0863 \u6587\u5b57\u4ee5\u5185\uff09',
-    'catalogItems.form.apiVersionLabel': 'API \u30d0\u30fc\u30b8\u30e7\u30f3 *',
+      'このカタログ項目の人間可読名 (最大 63 文字)',
+    'catalogItems.form.apiVersionLabel': 'API バージョン *',
     'catalogItems.form.apiVersionHelper':
-      'v<\u6570\u5b57>[alpha|beta][\u6570\u5b57] \u306e\u30d1\u30bf\u30fc\u30f3\u306b\u5f93\u3046\u3053\u3068\u2014\u4f8b: v1, v1alpha1',
-    'catalogItems.form.serviceTypeLabel':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7 *',
+      'パターン v<number>[alpha|beta][number] に従う必要があります — 例: v1、v1alpha1',
+    'catalogItems.form.serviceTypeLabel': 'サービスタイプ *',
     'catalogItems.form.serviceTypeHelperEdit':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u306f\u4f5c\u6210\u5f8c\u306b\u5909\u66f4\u3067\u304d\u307e\u305b\u3093',
+      'サービスタイプは作成後に変更できません',
     'catalogItems.form.serviceTypeHelperNoTypes':
-      '\u5229\u7528\u53ef\u80fd\u306a\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u306a\u3057 \u2014 \u307e\u305a\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u30bf\u30d6\u3067\u4f5c\u6210\u3057\u3066\u304f\u3060\u3055\u3044',
+      '利用可能なサービスタイプがありません — サービスタイプタブで作成してください',
     'catalogItems.form.serviceTypeHelperDefault':
-      '\u3053\u306e\u30a2\u30a4\u30c6\u30e0\u306e\u30d9\u30fc\u30b9\u3068\u306a\u308b\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u3092\u9078\u629e',
-    'catalogItems.form.fieldsLabel': '\u30d5\u30a3\u30fc\u30eb\u30c9 *',
-    'catalogItems.form.fieldsCaption':
-      '(\u5c11\u306a\u304f\u3068\u3082 1 \u3064\u5fc5\u8981)',
+      'このリソースの基となるサービスタイプを選択します',
+    'catalogItems.form.fieldsLabel': 'フィールド *',
+    'catalogItems.form.fieldsCaption': '(少なくとも 1 つ必須)',
     'catalogItems.form.fieldsErrorEmpty':
-      '\u30d1\u30b9\u304c\u7a7a\u3067\u306a\u3044\u30d5\u30a3\u30fc\u30eb\u30c9\u3092\u5c11\u306a\u304f\u3068\u3082 1 \u3064\u8ffd\u52a0\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
-    'catalogItems.form.fieldAddButton':
-      '\u30d5\u30a3\u30fc\u30eb\u30c9\u3092\u8ffd\u52a0',
+      'パスが空でないフィールドを少なくとも 1 つ追加します。',
+    'catalogItems.form.fieldAddButton': 'フィールドを追加する',
     'catalogItems.form.fieldAddTooltip':
-      '\u65b0\u3057\u3044\u30d5\u30a3\u30fc\u30eb\u30c9\u3092\u8ffd\u52a0\u3059\u308b\u524d\u306b\u6700\u5f8c\u306e\u30d5\u30a3\u30fc\u30eb\u30c9\u306e\u30d1\u30b9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044',
-    'catalogItems.form.fieldPathLabel': '\u30d1\u30b9 *',
-    'catalogItems.form.fieldPathHelper': '\u4f8b: config.replicas',
-    'catalogItems.form.fieldDisplayNameLabel': '\u8868\u793a\u540d',
-    'catalogItems.form.fieldEditableLabel': '\u7de8\u96c6\u53ef\u80fd',
-    'catalogItems.form.fieldDefaultValueLabel':
-      '\u30c7\u30d5\u30a9\u30eb\u30c8\u5024',
+      '新しいフィールドを追加する前に、直前のフィールドのパスを入力します',
+    'catalogItems.form.fieldPathLabel': 'パス *',
+    'catalogItems.form.fieldPathHelper': '例: config.replicas',
+    'catalogItems.form.fieldDisplayNameLabel': '表示名',
+    'catalogItems.form.fieldEditableLabel': '編集可能',
+    'catalogItems.form.fieldDefaultValueLabel': 'デフォルト値',
     'catalogItems.form.fieldDefaultValueHelper':
-      '\u4efb\u610f\u306e JSON \u5024 \u2014 \u4f8b: 42, "\u3053\u3093\u306b\u3061\u306f", true, [1,2]',
-    'catalogItems.form.fieldRemoveAriaLabel':
-      '\u30d5\u30a3\u30fc\u30eb\u30c9\u3092\u524a\u9664',
-    'catalogItems.form.schemaLabel':
-      '\u30d0\u30ea\u30c7\u30fc\u30b7\u30e7\u30f3\u30b9\u30ad\u30fc\u30de',
-    'catalogItems.form.schemaEditButton': 'JSON \u3092\u7de8\u96c6',
-    'catalogItems.form.schemaAddButton': 'JSON \u3092\u8ffd\u52a0',
-    'catalogItems.form.schemaDialogTitle':
-      '\u30d0\u30ea\u30c7\u30fc\u30b7\u30e7\u30f3\u30b9\u30ad\u30fc\u30de',
+      '任意の JSON 値 — 例: 42、"hello"、true、[1,2]',
+    'catalogItems.form.fieldRemoveAriaLabel': 'フィールドを削除する',
+    'catalogItems.form.schemaLabel': '検証スキーマ',
+    'catalogItems.form.schemaEditButton': 'JSON の編集',
+    'catalogItems.form.schemaAddButton': 'JSON を追加する',
+    'catalogItems.form.schemaDialogTitle': '検証スキーマ',
     'catalogItems.form.schemaDialogHelper':
-      'JSON \u30b9\u30ad\u30fc\u30de\u30aa\u30d6\u30b8\u30a7\u30af\u30c8 \u2014 \u4f8b: {"type":"integer","minimum":0}',
-    'catalogItems.form.schemaDialogCancel': '\u30ad\u30e3\u30f3\u30bb\u30eb',
-    'catalogItems.form.schemaDialogApply': '\u9069\u7528',
+      'JSON スキーマオブジェクト — 例: {"type":"integer","minimum":0}',
+    'catalogItems.form.schemaDialogCancel': 'キャンセル',
+    'catalogItems.form.schemaDialogApply': '適用',
     'catalogItems.form.schemaMustBeObject':
-      'JSON \u30aa\u30d6\u30b8\u30a7\u30af\u30c8\u3067\u306a\u3051\u308c\u3070\u306a\u308a\u307e\u305b\u3093\uff08\u914d\u5217\u307e\u305f\u306f\u30d7\u30ea\u30df\u30c6\u30a3\u30d6\u306f\u4e0d\u53ef\uff09',
-    'catalogItems.form.schemaInvalidJson':
-      '\u7121\u52b9\u306a JSON \u69cb\u6587',
-    'catalogItems.wizard.tabOverview': '\u6982\u8981',
+      '配列やプリミティブ型ではなく、JSON オブジェクトである必要があります',
+    'catalogItems.form.schemaInvalidJson': '無効な JSON 構文',
+    'catalogItems.wizard.tabOverview': '概要',
     'catalogItems.wizard.tabApi': 'API',
-    'catalogItems.wizard.tabResources': '\u30ea\u30bd\u30fc\u30b9',
+    'catalogItems.wizard.tabResources': 'リソース',
     'catalogItems.wizard.resourcesDescription':
-      '1\u3064\u4ee5\u4e0a\u306e\u30ea\u30bd\u30fc\u30b9\u3092\u8ffd\u52a0\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u5404\u30ea\u30bd\u30fc\u30b9\u306f\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u3092\u53c2\u7167\u3057\u3001\u72ec\u81ea\u306e\u30d5\u30a3\u30fc\u30eb\u30c9\u8a2d\u5b9a\u3092\u5b9a\u7fa9\u3057\u307e\u3059\u3002',
+      '1 つ以上のリソースを追加します。各リソースはサービスタイプを参照し、独自のフィールド設定を定義します。',
     'catalogItems.wizard.resourcesRequired':
-      '\u5c11\u306a\u304f\u3068\u30821\u3064\u306e\u30ea\u30bd\u30fc\u30b9\u304c\u5fc5\u8981\u3067\u3059\u3002',
-    'catalogItems.wizard.addResourceButton':
-      '\u30ea\u30bd\u30fc\u30b9\u3092\u8ffd\u52a0',
-    'catalogItems.wizard.removeResource':
-      '\u30ea\u30bd\u30fc\u30b9\u3092\u524a\u9664',
-    'catalogItems.wizard.unnamedResource': '(\u540d\u524d\u306a\u3057)',
-    'catalogItems.wizard.resourceNameLabel': '\u30ea\u30bd\u30fc\u30b9\u540d *',
+      '少なくとも 1 つのリソースが必要です。',
+    'catalogItems.wizard.addResourceButton': 'リソースを追加する',
+    'catalogItems.wizard.removeResource': 'リソースを削除する',
+    'catalogItems.wizard.unnamedResource': '(名前なし)',
+    'catalogItems.wizard.resourceNameLabel': 'リソース名 *',
     'catalogItems.wizard.resourceNameHelper':
-      '\u3053\u306e\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u5185\u306e\u4e00\u610f\u306e\u8b58\u5225\u5b50 \u2014 \u4f8b: app, ordersDb',
-    'catalogItems.wizard.requiresResourcesLabel':
-      '\u5fc5\u8981\u306a\u30ea\u30bd\u30fc\u30b9',
+      'このカタログ項目内の一意の識別子 — 例: app、ordersDb',
+    'catalogItems.wizard.requiresResourcesLabel': 'リソースが必要',
     'catalogItems.wizard.requiresResourcesHelper':
-      '\u3053\u306e\u30ea\u30bd\u30fc\u30b9\u306e\u524d\u306b\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u3059\u308b\u5fc5\u8981\u306e\u3042\u308b\u30ea\u30bd\u30fc\u30b9\u3092\u9078\u629e',
+      'このリソースの前にプロビジョニングする必要のある他のリソースを選択します',
     'catalogItems.wizard.apiVersionImmutable':
-      'API\u30d0\u30fc\u30b8\u30e7\u30f3\u306f\u4f5c\u6210\u5f8c\u306b\u5909\u66f4\u3067\u304d\u307e\u305b\u3093',
-    'instances.emptyTitle':
-      '\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u6e08\u307f\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u306a\u3057',
+      'API バージョンは作成後に変更できません',
+    'instances.emptyTitle': 'プロビジョニングされたインスタンスはありません',
     'instances.emptyDescription':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u306f\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u3055\u308c\u305f\u30b5\u30fc\u30d3\u30b9\u3092\u8868\u3057\u307e\u3059\u3002',
-    'instances.createButton': '\u4f5c\u6210',
-    'instances.entityLabel':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9',
-    'instances.createDialogTitle':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u3092\u4f5c\u6210',
+      'カタログ項目インスタンスは、プロビジョニングされたサービスを表します。カタログ項目からインスタンスを作成し、登録済みの環境エージェント上でサービスをプロビジョニングします。',
+    'instances.createButton': '作成',
+    'instances.entityLabel': 'カタログ項目インスタンス',
+    'instances.createDialogTitle': 'カタログ項目インスタンスを作成する',
     'instances.rehydrateSuccess':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u3092\u6b63\u5e38\u306b\u30ea\u30cf\u30a4\u30c9\u30ec\u30fc\u30c8\u3057\u307e\u3057\u305f\u3002',
-    'instances.deleteLabel': '\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9',
-    'instances.rehydrateTooltip': '\u30ea\u30cf\u30a4\u30c9\u30ec\u30fc\u30c8',
-    'instances.rehydrateAriaLabel':
-      '\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u3092\u30ea\u30cf\u30a4\u30c9\u30ec\u30fc\u30c8',
-    'instances.deleteTooltip': '\u524a\u9664',
-    'instances.deleteAriaLabel':
-      '\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u3092\u524a\u9664',
-    'instances.rehydrateDialogTitle':
-      '\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u3092\u30ea\u30cf\u30a4\u30c9\u30ec\u30fc\u30c8\u3057\u307e\u3059\u304b\uff1f',
+      'カタログ項目インスタンスが正常にリハイドレートされました。',
+    'instances.deleteLabel': 'インスタンス',
+    'instances.rehydrateTooltip': 'リハイドレーション',
+    'instances.rehydrateAriaLabel': 'インスタンスをリハイドレートする',
+    'instances.deleteTooltip': '削除',
+    'instances.deleteAriaLabel': 'インスタンスを削除する',
+    'instances.rehydrateDialogTitle': 'インスタンスをリハイドレートしますか?',
     'instances.rehydrateDialogBody':
-      '{{instanceName}}\u3092\u30ea\u30cf\u30a4\u30c9\u30ec\u30fc\u30c8\u3059\u308b\u3068\u30ea\u30bd\u30fc\u30b9\u304c\u518d\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u3055\u308c\u3001\u65b0\u3057\u3044\u30ea\u30bd\u30fc\u30b9 ID \u304c\u5272\u308a\u5f53\u3066\u3089\u308c\u308b\u5834\u5408\u304c\u3042\u308a\u307e\u3059\u3002\u3053\u306e\u64cd\u4f5c\u306f\u5143\u306b\u623b\u305b\u307e\u305b\u3093\u3002',
-    'instances.rehydrateDialogFallbackName':
-      '\u3053\u306e\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9',
-    'instances.rehydrateDialogCancel': '\u30ad\u30e3\u30f3\u30bb\u30eb',
-    'instances.rehydrateDialogConfirm':
-      '\u30ea\u30cf\u30a4\u30c9\u30ec\u30fc\u30c8',
-    'instances.columns.displayName': '\u8868\u793a\u540d',
-    'instances.columns.catalogItem':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0',
-    'instances.columns.resourceIds': '\u30ea\u30bd\u30fc\u30b9 ID',
-    'instances.columns.apiVersion': 'API \u30d0\u30fc\u30b8\u30e7\u30f3',
-    'instances.columns.created': '\u4f5c\u6210\u65e5',
-    'instances.form.displayNameLabel': '\u8868\u793a\u540d *',
+      '{{instanceName}} をリハイドレートすると、リソースが再プロビジョニングされ、新しいリソース ID が割り当てられる場合があります。この操作は元に戻せません。',
+    'instances.rehydrateDialogFallbackName': 'このインスタンス',
+    'instances.rehydrateDialogCancel': 'キャンセル',
+    'instances.rehydrateDialogConfirm': 'リハイドレーション',
+    'instances.columns.displayName': '表示名',
+    'instances.columns.catalogItem': 'カタログ項目',
+    'instances.columns.resourceIds': 'リソース ID',
+    'instances.columns.apiVersion': 'API バージョン',
+    'instances.columns.created': '作成済み',
+    'instances.form.displayNameLabel': '表示名 *',
     'instances.form.displayNameHelper':
-      '\u3053\u306e\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u6e08\u307f\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u306e\u8aad\u307f\u3084\u3059\u3044\u540d\u524d\uff0863 \u6587\u5b57\u4ee5\u5185\uff09',
-    'instances.form.catalogItemLabel':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0 *',
-    'instances.form.catalogItemSelect':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u3092\u9078\u629e\u2026',
+      'このプロビジョニングされたインスタンスの人間可読名 (最大 63 文字)',
+    'instances.form.catalogItemLabel': 'カタログ項目 *',
+    'instances.form.catalogItemSelect': 'カタログ項目を選択します…',
     'instances.form.catalogItemHelperNoItems':
-      '\u5229\u7528\u53ef\u80fd\u306a\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u306a\u3057 \u2014 \u307e\u305a\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u30bf\u30d6\u3067\u4f5c\u6210\u3057\u3066\u304f\u3060\u3055\u3044',
+      '利用可能なカタログ項目はありません — カタログ項目タブから作成してください',
     'instances.form.catalogItemHelperDefault':
-      '\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u3092\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u3059\u308b\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u3092\u9078\u629e',
-    'instances.form.apiVersionLabel': 'API \u30d0\u30fc\u30b8\u30e7\u30f3 *',
+      'インスタンスをプロビジョニングするカタログ項目を選択します',
+    'instances.form.apiVersionLabel': 'API バージョン *',
     'instances.form.apiVersionHelper':
-      'v<\u6570\u5b57>[alpha|beta][\u6570\u5b57] \u306e\u30d1\u30bf\u30fc\u30f3\u306b\u5f93\u3046\u3053\u3068\u2014\u4f8b: v1, v1alpha1',
-    'instances.form.fieldValuesSection': '\u30d5\u30a3\u30fc\u30eb\u30c9\u5024',
+      'パターン v<number>[alpha|beta][number] に従う必要があります — 例: v1、v1alpha1',
+    'instances.form.fieldValuesSection': 'フィールド値',
     'instances.form.fieldValuesSectionHint':
-      '(\u3053\u306e\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u3067\u5b9a\u7fa9\u3055\u308c\u305f\u7de8\u96c6\u53ef\u80fd\u30d5\u30a3\u30fc\u30eb\u30c9)',
+      '(このカタログ項目で定義された編集可能なフィールド)',
     'instances.form.noEditableFields':
-      '\u3053\u306e\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u306b\u306f\u7de8\u96c6\u53ef\u80fd\u306a\u30d5\u30a3\u30fc\u30eb\u30c9\u304c\u3042\u308a\u307e\u305b\u3093\u3002',
-    'instances.wizard.tabOverview': '\u6982\u8981',
-    'resources.emptyTitle':
-      '\u30ea\u30bd\u30fc\u30b9\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093',
+      'このリソースには編集可能なフィールドがありません。',
+    'instances.wizard.tabOverview': '概要',
+    'resources.emptyTitle': 'リソースが見つかりません',
     'resources.emptyDescription':
-      'DCM \u3067\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u3055\u308c\u305f\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u304c\u3053\u3053\u306b\u8868\u793a\u3055\u308c\u307e\u3059\u3002',
-    'resources.cardTitle': '\u30ea\u30bd\u30fc\u30b9 ({{count}})',
+      'DCM を通じてプロビジョニングされたサービスタイプのインスタンスはここに表示されます。',
+    'resources.cardTitle': 'リソース ({{count}})',
     'resources.columns.id': 'ID',
-    'resources.columns.serviceType':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
-    'resources.columns.provider': '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc',
-    'resources.columns.status': '\u30b9\u30c6\u30fc\u30bf\u30b9',
-    'resources.columns.created': '\u4f5c\u6210\u65e5',
-    'copyButton.copy': '\u30b3\u30d4\u30fc',
-    'copyButton.copied': '\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f\uff01',
-    'copyButton.failed': '\u30b3\u30d4\u30fc\u5931\u6557',
-    'copyButton.ariaLabel':
-      '\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc',
-    'validation.agent.nameRequired':
-      '\u540d\u524d\u306f\u5fc5\u9808\u3067\u3059',
+    'resources.columns.serviceType': 'サービスタイプ',
+    'resources.columns.provider': 'プロバイダー',
+    'resources.columns.status': 'ステータス',
+    'resources.columns.created': '作成済み',
+    'copyButton.copy': 'コピー',
+    'copyButton.copied': 'コピーしました!',
+    'copyButton.failed': 'コピーに失敗しました',
+    'copyButton.ariaLabel': 'クリップボードにコピーする',
+    'validation.agent.nameRequired': '名前は必須です',
     'validation.agent.namePattern':
-      '\u5c0f\u6587\u5b57\u3001\u6570\u5b57\u3001\u30cf\u30a4\u30d5\u30f3\u306e\u307f\u4f7f\u7528\u3067\u304d\u307e\u3059\uff08\u6587\u5b57\u3067\u59cb\u307e\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059\uff09',
-    'validation.agent.environmentRequired':
-      '\u74b0\u5883\u306f\u5fc5\u9808\u3067\u3059',
+      '使用できるのは小文字の英字、数字、ハイフンのみです (先頭は英字である必要があります)',
+    'validation.agent.environmentRequired': '環境は必須です',
     'validation.agent.serviceTypesRequired':
-      '\u5c11\u306a\u304f\u3068\u30821\u3064\u306e\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u304c\u5fc5\u8981\u3067\u3059',
-    'validation.agent.costRequired':
-      '\u30b3\u30b9\u30c8\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.agent.topicNameRequired':
-      'Topic\u540d\u306f\u5fc5\u9808\u3067\u3059',
+      '少なくとも 1 つのサービスタイプが必要です',
+    'validation.agent.costRequired': 'コストは必須です',
+    'validation.agent.topicNameRequired': 'トピック名は必須です',
     'validation.agent.topicNamePattern':
-      'Topic\u540d\u306fdcm.agent.\u3067\u59cb\u307e\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.policy.displayNameRequired':
-      '\u8868\u793a\u540d\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.policy.displayNameEmpty':
-      '\u8868\u793a\u540d\u306f\u7a7a\u306b\u3067\u304d\u307e\u305b\u3093',
-    'validation.policy.displayNameMax':
-      '\u8868\u793a\u540d\u306f255\u6587\u5b57\u4ee5\u5185\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.policy.descriptionMax':
-      '\u8aac\u660e\u306f255\u6587\u5b57\u4ee5\u5185\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.policy.policyTypeRequired':
-      '\u30dd\u30ea\u30b7\u30fc\u30bf\u30a4\u30d7\u306f\u5fc5\u9808\u3067\u3059',
+      'トピック名は dcm.agent で始まる必要があります。',
+    'validation.policy.displayNameRequired': '表示名は必須です',
+    'validation.policy.displayNameEmpty': '表示名は空にできません',
+    'validation.policy.displayNameMax': '表示名は最大 255 文字までです',
+    'validation.policy.descriptionMax': '説明文は最大 255 文字までです',
+    'validation.policy.policyTypeRequired': 'ポリシータイプは必須です',
     'validation.policy.policyTypeOneOf':
-      'GLOBAL \u307e\u305f\u306f USER \u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.policy.priorityType':
-      '\u512a\u5148\u5ea6\u306f\u6570\u5b57\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.policy.priorityRequired':
-      '\u512a\u5148\u5ea6\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.policy.priorityInteger':
-      '\u512a\u5148\u5ea6\u306f\u6574\u6570\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
+      'GLOBAL または USER である必要があります',
+    'validation.policy.priorityType': '優先度は数値である必要があります',
+    'validation.policy.priorityRequired': '優先度は必須です',
+    'validation.policy.priorityInteger': '優先度は整数である必要があります',
     'validation.policy.priorityMin':
-      '\u512a\u5148\u5ea6\u306f1\u4ee5\u4e0a\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
+      '優先度は少なくとも 1 である必要があります',
     'validation.policy.priorityMax':
-      '\u512a\u5148\u5ea6\u306f1000\u4ee5\u4e0b\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.policy.regoCodeRequired':
-      'Rego\u30b3\u30fc\u30c9\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.policy.regoCodeEmpty':
-      'Rego\u30b3\u30fc\u30c9\u306f\u7a7a\u306b\u3067\u304d\u307e\u305b\u3093',
+      '優先度は最大 1000 までである必要があります',
+    'validation.policy.regoCodeRequired': 'Rego コードは必須です',
+    'validation.policy.regoCodeEmpty': 'Rego コードは空にできません',
     'validation.policy.regoCodePackage':
-      '\u30d1\u30c3\u30b1\u30fc\u30b8\u5ba3\u8a00\u304c\u5fc5\u8981\u3067\u3059 \u2014 \u4f8b: "package dcm.placement"',
-    'validation.catalogItem.displayNameRequired':
-      '\u8868\u793a\u540d\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.catalogItem.displayNameEmpty':
-      '\u8868\u793a\u540d\u306f\u7a7a\u306b\u3067\u304d\u307e\u305b\u3093',
-    'validation.catalogItem.displayNameMax':
-      '\u8868\u793a\u540d\u306f63\u6587\u5b57\u4ee5\u5185\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.catalogItem.apiVersionRequired':
-      'API\u30d0\u30fc\u30b8\u30e7\u30f3\u306f\u5fc5\u9808\u3067\u3059',
+      'パッケージ宣言を含める必要があります — 例: "package dcm.placement"',
+    'validation.catalogItem.displayNameRequired': '表示名は必須です',
+    'validation.catalogItem.displayNameEmpty': '表示名は空にできません',
+    'validation.catalogItem.displayNameMax': '表示名は最大 63 文字までです',
+    'validation.catalogItem.apiVersionRequired': 'API バージョンは必須です',
     'validation.catalogItem.apiVersionPattern':
-      'v<\u6570\u5b57>[alpha|beta][<\u6570\u5b57>] \u306e\u5f62\u5f0f\u306b\u5f93\u3063\u3066\u304f\u3060\u3055\u3044 \u2014 \u4f8b: v1, v1alpha1',
-    'validation.catalogItem.serviceTypeRequired':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.catalogItem.resourceNameRequired':
-      '\u30ea\u30bd\u30fc\u30b9\u540d\u306f\u5fc5\u9808\u3067\u3059',
+      'パターン v<number>[alpha|beta][number] に従う必要があります — 例: v1、v1alpha1',
+    'validation.catalogItem.serviceTypeRequired': 'サービスタイプは必須です',
+    'validation.catalogItem.resourceNameRequired': 'リソース名は必須です',
     'validation.catalogItem.resourceNameDuplicate':
-      '\u30ea\u30bd\u30fc\u30b9\u540d\u306f\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u5185\u3067\u4e00\u610f\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
+      'リソース名はカタログ項目内で一意である必要があります',
     'validation.catalogItem.resourceNamePattern':
-      '\u6587\u5b57\u3001\u6570\u5b57\u3001\u30cf\u30a4\u30d5\u30f3\u3001\u30a2\u30f3\u30c0\u30fc\u30b9\u30b3\u30a2\u306e\u307f\u4f7f\u7528\u53ef\u80fd\uff08\u6587\u5b57\u3067\u59cb\u307e\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059\uff09',
+      '使用できるのは英字、数字、ハイフン、アンダースコアのみです (先頭は英字である必要があります)',
     'validation.catalogItem.requiresResourcesCycle':
-      '\u5faa\u74b0\u4f9d\u5b58\u304c\u691c\u51fa\u3055\u308c\u307e\u3057\u305f \u2014 \u3053\u306e\u30ea\u30bd\u30fc\u30b9\u306f\u9593\u63a5\u7684\u306b\u81ea\u5206\u81ea\u8eab\u3092\u5fc5\u8981\u3068\u3057\u3066\u3044\u307e\u3059',
+      '循環依存関係が検出されました — このリソースは間接的に自身を要求しています',
     'validation.catalogItem.resourcesRequired':
-      '\u5c11\u306a\u304f\u3068\u30821\u3064\u306e\u30ea\u30bd\u30fc\u30b9\u304c\u5fc5\u8981\u3067\u3059',
+      '少なくとも 1 つのリソースが必要です',
     'validation.catalogItem.duplicatePath':
-      '\u30d1\u30b9\u304c\u91cd\u8907\u3057\u3066\u3044\u307e\u3059 \u2014 \u30d1\u30b9\u306f\u4e00\u610f\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
+      '重複するパス — パスは一意である必要があります',
     'validation.catalogItem.invalidJson':
-      '\u7121\u52b9\u306aJSON\u3067\u3059 \u2014 \u69cb\u6587\u3092\u4fee\u6b63\u3059\u308b\u304b\u3001\u5358\u7d14\u306a\u6587\u5b57\u5217\u5024\u3092\u4f7f\u7528\u3057\u3066\u304f\u3060\u3055\u3044',
+      '無効な JSON — 構文を修正するか、プレーンな文字列値を使用します',
     'validation.catalogItem.schemaMustBeObject':
-      'JSON\u30aa\u30d6\u30b8\u30a7\u30af\u30c8\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059 \u2014 \u4f8b: {"type":"integer"}',
+      'JSON オブジェクトである必要があります — 例: {"type":"integer"}',
     'validation.catalogItem.schemaMinMaxConflict':
-      '\u6700\u5c0f\u5024 ({{min}}) \u306f\u6700\u5927\u5024 ({{max}}) \u3092\u8d85\u3048\u3066\u306f\u306a\u308a\u307e\u305b\u3093',
+      '最小値 ({{min}}) は最大値 ({{max}}) を超えることはできません',
     'validation.catalogItem.defaultBelowMin':
-      '\u30c7\u30d5\u30a9\u30eb\u30c8\u5024 ({{value}}) \u306f\u30b9\u30ad\u30fc\u30de\u306e\u6700\u5c0f\u5024 ({{min}}) \u3092\u4e0b\u56de\u3063\u3066\u3044\u307e\u3059',
+      'デフォルト値 ({{value}}) はスキーマの最小値 ({{min}}) を下回っています',
     'validation.catalogItem.defaultAboveMax':
-      '\u30c7\u30d5\u30a9\u30eb\u30c8\u5024 ({{value}}) \u306f\u30b9\u30ad\u30fc\u30de\u306e\u6700\u5927\u5024 ({{max}}) \u3092\u8d85\u3048\u3066\u3044\u307e\u3059',
-    'validation.catalogItem.schemaInvalidJson':
-      '\u7121\u52b9\u306aJSON\u69cb\u6587\u3067\u3059',
-    'validation.instance.displayNameRequired':
-      '\u8868\u793a\u540d\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.instance.displayNameEmpty':
-      '\u8868\u793a\u540d\u306f\u7a7a\u306b\u3067\u304d\u307e\u305b\u3093',
-    'validation.instance.displayNameMax':
-      '\u8868\u793a\u540d\u306f63\u6587\u5b57\u4ee5\u5185\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.instance.catalogItemRequired':
-      '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.instance.apiVersionRequired':
-      'API\u30d0\u30fc\u30b8\u30e7\u30f3\u306f\u5fc5\u9808\u3067\u3059',
+      'デフォルト値 ({{value}}) がスキーマの最大値 ({{max}}) を超えています',
+    'validation.catalogItem.schemaInvalidJson': '無効な JSON 構文',
+    'validation.instance.displayNameRequired': '表示名は必須です',
+    'validation.instance.displayNameEmpty': '表示名は空にできません',
+    'validation.instance.displayNameMax': '表示名は最大 63 文字までです',
+    'validation.instance.catalogItemRequired': 'カタログ項目は必須です',
+    'validation.instance.apiVersionRequired': 'API バージョンは必須です',
     'validation.instance.apiVersionPattern':
-      'v<\u6570\u5b57>[alpha|beta][<\u6570\u5b57>] \u306e\u5f62\u5f0f\u306b\u5f93\u3063\u3066\u304f\u3060\u3055\u3044 \u2014 \u4f8b: v1, v1alpha1',
-    'validation.instance.fieldRequired':
-      '\u3053\u306e\u30d5\u30a3\u30fc\u30eb\u30c9\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.instance.fieldMustBeNumber':
-      '\u6709\u52b9\u306a\u6570\u5b57\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.instance.fieldMin':
-      '\u5c11\u306a\u304f\u3068\u3082 {{min}} \u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
-    'validation.instance.fieldMax':
-      '\u6700\u5927\u3067\u3082 {{max}} \u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
+      'パターン v<number>[alpha|beta][number] に従う必要があります — 例: v1、v1alpha1',
+    'validation.instance.fieldRequired': 'このフィールドは必須です',
+    'validation.instance.fieldMustBeNumber': '有効な数字である必要があります',
+    'validation.instance.fieldMin': '最低でも {{min}} である必要があります',
+    'validation.instance.fieldMax': '最大でも {{max}} である必要があります',
   },
 });
 

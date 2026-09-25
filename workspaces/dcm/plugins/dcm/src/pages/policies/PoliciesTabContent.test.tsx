@@ -15,9 +15,9 @@
  */
 
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import { renderInTestApp } from '@backstage/test-utils';
 import type { Policy } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { policyManagerApiRef } from '../../apis';
+import { DcmClientsTestProvider } from '../../api/DcmClientsContext';
 import { PoliciesTabContent } from './PoliciesTabContent';
 
 jest.mock('../../hooks/useTranslation', () => {
@@ -53,9 +53,9 @@ async function renderPoliciesTab(
   mockApi: ReturnType<typeof buildMockApi> = buildMockApi(),
 ) {
   return renderInTestApp(
-    <TestApiProvider apis={[[policyManagerApiRef, mockApi]]}>
+    <DcmClientsTestProvider clients={{ policyManagerApi: mockApi }}>
       <PoliciesTabContent />
-    </TestApiProvider>,
+    </DcmClientsTestProvider>,
   );
 }
 

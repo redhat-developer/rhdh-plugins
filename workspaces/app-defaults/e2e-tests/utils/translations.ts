@@ -14,51 +14,57 @@
  * limitations under the License.
  */
 
-export type LearningPathsE2eMessages = {
-  menuItem: {
-    learningPaths: string;
-  };
-  learningPaths: {
-    title: string;
-  };
+export type E2eTranslations = {
+  languageDropdownTitle: string;
+  catalogSideBarTitle: string;
+  overviewTabTitle: string;
+  /** Localized sidebar / page title (`pages.Learning Paths`). */
+  learningPathTitle: string;
 };
 
-const enMessages: LearningPathsE2eMessages = {
-  menuItem: {
-    learningPaths: 'Learning Paths',
+const localeMessages: Record<string, E2eTranslations> = {
+  en: {
+    languageDropdownTitle: 'English',
+    catalogSideBarTitle: 'Catalog',
+    overviewTabTitle: 'Overview',
+    learningPathTitle: 'Learning Paths',
   },
-  learningPaths: {
-    title: 'Learning Paths',
-  },
-};
-
-const localeMessages: Record<string, LearningPathsE2eMessages> = {
-  en: enMessages,
   de: {
-    menuItem: { learningPaths: 'Lernpfade' },
-    learningPaths: { title: 'Lernpfade' },
+    languageDropdownTitle: 'Deutsch',
+    catalogSideBarTitle: 'Katalog',
+    overviewTabTitle: 'Übersicht',
+    learningPathTitle: 'Lernpfade',
   },
   es: {
-    menuItem: { learningPaths: 'Rutas de aprendizaje' },
-    learningPaths: { title: 'Rutas de aprendizaje' },
+    languageDropdownTitle: 'Español',
+    catalogSideBarTitle: 'Catálogo',
+    overviewTabTitle: 'Resumen',
+    learningPathTitle: 'Rutas de aprendizaje',
   },
   fr: {
-    menuItem: { learningPaths: "Parcours d'apprentissage" },
-    learningPaths: { title: "Parcours d'apprentissage" },
+    languageDropdownTitle: 'Français',
+    catalogSideBarTitle: 'Catalogue',
+    overviewTabTitle: 'Aperçu',
+    learningPathTitle: "Parcours d'apprentissage",
   },
   it: {
-    menuItem: { learningPaths: 'Learning Path' },
-    learningPaths: { title: 'Learning Path' },
+    languageDropdownTitle: 'Italiano',
+    catalogSideBarTitle: 'Catalogo',
+    overviewTabTitle: 'Panoramica',
+    learningPathTitle: 'Learning Path',
   },
   ja: {
-    menuItem: { learningPaths: 'ラーニングパス' },
-    learningPaths: { title: 'ラーニングパス' },
+    languageDropdownTitle: '日本語',
+    catalogSideBarTitle: 'カタログ',
+    overviewTabTitle: '概要',
+    learningPathTitle: 'ラーニングパス',
   },
 };
 
-export function getLearningPathsTranslations(
-  locale = 'en',
-): LearningPathsE2eMessages {
+export function getE2eTranslations(locale: string): E2eTranslations {
   const baseLocale = locale.split('-')[0];
-  return localeMessages[baseLocale] ?? enMessages;
+  const messages = localeMessages[baseLocale];
+  if (!messages)
+    throw new Error(`No e2e messages found for base locale ${baseLocale}`);
+  return messages;
 }

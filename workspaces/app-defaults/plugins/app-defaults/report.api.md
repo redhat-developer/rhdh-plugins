@@ -43,7 +43,6 @@ export const appDefaultsTranslationRef: TranslationRef<
     readonly 'docs.emptyState.title': 'No documentation available';
     readonly 'docs.emptyState.description': 'There are no documented entities yet, or you do not have permission to view any. Documentation will appear here once entities with TechDocs annotations are registered and you have access.';
     readonly 'docs.emptyState.importButtonTitle': 'Register a component';
-    readonly 'menuItem.learningPaths': 'Learning Paths';
     readonly 'learningPaths.title': 'Learning Paths';
     readonly 'learningPaths.error.title': 'Could not fetch data.';
     readonly 'learningPaths.error.unknownError': 'Unknown error';

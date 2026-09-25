@@ -1,5 +1,40 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.9.0
+
+### Minor Changes
+
+- 376fb61: Sidebar items and groups can now be declared in `app-config.yaml` under `app.sidebar.items` and `app.sidebar.groups`. This is the primary way to add remote links and other simple entries without writing a plugin: they accept the same fields as `SidebarItemBlueprint` and `SidebarItemGroupBlueprint` (config items require a `to` link), are merged with the contributed extensions and ordered together by `priority`, and a configured group reusing the `id` of a contributed group (for example `admin`) overrides it.
+
+  The same entries can also be split by plugin under `app.sidebar.plugins.<pluginName>`; all of them are flattened into one list. This form is primarily meant for the RHDH dynamic plugin configuration, where each plugin ships its own app-config fragment and arrays would otherwise overwrite each other, and it is used to ship sidebar defaults with some plugins such as the RBAC entry.
+
+  For advanced use cases — action items with `onClick`, entries with their own React component, spacers and dividers, or entries a plugin ships together with its pages — use the sidebar blueprints from `@red-hat-developer-hub/backstage-plugin-app-react` instead.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-app-react@1.9.0
+
+## 1.8.1
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.8.1
+
+## 1.8.0
+
+### Minor Changes
+
+- 379ab12: Localize sidebar item titles via a new `pages` translation namespace (looked up by English label), relabel Create as Self-Service, and drop the dedicated Learning Paths sidebar item so it uses the shared pages i18n.
+- d3313f9: When `appDefaultsFeatureLoader` (or the catalog / catalog-graph / api-docs plugin overrides) is enabled, NFS catalog entity pages match legacy RHDH: info cards on the left on Overview, Dependencies and System Diagram tabs, split relations graphs, and no API Definition card on Overview.
+
+  Override or disable individual extensions in `app.extensions` as needed — see README **Catalog entity pages (NFS)**.
+
+### Patch Changes
+
+- Updated dependencies [379ab12]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.8.0
+
 ## 1.7.0
 
 ### Minor Changes

@@ -115,7 +115,7 @@ Each AI provider (`boost-backend-module-ogx`, `boost-backend-module-kagenti`) is
 
 ### Capability checks, not identity checks
 
-Frontend rendering decisions use `ProviderCapabilities` interface checks. Never use `providerId === 'string'` comparisons.
+Frontend rendering decisions use capability-based interface checks. Never use `providerId === 'string'` comparisons.
 
 ### Permissions as sole authorization
 
@@ -195,19 +195,19 @@ Connector schema migrations (`migrateConnectorSchemas` in
 
 ### Package structure
 
-| Package                          | Purpose                                                                                       |
-| -------------------------------- | --------------------------------------------------------------------------------------------- |
-| `ai-catalog`                     | AI Catalog browse UI and composable routable extensions                                       |
-| `ai-catalog-common`              | Shared types, permissions (browser-safe, `common-library` role)                               |
-| `boost-node`                     | `boostAiProviderServiceRef`, extension points (`node-library` role)                           |
-| `ai-catalog-connector-utils`     | Shared connector utils (`node-library` role) — CA bundle, fault isolation, startup validation |
-| `boost-backend`                  | Core routes, services, middleware, ProviderManager                                            |
-| `boost-backend-module-ogx`       | OGX provider module                                                                           |
-| `boost-backend-module-kagenti`   | Kagenti provider module                                                                       |
-| `ai-catalog-entity-provider-sdk` | Shared entity-provider SDK (`node-library` role) — annotations, validation, and sync adapters |
-| `ogx-entity-provider`            | Independently deployable catalog entity provider                                              |
-| `kagenti-entity-provider`        | Independently deployable catalog entity provider                                              |
-| `boost-migration-readiness`      | Migration-readiness CLI tool (`node-library` role with custom CLI build)                      |
+| Package                          | Purpose                                                                                           |
+| -------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `ai-catalog`                     | AI Catalog browse UI and composable routable extensions                                           |
+| `ai-catalog-common`              | Shared types, permissions (browser-safe, `common-library` role)                                   |
+| `boost-node`                     | `boostAiProviderServiceRef`, extension points (`node-library` role)                               |
+| `ai-catalog-connector-utils`     | Shared connector utils (`node-library` role) — CA bundle, fault isolation, startup validation     |
+| `boost-backend`                  | Core routes, services, middleware, ProviderManager                                                |
+| `boost-backend-module-ogx`       | OGX provider module                                                                               |
+| `boost-backend-module-kagenti`   | Kagenti provider module                                                                           |
+| `ai-catalog-entity-provider-sdk` | Shared entity-provider SDK (`node-library` role) — annotation constants and version normalization |
+| `ogx-entity-provider`            | Independently deployable catalog entity provider                                                  |
+| `kagenti-entity-provider`        | Independently deployable catalog entity provider                                                  |
+| `boost-migration-readiness`      | Migration-readiness CLI tool (`node-library` role with custom CLI build)                          |
 
 ### CLI binary packages
 
@@ -310,7 +310,6 @@ const endpoint = safeGetOptionalString(config, 'endpoint');
   - `AiResource` — agents, skills, rules (NOT `AIResource`)
   - `AiModelServerAPI` — model servers (`spec.type: ai-model-server`)
   - `API` — MCP servers (`spec.type: mcp-server`)
-  - `Resource` — tools (`spec.type: ai-tool`), vector stores (`spec.type: vector-store`)
 
 ### Testing
 
@@ -369,6 +368,7 @@ Do not link to the document root when the display text references a specific sec
 | Prettier            | `yarn prettier:fix`                            |
 | Test                | `CI=true yarn test --watchAll=false`           |
 | Playwright e2e      | `yarn test:e2e`                                |
+| Perf benchmarks     | `yarn test:e2e:performance`                    |
 | API reports         | `yarn tsc:full && yarn build:api-reports:only` |
 | OpenSpec validation | `yarn openspec:validate`                       |
 

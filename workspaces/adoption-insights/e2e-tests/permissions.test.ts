@@ -20,7 +20,10 @@ import {
   installMockAdoptionInsightsPermission,
   loginAsGuest,
 } from './utils/permissionUtils';
-import { navigateToInsights } from './utils/insightsHelpers';
+import {
+  expandCollapsedSidebarGroup,
+  navigateToInsights,
+} from './utils/insightsHelpers';
 import {
   getAdoptionInsightsNavLabel,
   getTranslations,
@@ -40,11 +43,17 @@ test.describe('Adoption Insights permissions', () => {
   test('shows Adoption Insights in the sidebar when events.read is allowed', async ({
     page,
   }, testInfo) => {
+    test.skip(
+      isLegacy,
+      'OFS sidebar is a hardcoded SidebarItem and is not gated by permission',
+    );
+
     const { locale, navLabel } = getLocaleContext(testInfo);
 
     await installMockAdoptionInsightsPermission(page, 'ALLOW');
     await loginAsGuest(page, locale);
 
+    await expandCollapsedSidebarGroup(page);
     await expect(
       page.locator(`nav a:has-text("${navLabel}")`).first(),
     ).toBeVisible({ timeout: 30000 });

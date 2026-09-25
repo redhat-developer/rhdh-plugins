@@ -33,8 +33,6 @@ describe('isAiAsset', () => {
     ['AiResource', 'agent'],
     ['AiModelServerAPI', 'ai-model-server'],
     ['API', 'mcp-server'],
-    ['Resource', 'ai-tool'],
-    ['Resource', 'vector-store'],
   ])('returns true for %s with spec.type %s', (kind, type) => {
     expect(isAiAsset(entity(kind, type))).toBe(true);
   });
@@ -71,6 +69,14 @@ describe('isAiAsset', () => {
     expect(isAiAsset(entity('AiResource', 'custom-unknown'))).toBe(false);
   });
 
+  it('returns false for Resource/ai-tool (removed from taxonomy)', () => {
+    expect(isAiAsset(entity('Resource', 'ai-tool'))).toBe(false);
+  });
+
+  it('returns false for Resource/vector-store (removed from taxonomy)', () => {
+    expect(isAiAsset(entity('Resource', 'vector-store'))).toBe(false);
+  });
+
   it.each([
     ['Component', 'service'],
     ['API', 'openapi'],
@@ -90,9 +96,14 @@ describe('buildAiAssetCatalogFilter', () => {
         { kind: 'airesource', 'spec.type': ['skill', 'rule', 'agent'] },
         { kind: 'aimodelserverapi', 'spec.type': ['ai-model-server'] },
         { kind: 'api', 'spec.type': ['mcp-server'] },
-        { kind: 'resource', 'spec.type': ['ai-tool', 'vector-store'] },
       ]),
     );
-    expect(filter).toHaveLength(4);
+    expect(filter).toHaveLength(3);
+  });
+
+  it('does not contain a resource filter entry', () => {
+    const filter = buildAiAssetCatalogFilter();
+    const kinds = filter.map(f => f.kind);
+    expect(kinds).not.toContain('resource');
   });
 });

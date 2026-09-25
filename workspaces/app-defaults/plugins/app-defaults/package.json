@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-app-defaults",
-  "version": "1.7.0",
+  "version": "1.9.0",
   "license": "Apache-2.0",
   "description": "RHDH app module for the new frontend system",
   "main": "src/index.ts",
@@ -73,6 +73,7 @@
     ]
   },
   "sideEffects": false,
+  "configSchema": "config.d.ts",
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
@@ -127,6 +128,7 @@
     "react-router-dom": "^6.30.6"
   },
   "files": [
-    "dist"
+    "dist",
+    "config.d.ts"
   ]
 }

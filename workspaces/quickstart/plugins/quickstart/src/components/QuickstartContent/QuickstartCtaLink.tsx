@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { QuickstartItemCtaData } from '../../types';
-import { LinkButton } from '@backstage/core-components';
+import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
+
 import { useTranslation } from '../../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../../utils';
+import { QuickstartItemCtaData } from '../../types';
 
 export type QuickstartCtaLinkProps = {
   cta?: QuickstartItemCtaData;
@@ -26,54 +28,46 @@ export type QuickstartCtaLinkProps = {
 
 export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
   const { t } = useTranslation();
-  // If no CTA is provided, show a default "Got it!" button
+
   if (!cta) {
     return (
-      <LinkButton
-        color="primary"
-        variant="outlined"
-        to="#"
-        onClick={e => {
-          e.preventDefault();
-          onClick();
-        }}
-      >
+      <Button color="primary" variant="outlined" onClick={onClick}>
         {t('button.gotIt')}
-      </LinkButton>
+      </Button>
     );
   }
 
   const finalText = getTranslatedTextWithFallback(t, cta.textKey, cta.text);
-
   const isExternalLink =
     cta.link.startsWith('http://') || cta.link.startsWith('https://');
 
-  return isExternalLink ? (
-    <LinkButton
+  if (isExternalLink) {
+    return (
+      <Button
+        color="primary"
+        variant="outlined"
+        component="a"
+        href={cta.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClick}
+        endIcon={<OpenInNewIcon sx={{ fontSize: 15 }} />}
+        sx={{ gap: '5px' }}
+      >
+        {finalText}
+      </Button>
+    );
+  }
+
+  return (
+    <Button
       color="primary"
-      style={{
-        gap: '5px',
-      }}
       variant="outlined"
+      component={Link}
       to={cta.link}
       onClick={onClick}
     >
       {finalText}
-      &nbsp;
-      <OpenInNewIcon
-        sx={{
-          fontSize: '15px',
-        }}
-      />
-    </LinkButton>
-  ) : (
-    <LinkButton
-      color="primary"
-      variant="outlined"
-      to={cta.link}
-      onClick={onClick}
-    >
-      {finalText}
-    </LinkButton>
+    </Button>
   );
 };

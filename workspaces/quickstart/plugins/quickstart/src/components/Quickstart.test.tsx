@@ -107,7 +107,7 @@ describe('Quickstart', () => {
       });
       fireEvent.click(expandButtons[0]);
 
-      const cta = await screen.findByRole('button', { name: 'Start Now' });
+      const cta = await screen.findByRole('link', { name: 'Start Now' });
       fireEvent.click(cta);
 
       await waitFor(() => {
@@ -116,7 +116,7 @@ describe('Quickstart', () => {
 
       // Complete second admin item
       fireEvent.click(expandButtons[1]);
-      const cta2 = await screen.findByRole('button', { name: 'Continue' });
+      const cta2 = await screen.findByRole('link', { name: 'Continue' });
       fireEvent.click(cta2);
 
       await waitFor(() => {
@@ -135,7 +135,7 @@ describe('Quickstart', () => {
       });
       fireEvent.click(expandButtons[0]);
 
-      const cta = await screen.findByRole('button', { name: 'Start Now' });
+      const cta = await screen.findByRole('link', { name: 'Start Now' });
       fireEvent.click(cta);
 
       await waitFor(() => {
@@ -144,7 +144,7 @@ describe('Quickstart', () => {
 
       // Complete second developer item
       fireEvent.click(expandButtons[1]);
-      const cta2 = await screen.findByRole('button', { name: 'Continue' });
+      const cta2 = await screen.findByRole('link', { name: 'Continue' });
       fireEvent.click(cta2);
 
       await waitFor(() => {

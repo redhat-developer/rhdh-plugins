@@ -11,9 +11,16 @@ backend:
     connection: ':memory:'
 
 dcm:
+  # Keep this aligned with the DCM control plane's auth.enabled setting.
+  auth:
+    enabled: ${DCM_AUTH_ENABLED:-false}
+  # Base URL of the DCM control plane.
   apiUrl: ${DCM_API_URL:-}
   # Legacy env var; kept until deploy configs switch to DCM_API_URL.
   apiGatewayUrl: ${DCM_API_GATEWAY_URL:-}
+  # These settings are used only by the separately permission-protected token
+  # endpoint. Normal DCM UI proxy requests forward the signed-in user's OIDC
+  # token and do not use this shared client-credentials flow.
   ssoBaseUrl: ${DCM_SSO_BASE_URL:-}
   clientId: ${DCM_CLIENT_ID:-}
   clientSecret: ${DCM_CLIENT_SECRET:-}

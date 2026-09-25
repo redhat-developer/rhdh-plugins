@@ -42,7 +42,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator/legacy';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
-import { Administration } from '@backstage-community/plugin-rbac';
+import { Administration } from '@backstage-community/plugin-rbac/legacy';
 import {
   LogoFull,
   LogoIcon,

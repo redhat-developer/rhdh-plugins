@@ -24,7 +24,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 
-import type { TemplateCardActionProps } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import type { TemplateCardActionProps } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { orchestratorApiRef } from '../../api';
 import { useTranslation } from '../../hooks/useTranslation';

@@ -26,8 +26,6 @@ import type { Entity } from '@backstage/catalog-model';
  * | Agents         | AiResource        | agent            |
  * | Model Servers  | AiModelServerAPI  | ai-model-server  |
  * | MCP Servers    | API               | mcp-server       |
- * | Tools          | Resource          | ai-tool          |
- * | Vector Stores  | Resource          | vector-store     |
  *
  * This map is the single source of truth used by {@link isAiAsset} and
  * {@link buildAiAssetCatalogFilter}, shared by both the AI Catalog frontend
@@ -40,7 +38,6 @@ export const AI_ASSET_SPEC_TYPES: Record<string, Set<string>> = {
   airesource: new Set(['skill', 'rule', 'agent']),
   aimodelserverapi: new Set(['ai-model-server']),
   api: new Set(['mcp-server']),
-  resource: new Set(['ai-tool', 'vector-store']),
 };
 
 /**
