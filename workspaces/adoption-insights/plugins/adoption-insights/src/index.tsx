@@ -30,7 +30,10 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import MUIAdoptionInsightsIcon from '@mui/icons-material/QueryStatsOutlined';
+
 import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
+import { SidebarItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+
 import { rootRouteRef } from './routes';
 import { AdoptionInsightsApiClient, adoptionInsightsApiRef } from './api';
 import { adoptionInsightsTranslations } from './translations';
@@ -52,6 +55,17 @@ const adoptionInsightsPage = PageBlueprint.make({
       import('./components/AdoptionInsightsPage').then(m => (
         <m.AdoptionInsightsPage />
       )),
+  },
+});
+
+/**
+ * @public
+ */
+export const adoptionInsightsSidebarItem = SidebarItemBlueprint.make({
+  params: {
+    title: 'Adoption Insights',
+    to: '/adoption-insights',
+    group: 'admin',
   },
 });
 
@@ -80,7 +94,11 @@ const adoptionInsightsTranslation = TranslationBlueprint.make({
  */
 export default createFrontendPlugin({
   pluginId: 'adoption-insights',
-  extensions: [adoptionInsightsPage, adoptionInsightsApi],
+  extensions: [
+    adoptionInsightsPage,
+    adoptionInsightsSidebarItem,
+    adoptionInsightsApi,
+  ],
   routes: { root: rootRouteRef },
 });
 
