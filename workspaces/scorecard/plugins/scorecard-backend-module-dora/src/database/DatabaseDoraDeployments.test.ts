@@ -79,6 +79,103 @@ describe('DatabaseDoraDeployments', () => {
     );
 
     it.each(databases.eachSupportedId())(
+      'inserts large deployment lists in 100-row batches - %p',
+      async databaseId => {
+        const { client, deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/dora-deployment-batch-success';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+        const rows = Array.from({ length: 205 }, (_, index) => ({
+          catalogEntityRef: entityRef,
+          collectorId,
+          collectorInputHash: EMPTY_INPUT_HASH,
+          originalDeploymentId: `dep-${index}`,
+          commitSha: `sha-${index}`,
+          environment: 'production',
+          createdAt: new Date('2026-06-01T10:00:00.000Z'),
+        }));
+        const insertBindings: number[] = [];
+        const onQuery = (query: {
+          method?: string;
+          sql: string;
+          bindings?: readonly unknown[];
+        }) => {
+          if (
+            query.method === 'insert' &&
+            query.sql.includes('dora_deployments')
+          ) {
+            insertBindings.push(query.bindings?.length ?? 0);
+          }
+        };
+
+        client.on('query', onQuery);
+        try {
+          await deployments.upsert(rows);
+        } finally {
+          client.removeListener('query', onQuery);
+        }
+
+        expect(insertBindings).toEqual([800, 800, 40]);
+        const stored = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        expect(stored).toHaveLength(205);
+        expect(new Set(stored.map(row => row.originalDeploymentId)).size).toBe(
+          205,
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'rolls back earlier deployment batches when a later batch fails - %p',
+      async databaseId => {
+        const { client, deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/dora-deployment-batch-failure';
+        const rows = Array.from({ length: 101 }, (_, index) => ({
+          catalogEntityRef: entityRef,
+          collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          collectorInputHash: EMPTY_INPUT_HASH,
+          originalDeploymentId: `dep-${index}`,
+          commitSha: `sha-${index}`,
+          environment: 'production',
+          createdAt: new Date('2026-06-01T10:00:00.000Z'),
+        }));
+        let insertCount = 0;
+        const failSecondInsert = (query: { method?: string; sql: string }) => {
+          if (
+            query.method === 'insert' &&
+            query.sql.includes('dora_deployments') &&
+            ++insertCount === 2
+          ) {
+            throw new Error('second batch failed');
+          }
+        };
+
+        client.on('query', failSecondInsert);
+        try {
+          await expect(deployments.upsert(rows)).rejects.toThrow(
+            'second batch failed',
+          );
+        } finally {
+          client.removeListener('query', failSecondInsert);
+        }
+        expect(insertCount).toBe(2);
+        await expect(
+          client('dora_deployments')
+            .where('catalog_entity_ref', entityRef)
+            .select('*'),
+        ).resolves.toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
       'ignores conflicts on the natural key, preserving the immutable first row - %p',
       async databaseId => {
         const { deployments } = await createTestDatabase(
