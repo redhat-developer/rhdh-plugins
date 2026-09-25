@@ -845,8 +845,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           //
           // Backstage SidebarPage sets width:100%; horizontal margins would
           // otherwise overflow and get clipped (right gutter disappears).
-          // Left rounding sits after paddingLeft (drawer spacer), so sticky
-          // corner masks still paint the visible left curve against the sidebar.
           '@media (min-width: 600px)': {
             boxSizing: 'border-box',
             // Override Backstage `width: 100%` so margin-right is not pushed
@@ -861,13 +859,18 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             minHeight: '0 !important',
             overflowX: 'hidden',
             overflowY: 'auto',
-            overscrollBehavior: 'contain',
+            // `contain` still allows rubber-band overscroll, which reveals an
+            // empty rounded well above the content. `none` disables that.
+            overscrollBehavior: 'none',
             borderRadius: '1rem',
             // Clips the scrollbar into the rounded well (border-radius cannot).
             clipPath: 'inset(0 round 1rem)',
-            // Visible left corners: clip-path rounds the border-box (under the
-            // drawer spacer). Sticky masks paint the curve at the content edge
-            // after paddingLeft where it meets the sidebar.
+            // Left corners: clip-path rounds the border-box (under the drawer
+            // spacer), so the visible edge after paddingLeft stays square.
+            // Sticky masks paint the curve at the content edge. Keep
+            // overscroll-behavior: none so rubber-band does not show a second well.
+            // z-index must sit above Backstage Header (z-index: 100) or MUI
+            // Page headers cover the top-left mask tile.
             '&::before': {
               content: '""',
               position: 'sticky',
@@ -877,7 +880,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               height: `calc(100vh - 2 * ${general.pageInset})`,
               marginBottom: `calc(0px - (100vh - 2 * ${general.pageInset}))`,
               pointerEvents: 'none',
-              zIndex: 2,
+              zIndex: 101,
               backgroundImage: [
                 `radial-gradient(circle at 100% 100%, transparent 1rem, ${
                   general.pageInsetBackgroundColor ??

@@ -124,7 +124,7 @@ describe('createComponents', () => {
         marginLeft: 0,
         height: 'calc(100vh - 2 * 1.5rem)',
         maxHeight: 'calc(100vh - 2 * 1.5rem)',
-        overscrollBehavior: 'contain',
+        overscrollBehavior: 'none',
         borderRadius: '1rem',
         clipPath: 'inset(0 round 1rem)',
       }),
@@ -134,7 +134,7 @@ describe('createComponents', () => {
         position: 'sticky',
         top: 0,
         pointerEvents: 'none',
-        zIndex: 2,
+        zIndex: 101,
       }),
     );
     expect(
