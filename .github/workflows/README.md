@@ -2,7 +2,7 @@
 
 ## [ci.yml](./ci.yml)
 
-Triggered on pull requests, this workflow runs tests on the target branch, focusing only on workspaces that have changes. Once all checks pass successfully, the pull request can be merged.
+Triggered on pull requests, this workflow runs tests on workspaces that have changes, plus repository-wide checks (for example Material UI v4 enforcement). Once all checks pass successfully, the pull request can be merged.
 
 ## [release_workspace.yml](./release_workspace.yml)
 
