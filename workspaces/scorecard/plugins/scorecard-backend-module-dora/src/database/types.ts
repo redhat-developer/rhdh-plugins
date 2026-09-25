@@ -17,7 +17,7 @@
 import type { Knex } from 'knex';
 
 export interface DoraDbWriteOptions {
-  trx?: Knex | Knex.Transaction;
+  trx?: Knex.Transaction;
 }
 
 export type DbDoraDeploymentCreate = {

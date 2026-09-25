@@ -73,6 +73,130 @@ describe('DatabaseDoraIncidents', () => {
     );
 
     it.each(databases.eachSupportedId())(
+      'inserts large incident lists in 100-row batches - %p',
+      async databaseId => {
+        const { client, incidents } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/dora-incident-batch-success';
+        const collectorId = DORA_DEFAULT_INCIDENTS_COLLECTOR_ID;
+        const rows = Array.from({ length: 205 }, (_, index) => ({
+          catalogEntityRef: entityRef,
+          collectorId,
+          collectorInputHash: EMPTY_INPUT_HASH,
+          originalIncidentId: `INC-${index}`,
+          createdAt: new Date('2026-06-01T10:00:00.000Z'),
+          updatedAt: new Date('2026-06-01T10:00:00.000Z'),
+          resolutionAt: null,
+        }));
+        const insertBindings: number[] = [];
+        const onQuery = (query: {
+          method?: string;
+          sql: string;
+          bindings?: readonly unknown[];
+        }) => {
+          if (
+            query.method === 'insert' &&
+            query.sql.includes('dora_incidents')
+          ) {
+            insertBindings.push(query.bindings?.length ?? 0);
+          }
+        };
+
+        client.on('query', onQuery);
+        try {
+          await incidents.upsert(rows);
+        } finally {
+          client.removeListener('query', onQuery);
+        }
+
+        expect(insertBindings).toEqual([800, 800, 40]);
+        const stored = await incidents.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        expect(stored).toHaveLength(205);
+        expect(new Set(stored.map(row => row.originalIncidentId)).size).toBe(
+          205,
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'rolls back incident inserts and merges when a later batch fails - %p',
+      async databaseId => {
+        const { client, incidents } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/dora-incident-batch-failure';
+        const collectorId = DORA_DEFAULT_INCIDENTS_COLLECTOR_ID;
+        const createdAt = new Date('2026-06-01T10:00:00.000Z');
+        await incidents.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalIncidentId: 'INC-0',
+            createdAt,
+            updatedAt: createdAt,
+            resolutionAt: null,
+          },
+        ]);
+
+        const rows = Array.from({ length: 101 }, (_, index) => ({
+          catalogEntityRef: entityRef,
+          collectorId,
+          collectorInputHash: EMPTY_INPUT_HASH,
+          originalIncidentId: `INC-${index}`,
+          createdAt,
+          updatedAt: new Date('2026-06-02T10:00:00.000Z'),
+          resolutionAt: new Date('2026-06-02T10:00:00.000Z'),
+        }));
+        let insertCount = 0;
+        const failSecondInsert = (query: { method?: string; sql: string }) => {
+          if (
+            query.method === 'insert' &&
+            query.sql.includes('dora_incidents') &&
+            ++insertCount === 2
+          ) {
+            throw new Error('second batch failed');
+          }
+        };
+
+        client.on('query', failSecondInsert);
+        try {
+          await expect(incidents.upsert(rows)).rejects.toThrow(
+            'second batch failed',
+          );
+        } finally {
+          client.removeListener('query', failSecondInsert);
+        }
+        expect(insertCount).toBe(2);
+        const stored = await incidents.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        expect(stored).toHaveLength(1);
+        expect(stored[0]).toMatchObject({
+          originalIncidentId: 'INC-0',
+          updatedAt: createdAt,
+          resolutionAt: null,
+        });
+        await expect(
+          client('dora_incidents')
+            .where('catalog_entity_ref', entityRef)
+            .select('*'),
+        ).resolves.toHaveLength(1);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
       'merges resolution updates on natural key conflict - %p',
       async databaseId => {
         const { incidents } = await createTestDatabase(

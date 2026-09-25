@@ -16,6 +16,7 @@
 
 import { type Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
+import { DORA_UPSERT_BATCH_SIZE } from './constants';
 import {
   fromDoraPullRequestRow,
   toDoraPullRequestRow,
@@ -57,7 +58,7 @@ export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
     return this.dbClient.transaction(fn);
   }
 
-  private client(options?: DoraDbWriteOptions): Knex | Knex.Transaction {
+  private client(options?: DoraDbWriteOptions) {
     return options?.trx ?? this.dbClient;
   }
 
@@ -69,16 +70,32 @@ export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
       return;
     }
 
-    await this.client(options)(this.tableName)
-      .insert(
-        pullRequests.map(pullRequest => ({
-          ...toDoraPullRequestRow(pullRequest),
-          id: randomUUID(),
-        })),
-      )
-      .onConflict(['original_pr_id', 'deployment_id'])
-      // All columns are immutable historical facts for a given PR
-      .ignore();
+    const writeBatches = async (trx: Knex.Transaction): Promise<void> => {
+      for (
+        let offset = 0;
+        offset < pullRequests.length;
+        offset += DORA_UPSERT_BATCH_SIZE
+      ) {
+        const batch = pullRequests
+          .slice(offset, offset + DORA_UPSERT_BATCH_SIZE)
+          .map(pullRequest => ({
+            ...toDoraPullRequestRow(pullRequest),
+            id: randomUUID(),
+          }));
+
+        await trx(this.tableName)
+          .insert(batch)
+          .onConflict(['original_pr_id', 'deployment_id'])
+          // All columns are immutable historical facts for a given PR
+          .ignore();
+      }
+    };
+
+    if (options?.trx) {
+      await writeBatches(options.trx);
+    } else {
+      await this.dbClient.transaction(writeBatches);
+    }
   }
 
   async readByEntityAndDeployment(
