@@ -62,6 +62,8 @@
   "dependencies": {
     "@backstage/core-components": "^0.18.13",
     "@backstage/core-plugin-api": "^1.12.9",
+    "@backstage/frontend-plugin-api": "^0.18.0",
+    "@backstage/plugin-app-react": "^0.2.6",
     "@backstage/plugin-user-settings": "^0.9.6",
     "@backstage/theme": "^0.7.3",
     "@backstage/types": "^1.2.2",

@@ -8540,6 +8540,8 @@ __metadata:
     "@backstage/core-plugin-api": "npm:^1.12.9"
     "@backstage/dev-utils": "npm:^1.1.26"
     "@backstage/frontend-defaults": "npm:^0.5.5"
+    "@backstage/frontend-plugin-api": "npm:^0.18.0"
+    "@backstage/plugin-app-react": "npm:^0.2.6"
     "@backstage/plugin-user-settings": "npm:^0.9.6"
     "@backstage/test-utils": "npm:^1.7.21"
     "@backstage/theme": "npm:^0.7.3"
