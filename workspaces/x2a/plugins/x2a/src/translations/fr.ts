@@ -421,6 +421,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
       "Échec de la création de l'agent",
     'adversarialAgentsPage.dialog.updateError':
       "Échec de la mise à jour de l'agent",
+    'adversarialAgentsPage.dialog.templatesTitle': 'Modèles',
+    'adversarialAgentsPage.dialog.useTemplate': 'Utiliser',
   },
 });
 

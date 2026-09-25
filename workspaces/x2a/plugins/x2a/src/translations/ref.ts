@@ -469,6 +469,8 @@ export const x2aPluginMessages = {
       cancel: 'Cancel',
       createError: 'Failed to create agent',
       updateError: 'Failed to update agent',
+      templatesTitle: 'Templates',
+      useTemplate: 'Use this',
     },
   },
   empty: '-',

@@ -418,6 +418,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'adversarialAgentsPage.dialog.createError': "Impossibile creare l'agente",
     'adversarialAgentsPage.dialog.updateError':
       "Impossibile aggiornare l'agente",
+    'adversarialAgentsPage.dialog.templatesTitle': 'Modelli',
+    'adversarialAgentsPage.dialog.useTemplate': 'Usa questo',
   },
 });
 
