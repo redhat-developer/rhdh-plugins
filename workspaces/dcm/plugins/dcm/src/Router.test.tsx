@@ -15,7 +15,19 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { wrapInTestApp } from '@backstage/test-utils';
+import { wrapInTestApp, TestApiProvider } from '@backstage/test-utils';
+import {
+  configApiRef,
+  discoveryApiRef,
+  fetchApiRef,
+  type ConfigApi,
+} from '@backstage/core-plugin-api';
+import {
+  agentsApiRef,
+  catalogApiRef,
+  policyManagerApiRef,
+  resourcesApiRef,
+} from './apis';
 import { Router } from './Router';
 
 jest.mock('./pages/data-center/DataCenterPage', () => ({
@@ -24,7 +36,28 @@ jest.mock('./pages/data-center/DataCenterPage', () => ({
 
 describe('Router', () => {
   it('renders DataCenterPage on the default route', () => {
-    render(wrapInTestApp(<Router />));
+    render(
+      wrapInTestApp(
+        <TestApiProvider
+          apis={[
+            [
+              configApiRef,
+              {
+                getOptionalBoolean: jest.fn().mockReturnValue(false),
+              } as unknown as ConfigApi,
+            ],
+            [discoveryApiRef, { getBaseUrl: jest.fn() }],
+            [fetchApiRef, { fetch: jest.fn() }],
+            [agentsApiRef, {}],
+            [catalogApiRef, {}],
+            [policyManagerApiRef, {}],
+            [resourcesApiRef, {}],
+          ]}
+        >
+          <Router />
+        </TestApiProvider>,
+      ),
+    );
     expect(screen.getByText('DataCenterPage')).toBeInTheDocument();
   });
 });

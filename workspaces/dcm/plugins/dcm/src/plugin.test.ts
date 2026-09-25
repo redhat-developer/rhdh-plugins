@@ -28,7 +28,9 @@ import {
   dcmAuthApiFactory,
   dcmAuthApiRef,
   dcmOidcAuthApiFactory,
+  isDefaultDcmAuthApi,
 } from './api/AuthApiRefs';
+import { isDefaultDcmClient } from './api/DefaultDcmClient';
 import {
   agentsApiRef,
   catalogApiRef,
@@ -127,6 +129,16 @@ describe('dcm', () => {
     }
   });
 
+  it('marks all plugin default clients with internal provenance', () => {
+    const { resolver } = createDcmApiResolver({ authEnabled: true });
+
+    expect(isDefaultDcmClient(resolver.get(catalogApiRef))).toBe(true);
+    expect(isDefaultDcmClient(resolver.get(policyManagerApiRef))).toBe(true);
+    expect(isDefaultDcmClient(resolver.get(agentsApiRef))).toBe(true);
+    expect(isDefaultDcmClient(resolver.get(resourcesApiRef))).toBe(true);
+    expect(isDefaultDcmClient({})).toBe(false);
+  });
+
   it('adapts the host OIDC access token for DCM auth-enabled clients', async () => {
     const getAccessToken = jest.fn().mockResolvedValue('oidc-token');
     const oidcAuthApi = {
@@ -161,6 +173,7 @@ describe('dcm', () => {
       throw new Error('Expected an actionable DCM OIDC auth API error');
     }
 
+    expect(isDefaultDcmAuthApi(dcmAuthApi)).toBe(true);
     await expect(dcmAuthApi.getAccessToken()).rejects.toThrow(
       'DCM authentication is enabled, but the host does not provide a DCM OIDC auth API factory.',
     );

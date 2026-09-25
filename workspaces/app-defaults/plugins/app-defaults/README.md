@@ -17,6 +17,7 @@ The module provides:
             priority: -20
   ```
 
+- Sidebar items and groups declared in `app-config.yaml` under `app.sidebar`, merged with the contributed ones (see [Sidebar items from app-config](#sidebar-items-from-app-config))
 - Extensible scaffolder template card (`templateCardExtension`)
 - Common RHDH icon catalog via `IconBundleBlueprint` (`icon-bundle:app/common`) — same IDs as the legacy `CommonIcons` map (`home`, `group`, `category`, `extension`, `school`, `add`, `developerHub`, …)
 - **Plugin overrides** (via the default feature loader) for catalog, catalog-graph, API docs, TechDocs, and scaffolder — including empty-state pages and **RHDH catalog entity page defaults** (see below)
@@ -78,6 +79,64 @@ The frontend then requests `{proxyBaseUrl}/custom-hub/learning-paths`.
 #### Fallback when the proxy is unavailable
 
 When the proxy request fails, the page uses bundled demo data from `src/learning-paths/data/data.json` (included in the plugin bundle at build time).
+
+## Sidebar items from app-config
+
+`app-config.yaml` is the primary way to add remote links and other simple sidebar entries: a link to an external site or to a page that is already part of the app, optionally placed inside a group, without writing a plugin. `app.sidebar.items` and `app.sidebar.groups` accept the same fields as `SidebarItemBlueprint` and `SidebarItemGroupBlueprint`, except that config items cannot carry an `onClick` handler and therefore must have a `to` link (groups may omit it). The entries are merged with the contributed ones and ordered together by `priority`:
+
+```yaml
+app:
+  sidebar:
+    items:
+      # Top-level entry, rendered among the plugin pages (priority 0).
+      - title: Docs
+        icon: school
+        to: https://example.com/docs
+      # Joins the Administration group shipped by app-defaults; only shown
+      # when a page is registered at /audit-log.
+      - title: Audit log
+        icon: security
+        to: /audit-log
+        group: admin
+        requiresRoute: true
+      - title: Grafana
+        to: /grafana
+        group: tools
+    groups:
+      # New group collecting the items above with `group: tools`.
+      - id: tools
+        title: Tools
+        icon: extension
+        priority: -5
+        variant: flyout
+      # Same id as a contributed group: overrides its title, icon, link,
+      # priority or variant instead of adding a second group.
+      - id: admin
+        title: Admin area
+```
+
+`icon` is the key of a system icon registered via `IconBundleBlueprint` (for example the common RHDH icons `home`, `category`, `school`, `extension`); unknown keys fall back to a generic icon. Items with `group` render inside the group with that `id`, regardless of whether the group comes from config or from an extension; items whose group does not exist render at the top level.
+
+### Per-plugin entries
+
+The same `items` and `groups` can also be declared under `app.sidebar.plugins.<pluginName>`; all of them are flattened into one list together with the top-level entries. This form is primarily meant for the RHDH dynamic plugin configuration, where each plugin ships its own app-config fragment: arrays in Backstage config replace each other instead of merging, so several plugins declaring `app.sidebar.items` would overwrite each other, while separate `plugins.<pluginName>` keys merge cleanly. RHDH uses it to ship sidebar defaults together with some plugins, for example the RBAC entry in the Administration group:
+
+```yaml
+app:
+  sidebar:
+    plugins:
+      rbac:
+        items:
+          - title: RBAC
+            icon: admin
+            to: /rbac
+            group: admin
+            requiresRoute: true
+```
+
+A group declared at the top level of `app.sidebar` overrides a plugin group with the same `id`, which in turn overrides a contributed group.
+
+For advanced use cases — items that run an action instead of navigating (`onClick`), entries with their own React component, spacers and dividers, or entries a plugin ships together with its pages — use the sidebar blueprints from `@red-hat-developer-hub/backstage-plugin-app-react` instead: `SidebarItemBlueprint`, `SidebarItemGroupBlueprint`, `SidebarElementBlueprint`, `SidebarSpacerBlueprint` and `SidebarDividerBlueprint`. See [Contributing Sidebar Items and Groups](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/README.md#contributing-sidebar-items-and-groups) and [Contributing Custom Sidebar Elements](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/README.md#contributing-custom-sidebar-elements) in the app-react README.
 
 ## Usage
 

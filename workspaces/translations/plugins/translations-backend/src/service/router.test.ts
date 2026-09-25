@@ -60,7 +60,6 @@ describe('createRouter', () => {
     mockConfig = mockServices.rootConfig({
       data: {
         i18n: {
-          locales: ['en', 'de'],
           overrides: safeTestPaths,
         },
       },
@@ -157,7 +156,7 @@ describe('createRouter', () => {
     expect(res.body.error).toBe('Failed to process translation files');
   });
 
-  it('should filter out translations not in configured locales', async () => {
+  it('should not filter JSON locales using legacy i18n.locales', async () => {
     mockConfig = mockServices.rootConfig({
       data: {
         i18n: {
@@ -196,6 +195,7 @@ describe('createRouter', () => {
     expect(res.body).toEqual({
       plugin: {
         en: { hello: 'world' },
+        de: { hello: 'welt' },
       },
     });
   });
@@ -205,7 +205,6 @@ describe('createRouter', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en', 'de'],
             overrides: [],
           },
         },
@@ -400,7 +399,6 @@ describe('createRouter', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [join(testDir, 'single.json')],
           },
         },
@@ -437,7 +435,6 @@ describe('createRouter', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [join(testDir, 'single.json')],
           },
         },
@@ -473,7 +470,6 @@ describe('createRouter', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [join(testDir, 'override.json')],
           },
         },
@@ -546,7 +542,6 @@ describe('createRouter', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [join(testDir, 'override.json')],
           },
         },
@@ -581,7 +576,6 @@ describe('createRouter', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [],
           },
         },
@@ -624,7 +618,6 @@ describe('createRouter', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [],
           },
         },

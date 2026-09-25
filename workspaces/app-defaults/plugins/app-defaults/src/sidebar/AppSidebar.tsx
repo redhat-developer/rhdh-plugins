@@ -26,6 +26,7 @@ import {
   useSidebarOpenState,
 } from '@backstage/core-components';
 import {
+  configApiRef,
   iconsApiRef,
   useApi,
   useTranslationRef,
@@ -50,6 +51,10 @@ import {
   type SidebarModelIcon,
   type SidebarModelItem,
 } from './buildSidebarModel';
+import {
+  readConfigSidebarGroups,
+  readConfigSidebarItems,
+} from './readSidebarConfig';
 
 /**
  * Props for {@link AppSidebar}.
@@ -232,6 +237,11 @@ function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
  * nav items auto-discovered from page extensions are merged in unless a
  * contributed item already links to the same path.
  *
+ * Items and groups declared under `app.sidebar` in `app-config.yaml` are
+ * merged into the same model, so deployers can add entries without writing a
+ * plugin. They are appended after the contributed ones, which lets a
+ * configured group override a contributed group with the same `id`.
+ *
  * @public
  */
 export const AppSidebar = ({
@@ -240,9 +250,19 @@ export const AppSidebar = ({
   elements,
   navItems,
 }: AppSidebarProps) => {
+  const configApi = useApi(configApiRef);
+  const configItems = useMemo(
+    () => readConfigSidebarItems(configApi),
+    [configApi],
+  );
+  const configGroups = useMemo(
+    () => readConfigSidebarGroups(configApi),
+    [configApi],
+  );
+
   const entries = buildSidebarModel({
-    items,
-    groups,
+    items: [...items, ...configItems],
+    groups: [...groups, ...configGroups],
     elements,
     navItems: navItems?.rest(),
   });

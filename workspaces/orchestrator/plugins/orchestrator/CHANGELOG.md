@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 6.2.4
+
+### Patch Changes
+
+- 40735a7: Add an Orchestrator sidebar item via `SidebarItemBlueprint` and rely on app-defaults navigation instead of a custom nav module in the NFS app and plugin playground.
+
 ## 6.2.3
 
 ### Patch Changes

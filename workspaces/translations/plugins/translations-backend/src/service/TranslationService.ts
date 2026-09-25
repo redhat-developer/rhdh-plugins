@@ -18,11 +18,7 @@ import { Config } from '@backstage/config';
 import fs from 'fs';
 import path from 'path';
 
-import {
-  deepMergeTranslations,
-  filterLocales,
-  isValidJSONTranslation,
-} from '../utils';
+import { deepMergeTranslations, isValidJSONTranslation } from '../utils';
 
 export interface TranslationFileStats {
   filesProcessed: number;
@@ -45,7 +41,6 @@ export interface TranslationResult {
 export class TranslationService {
   private cachedTranslations: Record<string, any> | null = null;
   private readonly overridesFiles: string[];
-  private readonly configuredLocales: string[];
 
   constructor(
     private readonly config: Config,
@@ -53,9 +48,6 @@ export class TranslationService {
   ) {
     this.overridesFiles =
       this.config.getOptionalStringArray('i18n.overrides') ?? [];
-    this.configuredLocales = this.config.getOptionalStringArray(
-      'i18n.locales',
-    ) ?? ['en'];
   }
 
   /**
@@ -124,6 +116,28 @@ export class TranslationService {
       'No internal translations directory found in any expected location',
     );
     return null;
+  }
+
+  /**
+   * Orders catalog files so higher-priority sources override earlier sources.
+   */
+  private orderCatalogFiles(files: string[]): string[] {
+    const sourceOrder = [
+      'backstage-',
+      'community-plugins-',
+      'rhdh-plugins-',
+      'rhdh-',
+    ];
+    const priority = (file: string) => {
+      const name = path.basename(file);
+      const index = sourceOrder.findIndex(prefix => name.startsWith(prefix));
+      // Unrecognized files are customer additions and should override shipped
+      // catalogs when they define the same key.
+      return index === -1 ? sourceOrder.length : index;
+    };
+    return files.sort(
+      (a, b) => priority(a) - priority(b) || a.localeCompare(b),
+    );
   }
 
   /**
@@ -222,11 +236,14 @@ export class TranslationService {
     let totalFilesNotFound = 0;
     let totalFilesInvalid = 0;
 
-    // Step 1: Process internal directory files first (auto-detected)
+    // Step 1: Load JSON files from the repository or mounted translations
+    // directory.
     let internalFiles: string[] = [];
     const internalDirectory = this.resolveInternalTranslationsDirectory();
     if (internalDirectory) {
-      internalFiles = this.scanDirectoryForTranslationFiles(internalDirectory);
+      internalFiles = this.orderCatalogFiles(
+        this.scanDirectoryForTranslationFiles(internalDirectory),
+      );
       if (internalFiles.length > 0) {
         const internalStats = this.processTranslationFiles(
           internalFiles,
@@ -239,7 +256,7 @@ export class TranslationService {
       }
     }
 
-    // Step 2: Process config override files (these will override internal files)
+    // Step 2: Explicit config overrides take highest priority.
     if (this.overridesFiles.length > 0) {
       const overrideStats = this.processTranslationFiles(
         this.overridesFiles,
@@ -285,11 +302,7 @@ export class TranslationService {
       throw new Error('No valid translation files found in the provided files');
     }
 
-    // Filter translations by configured locales
-    this.cachedTranslations = filterLocales(
-      mergedTranslations,
-      this.configuredLocales,
-    );
+    this.cachedTranslations = mergedTranslations;
 
     // Log summary
     this.logger.info(

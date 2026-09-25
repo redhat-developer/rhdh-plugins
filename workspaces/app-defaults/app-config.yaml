@@ -22,6 +22,27 @@ app:
     # Demo element that throws on render; keep it disabled by default.
     - sidebar-element:app/crashing: false
 
+  # Sidebar entries declared in config are merged with the contributed ones
+  # (see plugins/app-defaults/README.md). `Community` is a top-level link,
+  # `Plugin catalog` joins the Administration group of app-defaults.
+  sidebar:
+    items:
+      - title: Community
+        icon: group
+        to: https://github.com/redhat-developer/rhdh-plugins
+      - title: Plugin catalog
+        icon: extension
+        to: /extensions
+        group: admin
+    # The same structure per plugin, the way the RHDH dynamic plugin config
+    # ships sidebar defaults with each plugin. All entries are flattened.
+    plugins:
+      demo-plugin:
+        items:
+          - title: RHDH docs
+            icon: help
+            to: https://docs.redhat.com/en/documentation/red_hat_developer_hub
+
 organization:
   name: My Company
 

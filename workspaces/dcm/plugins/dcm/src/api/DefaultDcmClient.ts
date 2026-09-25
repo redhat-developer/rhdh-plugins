@@ -13,10 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { SidebarContent } from './Sidebar';
 
-export const navModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [SidebarContent],
-});
+const defaultDcmClientMarker = Symbol('defaultDcmClient');
+
+type DefaultDcmClient = {
+  [defaultDcmClientMarker]: true;
+};
+
+/** @internal */
+export function markDefaultDcmClient<T extends object>(client: T): T {
+  Object.defineProperty(client, defaultDcmClientMarker, { value: true });
+  return client;
+}
+
+/** @internal */
+export function isDefaultDcmClient(
+  client: object | undefined,
+): client is DefaultDcmClient {
+  return Boolean(
+    client && (client as DefaultDcmClient)[defaultDcmClientMarker],
+  );
+}

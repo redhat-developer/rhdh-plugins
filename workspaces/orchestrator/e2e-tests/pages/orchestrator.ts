@@ -80,6 +80,46 @@ export class Orchestrator {
       .waitFor({ state: 'visible', timeout: 30_000 });
   }
 
+  /**
+   * NFS AppSidebar places Orchestrator in the Administration group
+   * (`SidebarItemBlueprint` group: 'admin'). Legacy Root keeps it under Menu.
+   */
+  async expectOrchestratorUnderAdministration() {
+    if (process.env.APP_MODE === 'legacy') {
+      return;
+    }
+    const administrationLabels: Record<string, string> = {
+      en: 'Administration',
+      de: 'Administration',
+      es: 'Administración',
+      fr: 'Administration',
+      it: 'Amministrazione',
+      ja: '管理',
+    };
+    const administration =
+      administrationLabels[this.locale] ?? 'Administration';
+    const sidebar = this.page.getByRole('navigation', {
+      name: 'sidebar nav',
+    });
+    const adminToggle = sidebar.getByRole('button', { name: administration });
+    const orchestratorLink = sidebar.getByRole('link', {
+      name: 'Orchestrator',
+    });
+    await expect(adminToggle).toBeVisible({ timeout: 15_000 });
+
+    // /orchestrator should auto-expand the group; expand if still collapsed.
+    if (!(await orchestratorLink.isVisible().catch(() => false))) {
+      await adminToggle.click();
+    }
+    await expect(orchestratorLink).toBeVisible();
+
+    // Collapse/expand proves the link lives inside the Administration group.
+    await adminToggle.click();
+    await expect(orchestratorLink).toBeHidden();
+    await adminToggle.click();
+    await expect(orchestratorLink).toBeVisible();
+  }
+
   async navigateToWorkflowRunTab(navText: string) {
     const navLink = this.page.getByRole('tab', { name: navText }).first();
     await navLink.waitFor({ state: 'visible', timeout: 60_000 });

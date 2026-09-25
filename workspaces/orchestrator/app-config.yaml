@@ -1,6 +1,9 @@
 app:
   title: RHDH Plugins
   baseUrl: http://localhost:3000
+
+  packages: all
+
   extensions:
     - 'api:app/app-language':
         config:

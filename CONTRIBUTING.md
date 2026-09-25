@@ -126,22 +126,31 @@ Use this flow when you need a **new npm version** of packages in a workspace tha
 
 Automation for this path is defined in [`.github/workflows/release_workspace_version.yml`](.github/workflows/release_workspace_version.yml). Published packages from this workflow use the npm dist-tag **`maintenance`** so they do not replace `latest`.
 
-There are two release flows:
+There are two release flows. Choose the target branch for the release line; `workspace/{workspace}` is no longer a valid backport branch:
 
-- **1.x legacy backports** use per-plugin branches such as `release-1.10/{plugin}`.
-- **2.1 and later repository-wide releases** use a single branch for the release line, such as `release-2.1`.
+- **Legacy 1.10 and earlier backports** use per-workspace branches such as `release-1.10/{workspace}`.
+- **2.1 and later repository-wide releases** use a single branch for the release line, such as `release-2.1`. Do not target `release-2.1/{workspace}`.
 
 ### Automated backports
 
-To request a backport from `main`, comment exactly one of `/backport release-2.1`, `/backport release-1.10`, or `/backport release-1.9` on the pull request before merging. The 2.x label targets the repository-wide branch directly, such as `release-2.1`. For the legacy 1.9 and 1.10 release branches, the PR must have exactly one `workspace/<name>` label; the workflow then targets the corresponding branch, such as `release-1.10/orchestrator`. The workflow creates the release label when needed, cherry-picks all commits from the source pull request into a new branch, and opens a pull request for review. If the request has multiple release labels, a legacy PR has zero or multiple workspace labels, or the cherry-pick conflicts, resolve it manually on a branch based on the target release branch and open the backport pull request.
+To request a backport from `main`, comment exactly one of `/backport release-2.1`, `/backport release-1.10`, or `/backport release-1.9` on the pull request before merging. The 2.x label targets the repository-wide branch directly, such as `release-2.1`. For the legacy 1.9 and 1.10 release branches, the PR must have exactly one `workspace/<name>` label (a PR label, not a branch); the workflow then targets the corresponding branch, such as `release-1.10/orchestrator`. The workflow creates the release label when needed, cherry-picks all commits from the source pull request into a new branch, and opens a pull request for review. If the request has multiple release labels, a legacy PR has zero or multiple workspace labels, or the cherry-pick conflicts, resolve it manually on a branch based on the target release branch and open the backport pull request.
 
-### Recommended: `release-x.y/{plugin}` branches
+### Backport workflow (both branch layouts)
 
-This approach uses per-release branches (e.g., `release-1.10/my-plugin`), eliminating the shared `workspace/{plugin}` branch as an intermediary. Multiple backports to different releases can proceed concurrently without blocking each other.
+The backport, Version Packages PR, and publish steps apply to both layouts. Only the backport PR target differs:
 
-1. Verify a `release-x.y/${plugin}` branch exists (e.g., `release-1.10/my-plugin`). If not, create it from the appropriate release tag by navigating to the [branches page](https://github.com/redhat-developer/rhdh-plugins/branches) and selecting 'New branch'.
+| Release line              | Backport PR target        |
+| ------------------------- | ------------------------- |
+| 1.10 and earlier (legacy) | `release-1.x/{workspace}` |
+| 2.1 and later             | `release-x.y`             |
 
-   If a branch `maintenance-changesets-release/release-x.y/${plugin}` already exists on the remote from a previous cycle, delete it before continuing; otherwise the Prior Version Release Workspace workflow will refuse to open a new Version Packages PR.
+For both layouts, each affected workspace gets a Version Packages branch named `maintenance-changesets-release/release-x.y/{workspace}`.
+
+Do not use `workspace/{workspace}` as a branch in either flow. The `release-x.y/{workspace}` target is only for legacy 1.10-and-earlier lines.
+
+1. Verify the appropriate release branch exists (e.g., `release-1.10/my-plugin` or `release-2.1`). If not, create it from the appropriate release tag by navigating to the [branches page](https://github.com/redhat-developer/rhdh-plugins/branches) and selecting 'New branch'. For repository-wide releases, maintainers create this branch at Feature Freeze, when the matching branch is cut in rhdh-plugin-export-overlays.
+
+   If the corresponding `maintenance-changesets-release/...` branch already exists on the remote from a previous cycle, delete it before continuing; otherwise the Prior Version Release Workspace workflow will refuse to open a new Version Packages PR.
 
 2. Cherry-pick the target commit(s) from `main` and push to a branch:
    - Apply the necessary patch fixes or security updates.
@@ -150,19 +159,19 @@ This approach uses per-release branches (e.g., `release-1.10/my-plugin`), elimin
 
    ```bash
    git fetch upstream
-   git checkout -b backport-<pr>-to-<release> upstream/release-x.y/<plugin>
+   git checkout -b backport-<pr>-to-<release> upstream/<target-release-branch>
    git cherry-pick <commit-sha>
    git push origin backport-<pr>-to-<release>
    ```
 
-3. Open a pull request targeting the `release-x.y/${plugin}` branch and merge when approved and CI is green.
+3. Open a pull request targeting the appropriate release branch from the table above and merge when approved and CI is green.
 
-   Merging this PR does **not** publish to npm by itself. It triggers the Prior Version Release Workspace workflow, which opens a **separate** follow-up pull request—the **Version Packages** PR—from branch `maintenance-changesets-release/release-x.y/${plugin}`, authored by `rhdh-bot`.
+   Merging this PR does **not** publish to npm by itself. It triggers the Prior Version Release Workspace workflow, which opens a **separate** follow-up **Version Packages** PR for each affected workspace, authored by `rhdh-bot`. For legacy branches the workspace comes from the target branch; on repository-wide branches the workflow detects affected workspaces from the merged PR.
 
 4. Merge the corresponding **Version Packages** PR:
    - The Version Packages PR must meet these conditions before you merge it:
      - The PR title starts with "Version Packages" (automatically generated by changesets).
-     - The PR originates from a `maintenance-changesets-release/release-x.y/${plugin}` branch.
+     - The PR originates from a `maintenance-changesets-release/release-x.y/{workspace}` branch.
      - The PR is authored by `rhdh-bot`.
      - The PR is merged, not just closed.
    - Merging **this** PR triggers the release job that builds and publishes to npm.
@@ -178,7 +187,7 @@ This approach uses per-release branches (e.g., `release-1.10/my-plugin`), elimin
 
 When only `yarn.lock` changes (e.g., a CVE fix that bumps a transitive dependency) and no plugin code is modified, you can skip the Version Packages flow entirely — no changeset, no version bump, no npm publish is needed.
 
-1. Merge the `yarn.lock` fix into the release branch (e.g., `release-x.y/${plugin}`).
+1. Merge the `yarn.lock` fix into the applicable release branch (e.g., `release-1.10/my-plugin` for legacy releases or `release-2.1` for repository-wide releases).
 2. Update `source.json` in the corresponding release branch of [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays) to point `repo-ref` to the commit with the `yarn.lock` change.
 3. Run `/publish` on the overlays PR — the export step rebuilds the dynamic plugin images from source at that commit, so the CVE fix is picked up without a new npm release.
 
@@ -186,20 +195,7 @@ This avoids unnecessary version bumps when no plugin API or behavior has changed
 
 ### Repository-wide releases from 2.1 onwards
 
-Starting with `release-2.1`, repository-wide release lines use a single `release-x.y` branch rather than a per-plugin branch. For example, all workspaces releasing for the 2.1 maintenance line use `release-2.1`.
-
-At Feature Freeze, when the corresponding `release-x.y` branch is cut in `rhdh-plugin-export-overlays`, repository maintainers create the matching `release-x.y` branch in `rhdh-plugins`. All backports for that release line must then target this repository-wide branch.
-
-1. Open a pull request targeting the repository-wide release branch, such as `release-2.1`, and include changesets for the affected workspaces.
-2. Merge the pull request after approval and CI pass. The merge does not publish packages directly.
-3. The Prior Version Release Workspace workflow detects each affected workspace and opens one `Version Packages` PR per workspace.
-4. Each generated PR uses a branch in this format:
-   ```text
-   maintenance-changesets-release/release-x.y/<workspace>
-   ```
-5. Merge the corresponding `Version Packages` PRs. Each merge publishes that workspace with the `maintenance` npm dist-tag and creates its Git tag.
-
-Future 2.x-and-later release lines follow the same `release-x.y` convention.
+Starting with `release-2.1`, all workspaces in a maintenance line share one `release-x.y` branch. Follow the same [backport workflow](#backport-workflow-both-branch-layouts) above, targeting that repository-wide branch and including changesets for the affected workspaces. The workflow detects each affected workspace and opens a separate Version Packages PR for each one; merging each PR publishes that workspace with the `maintenance` npm dist-tag and creates its Git tag.
 
 ## Creating a new Workspace
 
