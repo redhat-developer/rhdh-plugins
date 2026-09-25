@@ -39,7 +39,7 @@
     "@mui/material": "^5.12.2",
     "@red-hat-developer-hub/backstage-plugin-app-react": "^1.0.0",
     "@red-hat-developer-hub/backstage-plugin-intelligent-assistant": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.10",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.15.0",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router": "^6.30.4",
@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@backstage/frontend-test-utils": "^0.6.3",
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.63.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^15.0.0",
