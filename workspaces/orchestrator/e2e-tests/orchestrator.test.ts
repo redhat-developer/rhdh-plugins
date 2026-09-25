@@ -137,6 +137,7 @@ test.describe('Orchestrator workflow runs', () => {
     try {
       // Full reload clears persisted SWR cache from parent beforeEach's real fetch
       await sharedPage.reload({ waitUntil: 'domcontentloaded' });
+      await orchestrator.expectOrchestratorUnderAdministration();
       await sharedPage
         .getByRole('heading', { name: translations.page.title })
         .first()
