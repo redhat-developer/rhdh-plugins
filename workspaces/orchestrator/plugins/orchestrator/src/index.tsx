@@ -79,6 +79,7 @@ export const orchestratorSidebarItem = SidebarItemBlueprint.make({
     title: 'Orchestrator',
     to: '/orchestrator',
     group: 'admin',
+    requiresRoute: true,
   },
 });
 
