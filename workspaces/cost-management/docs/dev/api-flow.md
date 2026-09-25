@@ -1,6 +1,6 @@
 # Cost Management Plugin — API Flow
 
-How data moves from the browser to `console.redhat.com` and back, with links to the code. For the big picture see [`architecture.md`](./architecture.md); for a walkthrough see [`walkthrough-architecture-api.md`](./walkthrough-architecture-api.md); for permissions see [`rbac.md`](./rbac.md).
+How data moves from the browser to `console.redhat.com` and back, with links to the code. For the big picture see [`architecture.md`](./architecture.md); for a walkthrough see [`walkthrough-architecture-api.md`](./walkthrough-architecture-api.md); for permissions see [`rbac.md`](../rbac.md).
 
 ## Contents
 
@@ -192,8 +192,8 @@ Full checklist: [`walkthrough-architecture-api.md` §6](./walkthrough-architectu
 
 - [`architecture.md`](./architecture.md) — packages, security model, config overview
 - [`walkthrough-architecture-api.md`](./walkthrough-architecture-api.md) — walkthrough + verification checklist
-- [`rbac.md`](./rbac.md) — permission names and policies
-- [`local-dev-setup.md`](./local-dev-setup.md) · [`dynamic-plugin.md`](./dynamic-plugin.md)
+- [`rbac.md`](../rbac.md) — permission names and policies
+- [`local-dev-setup.md`](./local-dev-setup.md) · [`dynamic-plugin.md`](../dynamic-plugin.md)
 - [`plugins/cost-management-backend/README.md`](../plugins/cost-management-backend/README.md)
 - [Backstage Logger Service](https://backstage.io/docs/backend-system/core-services/logger/)
 - [Backstage Auditor Service](https://backstage.io/docs/backend-system/core-services/auditor/) — related; not used by this plugin
