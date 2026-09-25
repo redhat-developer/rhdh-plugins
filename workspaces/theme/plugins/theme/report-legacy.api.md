@@ -7,7 +7,6 @@ import { AppTheme } from '@backstage/core-plugin-api';
 import { default as DarkIcon } from '@mui/icons-material/Brightness2Rounded';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { default as LightIcon } from '@mui/icons-material/WbSunnyRounded';
-import { PropsWithChildren } from 'react';
 import { ReactNode } from 'react';
 import { Theme } from '@mui/material';
 import { UnifiedThemeOptions } from '@backstage/theme';
@@ -90,9 +89,6 @@ export const LogoFull: (props: React.ComponentProps<'svg'>) => JSX_2.Element;
 
 // @public (undocumented)
 export const LogoIcon: (props: React.ComponentProps<'svg'>) => JSX_2.Element;
-
-// @public (undocumented)
-export const PageMainContainer: (input: PropsWithChildren) => JSX_2.Element;
 
 // @public (undocumented)
 export interface RHDHThemePalette {

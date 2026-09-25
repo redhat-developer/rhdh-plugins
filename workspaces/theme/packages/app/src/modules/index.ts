@@ -13,7 +13,6 @@
  * See the License for the permissions and limitations under the License.
  */
 
-import { appLayoutModule } from './layout';
 import { navModule } from './nav';
 
-export { appLayoutModule, navModule };
+export { navModule };
