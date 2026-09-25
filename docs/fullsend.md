@@ -60,14 +60,13 @@ Available commands:
 ### Jira pilot for RHDH AI
 
 The [Jira poll workflow](../.github/workflows/fullsend-poll-jira.yml) checks
-every five minutes for `/fs-triage` and `/fs-code` comments on RHIDP and
-RHDHPLAN work items. It polls each project separately so Fullsend can check
-the command author's Jira project role. The existing GitHub Fullsend commands
-are unchanged.
+every five minutes for `/fs-triage` and `/fs-code` comments on RHIDP work
+items. Fullsend checks the command author's Jira project role. The existing
+GitHub Fullsend commands are unchanged.
 
 Each Jira query requires all of these gates:
 
-- Project: `RHIDP` or `RHDHPLAN`.
+- Project: `RHIDP`.
 - Jira `Team`: `RHDH AI`, selected by `cf[10001]` and its Atlassian team ID.
 - Label: `fullsend` (agent opt-in).
 - Status category is not Done.

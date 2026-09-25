@@ -1,7 +1,7 @@
-# Poll Jira for Fullsend commands intended for this repository.
+# Poll RHIDP for Fullsend commands intended for this repository.
 #
-# Projects are polled separately because Fullsend resolves the command author's
-# Jira role in each project. Only /fs-triage and /fs-code are registered for
+# Fullsend resolves the command author's Jira role in RHIDP.
+# Only /fs-triage and /fs-code are registered for
 # Jira dispatch; other Fullsend commands remain out of scope.
 
 name: fullsend Jira poll
@@ -80,7 +80,6 @@ jobs:
 
           # Jira Team "RHDH AI" uses this Atlassian ID in cf[10001], not its display name.
           RHDH_AI_TEAM_ID='ec74d716-af36-4b3c-950f-f79213d08f71-1087'
-          poll_project RHDHPLAN "${RHDH_AI_TEAM_ID}"
           poll_project RHIDP "${RHDH_AI_TEAM_ID}"
 
           jq -s 'add' dispatches-*.json > dispatches.json
