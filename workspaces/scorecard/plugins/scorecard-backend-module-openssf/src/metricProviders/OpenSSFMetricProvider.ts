@@ -76,11 +76,3 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
     return results;
   }
 }
-
-/**
- * Creates all default OpenSSF metric providers.
- * @returns Array of OpenSSF metric providers
- */
-export function createOpenSSFMetricProvider(): OpenSSFMetricProvider {
-  return new OpenSSFMetricProvider();
-}

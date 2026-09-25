@@ -17,10 +17,7 @@
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 
-import {
-  createOpenSSFMetricProvider,
-  OpenSSFMetricProvider,
-} from './OpenSSFMetricProvider';
+import { OpenSSFMetricProvider } from './OpenSSFMetricProvider';
 import { OPENSSF_METRICS, OPENSSF_THRESHOLDS } from './OpenSSFConfig';
 import type { OpenSSFCheck, OpenSSFResponse } from '../clients/types';
 
@@ -232,26 +229,6 @@ describe('OpenSSFMetricProvider', () => {
       );
       expect(getScorecardSpy).toHaveBeenCalledWith(entity);
       expect(fetch).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('createOpenSSFMetricProvider', () => {
-    it('creates a single OpenSSF metric provider', () => {
-      const created = createOpenSSFMetricProvider();
-
-      expect(created).toBeInstanceOf(OpenSSFMetricProvider);
-      expect(created.getProviderId()).toBe('openssf.securityScorecard');
-    });
-
-    it('returns the batch provider with normalized metric ids and thresholds', () => {
-      const created = createOpenSSFMetricProvider();
-      const metrics = created.getMetrics();
-
-      expect(created.getProviderDatasourceId()).toBe('openssf');
-      expect(metrics.map(metric => metric.id)).toEqual(EXPECTED_METRIC_IDS);
-      metrics.forEach(metric => {
-        expect(metric.thresholds).toEqual(OPENSSF_THRESHOLDS);
-      });
     });
   });
 });
