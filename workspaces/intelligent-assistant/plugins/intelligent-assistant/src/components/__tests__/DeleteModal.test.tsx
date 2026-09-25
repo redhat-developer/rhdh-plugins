@@ -178,4 +178,28 @@ describe('DeleteModal', () => {
 
     expect(onConfirm).not.toHaveBeenCalled();
   });
+
+  test('should append to the provided host when isCompact', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+
+    render(
+      <DeleteModal
+        isOpen
+        onClose={onClose}
+        onConfirm={onConfirm}
+        conversationId={conversationId}
+        chatName={chatName}
+        isCompact
+        appendTo={() => host}
+      />,
+    );
+
+    expect(
+      host.querySelector('.ia-scoped-chat-modal-backdrop'),
+    ).toBeInTheDocument();
+    expect(host.querySelector('[role="dialog"]')).toBeInTheDocument();
+
+    host.remove();
+  });
 });
