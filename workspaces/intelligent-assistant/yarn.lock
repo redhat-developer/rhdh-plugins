@@ -8357,19 +8357,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.9.0-prerelease.2":
-  version: 6.9.0-prerelease.2
-  resolution: "@patternfly/chatbot@npm:6.9.0-prerelease.2"
+"@patternfly/chatbot@npm:6.9.0-prerelease.4":
+  version: 6.9.0-prerelease.4
+  resolution: "@patternfly/chatbot@npm:6.9.0-prerelease.4"
   dependencies:
     "@patternfly/react-code-editor": "npm:^6.6.0"
     "@patternfly/react-core": "npm:^6.6.0"
-    "@patternfly/react-icons": "npm:^6.6.0"
+    "@patternfly/react-icons": "npm:6.6.1-prerelease.2"
     "@patternfly/react-styles": "npm:^6.6.0"
     "@patternfly/react-table": "npm:^6.6.0"
     "@segment/analytics-next": "npm:^1.76.0"
     clsx: "npm:^2.1.0"
     path-browserify: "npm:^1.0.1"
-    posthog-js: "npm:^1.194.4"
+    posthog-js: "npm:^1.298.0"
     react-markdown: "npm:^9.0.1"
     rehype-external-links: "npm:^3.0.0"
     rehype-highlight: "npm:^7.0.0"
@@ -8387,7 +8387,7 @@ __metadata:
       optional: false
     monaco-editor:
       optional: false
-  checksum: 10c0/4c4b526b94e7b9d141d453bc1fd2225cc6a7465cc5d318ef97ae88b5219187e95014f29e96208d2e0aed4d48620c9bfda132e37e8bf05e08df7075b7a0b1e688
+  checksum: 10c0/f8e737857e85a01bddb33dbcf4028f8c4863229a80bcbfdcde7eadfda29d4c807de0c0a426def56d03fc033bc09e90991275b97dfa31e9ca6129945225a047eb
   languageName: node
   linkType: hard
 
@@ -8408,24 +8408,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:6.6.0":
-  version: 6.6.0
-  resolution: "@patternfly/react-core@npm:6.6.0"
+"@patternfly/react-core@npm:6.6.1":
+  version: 6.6.1
+  resolution: "@patternfly/react-core@npm:6.6.1"
   dependencies:
-    "@patternfly/react-icons": "npm:^6.6.0"
-    "@patternfly/react-styles": "npm:^6.6.0"
-    "@patternfly/react-tokens": "npm:^6.6.0"
+    "@patternfly/react-icons": "npm:^6.6.1"
+    "@patternfly/react-styles": "npm:^6.6.1"
+    "@patternfly/react-tokens": "npm:^6.6.1"
     focus-trap: "npm:7.6.6"
     react-dropzone: "npm:^14.3.5"
     tslib: "npm:^2.8.1"
   peerDependencies:
     react: ^17 || ^18 || ^19
     react-dom: ^17 || ^18 || ^19
-  checksum: 10c0/7042f6b8fd9bdc0ddea5bd5206144216ebd0819486ad903e5052ca5bb6a433c5981a4f1d694d48e12ab4717b3139ccdf5c8344c27543a5e8c1644d994e7bbb3a
+  checksum: 10c0/48d8b952d87abb45b99d345731c89cd42e7ba7fdd9d973025068e97c97be84b95f1560c8b7e0f02b453453a0f7c8e23a2f269d1851b9bc615bfe5547ef3b0969
   languageName: node
   linkType: hard
 
-"@patternfly/react-icons@npm:^6.5.0, @patternfly/react-icons@npm:^6.6.0, @patternfly/react-icons@npm:^6.6.1":
+"@patternfly/react-icons@npm:6.6.1-prerelease.2":
+  version: 6.6.1-prerelease.2
+  resolution: "@patternfly/react-icons@npm:6.6.1-prerelease.2"
+  dependencies:
+    tslib: "npm:^2.8.1"
+  peerDependencies:
+    react: ^17 || ^18 || ^19
+    react-dom: ^17 || ^18 || ^19
+  checksum: 10c0/a71c04894ac08ed950c1ac44c4797d2c459fd254dd83278ee70acfa06a7eb7f0cf93d6bc2cadc9245bd2f04e81b08fc0c7f8a8bff3f0831f740f4db7bca83909
+  languageName: node
+  linkType: hard
+
+"@patternfly/react-icons@npm:^6.5.0, @patternfly/react-icons@npm:^6.6.1":
   version: 6.6.1
   resolution: "@patternfly/react-icons@npm:6.6.1"
   dependencies:
@@ -8461,7 +8473,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-tokens@npm:^6.6.0, @patternfly/react-tokens@npm:^6.6.1":
+"@patternfly/react-tokens@npm:^6.6.1":
   version: 6.6.1
   resolution: "@patternfly/react-tokens@npm:6.6.1"
   checksum: 10c0/818f0539722c147a83c35bd53860b80566117c823706e51228f652754c2053410da987712b21def02d55c39845c9d129819e96a78870cc390db80df59c127a8b
@@ -8678,6 +8690,32 @@ __metadata:
   version: 2.11.8
   resolution: "@popperjs/core@npm:2.11.8"
   checksum: 10c0/4681e682abc006d25eb380d0cf3efc7557043f53b6aea7a5057d0d1e7df849a00e281cd8ea79c902a35a414d7919621fc2ba293ecec05f413598e0b23d5a1e63
+  languageName: node
+  linkType: hard
+
+"@posthog/browser-common@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "@posthog/browser-common@npm:0.9.0"
+  dependencies:
+    "@posthog/core": "npm:^1.54.2"
+    "@posthog/types": "npm:^1.412.1"
+  checksum: 10c0/39bf601ceeeca5bfab72dcf46355ad70cc4c136dd6dec7d981db0e2c5959174841e5f696a2b4059be6299cb84afcdca1a9737cdccc3fd08248a9f874f09a0310
+  languageName: node
+  linkType: hard
+
+"@posthog/core@npm:^1.54.2, @posthog/core@npm:^1.55.0":
+  version: 1.55.1
+  resolution: "@posthog/core@npm:1.55.1"
+  dependencies:
+    "@posthog/types": "npm:^1.412.3"
+  checksum: 10c0/085574da07f29eeb4d59c8327f9bebc0c0a9e538148ffe7bc8ebab97d3cfc977a8aa7d08bd232f754642245bf0c6736dced187e072f60641c6997623676fdc1c
+  languageName: node
+  linkType: hard
+
+"@posthog/types@npm:^1.412.1, @posthog/types@npm:^1.412.2, @posthog/types@npm:^1.412.3":
+  version: 1.412.3
+  resolution: "@posthog/types@npm:1.412.3"
+  checksum: 10c0/f939dba66a5275f63556b637d9d0f78a0f82b4249813909d99d6bf61c457d9d31a9fa06722b035073e022266f689cb2a25a1ba76b4bfdcd62a3717a963287539
   languageName: node
   linkType: hard
 
@@ -9479,8 +9517,8 @@ __metadata:
     "@monaco-editor/react": "npm:^4.7.0"
     "@mui/icons-material": "npm:^6.1.8"
     "@mui/material": "npm:^5.12.2"
-    "@patternfly/chatbot": "npm:6.9.0-prerelease.2"
-    "@patternfly/react-core": "npm:6.6.0"
+    "@patternfly/chatbot": "npm:6.9.0-prerelease.4"
+    "@patternfly/react-core": "npm:6.6.1"
     "@patternfly/react-icons": "npm:^6.5.0"
     "@patternfly/react-table": "npm:^6.4.1"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^1.0.0"
@@ -16922,10 +16960,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.38.1, core-js@npm:^3.6.5":
-  version: 3.41.0
-  resolution: "core-js@npm:3.41.0"
-  checksum: 10c0/a29ed0b7fe81acf49d04ce5c17a1947166b1c15197327a5d12f95bbe84b46d60c3c13de701d808f41da06fa316285f3f55ce5903abc8d5642afc1eac4457afc8
+"core-js@npm:^3.49.0, core-js@npm:^3.6.5":
+  version: 3.50.0
+  resolution: "core-js@npm:3.50.0"
+  checksum: 10c0/1bfcfb1dbdf45b0b1428a9fdcb03697d1fc52c7e9bc336f804a86ff2c2705a301dca7d9d6636d09d49d60298183273b9321681baeaf330c78db5393bc73f3f6a
   languageName: node
   linkType: hard
 
@@ -28722,30 +28760,41 @@ __metadata:
   languageName: node
   linkType: hard
 
-"posthog-js@npm:^1.194.4":
-  version: 1.232.6
-  resolution: "posthog-js@npm:1.232.6"
+"posthog-js@npm:^1.298.0":
+  version: 1.434.2
+  resolution: "posthog-js@npm:1.434.2"
   dependencies:
-    core-js: "npm:^3.38.1"
+    "@posthog/browser-common": "npm:^0.9.0"
+    "@posthog/core": "npm:^1.55.0"
+    "@posthog/types": "npm:^1.412.2"
+    core-js: "npm:^3.49.0"
+    dompurify: "npm:^3.4.13"
     fflate: "npm:^0.4.8"
-    preact: "npm:^10.19.3"
-    web-vitals: "npm:^4.2.4"
+    preact: "npm:^10.29.3"
+    query-selector-shadow-dom: "npm:^1.0.1"
+    web-vitals: "npm:^6.2.1"
+    web-vitals-soft-navs: "npm:web-vitals@6.2.1"
   peerDependencies:
-    "@rrweb/types": 2.0.0-alpha.17
-    rrweb-snapshot: 2.0.0-alpha.17
+    "@types/react": ">=16.8.0"
+    react: ">=16.8.0"
   peerDependenciesMeta:
-    "@rrweb/types":
+    "@types/react":
       optional: true
-    rrweb-snapshot:
+    react:
       optional: true
-  checksum: 10c0/1c2c39ef8657cefccc7b3fd1dc731f04ace0859083769637125516d6bc1f31777aa6c2259c14867070911dd631ac308c78c05c648fc33d8644c13722f7d9a03e
+  checksum: 10c0/b9c3cc554c65a52a7a150e36d8d93b634e42baf4b5ccfa1ef93e4df92b1937f26b1d1dfe58628eef6cdd3f9b68e53a0a4e7a747398c410f50970f1944ced9bf7
   languageName: node
   linkType: hard
 
-"preact@npm:^10.19.3":
-  version: 10.26.4
-  resolution: "preact@npm:10.26.4"
-  checksum: 10c0/8abf64ec6f9773f0c4fb3746b7caa3d83e2de4d464928e7f64fc779c96ef9e135d23c1ade8d0923c9191f6d203d9f22bb92d8a50dc0f4f310073dfaa51a56922
+"preact@npm:^10.29.3":
+  version: 10.29.8
+  resolution: "preact@npm:10.29.8"
+  peerDependencies:
+    preact-render-to-string: ">=5"
+  peerDependenciesMeta:
+    preact-render-to-string:
+      optional: true
+  checksum: 10c0/505460352139e0ce5b9c971b69d8d9f3b73ea0f316e3ff1c0b3db9a1abe206c9dff6ba385eb796253c38fcc08b5ade70cd8da3d9d6c9e9aec1a2fd59348253ae
   languageName: node
   linkType: hard
 
@@ -29138,6 +29187,13 @@ __metadata:
     es-define-property: "npm:^1.0.1"
     side-channel: "npm:^1.1.1"
   checksum: 10c0/8f3f6e45ece255347d57696628401cde29e9ec649fff698b53bd3150dea7cefdf33036e1bc1826b9f110bfa7cb0ec4ab9f5297eca628ce216c55af82c304e08e
+  languageName: node
+  linkType: hard
+
+"query-selector-shadow-dom@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "query-selector-shadow-dom@npm:1.0.1"
+  checksum: 10c0/f36de03f170ff1da69c3eecfa7f8b01e450a46dd266c921e17f36076ec59862eee00179489f30cb17c118bb56e868436578c01ea66f671fb358750d6ae474125
   languageName: node
   linkType: hard
 
@@ -34667,10 +34723,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-vitals@npm:^4.2.4":
-  version: 4.2.4
-  resolution: "web-vitals@npm:4.2.4"
-  checksum: 10c0/383c9281d5b556bcd190fde3c823aeb005bb8cf82e62c75b47beb411014a4ed13fa5c5e0489ed0f1b8d501cd66b0bebcb8624c1a75750bd5df13e2a3b1b2d194
+"web-vitals-soft-navs@npm:web-vitals@6.2.1":
+  version: 6.2.1
+  resolution: "web-vitals@npm:6.2.1"
+  checksum: 10c0/6f5cfb5875f6164898ea1097067a8ab29ed6fbd9ad38ac7ea519c110bf1d38a441a5b1e38d18f3afd17c62f9aaa88b6bac3b719bd8e29660f6d939bc12640508
+  languageName: node
+  linkType: hard
+
+"web-vitals@npm:^6.2.1":
+  version: 6.2.2
+  resolution: "web-vitals@npm:6.2.2"
+  checksum: 10c0/dda70c450470680decfe6cb4e04550b28843e697b1ed7634e51fb1e14b2c4056daffa66b593ab3f8134a8f214c885a4913353b34836273f72d73036a561a12dc
   languageName: node
   linkType: hard
 

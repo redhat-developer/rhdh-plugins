@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-common
 
+## 1.0.4
+
 ## 1.0.3
 
 ## 1.0.2

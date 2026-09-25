@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-translations-backend
 
+## 0.6.0
+
+### Minor Changes
+
+- e515331: Serve the maintained JSON translations from the RHDH repository's `/translations` directory and merge them with mounted customer overrides in the NFS translation API. Expose the backend `i18n.overrides` configuration schema.
+
 ## 0.5.1
 
 ## 0.5.0
