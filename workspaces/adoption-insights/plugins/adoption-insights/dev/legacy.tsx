@@ -21,8 +21,10 @@
 import { ReactNode } from 'react';
 
 import { createDevApp } from '@backstage/dev-utils';
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { TestApiProvider } from '@backstage/test-utils';
+import { CatalogEntityPage } from '@backstage/plugin-catalog';
+
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 import {
   adoptionInsightsPlugin,
@@ -30,7 +32,6 @@ import {
 } from '../src/legacy/plugin';
 import { adoptionInsightsApiRef } from '../src/api';
 import { adoptionInsightsTranslations } from '../src/translations';
-import { CatalogEntityPage } from '@backstage/plugin-catalog';
 
 import CatalogEntities from '../src/components/CatalogEntities';
 import { DateRangeProvider } from '../src/components/Header/DateRangeContext';

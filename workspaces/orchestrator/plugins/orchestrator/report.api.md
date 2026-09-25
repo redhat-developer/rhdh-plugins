@@ -22,6 +22,8 @@ import { PathParams } from '@backstage/core-plugin-api';
 import { ReactElement } from 'react';
 import { RouteRef } from '@backstage/frontend-plugin-api';
 import { RouteRef as RouteRef_2 } from '@backstage/core-plugin-api';
+import { SidebarIcon } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
@@ -213,6 +215,37 @@ const _default: OverridableFrontendPlugin<
         noHeader?: boolean;
       };
     }>;
+    'sidebar-item:orchestrator': OverridableExtensionDefinition<{
+      kind: 'sidebar-item';
+      name: undefined;
+      config: {
+        title: string | undefined;
+        icon: string | undefined;
+        to: string | undefined;
+        priority: number | undefined;
+        group: string | undefined;
+        requiresRoute: boolean | undefined;
+      };
+      configInput: {
+        title?: string | undefined;
+        icon?: string | undefined;
+        to?: string | undefined;
+        priority?: number | undefined;
+        group?: string | undefined;
+        requiresRoute?: boolean | undefined;
+      };
+      output: ExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>;
+      inputs: {};
+      params: {
+        title: string;
+        icon?: SidebarIcon;
+        to?: string;
+        onClick?: () => void;
+        priority?: number;
+        group?: string;
+        requiresRoute?: boolean;
+      };
+    }>;
   }
 >;
 export default _default;
@@ -390,6 +423,39 @@ export const orchestratorPage: OverridableExtensionDefinition<{
     loader?: () => Promise<JSX_2.Element>;
     routeRef?: RouteRef;
     noHeader?: boolean;
+  };
+}>;
+
+// @public
+export const orchestratorSidebarItem: OverridableExtensionDefinition<{
+  kind: 'sidebar-item';
+  name: undefined;
+  config: {
+    title: string | undefined;
+    icon: string | undefined;
+    to: string | undefined;
+    priority: number | undefined;
+    group: string | undefined;
+    requiresRoute: boolean | undefined;
+  };
+  configInput: {
+    title?: string | undefined;
+    icon?: string | undefined;
+    to?: string | undefined;
+    priority?: number | undefined;
+    group?: string | undefined;
+    requiresRoute?: boolean | undefined;
+  };
+  output: ExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>;
+  inputs: {};
+  params: {
+    title: string;
+    icon?: SidebarIcon;
+    to?: string;
+    onClick?: () => void;
+    priority?: number;
+    group?: string;
+    requiresRoute?: boolean;
   };
 }>;
 

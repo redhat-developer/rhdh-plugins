@@ -30,21 +30,16 @@ import {
   pluginHeaderActionsApiRef,
 } from '@backstage/frontend-plugin-api';
 import {
-  Sidebar,
-  SidebarGroup,
-  SidebarItem,
-  SidebarScrollWrapper,
-  SidebarSpace,
-} from '@backstage/core-components';
-import { NavContentBlueprint } from '@backstage/plugin-app-react';
-import {
   SidebarLanguageSwitcher,
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
 
+import rhdhAppDefaults from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+import { SidebarElementBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
+
 import extensionsPlugin from '../src';
 import translations from '../src/translations';
-import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 import { extensionsApiRef, dynamicPluginsInfoApiRef } from '../src/api';
 import { MockExtensionsApi } from './__data__/mockExtensions';
 
@@ -94,43 +89,35 @@ const extensionsDevModule = createFrontendModule({
   extensions: [mockExtensionApi, mockDynamicPluginsInfoApi],
 });
 
-const devSidebarContent = NavContentBlueprint.make({
-  params: {
-    component: ({ items }) => (
-      <Sidebar>
-        <SidebarScrollWrapper>
-          {items.map(item => (
-            <SidebarItem
-              key={item.title}
-              to={item.to}
-              text={item.title}
-              icon={item.icon}
-            />
-          ))}
-        </SidebarScrollWrapper>
-        <SidebarSpace />
-        <SidebarGroup label="Settings">
-          <SidebarLanguageSwitcher />
-          <SidebarSignOutButton />
-        </SidebarGroup>
-      </Sidebar>
-    ),
-  },
-});
-
 const devNavModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [devSidebarContent],
+  extensions: [
+    SidebarElementBlueprint.make({
+      name: 'SidebarLanguageSwitcher',
+      params: {
+        component: SidebarLanguageSwitcher,
+        priority: -10000,
+      },
+    }),
+    SidebarElementBlueprint.make({
+      name: 'SidebarSignOutButton',
+      params: {
+        component: SidebarSignOutButton,
+        priority: -10001,
+      },
+    }),
+  ],
 });
 
 const app = createApp({
   features: [
+    rhdhAppDefaults,
+    rhdhThemeModule,
+    devNavModule,
     pluginHeaderActionsModule,
     translations,
     extensionsPlugin,
     extensionsDevModule,
-    devNavModule,
-    rhdhThemeModule,
   ],
 });
 

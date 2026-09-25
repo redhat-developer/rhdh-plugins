@@ -1,17 +1,24 @@
 app:
   title: Scaffolded Backstage App
   baseUrl: http://localhost:3000
+
   analytics:
     adoptionInsights:
       maxBufferSize: 20
       flushInterval: 5000
       debug: true
       licensedUsers: 100
+
+  packages: all
+
   extensions:
     - api:app/app-language:
         config:
           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
           defaultLanguage: 'en'
+    - page:catalog:
+        config:
+          path: /
 
 organization:
   name: My Company

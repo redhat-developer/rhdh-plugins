@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-
-import { SidebarContent } from './Sidebar';
-
-export const devNavModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [SidebarContent],
-});
+export interface Config {
+  i18n?: {
+    /**
+     * JSON files that override translations discovered in the `/translations`
+     * directory. Later files override earlier files.
+     * @visibility backend
+     */
+    overrides?: string[];
+  };
+}

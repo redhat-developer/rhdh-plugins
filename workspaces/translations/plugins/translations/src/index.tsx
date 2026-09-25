@@ -21,9 +21,11 @@ import {
   createExtensionInput,
   createFrontendModule,
   createFrontendPlugin,
+  fetchApiRef,
   PageBlueprint,
   translationApiRef,
 } from '@backstage/frontend-plugin-api';
+import { discoveryApiRef } from '@backstage/core-plugin-api';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import {
   AppRootWrapperBlueprint,
@@ -35,8 +37,14 @@ import {
   translationsPluginTranslations,
 } from './translations';
 import { I18nextTranslationApi } from './apis/I18nextTranslationApi';
+import {
+  createJsonTranslationsLoader,
+  JsonTranslations,
+} from './apis/jsonTranslations';
 import { attachPseudolocalizationIfEnabled } from './apis/pseudolocalization';
 import { PseudoLocalizationProvider } from './components/PseudoLocalizationProvider';
+
+const JSON_TRANSLATIONS_TIMEOUT_MS = 10_000;
 
 const translationsPage = PageBlueprint.make({
   params: {
@@ -68,14 +76,63 @@ const translationsApiExtension = ApiBlueprint.makeWithOverrides({
     return originalFactory(defineParams =>
       defineParams({
         api: translationApiRef,
-        deps: { languageApi: appLanguageApiRef, configApi: configApiRef },
-        factory: ({ languageApi, configApi }) => {
+        deps: {
+          languageApi: appLanguageApiRef,
+          configApi: configApiRef,
+          discoveryApi: discoveryApiRef,
+          fetchApi: fetchApiRef,
+        },
+        factory: ({ languageApi, configApi, discoveryApi, fetchApi }) => {
           const resources = inputs.translations.map(i =>
             i.get(TranslationBlueprint.dataRefs.translation),
           );
+          const requestJsonTranslations =
+            async (): Promise<JsonTranslations> => {
+              const controller = new AbortController();
+              let timeoutId: ReturnType<typeof setTimeout> | undefined;
+              const timeout = new Promise<never>((_, reject) => {
+                timeoutId = setTimeout(() => {
+                  controller.abort();
+                  reject(
+                    new Error(
+                      `Timed out after ${JSON_TRANSLATIONS_TIMEOUT_MS}ms`,
+                    ),
+                  );
+                }, JSON_TRANSLATIONS_TIMEOUT_MS);
+              });
+              const request = discoveryApi
+                .getBaseUrl('translations')
+                .then((baseUrl: string) =>
+                  fetchApi.fetch(baseUrl, { signal: controller.signal }),
+                )
+                .then((response: Response) => {
+                  if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                  }
+                  return response.json();
+                });
+
+              try {
+                return await Promise.race([request, timeout]);
+              } finally {
+                if (timeoutId) {
+                  clearTimeout(timeoutId);
+                }
+              }
+            };
+          const loadJsonTranslations = createJsonTranslationsLoader(
+            requestJsonTranslations,
+            (error: unknown) => {
+              // Keep plugin resources usable when the backend is unavailable.
+              // eslint-disable-next-line no-console
+              console.warn(`Unable to load JSON translations: ${error}`);
+            },
+          );
+
           const api = I18nextTranslationApi.create({
             languageApi,
             resources,
+            loadJsonTranslations,
           });
           attachPseudolocalizationIfEnabled(api, configApi);
           return api;

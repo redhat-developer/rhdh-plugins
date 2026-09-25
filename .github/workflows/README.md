@@ -10,18 +10,19 @@ Handles the release process for a specific workspace from a specified branch (de
 
 ## [backport.yml](./backport.yml)
 
-Creates a backport pull request when a pull request merged into `main` has one backport label. Comment exactly one of `/backport release-2.1`, `/backport release-1.10`, or `/backport release-1.9` on the pull request before it is merged. The 2.x label targets the repository-wide branch directly, such as `release-2.1`. The 1.9 and 1.10 labels require exactly one PR `workspace/<name>` label to select a branch such as `release-1.10/orchestrator`. The workflow creates the release label when needed, cherry-picks all commits from the source pull request, and opens a pull request for normal review. Missing release branches are reported and skipped; ambiguous release or workspace labels fail explicitly.
+Creates a backport pull request when a pull request merged into `main` has one backport label. Comment exactly one of `/backport release-2.1`, `/backport release-1.10`, or `/backport release-1.9` on the pull request before it is merged. The 2.x label targets the repository-wide branch directly, such as `release-2.1`. The 1.9 and 1.10 labels require exactly one PR `workspace/<name>` label (not a branch) to select a legacy per-workspace branch such as `release-1.10/orchestrator`. The workflow creates the release label when needed, cherry-picks all commits from the source pull request, and opens a pull request for normal review. Missing release branches are reported and skipped; ambiguous release or workspace labels fail explicitly. Resolve cherry-pick conflicts manually on a branch based on the target release branch.
 
 ## [release_workspace_version.yml](./release_workspace_version.yml)
 
-Handles prior-version releases. The legacy 1.x flow is triggered by pull requests merged into per-plugin release branches such as `release-1.10/orchestrator`. The old `workspace/<workspace>` backport path is not supported.
+Handles prior-version releases. Backport pull requests for legacy 1.10-and-earlier lines target a per-workspace branch such as `release-1.10/orchestrator`. From `release-2.1` onwards, they target a repository-wide `release-x.y` branch such as `release-2.1`. A `workspace/<workspace>` branch is not a valid backport target; neither is `release-2.1/<workspace>`.
 
-From `release-2.1` onwards, the repository-wide 2.x-and-later flow uses a single branch per release line under the `release-*.*` convention, such as `release-2.1`, and is two-step:
+The same release process applies to both branch layouts:
 
-1. A merged pull request targeting the configured release branch creates one `Version Packages` pull request per affected workspace.
-2. Merging the generated `Version Packages` pull request publishes the workspace with the `maintenance` npm tag.
+1. Cherry-pick the fix onto a branch based on the appropriate release branch, include a changeset for published package changes, and merge the backport pull request after review and CI. Do not bump `package.json` versions manually. This merge does not publish to npm.
+2. The workflow opens a separate `Version Packages` pull request for each affected workspace, from `maintenance-changesets-release/release-x.y/<workspace>`. A leftover branch with that name from a previous cycle must be deleted before the workflow can open a new PR. For legacy branches, the workspace comes from the target branch; for repository-wide branches, the workflow detects affected workspaces from the merged PR.
+3. Merge the `Version Packages` PR authored by `rhdh-bot` to publish that workspace with the `maintenance` npm dist-tag and create its Git tag. Closing it without merging does not publish.
 
-Future 2.x-and-later release lines follow the same `release-x.y` convention. The workflow classifies 2.x-and-later branches using this convention as repository-wide release branches.
+For `yarn.lock`-only fixes without plugin code changes, no changeset or npm release is needed; update the corresponding overlays `source.json` `repo-ref` instead. See [Backporting patches](../../CONTRIBUTING.md#backporting-patches-prior-release-lines) for the full procedure, including the follow-up `CHANGELOG` PR to `main`.
 
 ## [release.yml](./release.yml)
 

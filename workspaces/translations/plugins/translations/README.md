@@ -1,5 +1,22 @@
 # translations
 
+## NFS JSON translations
+
+Install `translationsApiModule` in the app's `features` list and install the
+translations backend plugin. The module retains NFS `TranslationBlueprint`
+resources, then merges the JSON catalog served by `/api/translations` over
+each requested translation reference and locale. JSON files in RHDH's
+repository-root `translations` directory, as well as files mounted there, are
+discovered by the backend on startup;
+`i18n.overrides` files take highest priority. Add a new language to the NFS
+`app.extensions` language selector through `availableLanguages`.
+
+```ts
+import translationsApiModule from '@red-hat-developer-hub/backstage-plugin-translations/translations-api-module';
+
+const app = createApp({ features: [translationsApiModule] });
+```
+
 Welcome to the translations plugin!
 
 _This plugin was created through the Backstage CLI_

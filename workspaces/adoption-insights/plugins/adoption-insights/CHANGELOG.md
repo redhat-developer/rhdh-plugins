@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 1.0.4
+
+### Patch Changes
+
+- 7a0b7d2: Register the Adoption Insights nav entry through `SidebarItemBlueprint` in the `admin` group, and adopt RHDH app-defaults for the NFS demo app sidebar instead of a custom nav module.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes
