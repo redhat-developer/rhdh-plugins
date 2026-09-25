@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 4.0.0
+
+### Major Changes
+
+- 2ec9351: Remove the `/legacy` subpath export and the legacy frontend system plugin implementation.
+
 ## 3.1.0
 
 ### Minor Changes
