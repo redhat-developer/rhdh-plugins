@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { ChatbotContent, ChatbotFooter, MessageBar } from '@patternfly/chatbot';
+import { ChatbotFooter, MessageBar } from '@patternfly/chatbot';
 import {
   Alert,
   Button,
@@ -48,6 +54,7 @@ import {
 import { useRenameDocument } from '../../hooks/notebooks/useRenameDocument';
 import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
+import { useChatContentScrollOverflow } from '../../hooks/useChatContentScrollOverflow';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useStopConversation } from '../../hooks/useStopConversation';
@@ -58,7 +65,13 @@ import userAvatar from '../../images/user-avatar.svg';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
 import { runFileUploads } from '../../utils/notebook-upload-runner';
+import {
+  ChatMessageContentShell,
+  ChatMessageScroll,
+} from '../chatMessageScrollLayout';
+import { LIGHTSPEED_FLOATING_BG } from '../chatShellTokens';
 import { LightspeedChatBox } from '../LightspeedChatBox';
+import { lightspeedMessageBarShellCss } from '../PlainIconButton';
 import { ToastAlertGroup } from '../ToastAlertGroup';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
@@ -68,7 +81,7 @@ import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
 
-const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
+const ExpandStripButton = Button;
 
 const Root = styled('div')({
   display: 'flex',
@@ -78,15 +91,22 @@ const Root = styled('div')({
   minWidth: 0,
   width: '100%',
   overflow: 'hidden',
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 });
 
-const StyledDrawer = styled(Drawer)({
+const NotebookDrawerContainer = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
   flex: 1,
   minHeight: 0,
   minWidth: 0,
+  '& .pf-v6-c-drawer, & .pf-v5-c-drawer': {
+    flex: 1,
+    minHeight: 0,
+    minWidth: 0,
+  },
   '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
-    backgroundColor: floatingBg,
+    backgroundColor: LIGHTSPEED_FLOATING_BG,
   },
 });
 
@@ -97,7 +117,7 @@ const StyledDrawerContent = styled(DrawerContent)({
 });
 
 const StyledDrawerContentBody = styled(DrawerContentBody)({
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
@@ -113,20 +133,16 @@ const MainArea = styled('div')({
   minWidth: 0,
 });
 
-const AddIconButton = styled(Button)({
-  padding: 0,
-  minWidth: 0,
-  lineHeight: 1,
-});
-
 const ExpandStrip = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  paddingTop: theme.spacing(1.5),
   gap: theme.spacing(1),
-  borderRight: '1px solid var(--pf-t--global--border--color--default)',
-  backgroundColor: floatingBg,
+  padding: `${theme.spacing(2)} ${theme.spacing(1)}`,
+  width: 56,
+  minWidth: 56,
+  flexShrink: 0,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 }));
 
 const ContentColumn = styled('div')({
@@ -142,7 +158,7 @@ const TopBar = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'flex-end',
   padding: `${theme.spacing(1.5)} ${theme.spacing(2)}`,
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 }));
 
 const MainContent = styled('div')({
@@ -159,7 +175,7 @@ const DisclaimerStrip = styled('div')(({ theme }) => ({
   margin: 0,
   padding: `0 0 ${theme.spacing(1)}`,
   boxSizing: 'border-box',
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 }));
 
 const DisclaimerInner = styled('div')({
@@ -174,7 +190,7 @@ const WelcomeContainer = styled('div')({
   flex: 1,
   minHeight: 0,
   overflow: 'auto',
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 });
 
 const NotebookContentArea = styled('div')(({ theme }) => ({
@@ -211,32 +227,21 @@ const PromptPill = styled('button')(({ theme }) => ({
   },
 }));
 
-const StyledChatbotContent = styled(ChatbotContent)({
-  minHeight: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  flex: 1,
-  overflow: 'auto',
-  backgroundColor: floatingBg,
-  '& .pf-chatbot__message-contents': {
-    overflowX: 'hidden',
-    overflowWrap: 'break-word',
-    wordBreak: 'break-word',
-  },
+const NotebookChatContentShell = styled(ChatMessageContentShell)({
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 });
 
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
-  backgroundColor: `${floatingBg} !important`,
-  '&>.pf-chatbot__footer-container': {
-    width: '95% !important',
-    maxWidth: 'unset !important',
+  '&.pf-chatbot__footer': {
+    backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
+    rowGap: 0,
+    '--pf-chatbot__footer--RowGap': '0',
+    alignItems: 'stretch',
   },
-  '& .pf-chatbot__message-bar': {
-    backgroundColor:
-      theme.palette.mode === 'light'
-        ? theme.palette.grey[100]
-        : 'var(--pf-t--global--background--color--secondary--default)',
+  '& > .pf-v6-c-divider, & > .pf-v5-c-divider': {
+    display: 'none',
   },
+  ...lightspeedMessageBarShellCss(theme),
 }));
 
 type NotebookViewProps = {
@@ -336,11 +341,18 @@ export const NotebookView = ({
     '',
     avatar,
   );
+  const notebookMessageScrollRef = useRef<HTMLDivElement>(null);
 
   // Show the store's transcript whenever there is an active or finished stream
   // for this session; otherwise fall back to persisted server messages.
   const messages =
     streamStatus === 'idle' ? conversationMessages : streamMessages;
+
+  const hasNotebookMessageOverflow = useChatContentScrollOverflow(
+    notebookMessageScrollRef,
+    messages.length > 0,
+    [sessionId, conversationId, messages.length, isStreaming],
+  );
 
   // Keep the local conversation id in sync when the store resolves a temp
   // conversation to its real id (written into the session query cache).
@@ -623,6 +635,32 @@ export const NotebookView = ({
   const isAddDisabled =
     totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
 
+  const getNotebookAddResourceTooltip = () => {
+    if (hasUploadsInProgress) {
+      return t('notebook.view.documents.uploadsInProgress');
+    }
+    if (isAddDisabled) {
+      return t('notebook.view.documents.maxReached');
+    }
+    return t('notebook.view.documents.add');
+  };
+
+  const notebookAddResourceTooltip = getNotebookAddResourceTooltip();
+
+  const notebookAttachButtonProps = {
+    onClick: (event: MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+      if (!isAddDisabled && !isUploadModalOpen) {
+        handleOpenUploadModal();
+      }
+    },
+    icon: <PlusIcon />,
+    tooltipContent: notebookAddResourceTooltip,
+    'aria-label': t('notebook.view.documents.add'),
+    isDisabled: isAddDisabled || isUploadModalOpen,
+    dropzoneProps: { disabled: true, noClick: true, noKeyboard: true },
+  };
+
   useEffect(() => {
     onUploadsInProgressChange?.(hasUploadsInProgress);
   }, [hasUploadsInProgress, onUploadsInProgressChange]);
@@ -673,7 +711,7 @@ export const NotebookView = ({
             flexDirection: 'column',
             minHeight: 0,
             minWidth: 0,
-            backgroundColor: floatingBg,
+            backgroundColor: LIGHTSPEED_FLOATING_BG,
           }}
         >
           <UploadResourceScreen
@@ -685,20 +723,22 @@ export const NotebookView = ({
     }
     if (messages.length > 0) {
       return (
-        <StyledChatbotContent>
-          <LightspeedChatBox
-            userName={userName}
-            messages={messages}
-            profileLoading={profileLoading}
-            announcement={announcement}
-            ref={scrollToBottomRef}
-            welcomePrompts={[]}
-            conversationId={conversationId}
-            isStreaming={isStreaming}
-            topicRestrictionEnabled={topicRestrictionEnabled}
-            showSourcesChipPopover
-          />
-        </StyledChatbotContent>
+        <NotebookChatContentShell hasOverflow={hasNotebookMessageOverflow}>
+          <ChatMessageScroll ref={notebookMessageScrollRef}>
+            <LightspeedChatBox
+              userName={userName}
+              messages={messages}
+              profileLoading={profileLoading}
+              announcement={announcement}
+              ref={scrollToBottomRef}
+              welcomePrompts={[]}
+              conversationId={conversationId}
+              isStreaming={isStreaming}
+              topicRestrictionEnabled={topicRestrictionEnabled}
+              showSourcesChipPopover
+            />
+          </ChatMessageScroll>
+        </NotebookChatContentShell>
       );
     }
     return (
@@ -747,39 +787,38 @@ export const NotebookView = ({
         alerts={toastAlerts}
         onRemoveAlert={handleRemoveToastAlert}
       />
-      <StyledDrawer isExpanded={!sidebarCollapsed} isInline position="start">
-        <StyledDrawerContent
-          panelContent={!sidebarCollapsed ? panelContent : undefined}
-        >
-          <StyledDrawerContentBody>
-            <MainArea>
-              {sidebarCollapsed && !isCompact && (
-                <ExpandStrip>
-                  <Tooltip
-                    content={t('notebook.view.sidebar.expand')}
-                    position="right"
-                  >
-                    <Button
-                      variant="plain"
-                      onClick={() => onSidebarCollapsedChange(false)}
-                      aria-label={t('notebook.view.sidebar.expand')}
-                      size="sm"
+      <NotebookDrawerContainer>
+        <Drawer isExpanded={!sidebarCollapsed} isInline position="start">
+          <StyledDrawerContent
+            panelContent={!sidebarCollapsed ? panelContent : undefined}
+          >
+            <StyledDrawerContentBody>
+              <MainArea>
+                {sidebarCollapsed && !isCompact && (
+                  <ExpandStrip>
+                    <Tooltip
+                      content={t('notebook.view.sidebar.expand')}
+                      position="right"
                     >
-                      <SidebarExpandIcon />
-                    </Button>
-                  </Tooltip>
-                  <Tooltip
-                    content={(() => {
-                      if (hasUploadsInProgress)
-                        return t('notebook.view.documents.uploadsInProgress');
-                      if (isAddDisabled)
-                        return t('notebook.view.documents.maxReached');
-                      return t('notebook.view.documents.add');
-                    })()}
-                    position="right"
-                  >
-                    <Typography component="span">
-                      <AddIconButton
+                      <ExpandStripButton
+                        variant="plain"
+                        onClick={() => onSidebarCollapsedChange(false)}
+                        aria-label={t('notebook.view.sidebar.expand')}
+                      >
+                        <SidebarExpandIcon size={18} />
+                      </ExpandStripButton>
+                    </Tooltip>
+                    <Tooltip
+                      content={(() => {
+                        if (hasUploadsInProgress)
+                          return t('notebook.view.documents.uploadsInProgress');
+                        if (isAddDisabled)
+                          return t('notebook.view.documents.maxReached');
+                        return t('notebook.view.documents.add');
+                      })()}
+                      position="right"
+                    >
+                      <ExpandStripButton
                         variant="plain"
                         onClick={
                           isAddDisabled ? undefined : handleOpenUploadModal
@@ -787,54 +826,46 @@ export const NotebookView = ({
                         aria-label={t('notebook.view.documents.add')}
                         isDisabled={isAddDisabled}
                       >
-                        <AddCircleFilledIcon disabled={isAddDisabled} />
-                      </AddIconButton>
-                    </Typography>
-                  </Tooltip>
-                </ExpandStrip>
-              )}
-
-              <ContentColumn>
-                {!isCompact && (
-                  <TopBar>
-                    <Button
-                      variant="link"
-                      style={{ textTransform: 'none' }}
-                      onClick={handleCloseNotebook}
-                      icon={<TimesIcon />}
-                      iconPosition="end"
-                    >
-                      {t('notebook.view.close')}
-                    </Button>
-                  </TopBar>
+                        <AddCircleFilledIcon
+                          disabled={isAddDisabled}
+                          size={18}
+                        />
+                      </ExpandStripButton>
+                    </Tooltip>
+                  </ExpandStrip>
                 )}
 
-                <MainContent>{renderMainContent()}</MainContent>
-
-                {hasNoDocuments &&
-                  messages.length === 0 &&
-                  renderNotebookDisclaimerAlert()}
-
-                <StyledChatbotFooter>
-                  {(() => {
-                    const addResourceAction = (
+                <ContentColumn>
+                  {!isCompact && (
+                    <TopBar>
                       <Button
-                        variant="plain"
-                        onClick={handleOpenUploadModal}
-                        aria-label={t('notebook.view.documents.add')}
-                        size="sm"
+                        variant="link"
+                        style={{ textTransform: 'none' }}
+                        onClick={handleCloseNotebook}
+                        icon={<TimesIcon />}
+                        iconPosition="end"
                       >
-                        <PlusIcon />
+                        {t('notebook.view.close')}
                       </Button>
-                    );
-                    return hasNoDocuments ? (
+                    </TopBar>
+                  )}
+
+                  <MainContent>{renderMainContent()}</MainContent>
+
+                  {hasNoDocuments &&
+                    messages.length === 0 &&
+                    renderNotebookDisclaimerAlert()}
+
+                  <StyledChatbotFooter>
+                    {hasNoDocuments ? (
                       <Tooltip
                         content={t('notebook.view.input.disabledTooltip')}
                         position="top"
                       >
                         <div>
                           <MessageBar
-                            hasAttachButton={false}
+                            hasAttachButton
+                            attachButtonPosition="start"
                             hasMicrophoneButton={false}
                             hasStopButton={false}
                             isSendButtonDisabled
@@ -842,8 +873,8 @@ export const NotebookView = ({
                             onSendMessage={sendMessage}
                             placeholder={t('notebook.view.input.placeholder')}
                             forceMultilineLayout
-                            additionalActions={addResourceAction}
                             buttonProps={{
+                              attach: notebookAttachButtonProps,
                               send: {
                                 tooltipContent: t('tooltip.send'),
                               },
@@ -853,7 +884,8 @@ export const NotebookView = ({
                       </Tooltip>
                     ) : (
                       <MessageBar
-                        hasAttachButton={false}
+                        hasAttachButton
+                        attachButtonPosition="start"
                         hasMicrophoneButton
                         hasStopButton={isStreaming}
                         handleStopButton={
@@ -863,8 +895,8 @@ export const NotebookView = ({
                         onSendMessage={sendMessage}
                         placeholder={t('notebook.view.input.placeholder')}
                         forceMultilineLayout
-                        additionalActions={addResourceAction}
                         buttonProps={{
+                          attach: notebookAttachButtonProps,
                           microphone: {
                             tooltipContent: {
                               active: t('tooltip.microphone.active'),
@@ -876,15 +908,17 @@ export const NotebookView = ({
                           },
                         }}
                       />
-                    );
-                  })()}
-                  <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
-                </StyledChatbotFooter>
-              </ContentColumn>
-            </MainArea>
-          </StyledDrawerContentBody>
-        </StyledDrawerContent>
-      </StyledDrawer>
+                    )}
+                    <ChatbotFootnoteWithIcon
+                      label={t('footer.accuracy.label')}
+                    />
+                  </StyledChatbotFooter>
+                </ContentColumn>
+              </MainArea>
+            </StyledDrawerContentBody>
+          </StyledDrawerContent>
+        </Drawer>
+      </NotebookDrawerContainer>
 
       <AddDocumentModal
         isOpen={isUploadModalOpen}

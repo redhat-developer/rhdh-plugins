@@ -40,7 +40,6 @@ import Tabs from '@mui/material/Tabs';
 import {
   Chatbot,
   ChatbotAlert,
-  ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
   ChatbotHeader,
@@ -53,11 +52,11 @@ import {
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import {
+  Button,
   DropdownItem,
   Label,
   MenuToggle,
   MenuToggleElement,
-  Button as PfButton,
   Select,
   SelectList,
   SelectOption,
@@ -66,6 +65,7 @@ import {
   type AlertProps,
 } from '@patternfly/react-core';
 import {
+  PencilAltIcon,
   PenIcon,
   PlusIcon,
   SearchIcon,
@@ -109,6 +109,7 @@ import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
 import { useDeleteNotebook } from '../hooks/notebooks/useDeleteNotebook';
 import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
 import { useRenameNotebookWithAlert } from '../hooks/notebooks/useRenameNotebookWithAlert';
+import { useChatContentScrollOverflow } from '../hooks/useChatContentScrollOverflow';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
@@ -127,6 +128,15 @@ import {
 import { buildScreenContextAttachments } from '../utils/screen-context-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
+import {
+  ChatMessageContentShell,
+  ChatMessageScroll,
+} from './chatMessageScrollLayout';
+import {
+  LIGHTSPEED_CONTENT_BORDER,
+  LIGHTSPEED_FLOATING_BG,
+  pf6HideNestedRhUiIconCss,
+} from './chatShellTokens';
 import { CollapsedHistoryStrip } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
 import { DeleteSavedPromptModal } from './DeleteSavedPromptModal';
@@ -143,13 +153,15 @@ import {
   SidebarCollapseIcon,
   SidebarExpandIcon,
 } from './notebooks/SidebarCollapseIcon';
+import {
+  chatHistoryDrawerCollapseCloseCss,
+  lightspeedMessageBarShellCss,
+} from './PlainIconButton';
 import { RenameConversationModal } from './RenameConversationModal';
 import { SavedPromptMenuItems } from './SavedPromptMenuItems';
 import { ScreenContextChip } from './ScreenContextChip';
 import { SettingsPanel } from './SettingsPanel';
 import { ToastAlertGroup } from './ToastAlertGroup';
-
-const COLLAPSE_PANEL_ICON_SVG = `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`;
 
 const ConditionalWrapper = ({
   condition,
@@ -161,31 +173,29 @@ const ConditionalWrapper = ({
   children: React.ReactNode;
 }) => (condition ? wrapper(children) : children);
 
-const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
-
 const StyledChatbot = styled(Chatbot, {
   shouldForwardProp: prop =>
     prop !== 'isCompact' &&
+    prop !== 'isDockedMode' &&
     prop !== 'mcpDrawerFix' &&
     prop !== 'compactDrawerOpen',
 })<{
   isCompact?: boolean;
+  isDockedMode?: boolean;
   mcpDrawerFix?: boolean;
   compactDrawerOpen?: boolean;
-}>(({ isCompact, mcpDrawerFix, compactDrawerOpen }) => ({
+}>(({ isCompact, isDockedMode, mcpDrawerFix, compactDrawerOpen }) => ({
   '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
     margin: 0,
     padding: 0,
   },
   '& .pf-chatbot__content': {
-    backgroundColor: `${floatingBg} !important`,
+    backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
   },
-  '& .pf-v6-svg > .pf-v6-icon-rh-ui': {
-    display: 'none !important',
-    width: 0,
-    height: 0,
-    overflow: 'hidden',
-  },
+  '& .pf-chatbot__header-container, & .pf-chatbot__footer-container, & .pf-chatbot__message-bar, & .pf-chatbot__history-menu':
+    {
+      ...pf6HideNestedRhUiIconCss,
+    },
   // Remove once @patternfly/chatbot supports ConversationGroup header actions:
   // https://github.com/patternfly/chatbot/issues/904
   '& .pf-chatbot__history-menu .pf-v6-c-menu__list': {
@@ -208,9 +218,29 @@ const StyledChatbot = styled(Chatbot, {
     },
   '& .pf-chatbot-container': {
     minHeight: 0,
+    backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
+    borderRadius: 'inherit',
+    overflow: 'hidden',
   },
   '& .pf-chatbot__header-container': {
     flexShrink: 0,
+    backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
+  },
+  '&.pf-chatbot--embedded': {
+    overflow: 'hidden',
+    boxShadow: 'none !important',
+    ...(isDockedMode
+      ? {
+          border: 'none !important',
+          borderInlineStart: `${LIGHTSPEED_CONTENT_BORDER} !important`,
+          borderRadius: 0,
+        }
+      : {
+          border: `${LIGHTSPEED_CONTENT_BORDER} !important`,
+          borderRadius: isCompact
+            ? 'var(--pf-t--global--border--radius--medium)'
+            : '1rem',
+        }),
   },
   ...(isCompact
     ? {
@@ -219,6 +249,9 @@ const StyledChatbot = styled(Chatbot, {
         overflow: 'hidden',
       }
     : {}),
+  '& .pf-chatbot__history': {
+    ...chatHistoryDrawerCollapseCloseCss,
+  },
   // Match the previous compactDrawerPanel class: only expand the history
   // panel when it is actually open. Applying 100% width while collapsed
   // lets the z-index: 1300 panel cover the Chat/Notebooks tab bar.
@@ -250,7 +283,10 @@ const StyledChatbot = styled(Chatbot, {
 
 const StyledChatbotHeader = styled(ChatbotHeader)(({ theme }) => ({
   padding: `${theme.spacing(3)} ${theme.spacing(3)} 0 ${theme.spacing(3)} !important`,
-  backgroundColor: `${floatingBg} !important`,
+  backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
+  '& + .pf-chatbot__header__divider': {
+    display: 'none',
+  },
 }));
 
 const ErrorContainer = styled('div')(({ theme }) => ({
@@ -271,7 +307,7 @@ const FileDropZoneShell = styled('div')({
     '--pf-v5-c-multiple-file-upload--Gap': '0',
     flex: 1,
     minWidth: 0,
-    backgroundColor: `${floatingBg} !important`,
+    backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
   },
 });
 
@@ -306,9 +342,9 @@ const StyledChatbotHeaderTitle = styled(ChatbotHeaderTitle)({
 
 const HeaderDivider = styled('div')({
   flexShrink: 0,
-  paddingTop: 8,
-  borderBottom: '1px solid var(--pf-t--global--border--color--default)',
-  backgroundColor: floatingBg,
+  marginTop: '0.75rem',
+  borderBottom: LIGHTSPEED_CONTENT_BORDER,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 });
 
 const ChatMain = styled('div')({
@@ -337,34 +373,19 @@ const NotebooksTabLabel = styled('span', {
 
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   '&.pf-chatbot__footer': {
-    backgroundColor: `${floatingBg} !important`,
+    backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
   },
-  '&>.pf-chatbot__footer-container': {
-    width: '100% !important',
-    padding: `${theme.spacing(1.5)} !important`,
-    maxWidth: 'unset !important',
-    margin: '0 auto',
+  '& > .pf-v6-c-divider, & > .pf-v5-c-divider': {
+    display: 'none',
   },
-  '& .pf-chatbot__message-bar': {
-    backgroundColor:
-      theme.palette.mode === 'light'
-        ? theme.palette.grey[100]
-        : 'var(--pf-t--global--background--color--secondary--default)',
-  },
-  '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
-    {
-      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
-    },
+  ...lightspeedMessageBarShellCss(theme),
 }));
 
-const StyledMessageBar = styled(MessageBar)(({ theme }) => ({
-  border: '1px solid var(--pf-t--global--border--color--default)',
-  borderRadius: 24,
-  padding: theme.spacing(0.5),
+const StyledMessageBar = styled(MessageBar)({
   '&::after': {
     display: 'none',
   },
-}));
+});
 
 const MessageBarActionsRow = styled('div')({
   display: 'flex',
@@ -380,25 +401,7 @@ const StyledSelectList = styled(SelectList)({
   margin: 0,
 });
 
-const StyledChatbotContent = styled(ChatbotContent, {
-  shouldForwardProp: prop => prop !== 'hasOverflow',
-})<{ hasOverflow?: boolean }>(({ hasOverflow }) => ({
-  minHeight: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  flex: 1,
-  '& .pf-chatbot__jump': {
-    left: '50% !important',
-    right: 'auto !important',
-    transform: 'translateX(-50%)',
-    visibility: hasOverflow ? 'visible' : 'hidden',
-    pointerEvents: hasOverflow ? 'auto' : 'none',
-  },
-  '& .pf-chatbot__message-contents': {
-    overflowX: 'hidden',
-    overflowWrap: 'break-word',
-    wordBreak: 'break-word',
-  },
+const StyledChatbotContent = styled(ChatMessageContentShell)({
   // Remove once @patternfly/chatbot adds a responsive grid layout for prompt suggestions:
   // https://github.com/patternfly/chatbot/issues/905
   '& .pf-chatbot__prompt-suggestions': {
@@ -412,19 +415,7 @@ const StyledChatbotContent = styled(ChatbotContent, {
     height: '100%',
     minWidth: 0,
   },
-}));
-
-const ContentScroll = styled('div', {
-  shouldForwardProp: prop => prop !== 'isNewChat',
-})<{ isNewChat?: boolean }>(({ isNewChat }) => ({
-  minHeight: 0,
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  overflowY: 'auto',
-  WebkitOverflowScrolling: 'touch',
-  ...(isNewChat ? { backgroundColor: `${floatingBg} !important` } : {}),
-}));
+});
 
 const ContentSpacer = styled('div')({
   flex: 1,
@@ -437,7 +428,7 @@ const FlatSettings = styled(Settings)({
   flex: 1,
   minHeight: 0,
   '&.pf-chatbot__settings-form-container': {
-    background: floatingBg,
+    background: LIGHTSPEED_FLOATING_BG,
     padding: 0,
     margin: 0,
     minHeight: 0,
@@ -453,7 +444,7 @@ const FlatSettings = styled(Settings)({
   '& .pf-chatbot__settings-form': {
     margin: 0,
     padding: 0,
-    background: floatingBg,
+    background: LIGHTSPEED_FLOATING_BG,
     minHeight: 0,
     flex: 1,
     display: 'flex',
@@ -461,9 +452,10 @@ const FlatSettings = styled(Settings)({
     width: '100%',
     maxWidth: 'none',
     border: 'none',
+    ...pf6HideNestedRhUiIconCss,
   },
   '& .pf-chatbot__settings-form-row': {
-    background: floatingBg,
+    background: LIGHTSPEED_FLOATING_BG,
     border: 'none',
     margin: 0,
     padding: 0,
@@ -505,11 +497,12 @@ const McpSettingsPane = styled('div')(({ theme }) => ({
   width: '100%',
   minWidth: 0,
   borderLeft: `1px solid ${theme.palette.divider}`,
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
   display: 'flex',
   flexDirection: 'column',
   minHeight: 0,
   overflow: 'auto',
+  ...pf6HideNestedRhUiIconCss,
 }));
 
 const FullscreenChatLayout = styled('div')({
@@ -531,33 +524,10 @@ const FullscreenChatLayout = styled('div')({
     {
       display: 'none',
     },
-  '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
-    marginTop: 0,
-    marginRight: 0,
-  },
   '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
     paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
     paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
   },
-  '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
-    {
-      display: 'none',
-    },
-  '& .pf-v6-c-drawer__close .pf-v6-c-button, & .pf-v5-c-drawer__close .pf-v5-c-button':
-    {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      '&::before': {
-        content: '""',
-        display: 'block',
-        width: 24,
-        height: 24,
-        mask: COLLAPSE_PANEL_ICON_SVG,
-        WebkitMask: COLLAPSE_PANEL_ICON_SVG,
-        backgroundColor: 'currentColor',
-      },
-    },
   '& .pf-chatbot__heading-container': {
     paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
     paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
@@ -786,7 +756,8 @@ export const LightspeedChat = ({
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
   const [messageBarKey, setMessageBarKey] = useState(0);
-  const [hasChatContentOverflow, setHasChatContentOverflow] = useState(false);
+  const [hasMcpSettingsScrollOverflow, setHasMcpSettingsScrollOverflow] =
+    useState(false);
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
@@ -1669,135 +1640,17 @@ export const LightspeedChat = ({
     };
   }, [welcomePrompts.length]);
 
-  useEffect(() => {
-    const scrollContainer = contentScrollRef.current;
-    if (!scrollContainer) {
-      setHasChatContentOverflow(false);
-      return undefined;
-    }
-
-    const getMessageBox = () =>
-      scrollContainer.querySelector(
-        '.pf-chatbot__messagebox',
-      ) as HTMLElement | null;
-
-    const messageBoxOwnsScroll = (messageBox: HTMLElement | null) => {
-      if (!messageBox || typeof window === 'undefined') {
-        return false;
-      }
-      const overflowY = window.getComputedStyle(messageBox).overflowY;
-      return (
-        overflowY === 'auto' ||
-        overflowY === 'scroll' ||
-        overflowY === 'overlay'
-      );
-    };
-
-    const getScrollTarget = () => {
-      const messageBox = getMessageBox();
-      return messageBoxOwnsScroll(messageBox) ? messageBox! : scrollContainer;
-    };
-
-    let observedScrollTarget: HTMLElement | null = getScrollTarget();
-    let rafId: number | null = null;
-    let updateScheduled = false;
-
-    const updateOverflow = () => {
-      const scrollTarget = observedScrollTarget ?? scrollContainer;
-      setHasChatContentOverflow(
-        scrollTarget.scrollHeight > scrollTarget.clientHeight + 1,
-      );
-    };
-
-    const scheduleOverflowUpdate = () => {
-      if (updateScheduled) {
-        return;
-      }
-      updateScheduled = true;
-      if (typeof requestAnimationFrame !== 'undefined') {
-        rafId = requestAnimationFrame(() => {
-          updateScheduled = false;
-          updateOverflow();
-        });
-      } else {
-        updateScheduled = false;
-        updateOverflow();
-      }
-    };
-
-    scheduleOverflowUpdate();
-
-    // Use capture so scroll events from inner messagebox also trigger updates.
-    scrollContainer.addEventListener('scroll', scheduleOverflowUpdate, {
-      passive: true,
-      capture: true,
-    });
-
-    const resizeObserver =
-      typeof ResizeObserver !== 'undefined'
-        ? new ResizeObserver(() => scheduleOverflowUpdate())
-        : undefined;
-    resizeObserver?.observe(scrollContainer);
-    if (observedScrollTarget !== scrollContainer) {
-      resizeObserver?.observe(observedScrollTarget);
-    }
-
-    const syncObservedScrollTarget = () => {
-      const nextScrollTarget = getScrollTarget();
-      if (nextScrollTarget === observedScrollTarget) {
-        return;
-      }
-      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
-        resizeObserver?.unobserve(observedScrollTarget);
-      }
-      if (nextScrollTarget !== scrollContainer) {
-        resizeObserver?.observe(nextScrollTarget);
-      }
-      observedScrollTarget = nextScrollTarget;
-    };
-
-    const mutationObserver =
-      typeof MutationObserver !== 'undefined'
-        ? new MutationObserver(() => {
-            syncObservedScrollTarget();
-            scheduleOverflowUpdate();
-          })
-        : undefined;
-    mutationObserver?.observe(scrollContainer, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', updateOverflow);
-    }
-
-    return () => {
-      if (rafId !== null && typeof cancelAnimationFrame !== 'undefined') {
-        cancelAnimationFrame(rafId);
-      }
-      scrollContainer.removeEventListener(
-        'scroll',
-        scheduleOverflowUpdate,
-        true,
-      );
-      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
-        resizeObserver?.unobserve(observedScrollTarget);
-      }
-      resizeObserver?.disconnect();
-      mutationObserver?.disconnect();
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', updateOverflow);
-      }
-    };
-  }, [
-    conversationId,
-    displayMode,
-    isSettingsOpen,
-    messages.length,
-    welcomePrompts.length,
-  ]);
+  const hasChatContentOverflow = useChatContentScrollOverflow(
+    contentScrollRef,
+    showChatPanel,
+    [
+      conversationId,
+      displayMode,
+      isSettingsOpen,
+      messages.length,
+      welcomePrompts.length,
+    ],
+  );
 
   const handleFilter = useCallback((value: string) => {
     setFilterValue(value);
@@ -1941,10 +1794,15 @@ export const LightspeedChat = ({
     });
   };
 
+  const showScrollJumpButtons =
+    !isFullscreenMode && isSettingsOpen
+      ? hasMcpSettingsScrollOverflow
+      : hasChatContentOverflow;
+
   const chatMainContent = (
     <>
-      <StyledChatbotContent hasOverflow={hasChatContentOverflow}>
-        <ContentScroll
+      <StyledChatbotContent hasOverflow={showScrollJumpButtons}>
+        <ChatMessageScroll
           ref={contentScrollRef}
           isNewChat={welcomePrompts.length > 0}
         >
@@ -1968,7 +1826,7 @@ export const LightspeedChat = ({
               style={{ height: 0, flexShrink: 0 }}
             />
           )}
-        </ContentScroll>
+        </ChatMessageScroll>
       </StyledChatbotContent>
       <StyledChatbotFooter>
         <FilePreview />
@@ -2053,6 +1911,7 @@ export const LightspeedChat = ({
       onCreateSavedPrompt={createPrompt}
       onRequestSavedPromptDelete={requestSavedPromptDelete}
       showMcpSettings={mcpToolsPermissionResolved}
+      onMcpContentOverflowChange={setHasMcpSettingsScrollOverflow}
     />
   );
 
@@ -2129,6 +1988,7 @@ export const LightspeedChat = ({
       <StyledChatbot
         displayMode={ChatbotDisplayMode.embedded}
         isCompact={!isFullscreenMode}
+        isDockedMode={displayMode === ChatbotDisplayMode.docked}
         compactDrawerOpen={!isFullscreenMode && isChatHistoryDrawerOpen}
         mcpDrawerFix={isSettingsOpen && !isChatHistoryDrawerOpen}
         data-screen-capture-exclude
@@ -2149,42 +2009,41 @@ export const LightspeedChat = ({
                       }
                       position="bottom"
                     >
-                      <PfButton
+                      <Button
                         variant="plain"
                         onClick={onChatHistoryDrawerToggle}
                         aria-expanded={isChatHistoryDrawerOpen}
                         aria-label={t('aria.chatHistoryMenu')}
-                        size="sm"
                       >
                         {isChatHistoryDrawerOpen ? (
                           <SidebarCollapseIcon size={18} />
                         ) : (
                           <SidebarExpandIcon size={18} />
                         )}
-                      </PfButton>
+                      </Button>
                     </Tooltip>
                     {!isChatHistoryDrawerOpen && (
                       <Tooltip
                         content={t('tooltip.quickNewChat')}
                         position="bottom"
                       >
-                        <PfButton
+                        <Button
                           variant="plain"
                           onClick={onNewChat}
                           isDisabled={newChatCreated}
                           aria-label={t('tooltip.quickNewChat')}
-                          size="sm"
                         >
-                          <PenIcon
+                          <PencilAltIcon
                             style={{
                               width: 18,
                               height: 18,
+                              display: 'block',
                               color: newChatCreated
                                 ? undefined
                                 : 'var(--pf-t--global--color--brand--default)',
                             }}
                           />
-                        </PfButton>
+                        </Button>
                       </Tooltip>
                     )}
                   </HeaderActions>

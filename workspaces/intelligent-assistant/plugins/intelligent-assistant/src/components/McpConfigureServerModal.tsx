@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import GlobalStyles from '@mui/material/GlobalStyles';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import {
@@ -53,18 +54,54 @@ import {
 import { type UseMcpConfigureModalResult } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
 
-const StyledModal = styled(Modal)({
-  '& .pf-v6-c-modal-box__close, & .pf-v5-c-modal-box__close': {
-    display: 'none',
+const MCP_CONFIGURE_MODAL_CLASS = 'ia-mcp-configure-modal';
+const MCP_CONFIGURE_MODAL_BACKDROP_CLASS = 'ia-mcp-configure-modal-backdrop';
+const MCP_CONFIGURE_MODAL_CLOSE_CLASS = 'ia-mcp-configure-modal-close';
+
+/** Above docked settings drawer (1300); scoped via Modal backdropClassName. */
+const mcpConfigureModalBackdropZIndexStyles = {
+  [`.${MCP_CONFIGURE_MODAL_BACKDROP_CLASS}`]: {
+    '--pf-v6-c-backdrop--ZIndex': '1400 !important',
+    '--pf-v5-c-backdrop--ZIndex': '1400 !important',
   },
+} as const;
+
+const MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS =
+  'ia-mcp-configure-modal-close-host';
+
+const modalDefaultCloseHideSelector = `.${MCP_CONFIGURE_MODAL_CLASS} .pf-v6-c-modal-box__close, .${MCP_CONFIGURE_MODAL_CLASS} .pf-v5-c-modal-box__close`;
+
+const modalCloseHostSiblingMarginResetSelector = `.${MCP_CONFIGURE_MODAL_CLASS} .pf-v6-c-modal-box__close + .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS}, .${MCP_CONFIGURE_MODAL_CLASS} .pf-v5-c-modal-box__close + .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS}`;
+
+const modalHeaderAfterCloseHostSelector = `.${MCP_CONFIGURE_MODAL_CLASS} .pf-v6-c-modal-box__close + .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS} + .pf-v6-c-modal-box__header, .${MCP_CONFIGURE_MODAL_CLASS} .pf-v5-c-modal-box__close + .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS} + .pf-v5-c-modal-box__header`;
+
+/** Align close trailing edge with body content (alert, inputs), not modal chrome. */
+const configureModalCloseHostCss = {
+  position: 'absolute' as const,
+  insetBlockStart: 'var(--pf-v6-c-modal-box__close--InsetBlockStart)',
+  insetInlineStart: 'var(--pf-v6-c-modal-box__body--PaddingInlineStart)',
+  insetInlineEnd: 'var(--pf-v6-c-modal-box__body--PaddingInlineEnd)',
+  display: 'flex',
+  justifyContent: 'flex-end',
+  alignItems: 'flex-start',
+  pointerEvents: 'none' as const,
+  marginInlineEnd: 0,
+  zIndex: 1,
+};
+
+const configureModalCloseHostButtonCss = {
+  pointerEvents: 'auto' as const,
+};
+
+const ConfigureModalCloseButton = styled(Button)(({ theme }) => ({
+  color: theme.palette.text.primary,
+}));
+
+const TokenClearButton = styled(Button)({});
+
+const StyledModal = styled(Modal)({
   '& .pf-v6-c-modal-box__body, & .pf-v5-c-modal-box__body': {
     paddingTop: 0,
-  },
-  '& .ia-mcp-modal-close': {
-    position: 'absolute',
-    insetBlockStart: 'var(--pf-v6-c-modal-box__close--InsetBlockStart, 1.5rem)',
-    insetInlineEnd: 'var(--pf-v6-c-modal-box__close--InsetInlineEnd, 1.5rem)',
-    zIndex: 1,
   },
 });
 
@@ -239,241 +276,274 @@ export const McpConfigureServerModal = ({
   );
 
   return (
-    <StyledModal
-      variant="small"
-      width={608}
-      isOpen={isOpen}
-      onClose={close}
-      aria-labelledby="mcp-configure-modal"
-      aria-describedby="mcp-configure-modal-body"
-    >
-      <ModalHeader
-        title={configureModalTitle}
-        labelId="mcp-configure-modal"
-        descriptorId="mcp-configure-modal-body"
+    <>
+      <GlobalStyles
+        styles={{
+          ...mcpConfigureModalBackdropZIndexStyles,
+          ...(isOpen
+            ? {
+                [modalDefaultCloseHideSelector]: {
+                  display: 'none',
+                },
+                [modalCloseHostSiblingMarginResetSelector]: {
+                  marginInlineEnd: '0 !important',
+                },
+                [modalHeaderAfterCloseHostSelector]: {
+                  marginInlineEnd:
+                    'var(--pf-v6-c-modal-box__close--sibling--MarginInlineEnd)',
+                },
+                [`.${MCP_CONFIGURE_MODAL_CLASS} .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS}`]:
+                  configureModalCloseHostCss,
+                [`.${MCP_CONFIGURE_MODAL_CLASS} .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS} .${MCP_CONFIGURE_MODAL_CLOSE_CLASS}`]:
+                  configureModalCloseHostButtonCss,
+              }
+            : {}),
+        }}
       />
-      <Button
-        className="ia-mcp-modal-close"
-        variant="plain"
-        icon={<TimesIcon />}
-        aria-label={t('mcp.settings.closeConfigureModalAriaLabel')}
-        onClick={close}
-      />
-      <ModalBody id="mcp-configure-modal-body">
-        <Stack hasGutter>
-          <StackItem>
-            <ModalInfoAlert
-              variant="custom"
-              customIcon={<InfoCircleIcon />}
-              title={t('mcp.settings.modalDescription')}
-              isInline
-            />
-          </StackItem>
-          {editingServer?.auth === 'dcr' && (
+      <StyledModal
+        className={MCP_CONFIGURE_MODAL_CLASS}
+        variant="small"
+        width={608}
+        isOpen={isOpen}
+        onClose={close}
+        aria-labelledby="mcp-configure-modal"
+        aria-describedby="mcp-configure-modal-body"
+        backdropClassName={MCP_CONFIGURE_MODAL_BACKDROP_CLASS}
+      >
+        <div className={MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS}>
+          <ConfigureModalCloseButton
+            className={MCP_CONFIGURE_MODAL_CLOSE_CLASS}
+            aria-label={t('mcp.settings.closeConfigureModalAriaLabel')}
+            icon={<TimesIcon />}
+            variant="plain"
+            onClick={close}
+          />
+        </div>
+        <ModalHeader
+          title={configureModalTitle}
+          labelId="mcp-configure-modal"
+          descriptorId="mcp-configure-modal-body"
+        />
+        <ModalBody id="mcp-configure-modal-body">
+          <Stack hasGutter>
             <StackItem>
               <ModalInfoAlert
                 variant="custom"
                 customIcon={<InfoCircleIcon />}
-                title={t('mcp.settings.modalDescriptionDcr')}
+                title={t('mcp.settings.modalDescription')}
                 isInline
               />
             </StackItem>
-          )}
-          {hasRemovedPersonalToken && !editingServer?.hasOrgToken && (
-            <StackItem>
-              <ModalInfoAlert
-                variant="custom"
-                customIcon={<InfoCircleIcon />}
-                title={t('mcp.settings.modal.tokenRemovedWarning')}
-                isInline
-              />
-            </StackItem>
-          )}
-          <StackItem>
-            <Typography
-              component="div"
-              sx={sectionTitleSx}
-              className="pf-v6-u-mb-sm"
-            >
-              {t('mcp.settings.status')}
-            </Typography>
-            <Flex
-              alignItems={{ default: 'alignItemsCenter' }}
-              spaceItems={{ default: 'spaceItemsSm' }}
-            >
-              <FlexItem>{renderStatusIcon()}</FlexItem>
-              <FlexItem>
-                <Typography component="span">{modalStatusText}</Typography>
-              </FlexItem>
-            </Flex>
-          </StackItem>
-          {modalVerifiedHasToken && modalDisplayStatus === 'ok' && (
+            {editingServer?.auth === 'dcr' && (
+              <StackItem>
+                <ModalInfoAlert
+                  variant="custom"
+                  customIcon={<InfoCircleIcon />}
+                  title={t('mcp.settings.modalDescriptionDcr')}
+                  isInline
+                />
+              </StackItem>
+            )}
+            {hasRemovedPersonalToken && !editingServer?.hasOrgToken && (
+              <StackItem>
+                <ModalInfoAlert
+                  variant="custom"
+                  customIcon={<InfoCircleIcon />}
+                  title={t('mcp.settings.modal.tokenRemovedWarning')}
+                  isInline
+                />
+              </StackItem>
+            )}
             <StackItem>
               <Typography
                 component="div"
-                className="pf-v6-u-mb-sm"
                 sx={sectionTitleSx}
+                className="pf-v6-u-mb-sm"
               >
-                {t('mcp.settings.modal.toolsHeading' as any, {
-                  count: String(modalToolCount),
-                })}
+                {t('mcp.settings.status')}
               </Typography>
-              {renderToolsContent()}
+              <Flex
+                alignItems={{ default: 'alignItemsCenter' }}
+                spaceItems={{ default: 'spaceItemsSm' }}
+              >
+                <FlexItem>{renderStatusIcon()}</FlexItem>
+                <FlexItem>
+                  <Typography component="span">{modalStatusText}</Typography>
+                </FlexItem>
+              </Flex>
             </StackItem>
-          )}
-          <StackItem>
-            <Flex
-              justifyContent={{ default: 'justifyContentSpaceBetween' }}
-              alignItems={{ default: 'alignItemsFlexStart' }}
-              spaceItems={{ default: 'spaceItemsMd' }}
-            >
-              <FlexItem flex={{ default: 'flex_1' }}>
+            {modalVerifiedHasToken && modalDisplayStatus === 'ok' && (
+              <StackItem>
                 <Typography
                   component="div"
                   className="pf-v6-u-mb-sm"
                   sx={sectionTitleSx}
                 >
-                  {t('mcp.settings.enabled')}
+                  {t('mcp.settings.modal.toolsHeading' as any, {
+                    count: String(modalToolCount),
+                  })}
                 </Typography>
-                <Typography
-                  component="div"
-                  className="pf-v6-u-mt-xs"
-                  sx={sectionDescriptionSx}
-                >
-                  {modalEnabledDescription}
-                </Typography>
-              </FlexItem>
-              <FlexItem>
-                {isModalEnabledToggleDisabled ? (
-                  <Tooltip content={modalStatusDetail}>
-                    <Typography component="span">{enabledSwitch}</Typography>
-                  </Tooltip>
-                ) : (
-                  enabledSwitch
-                )}
-              </FlexItem>
-            </Flex>
-          </StackItem>
-          {(showCredentialRadios || showPersonalTokenField) && (
+                {renderToolsContent()}
+              </StackItem>
+            )}
             <StackItem>
-              <Form>
-                {showCredentialRadios && (
-                  <FormGroup
-                    role="radiogroup"
-                    id="mcp-credential-mode"
-                    fieldId="mcp-credential-mode"
-                    label={t('mcp.settings.modal.authenticationHeading')}
+              <Flex
+                justifyContent={{ default: 'justifyContentSpaceBetween' }}
+                alignItems={{ default: 'alignItemsFlexStart' }}
+                spaceItems={{ default: 'spaceItemsMd' }}
+              >
+                <FlexItem flex={{ default: 'flex_1' }}>
+                  <Typography
+                    component="div"
+                    className="pf-v6-u-mb-sm"
+                    sx={sectionTitleSx}
                   >
-                    <Stack hasGutter>
-                      <StackItem>
-                        <Radio
-                          id="mcp-credential-organization"
-                          name="mcp-credential-mode"
-                          label={t(
-                            'mcp.settings.modal.credentialMode.organization',
-                          )}
-                          isChecked={modalCredentialMode === 'organization'}
-                          onChange={() =>
-                            onCredentialModeChange('organization')
+                    {t('mcp.settings.enabled')}
+                  </Typography>
+                  <Typography
+                    component="div"
+                    className="pf-v6-u-mt-xs"
+                    sx={sectionDescriptionSx}
+                  >
+                    {modalEnabledDescription}
+                  </Typography>
+                </FlexItem>
+                <FlexItem>
+                  {isModalEnabledToggleDisabled ? (
+                    <Tooltip content={modalStatusDetail}>
+                      <Typography component="span">{enabledSwitch}</Typography>
+                    </Tooltip>
+                  ) : (
+                    enabledSwitch
+                  )}
+                </FlexItem>
+              </Flex>
+            </StackItem>
+            {(showCredentialRadios || showPersonalTokenField) && (
+              <StackItem>
+                <Form>
+                  {showCredentialRadios && (
+                    <FormGroup
+                      role="radiogroup"
+                      id="mcp-credential-mode"
+                      fieldId="mcp-credential-mode"
+                      label={t('mcp.settings.modal.authenticationHeading')}
+                    >
+                      <Stack hasGutter>
+                        <StackItem>
+                          <Radio
+                            id="mcp-credential-organization"
+                            name="mcp-credential-mode"
+                            label={t(
+                              'mcp.settings.modal.credentialMode.organization',
+                            )}
+                            isChecked={modalCredentialMode === 'organization'}
+                            onChange={() =>
+                              onCredentialModeChange('organization')
+                            }
+                          />
+                          <Typography
+                            component="div"
+                            className="pf-v6-u-ml-xl pf-v6-u-mt-xs"
+                            sx={credentialRadioDescriptionSx}
+                          >
+                            {t(
+                              'mcp.settings.modal.credentialMode.organizationDescription',
+                            )}
+                          </Typography>
+                        </StackItem>
+                        <StackItem>
+                          <Radio
+                            id="mcp-credential-personal"
+                            name="mcp-credential-mode"
+                            label={t(
+                              'mcp.settings.modal.credentialMode.personal',
+                            )}
+                            isChecked={modalCredentialMode === 'personal'}
+                            onChange={() => onCredentialModeChange('personal')}
+                          />
+                        </StackItem>
+                      </Stack>
+                    </FormGroup>
+                  )}
+                  {showPersonalTokenField && (
+                    <FormGroup
+                      label={t('mcp.settings.authenticationToken')}
+                      fieldId="mcp-pat-input"
+                    >
+                      <TextInputGroup validated={tokenInputValidated}>
+                        <TextInputGroupMain
+                          inputId="mcp-pat-input"
+                          type="password"
+                          value={tokenInputValue}
+                          onChange={(_event, value) =>
+                            onTokenInputChange(value)
                           }
                         />
-                        <Typography
-                          component="div"
-                          className="pf-v6-u-ml-xl pf-v6-u-mt-xs"
-                          sx={credentialRadioDescriptionSx}
-                        >
-                          {t(
-                            'mcp.settings.modal.credentialMode.organizationDescription',
-                          )}
-                        </Typography>
-                      </StackItem>
-                      <StackItem>
-                        <Radio
-                          id="mcp-credential-personal"
-                          name="mcp-credential-mode"
-                          label={t(
-                            'mcp.settings.modal.credentialMode.personal',
-                          )}
-                          isChecked={modalCredentialMode === 'personal'}
-                          onChange={() => onCredentialModeChange('personal')}
-                        />
-                      </StackItem>
-                    </Stack>
-                  </FormGroup>
-                )}
-                {showPersonalTokenField && (
-                  <FormGroup
-                    label={t('mcp.settings.authenticationToken')}
-                    fieldId="mcp-pat-input"
-                  >
-                    <TextInputGroup validated={tokenInputValidated}>
-                      <TextInputGroupMain
-                        inputId="mcp-pat-input"
-                        type="password"
-                        value={tokenInputValue}
-                        onChange={(_event, value) => onTokenInputChange(value)}
-                      />
-                      {(tokenValidationState === 'idle' ||
-                        tokenValidationState === 'validating') && (
-                        <TextInputGroupUtilities>
-                          <Button
-                            variant="plain"
-                            onClick={clearTokenInput}
-                            aria-label={t('mcp.settings.token.clearAriaLabel')}
-                            icon={<TimesIcon />}
-                          />
-                        </TextInputGroupUtilities>
+                        {(tokenValidationState === 'idle' ||
+                          tokenValidationState === 'validating') && (
+                          <TextInputGroupUtilities>
+                            <TokenClearButton
+                              variant="plain"
+                              onClick={clearTokenInput}
+                              aria-label={t(
+                                'mcp.settings.token.clearAriaLabel',
+                              )}
+                              icon={<TimesIcon />}
+                            />
+                          </TextInputGroupUtilities>
+                        )}
+                      </TextInputGroup>
+                      {showTokenHelperText && (
+                        <FormHelperText>
+                          <HelperText>
+                            <HelperTextItem variant={tokenHelperVariant}>
+                              {tokenHelperText}
+                            </HelperTextItem>
+                          </HelperText>
+                        </FormHelperText>
                       )}
-                    </TextInputGroup>
-                    {showTokenHelperText && (
-                      <FormHelperText>
-                        <HelperText>
-                          <HelperTextItem variant={tokenHelperVariant}>
-                            {tokenHelperText}
-                          </HelperTextItem>
-                        </HelperText>
-                      </FormHelperText>
-                    )}
-                  </FormGroup>
-                )}
-              </Form>
-            </StackItem>
-          )}
-        </Stack>
-      </ModalBody>
-      <ModalFooter>
-        <Button
-          variant="primary"
-          onClick={() => void save()}
-          isDisabled={
-            isConfigureModalSaving ||
-            tokenValidationState === 'validating' ||
-            isSaveTokenButtonDisabled ||
-            isUpdatingModalStatus
-          }
-        >
-          {t('modal.save')}
-        </Button>
-        {canRemovePersonalToken && (
-          <RemovePersonalTokenButton
-            variant="secondary"
-            isDanger
-            onClick={() => void removePersonalToken()}
+                    </FormGroup>
+                  )}
+                </Form>
+              </StackItem>
+            )}
+          </Stack>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="primary"
+            onClick={() => void save()}
             isDisabled={
               isConfigureModalSaving ||
               tokenValidationState === 'validating' ||
-              isUpdatingModalStatus ||
-              hasRemovedPersonalToken ||
-              !hasSavedTokenInModal
+              isSaveTokenButtonDisabled ||
+              isUpdatingModalStatus
             }
           >
-            {t('mcp.settings.removePersonalToken')}
-          </RemovePersonalTokenButton>
-        )}
-        <Button variant="link" onClick={close}>
-          {t('common.cancel')}
-        </Button>
-      </ModalFooter>
-    </StyledModal>
+            {t('modal.save')}
+          </Button>
+          {canRemovePersonalToken && (
+            <RemovePersonalTokenButton
+              variant="secondary"
+              isDanger
+              onClick={() => void removePersonalToken()}
+              isDisabled={
+                isConfigureModalSaving ||
+                tokenValidationState === 'validating' ||
+                isUpdatingModalStatus ||
+                hasRemovedPersonalToken ||
+                !hasSavedTokenInModal
+              }
+            >
+              {t('mcp.settings.removePersonalToken')}
+            </RemovePersonalTokenButton>
+          )}
+          <Button variant="link" onClick={close}>
+            {t('common.cancel')}
+          </Button>
+        </ModalFooter>
+      </StyledModal>
+    </>
   );
 };

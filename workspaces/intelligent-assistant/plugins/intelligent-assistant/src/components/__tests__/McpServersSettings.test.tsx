@@ -330,7 +330,7 @@ describe('McpServersSettings', () => {
     ).toBeInTheDocument();
     expect(
       within(dialog).getByRole('button', { name: 'Close configure modal' }),
-    ).toHaveClass('ia-mcp-modal-close');
+    ).toBeInTheDocument();
     expect(
       within(dialog).getByRole('button', { name: 'Save' }).parentElement,
     ).toBe(

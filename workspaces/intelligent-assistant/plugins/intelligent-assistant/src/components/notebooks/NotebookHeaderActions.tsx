@@ -14,11 +14,26 @@
  * limitations under the License.
  */
 
-import { Button as PFButton, Tooltip } from '@patternfly/react-core';
+import { styled } from '@mui/material/styles';
+import { Button, Tooltip } from '@patternfly/react-core';
 import { AddCircleOIcon, TimesIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { SidebarCollapseIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
+
+const HEADER_ICON_SIZE = 18;
+
+const iconStyle = {
+  width: HEADER_ICON_SIZE,
+  height: HEADER_ICON_SIZE,
+  display: 'block',
+} as const;
+
+const Actions = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+}));
 
 export interface NotebookHeaderActionsProps {
   className?: string;
@@ -41,20 +56,17 @@ export const NotebookHeaderActions = ({
 }: NotebookHeaderActionsProps) => {
   const { t } = useTranslation();
 
-  const iconStyle = { width: 16, height: 16 };
-
   return (
-    <div className={className}>
+    <Actions className={className}>
       <Tooltip content={t('notebook.view.close')} position="bottom">
-        <PFButton
+        <Button
           variant="plain"
           onClick={onClose}
           aria-label={t('notebook.view.close')}
-          size="sm"
           isDisabled={uploadModalOpen}
         >
           <TimesIcon style={iconStyle} />
-        </PFButton>
+        </Button>
       </Tooltip>
       <Tooltip
         content={
@@ -64,11 +76,10 @@ export const NotebookHeaderActions = ({
         }
         position="bottom"
       >
-        <PFButton
+        <Button
           variant="plain"
           onClick={onOpenUploadModal}
           aria-label={t('notebook.view.documents.add')}
-          size="sm"
           isDisabled={uploadsInProgress || uploadModalOpen}
         >
           <AddCircleOIcon
@@ -77,7 +88,7 @@ export const NotebookHeaderActions = ({
               color: 'var(--pf-t--global--color--brand--default)',
             }}
           />
-        </PFButton>
+        </Button>
       </Tooltip>
       <Tooltip
         content={
@@ -87,7 +98,7 @@ export const NotebookHeaderActions = ({
         }
         position="bottom"
       >
-        <PFButton
+        <Button
           variant="plain"
           onClick={() => onSidebarCollapsedChange(!sidebarCollapsed)}
           aria-label={
@@ -95,16 +106,15 @@ export const NotebookHeaderActions = ({
               ? t('notebook.view.sidebar.expand')
               : t('notebook.view.sidebar.collapse')
           }
-          size="sm"
           isDisabled={uploadModalOpen}
         >
           {sidebarCollapsed ? (
-            <SidebarExpandIcon size={18} />
+            <SidebarExpandIcon size={HEADER_ICON_SIZE} />
           ) : (
-            <SidebarCollapseIcon size={18} />
+            <SidebarCollapseIcon size={HEADER_ICON_SIZE} />
           )}
-        </PFButton>
+        </Button>
       </Tooltip>
-    </div>
+    </Actions>
   );
 };
