@@ -20,6 +20,7 @@ import {
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { createDependabotMetricProviders } from './metricProviders/DependabotMetricProviderFactory';
 
+/** @public */
 export const scorecardModuleDependabot = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'dependabot',
