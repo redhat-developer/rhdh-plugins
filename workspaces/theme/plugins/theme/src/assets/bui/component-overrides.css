@@ -833,9 +833,9 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   /*
    * Page inset / rounded content well:
    * BackstageSidebarPage is the sole scrollport. createComponents.ts applies
-   * margin inset + clip-path so the scrollbar is clipped into the rounded well
-   * for both classic <main> and fragmented BUI Header + Container siblings —
-   * no extra DOM wrapper required.
+   * margin inset + clip-path, sticky left-edge corner masks, and
+   * overscroll-behavior: none — for both classic <main> and fragmented BUI
+   * Header + Container siblings; no extra DOM wrapper.
    */
 }
 
