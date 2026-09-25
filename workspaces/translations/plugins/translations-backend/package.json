@@ -9,6 +9,7 @@
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
   },
+  "configSchema": "config.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
@@ -49,6 +50,7 @@
     "supertest": "^6.2.4"
   },
   "files": [
-    "dist"
+    "dist",
+    "config.d.ts"
   ]
 }

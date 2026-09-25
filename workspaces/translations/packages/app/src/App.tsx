@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 import { createApp } from '@backstage/frontend-defaults';
-import translationsPlugin, {
-  translationsApiModule,
-} from '@red-hat-developer-hub/backstage-plugin-translations';
+import translationsPlugin from '@red-hat-developer-hub/backstage-plugin-translations';
+import translationsApiModule from '@red-hat-developer-hub/backstage-plugin-translations/translations-api-module';
 import translationsTestPlugin from '@red-hat-developer-hub/backstage-plugin-translations-test';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
