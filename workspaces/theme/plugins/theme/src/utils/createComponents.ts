@@ -47,6 +47,14 @@ export type Components = UnifiedThemeOptions['components'] & {
   RHDHPageMainContainer?: Component;
 };
 
+/**
+ * Fallback masthead height for position:fixed sidebar / dialog overlays when
+ * the theme CssBaseline token is unset. Page shell height uses the 100vh flex
+ * layout instead of subtracting this from 100vh.
+ * @see RHDHBUGS-3627
+ */
+const GLOBAL_HEADER_HEIGHT = 'var(--rhdh-global-header-height, 64px)';
+
 export const createComponents = (themeConfig: ThemeConfig): Components => {
   // Short hands to ensure that the code doesn't break if one of the properties is not defined.
 
@@ -87,7 +95,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       return {
         ...backstageStyles,
         '@font-face': redHatFontFaces,
+        // Static masthead height for position:fixed sidebar / dialog overlays.
+        // Page shell height comes from the 100vh flex layout in app-defaults /
+        // global-header — not from subtracting this value from 100vh.
+        ':root:has(#global-header)': {
+          '--rhdh-global-header-height': '64px',
+        },
+        // Keep Inspect Entity below the masthead; override BUI `inset: 0`
+        // so the backdrop cannot dim the header (RHDHBUGS-3603).
         ':root:has(#global-header) [class*="bui-DialogOverlay"]': {
+          inset: `${dialogMastheadOffset} 0 0 0 !important`,
           top: `${dialogMastheadOffset} !important`,
           height: `calc(100% - ${dialogMastheadOffset}) !important`,
           zIndex: 1300,
@@ -680,6 +697,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           paddingBottom: '1.5rem',
           backgroundColor: sidebarBackgroundColor,
           alignItems: 'stretch',
+          // Sidebar is position:fixed to the viewport; keep it below the
+          // in-flow masthead (RHDHBUGS-3627 / RHDHBUGS-3573).
+          top: `${GLOBAL_HEADER_HEIGHT} !important`,
+          height: `calc(100vh - ${GLOBAL_HEADER_HEIGHT}) !important`,
+          bottom: '0 !important',
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
@@ -781,6 +803,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               {
                 "& main, & [class*='MuiLinearProgress-root']": {
                   marginTop: '0 !important',
+                  // Top inset is cancelled under the in-flow masthead; only
+                  // reserve the bottom pageInset so the well matches the sides.
+                  minHeight: `calc(100% - ${general.pageInset}) !important`,
+                  maxHeight: `calc(100% - ${general.pageInset}) !important`,
+                },
+                // NFS BUI main keeps minHeight: 0 (RHDHBUGS-3543). Cap with one
+                // inset instead of two so flex:1 can fill the remaining column.
+                '& main:not([data-backstage-core-page])': {
+                  minHeight: '0 !important',
+                  maxHeight: `calc(100% - ${general.pageInset}) !important`,
                 },
               },
           },
@@ -808,11 +840,12 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     components.BackstageSidebarPage = {
       styleOverrides: {
         root: {
-          // Fill the viewport so short pages don't leave a gap below the shell.
-          // App root wrappers (e.g. ApplicationDrawer) can collapse to content
-          // height; without a min-height here the page-inset background stops
-          // early and body/html shows through (RHDHBUGS-3498).
-          minHeight: '100vh',
+          // Fill the flex column below the masthead (RHDHBUGS-3498 / 3627).
+          // Prefer flex growth over a hard maxHeight so homepage content can
+          // paint; the parent shell is already capped at 100vh.
+          flex: '1 1 auto',
+          minHeight: 0,
+          height: '100%',
           // Let BUI Container's flex: 1 grow into the remaining viewport below
           // PluginHeader / Header slots (those slots set flex: none).
           display: 'flex',
@@ -821,18 +854,27 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '@media (min-width: 600px)': {
             backgroundColor:
               general.pageInsetBackgroundColor ?? general.appBarBackgroundColor,
-            // Fixed viewport shell. Inset uses padding (border-box) so in-flow
-            // children still respect Backstage's paddingLeft for the sidebar.
-            // Do not position the main well absolutely — that ignores drawer padding.
+            // Fill the flex column below the masthead. Inset uses padding
+            // (border-box) so in-flow children still respect Backstage's
+            // paddingLeft for the sidebar. Do not position the main well
+            // absolutely — that ignores drawer padding.
             boxSizing: 'border-box',
-            height: '100vh',
-            maxHeight: '100vh',
+            height: '100%',
+            maxHeight: '100%',
             minHeight: '0 !important',
             overflow: 'hidden',
             overscrollBehavior: 'none',
             paddingTop: general.pageInset,
             paddingRight: general.pageInset,
             paddingBottom: general.pageInset,
+            // Cancel out the spacing produced by the page inset border when
+            // the sidebar is present
+            '& nav': {
+              "& ~ main, & ~ [class*='MuiLinearProgress-root'], & ~ [class*='RHDHPageMainContainer']":
+                {
+                  marginLeft: '0 !important',
+                },
+            },
             // PatternFly `.pf-v6-c-page__main-container` equivalent + classic <main>
             "& > [class*='MuiLinearProgress-root'], & > main, & > [class*='RHDHPageMainContainer']":
               {
@@ -892,6 +934,8 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             // a `main`. Fill the padded shell like the main well.
             "& > [class*='MuiLinearProgress-root']": {
               backgroundColor: general.mainSectionBackgroundColor,
+              height: '100%',
+              flexGrow: 1,
               "& > [class*='MuiLinearProgress-']": {
                 height: '0.5rem !important',
               },

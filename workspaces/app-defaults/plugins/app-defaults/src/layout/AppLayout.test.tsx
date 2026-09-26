@@ -13,10 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import '@backstage/cli/asset-types';
-import 'material-icons/iconfont/outlined.css';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+import { render, screen } from '@testing-library/react';
+
+import { AppLayout } from './AppLayout';
+
+describe('AppLayout', () => {
+  it('renders children in a viewport-filling flex column', () => {
+    render(
+      <AppLayout>
+        <main>page content</main>
+      </AppLayout>,
+    );
+
+    const layout = document.getElementById('rhdh-app-layout');
+    expect(layout).toBeInTheDocument();
+    expect(layout?.className).toMatch(/RHDHPageWithoutFixHeight/);
+    expect(screen.getByText('page content')).toBeInTheDocument();
+  });
+});

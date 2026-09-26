@@ -26,7 +26,12 @@ import { GLOBAL_HEADER_DIALOG_OFFSET_CSS } from './globalHeaderDialogOffset';
 
 /**
  * Global header bar. Reads toolbar items from GlobalHeaderContext
- * and renders them in a sticky AppBar.
+ * and renders them in an AppBar that stays pinned by the NFS flex
+ * shell (sibling content below scrolls; the masthead does not).
+ *
+ * Keep the default AppBar z-index (below MUI Menu/Modal). Raising it
+ * above `theme.zIndex.modal` stacks the bar over portaled dropdowns
+ * and blocks their click-away backdrops.
  *
  * @public
  */
@@ -39,7 +44,7 @@ export const GlobalHeader = () => {
         {GLOBAL_HEADER_DIALOG_OFFSET_CSS}
       </style>
       <AppBar
-        position="sticky"
+        position="relative"
         component="nav"
         id="global-header"
         sx={{

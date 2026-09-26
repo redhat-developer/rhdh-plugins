@@ -25,8 +25,16 @@ import {
   appDrawerContentDataRef,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { AppLayout } from '../layout/AppLayout';
+
 /**
- * Wrapper extension that renders the ApplicationDrawer around the app content.
+ * Wrapper extension that renders the NFS app layout and ApplicationDrawer
+ * around the app content.
+ *
+ * AppLayout is a viewport-filling flex column so in-flow siblings such as
+ * the global header take their natural height and the remaining page fills
+ * via flexbox — no runtime height measurement (RHDHBUGS-3627). Nested inside
+ * the drawer content column so the persistent drawer is not a flex sibling.
  *
  * Uses AppRootWrapperBlueprint.makeWithOverrides to stay aligned with the
  * blueprint API while adding a custom `drawers` input for content extensions.
@@ -44,7 +52,9 @@ export const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
     const contents = inputs.drawers.map(d => d.get(appDrawerContentDataRef));
     return originalFactory({
       component: ({ children }) => (
-        <ApplicationDrawer contents={contents}>{children}</ApplicationDrawer>
+        <ApplicationDrawer contents={contents}>
+          <AppLayout>{children}</AppLayout>
+        </ApplicationDrawer>
       ),
     });
   },

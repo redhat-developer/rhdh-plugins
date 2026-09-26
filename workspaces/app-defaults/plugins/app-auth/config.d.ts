@@ -21,4 +21,21 @@ export interface Config {
    * @visibility frontend
    */
   signInPage?: string | string[];
+
+  auth?: {
+    /**
+     * Provider map used by the NFS SignInPage to decide which buttons to show.
+     * Provider *keys* must be frontend-visible; backend-only schemas (e.g. the
+     * guest provider module) otherwise strip them and the page shows
+     * "Sign-in is not available" with no Enter button.
+     */
+    providers?: {
+      /**
+       * Guest sign-in. Presence of this key (even as `{}`) enables the Guest
+       * card on the sign-in page.
+       * @visibility frontend
+       */
+      guest?: object;
+    };
+  };
 }
