@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ci-fix-result.schema.json",
+  "title": "RHDH Plugins CI Fix Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pr",
+    "run",
+    "analyzed_head_sha",
+    "workspace",
+    "iteration",
+    "status",
+    "strategy",
+    "files",
+    "verification",
+    "commit",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number", "head_sha", "head_ref"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "head_ref": { "type": "string", "minLength": 1, "maxLength": 256 }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "attempt"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 },
+        "attempt": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "analyzed_head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "workspace": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "iteration": { "enum": [1, 2] },
+    "status": { "enum": ["committed", "no_change", "blocked"] },
+    "strategy": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "files": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^workspaces/[a-z0-9][a-z0-9-]*/[^\\r\\n]+$",
+        "maxLength": 512
+      }
+    },
+    "verification": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "exit_code", "passed", "summary"],
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "^[^\\r\\n]+$"
+          },
+          "exit_code": { "type": "integer", "minimum": 0, "maximum": 255 },
+          "passed": { "type": "boolean" },
+          "summary": { "type": "string", "minLength": 1, "maxLength": 2048 }
+        }
+      }
+    },
+    "commit": { "type": ["string", "null"], "pattern": "^[0-9a-f]{40}$" },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 4096 }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "committed" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "commit": { "type": "string" },
+          "files": { "minItems": 1 },
+          "verification": {
+            "items": {
+              "properties": {
+                "passed": { "const": true },
+                "exit_code": { "const": 0 }
+              }
+            }
+          }
+        }
+      },
+      "else": { "properties": { "commit": { "type": "null" } } }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "pr": {
+    "number": 12,
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "head_ref": "feature/fix"
+  },
+  "run": { "id": 34, "attempt": 1 },
+  "analyzed_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "workspace": "boost",
+  "iteration": 3,
+  "status": "committed",
+  "strategy": "Unverified edit.",
+  "files": ["scripts/root.js"],
+  "verification": [
+    {
+      "command": "yarn test",
+      "exit_code": 1,
+      "passed": false,
+      "summary": "failed"
+    }
+  ],
+  "commit": null,
+  "summary": "invalid fixture"
+}
