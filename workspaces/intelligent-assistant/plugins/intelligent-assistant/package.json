@@ -74,7 +74,7 @@
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^6.1.8",
     "@mui/material": "^5.12.2",
-    "@patternfly/chatbot": "6.9.0-prerelease.4",
+    "@patternfly/chatbot": "6.9.0-prerelease.5",
     "@patternfly/react-core": "6.6.1",
     "@patternfly/react-icons": "^6.5.0",
     "@patternfly/react-table": "^6.4.1",
