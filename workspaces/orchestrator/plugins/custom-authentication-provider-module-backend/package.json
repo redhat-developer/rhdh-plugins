@@ -51,7 +51,7 @@
   "devDependencies": {
     "@backstage/cli": "^0.36.5",
     "@backstage/types": "^1.2.2",
-    "prettier": "3.9.8",
+    "prettier": "3.9.9",
     "typescript": "5.6.3"
   },
   "files": [
