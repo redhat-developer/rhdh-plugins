@@ -21,11 +21,13 @@ import type { SxProps, Theme } from '@mui/material/styles';
 import ScorecardSuccessStatusIcon from '@mui/icons-material/CheckCircleOutline';
 import ScorecardWarningStatusIcon from '@mui/icons-material/WarningAmber';
 import ScorecardErrorStatusIcon from '@mui/icons-material/DangerousOutlined';
+import ScorecardInfoStatusIcon from '@mui/icons-material/InfoOutlined';
 
 const builtInIcons: Record<string, SvgIconComponent> = {
   scorecardSuccessStatusIcon: ScorecardSuccessStatusIcon,
   scorecardWarningStatusIcon: ScorecardWarningStatusIcon,
   scorecardErrorStatusIcon: ScorecardErrorStatusIcon,
+  scorecardInfoStatusIcon: ScorecardInfoStatusIcon,
 };
 
 /**
