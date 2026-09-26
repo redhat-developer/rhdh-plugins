@@ -116,6 +116,21 @@ To use these providers, install the corresponding backend modules:
 
 Administrators can disable metric checks globally via `scorecard.disabledMetrics`, and users can disable them per entity via the `scorecard.io/disabled-metrics` annotation. Whether that annotation is honored is controlled by `scorecard.entityAnnotations.enabled` (global switch for all scorecard entity annotations) and `scorecard.entityAnnotations.disabledMetrics` (`enabled` / `except`). For more details, see [disabled-metrics-logic.md](./docs/disabled-metrics-logic.md).
 
+Providers and individual metrics can also be disabled via the `enabled` config key at the provider or metric level:
+
+```yaml
+scorecard:
+  metricProviders:
+    github:
+      openPRs:
+        enabled: false # disable the entire provider
+        metrics:
+          openPRs:
+            enabled: true # re-enable a specific metric
+```
+
+Config overrides take precedence over code-level defaults. See [providers.md](./docs/providers.md#disabling-providers-and-metrics-by-default) for provider authoring details and [disabled-metrics-logic.md](./docs/disabled-metrics-logic.md#enabled-by-default-system) for the full resolution chain.
+
 ## Thresholds
 
 Thresholds define conditions to assign metric values to specific visual categories (`success`, `warning`, `error` or any custom category). The Scorecard plugin provides multiple ways to configure thresholds:

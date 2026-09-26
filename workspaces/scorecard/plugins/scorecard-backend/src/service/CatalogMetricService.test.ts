@@ -153,6 +153,7 @@ describe('CatalogMetricService', () => {
     );
 
     service = new CatalogMetricService({
+      config: mockServices.rootConfig({ data: {} }),
       catalog: mockedCatalog,
       auth: mockedAuth,
       registry: mockedRegistry,
@@ -945,6 +946,7 @@ describe('CatalogMetricService', () => {
       );
 
       service = new CatalogMetricService({
+        config: mockServices.rootConfig({ data: {} }),
         catalog: mockedCatalog,
         auth: mockedAuth,
         registry: mockedRegistry,

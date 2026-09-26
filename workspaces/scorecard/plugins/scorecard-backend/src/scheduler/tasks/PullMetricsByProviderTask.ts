@@ -24,7 +24,7 @@ import {
 import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { isMetricIdDisabled } from '../../utils/metricUtils';
+import { isMetricIdDisabled, isMetricEnabled } from '../../utils/metricUtils';
 import { randomUUID } from 'node:crypto';
 import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
 import { resolveScheduleFromConfig } from '../../utils/metricProviderConfigKeys';
@@ -124,7 +124,23 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     let totalProcessed = 0;
     let cursor: string | undefined = undefined;
 
-    const metrics = provider.getMetrics();
+    const allMetrics = provider.getMetrics();
+    const metrics = allMetrics.filter(m =>
+      isMetricEnabled(this.config, m, provider),
+    );
+
+    if (metrics.length < allMetrics.length) {
+      const skipped = allMetrics.length - metrics.length;
+      logger.info(
+        `Skipping ${skipped} disabled metric(s) for ${this.providerId}`,
+      );
+    }
+
+    if (metrics.length === 0) {
+      logger.info(`No enabled metrics for ${this.providerId}, skipping pull`);
+      return;
+    }
+
     const metricsById = new Map<string, Metric>(metrics.map(m => [m.id, m]));
     const metricIds = metrics.map(m => m.id);
 
