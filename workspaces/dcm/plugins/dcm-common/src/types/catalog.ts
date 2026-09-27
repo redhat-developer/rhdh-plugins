@@ -93,6 +93,8 @@ export interface CatalogItemInstance {
   display_name: string;
   spec: CatalogItemInstanceSpec;
   path?: string;
+  /** Placement run id (readOnly). */
+  run_id?: string;
   create_time?: string;
   update_time?: string;
 }
