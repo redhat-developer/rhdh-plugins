@@ -44,4 +44,5 @@
 /.cursor/                                           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.fullsend/                                         @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.github/workflows/fullsend.yaml                    @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/.github/workflows/fullsend-poll-jira.yml           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.github/workflows/prioritize.yml                   @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
