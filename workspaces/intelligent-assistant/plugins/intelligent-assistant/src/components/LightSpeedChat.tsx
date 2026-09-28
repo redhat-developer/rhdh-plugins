@@ -43,8 +43,8 @@ import {
   ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
-  ChatbotHeader,
   ChatbotHeaderMain,
+  ChatbotHeaderNewChatButton,
   ChatbotHeaderTitle,
   FileDropZone,
   MessageBar,
@@ -53,11 +53,13 @@ import {
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import {
+  Button,
+  Divider,
   DropdownItem,
+  Icon,
   Label,
   MenuToggle,
   MenuToggleElement,
-  Button as PfButton,
   Select,
   SelectList,
   SelectOption,
@@ -149,8 +151,6 @@ import { ScreenContextChip } from './ScreenContextChip';
 import { SettingsPanel } from './SettingsPanel';
 import { ToastAlertGroup } from './ToastAlertGroup';
 
-const COLLAPSE_PANEL_ICON_SVG = `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`;
-
 const ConditionalWrapper = ({
   condition,
   wrapper,
@@ -164,10 +164,10 @@ const ConditionalWrapper = ({
 const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 
 const StyledChatbot = styled(Chatbot, {
+  // Forward isCompact so PF applies pf-m-compact (denser header padding via
+  // .pf-chatbot.pf-m-compact .pf-chatbot__header). Only filter custom styled props.
   shouldForwardProp: prop =>
-    prop !== 'isCompact' &&
-    prop !== 'mcpDrawerFix' &&
-    prop !== 'compactDrawerOpen',
+    prop !== 'mcpDrawerFix' && prop !== 'compactDrawerOpen',
 })<{
   isCompact?: boolean;
   mcpDrawerFix?: boolean;
@@ -176,9 +176,6 @@ const StyledChatbot = styled(Chatbot, {
   '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
     margin: 0,
     padding: 0,
-  },
-  '& .pf-chatbot__content': {
-    backgroundColor: `${floatingBg} !important`,
   },
   '& .pf-v6-svg > .pf-v6-icon-rh-ui': {
     display: 'none !important',
@@ -212,11 +209,30 @@ const StyledChatbot = styled(Chatbot, {
   '& .pf-chatbot__header-container': {
     flexShrink: 0,
   },
+  // UA <hr> margins on ChatbotFooter / ChatbotHeader dividers add empty bands.
+  '& .pf-chatbot__footer > .pf-v6-c-divider, & .pf-chatbot__header__divider': {
+    margin: 0,
+  },
   ...(isCompact
     ? {
         height: '100% !important',
         minHeight: '0 !important',
         overflow: 'hidden',
+        '& .pf-chatbot__header': {
+          alignItems: 'center',
+          // Sit flush on the header divider; keep the line, lose the empty band.
+          paddingBlockEnd: 0,
+        },
+        // Floating panel is displayMode=embedded inside a narrow host, but the
+        // viewport is still >=64rem so PF's full-page footer rule applies
+        // (width 90%, padding sm 0). Match compact MessageBox padding instead
+        // (MessageBox.scss: .pf-chatbot.pf-m-compact .pf-chatbot__messagebox).
+        '& .pf-chatbot__footer > .pf-chatbot__footer-container': {
+          width: '100%',
+          maxWidth: 'unset',
+          padding:
+            '0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md)',
+        },
       }
     : {}),
   // Match the previous compactDrawerPanel class: only expand the history
@@ -248,11 +264,6 @@ const StyledChatbot = styled(Chatbot, {
     : {}),
 }));
 
-const StyledChatbotHeader = styled(ChatbotHeader)(({ theme }) => ({
-  padding: `${theme.spacing(3)} ${theme.spacing(3)} 0 ${theme.spacing(3)} !important`,
-  backgroundColor: `${floatingBg} !important`,
-}));
-
 const ErrorContainer = styled('div')(({ theme }) => ({
   padding: theme.spacing(3),
 }));
@@ -271,7 +282,8 @@ const FileDropZoneShell = styled('div')({
     '--pf-v5-c-multiple-file-upload--Gap': '0',
     flex: 1,
     minWidth: 0,
-    backgroundColor: `${floatingBg} !important`,
+    // Inherit PF primary surface from Chatbot when content uses isPrimary.
+    backgroundColor: 'transparent',
   },
 });
 
@@ -287,12 +299,6 @@ const ChatFileDropZone = (props: React.ComponentProps<typeof FileDropZone>) => (
   </FileDropZoneShell>
 );
 
-const HeaderActions = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.5),
-}));
-
 const HeaderLogo = styled(RhUiAiExperienceIcon)(({ theme }) => ({
   width: 48,
   height: 48,
@@ -302,13 +308,6 @@ const HeaderLogo = styled(RhUiAiExperienceIcon)(({ theme }) => ({
 
 const StyledChatbotHeaderTitle = styled(ChatbotHeaderTitle)({
   justifyContent: 'left !important',
-});
-
-const HeaderDivider = styled('div')({
-  flexShrink: 0,
-  paddingTop: 8,
-  borderBottom: '1px solid var(--pf-t--global--border--color--default)',
-  backgroundColor: floatingBg,
 });
 
 const ChatMain = styled('div')({
@@ -335,37 +334,7 @@ const NotebooksTabLabel = styled('span', {
   maxWidth: '100%',
 }));
 
-const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
-  '&.pf-chatbot__footer': {
-    backgroundColor: `${floatingBg} !important`,
-  },
-  '&>.pf-chatbot__footer-container': {
-    width: '100% !important',
-    padding: `${theme.spacing(1.5)} !important`,
-    maxWidth: 'unset !important',
-    margin: '0 auto',
-  },
-  '& .pf-chatbot__message-bar': {
-    backgroundColor:
-      theme.palette.mode === 'light'
-        ? theme.palette.grey[100]
-        : 'var(--pf-t--global--background--color--secondary--default)',
-  },
-  '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
-    {
-      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
-    },
-}));
-
-const StyledMessageBar = styled(MessageBar)(({ theme }) => ({
-  border: '1px solid var(--pf-t--global--border--color--default)',
-  borderRadius: 24,
-  padding: theme.spacing(0.5),
-  '&::after': {
-    display: 'none',
-  },
-}));
-
+/** Layout-only wrapper for model selector / screen-context chip in MessageBar.actions. */
 const MessageBarActionsRow = styled('div')({
   display: 'flex',
   flex: '1 1 0',
@@ -414,17 +383,14 @@ const StyledChatbotContent = styled(ChatbotContent, {
   },
 }));
 
-const ContentScroll = styled('div', {
-  shouldForwardProp: prop => prop !== 'isNewChat',
-})<{ isNewChat?: boolean }>(({ isNewChat }) => ({
+const ContentScroll = styled('div')({
   minHeight: 0,
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
   overflowY: 'auto',
   WebkitOverflowScrolling: 'touch',
-  ...(isNewChat ? { backgroundColor: `${floatingBg} !important` } : {}),
-}));
+});
 
 const ContentSpacer = styled('div')({
   flex: 1,
@@ -531,33 +497,10 @@ const FullscreenChatLayout = styled('div')({
     {
       display: 'none',
     },
-  '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
-    marginTop: 0,
-    marginRight: 0,
-  },
   '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
     paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
     paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
   },
-  '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
-    {
-      display: 'none',
-    },
-  '& .pf-v6-c-drawer__close .pf-v6-c-button, & .pf-v5-c-drawer__close .pf-v5-c-button':
-    {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      '&::before': {
-        content: '""',
-        display: 'block',
-        width: 24,
-        height: 24,
-        mask: COLLAPSE_PANEL_ICON_SVG,
-        WebkitMask: COLLAPSE_PANEL_ICON_SVG,
-        backgroundColor: 'currentColor',
-      },
-    },
   '& .pf-chatbot__heading-container': {
     paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
     paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
@@ -1943,11 +1886,8 @@ export const LightspeedChat = ({
 
   const chatMainContent = (
     <>
-      <StyledChatbotContent hasOverflow={hasChatContentOverflow}>
-        <ContentScroll
-          ref={contentScrollRef}
-          isNewChat={welcomePrompts.length > 0}
-        >
+      <StyledChatbotContent isPrimary hasOverflow={hasChatContentOverflow}>
+        <ContentScroll ref={contentScrollRef}>
           {welcomePrompts.length > 0 && <ContentSpacer aria-hidden />}
           <LightspeedChatBox
             userName={userName}
@@ -1970,10 +1910,11 @@ export const LightspeedChat = ({
           )}
         </ContentScroll>
       </StyledChatbotContent>
-      <StyledChatbotFooter>
+      <ChatbotFooter isPrimary>
         <FilePreview />
-        <StyledMessageBar
+        <MessageBar
           key={messageBarKey}
+          isPrimary
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
@@ -2031,7 +1972,7 @@ export const LightspeedChat = ({
           placeholder={t('chatbox.message.placeholder')}
         />
         <ChatbotFootnoteWithIcon {...getFootnoteProps(t)} />
-      </StyledChatbotFooter>
+      </ChatbotFooter>
     </>
   );
 
@@ -2137,117 +2078,124 @@ export const LightspeedChat = ({
           settingsPanel
         ) : (
           <>
-            <StyledChatbotHeader>
-              <ChatbotHeaderMain>
-                {showChatPanel && !isFullscreenMode && (
-                  <HeaderActions>
-                    <Tooltip
-                      content={
-                        isChatHistoryDrawerOpen
-                          ? t('tooltip.collapseHistoryPanel')
-                          : t('tooltip.expandHistoryPanel')
-                      }
-                      position="bottom"
-                    >
-                      <PfButton
-                        variant="plain"
-                        onClick={onChatHistoryDrawerToggle}
-                        aria-expanded={isChatHistoryDrawerOpen}
-                        aria-label={t('aria.chatHistoryMenu')}
-                        size="sm"
-                      >
-                        {isChatHistoryDrawerOpen ? (
-                          <SidebarCollapseIcon size={18} />
-                        ) : (
-                          <SidebarExpandIcon size={18} />
-                        )}
-                      </PfButton>
-                    </Tooltip>
-                    {!isChatHistoryDrawerOpen && (
-                      <Tooltip
-                        content={t('tooltip.quickNewChat')}
-                        position="bottom"
-                      >
-                        <PfButton
-                          variant="plain"
+            {/*
+              Same structure as ChatbotHeader, but we own the Divider so we can
+              zero UA <hr> margins (ChatbotHeader has no API for that).
+            */}
+            <div className="pf-chatbot__header-container">
+              <div className="pf-chatbot__header">
+                <ChatbotHeaderMain>
+                  {showChatPanel && !isFullscreenMode && (
+                    <>
+                      <div className="pf-chatbot__menu">
+                        <Tooltip
+                          content={
+                            isChatHistoryDrawerOpen
+                              ? t('tooltip.collapseHistoryPanel')
+                              : t('tooltip.expandHistoryPanel')
+                          }
+                          position="bottom"
+                          aria="none"
+                        >
+                          <Button
+                            className="pf-chatbot__button--toggle-menu pf-m-compact"
+                            variant="plain"
+                            size="sm"
+                            aria-label={t('aria.chatHistoryMenu')}
+                            aria-expanded={isChatHistoryDrawerOpen}
+                            // PF plain buttons paint :focus like :hover; skip
+                            // mouse focus so the chrome clears on pointer leave.
+                            onMouseDown={event => {
+                              if (event.button === 0) {
+                                event.preventDefault();
+                              }
+                            }}
+                            onClick={onChatHistoryDrawerToggle}
+                            icon={
+                              <Icon size="lg" isInline>
+                                {isChatHistoryDrawerOpen ? (
+                                  <SidebarCollapseIcon />
+                                ) : (
+                                  <SidebarExpandIcon />
+                                )}
+                              </Icon>
+                            }
+                          />
+                        </Tooltip>
+                      </div>
+                      {!isChatHistoryDrawerOpen && (
+                        <ChatbotHeaderNewChatButton
+                          isCompact
                           onClick={onNewChat}
                           isDisabled={newChatCreated}
-                          aria-label={t('tooltip.quickNewChat')}
-                          size="sm"
-                        >
-                          <PenIcon
-                            style={{
-                              width: 18,
-                              height: 18,
-                              color: newChatCreated
-                                ? undefined
-                                : 'var(--pf-t--global--color--brand--default)',
-                            }}
-                          />
-                        </PfButton>
-                      </Tooltip>
+                          menuAriaLabel={t('tooltip.quickNewChat')}
+                          tooltipContent={t('tooltip.quickNewChat')}
+                        />
+                      )}
+                    </>
+                  )}
+                  {!isFullscreenMode &&
+                    showNotebooksPanel &&
+                    activeNotebook && (
+                      <NotebookHeaderActions
+                        onClose={handleCloseNotebook}
+                        onOpenUploadModal={() =>
+                          setNotebookUploadModalOpen(true)
+                        }
+                        uploadsInProgress={notebookUploadsInProgress}
+                        uploadModalOpen={notebookUploadModalOpen}
+                        sidebarCollapsed={notebookSidebarCollapsed}
+                        onSidebarCollapsedChange={setNotebookSidebarCollapsed}
+                      />
                     )}
-                  </HeaderActions>
-                )}
-                {!isFullscreenMode && showNotebooksPanel && activeNotebook && (
-                  <HeaderActions>
-                    <NotebookHeaderActions
-                      onClose={handleCloseNotebook}
-                      onOpenUploadModal={() => setNotebookUploadModalOpen(true)}
-                      uploadsInProgress={notebookUploadsInProgress}
-                      uploadModalOpen={notebookUploadModalOpen}
-                      sidebarCollapsed={notebookSidebarCollapsed}
-                      onSidebarCollapsedChange={setNotebookSidebarCollapsed}
-                    />
-                  </HeaderActions>
-                )}
-                {isFullscreenMode && (
-                  <>
-                    <HeaderLogo
-                      style={{ width: '24px', height: '24px' }}
-                      aria-label={t('icon.lightspeed.alt')}
-                    />
-                    <StyledChatbotHeaderTitle>
-                      <Title
-                        headingLevel="h1"
-                        size="2xl"
-                        style={{ fontWeight: 700 }}
-                      >
-                        {t('chatbox.header.title')}
-                      </Title>
-                    </StyledChatbotHeaderTitle>
-                  </>
-                )}
-              </ChatbotHeaderMain>
+                  {isFullscreenMode && (
+                    <>
+                      <HeaderLogo
+                        style={{ width: '24px', height: '24px' }}
+                        aria-label={t('icon.lightspeed.alt')}
+                      />
+                      <StyledChatbotHeaderTitle>
+                        <Title
+                          headingLevel="h1"
+                          size="2xl"
+                          style={{ fontWeight: 700 }}
+                        >
+                          {t('chatbox.header.title')}
+                        </Title>
+                      </StyledChatbotHeaderTitle>
+                    </>
+                  )}
+                </ChatbotHeaderMain>
 
-              <LightspeedChatBoxHeader
-                selectedModel={selectedModel}
-                handleSelectedModel={handleSelectedModel}
-                models={models}
-                isPinningChatsEnabled={isPinningChatsEnabled}
-                isSavedPromptsEnabled={isSavedPromptsEnabled}
-                onSavedPromptsToggle={handleSavedPromptsToggle}
-                hideModelSelector
-                showChatTabOptions={!showNotebooksPanel}
-                showMcpSettings={mcpToolsPermissionResolved}
-                setDisplayMode={setDisplayModeFromHeader}
-                displayMode={displayMode}
-                onPinnedChatsToggle={handlePinningChatsToggle}
-                screenContextAdminEnabled={screenContextEnabled}
-                isScreenContextSharingEnabled={isScreenContextSharingEnabled}
-                onScreenContextSharingToggle={handleScreenContextSharingToggle}
-                onMcpSettingsClick={() => {
-                  openSettings(
-                    mcpToolsPermissionResolved
-                      ? 'mcp-servers'
-                      : 'saved-prompts',
-                  );
-                }}
-              />
-            </StyledChatbotHeader>
-            {(isFullscreenMode || shouldShowTabs) && (
-              <HeaderDivider data-testid="lightspeed-header-divider" />
-            )}
+                <LightspeedChatBoxHeader
+                  selectedModel={selectedModel}
+                  handleSelectedModel={handleSelectedModel}
+                  models={models}
+                  isPinningChatsEnabled={isPinningChatsEnabled}
+                  isSavedPromptsEnabled={isSavedPromptsEnabled}
+                  onSavedPromptsToggle={handleSavedPromptsToggle}
+                  hideModelSelector
+                  showChatTabOptions={!showNotebooksPanel}
+                  showMcpSettings={mcpToolsPermissionResolved}
+                  setDisplayMode={setDisplayModeFromHeader}
+                  displayMode={displayMode}
+                  onPinnedChatsToggle={handlePinningChatsToggle}
+                  screenContextAdminEnabled={screenContextEnabled}
+                  isScreenContextSharingEnabled={isScreenContextSharingEnabled}
+                  onScreenContextSharingToggle={
+                    handleScreenContextSharingToggle
+                  }
+                  onMcpSettingsClick={() => {
+                    openSettings(
+                      mcpToolsPermissionResolved
+                        ? 'mcp-servers'
+                        : 'saved-prompts',
+                    );
+                  }}
+                />
+              </div>
+              <Divider className="pf-chatbot__header__divider" />
+            </div>
             {shouldShowTabs && (
               <Tabs
                 value={selectedTabIndex}
@@ -2257,8 +2205,9 @@ export const LightspeedChat = ({
                 textColor="primary"
                 sx={theme => ({
                   flexShrink: 0,
-                  backgroundColor:
-                    'var(--pf-t--global--background--color--floating--default)',
+                  // Transparent so tabs sit on the PF primary chatbot surface
+                  // (WhiteEmbedded pattern: Content/Footer isPrimary).
+                  backgroundColor: 'transparent',
                   borderBottom:
                     '1px solid var(--pf-t--global--border--color--default)',
                   minHeight: theme.spacing(6),
@@ -2346,8 +2295,15 @@ export const LightspeedChat = ({
                   <ChatbotConversationHistoryNav
                     drawerPanelContentProps={{
                       isResizable: isFullscreenMode,
-                      hasNoBorder: !isFullscreenMode,
+                      // PF DrawerPanelContent attribute — no vertical rule in
+                      // fullscreen (matches docked/compact which already used this).
+                      hasNoBorder: true,
                       style: drawerPanelStyle,
+                      // Chatbot enables a focus trap that lands on DrawerCloseButton.
+                      // PF paints :focus like :hover, so the close control looks
+                      // hovered whenever the trap focuses it. Inline embedded
+                      // history should not trap focus.
+                      focusTrap: { enabled: false },
                     }}
                     reverseButtonOrder
                     displayMode={ChatbotDisplayMode.embedded}
@@ -2357,6 +2313,20 @@ export const LightspeedChat = ({
                     isDrawerOpen={isChatHistoryDrawerOpen}
                     drawerCloseButtonProps={{
                       'aria-label': t('aria.closeDrawerPanel'),
+                      // PF Chatbot forces pill radius on history DrawerCloseButton.
+                      // Remap that token on this wrapper so hover matches plain
+                      // action buttons (rounded square) without a CSS rule.
+                      style: {
+                        ['--pf-t--global--border--radius--pill' as string]:
+                          'var(--pf-t--global--border--radius--action--plain--default)',
+                      },
+                      // Inner Button isn't customizable; capture on the wrapper
+                      // so mouse clicks don't leave sticky :focus hover chrome.
+                      onMouseDownCapture: (event: MouseEvent<HTMLElement>) => {
+                        if (event.button === 0) {
+                          event.preventDefault();
+                        }
+                      },
                     }}
                     setIsDrawerOpen={setIsChatHistoryDrawerOpen}
                     activeItemId={viewConversationId}
@@ -2437,16 +2407,7 @@ export const LightspeedChat = ({
                 />
               )}
               {showNotebooksPanel && canShowNotebooks && !activeNotebook && (
-                <div
-                  style={{
-                    position: 'relative',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    flex: 1,
-                    minHeight: 0,
-                    overflow: 'hidden',
-                  }}
-                >
+                <StyledChatbotContent isPrimary>
                   <NotebooksTab
                     notebooks={notebooks}
                     hasNotebooks={hasNotebooks}
@@ -2467,7 +2428,7 @@ export const LightspeedChat = ({
                     onCreateNotebook={handleCreateNotebook}
                     t={t}
                   />
-                </div>
+                </StyledChatbotContent>
               )}
             </ChatMain>
           </>

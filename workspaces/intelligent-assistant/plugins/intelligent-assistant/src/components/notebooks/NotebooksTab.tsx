@@ -34,7 +34,7 @@ const Container = styled('div')(({ theme }) => ({
   flex: 1,
   minHeight: 0,
   overflowY: 'auto',
-  backgroundColor: 'var(--pf-t--global--background--color--floating--default)',
+  // Inherit PF primary surface from parent ChatbotContent isPrimary.
 }));
 
 const Header = styled('div')(({ theme }) => ({

@@ -14,61 +14,11 @@
  * limitations under the License.
  */
 
-import { styled } from '@mui/material/styles';
-import { Button, Tooltip } from '@patternfly/react-core';
+import { Button, Flex, FlexItem, Icon, Tooltip } from '@patternfly/react-core';
 import { PenIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
-
-const Strip = styled('div')(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  paddingTop: theme.spacing(1.5),
-  gap: theme.spacing(1.5),
-  borderRight: '1px solid var(--pf-t--global--border--color--default)',
-  width: 48,
-  minWidth: 48,
-  flexShrink: 0,
-  backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
-  height: '100%',
-}));
-
-const IconButton = styled(Button)({
-  padding: '8px !important',
-  minWidth: 0,
-  lineHeight: 1,
-  borderRadius: '8px !important',
-  border: '1px solid var(--pf-t--global--border--color--default) !important',
-  color: 'var(--pf-t--global--icon--color--regular)',
-  '& svg': {
-    width: 18,
-    height: 18,
-  },
-  '&:hover': {
-    color: 'var(--pf-t--global--icon--color--hover) !important',
-    backgroundColor:
-      'var(--pf-t--global--background--color--action--plain--hover) !important',
-  },
-});
-
-const NewChatIconButton = styled(Button)({
-  padding: '8px !important',
-  minWidth: 0,
-  lineHeight: 1,
-  borderRadius: '8px !important',
-  border: '1px solid var(--pf-t--global--border--color--default) !important',
-  color: 'var(--pf-t--global--color--brand--default) !important',
-  '&:hover': {
-    color: 'var(--pf-t--global--color--brand--hover) !important',
-    backgroundColor:
-      'var(--pf-t--global--background--color--action--plain--hover) !important',
-  },
-  '&:disabled': {
-    color: 'var(--pf-t--global--text--color--disabled) !important',
-  },
-});
 
 type CollapsedHistoryStripProps = {
   onExpand: () => void;
@@ -76,6 +26,10 @@ type CollapsedHistoryStripProps = {
   newChatDisabled?: boolean;
 };
 
+/**
+ * Collapsed chat-history rail for fullscreen. Stock PF plain icon buttons
+ * (rounded-square hover) — no custom button chrome or vertical divider.
+ */
 export const CollapsedHistoryStrip = ({
   onExpand,
   onNewChat,
@@ -84,26 +38,58 @@ export const CollapsedHistoryStrip = ({
   const { t } = useTranslation();
 
   return (
-    <Strip>
-      <Tooltip content={t('tooltip.expandHistoryPanel')} position="right">
-        <IconButton
-          variant="plain"
-          onClick={onExpand}
-          aria-label={t('tooltip.expandHistoryPanel')}
-        >
-          <SidebarExpandIcon />
-        </IconButton>
-      </Tooltip>
-      <Tooltip content={t('tooltip.quickNewChat')} position="right">
-        <NewChatIconButton
-          variant="plain"
-          onClick={onNewChat}
-          aria-label={t('tooltip.quickNewChat')}
-          isDisabled={newChatDisabled}
-        >
-          <PenIcon />
-        </NewChatIconButton>
-      </Tooltip>
-    </Strip>
+    <Flex
+      direction={{ default: 'column' }}
+      alignItems={{ default: 'alignItemsCenter' }}
+      spaceItems={{ default: 'spaceItemsMd' }}
+      flex={{ default: 'flexNone' }}
+      style={{
+        paddingBlockStart: 'var(--pf-t--global--spacer--md)',
+        paddingInline: 'var(--pf-t--global--spacer--xs)',
+        height: '100%',
+      }}
+    >
+      <FlexItem>
+        <Tooltip content={t('tooltip.expandHistoryPanel')} position="right">
+          <Button
+            variant="plain"
+            icon={
+              <Icon size="lg" isInline>
+                <SidebarExpandIcon />
+              </Icon>
+            }
+            // PF plain buttons paint :focus like :hover; skip mouse focus so
+            // the chrome clears on pointer leave.
+            onMouseDown={event => {
+              if (event.button === 0) {
+                event.preventDefault();
+              }
+            }}
+            onClick={onExpand}
+            aria-label={t('tooltip.expandHistoryPanel')}
+          />
+        </Tooltip>
+      </FlexItem>
+      <FlexItem>
+        <Tooltip content={t('tooltip.quickNewChat')} position="right">
+          <Button
+            variant="plain"
+            icon={
+              <Icon isInline>
+                <PenIcon />
+              </Icon>
+            }
+            onMouseDown={event => {
+              if (event.button === 0) {
+                event.preventDefault();
+              }
+            }}
+            onClick={onNewChat}
+            aria-label={t('tooltip.quickNewChat')}
+            isDisabled={newChatDisabled}
+          />
+        </Tooltip>
+      </FlexItem>
+    </Flex>
   );
 };

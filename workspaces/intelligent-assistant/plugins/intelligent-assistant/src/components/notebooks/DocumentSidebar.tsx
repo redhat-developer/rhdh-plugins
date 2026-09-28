@@ -25,6 +25,7 @@ import {
   DropdownList,
   HelperText,
   HelperTextItem,
+  Icon,
   MenuToggle,
   Spinner,
   TextInput,
@@ -92,10 +93,6 @@ const TitleInput = styled(TextInput)({
     padding: '0 4px',
     outline: 'none',
   },
-});
-
-const CollapseButton = styled(Button)({
-  flexShrink: 0,
 });
 
 const DocumentsRow = styled('div')({
@@ -382,13 +379,16 @@ export const DocumentSidebar = ({
           </NotebookTitle>
         )}
         <Tooltip content={t('notebook.view.sidebar.collapse')} position="right">
-          <CollapseButton
+          <Button
             variant="plain"
+            icon={
+              <Icon size="lg" isInline>
+                <SidebarCollapseIcon />
+              </Icon>
+            }
             onClick={onToggleCollapse}
             aria-label={t('notebook.view.sidebar.collapse')}
-          >
-            <SidebarCollapseIcon />
-          </CollapseButton>
+          />
         </Tooltip>
       </TitleRow>
 
