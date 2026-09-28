@@ -15,7 +15,7 @@
  */
 
 import { Button, Flex, FlexItem, Icon, Tooltip } from '@patternfly/react-core';
-import { PenIcon } from '@patternfly/react-icons';
+import { PencilAltIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
@@ -76,7 +76,7 @@ export const CollapsedHistoryStrip = ({
             variant="plain"
             icon={
               <Icon isInline>
-                <PenIcon />
+                <PencilAltIcon />
               </Icon>
             }
             onMouseDown={event => {

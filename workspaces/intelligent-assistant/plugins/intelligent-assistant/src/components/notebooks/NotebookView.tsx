@@ -20,7 +20,12 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { ChatbotContent, ChatbotFooter, MessageBar } from '@patternfly/chatbot';
+import {
+  ChatbotContent,
+  ChatbotFooter,
+  MessageBar,
+  MessageBox,
+} from '@patternfly/chatbot';
 import {
   Alert,
   Button,
@@ -133,32 +138,20 @@ const MainContent = styled('div')({
   minWidth: 0,
 });
 
-const DisclaimerStrip = styled('div')(({ theme }) => ({
-  width: '100%',
-  maxWidth: 'unset',
-  margin: 0,
-  padding: `0 0 ${theme.spacing(1)}`,
-  boxSizing: 'border-box',
-}));
-
-const DisclaimerInner = styled('div')({
-  width: '95%',
-  maxWidth: 'unset',
-  margin: '0 auto',
-});
-
-const WelcomeContainer = styled('div')({
-  display: 'flex',
-  flexDirection: 'column',
+// Match Chat: one MessageBox owns the scroll + inset (spacer--lg /
+// compact spacer--md). Children stay full-width — no per-block 95% margins.
+const WelcomeMessageBox = styled(MessageBox)({
   flex: 1,
   minHeight: 0,
-  overflow: 'auto',
+  maxWidth: 'unset !important',
+  width: '100%',
+  // Push welcome title/prompts toward the footer like Chat's new-chat layout.
+  justifyContent: 'flex-end',
 });
 
 const NotebookContentArea = styled('div')(({ theme }) => ({
-  width: '95%',
-  maxWidth: 'unset',
-  margin: `${theme.spacing(3)} auto 0 auto`,
+  width: '100%',
+  marginBlockStart: theme.spacing(3),
   padding: 0,
 }));
 
@@ -166,10 +159,21 @@ const PromptSuggestions = styled('div')(({ theme }) => ({
   display: 'flex',
   flexWrap: 'wrap',
   gap: theme.spacing(1),
-  width: '95%',
-  maxWidth: 'unset',
-  margin: `${theme.spacing(3)} auto ${theme.spacing(3)} auto`,
+  width: '100%',
+  marginBlock: theme.spacing(3),
   justifyContent: 'flex-start',
+}));
+
+// Empty-docs path keeps the alert between content and footer; mirror
+// MessageBox/footer horizontal inset so edges stay aligned.
+const FooterAlignedDisclaimer = styled('div')(({ theme }) => ({
+  width: '100%',
+  boxSizing: 'border-box',
+  paddingInline: 'var(--pf-t--global--spacer--lg)',
+  paddingBlockEnd: theme.spacing(1),
+  '.pf-chatbot.pf-m-compact &': {
+    paddingInline: 'var(--pf-t--global--spacer--md)',
+  },
 }));
 
 const PromptPill = styled('button')(({ theme }) => ({
@@ -194,8 +198,7 @@ const StyledChatbotContent = styled(ChatbotContent)({
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
-  overflow: 'auto',
-  // Surface color via ChatbotContent isPrimary (PF WhiteEmbedded pattern).
+
   '& .pf-chatbot__message-contents': {
     overflowX: 'hidden',
     overflowWrap: 'break-word',
@@ -205,13 +208,19 @@ const StyledChatbotContent = styled(ChatbotContent)({
 
 const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 
-// PF full-page footer caps at 60rem; our Chat/Notebook panes need the footer
-// to track the available width as sidebars open/close, and match chatbot bg.
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   backgroundColor: `${floatingBg} !important`,
+  alignItems: 'stretch',
   '&>.pf-chatbot__footer-container': {
-    width: '95% !important',
+    width: '100% !important',
     maxWidth: 'unset !important',
+    margin: 0,
+    padding:
+      'var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg) !important',
+  },
+  '.pf-chatbot.pf-m-compact & > .pf-chatbot__footer-container': {
+    padding:
+      '0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md) !important',
   },
   '& .pf-chatbot__message-bar': {
     backgroundColor:
@@ -636,13 +645,9 @@ export const NotebookView = ({
   );
 
   const renderNotebookDisclaimerAlert = () => (
-    <DisclaimerStrip>
-      <DisclaimerInner>
-        <Alert isInline variant="info" title={t('aria.important')}>
-          {t('disclaimer')}
-        </Alert>
-      </DisclaimerInner>
-    </DisclaimerStrip>
+    <Alert isInline variant="info" title={t('aria.important')}>
+      {t('disclaimer')}
+    </Alert>
   );
 
   const renderMainContent = () => {
@@ -687,8 +692,7 @@ export const NotebookView = ({
     }
     return (
       <StyledChatbotContent isPrimary>
-        <WelcomeContainer>
-          <div style={{ flex: 1 }} />
+        <WelcomeMessageBox>
           {renderNotebookDisclaimerAlert()}
           <NotebookContentArea>
             <Typography
@@ -727,7 +731,7 @@ export const NotebookView = ({
               ))}
             </PromptSuggestions>
           )}
-        </WelcomeContainer>
+        </WelcomeMessageBox>
       </StyledChatbotContent>
     );
   };
@@ -824,9 +828,11 @@ export const NotebookView = ({
 
                 <MainContent>{renderMainContent()}</MainContent>
 
-                {hasNoDocuments &&
-                  messages.length === 0 &&
-                  renderNotebookDisclaimerAlert()}
+                {hasNoDocuments && messages.length === 0 && (
+                  <FooterAlignedDisclaimer>
+                    {renderNotebookDisclaimerAlert()}
+                  </FooterAlignedDisclaimer>
+                )}
 
                 <StyledChatbotFooter isPrimary>
                   {(() => {

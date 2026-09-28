@@ -68,6 +68,7 @@ import {
   type AlertProps,
 } from '@patternfly/react-core';
 import {
+  PencilAltIcon,
   PenIcon,
   PlusIcon,
   SearchIcon,
@@ -2158,6 +2159,11 @@ export const LightspeedChat = ({
                           isDisabled={newChatCreated}
                           menuAriaLabel={t('tooltip.quickNewChat')}
                           tooltipContent={t('tooltip.quickNewChat')}
+                          icon={
+                            <Icon size="lg" isInline>
+                              <PencilAltIcon />
+                            </Icon>
+                          }
                         />
                       )}
                     </>
@@ -2367,7 +2373,7 @@ export const LightspeedChat = ({
                     onNewChat={onNewChat}
                     newChatButtonText={t('button.newChat')}
                     newChatButtonProps={{
-                      icon: <PenIcon />,
+                      icon: <PencilAltIcon />,
                       isDisabled: newChatCreated,
                     }}
                     handleTextInputChange={handleFilter}
