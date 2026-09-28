@@ -1661,36 +1661,36 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-backend@npm:^7.14.0":
-  version: 7.17.0
-  resolution: "@backstage-community/plugin-rbac-backend@npm:7.17.0"
+"@backstage-community/plugin-rbac-backend@npm:^8.1.4":
+  version: 8.1.4
+  resolution: "@backstage-community/plugin-rbac-backend@npm:8.1.4"
   dependencies:
-    "@backstage-community/plugin-rbac-common": "npm:^1.29.1"
-    "@backstage-community/plugin-rbac-node": "npm:^1.23.1"
-    "@backstage/backend-defaults": "npm:^0.17.3"
-    "@backstage/backend-plugin-api": "npm:^1.9.2"
-    "@backstage/catalog-client": "npm:^1.16.0"
-    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage-community/plugin-rbac-common": "npm:^2.1.1"
+    "@backstage-community/plugin-rbac-node": "npm:^2.1.1"
+    "@backstage/backend-defaults": "npm:^0.17.8"
+    "@backstage/backend-plugin-api": "npm:^1.10.0"
+    "@backstage/catalog-client": "npm:^1.16.1"
+    "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/config": "npm:^1.3.8"
     "@backstage/errors": "npm:^1.3.1"
-    "@backstage/plugin-permission-common": "npm:^0.9.9"
-    "@backstage/plugin-permission-node": "npm:^0.11.1"
+    "@backstage/plugin-permission-common": "npm:^0.9.10"
+    "@backstage/plugin-permission-node": "npm:^0.11.3"
     "@dagrejs/graphlib": "npm:^4.0.0"
     casbin: "npm:^5.27.1"
     chokidar: "npm:^3.6.0"
-    csv-parse: "npm:^6.0.0"
+    csv-parse: "npm:^7.0.0"
     express: "npm:^4.18.2"
     express-promise-router: "npm:^4.1.0"
-    js-yaml: "npm:^4.1.0"
+    js-yaml: "npm:^5.4.2"
     knex: "npm:^3.0.0"
     lodash: "npm:^4.17.21"
     typeorm-adapter: "npm:^1.6.1"
     zod: "npm:^4.3.6"
-  checksum: 10c0/97bedf93ff98f26ffcfc62c9001b468e3047b18fed284f71fc7db5b5f82ff4130e2cc0d6f3ce1156c705d1c67f788de2b52ccdba73796a9ff38b4763ce939a48
+  checksum: 10c0/bd4b4abfb888aa57351080fa5500fdb073c366ad6836b61a65a1dba8290828e08764f842e021f28bf8312b2589829839057a596c1f991d606f4d276f646f2072
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-common@npm:^1.29.0, @backstage-community/plugin-rbac-common@npm:^1.29.1":
+"@backstage-community/plugin-rbac-common@npm:^1.29.0":
   version: 1.29.1
   resolution: "@backstage-community/plugin-rbac-common@npm:1.29.1"
   peerDependencies:
@@ -1700,13 +1700,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac-node@npm:^1.23.1":
-  version: 1.23.1
-  resolution: "@backstage-community/plugin-rbac-node@npm:1.23.1"
+"@backstage-community/plugin-rbac-common@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@backstage-community/plugin-rbac-common@npm:2.1.1"
+  peerDependencies:
+    "@backstage/errors": ^1.3.1
+    "@backstage/plugin-permission-common": ^0.9.10
+  checksum: 10c0/531263896c0e428bd0d73c8aec9d9099deb500ae2e3b641ca515d1c5bc5b31c2db809931f431fc5dcb09b056a6476a0488cd14309a5ea19aa0a04b78fe6c3b4c
+  languageName: node
+  linkType: hard
+
+"@backstage-community/plugin-rbac-node@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@backstage-community/plugin-rbac-node@npm:2.1.1"
   dependencies:
-    "@backstage-community/plugin-rbac-common": "npm:^1.29.1"
-    "@backstage/backend-plugin-api": "npm:^1.9.2"
-  checksum: 10c0/9f1a14f010363c34777a1054bf6bd63855e3f33b7e01ab550b082d87d4be044db4974a39b8c0160408ea2b23127d3180c61a5193316a975bc98561bf2833991b
+    "@backstage-community/plugin-rbac-common": "npm:^2.1.1"
+    "@backstage/backend-plugin-api": "npm:^1.10.0"
+  checksum: 10c0/962161977e4565611e85462b4d9d19f09250e4a48a80dc76f096b1cb447bb841f8349db1716b7a87d28f326141f1d931b821e331148e8f741d308a5a1562b058
   languageName: node
   linkType: hard
 
@@ -1781,7 +1791,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-defaults@npm:^0.17.3, @backstage/backend-defaults@npm:^0.17.7, @backstage/backend-defaults@npm:^0.17.8":
+"@backstage/backend-defaults@npm:^0.17.7, @backstage/backend-defaults@npm:^0.17.8":
   version: 0.17.8
   resolution: "@backstage/backend-defaults@npm:0.17.8"
   dependencies:
@@ -1901,7 +1911,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-plugin-api@npm:^1.10.0, @backstage/backend-plugin-api@npm:^1.9.2":
+"@backstage/backend-plugin-api@npm:^1.10.0":
   version: 1.10.0
   resolution: "@backstage/backend-plugin-api@npm:1.10.0"
   dependencies:
@@ -1966,7 +1976,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-client@npm:^1.16.0, @backstage/catalog-client@npm:^1.16.1, @backstage/catalog-client@npm:^1.16.2":
+"@backstage/catalog-client@npm:^1.16.1, @backstage/catalog-client@npm:^1.16.2":
   version: 1.16.2
   resolution: "@backstage/catalog-client@npm:1.16.2"
   dependencies:
@@ -3595,7 +3605,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-node@npm:^0.11.1, @backstage/plugin-permission-node@npm:^0.11.3":
+"@backstage/plugin-permission-node@npm:^0.11.3":
   version: 0.11.3
   resolution: "@backstage/plugin-permission-node@npm:0.11.3"
   dependencies:
@@ -16884,7 +16894,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:packages/backend"
   dependencies:
-    "@backstage-community/plugin-rbac-backend": "npm:^7.14.0"
+    "@backstage-community/plugin-rbac-backend": "npm:^8.1.4"
     "@backstage/backend-defaults": "npm:^0.17.8"
     "@backstage/backend-plugin-api": "npm:^1.10.0"
     "@backstage/backend-test-utils": "npm:^1.11.6"
@@ -19385,10 +19395,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csv-parse@npm:^6.0.0":
-  version: 6.2.1
-  resolution: "csv-parse@npm:6.2.1"
-  checksum: 10c0/8b6f14b244ca62476d4217aac721131ba0ada3e4ed7614e43ebc99203807564dcb054144d1de4ef22ee8b0c63b431640f75d46a0e1e0f72853a954b279ba1c61
+"csv-parse@npm:^7.0.0":
+  version: 7.0.3
+  resolution: "csv-parse@npm:7.0.3"
+  checksum: 10c0/90d444df5bb14a5531fb87163be5236951a43092934c9ea10e1308cceefdd692c8c0b49f93c616a92a1c9695f371a376268bf45325bb88f60a1328274748cc25
   languageName: node
   linkType: hard
 
@@ -25881,6 +25891,17 @@ __metadata:
   bin:
     js-yaml: bin/js-yaml.js
   checksum: 10c0/dedd34c2e8fef1d504687f1bc94ed0ee1311a1f78770fa2800352c6d59c635ccf555009d74e9afe529ae62199da2b1ccef30e53dc84dcd8d2d8187c22574bc97
+  languageName: node
+  linkType: hard
+
+"js-yaml@npm:^5.4.2":
+  version: 5.4.2
+  resolution: "js-yaml@npm:5.4.2"
+  dependencies:
+    argparse: "npm:^2.0.1"
+  bin:
+    js-yaml: bin/js-yaml.mjs
+  checksum: 10c0/ba7e0f72c93c7a84eca2c3de45d2a9188b16a20e83f036df723a3ac29e841496382d0b0849592f63028d1c640bcc5b65f88800da342f47469b5b99bda5c75bfc
   languageName: node
   linkType: hard
 
