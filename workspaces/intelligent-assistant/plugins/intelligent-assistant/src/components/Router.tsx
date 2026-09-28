@@ -14,11 +14,29 @@
  * limitations under the License.
  */
 
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
+import { ErrorPage } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
+import { LIGHTSPEED_PATH } from '../const';
+import { useIaChatPermission } from '../hooks/useIaChatPermission';
 import { LightspeedPage } from './LightspeedPage';
+
+const UnknownIntelligentAssistantRoute = () => {
+  const { allowed: hasChatAccess, loading: chatPermissionLoading } =
+    useIaChatPermission();
+
+  if (chatPermissionLoading) {
+    return null;
+  }
+
+  if (hasChatAccess) {
+    return <Navigate to={LIGHTSPEED_PATH} replace />;
+  }
+
+  return <ErrorPage status="404" statusMessage="Page not found" />;
+};
 
 /**
  * @public
@@ -42,6 +60,7 @@ export const Router = () => {
           <Route path="/notebooks/:notebookId" element={<LightspeedPage />} />
         </>
       )}
+      <Route path="*" element={<UnknownIntelligentAssistantRoute />} />
     </Routes>
   );
 };

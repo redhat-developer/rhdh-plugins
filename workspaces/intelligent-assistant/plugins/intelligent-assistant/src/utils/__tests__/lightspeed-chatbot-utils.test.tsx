@@ -23,6 +23,7 @@ import {
   createBotMessage,
   createMessage,
   createUserMessage,
+  enrichMessagesWithPersistedSources,
   getCategorizeMessages,
   getTimestamp,
   getTimestampVariablesString,
@@ -411,6 +412,52 @@ describe('transformDocumentsToSources', () => {
     );
   });
 });
+
+describe('enrichMessagesWithPersistedSources', () => {
+  it('copies sources from persisted bot messages when live messages lack them', () => {
+    const persistedSources = transformDocumentsToSources(referenced_documents);
+    const live = [
+      createUserMessage({ content: 'question', timestamp: '1' }),
+      createBotMessage({ content: 'answer', timestamp: '2' }),
+    ];
+    const persisted = [
+      createUserMessage({ content: 'question', timestamp: '1' }),
+      createBotMessage({
+        content: 'answer',
+        timestamp: '2',
+        sources: persistedSources,
+      }),
+    ];
+
+    const enriched = enrichMessagesWithPersistedSources(live, persisted);
+    expect(enriched[1].sources).toEqual(persistedSources);
+  });
+
+  it('does not overwrite sources already present on live messages', () => {
+    const liveSources = transformDocumentsToSources([
+      { doc_title: 'live.md', doc_url: 'https://example.com/live' },
+    ]);
+    const persistedSources = transformDocumentsToSources(referenced_documents);
+    const live = [
+      createBotMessage({
+        content: 'answer',
+        timestamp: '1',
+        sources: liveSources,
+      }),
+    ];
+    const persisted = [
+      createBotMessage({
+        content: 'answer',
+        timestamp: '1',
+        sources: persistedSources,
+      }),
+    ];
+
+    const enriched = enrichMessagesWithPersistedSources(live, persisted);
+    expect(enriched[0].sources).toEqual(liveSources);
+  });
+});
+
 describe('getCategorizeMessages', () => {
   const addProps = (c: ConversationSummary) => ({
     customProp: `prop-${c.conversation_id}`,
