@@ -344,6 +344,25 @@ const MessageBarActionsRow = styled('div')({
   gap: 8,
 });
 
+// PF full-page footer caps at 60rem; Chat pane needs the footer to track
+// available width as the history drawer opens/closes, and match chatbot bg.
+const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
+  '&.pf-chatbot__footer': {
+    backgroundColor: `${floatingBg} !important`,
+  },
+  '&>.pf-chatbot__footer-container': {
+    width: '100% !important',
+    maxWidth: 'unset !important',
+    margin: '0 auto',
+  },
+  '& .pf-chatbot__message-bar': {
+    backgroundColor:
+      theme.palette.mode === 'light'
+        ? theme.palette.grey[100]
+        : 'var(--pf-t--global--background--color--secondary--default)',
+  },
+}));
+
 const StyledSelectList = styled(SelectList)({
   padding: 0,
   margin: 0,
@@ -1910,7 +1929,7 @@ export const LightspeedChat = ({
           )}
         </ContentScroll>
       </StyledChatbotContent>
-      <ChatbotFooter isPrimary>
+      <StyledChatbotFooter isPrimary>
         <FilePreview />
         <MessageBar
           key={messageBarKey}
@@ -1972,7 +1991,7 @@ export const LightspeedChat = ({
           placeholder={t('chatbox.message.placeholder')}
         />
         <ChatbotFootnoteWithIcon {...getFootnoteProps(t)} />
-      </ChatbotFooter>
+      </StyledChatbotFooter>
     </>
   );
 

@@ -203,6 +203,24 @@ const StyledChatbotContent = styled(ChatbotContent)({
   },
 });
 
+const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
+
+// PF full-page footer caps at 60rem; our Chat/Notebook panes need the footer
+// to track the available width as sidebars open/close, and match chatbot bg.
+const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
+  backgroundColor: `${floatingBg} !important`,
+  '&>.pf-chatbot__footer-container': {
+    width: '95% !important',
+    maxWidth: 'unset !important',
+  },
+  '& .pf-chatbot__message-bar': {
+    backgroundColor:
+      theme.palette.mode === 'light'
+        ? theme.palette.grey[100]
+        : 'var(--pf-t--global--background--color--secondary--default)',
+  },
+}));
+
 type NotebookViewProps = {
   sessionId: string;
   notebookName?: string;
@@ -810,7 +828,7 @@ export const NotebookView = ({
                   messages.length === 0 &&
                   renderNotebookDisclaimerAlert()}
 
-                <ChatbotFooter isPrimary>
+                <StyledChatbotFooter isPrimary>
                   {(() => {
                     const addResourceAction = (
                       <Button
@@ -876,7 +894,7 @@ export const NotebookView = ({
                     );
                   })()}
                   <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
-                </ChatbotFooter>
+                </StyledChatbotFooter>
               </ContentColumn>
             </MainArea>
           </StyledDrawerContentBody>
