@@ -344,16 +344,23 @@ const MessageBarActionsRow = styled('div')({
   gap: 8,
 });
 
-// PF full-page footer caps at 60rem; Chat pane needs the footer to track
-// available width as the history drawer opens/closes, and match chatbot bg.
+// PF full-page footer caps at 60rem. Keep PF's 90% gutters so the bar aligns
+// with the message log, but drop the 60rem cap so it still grows with the
+// pane when the history drawer collapses.
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   '&.pf-chatbot__footer': {
     backgroundColor: `${floatingBg} !important`,
   },
   '&>.pf-chatbot__footer-container': {
-    width: '100% !important',
+    width: '90% !important',
     maxWidth: 'unset !important',
     margin: '0 auto',
+  },
+  // Compact floating drawer: fill the narrow host with side padding.
+  '.pf-chatbot.pf-m-compact & > .pf-chatbot__footer-container': {
+    width: '100% !important',
+    padding:
+      '0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md)',
   },
   '& .pf-chatbot__message-bar': {
     backgroundColor:
