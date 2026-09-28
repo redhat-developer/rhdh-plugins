@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.9.1
+
+### Patch Changes
+
+- 39a2a05: Inline sidebar item and group definitions in the exported Config interface so the package schema has a single top-level declaration.
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.9.1
+
 ## 1.9.0
 
 ### Minor Changes
