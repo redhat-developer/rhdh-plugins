@@ -196,6 +196,23 @@ jobs:
             exit 1
           fi
 
+  verify-repo:
+    name: Repository-wide checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Install root dependencies
+        run: yarn install --immutable
+        env:
+          YARN_ENABLE_SCRIPTS: 'false'
+      - name: Verify no Material UI v4 packages
+        run: node scripts/ci/verify-no-material-ui-v4.js
+
   verify:
     name: Workspace ${{ matrix.workspace }}, Verify step
     runs-on: ubuntu-latest
@@ -227,7 +244,7 @@ jobs:
     if: ${{ always() }}
     name: check all required jobs
     runs-on: ubuntu-latest
-    needs: [ci, verify]
+    needs: [ci, verify, verify-repo]
     steps:
       - run: exit 1
         if: >-

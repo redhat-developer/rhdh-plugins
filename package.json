@@ -10,7 +10,8 @@
     "create-workspace": "rhdh-repo-tools workspace create",
     "postinstall": "husky",
     "prettier:check": "prettier --check .",
-    "prettier:fix": "prettier --write ."
+    "prettier:fix": "prettier --write .",
+    "verify:no-material-ui-v4": "node scripts/ci/verify-no-material-ui-v4.js"
   },
   "type": "module",
   "packageManager": "yarn@4.17.1",
