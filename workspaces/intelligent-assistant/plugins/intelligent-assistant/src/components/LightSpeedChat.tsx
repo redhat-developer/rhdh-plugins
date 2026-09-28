@@ -69,7 +69,6 @@ import {
 } from '@patternfly/react-core';
 import {
   PencilAltIcon,
-  PenIcon,
   PlusIcon,
   SearchIcon,
   SortAmountDownAltIcon,
@@ -165,8 +164,7 @@ const ConditionalWrapper = ({
 const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 
 const StyledChatbot = styled(Chatbot, {
-  // Forward isCompact so PF applies pf-m-compact (denser header padding via
-  // .pf-chatbot.pf-m-compact .pf-chatbot__header). Only filter custom styled props.
+  // Keep isCompact so PF applies pf-m-compact; filter only custom styled props.
   shouldForwardProp: prop =>
     prop !== 'mcpDrawerFix' && prop !== 'compactDrawerOpen',
 })<{
@@ -210,7 +208,7 @@ const StyledChatbot = styled(Chatbot, {
   '& .pf-chatbot__header-container': {
     flexShrink: 0,
   },
-  // UA <hr> margins on ChatbotFooter / ChatbotHeader dividers add empty bands.
+  // Zero UA <hr> margins on ChatbotFooter / ChatbotHeader dividers.
   '& .pf-chatbot__footer > .pf-v6-c-divider, & .pf-chatbot__header__divider': {
     margin: 0,
   },
@@ -221,24 +219,11 @@ const StyledChatbot = styled(Chatbot, {
         overflow: 'hidden',
         '& .pf-chatbot__header': {
           alignItems: 'center',
-          // Sit flush on the header divider; keep the line, lose the empty band.
           paddingBlockEnd: 0,
-        },
-        // Floating panel is displayMode=embedded inside a narrow host, but the
-        // viewport is still >=64rem so PF's full-page footer rule applies
-        // (width 90%, padding sm 0). Match compact MessageBox padding instead
-        // (MessageBox.scss: .pf-chatbot.pf-m-compact .pf-chatbot__messagebox).
-        '& .pf-chatbot__footer > .pf-chatbot__footer-container': {
-          width: '100%',
-          maxWidth: 'unset',
-          padding:
-            '0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md)',
         },
       }
     : {}),
-  // Match the previous compactDrawerPanel class: only expand the history
-  // panel when it is actually open. Applying 100% width while collapsed
-  // lets the z-index: 1300 panel cover the Chat/Notebooks tab bar.
+  // Only expand the history panel when open; 100% while collapsed covers the tab bar.
   ...(isCompact && compactDrawerOpen
     ? {
         '& .pf-v6-c-drawer__panel': {
@@ -283,7 +268,6 @@ const FileDropZoneShell = styled('div')({
     '--pf-v5-c-multiple-file-upload--Gap': '0',
     flex: 1,
     minWidth: 0,
-    // Inherit PF primary surface from Chatbot when content uses isPrimary.
     backgroundColor: 'transparent',
   },
 });
@@ -345,9 +329,7 @@ const MessageBarActionsRow = styled('div')({
   gap: 8,
 });
 
-// Match scrollable message log inset: MessageBox uses width 100% +
-// padding spacer--lg (not a % width). Override PF's embedded/fullscreen
-// 90%/60rem footer rule so the bar tracks the pane like the log does.
+// Align footer with MessageBox inset (override PF 90%/60rem full-page footer).
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   '&.pf-chatbot__footer': {
     backgroundColor: `${floatingBg} !important`,
@@ -360,7 +342,6 @@ const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
     padding:
       'var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg) !important',
   },
-  // Compact floating drawer: denser MessageBox padding (spacer--md).
   '.pf-chatbot.pf-m-compact & > .pf-chatbot__footer-container': {
     padding:
       '0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md) !important',
@@ -1418,7 +1399,7 @@ export const LightspeedChat = ({
         menuItems: (
           <>
             <DropdownItem
-              icon={<PenIcon />}
+              icon={<PencilAltIcon />}
               onClick={() =>
                 openChatRenameModal(conversationSummary.conversation_id)
               }
@@ -2239,8 +2220,6 @@ export const LightspeedChat = ({
                 textColor="primary"
                 sx={theme => ({
                   flexShrink: 0,
-                  // Transparent so tabs sit on the PF primary chatbot surface
-                  // (WhiteEmbedded pattern: Content/Footer isPrimary).
                   backgroundColor: 'transparent',
                   borderBottom:
                     '1px solid var(--pf-t--global--border--color--default)',
@@ -2329,14 +2308,10 @@ export const LightspeedChat = ({
                   <ChatbotConversationHistoryNav
                     drawerPanelContentProps={{
                       isResizable: isFullscreenMode,
-                      // PF DrawerPanelContent attribute — no vertical rule in
-                      // fullscreen (matches docked/compact which already used this).
                       hasNoBorder: true,
                       style: drawerPanelStyle,
-                      // Keep Chatbot's focus trap so the panel stays role="dialog"
-                      // (e2e + a11y). Point initial focus at New chat — PF paints
-                      // :focus like :hover, so landing on DrawerCloseButton made
-                      // the close control look hovered while the drawer was open.
+                      // Keep focusTrap (role=dialog). Focus New chat — PF paints
+                      // :focus like :hover, so DrawerCloseButton looked stuck hovered.
                       focusTrap: {
                         enabled: true,
                         elementToFocusOnExpand:
@@ -2351,7 +2326,7 @@ export const LightspeedChat = ({
                     isDrawerOpen={isChatHistoryDrawerOpen}
                     drawerCloseButtonProps={{
                       'aria-label': t('aria.closeDrawerPanel'),
-                      // PF Chatbot forces pill radius on history DrawerCloseButton.
+                      // Override PF Chatbot pill radius on history DrawerCloseButton.
                       // Remap that token on this wrapper so hover matches plain
                       // action buttons (rounded square) without a CSS rule.
                       style: {

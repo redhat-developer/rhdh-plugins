@@ -84,7 +84,6 @@ const Root = styled('div')({
   minWidth: 0,
   width: '100%',
   overflow: 'hidden',
-  // Inherit PF primary surface from ChatbotContent/Footer isPrimary.
 });
 
 const StyledDrawer = styled(Drawer)({
@@ -138,21 +137,17 @@ const MainContent = styled('div')({
   minWidth: 0,
 });
 
-// Match Chat: one MessageBox owns the scroll + inset (spacer--lg /
-// compact spacer--md). Children stay full-width — no per-block 95% margins.
 const WelcomeMessageBox = styled(MessageBox)({
   flex: 1,
   minHeight: 0,
   maxWidth: 'unset !important',
   width: '100%',
-  // Push welcome title/prompts toward the footer like Chat's new-chat layout.
   justifyContent: 'flex-end',
 });
 
 const NotebookContentArea = styled('div')(({ theme }) => ({
   width: '100%',
   marginBlockStart: theme.spacing(3),
-  padding: 0,
 }));
 
 const PromptSuggestions = styled('div')(({ theme }) => ({
@@ -164,8 +159,7 @@ const PromptSuggestions = styled('div')(({ theme }) => ({
   justifyContent: 'flex-start',
 }));
 
-// Empty-docs path keeps the alert between content and footer; mirror
-// MessageBox/footer horizontal inset so edges stay aligned.
+// Empty-docs alert sits between content and footer; match MessageBox inset.
 const FooterAlignedDisclaimer = styled('div')(({ theme }) => ({
   width: '100%',
   boxSizing: 'border-box',
@@ -198,7 +192,6 @@ const StyledChatbotContent = styled(ChatbotContent)({
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
-
   '& .pf-chatbot__message-contents': {
     overflowX: 'hidden',
     overflowWrap: 'break-word',
@@ -208,6 +201,7 @@ const StyledChatbotContent = styled(ChatbotContent)({
 
 const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 
+// Align footer with MessageBox inset (override PF 90%/60rem full-page footer).
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   backgroundColor: `${floatingBg} !important`,
   alignItems: 'stretch',
