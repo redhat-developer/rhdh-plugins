@@ -24,7 +24,7 @@ The RHDH Global Header can be disabled competely by disabling the right plugin:
 ```yaml
 # Disabling global header
 - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-header
-  disabled: true
+  enabled: false
 ```
 
 ## Replacing the Global Header with your own header
@@ -36,7 +36,7 @@ After that customers can implement and install their own header as a dynamic plu
 ```yaml
 # Custom header implementation
 - package: <npm or oci package-reference>
-  disabled: false
+  enabled: true
   pluginConfig:
     dynamicPlugins:
       frontend:

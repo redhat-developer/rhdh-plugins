@@ -60,15 +60,35 @@ describe('isPluginDisabled', () => {
     expect(isPluginDisabled({ package: 'pkg@1.0', enabled: false })).toBe(true);
   });
 
-  it('returns true when disabled: true (backward compat)', () => {
-    expect(isPluginDisabled({ package: 'pkg@1.0', disabled: true })).toBe(true);
-  });
+  it.each([
+    { disabled: true, expected: true, replacement: 'enabled: false' },
+    { disabled: false, expected: false, replacement: 'enabled: true' },
+  ])(
+    'preserves disabled: $disabled and warns once',
+    ({ disabled, expected, replacement }) => {
+      const warnings: string[] = [];
+      expect(
+        isPluginDisabled({ package: 'pkg@1.0', disabled }, msg =>
+          warnings.push(msg),
+        ),
+      ).toBe(expected);
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toContain('Plugin pkg@1.0');
+      expect(warnings[0]).toContain(`deprecated 'disabled: ${disabled}'`);
+      expect(warnings[0]).toContain(replacement);
+    },
+  );
 
-  it('returns false when disabled: false (backward compat)', () => {
-    expect(isPluginDisabled({ package: 'pkg@1.0', disabled: false })).toBe(
-      false,
-    );
-  });
+  it.each([{ enabled: true }, { enabled: false }, {}])(
+    'does not warn without disabled: %p',
+    fields => {
+      const warnings: string[] = [];
+      isPluginDisabled({ package: 'pkg@1.0', ...fields }, msg =>
+        warnings.push(msg),
+      );
+      expect(warnings).toEqual([]);
+    },
+  );
 
   it('enabled takes precedence over disabled when both set (enabled: true, disabled: true)', () => {
     const warnings: string[] = [];
@@ -78,7 +98,12 @@ describe('isPluginDisabled', () => {
     );
     expect(result).toBe(false);
     expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toMatch(/both 'enabled' and 'disabled'/);
+    expect(warnings[0]).toContain("deprecated 'disabled: true'");
+    expect(warnings[0]).toContain("alongside 'enabled: true'");
+    expect(warnings[0]).toContain(
+      "Remove 'disabled'; 'enabled' takes precedence",
+    );
+    expect(warnings[0]).not.toContain('Replace it with');
   });
 
   it('enabled takes precedence over disabled when both set (enabled: false, disabled: false)', () => {
@@ -89,6 +114,12 @@ describe('isPluginDisabled', () => {
     );
     expect(result).toBe(true);
     expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("deprecated 'disabled: false'");
+    expect(warnings[0]).toContain("alongside 'enabled: false'");
+    expect(warnings[0]).toContain(
+      "Remove 'disabled'; 'enabled' takes precedence",
+    );
+    expect(warnings[0]).not.toContain('Replace it with');
   });
 
   it('does not warn when no callback provided', () => {
@@ -141,7 +172,8 @@ describe('isPluginDisabled', () => {
       msg => warnings.push(msg),
     );
     expect(result).toBe(true);
-    expect(warnings).toHaveLength(1);
+    expect(warnings).toHaveLength(2);
     expect(warnings[0]).toMatch(/non-boolean 'enabled/);
+    expect(warnings[1]).toContain('enabled: false');
   });
 });

@@ -380,6 +380,13 @@ async function loadAllPlugins(
   }
   const mainPlugins = content.plugins ?? [];
 
+  // Warn once per declared entry, including disabled OCI entries removed by
+  // the pre-merge filter and included entries overridden by the main config.
+  for (const [, plugins] of includeLists) {
+    for (const plugin of plugins) isPluginDisabled(plugin, log);
+  }
+  for (const plugin of mainPlugins) isPluginDisabled(plugin, log);
+
   resolveRefPlugins(mainPlugins, includeLists);
   // Collision validation must use the packages the user declared. Resolving
   // an inherit reference replaces its requested registry with the catalog's
@@ -486,7 +493,7 @@ function categorize(allPlugins: PluginMap): Categorized {
   const npm: Plugin[] = [];
   const skipped: Plugin[] = [];
   for (const plugin of Object.values(allPlugins)) {
-    if (isPluginDisabled(plugin, log)) {
+    if (isPluginDisabled(plugin)) {
       log(`\n======= Skipping disabled plugin ${plugin.package}`);
       continue;
     }
