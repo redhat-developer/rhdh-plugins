@@ -1,17 +1,5 @@
 #!/usr/bin/env node
 /*
- * Verifies that migrated workspaces do not declare or import Material UI v4
- * (@material-ui/*) outside the temporary migration allowlist.
- *
- * Policy: scripts/ci/material-ui-v4-policy.json (migrated workspace scope)
- *
- * Checks:
- * - package.json direct dependencies across all workspaces
- * - source imports in workspaces listed in material-ui-v4-policy.json
- *
- * Lockfiles are not scanned because many workspaces still resolve Material UI
- * v4 transitively through Backstage dependencies.
- *
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +13,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ */
+/**
+ * Verifies that migrated workspaces do not declare or import Material UI v4
+ * (@material-ui/*) outside the temporary migration allowlist.
+ *
+ * Policy: scripts/ci/material-ui-v4-policy.json (migrated workspace scope)
+ *
+ * Checks:
+ * - package.json direct dependencies across all workspaces
+ * - source imports in workspaces listed in material-ui-v4-policy.json
+ *
+ * Lockfiles are not scanned because many workspaces still resolve Material UI
+ * v4 transitively through Backstage dependencies.
  */
 
 import { access, readFile, readdir } from 'node:fs/promises';
