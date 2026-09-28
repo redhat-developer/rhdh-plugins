@@ -192,6 +192,14 @@ const StyledChatbotContent = styled(ChatbotContent)({
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
+  // PF sets `overflow: hidden` after `overflow-y: auto` on .pf-chatbot__content,
+  // which clips the docked landing page with no way to scroll (RHDHBUGS-3751).
+  // Double class + !important so we beat the PF stylesheet order.
+  '&&': {
+    overflowX: 'hidden',
+    overflowY: 'auto',
+  },
+  WebkitOverflowScrolling: 'touch',
   '& .pf-chatbot__message-contents': {
     overflowX: 'hidden',
     overflowWrap: 'break-word',
@@ -205,6 +213,10 @@ const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   backgroundColor: `${floatingBg} !important`,
   alignItems: 'stretch',
+  // Match Chat: hide ChatbotFooter's injected <hr> (MessageBar supplies the edge).
+  '& > .pf-v6-c-divider': {
+    display: 'none',
+  },
   '&>.pf-chatbot__footer-container': {
     width: '100% !important',
     maxWidth: 'unset !important',

@@ -15,7 +15,6 @@
  */
 
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import { FileDetailsLabel } from '@patternfly/chatbot';
 
 import { useFileAttachmentContext } from './AttachmentContext';
@@ -57,22 +56,20 @@ const FilePreview = () => {
   }
 
   return (
-    <>
-      <Divider />
-      <Box sx={{ display: 'flex', gap: '10px' }}>
-        {fileContents.map((file, index) => (
-          <FileDetailsLabel
-            key={index}
-            fileName={file.name}
-            isLoading={isLoadingFile[file.name]}
-            onClick={onAttachmentClick}
-            onClose={() => {
-              removeFile(index);
-            }}
-          />
-        ))}
-      </Box>
-    </>
+    <Box sx={{ display: 'flex', gap: '10px' }}>
+      {fileContents.map((file, index) => (
+        <FileDetailsLabel
+          key={index}
+          fileName={file.name}
+          isLoading={isLoadingFile[file.name]}
+          variant="outline"
+          onClick={onAttachmentClick}
+          onClose={() => {
+            removeFile(index);
+          }}
+        />
+      ))}
+    </Box>
   );
 };
 

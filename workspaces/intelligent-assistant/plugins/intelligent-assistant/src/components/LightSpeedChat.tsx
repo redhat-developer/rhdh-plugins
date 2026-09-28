@@ -335,6 +335,11 @@ const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
     backgroundColor: `${floatingBg} !important`,
     alignItems: 'stretch',
   },
+  // ChatbotFooter always injects an <hr>; MessageBar already has its own edge,
+  // so the line reads as an extra divider above file chips / the input.
+  '& > .pf-v6-c-divider': {
+    display: 'none',
+  },
   '&>.pf-chatbot__footer-container': {
     width: '100% !important',
     maxWidth: 'unset !important',
