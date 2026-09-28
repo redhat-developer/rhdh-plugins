@@ -39,9 +39,11 @@ export type CustomDrawerProps = {
 export const CustomDrawer = (props: CustomDrawerProps) => {
   const {
     children,
+    // Defaults align with PatternFly Chatbot (30rem ≈ 480px); callers usually
+    // pass drawerWidth from Lightspeed provider / AppDrawer defaultWidth.
     minWidth = 400,
     maxWidth = 800,
-    initialWidth = 400,
+    initialWidth = 480,
     isDrawerOpen,
     drawerWidth,
     onWidthChange,

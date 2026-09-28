@@ -26,6 +26,7 @@ import type {
 import {
   ChatbotDisplayMode,
   LIGHTSPEED_APP_DRAWER_ID,
+  LIGHTSPEED_DOCKED_DRAWER_WIDTH_PX,
   LIGHTSPEED_PATH,
 } from '../const';
 import type { FileContent } from '../types';
@@ -61,7 +62,9 @@ export function useLightspeedProviderState(): {
   const [displayModeState, setDisplayModeState] =
     useState<ChatbotDisplayMode>(persistedDisplayMode);
   const [isOpen, setIsOpen] = useState(false);
-  const [drawerWidth, setDrawerWidth] = useState(400);
+  const [drawerWidth, setDrawerWidth] = useState(
+    LIGHTSPEED_DOCKED_DRAWER_WIDTH_PX,
+  );
   const [currentConversationIdState, setCurrentConversationIdState] = useState<
     string | undefined
   >(undefined);

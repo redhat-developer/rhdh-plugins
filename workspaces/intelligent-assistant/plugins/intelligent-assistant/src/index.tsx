@@ -31,7 +31,11 @@ import { lightspeedApiRef } from './api/api';
 import { LightspeedApiClient } from './api/LightspeedApiClient';
 import { notebooksApiRef } from './api/notebooksApi';
 import { NotebooksApiClient } from './api/NotebooksApiClient';
-import { LIGHTSPEED_APP_DRAWER_ID, LIGHTSPEED_PATH } from './const';
+import {
+  LIGHTSPEED_APP_DRAWER_ID,
+  LIGHTSPEED_DOCKED_DRAWER_WIDTH_PX,
+  LIGHTSPEED_PATH,
+} from './const';
 import { LazyLightspeedChatDrawerContent } from './lazy/LazyLightspeedChatDrawerContent';
 
 import './muiClassNameConfig';
@@ -89,7 +93,7 @@ const intelligentAssistantDrawer = AppDrawerContentBlueprint.make({
     id: LIGHTSPEED_APP_DRAWER_ID,
     element: <LazyLightspeedChatDrawerContent />,
     resizable: true,
-    defaultWidth: 400,
+    defaultWidth: LIGHTSPEED_DOCKED_DRAWER_WIDTH_PX,
     priority: 100,
   },
 });
