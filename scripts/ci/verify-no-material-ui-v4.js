@@ -31,7 +31,7 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 const ALTERNATIVE_MESSAGE =
-  'Material UI v4 (@material-ui/*) is deprecated. Use @mui/* (MUI v5), Backstage UI (@backstage/ui), or Canon design system instead.';
+  'Material UI v4 (@material-ui/*) is deprecated. Use @mui/* (MUI v5) or Backstage UI (@backstage/ui) instead.';
 
 const IGNORED_PATH_SEGMENTS = new Set([
   'node_modules',
