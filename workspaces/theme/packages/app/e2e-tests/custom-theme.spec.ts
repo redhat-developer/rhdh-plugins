@@ -20,7 +20,6 @@ import { TestUtils } from './utils/test-utils';
 import { runAccessibilityTests } from './utils/acessibility';
 
 test.describe('CustomTheme should be applied', () => {
-  let themeVerifier: ThemeVerifier;
   let testUtils: TestUtils;
 
   test.beforeEach(async ({ page }) => {
@@ -28,23 +27,24 @@ test.describe('CustomTheme should be applied', () => {
       type: 'component',
       description: 'core',
     });
-    themeVerifier = new ThemeVerifier(page);
     testUtils = new TestUtils(page);
     await testUtils.loginAsGuest();
   });
 
-  test('Verify theme colors are applied and make screenshots', async ({
-    page,
-  }, testInfo: TestInfo) => {
-    const themes = ThemeConstants.getThemes();
-
-    await runAccessibilityTests(
+  for (const theme of ThemeConstants.getThemes()) {
+    test(`Verify ${theme.name} theme colors are applied and make screenshots`, async ({
       page,
-      testInfo,
-      'accessibility-scan-results.json',
-    );
+    }, testInfo: TestInfo) => {
+      const themeVerifier = new ThemeVerifier(page);
 
-    for (const theme of themes) {
+      if (theme.name === 'Light') {
+        await runAccessibilityTests(
+          page,
+          testInfo,
+          'accessibility-scan-results.json',
+        );
+      }
+
       await themeVerifier.setTheme(theme.name);
       await themeVerifier.takeScreenshotAndAttach(
         `screenshots/custom-theme-${theme.name}-inspection.png`,
@@ -52,6 +52,30 @@ test.describe('CustomTheme should be applied', () => {
         `custom-theme-${theme.name}-inspection`,
       );
       await themeVerifier.verifyPrimaryColors(theme.primaryColor);
+    });
+  }
+
+  test('Only Light and Dark themes are available', async ({ page }) => {
+    await page
+      .getByTestId('sidebar-root')
+      .getByRole('link', { name: 'Settings' })
+      .click();
+
+    for (const themeName of ['Light', 'Dark']) {
+      await expect(
+        page.getByRole('button', { name: themeName, exact: true }),
+      ).toBeVisible();
+    }
+
+    for (const themeName of [
+      'RHDH Light (customized)',
+      'RHDH Dark (customized)',
+      'Backstage Light',
+      'Backstage Dark',
+    ]) {
+      await expect(
+        page.getByRole('button', { name: themeName, exact: true }),
+      ).toHaveCount(0);
     }
   });
 
