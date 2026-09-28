@@ -17,10 +17,11 @@
 import { Content, InfoCard } from '@backstage/core-components';
 import { useTranslationRef } from '@backstage/frontend-plugin-api';
 
-import Box from '@mui/material/Box';
+// import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
+import { Box } from '@material-ui/core';
 import Typography from '@mui/material/Typography';
 import type { SxProps, Theme } from '@mui/material/styles';
 
