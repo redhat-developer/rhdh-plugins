@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-bui-test
 
+## 0.5.2
+
+### Patch Changes
+
+- 8c7f13a: Align BUI theme styling with PatternFly v6: add PageMainContainer for page inset, and close gaps for typography, forms, menus, tooltips, popovers, and buttons.
+
 ## 0.5.1
 
 ### Patch Changes
