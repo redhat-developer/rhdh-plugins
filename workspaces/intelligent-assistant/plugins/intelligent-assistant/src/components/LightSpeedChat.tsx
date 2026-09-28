@@ -2299,11 +2299,15 @@ export const LightspeedChat = ({
                       // fullscreen (matches docked/compact which already used this).
                       hasNoBorder: true,
                       style: drawerPanelStyle,
-                      // Chatbot enables a focus trap that lands on DrawerCloseButton.
-                      // PF paints :focus like :hover, so the close control looks
-                      // hovered whenever the trap focuses it. Inline embedded
-                      // history should not trap focus.
-                      focusTrap: { enabled: false },
+                      // Keep Chatbot's focus trap so the panel stays role="dialog"
+                      // (e2e + a11y). Point initial focus at New chat — PF paints
+                      // :focus like :hover, so landing on DrawerCloseButton made
+                      // the close control look hovered while the drawer was open.
+                      focusTrap: {
+                        enabled: true,
+                        elementToFocusOnExpand:
+                          '[data-testid="chatbot-nav-drawer-actions"] > .pf-v6-c-button',
+                      },
                     }}
                     reverseButtonOrder
                     displayMode={ChatbotDisplayMode.embedded}
