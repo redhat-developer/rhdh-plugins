@@ -50,7 +50,7 @@
     "@backstage/frontend-plugin-api": "^0.18.0",
     "@backstage/plugin-user-settings": "^0.9.6",
     "@mui/material": "^5",
-    "@remixicon/react": "^4.9.0"
+    "@remixicon/react": ">=4.6.0 <4.9.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
