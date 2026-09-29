@@ -130,12 +130,8 @@ export class ScorecardPage {
   }
 
   async openDataSourcesDialog(card: Locator): Promise<Locator> {
-    await card
-      .getByLabel(this.translations.metricGroupCard.menuAriaLabel)
-      .click();
-    await this.page
-      .getByText(this.translations.metricGroupCard.viewDataSources)
-      .click();
+    await card.getByLabel(this.translations.card.menuAriaLabel).click();
+    await this.page.getByText(this.translations.card.viewDataSources).click();
     const dialog = this.page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible({ timeout: 5000 });
     return dialog;

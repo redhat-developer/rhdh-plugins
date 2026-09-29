@@ -15,6 +15,7 @@
  */
 
 import { useLayoutEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import {
   MetricType,
@@ -58,6 +59,7 @@ interface ScorecardProps {
   metricDataError?: string;
   isThresholdError?: boolean;
   thresholdError?: string;
+  info?: ReactNode;
 }
 
 const ScorecardCenterLabel = ({
@@ -181,6 +183,7 @@ const Scorecard = ({
   metricDataError,
   isThresholdError = false,
   thresholdError,
+  info,
 }: ScorecardProps) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -201,6 +204,7 @@ const Scorecard = ({
       title={cardTitle}
       description={description}
       width="100%"
+      info={info}
     >
       <Box
         width="100%"

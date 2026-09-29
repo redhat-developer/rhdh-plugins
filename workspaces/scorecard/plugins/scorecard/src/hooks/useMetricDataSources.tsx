@@ -15,28 +15,37 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
+import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { useLanguage } from './useLanguage';
 import { useMetricCollectors } from './useMetricCollectors';
 import { useTranslation } from './useTranslation';
-import { getLastUpdatedLabel, getStatusConfig } from '../utils';
-import { toCollectorSourceRows } from '../components/MetricGroupCard/collectorSourceRows';
-import type { MenuAction } from '../components/MetricGroupCard/MetricGroupCardMenu';
-import { MISSING_EVALUATION_LABEL } from '../components/MetricGroupCard/thresholdBucketUtils';
-import type { DataSourcesDialogProps } from '../components/MetricGroupCard/DataSourcesDialog';
+import { getLastUpdatedLabel } from '../utils';
+import { toCollectorSourceRows } from '../components/DataSources/collectorSourceRows';
+import { toMetricSourceRows } from '../components/DataSources/metricSourceRows';
+import type { MenuAction } from '../components/DataSources/CardActionsMenu';
+import {
+  buildThresholdBuckets,
+  MISSING_EVALUATION_LABEL,
+} from '../components/MetricGroupCard/thresholdBucketUtils';
+import type { DataSourcesDialogProps } from '../components/DataSources/DataSourcesDialog';
 
-export type UseSparklineDataSourcesOptions = {
+export type UseMetricDataSourcesOptions = {
   metricId: string;
   lastSyncedTimestamp?: string;
+  /** When true the hook fetches collector metadata via the collectors API (composite metrics like DORA). Defaults to false. */
   fetchEnabled?: boolean;
+  /** Full metric result — used to show actual value/status/evaluation in the dialog for non-composite metrics. */
+  metric?: MetricResult;
 };
 
-export const useSparklineDataSources = ({
+export const useMetricDataSources = ({
   metricId,
   lastSyncedTimestamp,
-  fetchEnabled = true,
-}: UseSparklineDataSourcesOptions) => {
+  fetchEnabled = false,
+  metric,
+}: UseMetricDataSourcesOptions) => {
   const { t } = useTranslation();
   const locale = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
@@ -47,7 +56,7 @@ export const useSparklineDataSources = ({
     () => [
       {
         id: 'view-data-sources',
-        label: t('metricGroupCard.viewDataSources'),
+        label: t('card.viewDataSources'),
         icon: <InfoOutlinedIcon fontSize="small" />,
         onClick: handleOpen,
       },
@@ -63,39 +72,46 @@ export const useSparklineDataSources = ({
   } = useMetricCollectors(metricId, shouldFetch);
 
   const sourceRows = useMemo(() => {
-    const unevaluatedStatus = getStatusConfig({
-      evaluation: null,
-      thresholdStatus: undefined,
-      metricStatus: undefined,
-      thresholdRules: [],
-    });
+    if (collectors && collectors.length > 0) {
+      return toCollectorSourceRows(collectors, {
+        metricId,
+        lastSynced: lastSyncedTimestamp
+          ? getLastUpdatedLabel(lastSyncedTimestamp, locale)
+          : MISSING_EVALUATION_LABEL,
+        emptyValue: t('dataSourcesDialog.collectorEmptyValue'),
+        unavailableStatus: t('dataSourcesDialog.collectorUnavailableStatus'),
+        statusColor: '',
+      });
+    }
 
-    return toCollectorSourceRows(collectors ?? [], {
-      metricId,
-      lastSynced: lastSyncedTimestamp
-        ? getLastUpdatedLabel(lastSyncedTimestamp, locale)
-        : MISSING_EVALUATION_LABEL,
-      emptyValue: t('dataSourcesDialog.collectorEmptyValue'),
-      unavailableStatus: t('dataSourcesDialog.collectorUnavailableStatus'),
-      statusColor: unevaluatedStatus.color,
-    });
-  }, [collectors, metricId, lastSyncedTimestamp, locale, t]);
+    if (metric) {
+      return toMetricSourceRows([metric], { t, locale });
+    }
+
+    return [];
+  }, [collectors, metric, metricId, lastSyncedTimestamp, locale, t]);
+
+  const buckets = useMemo(
+    () => (metric ? buildThresholdBuckets([metric], t) : undefined),
+    [metric, t],
+  );
 
   const dialogProps: Pick<
     DataSourcesDialogProps,
-    'open' | 'onClose' | 'rows' | 'isLoading' | 'error'
+    'open' | 'onClose' | 'rows' | 'isLoading' | 'error' | 'buckets'
   > = {
     open: isOpen,
     onClose: handleClose,
     rows: sourceRows,
     isLoading: shouldFetch && isLoading,
     error: shouldFetch ? error : undefined,
+    buckets,
   };
 
   return {
     isOpen,
     menuActions,
-    menuAriaLabel: t('metricGroupCard.menuAriaLabel'),
+    menuAriaLabel: t('card.menuAriaLabel'),
     dialogProps,
   };
 };

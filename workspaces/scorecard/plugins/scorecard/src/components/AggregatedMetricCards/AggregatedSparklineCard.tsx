@@ -20,8 +20,8 @@ import type { AggregatedMetricTimeSeriesResponse } from '@red-hat-developer-hub/
 
 import { CardWrapper } from '../Common/CardWrapper';
 import { SparklineChart } from '../SparklineChart';
-import { SparklineDataSources } from '../SparklineChart/SparklineDataSources';
-import { CardInfoButton } from './components/CardInfoButton';
+import { MetricDataSources } from '../DataSources/MetricDataSources';
+import { toDialogMetricResult } from '../DataSources/toDialogMetricResult';
 import { CardSubheader } from './components/CardSubheader';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -112,16 +112,41 @@ export const AggregatedSparklineCard = ({
       />
     ) : null;
 
+  const metricSnapshot = useMemo(() => {
+    if (!lastPoint) {
+      return undefined;
+    }
+
+    return toDialogMetricResult({
+      id: series.metricId,
+      title: cardTitle,
+      description,
+      type: series.metadata.type,
+      unit: series.metadata.unit,
+      value: lastPoint.value,
+      timestamp: lastPoint.timestamp,
+      evaluation: matchingThresholdKey ?? null,
+      thresholds: series.thresholds,
+      status: lastPoint.status,
+    });
+  }, [
+    lastPoint,
+    series.metricId,
+    series.metadata.type,
+    series.metadata.unit,
+    series.thresholds,
+    cardTitle,
+    description,
+    matchingThresholdKey,
+  ]);
+
   const info = showInfo ? (
-    <SparklineDataSources
+    <MetricDataSources
       title={cardTitle}
       metricId={series.metricId}
       lastSyncedTimestamp={lastPoint?.timestamp}
-      extraInfo={
-        lastPoint ? (
-          <CardInfoButton timestamp={lastPoint.timestamp} marginRight={0} />
-        ) : null
-      }
+      fetchEnabled
+      metric={metricSnapshot}
     />
   ) : null;
 
