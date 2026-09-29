@@ -32,15 +32,15 @@ export interface MenuAction {
   onClick: () => void;
 }
 
-interface MetricGroupCardMenuProps {
+interface CardActionsMenuProps {
   ariaLabel: string;
   actions: MenuAction[];
 }
 
-export const MetricGroupCardMenu = ({
+export const CardActionsMenu = ({
   ariaLabel,
   actions,
-}: MetricGroupCardMenuProps) => {
+}: CardActionsMenuProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleOpen = useCallback(

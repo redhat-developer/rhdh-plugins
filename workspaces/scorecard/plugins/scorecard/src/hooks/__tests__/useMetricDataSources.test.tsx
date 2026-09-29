@@ -15,8 +15,9 @@
  */
 
 import { act, renderHook } from '@testing-library/react';
+import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-import { useSparklineDataSources } from '../useSparklineDataSources';
+import { useMetricDataSources } from '../useMetricDataSources';
 import { useMetricCollectors } from '../useMetricCollectors';
 
 jest.mock('../useLanguage', () => ({
@@ -29,7 +30,7 @@ jest.mock('../useMetricCollectors', () => ({
 
 const useMetricCollectorsMock = useMetricCollectors as jest.Mock;
 
-describe('useSparklineDataSources', () => {
+describe('useMetricDataSources', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useMetricCollectorsMock.mockReturnValue({
@@ -41,7 +42,7 @@ describe('useSparklineDataSources', () => {
 
   it('does not fetch collectors until the dialog is opened', () => {
     renderHook(() =>
-      useSparklineDataSources({
+      useMetricDataSources({
         metricId: 'dora.deploymentFrequency',
         lastSyncedTimestamp: '2026-08-24T00:00:00.000Z',
       }),
@@ -66,9 +67,10 @@ describe('useSparklineDataSources', () => {
     });
 
     const { result } = renderHook(() =>
-      useSparklineDataSources({
+      useMetricDataSources({
         metricId: 'dora.deploymentFrequency',
         lastSyncedTimestamp: '2026-08-24T00:00:00.000Z',
+        fetchEnabled: true,
       }),
     );
 
@@ -88,7 +90,7 @@ describe('useSparklineDataSources', () => {
 
   it('does not fetch collectors when fetchEnabled is false', () => {
     const { result } = renderHook(() =>
-      useSparklineDataSources({
+      useMetricDataSources({
         metricId: 'dora.deploymentFrequency',
         fetchEnabled: false,
       }),
@@ -103,5 +105,59 @@ describe('useSparklineDataSources', () => {
       'dora.deploymentFrequency',
       false,
     );
+  });
+
+  it('shows actual metric value and status when metric result is provided', () => {
+    useMetricCollectorsMock.mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: undefined,
+    });
+
+    const metric: MetricResult = {
+      id: 'github.openPRs',
+      status: 'success',
+      metadata: {
+        title: 'GitHub open PRs',
+        description: 'Current count of open Pull Requests',
+        type: 'number',
+        history: true,
+      },
+      result: {
+        value: 0,
+        timestamp: '2026-09-22T04:31:25.653Z',
+        thresholdResult: {
+          definition: {
+            rules: [
+              { key: 'success', expression: '<10' },
+              { key: 'warning', expression: '10-50' },
+              { key: 'error', expression: '>50' },
+            ],
+          },
+          status: 'success',
+          evaluation: 'success',
+        },
+      },
+    };
+
+    const { result } = renderHook(() =>
+      useMetricDataSources({
+        metricId: 'github.openPRs',
+        lastSyncedTimestamp: '2026-09-22T04:31:25.653Z',
+        metric,
+      }),
+    );
+
+    act(() => {
+      result.current.menuActions[0].onClick();
+    });
+
+    expect(result.current.isOpen).toBe(true);
+    expect(result.current.dialogProps.rows).toHaveLength(1);
+    const row = result.current.dialogProps.rows[0];
+    expect(row?.metricId).toBe('github.openPRs');
+    expect(row?.value).toBe('0');
+    expect(row?.evaluationKey).toBe('success');
+    expect(row?.thresholdExpression).toBe('<10');
   });
 });

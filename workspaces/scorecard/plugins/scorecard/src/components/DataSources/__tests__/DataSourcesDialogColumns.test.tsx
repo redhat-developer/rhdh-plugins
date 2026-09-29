@@ -73,7 +73,7 @@ jest.mock('../StatusIcon', () => ({
   ),
 }));
 
-jest.mock('../thresholdBucketUtils', () => ({
+jest.mock('../../MetricGroupCard/thresholdBucketUtils', () => ({
   MISSING_EVALUATION_LABEL: '—',
 }));
 

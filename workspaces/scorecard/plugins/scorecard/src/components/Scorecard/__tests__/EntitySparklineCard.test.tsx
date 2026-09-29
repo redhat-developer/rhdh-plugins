@@ -36,8 +36,8 @@ jest.mock('../../../hooks/useLanguage', () => ({
   useLanguage: () => 'en',
 }));
 
-jest.mock('../../MetricGroupCard/MetricGroupCardMenu', () => ({
-  MetricGroupCardMenu: ({
+jest.mock('../../DataSources/CardActionsMenu', () => ({
+  CardActionsMenu: ({
     actions,
   }: {
     actions: Array<{ id: string; label: string; onClick: () => void }>;
@@ -56,7 +56,7 @@ jest.mock('../../MetricGroupCard/MetricGroupCardMenu', () => ({
   ),
 }));
 
-jest.mock('../../MetricGroupCard/DataSourcesDialog', () => ({
+jest.mock('../../DataSources/DataSourcesDialog', () => ({
   DataSourcesDialog: ({
     title,
     rows,
@@ -490,11 +490,11 @@ describe('EntitySparklineCard', () => {
     expect(screen.getByTestId('dialog-collectors')).toHaveTextContent(
       'GitHub,Jira',
     );
-    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('false');
+    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('true');
     expect(useMetricCollectorsMock).toHaveBeenCalledWith(metric.id, true);
   });
 
-  it('should not fetch collectors when the metric has no collector ids', () => {
+  it('should not fetch collectors when the metric has no collector ids but still show metric data', () => {
     useMetricTimeSeriesMock.mockReturnValue(
       mockTimeSeries('dora.changeFailureRate'),
     );
@@ -518,6 +518,9 @@ describe('EntitySparklineCard', () => {
     fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
 
     expect(useMetricCollectorsMock).toHaveBeenCalledWith(metric.id, false);
-    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent('');
+    expect(screen.getByTestId('dialog-metric-id')).toHaveTextContent(
+      'dora.changeFailureRate',
+    );
+    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent('Dora');
   });
 });
