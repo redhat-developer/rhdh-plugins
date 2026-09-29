@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import React from 'react';
 import {
   Sidebar,
   SidebarDivider,
@@ -47,7 +48,6 @@ export const SidebarContent = NavContentBlueprint.make({
           </SidebarGroup>
           <SidebarDivider />
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
-            {nav.take('page:home')}
             {nav.take('page:homepage')}
             {nav.take('page:catalog')}
             {nav.take('page:scaffolder')}
