@@ -14,6 +14,5 @@
  */
 
 import { appLayoutModule } from './layout';
-import { navModule } from './nav';
 
-export { appLayoutModule, navModule };
+export { appLayoutModule };
