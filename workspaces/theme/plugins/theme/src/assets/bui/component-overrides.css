@@ -619,6 +619,26 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
       #f2f2f2
     );
   }
+  /*
+   * Hover/focus parity: BUI only reveals the sort chevron on .bui-TableHead:hover
+   * (or when already sorted). Show it on keyboard focus too so mouse and keyboard
+   * users get the same sortable affordance.
+   *
+   * Keyboard note (React Aria / BUI table): Tab enters or leaves the table as a
+   * single stop. To move between sortable headers while one is focused, use the
+   * arrow keys — not Tab.
+   */
+  .bui-TableHead:focus-visible .bui-TableHeadSortButton,
+  .bui-TableHead[data-focused] .bui-TableHeadSortButton,
+  .bui-TableHead[data-focus-visible] .bui-TableHeadSortButton {
+    opacity: 1;
+  }
+  .bui-TableHead:focus-visible,
+  .bui-TableHead[data-focused],
+  .bui-TableHead[data-focus-visible] {
+    outline: 2px solid var(--bui-ring, var(--bui-bg-solid));
+    outline-offset: -2px;
+  }
   .bui-TableHead[data-sort-direction='ascending'] .bui-TableHeadSortButton,
   .bui-TableHead[data-sort-direction='descending'] .bui-TableHeadSortButton {
     color: var(--pf-t--global--color--brand--clicked, #004d99);
