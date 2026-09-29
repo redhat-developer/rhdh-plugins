@@ -230,8 +230,8 @@ export const scorecardMessages = {
     },
   },
 
-  // Metric group card menu
-  metricGroupCard: {
+  // Card overflow menu
+  card: {
     menuAriaLabel: 'More options',
     viewDataSources: 'View data sources',
   },

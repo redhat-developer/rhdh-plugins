@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
+import { useMemo } from 'react';
 import { useTheme } from '@mui/material/styles';
 import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import { CardWrapper } from '../../Common/CardWrapper';
-import { formatWithMetricUnit, resolveStatusColor } from '../../../utils';
+import {
+  formatWithMetricUnit,
+  getThresholdRuleColor,
+  resolveStatusColor,
+} from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { scorecardTranslationRef } from '../../../translations';
-import { CardInfoButton } from '../components/CardInfoButton';
+import { MetricDataSources } from '../../DataSources/MetricDataSources';
+import { toDialogMetricResult } from '../../DataSources/toDialogMetricResult';
 import { CardSubheader } from '../components/CardSubheader';
 import { CardChartContainer } from '../components/CardChartContainer';
 import { formatAggregationScoreDetail } from '../WeightedStatusScoreCard/TooltipContent';
@@ -42,7 +48,10 @@ function getAggregationTypeLabel(
     return translated;
   }
 
-  return aggregationType.charAt(0).toUpperCase() + aggregationType.slice(1);
+  return (
+    aggregationType.charAt(0).toLocaleUpperCase('en-US') +
+    aggregationType.slice(1)
+  );
 }
 
 export const ScalarStatCard = ({
@@ -77,8 +86,38 @@ export const ScalarStatCard = ({
     />
   ) : null;
 
+  const thresholdRules = result.thresholds?.rules ?? [];
+  const evaluation = result.aggregationChartDisplayColor
+    ? thresholdRules.find(
+        rule =>
+          getThresholdRuleColor(thresholdRules, rule.key) ===
+          result.aggregationChartDisplayColor,
+      )?.key ?? null
+    : null;
+
+  const metricSnapshot = useMemo(
+    () =>
+      toDialogMetricResult({
+        id: scorecardId,
+        title: cardTitle,
+        description,
+        type: metadata.type,
+        unit: metadata.unit,
+        value: result.value,
+        timestamp: result.timestamp,
+        evaluation,
+        thresholds: result.thresholds,
+      }),
+    [scorecardId, cardTitle, description, metadata, result, evaluation],
+  );
+
   const info = showInfo ? (
-    <CardInfoButton timestamp={result.timestamp} />
+    <MetricDataSources
+      title={cardTitle}
+      metricId={scorecardId}
+      lastSyncedTimestamp={result.timestamp}
+      metric={metricSnapshot}
+    />
   ) : null;
 
   return (

@@ -41,8 +41,8 @@ jest.mock('../../../hooks/useMetricCollectors', () => ({
   useMetricCollectors: jest.fn(),
 }));
 
-jest.mock('../../MetricGroupCard/MetricGroupCardMenu', () => ({
-  MetricGroupCardMenu: ({
+jest.mock('../../DataSources/CardActionsMenu', () => ({
+  CardActionsMenu: ({
     actions,
   }: {
     actions: Array<{ id: string; label: string; onClick: () => void }>;
@@ -61,7 +61,7 @@ jest.mock('../../MetricGroupCard/MetricGroupCardMenu', () => ({
   ),
 }));
 
-jest.mock('../../MetricGroupCard/DataSourcesDialog', () => ({
+jest.mock('../../DataSources/DataSourcesDialog', () => ({
   DataSourcesDialog: ({
     title,
     rows,
@@ -285,9 +285,49 @@ describe('AggregatedSparklineCard', () => {
     expect(screen.getByTestId('dialog-collectors')).toHaveTextContent(
       'GitHub,Jira',
     );
-    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('false');
+    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('true');
     expect(useMetricCollectorsMock).toHaveBeenCalledWith(
       'dora.deploymentFrequency',
+      true,
+    );
+  });
+
+  it('falls back to the metric snapshot when collectors are empty', () => {
+    useMetricCollectorsMock.mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: undefined,
+    });
+
+    const openPrsSeries: AggregatedMetricTimeSeriesResponse = {
+      ...series,
+      id: 'openPrsKpi',
+      metricId: 'github.openPRs',
+      metadata: {
+        ...series.metadata,
+        title: 'GitHub Open PRs KPI',
+        description: 'Current count of open Pull Requests',
+        unit: undefined,
+      },
+    };
+
+    renderCard({
+      series: openPrsSeries,
+      aggregationId: 'openPrsKpi',
+      cardTitle: 'GitHub Open PRs KPI',
+      description: 'Current count of open Pull Requests',
+    });
+
+    fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
+
+    expect(screen.getByTestId('data-sources-dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('dialog-metric-id')).toHaveTextContent(
+      'github.openPRs',
+    );
+    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent('Github');
+    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('true');
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'github.openPRs',
       true,
     );
   });

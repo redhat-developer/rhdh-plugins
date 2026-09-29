@@ -20,6 +20,7 @@ import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import { scorecardTranslationRef } from '../../translations';
 import {
   extractPluginName,
+  formatWithMetricUnit,
   getLastUpdatedLabel,
   getStatusConfig,
   resolveMetricTranslation,
@@ -31,7 +32,7 @@ import {
   getMetricBucketLabel,
   hasMetricEvaluation,
   MISSING_EVALUATION_LABEL,
-} from './thresholdBucketUtils';
+} from '../MetricGroupCard/thresholdBucketUtils';
 
 type ScorecardTranslate = TranslationFunction<typeof scorecardTranslationRef.T>;
 
@@ -72,7 +73,10 @@ export const toMetricSourceRows = (
         'description',
         metric.metadata.description,
       ),
-      value: formatMetricValue(metric.result),
+      value: formatWithMetricUnit(
+        formatMetricValue(metric.result),
+        metric.metadata.unit,
+      ),
       evaluationKey,
       statusLabel: getMetricBucketLabel(evaluationKey, options.t),
       statusIcon: evaluated ? statusConfig.icon ?? '' : '',
