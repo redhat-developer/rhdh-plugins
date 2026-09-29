@@ -5,6 +5,7 @@
 ```ts
 import { AppDrawerContent } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
+import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendFeatureLoader } from '@backstage/frontend-plugin-api';
@@ -18,6 +19,7 @@ import { ReactNode } from 'react';
 import { SidebarElementData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SidebarItemGroupData } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { SwappableComponentRef } from '@backstage/frontend-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -183,6 +185,54 @@ export default _default;
 
 // @public
 export const learningPathsModule: FrontendModule;
+
+// @public
+export const localizedPageLayoutExtension: OverridableExtensionDefinition<{
+  kind: 'component';
+  name: 'core-page-layout';
+  config: {};
+  configInput: {};
+  output: ExtensionDataRef<
+    {
+      ref: SwappableComponentRef;
+      loader:
+        | (() => (props: {}) => JSX.Element | null)
+        | (() => Promise<(props: {}) => JSX.Element | null>);
+    },
+    'core.swappableComponent',
+    {}
+  >;
+  inputs: {};
+  params: <Ref extends SwappableComponentRef<any>>(params: {
+    component: Ref extends SwappableComponentRef<
+      any,
+      infer IExternalComponentProps
+    >
+      ? {
+          ref: Ref;
+        } & ((props: IExternalComponentProps) => JSX.Element | null)
+      : never;
+    loader: Ref extends SwappableComponentRef<infer IInnerComponentProps, any>
+      ?
+          | (() => (props: IInnerComponentProps) => JSX.Element | null)
+          | (() => Promise<(props: IInnerComponentProps) => JSX.Element | null>)
+      : never;
+  }) => ExtensionBlueprintParams<{
+    component: Ref extends SwappableComponentRef<
+      any,
+      infer IExternalComponentProps
+    >
+      ? {
+          ref: Ref;
+        } & ((props: IExternalComponentProps) => JSX.Element | null)
+      : never;
+    loader: Ref extends SwappableComponentRef<infer IInnerComponentProps, any>
+      ?
+          | (() => (props: IInnerComponentProps) => JSX.Element | null)
+          | (() => Promise<(props: IInnerComponentProps) => JSX.Element | null>)
+      : never;
+  }>;
+}>;
 
 // @public
 export type LogoURLs =

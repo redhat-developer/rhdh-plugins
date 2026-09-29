@@ -49,6 +49,8 @@ export { appDrawerExtension, appDrawerModule } from './drawer/appDrawerModule';
 
 export { learningPathsModule } from './learning-paths';
 
+export { localizedPageLayoutExtension } from './pageLayout/pageLayoutExtension';
+
 export { catalogModule } from './catalog/catalogModule';
 
 export {
