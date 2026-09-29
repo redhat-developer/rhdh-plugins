@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-ai-catalog
 
+## 1.0.1
+
+### Patch Changes
+
+- 582d89d: Align `@remixicon/react` to `>=4.6.0 <4.9.0` to avoid the license change introduced in 4.9.0 (see Backstage 1.51 release notes).
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-common@1.0.1
+
 ## 1.0.0
 
 ### Patch Changes
