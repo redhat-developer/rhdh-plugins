@@ -169,11 +169,11 @@ export function isPluginDisabled(
   if (hasDisabled) {
     if (hasEnabled) {
       warn?.(
-        `WARNING: Plugin ${plugin.package} uses deprecated 'disabled: ${plugin.disabled}' alongside 'enabled: ${plugin.enabled}'. Remove 'disabled'; 'enabled' takes precedence.`,
+        `WARNING: Plugin ${plugin.package} uses BOTH deprecated 'disabled: ${plugin.disabled}' and new 'enabled: ${plugin.enabled}'. Remove deprecated 'disabled' in favour of preferred 'enabled' syntax.`,
       );
     } else {
       warn?.(
-        `WARNING: Plugin ${plugin.package} uses deprecated 'disabled: ${plugin.disabled}'. Replace it with 'enabled: ${!plugin.disabled}'.`,
+        `WARNING: Plugin ${plugin.package} uses deprecated 'disabled: ${plugin.disabled}' syntax. Replace it with 'enabled: ${!plugin.disabled}'.`,
       );
     }
   }
