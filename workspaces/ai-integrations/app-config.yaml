@@ -185,11 +185,10 @@ catalog:
         #   # Optional: defer the first sync
         #   # initialDelay: { seconds: 15 }
 skillImageConnector:
-   allowedRegistries:
-     - quay.io
-   images:
-     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
-
+  allowedRegistries:
+    - quay.io
+  images:
+    - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
 # Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 #kubernetes:
