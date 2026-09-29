@@ -333,6 +333,18 @@ export function resolveInheritPlugins(
   }
 }
 
+function warnAboutDeprecatedDisabledKeys(
+  includeLists: IncludePluginList[],
+  mainPlugins: PluginSpec[],
+): void {
+  // Warn once per declared entry, including disabled OCI entries removed by
+  // the pre-merge filter and included entries overridden by the main config.
+  for (const [, plugins] of includeLists) {
+    for (const plugin of plugins) isPluginDisabled(plugin, log);
+  }
+  for (const plugin of mainPlugins) isPluginDisabled(plugin, log);
+}
+
 /** Resolve include paths, substitute the catalog-index placeholder, merge
  * everything into a single `PluginMap`, and compute change-detection hashes.
  *
@@ -379,6 +391,8 @@ async function loadAllPlugins(
     includeLists.push([inc, plugins]);
   }
   const mainPlugins = content.plugins ?? [];
+
+  warnAboutDeprecatedDisabledKeys(includeLists, mainPlugins);
 
   resolveRefPlugins(mainPlugins, includeLists);
   // Collision validation must use the packages the user declared. Resolving
@@ -486,7 +500,7 @@ function categorize(allPlugins: PluginMap): Categorized {
   const npm: Plugin[] = [];
   const skipped: Plugin[] = [];
   for (const plugin of Object.values(allPlugins)) {
-    if (isPluginDisabled(plugin, log)) {
+    if (isPluginDisabled(plugin)) {
       log(`\n======= Skipping disabled plugin ${plugin.package}`);
       continue;
     }
