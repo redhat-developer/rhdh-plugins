@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.10.0
+
+### Minor Changes
+
+- f0fca0b: Localize the page header title, tabs and breadcrumbs rendered by `PageBlueprint` / `SubPageBlueprint` (e.g. Settings, Scaffolder, DevTools). The app-defaults module now replaces the `core-page-layout` swappable component with a localized page layout, and the app-react translations gain a `pageTabs` namespace covering known Backstage sub-page tab titles.
+
 ## 1.9.1
 
 ## 1.9.0
