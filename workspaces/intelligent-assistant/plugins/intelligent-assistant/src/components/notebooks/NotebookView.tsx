@@ -137,12 +137,23 @@ const MainContent = styled('div')({
   minWidth: 0,
 });
 
+// Match Chat new-chat welcome: grow with content and let StyledChatbotContent scroll.
+// A flex:1 + height:100% MessageBox fills the parent so outer overflowY never engages,
+// and justifyContent:flex-end on that inner scroller clips overflow without a usable
+// scrollbar (RHDHBUGS-3751 / notebook details welcome in overlay & docked).
 const WelcomeMessageBox = styled(MessageBox)({
-  flex: 1,
-  minHeight: 0,
+  flex: 'none',
+  height: 'auto !important',
+  overflow: 'visible',
   maxWidth: 'unset !important',
   width: '100%',
   justifyContent: 'flex-end',
+});
+
+/** Pushes welcome content to the bottom when the panel is taller than the content. */
+const WelcomeContentSpacer = styled('div')({
+  flex: 1,
+  minHeight: 0,
 });
 
 const NotebookContentArea = styled('div')(({ theme }) => ({
@@ -698,6 +709,7 @@ export const NotebookView = ({
     }
     return (
       <StyledChatbotContent isPrimary>
+        <WelcomeContentSpacer aria-hidden />
         <WelcomeMessageBox>
           {renderNotebookDisclaimerAlert()}
           <NotebookContentArea>

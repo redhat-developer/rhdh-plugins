@@ -36,7 +36,7 @@ import {
 import {
   AddCircleOIcon,
   EllipsisVIcon,
-  PenIcon,
+  PencilAltIcon,
   TrashIcon,
 } from '@patternfly/react-icons';
 
@@ -517,7 +517,7 @@ export const DocumentSidebar = ({
                         <DropdownList>
                           <DropdownItem
                             key="rename"
-                            icon={<PenIcon />}
+                            icon={<PencilAltIcon />}
                             onClick={event => {
                               event.stopPropagation();
                               startEditing(doc.document_id, doc.title);
