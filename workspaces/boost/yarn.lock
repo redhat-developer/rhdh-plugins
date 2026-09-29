@@ -7213,7 +7213,7 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.21"
     "@backstage/ui": "npm:^0.17.1"
     "@red-hat-developer-hub/backstage-plugin-ai-catalog-common": "workspace:^"
-    "@remixicon/react": "npm:<4.10.0"
+    "@remixicon/react": "npm:>=4.6.0 <4.9.0"
     "@testing-library/dom": "npm:^10.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^16.0.0"
@@ -7338,21 +7338,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remixicon/react@npm:<4.10.0, @remixicon/react@npm:^4.6.0":
-  version: 4.9.0
-  resolution: "@remixicon/react@npm:4.9.0"
-  peerDependencies:
-    react: ">=18.2.0"
-  checksum: 10c0/91bbadb677f45cf8b6687fdf9d273511fddb4e862f1da6c11bc7932acb578bcb26ae5b9e1eb62143a4e916b71797739a36d689866d5b0949f0f0f22c1684cb96
-  languageName: node
-  linkType: hard
-
 "@remixicon/react@npm:>=4.6.0 <4.9.0":
   version: 4.8.0
   resolution: "@remixicon/react@npm:4.8.0"
   peerDependencies:
     react: ">=18.2.0"
   checksum: 10c0/edf4bb4f600e13ee24dac2cecb389b4bfe83764a5168b553b726b41d6b76bc8c24212f2e4f7d89abae395ba8479082646a122a2a066cd5c743e4e372e0a3c345
+  languageName: node
+  linkType: hard
+
+"@remixicon/react@npm:^4.6.0":
+  version: 4.9.0
+  resolution: "@remixicon/react@npm:4.9.0"
+  peerDependencies:
+    react: ">=18.2.0"
+  checksum: 10c0/91bbadb677f45cf8b6687fdf9d273511fddb4e862f1da6c11bc7932acb578bcb26ae5b9e1eb62143a4e916b71797739a36d689866d5b0949f0f0f22c1684cb96
   languageName: node
   linkType: hard
 
