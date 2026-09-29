@@ -35,6 +35,11 @@
       "allowedVersions": "<3.0.0"
     },
     {
+      "description": "Limit @remixicon/react to versions below 4.9.0 due to a license change in that release",
+      "matchPackageNames": ["@remixicon/react"],
+      "allowedVersions": "<4.9.0"
+    },
+    {
       "matchPackageNames": ["typescript"],
       "allowedVersions": "~5.3.0"
     },
