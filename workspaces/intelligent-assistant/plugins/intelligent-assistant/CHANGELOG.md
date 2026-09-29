@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.4
+
+### Patch Changes
+
+- 588f80f: Update README to use new `enabled` field when configuring plugins, as `disabled` is now deprecated
+- fb4ecee: Updated dependency `prettier` to `3.9.9`.
+- 262900c: Updated dependency `@patternfly/chatbot` to `6.9.0-prerelease.5`.
+- b47cbf3: Align Intelligent Assistant Chat/Notebooks shell with PatternFly defaults and fix sticky history close hover.
+- Updated dependencies [fb4ecee]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.4
+
 ## 5.3.3
 
 ### Patch Changes
