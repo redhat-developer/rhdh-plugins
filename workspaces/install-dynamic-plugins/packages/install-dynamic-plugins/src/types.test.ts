@@ -99,9 +99,9 @@ describe('isPluginDisabled', () => {
     expect(result).toBe(false);
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain("deprecated 'disabled: true'");
-    expect(warnings[0]).toContain("alongside 'enabled: true'");
+    expect(warnings[0]).toContain("new 'enabled: true'");
     expect(warnings[0]).toContain(
-      "Remove 'disabled'; 'enabled' takes precedence",
+      "Remove deprecated 'disabled' in favour of preferred 'enabled' syntax.",
     );
     expect(warnings[0]).not.toContain('Replace it with');
   });
@@ -115,9 +115,9 @@ describe('isPluginDisabled', () => {
     expect(result).toBe(true);
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain("deprecated 'disabled: false'");
-    expect(warnings[0]).toContain("alongside 'enabled: false'");
+    expect(warnings[0]).toContain("new 'enabled: false'");
     expect(warnings[0]).toContain(
-      "Remove 'disabled'; 'enabled' takes precedence",
+      "Remove deprecated 'disabled' in favour of preferred 'enabled' syntax.",
     );
     expect(warnings[0]).not.toContain('Replace it with');
   });
