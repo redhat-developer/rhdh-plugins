@@ -23,6 +23,7 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
+  OutlinedInput,
   Select,
   Tooltip,
   Typography,
@@ -252,6 +253,7 @@ export function AgentsTabContent() {
     [classes, t],
   );
 
+  const healthFilterLabel = t('agents.filter.healthLabel');
   const healthFilterControl = (
     <FormControl
       variant="outlined"
@@ -259,7 +261,7 @@ export function AgentsTabContent() {
       className={classes.healthFilter}
     >
       <InputLabel shrink id="health-filter-label">
-        {t('agents.filter.healthLabel')}
+        {healthFilterLabel}
       </InputLabel>
       <Select
         labelId="health-filter-label"
@@ -268,8 +270,24 @@ export function AgentsTabContent() {
           setHealthFilter(e.target.value as AgentHealthStatus | '')
         }
         displayEmpty
-        label={t('agents.filter.healthLabel')}
-        inputProps={{ 'data-testid': 'health-filter' }}
+        label={healthFilterLabel}
+        input={
+          <OutlinedInput
+            notched
+            label={healthFilterLabel}
+            inputProps={{ 'data-testid': 'health-filter' }}
+          />
+        }
+        renderValue={(value: unknown) => {
+          const selected = value as AgentHealthStatus | '';
+          if (!selected) {
+            return t('agents.filter.healthAll');
+          }
+          return (
+            healthFilterOptions.find(opt => opt.value === selected)?.label ??
+            selected
+          );
+        }}
       >
         <MenuItem value="">{t('agents.filter.healthAll')}</MenuItem>
         {healthFilterOptions.map(opt => (
