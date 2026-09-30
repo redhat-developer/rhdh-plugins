@@ -10029,6 +10029,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-skills-common@workspace:plugins/skills-common":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-skills-common@workspace:plugins/skills-common"
+  dependencies:
+    "@backstage/cli": "npm:^0.36.5"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-theme@npm:^0.15.0":
   version: 0.15.0
   resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.15.0"
