@@ -15,10 +15,8 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import {
-  discoverQuayRepositories,
-  type QuayDiscoveryConfig,
-} from './QuayDiscovery';
+import { discoverQuayRepositories } from './QuayDiscovery';
+import type { QuayDiscoveryConfig } from './types';
 
 const mockLogger: LoggerService = {
   info: jest.fn(),
@@ -231,6 +229,7 @@ describe('discoverQuayRepositories', () => {
           { namespace: 'test-org', name: 'valid-repo' },
           { namespace: '', name: 'no-ns' },
           { namespace: 'test-org', name: '' },
+          { name: 'no-ns-field' },
         ],
       }),
     });
@@ -238,5 +237,63 @@ describe('discoverQuayRepositories', () => {
     const result = await discoverQuayRepositories(baseConfig, mockLogger);
 
     expect(result).toEqual(['quay.io/test-org/valid-repo:latest']);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('missing name or namespace'),
+    );
   });
+
+  it('skips repositories with invalid name format', async () => {
+    global.fetch = jest.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        repositories: [
+          { namespace: 'test-org', name: 'valid-repo' },
+          { namespace: 'test-org', name: '../traversal' },
+        ],
+      }),
+    });
+
+    const result = await discoverQuayRepositories(baseConfig, mockLogger);
+
+    expect(result).toEqual(['quay.io/test-org/valid-repo:latest']);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining("invalid name '../traversal'"),
+    );
+  });
+
+  it('retries on transient fetch failure and succeeds', async () => {
+    const transientError = new Error('ECONNRESET');
+    const fetchMock = jest
+      .fn()
+      .mockRejectedValueOnce(transientError)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          repositories: [{ namespace: 'test-org', name: 'repo-a' }],
+        }),
+      });
+    global.fetch = fetchMock;
+
+    const result = await discoverQuayRepositories(baseConfig, mockLogger);
+
+    expect(result).toEqual(['quay.io/test-org/repo-a:latest']);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Transient failure'),
+      expect.any(Error),
+    );
+  }, 10_000);
+
+  it('throws after exhausting retries on persistent transient failure', async () => {
+    const transientError = new Error('ECONNREFUSED');
+    global.fetch = jest
+      .fn()
+      .mockRejectedValueOnce(transientError)
+      .mockRejectedValueOnce(transientError)
+      .mockRejectedValueOnce(transientError);
+
+    await expect(
+      discoverQuayRepositories(baseConfig, mockLogger),
+    ).rejects.toThrow('ECONNREFUSED');
+  }, 15_000);
 });

@@ -23,7 +23,7 @@ import type { ImageRef, OciManifest, RegistryCredentials } from './types';
 import { MAX_BLOB_SIZE, FETCH_TIMEOUT_MS } from './types';
 
 const MAX_MANIFEST_SIZE = 5 * 1024 * 1024;
-const OCI_REGISTRY_PATTERN =
+export const OCI_REGISTRY_PATTERN =
   /^(?:\[[0-9a-fA-F:]+\]|[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?)(?::\d{1,5})?$/;
 const OCI_REPOSITORY_PATTERN =
   /^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*(?:\/[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*)*$/;

@@ -15,10 +15,8 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import { FETCH_TIMEOUT_MS } from './types';
 import type { QuayDiscoveryConfig } from './types';
-
-export type { QuayDiscoveryConfig } from './types';
+import { FETCH_TIMEOUT_MS } from './types';
 
 /** Maximum number of discovery pages to follow (design D7). */
 const MAX_DISCOVERY_PAGES = 100;
@@ -26,10 +24,22 @@ const MAX_DISCOVERY_PAGES = 100;
 /** Quay's default page size. The Quay API defaults to 100 repos per page. */
 const QUAY_PAGE_SIZE = 100;
 
+/** Maximum number of retry attempts for transient fetch failures. */
+const MAX_RETRIES = 2;
+/** Base delay for exponential backoff in milliseconds. */
+const RETRY_BASE_DELAY_MS = 2_000;
+
+/**
+ * Lightweight format check for repository names returned by the Quay API.
+ * OCI repository name components: [a-z0-9]+([._-][a-z0-9]+)*
+ * Quay names are case-insensitive, so we accept uppercase too.
+ */
+const REPO_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
 /**
  * A single repository as returned by the Quay public repository list API.
  */
-export interface QuayRepository {
+interface QuayRepository {
   namespace: string;
   name: string;
 }
@@ -41,6 +51,84 @@ export interface QuayRepository {
 interface QuayRepositoryListPage {
   repositories: QuayRepository[];
   next_page?: string;
+}
+
+/**
+ * Returns true if the error is likely transient and the operation
+ * should be retried (network errors, 5xx responses, timeouts).
+ */
+function isTransientError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const msg = error.message;
+    if (
+      msg.includes('ECONNREFUSED') ||
+      msg.includes('ECONNRESET') ||
+      msg.includes('ETIMEDOUT') ||
+      msg.includes('ENOTFOUND') ||
+      msg.includes('UND_ERR_CONNECT_TIMEOUT') ||
+      error.name === 'AbortError' ||
+      error.name === 'TimeoutError'
+    ) {
+      return true;
+    }
+    if (/\b5\d{2}\b/.test(msg)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Fetches a single page from the Quay repository list API with retry
+ * and exponential backoff for transient failures.
+ */
+async function fetchPageWithRetry(
+  url: string,
+  requestSignal: AbortSignal,
+  config: QuayDiscoveryConfig,
+  logger: LoggerService,
+): Promise<QuayRepositoryListPage> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(url, {
+        signal: requestSignal,
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Quay repository list request failed for organization ${config.organization}: ` +
+            `${response.status} ${response.statusText}`,
+        );
+      }
+
+      const body = (await response.json()) as QuayRepositoryListPage;
+
+      if (!Array.isArray(body.repositories)) {
+        throw new Error(
+          `Quay repository list response for ${config.organization} did not contain a repositories array`,
+        );
+      }
+
+      return body;
+    } catch (error) {
+      lastError = error;
+      if (attempt < MAX_RETRIES && isTransientError(error)) {
+        const delayMs = RETRY_BASE_DELAY_MS * 2 ** attempt;
+        logger.warn(
+          `Transient failure fetching Quay repository page (attempt ${
+            attempt + 1
+          }/${MAX_RETRIES + 1}), retrying in ${delayMs}ms`,
+          error as Error,
+        );
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw lastError;
 }
 
 /**
@@ -91,33 +179,29 @@ export async function discoverQuayRepositories(
       ? AbortSignal.any([signal, timeoutSignal])
       : timeoutSignal;
 
-    const response = await fetch(url.toString(), {
-      signal: requestSignal,
-      headers: { Accept: 'application/json' },
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Quay repository list request failed for organization ${config.organization}: ` +
-          `${response.status} ${response.statusText}`,
-      );
-    }
-
-    const body = (await response.json()) as QuayRepositoryListPage;
-
-    if (!Array.isArray(body.repositories)) {
-      throw new Error(
-        `Quay repository list response for ${config.organization} did not contain a repositories array`,
-      );
-    }
+    const body = await fetchPageWithRetry(
+      url.toString(),
+      requestSignal,
+      config,
+      logger,
+    );
 
     for (const repo of body.repositories) {
-      if (!repo.name) {
+      if (!repo.name || !repo.namespace) {
+        logger.warn(
+          `Skipping repository with missing name or namespace in ${config.organization} discovery results`,
+        );
         continue;
       }
       if (repo.namespace !== config.organization) {
         logger.warn(
           `Skipping repository ${repo.name}: namespace '${repo.namespace}' does not match organization '${config.organization}'`,
+        );
+        continue;
+      }
+      if (!REPO_NAME_PATTERN.test(repo.name)) {
+        logger.warn(
+          `Skipping repository with invalid name '${repo.name}' in ${config.organization} discovery results`,
         );
         continue;
       }

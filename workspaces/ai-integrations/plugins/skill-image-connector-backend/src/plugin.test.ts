@@ -214,6 +214,22 @@ describe('readQuayDiscoveryConfig', () => {
   });
 });
 
+describe('readQuayDiscoveryConfig — validation', () => {
+  it('throws when registry has invalid format', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: {
+          registry: 'not a valid host!',
+          organization: 'my-org',
+        },
+      },
+    });
+    expect(() => readQuayDiscoveryConfig(config)).toThrow(
+      'must be a valid registry host',
+    );
+  });
+});
+
 describe('mergeDiscoveredRefs', () => {
   const mockLogger = { warn: jest.fn() };
 

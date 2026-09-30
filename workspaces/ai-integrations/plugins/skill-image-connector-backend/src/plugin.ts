@@ -22,13 +22,13 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
 import { createRouter } from './router';
-import { parseImageRef } from './services/OciClient';
+import { OCI_REGISTRY_PATTERN, parseImageRef } from './services/OciClient';
+import { discoverQuayRepositories } from './services/QuayDiscovery';
 import {
   cleanupSkillImageExtraction,
   cleanupStaleExtractionDirs,
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
-import { discoverQuayRepositories } from './services/QuayDiscovery';
 import type {
   QuayDiscoveryConfig,
   RegistryCredentials,
@@ -222,6 +222,11 @@ export function readQuayDiscoveryConfig(
 
   const registry =
     safeGetOptionalString(discoveryConfig, 'registry')?.trim() || 'quay.io';
+  if (!OCI_REGISTRY_PATTERN.test(registry)) {
+    throw new InputError(
+      `Invalid quayDiscovery.registry value '${registry}': must be a valid registry host`,
+    );
+  }
   const tag = safeGetOptionalString(discoveryConfig, 'tag')?.trim() || 'latest';
 
   return { registry, organization, tag };
