@@ -165,6 +165,9 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.startedAt': 'Iniciado el',
     'modulePage.phases.status': 'Estado',
     'modulePage.phases.errorDetails': 'Detalles del error',
+    'modulePage.phases.copyToClipboard': 'Copiar al portapapeles',
+    'modulePage.phases.copyFailed': 'No se pudo copiar',
+    'modulePage.phases.copyUnavailable': 'Copia no disponible',
     'modulePage.phases.statuses.notStarted': 'No iniciado',
     'modulePage.phases.statuses.pending': 'Pendiente',
     'modulePage.phases.statuses.running': 'En ejecución',
@@ -174,7 +177,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.statuses.stale': 'Obsoleto',
     'modulePage.phases.reanalyzeInstructions':
       'El plan de migración del módulo ya existe. Si el plan de migración general del proyecto se ha actualizado, vuelva a ejecutar el análisis para reflejar los cambios.',
-    'modulePage.phases.rerunAnalyze': 'Recrear el plan de migración del módulo',
+    'modulePage.phases.rerunAnalyze': 'Volver a ejecutar el análisis',
     'modulePage.phases.analyzeInstructions':
       'Antes de ejecutar el análisis, revise primero el plan de migración general del proyecto; su contenido guiará el análisis del módulo.',
     'modulePage.phases.runAnalyze': 'Crear plan de migración del módulo',

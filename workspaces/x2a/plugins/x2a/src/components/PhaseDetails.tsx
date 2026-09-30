@@ -18,6 +18,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { LogViewer, Progress } from '@backstage/core-components';
 import {
+  Box,
   ButtonGroup,
   Button,
   Grid,
@@ -35,7 +36,14 @@ import {
 import { useTranslation } from '../hooks/useTranslation';
 import { useLogStream } from '../hooks/useLogStream';
 import { useClientService } from '../ClientService';
-import { ItemField } from './ItemField';
+import AccessTimeIcon from '@material-ui/icons/AccessTime';
+import CodeIcon from '@material-ui/icons/Code';
+import CloudQueueIcon from '@material-ui/icons/CloudQueue';
+import FingerprintIcon from '@material-ui/icons/Fingerprint';
+import RepeatIcon from '@material-ui/icons/Repeat';
+import TimerIcon from '@material-ui/icons/Timer';
+import { PhaseField } from './PhaseField';
+import { TruncatedId } from './TruncatedId';
 import {
   canCancelPhase,
   downloadLogFile,
@@ -126,24 +134,33 @@ const PhaseRunAction = ({
     return '';
   };
 
+  const instructions = getInstructions();
+  const actionText = getActionText();
+
   return (
-    <>
+    <Box border={1} borderColor="divider" borderRadius={4} p={2}>
+      {instructions && (
+        <Typography variant="body2" gutterBottom>
+          {instructions}
+        </Typography>
+      )}
       <ButtonGroup
         orientation="horizontal"
         size="small"
         className={classes.buttonGroup}
       >
-        <Button
-          variant="outlined"
-          color="primary"
-          disabled={isDisabled}
-          onClick={() => {
-            onRunPhase(phaseName);
-          }}
-        >
-          {getActionText()}
-        </Button>
-
+        {actionText && (
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={isDisabled}
+            onClick={() => {
+              onRunPhase(phaseName);
+            }}
+          >
+            {actionText}
+          </Button>
+        )}
         {canCancelPhase(phase?.status) && onCancelPhase && (
           <Button
             variant="outlined"
@@ -155,9 +172,7 @@ const PhaseRunAction = ({
           </Button>
         )}
       </ButtonGroup>
-
-      <Typography>{getInstructions()}</Typography>
-    </>
+    </Box>
   );
 };
 
@@ -255,61 +270,68 @@ export const PhaseDetails = (
         )}
       </Grid>
 
-      <Grid item xs={2}>
-        <ItemField
-          label={t('modulePage.phases.status')}
-          value={<PhaseStatus status={phase?.status} />}
-        />
-      </Grid>
-      <Grid item xs={10}>
-        <ItemField
-          label={t('modulePage.phases.errorDetails')}
-          value={phase?.errorDetails || empty}
-        />
-      </Grid>
-
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.startedAt')}
-          value={phase?.startedAt ? humanizeDate(phase.startedAt) : empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField label={t('modulePage.phases.duration')} value={duration} />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.attempts')}
-          value={String(attemptCount ?? empty)}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.totalElapsed')}
-          value={totalDuration || empty}
-        />
-      </Grid>
-
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.k8sJobName')}
-          value={phase?.k8sJobName || empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.id')}
-          value={phase?.id || empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.commitId')}
-          value={phase?.commitId || empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        {/* space holder */}
+      <Grid item xs={12}>
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          justifyContent="space-between"
+          style={{ gap: '16px 0' }}
+        >
+          <PhaseField label={t('modulePage.phases.status')}>
+            <PhaseStatus status={phase?.status} />
+          </PhaseField>
+          <PhaseField
+            label={t('modulePage.phases.startedAt')}
+            icon={AccessTimeIcon}
+          >
+            {phase?.startedAt ? humanizeDate(phase.startedAt) : empty}
+          </PhaseField>
+          <PhaseField label={t('modulePage.phases.duration')} icon={TimerIcon}>
+            {duration}
+          </PhaseField>
+          <PhaseField label={t('modulePage.phases.attempts')} icon={RepeatIcon}>
+            {String(attemptCount ?? empty)}
+          </PhaseField>
+          {totalDuration && (
+            <PhaseField
+              label={t('modulePage.phases.totalElapsed')}
+              icon={TimerIcon}
+            >
+              {totalDuration}
+            </PhaseField>
+          )}
+          {phase?.k8sJobName && (
+            <PhaseField
+              label={t('modulePage.phases.k8sJobName')}
+              icon={CloudQueueIcon}
+            >
+              <TruncatedId value={phase.k8sJobName} />
+            </PhaseField>
+          )}
+          {phase?.id && (
+            <PhaseField
+              label={t('modulePage.phases.id')}
+              icon={FingerprintIcon}
+            >
+              <TruncatedId value={phase.id} />
+            </PhaseField>
+          )}
+          {phase?.commitId && (
+            <PhaseField label={t('modulePage.phases.commitId')} icon={CodeIcon}>
+              <TruncatedId value={phase.commitId} />
+            </PhaseField>
+          )}
+        </Box>
+        {phase?.errorDetails && (
+          <Box mt={1}>
+            <Typography variant="caption" color="textSecondary">
+              {t('modulePage.phases.errorDetails')}
+            </Typography>
+            <Typography variant="body2" color="error">
+              {phase.errorDetails}
+            </Typography>
+          </Box>
+        )}
       </Grid>
 
       {phase && (

@@ -25,7 +25,6 @@ import {
   Button,
   ButtonGroup,
   Divider,
-  Grid,
   Tooltip,
   Typography,
   makeStyles,
@@ -44,8 +43,15 @@ import {
 import { useTranslation } from '../../hooks/useTranslation';
 import { useLogStream } from '../../hooks/useLogStream';
 import { useClientService } from '../../ClientService';
+import AccessTimeIcon from '@material-ui/icons/AccessTime';
+import CloudQueueIcon from '@material-ui/icons/CloudQueue';
+import CodeIcon from '@material-ui/icons/Code';
+import FingerprintIcon from '@material-ui/icons/Fingerprint';
+import RepeatIcon from '@material-ui/icons/Repeat';
+import TimerIcon from '@material-ui/icons/Timer';
 import { ArtifactLink } from '../ArtifactLink';
-import { ItemField } from '../ItemField';
+import { PhaseField } from '../PhaseField';
+import { TruncatedId } from '../TruncatedId';
 import { PhaseStatus } from '../PhaseStatus';
 import { TelemetrySection } from '../PhaseTelemetry';
 import {
@@ -380,117 +386,116 @@ export const AdversarialReviewSection = ({
           )}
 
           {job && (
-            <Grid container spacing={3}>
-              <Grid item xs={2}>
-                <ItemField
-                  label={t('modulePage.phases.status')}
-                  value={
-                    isSuccess ? (
-                      t('modulePage.phases.adversarialCompleted')
-                    ) : (
-                      <PhaseStatus status={job.status} />
-                    )
-                  }
-                />
-              </Grid>
-              <Grid item xs={10}>
-                <ItemField
-                  label={t('modulePage.phases.errorDetails')}
-                  value={job.errorDetails || empty}
-                />
-              </Grid>
+            <Box>
+              <Box
+                display="flex"
+                flexWrap="wrap"
+                justifyContent="space-between"
+                style={{ gap: '16px 0' }}
+              >
+                <PhaseField label={t('modulePage.phases.status')}>
+                  {isSuccess ? (
+                    t('modulePage.phases.adversarialCompleted')
+                  ) : (
+                    <PhaseStatus status={job.status} />
+                  )}
+                </PhaseField>
+                <PhaseField
+                  label={t('modulePage.phases.startedAt')}
+                  icon={AccessTimeIcon}
+                >
+                  {job.startedAt ? humanizeDate(job.startedAt) : empty}
+                </PhaseField>
+                <PhaseField
+                  label={t('modulePage.phases.duration')}
+                  icon={TimerIcon}
+                >
+                  {duration}
+                </PhaseField>
+                <PhaseField
+                  label={t('modulePage.phases.attempts')}
+                  icon={RepeatIcon}
+                >
+                  {String(attemptCount)}
+                </PhaseField>
+                {totalDuration && (
+                  <PhaseField
+                    label={t('modulePage.phases.totalElapsed')}
+                    icon={TimerIcon}
+                  >
+                    {totalDuration}
+                  </PhaseField>
+                )}
+                {job.k8sJobName && (
+                  <PhaseField
+                    label={t('modulePage.phases.k8sJobName')}
+                    icon={CloudQueueIcon}
+                  >
+                    <TruncatedId value={job.k8sJobName} />
+                  </PhaseField>
+                )}
+                {job.id && (
+                  <PhaseField
+                    label={t('modulePage.phases.id')}
+                    icon={FingerprintIcon}
+                  >
+                    <TruncatedId value={job.id} />
+                  </PhaseField>
+                )}
+                {job.commitId && (
+                  <PhaseField
+                    label={t('modulePage.phases.commitId')}
+                    icon={CodeIcon}
+                  >
+                    <TruncatedId value={job.commitId} />
+                  </PhaseField>
+                )}
+              </Box>
 
-              <Grid item xs={3}>
-                <ItemField
-                  label={t('artifact.types.adversarial_report')}
-                  value={
-                    <ArtifactLink
-                      artifact={reportArtifact}
-                      targetRepoUrl={targetRepoUrl}
-                      targetRepoBranch={targetRepoBranch}
-                    />
-                  }
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <ItemField
+              <Box
+                display="flex"
+                flexWrap="wrap"
+                style={{ gap: '16px 48px', marginTop: 16 }}
+              >
+                <PhaseField label={t('artifact.types.adversarial_report')}>
+                  <ArtifactLink
+                    artifact={reportArtifact}
+                    targetRepoUrl={targetRepoUrl}
+                    targetRepoBranch={targetRepoBranch}
+                  />
+                </PhaseField>
+                <PhaseField
                   label={t('modulePage.phases.adversarialCriticalFindings')}
-                  value={findingCountField(
+                >
+                  {findingCountField(
                     criticalCount,
                     ErrorIcon,
                     classes.criticalIcon,
                   )}
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <ItemField
+                </PhaseField>
+                <PhaseField
                   label={t('modulePage.phases.adversarialWarningFindings')}
-                  value={findingCountField(
+                >
+                  {findingCountField(
                     warningCount,
                     WarningIcon,
                     classes.warningIcon,
                   )}
-                />
-              </Grid>
-              <Grid item xs={3}>
-                {reportJson !== undefined && !hasFindings && (
-                  <ItemField
-                    label={t('modulePage.phases.adversarialResult')}
-                    value={
-                      <StatusOK>
-                        {t('modulePage.phases.adversarialNoFindings')}
-                      </StatusOK>
-                    }
-                  />
-                )}
-              </Grid>
+                </PhaseField>
+              </Box>
 
-              <Grid item xs={3}>
-                <ItemField
-                  label={t('modulePage.phases.startedAt')}
-                  value={job.startedAt ? humanizeDate(job.startedAt) : empty}
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <ItemField
-                  label={t('modulePage.phases.duration')}
-                  value={duration}
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <ItemField
-                  label={t('modulePage.phases.attempts')}
-                  value={String(attemptCount)}
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <ItemField
-                  label={t('modulePage.phases.totalElapsed')}
-                  value={totalDuration || empty}
-                />
-              </Grid>
+              {job.errorDetails && (
+                <Box mt={1}>
+                  <Typography variant="caption" color="textSecondary">
+                    {t('modulePage.phases.errorDetails')}
+                  </Typography>
+                  <Typography variant="body2" color="error">
+                    {job.errorDetails}
+                  </Typography>
+                </Box>
+              )}
 
-              <Grid item xs={3}>
-                <ItemField
-                  label={t('modulePage.phases.k8sJobName')}
-                  value={job.k8sJobName || empty}
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <ItemField
-                  label={t('modulePage.phases.id')}
-                  value={job.id || empty}
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <ItemField
-                  label={t('modulePage.phases.commitId')}
-                  value={job.commitId || empty}
-                />
-              </Grid>
-              <Grid item xs={3} />
-
-              <Grid item xs={12}>
+              <Box mt={2}>
                 <ButtonGroup>
                   <Button
                     variant="outlined"
@@ -507,10 +512,10 @@ export const AdversarialReviewSection = ({
                     </Button>
                   )}
                 </ButtonGroup>
-              </Grid>
+              </Box>
 
               {showLog && (
-                <Grid item xs={12}>
+                <Box mt={2}>
                   {logLoading && <Progress />}
                   {logError && (
                     <Typography color="error">{logError.message}</Typography>
@@ -528,11 +533,11 @@ export const AdversarialReviewSection = ({
                       />
                     </div>
                   )}
-                </Grid>
+                </Box>
               )}
 
               <TelemetrySection telemetry={job.telemetry} />
-            </Grid>
+            </Box>
           )}
         </AccordionDetails>
       </Accordion>
