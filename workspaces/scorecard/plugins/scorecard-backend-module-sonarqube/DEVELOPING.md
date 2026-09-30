@@ -21,7 +21,11 @@ curl -sS -H 'Authorization: Bearer mock-user-token' \
   http://localhost:7007/api/scorecard/metrics
 ```
 
-The metrics response lists the SonarQube metrics once the module has registered. Live SonarQube calls need a base URL and token in an uncommitted local config file. Do not commit tokens.
+The metrics response lists the SonarQube metrics once the module has registered. Live SonarQube calls need a base URL and token in an uncommitted `app-config.local.yaml` in this package. Do not commit tokens. `yarn start` already passes `--config app-config.yaml`, so that local file is not loaded unless you append it:
+
+```sh
+yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube start -- --config app-config.local.yaml
+```
 
 ## Tests
 

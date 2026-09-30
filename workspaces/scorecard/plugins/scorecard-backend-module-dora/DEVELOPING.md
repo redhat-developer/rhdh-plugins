@@ -21,7 +21,11 @@ curl -sS -H 'Authorization: Bearer mock-user-token' \
   http://localhost:7007/api/scorecard/metrics
 ```
 
-This harness also loads the GitHub scorecard module so DORA deployment collectors are registered. The Jira module is not loaded. Add it locally if you need incident metrics. DORA init uses the default retention and sync settings and migrates its database on startup. Live GitHub calls still need a token in an uncommitted local config file. Do not commit tokens.
+This harness also loads the GitHub scorecard module so DORA deployment collectors are registered. The Jira module is not loaded. Add it locally if you need incident metrics. DORA init uses the default retention and sync settings and migrates its database on startup. Live GitHub calls still need a token in an uncommitted `app-config.local.yaml` in this package. Do not commit tokens. `yarn start` already passes `--config app-config.yaml`, so that local file is not loaded unless you append it:
+
+```sh
+yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora start -- --config app-config.local.yaml
+```
 
 ## Tests
 
