@@ -28,11 +28,9 @@ import {
   cleanupStaleExtractionDirs,
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
-import {
-  discoverQuayRepositories,
-  type QuayDiscoveryConfig,
-} from './services/QuayDiscovery';
+import { discoverQuayRepositories } from './services/QuayDiscovery';
 import type {
+  QuayDiscoveryConfig,
   RegistryCredentials,
   SkillImageConfig,
   SkillImageExtraction,
@@ -227,6 +225,52 @@ export function readQuayDiscoveryConfig(
   const tag = safeGetOptionalString(discoveryConfig, 'tag')?.trim() || 'latest';
 
   return { registry, organization, tag };
+}
+
+/**
+ * Merges discovered image references into an existing list of explicit
+ * image configs, skipping duplicates and enforcing the configured image cap.
+ * Uses a separate zero-based counter for discovered image IDs.
+ */
+export function mergeDiscoveredRefs(
+  existingConfigs: SkillImageConfig[],
+  discoveredRefs: string[],
+  maxImages: number,
+  logger: Pick<LoggerService, 'warn'>,
+): { merged: SkillImageConfig[]; added: number; skipped: number } {
+  const allImageConfigs: SkillImageConfig[] = [...existingConfigs];
+  const existingRefSet = new Set(existingConfigs.map(c => c.imageRef));
+  let discoveredAdded = 0;
+  let discoveredSkipped = 0;
+
+  for (const ref of discoveredRefs) {
+    if (existingRefSet.has(ref)) {
+      continue;
+    }
+    existingRefSet.add(ref);
+    if (allImageConfigs.length < maxImages) {
+      allImageConfigs.push({
+        id: `discovered-${discoveredAdded}`,
+        imageRef: ref,
+      });
+      discoveredAdded++;
+    } else {
+      discoveredSkipped++;
+    }
+  }
+
+  if (discoveredSkipped > 0) {
+    logger.warn(
+      `${discoveredSkipped} discovered repository(ies) were dropped because the total ` +
+        `image count would exceed the maximum of ${maxImages}`,
+    );
+  }
+
+  return {
+    merged: allImageConfigs,
+    added: discoveredAdded,
+    skipped: discoveredSkipped,
+  };
 }
 
 /**
@@ -451,7 +495,8 @@ export const skillImageConnectorPlugin = createBackendPlugin({
 
         const processing = (async () => {
           // Build the full image list: explicit configs + discovered repos
-          const allImageConfigs: SkillImageConfig[] = [...imageConfigs];
+          let allImageConfigs: SkillImageConfig[] = [...imageConfigs];
+          let discoveryFailed = false;
 
           // Run Quay organization discovery if configured
           if (quayDiscoveryConfig) {
@@ -462,27 +507,28 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                 processingAbortController.signal,
               );
 
-              // Merge discovered refs, skipping duplicates with explicit configs
-              const existingRefs = new Set(imageConfigs.map(c => c.imageRef));
-              for (const ref of discoveredRefs) {
-                if (
-                  !existingRefs.has(ref) &&
-                  allImageConfigs.length < MAX_CONFIGURED_IMAGES
-                ) {
-                  allImageConfigs.push({
-                    id: `discovered-${allImageConfigs.length}`,
-                    imageRef: ref,
-                  });
-                  existingRefs.add(ref);
-                }
-              }
+              // Merge discovered refs, skipping duplicates and enforcing cap
+              const mergeResult = mergeDiscoveredRefs(
+                imageConfigs,
+                discoveredRefs,
+                MAX_CONFIGURED_IMAGES,
+                pluginLogger,
+              );
+              allImageConfigs = mergeResult.merged;
 
               pluginLogger.info(
-                `Quay discovery added ${
-                  allImageConfigs.length - imageConfigs.length
-                } new image(s) to process`,
+                `Quay discovery added ${mergeResult.added} new image(s) to process`,
               );
+
+              // Discovered images always use mutable tags
+              if (mergeResult.added > 0) {
+                pluginLogger.warn(
+                  `${mergeResult.added} discovered image(s) use the mutable tag '${quayDiscoveryConfig.tag}'. ` +
+                    'Use digest references in production to prevent tag mutation attacks.',
+                );
+              }
             } catch (error) {
+              discoveryFailed = true;
               if (!processingAbortController.signal.aborted) {
                 pluginLogger.error(
                   `Quay organization discovery failed for ${quayDiscoveryConfig.organization}`,
@@ -557,8 +603,11 @@ export const skillImageConnectorPlugin = createBackendPlugin({
             ),
           );
           processingStatus =
-            allImageConfigs.length > 0 &&
-            failedImages.size === allImageConfigs.length
+            (allImageConfigs.length > 0 &&
+              failedImages.size === allImageConfigs.length) ||
+            (hasConfiguredSources &&
+              allImageConfigs.length === 0 &&
+              discoveryFailed)
               ? 'failed'
               : 'ready';
         })();

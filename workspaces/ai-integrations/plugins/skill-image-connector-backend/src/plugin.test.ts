@@ -15,7 +15,11 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { readSkillImageConfigs, readQuayDiscoveryConfig } from './plugin';
+import {
+  readSkillImageConfigs,
+  readQuayDiscoveryConfig,
+  mergeDiscoveredRefs,
+} from './plugin';
 
 describe('readSkillImageConfigs', () => {
   it('should return empty array when no config', () => {
@@ -207,5 +211,77 @@ describe('readQuayDiscoveryConfig', () => {
       organization: 'test-org',
       tag: 'v2.0',
     });
+  });
+});
+
+describe('mergeDiscoveredRefs', () => {
+  const mockLogger = { warn: jest.fn() };
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('merges discovered refs with zero-based IDs', () => {
+    const existing = [{ id: 'image-0', imageRef: 'quay.io/org/existing:v1' }];
+    const discovered = ['quay.io/org/new-a:latest', 'quay.io/org/new-b:latest'];
+
+    const result = mergeDiscoveredRefs(existing, discovered, 25, mockLogger);
+
+    expect(result.merged).toHaveLength(3);
+    expect(result.merged[1]).toEqual({
+      id: 'discovered-0',
+      imageRef: 'quay.io/org/new-a:latest',
+    });
+    expect(result.merged[2]).toEqual({
+      id: 'discovered-1',
+      imageRef: 'quay.io/org/new-b:latest',
+    });
+    expect(result.added).toBe(2);
+    expect(result.skipped).toBe(0);
+  });
+
+  it('skips duplicate refs already in explicit configs', () => {
+    const existing = [{ id: 'image-0', imageRef: 'quay.io/org/repo:latest' }];
+    const discovered = ['quay.io/org/repo:latest', 'quay.io/org/new:latest'];
+
+    const result = mergeDiscoveredRefs(existing, discovered, 25, mockLogger);
+
+    expect(result.merged).toHaveLength(2);
+    expect(result.added).toBe(1);
+    expect(result.skipped).toBe(0);
+  });
+
+  it('enforces MAX_CONFIGURED_IMAGES cap and warns about skipped repos', () => {
+    const existing = Array.from({ length: 23 }, (_, i) => ({
+      id: `image-${i}`,
+      imageRef: `quay.io/org/img-${i}:v1`,
+    }));
+    const discovered = [
+      'quay.io/org/disc-0:latest',
+      'quay.io/org/disc-1:latest',
+      'quay.io/org/disc-2:latest',
+      'quay.io/org/disc-3:latest',
+      'quay.io/org/disc-4:latest',
+    ];
+
+    const result = mergeDiscoveredRefs(existing, discovered, 25, mockLogger);
+
+    expect(result.merged).toHaveLength(25);
+    expect(result.added).toBe(2);
+    expect(result.skipped).toBe(3);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('3 discovered repository(ies) were dropped'),
+    );
+  });
+
+  it('returns unchanged list when all discovered refs are duplicates', () => {
+    const existing = [{ id: 'image-0', imageRef: 'quay.io/org/repo:latest' }];
+    const discovered = ['quay.io/org/repo:latest'];
+
+    const result = mergeDiscoveredRefs(existing, discovered, 25, mockLogger);
+
+    expect(result.merged).toHaveLength(1);
+    expect(result.added).toBe(0);
+    expect(result.skipped).toBe(0);
   });
 });

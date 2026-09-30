@@ -75,6 +75,18 @@ export interface SkillImageExtraction {
   skillsMd: string;
 }
 
+/**
+ * Configuration for Quay organization discovery.
+ */
+export interface QuayDiscoveryConfig {
+  /** Quay registry host (e.g. "quay.io"). */
+  registry: string;
+  /** Public organization whose repositories will be discovered. */
+  organization: string;
+  /** Tag to select for each discovered repository. Defaults to "latest". */
+  tag: string;
+}
+
 /** Plugin configuration for a single skill image source. */
 export interface SkillImageConfig {
   /** Identifier for this image config entry. */

@@ -16,6 +16,9 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { FETCH_TIMEOUT_MS } from './types';
+import type { QuayDiscoveryConfig } from './types';
+
+export type { QuayDiscoveryConfig } from './types';
 
 /** Maximum number of discovery pages to follow (design D7). */
 const MAX_DISCOVERY_PAGES = 100;
@@ -38,18 +41,6 @@ export interface QuayRepository {
 interface QuayRepositoryListPage {
   repositories: QuayRepository[];
   next_page?: string;
-}
-
-/**
- * Configuration for Quay organization discovery.
- */
-export interface QuayDiscoveryConfig {
-  /** Quay registry host (e.g. "quay.io"). */
-  registry: string;
-  /** Public organization whose repositories will be discovered. */
-  organization: string;
-  /** Tag to select for each discovered repository. Defaults to "latest". */
-  tag: string;
 }
 
 /**
@@ -121,10 +112,17 @@ export async function discoverQuayRepositories(
     }
 
     for (const repo of body.repositories) {
-      if (repo.namespace && repo.name) {
-        const imageRef = `${config.registry}/${repo.namespace}/${repo.name}:${config.tag}`;
-        imageRefs.push(imageRef);
+      if (!repo.name) {
+        continue;
       }
+      if (repo.namespace !== config.organization) {
+        logger.warn(
+          `Skipping repository ${repo.name}: namespace '${repo.namespace}' does not match organization '${config.organization}'`,
+        );
+        continue;
+      }
+      const imageRef = `${config.registry}/${repo.namespace}/${repo.name}:${config.tag}`;
+      imageRefs.push(imageRef);
     }
 
     nextPage = body.next_page;

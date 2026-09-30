@@ -193,6 +193,36 @@ describe('discoverQuayRepositories', () => {
     );
   });
 
+  it('throws when called with an already-aborted signal', async () => {
+    const abortController = new AbortController();
+    abortController.abort();
+
+    await expect(
+      discoverQuayRepositories(baseConfig, mockLogger, abortController.signal),
+    ).rejects.toThrow('Quay discovery was aborted');
+  });
+
+  it('rejects repositories whose namespace does not match the configured organization', async () => {
+    global.fetch = jest.fn().mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        repositories: [
+          { namespace: 'test-org', name: 'valid-repo' },
+          { namespace: 'rogue-ns', name: 'sneaky-repo' },
+        ],
+      }),
+    });
+
+    const result = await discoverQuayRepositories(baseConfig, mockLogger);
+
+    expect(result).toEqual(['quay.io/test-org/valid-repo:latest']);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "namespace 'rogue-ns' does not match organization 'test-org'",
+      ),
+    );
+  });
+
   it('skips repositories with missing name or namespace', async () => {
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
