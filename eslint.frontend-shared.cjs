@@ -62,10 +62,15 @@ const materialUiMigrationEslintConfig = {
  * Shared ESLint config for frontend packages across the rhdh-plugins monorepo.
  * Blocks Material UI v4 (@material-ui/*) imports to prevent reintroduction
  * after migration to MUI v5 / Backstage UI.
+ *
+ * Resolve @backstage/cli from the package/workspace (packageDir), not the
+ * monorepo root — workspaces pin newer CLI with JSX-transform rules.
  */
 module.exports = function createFrontendEslintConfig(packageDir) {
-  return require('@backstage/cli/config/eslint-factory')(
-    packageDir,
-    materialUiMigrationEslintConfig,
+  const createPackageConfig = require(
+    require.resolve('@backstage/cli/config/eslint-factory', {
+      paths: [packageDir],
+    }),
   );
+  return createPackageConfig(packageDir, materialUiMigrationEslintConfig);
 };

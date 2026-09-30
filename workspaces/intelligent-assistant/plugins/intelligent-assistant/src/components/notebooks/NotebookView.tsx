@@ -137,12 +137,23 @@ const MainContent = styled('div')({
   minWidth: 0,
 });
 
+// Match Chat new-chat welcome: grow with content and let StyledChatbotContent scroll.
+// A flex:1 + height:100% MessageBox fills the parent so outer overflowY never engages,
+// and justifyContent:flex-end on that inner scroller clips overflow without a usable
+// scrollbar (RHDHBUGS-3751 / notebook details welcome in overlay & docked).
 const WelcomeMessageBox = styled(MessageBox)({
-  flex: 1,
-  minHeight: 0,
+  flex: 'none',
+  height: 'auto !important',
+  overflow: 'visible',
   maxWidth: 'unset !important',
   width: '100%',
   justifyContent: 'flex-end',
+});
+
+/** Pushes welcome content to the bottom when the panel is taller than the content. */
+const WelcomeContentSpacer = styled('div')({
+  flex: 1,
+  minHeight: 0,
 });
 
 const NotebookContentArea = styled('div')(({ theme }) => ({
@@ -192,6 +203,14 @@ const StyledChatbotContent = styled(ChatbotContent)({
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
+  // PF sets `overflow: hidden` after `overflow-y: auto` on .pf-chatbot__content,
+  // which clips the docked landing page with no way to scroll (RHDHBUGS-3751).
+  // Double class + !important so we beat the PF stylesheet order.
+  '&&': {
+    overflowX: 'hidden',
+    overflowY: 'auto',
+  },
+  WebkitOverflowScrolling: 'touch',
   '& .pf-chatbot__message-contents': {
     overflowX: 'hidden',
     overflowWrap: 'break-word',
@@ -205,6 +224,10 @@ const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   backgroundColor: `${floatingBg} !important`,
   alignItems: 'stretch',
+  // Match Chat: hide ChatbotFooter's injected <hr> (MessageBar supplies the edge).
+  '& > .pf-v6-c-divider': {
+    display: 'none',
+  },
   '&>.pf-chatbot__footer-container': {
     width: '100% !important',
     maxWidth: 'unset !important',
@@ -686,6 +709,7 @@ export const NotebookView = ({
     }
     return (
       <StyledChatbotContent isPrimary>
+        <WelcomeContentSpacer aria-hidden />
         <WelcomeMessageBox>
           {renderNotebookDisclaimerAlert()}
           <NotebookContentArea>
