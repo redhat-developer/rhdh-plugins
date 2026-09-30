@@ -77,7 +77,9 @@ const ALLOWED_NPX_EXTENSION_KEYS: ReadonlySet<string> = new Set(['type']);
  * @public
  */
 export interface ValidationResult {
+  /** Whether the validated input passed all checks. */
   valid: boolean;
+  /** Human-readable error messages for each failed check. */
   errors: string[];
 }
 
@@ -539,11 +541,19 @@ export function validateSnapshotSize(
 /**
  * Type guard for OciSkillRecord.
  *
+ * Requires the snapshot's `source.type` to disambiguate records that
+ * have no `extensions` field — a bare record is only an OCI record
+ * when the enclosing snapshot source is `'oci'`.
+ *
  * @public
  */
 export function isOciSkillRecord(
   record: SkillRecord,
+  sourceType: SkillSourceType,
 ): record is OciSkillRecord {
+  if (sourceType !== 'oci') {
+    return false;
+  }
   if (!('extensions' in record) || record.extensions === undefined) {
     return true; // No extensions is valid for OCI
   }
@@ -554,11 +564,19 @@ export function isOciSkillRecord(
 /**
  * Type guard for NpxSkillRecord.
  *
+ * Requires the snapshot's `source.type` to disambiguate records that
+ * have no `extensions` field — a bare record is only an npx record
+ * when the enclosing snapshot source is `'npx'`.
+ *
  * @public
  */
 export function isNpxSkillRecord(
   record: SkillRecord,
+  sourceType: SkillSourceType,
 ): record is NpxSkillRecord {
+  if (sourceType !== 'npx') {
+    return false;
+  }
   if (!('extensions' in record) || record.extensions === undefined) {
     return true; // No extensions is valid for npx
   }

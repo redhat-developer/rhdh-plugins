@@ -29,13 +29,21 @@ import type {
 
 // ─── Sources ──────────────────────────────────────────────────────────
 
-/** @public */
+/**
+ * OCI source fixture for contract tests.
+ *
+ * @public
+ */
 export const ociSource: SnapshotSource = {
   id: 'quay-public',
   type: 'oci',
 };
 
-/** @public */
+/**
+ * npx source fixture for contract tests.
+ *
+ * @public
+ */
 export const npxSource: SnapshotSource = {
   id: 'rhess-index',
   type: 'npx',
@@ -43,7 +51,11 @@ export const npxSource: SnapshotSource = {
 
 // ─── Valid OCI records ────────────────────────────────────────────────
 
-/** A valid OCI skill record with full metadata. @public */
+/**
+ * A valid OCI skill record with full metadata.
+ *
+ * @public
+ */
 export const validOciRecordFull: OciSkillRecord = {
   key: 'quay.io/octo/hello-world-skill',
   name: 'Hello World Skill',
@@ -67,7 +79,11 @@ export const validOciRecordFull: OciSkillRecord = {
   },
 };
 
-/** A valid OCI record with only required fields. @public */
+/**
+ * A valid OCI record with only required fields.
+ *
+ * @public
+ */
 export const validOciRecordMinimal: OciSkillRecord = {
   key: 'quay.io/octo/minimal-skill',
   name: 'Minimal Skill',
@@ -77,7 +93,11 @@ export const validOciRecordMinimal: OciSkillRecord = {
     'sha256:1111111111111111111111111111111111111111111111111111111111111111',
 };
 
-/** A valid OCI record with empty extensions object. @public */
+/**
+ * A valid OCI record with empty extensions object.
+ *
+ * @public
+ */
 export const validOciRecordEmptyExtensions: OciSkillRecord = {
   key: 'quay.io/octo/no-ext-skill',
   name: 'No Extensions Skill',
@@ -90,7 +110,11 @@ export const validOciRecordEmptyExtensions: OciSkillRecord = {
 
 // ─── Valid npx records ────────────────────────────────────────────────
 
-/** A valid npx skill record with full metadata. @public */
+/**
+ * A valid npx skill record with full metadata.
+ *
+ * @public
+ */
 export const validNpxRecordFull: NpxSkillRecord = {
   key: 'summarize-text',
   name: 'Summarize Text',
@@ -110,7 +134,11 @@ export const validNpxRecordFull: NpxSkillRecord = {
   },
 };
 
-/** A valid npx record with only required fields. @public */
+/**
+ * A valid npx record with only required fields.
+ *
+ * @public
+ */
 export const validNpxRecordMinimal: NpxSkillRecord = {
   key: 'basic-skill',
   name: 'Basic Skill',
@@ -119,7 +147,11 @@ export const validNpxRecordMinimal: NpxSkillRecord = {
     'sha256:3333333333333333333333333333333333333333333333333333333333333333',
 };
 
-/** A valid npx record with a query-string-bearing source URI. @public */
+/**
+ * A valid npx record with a query-string-bearing source URI.
+ *
+ * @public
+ */
 export const validNpxRecordWithQuery: NpxSkillRecord = {
   key: 'query-skill',
   name: 'Query Skill',
@@ -136,7 +168,11 @@ export const validNpxRecordWithQuery: NpxSkillRecord = {
 
 // ─── Valid snapshots ──────────────────────────────────────────────────
 
-/** A valid ready OCI snapshot. @public */
+/**
+ * A valid ready OCI snapshot.
+ *
+ * @public
+ */
 export const validOciSnapshotReady: SkillSnapshot = {
   schemaVersion: '1',
   source: ociSource,
@@ -146,7 +182,11 @@ export const validOciSnapshotReady: SkillSnapshot = {
   failedSkillKeys: [],
 };
 
-/** A valid ready npx snapshot. @public */
+/**
+ * A valid ready npx snapshot.
+ *
+ * @public
+ */
 export const validNpxSnapshotReady: SkillSnapshot = {
   schemaVersion: '1',
   source: npxSource,
@@ -156,7 +196,11 @@ export const validNpxSnapshotReady: SkillSnapshot = {
   failedSkillKeys: [],
 };
 
-/** A valid loading snapshot. @public */
+/**
+ * A valid loading snapshot.
+ *
+ * @public
+ */
 export const validLoadingSnapshot: SkillSnapshot = {
   schemaVersion: '1',
   source: ociSource,
@@ -166,7 +210,11 @@ export const validLoadingSnapshot: SkillSnapshot = {
   failedSkillKeys: [],
 };
 
-/** A valid partial snapshot with failed keys. @public */
+/**
+ * A valid partial snapshot with failed keys.
+ *
+ * @public
+ */
 export const validPartialSnapshot: SkillSnapshot = {
   schemaVersion: '1',
   source: ociSource,
@@ -176,7 +224,11 @@ export const validPartialSnapshot: SkillSnapshot = {
   failedSkillKeys: ['quay.io/octo/broken-skill'],
 };
 
-/** A valid failed snapshot. @public */
+/**
+ * A valid failed snapshot.
+ *
+ * @public
+ */
 export const validFailedSnapshot: SkillSnapshot = {
   schemaVersion: '1',
   source: ociSource,
@@ -186,7 +238,11 @@ export const validFailedSnapshot: SkillSnapshot = {
   failedSkillKeys: [],
 };
 
-/** A valid partial snapshot with no records and no failed keys. @public */
+/**
+ * A valid partial snapshot with no records and no failed keys.
+ *
+ * @public
+ */
 export const validPartialEmptySnapshot: SkillSnapshot = {
   schemaVersion: '1',
   source: npxSource,
@@ -196,7 +252,11 @@ export const validPartialEmptySnapshot: SkillSnapshot = {
   failedSkillKeys: [],
 };
 
-/** A valid ready snapshot with zero records (successful empty discovery). @public */
+/**
+ * A valid ready snapshot with zero records (successful empty discovery).
+ *
+ * @public
+ */
 export const validReadyEmptySnapshot: SkillSnapshot = {
   schemaVersion: '1',
   source: ociSource,
@@ -208,7 +268,11 @@ export const validReadyEmptySnapshot: SkillSnapshot = {
 
 // ─── Invalid records ──────────────────────────────────────────────────
 
-/** Record with empty key. @public */
+/**
+ * Record with empty key.
+ *
+ * @public
+ */
 export const invalidRecordEmptyKey: OciSkillRecord = {
   key: '',
   name: 'Bad Skill',
@@ -218,7 +282,11 @@ export const invalidRecordEmptyKey: OciSkillRecord = {
     'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
 };
 
-/** Record with malformed digest (uppercase). @public */
+/**
+ * Record with malformed digest (uppercase).
+ *
+ * @public
+ */
 export const invalidRecordBadDigest: OciSkillRecord = {
   key: 'quay.io/octo/bad-digest',
   name: 'Bad Digest Skill',
@@ -228,7 +296,11 @@ export const invalidRecordBadDigest: OciSkillRecord = {
     'sha256:ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789',
 };
 
-/** Record with truncated digest. @public */
+/**
+ * Record with truncated digest.
+ *
+ * @public
+ */
 export const invalidRecordShortDigest: OciSkillRecord = {
   key: 'quay.io/octo/short-digest',
   name: 'Short Digest Skill',
@@ -236,7 +308,11 @@ export const invalidRecordShortDigest: OciSkillRecord = {
   digest: 'sha256:abcdef',
 };
 
-/** npx record with OCI extension (source mismatch). @public */
+/**
+ * npx record with OCI extension (source mismatch).
+ *
+ * @public
+ */
 export const invalidNpxRecordWithOciExtension: NpxSkillRecord = {
   key: 'mismatched-skill',
   name: 'Mismatched Skill',
@@ -248,7 +324,11 @@ export const invalidNpxRecordWithOciExtension: NpxSkillRecord = {
   },
 };
 
-/** OCI record with npx extension (source mismatch). @public */
+/**
+ * OCI record with npx extension (source mismatch).
+ *
+ * @public
+ */
 export const invalidOciRecordWithNpxExtension: OciSkillRecord = {
   key: 'quay.io/octo/npx-ext-mismatch',
   name: 'Mismatch Skill',
@@ -261,7 +341,11 @@ export const invalidOciRecordWithNpxExtension: OciSkillRecord = {
   },
 };
 
-/** OCI record with unknown extension key. @public */
+/**
+ * OCI record with unknown extension key.
+ *
+ * @public
+ */
 export const invalidOciRecordUnknownExtKey: OciSkillRecord = {
   key: 'quay.io/octo/unknown-ext',
   name: 'Unknown Ext Skill',
@@ -279,7 +363,11 @@ export const invalidOciRecordUnknownExtKey: OciSkillRecord = {
 
 // ─── Invalid snapshots ────────────────────────────────────────────────
 
-/** Snapshot with unsupported schema version. @public */
+/**
+ * Snapshot with unsupported schema version.
+ *
+ * @public
+ */
 export const invalidSnapshotBadVersion: unknown = {
   schemaVersion: '2',
   source: ociSource,
@@ -289,7 +377,11 @@ export const invalidSnapshotBadVersion: unknown = {
   failedSkillKeys: [],
 };
 
-/** Snapshot claiming ready with failed keys. @public */
+/**
+ * Snapshot claiming ready with failed keys.
+ *
+ * @public
+ */
 export const invalidSnapshotReadyWithFailedKeys: unknown = {
   schemaVersion: '1',
   source: ociSource,
@@ -299,7 +391,11 @@ export const invalidSnapshotReadyWithFailedKeys: unknown = {
   failedSkillKeys: ['quay.io/octo/failed-one'],
 };
 
-/** Snapshot with duplicate skill keys. @public */
+/**
+ * Snapshot with duplicate skill keys.
+ *
+ * @public
+ */
 export const invalidSnapshotDuplicateKeys: unknown = {
   schemaVersion: '1',
   source: ociSource,
@@ -309,7 +405,11 @@ export const invalidSnapshotDuplicateKeys: unknown = {
   failedSkillKeys: [],
 };
 
-/** Snapshot with overlapping skill and failed keys. @public */
+/**
+ * Snapshot with overlapping skill and failed keys.
+ *
+ * @public
+ */
 export const invalidSnapshotOverlappingKeys: unknown = {
   schemaVersion: '1',
   source: ociSource,
@@ -319,7 +419,11 @@ export const invalidSnapshotOverlappingKeys: unknown = {
   failedSkillKeys: [validOciRecordMinimal.key],
 };
 
-/** Loading snapshot with non-null observedAt. @public */
+/**
+ * Loading snapshot with non-null observedAt.
+ *
+ * @public
+ */
 export const invalidLoadingWithObservedAt: unknown = {
   schemaVersion: '1',
   source: ociSource,
@@ -329,7 +433,11 @@ export const invalidLoadingWithObservedAt: unknown = {
   failedSkillKeys: [],
 };
 
-/** Loading snapshot with skills. @public */
+/**
+ * Loading snapshot with skills.
+ *
+ * @public
+ */
 export const invalidLoadingWithSkills: unknown = {
   schemaVersion: '1',
   source: ociSource,
@@ -339,7 +447,11 @@ export const invalidLoadingWithSkills: unknown = {
   failedSkillKeys: [],
 };
 
-/** Failed snapshot with skills. @public */
+/**
+ * Failed snapshot with skills.
+ *
+ * @public
+ */
 export const invalidFailedWithSkills: unknown = {
   schemaVersion: '1',
   source: ociSource,
@@ -349,7 +461,11 @@ export const invalidFailedWithSkills: unknown = {
   failedSkillKeys: [],
 };
 
-/** Snapshot with non-UTC timestamp. @public */
+/**
+ * Snapshot with non-UTC timestamp.
+ *
+ * @public
+ */
 export const invalidSnapshotNonUtcTimestamp: unknown = {
   schemaVersion: '1',
   source: ociSource,

@@ -67,10 +67,16 @@ export const invalidSnapshotOverlappingKeys: unknown;
 export const invalidSnapshotReadyWithFailedKeys: unknown;
 
 // @public
-export function isNpxSkillRecord(record: SkillRecord): record is NpxSkillRecord;
+export function isNpxSkillRecord(
+  record: SkillRecord,
+  sourceType: SkillSourceType,
+): record is NpxSkillRecord;
 
 // @public
-export function isOciSkillRecord(record: SkillRecord): record is OciSkillRecord;
+export function isOciSkillRecord(
+  record: SkillRecord,
+  sourceType: SkillSourceType,
+): record is OciSkillRecord;
 
 // @public
 export function isValidDigest(digest: string): boolean;
@@ -89,45 +95,38 @@ export const MAX_SNAPSHOT_RECORDS = 1000;
 
 // @public
 export interface NpxExtensions {
-  // (undocumented)
   type?: 'skill-md';
 }
 
 // @public
 export interface NpxSkillRecord extends SkillRecord {
-  // (undocumented)
   extensions?: {
     npx?: NpxExtensions;
   };
 }
 
-// @public (undocumented)
+// @public
 export const npxSource: SnapshotSource;
 
 // @public
 export interface OciExtensions {
-  // (undocumented)
   namespace?: string;
-  // (undocumented)
   prompt?: string;
 }
 
 // @public
 export interface OciSkillRecord extends SkillRecord {
-  // (undocumented)
   extensions?: {
     oci?: OciExtensions;
   };
 }
 
-// @public (undocumented)
+// @public
 export const ociSource: SnapshotSource;
 
 // @public
 export interface SkillAuthor {
-  // (undocumented)
   email?: string;
-  // (undocumented)
   name: string;
 }
 
@@ -161,6 +160,9 @@ export interface SkillSnapshot {
 }
 
 // @public
+export type SkillSnapshotV1 = SkillSnapshot;
+
+// @public
 export type SkillSourceType = 'oci' | 'npx';
 
 // @public
@@ -188,9 +190,7 @@ export function validateSnapshotSize(snapshot: SkillSnapshot): ValidationResult;
 
 // @public
 export interface ValidationResult {
-  // (undocumented)
   errors: string[];
-  // (undocumented)
   valid: boolean;
 }
 

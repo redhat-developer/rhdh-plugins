@@ -17,6 +17,9 @@
 /**
  * Supported source types for skill connectors.
  *
+ * This is a closed union. Adding a new member is a breaking change
+ * for consumers performing exhaustive switching.
+ *
  * @public
  */
 export type SkillSourceType = 'oci' | 'npx';
@@ -29,6 +32,9 @@ export type SkillSourceType = 'oci' | 'npx';
  * - `partial` — discovery or processing was incomplete
  * - `failed` — no usable discovery result could be obtained
  *
+ * This is a closed union. Adding a new member is a breaking change
+ * for consumers performing exhaustive switching.
+ *
  * @public
  */
 export type SnapshotStatus = 'loading' | 'ready' | 'partial' | 'failed';
@@ -39,7 +45,9 @@ export type SnapshotStatus = 'loading' | 'ready' | 'partial' | 'failed';
  * @public
  */
 export interface SkillAuthor {
+  /** Display name of the author. */
   name: string;
+  /** Optional contact email. */
   email?: string;
 }
 
@@ -88,7 +96,9 @@ export interface SkillRecord {
  * @public
  */
 export interface OciExtensions {
+  /** OCI namespace scope for the skill image. */
   namespace?: string;
+  /** System prompt embedded in the skill image metadata. */
   prompt?: string;
 }
 
@@ -98,6 +108,11 @@ export interface OciExtensions {
  * @public
  */
 export interface NpxExtensions {
+  /**
+   * Artifact format type. Currently only `'skill-md'` is supported.
+   * This is a closed literal — adding a new format requires expanding
+   * both the type and the validator, which are breaking changes.
+   */
   type?: 'skill-md';
 }
 
@@ -107,6 +122,7 @@ export interface NpxExtensions {
  * @public
  */
 export interface OciSkillRecord extends SkillRecord {
+  /** OCI-specific extension fields scoped under the `oci` container. */
   extensions?: { oci?: OciExtensions };
 }
 
@@ -116,6 +132,7 @@ export interface OciSkillRecord extends SkillRecord {
  * @public
  */
 export interface NpxSkillRecord extends SkillRecord {
+  /** npx-specific extension fields scoped under the `npx` container. */
   extensions?: { npx?: NpxExtensions };
 }
 
@@ -156,3 +173,14 @@ export interface SkillSnapshot {
   /** Stable keys of skills that failed processing; disjoint from skill keys. */
   failedSkillKeys: string[];
 }
+
+/**
+ * Forward-compatibility alias for the v1 snapshot interface.
+ *
+ * When v2 is introduced, `SkillSnapshot` will widen to a union and
+ * `SkillSnapshotV1` will continue to refer to the v1 shape, allowing
+ * consumers to migrate without a breaking change.
+ *
+ * @public
+ */
+export type SkillSnapshotV1 = SkillSnapshot;

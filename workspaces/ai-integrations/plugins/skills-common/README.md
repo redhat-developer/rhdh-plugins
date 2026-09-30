@@ -24,6 +24,15 @@ consumes these snapshots to produce `AiResource` entities.
 | `SnapshotSource` | Source identity (`id` and `type`)                                 |
 | `SnapshotStatus` | `'loading' \| 'ready' \| 'partial' \| 'failed'`                   |
 
+## Constants
+
+| Constant                   | Value             | Description                                      |
+| -------------------------- | ----------------- | ------------------------------------------------ |
+| `MAX_SNAPSHOT_RECORDS`     | `1_000`           | Maximum number of records in a single snapshot   |
+| `MAX_SNAPSHOT_BYTES`       | `5 * 1024 * 1024` | Maximum serialized snapshot size (5 MiB)         |
+| `MAX_RESPONSE_BYTES`       | `5 * 1024 * 1024` | Maximum response read size for consumers (5 MiB) |
+| `SUPPORTED_SCHEMA_VERSION` | `'1'`             | Supported schema version                         |
+
 ## Validation
 
 - `validateSnapshot(snapshot)` — validates a complete v1 snapshot
@@ -33,12 +42,16 @@ consumes these snapshots to produce `AiResource` entities.
 - `validateSnapshotSize(snapshot)` — validates serialized byte size
   against the 5 MiB limit.
 - `isValidDigest(digest)` — checks `sha256:<64 lowercase hex>` format.
+- `isValidUtcTimestamp(value)` — checks for valid ISO 8601 UTC
+  timestamps (strings ending in `Z` or `+00:00`).
 
 ## Snapshot construction
 
 - `boundSnapshot(options)` — creates a bounded v1 snapshot with
   deterministic stable-key ordering and longest-prefix selection
   within count (1,000) and byte-size (5 MiB) limits.
+- `sortRecordsByKey(records)` — sorts skill records by stable `key`
+  in ascending Unicode code-point order.
 - `createLoadingSnapshot(source)` — creates a loading snapshot for
   initial state.
 - `createFailedSnapshot(source, observedAt)` — creates a failed

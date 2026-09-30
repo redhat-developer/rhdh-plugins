@@ -32,6 +32,7 @@ export type {
   SkillAuthor,
   SkillRecord,
   SkillSnapshot,
+  SkillSnapshotV1,
   SkillSourceType,
   SnapshotSource,
   SnapshotStatus,

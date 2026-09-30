@@ -142,7 +142,7 @@ function applyByteLimit(
   const fullSnapshot: SkillSnapshot = {
     schemaVersion: '1',
     source,
-    status: 'ready', // placeholder — doesn't affect size much
+    status: 'partial', // worst-case placeholder — 'partial' is the longest status value
     observedAt,
     skills: sortedRecords,
     failedSkillKeys,

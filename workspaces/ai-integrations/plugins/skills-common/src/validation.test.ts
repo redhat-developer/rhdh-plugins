@@ -550,22 +550,71 @@ describe('validateSnapshotSize', () => {
     const result = validateSnapshotSize(validOciSnapshotReady);
     expect(result.valid).toBe(true);
   });
+
+  it('rejects a snapshot exceeding MAX_SNAPSHOT_BYTES', () => {
+    const largeDescription = 'x'.repeat(100_000);
+    const records = Array.from({ length: 100 }, (_, i) => ({
+      key: `quay.io/octo/large-${String(i).padStart(4, '0')}`,
+      name: `Large Skill ${i}`,
+      description: largeDescription,
+      sourceUri: `oci://quay.io/octo/large-${i}@sha256:${'a'.repeat(64)}`,
+      digest: `sha256:${'a'.repeat(64)}`,
+    }));
+    const oversized: SkillSnapshot = {
+      schemaVersion: '1',
+      source: ociSource,
+      status: 'partial',
+      observedAt: '2026-09-01T12:00:00Z',
+      skills: records,
+      failedSkillKeys: [],
+    };
+    const result = validateSnapshotSize(oversized);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContainEqual(
+      expect.stringContaining('exceeds maximum'),
+    );
+  });
 });
 
 describe('type guards', () => {
   it('isOciSkillRecord for full OCI record', () => {
-    expect(isOciSkillRecord(validOciRecordFull)).toBe(true);
+    expect(isOciSkillRecord(validOciRecordFull, 'oci')).toBe(true);
   });
 
   it('isOciSkillRecord for minimal record (no extensions)', () => {
-    expect(isOciSkillRecord(validOciRecordMinimal)).toBe(true);
+    expect(isOciSkillRecord(validOciRecordMinimal, 'oci')).toBe(true);
   });
 
   it('isNpxSkillRecord for full npx record', () => {
-    expect(isNpxSkillRecord(validNpxRecordFull)).toBe(true);
+    expect(isNpxSkillRecord(validNpxRecordFull, 'npx')).toBe(true);
   });
 
   it('isNpxSkillRecord for minimal record (no extensions)', () => {
-    expect(isNpxSkillRecord(validNpxRecordMinimal)).toBe(true);
+    expect(isNpxSkillRecord(validNpxRecordMinimal, 'npx')).toBe(true);
+  });
+
+  it('isOciSkillRecord returns false for wrong source type', () => {
+    expect(isOciSkillRecord(validOciRecordFull, 'npx')).toBe(false);
+  });
+
+  it('isNpxSkillRecord returns false for wrong source type', () => {
+    expect(isNpxSkillRecord(validNpxRecordFull, 'oci')).toBe(false);
+  });
+
+  it('isOciSkillRecord returns false for npx record with npx extensions', () => {
+    expect(isOciSkillRecord(validNpxRecordFull, 'oci')).toBe(false);
+  });
+
+  it('isNpxSkillRecord returns false for OCI record with OCI extensions', () => {
+    expect(isNpxSkillRecord(validOciRecordFull, 'npx')).toBe(false);
+  });
+
+  it('minimal record without extensions is not ambiguous', () => {
+    // A minimal record (no extensions) should only match its actual source type
+    expect(isOciSkillRecord(validOciRecordMinimal, 'oci')).toBe(true);
+    expect(isNpxSkillRecord(validOciRecordMinimal, 'npx')).toBe(true);
+    // But not the opposite source type
+    expect(isOciSkillRecord(validOciRecordMinimal, 'npx')).toBe(false);
+    expect(isNpxSkillRecord(validOciRecordMinimal, 'oci')).toBe(false);
   });
 });
