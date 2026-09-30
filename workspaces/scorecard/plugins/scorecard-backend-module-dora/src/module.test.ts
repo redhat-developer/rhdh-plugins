@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
+// The DORA test script sets --experimental-vm-modules. Importing the GitHub
+// module then loads ESM-only Octokit and the suite fails before any test.
+// These stand-ins let the real collectors register without executing that entry.
+jest.mock('@octokit/graphql', () => ({
+  graphql: jest.fn(),
+}));
+jest.mock('@octokit/rest', () => ({
+  Octokit: class Octokit {},
+}));
+
 import {
   coreServices,
   createServiceFactory,
@@ -138,9 +148,9 @@ describe('scorecard dora module', () => {
   }, 60_000);
 
   afterAll(async () => {
-    server.close();
-    await stop();
-    await knex.destroy();
+    server?.close();
+    await stop?.();
+    await knex?.destroy();
   });
 
   it('registers DORA and GitHub open PR metrics', async () => {
