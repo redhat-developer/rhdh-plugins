@@ -92,13 +92,20 @@ describe('createComponents', () => {
     expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
       expect.objectContaining({
         minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
       }),
     );
   });
 
-  it('stretches main with mainSectionBackgroundColor inside the page inset', () => {
+  it('paints BackstageSidebarPage with mainSectionBackgroundColor on all viewports', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
+      expect.objectContaining({
+        backgroundColor: '#292929',
+      }),
+    );
+  });
+
+  it('clips the SidebarPage scrollport so the scrollbar follows the rounded well', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
       | Record<string, unknown>
@@ -109,35 +116,54 @@ describe('createComponents', () => {
     expect(desktop).toEqual(
       expect.objectContaining({
         boxSizing: 'border-box',
-        overflow: 'hidden',
-        height: '100vh',
-        maxHeight: '100vh',
+        overflowY: 'auto',
+        width: 'calc(100% - 1.5rem) !important',
+        marginTop: '1.5rem',
+        marginRight: '1.5rem',
+        marginBottom: '1.5rem',
+        marginLeft: 0,
+        height: 'calc(100vh - 2 * 1.5rem)',
+        maxHeight: 'calc(100vh - 2 * 1.5rem)',
         overscrollBehavior: 'none',
-        paddingTop: '1.5rem',
-        paddingRight: '1.5rem',
-        paddingBottom: '1.5rem',
+        borderRadius: '1rem',
+        clipPath: 'inset(0 round 1rem)',
+      }),
+    );
+    expect(desktop?.['&::before']).toEqual(
+      expect.objectContaining({
+        position: 'sticky',
+        top: 0,
+        pointerEvents: 'none',
+        zIndex: 101,
+      }),
+    );
+    expect(
+      desktop?.["& > [class*='MuiLinearProgress-root'], & > main"],
+    ).toEqual(
+      expect.objectContaining({
+        backgroundColor: '#292929',
+        borderRadius: 0,
+        overflow: 'visible',
+      }),
+    );
+    expect(desktop?.['& .fullscreen']).toEqual(
+      expect.objectContaining({
+        position: 'relative',
       }),
     );
     expect(
       desktop?.[
-        "& > [class*='MuiLinearProgress-root'], & > main, & > [class*='RHDHPageMainContainer']"
+        '& .fullscreen > .MuiIconButton-root, & .fullscreen .MuiIconButton-root[class*="fullscreenButton"]'
       ],
     ).toEqual(
       expect.objectContaining({
-        backgroundColor: '#292929',
-        borderRadius: '1rem',
-        margin: 0,
-        flex: '1 1 auto',
-        minHeight: 0,
-        overflowY: 'auto',
-        overscrollBehaviorY: 'contain',
-        display: 'flex',
-        flexDirection: 'column',
+        top: '0.5rem !important',
+        right: '0.5rem !important',
       }),
     );
   });
 
-  it('makes NFS BUI main a flex column without unlocking viewport height', () => {
+  it('does not require a PageMainContainer wrapper for the content well', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
       | Record<string, unknown>
@@ -145,18 +171,8 @@ describe('createComponents', () => {
     const desktop = root?.['@media (min-width: 600px)'] as
       | Record<string, unknown>
       | undefined;
-    expect(
-      desktop?.[
-        "& > [class*='MuiLinearProgress-root'], & > main, & > [class*='RHDHPageMainContainer']"
-      ],
-    ).toEqual(
-      expect.objectContaining({
-        display: 'flex',
-        flexDirection: 'column',
-      }),
-    );
+    expect(JSON.stringify(desktop)).not.toContain('RHDHPageMainContainer');
   });
-
   it('offsets BUI dialogs below the masthead so Inspect Entity stays visible', () => {
     const actual = createComponents({});
     const overrides = actual.MuiCssBaseline?.styleOverrides;
@@ -174,9 +190,7 @@ describe('createComponents', () => {
       | Record<string, unknown>
       | undefined;
     expect(
-      desktop?.[
-        "& > [class*='bui-Container']:not([class*='bui-Header']), & > [class*='RHDHPageMainContainer'] [class*='bui-Container']:not([class*='bui-Header'])"
-      ],
+      desktop?.["& > [class*='bui-Container']:not([class*='bui-Header'])"],
     ).toEqual(
       expect.objectContaining({
         backgroundColor: '#292929',
@@ -184,7 +198,7 @@ describe('createComponents', () => {
     );
   });
 
-  it('grows BackstageContent article to fill the flex column', () => {
+  it('paints BackstageContent article with mainSectionBackgroundColor', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
       | Record<string, unknown>
@@ -193,12 +207,9 @@ describe('createComponents', () => {
       | Record<string, unknown>
       | undefined;
     expect(
-      desktop?.[
-        '& > article, & > [class*="BackstageContent-root"], & > [class*="RHDHPageMainContainer"] > article, & > [class*="RHDHPageMainContainer"] > [class*="BackstageContent-root"]'
-      ],
+      desktop?.['& > article, & > [class*="BackstageContent-root"]'],
     ).toEqual(
       expect.objectContaining({
-        flex: 1,
         backgroundColor: '#292929',
       }),
     );
