@@ -17,7 +17,8 @@ import { createBackend } from '@backstage/backend-defaults';
 import { mockServices } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
-// Local REST harness. Commands and curl examples are in DEVELOPING.md.
+// Local REST harness for this module. Commands are in DEVELOPING.md.
+// The scorecard backend default export already installs the collectors service.
 
 const backend = createBackend();
 
@@ -42,6 +43,9 @@ backend.add(
   }),
 );
 
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend'),
+);
 backend.add(import('../src'));
 
 backend.start();
