@@ -17,9 +17,7 @@ For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModul
 
 Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/scorecard](http://localhost:3000/scorecard).
 
-You can also serve the plugin in isolation by running `yarn start` in the plugin directory.
-This method of serving the plugin provides quicker iteration speed and a faster startup and hot reloads.
-It is only meant for local development, and the setup for it can be found inside the [/dev](./dev) directory. Contributor commands, including the mock API limitation, are in [DEVELOPING.md](./DEVELOPING.md).
+Contributor setup, including the mock API limitation of the package dev app, is in [DEVELOPING.md](./DEVELOPING.md).
 
 ## For Administrators
 

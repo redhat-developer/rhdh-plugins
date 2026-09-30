@@ -21,7 +21,11 @@ curl -sS -H 'Authorization: Bearer mock-user-token' \
   http://localhost:7007/api/scorecard/metrics
 ```
 
-This package commits [app-config.yaml](./app-config.yaml) with one sample file, `readme: README.md`, so the module registers `filecheck.readme`. With no `files` entries the process still starts and registers nothing. Reading repository files needs a URL reader integration in an uncommitted local config file.
+This package commits [app-config.yaml](./app-config.yaml) with one sample file, `readme: README.md`, so the module registers `filecheck.readme`. With no `files` entries the process still starts and registers nothing. Reading repository files needs a URL reader integration in an uncommitted `app-config.local.yaml` in this package. `yarn start` already passes `--config app-config.yaml`, so that local file is not loaded unless you append it:
+
+```sh
+yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck start -- --config app-config.local.yaml
+```
 
 ## Tests
 

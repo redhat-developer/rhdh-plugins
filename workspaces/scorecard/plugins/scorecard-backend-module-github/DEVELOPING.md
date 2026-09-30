@@ -21,7 +21,11 @@ curl -sS -H 'Authorization: Bearer mock-user-token' \
   http://localhost:7007/api/scorecard/metrics
 ```
 
-The response lists `github.openPRs` once the module has registered. Live GitHub calls need a token and integrations in an uncommitted local config file. Do not commit tokens.
+The response lists `github.openPRs` once the module has registered. Live GitHub calls need a token and integrations in an uncommitted `app-config.local.yaml` in this package. Do not commit tokens. `yarn start` already passes `--config app-config.yaml`, so that local file is not loaded unless you append it:
+
+```sh
+yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github start -- --config app-config.local.yaml
+```
 
 ## Tests
 

@@ -21,7 +21,11 @@ curl -sS -H 'Authorization: Bearer mock-user-token' \
   http://localhost:7007/api/scorecard/metrics
 ```
 
-This package commits [app-config.yaml](./app-config.yaml) with placeholder `jira.baseUrl` (`http://jira.example.com`), `token` (`test-token`), and `product` (`cloud`). `JiraClientFactory.fromConfig` throws when `jira` is missing, so the process does not start without that block. Point those placeholders at a real Jira only in an uncommitted local config file. The metrics response lists `jira.openIssues` after registration. Calling Jira with the placeholder host fails.
+This package commits [app-config.yaml](./app-config.yaml) with placeholder `jira.baseUrl` (`http://jira.example.com`), `token` (`test-token`), and `product` (`cloud`). `JiraClientFactory.fromConfig` throws when `jira` is missing, so the process does not start without that block. The metrics response lists `jira.openIssues` after registration. Calling Jira with the placeholder host fails. Point those placeholders at a real Jira only in an uncommitted `app-config.local.yaml` in this package. Do not commit tokens. `yarn start` already passes `--config app-config.yaml`, so that local file is not loaded unless you append it:
+
+```sh
+yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira start -- --config app-config.local.yaml
+```
 
 ## Tests
 

@@ -37,7 +37,6 @@ From `workspaces/scorecard`:
 ```sh
 yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend test --watchAll=false
 yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend lint
-yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend tsc --noEmit
 ```
 
 `yarn tsc` at the workspace root checks the whole workspace.
