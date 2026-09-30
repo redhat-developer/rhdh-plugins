@@ -2420,6 +2420,7 @@ describe('createRouter', () => {
           owner: undefined,
           kind: undefined,
           entityName: undefined,
+          namespace: undefined,
           sortBy: undefined,
           sortOrder: 'desc',
           page: 1,
@@ -2493,6 +2494,20 @@ describe('createRouter', () => {
         mockCredentials,
         expect.objectContaining({
           owner: ['team:default/platform'],
+        }),
+      );
+    });
+
+    it('should pass the namespace query param through to the service', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.openPRs/catalog/aggregations/entities?namespace=staging',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        'github.openPRs',
+        mockCredentials,
+        expect.objectContaining({
+          namespace: 'staging',
         }),
       );
     });
