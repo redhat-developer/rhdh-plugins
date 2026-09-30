@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.4.0
+
+### Minor Changes
+
+- a6ada16: Replace PageMainContainer with a CSS-only PatternFly page-inset: BackstageSidebarPage is the sole scrollport, clipped with `clip-path` so the scrollbar follows the rounded well (no extra DOM wrapper).
+
 ## 1.3.0
 
 ### Minor Changes
