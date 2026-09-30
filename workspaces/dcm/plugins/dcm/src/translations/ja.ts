@@ -27,6 +27,7 @@ const dcmTranslationJa: TranslationMessages<
   ref: dcmTranslationRef,
   messages: {
     'page.title': 'データセンター',
+    'page.notFound': 'ページが見つかりません',
     'page.tabs.agents': 'エージェント',
     'page.tabs.policies': 'ポリシー',
     'page.tabs.serviceTypes': 'サービスタイプ',

@@ -27,6 +27,7 @@ const dcmTranslationFr: TranslationMessages<
   ref: dcmTranslationRef,
   messages: {
     'page.title': 'Centre de données',
+    'page.notFound': 'Page non trouvée',
     'page.tabs.agents': 'Agents',
     'page.tabs.policies': 'Stratégies',
     'page.tabs.serviceTypes': 'Types de services',
