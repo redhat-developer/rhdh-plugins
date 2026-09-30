@@ -478,7 +478,9 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               }
 
               pluginLogger.info(
-                `Quay discovery added ${allImageConfigs.length - imageConfigs.length} new image(s) to process`,
+                `Quay discovery added ${
+                  allImageConfigs.length - imageConfigs.length
+                } new image(s) to process`,
               );
             } catch (error) {
               if (!processingAbortController.signal.aborted) {
