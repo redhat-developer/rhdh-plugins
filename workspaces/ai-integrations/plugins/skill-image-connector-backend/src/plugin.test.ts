@@ -15,7 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { readSkillImageConfigs } from './plugin';
+import { readSkillImageConfigs, readQuayDiscoveryConfig } from './plugin';
 
 describe('readSkillImageConfigs', () => {
   it('should return empty array when no config', () => {
@@ -150,5 +150,62 @@ describe('readSkillImageConfigs', () => {
     });
 
     expect(() => readSkillImageConfigs(config)).toThrow(message);
+  });
+});
+
+describe('readQuayDiscoveryConfig', () => {
+  it('returns undefined when no config', () => {
+    const config = new ConfigReader({});
+    expect(readQuayDiscoveryConfig(config)).toBeUndefined();
+  });
+
+  it('returns undefined when quayDiscovery section is missing', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {},
+    });
+    expect(readQuayDiscoveryConfig(config)).toBeUndefined();
+  });
+
+  it('returns undefined when organization is missing', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: {},
+      },
+    });
+    expect(readQuayDiscoveryConfig(config)).toBeUndefined();
+  });
+
+  it('reads organization with default registry and tag', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: {
+          organization: 'my-org',
+        },
+      },
+    });
+    const result = readQuayDiscoveryConfig(config);
+    expect(result).toEqual({
+      registry: 'quay.io',
+      organization: 'my-org',
+      tag: 'latest',
+    });
+  });
+
+  it('reads explicit registry and tag', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: {
+          registry: 'custom-quay.example.com',
+          organization: 'test-org',
+          tag: 'v2.0',
+        },
+      },
+    });
+    const result = readQuayDiscoveryConfig(config);
+    expect(result).toEqual({
+      registry: 'custom-quay.example.com',
+      organization: 'test-org',
+      tag: 'v2.0',
+    });
   });
 });

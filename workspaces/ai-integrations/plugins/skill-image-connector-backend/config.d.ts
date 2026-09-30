@@ -32,5 +32,14 @@ export interface Config {
         tokenRealm?: string;
       };
     }>;
+    /** @visibility backend */
+    quayDiscovery?: {
+      /** @visibility backend */
+      registry?: string;
+      /** @visibility backend */
+      organization?: string;
+      /** @visibility backend */
+      tag?: string;
+    };
   };
 }

@@ -189,6 +189,11 @@ skillImageConnector:
     - quay.io
   images:
     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+  # Uncomment to enable automatic public Quay organization discovery:
+  # quayDiscovery:
+  #   organization: my-skills-org  # required
+  #   # registry: quay.io          # optional, defaults to quay.io
+  #   # tag: latest                # optional, defaults to latest
 # Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 #kubernetes:

@@ -28,6 +28,10 @@ import {
   cleanupStaleExtractionDirs,
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
+import {
+  discoverQuayRepositories,
+  type QuayDiscoveryConfig,
+} from './services/QuayDiscovery';
 import type {
   RegistryCredentials,
   SkillImageConfig,
@@ -182,6 +186,50 @@ export function readSkillImageConfigs(
 }
 
 /**
+ * Reads Quay organization discovery configuration from app-config.
+ *
+ * Expected config shape:
+ * ```yaml
+ * skillImageConnector:
+ *   quayDiscovery:
+ *     registry: quay.io          # optional, defaults to quay.io
+ *     organization: my-org       # required
+ *     tag: latest                # optional, defaults to latest
+ * ```
+ */
+export function readQuayDiscoveryConfig(
+  config: Config,
+  logger?: Pick<LoggerService, 'warn'>,
+): QuayDiscoveryConfig | undefined {
+  const pluginConfig = config.getOptionalConfig('skillImageConnector');
+  if (!pluginConfig) {
+    return undefined;
+  }
+
+  const discoveryConfig = pluginConfig.getOptionalConfig('quayDiscovery');
+  if (!discoveryConfig) {
+    return undefined;
+  }
+
+  const organization = safeGetOptionalString(
+    discoveryConfig,
+    'organization',
+  )?.trim();
+  if (!organization) {
+    logger?.warn(
+      'skillImageConnector.quayDiscovery.organization is missing; skipping Quay discovery',
+    );
+    return undefined;
+  }
+
+  const registry =
+    safeGetOptionalString(discoveryConfig, 'registry')?.trim() || 'quay.io';
+  const tag = safeGetOptionalString(discoveryConfig, 'tag')?.trim() || 'latest';
+
+  return { registry, organization, tag };
+}
+
+/**
  * Returns true if the error is likely transient and the operation
  * should be retried (network errors, 5xx responses, timeouts).
  */
@@ -305,6 +353,10 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         });
 
         const imageConfigs = readSkillImageConfigs(config, pluginLogger);
+        const quayDiscoveryConfig = readQuayDiscoveryConfig(
+          config,
+          pluginLogger,
+        );
         const allowedRegistries = (
           config
             .getOptionalConfig('skillImageConnector')
@@ -313,14 +365,27 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           .map(registry => registry.trim().toLowerCase())
           .filter(Boolean);
 
-        if (imageConfigs.length > 0 && allowedRegistries.length === 0) {
+        const hasConfiguredSources =
+          imageConfigs.length > 0 || quayDiscoveryConfig !== undefined;
+
+        if (hasConfiguredSources && allowedRegistries.length === 0) {
           throw new InputError(
-            'skillImageConnector.allowedRegistries must list at least one registry when images are configured',
+            'skillImageConnector.allowedRegistries must list at least one registry when images or quayDiscovery are configured',
           );
         }
         if (imageConfigs.length > MAX_CONFIGURED_IMAGES) {
           throw new InputError(
             `skillImageConnector.images may contain at most ${MAX_CONFIGURED_IMAGES} entries`,
+          );
+        }
+        if (
+          quayDiscoveryConfig &&
+          !allowedRegistries.includes(
+            quayDiscoveryConfig.registry.toLowerCase(),
+          )
+        ) {
+          throw new InputError(
+            `Registry ${quayDiscoveryConfig.registry} for quayDiscovery is not in skillImageConnector.allowedRegistries`,
           );
         }
         for (const imageConfig of imageConfigs) {
@@ -340,8 +405,11 @@ export const skillImageConnectorPlugin = createBackendPlugin({
             );
           }
         }
+        const discoveryNote = quayDiscoveryConfig
+          ? ` and Quay discovery for ${quayDiscoveryConfig.organization}`
+          : '';
         pluginLogger.info(
-          `Found ${imageConfigs.length} skill image configuration(s)`,
+          `Found ${imageConfigs.length} skill image configuration(s)${discoveryNote}`,
         );
 
         const workDir = safeGetOptionalString(
@@ -356,8 +424,9 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         // Store extraction results so they can be exposed via the API
         const extractions = new Map<string, SkillImageExtraction>();
         const failedImages = new Set<string>();
-        let processingStatus: SkillImageProcessingStatus =
-          imageConfigs.length > 0 ? 'loading' : 'ready';
+        let processingStatus: SkillImageProcessingStatus = hasConfiguredSources
+          ? 'loading'
+          : 'ready';
 
         httpRouter.use(
           await createRouter(
@@ -381,14 +450,54 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         let aggregateContentSize = 0;
 
         const processing = (async () => {
+          // Build the full image list: explicit configs + discovered repos
+          const allImageConfigs: SkillImageConfig[] = [...imageConfigs];
+
+          // Run Quay organization discovery if configured
+          if (quayDiscoveryConfig) {
+            try {
+              const discoveredRefs = await discoverQuayRepositories(
+                quayDiscoveryConfig,
+                pluginLogger,
+                processingAbortController.signal,
+              );
+
+              // Merge discovered refs, skipping duplicates with explicit configs
+              const existingRefs = new Set(imageConfigs.map(c => c.imageRef));
+              for (const ref of discoveredRefs) {
+                if (
+                  !existingRefs.has(ref) &&
+                  allImageConfigs.length < MAX_CONFIGURED_IMAGES
+                ) {
+                  allImageConfigs.push({
+                    id: `discovered-${allImageConfigs.length}`,
+                    imageRef: ref,
+                  });
+                  existingRefs.add(ref);
+                }
+              }
+
+              pluginLogger.info(
+                `Quay discovery added ${allImageConfigs.length - imageConfigs.length} new image(s) to process`,
+              );
+            } catch (error) {
+              if (!processingAbortController.signal.aborted) {
+                pluginLogger.error(
+                  `Quay organization discovery failed for ${quayDiscoveryConfig.organization}`,
+                  error as Error,
+                );
+              }
+            }
+          }
+
           let nextImageIndex = 0;
           const processNextImage = async () => {
             while (
               !processingAbortController.signal.aborted &&
-              nextImageIndex < imageConfigs.length
+              nextImageIndex < allImageConfigs.length
             ) {
               const imageIndex = nextImageIndex++;
-              const imgConfig = imageConfigs[imageIndex];
+              const imgConfig = allImageConfigs[imageIndex];
               try {
                 const result = await fetchWithRetry(
                   imgConfig.imageRef,
@@ -439,14 +548,15 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               {
                 length: Math.min(
                   MAX_CONCURRENT_IMAGE_FETCHES,
-                  imageConfigs.length,
+                  allImageConfigs.length,
                 ),
               },
               processNextImage,
             ),
           );
           processingStatus =
-            imageConfigs.length > 0 && failedImages.size === imageConfigs.length
+            allImageConfigs.length > 0 &&
+            failedImages.size === allImageConfigs.length
               ? 'failed'
               : 'ready';
         })();

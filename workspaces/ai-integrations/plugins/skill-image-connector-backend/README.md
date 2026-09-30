@@ -17,9 +17,7 @@ Then add the plugin to your backend in `packages/backend/src/index.ts`:
 const backend = createBackend();
 // ...
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend'),
 );
 ```
 
@@ -31,6 +29,7 @@ Add the following to your `app-config.yaml`:
 skillImageConnector:
   allowedRegistries:
     - quay.io
+  # Option 1: Explicit image references
   images:
     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
       # Optional; use environment variable substitution for secrets.
@@ -40,7 +39,14 @@ skillImageConnector:
       #   # Required when the token service is on another host, including
       #   # anonymous token exchange.
       #   tokenRealm: https://auth.example.com/token
+  # Option 2: Automatic public Quay organization discovery
+  quayDiscovery:
+    organization: my-skills-org # required
+    # registry: quay.io          # optional, defaults to quay.io
+    # tag: latest                # optional, defaults to latest
 ```
+
+Both explicit images and Quay discovery can be used together. Discovered repositories are merged with explicit images; duplicates are skipped.
 
 ### Configuration fields
 
@@ -52,9 +58,13 @@ skillImageConnector:
 | `skillImageConnector.images[].credentials.username`   | `string` | Registry username; required together with `password`.                                                       |
 | `skillImageConnector.images[].credentials.password`   | `string` | Registry password; use environment variable substitution.                                                   |
 | `skillImageConnector.images[].credentials.tokenRealm` | `string` | Optional HTTPS token endpoint; required for cross-host token exchange and must not contain URL credentials. |
-| `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images.                                      |
+| `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images and discovery registries.             |
+| `skillImageConnector.quayDiscovery`                   | `object` | Optional public Quay organization discovery configuration.                                                  |
+| `skillImageConnector.quayDiscovery.registry`          | `string` | Quay registry host (defaults to `quay.io`).                                                                 |
+| `skillImageConnector.quayDiscovery.organization`      | `string` | Public organization whose repositories will be discovered. Required when `quayDiscovery` is set.            |
+| `skillImageConnector.quayDiscovery.tag`               | `string` | Tag to select for each discovered repository (defaults to `latest`).                                        |
 
-At most 25 images may be configured. **Use immutable digest references (`@sha256:...`) in production.** Mutable tags can be moved or replaced by the registry; the plugin warns at startup when a tag reference is used. Digest-pinned references are verified against the manifest content, preventing tag mutation attacks.
+At most 25 images may be configured (including discovered repositories). **Use immutable digest references (`@sha256:...`) in production.** Mutable tags can be moved or replaced by the registry; the plugin warns at startup when a tag reference is used. Digest-pinned references are verified against the manifest content, preventing tag mutation attacks.
 
 Each extracted layer is limited to 5 MB. The aggregate in-memory content across all images is capped at 50 MB. All configuration fields use `@visibility backend` or `@visibility secret` and are not exposed to the frontend.
 
@@ -64,12 +74,13 @@ On startup the plugin:
 
 1. Cleans up stale extraction directories from any previous abnormal termination.
 2. Reads configured image references from `app-config.yaml`.
-3. Fetches the OCI manifest from the registry using the Distribution Spec v2 HTTP API.
-4. Determines the extraction strategy:
+3. If `quayDiscovery` is configured, discovers all repositories in the public Quay organization using paginated API calls and merges them with the explicit image list.
+4. Fetches the OCI manifest from the registry using the Distribution Spec v2 HTTP API.
+5. Determines the extraction strategy:
    - **Annotated layers**: Two individual layers annotated with `org.opencontainers.image.title` set to `skillimage.yaml`/`skill.yaml` and `SKILLS.md`/`SKILL.md`.
    - **Tar archives**: One or more `tar` or `tar+gzip` layers (as produced by `skillctl`) containing the skill files as tar entries.
-5. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
-6. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
+6. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
+7. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
 
 Transient registry failures (network errors, 5xx responses) are retried up to 2 times with exponential backoff before marking an image as failed.
 
