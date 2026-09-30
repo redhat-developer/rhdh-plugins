@@ -58,7 +58,7 @@ export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
     return this.dbClient.transaction(fn);
   }
 
-  private client(options?: DoraDbWriteOptions) {
+  private client(options?: DoraDbWriteOptions): Knex | Knex.Transaction {
     return options?.trx ?? this.dbClient;
   }
 
