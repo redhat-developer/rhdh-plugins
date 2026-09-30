@@ -19,6 +19,7 @@ The module provides:
 
 - Sidebar items and groups declared in `app-config.yaml` under `app.sidebar`, merged with the contributed ones (see [Sidebar items from app-config](#sidebar-items-from-app-config))
 - Extensible scaffolder template card (`templateCardExtension`)
+- Localized page layout (`component:app/core-page-layout`, replacing the default of `@backstage/plugin-app`): the page header title, tabs and breadcrumbs that `PageBlueprint` / `SubPageBlueprint` pass as plain English strings (e.g. Settings, Scaffolder, DevTools) are looked up in the `@red-hat-developer-hub/backstage-plugin-app-react` translations — titles under `pages.<title>` (shared with the sidebar), tab labels under `pageTabs.<title>`. Unknown titles keep their English label; add a key to the app-react translations (and each locale) to localize a new one
 - Common RHDH icon catalog via `IconBundleBlueprint` (`icon-bundle:app/common`) — same IDs as the legacy `CommonIcons` map (`home`, `group`, `category`, `extension`, `school`, `add`, `developerHub`, …)
 - **Plugin overrides** (via the default feature loader) for catalog, catalog-graph, API docs, TechDocs, and scaffolder — including empty-state pages and **RHDH catalog entity page defaults** (see below)
 - Learning Paths page at `/learning-paths` (`learningPathsModule`) with proxy-backed data and static JSON fallback

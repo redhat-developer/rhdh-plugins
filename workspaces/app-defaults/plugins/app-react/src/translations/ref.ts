@@ -46,6 +46,34 @@ export const appReactTranslationRef = createTranslationRef({
       RBAC: 'RBAC',
       Plugins: 'Plugins',
     },
+    // Page header tab titles (e.g. the Settings sub-pages), keyed by the
+    // English tab title so the localized page layout can look them up
+    // dynamically (see `LocalizedPageLayout` in
+    // `@red-hat-developer-hub/backstage-plugin-app-defaults`). They live in
+    // their own namespace since generic tab titles like `General` may mean
+    // something different than a page of the same name.
+    pageTabs: {
+      // user-settings
+      General: 'General',
+      'Authentication Providers': 'Authentication Providers',
+      'Feature Flags': 'Feature Flags',
+      // scaffolder
+      Templates: 'Templates',
+      Tasks: 'Tasks',
+      Actions: 'Actions',
+      'Template Editor': 'Template Editor',
+      'Templating Extensions': 'Templating Extensions',
+      // devtools
+      Info: 'Info',
+      Config: 'Config',
+      'Scheduled Tasks': 'Scheduled Tasks',
+      // catalog-unprocessed-entities (attached to devtools)
+      'Unprocessed Entities': 'Unprocessed Entities',
+      // app-visualizer
+      Tree: 'Tree',
+      Detailed: 'Detailed',
+      Text: 'Text',
+    },
     catalog: {
       // Catalog entity page group titles, keyed by the English group title.
       entityTabGroups: {

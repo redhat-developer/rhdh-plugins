@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/cli-module-install-dynamic-plugins
 
+## 0.6.1
+
+### Patch Changes
+
+- 588f80f: Warn once per dynamic plugin entry that uses the deprecated `disabled` field, including entries filtered or overridden during installation. Preserve `enabled` precedence and existing plugin loading behavior.
+
 ## 0.6.0
 
 ### Minor Changes

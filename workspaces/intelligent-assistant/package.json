@@ -92,7 +92,6 @@
     "@testing-library/react": "15.0.7",
     "@types/react-dom": "^18",
     "@types/react": "^18",
-    "infinispan": "0.15.0",
     "react-router-dom": "6.30.6",
     "react-router": "6.30.6",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"

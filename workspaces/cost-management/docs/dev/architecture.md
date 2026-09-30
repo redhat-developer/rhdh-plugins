@@ -141,7 +141,7 @@ The only write path: `POST /api/cost-management/apply-recommendation` ([`applyRe
 
 ## 7. Permissions
 
-Full catalogue and policy examples: [`rbac.md`](./rbac.md).
+Full catalogue and policy examples: [`rbac.md`](../rbac.md).
 
 - Domains: **`ros.*`/`ros/…`** (Optimizations) and **`cost.*`/`cost/…`** (OpenShift cost) — plugin-wide plus cluster/project-scoped.
 - **`ros.apply`** gates Apply.
@@ -181,7 +181,7 @@ costManagement:
 
 Schemas: [`cost-management-backend/config.d.ts`](../plugins/cost-management-backend/config.d.ts) · [`cost-management/config.d.ts`](../plugins/cost-management/config.d.ts).
 
-Install / local setup: [`dynamic-plugin.md`](./dynamic-plugin.md) · [`local-dev-setup.md`](./local-dev-setup.md) · [workspace README](../README.md).
+Install / local setup: [`dynamic-plugin.md`](../dynamic-plugin.md) · [`local-dev-setup.md`](./local-dev-setup.md) · [workspace README](../../README.md).
 
 ---
 
@@ -189,6 +189,6 @@ Install / local setup: [`dynamic-plugin.md`](./dynamic-plugin.md) · [`local-dev
 
 - [`walkthrough-architecture-api.md`](./walkthrough-architecture-api.md) — walkthrough + verification
 - [`api-flow.md`](./api-flow.md) — request/response flow with code links
-- [`rbac.md`](./rbac.md) — permissions and policies
+- [`rbac.md`](../rbac.md) — permissions and policies
 - [`plugins/cost-management-backend/README.md`](../plugins/cost-management-backend/README.md) — endpoints and audit log format
 - [Backstage Logger Service](https://backstage.io/docs/backend-system/core-services/logger/) — logging API this plugin uses

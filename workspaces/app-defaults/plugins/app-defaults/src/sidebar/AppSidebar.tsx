@@ -29,12 +29,10 @@ import {
   configApiRef,
   iconsApiRef,
   useApi,
-  useTranslationRef,
 } from '@backstage/frontend-plugin-api';
 import type { IconComponent } from '@backstage/frontend-plugin-api';
 import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import {
-  appReactTranslationRef,
   type SidebarElementData,
   type SidebarItemData,
   type SidebarItemGroupData,
@@ -55,6 +53,7 @@ import {
   readConfigSidebarGroups,
   readConfigSidebarItems,
 } from './readSidebarConfig';
+import { useTranslateTitle } from '../pageLayout/useTranslateTitle';
 
 /**
  * Props for {@link AppSidebar}.
@@ -70,27 +69,6 @@ export interface AppSidebarProps {
   elements?: SidebarElementData[];
   /** Nav items auto-discovered by Backstage from page extensions. */
   navItems?: NavContentNavItems;
-}
-
-/**
- * Returns a function that localizes a sidebar title. Titles are looked up
- * dynamically under the `pages.<title>` keys of the app-react translations
- * (keyed by the English title); unknown titles — including those contributed
- * by plugins we do not know about — fall through unchanged. i18next uses `.`
- * as its key separator, so any dot in the title is replaced with `_`.
- */
-function useTranslateTitle(): (title: string) => string {
-  const { t } = useTranslationRef(appReactTranslationRef);
-  return useMemo(() => {
-    const translate = t as unknown as (
-      key: string,
-      options: { defaultValue: string },
-    ) => string;
-    return (title: string) =>
-      translate(`pages.${title.replaceAll('.', '_')}`, {
-        defaultValue: title,
-      });
-  }, [t]);
 }
 
 function useSidebarIcon(icon: SidebarModelIcon | undefined): IconComponent {
@@ -113,7 +91,7 @@ function useSidebarIcon(icon: SidebarModelIcon | undefined): IconComponent {
 
 function SidebarModelItemEntry({ item }: { item: SidebarModelItem }) {
   const icon = useSidebarIcon(item.icon);
-  const translate = useTranslateTitle();
+  const translate = useTranslateTitle('pages');
   const text = translate(item.title);
   if (item.to) {
     return (
@@ -132,7 +110,7 @@ function SidebarModelItemEntry({ item }: { item: SidebarModelItem }) {
 
 function SidebarModelSubmenuItem({ item }: { item: SidebarModelItem }) {
   const icon = useSidebarIcon(item.icon);
-  const translate = useTranslateTitle();
+  const translate = useTranslateTitle('pages');
   return (
     <SidebarSubmenuItem
       title={translate(item.title)}
@@ -154,7 +132,7 @@ function isActivePath(pathname: string, to: string | undefined): boolean {
 
 function SidebarModelInlineGroup({ group }: { group: SidebarModelGroup }) {
   const icon = useSidebarIcon(group.icon);
-  const translate = useTranslateTitle();
+  const translate = useTranslateTitle('pages');
   const title = translate(group.title);
   const { pathname } = useLocation();
   const { isOpen: isSidebarOpen } = useSidebarOpenState();
@@ -199,7 +177,7 @@ function SidebarModelInlineGroup({ group }: { group: SidebarModelGroup }) {
 
 function SidebarModelFlyoutGroup({ group }: { group: SidebarModelGroup }) {
   const icon = useSidebarIcon(group.icon);
-  const translate = useTranslateTitle();
+  const translate = useTranslateTitle('pages');
   const title = translate(group.title);
   return (
     <SidebarItem icon={icon} text={title} to={group.to}>
@@ -214,7 +192,7 @@ function SidebarModelFlyoutGroup({ group }: { group: SidebarModelGroup }) {
 
 function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
   const icon = useSidebarIcon(group.icon);
-  const translate = useTranslateTitle();
+  const translate = useTranslateTitle('pages');
   if (group.items.length === 0) {
     if (!group.to) {
       return null;

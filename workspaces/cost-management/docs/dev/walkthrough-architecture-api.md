@@ -134,19 +134,19 @@ More on audit purpose and format: [`architecture.md` §8](./architecture.md#8-au
 ## 7. RBAC & Where To Go Deeper
 
 - Domains: `ros.*` / `cost.*`, plus `ros.apply` for write.
-- Server-side enforcement only — see [`rbac.md`](./rbac.md).
+- Server-side enforcement only — see [`rbac.md`](../rbac.md).
 
-| Want…                    | Go to                                                                                     |
-| ------------------------ | ----------------------------------------------------------------------------------------- |
-| Big picture              | [`architecture.md`](./architecture.md)                                                    |
-| Request hops / debugging | [`api-flow.md`](./api-flow.md)                                                            |
-| Permission catalogue     | [`rbac.md`](./rbac.md)                                                                    |
-| Local / dynamic install  | [`local-dev-setup.md`](./local-dev-setup.md) · [`dynamic-plugin.md`](./dynamic-plugin.md) |
+| Want…                    | Go to                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------ |
+| Big picture              | [`architecture.md`](./architecture.md)                                                     |
+| Request hops / debugging | [`api-flow.md`](./api-flow.md)                                                             |
+| Permission catalogue     | [`rbac.md`](../rbac.md)                                                                    |
+| Local / dynamic install  | [`local-dev-setup.md`](./local-dev-setup.md) · [`dynamic-plugin.md`](../dynamic-plugin.md) |
 
 ---
 
 ## 8. Related Documentation
 
-- [`architecture.md`](./architecture.md) · [`api-flow.md`](./api-flow.md) · [`rbac.md`](./rbac.md)
-- [`local-dev-setup.md`](./local-dev-setup.md) · [`dynamic-plugin.md`](./dynamic-plugin.md)
+- [`architecture.md`](./architecture.md) · [`api-flow.md`](./api-flow.md) · [`rbac.md`](../rbac.md)
+- [`local-dev-setup.md`](./local-dev-setup.md) · [`dynamic-plugin.md`](../dynamic-plugin.md)
 - [Workspace `README.md`](../README.md)

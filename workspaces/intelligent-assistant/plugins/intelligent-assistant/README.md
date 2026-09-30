@@ -289,7 +289,7 @@ Enable the plugin and its extensions in your dynamic plugins configuration:
 ```yaml
 plugins:
   - package: './local-plugins/red-hat-developer-hub-backstage-plugin-intelligent-assistant'
-    disabled: false
+    enabled: true
 ```
 
 Then configure extensions in `app-config.yaml`:
@@ -323,7 +323,7 @@ OFS mode uses Scalprum for dynamic plugin loading. Legacy exports require `modul
 ```yaml
 plugins:
   - package: './local-plugins/red-hat-developer-hub-backstage-plugin-intelligent-assistant'
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
