@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.5
+
+### Patch Changes
+
+- ab76946: Fix MUI5 style regressions: notebooks docked scroll, file chip outline border, footer divider, and document row alignment
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.5
+
 ## 5.3.4
 
 ### Patch Changes
