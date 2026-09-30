@@ -213,7 +213,7 @@ describe('scorecard dora module', () => {
       );
 
       expect(response.status).toBe(500);
-      expect(response.body.error.message).toContain('jira:doraIncidents');
+      expect(response.body.error?.message).toContain('jira:doraIncidents');
     },
   );
 
