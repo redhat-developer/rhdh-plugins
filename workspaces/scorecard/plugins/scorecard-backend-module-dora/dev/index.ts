@@ -17,7 +17,9 @@ import { createBackend } from '@backstage/backend-defaults';
 import { mockServices } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
-// Local REST harness. Commands and curl examples are in DEVELOPING.md.
+// Local REST harness. Commands are in DEVELOPING.md.
+// The scorecard backend default export already installs the collectors service.
+// The GitHub module is loaded so DORA deployment collectors are registered.
 
 const backend = createBackend();
 
@@ -42,6 +44,14 @@ backend.add(
   }),
 );
 
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-scorecard-backend'),
+);
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github'
+  ),
+);
 backend.add(import('../src'));
 
 backend.start();
