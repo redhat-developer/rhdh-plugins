@@ -14,10 +14,41 @@
  * limitations under the License.
  */
 
-import { ErrorBoundary } from '@backstage/core-components';
-import { Routes, Route } from 'react-router-dom';
+import { ErrorBoundary, ErrorPage } from '@backstage/core-components';
+import { Routes, Route, useParams } from 'react-router-dom';
 import { DcmClientsProvider } from './api/DcmClientsContext';
+import { useTranslation } from './hooks/useTranslation';
 import { DataCenterPage } from './pages/data-center/DataCenterPage';
+import {
+  policiesRouteRef,
+  serviceTypesRouteRef,
+  catalogItemsRouteRef,
+  catalogItemInstancesRouteRef,
+  resourcesRouteRef,
+} from './routes';
+
+const VALID_SUB_PATHS = new Set([
+  '',
+  ...[
+    policiesRouteRef,
+    serviceTypesRouteRef,
+    catalogItemsRouteRef,
+    catalogItemInstancesRouteRef,
+    resourcesRouteRef,
+  ].map(ref => ref.path.replace(/^\//, '')),
+]);
+
+function DcmRouteGuard() {
+  const params = useParams();
+  const { t } = useTranslation();
+  const subPath = params['*'] ?? '';
+
+  if (!VALID_SUB_PATHS.has(subPath)) {
+    return <ErrorPage status="404" statusMessage={t('page.notFound')} />;
+  }
+
+  return <DataCenterPage />;
+}
 
 /**
  * Plugin-level router. All DCM routes are defined here (app mounts at /dcm/*).
@@ -29,7 +60,7 @@ export function Router() {
     <ErrorBoundary>
       <DcmClientsProvider>
         <Routes>
-          <Route path="*" element={<DataCenterPage />} />
+          <Route path="*" element={<DcmRouteGuard />} />
         </Routes>
       </DcmClientsProvider>
     </ErrorBoundary>

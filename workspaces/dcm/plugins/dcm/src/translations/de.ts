@@ -27,6 +27,7 @@ const dcmTranslationDe: TranslationMessages<
   ref: dcmTranslationRef,
   messages: {
     'page.title': 'Rechenzentrum',
+    'page.notFound': 'Seite nicht gefunden',
     'page.tabs.agents': 'Agents',
     'page.tabs.policies': 'Richtlinien',
     'page.tabs.serviceTypes': 'Servicetypen',

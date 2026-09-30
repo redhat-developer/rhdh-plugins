@@ -27,6 +27,7 @@ import {
 export const dcmMessages = {
   page: {
     title: 'Data Center',
+    notFound: 'Page not found',
     tabs: {
       agents: 'Agents',
       policies: 'Policies',
