@@ -1,0 +1,103 @@
+name: Link Fullsend PR on Jira issue
+
+on:
+  pull_request_target:
+    types: [opened]
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: fullsend-jira-pr-link-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  comment-jira:
+    if: >-
+      github.repository == 'redhat-developer/rhdh-plugins'
+      && github.event.pull_request.user.login == 'fullsend-ai-coder[bot]'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Comment on source Jira issue
+        env:
+          JIRA_BASE_URL: ${{ vars.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          set -euo pipefail
+
+          # The code post-script creates agent/<Jira key>-* and adds this exact
+          # Jira reference to the PR body. Require both before writing to Jira.
+          if [[ ! "${PR_HEAD_REF}" =~ ^agent/(RHIDP-[0-9]+)-[a-z0-9-]+$ ]]; then
+            echo "Not a Jira code-agent branch; skipping."
+            exit 0
+          fi
+          issue_key="${BASH_REMATCH[1]}"
+          jira_url="https://redhat.atlassian.net/browse/${issue_key}"
+          if ! grep -Fxq "Related to ${jira_url}" <<< "${PR_BODY}"; then
+            echo "PR body does not reference ${issue_key}; skipping."
+            exit 0
+          fi
+          if [[ ! "${PR_URL}" =~ ^https://github\.com/redhat-developer/rhdh-plugins/pull/[0-9]+$ ]]; then
+            echo "::error::Unexpected PR URL"
+            exit 1
+          fi
+          if [[ "${JIRA_BASE_URL%/}" != "https://redhat.atlassian.net" ]]; then
+            echo "::error::JIRA_BASE_URL must be https://redhat.atlassian.net"
+            exit 1
+          fi
+          if [[ -z "${JIRA_USER_EMAIL}" || -z "${JIRA_TOKEN}" ]]; then
+            echo "::error::Jira credentials are missing"
+            exit 1
+          fi
+
+          api_url="${JIRA_BASE_URL%/}/rest/api/3/issue/${issue_key}/comment"
+          start_at=0
+          while true; do
+            comments="$(curl --silent --show-error --fail-with-body --retry 3 \
+              --user "${JIRA_USER_EMAIL}:${JIRA_TOKEN}" \
+              --header 'Accept: application/json' \
+              "${api_url}?startAt=${start_at}&maxResults=100")"
+            if jq -e --arg url "${PR_URL}" \
+              '[.comments[]?.body | .. | objects | select(.type == "text") | .text] | any(. == $url)' \
+              <<< "${comments}" > /dev/null; then
+              echo "PR already linked on ${issue_key}; skipping duplicate comment."
+              exit 0
+            fi
+            page_size="$(jq -r '.comments | length' <<< "${comments}")"
+            total="$(jq -r '.total' <<< "${comments}")"
+            start_at=$((start_at + page_size))
+            if (( start_at >= total || page_size == 0 )); then
+              break
+            fi
+          done
+
+          jq -n --arg url "${PR_URL}" '{
+            body: {
+              type: "doc", version: 1,
+              content: [{
+                type: "paragraph",
+                content: [
+                  {type: "text", text: "Fullsend created a pull request: "},
+                  {type: "text", text: $url, marks: [{type: "link", attrs: {href: $url}}]}
+                ]
+              }]
+            }
+          }' > "${RUNNER_TEMP}/jira-pr-comment.json"
+          curl --silent --show-error --fail-with-body \
+            --user "${JIRA_USER_EMAIL}:${JIRA_TOKEN}" \
+            --header 'Accept: application/json' \
+            --header 'Content-Type: application/json' \
+            --data-binary "@${RUNNER_TEMP}/jira-pr-comment.json" \
+            --output /dev/null \
+            "${api_url}"
+          echo "Linked ${PR_URL} on ${issue_key}."
