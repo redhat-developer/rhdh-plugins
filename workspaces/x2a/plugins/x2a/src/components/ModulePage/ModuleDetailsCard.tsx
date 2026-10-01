@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { Box, Divider, Grid, Tooltip, Typography } from '@material-ui/core';
+import {
+  Box,
+  Divider,
+  Grid,
+  IconButton,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import {
   Artifact,
@@ -79,11 +86,13 @@ export const ModuleDetailsCard = ({
               {t('modulePage.artifacts.title')}
             </Typography>
             <Tooltip title={t('modulePage.artifacts.description')}>
-              <InfoOutlinedIcon
-                fontSize="small"
-                color="action"
+              <IconButton
+                aria-label={t('modulePage.artifacts.description')}
+                size="small"
                 style={{ marginLeft: 6 }}
-              />
+              >
+                <InfoOutlinedIcon fontSize="small" color="action" />
+              </IconButton>
             </Tooltip>
           </Box>
         </Grid>

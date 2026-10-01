@@ -36,24 +36,10 @@ import {
 import { useTranslation } from '../hooks/useTranslation';
 import { useLogStream } from '../hooks/useLogStream';
 import { useClientService } from '../ClientService';
-import AccessTimeIcon from '@material-ui/icons/AccessTime';
-import CodeIcon from '@material-ui/icons/Code';
-import CloudQueueIcon from '@material-ui/icons/CloudQueue';
-import FingerprintIcon from '@material-ui/icons/Fingerprint';
-import RepeatIcon from '@material-ui/icons/Repeat';
-import TimerIcon from '@material-ui/icons/Timer';
-import { PhaseField } from './PhaseField';
-import { TruncatedId } from './TruncatedId';
-import {
-  canCancelPhase,
-  downloadLogFile,
-  formatDuration,
-  getEffectiveDurationSeconds,
-  humanizeDate,
-  secondsBetween,
-} from './tools';
+import { canCancelPhase, downloadLogFile } from './tools';
 import { TelemetrySection } from './PhaseTelemetry';
 import { PhaseStatus } from './PhaseStatus';
+import { PhaseMetadata } from './PhaseMetadata';
 
 const useStyles = makeStyles(theme => ({
   buttonGroup: {
@@ -196,29 +182,10 @@ export const PhaseDetails = (
   const { t } = useTranslation();
   const classes = useStyles();
   const clientService = useClientService();
-  const empty = t('module.phases.none');
   const [showLog, setShowLog] = useState(false);
 
   const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
-
-  const durationSeconds = phase
-    ? getEffectiveDurationSeconds(phase)
-    : undefined;
-  const duration =
-    durationSeconds === undefined ? empty : formatDuration(t, durationSeconds);
-
-  const attemptCount = phase?.attemptCount ?? (phase ? 1 : undefined);
-  const totalDuration =
-    attemptCount &&
-    attemptCount > 1 &&
-    phase?.firstAttemptAt &&
-    phase?.finishedAt
-      ? formatDuration(
-          t,
-          secondsBetween(phase.firstAttemptAt, phase.finishedAt),
-        )
-      : undefined;
 
   const canRunPhase = phase?.status !== 'running';
 
@@ -271,57 +238,10 @@ export const PhaseDetails = (
       </Grid>
 
       <Grid item xs={12}>
-        <Box
-          display="flex"
-          flexWrap="wrap"
-          justifyContent="space-between"
-          style={{ gap: '16px 0' }}
-        >
-          <PhaseField label={t('modulePage.phases.status')}>
-            <PhaseStatus status={phase?.status} />
-          </PhaseField>
-          <PhaseField
-            label={t('modulePage.phases.startedAt')}
-            icon={AccessTimeIcon}
-          >
-            {phase?.startedAt ? humanizeDate(phase.startedAt) : empty}
-          </PhaseField>
-          <PhaseField label={t('modulePage.phases.duration')} icon={TimerIcon}>
-            {duration}
-          </PhaseField>
-          <PhaseField label={t('modulePage.phases.attempts')} icon={RepeatIcon}>
-            {String(attemptCount ?? empty)}
-          </PhaseField>
-          {totalDuration && (
-            <PhaseField
-              label={t('modulePage.phases.totalElapsed')}
-              icon={TimerIcon}
-            >
-              {totalDuration}
-            </PhaseField>
-          )}
-          {phase?.k8sJobName && (
-            <PhaseField
-              label={t('modulePage.phases.k8sJobName')}
-              icon={CloudQueueIcon}
-            >
-              <TruncatedId value={phase.k8sJobName} />
-            </PhaseField>
-          )}
-          {phase?.id && (
-            <PhaseField
-              label={t('modulePage.phases.id')}
-              icon={FingerprintIcon}
-            >
-              <TruncatedId value={phase.id} />
-            </PhaseField>
-          )}
-          {phase?.commitId && (
-            <PhaseField label={t('modulePage.phases.commitId')} icon={CodeIcon}>
-              <TruncatedId value={phase.commitId} />
-            </PhaseField>
-          )}
-        </Box>
+        <PhaseMetadata
+          phase={phase}
+          status={<PhaseStatus status={phase?.status} />}
+        />
         {phase?.errorDetails && (
           <Box mt={1}>
             <Typography variant="caption" color="textSecondary">

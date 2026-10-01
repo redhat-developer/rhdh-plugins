@@ -43,24 +43,16 @@ import {
 import { useTranslation } from '../../hooks/useTranslation';
 import { useLogStream } from '../../hooks/useLogStream';
 import { useClientService } from '../../ClientService';
-import AccessTimeIcon from '@material-ui/icons/AccessTime';
-import CloudQueueIcon from '@material-ui/icons/CloudQueue';
-import CodeIcon from '@material-ui/icons/Code';
-import FingerprintIcon from '@material-ui/icons/Fingerprint';
-import RepeatIcon from '@material-ui/icons/Repeat';
-import TimerIcon from '@material-ui/icons/Timer';
 import { ArtifactLink } from '../ArtifactLink';
 import { PhaseField } from '../PhaseField';
-import { TruncatedId } from '../TruncatedId';
 import { PhaseStatus } from '../PhaseStatus';
+import { PhaseMetadata } from '../PhaseMetadata';
 import { TelemetrySection } from '../PhaseTelemetry';
 import {
   canCancelPhase,
   downloadLogFile,
   formatDuration,
   getEffectiveDurationSeconds,
-  humanizeDate,
-  secondsBetween,
 } from '../tools';
 import { AdversarialAgentsSelector } from './AdversarialAgentsSelector';
 
@@ -250,12 +242,6 @@ export const AdversarialReviewSection = ({
   const duration =
     durationSeconds === undefined ? empty : formatDuration(t, durationSeconds);
 
-  const attemptCount = job?.attemptCount ?? 1;
-  const totalDuration =
-    attemptCount > 1 && job?.firstAttemptAt && job?.finishedAt
-      ? formatDuration(t, secondsBetween(job.firstAttemptAt, job.finishedAt))
-      : undefined;
-
   if (!job && !canRun) return null;
 
   const jobStatus = job?.status ? JobStatus.from(job.status) : undefined;
@@ -387,70 +373,16 @@ export const AdversarialReviewSection = ({
 
           {job && (
             <Box>
-              <Box
-                display="flex"
-                flexWrap="wrap"
-                justifyContent="space-between"
-                style={{ gap: '16px 0' }}
-              >
-                <PhaseField label={t('modulePage.phases.status')}>
-                  {isSuccess ? (
+              <PhaseMetadata
+                phase={job}
+                status={
+                  isSuccess ? (
                     t('modulePage.phases.adversarialCompleted')
                   ) : (
                     <PhaseStatus status={job.status} />
-                  )}
-                </PhaseField>
-                <PhaseField
-                  label={t('modulePage.phases.startedAt')}
-                  icon={AccessTimeIcon}
-                >
-                  {job.startedAt ? humanizeDate(job.startedAt) : empty}
-                </PhaseField>
-                <PhaseField
-                  label={t('modulePage.phases.duration')}
-                  icon={TimerIcon}
-                >
-                  {duration}
-                </PhaseField>
-                <PhaseField
-                  label={t('modulePage.phases.attempts')}
-                  icon={RepeatIcon}
-                >
-                  {String(attemptCount)}
-                </PhaseField>
-                {totalDuration && (
-                  <PhaseField
-                    label={t('modulePage.phases.totalElapsed')}
-                    icon={TimerIcon}
-                  >
-                    {totalDuration}
-                  </PhaseField>
-                )}
-                {job.k8sJobName && (
-                  <PhaseField
-                    label={t('modulePage.phases.k8sJobName')}
-                    icon={CloudQueueIcon}
-                  >
-                    <TruncatedId value={job.k8sJobName} />
-                  </PhaseField>
-                )}
-                {job.id && (
-                  <PhaseField
-                    label={t('modulePage.phases.id')}
-                    icon={FingerprintIcon}
-                  >
-                    <TruncatedId value={job.id} />
-                  </PhaseField>
-                )}
-                {job.commitId && (
-                  <PhaseField
-                    label={t('modulePage.phases.commitId')}
-                    icon={CodeIcon}
-                  >
-                    <TruncatedId value={job.commitId} />
-                  </PhaseField>
-                )}
-              </Box>
+                  )
+                }
+              />
 
               <Box
                 display="flex"
