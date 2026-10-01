@@ -89,6 +89,56 @@ export interface Config {
       };
     };
     /**
+     * Configuration for Screen Context (deep context awareness).
+     * Declared on the backend schema so RHDH includes it in the
+     * frontend-injected config filter (frontend-only schemas are stripped).
+     * @visibility frontend
+     */
+    'screen-context'?: {
+      /**
+       * Enable/disable the Screen Context feature.
+       * When enabled, the assistant can capture the user's current RHDH screen
+       * to provide context-aware responses. Users must still opt in via the kebab menu.
+       * @default false
+       * @visibility frontend
+       */
+      enabled?: boolean;
+      /**
+       * Screenshot capture configuration
+       * @visibility frontend
+       */
+      screenshots?: {
+        /**
+         * Enable/disable screenshot capture within Screen Context.
+         * Admin can disable screenshots org-wide while keeping DOM text context.
+         * @default true
+         * @visibility frontend
+         */
+        enabled?: boolean;
+      };
+      /**
+       * DOM text extraction configuration
+       * @visibility frontend
+       */
+      'dom-extraction'?: {
+        /**
+         * Enable/disable DOM text extraction within Screen Context.
+         * When enabled, extracts structured page content (headings, tables, alerts, text)
+         * and sends it as context alongside the user's message.
+         * @default true
+         * @visibility frontend
+         */
+        enabled?: boolean;
+        /**
+         * Maximum characters to extract from the page.
+         * Higher values provide richer context but consume more LLM tokens.
+         * @default 8000
+         * @visibility frontend
+         */
+        maxChars?: number;
+      };
+    };
+    /**
      * Configuration for AI Notebooks (Developer Preview)
      */
     notebooks?: {

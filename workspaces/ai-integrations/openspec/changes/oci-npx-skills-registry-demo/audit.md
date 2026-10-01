@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-09-30T00:00:00Z
+**Last audited:** 2026-10-01T00:00:00Z
 
 Audit clean (no CRITICAL). The independent auditor returned no findings for the
 final artifacts. All required planning artifacts are present and marked done by
@@ -11,6 +11,8 @@ Strict OpenSpec validation, relative links, workspace TypeScript, and workspace
 Prettier checks passed. This audit evaluates specification coherence, not runtime
 implementation; task 2.1 is now complete and all remaining implementation tasks
 are unchecked.
+implementation; task 1.1 is checked (implemented in `ai-skills-common` PR #5061)
+and task 1.4 is annotated with shared-library completion status.
 
 Fixes to one file can introduce new drift elsewhere — re-run the audit after
 resolving remaining findings.
