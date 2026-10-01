@@ -69,7 +69,7 @@ describe('JiraClientFactory', () => {
       config = newMockRootConfig({
         jiraConfig: {
           baseUrl: 'https://example.atlassian.net',
-          token: 'token',
+          token: 'Basic token',
           product: 'cloud',
           proxyPath: undefined,
         },
@@ -78,8 +78,7 @@ describe('JiraClientFactory', () => {
       JiraClientFactory.fromConfig(config, factoryOptions);
       expect(mockedDirectConnectionStrategy).toHaveBeenCalledWith(
         'https://example.atlassian.net',
-        'token',
-        'cloud',
+        'Basic token',
       );
       expect(mockedProxyConnectionStrategy).not.toHaveBeenCalled();
     });
@@ -93,8 +92,7 @@ describe('JiraClientFactory', () => {
       expect(client).toBeInstanceOf(JiraDataCenterClientStrategy);
       expect(mockedDirectConnectionStrategy).toHaveBeenCalledWith(
         'https://example.com/api',
-        'dummyToken',
-        'datacenter',
+        'Bearer dummyToken',
       );
       expect(JiraDataCenterClientStrategy).toHaveBeenCalledWith(
         mockedDirectConnectionStrategy.mock.instances[0],
@@ -130,8 +128,7 @@ describe('JiraClientFactory', () => {
       expect(client).toBeInstanceOf(JiraCloudClientStrategy);
       expect(mockedDirectConnectionStrategy).toHaveBeenCalledWith(
         'https://example.com/api',
-        'dummyToken',
-        'cloud',
+        'Bearer dummyToken',
       );
       expect(JiraCloudClientStrategy).toHaveBeenCalledWith(
         mockedDirectConnectionStrategy.mock.instances[0],
@@ -156,6 +153,39 @@ describe('JiraClientFactory', () => {
         mockedProxyConnectionStrategy.mock.instances[0],
         factoryOptions.logger,
       );
+    });
+
+    it('should ignore token when proxyPath is set', () => {
+      config = newMockRootConfig({
+        jiraConfig: {
+          product: 'cloud',
+          proxyPath: '/jira/api',
+          token: 'not-a-valid-auth-header',
+        },
+      });
+
+      expect(() =>
+        JiraClientFactory.fromConfig(config, factoryOptions),
+      ).not.toThrow();
+      expect(mockedDirectConnectionStrategy).not.toHaveBeenCalled();
+      expect(mockedProxyConnectionStrategy).toHaveBeenCalled();
+    });
+
+    it('should throw when direct token is missing Basic or Bearer prefix', () => {
+      config = newMockRootConfig({
+        jiraConfig: {
+          product: 'cloud',
+          proxyPath: undefined,
+          token: 'bare-token-without-scheme',
+        },
+      });
+
+      expect(() =>
+        JiraClientFactory.fromConfig(config, factoryOptions),
+      ).toThrow(
+        "Invalid jira.token: must be a full Authorization value starting with 'Basic ' or 'Bearer '",
+      );
+      expect(mockedDirectConnectionStrategy).not.toHaveBeenCalled();
     });
 
     it('should throw when product is invalid', () => {

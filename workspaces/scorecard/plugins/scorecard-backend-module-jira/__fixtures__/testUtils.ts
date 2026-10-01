@@ -66,7 +66,7 @@ export function newMockRootConfig({
 }: NewMockRootConfigProps = {}): Config {
   const jira = {
     baseUrl: 'https://example.com/api',
-    token: 'dummyToken',
+    token: 'Bearer dummyToken',
     product: 'cloud',
     proxyPath: '/jira/api',
     ...jiraConfig,
