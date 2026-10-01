@@ -110,7 +110,7 @@ export function isValidUtcTimestamp(value: string): boolean {
     return false;
   }
   const d = new Date(value);
-  return !isNaN(d.getTime());
+  return !Number.isNaN(d.getTime());
 }
 
 /**
@@ -146,21 +146,13 @@ function validateAuthor(
 }
 
 /**
- * Validates a base SkillRecord (common fields).
+ * Validates the required fields of a SkillRecord (key, name, sourceUri, digest).
  */
-function validateBaseRecord(
-  record: unknown,
-  index: number,
+function validateRequiredRecordFields(
+  r: Record<string, unknown>,
+  prefix: string,
   errors: string[],
-): record is SkillRecord {
-  const prefix = `skills[${index}]`;
-  if (typeof record !== 'object' || record === null) {
-    errors.push(`${prefix}: must be an object`);
-    return false;
-  }
-  const r = record as Record<string, unknown>;
-
-  // Required non-empty strings
+): boolean {
   if (!isNonEmptyString(r.key)) {
     errors.push(`${prefix}.key: must be a non-empty string`);
     return false;
@@ -183,8 +175,17 @@ function validateBaseRecord(
     );
     return false;
   }
+  return true;
+}
 
-  // Optional string fields
+/**
+ * Validates optional string fields, authors array, and tags array on a record.
+ */
+function validateOptionalRecordFields(
+  r: Record<string, unknown>,
+  prefix: string,
+  errors: string[],
+): boolean {
   const optionalStrings = [
     'description',
     'version',
@@ -200,31 +201,100 @@ function validateBaseRecord(
     }
   }
 
-  // Optional authors array
-  if (r.authors !== undefined) {
-    if (!Array.isArray(r.authors)) {
-      errors.push(`${prefix}.authors: must be an array when present`);
-      return false;
-    }
-    for (let i = 0; i < r.authors.length; i++) {
-      validateAuthor(r.authors[i], `${prefix}.authors[${i}]`, errors);
-    }
+  if (!validateAuthorsField(r, prefix, errors)) {
+    return false;
   }
 
-  // Optional tags array
-  if (r.tags !== undefined) {
-    if (!Array.isArray(r.tags)) {
-      errors.push(`${prefix}.tags: must be an array when present`);
+  return validateTagsField(r, prefix, errors);
+}
+
+/**
+ * Validates the optional `authors` array field on a record.
+ */
+function validateAuthorsField(
+  r: Record<string, unknown>,
+  prefix: string,
+  errors: string[],
+): boolean {
+  if (r.authors === undefined) {
+    return true;
+  }
+  if (!Array.isArray(r.authors)) {
+    errors.push(`${prefix}.authors: must be an array when present`);
+    return false;
+  }
+  for (let i = 0; i < r.authors.length; i++) {
+    validateAuthor(r.authors[i], `${prefix}.authors[${i}]`, errors);
+  }
+  return true;
+}
+
+/**
+ * Validates the optional `tags` array field on a record.
+ */
+function validateTagsField(
+  r: Record<string, unknown>,
+  prefix: string,
+  errors: string[],
+): boolean {
+  if (r.tags === undefined) {
+    return true;
+  }
+  if (!Array.isArray(r.tags)) {
+    errors.push(`${prefix}.tags: must be an array when present`);
+    return false;
+  }
+  for (let i = 0; i < r.tags.length; i++) {
+    if (typeof r.tags[i] !== 'string') {
+      errors.push(`${prefix}.tags[${i}]: must be a string`);
       return false;
     }
-    for (let i = 0; i < r.tags.length; i++) {
-      if (typeof r.tags[i] !== 'string') {
-        errors.push(`${prefix}.tags[${i}]: must be a string`);
-        return false;
-      }
-    }
+  }
+  return true;
+}
+
+/**
+ * Validates a base SkillRecord (common fields).
+ */
+function validateBaseRecord(
+  record: unknown,
+  index: number,
+  errors: string[],
+): record is SkillRecord {
+  const prefix = `skills[${index}]`;
+  if (typeof record !== 'object' || record === null) {
+    errors.push(`${prefix}: must be an object`);
+    return false;
+  }
+  const r = record as Record<string, unknown>;
+
+  if (!validateRequiredRecordFields(r, prefix, errors)) {
+    return false;
   }
 
+  return validateOptionalRecordFields(r, prefix, errors);
+}
+
+/**
+ * Validates keys within the OCI extension container.
+ */
+function validateOciContainerKeys(
+  oci: Record<string, unknown>,
+  prefix: string,
+  errors: string[],
+): boolean {
+  for (const key of Object.keys(oci)) {
+    if (!ALLOWED_OCI_EXTENSION_KEYS.has(key)) {
+      errors.push(`${prefix}.extensions.oci: unknown key '${key}'`);
+      return false;
+    }
+    if (oci[key] !== undefined && typeof oci[key] !== 'string') {
+      errors.push(
+        `${prefix}.extensions.oci.${key}: must be a string when present`,
+      );
+      return false;
+    }
+  }
   return true;
 }
 
@@ -257,26 +327,40 @@ function validateOciExtensions(
     }
   }
 
-  if (ext.oci !== undefined) {
-    if (typeof ext.oci !== 'object' || ext.oci === null) {
-      errors.push(`${prefix}.extensions.oci: must be an object when present`);
+  if (ext.oci === undefined) {
+    return true;
+  }
+  if (typeof ext.oci !== 'object' || ext.oci === null) {
+    errors.push(`${prefix}.extensions.oci: must be an object when present`);
+    return false;
+  }
+  return validateOciContainerKeys(
+    ext.oci as Record<string, unknown>,
+    prefix,
+    errors,
+  );
+}
+
+/**
+ * Validates keys within the npx extension container.
+ */
+function validateNpxContainerKeys(
+  npx: Record<string, unknown>,
+  prefix: string,
+  errors: string[],
+): boolean {
+  for (const key of Object.keys(npx)) {
+    if (!ALLOWED_NPX_EXTENSION_KEYS.has(key)) {
+      errors.push(`${prefix}.extensions.npx: unknown key '${key}'`);
       return false;
     }
-    const oci = ext.oci as Record<string, unknown>;
-    for (const key of Object.keys(oci)) {
-      if (!ALLOWED_OCI_EXTENSION_KEYS.has(key)) {
-        errors.push(`${prefix}.extensions.oci: unknown key '${key}'`);
-        return false;
-      }
-      if (oci[key] !== undefined && typeof oci[key] !== 'string') {
-        errors.push(
-          `${prefix}.extensions.oci.${key}: must be a string when present`,
-        );
-        return false;
-      }
-    }
   }
-
+  if (npx.type !== undefined && npx.type !== 'skill-md') {
+    errors.push(
+      `${prefix}.extensions.npx.type: must be 'skill-md' when present`,
+    );
+    return false;
+  }
   return true;
 }
 
@@ -309,27 +393,18 @@ function validateNpxExtensions(
     }
   }
 
-  if (ext.npx !== undefined) {
-    if (typeof ext.npx !== 'object' || ext.npx === null) {
-      errors.push(`${prefix}.extensions.npx: must be an object when present`);
-      return false;
-    }
-    const npx = ext.npx as Record<string, unknown>;
-    for (const key of Object.keys(npx)) {
-      if (!ALLOWED_NPX_EXTENSION_KEYS.has(key)) {
-        errors.push(`${prefix}.extensions.npx: unknown key '${key}'`);
-        return false;
-      }
-    }
-    if (npx.type !== undefined && npx.type !== 'skill-md') {
-      errors.push(
-        `${prefix}.extensions.npx.type: must be 'skill-md' when present`,
-      );
-      return false;
-    }
+  if (ext.npx === undefined) {
+    return true;
   }
-
-  return true;
+  if (typeof ext.npx !== 'object' || ext.npx === null) {
+    errors.push(`${prefix}.extensions.npx: must be an object when present`);
+    return false;
+  }
+  return validateNpxContainerKeys(
+    ext.npx as Record<string, unknown>,
+    prefix,
+    errors,
+  );
 }
 
 /**
@@ -347,6 +422,181 @@ function validateRecordExtensions(
     return validateOciExtensions(record, index, errors);
   }
   return validateNpxExtensions(record, index, errors);
+}
+
+/**
+ * Validates the structural shape of a snapshot: schemaVersion, source,
+ * status, and the presence of skills and failedSkillKeys arrays.
+ *
+ * Returns the parsed sourceType and status on success, or null on failure
+ * (with errors pushed to the provided array).
+ */
+function validateSnapshotShape(
+  s: Record<string, unknown>,
+  errors: string[],
+): { sourceType: SkillSourceType; status: SnapshotStatus } | null {
+  // Schema version
+  if (s.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
+    errors.push(
+      `schemaVersion: must be '${SUPPORTED_SCHEMA_VERSION}', got '${String(
+        s.schemaVersion,
+      )}'`,
+    );
+    return null;
+  }
+
+  // Source
+  if (typeof s.source !== 'object' || s.source === null) {
+    errors.push('source: must be an object');
+    return null;
+  }
+  const source = s.source as Record<string, unknown>;
+  if (!isNonEmptyString(source.id)) {
+    errors.push('source.id: must be a non-empty string');
+  }
+  if (!VALID_SOURCE_TYPES.has(source.type as string)) {
+    errors.push(
+      `source.type: must be one of 'oci', 'npx', got '${String(source.type)}'`,
+    );
+  }
+
+  // Early return if source is invalid — can't validate records
+  if (errors.length > 0) {
+    return null;
+  }
+  const sourceType = source.type as SkillSourceType;
+
+  // Status
+  if (!VALID_STATUSES.has(s.status as string)) {
+    errors.push(
+      `status: must be one of 'loading', 'ready', 'partial', 'failed', got '${String(
+        s.status,
+      )}'`,
+    );
+    return null;
+  }
+  const status = s.status as SnapshotStatus;
+
+  // Arrays must be present
+  if (!Array.isArray(s.skills)) {
+    errors.push('skills: must be an array');
+    return null;
+  }
+  if (!Array.isArray(s.failedSkillKeys)) {
+    errors.push('failedSkillKeys: must be an array');
+    return null;
+  }
+
+  return { sourceType, status };
+}
+
+/**
+ * Validates the `observedAt` field based on the snapshot status.
+ */
+function validateObservedAt(
+  s: Record<string, unknown>,
+  status: SnapshotStatus,
+  errors: string[],
+): void {
+  if (status === 'loading') {
+    if (s.observedAt !== null) {
+      errors.push('observedAt: must be null for loading status');
+    }
+  } else if (typeof s.observedAt !== 'string') {
+    errors.push(
+      'observedAt: must be a UTC timestamp string for completed status',
+    );
+  } else if (!isValidUtcTimestamp(s.observedAt)) {
+    errors.push('observedAt: must be a valid UTC ISO 8601 timestamp');
+  }
+}
+
+/**
+ * Validates status invariants per design D6.
+ */
+function validateStatusInvariants(
+  skills: unknown[],
+  failedSkillKeys: unknown[],
+  status: SnapshotStatus,
+  errors: string[],
+): void {
+  if (status === 'loading') {
+    if (skills.length > 0) {
+      errors.push('skills: must be empty for loading status');
+    }
+    if (failedSkillKeys.length > 0) {
+      errors.push('failedSkillKeys: must be empty for loading status');
+    }
+  }
+  if (status === 'ready') {
+    if (failedSkillKeys.length > 0) {
+      errors.push('failedSkillKeys: must be empty for ready status');
+    }
+  }
+  if (status === 'failed') {
+    if (skills.length > 0) {
+      errors.push('skills: must be empty for failed status');
+    }
+  }
+}
+
+/**
+ * Validates individual records and collects unique skill keys.
+ */
+function validateSnapshotRecords(
+  skills: unknown[],
+  sourceType: SkillSourceType,
+  errors: string[],
+): Set<string> {
+  const skillKeys = new Set<string>();
+  for (let i = 0; i < skills.length; i++) {
+    const record = skills[i];
+    if (validateBaseRecord(record, i, errors)) {
+      const r = record as SkillRecord;
+      if (skillKeys.has(r.key)) {
+        errors.push(`skills[${i}].key: duplicate key '${r.key}'`);
+      }
+      skillKeys.add(r.key);
+    }
+    if (typeof record === 'object' && record !== null) {
+      validateRecordExtensions(
+        record as Record<string, unknown>,
+        i,
+        sourceType,
+        errors,
+      );
+    }
+  }
+  return skillKeys;
+}
+
+/**
+ * Validates failedSkillKeys entries and checks for disjointness
+ * with successful skill keys.
+ */
+function validateDisjointKeys(
+  failedSkillKeys: unknown[],
+  skillKeys: Set<string>,
+  errors: string[],
+): void {
+  for (let i = 0; i < failedSkillKeys.length; i++) {
+    if (!isNonEmptyString(failedSkillKeys[i])) {
+      errors.push(`failedSkillKeys[${i}]: must be a non-empty string`);
+    }
+  }
+
+  const failedKeys = new Set<string>();
+  for (const fk of failedSkillKeys) {
+    if (typeof fk === 'string') {
+      if (failedKeys.has(fk)) {
+        errors.push(`failedSkillKeys: duplicate key '${fk}'`);
+      }
+      failedKeys.add(fk);
+      if (skillKeys.has(fk)) {
+        errors.push(`failedSkillKeys: key '${fk}' overlaps with skills`);
+      }
+    }
+  }
 }
 
 /**
@@ -376,142 +626,33 @@ export function validateSnapshot(snapshot: unknown): ValidationResult {
   }
   const s = snapshot as Record<string, unknown>;
 
-  // Schema version
-  if (s.schemaVersion !== SUPPORTED_SCHEMA_VERSION) {
+  const shape = validateSnapshotShape(s, errors);
+  if (shape === null) {
+    return { valid: false, errors };
+  }
+  const { sourceType, status } = shape;
+
+  validateObservedAt(s, status, errors);
+  validateStatusInvariants(
+    s.skills as unknown[],
+    s.failedSkillKeys as unknown[],
+    status,
+    errors,
+  );
+
+  const skillKeys = validateSnapshotRecords(
+    s.skills as unknown[],
+    sourceType,
+    errors,
+  );
+
+  validateDisjointKeys(s.failedSkillKeys as unknown[], skillKeys, errors);
+
+  if ((s.skills as unknown[]).length > MAX_SNAPSHOT_RECORDS) {
     errors.push(
-      `schemaVersion: must be '${SUPPORTED_SCHEMA_VERSION}', got '${String(
-        s.schemaVersion,
-      )}'`,
-    );
-    return { valid: false, errors };
-  }
-
-  // Source
-  if (typeof s.source !== 'object' || s.source === null) {
-    errors.push('source: must be an object');
-    return { valid: false, errors };
-  }
-  const source = s.source as Record<string, unknown>;
-  if (!isNonEmptyString(source.id)) {
-    errors.push('source.id: must be a non-empty string');
-  }
-  if (!VALID_SOURCE_TYPES.has(source.type as string)) {
-    errors.push(
-      `source.type: must be one of 'oci', 'npx', got '${String(source.type)}'`,
-    );
-  }
-
-  // Early return if source is invalid — can't validate records
-  if (errors.length > 0) {
-    return { valid: false, errors };
-  }
-  const sourceType = source.type as SkillSourceType;
-
-  // Status
-  if (!VALID_STATUSES.has(s.status as string)) {
-    errors.push(
-      `status: must be one of 'loading', 'ready', 'partial', 'failed', got '${String(
-        s.status,
-      )}'`,
-    );
-    return { valid: false, errors };
-  }
-  const status = s.status as SnapshotStatus;
-
-  // Arrays must be present
-  if (!Array.isArray(s.skills)) {
-    errors.push('skills: must be an array');
-    return { valid: false, errors };
-  }
-  if (!Array.isArray(s.failedSkillKeys)) {
-    errors.push('failedSkillKeys: must be an array');
-    return { valid: false, errors };
-  }
-
-  // observedAt
-  if (status === 'loading') {
-    if (s.observedAt !== null) {
-      errors.push('observedAt: must be null for loading status');
-    }
-  } else {
-    // Completed statuses require a UTC timestamp
-    if (typeof s.observedAt !== 'string') {
-      errors.push(
-        'observedAt: must be a UTC timestamp string for completed status',
-      );
-    } else if (!isValidUtcTimestamp(s.observedAt)) {
-      errors.push('observedAt: must be a valid UTC ISO 8601 timestamp');
-    }
-  }
-
-  // Status invariants per design D6
-  if (status === 'loading') {
-    if (s.skills.length > 0) {
-      errors.push('skills: must be empty for loading status');
-    }
-    if (s.failedSkillKeys.length > 0) {
-      errors.push('failedSkillKeys: must be empty for loading status');
-    }
-  }
-  if (status === 'ready') {
-    if (s.failedSkillKeys.length > 0) {
-      errors.push('failedSkillKeys: must be empty for ready status');
-    }
-  }
-  if (status === 'failed') {
-    if (s.skills.length > 0) {
-      errors.push('skills: must be empty for failed status');
-    }
-  }
-
-  // Validate failedSkillKeys entries
-  for (let i = 0; i < s.failedSkillKeys.length; i++) {
-    if (!isNonEmptyString(s.failedSkillKeys[i])) {
-      errors.push(`failedSkillKeys[${i}]: must be a non-empty string`);
-    }
-  }
-
-  // Validate individual records
-  const skillKeys = new Set<string>();
-  for (let i = 0; i < s.skills.length; i++) {
-    const record = s.skills[i];
-    if (validateBaseRecord(record, i, errors)) {
-      const r = record as SkillRecord;
-      // Check for duplicate keys
-      if (skillKeys.has(r.key)) {
-        errors.push(`skills[${i}].key: duplicate key '${r.key}'`);
-      }
-      skillKeys.add(r.key);
-    }
-    // Validate source-discriminated extensions
-    if (typeof record === 'object' && record !== null) {
-      validateRecordExtensions(
-        record as Record<string, unknown>,
-        i,
-        sourceType,
-        errors,
-      );
-    }
-  }
-
-  // Disjoint successful/failed key check
-  const failedKeys = new Set<string>();
-  for (const fk of s.failedSkillKeys) {
-    if (typeof fk === 'string') {
-      if (failedKeys.has(fk)) {
-        errors.push(`failedSkillKeys: duplicate key '${fk}'`);
-      }
-      failedKeys.add(fk);
-      if (skillKeys.has(fk)) {
-        errors.push(`failedSkillKeys: key '${fk}' overlaps with skills`);
-      }
-    }
-  }
-
-  // Count bound
-  if (s.skills.length > MAX_SNAPSHOT_RECORDS) {
-    errors.push(
-      `skills: count ${s.skills.length} exceeds maximum ${MAX_SNAPSHOT_RECORDS}`,
+      `skills: count ${
+        (s.skills as unknown[]).length
+      } exceeds maximum ${MAX_SNAPSHOT_RECORDS}`,
     );
   }
 

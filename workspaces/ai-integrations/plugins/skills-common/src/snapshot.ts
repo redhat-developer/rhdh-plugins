@@ -85,7 +85,9 @@ export function boundSnapshot(options: BoundSnapshotOptions): SkillSnapshot {
 
   // Sort records and failed keys by stable key
   const sortedRecords = sortRecordsByKey(records);
-  const sortedFailedKeys = [...failedSkillKeys].sort();
+  const sortedFailedKeys = [...failedSkillKeys].sort((a, b) =>
+    a.localeCompare(b),
+  );
 
   // Determine initial status
   let bounded = false;
