@@ -35,7 +35,7 @@ export default defineConfig({
         reuseExistingServer: true,
         env: {
           JIRA_URL: 'https://issues.redhat.com',
-          JIRA_TOKEN: 'my-jira-token',
+          JIRA_TOKEN: 'Basic my-jira-token',
         },
       },
 
