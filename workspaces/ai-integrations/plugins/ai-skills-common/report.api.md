@@ -94,9 +94,83 @@ export const MAX_SNAPSHOT_BYTES: number;
 export const MAX_SNAPSHOT_RECORDS = 1000;
 
 // @public
+export interface NormalizationDiagnostic {
+  field: string;
+  message: string;
+}
+
+// @public
+export interface NormalizationResult<T> {
+  diagnostics: NormalizationDiagnostic[];
+  record: T | null;
+}
+
+// @public
+export function normalizeNpxMetadata(
+  native: NpxNativeInput,
+  trusted: TrustedSourceInput,
+): NormalizationResult<NpxSkillRecord>;
+
+// @public
+export function normalizeOciMetadata(
+  native: OciNativeInput,
+  trusted: TrustedSourceInput,
+): NormalizationResult<OciSkillRecord>;
+
+// @public
+export interface NpxDiscoveryEntry {
+  description?: unknown;
+  name?: unknown;
+  type?: unknown;
+}
+
+// @public
+export const npxDiscoveryEntryFull: NpxDiscoveryEntry;
+
+// @public
+export const npxDiscoveryEntryMinimal: NpxDiscoveryEntry;
+
+// @public
 export interface NpxExtensions {
   type?: 'skill-md';
 }
+
+// @public
+export interface NpxFrontmatter {
+  compatibility?: unknown;
+  description?: unknown;
+  license?: unknown;
+  metadata?: {
+    version?: unknown;
+    author?: unknown;
+    tags?: unknown;
+    owner?: unknown;
+    lifecycle?: unknown;
+  };
+  name?: unknown;
+  version?: unknown;
+}
+
+// @public
+export const npxFrontmatterConflictingVersion: NpxFrontmatter;
+
+// @public
+export const npxFrontmatterFull: NpxFrontmatter;
+
+// @public
+export interface NpxNativeInput {
+  entry?: NpxDiscoveryEntry;
+  frontmatter?: NpxFrontmatter;
+}
+
+// @public
+export const npxNativeInputConflictingVersion: NpxNativeInput;
+
+// @public
+export const npxNativeInputFull: NpxNativeInput;
+
+// @public
+export const npxNativeInputMinimal: NpxNativeInput;
 
 // @public
 export interface NpxSkillRecord extends SkillRecord {
@@ -109,9 +183,82 @@ export interface NpxSkillRecord extends SkillRecord {
 export const npxSource: SnapshotSource;
 
 // @public
+export const npxTrustedInput: TrustedSourceInput;
+
+// @public
 export interface OciExtensions {
   namespace?: string;
   prompt?: string;
+}
+
+// @public
+export interface OciMarkdownFrontmatter {
+  compatibility?: unknown;
+  description?: unknown;
+  license?: unknown;
+  metadata?: {
+    version?: unknown;
+    author?: unknown;
+    tags?: unknown;
+    owner?: unknown;
+    lifecycle?: unknown;
+  };
+  name?: unknown;
+  version?: unknown;
+}
+
+// @public
+export const ociMarkdownFrontmatterConflictingVersion: OciMarkdownFrontmatter;
+
+// @public
+export const ociMarkdownFrontmatterFull: OciMarkdownFrontmatter;
+
+// @public
+export interface OciNativeInput {
+  frontmatter?: OciMarkdownFrontmatter;
+  skillCard?: OciSkillCard;
+}
+
+// @public
+export const ociNativeInputConflictingVersion: OciNativeInput;
+
+// @public
+export const ociNativeInputFull: OciNativeInput;
+
+// @public
+export const ociNativeInputMinimal: OciNativeInput;
+
+// @public
+export interface OciSkillCard {
+  metadata?: OciSkillCardMetadata;
+  spec?: OciSkillCardSpec;
+}
+
+// @public
+export const ociSkillCardConflictingVersion: OciSkillCard;
+
+// @public
+export const ociSkillCardFull: OciSkillCard;
+
+// @public
+export interface OciSkillCardMetadata {
+  'display-name'?: unknown;
+  authors?: unknown;
+  compatibility?: unknown;
+  description?: unknown;
+  license?: unknown;
+  name?: unknown;
+  namespace?: unknown;
+  tags?: unknown;
+  version?: unknown;
+}
+
+// @public
+export const ociSkillCardMinimal: OciSkillCard;
+
+// @public
+export interface OciSkillCardSpec {
+  prompt?: unknown;
 }
 
 // @public
@@ -123,6 +270,9 @@ export interface OciSkillRecord extends SkillRecord {
 
 // @public
 export const ociSource: SnapshotSource;
+
+// @public
+export const ociTrustedInput: TrustedSourceInput;
 
 // @public
 export interface SkillAuthor {
@@ -181,6 +331,13 @@ export function sortRecordsByKey<T extends OciSkillRecord | NpxSkillRecord>(
 
 // @public
 export const SUPPORTED_SCHEMA_VERSION = '1';
+
+// @public
+export interface TrustedSourceInput {
+  digest: string;
+  key: string;
+  sourceUri: string;
+}
 
 // @public
 export function validateSnapshot(snapshot: unknown): ValidationResult;

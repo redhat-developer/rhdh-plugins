@@ -27,6 +27,16 @@ import type {
   SnapshotSource,
 } from './types';
 
+import type {
+  NpxDiscoveryEntry,
+  NpxFrontmatter,
+  NpxNativeInput,
+  OciMarkdownFrontmatter,
+  OciNativeInput,
+  OciSkillCard,
+  TrustedSourceInput,
+} from './normalizer';
+
 // ─── Sources ──────────────────────────────────────────────────────────
 
 /**
@@ -473,4 +483,237 @@ export const invalidSnapshotNonUtcTimestamp: unknown = {
   observedAt: '2026-09-01T12:00:00-05:00',
   skills: [],
   failedSkillKeys: [],
+};
+
+// ─── OCI native metadata fixtures ───────────────────────────────────
+
+/**
+ * OCI SkillCard with full metadata including namespace and prompt.
+ *
+ * @public
+ */
+export const ociSkillCardFull: OciSkillCard = {
+  metadata: {
+    'display-name': 'Hello World Skill',
+    name: 'hello-world-skill',
+    description: 'A demo OCI skill image',
+    version: '1.0.0',
+    license: 'Apache-2.0',
+    authors: [{ name: 'OCTO Team', email: 'octo@example.com' }],
+    tags: ['Demo', 'hello-world'],
+    compatibility: 'rhdh-2.2',
+    namespace: 'octo-skills',
+  },
+  spec: {
+    prompt: 'You are a helpful assistant.',
+  },
+};
+
+/**
+ * OCI Markdown frontmatter with full metadata.
+ *
+ * The `metadata.version` here intentionally conflicts with the SkillCard
+ * version to verify D3 precedence: SkillCard `metadata.version` (1.0.0)
+ * wins over frontmatter `metadata.version` (1.0).
+ *
+ * @public
+ */
+export const ociMarkdownFrontmatterFull: OciMarkdownFrontmatter = {
+  name: 'Hello World (Markdown)',
+  description: 'A demo OCI skill from Markdown',
+  version: '0.9.0',
+  license: 'MIT',
+  compatibility: 'rhdh-2.1',
+  metadata: {
+    version: '1.0',
+    author: 'Markdown Author',
+    tags: ['markdown-tag'],
+    owner: 'team-octo',
+    lifecycle: 'production',
+  },
+};
+
+/**
+ * OCI SkillCard with conflicting version.
+ *
+ * SkillCard `metadata.version` is 1.0.0 while the paired frontmatter
+ * declares `metadata.version: "1.0"` and `version: "0.9.0"`. D3
+ * precedence selects 1.0.0 as the declared version.
+ *
+ * @public
+ */
+export const ociSkillCardConflictingVersion: OciSkillCard = {
+  metadata: {
+    name: 'version-test-skill',
+    version: '1.0.0',
+  },
+};
+
+/**
+ * OCI Markdown frontmatter with conflicting version values.
+ *
+ * Paired with {@link ociSkillCardConflictingVersion} to test D3
+ * version precedence. The SkillCard version (1.0.0) wins.
+ *
+ * @public
+ */
+export const ociMarkdownFrontmatterConflictingVersion: OciMarkdownFrontmatter =
+  {
+    name: 'Version Test (Markdown)',
+    metadata: {
+      version: '1.0',
+    },
+    version: '0.9.0',
+  };
+
+/**
+ * OCI SkillCard with only a name — no optional metadata.
+ *
+ * @public
+ */
+export const ociSkillCardMinimal: OciSkillCard = {
+  metadata: {
+    name: 'Minimal Skill',
+  },
+};
+
+/**
+ * Combined OCI native input with full metadata.
+ *
+ * @public
+ */
+export const ociNativeInputFull: OciNativeInput = {
+  skillCard: ociSkillCardFull,
+  frontmatter: ociMarkdownFrontmatterFull,
+};
+
+/**
+ * Combined OCI native input with conflicting versions.
+ *
+ * @public
+ */
+export const ociNativeInputConflictingVersion: OciNativeInput = {
+  skillCard: ociSkillCardConflictingVersion,
+  frontmatter: ociMarkdownFrontmatterConflictingVersion,
+};
+
+/**
+ * Combined OCI native input with only a minimal SkillCard.
+ *
+ * @public
+ */
+export const ociNativeInputMinimal: OciNativeInput = {
+  skillCard: ociSkillCardMinimal,
+};
+
+/**
+ * Trusted source input for OCI fixtures.
+ *
+ * @public
+ */
+export const ociTrustedInput: TrustedSourceInput = {
+  key: 'quay.io/octo/hello-world-skill',
+  sourceUri:
+    'oci://quay.io/octo/hello-world-skill@sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789',
+  digest:
+    'sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789',
+};
+
+// ─── npx native metadata fixtures ───────────────────────────────────
+
+/**
+ * npx discovery entry with full metadata.
+ *
+ * @public
+ */
+export const npxDiscoveryEntryFull: NpxDiscoveryEntry = {
+  name: 'summarize-text',
+  description: 'Summarizes input text using an LLM',
+  type: 'skill-md',
+};
+
+/**
+ * npx Markdown frontmatter with full metadata.
+ *
+ * @public
+ */
+export const npxFrontmatterFull: NpxFrontmatter = {
+  name: 'Summarize Text',
+  description: 'A skill for summarizing text content',
+  version: '0.2.0',
+  license: 'MIT',
+  compatibility: 'agent-skills-v0.2',
+  metadata: {
+    version: '0.2.0',
+    author: 'Agent Team',
+    tags: ['summarization', 'text'],
+    owner: 'team-agents',
+    lifecycle: 'experimental',
+  },
+};
+
+/**
+ * npx discovery entry with only a name (minimal).
+ *
+ * @public
+ */
+export const npxDiscoveryEntryMinimal: NpxDiscoveryEntry = {
+  name: 'basic-skill',
+};
+
+/**
+ * npx Markdown frontmatter with conflicting version values.
+ *
+ * `metadata.version` (2.0.0) has higher precedence than top-level
+ * `version` (1.5.0) per D3.
+ *
+ * @public
+ */
+export const npxFrontmatterConflictingVersion: NpxFrontmatter = {
+  name: 'Version Conflict Skill',
+  metadata: {
+    version: '2.0.0',
+  },
+  version: '1.5.0',
+};
+
+/**
+ * Combined npx native input with full metadata.
+ *
+ * @public
+ */
+export const npxNativeInputFull: NpxNativeInput = {
+  entry: npxDiscoveryEntryFull,
+  frontmatter: npxFrontmatterFull,
+};
+
+/**
+ * Combined npx native input with conflicting versions.
+ *
+ * @public
+ */
+export const npxNativeInputConflictingVersion: NpxNativeInput = {
+  entry: npxDiscoveryEntryMinimal,
+  frontmatter: npxFrontmatterConflictingVersion,
+};
+
+/**
+ * Combined npx native input with minimal data.
+ *
+ * @public
+ */
+export const npxNativeInputMinimal: NpxNativeInput = {
+  entry: npxDiscoveryEntryMinimal,
+};
+
+/**
+ * Trusted source input for npx fixtures.
+ *
+ * @public
+ */
+export const npxTrustedInput: TrustedSourceInput = {
+  key: 'summarize-text',
+  sourceUri: 'https://registry.example.com/skills/summarize-text/SKILL.md',
+  digest:
+    'sha256:fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210',
 };
