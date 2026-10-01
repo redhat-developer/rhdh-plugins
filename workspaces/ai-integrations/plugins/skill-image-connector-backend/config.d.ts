@@ -64,7 +64,12 @@ export interface Config {
     quayDiscovery?: {
       /** @visibility backend */
       registry?: string;
-      /** @visibility backend */
+      /**
+       * The Quay organization whose public repositories are discovered.
+       * Although typed as optional, discovery is silently skipped when this
+       * field is omitted — it is effectively required for discovery to function.
+       * @visibility backend
+       */
       organization?: string;
       /** @visibility backend */
       tag?: string;

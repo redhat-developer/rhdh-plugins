@@ -164,15 +164,14 @@ export async function fetchWithRedirects(
 ): Promise<Response> {
   let currentUrl = new URL(url);
   const headers = new Headers(init.headers);
-  const requestSignal = signal;
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
-    requestSignal.throwIfAborted();
+    signal.throwIfAborted();
     const response = await fetch(currentUrl.toString(), {
       ...init,
       headers: Object.fromEntries(headers),
       redirect: 'manual',
-      signal: requestSignal,
+      signal,
     });
     if (![301, 302, 303, 307, 308].includes(response.status)) {
       return response;

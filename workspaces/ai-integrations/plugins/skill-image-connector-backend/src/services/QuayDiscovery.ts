@@ -73,9 +73,7 @@ export async function discoverQuayRepositories(
   );
 
   do {
-    if (signal?.aborted) {
-      throw new Error('Quay discovery was aborted');
-    }
+    signal?.throwIfAborted();
 
     pageCount++;
     if (pageCount > MAX_DISCOVERY_PAGES) {

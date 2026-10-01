@@ -63,10 +63,7 @@ export function isTransientError(error: unknown): boolean {
 }
 
 /** Cancel retry backoff promptly, independently of an expired attempt timeout. */
-export function abortAwareDelay(
-  ms: number,
-  signal?: AbortSignal,
-): Promise<void> {
+function abortAwareDelay(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
       reject(signal.reason);

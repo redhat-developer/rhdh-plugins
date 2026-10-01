@@ -296,7 +296,7 @@ describe('discoverQuayRepositories', () => {
 
     await expect(
       discoverQuayRepositories(baseConfig, mockLogger, abortController.signal),
-    ).rejects.toThrow('Quay discovery was aborted');
+    ).rejects.toThrow('This operation was aborted');
   });
 
   it('rejects repositories whose namespace does not match the configured organization', async () => {
