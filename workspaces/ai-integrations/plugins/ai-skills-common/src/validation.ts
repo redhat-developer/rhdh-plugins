@@ -223,10 +223,13 @@ function validateAuthorsField(
     errors.push(`${prefix}.authors: must be an array when present`);
     return false;
   }
+  let allValid = true;
   for (let i = 0; i < r.authors.length; i++) {
-    validateAuthor(r.authors[i], `${prefix}.authors[${i}]`, errors);
+    if (!validateAuthor(r.authors[i], `${prefix}.authors[${i}]`, errors)) {
+      allValid = false;
+    }
   }
-  return true;
+  return allValid;
 }
 
 /**
@@ -660,6 +663,21 @@ export function validateSnapshot(snapshot: unknown): ValidationResult {
 }
 
 /**
+ * Returns the UTF-8 byte length of a string in a portable way.
+ *
+ * Uses `TextEncoder` when available (browsers, modern Node.js) and
+ * falls back to `Buffer.byteLength` in Node-only environments (e.g.,
+ * older Jest jsdom setups where `TextEncoder` is not global).
+ */
+function utf8ByteLength(str: string): number {
+  if (typeof TextEncoder !== 'undefined') {
+    return new TextEncoder().encode(str).byteLength;
+  }
+  // Node.js fallback for environments where TextEncoder is not global
+  return Buffer.byteLength(str, 'utf8');
+}
+
+/**
  * Validates the serialized byte size of a snapshot against the 5 MiB
  * limit. Call after `validateSnapshot` succeeds.
  *
@@ -670,7 +688,7 @@ export function validateSnapshotSize(
 ): ValidationResult {
   const errors: string[] = [];
   const serialized = JSON.stringify(snapshot);
-  const byteLength = Buffer.byteLength(serialized, 'utf8');
+  const byteLength = utf8ByteLength(serialized);
   if (byteLength > MAX_SNAPSHOT_BYTES) {
     errors.push(
       `snapshot serialized size ${byteLength} bytes exceeds maximum ${MAX_SNAPSHOT_BYTES} bytes`,

@@ -85,9 +85,11 @@ export function boundSnapshot(options: BoundSnapshotOptions): SkillSnapshot {
 
   // Sort records and failed keys by stable key
   const sortedRecords = sortRecordsByKey(records);
-  const sortedFailedKeys = [...failedSkillKeys].sort((a, b) =>
-    a.localeCompare(b),
-  );
+  const sortedFailedKeys = [...failedSkillKeys].sort((a, b) => {
+    if (a < b) return -1;
+    if (a > b) return 1;
+    return 0;
+  });
 
   // Determine initial status
   let bounded = false;
@@ -180,6 +182,9 @@ function applyByteLimit(
 
 /**
  * Returns the UTF-8 byte length of a string.
+ *
+ * This private helper is only called by `boundSnapshot` which is a
+ * backend producer function, so `Buffer` is always available.
  */
 function byteLength(str: string): number {
   return Buffer.byteLength(str, 'utf8');

@@ -116,6 +116,19 @@ describe('boundSnapshot', () => {
     expect(snapshot.failedSkillKeys).toEqual(['a-key', 'm-key', 'z-key']);
   });
 
+  it('sorts failed keys using Unicode code-point order (same as records)', () => {
+    // Verify non-ASCII keys are sorted by code-point, not locale
+    const snapshot = boundSnapshot({
+      source: ociSource,
+      records: [],
+      failedSkillKeys: ['ä-key', 'Z-key', 'a-key'],
+      discoveryComplete: false,
+      observedAt: '2026-09-01T12:00:00Z',
+    });
+    // Unicode code-point order: 'Z' (U+005A) < 'a' (U+0061) < 'ä' (U+00E4)
+    expect(snapshot.failedSkillKeys).toEqual(['Z-key', 'a-key', 'ä-key']);
+  });
+
   it('produces valid snapshot per validateSnapshot', () => {
     const snapshot = boundSnapshot({
       source: ociSource,
