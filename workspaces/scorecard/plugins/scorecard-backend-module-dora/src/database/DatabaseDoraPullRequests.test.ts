@@ -102,6 +102,95 @@ describe('DatabaseDoraPullRequests', () => {
     );
 
     it.each(databases.eachSupportedId())(
+      'inserts large pull request lists in 100-row batches - %p',
+      async databaseId => {
+        const { client, deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments, {
+          entityRef: 'component:default/dora-pr-batch-success',
+          originalDeploymentId: 'dep-pr-batch-success',
+        });
+        const rows = Array.from({ length: 205 }, (_, index) => ({
+          catalogEntityRef: entityRef,
+          originalPrId: `pr-${index}`,
+          firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+          deploymentId: deployment.id,
+        }));
+        const insertBindings: number[] = [];
+        const onQuery = (query: {
+          method?: string;
+          sql: string;
+          bindings?: readonly unknown[];
+        }) => {
+          if (
+            query.method === 'insert' &&
+            query.sql.includes('dora_pull_requests')
+          ) {
+            insertBindings.push(query.bindings?.length ?? 0);
+          }
+        };
+
+        client.on('query', onQuery);
+        try {
+          await pullRequests.upsert(rows);
+        } finally {
+          client.removeListener('query', onQuery);
+        }
+
+        expect(insertBindings).toEqual([500, 500, 25]);
+        const stored = await pullRequests.readByEntityAndDeployment(
+          entityRef,
+          deployment.id,
+        );
+        expect(stored).toHaveLength(205);
+        expect(new Set(stored.map(row => row.originalPrId)).size).toBe(205);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'rolls back earlier pull request batches when a later batch fails - %p',
+      async databaseId => {
+        const { client, deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments, {
+          entityRef: 'component:default/dora-pr-batch-failure',
+          originalDeploymentId: 'dep-pr-batch-failure',
+        });
+        const rows = Array.from({ length: 101 }, (_, index) => ({
+          catalogEntityRef: entityRef,
+          originalPrId: `pr-${index}`,
+          firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+          deploymentId: deployment.id,
+        }));
+        let insertCount = 0;
+        const failSecondInsert = (query: { method?: string; sql: string }) => {
+          if (
+            query.method === 'insert' &&
+            query.sql.includes('dora_pull_requests') &&
+            ++insertCount === 2
+          ) {
+            throw new Error('second batch failed');
+          }
+        };
+
+        client.on('query', failSecondInsert);
+        try {
+          await expect(pullRequests.upsert(rows)).rejects.toThrow(
+            'second batch failed',
+          );
+        } finally {
+          client.removeListener('query', failSecondInsert);
+        }
+        expect(insertCount).toBe(2);
+        await expect(
+          pullRequests.readByEntityAndDeployment(entityRef, deployment.id),
+        ).resolves.toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
       'ignores conflicts on the natural key, preserving the immutable first row - %p',
       async databaseId => {
         const { deployments, pullRequests } = await createTestDatabase(
@@ -156,21 +245,21 @@ describe('DatabaseDoraPullRequests', () => {
         const { deployments, pullRequests } = await createTestDatabase(
           await databases.init(databaseId),
         );
-        const { entityRef, deployment } = await seedDeployment(deployments);
+        const { entityRef, deployment } = await seedDeployment(deployments, {
+          entityRef: 'component:default/dora-pr-outer-transaction',
+          originalDeploymentId: 'dep-pr-outer-transaction',
+        });
+
+        const rows = Array.from({ length: 205 }, (_, index) => ({
+          catalogEntityRef: entityRef,
+          originalPrId: `pr-${index}`,
+          firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+          deploymentId: deployment.id,
+        }));
 
         await expect(
           pullRequests.transaction(async trx => {
-            await pullRequests.upsert(
-              [
-                {
-                  catalogEntityRef: entityRef,
-                  originalPrId: 'pr-1',
-                  firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
-                  deploymentId: deployment.id,
-                },
-              ],
-              { trx },
-            );
+            await pullRequests.upsert(rows, { trx });
             throw new Error('sync failed');
           }),
         ).rejects.toThrow('sync failed');
