@@ -176,6 +176,9 @@ export function resolveVersion(
   }
 
   // Fallback: 0.0.0+<first 12 hex digits of digest>
+  if (!isValidDigest(digest)) {
+    throw new Error(`invalid digest: ${digest}`);
+  }
   // digest format is sha256:<64 hex>, so hex starts at index 7
   const hex = digest.substring(7, 19);
   return `0.0.0+${hex}`;
@@ -227,7 +230,9 @@ export function buildOciRef(
     throw new Error(`invalid digest: ${digest}`);
   }
   if (!registry || !repository) {
-    throw new Error('registry and repository must be non-empty');
+    throw new Error(
+      `registry and repository must be non-empty: registry=${JSON.stringify(registry)}, repository=${JSON.stringify(repository)}`,
+    );
   }
   return `oci://${registry}/${repository}@${digest}`;
 }

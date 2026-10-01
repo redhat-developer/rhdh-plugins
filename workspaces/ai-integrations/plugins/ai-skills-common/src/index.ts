@@ -40,6 +40,18 @@ export type {
 
 export type { ValidationResult } from './validation';
 
+export {
+  isNpxSkillRecord,
+  isOciSkillRecord,
+  isValidDigest,
+  isValidUtcTimestamp,
+  MAX_SNAPSHOT_BYTES,
+  MAX_SNAPSHOT_RECORDS,
+  SUPPORTED_SCHEMA_VERSION,
+  validateSnapshot,
+  validateSnapshotSize,
+} from './validation';
+
 export type {
   IdentityTuple,
   NormalizeTagsResult,
@@ -56,18 +68,6 @@ export {
   parseOciRef,
   resolveVersion,
 } from './catalog-helpers';
-
-export {
-  isNpxSkillRecord,
-  isOciSkillRecord,
-  isValidDigest,
-  isValidUtcTimestamp,
-  MAX_SNAPSHOT_BYTES,
-  MAX_SNAPSHOT_RECORDS,
-  SUPPORTED_SCHEMA_VERSION,
-  validateSnapshot,
-  validateSnapshotSize,
-} from './validation';
 
 export type { BoundSnapshotOptions } from './snapshot';
 

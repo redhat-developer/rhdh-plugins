@@ -283,6 +283,16 @@ describe('resolveVersion', () => {
   it('accepts 0.0.0 as valid SemVer', () => {
     expect(resolveVersion('0.0.0', testDigest)).toBe('0.0.0');
   });
+
+  it('throws on malformed digest in fallback path', () => {
+    expect(() => resolveVersion(undefined, 'not-a-digest')).toThrow(
+      'invalid digest',
+    );
+  });
+
+  it('throws on short digest in fallback path', () => {
+    expect(() => resolveVersion('', 'sha256:short')).toThrow('invalid digest');
+  });
 });
 
 // ─── OCI references ──────────────────────────────────────────────────
