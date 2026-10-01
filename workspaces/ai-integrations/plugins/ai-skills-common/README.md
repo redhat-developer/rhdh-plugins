@@ -1,4 +1,4 @@
-# skills-common
+# ai-skills-common
 
 Shared v1 skill record and snapshot contract for RHDH skill connectors
 and the common catalog provider.
@@ -8,7 +8,7 @@ no network, scheduler, database, or Catalog operations.
 
 ## Overview
 
-The `skills-common` package defines the versioned normalized REST contract
+The `ai-skills-common` package defines the versioned normalized REST contract
 (`SkillRecord`, `SkillSnapshot`) that OCI and npx skill connectors expose
 at `GET /skills/:sourceId`. The common catalog provider validates and
 consumes these snapshots to produce `AiResource` entities.
@@ -77,5 +77,5 @@ and provider contract tests. Import them from the package root.
 ## Installation
 
 ```bash
-yarn add @red-hat-developer-hub/backstage-plugin-skills-common
+yarn add @red-hat-developer-hub/backstage-plugin-ai-skills-common
 ```

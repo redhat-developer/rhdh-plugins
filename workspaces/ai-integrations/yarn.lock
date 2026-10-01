@@ -9817,6 +9817,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-ai-skills-common@workspace:plugins/ai-skills-common":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-ai-skills-common@workspace:plugins/ai-skills-common"
+  dependencies:
+    "@backstage/cli": "npm:^0.36.5"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server@workspace:plugins/catalog-backend-module-ai-model-server":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server@workspace:plugins/catalog-backend-module-ai-model-server"
@@ -10026,14 +10034,6 @@ __metadata:
     express: "npm:^4.17.1"
     express-promise-router: "npm:^4.1.0"
     supertest: "npm:^6.2.4"
-  languageName: unknown
-  linkType: soft
-
-"@red-hat-developer-hub/backstage-plugin-skills-common@workspace:plugins/skills-common":
-  version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-skills-common@workspace:plugins/skills-common"
-  dependencies:
-    "@backstage/cli": "npm:^0.36.5"
   languageName: unknown
   linkType: soft
 

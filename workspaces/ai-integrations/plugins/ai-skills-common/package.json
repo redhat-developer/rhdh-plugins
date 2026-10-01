@@ -1,5 +1,5 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-skills-common",
+  "name": "@red-hat-developer-hub/backstage-plugin-ai-skills-common",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "main": "src/index.ts",
@@ -13,14 +13,14 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/ai-integrations/plugins/skills-common"
+    "directory": "workspaces/ai-integrations/plugins/ai-skills-common"
   },
   "backstage": {
     "role": "common-library",
-    "pluginId": "skills-common",
-    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-skills-common",
+    "pluginId": "ai-skills-common",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-ai-skills-common",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-skills-common"
+      "@red-hat-developer-hub/backstage-plugin-ai-skills-common"
     ]
   },
   "sideEffects": false,

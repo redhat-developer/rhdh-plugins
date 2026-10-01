@@ -42,7 +42,7 @@ This explicitly replaces the earlier manifest-only discovery restriction.
 
 ### New Capabilities
 
-- `skills-common`: Shared record and snapshot schemas, metadata mapping
+- `ai-skills-common`: Shared record and snapshot schemas, metadata mapping
   rules, validation, and pure identity/reference helpers.
 - `oci-skills-connector`: Public Quay/OCTO connector and normalized REST API.
 - `npx-skills-connector`: Public npx-compatible connector and normalized REST API.
@@ -50,7 +50,7 @@ This explicitly replaces the earlier manifest-only discovery restriction.
   and source-isolated catalog reconciliation.
 
 The two connectors feed `skills-catalog-provider`, the sole catalog entity
-provider capability. `skills-common` supplies the library shared by all three.
+provider capability. `ai-skills-common` supplies the library shared by all three.
 
 ### Modified Capabilities
 
