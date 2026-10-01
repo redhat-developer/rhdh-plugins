@@ -158,6 +158,20 @@ describe('readSkillImageConfigs', () => {
 });
 
 describe('readQuayDiscoveryConfig', () => {
+  it.each(['bad tag', '../bad', '-bad', 'a'.repeat(129)])(
+    'rejects invalid tag %s at configuration time',
+    tag => {
+      const config = new ConfigReader({
+        skillImageConnector: {
+          quayDiscovery: { organization: 'test-org', tag },
+        },
+      });
+      expect(() => readQuayDiscoveryConfig(config)).toThrow(
+        'quayDiscovery.tag',
+      );
+    },
+  );
+
   it('returns undefined when no config', () => {
     const config = new ConfigReader({});
     expect(readQuayDiscoveryConfig(config)).toBeUndefined();
@@ -247,10 +261,12 @@ describe('mergeDiscoveredRefs', () => {
     expect(result.merged[1]).toEqual({
       id: 'discovered-0',
       imageRef: 'quay.io/org/new-a:latest',
+      warnOnNotFound: false,
     });
     expect(result.merged[2]).toEqual({
       id: 'discovered-1',
       imageRef: 'quay.io/org/new-b:latest',
+      warnOnNotFound: false,
     });
     expect(result.added).toBe(2);
     expect(result.skipped).toBe(0);

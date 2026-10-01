@@ -22,7 +22,11 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
 import { createRouter } from './router';
-import { OCI_REGISTRY_PATTERN, parseImageRef } from './services/OciClient';
+import {
+  OCI_REGISTRY_PATTERN,
+  validateTag,
+  parseImageRef,
+} from './services/OciClient';
 import { discoverQuayRepositories } from './services/QuayDiscovery';
 import {
   cleanupSkillImageExtraction,
@@ -34,17 +38,13 @@ import type {
   RegistryCredentials,
   SkillImageConfig,
   SkillImageExtraction,
+  SkillImageOptions,
 } from './services/types';
-import { MAX_AGGREGATE_CONTENT_SIZE } from './services/types';
+import { MAX_CONCURRENT_IMAGE_FETCHES } from './services/types';
+import { withRetry } from './services/Retry';
+import { HttpResponseError } from './services/HttpClient';
+import { readSkillImageOptions } from './services/config';
 import type { SkillImageProcessingStatus } from './router';
-
-const MAX_CONFIGURED_IMAGES = 25;
-const MAX_CONCURRENT_IMAGE_FETCHES = 4;
-
-/** Maximum number of retry attempts for transient registry failures. */
-const MAX_RETRIES = 2;
-/** Base delay for exponential backoff in milliseconds. */
-const RETRY_BASE_DELAY_MS = 2_000;
 
 /**
  * Safely read an optional string from a Backstage Config object.
@@ -228,6 +228,7 @@ export function readQuayDiscoveryConfig(
     );
   }
   const tag = safeGetOptionalString(discoveryConfig, 'tag')?.trim() || 'latest';
+  validateTag(tag, 'quayDiscovery.tag');
 
   return { registry, organization, tag };
 }
@@ -257,6 +258,7 @@ export function mergeDiscoveredRefs(
       allImageConfigs.push({
         id: `discovered-${discoveredAdded}`,
         imageRef: ref,
+        warnOnNotFound: false,
       });
       discoveredAdded++;
     } else {
@@ -278,103 +280,48 @@ export function mergeDiscoveredRefs(
   };
 }
 
-/**
- * Returns true if the error is likely transient and the operation
- * should be retried (network errors, 5xx responses, timeouts).
- */
-function isTransientError(error: unknown): boolean {
-  if (error instanceof Error) {
-    const msg = error.message;
-    // Network-level and timeout failures
-    if (
-      msg.includes('ECONNREFUSED') ||
-      msg.includes('ECONNRESET') ||
-      msg.includes('ETIMEDOUT') ||
-      msg.includes('ENOTFOUND') ||
-      msg.includes('UND_ERR_CONNECT_TIMEOUT') ||
-      error.name === 'AbortError' ||
-      error.name === 'TimeoutError'
-    ) {
-      return true;
-    }
-    // HTTP 5xx from registry
-    if (/\b5\d{2}\b/.test(msg) && msg.includes('Failed to fetch')) {
-      return true;
-    }
+/** Report failures according to whether the caller expects the image to exist. */
+function logImageProcessingFailure(
+  logger: LoggerService,
+  imageRef: string,
+  error: unknown,
+  warnOnNotFound: boolean,
+): void {
+  if (
+    !warnOnNotFound &&
+    error instanceof HttpResponseError &&
+    error.status === 404
+  ) {
+    logger.debug(`Discovered skill image ${imageRef} was not found (404)`);
+    return;
   }
-  return false;
+  logger.error(`Failed to process skill image ${imageRef}`, error as Error);
 }
 
-/**
- * Returns a promise that resolves after the given delay, but rejects
- * immediately if the abort signal fires — preventing shutdown from
- * blocking on retry backoff timers.
- */
-function abortAwareDelay(ms: number, signal?: AbortSignal): Promise<void> {
-  if (signal?.aborted) {
-    return Promise.reject(new Error('Processing was aborted'));
-  }
-  if (!signal) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-  return new Promise<void>((resolve, reject) => {
-    const state = {
-      timer: undefined as ReturnType<typeof setTimeout> | undefined,
-    };
-    const onAbort = () => {
-      clearTimeout(state.timer);
-      reject(new Error('Processing was aborted'));
-    };
-    state.timer = setTimeout(() => {
-      signal.removeEventListener('abort', onAbort);
-      resolve();
-    }, ms);
-    signal.addEventListener('abort', onAbort, { once: true });
-  });
-}
-
-/**
- * Attempts to fetch and extract a skill image with retry and exponential
- * backoff for transient failures.  Permanent errors (4xx, validation
- * failures) are not retried.
- */
+/** Retry the whole image acquisition without nesting per-request retries. */
 async function fetchWithRetry(
   imageRefStr: string,
   workDir: string | undefined,
   logger: LoggerService,
-  credentials?: RegistryCredentials,
-  signal?: AbortSignal,
+  credentials: RegistryCredentials | undefined,
+  signal: AbortSignal,
+  options: SkillImageOptions,
 ): Promise<SkillImageExtraction> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    if (signal?.aborted) {
-      throw new Error('Processing was aborted');
-    }
-    try {
-      return await fetchAndExtractSkillImage(
+  return withRetry(
+    () =>
+      fetchAndExtractSkillImage(
         imageRefStr,
         workDir,
         logger,
         credentials,
         signal,
-      );
-    } catch (error) {
-      lastError = error;
-      if (attempt < MAX_RETRIES && isTransientError(error)) {
-        const delayMs = RETRY_BASE_DELAY_MS * 2 ** attempt;
-        logger.warn(
-          `Transient failure fetching ${imageRefStr} (attempt ${attempt + 1}/${
-            MAX_RETRIES + 1
-          }), retrying in ${delayMs}ms`,
-          error as Error,
-        );
-        await abortAwareDelay(delayMs, signal);
-      } else {
-        throw error;
-      }
-    }
-  }
-  throw lastError;
+        options,
+      ),
+    options,
+    logger,
+    imageRefStr,
+    signal,
+  );
 }
 
 /**
@@ -401,6 +348,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           source: 'skillImageConnectorPlugin',
         });
 
+        const options = readSkillImageOptions(config);
         const imageConfigs = readSkillImageConfigs(config, pluginLogger);
         const quayDiscoveryConfig = readQuayDiscoveryConfig(
           config,
@@ -422,9 +370,9 @@ export const skillImageConnectorPlugin = createBackendPlugin({
             'skillImageConnector.allowedRegistries must list at least one registry when images or quayDiscovery are configured',
           );
         }
-        if (imageConfigs.length > MAX_CONFIGURED_IMAGES) {
+        if (imageConfigs.length > options.maxImages) {
           throw new InputError(
-            `skillImageConnector.images may contain at most ${MAX_CONFIGURED_IMAGES} entries`,
+            `skillImageConnector.images may contain at most ${options.maxImages} entries (skillImageConnector.maxImages)`,
           );
         }
         if (
@@ -510,13 +458,14 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                 quayDiscoveryConfig,
                 pluginLogger,
                 processingAbortController.signal,
+                options,
               );
 
               // Merge discovered refs, skipping duplicates and enforcing cap
               const mergeResult = mergeDiscoveredRefs(
                 imageConfigs,
                 discoveredRefs,
-                MAX_CONFIGURED_IMAGES,
+                options.maxImages,
                 pluginLogger,
               );
               allImageConfigs = mergeResult.merged;
@@ -558,6 +507,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                   pluginLogger,
                   imgConfig.credentials,
                   processingAbortController.signal,
+                  options,
                 );
 
                 // Enforce aggregate content budget before accepting the result
@@ -566,14 +516,14 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                   Buffer.byteLength(result.skillsMd, 'utf-8');
                 if (
                   aggregateContentSize + contentSize >
-                  MAX_AGGREGATE_CONTENT_SIZE
+                  options.maxAggregateContentSizeBytes
                 ) {
                   pluginLogger.error(
                     `Aggregate content budget exceeded after ${imgConfig.imageRef}; ` +
                       `${
                         aggregateContentSize + contentSize
                       } bytes would exceed ` +
-                      `${MAX_AGGREGATE_CONTENT_SIZE} byte limit`,
+                      `${options.maxAggregateContentSizeBytes} byte limit`,
                   );
                   await cleanupSkillImageExtraction(result, pluginLogger);
                   failedImages.add(imgConfig.imageRef);
@@ -587,9 +537,11 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               } catch (error) {
                 if (!processingAbortController.signal.aborted) {
                   failedImages.add(imgConfig.imageRef);
-                  pluginLogger.error(
-                    `Failed to process skill image ${imgConfig.imageRef}`,
-                    error as Error,
+                  logImageProcessingFailure(
+                    pluginLogger,
+                    imgConfig.imageRef,
+                    error,
+                    imgConfig.warnOnNotFound ?? true,
                   );
                 }
               }

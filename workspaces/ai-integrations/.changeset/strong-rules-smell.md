@@ -2,4 +2,4 @@
 '@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend': minor
 ---
 
-add public quay discovery to the oci skillimage connector backend plugin
+Add public Quay discovery to the OCI skill image connector backend plugin, with optional acquisition tuning and a configurable `skillImageConnector.maxImages` limit (default 25) for combined explicit and discovered image candidates.

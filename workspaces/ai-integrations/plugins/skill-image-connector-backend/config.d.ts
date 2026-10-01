@@ -16,6 +16,34 @@
 
 export interface Config {
   skillImageConnector?: {
+    /** Request deadline including redirects, authentication and body reading. Defaults to 30000 ms.
+     * @visibility backend
+     */
+    fetchTimeoutMs?: number;
+    /** Maximum bytes per downloaded blob and decompressed layer. Defaults to 5242880.
+     * @visibility backend
+     */
+    maxBlobSizeBytes?: number;
+    /** Maximum combined retained skill YAML and Markdown bytes across images. Defaults to 52428800.
+     * @visibility backend
+     */
+    maxAggregateContentSizeBytes?: number;
+    /** Maximum bytes per Quay discovery response. Defaults to 5242880.
+     * @visibility backend
+     */
+    maxDiscoveryResponseSizeBytes?: number;
+    /** Maximum combined explicit images and discovered candidates to process. Positive integer; defaults to 25.
+     * @visibility backend
+     */
+    maxImages?: number;
+    /** Retries after the initial page/image attempt. Defaults to 2; 0 disables retries.
+     * @visibility backend
+     */
+    maxRetries?: number;
+    /** Initial retry delay in milliseconds, doubled on subsequent retries. Defaults to 2000.
+     * @visibility backend
+     */
+    retryBaseDelayMs?: number;
     /** @visibility backend */
     allowedRegistries?: string[];
     /** @visibility backend */

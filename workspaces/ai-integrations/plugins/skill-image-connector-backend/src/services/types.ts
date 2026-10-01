@@ -47,6 +47,42 @@ export const MAX_AGGREGATE_CONTENT_SIZE = 50 * 1024 * 1024;
 /** Default fetch timeout in milliseconds (30 seconds). */
 export const FETCH_TIMEOUT_MS = 30_000;
 
+/** Shared acquisition defaults. Byte limits have distinct scopes. */
+export const MAX_MANIFEST_SIZE = 5 * 1024 * 1024;
+export const MAX_DISCOVERY_RESPONSE_SIZE = 5 * 1024 * 1024;
+export const MAX_TOKEN_RESPONSE_SIZE = 1024 * 1024;
+export const MAX_REDIRECTS = 3;
+export const MAX_DISCOVERY_PAGES = 100;
+export const MAX_TAR_ENTRIES = 200;
+/** Default total candidate limit for explicit images and discovered repositories. */
+export const MAX_CONFIGURED_IMAGES = 25;
+export const MAX_CONCURRENT_IMAGE_FETCHES = 4;
+export const MAX_RETRIES = 2;
+export const RETRY_BASE_DELAY_MS = 2_000;
+/** Largest delay supported by Node's timers without clamping to 1 ms. */
+export const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
+
+/** Validated backend settings, resolved once at plugin initialization. */
+export interface SkillImageOptions {
+  readonly fetchTimeoutMs: number;
+  readonly maxBlobSizeBytes: number;
+  readonly maxAggregateContentSizeBytes: number;
+  readonly maxDiscoveryResponseSizeBytes: number;
+  readonly maxImages: number;
+  readonly maxRetries: number;
+  readonly retryBaseDelayMs: number;
+}
+
+export const DEFAULT_SKILL_IMAGE_OPTIONS: SkillImageOptions = Object.freeze({
+  fetchTimeoutMs: FETCH_TIMEOUT_MS,
+  maxBlobSizeBytes: MAX_BLOB_SIZE,
+  maxAggregateContentSizeBytes: MAX_AGGREGATE_CONTENT_SIZE,
+  maxDiscoveryResponseSizeBytes: MAX_DISCOVERY_RESPONSE_SIZE,
+  maxImages: MAX_CONFIGURED_IMAGES,
+  maxRetries: MAX_RETRIES,
+  retryBaseDelayMs: RETRY_BASE_DELAY_MS,
+});
+
 /** Minimal OCI manifest descriptor (image manifest V2 schema 2). */
 export interface OciManifest {
   schemaVersion: number;
@@ -95,4 +131,6 @@ export interface SkillImageConfig {
   imageRef: string;
   /** Optional credentials for a private registry. */
   credentials?: RegistryCredentials;
+  /** Internal reporting policy: false for discovered candidates; defaults to true. */
+  warnOnNotFound?: boolean;
 }

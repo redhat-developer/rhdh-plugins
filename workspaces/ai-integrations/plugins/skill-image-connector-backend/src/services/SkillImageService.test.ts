@@ -24,6 +24,7 @@ import {
   parseTarEntries,
 } from './SkillImageService';
 import { fetchManifest, fetchBlob } from './OciClient';
+import { DEFAULT_SKILL_IMAGE_OPTIONS } from './types';
 import type { OciDescriptor, OciManifest } from './types';
 
 jest.mock('./OciClient', () => ({
@@ -439,6 +440,7 @@ describe('fetchAndExtractSkillImage', () => {
       logger,
       undefined,
       expect.anything(),
+      expect.objectContaining({ maxBlobSizeBytes: 5242880 }),
     );
     expect(mockedFetchBlob).toHaveBeenCalledWith(
       expect.any(Object),
@@ -447,6 +449,7 @@ describe('fetchAndExtractSkillImage', () => {
       logger,
       undefined,
       expect.anything(),
+      expect.objectContaining({ maxBlobSizeBytes: 5242880 }),
     );
   });
 
@@ -490,6 +493,54 @@ describe('fetchAndExtractSkillImage', () => {
 
     expect(result.skillImageYaml).toBe(yamlContent);
     expect(result.skillsMd).toBe(mdContent);
+  });
+
+  it('enforces a configured decompressed layer limit', async () => {
+    const yamlContent = 'name: hello-world-skill\nversion: 1.0.0';
+    const mdContent = '# Hello World Skill';
+
+    const tarArchive = createTarArchive([
+      { name: 'skill.yaml', content: yamlContent },
+      { name: 'SKILL.md', content: mdContent },
+    ]);
+    const gzippedTar = gzipSync(tarArchive);
+
+    const manifest: OciManifest = {
+      schemaVersion: 2,
+      config: {
+        mediaType: 'application/vnd.oci.image.config.v1+json',
+        digest: 'sha256:cfg',
+        size: 10,
+      },
+      layers: [
+        {
+          mediaType: 'application/vnd.oci.image.layer.v1.tar+gzip',
+          digest: 'sha256:tar-digest',
+          size: gzippedTar.length,
+        },
+      ],
+    };
+
+    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchBlob.mockResolvedValueOnce(gzippedTar);
+
+    (fs.promises.mkdtemp as jest.Mock).mockResolvedValue('/tmp/skill-image-xx');
+    (fs.promises.writeFile as jest.Mock).mockResolvedValue(undefined);
+
+    await expect(
+      fetchAndExtractSkillImage(
+        'quay.io/org/skill:v1',
+        '/tmp',
+        logger,
+        undefined,
+        undefined,
+        {
+          ...DEFAULT_SKILL_IMAGE_OPTIONS,
+          maxBlobSizeBytes: gzippedTar.length + 1,
+        },
+      ),
+    ).rejects.toThrow();
+    expect(fs.promises.mkdtemp).not.toHaveBeenCalled();
   });
 
   it('should extract files from an uncompressed tar layer', async () => {

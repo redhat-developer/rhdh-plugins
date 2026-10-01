@@ -15,19 +15,16 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { QuayDiscoveryConfig } from './types';
-import { FETCH_TIMEOUT_MS } from './types';
-
-/** Maximum number of discovery pages to follow (design D7). */
-const MAX_DISCOVERY_PAGES = 100;
-
-/** Quay's default page size. The Quay API defaults to 100 repos per page. */
-const QUAY_PAGE_SIZE = 100;
-
-/** Maximum number of retry attempts for transient fetch failures. */
-const MAX_RETRIES = 2;
-/** Base delay for exponential backoff in milliseconds. */
-const RETRY_BASE_DELAY_MS = 2_000;
+import type { QuayDiscoveryConfig, SkillImageOptions } from './types';
+import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_DISCOVERY_PAGES } from './types';
+import {
+  cancelResponseBody,
+  fetchWithRedirects,
+  HttpResponseError,
+  readResponseJson,
+  withRequestTimeout,
+} from './HttpClient';
+import { withRetry } from './Retry';
 
 /**
  * Lightweight format check for repository names returned by the Quay API.
@@ -54,84 +51,6 @@ interface QuayRepositoryListPage {
 }
 
 /**
- * Returns true if the error is likely transient and the operation
- * should be retried (network errors, 5xx responses, timeouts).
- */
-function isTransientError(error: unknown): boolean {
-  if (error instanceof Error) {
-    const msg = error.message;
-    if (
-      msg.includes('ECONNREFUSED') ||
-      msg.includes('ECONNRESET') ||
-      msg.includes('ETIMEDOUT') ||
-      msg.includes('ENOTFOUND') ||
-      msg.includes('UND_ERR_CONNECT_TIMEOUT') ||
-      error.name === 'AbortError' ||
-      error.name === 'TimeoutError'
-    ) {
-      return true;
-    }
-    if (/\b5\d{2}\b/.test(msg)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Fetches a single page from the Quay repository list API with retry
- * and exponential backoff for transient failures.
- */
-async function fetchPageWithRetry(
-  url: string,
-  requestSignal: AbortSignal,
-  config: QuayDiscoveryConfig,
-  logger: LoggerService,
-): Promise<QuayRepositoryListPage> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const response = await fetch(url, {
-        signal: requestSignal,
-        headers: { Accept: 'application/json' },
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          `Quay repository list request failed for organization ${config.organization}: ` +
-            `${response.status} ${response.statusText}`,
-        );
-      }
-
-      const body = (await response.json()) as QuayRepositoryListPage;
-
-      if (!Array.isArray(body.repositories)) {
-        throw new Error(
-          `Quay repository list response for ${config.organization} did not contain a repositories array`,
-        );
-      }
-
-      return body;
-    } catch (error) {
-      lastError = error;
-      if (attempt < MAX_RETRIES && isTransientError(error)) {
-        const delayMs = RETRY_BASE_DELAY_MS * 2 ** attempt;
-        logger.warn(
-          `Transient failure fetching Quay repository page (attempt ${
-            attempt + 1
-          }/${MAX_RETRIES + 1}), retrying in ${delayMs}ms`,
-          error as Error,
-        );
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-      } else {
-        throw error;
-      }
-    }
-  }
-  throw lastError;
-}
-
-/**
  * Discovers all repositories in a public Quay organization by following
  * pagination. Returns the list of discovered image references as strings
  * in the form `registry/namespace/name:tag`.
@@ -142,6 +61,7 @@ export async function discoverQuayRepositories(
   config: QuayDiscoveryConfig,
   logger: LoggerService,
   signal?: AbortSignal,
+  options: SkillImageOptions = DEFAULT_SKILL_IMAGE_OPTIONS,
 ): Promise<string[]> {
   const imageRefs: string[] = [];
   let nextPage: string | undefined;
@@ -174,16 +94,42 @@ export async function discoverQuayRepositories(
 
     logger.debug(`Fetching Quay repository page ${pageCount}: ${url}`);
 
-    const timeoutSignal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
-    const requestSignal = signal
-      ? AbortSignal.any([signal, timeoutSignal])
-      : timeoutSignal;
-
-    const body = await fetchPageWithRetry(
-      url.toString(),
-      requestSignal,
-      config,
+    const body = await withRetry(
+      () =>
+        withRequestTimeout(
+          async requestSignal => {
+            const response = await fetchWithRedirects(
+              url.toString(),
+              {
+                headers: { Accept: 'application/json' },
+              },
+              requestSignal,
+            );
+            if (!response.ok) {
+              await cancelResponseBody(response);
+              throw new HttpResponseError(
+                `Quay repository list request failed for organization ${config.organization}: ${response.status} ${response.statusText}`,
+                response.status,
+              );
+            }
+            const page = (await readResponseJson(
+              response,
+              options.maxDiscoveryResponseSizeBytes,
+            )) as QuayRepositoryListPage | null;
+            if (!page || !Array.isArray(page.repositories)) {
+              throw new Error(
+                `Quay repository list response for ${config.organization} did not contain a repositories array`,
+              );
+            }
+            return page;
+          },
+          signal,
+          options.fetchTimeoutMs,
+        ),
+      options,
       logger,
+      `Quay repository page for ${config.organization}`,
+      signal,
     );
 
     for (const repo of body.repositories) {
@@ -220,11 +166,6 @@ export async function discoverQuayRepositories(
         break;
       }
       seenNextPages.add(nextPage);
-    }
-
-    // If we received fewer repos than the page size, there are no more pages
-    if (body.repositories.length < QUAY_PAGE_SIZE && !nextPage) {
-      break;
     }
   } while (nextPage);
 

@@ -184,16 +184,24 @@ catalog:
         #   timeout: { minutes: 3 }
         #   # Optional: defer the first sync
         #   # initialDelay: { seconds: 15 }
-skillImageConnector:
-  allowedRegistries:
-    - quay.io
-  images:
-    - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
-  # Uncomment to enable automatic public Quay organization discovery:
-  # quayDiscovery:
-  #   organization: my-skills-org  # required
-  #   # registry: quay.io          # optional, defaults to quay.io
-  #   # tag: latest                # optional, defaults to latest
+# Uncomment to enable skill image acquisition; optional tuning defaults are shown.
+# skillImageConnector:
+#   fetchTimeoutMs: 30000 # 30 seconds per request, including body reading
+#   maxBlobSizeBytes: 5242880 # 5 MiB per downloaded blob and decompressed layer
+#   maxAggregateContentSizeBytes: 52428800 # 50 MiB retained skill content across images
+#   maxDiscoveryResponseSizeBytes: 5242880 # 5 MiB per Quay discovery response
+#   maxImages: 25 # Raise to 100 to try all 75 repositories used in local testing
+#   maxRetries: 2 # Retries after the initial attempt; 0 disables retries
+#   retryBaseDelayMs: 2000 # 2 seconds, doubled on subsequent retries
+#   allowedRegistries:
+#     - quay.io
+#   images:
+#     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+#   # Optional automatic public Quay organization discovery:
+#   quayDiscovery:
+#     organization: gabemontero # required
+#     registry: quay.io # optional, defaults to quay.io
+#     tag: 1.0.0-draft # optional, defaults to latest
 # Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 #kubernetes:

@@ -31,6 +31,14 @@ Add the following to your `app-config.yaml`:
 skillImageConnector:
   allowedRegistries:
     - quay.io
+  # Optional acquisition tuning; shown values are the defaults.
+  # fetchTimeoutMs: 30000
+  # maxBlobSizeBytes: 5242880
+  # maxAggregateContentSizeBytes: 52428800
+  # maxDiscoveryResponseSizeBytes: 5242880
+  # maxImages: 25
+  # maxRetries: 2
+  # retryBaseDelayMs: 2000
   # Option 1: Explicit image references
   images:
     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
@@ -66,9 +74,29 @@ Both explicit images and Quay discovery can be used together. Discovered reposit
 | `skillImageConnector.quayDiscovery.organization`      | `string` | Public organization whose repositories will be discovered. Required when `quayDiscovery` is set.            |
 | `skillImageConnector.quayDiscovery.tag`               | `string` | Tag to select for each discovered repository (defaults to `latest`).                                        |
 
-At most 25 images may be configured (including discovered repositories). **Use immutable digest references (`@sha256:...`) in production.** Mutable tags can be moved or replaced by the registry; the plugin warns at startup when a tag reference is used. Digest-pinned references are verified against the manifest content, preventing tag mutation attacks.
+By default, at most 25 image candidates are processed, including explicit images and discovered repositories. Set `skillImageConnector.maxImages` to raise or lower this total (for example, `100` to try all 75 repositories in an organization). Explicit images take priority, and discovered references already present in the explicit list do not consume another slot. An explicit list exceeding the limit fails startup validation; excess discovered candidates are skipped with a warning. This bounds candidates attempted, not successful skill extractions: repositories without the selected tag still consume a slot. It does not change the concurrency limit of four image operations.
 
-Each extracted layer is limited to 5 MB. The aggregate in-memory content across all images is capped at 50 MB. All configuration fields use `@visibility backend` or `@visibility secret` and are not exposed to the frontend.
+**Use immutable digest references (`@sha256:...`) in production.** Mutable tags can be moved or replaced by the registry; the plugin warns at startup when a tag reference is used. Digest-pinned references are verified against the manifest content, preventing tag mutation attacks.
+
+By default, each downloaded blob and decompressed layer is limited to 5 MiB. The combined retained UTF-8 `skillimage.yaml` and `SKILLS.md` content across accepted images is capped at 50 MiB. This retained-content budget does not measure total downloads or peak process memory. All configuration fields use `@visibility backend` or `@visibility secret` and are not exposed to the frontend.
+
+### Optional acquisition limits
+
+All of these backend-only settings are optional. Omitted settings use the shared defaults; supplied values are validated at startup. Backstage numeric environment substitutions are supported. Byte limits, delays, and `maxImages` must be positive safe integers; `maxRetries` must be a nonnegative safe integer. Timeout and base-delay values must not exceed 2,147,483,647 ms (Node's timer limit).
+
+| Field under `skillImageConnector` | Default    | Scope                                                                                        |
+| --------------------------------- | ---------- | -------------------------------------------------------------------------------------------- |
+| `fetchTimeoutMs`                  | `30000`    | One discovery attempt or OCI request, including redirects, authentication, and body reading. |
+| `maxBlobSizeBytes`                | `5242880`  | Both the compressed/downloaded blob and the decompressed layer, checked separately.          |
+| `maxAggregateContentSizeBytes`    | `52428800` | Combined retained skill YAML and Markdown across accepted images.                            |
+| `maxDiscoveryResponseSizeBytes`   | `5242880`  | One discovery response, enforced during streaming even without Content-Length.               |
+| `maxImages`                       | `25`       | Combined explicit images and discovered candidates attempted at startup.                     |
+| `maxRetries`                      | `2`        | Retries after the initial page or image acquisition attempt. Set `0` to disable.             |
+| `retryBaseDelayMs`                | `2000`     | Initial backoff; doubled for each further retry and capped at Node's timer limit.            |
+
+Manifest responses retain their separate 5 MiB limit; token responses retain their 1 MiB limit. Pagination (100 pages), redirects (three), concurrent image operations (four), and tar entries (200) also have distinct shared defaults. The image retry wraps the whole acquisition/extraction; individual OCI requests do not add another retry loop.
+
+Discovery and OCI requests share HTTP redirect validation, response cleanup, and bounded body reading. Redirects must use HTTPS, reject URL credentials, localhost and literal IPs, and pass a DNS check for non-public destinations. Authorization headers are removed when following cross-origin redirects. These checks do not replace the future D7 configured-origin policy or implement normalized snapshots.
 
 ## How it works
 
@@ -84,7 +112,16 @@ On startup the plugin:
 6. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
 7. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
 
-Transient registry failures (network errors, 5xx responses) are retried up to 2 times with exponential backoff before marking an image as failed.
+Transient discovery and registry failures (network errors including wrapped fetch causes, HTTP 5xx, and request timeouts) are retried up to two times by default, with 2-second then 4-second backoff. Discovery retries one page with a fresh timeout each time; image processing retries the full acquisition/extraction. Validation failures, size violations, malformed JSON, and non-5xx HTTP failures are not retried. Shutdown cancels active requests and backoff promptly. OCI authentication challenges are handled separately within the same request deadline.
+
+A discovered repository may not have the selected tag. HTTP 404 failures while
+acquiring discovered images are logged only at debug level; explicitly configured
+images retain their error diagnostics because their references are expected to
+exist. When discovery finds an explicitly configured reference, the explicit
+reporting policy wins. The internal `warnOnNotFound` flag selects this behavior;
+it is not an additional app-config setting. Other acquisition errors and a 404
+from the Quay organization-listing endpoint are still reported. Missing images
+remain in `failedImages`, and the existing `/images` status calculation is unchanged.
 
 ## API
 
