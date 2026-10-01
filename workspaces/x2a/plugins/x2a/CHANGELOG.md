@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 2.0.3
+
+### Patch Changes
+
+- 59efc1a: Added default prompt template when creating adversarial agent
+
 ## 2.0.2
 
 ### Patch Changes
