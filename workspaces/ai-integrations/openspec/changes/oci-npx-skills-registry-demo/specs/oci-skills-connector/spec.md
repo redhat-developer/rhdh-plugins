@@ -79,3 +79,66 @@ Unknown source IDs SHALL return 404.
 - **WHEN** one repository fails while others are successfully processed
 - **THEN** the connector publishes successful records with `status: partial` and the failed repository key
 - **AND** it makes no catalog mutation itself
+
+### Requirement: Configurable acquisition with shared request handling
+
+The task 2.1 acquisition path SHALL accept the optional backend-only timeout,
+blob/decompressed-layer, retained-content, discovery-response, image-count, retry-count, and
+retry-delay settings described in design D7. Absent settings SHALL use the shared
+defaults; invalid supplied numeric values SHALL fail configuration validation.
+A retry count of zero SHALL disable transient retries. The connector SHALL
+validate the selected OCI tag when reading discovery configuration.
+
+Quay discovery and OCI acquisition SHALL share redirect handling, unused-body
+cleanup, bounded response reading, and request-deadline handling. Discovery and
+image processing SHALL share transient-error classification and backoff, while
+preserving their separate retry units (one page and one image acquisition).
+
+#### Scenario: Optional limits and overrides
+
+- **WHEN** an operator omits tuning settings
+- **THEN** acquisition uses the documented default values
+- **AND** a supplied override applies at every corresponding acquisition boundary
+- **AND** the retained-content budget counts UTF-8 skill YAML and Markdown across accepted images
+
+#### Scenario: Configurable total candidate limit
+
+- **WHEN** an operator sets `skillImageConnector.maxImages` to 100 and discovery returns 75 unique candidates
+- **THEN** all 75 candidates can be attempted rather than being truncated to the default of 25
+- **AND** the total includes explicit images, which take priority over discovered candidates
+- **AND** discovered references already present in the explicit list consume no additional slots
+- **AND** missing tags still count toward candidates attempted, and concurrency remains capped at four
+
+#### Scenario: Enforcing the candidate limit
+
+- **WHEN** the combined candidate list exceeds the configured `maxImages` limit
+- **THEN** excess discovered candidates are skipped with a warning
+- **AND** an explicit image list exceeding the limit fails startup validation
+- **AND** an omitted limit defaults to 25, while nonpositive, fractional, or unsafe integer limits fail validation
+
+#### Scenario: Timeout recovery and shutdown
+
+- **WHEN** a discovery attempt times out and retries remain
+- **THEN** the next attempt receives a fresh request deadline
+- **AND** redirects, authentication when applicable, and body reading stay within a request's deadline
+- **AND** parent cancellation stops requests and backoff without further retries
+
+#### Scenario: Unsafe redirect or oversized discovery response
+
+- **WHEN** discovery receives a redirect rejected by the shared OCI redirect checks or a response exceeding its byte limit
+- **THEN** discovery rejects it and releases unused response resources
+- **AND** the existing raw-content `/images` failure behavior is retained
+
+#### Scenario: Wrapped transient network failure
+
+- **WHEN** fetch reports a transient network error through an underlying cause
+- **THEN** the shared retry policy recognizes its error code and retries within the configured budget
+- **AND** validation, size-limit, and parent-cancellation failures are not retried
+
+#### Scenario: Missing tag on a discovered image
+
+- **WHEN** acquisition of a discovered image returns HTTP 404
+- **THEN** the connector logs the failure only at debug level
+- **AND** an explicitly configured reference retains error diagnostics, including when discovery finds the same reference
+- **AND** non-404 failures and organization-listing failures remain visible
+- **AND** the existing `/images` failure list and status calculation are preserved

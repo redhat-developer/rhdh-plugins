@@ -15,7 +15,11 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { readSkillImageConfigs } from './plugin';
+import {
+  readSkillImageConfigs,
+  readQuayDiscoveryConfig,
+  mergeDiscoveredRefs,
+} from './plugin';
 
 describe('readSkillImageConfigs', () => {
   it('should return empty array when no config', () => {
@@ -150,5 +154,166 @@ describe('readSkillImageConfigs', () => {
     });
 
     expect(() => readSkillImageConfigs(config)).toThrow(message);
+  });
+});
+
+describe('readQuayDiscoveryConfig', () => {
+  it.each(['bad tag', '../bad', '-bad', 'a'.repeat(129)])(
+    'rejects invalid tag %s at configuration time',
+    tag => {
+      const config = new ConfigReader({
+        skillImageConnector: {
+          quayDiscovery: { organization: 'test-org', tag },
+        },
+      });
+      expect(() => readQuayDiscoveryConfig(config)).toThrow(
+        'quayDiscovery.tag',
+      );
+    },
+  );
+
+  it('returns undefined when no config', () => {
+    const config = new ConfigReader({});
+    expect(readQuayDiscoveryConfig(config)).toBeUndefined();
+  });
+
+  it('returns undefined when quayDiscovery section is missing', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {},
+    });
+    expect(readQuayDiscoveryConfig(config)).toBeUndefined();
+  });
+
+  it('returns undefined when organization is missing', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: {},
+      },
+    });
+    expect(readQuayDiscoveryConfig(config)).toBeUndefined();
+  });
+
+  it('reads organization with default registry and tag', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: {
+          organization: 'my-org',
+        },
+      },
+    });
+    const result = readQuayDiscoveryConfig(config);
+    expect(result).toEqual({
+      registry: 'quay.io',
+      organization: 'my-org',
+      tag: 'latest',
+    });
+  });
+
+  it('reads explicit registry and tag', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: {
+          registry: 'custom-quay.example.com',
+          organization: 'test-org',
+          tag: 'v2.0',
+        },
+      },
+    });
+    const result = readQuayDiscoveryConfig(config);
+    expect(result).toEqual({
+      registry: 'custom-quay.example.com',
+      organization: 'test-org',
+      tag: 'v2.0',
+    });
+  });
+});
+
+describe('readQuayDiscoveryConfig — validation', () => {
+  it('throws when registry has invalid format', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: {
+          registry: 'not a valid host!',
+          organization: 'my-org',
+        },
+      },
+    });
+    expect(() => readQuayDiscoveryConfig(config)).toThrow(
+      'must be a valid registry host',
+    );
+  });
+});
+
+describe('mergeDiscoveredRefs', () => {
+  const mockLogger = { warn: jest.fn() };
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('merges discovered refs with zero-based IDs', () => {
+    const existing = [{ id: 'image-0', imageRef: 'quay.io/org/existing:v1' }];
+    const discovered = ['quay.io/org/new-a:latest', 'quay.io/org/new-b:latest'];
+
+    const result = mergeDiscoveredRefs(existing, discovered, 25, mockLogger);
+
+    expect(result.merged).toHaveLength(3);
+    expect(result.merged[1]).toEqual({
+      id: 'discovered-0',
+      imageRef: 'quay.io/org/new-a:latest',
+      warnOnNotFound: false,
+    });
+    expect(result.merged[2]).toEqual({
+      id: 'discovered-1',
+      imageRef: 'quay.io/org/new-b:latest',
+      warnOnNotFound: false,
+    });
+    expect(result.added).toBe(2);
+    expect(result.skipped).toBe(0);
+  });
+
+  it('skips duplicate refs already in explicit configs', () => {
+    const existing = [{ id: 'image-0', imageRef: 'quay.io/org/repo:latest' }];
+    const discovered = ['quay.io/org/repo:latest', 'quay.io/org/new:latest'];
+
+    const result = mergeDiscoveredRefs(existing, discovered, 25, mockLogger);
+
+    expect(result.merged).toHaveLength(2);
+    expect(result.added).toBe(1);
+    expect(result.skipped).toBe(0);
+  });
+
+  it('enforces MAX_CONFIGURED_IMAGES cap and warns about skipped repos', () => {
+    const existing = Array.from({ length: 23 }, (_, i) => ({
+      id: `image-${i}`,
+      imageRef: `quay.io/org/img-${i}:v1`,
+    }));
+    const discovered = [
+      'quay.io/org/disc-0:latest',
+      'quay.io/org/disc-1:latest',
+      'quay.io/org/disc-2:latest',
+      'quay.io/org/disc-3:latest',
+      'quay.io/org/disc-4:latest',
+    ];
+
+    const result = mergeDiscoveredRefs(existing, discovered, 25, mockLogger);
+
+    expect(result.merged).toHaveLength(25);
+    expect(result.added).toBe(2);
+    expect(result.skipped).toBe(3);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('3 discovered repository(ies) were dropped'),
+    );
+  });
+
+  it('returns unchanged list when all discovered refs are duplicates', () => {
+    const existing = [{ id: 'image-0', imageRef: 'quay.io/org/repo:latest' }];
+    const discovered = ['quay.io/org/repo:latest'];
+
+    const result = mergeDiscoveredRefs(existing, discovered, 25, mockLogger);
+
+    expect(result.merged).toHaveLength(1);
+    expect(result.added).toBe(0);
+    expect(result.skipped).toBe(0);
   });
 });

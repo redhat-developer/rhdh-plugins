@@ -268,6 +268,40 @@ and manifests to 5 MiB per response. A reached bound is an incomplete result,
 not evidence of absence. Logs include source/key context and counters without
 raw skill bodies, credentials, or tokens.
 
+The task 2.1 `/images` acquisition path shares HTTP utilities between OCI fetching
+and Quay discovery and shares retry orchestration with image processing. Its
+backend-only `skillImageConnector` configuration accepts optional `fetchTimeoutMs`
+(default 30,000), `maxBlobSizeBytes` (5 MiB),
+`maxAggregateContentSizeBytes` (50 MiB), `maxDiscoveryResponseSizeBytes` (5 MiB),
+`maxImages` (25), `maxRetries` (2), and `retryBaseDelayMs` (2,000). Omission preserves defaults;
+invalid values fail configuration validation, and zero retries disables retries.
+The positive-integer `maxImages` limit applies to combined explicit images and
+discovered candidates attempted at startup. Explicit images take priority;
+duplicate discovered references do not consume additional slots. An explicit
+list exceeding the configured limit fails startup validation; excess discovered
+candidates are skipped with a warning. Missing tags still consume candidate
+slots. Raising this limit does not change the concurrency limit of four.
+These byte sizes are independent: the aggregate setting bounds retained decoded
+skill content across accepted images, not D7's total downloaded/decompressed
+budget per image. The task 2.1 defaults are acquisition defaults that operators
+may override; D2 normalized-response limits remain unchanged.
+
+Discovery retries one page with a new deadline per attempt. OCI authentication,
+redirects, and body reading share one request deadline; the image retry wraps
+acquisition/extraction without nested per-request retries. Parent cancellation
+stops work and backoff. Shared helpers enforce bounded streaming reads, clean up
+unused responses, and classify transient errors by HTTP status or network causes.
+Quay pagination and OCI authentication/extraction remain separate responsibilities.
+Image-error reporting takes an internal `warnOnNotFound` boolean: true for
+explicit image references and false for discovered candidates. Discovered-image
+404s log at debug level; explicit references take precedence during merging.
+Other failures, including organization-listing 404s, retain diagnostics.
+The `/images` failure list and status calculation are unchanged.
+The existing three-redirect cap and destination checks are preserved; completing
+D7's configured-origin policy, five-redirect bound and per-image/refresh budgets
+remains part of unchecked task 2.4. The follow-up does not implement normalized
+snapshots, periodic refresh, or other unchecked tasks.
+
 Each refresh also has a five-minute total deadline, at most 100 discovery pages,
 and at most 1,000 inspected candidates (including skipped and failed candidates).
 Detect repeated pagination tokens/URLs and stop instead of following a cycle.

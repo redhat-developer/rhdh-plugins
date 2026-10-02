@@ -16,13 +16,10 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { createHash } from 'node:crypto';
-import {
-  parseImageRef,
-  fetchManifest,
-  fetchBlob,
-  isPrivateAddress,
-} from './OciClient';
+import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
 import type { OciManifest } from './types';
+import { DEFAULT_SKILL_IMAGE_OPTIONS } from './types';
+import { isPrivateAddress } from './HttpClient';
 
 // Mock DNS resolution so redirect tests don't fail with real DNS lookups.
 // By default, resolve all hostnames to a public IP.
@@ -182,7 +179,7 @@ describe('fetchManifest', () => {
     expect(global.fetch).toHaveBeenCalledWith(
       'https://quay.io/v2/org/repo/manifests/v1',
       expect.objectContaining({
-        headers: expect.objectContaining({ Accept: expect.any(String) }),
+        headers: expect.objectContaining({ accept: expect.any(String) }),
       }),
     );
   });
@@ -374,6 +371,28 @@ describe('fetchManifest', () => {
     expect(cancelUnauthorizedBody).toHaveBeenCalled();
   });
 
+  it('preserves a token endpoint 404 for source-specific logging instead of warning and masking it as 401', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(null, {
+          status: 401,
+          headers: {
+            'www-authenticate': 'Bearer realm="https://quay.io/token"',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(new Response('not found', { status: 404 }));
+    await expect(
+      fetchManifest(
+        { registry: 'quay.io', repository: 'org/missing', tag: 'v1' },
+        logger,
+      ),
+    ).rejects.toMatchObject({ status: 404 });
+    expect(logger.warn).not.toHaveBeenCalled();
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
   it('should fall back when the bearer token response is invalid JSON', async () => {
     const headersMap = new Map([
       ['www-authenticate', 'Bearer realm="https://auth.example.com/token"'],
@@ -456,9 +475,15 @@ describe('fetchManifest', () => {
     );
 
     const calls = (global.fetch as jest.Mock).mock.calls;
-    expect(calls[0][1].headers.Authorization).toMatch(/^Basic /);
-    expect(calls[1][1].headers.Authorization).toMatch(/^Basic /);
-    expect(calls[2][1].headers.Authorization).toBe('Bearer test-token-123');
+    expect(new Headers(calls[0][1].headers).get('authorization')).toMatch(
+      /^Basic /,
+    );
+    expect(new Headers(calls[1][1].headers).get('authorization')).toMatch(
+      /^Basic /,
+    );
+    expect(new Headers(calls[2][1].headers).get('authorization')).toBe(
+      'Bearer test-token-123',
+    );
   });
 
   it('should throw when fetch itself rejects', async () => {
@@ -597,8 +622,10 @@ describe('fetchBlob', () => {
     ).resolves.toEqual(content);
     expect(cancel).toHaveBeenCalled();
     expect(
-      (global.fetch as jest.Mock).mock.calls[1][1].headers.Authorization,
-    ).toBeUndefined();
+      new Headers((global.fetch as jest.Mock).mock.calls[1][1].headers).get(
+        'authorization',
+      ),
+    ).toBeNull();
   });
 
   it.each([
@@ -714,6 +741,37 @@ describe('fetchBlob', () => {
         logger,
       ),
     ).rejects.toThrow('size mismatch');
+  });
+
+  it('enforces a configured blob size independently of its declared size', async () => {
+    global.fetch = jest.fn().mockResolvedValue(new Response('oversized'));
+    await expect(
+      fetchBlob(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        validSha256Digest,
+        4,
+        logger,
+        undefined,
+        undefined,
+        { ...DEFAULT_SKILL_IMAGE_OPTIONS, maxBlobSizeBytes: 4 },
+      ),
+    ).rejects.toThrow('maximum allowed size');
+  });
+
+  it('uses the configured blob size for the descriptor check before fetching', async () => {
+    global.fetch = jest.fn();
+    await expect(
+      fetchBlob(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        validSha256Digest,
+        5,
+        logger,
+        undefined,
+        undefined,
+        { ...DEFAULT_SKILL_IMAGE_OPTIONS, maxBlobSizeBytes: 4 },
+      ),
+    ).rejects.toThrow('maximum allowed size');
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   it('should throw when expected size exceeds maximum', async () => {

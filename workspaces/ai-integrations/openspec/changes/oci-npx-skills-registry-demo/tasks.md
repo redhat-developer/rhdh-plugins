@@ -9,7 +9,7 @@
 
 ## 2. OCI connector and REST API
 
-- [ ] 2.1 Integrate with the #4747 connector, add paginated public Quay organization discovery and configured tag selection, and retain `/images` compatibility.
+- [x] 2.1 Integrate with the #4747 connector, add paginated public Quay organization discovery and configured tag selection, and retain `/images` compatibility.
 - [ ] 2.2 Resolve tags once, verify digest-addressed manifests and blobs, and expose the resolved manifest digest and stable repository key.
 - [ ] 2.3 Normalize annotated-layer and tar/tar+gzip SkillCard/Markdown layouts using the shared mapping; support valid skillctl images without mandatory manifest metadata annotations.
 - [ ] 2.4 Enforce design D7's origin, timeout, concurrency, extraction, and size bounds; test integrity failures, traversal, decompression limits, non-skills, malformed candidates, and ambiguous duplicate skill files.
@@ -38,6 +38,7 @@
 - [ ] 5.4 Document demo/public-source scope, metadata mappings, the #4747 integration, and the explicit connector-only OCI extraction decision; leave MLflow implementation to a future change.
 
 Task 1.1 was implemented by the `ai-skills-common` package (PR #5061). The
-shared-library portions of task 1.4 were completed in the same PR. All
-remaining tasks describe future implementation in connector and provider
-packages.
+shared-library portions of task 1.4 were completed in the same PR. Task 2.1 is
+implemented by PR #5057, including its reviewed acquisition/configuration follow-up.
+Unchecked tasks describe remaining connector and provider implementation;
+the task 2.1 follow-up does not complete tasks 2.2–2.4.
