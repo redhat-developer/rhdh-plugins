@@ -569,6 +569,33 @@ describe('buildNpxRef', () => {
       buildNpxRef('http://example.com/skill.md', validDigest),
     ).toThrow('npx reference: URL must use HTTPS');
   });
+
+  it.each([
+    [
+      'credentials',
+      'https://user:example-secret@example.com/skill.md',
+      'npx reference: URL contains credentials',
+    ],
+    [
+      'a fragment',
+      'https://example.com/skill.md?token=example-secret#section',
+      'npx reference: URL contains a fragment',
+    ],
+    [
+      'a non-HTTPS URL',
+      'http://example.com/skill.md?token=example-secret',
+      'npx reference: URL must use HTTPS',
+    ],
+    ['an invalid URL', 'invalid?token=example-secret', 'invalid URL'],
+  ])('does not expose the URL when rejecting %s', (_, sourceUri, expected) => {
+    let message = '';
+    try {
+      buildNpxRef(sourceUri, validDigest);
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toBe(expected);
+  });
 });
 
 describe('parseNpxRef', () => {
@@ -620,6 +647,42 @@ describe('parseNpxRef', () => {
     expect(() =>
       parseNpxRef(`https://example.com/skill.md?token=x#${validDigest}`),
     ).toThrow('sensitive query parameter');
+  });
+
+  it.each([
+    [
+      'missing separator',
+      'https://example.com/skill.md?token=example-secret',
+      "malformed npx reference (no '#' separator)",
+    ],
+    [
+      'invalid digest',
+      'https://example.com/skill.md?token=example-secret#bad',
+      'malformed npx reference: invalid digest',
+    ],
+    [
+      'invalid URL',
+      `invalid?token=example-secret#${validDigest}`,
+      'malformed npx reference: invalid URL',
+    ],
+    [
+      'non-HTTPS URL',
+      `http://example.com/skill.md?token=example-secret#${validDigest}`,
+      'npx reference: URL must use HTTPS',
+    ],
+    [
+      'fragment',
+      `https://example.com/skill.md?token=example-secret#section#${validDigest}`,
+      'npx reference: URL contains a fragment',
+    ],
+  ])('does not expose the URL for a reference with %s', (_, ref, expected) => {
+    let message = '';
+    try {
+      parseNpxRef(ref);
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toBe(expected);
   });
 
   it('round-trips through build and parse', () => {

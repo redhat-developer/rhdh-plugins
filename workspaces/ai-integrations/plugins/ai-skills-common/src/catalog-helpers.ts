@@ -355,13 +355,11 @@ function rejectSensitiveUrl(url: URL, context?: string): void {
   const prefix = context ? `${context}: ` : '';
 
   if (url.username || url.password) {
-    throw new Error(
-      `${prefix}URL contains credentials: ${url.protocol}//${url.host}${url.pathname}`,
-    );
+    throw new Error(`${prefix}URL contains credentials`);
   }
 
   if (url.hash) {
-    throw new Error(`${prefix}URL contains a fragment: ${url.href}`);
+    throw new Error(`${prefix}URL contains a fragment`);
   }
 
   let azureSasCount = 0;
@@ -410,11 +408,11 @@ export function buildNpxRef(sourceUri: string, digest: string): string {
   try {
     url = new URL(sourceUri);
   } catch {
-    throw new Error(`invalid URL: ${sourceUri}`);
+    throw new Error('invalid URL');
   }
 
   if (url.protocol !== 'https:') {
-    throw new Error(`npx reference: URL must use HTTPS: ${sourceUri}`);
+    throw new Error('npx reference: URL must use HTTPS');
   }
 
   rejectSensitiveUrl(url, 'npx reference');
@@ -440,25 +438,25 @@ export function parseNpxRef(ref: string): NpxRef {
   // Split at the last '#' to separate URL from digest
   const hashIndex = ref.lastIndexOf('#');
   if (hashIndex === -1) {
-    throw new Error(`malformed npx reference (no '#' separator): ${ref}`);
+    throw new Error("malformed npx reference (no '#' separator)");
   }
 
   const sourceUri = ref.substring(0, hashIndex);
   const digest = ref.substring(hashIndex + 1);
 
   if (!isValidDigest(digest)) {
-    throw new Error(`malformed npx reference: invalid digest '${digest}'`);
+    throw new Error('malformed npx reference: invalid digest');
   }
 
   let url: URL;
   try {
     url = new URL(sourceUri);
   } catch {
-    throw new Error(`malformed npx reference: invalid URL '${sourceUri}'`);
+    throw new Error('malformed npx reference: invalid URL');
   }
 
   if (url.protocol !== 'https:') {
-    throw new Error(`npx reference: URL must use HTTPS: ${sourceUri}`);
+    throw new Error('npx reference: URL must use HTTPS');
   }
 
   rejectSensitiveUrl(url, 'npx reference');
