@@ -52,6 +52,25 @@ export interface X2AConfig {
       name: string;
       email: string;
     };
+    /**
+     * Extra PEM (issuing CA and intermediates) mounted into converter Jobs
+     * and concatenated with the image trust store for git/HTTPS.
+     */
+    caBundle?: string;
+    /**
+     * When true, mount the OpenShift-injected cluster trusted CA bundle
+     * into converter Jobs (`config.openshift.io/inject-trusted-cabundle`).
+     * OpenShift only; default false. Job creation fails if `ca-bundle.crt`
+     * never appears (not a silent no-op). Vanilla Kubernetes / kind / CI
+     * must leave this false.
+     */
+    useClusterTrustedCABundle?: boolean;
+    /**
+     * When true and neither caBundle nor useClusterTrustedCABundle is set,
+     * disable git TLS verification in Jobs.
+     * Default false. Ignored when caBundle or useClusterTrustedCABundle is set.
+     */
+    skipSSLVerification?: boolean;
   };
   credentials: {
     llm: Record<string, string>;

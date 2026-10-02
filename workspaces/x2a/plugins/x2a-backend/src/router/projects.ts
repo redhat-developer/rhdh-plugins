@@ -38,6 +38,7 @@ import {
   useEnforceX2APermissions,
 } from './common';
 import { GitRepositoryResolver } from './GitRepositoryResolver';
+import { markJobErrorAndRethrow } from './markJobErrorAndRethrow';
 import { ProjectsGet, ProjectsPost } from '../schema/openapi';
 
 const projectUpdateSchema = z
@@ -442,22 +443,32 @@ export function registerProjectRoutes(
         projectId,
       });
 
-      const { k8sJobName } = await kubeService.createJob({
-        jobId: job.id,
-        projectId,
-        projectName: project.name,
-        projectDirName: project.dirName,
-        phase: 'init',
-        user: userRef,
-        callbackToken: callbackToken.value,
-        callbackUrl,
-        sourceRepo,
-        targetRepo,
-        aapCredentials,
-        userPrompt,
-        acceptedRules,
-        refresh,
-      });
+      let k8sJobName: string;
+      try {
+        ({ k8sJobName } = await kubeService.createJob({
+          jobId: job.id,
+          projectId,
+          projectName: project.name,
+          projectDirName: project.dirName,
+          phase: 'init',
+          user: userRef,
+          callbackToken: callbackToken.value,
+          callbackUrl,
+          sourceRepo,
+          targetRepo,
+          aapCredentials,
+          userPrompt,
+          acceptedRules,
+          refresh,
+        }));
+      } catch (error: unknown) {
+        return await markJobErrorAndRethrow({
+          x2aDatabase,
+          logger,
+          jobId: job.id,
+          error,
+        });
+      }
 
       // Update job with k8s job name
       await x2aDatabase.updateJob({
@@ -575,21 +586,31 @@ export function registerProjectRoutes(
         (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
 
-      const { k8sJobName } = await kubeService.createJob({
-        jobId: job.id,
-        projectId,
-        projectName: project.name,
-        projectDirName: project.dirName,
-        phase: adversarialPhase.value,
-        user: userRef,
-        callbackToken: callbackToken.value,
-        callbackUrl,
-        moduleId,
-        moduleName: module.name,
-        sourceRepo: targetRepo,
-        targetRepo,
-        adversarialAgents: adversarialAgents.map(a => a.toConfig()),
-      });
+      let k8sJobName: string;
+      try {
+        ({ k8sJobName } = await kubeService.createJob({
+          jobId: job.id,
+          projectId,
+          projectName: project.name,
+          projectDirName: project.dirName,
+          phase: adversarialPhase.value,
+          user: userRef,
+          callbackToken: callbackToken.value,
+          callbackUrl,
+          moduleId,
+          moduleName: module.name,
+          sourceRepo: targetRepo,
+          targetRepo,
+          adversarialAgents: adversarialAgents.map(a => a.toConfig()),
+        }));
+      } catch (error: unknown) {
+        return await markJobErrorAndRethrow({
+          x2aDatabase,
+          logger,
+          jobId: job.id,
+          error,
+        });
+      }
 
       await x2aDatabase.updateJob({
         id: job.id,

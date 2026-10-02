@@ -1176,6 +1176,69 @@ describe('createRouter – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
+      'marks the DB job error when kubeService.createJob fails - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const kubeError = new Error(
+          'Timed out waiting for x2a-cluster-trusted-ca key ca-bundle.crt',
+        );
+        const mockCreateJob = jest
+          .fn()
+          .mockRejectedValueOnce(kubeError)
+          .mockResolvedValue({ k8sJobName: 'test-job' });
+        const app = await createApp(client, undefined, undefined, {
+          createJob: mockCreateJob,
+        });
+
+        const projectRes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        const projectId = projectRes.body.id;
+        const module = await x2aDatabase.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId,
+        });
+        const agent = await x2aDatabase.createAdversarialAgent(validAgentInput);
+        const runBody = {
+          phase: 'analyze',
+          moduleId: module.id,
+          agentIds: [agent.id],
+          targetRepoAuth: { token: 'test-token' },
+        };
+
+        const first = await request(app)
+          .post(`/projects/${projectId}/adversarial-run`)
+          .send(runBody);
+
+        expect(first.status).toBeGreaterThanOrEqual(500);
+        expect(first.body.error.message).toContain(
+          'Timed out waiting for x2a-cluster-trusted-ca',
+        );
+
+        const jobs = await x2aDatabase.listJobs({
+          projectId,
+          moduleId: module.id,
+          phase: 'adversarial-analyze',
+          lastJobOnly: true,
+        });
+        expect(jobs[0]?.status).toBe('error');
+        expect(jobs[0]?.errorDetails).toContain(
+          'Timed out waiting for x2a-cluster-trusted-ca',
+        );
+
+        const second = await request(app)
+          .post(`/projects/${projectId}/adversarial-run`)
+          .send(runBody);
+        expect(second.status).not.toBe(409);
+        expect(second.body.error).not.toBe('JobAlreadyRunning');
+        expect(second.status).toBe(202);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
       'uses targetRepo token from config when not provided in request body - %p',
       async databaseId => {
         const { client, x2aDatabase } =
