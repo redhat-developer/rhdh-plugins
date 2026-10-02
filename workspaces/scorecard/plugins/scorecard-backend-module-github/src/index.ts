@@ -20,4 +20,5 @@
  * @packageDocumentation
  */
 
+/** @public */
 export { scorecardModuleGithub as default } from './module';
