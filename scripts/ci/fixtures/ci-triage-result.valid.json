@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "pr": {
+    "number": 12,
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "run": {
+    "id": 34,
+    "attempt": 1,
+    "url": "https://github.com/redhat-developer/rhdh-plugins/actions/runs/34"
+  },
+  "failed_jobs": [
+    {
+      "name": "Workspace boost, CI step for node 22",
+      "conclusion": "failure",
+      "failed_steps": ["run playwright tests"]
+    }
+  ],
+  "failed_tests": [
+    {
+      "name": "renders",
+      "framework": "playwright",
+      "file": "workspaces/boost/e2e-tests/render.spec.ts",
+      "error": "element missing"
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "trace",
+      "location": "evidence/trace.zip",
+      "summary": "The request completed before the assertion."
+    }
+  ],
+  "category": "repository_test",
+  "confidence": "high",
+  "recommendation": "repair",
+  "root_cause": "The test waits on an unrelated readiness signal.",
+  "workspace_boundary": {
+    "kind": "single",
+    "workspace": "boost",
+    "allowed_prefix": "workspaces/boost/",
+    "reason": "All failed leaf jobs belong to boost."
+  },
+  "verification_commands": [
+    {
+      "command": "yarn playwright test e2e-tests/render.spec.ts",
+      "reason": "Runs only the failed test."
+    }
+  ],
+  "summary": "One deterministic Playwright test defect is isolated to boost."
+}

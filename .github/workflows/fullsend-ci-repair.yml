@@ -1,0 +1,125 @@
+name: Fullsend CI repair dispatch
+
+on:
+  pull_request_target:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number with a trusted head-matching triage result
+        required: true
+        type: string
+      action:
+        description: Dispatch operation
+        required: true
+        type: choice
+        options: [retry, fix]
+
+concurrency:
+  group: fullsend-ci-repair-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  prepare:
+    name: Revalidate triage and prepare operation
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch'
+        || github.event.label.name == 'fullsend-ci-retry'
+        || github.event.label.name == 'fullsend-ci-fix'
+      }}
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+      contents: read
+      issues: write
+      pull-requests: read
+    outputs:
+      matrix: ${{ steps.dispatch.outputs.matrix }}
+      operation: ${{ steps.dispatch.outputs.operation }}
+      pr_number: ${{ steps.dispatch.outputs.pr_number }}
+    steps:
+      - name: Revalidate triage result and dispatch gates
+        id: dispatch
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        env:
+          FULLSEND_CI_PR_NUMBER: ${{ inputs.pr_number }}
+          FULLSEND_CI_ACTION: ${{ inputs.action }}
+          FULLSEND_CI_AUTOMATION: ${{ vars.FULLSEND_CI_AUTOMATION || 'observe' }}
+          FULLSEND_CI_AUTOFIX_WORKSPACES: ${{ vars.FULLSEND_CI_AUTOFIX_WORKSPACES || 'boost,scorecard,ai-integrations' }}
+        with:
+          script: |
+            // This privileged workflow never checks out a PR or fork. Fetch
+            // the helper as a file from the upstream default branch only.
+            const fs = require('node:fs');
+            const os = require('node:os');
+            const path = require('node:path');
+            const response = await github.rest.repos.getContent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: 'scripts/ci/fullsend-ci-context.cjs',
+              ref: context.payload.repository.default_branch,
+            });
+            if (Array.isArray(response.data) || response.data.type !== 'file') {
+              throw new Error('Trusted CI helper is not a regular file');
+            }
+            const helperPath = path.join(os.tmpdir(), 'fullsend-ci-context.cjs');
+            fs.writeFileSync(
+              helperPath,
+              Buffer.from(response.data.content, response.data.encoding),
+              { mode: 0o600 },
+            );
+            const dispatch = require(helperPath);
+            await dispatch.prepareRepairDispatch({github, context, core, env: process.env});
+
+  repair:
+    name: Run guarded CI fix agent
+    needs: prepare
+    if: ${{ needs.prepare.outputs.operation == 'fix' && needs.prepare.outputs.matrix != '{"include":[]}' }}
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+      issues: write
+      packages: read
+      pull-requests: write
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@84c8bbbb821ff85136854150b06740253709b3b8 # v0.37.0
+    with:
+      event_action: ci_fix
+      install_mode: per-repo
+      matrix: ${{ needs.prepare.outputs.matrix }}
+      mint_url: ${{ vars.FULLSEND_MINT_URL }}
+      gcp_region: ${{ vars.FULLSEND_GCP_REGION }}
+      project_number: ${{ vars.FULLSEND_PROJECT_NUMBER }}
+      runner_image: ubuntu-24.04
+    secrets:
+      FULLSEND_GCP_WIF_PROVIDER: ${{ secrets.FULLSEND_GCP_WIF_PROVIDER }}
+      FULLSEND_GCP_PROJECT_ID: ${{ secrets.FULLSEND_GCP_PROJECT_ID }}
+      OTEL_EXPORTER_OTLP_TRACES_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_TRACES_HEADERS }}
+      OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+
+  cleanup:
+    name: Remove ephemeral dispatch labels
+    needs: [prepare, repair]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    permissions:
+      issues: write
+    steps:
+      - name: Remove retry and fix labels
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        env:
+          PR_NUMBER: ${{ needs.prepare.outputs.pr_number || github.event.pull_request.number || inputs.pr_number }}
+        with:
+          script: |
+            const issue_number = Number(process.env.PR_NUMBER);
+            if (!Number.isInteger(issue_number) || issue_number < 1) return;
+            for (const name of ['fullsend-ci-retry', 'fullsend-ci-fix']) {
+              try {
+                await github.rest.issues.removeLabel({...context.repo, issue_number, name});
+              } catch (error) {
+                if (error.status !== 404) core.warning(`Could not remove ${name}: ${error.message}`);
+              }
+            }
