@@ -9,6 +9,17 @@
 - Lint: `yarn lint:all`
 - Type check: `yarn tsc`
 
+## New Module Creation
+
+When creating a new scorecard backend module under `plugins/`:
+
+1. Set `version` in `package.json` to `0.0.0` (the first changeset bumps it to `0.0.1`).
+2. Create a changeset at `workspaces/scorecard/.changeset/<descriptive-name>.md` with a `patch` bump for the new package.
+3. After adding public exports, generate the API report: `yarn tsc && yarn build:api-reports:only` from the scorecard workspace.
+4. Create a `README.md` with: feature overview, prerequisites, installation instructions, and app-config configuration examples.
+5. In `config.d.ts`, use `@visibility frontend` or `@visibility backend` for non-sensitive fields. Only use `@deepVisibility secret` for fields that contain credentials, tokens, or other genuinely sensitive values. Catalog entity filters (e.g., `kind: Component`) are not sensitive.
+6. Run `yarn prettier:fix` from the scorecard workspace before committing.
+
 ## Metric ID Naming Convention
 
 All metric IDs use `lowerCamelCase` with a `<provider>.<metricName>` format:
