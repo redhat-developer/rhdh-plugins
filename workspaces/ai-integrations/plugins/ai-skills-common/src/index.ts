@@ -80,6 +80,28 @@ export {
 
 export { MAX_RESPONSE_BYTES, SKILLS_ENDPOINT_BASE } from './rest-contract';
 
+export type {
+  MarkdownFrontmatter,
+  NormalizationDiagnostic,
+  NormalizationResult,
+  NpxDiscoveryEntry,
+  NpxFrontmatter,
+  NpxNativeInput,
+  OciMarkdownFrontmatter,
+  OciNativeInput,
+  OciSkillCard,
+  OciSkillCardMetadata,
+  OciSkillCardSpec,
+  TrustedSourceInput,
+} from './normalizer';
+
+export {
+  CATALOG_TAG_PATTERN,
+  MAX_TAG_LENGTH,
+  normalizeNpxMetadata,
+  normalizeOciMetadata,
+} from './normalizer';
+
 export {
   invalidFailedWithSkills,
   invalidLoadingWithObservedAt,
@@ -95,8 +117,25 @@ export {
   invalidSnapshotNonUtcTimestamp,
   invalidSnapshotOverlappingKeys,
   invalidSnapshotReadyWithFailedKeys,
+  npxDiscoveryEntryFull,
+  npxDiscoveryEntryMinimal,
+  npxFrontmatterConflictingVersion,
+  npxFrontmatterFull,
+  npxNativeInputConflictingVersion,
+  npxNativeInputFull,
+  npxNativeInputMinimal,
   npxSource,
+  npxTrustedInput,
+  ociMarkdownFrontmatterConflictingVersion,
+  ociMarkdownFrontmatterFull,
+  ociNativeInputConflictingVersion,
+  ociNativeInputFull,
+  ociNativeInputMinimal,
+  ociSkillCardConflictingVersion,
+  ociSkillCardFull,
+  ociSkillCardMinimal,
   ociSource,
+  ociTrustedInput,
   validFailedSnapshot,
   validLoadingSnapshot,
   validNpxRecordFull,

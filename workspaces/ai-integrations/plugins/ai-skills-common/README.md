@@ -33,6 +33,64 @@ consumes these snapshots to produce `AiResource` entities.
 | `MAX_RESPONSE_BYTES`       | `5 * 1024 * 1024` | Maximum response read size for consumers (5 MiB) |
 | `SUPPORTED_SCHEMA_VERSION` | `'1'`             | Supported schema version                         |
 
+## Normalization
+
+Pure metadata normalizers implementing design D3 native-field mappings
+and precedence. These functions accept already-parsed, verified inputs
+and return schema-valid `SkillRecord`s or explicit per-record
+diagnostics. They perform no network, scheduler, database, or catalog
+operations.
+
+### Functions
+
+| Function               | Description                                                |
+| ---------------------- | ---------------------------------------------------------- |
+| `normalizeOciMetadata` | Normalizes OCI SkillCard and Markdown frontmatter metadata |
+| `normalizeNpxMetadata` | Normalizes npx discovery entry and Markdown frontmatter    |
+
+### Input types
+
+| Type                     | Description                                                 |
+| ------------------------ | ----------------------------------------------------------- |
+| `OciNativeInput`         | Combined OCI SkillCard and frontmatter for normalization    |
+| `OciSkillCard`           | Parsed OCI SkillCard document                               |
+| `OciSkillCardMetadata`   | Parsed OCI SkillCard metadata fields                        |
+| `OciSkillCardSpec`       | Parsed OCI SkillCard spec fields                            |
+| `OciMarkdownFrontmatter` | Parsed OCI Markdown frontmatter                             |
+| `NpxNativeInput`         | Combined npx discovery entry and frontmatter                |
+| `NpxDiscoveryEntry`      | Parsed npx discovery entry                                  |
+| `NpxFrontmatter`         | Parsed npx Markdown frontmatter                             |
+| `TrustedSourceInput`     | Trusted source identity/integrity fields from the connector |
+
+### Result types
+
+| Type                      | Description                                              |
+| ------------------------- | -------------------------------------------------------- |
+| `NormalizationResult<T>`  | Contains the normalized record (or null) and diagnostics |
+| `NormalizationDiagnostic` | A single diagnostic with field name and message          |
+
+### Constants
+
+| Constant              | Value | Description                                   |
+| --------------------- | ----- | --------------------------------------------- |
+| `MAX_TAG_LENGTH`      | `63`  | Maximum tag length for Backstage catalog tags |
+| `CATALOG_TAG_PATTERN` | regex | Backstage catalog tag validation pattern      |
+
+### Behavior
+
+- **D3 precedence**: Each field has an ordered list of candidates.
+  The first non-empty, correctly typed value wins.
+- **Tag processing**: Tags are trimmed, lowercased, deduplicated, and
+  validated against `CATALOG_TAG_PATTERN`. Invalid or overlength tags
+  are omitted with diagnostics.
+- **Author normalization**: String authors are normalized to
+  `[{ name: value }]`. Array authors require a non-empty `name`.
+  Invalid entries are omitted with diagnostics.
+- **Extension allowlisting**: Only `extensions.oci.namespace`,
+  `extensions.oci.prompt`, and `extensions.npx.type` are preserved.
+- **Diagnostics**: Non-string candidates at any priority level emit
+  a diagnostic even when a valid lower-priority candidate is selected.
+
 ## Validation
 
 - `validateSnapshot(snapshot)` — validates a complete v1 snapshot

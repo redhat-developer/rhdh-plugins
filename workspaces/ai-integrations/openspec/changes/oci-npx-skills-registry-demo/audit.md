@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-02T16:00:00Z
+**Last audited:** 2026-10-02T20:30:00Z
 
 Audit clean (no CRITICAL). The independent auditor returned no findings for the
 final artifacts. All required planning artifacts are present and marked done by
@@ -10,6 +10,9 @@ ownership map; cross-change ownership checks were not degraded.
 Strict OpenSpec validation, relative links, workspace TypeScript, and workspace
 Prettier checks passed. This audit evaluates specification coherence, not runtime
 implementation; task 1.1 is checked (implemented in `ai-skills-common` PR #5061),
+task 1.2 is checked (implemented in `ai-skills-common` PR #5072, adding
+`normalizeOciMetadata` and `normalizeNpxMetadata` with D3 precedence, tag/author
+normalization, allowlisted extensions, diagnostics, and native metadata fixtures),
 task 1.3 is checked (implemented in `ai-skills-common` PR #5071), and task 1.4
 is annotated with shared-library completion status.
 

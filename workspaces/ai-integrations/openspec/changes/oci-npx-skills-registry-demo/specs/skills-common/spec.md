@@ -35,6 +35,36 @@ SkillCard namespaces SHALL NOT override catalog namespaces.
 - **WHEN** an OCI SkillCard declares `metadata.version: 1.0.0` and its Markdown frontmatter declares `metadata.version: "1.0"`
 - **THEN** the normalized record contains `version: "1.0.0"`
 
+#### Scenario: Tag validation and deduplication
+
+- **WHEN** a normalized record contains tags with mixed case, duplicates, or invalid characters
+- **THEN** valid tags are trimmed, lowercased, and deduplicated
+- **AND** invalid or overlength tags (exceeding 63 characters) are omitted with diagnostics
+- **AND** non-array tag candidates emit a diagnostic
+
+#### Scenario: Author string shorthand
+
+- **WHEN** frontmatter `metadata.author` is a non-empty string
+- **THEN** the normalizer converts it to `[{ name: value }]` in the output record
+- **AND** invalid author entries in arrays are omitted with diagnostics
+
+#### Scenario: Authors never imply catalog ownership
+
+- **WHEN** a record has authors but no explicit `owner` field
+- **THEN** the `owner` field remains absent — author data is informational only
+
+#### Scenario: Diagnostic emission for incorrectly typed optional fields
+
+- **WHEN** a higher-priority candidate for an optional scalar field has a non-string type
+- **THEN** the normalizer emits a diagnostic for the type mismatch
+- **AND** selects the next valid string candidate at a lower priority (if any)
+
+#### Scenario: Normalizer function exports
+
+- **WHEN** the shared library is imported by a connector
+- **THEN** it provides `normalizeOciMetadata` and `normalizeNpxMetadata` functions
+- **AND** each returns a `NormalizationResult` containing the record and diagnostics
+
 #### Scenario: Source-specific metadata
 
 - **WHEN** an OCI SkillCard includes `metadata.namespace` and `spec.prompt`
