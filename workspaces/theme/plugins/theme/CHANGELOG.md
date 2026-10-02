@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.4.1
+
+### Patch Changes
+
+- c7605a3: Adopt Backstage yarn plugin for Backstage package version management
+
 ## 1.4.0
 
 ### Minor Changes
