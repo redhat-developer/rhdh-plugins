@@ -127,6 +127,44 @@ bounded `SkillSnapshot` v1 JSON body.
 | 200    | Returns a `SkillSnapshot` v1 |
 | 404    | Unknown `sourceId`           |
 
+## Catalog helpers
+
+Pure identity, tag, version, and source-reference helpers for catalog
+entity mapping (design D5). These helpers have no network, database, or
+Catalog side effects.
+
+### Types
+
+| Type                  | Description                                                          |
+| --------------------- | -------------------------------------------------------------------- |
+| `IdentityTuple`       | Identity tuple (`type`, `id`, `key`) for deterministic entity naming |
+| `NormalizeTagsResult` | Result of tag normalization: valid tags and diagnostics              |
+| `OciRef`              | Parsed OCI skill reference (registry, repository, digest, URI)       |
+| `NpxRef`              | Parsed npx skill reference (sourceUri, digest, ref)                  |
+
+### Functions
+
+- `computeCatalogName(tuple)` — computes the deterministic catalog entity
+  name from an identity tuple via SHA-256 of the compact JSON encoding
+  `[type, id, key]`, prefixed with `skill-` (first 56 hex digits).
+- `normalizeTags(tags)` — trims, lowercases, deduplicates, and validates
+  tags against an extended catalog tag pattern (per design D3/D5) that
+  allows colons, plus signs, and hash characters beyond the standard
+  Backstage tag validator. Returns valid tags and diagnostics for dropped
+  entries.
+- `resolveVersion(declaredVersion, digest)` — strips at most one leading
+  `v`, validates as SemVer, and falls back to `0.0.0+<first 12 hex digits
+of digest>` when no valid SemVer is present.
+- `buildOciRef(registry, repository, digest)` — constructs a
+  digest-addressed OCI URI (`oci://<registry>/<repository>@<digest>`).
+- `parseOciRef(uri, recordDigest?)` — parses an OCI URI and optionally
+  validates digest agreement with a record digest.
+- `buildNpxRef(sourceUri, digest)` — constructs an npx reference
+  (`<sourceUri>#<digest>`) from an HTTPS URL, rejecting credentials,
+  fragments, and sensitive query parameters.
+- `parseNpxRef(ref)` — parses an npx reference, validating the URL and
+  digest.
+
 ## Fixtures
 
 The package exports valid and invalid OCI/npx fixtures for connector

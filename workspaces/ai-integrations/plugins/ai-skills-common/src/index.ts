@@ -52,6 +52,23 @@ export {
   validateSnapshotSize,
 } from './validation';
 
+export type {
+  IdentityTuple,
+  NormalizeTagsResult,
+  NpxRef,
+  OciRef,
+} from './catalog-helpers';
+
+export {
+  buildNpxRef,
+  buildOciRef,
+  computeCatalogName,
+  normalizeTags,
+  parseNpxRef,
+  parseOciRef,
+  resolveVersion,
+} from './catalog-helpers';
+
 export type { BoundSnapshotOptions } from './snapshot';
 
 export {

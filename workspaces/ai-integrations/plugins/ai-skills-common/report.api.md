@@ -16,7 +16,20 @@ export interface BoundSnapshotOptions {
 }
 
 // @public
+export function buildNpxRef(sourceUri: string, digest: string): string;
+
+// @public
+export function buildOciRef(
+  registry: string,
+  repository: string,
+  digest: string,
+): string;
+
+// @public
 export const CATALOG_TAG_PATTERN: RegExp;
+
+// @public
+export function computeCatalogName(tuple: IdentityTuple): string;
 
 // @public
 export function createFailedSnapshot(
@@ -26,6 +39,13 @@ export function createFailedSnapshot(
 
 // @public
 export function createLoadingSnapshot(source: SnapshotSource): SkillSnapshot;
+
+// @public
+export interface IdentityTuple {
+  id: string;
+  key: string;
+  type: SkillSourceType;
+}
 
 // @public
 export const invalidFailedWithSkills: unknown;
@@ -124,6 +144,15 @@ export function normalizeOciMetadata(
 ): NormalizationResult<OciSkillRecord>;
 
 // @public
+export function normalizeTags(tags: string[]): NormalizeTagsResult;
+
+// @public
+export interface NormalizeTagsResult {
+  diagnostics: string[];
+  tags: string[];
+}
+
+// @public
 export interface NpxDiscoveryEntry {
   description?: unknown;
   name?: unknown;
@@ -177,6 +206,13 @@ export const npxNativeInputFull: NpxNativeInput;
 
 // @public
 export const npxNativeInputMinimal: NpxNativeInput;
+
+// @public
+export interface NpxRef {
+  digest: string;
+  ref: string;
+  sourceUri: string;
+}
 
 // @public
 export interface NpxSkillRecord extends SkillRecord {
@@ -235,6 +271,14 @@ export const ociNativeInputFull: OciNativeInput;
 export const ociNativeInputMinimal: OciNativeInput;
 
 // @public
+export interface OciRef {
+  digest: string;
+  registry: string;
+  repository: string;
+  uri: string;
+}
+
+// @public
 export interface OciSkillCard {
   metadata?: OciSkillCardMetadata;
   spec?: OciSkillCardSpec;
@@ -279,6 +323,18 @@ export const ociSource: SnapshotSource;
 
 // @public
 export const ociTrustedInput: TrustedSourceInput;
+
+// @public
+export function parseNpxRef(ref: string): NpxRef;
+
+// @public
+export function parseOciRef(uri: string, recordDigest?: string): OciRef;
+
+// @public
+export function resolveVersion(
+  declaredVersion: string | undefined,
+  digest: string,
+): string;
 
 // @public
 export interface SkillAuthor {
