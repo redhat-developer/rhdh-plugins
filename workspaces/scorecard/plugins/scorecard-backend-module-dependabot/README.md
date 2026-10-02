@@ -29,3 +29,7 @@ scorecard:
 ```
 
 Replace `alertsCritical` with `alertsHigh`, `alertsMedium`, or `alertsLow` for the other severity metrics. See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
+
+## Development
+
+Local module harness and test commands are in [DEVELOPING.md](./DEVELOPING.md).
