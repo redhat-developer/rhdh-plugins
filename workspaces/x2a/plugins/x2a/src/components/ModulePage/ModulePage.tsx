@@ -40,7 +40,6 @@ import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
 import { usePolledFetch } from '../../hooks/usePolledFetch';
 import { useRepoAuthentication } from '../../repoAuth';
-import { ArtifactsCard } from './ArtifactsCard';
 import { ModuleDetailsCard } from './ModuleDetailsCard';
 import { PhasesCard } from './PhasesCard';
 import { ModulePageBreadcrumb } from './ModulePageBreadcrumb';
@@ -259,16 +258,13 @@ export const ModulePage = () => {
         {isLoading && <Progress />}
         {!isLoading && (
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <ArtifactsCard
+            <Grid item xs={12}>
+              <ModuleDetailsCard
                 module={module}
                 targetRepoUrl={project?.targetRepoUrl || ''}
                 targetRepoBranch={project?.targetRepoBranch || ''}
                 migrationPlanArtifact={project?.migrationPlan}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <ModuleDetailsCard module={module} />
             </Grid>
             <Grid item xs={12}>
               <PhasesCard

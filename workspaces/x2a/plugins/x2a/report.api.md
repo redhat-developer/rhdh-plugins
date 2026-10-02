@@ -124,6 +124,9 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.k8sJobName': string;
     readonly 'modulePage.phases.startedAt': string;
     readonly 'modulePage.phases.errorDetails': string;
+    readonly 'modulePage.phases.copyToClipboard': string;
+    readonly 'modulePage.phases.copyFailed': string;
+    readonly 'modulePage.phases.copyUnavailable': string;
     readonly 'modulePage.phases.statuses.error': string;
     readonly 'modulePage.phases.statuses.notStarted': string;
     readonly 'modulePage.phases.statuses.pending': string;
