@@ -90,8 +90,10 @@ Catalog side effects.
   name from an identity tuple via SHA-256 of the compact JSON encoding
   `[type, id, key]`, prefixed with `skill-` (first 56 hex digits).
 - `normalizeTags(tags)` — trims, lowercases, deduplicates, and validates
-  tags against Backstage's catalog tag pattern. Returns valid tags and
-  diagnostics for dropped entries.
+  tags against an extended catalog tag pattern (per design D3/D5) that
+  allows colons, plus signs, and hash characters beyond the standard
+  Backstage tag validator. Returns valid tags and diagnostics for dropped
+  entries.
 - `resolveVersion(declaredVersion, digest)` — strips at most one leading
   `v`, validates as SemVer, and falls back to `0.0.0+<first 12 hex digits
 of digest>` when no valid SemVer is present.

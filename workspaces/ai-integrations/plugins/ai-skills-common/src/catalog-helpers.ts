@@ -55,6 +55,12 @@ export interface IdentityTuple {
  * Names, versions, tags, and content digests do not affect entity
  * identity. A source ID or native key change creates a different name.
  *
+ * @remarks
+ * The hashing algorithm (SHA-256 of compact JSON identity tuple, truncated
+ * to 56 hex digits) is part of the stable public contract. Persisted
+ * entities depend on this producing the same output for the same input.
+ * Any change to the algorithm constitutes a breaking (major) change.
+ *
  * @public
  */
 export function computeCatalogName(tuple: IdentityTuple): string {
@@ -94,9 +100,11 @@ export interface NormalizeTagsResult {
  * Normalizes tags for catalog use per design D3/D5.
  *
  * Trims whitespace, lowercases, deduplicates, and retains only values
- * accepted by Backstage's catalog tag validator. Invalid or overlength
- * values are omitted with a diagnostic — tags are never truncated and
- * replacement characters are never synthesized.
+ * accepted by an extended catalog tag pattern (per design D3/D5) that
+ * allows colons, plus signs, and hash characters beyond the standard
+ * Backstage tag validator. Invalid or overlength values are omitted
+ * with a diagnostic — tags are never truncated and replacement
+ * characters are never synthesized.
  *
  * @public
  */
@@ -169,6 +177,11 @@ export function resolveVersion(
   declaredVersion: string | undefined,
   digest: string,
 ): string {
+  // Validate digest upfront, consistent with buildOciRef and buildNpxRef.
+  if (!isValidDigest(digest)) {
+    throw new Error(`invalid digest: ${digest}`);
+  }
+
   if (declaredVersion !== undefined && declaredVersion !== '') {
     let candidate = declaredVersion;
     if (candidate.startsWith('v')) {
@@ -180,9 +193,6 @@ export function resolveVersion(
   }
 
   // Fallback: 0.0.0+<first 12 hex digits of digest>
-  if (!isValidDigest(digest)) {
-    throw new Error(`invalid digest: ${digest}`);
-  }
   // digest format is sha256:<64 hex>, so hex starts at index 7
   const hex = digest.substring(7, 19);
   return `0.0.0+${hex}`;
@@ -310,6 +320,8 @@ const SENSITIVE_QUERY_PARAMS: ReadonlySet<string> = new Set([
   'x-amz-signature',
   'x-amz-security-token',
   'x-goog-signature',
+  'client_secret',
+  'refresh_token',
 ]);
 
 /**
@@ -402,7 +414,7 @@ export function buildNpxRef(sourceUri: string, digest: string): string {
   }
 
   if (url.protocol !== 'https:') {
-    throw new Error(`URL must use HTTPS: ${sourceUri}`);
+    throw new Error(`npx reference: URL must use HTTPS: ${sourceUri}`);
   }
 
   rejectSensitiveUrl(url, 'npx reference');
@@ -446,7 +458,7 @@ export function parseNpxRef(ref: string): NpxRef {
   }
 
   if (url.protocol !== 'https:') {
-    throw new Error(`npx reference URL must use HTTPS: ${sourceUri}`);
+    throw new Error(`npx reference: URL must use HTTPS: ${sourceUri}`);
   }
 
   rejectSensitiveUrl(url, 'npx reference');

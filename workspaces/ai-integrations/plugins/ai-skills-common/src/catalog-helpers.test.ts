@@ -293,6 +293,12 @@ describe('resolveVersion', () => {
   it('throws on short digest in fallback path', () => {
     expect(() => resolveVersion('', 'sha256:short')).toThrow('invalid digest');
   });
+
+  it('throws on invalid digest even when valid SemVer is provided', () => {
+    expect(() => resolveVersion('1.2.3', 'not-a-digest')).toThrow(
+      'invalid digest',
+    );
+  });
 });
 
 // ─── OCI references ──────────────────────────────────────────────────
@@ -509,6 +515,24 @@ describe('buildNpxRef', () => {
     ).toThrow('sensitive query parameter');
   });
 
+  it('throws on URL with client_secret query parameter', () => {
+    expect(() =>
+      buildNpxRef(
+        'https://example.com/skill.md?client_secret=s3cret',
+        validDigest,
+      ),
+    ).toThrow('sensitive query parameter');
+  });
+
+  it('throws on URL with refresh_token query parameter', () => {
+    expect(() =>
+      buildNpxRef(
+        'https://example.com/skill.md?refresh_token=rt-abc',
+        validDigest,
+      ),
+    ).toThrow('sensitive query parameter');
+  });
+
   it('throws on URL with multiple Azure SAS params (co-occurrence)', () => {
     expect(() =>
       buildNpxRef(
@@ -534,10 +558,16 @@ describe('buildNpxRef', () => {
     expect(ref).toMatch(/^https:\/\/example\.com\/skill\.md#/);
   });
 
-  it('includes npx reference context in error messages', () => {
+  it('includes npx reference context in error messages for credentials', () => {
     expect(() =>
       buildNpxRef('https://user:pass@example.com/skill.md', validDigest),
     ).toThrow('npx reference: URL contains credentials');
+  });
+
+  it('includes npx reference context in HTTPS error messages', () => {
+    expect(() =>
+      buildNpxRef('http://example.com/skill.md', validDigest),
+    ).toThrow('npx reference: URL must use HTTPS');
   });
 });
 
