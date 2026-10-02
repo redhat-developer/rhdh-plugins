@@ -16,6 +16,19 @@ export interface BoundSnapshotOptions {
 }
 
 // @public
+export function buildNpxRef(sourceUri: string, digest: string): string;
+
+// @public
+export function buildOciRef(
+  registry: string,
+  repository: string,
+  digest: string,
+): string;
+
+// @public
+export function computeCatalogName(tuple: IdentityTuple): string;
+
+// @public
 export function createFailedSnapshot(
   source: SnapshotSource,
   observedAt: string,
@@ -23,6 +36,13 @@ export function createFailedSnapshot(
 
 // @public
 export function createLoadingSnapshot(source: SnapshotSource): SkillSnapshot;
+
+// @public
+export interface IdentityTuple {
+  id: string;
+  key: string;
+  type: SkillSourceType;
+}
 
 // @public
 export const invalidFailedWithSkills: unknown;
@@ -94,8 +114,24 @@ export const MAX_SNAPSHOT_BYTES: number;
 export const MAX_SNAPSHOT_RECORDS = 1000;
 
 // @public
+export function normalizeTags(tags: string[]): NormalizeTagsResult;
+
+// @public
+export interface NormalizeTagsResult {
+  diagnostics: string[];
+  tags: string[];
+}
+
+// @public
 export interface NpxExtensions {
   type?: 'skill-md';
+}
+
+// @public
+export interface NpxRef {
+  digest: string;
+  ref: string;
+  sourceUri: string;
 }
 
 // @public
@@ -115,6 +151,14 @@ export interface OciExtensions {
 }
 
 // @public
+export interface OciRef {
+  digest: string;
+  registry: string;
+  repository: string;
+  uri: string;
+}
+
+// @public
 export interface OciSkillRecord extends SkillRecord {
   extensions?: {
     oci?: OciExtensions;
@@ -123,6 +167,18 @@ export interface OciSkillRecord extends SkillRecord {
 
 // @public
 export const ociSource: SnapshotSource;
+
+// @public
+export function parseNpxRef(ref: string): NpxRef;
+
+// @public
+export function parseOciRef(uri: string, recordDigest?: string): OciRef;
+
+// @public
+export function resolveVersion(
+  declaredVersion: string | undefined,
+  digest: string,
+): string;
 
 // @public
 export interface SkillAuthor {
