@@ -19,10 +19,33 @@ import {
   jiraDateTimeToIso,
   toJiraEpochMillis,
   validateIdentifier,
+  validateJiraAuthToken,
   validateJQLValue,
 } from './utils';
 
 describe('utils', () => {
+  describe('validateJiraAuthToken', () => {
+    it('should accept Basic Authorization values', () => {
+      expect(validateJiraAuthToken('Basic abc123')).toBe('Basic abc123');
+    });
+
+    it('should accept Bearer Authorization values', () => {
+      expect(validateJiraAuthToken('Bearer abc123')).toBe('Bearer abc123');
+    });
+
+    it('should throw for bare tokens without a scheme prefix', () => {
+      expect(() => validateJiraAuthToken('abc123')).toThrow(
+        "Invalid jira.token: must be a full Authorization value starting with 'Basic ' or 'Bearer '",
+      );
+    });
+
+    it('should throw when the scheme is lowercase', () => {
+      expect(() => validateJiraAuthToken('basic abc123')).toThrow(
+        "Invalid jira.token: must be a full Authorization value starting with 'Basic ' or 'Bearer '",
+      );
+    });
+  });
+
   describe('validateJQLValue', () => {
     it('should throw error for invalid JQL value', () => {
       expect(() => validateJQLValue('TEST$123', 'jira/project-key')).toThrow(
