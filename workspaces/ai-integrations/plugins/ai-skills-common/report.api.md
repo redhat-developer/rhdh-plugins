@@ -108,6 +108,22 @@ export function isValidDigest(digest: string): boolean;
 export function isValidUtcTimestamp(value: string): boolean;
 
 // @public
+export interface MarkdownFrontmatter {
+  compatibility?: unknown;
+  description?: unknown;
+  license?: unknown;
+  metadata?: {
+    version?: unknown;
+    author?: unknown;
+    tags?: unknown;
+    owner?: unknown;
+    lifecycle?: unknown;
+  };
+  name?: unknown;
+  version?: unknown;
+}
+
+// @public
 export const MAX_RESPONSE_BYTES: number;
 
 // @public
@@ -171,20 +187,7 @@ export interface NpxExtensions {
 }
 
 // @public
-export interface NpxFrontmatter {
-  compatibility?: unknown;
-  description?: unknown;
-  license?: unknown;
-  metadata?: {
-    version?: unknown;
-    author?: unknown;
-    tags?: unknown;
-    owner?: unknown;
-    lifecycle?: unknown;
-  };
-  name?: unknown;
-  version?: unknown;
-}
+export type NpxFrontmatter = MarkdownFrontmatter;
 
 // @public
 export const npxFrontmatterConflictingVersion: NpxFrontmatter;
@@ -234,20 +237,7 @@ export interface OciExtensions {
 }
 
 // @public
-export interface OciMarkdownFrontmatter {
-  compatibility?: unknown;
-  description?: unknown;
-  license?: unknown;
-  metadata?: {
-    version?: unknown;
-    author?: unknown;
-    tags?: unknown;
-    owner?: unknown;
-    lifecycle?: unknown;
-  };
-  name?: unknown;
-  version?: unknown;
-}
+export type OciMarkdownFrontmatter = MarkdownFrontmatter;
 
 // @public
 export const ociMarkdownFrontmatterConflictingVersion: OciMarkdownFrontmatter;

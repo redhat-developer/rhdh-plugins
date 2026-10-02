@@ -92,8 +92,13 @@ export interface OciSkillCard {
 }
 
 /**
- * Parsed Markdown frontmatter from an OCI skill document
- * (SKILL.md or SKILLS.md).
+ * Shared base interface for parsed Markdown frontmatter.
+ *
+ * Both OCI and npx skill documents use the same YAML frontmatter
+ * structure. This base captures the common shape. Dedicated aliases
+ * ({@link OciMarkdownFrontmatter}, {@link NpxFrontmatter}) represent
+ * semantically distinct domains and may diverge independently in
+ * future versions.
  *
  * @remarks
  * The `unknown` field types are deliberate and stable for the v1 contract.
@@ -101,7 +106,7 @@ export interface OciSkillCard {
  *
  * @public
  */
-export interface OciMarkdownFrontmatter {
+export interface MarkdownFrontmatter {
   /** Top-level name. */
   name?: unknown;
   /** Top-level description. */
@@ -126,6 +131,18 @@ export interface OciMarkdownFrontmatter {
     lifecycle?: unknown;
   };
 }
+
+/**
+ * Parsed Markdown frontmatter from an OCI skill document
+ * (SKILL.md or SKILLS.md).
+ *
+ * Structurally identical to {@link MarkdownFrontmatter} but kept as a
+ * separate named type so the OCI and npx domains can diverge
+ * independently in future versions without a breaking rename.
+ *
+ * @public
+ */
+export type OciMarkdownFrontmatter = MarkdownFrontmatter;
 
 /**
  * Combined parsed OCI native input for normalization.
@@ -168,37 +185,13 @@ export interface NpxDiscoveryEntry {
 /**
  * Parsed Markdown frontmatter from an npx skill document.
  *
- * @remarks
- * The `unknown` field types are deliberate and stable for the v1 contract.
- * See {@link OciSkillCardMetadata} for the rationale.
+ * Structurally identical to {@link MarkdownFrontmatter} but kept as a
+ * separate named type so the npx and OCI domains can diverge
+ * independently in future versions without a breaking rename.
  *
  * @public
  */
-export interface NpxFrontmatter {
-  /** Top-level name. */
-  name?: unknown;
-  /** Top-level description. */
-  description?: unknown;
-  /** Top-level version. */
-  version?: unknown;
-  /** Top-level license. */
-  license?: unknown;
-  /** Top-level compatibility. */
-  compatibility?: unknown;
-  /** Nested metadata block in frontmatter. */
-  metadata?: {
-    /** Frontmatter `metadata.version`. */
-    version?: unknown;
-    /** Frontmatter `metadata.author` (string or object). */
-    author?: unknown;
-    /** Frontmatter `metadata.tags`. */
-    tags?: unknown;
-    /** Frontmatter `metadata.owner`. */
-    owner?: unknown;
-    /** Frontmatter `metadata.lifecycle`. */
-    lifecycle?: unknown;
-  };
-}
+export type NpxFrontmatter = MarkdownFrontmatter;
 
 /**
  * Combined parsed npx native input for normalization.
@@ -266,6 +259,15 @@ export interface NormalizationResult<T> {
  * `#`, `.`, `_`, `-`. Must start and end with an alphanumeric character
  * or one of `:`, `+`, `#`.
  *
+ * @remarks
+ * This is a snapshot of the Backstage catalog tag validation rule at the
+ * time of authoring (Backstage 1.36 / catalog-model 0.x). The pattern is
+ * not imported from `@backstage/catalog-model` because that package is not
+ * a dependency of this library. If Backstage changes its tag validation
+ * pattern in a future release, this constant must be updated to match,
+ * and such a change will be a semver-breaking update to downstream
+ * consumers.
+ *
  * @public
  */
 export const CATALOG_TAG_PATTERN = /^[a-z0-9:+#]([a-z0-9:+#._-]*[a-z0-9:+#])?$/;
@@ -276,6 +278,21 @@ export const CATALOG_TAG_PATTERN = /^[a-z0-9:+#]([a-z0-9:+#._-]*[a-z0-9:+#])?$/;
  * @public
  */
 export const MAX_TAG_LENGTH = 63;
+
+/** Maximum length for user-controlled values interpolated into diagnostics. */
+const DIAGNOSTIC_VALUE_MAX_LENGTH = 80;
+
+/**
+ * Truncates a string for safe interpolation into diagnostic messages.
+ * Values longer than {@link DIAGNOSTIC_VALUE_MAX_LENGTH} are sliced and
+ * suffixed with an ellipsis.
+ */
+function truncateForDiagnostic(value: string): string {
+  if (value.length <= DIAGNOSTIC_VALUE_MAX_LENGTH) {
+    return value;
+  }
+  return `${value.slice(0, DIAGNOSTIC_VALUE_MAX_LENGTH)}…`;
+}
 
 // ─── Internal helpers ────────────────────────────────────────────────
 
@@ -450,12 +467,16 @@ function normalizeTags(
           if (raw.length > MAX_TAG_LENGTH) {
             diagnostics.push({
               field: 'tags',
-              message: `tags[${i}]: overlength tag '${raw}' omitted — exceeds ${MAX_TAG_LENGTH} characters`,
+              message: `tags[${i}]: overlength tag '${truncateForDiagnostic(
+                raw,
+              )}' omitted — exceeds ${MAX_TAG_LENGTH} characters`,
             });
           } else {
             diagnostics.push({
               field: 'tags',
-              message: `tags[${i}]: invalid tag '${raw}' omitted — does not match catalog tag pattern`,
+              message: `tags[${i}]: invalid tag '${truncateForDiagnostic(
+                raw,
+              )}' omitted — does not match catalog tag pattern`,
             });
           }
         } else {
@@ -548,7 +569,13 @@ export function normalizeOciMetadata(
   const spec = native.skillCard?.spec;
   const fm = native.frontmatter;
 
-  // Required: name — first non-empty from D3 precedence
+  // Required: name — first non-empty from D3 precedence.
+  // Unlike optional scalars, name uses a single terminal diagnostic
+  // when no valid candidate is found rather than per-candidate
+  // type-mismatch warnings. This is intentional: name is a required
+  // field whose absence aborts normalization, so the terminal
+  // diagnostic is authoritative and individual candidate warnings
+  // would be noise on an already-failed result.
   const name = firstNonEmptyString(
     meta?.['display-name'],
     meta?.name,
@@ -605,7 +632,14 @@ export function normalizeOciMetadata(
 
   // Owner and lifecycle — only from frontmatter metadata
   const owner = firstNonEmptyString(fm?.metadata?.owner);
+  diagnoseNonStringCandidates('owner', [fm?.metadata?.owner], diagnostics);
+
   const lifecycle = firstNonEmptyString(fm?.metadata?.lifecycle);
+  diagnoseNonStringCandidates(
+    'lifecycle',
+    [fm?.metadata?.lifecycle],
+    diagnostics,
+  );
 
   // Authors: metadata.authors → frontmatter metadata.author
   const authors = normalizeAuthors(
@@ -678,7 +712,9 @@ export function normalizeNpxMetadata(
   const entry = native.entry;
   const fm = native.frontmatter;
 
-  // Required: name — frontmatter name → discovery entry name
+  // Required: name — frontmatter name → discovery entry name.
+  // See normalizeOciMetadata for the rationale on terminal-only
+  // diagnostics for the required name field.
   const name = firstNonEmptyString(fm?.name, entry?.name);
   if (!name) {
     diagnostics.push({
@@ -718,7 +754,14 @@ export function normalizeNpxMetadata(
 
   // Owner and lifecycle — only from frontmatter metadata
   const owner = firstNonEmptyString(fm?.metadata?.owner);
+  diagnoseNonStringCandidates('owner', [fm?.metadata?.owner], diagnostics);
+
   const lifecycle = firstNonEmptyString(fm?.metadata?.lifecycle);
+  diagnoseNonStringCandidates(
+    'lifecycle',
+    [fm?.metadata?.lifecycle],
+    diagnostics,
+  );
 
   // Authors: frontmatter metadata.author only
   const authors = normalizeAuthors([fm?.metadata?.author], diagnostics);
@@ -750,8 +793,8 @@ export function normalizeNpxMetadata(
   } else if (entry?.type !== undefined && entry?.type !== null) {
     diagnostics.push({
       field: 'extensions.npx.type',
-      message: `extensions.npx.type: unsupported type value '${String(
-        entry.type,
+      message: `extensions.npx.type: unsupported type value '${truncateForDiagnostic(
+        String(entry.type),
       )}' — only 'skill-md' is allowed; extension omitted`,
     });
   }

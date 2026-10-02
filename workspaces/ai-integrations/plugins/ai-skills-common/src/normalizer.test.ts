@@ -505,6 +505,48 @@ describe('normalizeOciMetadata', () => {
       ).toBe(true);
     });
 
+    it('emits diagnostic for non-string owner', () => {
+      const native: OciNativeInput = {
+        skillCard: {
+          metadata: { name: 'Test' },
+        },
+        frontmatter: {
+          metadata: { owner: 42 as unknown },
+        },
+      };
+      const result = normalizeOciMetadata(native, ociTrustedInput);
+      expect(result.record).not.toBeNull();
+      expect(result.record!.owner).toBeUndefined();
+      expect(
+        result.diagnostics.some(
+          d =>
+            d.field === 'owner' &&
+            d.message.includes("unsupported type 'number'"),
+        ),
+      ).toBe(true);
+    });
+
+    it('emits diagnostic for non-string lifecycle', () => {
+      const native: OciNativeInput = {
+        skillCard: {
+          metadata: { name: 'Test' },
+        },
+        frontmatter: {
+          metadata: { lifecycle: ['production'] as unknown },
+        },
+      };
+      const result = normalizeOciMetadata(native, ociTrustedInput);
+      expect(result.record).not.toBeNull();
+      expect(result.record!.lifecycle).toBeUndefined();
+      expect(
+        result.diagnostics.some(
+          d =>
+            d.field === 'lifecycle' &&
+            d.message.includes("unsupported type 'object'"),
+        ),
+      ).toBe(true);
+    });
+
     it('malformed optional values do not make otherwise valid records fail', () => {
       const native: OciNativeInput = {
         skillCard: {
@@ -722,6 +764,46 @@ describe('normalizeNpxMetadata', () => {
       expect(result.record!.extensions).toBeUndefined();
       expect(
         result.diagnostics.some(d => d.field === 'extensions.npx.type'),
+      ).toBe(true);
+    });
+  });
+
+  describe('invalid optional values yield diagnostics', () => {
+    it('emits diagnostic for non-string owner in npx', () => {
+      const native: NpxNativeInput = {
+        entry: { name: 'test' },
+        frontmatter: {
+          metadata: { owner: true as unknown },
+        },
+      };
+      const result = normalizeNpxMetadata(native, npxTrustedInput);
+      expect(result.record).not.toBeNull();
+      expect(result.record!.owner).toBeUndefined();
+      expect(
+        result.diagnostics.some(
+          d =>
+            d.field === 'owner' &&
+            d.message.includes("unsupported type 'boolean'"),
+        ),
+      ).toBe(true);
+    });
+
+    it('emits diagnostic for non-string lifecycle in npx', () => {
+      const native: NpxNativeInput = {
+        entry: { name: 'test' },
+        frontmatter: {
+          metadata: { lifecycle: { phase: 'production' } as unknown },
+        },
+      };
+      const result = normalizeNpxMetadata(native, npxTrustedInput);
+      expect(result.record).not.toBeNull();
+      expect(result.record!.lifecycle).toBeUndefined();
+      expect(
+        result.diagnostics.some(
+          d =>
+            d.field === 'lifecycle' &&
+            d.message.includes("unsupported type 'object'"),
+        ),
       ).toBe(true);
     });
   });

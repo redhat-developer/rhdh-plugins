@@ -81,6 +81,7 @@ export {
 export { MAX_RESPONSE_BYTES, SKILLS_ENDPOINT_BASE } from './rest-contract';
 
 export type {
+  MarkdownFrontmatter,
   NormalizationDiagnostic,
   NormalizationResult,
   NpxDiscoveryEntry,
