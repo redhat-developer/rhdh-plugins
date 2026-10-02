@@ -77,12 +77,12 @@ Catalog side effects.
 
 ### Types
 
-| Type                 | Description                                                          |
-| -------------------- | -------------------------------------------------------------------- |
-| `IdentityTuple`      | Identity tuple (`type`, `id`, `key`) for deterministic entity naming |
+| Type                  | Description                                                          |
+| --------------------- | -------------------------------------------------------------------- |
+| `IdentityTuple`       | Identity tuple (`type`, `id`, `key`) for deterministic entity naming |
 | `NormalizeTagsResult` | Result of tag normalization: valid tags and diagnostics              |
-| `OciRef`             | Parsed OCI skill reference (registry, repository, digest, URI)       |
-| `NpxRef`             | Parsed npx skill reference (sourceUri, digest, ref)                  |
+| `OciRef`              | Parsed OCI skill reference (registry, repository, digest, URI)       |
+| `NpxRef`              | Parsed npx skill reference (sourceUri, digest, ref)                  |
 
 ### Functions
 
@@ -94,7 +94,7 @@ Catalog side effects.
   diagnostics for dropped entries.
 - `resolveVersion(declaredVersion, digest)` — strips at most one leading
   `v`, validates as SemVer, and falls back to `0.0.0+<first 12 hex digits
-  of digest>` when no valid SemVer is present.
+of digest>` when no valid SemVer is present.
 - `buildOciRef(registry, repository, digest)` — constructs a
   digest-addressed OCI URI (`oci://<registry>/<repository>@<digest>`).
 - `parseOciRef(uri, recordDigest?)` — parses an OCI URI and optionally

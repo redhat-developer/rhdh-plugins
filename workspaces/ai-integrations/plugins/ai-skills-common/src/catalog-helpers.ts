@@ -231,7 +231,9 @@ export function buildOciRef(
   }
   if (!registry || !repository) {
     throw new Error(
-      `registry and repository must be non-empty: registry=${JSON.stringify(registry)}, repository=${JSON.stringify(repository)}`,
+      `registry and repository must be non-empty: registry=${JSON.stringify(
+        registry,
+      )}, repository=${JSON.stringify(repository)}`,
     );
   }
   return `oci://${registry}/${repository}@${digest}`;
