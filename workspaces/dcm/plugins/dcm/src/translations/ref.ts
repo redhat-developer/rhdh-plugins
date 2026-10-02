@@ -264,11 +264,14 @@ export const dcmMessages = {
     rehydrateDialogCancel: 'Cancel',
     rehydrateDialogConfirm: 'Rehydrate',
     columns: {
+      instanceId: 'Instance ID',
       displayName: 'Display name',
       catalogItem: 'Catalog item',
       resourceIds: 'Resource IDs',
       apiVersion: 'API version',
+      runId: 'Run ID',
       created: 'Created',
+      updated: 'Updated',
     },
     form: {
       displayNameLabel: 'Display name *',

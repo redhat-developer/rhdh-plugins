@@ -113,6 +113,7 @@ export function CatalogItemInstancesTabContent() {
       inst.display_name,
       inst.spec?.catalog_item_id,
       inst.uid,
+      inst.run_id,
       ...(inst.spec?.resource_ids ?? []),
     ],
     emptyForm: emptyInstanceForm,
@@ -155,6 +156,20 @@ export function CatalogItemInstancesTabContent() {
 
   const columns = useMemo<TableColumn<CatalogItemInstance>[]>(
     () => [
+      {
+        title: t('instances.columns.instanceId'),
+        field: 'uid',
+        render: inst => (
+          <TruncatedText
+            text={inst.uid}
+            variant="body2"
+            color="textSecondary"
+            bold={false}
+            maxWidth={180}
+            fallback={<DcmEmptyCell />}
+          />
+        ),
+      },
       {
         title: t('instances.columns.displayName'),
         field: 'display_name',
@@ -211,12 +226,40 @@ export function CatalogItemInstancesTabContent() {
         ),
       },
       {
+        title: t('instances.columns.runId'),
+        field: 'run_id',
+        render: inst => (
+          <TruncatedText
+            text={inst.run_id}
+            variant="body2"
+            color="textSecondary"
+            bold={false}
+            maxWidth={180}
+            fallback={<DcmEmptyCell />}
+          />
+        ),
+      },
+      {
         title: t('instances.columns.created'),
         field: 'create_time',
         render: inst =>
           inst.create_time ? (
             <Typography variant="body2">
               {new Date(inst.create_time).toLocaleDateString()}
+            </Typography>
+          ) : (
+            <Typography variant="caption" color="textSecondary">
+              -
+            </Typography>
+          ),
+      },
+      {
+        title: t('instances.columns.updated'),
+        field: 'update_time',
+        render: inst =>
+          inst.update_time ? (
+            <Typography variant="body2">
+              {new Date(inst.update_time).toLocaleDateString()}
             </Typography>
           ) : (
             <Typography variant="caption" color="textSecondary">

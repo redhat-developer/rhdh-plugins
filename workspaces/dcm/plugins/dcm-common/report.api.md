@@ -201,6 +201,7 @@ export interface CatalogItemInstance {
   display_name: string;
   // (undocumented)
   path?: string;
+  run_id?: string;
   // (undocumented)
   spec: CatalogItemInstanceSpec;
   // (undocumented)
