@@ -25,7 +25,12 @@
  * @packageDocumentation
  */
 
-import type { NpxSkillRecord, OciSkillRecord, SkillAuthor } from './types';
+import type {
+  NpxSkillRecord,
+  OciExtensions,
+  OciSkillRecord,
+  SkillAuthor,
+} from './types';
 
 // ─── Input types ─────────────────────────────────────────────────────
 
@@ -34,6 +39,12 @@ import type { NpxSkillRecord, OciSkillRecord, SkillAuthor } from './types';
  *
  * Fields use `unknown` because the YAML parser may produce any type.
  * The normalizer validates and selects correctly typed values.
+ *
+ * @remarks
+ * The `unknown` field types are deliberate and stable for the v1 contract.
+ * Native metadata arrives as parsed YAML/JSON and may contain any type.
+ * Narrowing to concrete types in a future minor release would be a
+ * breaking TypeScript change; any such narrowing will be reserved for v2.
  *
  * @public
  */
@@ -84,6 +95,10 @@ export interface OciSkillCard {
  * Parsed Markdown frontmatter from an OCI skill document
  * (SKILL.md or SKILLS.md).
  *
+ * @remarks
+ * The `unknown` field types are deliberate and stable for the v1 contract.
+ * See {@link OciSkillCardMetadata} for the rationale.
+ *
  * @public
  */
 export interface OciMarkdownFrontmatter {
@@ -127,6 +142,10 @@ export interface OciNativeInput {
 /**
  * Parsed npx discovery entry from an Agent Skills index.
  *
+ * @remarks
+ * The `unknown` field types are deliberate and stable for the v1 contract.
+ * See {@link OciSkillCardMetadata} for the rationale.
+ *
  * @public
  */
 export interface NpxDiscoveryEntry {
@@ -134,12 +153,24 @@ export interface NpxDiscoveryEntry {
   name?: unknown;
   /** Discovery entry description. */
   description?: unknown;
-  /** Artifact format type (e.g., `'skill-md'`). */
+  /**
+   * Artifact format type.
+   *
+   * @remarks
+   * Currently only `'skill-md'` is accepted by the normalizer. Any other
+   * non-nullish value is omitted from the normalized record with a
+   * diagnostic. The field is typed `unknown` because the discovery index
+   * may contain arbitrary strings; the normalizer validates at runtime.
+   */
   type?: unknown;
 }
 
 /**
  * Parsed Markdown frontmatter from an npx skill document.
+ *
+ * @remarks
+ * The `unknown` field types are deliberate and stable for the v1 contract.
+ * See {@link OciSkillCardMetadata} for the rationale.
  *
  * @public
  */
@@ -234,13 +265,17 @@ export interface NormalizationResult<T> {
  * Tags must consist of lowercase alphanumeric characters plus `:`, `+`,
  * `#`, `.`, `_`, `-`. Must start and end with an alphanumeric character
  * or one of `:`, `+`, `#`.
+ *
+ * @public
  */
-const CATALOG_TAG_PATTERN = /^[a-z0-9:+#]([a-z0-9:+#._-]*[a-z0-9:+#])?$/;
+export const CATALOG_TAG_PATTERN = /^[a-z0-9:+#]([a-z0-9:+#._-]*[a-z0-9:+#])?$/;
 
 /**
  * Maximum tag length accepted by the Backstage catalog.
+ *
+ * @public
  */
-const MAX_TAG_LENGTH = 63;
+export const MAX_TAG_LENGTH = 63;
 
 // ─── Internal helpers ────────────────────────────────────────────────
 
@@ -388,7 +423,19 @@ function normalizeTags(
   diagnostics: NormalizationDiagnostic[],
 ): string[] | undefined {
   for (const candidate of candidates) {
-    if (!Array.isArray(candidate) || candidate.length === 0) {
+    if (candidate === undefined || candidate === null) {
+      continue;
+    }
+
+    if (!Array.isArray(candidate)) {
+      diagnostics.push({
+        field: 'tags',
+        message: `tags: unsupported type '${typeof candidate}' — expected array`,
+      });
+      continue;
+    }
+
+    if (candidate.length === 0) {
       continue;
     }
 
@@ -450,6 +497,21 @@ function diagnoseOptionalStringField(
   }
 }
 
+/**
+ * Emits diagnostics for non-string candidates at any priority level
+ * in the candidate list. Called regardless of whether a valid string
+ * was found at a lower priority.
+ */
+function diagnoseNonStringCandidates(
+  fieldName: string,
+  candidates: unknown[],
+  diagnostics: NormalizationDiagnostic[],
+): void {
+  for (const c of candidates) {
+    diagnoseOptionalStringField(fieldName, c, diagnostics);
+  }
+}
+
 // ─── Public normalizer functions ─────────────────────────────────────
 
 /**
@@ -502,11 +564,14 @@ export function normalizeOciMetadata(
   }
 
   // Optional scalars with D3 precedence
+  // Always emit diagnostics for non-string candidates at any priority level,
+  // even when a valid string is found at a lower priority.
   const description = firstNonEmptyString(meta?.description, fm?.description);
-  if (!description) {
-    diagnoseOptionalStringField('description', meta?.description, diagnostics);
-    diagnoseOptionalStringField('description', fm?.description, diagnostics);
-  }
+  diagnoseNonStringCandidates(
+    'description',
+    [meta?.description, fm?.description],
+    diagnostics,
+  );
 
   // Version: metadata.version → frontmatter metadata.version → frontmatter version
   // Invalid first-choice version is retained for D5 fallback
@@ -515,34 +580,28 @@ export function normalizeOciMetadata(
     fm?.metadata?.version,
     fm?.version,
   );
-  if (!version) {
-    diagnoseOptionalStringField('version', meta?.version, diagnostics);
-    diagnoseOptionalStringField('version', fm?.metadata?.version, diagnostics);
-    diagnoseOptionalStringField('version', fm?.version, diagnostics);
-  }
+  diagnoseNonStringCandidates(
+    'version',
+    [meta?.version, fm?.metadata?.version, fm?.version],
+    diagnostics,
+  );
 
   const license = firstNonEmptyString(meta?.license, fm?.license);
-  if (!license) {
-    diagnoseOptionalStringField('license', meta?.license, diagnostics);
-    diagnoseOptionalStringField('license', fm?.license, diagnostics);
-  }
+  diagnoseNonStringCandidates(
+    'license',
+    [meta?.license, fm?.license],
+    diagnostics,
+  );
 
   const compatibility = firstNonEmptyString(
     meta?.compatibility,
     fm?.compatibility,
   );
-  if (!compatibility) {
-    diagnoseOptionalStringField(
-      'compatibility',
-      meta?.compatibility,
-      diagnostics,
-    );
-    diagnoseOptionalStringField(
-      'compatibility',
-      fm?.compatibility,
-      diagnostics,
-    );
-  }
+  diagnoseNonStringCandidates(
+    'compatibility',
+    [meta?.compatibility, fm?.compatibility],
+    diagnostics,
+  );
 
   // Owner and lifecycle — only from frontmatter metadata
   const owner = firstNonEmptyString(fm?.metadata?.owner);
@@ -580,7 +639,7 @@ export function normalizeOciMetadata(
   const prompt = asNonEmptyString(spec?.prompt);
 
   if (namespace || prompt) {
-    const oci: Record<string, string> = {};
+    const oci: OciExtensions = {};
     if (namespace) oci.namespace = namespace;
     if (prompt) oci.prompt = prompt;
     record.extensions = { oci };
@@ -631,32 +690,31 @@ export function normalizeNpxMetadata(
   }
 
   // Optional scalars with D3 precedence
+  // Always emit diagnostics for non-string candidates at any priority level.
   const description = firstNonEmptyString(fm?.description, entry?.description);
-  if (!description) {
-    diagnoseOptionalStringField('description', fm?.description, diagnostics);
-    diagnoseOptionalStringField('description', entry?.description, diagnostics);
-  }
+  diagnoseNonStringCandidates(
+    'description',
+    [fm?.description, entry?.description],
+    diagnostics,
+  );
 
   // Version: frontmatter metadata.version → frontmatter version
   const version = firstNonEmptyString(fm?.metadata?.version, fm?.version);
-  if (!version) {
-    diagnoseOptionalStringField('version', fm?.metadata?.version, diagnostics);
-    diagnoseOptionalStringField('version', fm?.version, diagnostics);
-  }
+  diagnoseNonStringCandidates(
+    'version',
+    [fm?.metadata?.version, fm?.version],
+    diagnostics,
+  );
 
   const license = firstNonEmptyString(fm?.license);
-  if (!license) {
-    diagnoseOptionalStringField('license', fm?.license, diagnostics);
-  }
+  diagnoseNonStringCandidates('license', [fm?.license], diagnostics);
 
   const compatibility = firstNonEmptyString(fm?.compatibility);
-  if (!compatibility) {
-    diagnoseOptionalStringField(
-      'compatibility',
-      fm?.compatibility,
-      diagnostics,
-    );
-  }
+  diagnoseNonStringCandidates(
+    'compatibility',
+    [fm?.compatibility],
+    diagnostics,
+  );
 
   // Owner and lifecycle — only from frontmatter metadata
   const owner = firstNonEmptyString(fm?.metadata?.owner);

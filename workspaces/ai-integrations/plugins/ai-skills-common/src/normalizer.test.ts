@@ -421,6 +421,39 @@ describe('normalizeOciMetadata', () => {
         ),
       ).toHaveLength(2);
     });
+
+    it('falls back from SkillCard metadata.tags to frontmatter metadata.tags', () => {
+      const native: OciNativeInput = {
+        skillCard: {
+          metadata: { name: 'Test' },
+        },
+        frontmatter: {
+          metadata: { tags: ['frontmatter-tag'] },
+        },
+      };
+      const result = normalizeOciMetadata(native, ociTrustedInput);
+      expect(result.record!.tags).toEqual(['frontmatter-tag']);
+    });
+
+    it('emits diagnostic for non-array tag candidate', () => {
+      const native: OciNativeInput = {
+        skillCard: {
+          metadata: {
+            name: 'Test',
+            tags: 'single-tag' as unknown,
+          },
+        },
+      };
+      const result = normalizeOciMetadata(native, ociTrustedInput);
+      expect(result.record!.tags).toBeUndefined();
+      expect(
+        result.diagnostics.some(
+          d =>
+            d.field === 'tags' &&
+            d.message.includes("unsupported type 'string'"),
+        ),
+      ).toBe(true);
+    });
   });
 
   describe('invalid optional values yield diagnostics', () => {
@@ -447,6 +480,29 @@ describe('normalizeOciMetadata', () => {
       const result = normalizeOciMetadata(native, ociTrustedInput);
       expect(result.record!.version).toBeUndefined();
       expect(result.diagnostics.some(d => d.field === 'version')).toBe(true);
+    });
+
+    it('emits diagnostic for non-string higher-priority candidate even when lower-priority provides valid string', () => {
+      const native: OciNativeInput = {
+        skillCard: {
+          metadata: { name: 'Test', description: 42 },
+        },
+        frontmatter: {
+          description: 'valid fallback description',
+        },
+      };
+      const result = normalizeOciMetadata(native, ociTrustedInput);
+      expect(result.record).not.toBeNull();
+      // The valid lower-priority string is selected
+      expect(result.record!.description).toBe('valid fallback description');
+      // A diagnostic is still emitted for the non-string higher-priority candidate
+      expect(
+        result.diagnostics.some(
+          d =>
+            d.field === 'description' &&
+            d.message.includes("unsupported type 'number'"),
+        ),
+      ).toBe(true);
     });
 
     it('malformed optional values do not make otherwise valid records fail', () => {

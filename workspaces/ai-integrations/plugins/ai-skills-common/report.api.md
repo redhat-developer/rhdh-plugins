@@ -16,6 +16,9 @@ export interface BoundSnapshotOptions {
 }
 
 // @public
+export const CATALOG_TAG_PATTERN: RegExp;
+
+// @public
 export function createFailedSnapshot(
   source: SnapshotSource,
   observedAt: string,
@@ -92,6 +95,9 @@ export const MAX_SNAPSHOT_BYTES: number;
 
 // @public
 export const MAX_SNAPSHOT_RECORDS = 1000;
+
+// @public
+export const MAX_TAG_LENGTH = 63;
 
 // @public
 export interface NormalizationDiagnostic {
