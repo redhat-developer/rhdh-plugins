@@ -200,7 +200,7 @@ describe('normalizeTags', () => {
     ]);
     expect(result.tags).toEqual(['demo', 'upper', 'valid']);
     // empty skipped, 'has space' dropped, 'demo' is duplicate of ' Demo '
-    expect(result.diagnostics.length).toBeGreaterThanOrEqual(2);
+    expect(result.diagnostics).toHaveLength(3);
   });
 
   it('returns empty arrays for empty input', () => {
@@ -475,6 +475,69 @@ describe('buildNpxRef', () => {
     );
     expect(ref).toContain('version=2');
     expect(ref).toContain('format=raw');
+  });
+
+  it('accepts a URL with key= query parameter (not credential-sensitive)', () => {
+    const ref = buildNpxRef(
+      'https://example.com/skill.md?key=some-record-id',
+      validDigest,
+    );
+    expect(ref).toContain('key=some-record-id');
+  });
+
+  it('throws on URL with private_token query parameter', () => {
+    expect(() =>
+      buildNpxRef(
+        'https://gitlab.example.com/skill.md?private_token=glpat-xxx',
+        validDigest,
+      ),
+    ).toThrow('sensitive query parameter');
+  });
+
+  it('throws on URL with auth_token query parameter', () => {
+    expect(() =>
+      buildNpxRef(
+        'https://example.com/skill.md?auth_token=abc123',
+        validDigest,
+      ),
+    ).toThrow('sensitive query parameter');
+  });
+
+  it('throws on URL with bearer_token query parameter', () => {
+    expect(() =>
+      buildNpxRef('https://example.com/skill.md?bearer_token=xyz', validDigest),
+    ).toThrow('sensitive query parameter');
+  });
+
+  it('throws on URL with multiple Azure SAS params (co-occurrence)', () => {
+    expect(() =>
+      buildNpxRef(
+        'https://blob.core.windows.net/skill.md?sv=2020-08-04&ss=b&srt=sco&sp=r&se=2030-01-01',
+        validDigest,
+      ),
+    ).toThrow('Azure SAS token parameters');
+  });
+
+  it('accepts a URL with fewer than 3 Azure SAS-like params', () => {
+    // Only 2 params that happen to match Azure SAS names — not enough to trigger
+    const ref = buildNpxRef(
+      'https://example.com/skill.md?sv=2&sp=r',
+      validDigest,
+    );
+    expect(ref).toContain('sv=2');
+    expect(ref).toContain('sp=r');
+  });
+
+  it('normalizes URL via URL API (host lowercased, default port stripped)', () => {
+    const ref = buildNpxRef('https://EXAMPLE.COM:443/skill.md', validDigest);
+    // URL API normalizes host to lowercase and strips default HTTPS port
+    expect(ref).toMatch(/^https:\/\/example\.com\/skill\.md#/);
+  });
+
+  it('includes npx reference context in error messages', () => {
+    expect(() =>
+      buildNpxRef('https://user:pass@example.com/skill.md', validDigest),
+    ).toThrow('npx reference: URL contains credentials');
   });
 });
 

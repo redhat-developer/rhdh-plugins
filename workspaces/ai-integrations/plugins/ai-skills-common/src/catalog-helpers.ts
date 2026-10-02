@@ -68,6 +68,10 @@ export function computeCatalogName(tuple: IdentityTuple): string {
 /**
  * Backstage catalog tag validation pattern: one or more segments of
  * `[a-z0-9:+#]` separated by hyphens, maximum 63 characters.
+ *
+ * This pattern intentionally extends the standard Backstage catalog tag
+ * pattern (which uses `[a-z0-9]` segments) to also allow colons, plus
+ * signs, and hash characters per design D3/D5 requirements.
  */
 const CATALOG_TAG_RE = /^[a-z0-9:+#]+(-[a-z0-9:+#]+)*$/;
 
@@ -288,6 +292,7 @@ export interface NpxRef {
 
 /**
  * Query parameter names that indicate credentials or signed access tokens.
+ * Individually rejected regardless of context.
  */
 const SENSITIVE_QUERY_PARAMS: ReadonlySet<string> = new Set([
   'sig',
@@ -296,43 +301,74 @@ const SENSITIVE_QUERY_PARAMS: ReadonlySet<string> = new Set([
   'access_token',
   'api_key',
   'apikey',
-  'key',
   'secret',
   'password',
+  'private_token',
+  'auth_token',
+  'bearer_token',
   'x-amz-credential',
   'x-amz-signature',
   'x-amz-security-token',
   'x-goog-signature',
-  'se', // Azure SAS token expiry
-  'sp', // Azure SAS permissions
-  'spr', // Azure SAS protocol
-  'sv', // Azure SAS version
-  'ss', // Azure SAS services
-  'srt', // Azure SAS resource types
-  'st', // Azure SAS start time
 ]);
+
+/**
+ * Azure SAS token query parameters. These short, common names (`se`, `sp`,
+ * `sv`, etc.) can appear in non-credential contexts, so they are only
+ * rejected when {@link AZURE_SAS_CO_OCCURRENCE_THRESHOLD} or more appear
+ * together — a strong signal of a signed URL.
+ */
+const AZURE_SAS_PARAMS: ReadonlySet<string> = new Set([
+  'se', // expiry
+  'sp', // permissions
+  'spr', // protocol
+  'sv', // version
+  'ss', // services
+  'srt', // resource types
+  'st', // start time
+]);
+
+/** Minimum number of Azure SAS params that must co-occur to trigger rejection. */
+const AZURE_SAS_CO_OCCURRENCE_THRESHOLD = 3;
 
 /**
  * Checks whether a URL contains credentials (userinfo), fragments,
  * query-string credentials, or signed access tokens.
  *
+ * @param url - The URL to inspect.
+ * @param context - Optional context prefix for error messages (e.g., `"npx reference"`).
  * @throws If the URL contains sensitive elements.
  */
-function rejectSensitiveUrl(url: URL): void {
+function rejectSensitiveUrl(url: URL, context?: string): void {
+  const prefix = context ? `${context}: ` : '';
+
   if (url.username || url.password) {
     throw new Error(
-      `URL contains credentials: ${url.protocol}//${url.host}${url.pathname}`,
+      `${prefix}URL contains credentials: ${url.protocol}//${url.host}${url.pathname}`,
     );
   }
 
   if (url.hash) {
-    throw new Error(`URL contains a fragment: ${url.href}`);
+    throw new Error(`${prefix}URL contains a fragment: ${url.href}`);
   }
 
+  let azureSasCount = 0;
   for (const [param] of url.searchParams) {
-    if (SENSITIVE_QUERY_PARAMS.has(param.toLocaleLowerCase('en-US'))) {
-      throw new Error(`URL contains sensitive query parameter '${param}'`);
+    const lower = param.toLocaleLowerCase('en-US');
+    if (SENSITIVE_QUERY_PARAMS.has(lower)) {
+      throw new Error(
+        `${prefix}URL contains sensitive query parameter '${param}'`,
+      );
     }
+    if (AZURE_SAS_PARAMS.has(lower)) {
+      azureSasCount++;
+    }
+  }
+
+  if (azureSasCount >= AZURE_SAS_CO_OCCURRENCE_THRESHOLD) {
+    throw new Error(
+      `${prefix}URL contains Azure SAS token parameters (${azureSasCount} of ${AZURE_SAS_PARAMS.size} present)`,
+    );
   }
 }
 
@@ -369,7 +405,7 @@ export function buildNpxRef(sourceUri: string, digest: string): string {
     throw new Error(`URL must use HTTPS: ${sourceUri}`);
   }
 
-  rejectSensitiveUrl(url);
+  rejectSensitiveUrl(url, 'npx reference');
 
   // Serialize using URL API to normalize, preserving query order
   return `${url.href}#${digest}`;
@@ -413,7 +449,7 @@ export function parseNpxRef(ref: string): NpxRef {
     throw new Error(`npx reference URL must use HTTPS: ${sourceUri}`);
   }
 
-  rejectSensitiveUrl(url);
+  rejectSensitiveUrl(url, 'npx reference');
 
   return { ref, sourceUri, digest };
 }
