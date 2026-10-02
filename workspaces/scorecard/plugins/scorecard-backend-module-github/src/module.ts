@@ -25,6 +25,15 @@ import { GithubDeploymentPullRequestsCollector } from './collectors/GithubDeploy
 import { GithubDeploymentWorkflowRunsCollector } from './collectors/GithubDeploymentWorkflowRunsCollector';
 import { GithubDeploymentsCollector } from './collectors/GithubDeploymentsCollector';
 import { GithubOpenPRsProvider } from './metricProviders/GithubOpenPRsProvider';
+import { GithubOpenIssuesProvider } from './metricProviders/GithubOpenIssuesProvider';
+import { GithubOpenedIssuesProvider } from './metricProviders/GithubOpenedIssuesProvider';
+import { GithubOpenedPRsProvider } from './metricProviders/GithubOpenedPRsProvider';
+import { GithubClosedIssuesProvider } from './metricProviders/GithubClosedIssuesProvider';
+import { GithubClosedPRsProvider } from './metricProviders/GithubClosedPRsProvider';
+import { GithubPRLifecycleProvider } from './metricProviders/GithubPRLifecycleProvider';
+import { GithubActionsCountProvider } from './metricProviders/GithubActionsCountProvider';
+import { GithubActionsRatioProvider } from './metricProviders/GithubActionsRatioProvider';
+import { GithubPRPassRateProvider } from './metricProviders/GithubPRPassRateProvider';
 
 export const scorecardModuleGithub = createBackendModule({
   pluginId: 'scorecard',
@@ -45,6 +54,33 @@ export const scorecardModuleGithub = createBackendModule({
         );
         metrics.addMetricProvider(
           GithubOpenPRsProvider.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubOpenIssuesProvider.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubOpenedIssuesProvider.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubOpenedPRsProvider.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubClosedIssuesProvider.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubClosedPRsProvider.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubPRLifecycleProvider.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubActionsCountProvider.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubActionsRatioProvider.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubPRPassRateProvider.fromConfig(config, { logger }),
         );
       },
     });
