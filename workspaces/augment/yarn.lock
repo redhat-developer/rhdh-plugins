@@ -7401,7 +7401,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@modelcontextprotocol/sdk@npm:^1.25.2, @modelcontextprotocol/sdk@npm:^1.26.0":
+"@modelcontextprotocol/client@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@modelcontextprotocol/client@npm:2.0.0"
+  dependencies:
+    "@modelcontextprotocol/core": "npm:2.0.0"
+    cross-spawn: "npm:^7.0.5"
+    eventsource: "npm:^3.0.2"
+    eventsource-parser: "npm:^3.0.0"
+    jose: "npm:^6.1.3"
+    pkce-challenge: "npm:^5.0.0"
+    zod: "npm:^4.2.0"
+  checksum: 10c0/23d1d16539c76a69d1848dc67c495b3aa6d048946dd894ed449bca0de7ce9835a71904476c6eeb9f75fe8dfca1964c61372d9d7d283b7cabfa3258d288db6859
+  languageName: node
+  linkType: hard
+
+"@modelcontextprotocol/core@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@modelcontextprotocol/core@npm:2.0.0"
+  dependencies:
+    zod: "npm:^4.2.0"
+  checksum: 10c0/1cb96fcebfb60651775bcaa3b1e92b47b9317239e9e0352a2d6a404f77d1abfb68ce5b462becd073cddc4db08f2f0024cd3c7dd2582e3463ddb958f65b73fbe3
+  languageName: node
+  linkType: hard
+
+"@modelcontextprotocol/sdk@npm:^1.25.2":
   version: 1.29.0
   resolution: "@modelcontextprotocol/sdk@npm:1.29.0"
   dependencies:
@@ -8684,22 +8708,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openai/agents-core@npm:^0.14.0":
-  version: 0.14.1
-  resolution: "@openai/agents-core@npm:0.14.1"
+"@openai/agents-core@npm:^0.17.0":
+  version: 0.17.0
+  resolution: "@openai/agents-core@npm:0.17.0"
   dependencies:
-    "@modelcontextprotocol/sdk": "npm:^1.26.0"
+    "@modelcontextprotocol/client": "npm:^2.0.0"
+    "@standard-schema/spec": "npm:^1.1.0"
     debug: "npm:^4.4.0"
-    openai: "npm:^6.46.0"
+    openai: "npm:^7.2.0"
   peerDependencies:
     zod: ^4.0.0
   dependenciesMeta:
-    "@modelcontextprotocol/sdk":
+    "@modelcontextprotocol/client":
       optional: true
   peerDependenciesMeta:
     zod:
       optional: true
-  checksum: 10c0/10a674e95c94b172473cf42277fbdc0550827268e3ec54caccc0ce6176162cf48c6ded62825ac8f4ce9d71d1de985a80b2826bd3921394f73b3f73583e698144
+  checksum: 10c0/64db8ed9973a75fb1b7f376fc0cb90a2638bfd1ff12af7d944fcbcabdf93f5b2957144dda0d1c0cf56dee91544a6fa79e007754806bb0a413f8d9c5a8ed99a1d
   languageName: node
   linkType: hard
 
@@ -11327,7 +11352,7 @@ __metadata:
     "@backstage/plugin-permission-common": "npm:^0.9.2"
     "@kagenti/adk": "npm:^0.8.1"
     "@modelcontextprotocol/sdk": "npm:^1.25.2"
-    "@openai/agents-core": "npm:^0.14.0"
+    "@openai/agents-core": "npm:^0.17.0"
     "@red-hat-developer-hub/backstage-plugin-augment-common": "workspace:^"
     "@types/express": "npm:^4.17.6"
     "@types/express-session": "npm:^1.18.2"
@@ -12793,6 +12818,13 @@ __metadata:
     "@typescript-eslint/parser": ">=5"
     eslint: ">=8.x"
   checksum: 10c0/b6187252bd0bf2e55e023dcfff6d4cf6f8f3fdacd6baa2c597e94e843c725563552fc15fda7c17a4b1f0d10673792b1f90566763f14499e6b7854b1e3d3d459a
+  languageName: node
+  linkType: hard
+
+"@standard-schema/spec@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@standard-schema/spec@npm:1.1.0"
+  checksum: 10c0/d90f55acde4b2deb983529c87e8025fa693de1a5e8b49ecc6eb84d1fd96328add0e03d7d551442156c7432fd78165b2c26ff561b970a9a881f046abb78d6a526
   languageName: node
   linkType: hard
 
@@ -28694,14 +28726,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^6.46.0":
-  version: 6.48.0
-  resolution: "openai@npm:6.48.0"
+"openai@npm:^7.2.0":
+  version: 7.8.0
+  resolution: "openai@npm:7.8.0"
   peerDependencies:
     "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
     "@smithy/hash-node": ">=4.3.0 <5"
     "@smithy/signature-v4": ">=5.4.0 <6"
-    ws: ^8.18.0
+    undici: ">=5 <9"
+    ws: ^8.21.0
     zod: ^3.25 || ^4.0
   peerDependenciesMeta:
     "@aws-sdk/credential-provider-node":
@@ -28710,11 +28743,13 @@ __metadata:
       optional: true
     "@smithy/signature-v4":
       optional: true
+    undici:
+      optional: true
     ws:
       optional: true
     zod:
       optional: true
-  checksum: 10c0/1e6b792e94af7dc22541343a395282d747cea596fa52d28ccc27410d5fdd82912bc0e12589bc68a88317ae58d3afc10f5fed6cb5deff3ba445817a56870d3719
+  checksum: 10c0/8df536b67b8c8e73c6ba54a7392f489c01531a48cd80a78aa04d2afb6a7a64ae692cb5102bd58e40c6d0b2cd1fd8944d8a489732c05f97bf0991948b4466d6b5
   languageName: node
   linkType: hard
 
@@ -36513,10 +36548,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.25 || ^4.0, zod@npm:^3.25.76 || ^4.0.0, zod@npm:^4.1.11, zod@npm:^4.3.5, zod@npm:^4.3.6":
-  version: 4.3.6
-  resolution: "zod@npm:4.3.6"
-  checksum: 10c0/860d25a81ab41d33aa25f8d0d07b091a04acb426e605f396227a796e9e800c44723ed96d0f53a512b57be3d1520f45bf69c0cb3b378a232a00787a2609625307
+"zod@npm:^3.25 || ^4.0, zod@npm:^3.25.76 || ^4.0.0, zod@npm:^4.1.11, zod@npm:^4.2.0, zod@npm:^4.3.5, zod@npm:^4.3.6":
+  version: 4.5.4
+  resolution: "zod@npm:4.5.4"
+  checksum: 10c0/511a2a4d1a6f875dfdd70a1586989a8b14ef126776cd6218a2c760b9f65f14ef389ec20d92ee1aa4fcb4566d4ff3fa012956044f9dc503510d82e4c756a8ba92
   languageName: node
   linkType: hard
 
