@@ -14,35 +14,37 @@
  * limitations under the License.
  */
 
-import type { ReactNode } from 'react';
-
 import Box from '@mui/material/Box';
 
-import { DataSourcesDialog } from '../MetricGroupCard/DataSourcesDialog';
-import { MetricGroupCardMenu } from '../MetricGroupCard/MetricGroupCardMenu';
+import { CardInfoButton } from '../Common/CardInfoButton';
+import { DataSourcesDialog } from './DataSourcesDialog';
+import { CardActionsMenu } from './CardActionsMenu';
 import {
-  useSparklineDataSources,
-  type UseSparklineDataSourcesOptions,
-} from '../../hooks/useSparklineDataSources';
+  useMetricDataSources,
+  type UseMetricDataSourcesOptions,
+} from '../../hooks/useMetricDataSources';
 
-export type SparklineDataSourcesProps = UseSparklineDataSourcesOptions & {
+export type MetricDataSourcesProps = UseMetricDataSourcesOptions & {
   title: string;
-  extraInfo?: ReactNode;
 };
 
-export const SparklineDataSources = ({
+export const MetricDataSources = ({
   title,
-  extraInfo,
   ...options
-}: SparklineDataSourcesProps) => {
+}: MetricDataSourcesProps) => {
   const { isOpen, menuActions, menuAriaLabel, dialogProps } =
-    useSparklineDataSources(options);
+    useMetricDataSources(options);
 
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        {extraInfo}
-        <MetricGroupCardMenu ariaLabel={menuAriaLabel} actions={menuActions} />
+        {options.lastSyncedTimestamp && (
+          <CardInfoButton
+            timestamp={options.lastSyncedTimestamp}
+            marginRight={0}
+          />
+        )}
+        <CardActionsMenu ariaLabel={menuAriaLabel} actions={menuActions} />
       </Box>
       {isOpen && <DataSourcesDialog title={title} {...dialogProps} />}
     </>

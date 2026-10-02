@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import { useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { useState } from 'react';
 import { PieData } from '../../types';
 import type { TooltipPosition } from '../types';
 import {
@@ -24,7 +24,8 @@ import {
   resolveStatusColor,
 } from '../../../utils';
 import { CardWrapper } from '../../Common/CardWrapper';
-import { CardInfoButton } from '../components/CardInfoButton';
+import { MetricDataSources } from '../../DataSources/MetricDataSources';
+import { toDialogMetricResult } from '../../DataSources/toDialogMetricResult';
 import { ResponsivePieChart } from '../../ScorecardHomepageSection/ResponsivePieChart';
 import { CardLegendContent } from '../components/CardLegendContent';
 import { CardPieTooltipContent } from '../components/CardPieTooltipContent';
@@ -71,8 +72,33 @@ export const StatusGroupedCardComponent = ({
     />
   ) : null;
 
+  const topStatus = result.values?.reduce(
+    (max, v) => (v.count > max.count ? v : max),
+    result.values[0],
+  );
+
+  const metricSnapshot = useMemo(
+    () =>
+      toDialogMetricResult({
+        id: scorecardId,
+        title: cardTitle,
+        description,
+        type: 'number',
+        value: result.total,
+        timestamp: result.timestamp,
+        evaluation: topStatus?.name ?? null,
+        thresholds: result.thresholds,
+      }),
+    [scorecardId, cardTitle, description, result, topStatus],
+  );
+
   const info = showInfo ? (
-    <CardInfoButton timestamp={result.timestamp} />
+    <MetricDataSources
+      title={cardTitle}
+      metricId={scorecardId}
+      lastSyncedTimestamp={result.timestamp}
+      metric={metricSnapshot}
+    />
   ) : null;
 
   return (

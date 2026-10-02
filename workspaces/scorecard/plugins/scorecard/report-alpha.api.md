@@ -119,8 +119,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'dataSourcesDialog.columns.value': string;
     readonly 'dataSourcesDialog.columns.status': string;
     readonly 'dataSourcesDialog.columns.lastSynced': string;
-    readonly 'metricGroupCard.menuAriaLabel': string;
-    readonly 'metricGroupCard.viewDataSources': string;
+    readonly 'card.menuAriaLabel': string;
+    readonly 'card.viewDataSources': string;
     readonly 'entitiesPage.missingPermission': string;
     readonly 'entitiesPage.noDataFound': string;
     readonly 'entitiesPage.unknownMetric': string;

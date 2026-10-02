@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { MouseEvent } from 'react';
 
 import { useTheme } from '@mui/material/styles';
 
 import { CardWrapper } from '../../Common/CardWrapper';
 import type { PieData } from '../../types';
-import { resolveStatusColor } from '../../../utils';
+import { getThresholdRuleColor, resolveStatusColor } from '../../../utils';
 import { ResponsivePieChart } from '../../ScorecardHomepageSection/ResponsivePieChart';
-import { CardInfoButton } from '../components/CardInfoButton';
+import { MetricDataSources } from '../../DataSources/MetricDataSources';
+import { toDialogMetricResult } from '../../DataSources/toDialogMetricResult';
 import { CardSubheader } from '../components/CardSubheader';
 import { CardChartContainer } from '../components/CardChartContainer';
 import { CardTooltip } from '../components/CardTooltip';
@@ -100,8 +101,38 @@ export const WeightedStatusScoreCardComponent = ({
     />
   ) : null;
 
+  const thresholdRules = scorecard.result.thresholds?.rules ?? [];
+  const evaluation = scorecard.result.aggregationChartDisplayColor
+    ? thresholdRules.find(
+        rule =>
+          getThresholdRuleColor(thresholdRules, rule.key) ===
+          scorecard.result.aggregationChartDisplayColor,
+      )?.key ?? null
+    : null;
+
+  const metricSnapshot = useMemo(
+    () =>
+      toDialogMetricResult({
+        id: scorecard.id,
+        title: cardTitle,
+        description,
+        type: 'number',
+        unit: '%',
+        value: scorecard.result.weightedStatusScore,
+        timestamp: scorecard.result.timestamp,
+        evaluation,
+        thresholds: scorecard.result.thresholds,
+      }),
+    [scorecard, cardTitle, description, evaluation],
+  );
+
   const info = showInfo ? (
-    <CardInfoButton timestamp={scorecard.result.timestamp} />
+    <MetricDataSources
+      title={cardTitle}
+      metricId={scorecard.id}
+      lastSyncedTimestamp={scorecard.result.timestamp}
+      metric={metricSnapshot}
+    />
   ) : null;
 
   return (

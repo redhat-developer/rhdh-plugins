@@ -14,19 +14,31 @@
  * limitations under the License.
  */
 
+import { useCallback, useMemo, useState } from 'react';
 import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import Box from '@mui/material/Box';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
+import { useLanguage } from '../../hooks/useLanguage';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getStatusConfig, resolveMetricTranslation } from '../../utils';
 import { isSparklineVisualization } from '../../utils/metricVisualization';
 import { hasMetricDataError, hasThresholdError } from '../../utils/statusUtils';
+import { CardInfoButton } from '../Common/CardInfoButton';
+import { DataSourcesDialog } from '../DataSources/DataSourcesDialog';
+import { CardActionsMenu } from '../DataSources/CardActionsMenu';
+import type { MenuAction } from '../DataSources/CardActionsMenu';
+import { toMetricSourceRows } from '../DataSources/metricSourceRows';
+import { buildThresholdBuckets } from '../MetricGroupCard/thresholdBucketUtils';
 import { EntitySparklineCard } from './EntitySparklineCard';
 import Scorecard from './Scorecard';
 
 export const EntityMetricCard = ({ metric }: { metric: MetricResult }) => {
   const { t } = useTranslation();
+  const locale = useLanguage();
+  const [dataSourcesOpen, setDataSourcesOpen] = useState(false);
+
   const title = resolveMetricTranslation(
     t,
     metric.id,
@@ -38,6 +50,31 @@ export const EntityMetricCard = ({ metric }: { metric: MetricResult }) => {
     metric.id,
     'description',
     metric.metadata.description,
+  );
+
+  const sourceRows = useMemo(
+    () => toMetricSourceRows([metric], { t, locale }),
+    [metric, t, locale],
+  );
+
+  const buckets = useMemo(
+    () => buildThresholdBuckets([metric], t),
+    [metric, t],
+  );
+
+  const handleOpen = useCallback(() => setDataSourcesOpen(true), []);
+  const handleClose = useCallback(() => setDataSourcesOpen(false), []);
+
+  const menuActions = useMemo<MenuAction[]>(
+    () => [
+      {
+        id: 'view-data-sources',
+        label: t('card.viewDataSources'),
+        icon: <InfoOutlinedIcon fontSize="small" />,
+        onClick: handleOpen,
+      },
+    ],
+    [t, handleOpen],
   );
 
   if (isSparklineVisualization(metric.metadata.defaultVisualization)) {
@@ -76,7 +113,30 @@ export const EntityMetricCard = ({ metric }: { metric: MetricResult }) => {
         metricDataError={metric?.error}
         isThresholdError={isThresholdError}
         thresholdError={metric.result?.thresholdResult?.error}
+        info={
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {metric.result?.timestamp && (
+              <CardInfoButton
+                timestamp={metric.result.timestamp}
+                marginRight={0}
+              />
+            )}
+            <CardActionsMenu
+              ariaLabel={t('card.menuAriaLabel')}
+              actions={menuActions}
+            />
+          </Box>
+        }
       />
+      {dataSourcesOpen && (
+        <DataSourcesDialog
+          open={dataSourcesOpen}
+          onClose={handleClose}
+          title={title}
+          rows={sourceRows}
+          buckets={buckets}
+        />
+      )}
     </Box>
   );
 };

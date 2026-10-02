@@ -22,7 +22,7 @@ import Box from '@mui/material/Box';
 import { useTheme, alpha } from '@mui/material/styles';
 
 import { resolveStatusColor } from '../../utils';
-import type { ThresholdBucket } from './types';
+import type { ThresholdBucket } from '../MetricGroupCard/types';
 
 interface ThresholdLegendProps {
   buckets: ThresholdBucket[];

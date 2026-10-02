@@ -26,6 +26,8 @@ const scorecardTranslationIt = createTranslationMessages({
   messages: {
     'common.loading': 'Caricamento',
     'common.current': 'attuale',
+    'card.menuAriaLabel': 'Altre opzioni',
+    'card.viewDataSources': 'Visualizza le fonti dei dati',
     'dataSourcesDialog.title': '{{title}} fonti',
     'dataSourcesDialog.close': 'Chiudi',
     'dataSourcesDialog.unknownPlugin': 'Sconosciuto',
@@ -184,8 +186,6 @@ const scorecardTranslationIt = createTranslationMessages({
       'Valutazione di sicurezza di SonarQube.',
     'metric.sonarqube.securityReviewRating.title':
       'Valutazione di sicurezza di SonarQube',
-    'metricGroupCard.menuAriaLabel': 'Altre opzioni',
-    'metricGroupCard.viewDataSources': 'Visualizza le fonti dei dati',
     'notFound.altText': 'Pagina non trovata',
     'notFound.contactSupport': 'Contatta il supporto',
     'notFound.description':
