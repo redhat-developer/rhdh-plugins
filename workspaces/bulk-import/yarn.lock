@@ -3318,7 +3318,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-react@npm:^3.2.0, @backstage/plugin-catalog-react@npm:^3.2.1, @backstage/plugin-catalog-react@npm:^3.2.2, @backstage/plugin-catalog-react@npm:^3.2.3":
+"@backstage/plugin-catalog-react@npm:^3.2.1, @backstage/plugin-catalog-react@npm:^3.2.2, @backstage/plugin-catalog-react@npm:^3.2.3":
   version: 3.2.3
   resolution: "@backstage/plugin-catalog-react@npm:3.2.3"
   dependencies:
@@ -3623,7 +3623,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-react@npm:^0.5.2, @backstage/plugin-permission-react@npm:^0.5.3, @backstage/plugin-permission-react@npm:^0.5.4, @backstage/plugin-permission-react@npm:^0.5.5":
+"@backstage/plugin-permission-react@npm:^0.5.2, @backstage/plugin-permission-react@npm:^0.5.4, @backstage/plugin-permission-react@npm:^0.5.5":
   version: 0.5.5
   resolution: "@backstage/plugin-permission-react@npm:0.5.5"
   dependencies:
@@ -3750,7 +3750,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-common@npm:^2.2.1, @backstage/plugin-scaffolder-common@npm:^2.2.2, @backstage/plugin-scaffolder-common@npm:^2.2.3, @backstage/plugin-scaffolder-common@npm:^2.3.0":
+"@backstage/plugin-scaffolder-common@npm:^2.2.2, @backstage/plugin-scaffolder-common@npm:^2.2.3, @backstage/plugin-scaffolder-common@npm:^2.3.0":
   version: 2.3.0
   resolution: "@backstage/plugin-scaffolder-common@npm:2.3.0"
   dependencies:
@@ -10601,25 +10601,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-app-react@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@npm:0.2.0"
+"@red-hat-developer-hub/backstage-plugin-app-react@npm:^1.8.1":
+  version: 1.10.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@npm:1.10.0"
   dependencies:
-    "@backstage/catalog-model": "npm:^1.9.0"
-    "@backstage/core-components": "npm:^0.18.11"
-    "@backstage/core-plugin-api": "npm:^1.12.7"
-    "@backstage/frontend-plugin-api": "npm:^0.17.2"
-    "@backstage/plugin-app-react": "npm:^0.2.4"
-    "@backstage/plugin-catalog-react": "npm:^3.2.0"
-    "@backstage/plugin-permission-react": "npm:^0.5.3"
-    "@backstage/plugin-scaffolder-common": "npm:^2.2.1"
-    "@backstage/plugin-scaffolder-react": "npm:^2.0.2"
+    "@backstage/catalog-model": "npm:^1.10.0"
+    "@backstage/core-components": "npm:^0.18.13"
+    "@backstage/core-plugin-api": "npm:^1.12.9"
+    "@backstage/frontend-plugin-api": "npm:^0.18.0"
+    "@backstage/plugin-app-react": "npm:^0.2.6"
+    "@backstage/plugin-catalog": "npm:^2.0.8"
+    "@backstage/plugin-catalog-react": "npm:^3.2.2"
+    "@backstage/plugin-permission-react": "npm:^0.5.4"
+    "@backstage/plugin-scaffolder-common": "npm:^2.2.3"
+    "@backstage/plugin-scaffolder-react": "npm:^2.0.3"
+    "@backstage/ui": "npm:^0.17.1"
     "@backstage/version-bridge": "npm:^1.0.12"
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:5.18.0"
+    "@remixicon/react": "npm:>=4.6.0 <4.9.0"
+    react-use: "npm:^17.4.0"
+    zod: "npm:^3.25.76 || ^4.0.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/13d76948108bb622d27fb3156943b4c5e6854d67e5e7384391a929300a461e2cd5c434069242f9ffd2798a3ccc0b5c5cfdf105bcf12acf6458605bd4b688ae8b
+  checksum: 10c0/15230debca5068581a2094465429e1fd26ec0365a38d01359654cc23550e9d31ab8ef0f46662b3b76fea974d57ca382b2acae2ffb649d37048f5c264cde14462
   languageName: node
   linkType: hard
 
@@ -10786,9 +10791,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator-form-api@npm:^2.11.1":
-  version: 2.11.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api@npm:2.11.1"
+"@red-hat-developer-hub/backstage-plugin-orchestrator-form-api@npm:^2.11.2":
+  version: 2.11.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api@npm:2.11.2"
   dependencies:
     "@backstage/core-plugin-api": "npm:^1.12.9"
     "@backstage/types": "npm:^1.2.2"
@@ -10798,19 +10803,19 @@ __metadata:
     json-schema: "npm:^0.4.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/dd182814025983422c9bc25dbf7fc909aad9ac45ade1450eea552529a53d073458167a929cc1c5e6bd1b5c5413c7bcaeafc7eaa70d2025215a8bcd5efd909e62
+  checksum: 10c0/e54f0b22d75afa400557d404c68479a01b45faea53ad579514a6b04b40bfab9fe9f57ec8717623013887eba8918ef954a78491b76cc6e2b1192a73469a968ca1
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator-form-react@npm:^2.12.1":
-  version: 2.12.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react@npm:2.12.1"
+"@red-hat-developer-hub/backstage-plugin-orchestrator-form-react@npm:^2.12.2":
+  version: 2.12.2
+  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react@npm:2.12.2"
   dependencies:
     "@backstage/core-components": "npm:^0.18.13"
     "@backstage/types": "npm:^1.2.2"
     "@mui/material": "npm:^5.17.1"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "npm:^3.11.0"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "npm:^2.11.1"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "npm:^2.11.2"
     "@rjsf/core": "npm:^5.21.2"
     "@rjsf/material-ui": "npm:^5.21.2"
     "@rjsf/utils": "npm:^5.21.2"
@@ -10821,21 +10826,21 @@ __metadata:
     tss-react: "npm:^4.9.18"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/4bb15788cc3889d46d6a54b0bc17f3911903a0426d1e9fbab7b12b66a3a618814b650aa3c93faa9c5a77af589fe129c76440fc7d38c62af1489aa0da6ad3e655
+  checksum: 10c0/af48e962df0b3004feae6f4ebf88bbd1b289c0a67926a388392166d9f44c43bf5e3c657283786b48cb5bf1bd6af5bad0d3cd363339a134470f387d0f1f2ee4be
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets@npm:2.2.0"
+"@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets@npm:2.2.1":
+  version: 2.2.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets@npm:2.2.1"
   dependencies:
     "@backstage/core-components": "npm:^0.18.13"
     "@backstage/core-plugin-api": "npm:^1.12.9"
     "@backstage/frontend-plugin-api": "npm:^0.18.0"
     "@backstage/types": "npm:^1.2.2"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "npm:^3.11.0"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "npm:^2.11.1"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "npm:^2.12.1"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "npm:^2.11.2"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "npm:^2.12.2"
     "@rjsf/utils": "npm:^5.21.2"
     clsx: "npm:^2.1.1"
     json-schema: "npm:^0.4.0"
@@ -10849,7 +10854,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 10c0/604c849dff7306f07ba350c0f28b99fff220b839bd331221c799d2bcc7d3ba6fb872cb8112e858771429b59d7c5f648b15229bf34069232d2b9b1684f860b0d8
+  checksum: 10c0/75558d4e4cc26e493dae734dd2c80801c71ffa62e5a09d2a83de422e1c9c6eb381820d1c2e7f5344fc5316e01f686448a63d9f3570e4ad8e323d40cccd587dbb
   languageName: node
   linkType: hard
 
@@ -10863,9 +10868,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator@npm:6.2.1":
-  version: 6.2.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator@npm:6.2.1"
+"@red-hat-developer-hub/backstage-plugin-orchestrator@npm:6.2.4":
+  version: 6.2.4
+  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator@npm:6.2.4"
   dependencies:
     "@backstage/catalog-model": "npm:^1.9.0"
     "@backstage/core-components": "npm:^0.18.13"
@@ -10882,10 +10887,10 @@ __metadata:
     "@dagrejs/dagre": "npm:^2.0.4"
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:^5.17.1"
-    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.2.0"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^1.8.1"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "npm:^3.11.0"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "npm:^2.11.1"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "npm:^2.12.1"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "npm:^2.11.2"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "npm:^2.12.2"
     axios: "npm:^1.15.0"
     js-yaml: "npm:^4.1.0"
     json-schema: "npm:^0.4.0"
@@ -10903,7 +10908,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
-  checksum: 10c0/cfa47985512418a72e4d48fe269d30cb8e59de1dff7887342cf29510abc7756617977f309792549adb3a5838d26631c5b375e0e277c50839c7ab0ea90d95f75c
+  checksum: 10c0/a33274eab6c3f08eeac660dd259da51b54505e87d6a62d1d90d1f359cb88e66ff98b6d5115cbf3943ae0b83692839b489d1c5659f132920b5453f006f3020750
   languageName: node
   linkType: hard
 
@@ -16092,8 +16097,8 @@ __metadata:
     "@playwright/test": "npm:1.63.0"
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.1"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:2.2.0"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.4"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:2.2.1"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^4.29.21"
@@ -16183,8 +16188,8 @@ __metadata:
     "@playwright/test": "npm:1.63.0"
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.1"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:2.2.0"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.4"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:2.2.1"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^4.29.21"
