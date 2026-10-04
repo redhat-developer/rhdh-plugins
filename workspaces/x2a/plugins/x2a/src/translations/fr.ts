@@ -164,6 +164,9 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.startedAt': 'Démarré le',
     'modulePage.phases.status': 'Statut',
     'modulePage.phases.errorDetails': "Détails de l'erreur",
+    'modulePage.phases.copyToClipboard': 'Copier dans le presse-papiers',
+    'modulePage.phases.copyFailed': 'Échec de la copie',
+    'modulePage.phases.copyUnavailable': 'Copie non disponible',
     'modulePage.phases.statuses.notStarted': 'Non commencé',
     'modulePage.phases.statuses.pending': 'En attente',
     'modulePage.phases.statuses.running': 'En cours',
@@ -173,7 +176,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.statuses.stale': 'Contaminé',
     'modulePage.phases.reanalyzeInstructions':
       "Le plan de migration du module est déjà présent. Si le plan de migration global du projet a été mis à jour, relancez l'analyse pour refléter les changements.",
-    'modulePage.phases.rerunAnalyze': 'Recréer le plan de migration du module',
+    'modulePage.phases.rerunAnalyze': "Relancer l'analyse",
     'modulePage.phases.analyzeInstructions':
       "Avant de lancer l'analyse, consultez d'abord le plan de migration global du projet ; son contenu guidera l'analyse du module.",
     'modulePage.phases.runAnalyze': 'Créer le plan de migration du module',
