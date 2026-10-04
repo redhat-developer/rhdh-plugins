@@ -16,6 +16,7 @@
 
 import { type Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
+import { DORA_UPSERT_BATCH_SIZE } from './constants';
 import {
   fromDoraDeploymentRow,
   toDoraDeploymentCreateRow,
@@ -106,24 +107,34 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
       return;
     }
 
-    await this.dbClient(this.tableName)
-      .insert(
-        deployments.map(deployment => ({
-          ...toDoraDeploymentCreateRow(deployment),
-          id: randomUUID(),
-        })),
-      )
-      .onConflict([
-        'catalog_entity_ref',
-        'collector_id',
-        'collector_input_hash',
-        'original_deployment_id',
-      ])
-      // Immutable historical facts: keep the first stored row.
-      // `deploymentLookbackMs` re-queries recent `created_at` so a deployment
-      // that later becomes `success` can be inserted. Already-stored rows are
-      // never updated.
-      .ignore();
+    await this.dbClient.transaction(async trx => {
+      for (
+        let offset = 0;
+        offset < deployments.length;
+        offset += DORA_UPSERT_BATCH_SIZE
+      ) {
+        const batch = deployments
+          .slice(offset, offset + DORA_UPSERT_BATCH_SIZE)
+          .map(deployment => ({
+            ...toDoraDeploymentCreateRow(deployment),
+            id: randomUUID(),
+          }));
+
+        await trx(this.tableName)
+          .insert(batch)
+          .onConflict([
+            'catalog_entity_ref',
+            'collector_id',
+            'collector_input_hash',
+            'original_deployment_id',
+          ])
+          // Immutable historical facts: keep the first stored row.
+          // `deploymentLookbackMs` re-queries recent `created_at` so a deployment
+          // that later becomes `success` can be inserted. Already-stored rows are
+          // never updated.
+          .ignore();
+      }
+    });
   }
 
   async readByEntityCollectorAndWindow(

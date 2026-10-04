@@ -2,10 +2,10 @@
 
 ## 1. Shared contract and metadata mapping
 
-- [ ] 1.1 Implement and export the design D2 `SkillRecord` and `SkillSnapshot` schemas and runtime validators from `skills-common` for both connectors and the common provider.
+- [x] 1.1 Implement and export the design D2 `SkillRecord` and `SkillSnapshot` schemas and runtime validators from `ai-skills-common` for both connectors and the common provider.
 - [ ] 1.2 Implement design D3's native-field mappings, precedence, optional metadata, and allowlisted extensions; add OCI SkillCard/Markdown and npx fixtures, including conflicting versions.
-- [ ] 1.3 Implement pure helpers for stable identity, catalog-valid tags, SemVer fallback, and OCI/npx reference serialization with round-trip tests; cover empty, invalid, and overlength tags using Backstage's validator, plus credential-bearing and signed query URLs.
-- [ ] 1.4 Test source-discriminated extension validation, deterministic limit ordering, snapshot status invariants, unknown versions, duplicate keys, source mismatch, response/count limits, total discovery budgets, and pagination cycles; document the shared REST contract.
+- [x] 1.3 Implement pure helpers for stable identity, catalog-valid tags, SemVer fallback, and OCI/npx reference serialization with round-trip tests; cover empty, invalid, and overlength tags using Backstage's validator, plus credential-bearing and signed query URLs.
+- [ ] 1.4 Test source-discriminated extension validation, deterministic limit ordering, snapshot status invariants, unknown versions, duplicate keys, source mismatch, response/count limits, total discovery budgets, and pagination cycles; document the shared REST contract. _(Shared-library portions complete in `ai-skills-common`: extension validation, ordering, status invariants, version/key/count/size checks, REST contract docs. Remaining: OCI/npx discovery budgets and pagination-cycle tests — connector scope.)_
 
 ## 2. OCI connector and REST API
 
@@ -37,5 +37,7 @@
 - [ ] 5.3 Add integration coverage for OCI and npx endpoints feeding the same provider, including service authentication and failure isolation across sources.
 - [ ] 5.4 Document demo/public-source scope, metadata mappings, the #4747 integration, and the explicit connector-only OCI extraction decision; leave MLflow implementation to a future change.
 
-All tasks describe future implementation. This specification-only PR does not
-complete implementation tasks or change runtime packages/configuration.
+Task 1.1 was implemented by the `ai-skills-common` package (PR #5061). The
+shared-library portions of task 1.4 were completed in the same PR. All
+remaining tasks describe future implementation in connector and provider
+packages.

@@ -16,6 +16,7 @@
 
 import { type Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
+import { DORA_UPSERT_BATCH_SIZE } from './constants';
 import {
   fromDoraIncidentRow,
   toDoraIncidentRow,
@@ -45,20 +46,30 @@ export class DatabaseDoraIncidents implements DoraIncidentsStore {
       return;
     }
 
-    await this.dbClient(this.tableName)
-      .insert(
-        incidents.map(incident => ({
-          ...toDoraIncidentRow(incident),
-          id: randomUUID(),
-        })),
-      )
-      .onConflict([
-        'catalog_entity_ref',
-        'collector_id',
-        'collector_input_hash',
-        'original_incident_id',
-      ])
-      .merge(['updated_at', 'resolution_at']);
+    await this.dbClient.transaction(async trx => {
+      for (
+        let offset = 0;
+        offset < incidents.length;
+        offset += DORA_UPSERT_BATCH_SIZE
+      ) {
+        const batch = incidents
+          .slice(offset, offset + DORA_UPSERT_BATCH_SIZE)
+          .map(incident => ({
+            ...toDoraIncidentRow(incident),
+            id: randomUUID(),
+          }));
+
+        await trx(this.tableName)
+          .insert(batch)
+          .onConflict([
+            'catalog_entity_ref',
+            'collector_id',
+            'collector_input_hash',
+            'original_incident_id',
+          ])
+          .merge(['updated_at', 'resolution_at']);
+      }
+    });
   }
 
   async readByEntityCollectorAndWindow(

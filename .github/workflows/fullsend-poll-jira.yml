@@ -65,7 +65,7 @@ jobs:
             local output="dispatches-${project,,}.json"
             # Keep each gate explicit. To enroll another team/project, add one
             # poll_project call below with its Atlassian team ID.
-            local jql="project = ${project} AND cf[10001] = \"${team_id}\" AND labels = \"fullsend\" AND statusCategory != Done ORDER BY updated DESC"
+            local jql="project = ${project} AND cf[10001] = \"${team_id}\" AND labels = \"fullsend\" AND statusCategory != Done AND updated >= \"-12h\" ORDER BY updated DESC"
             echo "Polling ${project} for team ${team_id}; dispatching matches to ${TARGET_REPO}"
             fullsend poll \
               --input-driver jira-poll \

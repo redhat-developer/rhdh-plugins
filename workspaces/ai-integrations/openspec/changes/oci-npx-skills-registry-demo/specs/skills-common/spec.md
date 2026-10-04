@@ -2,7 +2,7 @@
 
 ### Requirement: Shared normalized skill contract
 
-The `skills-common` library SHALL define and validate the `SkillRecord` and `SkillSnapshot` v1
+The `ai-skills-common` library SHALL define and validate the `SkillRecord` and `SkillSnapshot` v1
 schemas in design D2 for both connectors and the common catalog provider. It
 SHALL provide pure normalization, identity, and reference helpers without owning
 catalog mutations, runtime storage, or scheduled tasks. Connectors SHALL emit
