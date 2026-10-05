@@ -18,19 +18,19 @@ export function validateJiraAuthToken(
   token: string,
   fieldName: string,
 ): string {
-  const JIRA_AUTH_SCHEME_PATTERN = /^(Basic|Bearer) /i;
+  const jiraAuthSchemePattern = /^(Basic|Bearer) /i;
 
-  const match = JIRA_AUTH_SCHEME_PATTERN.exec(token);
+  const match = jiraAuthSchemePattern.exec(token);
   if (!match) {
     throw new Error(
-      `Invalid ${fieldName}: must be a full Authorization value starting with 'Basic ' or 'Bearer ' (for example, 'Basic <base64>' or 'Bearer <token>').`,
+      `${fieldName} must be a full Authorization value starting with 'Basic ' or 'Bearer ' (for example, 'Basic <base64>' or 'Bearer <token>').`,
     );
   }
 
   const credential = token.slice(match[0].length);
   if (credential.trim().length === 0) {
     throw new Error(
-      `Invalid ${fieldName}: credential after Basic/Bearer scheme must be non-empty.`,
+      `${fieldName} credential after Basic/Bearer scheme must be non-empty.`,
     );
   }
 

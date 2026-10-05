@@ -48,16 +48,16 @@ describe('utils', () => {
 
     it('should throw for bare tokens without a scheme prefix', () => {
       expect(() => validateJiraAuthToken('abc123', 'jira.token')).toThrow(
-        "Invalid jira.token: must be a full Authorization value starting with 'Basic ' or 'Bearer '",
+        "jira.token must be a full Authorization value starting with 'Basic ' or 'Bearer '",
       );
     });
 
     it('should throw when the credential portion is empty', () => {
       expect(() => validateJiraAuthToken('Basic ', 'jira.token')).toThrow(
-        'Invalid jira.token: credential after Basic/Bearer scheme must be non-empty.',
+        'jira.token credential after Basic/Bearer scheme must be non-empty.',
       );
       expect(() => validateJiraAuthToken('Bearer   ', 'jira.token')).toThrow(
-        'Invalid jira.token: credential after Basic/Bearer scheme must be non-empty.',
+        'jira.token credential after Basic/Bearer scheme must be non-empty.',
       );
     });
   });
