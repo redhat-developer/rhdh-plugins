@@ -16,8 +16,20 @@ name: Auto-Approve Bot PRs
 
 # Same gate as redhat-developer/rhdh .github/workflows/auto-approve-bot-prs.yaml:
 # rhdh-bot PRs on chore/automated-* get lgtm + approved and a github-actions approval.
-# This repo has no OpenShift merge bot, so the job also enables squash auto-merge.
-# Auto-merge still waits for required checks and a code-owner review.
+# openshift-merge-robot (writer on this repo) merges from those labels.
+# This job does not merge: contents stays read-only.
+
+# This workflow automatically adds labels and approves PRs that match specific criteria:
+# - Created by rhdh-bot (via RHDH GitHub App)
+# - Branch name matches specific patterns (base image updates, version bumps, etc.)
+# - Adds lgtm and approved labels if not present
+#
+# pull_request_target runs this file from the *base* branch, so every release-*
+# line needs the same debounce. updateBaseImages.sh opens the PR on the first
+# image bump and pushes another commit seconds later; Prow then strips lgtm.
+# Wait 10s after the triggering commit and skip if HEAD moved. A later
+# synchronize run (with cancel-in-progress) applies lgtm 10s after the last push.
+# labeled is omitted so adding lgtm/approved does not retrigger this workflow.
 
 on:
   pull_request_target:
@@ -28,14 +40,16 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
+  issues: write
 
 jobs:
   auto-approve:
     name: Auto-Approve and Label PRs
     runs-on: ubuntu-latest
 
+    # Only run if PR is from rhdh-bot
     if: github.event.pull_request.user.login == 'rhdh-bot'
 
     steps:
@@ -45,12 +59,17 @@ jobs:
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           PR_DRAFT: ${{ github.event.pull_request.draft }}
         run: |
+          # Don't auto-approve draft PRs
           if [[ "$PR_DRAFT" == "true" ]]; then
-            echo "eligible=false" >> "$GITHUB_OUTPUT"
-            echo "reason=PR is in draft state" >> "$GITHUB_OUTPUT"
+            echo "eligible=false" >> $GITHUB_OUTPUT
+            echo "reason=PR is in draft state" >> $GITHUB_OUTPUT
             exit 0
           fi
 
+          # Labels will be added automatically if eligible
+
+          # Define branch patterns that are eligible for auto-approval
+          # Add more patterns as needed
           ELIGIBLE_PATTERNS=(
             "^chore/automated-.*"
           )
@@ -64,9 +83,9 @@ jobs:
           done
 
           if [[ "$ELIGIBLE" == "true" ]]; then
-            echo "eligible=true" >> "$GITHUB_OUTPUT"
+            echo "eligible=true" >> $GITHUB_OUTPUT
           else
-            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            echo "eligible=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Wait until HEAD is stable
@@ -78,12 +97,12 @@ jobs:
           EVENT_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           DEBOUNCE_SECONDS=10
-          echo "Waiting ${DEBOUNCE_SECONDS}s after ${EVENT_SHA}."
+          echo "Waiting ${DEBOUNCE_SECONDS}s after ${EVENT_SHA} so later commits can land."
           sleep "${DEBOUNCE_SECONDS}"
 
           CURRENT_SHA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq .headRefOid)
           if [[ "${CURRENT_SHA}" != "${EVENT_SHA}" ]]; then
-            echo "HEAD moved during debounce (${EVENT_SHA} -> ${CURRENT_SHA}); skipping."
+            echo "HEAD moved during debounce (${EVENT_SHA} -> ${CURRENT_SHA}); skipping so the newer run can label."
             echo "stable=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -91,14 +110,16 @@ jobs:
           echo "HEAD unchanged for ${DEBOUNCE_SECONDS}s: ${CURRENT_SHA}"
           echo "stable=true" >> "$GITHUB_OUTPUT"
 
-      - name: Add required labels, approve, and enable auto-merge
+      - name: Add required labels and approve PR
         if: steps.check-eligibility.outputs.eligible == 'true' && steps.debounce.outputs.stable == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          # Add the required labels if not already present
           gh pr edit "$PR_NUMBER" --add-label "lgtm,approved" --repo "$GITHUB_REPOSITORY"
 
+          # Auto-approve the PR
           gh pr review "$PR_NUMBER" \
             --approve \
             --repo "$GITHUB_REPOSITORY" \
@@ -107,5 +128,3 @@ jobs:
           This PR has been automatically approved by the auto-approve workflow.
 
           **Labels Added:** \`lgtm\`, \`approved\`"
-
-          gh pr merge "$PR_NUMBER" --squash --auto --repo "$GITHUB_REPOSITORY"
