@@ -47,6 +47,7 @@ import {
   aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
   aggregatedCardWithDoraMedianTimeToRestoreWidget,
   aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
+  aggregatedCardWithCustomAggregationWidget,
 } from './extensions/homePageCards';
 import { scorecardIconBundle } from './extensions/icons';
 import { scorecardPage } from './extensions/scorecardPage';
@@ -96,6 +97,7 @@ export default createFrontendPlugin({
     aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
     aggregatedCardWithDoraMedianTimeToRestoreWidget,
     aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
+    aggregatedCardWithCustomAggregationWidget,
   ],
   routes: {
     root: rootRouteRef,

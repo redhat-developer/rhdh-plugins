@@ -318,8 +318,9 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - `AggregatedCardWithDoraChangeFailureRate` (title: **Scorecard: DORA - Change Failure Rate**)
    - `AggregatedCardWithDoraMedianLeadTimeForChanges` (title: **Scorecard: DORA - Lead Time for Changes**)
    - `AggregatedCardWithDoraMedianTimeToRestore` (title: **Scorecard: DORA - Median Time to Restore**)
+   - `AggregatedCardWithCustomAggregation` (title: **Scorecard: Custom aggregation**) — set **Aggregation ID** in the card settings when adding or editing the widget
 
-   These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
+   Preset widgets render the `ScorecardHomepageCard` component used in legacy apps, each with a fixed aggregation or metric id. `AggregatedCardWithCustomAggregation` is the same card, with the id supplied from homepage settings.
 
 ##### Modules and extensions (NFS)
 
@@ -358,6 +359,7 @@ The default `scorecardPlugin` registers the Scorecard page, API, entity tab, lay
 | `home-page-widget:scorecard/scorecard-dora-change-failure-rate`            | Homepage widget for DORA change failure rate sparkline (`doraChangeFailureRateKpi`).                                             |
 | `home-page-widget:scorecard/scorecard-dora-median-lead-time-for-changes`   | Homepage widget for DORA median lead time sparkline (`doraMedianLeadTimeForChangesKpi`).                                         |
 | `home-page-widget:scorecard/scorecard-dora-median-time-to-restore`         | Homepage widget for DORA median time to restore sparkline (`doraMedianTimeToRestoreKpi`).                                        |
+| `home-page-widget:scorecard/scorecard-custom-aggregation`                  | Homepage widget with a configurable `aggregationId` (KPI key or metric id), set when adding or editing the card.                 |
 
 ##### Migration notes (NFS graduation)
 
@@ -530,7 +532,7 @@ The plugin exports **`ScorecardHomepageCard`** from `@red-hat-developer-hub/back
 
 Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId`. The default type is **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**, otherwise **`statusGrouped`**. A missing custom KPI key that is not a registered metric id returns **404**; the homepage card shows that error instead of staying in a loading state.
 
-NFS `HomePageWidgetBlueprint`s are catalog presets with hardcoded ids. They are not the only way to put a card on the homepage: Dynamic Home Page / app-legacy can pass any `aggregationId`. Metric-id widgets (for example `filecheck.codeowners` or `dora.changeFailureRate`) work without an `aggregationKPIs` row. Custom KPI keys such as `avgDeploymentFrequency`, `licenseFileExistsKpi`, or `changeFailureRateKpi` must exist in app-config (or the metadata API returns 404).
+Preset NFS `HomePageWidgetBlueprint`s use a fixed aggregation id. For any other id, add **`home-page-widget:scorecard/scorecard-custom-aggregation`** (`AggregatedCardWithCustomAggregation`). In homepage edit mode, open the card settings and set **Aggregation ID** to a KPI key from **`scorecard.aggregationKPIs`**, or to a metric id such as `filecheck.securityMd`. The same widget can be added more than once, each copy with its own id. Dynamic Home Page / app-legacy can still pass any `aggregationId` through mountpoint props. Metric ids (for example `filecheck.codeowners` or `dora.changeFailureRate`) work without an `aggregationKPIs` row. Custom KPI keys such as `avgDeploymentFrequency`, `licenseFileExistsKpi`, or `changeFailureRateKpi` must exist in app-config (or the metadata API returns 404).
 
 Supported scorecard aggregation types (see [Entity Aggregation — Aggregation types](../scorecard-backend/docs/aggregation.md#aggregation-types)):
 
@@ -560,7 +562,7 @@ The supported model is **a single `aggregationId` string** whose value is either
 
 - **Homepage `props`:** set **`aggregationId`** to your KPI key or metric id - drop **`metricId`** when your plugin version no longer requires it.
 - **Custom HTTP clients:** replace **`GET .../metrics/<metricId>/catalog/aggregations`** with **`GET .../aggregations/<aggregationId>`** (same segment value when you used the metric id before). Deprecation **`Link`** headers point at the successor URL.
-- **User-editable home cards:** if your **`settings.schema`** still exposes **`metricId`**, plan to rename or replace it with **`aggregationId`** using the same KPI vs metric-id rules once the frontend supports it.
+- **User-editable NFS home cards:** add **`AggregatedCardWithCustomAggregation`** and set **`aggregationId`** in the card settings. Legacy mount points still pass **`props.aggregationId`**.
 
 Example (Dynamic Home Page–style mount point): register **`ScorecardHomepageCard`** and pass **`props.aggregationId`** (and **`metricId`** only if you still run an older card API):
 

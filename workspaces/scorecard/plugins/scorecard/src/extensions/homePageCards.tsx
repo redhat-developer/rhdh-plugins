@@ -31,13 +31,15 @@ const defaultCardLayout = {
   },
 } as const;
 
+type ScorecardHomepageCardProps = {
+  metricId?: string;
+  aggregationId?: string;
+};
+
 function lazyScorecardWidget(
   factory: (
-    ScorecardHomepageCardWithProvider: ComponentType<{
-      metricId?: string;
-      aggregationId?: string;
-    }>,
-  ) => () => ReactElement,
+    ScorecardHomepageCardWithProvider: ComponentType<ScorecardHomepageCardProps>,
+  ) => (props?: ScorecardHomepageCardProps) => ReactElement,
 ) {
   return async () => {
     const { ScorecardHomepageCardWithProvider } = await import(
@@ -49,6 +51,14 @@ function lazyScorecardWidget(
 
 function BorderlessHomeWidgetRenderer({ Content }: RendererProps) {
   return <Content />;
+}
+
+/** Forwards homepage card settings, including `aggregationId`, into the card. */
+function ConfigurableScorecardWidgetRenderer({
+  Content,
+  ...rest
+}: RendererProps) {
+  return <Content {...rest} />;
 }
 
 /**
@@ -420,6 +430,51 @@ export const aggregatedCardWithDeprecatedDoraChangeFailureRateWidget =
         ScorecardHomepageCardWithProvider => () =>
           (
             <ScorecardHomepageCardWithProvider metricId="dora.changeFailureRate" />
+          ),
+      ),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithCustomAggregation.
+ *
+ * Preset widgets bake in one aggregation id. This widget reads `aggregationId`
+ * from homepage card settings so users can target any KPI key or metric id.
+ */
+export const aggregatedCardWithCustomAggregationWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-custom-aggregation',
+    params: {
+      name: 'AggregatedCardWithCustomAggregation',
+      title: 'Scorecard: Custom aggregation',
+      description:
+        'Aggregated scorecard. Set Aggregation ID in the card settings to a KPI key from scorecard.aggregationKPIs, or to a metric id such as filecheck.securityMd.',
+      layout: defaultCardLayout,
+      settings: {
+        schema: {
+          title: 'Scorecard settings',
+          type: 'object',
+          required: ['aggregationId'],
+          properties: {
+            aggregationId: {
+              title: 'Aggregation ID',
+              type: 'string',
+              minLength: 1,
+              description:
+                'KPI key from scorecard.aggregationKPIs, or a metric id such as filecheck.securityMd or github.openPRs.',
+            },
+          },
+        },
+      },
+      componentProps: {
+        Renderer: ConfigurableScorecardWidgetRenderer,
+      },
+      components: lazyScorecardWidget(
+        ScorecardHomepageCardWithProvider => props =>
+          (
+            <ScorecardHomepageCardWithProvider
+              aggregationId={props?.aggregationId}
+            />
           ),
       ),
     },
