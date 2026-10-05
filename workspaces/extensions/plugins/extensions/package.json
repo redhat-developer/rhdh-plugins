@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-extensions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
   "license": "Apache-2.0",
@@ -72,6 +72,7 @@
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
+    "@red-hat-developer-hub/backstage-plugin-app-react": "^1.8.1",
     "@red-hat-developer-hub/backstage-plugin-extensions-common": "workspace:^",
     "@tanstack/react-query": "^5.60.5",
     "monaco-editor": "^0.56.0",
@@ -86,6 +87,7 @@
     "@backstage/cli": "^0.36.5",
     "@backstage/dev-utils": "^1.1.26",
     "@backstage/test-utils": "^1.7.21",
+    "@red-hat-developer-hub/backstage-plugin-app-defaults": "^1.8.1",
     "@red-hat-developer-hub/backstage-plugin-theme": "^1.2.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",

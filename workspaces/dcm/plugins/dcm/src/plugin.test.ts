@@ -13,10 +13,183 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { ApiFactoryRegistry, ApiResolver } from '@backstage/core-app-api';
+import {
+  configApiRef,
+  createApiFactory,
+  createApiRef,
+  discoveryApiRef,
+  fetchApiRef,
+  type ConfigApi,
+  type OAuthApi,
+  type OpenIdConnectApi,
+} from '@backstage/core-plugin-api';
+import {
+  dcmAuthApiFactory,
+  dcmAuthApiRef,
+  dcmOidcAuthApiFactory,
+  isDefaultDcmAuthApi,
+} from './api/AuthApiRefs';
+import { isDefaultDcmClient } from './api/DefaultDcmClient';
+import {
+  agentsApiRef,
+  catalogApiRef,
+  policyManagerApiRef,
+  resourcesApiRef,
+} from './apis';
 import { dcmPlugin } from './plugin';
+
+const oidcAuthApiRef = createApiRef<OAuthApi & OpenIdConnectApi>({
+  id: 'internal.auth.oidc',
+});
+
+function expectDcmApisToResolve(resolver: ApiResolver) {
+  expect(resolver.get(catalogApiRef)).toBeDefined();
+  expect(resolver.get(policyManagerApiRef)).toBeDefined();
+  expect(resolver.get(agentsApiRef)).toBeDefined();
+  expect(resolver.get(resourcesApiRef)).toBeDefined();
+}
+
+function createDcmApiResolver(options: {
+  authEnabled: boolean;
+  oidcAuthApi?: OAuthApi & OpenIdConnectApi;
+  useOidcAdapter?: boolean;
+}) {
+  const registry = new ApiFactoryRegistry();
+
+  for (const factory of dcmPlugin.getApis()) {
+    registry.register('default', factory);
+  }
+  registry.register(
+    'default',
+    createApiFactory(configApiRef, {
+      getOptionalBoolean: jest.fn().mockReturnValue(options.authEnabled),
+    } as unknown as ConfigApi),
+  );
+  registry.register(
+    'default',
+    createApiFactory(discoveryApiRef, {
+      getBaseUrl: jest.fn().mockResolvedValue('http://localhost/api/dcm'),
+    }),
+  );
+  const fetch = jest.fn().mockResolvedValue({
+    status: 200,
+    ok: true,
+    json: async () => ({}),
+  });
+  registry.register('default', createApiFactory(fetchApiRef, { fetch }));
+  if (options.oidcAuthApi) {
+    registry.register(
+      'default',
+      createApiFactory(oidcAuthApiRef, options.oidcAuthApi),
+    );
+  }
+  if (options.useOidcAdapter) {
+    registry.register('app', dcmOidcAuthApiFactory);
+  }
+
+  return { fetch, registry, resolver: new ApiResolver(registry) };
+}
 
 describe('dcm', () => {
   it('should export plugin', () => {
     expect(dcmPlugin).toBeDefined();
+  });
+
+  it('resolves all DCM APIs without an OIDC API when DCM auth is disabled', () => {
+    const { resolver } = createDcmApiResolver({ authEnabled: false });
+
+    expectDcmApisToResolve(resolver);
+    expect(resolver.get(dcmAuthApiRef)?.getAccessToken).toBeUndefined();
+  });
+
+  it('does not select the host OIDC API when DCM auth is disabled', async () => {
+    const getAccessToken = jest.fn().mockResolvedValue('oidc-token');
+    const oidcAuthApi = {
+      getAccessToken,
+      getIdToken: jest.fn(),
+    } as unknown as OAuthApi & OpenIdConnectApi;
+    const { fetch, resolver } = createDcmApiResolver({
+      authEnabled: false,
+      oidcAuthApi,
+    });
+
+    expectDcmApisToResolve(resolver);
+    expect(resolver.get(dcmAuthApiRef)?.getAccessToken).toBeUndefined();
+    await Promise.all([
+      resolver.get(catalogApiRef)?.listServiceTypes(),
+      resolver.get(policyManagerApiRef)?.listPolicies(),
+      resolver.get(agentsApiRef)?.listAgents(),
+      resolver.get(resourcesApiRef)?.listServiceTypeInstances(),
+    ]);
+
+    expect(getAccessToken).not.toHaveBeenCalled();
+    for (const [, init] of fetch.mock.calls) {
+      expect(init.headers).not.toHaveProperty('X-DCM-OIDC-Token');
+    }
+  });
+
+  it('marks all plugin default clients with internal provenance', () => {
+    const { resolver } = createDcmApiResolver({ authEnabled: true });
+
+    expect(isDefaultDcmClient(resolver.get(catalogApiRef))).toBe(true);
+    expect(isDefaultDcmClient(resolver.get(policyManagerApiRef))).toBe(true);
+    expect(isDefaultDcmClient(resolver.get(agentsApiRef))).toBe(true);
+    expect(isDefaultDcmClient(resolver.get(resourcesApiRef))).toBe(true);
+    expect(isDefaultDcmClient({})).toBe(false);
+  });
+
+  it('adapts the host OIDC access token for DCM auth-enabled clients', async () => {
+    const getAccessToken = jest.fn().mockResolvedValue('oidc-token');
+    const oidcAuthApi = {
+      getAccessToken,
+      getIdToken: jest.fn(),
+    } as unknown as OAuthApi & OpenIdConnectApi;
+    const { fetch, resolver } = createDcmApiResolver({
+      authEnabled: true,
+      oidcAuthApi,
+      useOidcAdapter: true,
+    });
+
+    expectDcmApisToResolve(resolver);
+    await Promise.all([
+      resolver.get(catalogApiRef)?.listServiceTypes(),
+      resolver.get(policyManagerApiRef)?.listPolicies(),
+      resolver.get(agentsApiRef)?.listAgents(),
+      resolver.get(resourcesApiRef)?.listServiceTypeInstances(),
+    ]);
+
+    expect(getAccessToken).toHaveBeenCalledTimes(4);
+    for (const [, init] of fetch.mock.calls) {
+      expect(init.headers).toHaveProperty('X-DCM-OIDC-Token', 'oidc-token');
+    }
+  });
+
+  it('fails explicitly when DCM auth is enabled without an OIDC adapter', async () => {
+    const { resolver } = createDcmApiResolver({ authEnabled: true });
+
+    const dcmAuthApi = resolver.get(dcmAuthApiRef);
+    if (!dcmAuthApi?.getAccessToken) {
+      throw new Error('Expected an actionable DCM OIDC auth API error');
+    }
+
+    expect(isDefaultDcmAuthApi(dcmAuthApi)).toBe(true);
+    await expect(dcmAuthApi.getAccessToken()).rejects.toThrow(
+      'DCM authentication is enabled, but the host does not provide a DCM OIDC auth API factory.',
+    );
+  });
+
+  it('lets the app-scoped DCM OIDC adapter override the config-only default', () => {
+    const { registry } = createDcmApiResolver({
+      authEnabled: true,
+      oidcAuthApi: {
+        getAccessToken: jest.fn(),
+        getIdToken: jest.fn(),
+      } as unknown as OAuthApi & OpenIdConnectApi,
+      useOidcAdapter: true,
+    });
+
+    expect(registry.get(dcmAuthApiRef)).toBe(dcmOidcAuthApiFactory);
+    expect(registry.get(oidcAuthApiRef)).not.toBe(dcmAuthApiFactory);
   });
 });

@@ -29,35 +29,34 @@ Catalog backend module.
 
 ### Requirement: OGX configuration resolution
 
-The system SHALL resolve OGX configuration from `boost.entityProviders.ogx`
-before `boost.providers.ogx`, and SHALL use `http://localhost:8321` as the base
-URL when neither configuration path provides an OGX base URL.
+The system SHALL resolve OGX configuration only from
+`ai-catalog.entityProviders.ogx`, and SHALL use `http://localhost:8321` as the
+base URL when that configuration does not provide an OGX base URL.
 
-#### Scenario: Prefer the entity-provider configuration
+#### Scenario: Read the AI Catalog entity-provider configuration
 
-- **GIVEN** both `boost.entityProviders.ogx` and `boost.providers.ogx` are present
+- **GIVEN** `ai-catalog.entityProviders.ogx` is present
 - **WHEN** the OGX module reads configuration
-- **THEN** it uses `boost.entityProviders.ogx`
+- **THEN** it uses `ai-catalog.entityProviders.ogx`
 
-#### Scenario: Use the legacy provider configuration as fallback
+#### Scenario: Ignore legacy Boost configuration
 
-- **GIVEN** `boost.entityProviders.ogx` is absent
-- **AND** `boost.providers.ogx` is present
+- **GIVEN** only `boost.entityProviders.ogx` or `boost.providers.ogx` is present
 - **WHEN** the OGX module reads configuration
-- **THEN** it uses `boost.providers.ogx`
+- **THEN** it ignores the legacy configuration
+- **AND** it uses `http://localhost:8321`
 
 #### Scenario: Use the local default endpoint
 
-- **GIVEN** neither supported OGX configuration path provides a base URL
+- **GIVEN** `ai-catalog.entityProviders.ogx` does not provide a base URL
 - **WHEN** the OGX module reads configuration
 - **THEN** it uses `http://localhost:8321`
 
-#### Scenario: Read TLS settings from either configuration path
+#### Scenario: Read TLS settings from the AI Catalog configuration
 
 - **GIVEN** `caData` or `skipTLSVerify` is set under the OGX configuration in use
 - **WHEN** the OGX module reads configuration
 - **THEN** both settings are read from that path
-- **AND** the same settings are supported on the `boost.providers.ogx` fallback path
 - **AND** each is left unset when the configuration does not provide it
 
 ### Requirement: OGX configuration schema
@@ -70,13 +69,13 @@ loaded independently of `boost-backend`.
 
 - **GIVEN** the `ogx-entity-provider` package is installed
 - **WHEN** Backstage loads the configuration schema
-- **THEN** the package contributes a schema covering `boost.entityProviders.ogx`
-  and `boost.providers.ogx`
+- **THEN** the package contributes a schema covering
+  `ai-catalog.entityProviders.ogx`
 - **AND** `apiKey` is marked with `@visibility secret`
 - **AND** `caData` is marked with `@visibility backend`
 - **AND** `baseUrl` and `skipTLSVerify` are marked `@configScope yaml-only`
 - **AND** model and agent refresh intervals are declared on the
-  `boost.entityProviders.ogx` configuration path
+  `ai-catalog.entityProviders.ogx` configuration path
 - **AND** configured static agents support `id`, `name`, `version`,
   `description`, `instructions`, `model`, `tools`, handoffs, RAG, owner, and
   lifecycle fields
@@ -173,14 +172,14 @@ with type `agent`.
 ### Requirement: Refresh and model-fetch failure behavior
 
 The providers SHALL refresh through scheduled full mutations. Intervals from
-`boost.entityProviders.ogx` override the 60-second model and 300-second agent
-defaults. A failed model fetch SHALL preserve the last successfully emitted
-model entity.
+`ai-catalog.entityProviders.ogx` override the 60-second model and 300-second
+agent defaults. A failed model fetch SHALL preserve the last successfully
+emitted model entity.
 
 #### Scenario: Use the configured refresh intervals
 
 - **GIVEN** model and agent refresh intervals are configured under
-  `boost.entityProviders.ogx`
+  `ai-catalog.entityProviders.ogx`
 - **WHEN** the OGX module creates the providers
 - **THEN** the model provider uses the configured model interval
 - **AND** the agent provider uses the configured agent interval

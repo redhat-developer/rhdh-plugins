@@ -10,6 +10,8 @@
     "dev:debug": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start --inspect",
     "start": "yarn workspace app start",
     "start-backend": "yarn workspace backend start",
+    "start-local-mcp-registry": "node scripts/deploy-local-mcp-registry.ts",
+    "stop-local-mcp-registry": "node scripts/undeploy-local-mcp-registry.ts",
     "build:backend": "yarn workspace backend build",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
@@ -64,7 +66,7 @@
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+    "{packages,plugins,scripts}/**/*.{js,jsx,ts,tsx,mjs,cjs}": [
       "eslint --fix",
       "prettier --write"
     ],

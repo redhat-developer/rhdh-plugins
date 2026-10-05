@@ -16,9 +16,28 @@
 
 import { SamplePrompts } from './types';
 
+/**
+ * Local mirror of PatternFly ChatbotDisplayMode string values.
+ * Keeps the always-loaded FAB / drawer-provider graph free of
+ * `@patternfly/chatbot` for these constants alone.
+ */
+export enum ChatbotDisplayMode {
+  default = 'default',
+  embedded = 'embedded',
+  docked = 'docked',
+  fullscreen = 'fullscreen',
+  drawer = 'drawer',
+}
+
 export const TEMP_CONVERSATION_ID = 'temp-conversation-id';
 
 export const LIGHTSPEED_APP_DRAWER_ID = 'intelligent-assistant';
+
+/**
+ * Default docked drawer width in px.
+ * Matches PatternFly Chatbot’s default panel width (`width: 30rem` ≈ 480px at 16px root).
+ */
+export const LIGHTSPEED_DOCKED_DRAWER_WIDTH_PX = 480;
 
 // Translation keys for disclaimers
 export const FUNCTION_DISCLAIMER_WITHOUT_QUESTION_VALIDATION_KEY =

@@ -23,27 +23,26 @@ import { appDefaultsTranslationRef } from './ref';
 export default createTranslationMessages({
   ref: appDefaultsTranslationRef,
   messages: {
-    'catalog.emptyState.title': 'カタログアイテムがありません',
+    'catalog.emptyState.title': '利用可能なカタログ項目はありません',
     'catalog.emptyState.description':
-      'カタログエンティティがまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここに表示されます。',
+      'カタログエンティティーがまだ存在しないか、表示権限がありません。登録が完了し、アクセス権が付与されると、ここに表示されます。',
     'catalog.emptyState.importButtonTitle': 'コンポーネントを登録',
-    'catalogGraph.emptyState.title': 'カタログアイテムがありません',
+    'catalogGraph.emptyState.title': '利用可能なカタログ項目はありません',
     'catalogGraph.emptyState.description':
-      'カタログエンティティがまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここにカタロググラフが表示されます。',
+      'カタログエンティティーがまだ存在しないか、表示権限がありません。登録が完了し、アクセス権が付与されると、カタロググラフがここに表示されます。',
     'catalogGraph.emptyState.importButtonTitle': 'コンポーネントを登録',
-    'scaffolder.emptyState.title': 'テンプレートがありません',
+    'scaffolder.emptyState.title': '利用できるテンプレートがありません',
     'scaffolder.emptyState.description':
-      'ソフトウェアテンプレートがまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここに表示されます。',
+      'ソフトウェアテンプレートがまだ存在しないか、表示権限がありません。登録が完了し、アクセス権が付与されると、ここに表示されます。',
     'scaffolder.emptyState.importButtonTitle': 'テンプレートを登録',
-    'apiDocs.emptyState.title': 'API がありません',
+    'apiDocs.emptyState.title': '利用可能な API はありません',
     'apiDocs.emptyState.description':
-      'API がまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここに表示されます。',
+      'API がまだ存在しないか、表示権限がありません。登録が完了し、アクセス権が付与されると、ここに表示されます。',
     'apiDocs.emptyState.importButtonTitle': 'API を登録',
-    'docs.emptyState.title': 'ドキュメントがありません',
+    'docs.emptyState.title': '利用可能なドキュメントがありません',
     'docs.emptyState.description':
-      'ドキュメント化されたエンティティがまだ存在しないか、閲覧する権限がありません。TechDocs アノテーションを持つエンティティが登録され、アクセス権を得ると、ここにドキュメントが表示されます。',
+      'ドキュメント化されたエンティティーがまだ存在しないか、表示権限がありません。TechDocs のアノテーションが付いたエンティティーが登録され、アクセス権が付与されると、ここにドキュメントが表示されます。',
     'docs.emptyState.importButtonTitle': 'コンポーネントを登録',
-    'menuItem.learningPaths': 'ラーニングパス',
     'learningPaths.title': 'ラーニングパス',
     'learningPaths.error.title': 'データを取得できませんでした。',
     'learningPaths.error.unknownError': '不明なエラー',

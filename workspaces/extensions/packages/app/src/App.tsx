@@ -16,9 +16,8 @@
 
 import { createApp } from '@backstage/frontend-defaults';
 import translations from '@red-hat-developer-hub/backstage-plugin-extensions/translations';
-import { navModule } from './modules/nav';
 import { signInModule } from './modules/signIn';
 
 export default createApp({
-  features: [navModule, translations, signInModule],
+  features: [translations, signInModule],
 });

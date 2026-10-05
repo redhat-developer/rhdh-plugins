@@ -15,13 +15,15 @@
  */
 
 import { ConfigReader } from '@backstage/config';
+import { loadConfigSchema } from '@backstage/config-loader';
+import { resolve } from 'node:path';
 
 import { readOgxEntityProviderConfig } from './module';
 
 describe('readOgxEntityProviderConfig', () => {
-  it('reads caData and skipTLSVerify from boost.entityProviders.ogx', () => {
+  it('reads TLS settings from ai-catalog.entityProviders.ogx', () => {
     const config = new ConfigReader({
-      boost: {
+      'ai-catalog': {
         entityProviders: {
           ogx: {
             baseUrl: 'https://ogx.example.com',
@@ -42,9 +44,9 @@ describe('readOgxEntityProviderConfig', () => {
     expect(result.skipTLSVerify).toBe(true);
   });
 
-  it('reads agent configuration from boost.entityProviders.ogx', () => {
+  it('reads agent configuration from ai-catalog.entityProviders.ogx', () => {
     const config = new ConfigReader({
-      boost: {
+      'ai-catalog': {
         entityProviders: {
           ogx: {
             baseUrl: 'https://ogx.example.com',
@@ -57,6 +59,13 @@ describe('readOgxEntityProviderConfig', () => {
                 version: '1.2.3',
                 model: 'granite-8b',
                 tools: ['web-search'],
+                description: 'Entry-point agent',
+                instructions: 'Route the request',
+                handoffs: ['helper'],
+                handoffDescription: 'Delegate specialist requests',
+                enableRAG: false,
+                createdBy: 'user:default/admin',
+                lifecycleStage: 'published',
               },
             ],
           },
@@ -75,58 +84,20 @@ describe('readOgxEntityProviderConfig', () => {
         version: '1.2.3',
         model: 'granite-8b',
         tools: ['web-search'],
-        description: undefined,
-        instructions: undefined,
-        handoffs: undefined,
-        handoffDescription: undefined,
-        enableRAG: undefined,
-        createdBy: undefined,
-        lifecycleStage: undefined,
+        description: 'Entry-point agent',
+        instructions: 'Route the request',
+        handoffs: ['helper'],
+        handoffDescription: 'Delegate specialist requests',
+        enableRAG: false,
+        createdBy: 'user:default/admin',
+        lifecycleStage: 'published',
       },
     ]);
   });
 
-  it('reads caData and skipTLSVerify from fallback boost.providers.ogx', () => {
-    const config = new ConfigReader({
-      boost: {
-        providers: {
-          ogx: {
-            baseUrl: 'https://ogx-fallback.example.com',
-            caData: 'PEM-CERT-DATA',
-            skipTLSVerify: false,
-          },
-        },
-      },
-    });
-
-    const result = readOgxEntityProviderConfig(config);
-
-    expect(result.baseUrl).toBe('https://ogx-fallback.example.com');
-    expect(result.caData).toBe('PEM-CERT-DATA');
-    expect(result.skipTLSVerify).toBe(false);
-  });
-
-  it('returns undefined for caData and skipTLSVerify when not configured', () => {
-    const config = new ConfigReader({
-      boost: {
-        entityProviders: {
-          ogx: {
-            baseUrl: 'http://localhost:8321',
-          },
-        },
-      },
-    });
-
-    const result = readOgxEntityProviderConfig(config);
-
-    expect(result.baseUrl).toBe('http://localhost:8321');
-    expect(result.caData).toBeUndefined();
-    expect(result.skipTLSVerify).toBeUndefined();
-  });
-
   it('treats empty optional environment values as undefined', () => {
     const config = new ConfigReader({
-      boost: {
+      'ai-catalog': {
         entityProviders: {
           ogx: {
             baseUrl: 'http://localhost:8321',
@@ -154,36 +125,146 @@ describe('readOgxEntityProviderConfig', () => {
   });
 
   it('falls back to localhost when no OGX config is present', () => {
-    const config = new ConfigReader({});
+    const result = readOgxEntityProviderConfig(new ConfigReader({}));
 
-    const result = readOgxEntityProviderConfig(config);
-
-    expect(result.baseUrl).toBe('http://localhost:8321');
-    expect(result.caData).toBeUndefined();
-    expect(result.skipTLSVerify).toBeUndefined();
+    expect(result).toEqual({ baseUrl: 'http://localhost:8321' });
   });
 
-  it('prefers entityProviders.ogx over providers.ogx', () => {
+  it('requires a base URL when the new configuration block exists', () => {
+    const config = new ConfigReader({
+      'ai-catalog': { entityProviders: { ogx: { apiKey: 'example-key' } } },
+    });
+
+    expect(() => readOgxEntityProviderConfig(config)).toThrow('baseUrl');
+  });
+
+  it('reads refresh intervals and credentials from the new namespace', () => {
+    const config = new ConfigReader({
+      'ai-catalog': {
+        entityProviders: {
+          ogx: {
+            baseUrl: 'https://ogx.example.com',
+            apiKey: 'example-key',
+            modelRefreshIntervalSeconds: 120,
+            agentRefreshIntervalSeconds: 600,
+            skipTLSVerify: false,
+          },
+        },
+      },
+    });
+
+    expect(readOgxEntityProviderConfig(config)).toMatchObject({
+      apiKey: 'example-key',
+      modelRefreshIntervalSeconds: 120,
+      agentRefreshIntervalSeconds: 600,
+      skipTLSVerify: false,
+      caData: undefined,
+    });
+  });
+
+  it('ignores legacy Boost configuration namespaces', () => {
     const config = new ConfigReader({
       boost: {
         entityProviders: {
-          ogx: {
-            baseUrl: 'https://primary.example.com',
-            caData: 'PRIMARY-CA',
-          },
+          ogx: { baseUrl: 'https://legacy-entity-provider.example.com' },
         },
         providers: {
-          ogx: {
-            baseUrl: 'https://fallback.example.com',
-            caData: 'FALLBACK-CA',
-          },
+          ogx: { baseUrl: 'https://legacy-provider.example.com' },
         },
       },
     });
 
     const result = readOgxEntityProviderConfig(config);
 
-    expect(result.baseUrl).toBe('https://primary.example.com');
-    expect(result.caData).toBe('PRIMARY-CA');
+    expect(result).toEqual({ baseUrl: 'http://localhost:8321' });
+  });
+
+  it('prefers the AI Catalog namespace when legacy and new values coexist', () => {
+    const config = new ConfigReader({
+      boost: {
+        entityProviders: {
+          ogx: { baseUrl: 'https://legacy.example.com', apiKey: 'legacy-key' },
+        },
+        providers: {
+          ogx: {
+            baseUrl: 'https://legacy-provider.example.com',
+            caData: 'legacy-ca',
+          },
+        },
+      },
+      'ai-catalog': {
+        entityProviders: {
+          ogx: { baseUrl: 'https://ai-catalog.example.com' },
+        },
+      },
+    });
+
+    const result = readOgxEntityProviderConfig(config);
+
+    expect(result.baseUrl).toBe('https://ai-catalog.example.com');
+    expect(result.apiKey).toBeUndefined();
+    expect(result.caData).toBeUndefined();
+  });
+});
+
+describe('standalone OGX configuration schema', () => {
+  it('validates the renamed namespace and keeps credentials and backend settings out of frontend config', async () => {
+    const schema = await loadConfigSchema({
+      dependencies: [],
+      packagePaths: [resolve(__dirname, '../package.json')],
+      excludePackageDependencies: true,
+    });
+    const data = {
+      'ai-catalog': {
+        entityProviders: {
+          ogx: {
+            baseUrl: 'https://ogx.example.com',
+            apiKey: 'example-key',
+            caData: 'example-ca',
+            skipTLSVerify: false,
+            modelRefreshIntervalSeconds: 120,
+            agentRefreshIntervalSeconds: 600,
+          },
+        },
+      },
+    };
+    const configs = [{ context: 'test', data }];
+
+    expect(schema.process(configs)[0].data).toEqual(data);
+    expect(
+      schema.process(configs, { visibility: ['frontend'] })[0].data,
+    ).toEqual({});
+    const backend = new ConfigReader(
+      schema.process(configs, { visibility: ['backend'] })[0].data,
+    );
+    expect(
+      backend.getOptionalString('ai-catalog.entityProviders.ogx.apiKey'),
+    ).toBeUndefined();
+    expect(backend.getString('ai-catalog.entityProviders.ogx.caData')).toBe(
+      'example-ca',
+    );
+    expect(schema.serialize()).toMatchObject({
+      schemas: [
+        { value: { properties: { 'ai-catalog': expect.any(Object) } } },
+      ],
+    });
+    expect(JSON.stringify(schema.serialize())).not.toContain('"boost"');
+    expect(() =>
+      schema.process([
+        {
+          context: 'test',
+          data: {
+            'ai-catalog': {
+              entityProviders: {
+                ogx: {
+                  baseUrl: 'https://ogx.example.com',
+                  skipTLSVerify: 'invalid',
+                },
+              },
+            },
+          },
+        },
+      ]),
+    ).toThrow();
   });
 });

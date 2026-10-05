@@ -96,9 +96,40 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
             maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
           },
+        html: {
+          '@media (min-width: 600px)': {
+            height: '100%',
+            overflow: 'hidden',
+            overscrollBehavior: 'none',
+          },
+        },
         body: {
           ...(backstageStyles.body as CSSObject),
           fontFamily: redHatFonts.text,
+          '@media (min-width: 600px)': {
+            height: '100%',
+            overflow: 'hidden',
+            overscrollBehavior: 'none',
+          },
+        },
+        '#root': {
+          '@media (min-width: 600px)': {
+            height: '100%',
+            overflow: 'hidden',
+            // Shows through SidebarPage's page-inset margin (clip-path well).
+            backgroundColor:
+              general.pageInsetBackgroundColor ??
+              general.appBarBackgroundColor ??
+              theme.palette.background.default,
+          },
+        },
+        '#rhdh-sidebar-layout': {
+          '@media (min-width: 600px)': {
+            backgroundColor:
+              general.pageInsetBackgroundColor ??
+              general.appBarBackgroundColor ??
+              theme.palette.background.default,
+          },
         },
         'h1, h2, h3, h4, h5, h6': {
           fontFamily: redHatFonts.heading,
@@ -760,6 +791,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '@media (min-width: 600px)': {
             '#rhdh-above-sidebar-header-container:has(*) ~ #rhdh-sidebar-layout':
               {
+                // Page inset is margin on SidebarPage; don't double-gap under the masthead.
+                "& [class*='BackstageSidebarPage-root']": {
+                  marginTop: '0 !important',
+                },
                 "& main, & [class*='MuiLinearProgress-root']": {
                   marginTop: '0 !important',
                 },
@@ -794,51 +829,91 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           // height; without a min-height here the page-inset background stops
           // early and body/html shows through (RHDHBUGS-3498).
           minHeight: '100vh',
-          // Let BUI Container's flex: 1 grow into the remaining viewport below
-          // PluginHeader / Header slots (those slots set flex: none).
-          display: 'flex',
-          flexDirection: 'column',
-          // Controls the page inset as in PF6 -- only in desktop view
+          // All viewports: paint the content well. Page-inset chrome below is
+          // desktop-only; without this, mobile falls through to body
+          // (--bui-bg-app / page-inset) instead of mainSectionBackgroundColor.
+          backgroundColor: general.mainSectionBackgroundColor,
+          // Controls the page inset as in PF6 -- only in desktop view.
+          // CSS-only: SidebarPage is the sole scrollport so BUI siblings
+          // (PluginHeader + Containers) and classic <main> share one rounded
+          // well without an extra DOM wrapper (PageMainContainer).
+          //
+          // Scrollbar clipping: border-radius alone does not clip Chromium
+          // scrollbars. clip-path on this same scrollport does. Margin (not
+          // border) forms the page inset so the clipped edge is the well
+          // edge — the overflow/scrollbar edge — not the outer border-box.
+          //
+          // Backstage SidebarPage sets width:100%; horizontal margins would
+          // otherwise overflow and get clipped (right gutter disappears).
           '@media (min-width: 600px)': {
-            backgroundColor:
-              general.pageInsetBackgroundColor ?? general.appBarBackgroundColor,
-            // Prevents the main content from scrolling weird
+            boxSizing: 'border-box',
+            // Override Backstage `width: 100%` so margin-right is not pushed
+            // off-screen by the parent overflow:hidden.
+            width: `calc(100% - ${general.pageInset}) !important`,
+            marginTop: general.pageInset,
+            marginRight: general.pageInset,
+            marginBottom: general.pageInset,
+            marginLeft: 0,
+            height: `calc(100vh - 2 * ${general.pageInset})`,
+            maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
+            minHeight: '0 !important',
+            overflowX: 'hidden',
             overflowY: 'auto',
-            // Cancel out the spacing produced by the page inset border when
-            // the sidebar is present
-            '& nav': {
-              "& ~ main, & ~ [class*='MuiLinearProgress-root']": {
-                marginLeft: '0 !important',
-              },
+            // `contain` still allows rubber-band overscroll, which reveals an
+            // empty rounded well above the content. `none` disables that.
+            overscrollBehavior: 'none',
+            borderRadius: '1rem',
+            // Clips the scrollbar into the rounded well (border-radius cannot).
+            clipPath: 'inset(0 round 1rem)',
+            // Left corners: clip-path rounds the border-box (under the drawer
+            // spacer), so the visible edge after paddingLeft stays square.
+            // Sticky masks paint the curve at the content edge. Keep
+            // overscroll-behavior: none so rubber-band does not show a second well.
+            // z-index must sit above Backstage Header (z-index: 100) or MUI
+            // Page headers cover the top-left mask tile.
+            '&::before': {
+              content: '""',
+              position: 'sticky',
+              top: 0,
+              display: 'block',
+              width: '100%',
+              height: `calc(100vh - 2 * ${general.pageInset})`,
+              marginBottom: `calc(0px - (100vh - 2 * ${general.pageInset}))`,
+              pointerEvents: 'none',
+              zIndex: 101,
+              backgroundImage: [
+                `radial-gradient(circle at 100% 100%, transparent 1rem, ${
+                  general.pageInsetBackgroundColor ??
+                  general.appBarBackgroundColor
+                } 1.01rem)`,
+                `radial-gradient(circle at 0% 100%, transparent 1rem, ${
+                  general.pageInsetBackgroundColor ??
+                  general.appBarBackgroundColor
+                } 1.01rem)`,
+                `radial-gradient(circle at 100% 0%, transparent 1rem, ${
+                  general.pageInsetBackgroundColor ??
+                  general.appBarBackgroundColor
+                } 1.01rem)`,
+                `radial-gradient(circle at 0% 0%, transparent 1rem, ${
+                  general.pageInsetBackgroundColor ??
+                  general.appBarBackgroundColor
+                } 1.01rem)`,
+              ].join(', '),
+              backgroundPosition:
+                'top left, top right, bottom left, bottom right',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1rem 1rem',
             },
+            // No nested scroll/radius on children — the shell scrolls as one.
             "& > [class*='MuiLinearProgress-root'], & > main": {
-              // clip-path clips the scrollbar properly in Chrome compared to
-              // border-radius. 1rem is the hardcoded border-radius of the page content.
-              clipPath: 'rect(0 100% 100% 0 round 1rem)',
-              // Emulate the PatternFly 6 page inset using a margin
-              margin: general.pageInset,
-              // Fill the inset well so short pages use mainSectionBackgroundColor
-              // (#292929) instead of leaving a pageInset (#151515) band below content.
+              margin: 0,
+              borderRadius: 0,
+              clipPath: 'none',
               backgroundColor: general.mainSectionBackgroundColor,
-              minHeight: `calc(100vh - 2 * ${general.pageInset})`,
-              // Prevent overflow in the main container due to the margin
-              maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
-            },
-            // NFS BUI entity pages wrap their content in a BUI Container inside
-            // a classless <main>. The Container is flex: 1 1 0%, but that only
-            // grows when main is a flex column. Keep the main content at least
-            // viewport-height while allowing longer entity pages to grow.
-            '& > main:has([class*="bui-Container"])': {
-              display: 'flex',
-              flexDirection: 'column',
-              flex: '1 0 auto',
-              minHeight: `calc(100vh - 2 * ${general.pageInset})`,
+              overflow: 'visible',
               height: 'auto',
-              maxHeight: 'none !important',
+              maxHeight: 'none',
             },
-            // NFS / BUI pages use Container instead of <main>. Match the content
-            // well color (same token as BackstageContent) and rely on flex: 1
-            // from BUI rather than 100vh so PluginHeader siblings are not overflowed.
             "& > [class*='bui-Container']:not([class*='bui-Header'])": {
               backgroundColor: general.mainSectionBackgroundColor,
             },
@@ -847,31 +922,34 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             "&:has([class*='BackstagePage-root']) > .bui-PluginHeader": {
               display: 'none',
             },
-            // Settings and other pages render BackstageContent as <article>.
-            // Grow it to fill the flex column so pageInset doesn't show as a band.
             '& > article, & > [class*="BackstageContent-root"]': {
-              flex: 1,
               backgroundColor: general.mainSectionBackgroundColor,
             },
-            // Prevent TechDocs double scrollbar: the page-inset max-height puts
-            // <main>'s scrollbar at the same position as the ToC sidebar scrollbar.
-            // Letting <main> expand moves the scroll to the parent root instead.
+            // TechDocs ToC has its own scrollbar — avoid forcing a nested main well.
             "& > main:has([data-testid='techdocs-native-shadowroot'])": {
               height: 'auto !important',
               maxHeight: 'none !important',
-              borderRadius: '1rem',
               marginRight: '0.5rem',
             },
-            // The Backstage suspense is an MUI LinearProgress that is not wrapped by
-            // a `main`. We need to give it 100vh height to fill the page for the page
-            // inset to look right.
             "& > [class*='MuiLinearProgress-root']": {
-              backgroundColor: general.mainSectionBackgroundColor,
-              height: '100vh',
               "& > [class*='MuiLinearProgress-']": {
                 height: '0.5rem !important',
               },
             },
+            // DependencyGraph's IconButton is `position:absolute; right:0` but
+            // `.fullscreen` is not positioned. Our clip-path on SidebarPage
+            // becomes the absolute containing block, so the control sticks to
+            // the page-well corner. Re-contain it to the graph, then inset it
+            // slightly so the 1rem curve does not shear the icon.
+            '& .fullscreen': {
+              position: 'relative',
+            },
+            '& .fullscreen > .MuiIconButton-root, & .fullscreen .MuiIconButton-root[class*="fullscreenButton"]':
+              {
+                top: '0.5rem !important',
+                right: '0.5rem !important',
+                zIndex: 3,
+              },
           },
         },
       },

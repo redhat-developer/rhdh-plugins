@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 2.0.2
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+
+## 2.0.1
+
+### Patch Changes
+
+- 769d370: Improve module page UX
+- 6db5c1d: implemented adversarial agents
+- 12b27d6: Added severity icons, Make Adversarial Review status clearer so a successful job is no longer confused with a clean one
+- 3bf5e1b: Downstream phase jobs are automatically marked as stale when an upstream phase completes successfully.
+- 141731a: Made token usage more human readable
+- Updated dependencies [6db5c1d]
+- Updated dependencies [3bf5e1b]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

@@ -16,7 +16,10 @@
 
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-import scorecardPlugin from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
+import {
+scorecardCollectorsServiceFactory,
+scorecardPlugin,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
 import { scorecardModuleCatalog } from './module';
 import request from 'supertest';
 import type { Server } from 'http';
@@ -34,6 +37,7 @@ describe('scorecard-backend-module-catalog', () => {
     beforeAll(async () => {
       ({ server } = await startTestBackend({
         features: [
+          scorecardCollectorsServiceFactory,
           scorecardPlugin,
           scorecardModuleCatalog,
           mockServices.rootConfig.factory({ data: BASE_CONFIG }),
@@ -45,7 +49,7 @@ describe('scorecard-backend-module-catalog', () => {
     });
 
     afterAll(() => {
-      server.close();
+      server?.close();
     });
 
     it('starts the backend without errors when no catalog config is provided', async () => {
@@ -83,6 +87,7 @@ describe('scorecard-backend-module-catalog', () => {
     beforeAll(async () => {
       ({ server } = await startTestBackend({
         features: [
+          scorecardCollectorsServiceFactory,
           scorecardPlugin,
           scorecardModuleCatalog,
           mockServices.rootConfig.factory({ data: CONFIG_WITH_CATALOG }),
@@ -94,7 +99,7 @@ describe('scorecard-backend-module-catalog', () => {
     });
 
     afterAll(() => {
-      server.close();
+      server?.close();
     });
 
     it('registers the catalog metric provider', async () => {

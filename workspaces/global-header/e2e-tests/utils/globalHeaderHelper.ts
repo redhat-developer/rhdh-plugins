@@ -50,16 +50,9 @@ export async function loginAsGuest(page: Page): Promise<void> {
 
     try {
       await enter.waitFor({ state: 'hidden', timeout: 15_000 });
-
-      if (process.env.APP_MODE === 'nfs') {
-        await page
-          .getByRole('link', { name: 'Settings' })
-          .waitFor({ state: 'visible', timeout: 15_000 });
-      } else {
-        await page
-          .locator('#global-header')
-          .waitFor({ state: 'visible', timeout: 15_000 });
-      }
+      await page
+        .getByRole('link', { name: 'Settings' })
+        .waitFor({ state: 'visible', timeout: 15_000 });
 
       return;
     } catch {
@@ -76,16 +69,7 @@ export async function loginAsGuest(page: Page): Promise<void> {
  * profile dropdown (Guest → Settings) because its sidebar has no settings nav.
  */
 async function openUserSettings(page: Page): Promise<void> {
-  if (process.env.APP_MODE === 'nfs') {
-    await page.getByRole('link', { name: 'Settings' }).click();
-    return;
-  }
-
-  await page
-    .locator('#global-header')
-    .getByRole('button', { name: 'Guest' })
-    .click();
-  await page.getByRole('menuitem', { name: 'Settings' }).click();
+  await page.getByRole('link', { name: 'Settings' }).click();
 }
 
 /**

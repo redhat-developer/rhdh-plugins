@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { SourcesCardProps } from '@patternfly/chatbot';
-import { AlertProps } from '@patternfly/react-core';
+import type { SourcesCardProps } from '@patternfly/chatbot';
+import type { AlertProps } from '@patternfly/react-core';
 
 export type Conversations = {
   [key: string]: {

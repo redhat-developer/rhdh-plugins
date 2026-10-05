@@ -55,19 +55,18 @@ test.describe('Admin > Extensions', () => {
     const baseLocale = locale.split('-')[0];
     if (baseLocale === 'en') return;
 
+    await page.getByRole('link', { name: 'Settings' }).click();
+
     const displayName = getLocaleDisplayName(locale);
     const localeDisplayPattern = new RegExp(
       `^(${Object.values(LOCALE_DISPLAY_NAMES).map(escapeRegExp).join('|')})$`,
     );
-
-    // Navigating directly avoids flaky duplicate "Settings" links in sidebar.
-    await page.goto('/settings');
     await page
       .getByRole('button', { name: localeDisplayPattern })
       .first()
       .click();
     await page.getByRole('option', { name: displayName }).click();
-    await page.goto('/');
+    await page.locator('a[href="/"]').first().click();
   }
 
   test.beforeAll(async ({ browser }) => {

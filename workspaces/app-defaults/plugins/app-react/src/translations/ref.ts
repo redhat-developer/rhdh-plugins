@@ -27,6 +27,53 @@ import { createTranslationRef } from '@backstage/frontend-plugin-api';
 export const appReactTranslationRef = createTranslationRef({
   id: 'plugin.app-react',
   messages: {
+    // Common page / sidebar item titles, keyed by the English title so the
+    // sidebar can look them up dynamically (see `AppSidebar` in
+    // `@red-hat-developer-hub/backstage-plugin-app-defaults`). Titles without a
+    // matching entry fall through to their original English label.
+    pages: {
+      Home: 'Home',
+      Catalog: 'Catalog',
+      APIs: 'APIs',
+      Create: 'Self-Service',
+      Docs: 'Docs',
+      'Learning Paths': 'Learning Paths',
+      Settings: 'Settings',
+      Notifications: 'Notifications',
+      Search: 'Search',
+      'Catalog Graph': 'Catalog Graph',
+      Administration: 'Administration',
+      RBAC: 'RBAC',
+      Plugins: 'Plugins',
+    },
+    // Page header tab titles (e.g. the Settings sub-pages), keyed by the
+    // English tab title so the localized page layout can look them up
+    // dynamically (see `LocalizedPageLayout` in
+    // `@red-hat-developer-hub/backstage-plugin-app-defaults`). They live in
+    // their own namespace since generic tab titles like `General` may mean
+    // something different than a page of the same name.
+    pageTabs: {
+      // user-settings
+      General: 'General',
+      'Authentication Providers': 'Authentication Providers',
+      'Feature Flags': 'Feature Flags',
+      // scaffolder
+      Templates: 'Templates',
+      Tasks: 'Tasks',
+      Actions: 'Actions',
+      'Template Editor': 'Template Editor',
+      'Templating Extensions': 'Templating Extensions',
+      // devtools
+      Info: 'Info',
+      Config: 'Config',
+      'Scheduled Tasks': 'Scheduled Tasks',
+      // catalog-unprocessed-entities (attached to devtools)
+      'Unprocessed Entities': 'Unprocessed Entities',
+      // app-visualizer
+      Tree: 'Tree',
+      Detailed: 'Detailed',
+      Text: 'Text',
+    },
     catalog: {
       // Catalog entity page group titles, keyed by the English group title.
       entityTabGroups: {

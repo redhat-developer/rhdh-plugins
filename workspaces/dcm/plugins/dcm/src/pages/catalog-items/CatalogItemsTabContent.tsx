@@ -16,11 +16,11 @@
 
 import { useMemo } from 'react';
 import { TableColumn } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
+
 import { Box, Chip, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import type { CatalogItem } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { catalogApiRef } from '../../apis';
+import { useDcmClients } from '../../api/DcmClientsContext';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
@@ -54,7 +54,7 @@ const useStyles = makeStyles(theme => ({
 
 export function CatalogItemsTabContent() {
   const classes = useStyles();
-  const catalogApi = useApi(catalogApiRef);
+  const { catalogApi } = useDcmClients();
   const { t } = useTranslation();
 
   // Paginated service-type list for the create/edit-item dropdowns.

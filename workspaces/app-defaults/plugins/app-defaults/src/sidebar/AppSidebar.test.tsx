@@ -236,4 +236,71 @@ describe('AppSidebar', () => {
     const links = screen.getAllByRole('link');
     expect(links.map(l => l.textContent)).toEqual(['Chat', 'Catalog']);
   });
+
+  it('merges items and groups from app.sidebar config', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          { id: 'chat', title: 'Chat', to: '/chat', priority: 5 },
+          { id: 'users', title: 'Users', to: '/admin/users', group: 'admin' },
+        ]}
+        groups={[{ id: 'admin', title: 'Administration', priority: -10 }]}
+      />,
+      {
+        config: {
+          app: {
+            sidebar: {
+              items: [
+                { title: 'Docs', to: 'https://example.com/docs', priority: 10 },
+                { title: 'Audit log', to: '/audit-log', group: 'admin' },
+                { title: 'Grafana', to: '/grafana', group: 'tools' },
+              ],
+              groups: [
+                { id: 'tools', title: 'Tools', priority: -5 },
+                { id: 'admin', title: 'Admin area', priority: -10 },
+              ],
+              plugins: {
+                'my-plugin': {
+                  items: [{ title: 'Plugin page', to: '/plugin', priority: 7 }],
+                },
+              },
+            },
+          },
+        },
+      },
+    );
+
+    // Config (top-level and per-plugin) and contributed entries are ordered
+    // together by priority.
+    const nav = screen.getByRole('navigation');
+    const texts = Array.from(nav.querySelectorAll('a, button')).map(
+      el => el.textContent,
+    );
+    expect(texts).toEqual([
+      'Docs',
+      'Plugin page',
+      'Chat',
+      'Tools',
+      'Admin area',
+    ]);
+
+    // A config item joins a contributed group, a config group with the same
+    // id as a contributed group replaces it.
+    expect(screen.queryByText('Administration')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Admin area/ }));
+    expect(screen.getByRole('link', { name: /Audit log/ })).toHaveAttribute(
+      'href',
+      '/audit-log',
+    );
+    expect(screen.getByRole('link', { name: /Users/ })).toHaveAttribute(
+      'href',
+      '/admin/users',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Tools/ }));
+    expect(screen.getByRole('link', { name: /Grafana/ })).toHaveAttribute(
+      'href',
+      '/grafana',
+    );
+  });
 });

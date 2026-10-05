@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-translations-test
 
+## 0.5.1
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+
 ## 0.5.0
 
 ### Minor Changes

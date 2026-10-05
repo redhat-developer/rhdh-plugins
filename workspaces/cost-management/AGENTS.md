@@ -68,8 +68,9 @@ All communication with Red Hat Hybrid Cloud Console (RHHCC) happens server-side:
    then forwarded to RHHCC `https://console.redhat.com/api/cost-management/v1/`
 2. SSO token is acquired via OAuth2 `client_credentials` grant using `costManagement.clientId` /
    `costManagement.clientSecret` from `app-config.yaml` — never sent to the browser
-3. Client-supplied `cluster`/`project` query params are ignored and overwritten — the backend
-   injects its own server-authorized filters from the RBAC policy. Do not add these params on the frontend.
+3. For full-access users, client `cluster`/`project` params pass through for UI filtering.
+   For scoped users, RBAC-authorized filters are injected as `filter[exact:cluster]` /
+   `filter[exact:project]`; client-supplied `filter[exact:…]` params are stripped to prevent bypass.
 4. Cluster/project data is cached in-memory with a 15-minute TTL to avoid redundant upstream calls
 
 ### Permission namespaces (easy to mix up)
@@ -90,10 +91,11 @@ All communication with Red Hat Hybrid Cloud Console (RHHCC) happens server-side:
 
 The RHHCC APIs use different query param keys:
 
-- Optimizations API: `cluster=`, `project=`
-- OpenShift cost API: `filter[exact:cluster]=`, `filter[exact:project]=`
+- Optimizations UI search: `cluster=`, `project=` (partial include)
+- OpenShift cost UI search: `filter[exact:cluster]=`, `filter[exact:project]=`
+- RBAC ceiling (both APIs): `filter[exact:cluster]=`, `filter[exact:project]=`
 
-The backend determines the correct key based on the proxy path prefix (`recommendations/` → ROS).
+The backend determines ROS vs cost from the proxy path prefix (`recommendations/` → ROS).
 
 ### Endpoints
 

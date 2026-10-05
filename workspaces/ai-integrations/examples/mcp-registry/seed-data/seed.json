@@ -1,0 +1,204 @@
+[
+  {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.example.labs/atlas-search",
+    "description": "MCP server that wraps the Atlas Search HTTP API for document discovery",
+    "title": "Atlas Search",
+    "websiteUrl": "https://labs.example.io/mcp/atlas-search",
+    "repository": {
+      "url": "https://github.com/example-labs/mcp-servers",
+      "source": "github"
+    },
+    "version": "2.1.0",
+    "packages": [
+      {
+        "registryType": "npm",
+        "registryBaseUrl": "https://registry.npmjs.org",
+        "identifier": "@example-labs/mcp-server-atlas-search",
+        "version": "2.1.0",
+        "transport": {
+          "type": "stdio"
+        },
+        "environmentVariables": [
+          {
+            "name": "ATLAS_SEARCH_API_KEY",
+            "description": "Atlas Search API key",
+            "value": "1234567890",
+            "isRequired": true,
+            "isSecret": true
+          }
+        ]
+      }
+    ],
+    "_meta": {
+      "io.modelcontextprotocol.registry/publisher-provided": {
+        "tool": "npm-publisher",
+        "version": "1.2.0",
+        "build_info": {
+          "timestamp": "2025-03-14T09:15:00Z"
+        }
+      }
+    }
+  },
+  {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.github.example-labs/workspace-fs",
+    "description": "MCP server for sandboxed workspace filesystem read and write operations.",
+    "title": "Workspace Filesystem",
+    "repository": {
+      "url": "https://github.com/example-labs/mcp-servers",
+      "source": "github",
+      "id": "c1a2b3d4-e5f6-7890-abcd-ef1234567890"
+    },
+    "version": "1.4.1",
+    "packages": [
+      {
+        "registryType": "npm",
+        "registryBaseUrl": "https://registry.npmjs.org",
+        "identifier": "@example-labs/mcp-server-workspace-fs",
+        "version": "1.4.1",
+        "transport": {
+          "type": "stdio"
+        },
+        "packageArguments": [
+          {
+            "type": "positional",
+            "valueHint": "workspace_root",
+            "description": "Workspace root directory to expose",
+            "default": "/home/developer/workspace",
+            "isRequired": true,
+            "isRepeated": true
+          }
+        ],
+        "environmentVariables": [
+          {
+            "name": "LOG_LEVEL",
+            "description": "Logging level (debug, info, warn, error)",
+            "default": "warn"
+          }
+        ]
+      },
+      {
+        "registryType": "oci",
+        "identifier": "ghcr.io/example-labs/workspace-fs:1.4.1",
+        "transport": {
+          "type": "stdio"
+        },
+        "runtimeArguments": [
+          {
+            "type": "named",
+            "description": "Bind-mount a host path into the container",
+            "name": "--mount",
+            "value": "type=bind,src={source_path},dst={target_path}",
+            "isRequired": true,
+            "isRepeated": true,
+            "variables": {
+              "source_path": {
+                "description": "Host path to mount",
+                "format": "filepath",
+                "isRequired": true
+              },
+              "target_path": {
+                "description": "Mount point inside the container under `/workspace`.",
+                "isRequired": true,
+                "default": "/workspace"
+              }
+            }
+          }
+        ],
+        "packageArguments": [
+          {
+            "type": "positional",
+            "valueHint": "workspace_root",
+            "value": "/workspace"
+          }
+        ],
+        "environmentVariables": [
+          {
+            "name": "LOG_LEVEL",
+            "description": "Logging level (debug, info, warn, error)",
+            "default": "warn"
+          }
+        ]
+      }
+    ],
+    "_meta": {
+      "io.modelcontextprotocol.registry/publisher-provided": {
+        "tool": "ci-publisher",
+        "version": "4.0.0",
+        "build_info": {
+          "commit": "9f8e7d6c5b4a3210",
+          "timestamp": "2025-06-02T18:40:00Z",
+          "pipeline_id": "workspace-fs-build-2048",
+          "environment": "staging"
+        }
+      }
+    }
+  },
+  {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.github.example-labs/dice-weather-mcp",
+    "description": "NuGet MCP server that returns random dice rolls and sample weather snippets",
+    "version": "1.2.0-preview.3",
+    "packages": [
+      {
+        "registryType": "nuget",
+        "registryBaseUrl": "https://api.nuget.org/v3/index.json",
+        "identifier": "ExampleLabs.DiceWeatherMcp",
+        "version": "1.2.0-preview.3",
+        "transport": {
+          "type": "stdio"
+        },
+        "packageArguments": [
+          {
+            "type": "positional",
+            "value": "mcp"
+          },
+          {
+            "type": "positional",
+            "value": "start"
+          }
+        ]
+      }
+    ],
+    "_meta": {
+      "io.modelcontextprotocol.registry/publisher-provided": {
+        "tool": "nuget-publisher",
+        "version": "2.3.1",
+        "build_info": {
+          "timestamp": "2025-01-22T11:05:00Z",
+          "pipeline_id": "nuget-dice-weather-101"
+        }
+      }
+    }
+  },
+  {
+    "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+    "name": "io.example.cloud/remote-workspace",
+    "description": "Hosted MCP workspace filesystem endpoint for shared team sandboxes",
+    "repository": {
+      "url": "https://github.com/example-cloud/remote-workspace-mcp",
+      "source": "github",
+      "id": "a0b1c2d3-e4f5-6789-abcd-ef0123456789"
+    },
+    "version": "3.1.0",
+    "remotes": [
+      {
+        "type": "streamable-http",
+        "url": "https://mcp.example.cloud/v1/workspace/http"
+      }
+    ],
+    "_meta": {
+      "io.modelcontextprotocol.registry/publisher-provided": {
+        "tool": "cloud-deployer",
+        "version": "3.0.2",
+        "build_info": {
+          "commit": "c3b2a19087fe",
+          "timestamp": "2025-08-19T13:10:00Z",
+          "deployment_id": "remote-workspace-deploy-812",
+          "region": "eu-central-1"
+        }
+      }
+    }
+  }
+]

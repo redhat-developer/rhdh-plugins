@@ -16,7 +16,7 @@
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 
-import { TemplateCardActionBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { TemplateCardActionBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { OrchestratorTemplateCardChooseButton } from '../components/templateCard/OrchestratorTemplateCardChooseButton';
 

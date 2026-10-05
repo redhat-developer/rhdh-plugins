@@ -22,7 +22,7 @@
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { ThemeBlueprint } from '@backstage/plugin-app-react';
 
-import { getAllThemes } from './themes';
+import { getThemes } from './themes';
 
 import './assets/fonts/font.min.css';
 import './assets/bui/tokens.css';
@@ -33,13 +33,14 @@ export { LogoFull, LogoIcon } from './components';
 /**
  * RHDH themes as NFS extensions (ThemeBlueprint).
  * Only the app can register ThemeBlueprint; we use the same theme definitions
- * from the theme plugin (getAllThemes()) so behavior matches the legacy app.
+ * from the theme plugin (getThemes()) so the app exposes only the current RHDH
+ * light and dark themes.
  *
  * @public
  */
 const rhdhThemeModule = createFrontendModule({
   pluginId: 'app',
-  extensions: getAllThemes().map(appTheme =>
+  extensions: getThemes().map(appTheme =>
     ThemeBlueprint.make({
       name: appTheme.id,
       params: {

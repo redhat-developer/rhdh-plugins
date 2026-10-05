@@ -1,5 +1,66 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.6
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.6
+
+## 5.3.5
+
+### Patch Changes
+
+- ab76946: Fix MUI5 style regressions: notebooks docked scroll, file chip outline border, footer divider, and document row alignment
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.5
+
+## 5.3.4
+
+### Patch Changes
+
+- 588f80f: Update README to use new `enabled` field when configuring plugins, as `disabled` is now deprecated
+- fb4ecee: Updated dependency `prettier` to `3.9.9`.
+- 262900c: Updated dependency `@patternfly/chatbot` to `6.9.0-prerelease.5`.
+- b47cbf3: Align Intelligent Assistant Chat/Notebooks shell with PatternFly defaults and fix sticky history close hover.
+- Updated dependencies [fb4ecee]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.4
+
+## 5.3.3
+
+### Patch Changes
+
+- 377efe3: Updated dependency `@patternfly/chatbot` to `6.9.0-prerelease.4`.
+  Updated dependency `@patternfly/react-core` to `6.6.1`.
+- a669321: Updated dependency `@testing-library/user-event` to `14.6.7`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.3
+
+## 5.3.2
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.2
+
+## 5.3.1
+
+### Patch Changes
+
+- 9dc3351: Split Module Federation entry points and lazy-load chat UI so NFS, FAB, and translations remotes ship minimal synchronous bundles.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.1
+
+## 5.3.0
+
+### Minor Changes
+
+- 0f9a3e8: Add screen context UX: kebab opt-in, context chip (recording/paused/unavailable), and gated DOM and screenshot attachments on send per RHIDP-14319.
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.0
+
 ## 5.2.0
 
 ### Minor Changes

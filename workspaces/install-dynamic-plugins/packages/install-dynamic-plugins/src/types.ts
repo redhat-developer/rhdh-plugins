@@ -31,7 +31,7 @@ export type PullPolicy = (typeof PullPolicy)[keyof typeof PullPolicy];
 export type PluginSpec = {
   package: string;
   /**
-   * Recommended: Use `enabled` instead.
+   * @deprecated Use `enabled` instead (`enabled: !disabled`).
    * When both `enabled` and `disabled` are present, `enabled` takes precedence.
    */
   disabled?: boolean;
@@ -133,9 +133,11 @@ export function effectivePullPolicy(plugin: {
  *
  *  1. When only `enabled` is set  → `disabled = !enabled`.
  *  2. When only `disabled` is set → use it directly (backward compat).
- *  3. When both are set           → `enabled` wins and a warning is emitted
- *     via the optional `warn` callback.
+ *  3. When both are set           → `enabled` wins.
  *  4. When neither is set         → default to `false` (not disabled).
+ *
+ * An explicit boolean `disabled` produces one deprecation warning through
+ * the optional `warn` callback, including when `enabled` is also set.
  *
  * Non-boolean values (e.g. the quoted string `enabled: 'false'` or
  * `enabled: null`) are treated as unset and a warning is emitted,
@@ -164,12 +166,16 @@ export function isPluginDisabled(
     );
   }
 
-  if (hasEnabled && hasDisabled) {
-    warn?.(
-      `WARNING: Plugin ${plugin.package} specifies both 'enabled' and 'disabled'. ` +
-        `The 'enabled' field takes precedence; please use only 'enabled'.`,
-    );
-    return !plugin.enabled;
+  if (hasDisabled) {
+    if (hasEnabled) {
+      warn?.(
+        `WARNING: Plugin ${plugin.package} uses BOTH deprecated 'disabled: ${plugin.disabled}' and new 'enabled: ${plugin.enabled}'. Remove deprecated 'disabled' in favour of preferred 'enabled' syntax.`,
+      );
+    } else {
+      warn?.(
+        `WARNING: Plugin ${plugin.package} uses deprecated 'disabled: ${plugin.disabled}' syntax. Replace it with 'enabled: ${!plugin.disabled}'.`,
+      );
+    }
   }
   if (hasEnabled) return !plugin.enabled;
   if (hasDisabled) return plugin.disabled === true;

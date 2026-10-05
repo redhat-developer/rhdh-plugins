@@ -25,7 +25,7 @@ import {
   AI_ASSET_CATEGORY_ANNOTATION,
   AI_ASSET_SOURCE_ANNOTATION,
   AI_ASSET_VERSION_ANNOTATION,
-} from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk';
 
 import { Agent } from 'undici';
 

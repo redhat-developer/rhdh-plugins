@@ -16,7 +16,10 @@
 
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-import scorecardPlugin from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
+import {
+  scorecardCollectorsServiceFactory,
+  scorecardPlugin,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
 import { scorecardModuleDependabot } from './module';
 import request from 'supertest';
 import type { Server } from 'http';
@@ -33,6 +36,7 @@ describe('scorecard-backend-module-dependabot', () => {
   beforeAll(async () => {
     ({ server } = await startTestBackend({
       features: [
+        scorecardCollectorsServiceFactory,
         scorecardPlugin,
         scorecardModuleDependabot,
         mockServices.rootConfig.factory({ data: BASE_CONFIG }),
@@ -44,7 +48,7 @@ describe('scorecard-backend-module-dependabot', () => {
   });
 
   afterAll(() => {
-    server.close();
+    server?.close();
   });
 
   it('starts the backend with the dependabot module without errors', async () => {

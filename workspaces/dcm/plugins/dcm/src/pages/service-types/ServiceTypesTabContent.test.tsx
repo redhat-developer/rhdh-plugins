@@ -15,8 +15,8 @@
  */
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
-import { catalogApiRef } from '../../apis';
+import { renderInTestApp } from '@backstage/test-utils';
+import { DcmClientsTestProvider } from '../../api/DcmClientsContext';
 import { ServiceTypesTabContent } from './ServiceTypesTabContent';
 
 jest.mock('../../hooks/useTranslation', () => {
@@ -43,17 +43,17 @@ const MOCK_SERVICE_TYPES = [
 
 function renderWith(mockCatalogApi: { listServiceTypes: jest.Mock }) {
   return render(
-    <TestApiProvider apis={[[catalogApiRef, mockCatalogApi]]}>
+    <DcmClientsTestProvider clients={{ catalogApi: mockCatalogApi }}>
       <ServiceTypesTabContent />
-    </TestApiProvider>,
+    </DcmClientsTestProvider>,
   );
 }
 
 async function renderWithApp(mockCatalogApi: { listServiceTypes: jest.Mock }) {
   return renderInTestApp(
-    <TestApiProvider apis={[[catalogApiRef, mockCatalogApi]]}>
+    <DcmClientsTestProvider clients={{ catalogApi: mockCatalogApi }}>
       <ServiceTypesTabContent />
-    </TestApiProvider>,
+    </DcmClientsTestProvider>,
   );
 }
 

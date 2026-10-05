@@ -6,7 +6,7 @@ A configurable and extensible global header for [Red Hat Developer Hub](https://
 
 - Sticky header bar with company logo, search, notifications, and user profile
 - Dropdown menus for application launcher, help/support, and user profile
-- Extensible via the **new frontend system** (extension blueprints) or **legacy mount points**
+- Extensible via the **new frontend system** (extension blueprints)
 - Config-driven menu items via `app-config.yaml` (no code required)
 - Full i18n/translation support
 - Themeable (light/dark mode, custom branding)
@@ -40,7 +40,6 @@ export default createApp({
 ```
 
 > `/alpha` is deprecated and translations-only — use the root import for NFS.
-> Legacy (OFS) mounts live under `/legacy`.
 
 Other plugins can contribute toolbar items and dropdown menu items using
 `GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint` from the
@@ -50,11 +49,6 @@ only via a blueprint `loader`) so MUI-heavy UI stays off the root NFS sync
 chunk. See the
 [New Frontend System documentation](../../docs/new-frontend-system.md) for
 detailed examples and API reference.
-
-### Legacy (Mount Points)
-
-For legacy Backstage apps using dynamic plugin mount points, import from
-`/legacy` and see the [Configuration documentation](../../docs/configuration.md).
 
 ## Configuration
 
@@ -93,7 +87,7 @@ app:
 ## Documentation
 
 - [New Frontend System Guide](../../docs/new-frontend-system.md) -- Blueprints, building blocks, and integration guide for plugin authors
-- [Configuration](../../docs/configuration.md) -- Dynamic plugin setup for legacy apps
+- [Configuration](../../docs/configuration.md) -- Dynamic plugin setup
 - [Components](../../docs/components/) -- HeaderButton, HeaderIconButton, Spacer, Divider reference
 
 ## Development

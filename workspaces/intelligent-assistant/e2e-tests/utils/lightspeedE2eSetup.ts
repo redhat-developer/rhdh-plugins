@@ -51,12 +51,18 @@ export type BootstrapLightspeedE2eOptions = {
 };
 
 async function waitForLoggedInShell(page: Page) {
+  const enter = page.getByRole('button', { name: 'Enter' });
   const legacyMain = page.locator('main[class*="BackstagePage-root"]').first();
   const nfsCatalogTitle = page.locator('.bui-HeaderTitle').first();
   const settings = page.getByRole('link', { name: 'Settings' });
   const deadline = Date.now() + 15_000;
 
   while (Date.now() < deadline) {
+    // Never treat the sign-in page as logged-in (NFS can render titles there).
+    if (await enter.isVisible().catch(() => false)) {
+      await page.waitForTimeout(250);
+      continue;
+    }
     if (await legacyMain.isVisible().catch(() => false)) {
       return;
     }
@@ -70,6 +76,27 @@ async function waitForLoggedInShell(page: Page) {
   }
 
   throw new Error('Timed out waiting for logged-in app shell');
+}
+
+/** RBAC e2e uses dedicated backend port 7008 — wait until it accepts requests. */
+async function waitForRbacBackendReady(page: Page): Promise<void> {
+  const backendBase =
+    process.env.PLAYWRIGHT_BACKEND_URL ?? 'http://localhost:7008';
+  const deadline = Date.now() + 120_000;
+
+  while (Date.now() < deadline) {
+    const status = await page.request
+      .get(`${backendBase}/api/catalog/entities`)
+      .then(response => response.status())
+      .catch(() => 0);
+    // 401 = up but unauthenticated; 200 = up with guest/cookie already set.
+    if (status === 200 || status === 401) {
+      return;
+    }
+    await page.waitForTimeout(500);
+  }
+
+  throw new Error(`RBAC e2e backend not ready at ${backendBase}`);
 }
 
 export async function loginAsGuest(page: Page) {
@@ -149,11 +176,13 @@ export async function bootstrapLightspeedRbacE2ePage(
 
   await setupLightspeedApiMocks(page);
 
+  await waitForRbacBackendReady(page);
+
+  // Arm before navigation so the authorize response cannot race past the waiter.
+  const authorizeSettled = waitForIaPermissionAuthorize(page);
   await page.goto('/');
   await loginAsGuest(page);
-  await switchToLocale(page, 'en');
-  await page.reload();
-  await waitForIaPermissionAuthorize(page);
+  await authorizeSettled;
 
   return { page, locale: 'en', translations };
 }

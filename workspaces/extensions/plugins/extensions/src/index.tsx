@@ -21,6 +21,9 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { compatWrapper } from '@backstage/core-compat-api';
 import ExtensionsIcon from '@mui/icons-material/ShoppingBasketOutlined';
+
+import { SidebarItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+
 import { dynamicPluginsInfoApi, extensionApi } from './apis';
 import { allRoutes, rootRouteRef } from './routes';
 
@@ -49,10 +52,32 @@ export const extensionsPage = PageBlueprint.make({
 /**
  * @public
  */
+export const sidebarItem = SidebarItemBlueprint.make({
+  params: {
+    title: 'Extensions',
+    to: '/extensions',
+    group: 'admin',
+    // icon: ExtensionsIcon,
+    // routeRef: rootRouteRef,
+    // loader: () =>
+    //   import('./pages/DynamicExtensionsPluginRouter').then(m =>
+    //     compatWrapper(<m.DynamicExtensionsPluginRouter />),
+    //   ),
+  },
+});
+
+/**
+ * @public
+ */
 const extensionsPlugin = createFrontendPlugin({
   pluginId: 'extensions',
   info: { packageJson: () => import('../package.json') },
-  extensions: [dynamicPluginsInfoApi, extensionApi, extensionsPage],
+  extensions: [
+    dynamicPluginsInfoApi,
+    extensionApi,
+    extensionsPage,
+    sidebarItem,
+  ],
   routes: allRoutes,
 });
 

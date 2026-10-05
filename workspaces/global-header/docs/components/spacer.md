@@ -4,6 +4,11 @@ A horizontal spacer that grows as much as possible/needed.
 
 Multiple spacer could be configured.
 
+> **Deprecated:** The `mountPoints` example below targeted the Old Frontend
+> System. That integration and the `/legacy` export have been removed. Prefer
+> the default `gh-component:global-header/spacer` extension via
+> [Customize defaults](../new-frontend-system.md#customize-defaults).
+
 ```yaml
 mountPoints:
   - mountPoint: global.header/component

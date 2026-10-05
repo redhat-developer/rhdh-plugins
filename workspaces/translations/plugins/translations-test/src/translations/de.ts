@@ -28,12 +28,12 @@ const quickstartTranslationDe = createTranslationMessages({
     'page.subtitle':
       'Ein Plugin zum Testen der Übersetzungsfunktionalität und der i18next-Funktionen',
     'essentials.key': 'Wert des Schlüssels',
-    'essentials.look.deep': 'Wert der detaillierten Analyse',
+    'essentials.look.deep': 'Wert der eingehenden Prüfung',
     'interpolation.key': '{{what}} ist {{how}}',
     'formatting.intlNumber': 'Einige {{val, number}}',
     'context.friend': 'Ein Freund',
-    'context.friend_male': 'Ein fester Freund',
-    'context.friend_female': 'Eine feste Freundin',
+    'context.friend_male': 'Ein Freund',
+    'context.friend_female': 'Eine Freundin',
     'objects.tree.res': 'hat {{something}} hinzugefügt',
   },
 });

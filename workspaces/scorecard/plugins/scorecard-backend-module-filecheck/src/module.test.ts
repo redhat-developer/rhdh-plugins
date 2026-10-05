@@ -16,7 +16,10 @@
 
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-import scorecardPlugin from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
+import {
+scorecardCollectorsServiceFactory,
+scorecardPlugin,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
 import { scorecardModuleFilecheck } from './module';
 import request from 'supertest';
 import type { Server } from 'http';
@@ -34,6 +37,7 @@ describe('scorecard-backend-module-filecheck', () => {
     beforeAll(async () => {
       ({ server } = await startTestBackend({
         features: [
+          scorecardCollectorsServiceFactory,
           scorecardPlugin,
           scorecardModuleFilecheck,
           mockServices.rootConfig.factory({ data: BASE_CONFIG }),
@@ -45,7 +49,7 @@ describe('scorecard-backend-module-filecheck', () => {
     });
 
     afterAll(() => {
-      server.close();
+      server?.close();
     });
 
     it('starts the backend without errors when no filecheck config is provided', async () => {
@@ -79,6 +83,7 @@ describe('scorecard-backend-module-filecheck', () => {
     beforeAll(async () => {
       ({ server } = await startTestBackend({
         features: [
+          scorecardCollectorsServiceFactory,
           scorecardPlugin,
           scorecardModuleFilecheck,
           mockServices.rootConfig.factory({ data: CONFIG_WITH_FILECHECK }),
@@ -90,7 +95,7 @@ describe('scorecard-backend-module-filecheck', () => {
     });
 
     afterAll(() => {
-      server.close();
+      server?.close();
     });
 
     it('registers the filecheck metric providers from config', async () => {

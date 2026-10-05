@@ -23,8 +23,11 @@ import {
   Dropdown,
   DropdownItem,
   DropdownList,
+  Flex,
+  FlexItem,
   HelperText,
   HelperTextItem,
+  Icon,
   MenuToggle,
   Spinner,
   TextInput,
@@ -33,7 +36,7 @@ import {
 import {
   AddCircleOIcon,
   EllipsisVIcon,
-  PenIcon,
+  PencilAltIcon,
   TrashIcon,
 } from '@patternfly/react-icons';
 
@@ -94,10 +97,6 @@ const TitleInput = styled(TextInput)({
   },
 });
 
-const CollapseButton = styled(Button)({
-  flexShrink: 0,
-});
-
 const DocumentsRow = styled('div')({
   display: 'flex',
   alignItems: 'center',
@@ -123,26 +122,20 @@ const DocumentsList = styled('div')(({ theme }) => ({
   flex: 1,
 }));
 
-const DocumentItem = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: theme.spacing(1),
+// Hover chrome only — alignment comes from PF Flex alignItemsCenter.
+const DocumentItem = styled(Flex)(({ theme }) => ({
   padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
-  borderRadius: 4,
+  borderRadius: 'var(--pf-t--global--border--radius--small)',
   '&:hover': {
     backgroundColor:
       'var(--pf-t--global--background--color--action--plain--hover)',
   },
-  '&:hover .doc-kebab': {
-    visibility: 'visible',
-  },
-  '&:focus-within .doc-kebab': {
+  '&:hover .doc-kebab, &:focus-within .doc-kebab': {
     visibility: 'visible',
   },
 }));
 
 const FileName = styled(Typography)({
-  flex: 1,
   minWidth: 0,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -150,7 +143,7 @@ const FileName = styled(Typography)({
   fontSize: '0.875rem',
   lineHeight: '1.25rem',
   cursor: 'pointer',
-  borderRadius: 4,
+  borderRadius: 'var(--pf-t--global--border--radius--small)',
   padding: '2px 6px',
   '&:hover': {
     backgroundColor:
@@ -158,12 +151,12 @@ const FileName = styled(Typography)({
   },
 });
 
-const RenameContainer = styled('div')({
+const RenameFields = styled('div')({
   display: 'flex',
   alignItems: 'center',
-  flexWrap: 'wrap',
   flex: 1,
   minWidth: 0,
+  gap: 'var(--pf-t--global--spacer--xs)',
 });
 
 const RenameInput = styled(TextInput)({
@@ -194,7 +187,8 @@ const RenameExtension = styled(Typography)({
 
 const RenameHelperText = styled('div')({
   width: '100%',
-  paddingTop: 4,
+  paddingTop: 'var(--pf-t--global--spacer--xs)',
+  paddingInlineStart: 'calc(28px + var(--pf-t--global--spacer--sm))',
   '& .pf-v6-c-helper-text__item-text': {
     color: 'var(--pf-t--global--color--status--danger--default)',
   },
@@ -202,6 +196,8 @@ const RenameHelperText = styled('div')({
 
 const SpinnerContainer = styled('div')({
   flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
 });
 
 const KebabToggle = styled(MenuToggle)({
@@ -382,13 +378,16 @@ export const DocumentSidebar = ({
           </NotebookTitle>
         )}
         <Tooltip content={t('notebook.view.sidebar.collapse')} position="right">
-          <CollapseButton
+          <Button
             variant="plain"
+            icon={
+              <Icon size="lg" isInline>
+                <SidebarCollapseIcon />
+              </Icon>
+            }
             onClick={onToggleCollapse}
             aria-label={t('notebook.view.sidebar.collapse')}
-          >
-            <SidebarCollapseIcon />
-          </CollapseButton>
+          />
         </Tooltip>
       </TitleRow>
 
@@ -426,129 +425,156 @@ export const DocumentSidebar = ({
 
       {(documents.length > 0 || activePending.length > 0) && (
         <DocumentsList>
-          {documents.map(doc => (
-            <DocumentItem key={doc.document_id}>
-              <FileTypeIcon fileName={doc.title} />
-              {editingDocId === doc.document_id ? (
-                (() => {
-                  const validationError = getValidationError(
-                    doc.document_id,
-                    doc.title,
-                  );
-                  return (
-                    <RenameContainer>
-                      <RenameInput
-                        ref={inputRef}
-                        value={editName}
-                        onChange={(_event, value) => setEditName(value)}
-                        onBlur={() => saveRename(doc.document_id, doc.title)}
-                        onKeyDown={event =>
-                          handleKeyDown(event, doc.document_id, doc.title)
+          {documents.map(doc => {
+            const isEditing = editingDocId === doc.document_id;
+            const validationError = isEditing
+              ? getValidationError(doc.document_id, doc.title)
+              : null;
+
+            return (
+              <div key={doc.document_id}>
+                <DocumentItem
+                  alignItems={{ default: 'alignItemsCenter' }}
+                  spaceItems={{ default: 'spaceItemsSm' }}
+                  flexWrap={{ default: 'nowrap' }}
+                >
+                  <FlexItem>
+                    <FileTypeIcon fileName={doc.title} />
+                  </FlexItem>
+                  <FlexItem
+                    flex={{ default: 'flex_1' }}
+                    style={{ minWidth: 0 }}
+                  >
+                    {isEditing ? (
+                      <RenameFields>
+                        <RenameInput
+                          ref={inputRef}
+                          value={editName}
+                          onChange={(_event, value) => setEditName(value)}
+                          onBlur={() => saveRename(doc.document_id, doc.title)}
+                          onKeyDown={event =>
+                            handleKeyDown(event, doc.document_id, doc.title)
+                          }
+                          validated={validationError ? 'error' : 'default'}
+                          aria-label={t('notebook.document.rename')}
+                        />
+                        <RenameExtension>
+                          {splitFileName(doc.title).extension}
+                        </RenameExtension>
+                      </RenameFields>
+                    ) : (
+                      <FileName
+                        title={t('notebook.document.rename.tooltip')}
+                        onClick={() => startEditing(doc.document_id, doc.title)}
+                      >
+                        {doc.title}
+                      </FileName>
+                    )}
+                  </FlexItem>
+                  <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
+                    {deletingDocumentIds?.has(doc.document_id) ? (
+                      <SpinnerContainer>
+                        <Spinner
+                          size="md"
+                          aria-label={t('notebook.document.delete')}
+                        />
+                      </SpinnerContainer>
+                    ) : (
+                      <KebabDropdown
+                        isOpen={openMenuDocId === doc.document_id}
+                        popperProps={{
+                          position: 'end',
+                          preventOverflow: true,
+                        }}
+                        onOpenChange={isOpen =>
+                          setOpenMenuDocId(isOpen ? doc.document_id : null)
                         }
-                        validated={validationError ? 'error' : 'default'}
-                        aria-label={t('notebook.document.rename')}
-                      />
-                      <RenameExtension>
-                        {splitFileName(doc.title).extension}
-                      </RenameExtension>
-                      {validationError && (
-                        <RenameHelperText>
-                          <HelperText>
-                            <HelperTextItem variant="error">
-                              {validationError}
-                            </HelperTextItem>
-                          </HelperText>
-                        </RenameHelperText>
-                      )}
-                    </RenameContainer>
-                  );
-                })()
-              ) : (
-                <FileName
-                  title={t('notebook.document.rename.tooltip')}
-                  onClick={() => startEditing(doc.document_id, doc.title)}
-                >
-                  {doc.title}
-                </FileName>
-              )}
-              {deletingDocumentIds?.has(doc.document_id) ? (
-                <SpinnerContainer>
-                  <Spinner
-                    size="md"
-                    aria-label={t('notebook.document.delete')}
-                  />
-                </SpinnerContainer>
-              ) : (
-                <KebabDropdown
-                  isOpen={openMenuDocId === doc.document_id}
-                  popperProps={{
-                    position: 'end',
-                    preventOverflow: true,
-                  }}
-                  onOpenChange={isOpen =>
-                    setOpenMenuDocId(isOpen ? doc.document_id : null)
-                  }
-                  toggle={toggleRef => (
-                    <KebabToggle
-                      ref={toggleRef}
-                      variant="plain"
-                      className="doc-kebab"
-                      style={
-                        openMenuDocId === doc.document_id
-                          ? { visibility: 'visible' }
-                          : undefined
-                      }
-                      isExpanded={openMenuDocId === doc.document_id}
-                      onClick={event => {
-                        event.stopPropagation();
-                        setOpenMenuDocId(current =>
-                          current === doc.document_id ? null : doc.document_id,
-                        );
-                      }}
-                      aria-label={`${t('aria.options.label')} ${doc.title}`}
-                    >
-                      <EllipsisVIcon />
-                    </KebabToggle>
-                  )}
-                >
-                  <DropdownList>
-                    <DropdownItem
-                      key="rename"
-                      icon={<PenIcon />}
-                      onClick={event => {
-                        event.stopPropagation();
-                        startEditing(doc.document_id, doc.title);
-                      }}
-                    >
-                      {t('notebook.document.rename')}
-                    </DropdownItem>
-                    <DropdownItem
-                      key="delete"
-                      icon={<TrashIcon />}
-                      onClick={event => {
-                        event.stopPropagation();
-                        setOpenMenuDocId(null);
-                        onDeleteDocument?.(doc.document_id);
-                      }}
-                    >
-                      {t('notebook.document.delete')}
-                    </DropdownItem>
-                  </DropdownList>
-                </KebabDropdown>
-              )}
-            </DocumentItem>
-          ))}
+                        toggle={toggleRef => (
+                          <KebabToggle
+                            ref={toggleRef}
+                            variant="plain"
+                            className="doc-kebab"
+                            style={
+                              openMenuDocId === doc.document_id
+                                ? { visibility: 'visible' }
+                                : undefined
+                            }
+                            isExpanded={openMenuDocId === doc.document_id}
+                            onClick={event => {
+                              event.stopPropagation();
+                              setOpenMenuDocId(current =>
+                                current === doc.document_id
+                                  ? null
+                                  : doc.document_id,
+                              );
+                            }}
+                            aria-label={`${t('aria.options.label')} ${doc.title}`}
+                          >
+                            <EllipsisVIcon />
+                          </KebabToggle>
+                        )}
+                      >
+                        <DropdownList>
+                          <DropdownItem
+                            key="rename"
+                            icon={<PencilAltIcon />}
+                            onClick={event => {
+                              event.stopPropagation();
+                              startEditing(doc.document_id, doc.title);
+                            }}
+                          >
+                            {t('notebook.document.rename')}
+                          </DropdownItem>
+                          <DropdownItem
+                            key="delete"
+                            icon={<TrashIcon />}
+                            onClick={event => {
+                              event.stopPropagation();
+                              setOpenMenuDocId(null);
+                              onDeleteDocument?.(doc.document_id);
+                            }}
+                          >
+                            {t('notebook.document.delete')}
+                          </DropdownItem>
+                        </DropdownList>
+                      </KebabDropdown>
+                    )}
+                  </FlexItem>
+                </DocumentItem>
+                {validationError && (
+                  <RenameHelperText>
+                    <HelperText>
+                      <HelperTextItem variant="error">
+                        {validationError}
+                      </HelperTextItem>
+                    </HelperText>
+                  </RenameHelperText>
+                )}
+              </div>
+            );
+          })}
           {activePending.map(fileName => (
-            <DocumentItem key={`pending-${fileName}`}>
-              <FileTypeIcon fileName={fileName} />
-              <FileName>{fileName}</FileName>
+            <DocumentItem
+              key={`pending-${fileName}`}
+              alignItems={{ default: 'alignItemsCenter' }}
+              spaceItems={{ default: 'spaceItemsSm' }}
+              flexWrap={{ default: 'nowrap' }}
+            >
+              <FlexItem>
+                <FileTypeIcon fileName={fileName} />
+              </FlexItem>
+              <FlexItem flex={{ default: 'flex_1' }} style={{ minWidth: 0 }}>
+                <FileName>{fileName}</FileName>
+              </FlexItem>
               {!completedFileNames?.has(fileName) && (
-                <SpinnerContainer>
-                  <Spinner
-                    size="md"
-                    aria-label={t('notebook.view.documents.uploading')}
-                  />
-                </SpinnerContainer>
+                <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
+                  <SpinnerContainer>
+                    <Spinner
+                      size="md"
+                      aria-label={t('notebook.view.documents.uploading')}
+                    />
+                  </SpinnerContainer>
+                </FlexItem>
               )}
             </DocumentItem>
           ))}

@@ -14,6 +14,10 @@ The OpenShift section displays cost tracking for OpenShift clusters with flexibl
 
 The Optimizations section allows users to visualize usage trends and receive optimization recommendations for workloads running on OpenShift clusters. There is also an option to automatically apply recommendations. Refer to [Optimizer App](#optimizer-app) section for more details.
 
+## Architecture
+
+New to this plugin? Start with [docs/dev/walkthrough-architecture-api.md](./docs/dev/walkthrough-architecture-api.md) for a high-level overview of architecture and API flow. For a full breakdown of the frontend/backend/common packages, request flows, permission model, and security design, see [docs/dev/architecture.md](./docs/dev/architecture.md). For a detailed, code-level walkthrough of every API call the plugin makes (exact requests/responses, auth at each hop, config, and debugging tips), see [docs/dev/api-flow.md](./docs/dev/api-flow.md).
+
 ## Getting started
 
 ### Prerequisite
@@ -168,6 +172,7 @@ For vanilla Backstage local development, see the [Local Development with Orchest
 The HTTP endpoints exposed by the cost-management-backend can enforce authorization if the [RBAC plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins) is deployed. Please refer the RBAC plugin documentation for the setup steps (mind they rely on the [Backstage authentication and identity](https://backstage.io/docs/auth/)).
 
 - More detailed info about Cost Management plugin RBAC permissions can be found in [docs/rbac.md](./docs/rbac.md)
+- Backend proxy, SSO token handling, and security controls are documented in [docs/dev/backend-proxy-and-security.md](./docs/dev/backend-proxy-and-security.md)
 - More detailed info about Orcestrator plugin RBAC for setting up permission for workflow can be [found here](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/docs/Permissions.md).
 
 ## Optimizer App

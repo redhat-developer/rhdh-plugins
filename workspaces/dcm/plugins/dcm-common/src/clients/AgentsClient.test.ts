@@ -43,7 +43,14 @@ function makeClient(fetchFn: jest.Mock) {
     getBaseUrl: jest.fn().mockResolvedValue(BASE_URL),
   };
   const fetchApi: FetchApi = { fetch: fetchFn };
-  return new AgentsClient({ discoveryApi, fetchApi });
+  const oidcAuthApi = {
+    getAccessToken: jest.fn().mockResolvedValue('oidc-token'),
+  };
+  return new AgentsClient({
+    discoveryApi,
+    fetchApi,
+    getAccessToken: oidcAuthApi.getAccessToken,
+  });
 }
 
 function okJson(data: unknown): Response {

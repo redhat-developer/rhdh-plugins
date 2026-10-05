@@ -117,6 +117,19 @@ describe('AdversarialReviewSection', () => {
     expect(header.queryByText('Warning Findings')).not.toBeInTheDocument();
   });
 
+  it('shows total elapsed for a retried review', async () => {
+    await renderSection({
+      ...makeJob('success'),
+      attemptCount: 3,
+      firstAttemptAt: new Date('2024-01-01T00:00:00Z'),
+    });
+
+    const totalElapsedLabel = screen.getByText('Total Elapsed');
+    expect(totalElapsedLabel.parentElement?.parentElement).toHaveTextContent(
+      '5m 0s',
+    );
+  });
+
   it('shows both severities when critical and warning findings exist', async () => {
     await renderSection(
       makeJob('success', [

@@ -79,7 +79,18 @@ export class Extensions {
     ];
   }
 
+  async expandCollapsedSidebarGroup() {
+    if (process.env.APP_MODE === 'legacy') {
+      return;
+    }
+    await this.page
+      .locator('nav button:has(svg[data-testid="ExpandMoreIcon"])')
+      .first()
+      .click();
+  }
+
   async navigateToExtensions(navText: string) {
+    await this.expandCollapsedSidebarGroup();
     const navLink = this.page.getByRole('link', { name: 'Extensions' }).first();
     await navLink.waitFor({ state: 'visible', timeout: 15_000 });
     await navLink.click();

@@ -16,8 +16,7 @@
 
 import { createContext } from 'react';
 
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
-
+import type { ChatbotDisplayMode } from '../const';
 import type { SettingsTab } from '../hooks/useSettingsPanelUrlState';
 import { FileContent } from '../types';
 

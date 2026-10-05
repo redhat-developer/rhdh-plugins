@@ -1004,7 +1004,7 @@ describe('LightspeedChat', () => {
       });
     });
 
-    it('should hide tabs and show header divider when notebooks permission is denied', async () => {
+    it('should hide tabs when notebooks permission is denied', async () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
@@ -1015,8 +1015,8 @@ describe('LightspeedChat', () => {
 
       expect(screen.queryByRole('tab')).not.toBeInTheDocument();
       expect(
-        screen.getByTestId('lightspeed-header-divider'),
-      ).toBeInTheDocument();
+        screen.queryByTestId('lightspeed-header-divider'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -1030,7 +1030,7 @@ describe('LightspeedChat', () => {
       });
     });
 
-    it('should hide tabs and show header divider when chat permission is denied', async () => {
+    it('should hide tabs when chat permission is denied', async () => {
       render(setupLightspeedChat('/intelligent-assistant/notebooks'));
 
       await waitFor(() => {
@@ -1041,8 +1041,8 @@ describe('LightspeedChat', () => {
 
       expect(screen.queryByRole('tab')).not.toBeInTheDocument();
       expect(
-        screen.getByTestId('lightspeed-header-divider'),
-      ).toBeInTheDocument();
+        screen.queryByTestId('lightspeed-header-divider'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -1272,7 +1272,7 @@ describe('LightspeedChat', () => {
       ).toBeInTheDocument();
     });
 
-    it('should show PenIcon in new chat button in fullscreen mode', async () => {
+    it('should show new chat button in fullscreen mode', async () => {
       mockUseConversations.mockReturnValue({
         data: [
           {

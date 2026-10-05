@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora
 
+## 0.2.2
+
+### Patch Changes
+
+- 8dfdcae: Batch DORA deployment, incident, and pull request upserts in groups of 100 within a transaction. This keeps large first-time or stale-window syncs below database parameter limits while ensuring all batches succeed or roll back together.
+
+## 0.2.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@4.4.1
+
 ## 0.2.0
 
 ### Minor Changes

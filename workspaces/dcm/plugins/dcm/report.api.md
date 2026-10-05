@@ -4,10 +4,15 @@
 
 ```ts
 import type { AgentsApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import type { ApiRef } from '@backstage/core-plugin-api';
+import { ApiFactory } from '@backstage/core-plugin-api';
+import { ApiRef } from '@backstage/core-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import type { CatalogApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { ConfigApi } from '@backstage/core-plugin-api';
+import type { DcmOidcTokenProvider } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { OAuthApi } from '@backstage/core-plugin-api';
+import { OpenIdConnectApi } from '@backstage/core-plugin-api';
 import type { PolicyManagerApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import type { ResourcesApi } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { RouteRef } from '@backstage/core-plugin-api';
@@ -21,6 +26,35 @@ export const agentsApiRef: ApiRef<AgentsApi>;
 
 // @public
 export const catalogApiRef: ApiRef<CatalogApi>;
+
+// @public
+export type DcmAuthApi = {
+  getAccessToken?: DcmOidcTokenProvider;
+};
+
+// @public
+export const dcmAuthApiFactory: ApiFactory<
+  DcmAuthApi,
+  DcmAuthApi,
+  {
+    configApi: ConfigApi;
+  }
+>;
+
+// @public
+export const dcmAuthApiRef: ApiRef<DcmAuthApi>;
+
+// @public
+export const dcmAuthDisabledApiFactory: ApiFactory<DcmAuthApi, DcmAuthApi, {}>;
+
+// @public
+export const dcmOidcAuthApiFactory: ApiFactory<
+  DcmAuthApi,
+  DcmAuthApi,
+  {
+    oidcAuthApi: OAuthApi & OpenIdConnectApi;
+  }
+>;
 
 // @public
 export const DcmPage: Router;

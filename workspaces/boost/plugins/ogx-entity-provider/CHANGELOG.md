@@ -1,5 +1,37 @@
 # @red-hat-developer-hub/backstage-plugin-llamastack-entity-provider
 
+## 1.0.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils@1.0.1
+- @red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk@1.0.1
+
+## 1.0.0
+
+### Patch Changes
+
+- Updated dependencies [b091517]
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk@1.0.0
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils@1.0.0
+
+## 0.8.0
+
+### Minor Changes
+
+- 110e2d1: Rename the first-release AI Catalog package family and update consumers to the new public package identities.
+
+  Move standalone OGX configuration to `ai-catalog.entityProviders.ogx`; the old
+  Boost configuration paths are no longer read by this module. Update frontend
+  extension IDs to the `ai-catalog` namespace and translation overrides to
+  `plugin.ai-catalog`. See the workspace README's consumer migration instructions.
+
+### Patch Changes
+
+- Updated dependencies [110e2d1]
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils@0.8.0
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk@0.8.0
+
 ## 0.6.0
 
 ### Minor Changes

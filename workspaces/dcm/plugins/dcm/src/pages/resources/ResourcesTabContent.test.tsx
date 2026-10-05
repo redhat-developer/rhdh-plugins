@@ -15,9 +15,9 @@
  */
 
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import { renderInTestApp } from '@backstage/test-utils';
 import type { ServiceTypeInstance } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { resourcesApiRef } from '../../apis';
+import { DcmClientsTestProvider } from '../../api/DcmClientsContext';
 import { ResourcesTabContent } from './ResourcesTabContent';
 
 jest.mock('../../hooks/useTranslation', () => {
@@ -47,9 +47,9 @@ async function renderResourcesTab(
   mockApi: ReturnType<typeof buildApi> = buildApi(),
 ) {
   return renderInTestApp(
-    <TestApiProvider apis={[[resourcesApiRef, mockApi]]}>
+    <DcmClientsTestProvider clients={{ resourcesApi: mockApi }}>
       <ResourcesTabContent />
-    </TestApiProvider>,
+    </DcmClientsTestProvider>,
   );
 }
 

@@ -2,7 +2,7 @@
 
 > **Status: Implemented** — Current RHDH 2.1 release source of truth.
 >
-> **Scope:** `plugins/boost` entity-page cards for AI catalog assets. Catalog
+> **Scope:** `plugins/ai-catalog` entity-page cards for AI catalog assets. Catalog
 > entity visibility remains a Catalog/RHDH concern; this spec covers frontend
 > presentation only.
 
@@ -31,7 +31,7 @@ It MUST omit itself when there is no supported content.
 
 - **WHEN** an AI asset has a description, rationale, version, or supported
   type-specific metadata
-- **THEN** `entity-card:boost/ai-asset-details` renders the available fields
+- **THEN** `entity-card:ai-catalog/ai-asset-details` renders the available fields
 
 #### Scenario: Description-only asset
 
@@ -81,7 +81,7 @@ MUST render the instruction content as Markdown.
 #### Scenario: Agent instructions exist
 
 - **WHEN** an agent has non-empty instructions
-- **THEN** `entity-card:boost/agent-instructions` renders the instructions
+- **THEN** `entity-card:ai-catalog/agent-instructions` renders the instructions
   using Markdown content
 
 #### Scenario: Agent instructions are absent
@@ -98,7 +98,7 @@ derived from the entity. It MUST NOT call a Boost backend.
 
 - **WHEN** the entity has a supported skill command, OCI pull command, model
   server endpoint, MCP endpoint, Git archive, or Git source location
-- **THEN** `entity-card:boost/usage` exposes the corresponding copy or link
+- **THEN** `entity-card:ai-catalog/usage` exposes the corresponding copy or link
   action
 
 #### Scenario: Git subpath source
@@ -135,4 +135,4 @@ through the host application's normal entity-page extensions.
 - **WHEN** a user views an AI asset with TechDocs configured
 - **THEN** the host application's standard TechDocs experience remains
   available
-- **AND** the Boost plugin does not add a separate Usage tab for it
+- **AND** the AI Catalog plugin does not add a separate Usage tab for it

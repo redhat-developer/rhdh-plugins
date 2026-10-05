@@ -16,7 +16,10 @@
 
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-import scorecardPlugin from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
+import {
+  scorecardCollectorsServiceFactory,
+  scorecardPlugin,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
 import { scorecardModuleJira } from './module';
 import request from 'supertest';
 import type { Server } from 'http';
@@ -38,6 +41,7 @@ describe('scorecard-backend-module-jira', () => {
   beforeAll(async () => {
     ({ server } = await startTestBackend({
       features: [
+        scorecardCollectorsServiceFactory,
         scorecardPlugin,
         scorecardModuleJira,
         mockServices.rootConfig.factory({ data: BASE_CONFIG }),
@@ -49,7 +53,7 @@ describe('scorecard-backend-module-jira', () => {
   });
 
   afterAll(() => {
-    server.close();
+    server?.close();
   });
 
   it('starts the backend with the jira module without errors', async () => {

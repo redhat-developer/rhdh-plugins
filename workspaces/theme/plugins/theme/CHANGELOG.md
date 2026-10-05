@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.4.0
+
+### Minor Changes
+
+- a6ada16: Replace PageMainContainer with a CSS-only PatternFly page-inset: BackstageSidebarPage is the sole scrollport, clipped with `clip-path` so the scrollbar follows the rounded well (no extra DOM wrapper).
+
+## 1.3.0
+
+### Minor Changes
+
+- 8c7f13a: Align BUI theme styling with PatternFly v6: add PageMainContainer for page inset, and close gaps for typography, forms, menus, tooltips, popovers, and buttons.
+
+### Patch Changes
+
+- e93cf90: Limit the NFS theme module to the RHDH light and dark themes.
+
 ## 1.2.2
 
 ### Patch Changes

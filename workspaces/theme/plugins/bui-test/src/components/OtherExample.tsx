@@ -625,19 +625,21 @@ const PopoverExample = () => (
   <Section title="Popover">
     <Flex gap="4">
       <DialogTrigger>
-        <Button variant="secondary">Open Popover</Button>
-        <Popover>
-          <Box p="4">
-            <Text>This is popover content.</Text>
-          </Box>
+        <Button variant="primary">Toggle popover</Button>
+        <Popover placement="top">
+          <Flex direction="column" gap="3">
+            <Flex justify="between" align="center" gap="4">
+              <Text weight="bold">Popover header</Text>
+            </Flex>
+            <Text>Popovers are triggered by click rather than hover.</Text>
+            <Text>Popover footer</Text>
+          </Flex>
         </Popover>
       </DialogTrigger>
       <DialogTrigger>
-        <Button variant="secondary">Bottom Placement</Button>
+        <Button variant="primary">Bottom Placement</Button>
         <Popover placement="bottom">
-          <Box p="4">
-            <Text>Bottom popover.</Text>
-          </Box>
+          <Text>Bottom popover.</Text>
         </Popover>
       </DialogTrigger>
     </Flex>
@@ -991,19 +993,27 @@ const TooltipExample = () => (
     <Flex gap="4">
       <TooltipTrigger>
         <Button variant="secondary">Top (default)</Button>
-        <Tooltip placement="top">Top tooltip</Tooltip>
+        <Tooltip placement="top">
+          Example tooltip text for top placement
+        </Tooltip>
       </TooltipTrigger>
       <TooltipTrigger>
         <Button variant="secondary">Right</Button>
-        <Tooltip placement="right">Right tooltip</Tooltip>
+        <Tooltip placement="right">
+          Example tooltip text for right placement
+        </Tooltip>
       </TooltipTrigger>
       <TooltipTrigger>
         <Button variant="secondary">Bottom</Button>
-        <Tooltip placement="bottom">Bottom tooltip</Tooltip>
+        <Tooltip placement="bottom">
+          Example tooltip text for bottom placement
+        </Tooltip>
       </TooltipTrigger>
       <TooltipTrigger>
         <Button variant="secondary">Left</Button>
-        <Tooltip placement="left">Left tooltip</Tooltip>
+        <Tooltip placement="left">
+          Example tooltip text for left placement
+        </Tooltip>
       </TooltipTrigger>
     </Flex>
   </Section>

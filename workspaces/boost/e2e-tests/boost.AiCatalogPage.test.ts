@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import { runAccessibilityTests } from './utils/accessibility';
+import { mockCatalogEntities, signInAsGuest } from './utils/catalogMocks';
+import { skipIfLocales } from './utils/localeSkip';
+
+const NON_EN = ['de', 'es', 'fr', 'it', 'ja'];
 
 /**
  * Locators from Playwright MCP against the live NFS app. After catalog load
@@ -74,47 +78,6 @@ function catalogCount(page: Page, n: number) {
   return page.getByText(`All (${n})`, { exact: true });
 }
 
-function isCatalogEntitiesPath(url: URL): boolean {
-  return (
-    url.pathname.endsWith('/api/catalog/entities') &&
-    !url.pathname.includes('/by-query')
-  );
-}
-
-async function mockCatalogEntities(page: Page, items: unknown[]) {
-  const fulfillItemsWrapper = async (route: Route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ items }),
-    });
-
-  await page.route('**/api/catalog/entities/by-query**', fulfillItemsWrapper);
-  await page.route(isCatalogEntitiesPath, async route => {
-    if (route.request().method() === 'GET') {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(items),
-      });
-      return;
-    }
-    await fulfillItemsWrapper(route);
-  });
-}
-
-async function signInAsGuest(page: Page) {
-  page.on('dialog', dialog => dialog.accept());
-  await page.goto('/ai-catalog');
-  const enter = page.getByRole('button', { name: 'Enter' });
-  const heading = page.getByRole('heading', { name: 'AI Catalog' });
-  await expect(enter.or(heading).first()).toBeVisible({ timeout: 30_000 });
-  if (await enter.isVisible()) {
-    await enter.click();
-    await expect(heading).toBeVisible({ timeout: 20_000 });
-  }
-}
-
 async function loadTwoAssetCatalog(page: Page) {
   await mockCatalogEntities(page, [skillEntity, agentEntity]);
   await signInAsGuest(page);
@@ -123,10 +86,11 @@ async function loadTwoAssetCatalog(page: Page) {
   await expect(catalogCount(page, 2)).toBeVisible();
 }
 
-test.describe('Boost AI Catalog', () => {
+test.describe('AI Catalog', () => {
   test('renders the AI Catalog heading after guest sign-in', async ({
     page,
   }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await mockCatalogEntities(page, []);
     await signInAsGuest(page);
 
@@ -144,7 +108,8 @@ test.describe('Boost AI Catalog', () => {
 
   test('shows catalog assets when the catalog API returns items', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await mockCatalogEntities(page, [skillEntity]);
     await signInAsGuest(page);
 
@@ -158,7 +123,8 @@ test.describe('Boost AI Catalog', () => {
 
   test('shows the catalog error state when the catalog API fails', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await page.route('**/api/catalog/**', route => route.abort());
     await signInAsGuest(page);
 
@@ -168,7 +134,8 @@ test.describe('Boost AI Catalog', () => {
 
   test('Type filter keeps only matching cards and sets type in the URL', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await loadTwoAssetCatalog(page);
 
     const filters = page.getByRole('navigation', { name: 'Filters' });
@@ -200,7 +167,8 @@ test.describe('Boost AI Catalog', () => {
 
   test('search keeps only matching cards and sets q in the URL', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await loadTwoAssetCatalog(page);
 
     await page.getByRole('searchbox', { name: 'Search' }).fill('Code Review');
@@ -218,6 +186,7 @@ test.describe('Boost AI Catalog', () => {
   test('uses a mobile filter drawer on smaller screens', async ({
     page,
   }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await page.setViewportSize({ width: 768, height: 900 });
     await loadTwoAssetCatalog(page);
 
@@ -254,7 +223,8 @@ test.describe('Boost AI Catalog', () => {
 
   test('table view lists both assets in the data table and sets view=table', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await loadTwoAssetCatalog(page);
 
     await page.getByRole('radio', { name: 'Table view' }).click();
@@ -276,7 +246,8 @@ test.describe('Boost AI Catalog', () => {
 
   test('empty filtered state clears search and restores both cards', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipIfLocales(testInfo, NON_EN, 'Functional suite is English-only');
     await loadTwoAssetCatalog(page);
 
     await page.getByRole('searchbox', { name: 'Search' }).fill('zzznomatch');

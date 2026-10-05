@@ -15,7 +15,6 @@
  */
 
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import { FileDetailsLabel } from '@patternfly/chatbot';
 
 import { useFileAttachmentContext } from './AttachmentContext';
@@ -50,25 +49,27 @@ const FilePreview = () => {
     );
   };
 
+  // Return null when empty so ChatbotFooter's row-gap does not add a blank
+  // band above MessageBar (Notebooks has no FilePreview and looked tighter).
+  if (!fileContents.length) {
+    return null;
+  }
+
   return (
-    <>
-      {fileContents.length > 0 && <Divider />}
-      {fileContents && (
-        <Box sx={{ display: 'flex', gap: '10px' }}>
-          {fileContents.map((file, index) => (
-            <FileDetailsLabel
-              key={index}
-              fileName={file.name}
-              isLoading={isLoadingFile[file.name]}
-              onClick={onAttachmentClick}
-              onClose={() => {
-                removeFile(index);
-              }}
-            />
-          ))}
-        </Box>
-      )}
-    </>
+    <Box sx={{ display: 'flex', gap: '10px' }}>
+      {fileContents.map((file, index) => (
+        <FileDetailsLabel
+          key={index}
+          fileName={file.name}
+          isLoading={isLoadingFile[file.name]}
+          variant="outline"
+          onClick={onAttachmentClick}
+          onClose={() => {
+            removeFile(index);
+          }}
+        />
+      ))}
+    </Box>
   );
 };
 

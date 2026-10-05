@@ -15,9 +15,9 @@
  */
 
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import { renderInTestApp } from '@backstage/test-utils';
 import type { Agent } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { agentsApiRef, catalogApiRef } from '../../apis';
+import { DcmClientsTestProvider } from '../../api/DcmClientsContext';
 import { AgentsTabContent } from './AgentsTabContent';
 
 jest.mock('../../hooks/useTranslation', () => {
@@ -74,14 +74,11 @@ async function renderAgentsTab(
   apis: ReturnType<typeof buildApis> = buildApis(),
 ) {
   return renderInTestApp(
-    <TestApiProvider
-      apis={[
-        [agentsApiRef, apis.agents],
-        [catalogApiRef, apis.catalog],
-      ]}
+    <DcmClientsTestProvider
+      clients={{ agentsApi: apis.agents, catalogApi: apis.catalog }}
     >
       <AgentsTabContent />
-    </TestApiProvider>,
+    </DcmClientsTestProvider>,
   );
 }
 

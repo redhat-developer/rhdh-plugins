@@ -1,5 +1,55 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.3.6
+
+### Patch Changes
+
+- c947abc: Expose `intelligent-assistant.screen-context` on the backend config schema with `@visibility frontend` so RHDH includes it in the frontend-injected config and the Enable screen context kebab option can appear.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.6
+
+## 5.3.5
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.5
+
+## 5.3.4
+
+### Patch Changes
+
+- fb4ecee: Updated dependency `prettier` to `3.9.9`.
+- Updated dependencies [fb4ecee]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.4
+
+## 5.3.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.3
+
+## 5.3.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.2
+
+## 5.3.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.1
+
+## 5.3.0
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- 84e4ad1: Retry vector store attach and file upload requests when lightspeed-core responds with HTTP 429 Too Many Requests. lightspeed-core bounds concurrent file uploads and vector store attaches with per-endpoint semaphores and rejects excess requests rather than queuing them, so bursty notebook uploads could fail intermittently. `VectorStoresOperator` now retries these two calls, honoring the `Retry-After` header when present and otherwise backing off exponentially (capped, up to 8 attempts).
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.0
+
 ## 5.2.0
 
 ### Patch Changes

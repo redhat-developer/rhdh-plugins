@@ -121,12 +121,32 @@ export async function installIaPermissionsMock(
   });
 }
 
-/** Wait until the FAB has resolved IA permission checks on the catalog page. */
-export async function waitForIaPermissionAuthorize(page: Page): Promise<void> {
-  await page.waitForResponse(
-    response =>
-      response.url().includes('/api/permission/authorize') &&
-      response.request().method() === 'POST',
-    { timeout: 30_000 },
-  );
+/**
+ * Begin waiting for the next POST /api/permission/authorize that includes an
+ * Intelligent Assistant permission. Arm *before* the navigation that triggers it.
+ */
+export function waitForIaPermissionAuthorize(page: Page): Promise<void> {
+  return page
+    .waitForResponse(
+      response => {
+        if (
+          !response.url().includes('/api/permission/authorize') ||
+          response.request().method() !== 'POST'
+        ) {
+          return false;
+        }
+        try {
+          const body = response.request().postDataJSON() as {
+            items?: AuthorizeRequestItem[];
+          };
+          return (body?.items ?? []).some(item =>
+            isIaPermissionName(item.permission?.name),
+          );
+        } catch {
+          return false;
+        }
+      },
+      { timeout: 30_000 },
+    )
+    .then(() => undefined);
 }

@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 1.0.1
+
+### Patch Changes
+
+- 454b0fe: Register the Extensions nav entry through `SidebarItemBlueprint` in the `admin` group, and adopt RHDH app-defaults for the NFS demo app sidebar instead of a custom nav module.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@1.0.1
+
 ## 1.0.0
 
 ### Major Changes

@@ -37,43 +37,6 @@ export class ThemeConstants {
       headerColor2: 'rgb(41, 41, 41)',
       navigationIndicatorColor: 'rgba(0, 0, 0, 0)',
     };
-    const lightCustomized: ThemeInfo = {
-      name: 'RHDH Light (customized)',
-      primaryColor: 'rgb(255, 0, 0)',
-      headerColor1: 'rgb(255, 255, 255)',
-      headerColor2: 'rgb(255, 255, 255)',
-      navigationIndicatorColor: 'rgba(0, 0, 0, 0)',
-    };
-    const darkCustomized: ThemeInfo = {
-      name: 'RHDH Dark (customized)',
-      primaryColor: 'rgb(255, 0, 0)',
-      headerColor1: 'rgb(41, 41, 41)',
-      headerColor2: 'rgb(41, 41, 41)',
-      navigationIndicatorColor: 'rgba(0, 0, 0, 0)',
-    };
-    const backstageLight: ThemeInfo = {
-      name: 'Backstage Light',
-      primaryColor: 'rgb(31, 84, 147)',
-      headerColor1: 'rgb(0, 91, 75)',
-      headerColor2: 'rgb(0, 91, 75)',
-      navigationIndicatorColor: 'rgb(155, 240, 225)',
-    };
-
-    const backstageDark: ThemeInfo = {
-      name: 'Backstage Dark',
-      primaryColor: 'rgb(156, 201, 255)',
-      headerColor1: 'rgb(0, 91, 75)',
-      headerColor2: 'rgb(0, 91, 75)',
-      navigationIndicatorColor: 'rgb(155, 240, 225)',
-    };
-
-    return [
-      lightLatest,
-      darkLatest,
-      lightCustomized,
-      darkCustomized,
-      backstageLight,
-      backstageDark,
-    ];
+    return [lightLatest, darkLatest];
   }
 }

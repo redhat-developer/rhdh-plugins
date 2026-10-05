@@ -13,6 +13,9 @@ export const signInTranslationRef: TranslationRef<
     readonly 'signIn.config.missingAuthEnvironment.error': 'Missing required app configuration: auth.environment must be set';
     readonly 'signIn.config.missingAuthEnvironment.panelTitle': 'Sign-in is not available';
     readonly 'signIn.config.missingAuthEnvironment.description': 'Set {{ authEnvKey }} in your app configuration (for example {{ devEnv }} for local use or {{ prodEnv }} in deployed environments). Without it, the app cannot safely determine which sign-in options to offer.';
+    readonly 'signIn.config.noConfiguredProviders.error': 'No authentication providers are configured';
+    readonly 'signIn.config.noConfiguredProviders.panelTitle': 'Sign-in is not available';
+    readonly 'signIn.config.noConfiguredProviders.description': 'To enable sign-in, configure at least one authentication provider in your app configuration under {{ authProvidersKey }}.';
     readonly 'signIn.providers.auth0.title': 'Auth0';
     readonly 'signIn.providers.auth0.message': 'Sign in using Auth0';
     readonly 'signIn.providers.atlassian.title': 'Atlassian';

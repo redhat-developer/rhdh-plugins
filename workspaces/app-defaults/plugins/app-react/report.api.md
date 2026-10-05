@@ -89,18 +89,46 @@ export interface ApplicationDrawerProps {
 export const appReactTranslationRef: TranslationRef<
   'plugin.app-react',
   {
+    readonly 'pages.Create': 'Self-Service';
+    readonly 'pages.Home': 'Home';
+    readonly 'pages.Catalog': 'Catalog';
+    readonly 'pages.APIs': 'APIs';
+    readonly 'pages.Docs': 'Docs';
+    readonly 'pages.Learning Paths': 'Learning Paths';
+    readonly 'pages.Settings': 'Settings';
+    readonly 'pages.Notifications': 'Notifications';
+    readonly 'pages.Search': 'Search';
+    readonly 'pages.Catalog Graph': 'Catalog Graph';
+    readonly 'pages.Administration': 'Administration';
+    readonly 'pages.RBAC': 'RBAC';
+    readonly 'pages.Plugins': 'Plugins';
+    readonly 'pageTabs.Templating Extensions': 'Templating Extensions';
+    readonly 'pageTabs.General': 'General';
+    readonly 'pageTabs.Authentication Providers': 'Authentication Providers';
+    readonly 'pageTabs.Feature Flags': 'Feature Flags';
+    readonly 'pageTabs.Templates': 'Templates';
+    readonly 'pageTabs.Tasks': 'Tasks';
+    readonly 'pageTabs.Actions': 'Actions';
+    readonly 'pageTabs.Template Editor': 'Template Editor';
+    readonly 'pageTabs.Info': 'Info';
+    readonly 'pageTabs.Config': 'Config';
+    readonly 'pageTabs.Scheduled Tasks': 'Scheduled Tasks';
+    readonly 'pageTabs.Unprocessed Entities': 'Unprocessed Entities';
+    readonly 'pageTabs.Tree': 'Tree';
+    readonly 'pageTabs.Detailed': 'Detailed';
+    readonly 'pageTabs.Text': 'Text';
     readonly 'catalog.entityTabGroups.Overview': 'Overview';
     readonly 'catalog.entityTabGroups.Documentation': 'Documentation';
     readonly 'catalog.entityTabGroups.Development': 'Development';
     readonly 'catalog.entityTabGroups.Deployment': 'Deployment';
     readonly 'catalog.entityTabGroups.Operation': 'Operation';
     readonly 'catalog.entityTabGroups.Observability': 'Observability';
-    readonly 'catalog.entityTabs.Overview': 'Overview';
+    readonly 'catalog.entityTabs.APIs': 'APIs';
     readonly 'catalog.entityTabs.Docs': 'Docs';
+    readonly 'catalog.entityTabs.Overview': 'Overview';
     readonly 'catalog.entityTabs.API': 'API';
     readonly 'catalog.entityTabs.Dependencies': 'Dependencies';
     readonly 'catalog.entityTabs.Definition': 'Definition';
-    readonly 'catalog.entityTabs.APIs': 'APIs';
     readonly 'catalog.entityTabs.TechDocs': 'TechDocs';
     readonly 'catalog.entityTabs.Deployment Lifecycle': 'Deployment Lifecycle';
     readonly 'catalog.entityTabs.Deployment Summary': 'Deployment Summary';

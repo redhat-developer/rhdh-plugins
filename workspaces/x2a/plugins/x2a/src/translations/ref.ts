@@ -103,6 +103,9 @@ export const x2aPluginMessages = {
       startedAt: 'Started At',
       status: 'Status',
       errorDetails: 'Error Details',
+      copyToClipboard: 'Copy to clipboard',
+      copyFailed: 'Copy failed',
+      copyUnavailable: 'Copy unavailable',
       statuses: {
         notStarted: 'Not Started',
         pending: 'Pending',
@@ -118,7 +121,7 @@ export const x2aPluginMessages = {
         'This phase result is stale because an upstream phase was re-run. Re-run to update.',
       reanalyzeInstructions:
         'The module migration plan is already present. In case the overall project migration plan has been updated, retrigger the analysis to reflect the changes.',
-      rerunAnalyze: 'Recreate the module migration plan',
+      rerunAnalyze: 'Re-run analysis',
       analyzeInstructions:
         'Before running the analysis, review the overall project migration plan first. Its content will drive the analysis of the module.',
       runAnalyze: 'Create module migration plan',
@@ -469,6 +472,8 @@ export const x2aPluginMessages = {
       cancel: 'Cancel',
       createError: 'Failed to create agent',
       updateError: 'Failed to update agent',
+      templatesTitle: 'Templates',
+      useTemplate: 'Use this',
     },
   },
   empty: '-',

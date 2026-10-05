@@ -126,9 +126,9 @@ The following decisions are resolved and are not re-litigated here:
 - **`vector-store` / `ai-tool`:** Out of scope for this seven-category
   upstream-migration SoT (Augment POC vestiges per
   [gate comment](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)).
-  Boost frontend still recognizes them via `isAiAsset`
-  (`Resource` + `ai-tool` / `vector-store`) and fixtures until
-  explicitly retired.
+  These have been retired — the `resource` entry was removed from
+  `AI_ASSET_SPEC_TYPES`, so `isAiAsset` no longer recognizes
+  `Resource` + `ai-tool` / `vector-store`.
 - **Sign-off scope:** RHDH architect / tech lead (not upstream
   maintainer required).
 

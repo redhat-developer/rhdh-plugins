@@ -92,13 +92,20 @@ describe('createComponents', () => {
     expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
       expect.objectContaining({
         minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
       }),
     );
   });
 
-  it('stretches main with mainSectionBackgroundColor inside the page inset', () => {
+  it('paints BackstageSidebarPage with mainSectionBackgroundColor on all viewports', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
+      expect.objectContaining({
+        backgroundColor: '#292929',
+      }),
+    );
+  });
+
+  it('clips the SidebarPage scrollport so the scrollbar follows the rounded well', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
       | Record<string, unknown>
@@ -106,18 +113,57 @@ describe('createComponents', () => {
     const desktop = root?.['@media (min-width: 600px)'] as
       | Record<string, unknown>
       | undefined;
+    expect(desktop).toEqual(
+      expect.objectContaining({
+        boxSizing: 'border-box',
+        overflowY: 'auto',
+        width: 'calc(100% - 1.5rem) !important',
+        marginTop: '1.5rem',
+        marginRight: '1.5rem',
+        marginBottom: '1.5rem',
+        marginLeft: 0,
+        height: 'calc(100vh - 2 * 1.5rem)',
+        maxHeight: 'calc(100vh - 2 * 1.5rem)',
+        overscrollBehavior: 'none',
+        borderRadius: '1rem',
+        clipPath: 'inset(0 round 1rem)',
+      }),
+    );
+    expect(desktop?.['&::before']).toEqual(
+      expect.objectContaining({
+        position: 'sticky',
+        top: 0,
+        pointerEvents: 'none',
+        zIndex: 101,
+      }),
+    );
     expect(
       desktop?.["& > [class*='MuiLinearProgress-root'], & > main"],
     ).toEqual(
       expect.objectContaining({
         backgroundColor: '#292929',
-        minHeight: 'calc(100vh - 2 * 1.5rem)',
-        maxHeight: 'calc(100vh - 2 * 1.5rem)',
+        borderRadius: 0,
+        overflow: 'visible',
+      }),
+    );
+    expect(desktop?.['& .fullscreen']).toEqual(
+      expect.objectContaining({
+        position: 'relative',
+      }),
+    );
+    expect(
+      desktop?.[
+        '& .fullscreen > .MuiIconButton-root, & .fullscreen .MuiIconButton-root[class*="fullscreenButton"]'
+      ],
+    ).toEqual(
+      expect.objectContaining({
+        top: '0.5rem !important',
+        right: '0.5rem !important',
       }),
     );
   });
 
-  it('makes NFS BUI main a flex column so nested Containers can grow', () => {
+  it('does not require a PageMainContainer wrapper for the content well', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
       | Record<string, unknown>
@@ -125,18 +171,8 @@ describe('createComponents', () => {
     const desktop = root?.['@media (min-width: 600px)'] as
       | Record<string, unknown>
       | undefined;
-    expect(desktop?.['& > main:has([class*="bui-Container"])']).toEqual(
-      expect.objectContaining({
-        display: 'flex',
-        flexDirection: 'column',
-        flex: '1 0 auto',
-        minHeight: 'calc(100vh - 2 * 1.5rem)',
-        height: 'auto',
-        maxHeight: 'none !important',
-      }),
-    );
+    expect(JSON.stringify(desktop)).not.toContain('RHDHPageMainContainer');
   });
-
   it('offsets BUI dialogs below the masthead so Inspect Entity stays visible', () => {
     const actual = createComponents({});
     const overrides = actual.MuiCssBaseline?.styleOverrides;
@@ -162,7 +198,7 @@ describe('createComponents', () => {
     );
   });
 
-  it('grows BackstageContent article to fill the flex column', () => {
+  it('paints BackstageContent article with mainSectionBackgroundColor', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
       | Record<string, unknown>
@@ -174,7 +210,6 @@ describe('createComponents', () => {
       desktop?.['& > article, & > [class*="BackstageContent-root"]'],
     ).toEqual(
       expect.objectContaining({
-        flex: 1,
         backgroundColor: '#292929',
       }),
     );

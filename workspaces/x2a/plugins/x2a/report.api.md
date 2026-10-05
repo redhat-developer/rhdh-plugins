@@ -124,6 +124,9 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.k8sJobName': string;
     readonly 'modulePage.phases.startedAt': string;
     readonly 'modulePage.phases.errorDetails': string;
+    readonly 'modulePage.phases.copyToClipboard': string;
+    readonly 'modulePage.phases.copyFailed': string;
+    readonly 'modulePage.phases.copyUnavailable': string;
     readonly 'modulePage.phases.statuses.error': string;
     readonly 'modulePage.phases.statuses.notStarted': string;
     readonly 'modulePage.phases.statuses.pending': string;
@@ -330,6 +333,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'adversarialAgentsPage.dialog.criticalHelper': string;
     readonly 'adversarialAgentsPage.dialog.nameValidation': string;
     readonly 'adversarialAgentsPage.dialog.phasesValidation': string;
+    readonly 'adversarialAgentsPage.dialog.templatesTitle': string;
+    readonly 'adversarialAgentsPage.dialog.useTemplate': string;
     readonly 'adversarialAgentsPage.table.name': string;
     readonly 'adversarialAgentsPage.table.phases': string;
     readonly 'adversarialAgentsPage.table.createdAt': string;

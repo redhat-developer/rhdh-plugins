@@ -16,7 +16,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
+
 import {
   Box,
   Chip,
@@ -33,7 +33,7 @@ import type {
   Agent,
   AgentHealthStatus,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { agentsApiRef, catalogApiRef } from '../../apis';
+import { useDcmClients } from '../../api/DcmClientsContext';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
@@ -69,8 +69,7 @@ const useStyles = makeStyles(theme => ({
 
 export function AgentsTabContent() {
   const classes = useStyles();
-  const agentsApi = useApi(agentsApiRef);
-  const catalogApi = useApi(catalogApiRef);
+  const { agentsApi, catalogApi } = useDcmClients();
   const { t } = useTranslation();
 
   const [healthFilter, setHealthFilter] = useState<AgentHealthStatus | ''>('');

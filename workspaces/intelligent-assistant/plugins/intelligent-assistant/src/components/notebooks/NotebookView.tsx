@@ -20,7 +20,12 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { ChatbotContent, ChatbotFooter, MessageBar } from '@patternfly/chatbot';
+import {
+  ChatbotContent,
+  ChatbotFooter,
+  MessageBar,
+  MessageBox,
+} from '@patternfly/chatbot';
 import {
   Alert,
   Button,
@@ -28,10 +33,13 @@ import {
   DrawerContent,
   DrawerContentBody,
   DrawerPanelContent,
+  Flex,
+  FlexItem,
+  Icon,
   Tooltip,
   type AlertProps,
 } from '@patternfly/react-core';
-import { PlusIcon, TimesIcon } from '@patternfly/react-icons';
+import { AddCircleOIcon, PlusIcon, TimesIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
@@ -65,10 +73,8 @@ import { DeleteDocumentModal } from './DeleteDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
 import { useNotebookStream } from './NotebookStreamProvider';
 import { OverwriteConfirmModal } from './OverwriteConfirmModal';
-import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
+import { SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
-
-const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 
 const Root = styled('div')({
   display: 'flex',
@@ -78,16 +84,12 @@ const Root = styled('div')({
   minWidth: 0,
   width: '100%',
   overflow: 'hidden',
-  backgroundColor: floatingBg,
 });
 
 const StyledDrawer = styled(Drawer)({
   flex: 1,
   minHeight: 0,
   minWidth: 0,
-  '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
-    backgroundColor: floatingBg,
-  },
 });
 
 const StyledDrawerContent = styled(DrawerContent)({
@@ -97,7 +99,6 @@ const StyledDrawerContent = styled(DrawerContent)({
 });
 
 const StyledDrawerContentBody = styled(DrawerContentBody)({
-  backgroundColor: floatingBg,
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
@@ -113,22 +114,6 @@ const MainArea = styled('div')({
   minWidth: 0,
 });
 
-const AddIconButton = styled(Button)({
-  padding: 0,
-  minWidth: 0,
-  lineHeight: 1,
-});
-
-const ExpandStrip = styled('div')(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  paddingTop: theme.spacing(1.5),
-  gap: theme.spacing(1),
-  borderRight: '1px solid var(--pf-t--global--border--color--default)',
-  backgroundColor: floatingBg,
-}));
-
 const ContentColumn = styled('div')({
   display: 'flex',
   flexDirection: 'column',
@@ -142,7 +127,6 @@ const TopBar = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'flex-end',
   padding: `${theme.spacing(1.5)} ${theme.spacing(2)}`,
-  backgroundColor: floatingBg,
 }));
 
 const MainContent = styled('div')({
@@ -153,45 +137,48 @@ const MainContent = styled('div')({
   minWidth: 0,
 });
 
-const DisclaimerStrip = styled('div')(({ theme }) => ({
+// Match Chat new-chat welcome: grow with content and let StyledChatbotContent scroll.
+// A flex:1 + height:100% MessageBox fills the parent so outer overflowY never engages,
+// and justifyContent:flex-end on that inner scroller clips overflow without a usable
+// scrollbar (RHDHBUGS-3751 / notebook details welcome in overlay & docked).
+const WelcomeMessageBox = styled(MessageBox)({
+  flex: 'none',
+  height: 'auto !important',
+  overflow: 'visible',
+  maxWidth: 'unset !important',
   width: '100%',
-  maxWidth: 'unset',
-  margin: 0,
-  padding: `0 0 ${theme.spacing(1)}`,
-  boxSizing: 'border-box',
-  backgroundColor: floatingBg,
-}));
-
-const DisclaimerInner = styled('div')({
-  width: '95%',
-  maxWidth: 'unset',
-  margin: '0 auto',
+  justifyContent: 'flex-end',
 });
 
-const WelcomeContainer = styled('div')({
-  display: 'flex',
-  flexDirection: 'column',
+/** Pushes welcome content to the bottom when the panel is taller than the content. */
+const WelcomeContentSpacer = styled('div')({
   flex: 1,
   minHeight: 0,
-  overflow: 'auto',
-  backgroundColor: floatingBg,
 });
 
 const NotebookContentArea = styled('div')(({ theme }) => ({
-  width: '95%',
-  maxWidth: 'unset',
-  margin: `${theme.spacing(3)} auto 0 auto`,
-  padding: 0,
+  width: '100%',
+  marginBlockStart: theme.spacing(3),
 }));
 
 const PromptSuggestions = styled('div')(({ theme }) => ({
   display: 'flex',
   flexWrap: 'wrap',
   gap: theme.spacing(1),
-  width: '95%',
-  maxWidth: 'unset',
-  margin: `${theme.spacing(3)} auto ${theme.spacing(3)} auto`,
+  width: '100%',
+  marginBlock: theme.spacing(3),
   justifyContent: 'flex-start',
+}));
+
+// Empty-docs alert sits between content and footer; match MessageBox inset.
+const FooterAlignedDisclaimer = styled('div')(({ theme }) => ({
+  width: '100%',
+  boxSizing: 'border-box',
+  paddingInline: 'var(--pf-t--global--spacer--lg)',
+  paddingBlockEnd: theme.spacing(1),
+  '.pf-chatbot.pf-m-compact &': {
+    paddingInline: 'var(--pf-t--global--spacer--md)',
+  },
 }));
 
 const PromptPill = styled('button')(({ theme }) => ({
@@ -216,8 +203,14 @@ const StyledChatbotContent = styled(ChatbotContent)({
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
-  overflow: 'auto',
-  backgroundColor: floatingBg,
+  // PF sets `overflow: hidden` after `overflow-y: auto` on .pf-chatbot__content,
+  // which clips the docked landing page with no way to scroll (RHDHBUGS-3751).
+  // Double class + !important so we beat the PF stylesheet order.
+  '&&': {
+    overflowX: 'hidden',
+    overflowY: 'auto',
+  },
+  WebkitOverflowScrolling: 'touch',
   '& .pf-chatbot__message-contents': {
     overflowX: 'hidden',
     overflowWrap: 'break-word',
@@ -225,11 +218,26 @@ const StyledChatbotContent = styled(ChatbotContent)({
   },
 });
 
+const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
+
+// Align footer with MessageBox inset (override PF 90%/60rem full-page footer).
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   backgroundColor: `${floatingBg} !important`,
+  alignItems: 'stretch',
+  // Match Chat: hide ChatbotFooter's injected <hr> (MessageBar supplies the edge).
+  '& > .pf-v6-c-divider': {
+    display: 'none',
+  },
   '&>.pf-chatbot__footer-container': {
-    width: '95% !important',
+    width: '100% !important',
     maxWidth: 'unset !important',
+    margin: 0,
+    padding:
+      'var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg) !important',
+  },
+  '.pf-chatbot.pf-m-compact & > .pf-chatbot__footer-container': {
+    padding:
+      '0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md) !important',
   },
   '& .pf-chatbot__message-bar': {
     backgroundColor:
@@ -633,6 +641,7 @@ export const NotebookView = ({
       defaultSize={isCompact ? '100%' : '310px'}
       minSize={isCompact ? '100%' : '232px'}
       maxSize={isCompact ? '100%' : '50%'}
+      hasNoBorder
       resizeAriaLabel={t('notebook.view.sidebar.resize')}
     >
       <DocumentSidebar
@@ -653,39 +662,36 @@ export const NotebookView = ({
   );
 
   const renderNotebookDisclaimerAlert = () => (
-    <DisclaimerStrip>
-      <DisclaimerInner>
-        <Alert isInline variant="info" title={t('aria.important')}>
-          {t('disclaimer')}
-        </Alert>
-      </DisclaimerInner>
-    </DisclaimerStrip>
+    <Alert isInline variant="info" title={t('aria.important')}>
+      {t('disclaimer')}
+    </Alert>
   );
 
   const renderMainContent = () => {
     if (hasNoDocuments && messages.length === 0) {
       return (
-        <Typography
-          component="span"
-          sx={{
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 0,
-            minWidth: 0,
-            backgroundColor: floatingBg,
-          }}
-        >
-          <UploadResourceScreen
-            onUploadClick={handleOpenUploadModal}
-            isProcessing={uploadingFileNames.length > 0}
-          />
-        </Typography>
+        <StyledChatbotContent isPrimary>
+          <Typography
+            component="span"
+            sx={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0,
+              minWidth: 0,
+            }}
+          >
+            <UploadResourceScreen
+              onUploadClick={handleOpenUploadModal}
+              isProcessing={uploadingFileNames.length > 0}
+            />
+          </Typography>
+        </StyledChatbotContent>
       );
     }
     if (messages.length > 0) {
       return (
-        <StyledChatbotContent>
+        <StyledChatbotContent isPrimary>
           <LightspeedChatBox
             userName={userName}
             messages={messages}
@@ -702,42 +708,49 @@ export const NotebookView = ({
       );
     }
     return (
-      <WelcomeContainer>
-        <div style={{ flex: 1 }} />
-        {renderNotebookDisclaimerAlert()}
-        <NotebookContentArea>
-          <Typography
-            sx={{ fontSize: '2rem', fontWeight: 500, lineHeight: 1.25, py: 1 }}
-          >
-            {notebookName}
-          </Typography>
-          {topicSummary && (
+      <StyledChatbotContent isPrimary>
+        <WelcomeContentSpacer aria-hidden />
+        <WelcomeMessageBox>
+          {renderNotebookDisclaimerAlert()}
+          <NotebookContentArea>
             <Typography
               sx={{
-                fontSize: '1rem',
-                lineHeight: 2,
-                color: 'var(--pf-t--global--text--color--regular)',
-                pt: 0.5,
+                fontSize: '2rem',
+                fontWeight: 500,
+                lineHeight: 1.25,
+                py: 1,
               }}
             >
-              {topicSummary}
+              {notebookName}
             </Typography>
-          )}
-        </NotebookContentArea>
-        {welcomePrompts.length > 0 && (
-          <PromptSuggestions>
-            {welcomePrompts.map(prompt => (
-              <PromptPill
-                key={prompt.title}
-                type="button"
-                onClick={prompt.onClick}
+            {topicSummary && (
+              <Typography
+                sx={{
+                  fontSize: '1rem',
+                  lineHeight: 2,
+                  color: 'var(--pf-t--global--text--color--regular)',
+                  pt: 0.5,
+                }}
               >
-                {prompt.title}
-              </PromptPill>
-            ))}
-          </PromptSuggestions>
-        )}
-      </WelcomeContainer>
+                {topicSummary}
+              </Typography>
+            )}
+          </NotebookContentArea>
+          {welcomePrompts.length > 0 && (
+            <PromptSuggestions>
+              {welcomePrompts.map(prompt => (
+                <PromptPill
+                  key={prompt.title}
+                  type="button"
+                  onClick={prompt.onClick}
+                >
+                  {prompt.title}
+                </PromptPill>
+              ))}
+            </PromptSuggestions>
+          )}
+        </WelcomeMessageBox>
+      </StyledChatbotContent>
     );
   };
 
@@ -754,44 +767,66 @@ export const NotebookView = ({
           <StyledDrawerContentBody>
             <MainArea>
               {sidebarCollapsed && !isCompact && (
-                <ExpandStrip>
-                  <Tooltip
-                    content={t('notebook.view.sidebar.expand')}
-                    position="right"
-                  >
-                    <Button
-                      variant="plain"
-                      onClick={() => onSidebarCollapsedChange(false)}
-                      aria-label={t('notebook.view.sidebar.expand')}
-                      size="sm"
+                <Flex
+                  direction={{ default: 'column' }}
+                  alignItems={{ default: 'alignItemsCenter' }}
+                  spaceItems={{ default: 'spaceItemsMd' }}
+                  flex={{ default: 'flexNone' }}
+                  style={{
+                    paddingBlockStart: 'var(--pf-t--global--spacer--md)',
+                    paddingInline: 'var(--pf-t--global--spacer--xs)',
+                  }}
+                >
+                  <FlexItem>
+                    <Tooltip
+                      content={t('notebook.view.sidebar.expand')}
+                      position="right"
                     >
-                      <SidebarExpandIcon />
-                    </Button>
-                  </Tooltip>
-                  <Tooltip
-                    content={(() => {
-                      if (hasUploadsInProgress)
-                        return t('notebook.view.documents.uploadsInProgress');
-                      if (isAddDisabled)
-                        return t('notebook.view.documents.maxReached');
-                      return t('notebook.view.documents.add');
-                    })()}
-                    position="right"
-                  >
-                    <Typography component="span">
-                      <AddIconButton
+                      <Button
                         variant="plain"
+                        icon={
+                          <Icon size="lg" isInline>
+                            <SidebarExpandIcon />
+                          </Icon>
+                        }
+                        onClick={() => onSidebarCollapsedChange(false)}
+                        aria-label={t('notebook.view.sidebar.expand')}
+                      />
+                    </Tooltip>
+                  </FlexItem>
+                  <FlexItem>
+                    <Tooltip
+                      content={(() => {
+                        if (hasUploadsInProgress)
+                          return t('notebook.view.documents.uploadsInProgress');
+                        if (isAddDisabled)
+                          return t('notebook.view.documents.maxReached');
+                        return t('notebook.view.documents.add');
+                      })()}
+                      position="right"
+                    >
+                      <Button
+                        variant="plain"
+                        icon={
+                          <Icon isInline>
+                            <AddCircleOIcon
+                              color={
+                                isAddDisabled
+                                  ? 'var(--pf-t--global--icon--color--disabled)'
+                                  : 'var(--pf-t--global--color--brand--default)'
+                              }
+                            />
+                          </Icon>
+                        }
                         onClick={
                           isAddDisabled ? undefined : handleOpenUploadModal
                         }
                         aria-label={t('notebook.view.documents.add')}
                         isDisabled={isAddDisabled}
-                      >
-                        <AddCircleFilledIcon disabled={isAddDisabled} />
-                      </AddIconButton>
-                    </Typography>
-                  </Tooltip>
-                </ExpandStrip>
+                      />
+                    </Tooltip>
+                  </FlexItem>
+                </Flex>
               )}
 
               <ContentColumn>
@@ -811,11 +846,13 @@ export const NotebookView = ({
 
                 <MainContent>{renderMainContent()}</MainContent>
 
-                {hasNoDocuments &&
-                  messages.length === 0 &&
-                  renderNotebookDisclaimerAlert()}
+                {hasNoDocuments && messages.length === 0 && (
+                  <FooterAlignedDisclaimer>
+                    {renderNotebookDisclaimerAlert()}
+                  </FooterAlignedDisclaimer>
+                )}
 
-                <StyledChatbotFooter>
+                <StyledChatbotFooter isPrimary>
                   {(() => {
                     const addResourceAction = (
                       <Button
@@ -834,6 +871,7 @@ export const NotebookView = ({
                       >
                         <div>
                           <MessageBar
+                            isPrimary
                             hasAttachButton={false}
                             hasMicrophoneButton={false}
                             hasStopButton={false}
@@ -853,6 +891,7 @@ export const NotebookView = ({
                       </Tooltip>
                     ) : (
                       <MessageBar
+                        isPrimary
                         hasAttachButton={false}
                         hasMicrophoneButton
                         hasStopButton={isStreaming}

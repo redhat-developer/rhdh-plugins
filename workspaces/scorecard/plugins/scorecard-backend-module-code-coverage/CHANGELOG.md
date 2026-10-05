@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-code-coverage
 
+## 0.1.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@4.4.1
+
 ## 0.1.2
 
 ### Patch Changes

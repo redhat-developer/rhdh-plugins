@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { Button as PFButton, Tooltip } from '@patternfly/react-core';
-import { AddCircleOIcon, TimesIcon } from '@patternfly/react-icons';
+import { ChatbotHeaderCloseButton } from '@patternfly/chatbot';
+import { Button, Icon, Tooltip } from '@patternfly/react-core';
+import { AddCircleOIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { SidebarCollapseIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 
 export interface NotebookHeaderActionsProps {
-  className?: string;
   onClose: () => void;
   onOpenUploadModal: () => void;
   uploadsInProgress: boolean;
@@ -30,8 +30,12 @@ export interface NotebookHeaderActionsProps {
   onSidebarCollapsedChange: (collapsed: boolean) => void;
 }
 
+/**
+ * Compact notebook controls for ChatbotHeaderMain.
+ * Uses PF Chatbot header button chrome (pf-chatbot__button--toggle-menu)
+ * so sizing/alignment matches ChatbotHeaderCloseButton / NewChat / Menu.
+ */
 export const NotebookHeaderActions = ({
-  className,
   onClose,
   onOpenUploadModal,
   uploadsInProgress,
@@ -41,70 +45,73 @@ export const NotebookHeaderActions = ({
 }: NotebookHeaderActionsProps) => {
   const { t } = useTranslation();
 
-  const iconStyle = { width: 16, height: 16 };
-
   return (
-    <div className={className}>
-      <Tooltip content={t('notebook.view.close')} position="bottom">
-        <PFButton
-          variant="plain"
-          onClick={onClose}
-          aria-label={t('notebook.view.close')}
-          size="sm"
-          isDisabled={uploadModalOpen}
+    <>
+      <ChatbotHeaderCloseButton
+        isCompact
+        onClick={onClose}
+        isDisabled={uploadModalOpen}
+        menuAriaLabel={t('notebook.view.close')}
+        tooltipContent={t('notebook.view.close')}
+      />
+      <div className="pf-chatbot__menu">
+        <Tooltip
+          content={
+            uploadsInProgress
+              ? t('notebook.view.documents.uploadsInProgress')
+              : t('notebook.view.documents.add')
+          }
+          position="bottom"
+          aria="none"
         >
-          <TimesIcon style={iconStyle} />
-        </PFButton>
-      </Tooltip>
-      <Tooltip
-        content={
-          uploadsInProgress
-            ? t('notebook.view.documents.uploadsInProgress')
-            : t('notebook.view.documents.add')
-        }
-        position="bottom"
-      >
-        <PFButton
-          variant="plain"
-          onClick={onOpenUploadModal}
-          aria-label={t('notebook.view.documents.add')}
-          size="sm"
-          isDisabled={uploadsInProgress || uploadModalOpen}
-        >
-          <AddCircleOIcon
-            style={{
-              ...iconStyle,
-              color: 'var(--pf-t--global--color--brand--default)',
-            }}
+          <Button
+            className="pf-chatbot__button--toggle-menu pf-m-compact"
+            variant="plain"
+            size="sm"
+            onClick={onOpenUploadModal}
+            aria-label={t('notebook.view.documents.add')}
+            isDisabled={uploadsInProgress || uploadModalOpen}
+            icon={
+              <Icon size="lg" isInline>
+                <AddCircleOIcon color="var(--pf-t--global--color--brand--default)" />
+              </Icon>
+            }
           />
-        </PFButton>
-      </Tooltip>
-      <Tooltip
-        content={
-          sidebarCollapsed
-            ? t('notebook.view.sidebar.expand')
-            : t('notebook.view.sidebar.collapse')
-        }
-        position="bottom"
-      >
-        <PFButton
-          variant="plain"
-          onClick={() => onSidebarCollapsedChange(!sidebarCollapsed)}
-          aria-label={
+        </Tooltip>
+      </div>
+      <div className="pf-chatbot__menu">
+        <Tooltip
+          content={
             sidebarCollapsed
               ? t('notebook.view.sidebar.expand')
               : t('notebook.view.sidebar.collapse')
           }
-          size="sm"
-          isDisabled={uploadModalOpen}
+          position="bottom"
+          aria="none"
         >
-          {sidebarCollapsed ? (
-            <SidebarExpandIcon size={18} />
-          ) : (
-            <SidebarCollapseIcon size={18} />
-          )}
-        </PFButton>
-      </Tooltip>
-    </div>
+          <Button
+            className="pf-chatbot__button--toggle-menu pf-m-compact"
+            variant="plain"
+            size="sm"
+            onClick={() => onSidebarCollapsedChange(!sidebarCollapsed)}
+            aria-label={
+              sidebarCollapsed
+                ? t('notebook.view.sidebar.expand')
+                : t('notebook.view.sidebar.collapse')
+            }
+            isDisabled={uploadModalOpen}
+            icon={
+              <Icon size="lg" isInline>
+                {sidebarCollapsed ? (
+                  <SidebarExpandIcon />
+                ) : (
+                  <SidebarCollapseIcon />
+                )}
+              </Icon>
+            }
+          />
+        </Tooltip>
+      </div>
+    </>
   );
 };

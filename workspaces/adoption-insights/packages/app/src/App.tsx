@@ -20,7 +20,6 @@ import adoptionInsightsPlugin, {
   adoptionInsightsTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
 import adoptionInsightsAnalyticsPlugin from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights';
-import { navModule } from './modules/nav';
 import { signInModule } from './modules/signIn';
 
 export default createApp({
@@ -30,7 +29,6 @@ export default createApp({
     adoptionInsightsPlugin,
     adoptionInsightsTranslationsModule,
     adoptionInsightsAnalyticsPlugin,
-    navModule,
     signInModule,
   ],
 });

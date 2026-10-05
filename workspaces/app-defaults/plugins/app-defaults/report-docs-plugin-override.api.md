@@ -214,9 +214,9 @@ const docsPluginOverride: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
-              | 'development'
-              | 'documentation'
               | 'overview'
+              | 'documentation'
+              | 'development'
               | 'deployment'
               | 'operation'
               | 'observability'

@@ -19,7 +19,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
-import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
+import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils';
 
 import { OgxModelEntityProvider } from './providers/OgxModelEntityProvider';
 import { OgxAgentEntityProvider } from './providers/OgxAgentEntityProvider';
@@ -41,11 +41,11 @@ const DEFAULT_AGENT_REFRESH_SECONDS = 300;
  * Independently deployable as an RHDH dynamic plugin — emits a model
  * server entity (kind: AiModelServerAPI, spec.type: ai-model-server)
  * and agents (kind: AiResource, spec.type: agent) as Backstage catalog
- * entities without requiring the full boost plugin.
+ * entities without requiring the deferred Boost backend.
  *
  * Configuration (app-config.yaml):
  * ```yaml
- * boost:
+ * ai-catalog:
  *   entityProviders:
  *     ogx:
  *       baseUrl: http://localhost:8321
@@ -123,8 +123,7 @@ export const catalogModuleOgxEntityProvider = createBackendModule({
 export function readOgxEntityProviderConfig(
   config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,
 ): OgxEntityProviderConfig {
-  // Try the entity-provider-specific config first
-  const epConfig = config.getOptionalConfig('boost.entityProviders.ogx');
+  const epConfig = config.getOptionalConfig('ai-catalog.entityProviders.ogx');
 
   if (epConfig) {
     return {
@@ -141,21 +140,6 @@ export function readOgxEntityProviderConfig(
       agents: readAgentConfigs(epConfig),
       caData: safeGetOptionalString(epConfig, 'caData'),
       skipTLSVerify: epConfig.getOptionalBoolean('skipTLSVerify'),
-    };
-  }
-
-  // Fall back to the provider module config for composed mode
-  const providerConfig = config.getOptionalConfig('boost.providers.ogx');
-
-  if (providerConfig) {
-    return {
-      baseUrl: providerConfig.getString('baseUrl'),
-      apiKey: safeGetOptionalString(providerConfig, 'apiKey'),
-      defaultAgent: safeGetOptionalString(providerConfig, 'defaultAgent'),
-      maxAgentTurns: providerConfig.getOptionalNumber('maxAgentTurns'),
-      agents: readAgentConfigs(providerConfig),
-      caData: safeGetOptionalString(providerConfig, 'caData'),
-      skipTLSVerify: providerConfig.getOptionalBoolean('skipTLSVerify'),
     };
   }
 
