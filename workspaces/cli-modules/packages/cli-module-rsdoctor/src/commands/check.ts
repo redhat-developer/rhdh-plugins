@@ -54,9 +54,12 @@ export default async ({ args, info }: CliCommandContext) => {
     output.push(formatSummary(report));
   }
   if (checks.budgets) {
-    output.push(`Budgets: ${checks.budgetFile}`);
     const result = evaluateBudgets(report, checks.budgets);
-    output.push('Budget checks:', ...result.notes.map(n => `  ${n}`));
+    output.push(
+      `Budgets: ${checks.budgetFile}`,
+      'Budget checks:',
+      ...result.notes.map(n => `  ${n}`),
+    );
     violations.push(...result.violations);
   } else {
     output.push(

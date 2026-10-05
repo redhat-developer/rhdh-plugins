@@ -23,6 +23,7 @@
 import { createCliModule } from '@backstage/cli-node';
 import packageJson from '../package.json';
 
+/** @public */
 export default createCliModule({
   packageJson,
   init: async reg => {

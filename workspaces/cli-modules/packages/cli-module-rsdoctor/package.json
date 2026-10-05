@@ -11,6 +11,11 @@
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/cli-modules/packages/cli-module-rsdoctor"
+  },
   "backstage": {
     "role": "cli-module"
   },

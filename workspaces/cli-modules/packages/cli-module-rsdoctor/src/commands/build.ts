@@ -40,7 +40,10 @@ const flagDefinitions = {
   ...checkFlags,
 };
 
-export default async ({ args, info }: CliCommandContext) => {
+export default async function runBuildCommand({
+  args,
+  info,
+}: CliCommandContext) {
   const { own, rest } = partitionArgs(args, flagDefinitions);
   const { flags } = cli(
     {
@@ -89,4 +92,4 @@ export default async ({ args, info }: CliCommandContext) => {
     args: buildArgs,
     info: { usage: 'backstage-cli package build', name: 'package build' },
   });
-};
+}

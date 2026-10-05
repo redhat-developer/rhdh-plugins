@@ -13,30 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  createFrontendPlugin,
-  PageBlueprint,
-} from '@backstage/frontend-plugin-api';
 
-import { rootRouteRef } from './routes';
+const path = require('node:path');
 
-export const page = PageBlueprint.make({
-  params: {
-    path: '/rsdoctor-test',
-    routeRef: rootRouteRef,
-    loader: () => import('./components/TodoPage').then(m => <m.TodoPage />),
-  },
-});
+/* eslint-disable-next-line no-restricted-syntax */
+const isLocal = require('node:fs').existsSync(path.resolve(__dirname, 'src'));
 
-/**
- * Rsdoctor test frontend plugin.
- *
- * @public
- */
-export const rsdoctorTestPlugin = createFrontendPlugin({
-  pluginId: 'rsdoctor-test',
-  extensions: [page],
-  routes: {
-    root: rootRouteRef,
-  },
-});
+if (isLocal) {
+  require('@backstage/cli-node/config/nodeTransform.cjs');
+}
+
+module.exports = require(isLocal ? './src/index.ts' : './dist/index.cjs.js');

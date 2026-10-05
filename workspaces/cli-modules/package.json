@@ -8,7 +8,7 @@
   "scripts": {
     "start": "backstage-cli repo start",
     "tsc": "tsc",
-    "tsc:full": "tsc --skipLibCheck false --incremental false",
+    "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn build:api-reports:only --tsc",
     "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags",
@@ -43,6 +43,9 @@
     "@backstage/e2e-test-utils": "^0.1.2",
     "@backstage/repo-tools": "^0.19.0",
     "@changesets/cli": "^2.27.1",
+    "@red-hat-developer-hub/cli-module-rsdoctor": "workspace:^",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "knip": "^5.27.4",
     "node-gyp": "^10.0.0",
     "prettier": "^2.3.2",

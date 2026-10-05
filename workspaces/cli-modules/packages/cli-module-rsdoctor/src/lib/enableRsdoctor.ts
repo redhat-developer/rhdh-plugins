@@ -151,7 +151,7 @@ export function enableRsdoctor(
   const bundlerConfig = require('@backstage/cli-module-build/dist/lib/bundler/config.cjs.js');
   const originalCreateConfig = bundlerConfig.createConfig;
   if (typeof originalCreateConfig !== 'function') {
-    throw new Error(
+    throw new TypeError(
       'Unable to enable Rsdoctor: @backstage/cli-module-build does not export the expected bundler config module',
     );
   }
@@ -209,8 +209,6 @@ export function enableRsdoctor(
             }
           : {}),
       }),
-    );
-    config.plugins.push(
       new RsdoctorBundleChecksPlugin(
         path.join(reportFolder, SIZES_FILE_NAME),
         checks,

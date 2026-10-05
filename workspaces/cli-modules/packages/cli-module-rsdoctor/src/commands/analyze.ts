@@ -19,7 +19,10 @@ import type { CliCommandContext } from '@backstage/cli-node';
 import { targetPaths } from '@backstage/cli-common';
 import { executeRsdoctorCli, waitForInterrupt } from '../lib/rsdoctorCli';
 
-export default async ({ args, info }: CliCommandContext) => {
+export default async function runAnalyzeCommand({
+  args,
+  info,
+}: CliCommandContext) {
   const { flags } = cli(
     {
       name: info.usage,
@@ -58,4 +61,4 @@ export default async ({ args, info }: CliCommandContext) => {
   // The report server lives in this process; keep it running until the user
   // interrupts, because the CLI exits once the command has finished.
   await waitForInterrupt();
-};
+}

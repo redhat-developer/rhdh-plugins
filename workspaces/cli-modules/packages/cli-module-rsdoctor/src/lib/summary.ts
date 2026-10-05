@@ -17,6 +17,7 @@ import { AssetDelta } from './budgets';
 import { formatBytes, formatDelta, SizesReport } from './sizes';
 
 const pad = (value: string, width: number) => value.padStart(width);
+const FINDING_CODE = /\[(E\d{4}|EXTEND):[^:\]]*:([^\]]+)\]/;
 
 /** Console summary of a build's sizes and the Rsdoctor lint findings. */
 export function formatSummary(
@@ -25,45 +26,46 @@ export function formatSummary(
   options: { largest?: number } = {},
 ): string {
   const { totals } = report;
-  const lines: string[] = [];
-  lines.push(`Rsdoctor summary for ${report.package} (gzipped sizes)`);
-  lines.push(
+  const largest = report.assets.slice(0, options.largest ?? 10);
+  const byCode = new Map<string, number>();
+  for (const finding of findings) {
+    const code = FINDING_CODE.exec(finding);
+    const label = code ? `${code[1]} ${code[2].toLowerCase()}` : 'other';
+    byCode.set(label, (byCode.get(label) ?? 0) + 1);
+  }
+
+  return [
+    `Rsdoctor summary for ${report.package} (gzipped sizes)`,
     `  JS: ${formatBytes(totals.js.gzip)} in ${
       totals.js.files
     } files, initial ${formatBytes(totals.initialJs.gzip)} in ${
       totals.initialJs.files
     } files; CSS: ${formatBytes(totals.css.gzip)} in ${totals.css.files} files`,
-  );
-  const largest = report.assets.slice(0, options.largest ?? 10);
-  if (largest.length) {
-    lines.push('  Largest files:');
-    for (const entry of largest) {
-      lines.push(
-        `    ${pad(formatBytes(entry.gzip), 10)}  ${entry.key}${
-          entry.chunk ? ` (${entry.chunk})` : ''
-        }${entry.initial ? '  [initial]' : ''}`,
-      );
-    }
-  }
-  if (findings.length) {
-    const byCode = new Map<string, number>();
-    for (const finding of findings) {
-      const code = finding.match(/\[(E\d{4}|EXTEND):[^:\]]*:([^\]]+)\]/);
-      const label = code ? `${code[1]} ${code[2].toLowerCase()}` : 'other';
-      byCode.set(label, (byCode.get(label) ?? 0) + 1);
-    }
-    lines.push(
-      `  Rsdoctor findings: ${[...byCode]
-        .map(([label, count]) => `${count} ${label}`)
-        .join(', ')}`,
-    );
-    for (const finding of findings) {
-      for (const line of finding.trim().split('\n')) {
-        lines.push(`    ${line.replace(/^\s*⚠\s*/, '')}`);
-      }
-    }
-  }
-  return lines.join('\n');
+    ...(largest.length
+      ? [
+          '  Largest files:',
+          ...largest.map(
+            entry =>
+              `    ${pad(formatBytes(entry.gzip), 10)}  ${entry.key}${
+                entry.chunk ? ` (${entry.chunk})` : ''
+              }${entry.initial ? '  [initial]' : ''}`,
+          ),
+        ]
+      : []),
+    ...(findings.length
+      ? [
+          `  Rsdoctor findings: ${[...byCode]
+            .map(([label, count]) => `${count} ${label}`)
+            .join(', ')}`,
+          ...findings.flatMap(finding =>
+            finding
+              .trim()
+              .split('\n')
+              .map(line => `    ${line.replace(/^\s*⚠\s*/, '')}`),
+          ),
+        ]
+      : []),
+  ].join('\n');
 }
 
 /** Console table of the largest gzip size changes between two builds. */
@@ -73,46 +75,38 @@ export function formatDiff(
   deltas: AssetDelta[],
   options: { limit?: number } = {},
 ): string {
-  const lines: string[] = [];
   const total = (name: string, before: number, after: number) =>
     `  ${name}: ${formatBytes(before)} -> ${formatBytes(after)} (${formatDelta(
       after - before,
     )})`;
-  lines.push('Bundle size diff (gzipped)');
-  lines.push(
+  const changed = deltas.filter(d => d.delta !== 0);
+  const added = changed.filter(d => d.before === undefined).length;
+  const removed = changed.filter(d => d.after === undefined).length;
+
+  return [
+    'Bundle size diff (gzipped)',
     total(
       'initial JS',
       baseline.totals.initialJs.gzip,
       current.totals.initialJs.gzip,
     ),
-  );
-  lines.push(
     total('total JS', baseline.totals.js.gzip, current.totals.js.gzip),
-  );
-  lines.push(total('CSS', baseline.totals.css.gzip, current.totals.css.gzip));
-
-  const changed = deltas.filter(d => d.delta !== 0);
-  const added = changed.filter(d => d.before === undefined).length;
-  const removed = changed.filter(d => d.after === undefined).length;
-  lines.push(
+    total('CSS', baseline.totals.css.gzip, current.totals.css.gzip),
     `  ${changed.length} files changed (${added} added, ${removed} removed), ${
       deltas.length - changed.length
     } unchanged`,
-  );
-  for (const item of changed.slice(0, options.limit ?? 15)) {
-    let state = `${formatBytes(item.before ?? 0)} -> ${formatBytes(
-      item.after ?? 0,
-    )}`;
-    if (item.before === undefined) {
-      state = 'added';
-    } else if (item.after === undefined) {
-      state = 'removed';
-    }
-    lines.push(
-      `    ${pad(formatDelta(item.delta), 10)}  ${item.key}${
+    ...changed.slice(0, options.limit ?? 15).map(item => {
+      let state = `${formatBytes(item.before ?? 0)} -> ${formatBytes(
+        item.after ?? 0,
+      )}`;
+      if (item.before === undefined) {
+        state = 'added';
+      } else if (item.after === undefined) {
+        state = 'removed';
+      }
+      return `    ${pad(formatDelta(item.delta), 10)}  ${item.key}${
         item.chunk ? ` (${item.chunk})` : ''
-      }  ${state}`,
-    );
-  }
-  return lines.join('\n');
+      }  ${state}`;
+    }),
+  ].join('\n');
 }

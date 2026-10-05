@@ -72,19 +72,21 @@ const UNITS: Record<string, number> = {
   mib: 1024 * 1024,
 };
 
+const SIZE_PATTERN = /^([\d.]+)\s*([a-zA-Z]*)$/;
+
 /** Parses `600 KB`, `1.5MB` or a plain byte count into bytes. */
 export function parseSize(value: SizeLimit, what = 'size'): number {
   if (typeof value === 'number') {
     return value;
   }
-  const match = value.trim().match(/^([\d.]+)\s*([a-zA-Z]*)$/);
+  const match = SIZE_PATTERN.exec(value.trim());
   const unit = match ? UNITS[match[2].toLowerCase() || 'b'] : undefined;
   if (!match || unit === undefined) {
-    throw new Error(
+    throw new TypeError(
       `Invalid ${what} '${value}', expected a number of bytes or e.g. '600 KB', '1.5 MB'`,
     );
   }
-  return Math.round(parseFloat(match[1]) * unit);
+  return Math.round(Number.parseFloat(match[1]) * unit);
 }
 
 /** Parses an increase limit into either a percentage or a byte count. */
@@ -93,9 +95,9 @@ export function parseIncrease(value: IncreaseLimit): {
   bytes?: number;
 } {
   if (typeof value === 'string' && value.trim().endsWith('%')) {
-    const percent = parseFloat(value);
+    const percent = Number.parseFloat(value);
     if (Number.isNaN(percent)) {
-      throw new Error(`Invalid increase limit '${value}'`);
+      throw new TypeError(`Invalid increase limit '${value}'`);
     }
     return { percent };
   }
@@ -108,7 +110,7 @@ export function loadBudgets(file: string): Budgets {
   }
   const budgets = JSON.parse(fs.readFileSync(file, 'utf8')) as Budgets;
   if (typeof budgets !== 'object' || budgets === null) {
-    throw new Error(`Budget file ${file} must contain a JSON object`);
+    throw new TypeError(`Budget file ${file} must contain a JSON object`);
   }
   return budgets;
 }

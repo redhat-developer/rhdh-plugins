@@ -111,9 +111,10 @@ export function partitionArgs(
   byName.set('help', false);
   byName.set('h', false);
 
+  const flagPattern = /^--?(no-)?([^=]+)(=.*)?$/;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    const match = arg.match(/^--?(no-)?([^=]+)(=.*)?$/);
+    const match = flagPattern.exec(arg);
     if (!match || (!arg.startsWith('--') && arg.length > 2)) {
       rest.push(arg);
       continue;
