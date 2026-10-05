@@ -60,6 +60,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   const rhdhSecondary =
     palette.rhdh?.secondary || ({} as RHDHThemePalette['secondary']);
 
+  // PatternFly shell chrome (page inset + masthead + sidebar). Prefer
+  // pageInsetBackgroundColor, then app-bar / sidebar tokens from app-config.
+  const chromeBackgroundColor =
+    general.pageInsetBackgroundColor ??
+    general.appBarBackgroundColor ??
+    general.sidebarBackgroundColor;
+  const appBarBackgroundColor =
+    general.appBarBackgroundColor ?? chromeBackgroundColor;
+  const pageInset = general.pageInset || '1.5rem';
+
   const components: Components = {};
   if (options.components === 'backstage' || options.components === 'mui') {
     return components;
@@ -82,10 +92,23 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       // title and close control (RHDHBUGS-3603). 64px fallback matches the
       // MUI Toolbar default when --rhdh-global-header-height is unset.
       const dialogMastheadOffset = 'var(--rhdh-global-header-height, 64px)';
+      // Prefer branding chrome tokens; fall back to MUI default for empty configs.
+      const shellBackground =
+        chromeBackgroundColor ?? theme.palette.background.default;
 
       return {
         ...backstageStyles,
         '@font-face': redHatFontFaces,
+        // Full-width PF/OFS masthead: publish height for fixed sidebar + overlays.
+        ':root:has(#global-header)': {
+          '--rhdh-global-header-height': '64px',
+        },
+        // Branding lives in the masthead; hide the sidebar mark to avoid a
+        // duplicate company logo (PatternFly header + nav pattern).
+        ':root:has(#global-header) [data-testid="sidebar-company-logo"], :root:has(#global-header) [data-testid="sidebar-home-logo"]':
+          {
+            display: 'none',
+          },
         ':root:has(#global-header) [class*="bui-DialogOverlay"]': {
           top: `${dialogMastheadOffset} !important`,
           height: `calc(100% - ${dialogMastheadOffset}) !important`,
@@ -96,7 +119,29 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
             maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
           },
+        // Masthead shares the shell chrome color (config or RHDH defaults).
+        '#global-header': {
+          backgroundColor: `${appBarBackgroundColor ?? shellBackground} !important`,
+          backgroundImage: `${general.appBarBackgroundImage ?? 'none'} !important`,
+        },
+        // Sidebar menu scroller: keep item alignment stable when the classic
+        // scrollbar appears (app-defaults uses data-testid="sidebar-menu-scroll";
+        // also cover Backstage's hover-to-scroll wrapper as a fallback).
+        '[data-testid="sidebar-menu-scroll"]': {
+          overflowY: 'auto',
+          scrollbarGutter: 'stable',
+        },
+        // Shell chrome (page-inset gutter). BUI tokens.css hardcodes
+        // --bui-redhat-theme-page-inset-bg (#f2f2f2 / #151515) and
+        // component-overrides.css paints body with that var using a high-
+        // specificity attribute selector — which otherwise ignores branding
+        // pageInsetBackgroundColor / appBar / sidebar overrides from
+        // app-config. Sync the vars and use !important so customized dark
+        // chrome (e.g. #212830) matches sidebar + global-header.
         html: {
+          backgroundColor: `${shellBackground} !important`,
+          '--bui-redhat-theme-page-inset-bg': shellBackground,
+          '--bui-bg-app': shellBackground,
           '@media (min-width: 600px)': {
             height: '100%',
             overflow: 'hidden',
@@ -106,6 +151,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         body: {
           ...(backstageStyles.body as CSSObject),
           fontFamily: redHatFonts.text,
+          backgroundColor: `${shellBackground} !important`,
+          '--bui-redhat-theme-page-inset-bg': shellBackground,
+          '--bui-bg-app': shellBackground,
           '@media (min-width: 600px)': {
             height: '100%',
             overflow: 'hidden',
@@ -113,22 +161,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         '#root': {
+          backgroundColor: `${shellBackground} !important`,
           '@media (min-width: 600px)': {
             height: '100%',
             overflow: 'hidden',
             // Shows through SidebarPage's page-inset margin (clip-path well).
-            backgroundColor:
-              general.pageInsetBackgroundColor ??
-              general.appBarBackgroundColor ??
-              theme.palette.background.default,
           },
         },
         '#rhdh-sidebar-layout': {
           '@media (min-width: 600px)': {
-            backgroundColor:
-              general.pageInsetBackgroundColor ??
-              general.appBarBackgroundColor ??
-              theme.palette.background.default,
+            backgroundColor: `${shellBackground} !important`,
           },
         },
         'h1, h2, h3, h4, h5, h6': {
@@ -224,13 +266,13 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     });
   }
 
-  // MUI AppBar
+  // MUI AppBar (global-header masthead uses this)
   components.MuiAppBar = {
     styleOverrides: {
       root: {
         boxShadow: 'none',
         ...(options.appBar !== 'mui' && {
-          backgroundColor: general.appBarBackgroundColor,
+          backgroundColor: appBarBackgroundColor,
           backgroundImage: general.appBarBackgroundImage,
           outline: 'none',
         }),
@@ -692,6 +734,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           paddingBottom: '1.5rem',
           backgroundColor: sidebarBackgroundColor,
           alignItems: 'stretch',
+          // Fixed sidebar clears the full-width in-flow / sticky masthead
+          // (PatternFly page + OFS Root). Falls back to 0 when no header.
+          top: `var(--rhdh-global-header-height, 0px) !important`,
+          height: `calc(100vh - var(--rhdh-global-header-height, 0px)) !important`,
+          bottom: '0 !important',
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
@@ -849,55 +896,67 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             boxSizing: 'border-box',
             // Override Backstage `width: 100%` so margin-right is not pushed
             // off-screen by the parent overflow:hidden.
-            width: `calc(100% - ${general.pageInset}) !important`,
-            marginTop: general.pageInset,
-            marginRight: general.pageInset,
-            marginBottom: general.pageInset,
+            width: `calc(100% - ${pageInset}) !important`,
+            // Default: top + bottom page inset (no masthead).
+            marginTop: pageInset,
+            marginRight: pageInset,
+            marginBottom: pageInset,
             marginLeft: 0,
-            height: `calc(100vh - 2 * ${general.pageInset})`,
-            maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
+            height: `calc(100vh - 2 * ${pageInset})`,
+            maxHeight: `calc(100vh - 2 * ${pageInset})`,
             minHeight: '0 !important',
             overflowX: 'hidden',
             overflowY: 'auto',
             // `contain` still allows rubber-band overscroll, which reveals an
             // empty rounded well above the content. `none` disables that.
             overscrollBehavior: 'none',
-            borderRadius: '1rem',
+            // Round only the free (right) edge of the border-box. Left corners
+            // stay square so clip-path does not bite the drawer spacer under
+            // the fixed sidebar. Left curves of the *content* well are painted
+            // by the sticky ::before masks below (after paddingLeft).
+            borderRadius: '0 1rem 1rem 0',
             // Clips the scrollbar into the rounded well (border-radius cannot).
-            clipPath: 'inset(0 round 1rem)',
-            // Left corners: clip-path rounds the border-box (under the drawer
-            // spacer), so the visible edge after paddingLeft stays square.
-            // Sticky masks paint the curve at the content edge. Keep
-            // overscroll-behavior: none so rubber-band does not show a second well.
-            // z-index must sit above Backstage Header (z-index: 100) or MUI
-            // Page headers cover the top-left mask tile.
+            clipPath: 'inset(0 round 0 1rem 1rem 0)',
+            // Masthead (or any #global-header) sits above this well in-flow.
+            // Drop the top inset and subtract only the header + bottom inset
+            // from 100vh so the bottom margin remains visible.
+            ':root:has(#global-header) &': {
+              marginTop: '0 !important',
+              height: `calc(100vh - var(--rhdh-global-header-height, 64px) - ${pageInset}) !important`,
+              maxHeight: `calc(100vh - var(--rhdh-global-header-height, 64px) - ${pageInset}) !important`,
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: '1rem',
+              // Only bottom-right on the border-box; left content curve is ::before.
+              clipPath: 'inset(0 round 0 0 1rem 0)',
+              '&::before': {
+                height: `calc(100vh - var(--rhdh-global-header-height, 64px) - ${pageInset})`,
+                marginBottom: `calc(0px - (100vh - var(--rhdh-global-header-height, 64px) - ${pageInset}))`,
+              },
+            },
+            // Sticky masks sit in the content box (after paddingLeft), so their
+            // left tiles round the main well against the sidebar without
+            // clipping the drawer spacer. Right tiles match the free edge.
+            // Keep overscroll-behavior: none so rubber-band does not show a
+            // second well. z-index must sit above Backstage Header (100).
             '&::before': {
               content: '""',
               position: 'sticky',
               top: 0,
               display: 'block',
               width: '100%',
-              height: `calc(100vh - 2 * ${general.pageInset})`,
-              marginBottom: `calc(0px - (100vh - 2 * ${general.pageInset}))`,
+              height: `calc(100vh - 2 * ${pageInset})`,
+              marginBottom: `calc(0px - (100vh - 2 * ${pageInset}))`,
               pointerEvents: 'none',
               zIndex: 101,
+              // Prefer branding chrome hex; fall back to the CSS var synced
+              // on html/body above so customized dark themes stay consistent.
               backgroundImage: [
-                `radial-gradient(circle at 100% 100%, transparent 1rem, ${
-                  general.pageInsetBackgroundColor ??
-                  general.appBarBackgroundColor
-                } 1.01rem)`,
-                `radial-gradient(circle at 0% 100%, transparent 1rem, ${
-                  general.pageInsetBackgroundColor ??
-                  general.appBarBackgroundColor
-                } 1.01rem)`,
-                `radial-gradient(circle at 100% 0%, transparent 1rem, ${
-                  general.pageInsetBackgroundColor ??
-                  general.appBarBackgroundColor
-                } 1.01rem)`,
-                `radial-gradient(circle at 0% 0%, transparent 1rem, ${
-                  general.pageInsetBackgroundColor ??
-                  general.appBarBackgroundColor
-                } 1.01rem)`,
+                `radial-gradient(circle at 100% 100%, transparent 1rem, ${chromeBackgroundColor ?? 'var(--bui-redhat-theme-page-inset-bg)'} 1.01rem)`,
+                `radial-gradient(circle at 0% 100%, transparent 1rem, ${chromeBackgroundColor ?? 'var(--bui-redhat-theme-page-inset-bg)'} 1.01rem)`,
+                `radial-gradient(circle at 100% 0%, transparent 1rem, ${chromeBackgroundColor ?? 'var(--bui-redhat-theme-page-inset-bg)'} 1.01rem)`,
+                `radial-gradient(circle at 0% 0%, transparent 1rem, ${chromeBackgroundColor ?? 'var(--bui-redhat-theme-page-inset-bg)'} 1.01rem)`,
               ].join(', '),
               backgroundPosition:
                 'top left, top right, bottom left, bottom right',
