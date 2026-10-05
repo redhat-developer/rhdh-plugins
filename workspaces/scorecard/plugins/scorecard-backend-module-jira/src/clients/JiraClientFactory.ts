@@ -53,7 +53,10 @@ export class JiraClientFactory {
     } else {
       connectionStrategy = new DirectConnectionStrategy(
         jiraConfig.getString('baseUrl'),
-        validateJiraAuthToken(jiraConfig.getString('token')),
+        validateJiraAuthToken(
+          jiraConfig.getString('token'),
+          `${JIRA_CONFIG_PATH}.token`,
+        ),
       );
     }
 
