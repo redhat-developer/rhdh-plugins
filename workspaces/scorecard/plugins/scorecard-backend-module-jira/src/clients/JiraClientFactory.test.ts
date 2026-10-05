@@ -183,7 +183,7 @@ describe('JiraClientFactory', () => {
       expect(() =>
         JiraClientFactory.fromConfig(config, factoryOptions),
       ).toThrow(
-        "Invalid jira.token: must be a full Authorization value starting with 'Basic ' or 'Bearer '",
+        "jira.token must be a full Authorization value starting with 'Basic ' or 'Bearer '",
       );
       expect(mockedDirectConnectionStrategy).not.toHaveBeenCalled();
     });
