@@ -26,7 +26,7 @@ jobs:
       has_dispatches: ${{ steps.build-matrix.outputs.has_dispatches }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -87,7 +87,7 @@ jobs:
           jq -c '.[] | {agent, event_type, status_number}' dispatches.json || true
 
       - name: Upload dispatches.json
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: dispatches
@@ -126,7 +126,7 @@ jobs:
       issues: write
       packages: read
       pull-requests: write
-    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@d5f36921ac754705619f38c637ef692873809fbc # v0.43.0
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@3454a2e4ee2b667e2ed71fa9d384edc6de3d4f74 # v0.45.0
     with:
       matrix: ${{ needs.poll.outputs.matrix }}
       install_mode: per-repo
