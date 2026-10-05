@@ -17,8 +17,8 @@
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
-scorecardCollectorsServiceFactory,
-scorecardPlugin,
+  scorecardCollectorsServiceFactory,
+  scorecardPlugin,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
 import { scorecardModuleFilecheck } from './module';
 import request from 'supertest';
