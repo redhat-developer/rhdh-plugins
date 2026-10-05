@@ -99,6 +99,14 @@ jest.mock('../EntitySparklineCard', () => ({
   },
 }));
 
+jest.mock('../../DataSources/metricSourceRows', () => ({
+  toMetricSourceRows: () => [],
+}));
+
+jest.mock('../../MetricGroupCard/thresholdBucketUtils', () => ({
+  buildThresholdBuckets: () => [],
+}));
+
 jest.mock('../../../hooks/useScorecards', () => ({
   useScorecards: jest.fn(),
 }));
@@ -107,7 +115,12 @@ jest.mock('../../../hooks/useMetricTimeSeries', () => ({
   useMetricTimeSeries: jest.fn(),
 }));
 
+jest.mock('../../../hooks/useLanguage', () => ({
+  useLanguage: () => 'en',
+}));
+
 jest.mock('../../../utils', () => ({
+  ...jest.requireActual('../../../utils'),
   getStatusConfig: jest.fn(),
   resolveMetricTranslation: jest.fn(
     (_t: any, _metricId: string, _field: string, fallback?: string) =>
@@ -228,11 +241,7 @@ describe('EntityScorecardContent Component', () => {
           ...mockScorecardSuccessData[0].result,
           thresholdResult: {
             ...mockScorecardSuccessData[0].result.thresholdResult,
-            evaluation: {
-              status: 'green',
-              matchedRule: '< 10',
-              label: 'Ideal',
-            },
+            evaluation: 'success',
           },
         },
       },
@@ -243,11 +252,7 @@ describe('EntityScorecardContent Component', () => {
           ...mockScorecardSuccessData[1].result,
           thresholdResult: {
             ...mockScorecardSuccessData[1].result.thresholdResult,
-            evaluation: {
-              status: 'orange',
-              matchedRule: '10-50',
-              label: 'Warning',
-            },
+            evaluation: 'warning',
           },
         },
       },
@@ -263,11 +268,7 @@ describe('EntityScorecardContent Component', () => {
           value: 75,
           thresholdResult: {
             ...mockScorecardSuccessData[0].result.thresholdResult,
-            evaluation: {
-              status: 'red',
-              matchedRule: '> 50',
-              label: 'Critical',
-            },
+            evaluation: 'error',
           },
         },
       },

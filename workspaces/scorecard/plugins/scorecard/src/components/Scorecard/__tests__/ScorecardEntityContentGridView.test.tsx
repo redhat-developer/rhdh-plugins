@@ -52,6 +52,15 @@ jest.mock('../EntitySparklineCard', () => ({
   },
 }));
 
+jest.mock('../../DataSources/metricSourceRows', () => ({
+  toMetricSourceRows: () => [],
+}));
+
+jest.mock('../../MetricGroupCard/thresholdBucketUtils', () => ({
+  ...jest.requireActual('../../MetricGroupCard/thresholdBucketUtils'),
+  buildThresholdBuckets: () => [],
+}));
+
 jest.mock('../Scorecard', () => {
   return function MockScorecard({
     cardTitle,
@@ -140,31 +149,17 @@ jest.mock('../../../hooks/useMetricTimeSeries', () => ({
   useMetricTimeSeries: jest.fn(),
 }));
 
+jest.mock('../../../hooks/useLanguage', () => ({
+  useLanguage: () => 'en',
+}));
+
 jest.mock('../../../utils', () => ({
+  ...jest.requireActual('../../../utils'),
   getStatusConfig: jest.fn(),
   resolveMetricTranslation: jest.fn(
     (_t: any, _metricId: string, _field: string, fallback?: string) =>
       fallback ?? `metric.${_metricId}.${_field}`,
   ),
-}));
-
-jest.mock('../../../utils', () => {
-  const { getTranslatedTextWithFallback } = jest.requireActual(
-    '../../../utils/translationUtils',
-  );
-  return {
-    getStatusConfig: jest.fn(),
-    resolveMetricTranslation: jest.fn(
-      (_t: any, _metricId: string, _field: string, fallback?: string) =>
-        fallback ?? `metric.${_metricId}.${_field}`,
-    ),
-    getTranslatedTextWithFallback,
-  };
-});
-
-jest.mock('../../../utils/statusUtils', () => ({
-  hasMetricDataError: jest.fn(() => false),
-  hasThresholdError: jest.fn(() => false),
 }));
 
 const useScorecardsMock = useScorecards as jest.Mock;
