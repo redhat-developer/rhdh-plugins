@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, useLocation } from 'react-router-dom';
-
+import { renderInTestApp } from '@backstage/frontend-test-utils';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { EntityHeaderBui } from './EntityHeaderBui';
 
-jest.mock('@backstage/core-plugin-api', () => ({
-  ...jest.requireActual('@backstage/core-plugin-api'),
-  useApi: () => ({ getEntitiesByRefs: async () => ({ items: [] }) }),
-  useRouteRefParams: () => ({ kind: 'component', name: 'component-1' }),
-}));
+jest.mock('@backstage/core-plugin-api', () => {
+  const actual = jest.requireActual('@backstage/core-plugin-api');
+  return {
+    ...actual,
+    useApi: (apiRef: { id: string }) =>
+      apiRef.id === 'plugin.catalog.service'
+        ? { getEntitiesByRefs: async () => ({ items: [] }) }
+        : actual.useApi(apiRef),
+    useRouteRefParams: () => ({ kind: 'component', name: 'component-1' }),
+  };
+});
 
 jest.mock('@backstage/core-plugin-api/alpha', () => ({
   ...jest.requireActual('@backstage/core-plugin-api/alpha'),
@@ -47,35 +52,29 @@ jest.mock('../EntityContextMenu/EntityContextMenu', () => ({
   EntityContextMenu: () => null,
 }));
 
-function CurrentPath() {
-  return <output data-testid="current-path">{useLocation().pathname}</output>;
-}
-
 describe('EntityHeaderBui', () => {
   it('uses client-side routing when an entity tab is clicked', async () => {
-    render(
-      <MemoryRouter
-        initialEntries={['/catalog/default/component/component-1']}
-        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-      >
-        <EntityHeaderBui
-          tabs={[
-            {
-              id: 'docs',
-              label: 'Docs',
-              href: '/catalog/default/component/component-1/docs',
-            },
-          ]}
-        />
-        <CurrentPath />
-      </MemoryRouter>,
+    await renderInTestApp(
+      <EntityHeaderBui
+        tabs={[
+          {
+            id: 'docs',
+            label: 'Docs',
+            href: '/catalog/default/component/component-1/docs',
+          },
+        ]}
+      />,
+      {
+        initialRouteEntries: ['/catalog/default/component/component-1'],
+      },
     );
 
     fireEvent.click(screen.getByRole('link', { name: 'Docs' }));
 
     await waitFor(() =>
-      expect(screen.getByTestId('current-path')).toHaveTextContent(
-        '/catalog/default/component/component-1/docs',
+      expect(screen.getByRole('link', { name: 'Docs' })).toHaveAttribute(
+        'aria-current',
+        'page',
       ),
     );
   });

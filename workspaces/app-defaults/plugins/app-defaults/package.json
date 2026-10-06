@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./app-defaults-module": "./src/appDefaultsModuleExport.ts",
+    "./app-layout-module": "./src/appLayoutModuleExport.ts",
     "./app-drawer-module": "./src/appDrawerModuleExport.ts",
     "./app-sidebar-module": "./src/appSidebarModuleExport.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
@@ -24,6 +25,9 @@
     "*": {
       "app-defaults-module": [
         "src/appDefaultsModuleExport.ts"
+      ],
+      "app-layout-module": [
+        "src/appLayoutModuleExport.ts"
       ],
       "app-drawer-module": [
         "src/appDrawerModuleExport.ts"
