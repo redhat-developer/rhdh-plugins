@@ -19,7 +19,6 @@
 import { useMemo } from 'react';
 import {
   Box,
-  BUIProvider,
   ButtonIcon,
   Header,
   HeaderMetadataUsers,
@@ -201,25 +200,23 @@ export function EntityHeaderBui(props: {
   const type = entity?.spec?.type?.toString();
 
   return (
-    <BUIProvider>
-      <Header
-        title={presentation.primaryTitle}
-        tags={[
-          { label: entity?.kind ?? routeParams.kind },
-          ...(type ? [{ label: type }] : []),
-        ]}
-        metadata={metadata}
-        tabs={entity ? props.tabs : undefined}
-        activeTabId={props.activeTabId}
-        customActions={
-          entity ? (
-            <>
-              <FavoriteEntityButton entity={entity} />
-              <EntityContextMenu contextMenuItems={props.contextMenuItems} />
-            </>
-          ) : undefined
-        }
-      />
-    </BUIProvider>
+    <Header
+      title={presentation.primaryTitle}
+      tags={[
+        { label: entity?.kind ?? routeParams.kind },
+        ...(type ? [{ label: type }] : []),
+      ]}
+      metadata={metadata}
+      tabs={entity ? props.tabs : undefined}
+      activeTabId={props.activeTabId}
+      customActions={
+        entity ? (
+          <>
+            <FavoriteEntityButton entity={entity} />
+            <EntityContextMenu contextMenuItems={props.contextMenuItems} />
+          </>
+        ) : undefined
+      }
+    />
   );
 }
