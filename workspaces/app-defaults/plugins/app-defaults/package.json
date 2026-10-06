@@ -92,10 +92,12 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
+    "@backstage-community/plugin-rbac-common": "^1.19.0",
     "@backstage/catalog-client": "^1.16.1",
     "@backstage/catalog-model": "^1.10.0",
     "@backstage/core-components": "^0.18.13",
     "@backstage/core-plugin-api": "^1.12.9",
+    "@backstage/errors": "^1.2.7",
     "@backstage/frontend-plugin-api": "^0.18.0",
     "@backstage/plugin-api-docs": "^0.14.4",
     "@backstage/plugin-app-react": "^0.2.6",
@@ -105,6 +107,7 @@
     "@backstage/plugin-catalog-import": "^0.13.17",
     "@backstage/plugin-catalog-react": "^3.2.2",
     "@backstage/plugin-notifications": "^0.5.20",
+    "@backstage/plugin-permission-common": "^0.9.4",
     "@backstage/plugin-permission-react": "^0.5.4",
     "@backstage/plugin-scaffolder": "^1.38.2",
     "@backstage/plugin-search": "^1.7.7",

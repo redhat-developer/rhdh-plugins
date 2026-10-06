@@ -20,6 +20,7 @@ import {
   renderInTestApp,
 } from '@backstage/frontend-test-utils';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import { usePermission } from '@backstage/plugin-permission-react';
 import {
   SidebarElementBlueprint,
   SidebarItemBlueprint,
@@ -27,6 +28,17 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { appSidebarExtension } from './appSidebarModule';
+
+jest.mock('@backstage/plugin-permission-react', () => ({
+  ...jest.requireActual('@backstage/plugin-permission-react'),
+  usePermission: jest.fn(),
+}));
+
+const mockUsePermission = usePermission as jest.Mock;
+
+beforeEach(() => {
+  mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+});
 
 // createExtensionTester resolves ids without a plugin namespace, so the
 // subject becomes `nav-content:sidebar` instead of `nav-content:app/sidebar`.
