@@ -5,9 +5,9 @@
 ```ts
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
-// @public @deprecated
-const appDrawerModule: FrontendModule;
-export default appDrawerModule;
+// @public
+const appLayoutModule: FrontendModule;
+export default appLayoutModule;
 
 // (No @packageDocumentation comment for this package)
 ```

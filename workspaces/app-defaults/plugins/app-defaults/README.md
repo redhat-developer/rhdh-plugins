@@ -4,7 +4,7 @@ RHDH app module for the **new frontend system**, registered against `pluginId: '
 
 The module provides:
 
-- Application drawer (`appDrawerExtension`)
+- App layout wrapper (`appLayoutExtension`) that provides BUI routing and analytics context around routed application content, and renders the extensible application drawer (`appDrawerExtension` remains as a compatibility alias)
 - Priority-ordered sidebar (`appSidebarExtension`, extension ID `nav-content:app/sidebar`) that renders `SidebarItemBlueprint`, `SidebarItemGroupBlueprint`, `SidebarElementBlueprint`, `SidebarSpacerBlueprint` and `SidebarDividerBlueprint` contributions from `@red-hat-developer-hub/backstage-plugin-app-react`
 - Default sidebar layout: company logo (`sidebar-element:app/logo`, full logo while the sidebar is open and icon logo while collapsed, from `app.branding.fullLogo`, `app.branding.iconLogo` and `app.branding.fullLogoWidth`, with the RHDH logos as fallback), a gap below it (`sidebar-spacer:app/logo`), search modal (`sidebar-element:app/search`), a spacer (`sidebar-spacer:app/bottom`) and divider (`sidebar-divider:app/bottom`) that push a bottom block down, the notifications item (`sidebar-element:app/notifications`), a divider above the settings area (`sidebar-divider:app/settings`), an Administration group (`sidebar-item-group:app/admin`, id `admin`) that only appears once a plugin contributes an item with `group: 'admin'`, and a Settings group (`sidebar-item-group:app/settings`, id `settings`) linking to `/settings` at the very bottom. Disable or move any of them from `app-config.yaml`:
 
@@ -143,6 +143,8 @@ For advanced use cases — items that run an action instead of navigating (`onCl
 
 - **Dynamic loading**: default export is a `FrontendModule` suitable for `@backstage/frontend-dynamic-feature-loader`.
 - **Static**: import `appDefaultsModule` from `@red-hat-developer-hub/backstage-plugin-app-defaults`.
+
+For apps that need only the app layout and drawer wrapper, import `appLayoutModule` from `@red-hat-developer-hub/backstage-plugin-app-defaults/app-layout-module`. The previous `app-drawer-module` entry point remains available as a compatibility alias.
 
 Override entry points (for advanced installs):
 
