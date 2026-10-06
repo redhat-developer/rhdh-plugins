@@ -38,11 +38,33 @@ type SetupHomepageAggregationCardOptions = {
   status?: number;
 };
 
-async function addWidget(homePage: HomePage, widgetTitle: string) {
+const isNfs = () => process.env.APP_MODE === 'nfs';
+
+async function addHomepageCard(
+  homePage: HomePage,
+  widgetTitle: string,
+  aggregationId: string,
+) {
+  if (isNfs()) {
+    await homePage.addScorecardCard(aggregationId);
+    return;
+  }
+
+  await homePage.addCard(widgetTitle);
+}
+
+async function addWidget(
+  homePage: HomePage,
+  aggregationMetadata: { id: string; title: string },
+) {
   await homePage.navigateToHome();
   await homePage.enterEditMode();
   await homePage.clearAllCards();
-  await homePage.addCard(widgetTitle);
+  await addHomepageCard(
+    homePage,
+    aggregationMetadata.title,
+    aggregationMetadata.id,
+  );
   await homePage.saveChanges();
 }
 
@@ -60,7 +82,11 @@ export async function addAggregatedScorecardWidgets(
     if (!isAggregatedCardWidgetKey(instanceId)) {
       throw new Error(`Unknown homepage scorecard widget id: ${instanceId}`);
     }
-    await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES[instanceId]);
+    await addHomepageCard(
+      homePage,
+      AGGREGATED_CARDS_WIDGET_TITLES[instanceId],
+      widgetIds[instanceId] ?? AGGREGATED_CARDS_METRIC_IDS[instanceId],
+    );
   }
 
   await homePage.saveChanges();
@@ -75,7 +101,7 @@ export async function setupHomepageAggregationCard(
 
   await mockApiResponse(page, route, response, status ?? 200);
 
-  await addWidget(homePage, aggregationMetadata.title);
+  await addWidget(homePage, aggregationMetadata);
 
   // Reload clears the singleton React Query cache
   await page.reload();
