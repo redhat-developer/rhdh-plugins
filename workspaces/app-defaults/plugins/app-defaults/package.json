@@ -12,6 +12,7 @@
     "./app-sidebar-module": "./src/appSidebarModuleExport.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
     "./catalog-plugin-override": "./src/catalogPluginOverrideExport.ts",
+    "./catalog-module": "./src/catalogModuleExport.ts",
     "./catalog-graph-plugin-override": "./src/catalogGraphPluginOverrideExport.ts",
     "./scaffolder-plugin-override": "./src/scaffolderPluginOverrideExport.ts",
     "./api-docs-plugin-override": "./src/apiDocsPluginOverrideExport.ts",
@@ -35,6 +36,9 @@
       ],
       "catalog-plugin-override": [
         "src/catalogPluginOverrideExport.ts"
+      ],
+      "catalog-module": [
+        "src/catalogModuleExport.ts"
       ],
       "catalog-graph-plugin-override": [
         "src/catalogGraphPluginOverrideExport.ts"
