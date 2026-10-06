@@ -5,7 +5,7 @@
 ```ts
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
-// @public
+// @public @deprecated
 const appDrawerModule: FrontendModule;
 export default appDrawerModule;
 

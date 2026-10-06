@@ -162,6 +162,9 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.startedAt': 'Gestartet am',
     'modulePage.phases.status': 'Status',
     'modulePage.phases.errorDetails': 'Fehlerdetails',
+    'modulePage.phases.copyToClipboard': 'In Zwischenablage kopieren',
+    'modulePage.phases.copyFailed': 'Kopieren fehlgeschlagen',
+    'modulePage.phases.copyUnavailable': 'Kopieren nicht verfügbar',
     'modulePage.phases.statuses.notStarted': 'Nicht gestartet',
     'modulePage.phases.statuses.pending': 'Ausstehend',
     'modulePage.phases.statuses.running': 'Läuft',
@@ -171,7 +174,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.statuses.stale': 'Veraltet',
     'modulePage.phases.reanalyzeInstructions':
       'Der Modulmigrationsplan ist bereits vorhanden. Falls der gesamte Projektmigrationsplan aktualisiert wurde, lösen Sie die Analyse erneut aus, um die Änderungen widerzuspiegeln.',
-    'modulePage.phases.rerunAnalyze': 'Modulmigrationsplan neu erstellen',
+    'modulePage.phases.rerunAnalyze': 'Analyse erneut ausführen',
     'modulePage.phases.analyzeInstructions':
       'Überprüfen Sie vor der Analyse zunächst den gesamten Projektmigrationsplan. Sein Inhalt bestimmt die Analyse des Moduls.',
     'modulePage.phases.runAnalyze': 'Modulmigrationsplan erstellen',

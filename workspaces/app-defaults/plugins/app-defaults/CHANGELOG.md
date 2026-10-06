@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.11.0
+
+### Minor Changes
+
+- edc7eae: Add an app layout module that provides BUI routing and analytics context around routed application content and hosts the extensible application drawer.
+
+### Patch Changes
+
+- Updated dependencies [edc7eae]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.11.0
+
+## 1.10.1
+
+### Patch Changes
+
+- 216cda2: Register the custom catalog header as a dynamic frontend module and provide Backstage UI routing context for its entity tabs.
+- Updated dependencies [216cda2]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.10.1
+
 ## 1.10.0
 
 ### Minor Changes
