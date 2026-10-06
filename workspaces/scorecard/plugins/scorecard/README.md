@@ -166,7 +166,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - If `groups` is empty or omitted, the grid layout falls back to the default `EntityScorecardContent` view (individual cards for all metrics).
    - When multiple layout extensions are enabled, the Scorecard tab renders a toggle to switch between them.
 
-7. (Optional) Enable homepage Scorecard widgets by configuring home page extensions in `app-config.yaml` (widgets are registered by `scorecardPlugin`):
+7. (Optional) Enable the homepage Scorecard card in `app-config.yaml` (the widget is registered by `scorecardPlugin`):
 
    ```yaml
    app:
@@ -180,7 +180,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
            config:
              customizable: true
              widgetLayout:
-               AggregatedCardWithDeprecatedMetricId:
+               ScorecardAggregatedCard:
                  priority: 410
                  breakpoints:
                    xl: { w: 4, h: 6 }
@@ -189,138 +189,15 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    sm: { w: 4, h: 6 }
                    xs: { w: 4, h: 6 }
                    xxs: { w: 4, h: 6 }
-               AggregatedCardWithDefaultAggregation:
-                 priority: 420
-                 breakpoints:
-                   xl: { w: 4, h: 6, x: 4 }
-                   lg: { w: 4, h: 6, x: 4 }
-                   md: { w: 4, h: 6, x: 4 }
-                   sm: { w: 4, h: 6, x: 4 }
-                   xs: { w: 4, h: 6, x: 4 }
-                   xxs: { w: 4, h: 6, x: 4 }
-               AggregatedCardWithJiraOpenIssues:
-                 priority: 430
-                 breakpoints:
-                   xl: { w: 4, h: 6 }
-                   lg: { w: 4, h: 6 }
-                   md: { w: 4, h: 6 }
-                   sm: { w: 4, h: 6 }
-                   xs: { w: 4, h: 6 }
-                   xxs: { w: 4, h: 6 }
-               AggregatedCardWithGithubOpenPrs:
-                 priority: 440
-                 breakpoints:
-                   xl: { w: 4, h: 6, x: 4 }
-                   lg: { w: 4, h: 6, x: 4 }
-                   md: { w: 4, h: 6, x: 4 }
-                   sm: { w: 4, h: 6, x: 4 }
-                   xs: { w: 4, h: 6, x: 4 }
-                   xxs: { w: 4, h: 6, x: 4 }
-               AggregatedCardWithGithubFilecheckLicense:
-                 priority: 450
-                 breakpoints:
-                   xl: { w: 4, h: 6 }
-                   lg: { w: 4, h: 6 }
-                   md: { w: 4, h: 6 }
-                   sm: { w: 4, h: 6 }
-                   xs: { w: 4, h: 6 }
-                   xxs: { w: 4, h: 6 }
-               AggregatedCardWithGithubFilecheckCodeowners:
-                 priority: 460
-                 breakpoints:
-                   xl: { w: 4, h: 6, x: 8 }
-                   lg: { w: 4, h: 6, x: 8 }
-                   md: { w: 4, h: 6, x: 8 }
-                   sm: { w: 4, h: 6, x: 8 }
-                   xs: { w: 4, h: 6, x: 8 }
-                   xxs: { w: 4, h: 6, x: 8 }
-               AggregatedCardWithGithubOpenPrsWeighted:
-                 priority: 470
-                 breakpoints:
-                   xl: { w: 4, h: 6, x: 8 }
-                   lg: { w: 4, h: 6, x: 8 }
-                   md: { w: 4, h: 6, x: 8 }
-                   sm: { w: 4, h: 6, x: 8 }
-                   xs: { w: 4, h: 6, x: 8 }
-                   xxs: { w: 4, h: 6, x: 8 }
-               AggregatedCardWithMaxOpenPrs:
-                 priority: 480
-                 breakpoints:
-                   xl: { w: 4, h: 6 }
-                   lg: { w: 4, h: 6 }
-                   md: { w: 4, h: 6 }
-                   sm: { w: 4, h: 6 }
-                   xs: { w: 4, h: 6 }
-                   xxs: { w: 4, h: 6 }
-               AggregatedCardWithMinOpenPrs:
-                 priority: 490
-                 breakpoints:
-                   xl: { w: 4, h: 6, x: 4 }
-                   lg: { w: 4, h: 6, x: 4 }
-                   md: { w: 4, h: 6, x: 4 }
-                   sm: { w: 4, h: 6, x: 4 }
-                   xs: { w: 4, h: 6, x: 4 }
-                   xxs: { w: 4, h: 6, x: 4 }
-               AggregatedCardWithTotalOpenBugs:
-                 priority: 500
-                 breakpoints:
-                   xl: { w: 4, h: 6, x: 8 }
-                   lg: { w: 4, h: 6, x: 8 }
-                   md: { w: 4, h: 6, x: 8 }
-                   sm: { w: 4, h: 6, x: 8 }
-                   xs: { w: 4, h: 6, x: 8 }
-                   xxs: { w: 4, h: 6, x: 8 }
-               AggregatedCardWithEntitiesWithOpenPrs:
-                 priority: 510
-                 breakpoints:
-                   xl: { w: 4, h: 6 }
-                   lg: { w: 4, h: 6 }
-                   md: { w: 4, h: 6 }
-                   sm: { w: 4, h: 6 }
-                   xs: { w: 4, h: 6 }
-                   xxs: { w: 4, h: 6 }
-               AggregatedCardWithAvgOpenPrs:
-                 priority: 520
-                 breakpoints:
-                   xl: { w: 4, h: 6, x: 4 }
-                   lg: { w: 4, h: 6, x: 4 }
-                   md: { w: 4, h: 6, x: 4 }
-                   sm: { w: 4, h: 6, x: 4 }
-                   xs: { w: 4, h: 6, x: 4 }
-                   xxs: { w: 4, h: 6, x: 4 }
-               AggregatedCardWithDoraDeploymentFrequency:
-                 priority: 530
-                 breakpoints:
-                   xl: { w: 4, h: 6, x: 8 }
-                   lg: { w: 4, h: 6, x: 8 }
-                   md: { w: 4, h: 6, x: 8 }
-                   sm: { w: 4, h: 6, x: 8 }
-                   xs: { w: 4, h: 6, x: 8 }
-                   xxs: { w: 4, h: 6, x: 8 }
    ```
 
-   The home module contributes these widgets:
+   The plugin contributes one homepage widget:
 
-   - `AggregatedCardWithDeprecatedMetricId` (title: **Scorecard: With deprecated metricId property (Jira)**)
-   - `AggregatedCardWithDeprecatedDoraChangeFailureRate` (title: **Scorecard: With deprecated metricId property (DORA change failure rate)**)
-   - `AggregatedCardWithDefaultAggregation` (title: **Scorecard: With default aggregation config (GitHub)**)
-   - `AggregatedCardWithJiraOpenIssues` (title: **Scorecard: Jira open blocking tickets**)
-   - `AggregatedCardWithGithubOpenPrs` (title: **Scorecard: GitHub open PRs**)
-   - `AggregatedCardWithGithubFilecheckLicense` (title: **Scorecard: LICENSE file exists**)
-   - `AggregatedCardWithGithubFilecheckCodeowners` (title: **Scorecard: CODEOWNERS file exists**)
-   - `AggregatedCardWithGithubOpenPrsWeighted` (title: **Scorecard: GitHub open PRs (weighted health)**)
-   - `AggregatedCardWithMaxOpenPrs` (title: **Scorecard: Maximum open PRs**)
-   - `AggregatedCardWithMinOpenPrs` (title: **Scorecard: Minimum open PRs**)
-   - `AggregatedCardWithTotalOpenBugs` (title: **Scorecard: Total open bugs**)
-   - `AggregatedCardWithEntitiesWithOpenPrs` (title: **Scorecard: Entities with open PRs**)
-   - `AggregatedCardWithAvgOpenPrs` (title: **Scorecard: Average open PRs**)
-   - `AggregatedCardWithDoraDeploymentFrequency` (title: **Scorecard: DORA - Deployment Frequency**)
-   - `AggregatedCardWithDoraChangeFailureRate` (title: **Scorecard: DORA - Change Failure Rate**)
-   - `AggregatedCardWithDoraMedianLeadTimeForChanges` (title: **Scorecard: DORA - Lead Time for Changes**)
-   - `AggregatedCardWithDoraMedianTimeToRestore` (title: **Scorecard: DORA - Median Time to Restore**)
-   - `AggregatedCardWithCustomAggregation` (title: **Scorecard: Custom aggregation**) — set **Aggregation ID** in the card settings when adding or editing the widget
+   - `ScorecardAggregatedCard` (title: **Scorecard**, extension `home-page-widget:scorecard/scorecard-aggregated-card`)
 
-   Preset widgets render the `ScorecardHomepageCard` component used in legacy apps, each with a fixed aggregation or metric id. `AggregatedCardWithCustomAggregation` is the same card, with the id supplied from homepage settings.
+   On an editable homepage, add **Scorecard** and set **Aggregation ID** in the card settings. The same widget can be added more than once, each copy with its own id. `widgetLayout` only sets size and position for the widget name `ScorecardAggregatedCard`.
+
+   The id is a KPI key from **`scorecard.aggregationKPIs`**, or a metric id such as `github.openPRs` when there is no KPI row. A custom KPI key that is not a registered metric id returns **404**.
 
 ##### Modules and extensions (NFS)
 
@@ -336,30 +213,13 @@ The default `scorecardPlugin` registers the Scorecard page, API, entity tab, lay
 
 **Extension IDs**
 
-| Extension ID                                                               | Description                                                                                                                      |
-| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `api:scorecard`                                                            | Scorecard API (auto-discovered when the plugin is installed).                                                                    |
-| `page:scorecard`                                                           | Scorecard entities / drill-down page.                                                                                            |
-| `entity-content:scorecard/entity-content-scorecard`                        | Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type. |
-| `scorecard-layout:scorecard/scorecard-entity-layout-grid`                  | Grid layout with metric group cards (disabled by default). Enable via `app.extensions` and define `groups` (see step 6).         |
-| `home-page-widget:scorecard/scorecard-deprecated-metric-id`                | Homepage widget using deprecated `metricId` (Jira open issues).                                                                  |
-| `home-page-widget:scorecard/scorecard-deprecated-dora-change-failure-rate` | Homepage widget using deprecated `metricId` (DORA change failure rate).                                                          |
-| `home-page-widget:scorecard/scorecard-default-aggregation`                 | Homepage widget using default aggregation (GitHub open PRs).                                                                     |
-| `home-page-widget:scorecard/scorecard-jira-open-issues`                    | Homepage widget for Jira open blocking tickets.                                                                                  |
-| `home-page-widget:scorecard/scorecard-github-open-prs`                     | Homepage widget for GitHub open PRs.                                                                                             |
-| `home-page-widget:scorecard/scorecard-github-filecheck-license`            | Homepage widget for file check "License".                                                                                        |
-| `home-page-widget:scorecard/scorecard-github-filecheck-codeowners`         | Homepage widget for file check "Codeowners".                                                                                     |
-| `home-page-widget:scorecard/scorecard-github-open-prs-weighted`            | Homepage widget for weighted GitHub open PRs health.                                                                             |
-| `home-page-widget:scorecard/scorecard-max-open-prs`                        | Homepage widget for scalar max open PRs.                                                                                         |
-| `home-page-widget:scorecard/scorecard-min-open-prs`                        | Homepage widget for scalar min open PRs.                                                                                         |
-| `home-page-widget:scorecard/scorecard-total-open-bugs`                     | Homepage widget for scalar sum of open bugs.                                                                                     |
-| `home-page-widget:scorecard/scorecard-entities-with-open-prs`              | Homepage widget for scalar count of entities with open PRs.                                                                      |
-| `home-page-widget:scorecard/scorecard-avg-open-prs`                        | Homepage widget for scalar average open PRs.                                                                                     |
-| `home-page-widget:scorecard/scorecard-dora-deployment-frequency`           | Homepage widget for DORA deployment frequency sparkline (`doraDeploymentFrequencyKpi`).                                          |
-| `home-page-widget:scorecard/scorecard-dora-change-failure-rate`            | Homepage widget for DORA change failure rate sparkline (`doraChangeFailureRateKpi`).                                             |
-| `home-page-widget:scorecard/scorecard-dora-median-lead-time-for-changes`   | Homepage widget for DORA median lead time sparkline (`doraMedianLeadTimeForChangesKpi`).                                         |
-| `home-page-widget:scorecard/scorecard-dora-median-time-to-restore`         | Homepage widget for DORA median time to restore sparkline (`doraMedianTimeToRestoreKpi`).                                        |
-| `home-page-widget:scorecard/scorecard-custom-aggregation`                  | Homepage widget with a configurable `aggregationId` (KPI key or metric id), set when adding or editing the card.                 |
+| Extension ID                                              | Description                                                                                                                      |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `api:scorecard`                                           | Scorecard API (auto-discovered when the plugin is installed).                                                                    |
+| `page:scorecard`                                          | Scorecard entities / drill-down page.                                                                                            |
+| `entity-content:scorecard/entity-content-scorecard`       | Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type. |
+| `scorecard-layout:scorecard/scorecard-entity-layout-grid` | Grid layout with metric group cards (disabled by default). Enable via `app.extensions` and define `groups` (see step 6).         |
+| `home-page-widget:scorecard/scorecard-aggregated-card`    | Homepage widget (`ScorecardAggregatedCard`, title **Scorecard**). Set `aggregationId` in the card settings.                      |
 
 ##### Migration notes (NFS graduation)
 
@@ -391,17 +251,11 @@ If you previously imported Scorecard NFS APIs from `/alpha` and registered separ
 
 Extension IDs now use the `scorecard` plugin namespace (not `catalog` / `home`):
 
-| Old ID                                                        | New ID                                                             |
-| ------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `entity-content:catalog/entity-content-scorecard`             | `entity-content:scorecard/entity-content-scorecard`                |
-| `scorecard-layout:catalog/scorecard-entity-layout-grid`       | `scorecard-layout:scorecard/scorecard-entity-layout-grid`          |
-| `home-page-widget:home/scorecard-deprecated-metric-id`        | `home-page-widget:scorecard/scorecard-deprecated-metric-id`        |
-| `home-page-widget:home/scorecard-default-aggregation`         | `home-page-widget:scorecard/scorecard-default-aggregation`         |
-| `home-page-widget:home/scorecard-jira-open-issues`            | `home-page-widget:scorecard/scorecard-jira-open-issues`            |
-| `home-page-widget:home/scorecard-github-open-prs`             | `home-page-widget:scorecard/scorecard-github-open-prs`             |
-| `home-page-widget:home/scorecard-github-filecheck-license`    | `home-page-widget:scorecard/scorecard-github-filecheck-license`    |
-| `home-page-widget:home/scorecard-github-filecheck-codeowners` | `home-page-widget:scorecard/scorecard-github-filecheck-codeowners` |
-| `home-page-widget:home/scorecard-github-open-prs-weighted`    | `home-page-widget:scorecard/scorecard-github-open-prs-weighted`    |
+| Old ID                                                                                       | New ID                                                    |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `entity-content:catalog/entity-content-scorecard`                                            | `entity-content:scorecard/entity-content-scorecard`       |
+| `scorecard-layout:catalog/scorecard-entity-layout-grid`                                      | `scorecard-layout:scorecard/scorecard-entity-layout-grid` |
+| `home-page-widget:home/scorecard-*` and `home-page-widget:scorecard/scorecard-*` fixed cards | `home-page-widget:scorecard/scorecard-aggregated-card`    |
 
 Example:
 
@@ -415,7 +269,7 @@ Example:
               - kind: component
 ```
 
-Homepage widget **layout** config under `home-page-layout:home/dynamic-homepage-layout` (widget names like `AggregatedCardWithGithubOpenPrs`) is unchanged; only the extension IDs above move namespaces.
+Homepage widget layout under `home-page-layout:home/dynamic-homepage-layout` uses the widget name `ScorecardAggregatedCard`. Fixed widget names such as `AggregatedCardWithGithubOpenPrs` are removed. Set the aggregation id in the card settings. `widgetLayout` only sets size and position.
 
 **3. Legacy (OFS) imports**
 
@@ -532,7 +386,7 @@ The plugin exports **`ScorecardHomepageCard`** from `@red-hat-developer-hub/back
 
 Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId`. The default type is **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**, otherwise **`statusGrouped`**. A missing custom KPI key that is not a registered metric id returns **404**; the homepage card shows that error instead of staying in a loading state.
 
-Preset NFS `HomePageWidgetBlueprint`s use a fixed aggregation id. For any other id, add **`home-page-widget:scorecard/scorecard-custom-aggregation`** (`AggregatedCardWithCustomAggregation`). In homepage edit mode, open the card settings and set **Aggregation ID** to a KPI key from **`scorecard.aggregationKPIs`**, or to a metric id such as `filecheck.securityMd`. The same widget can be added more than once, each copy with its own id. Dynamic Home Page / app-legacy can still pass any `aggregationId` through mountpoint props. Metric ids (for example `filecheck.codeowners` or `dora.changeFailureRate`) work without an `aggregationKPIs` row. Custom KPI keys such as `avgDeploymentFrequency`, `licenseFileExistsKpi`, or `changeFailureRateKpi` must exist in app-config (or the metadata API returns 404).
+The NFS homepage contributes one card, **`home-page-widget:scorecard/scorecard-aggregated-card`** (`ScorecardAggregatedCard`). On an editable homepage, set **Aggregation ID** in the card settings. The same widget can be added more than once, each copy with its own id. Dynamic Home Page / app-legacy can still pass any `aggregationId` through mountpoint props. Metric ids (for example `github.openPRs` or `filecheck.codeowners`) work without an `aggregationKPIs` row. Custom KPI keys such as `avgDeploymentFrequency`, `licenseFileExistsKpi`, or `changeFailureRateKpi` must exist in app-config (or the metadata API returns 404).
 
 Supported scorecard aggregation types (see [Entity Aggregation — Aggregation types](../scorecard-backend/docs/aggregation.md#aggregation-types)):
 
@@ -562,7 +416,7 @@ The supported model is **a single `aggregationId` string** whose value is either
 
 - **Homepage `props`:** set **`aggregationId`** to your KPI key or metric id - drop **`metricId`** when your plugin version no longer requires it.
 - **Custom HTTP clients:** replace **`GET .../metrics/<metricId>/catalog/aggregations`** with **`GET .../aggregations/<aggregationId>`** (same segment value when you used the metric id before). Deprecation **`Link`** headers point at the successor URL.
-- **User-editable NFS home cards:** add **`AggregatedCardWithCustomAggregation`** and set **`aggregationId`** in the card settings. Legacy mount points still pass **`props.aggregationId`**.
+- **NFS home cards:** use **`ScorecardAggregatedCard`** and set **`aggregationId`** in the card settings. Legacy mount points still pass **`props.aggregationId`**.
 
 Example (Dynamic Home Page–style mount point): register **`ScorecardHomepageCard`** and pass **`props.aggregationId`** (and **`metricId`** only if you still run an older card API):
 

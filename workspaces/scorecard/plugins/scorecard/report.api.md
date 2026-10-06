@@ -33,8 +33,8 @@ const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
     drillDown: RouteRef<{
-      metricId: string;
       aggregationId: string;
+      metricId: string;
     }>;
   },
   {},
@@ -155,175 +155,17 @@ const _default: OverridableFrontendPlugin<
         filter?: string | FilterPredicate | ((entity: Entity) => boolean);
       };
     }>;
-    'home-page-widget:scorecard/scorecard-avg-open-prs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-avg-open-prs';
-      config: {};
-      configInput: {};
+    'home-page-widget:scorecard/scorecard-aggregated-card': OverridableExtensionDefinition<{
+      config: {
+        aggregationId: string | undefined;
+      };
+      configInput: {
+        aggregationId?: string | undefined;
+      };
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
       inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-custom-aggregation': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
-      name: 'scorecard-custom-aggregation';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-default-aggregation': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-default-aggregation';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-deprecated-dora-change-failure-rate': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-deprecated-dora-change-failure-rate';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-deprecated-metric-id': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-deprecated-metric-id';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-dora-change-failure-rate': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-dora-change-failure-rate';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-dora-deployment-frequency': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-dora-deployment-frequency';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-dora-median-lead-time-for-changes': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-dora-median-lead-time-for-changes';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-dora-median-time-to-restore': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-dora-median-time-to-restore';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-entities-with-open-prs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-entities-with-open-prs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-filecheck-codeowners': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-filecheck-codeowners';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-filecheck-license': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-filecheck-license';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-filecheck-readme': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-filecheck-readme';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-open-prs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-open-prs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-open-prs-weighted': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-open-prs-weighted';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-jira-open-issues': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-jira-open-issues';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-max-open-prs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-max-open-prs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-min-open-prs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-min-open-prs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-total-open-bugs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-total-open-bugs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
+      name: 'scorecard-aggregated-card';
       params: HomePageWidgetBlueprintParams;
     }>;
     'icon-bundle:scorecard': OverridableExtensionDefinition<{

@@ -28,27 +28,7 @@ import { rootRouteRef, scorecardDrillDownRouteRef } from './routes';
 import { scorecardTranslations } from './translations';
 import { scorecardApi } from './extensions/api';
 import { scorecardEntityContent } from './extensions/entityTab';
-import {
-  aggregatedCardWithDeprecatedMetricIdWidget,
-  aggregatedCardWithDefaultAggregationWidget,
-  aggregatedCardWithGithubOpenPrsWidget,
-  aggregatedCardWithJiraOpenIssuesWidget,
-  aggregatedCardWithGithubFilecheckLicenseWidget,
-  aggregatedCardWithGithubFilecheckCodeownersWidget,
-  aggregatedCardWithGithubFilecheckReadmeWidget,
-  aggregatedCardWithGithubOpenPrsWeightedWidget,
-  aggregatedCardWithMaxOpenPrsWidget,
-  aggregatedCardWithMinOpenPrsWidget,
-  aggregatedCardWithTotalOpenBugsWidget,
-  aggregatedCardWithEntitiesWithOpenPrsWidget,
-  aggregatedCardWithAvgOpenPrsWidget,
-  aggregatedCardWithDoraDeploymentFrequencyWidget,
-  aggregatedCardWithDoraChangeFailureRateWidget,
-  aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
-  aggregatedCardWithDoraMedianTimeToRestoreWidget,
-  aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
-  aggregatedCardWithCustomAggregationWidget,
-} from './extensions/homePageCards';
+import { scorecardAggregatedCardWidget } from './extensions/homePageCards';
 import { scorecardIconBundle } from './extensions/icons';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
@@ -79,25 +59,7 @@ export default createFrontendPlugin({
     scorecardPage,
     scorecardEntityContent,
     scorecardEntityLayoutGrid,
-    aggregatedCardWithDeprecatedMetricIdWidget,
-    aggregatedCardWithDefaultAggregationWidget,
-    aggregatedCardWithJiraOpenIssuesWidget,
-    aggregatedCardWithGithubOpenPrsWidget,
-    aggregatedCardWithGithubFilecheckLicenseWidget,
-    aggregatedCardWithGithubFilecheckCodeownersWidget,
-    aggregatedCardWithGithubFilecheckReadmeWidget,
-    aggregatedCardWithGithubOpenPrsWeightedWidget,
-    aggregatedCardWithMaxOpenPrsWidget,
-    aggregatedCardWithMinOpenPrsWidget,
-    aggregatedCardWithTotalOpenBugsWidget,
-    aggregatedCardWithEntitiesWithOpenPrsWidget,
-    aggregatedCardWithAvgOpenPrsWidget,
-    aggregatedCardWithDoraDeploymentFrequencyWidget,
-    aggregatedCardWithDoraChangeFailureRateWidget,
-    aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
-    aggregatedCardWithDoraMedianTimeToRestoreWidget,
-    aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
-    aggregatedCardWithCustomAggregationWidget,
+    scorecardAggregatedCardWidget,
   ],
   routes: {
     root: rootRouteRef,
