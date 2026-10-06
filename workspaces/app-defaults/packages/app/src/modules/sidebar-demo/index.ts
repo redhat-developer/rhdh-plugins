@@ -158,6 +158,9 @@ const TopSpacer = () =>
 
 const topSpacerElement = SidebarElementBlueprint.make({
   name: 'top-spacer',
+  // Disabled by default — it was only for verifying masthead offset and would
+  // otherwise sit above Search at the top of the sidebar.
+  disabled: true,
   params: {
     component: TopSpacer,
     priority: 3000,
@@ -175,6 +178,9 @@ const CrashingElement = () => {
 
 const crashingElement = SidebarElementBlueprint.make({
   name: 'crashing',
+  // Disabled by default so normal sidebar demos stay clean; enable via
+  // app-config to verify the ErrorBoundary around custom sidebar elements.
+  disabled: true,
   params: {
     component: CrashingElement,
     priority: 5,
