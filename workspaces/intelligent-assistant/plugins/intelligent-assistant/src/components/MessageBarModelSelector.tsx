@@ -33,6 +33,7 @@ import {
 } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { ModelSelectorToggleText } from './ModelSelectorToggleText';
 
 type MessageBarModelSelectorProps = {
   selectedModel: string;
@@ -48,7 +49,7 @@ type MessageBarModelSelectorProps = {
 };
 
 const SelectorToggle = styled(MenuToggle)(({ theme }) => ({
-  display: 'flex',
+  display: 'inline-flex',
   alignItems: 'center',
   gap: 4,
   color: theme.palette.text.secondary,
@@ -155,7 +156,6 @@ export const MessageBarModelSelector = ({
 
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
-
   const visionScreenshotTooltip = useMemo(
     () => (
       <Fragment>
@@ -176,7 +176,7 @@ export const MessageBarModelSelector = ({
       variant="plain"
       aria-label={t('aria.chatbotSelector')}
     >
-      {selectedModelLabel}
+      <ModelSelectorToggleText label={selectedModelLabel} />
       <AngleDownIcon />
     </SelectorToggle>
   );

@@ -48,6 +48,26 @@ describe('MessageBarModelSelector', () => {
     expect(screen.getByText('Granite 3.3')).toBeInTheDocument();
   });
 
+  it('should truncate a long selected model label on the toggle', () => {
+    const longValue = 'meta-llama/Meta-Llama-3.1-70b:latest';
+    render(
+      <MessageBarModelSelector
+        selectedModel={longValue}
+        models={[
+          {
+            label: longValue,
+            value: longValue,
+            provider: 'meta',
+          },
+        ]}
+        onSelect={mockOnSelect}
+      />,
+    );
+
+    expect(screen.getByText('meta-llama/Met…')).toBeInTheDocument();
+    expect(screen.queryByText(longValue)).not.toBeInTheDocument();
+  });
+
   it('should show model value when model is not in the list', () => {
     render(
       <MessageBarModelSelector
