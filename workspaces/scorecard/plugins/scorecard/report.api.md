@@ -156,16 +156,12 @@ const _default: OverridableFrontendPlugin<
       };
     }>;
     'home-page-widget:scorecard/scorecard-aggregated-card': OverridableExtensionDefinition<{
-      config: {
-        aggregationId: string | undefined;
-      };
-      configInput: {
-        aggregationId?: string | undefined;
-      };
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
       kind: 'home-page-widget';
       name: 'scorecard-aggregated-card';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
     'icon-bundle:scorecard': OverridableExtensionDefinition<{
