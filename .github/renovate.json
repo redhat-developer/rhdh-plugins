@@ -34,6 +34,12 @@
       "matchPackageNames": ["yarn"]
     },
     {
+      "description": "Roll Fullsend workflow refs together with custom harness bases via rhdh-fullsend/repos.yaml",
+      "enabled": false,
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["/^fullsend-ai\\/fullsend(?:\\/|$)/"]
+    },
+    {
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions"
     },
