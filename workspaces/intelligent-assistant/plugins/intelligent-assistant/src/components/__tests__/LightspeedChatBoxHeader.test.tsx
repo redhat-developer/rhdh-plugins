@@ -44,7 +44,7 @@ describe('LightspeedChatBoxHeader', () => {
 
   it('should show model selector by default', () => {
     render(<LightspeedChatBoxHeader {...defaultProps} />);
-    expect(screen.getByText('gpt-4')).toBeInTheDocument();
+    expect(screen.getByText('GPT-4')).toBeInTheDocument();
   });
 
   it('should hide model selector when hideModelSelector is true', () => {

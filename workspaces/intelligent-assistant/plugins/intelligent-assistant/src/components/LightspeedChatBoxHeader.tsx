@@ -44,6 +44,7 @@ import {
 
 import { useTranslation } from '../hooks/useTranslation';
 import { McpSettingsIcon } from './McpSettingsIcon';
+import { ModelSelectorToggleText } from './ModelSelectorToggleText';
 
 type LightspeedChatBoxHeaderProps = {
   displayMode: ChatbotDisplayMode;
@@ -115,13 +116,8 @@ export const LightspeedChatBoxHeader = ({
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
   const { t } = useTranslation();
 
-  const maxLabelLength = Math.max(
-    ...models.map(m => m.label.length),
-    selectedModel.length,
-    1,
-  );
-  const toggleMinWidth = `${maxLabelLength + 4}ch`;
-
+  const selectedModelLabel =
+    models.find(m => m.value === selectedModel)?.label ?? selectedModel;
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <SelectorToggle
       dimmed={isModelSelectorDisabled}
@@ -131,9 +127,8 @@ export const LightspeedChatBoxHeader = ({
       isExpanded={isOptionsMenuOpen}
       isDisabled={isModelSelectorDisabled}
       onClick={() => setIsOptionsMenuOpen(!isOptionsMenuOpen)}
-      style={{ minWidth: toggleMinWidth }}
     >
-      {selectedModel}
+      <ModelSelectorToggleText label={selectedModelLabel} />
     </SelectorToggle>
   );
 
