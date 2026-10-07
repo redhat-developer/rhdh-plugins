@@ -159,6 +159,7 @@ describe('CatalogMetricService', () => {
       database: mockedDatabase,
       logger: mockedLogger,
       thresholdResolver: mockedThresholdResolver,
+      config: mockServices.rootConfig({ data: {} }),
     });
 
     jest.useFakeTimers();
@@ -443,6 +444,120 @@ describe('CatalogMetricService', () => {
       expect(thresholdResult.error).toBe(
         'Unable to evaluate thresholds, metric value is missing',
       );
+    });
+
+    it('should exclude metrics disabled via scorecard.disabledMetrics app-config', async () => {
+      const secondProvider = new MockNumberProvider(
+        'github.numberMetric',
+        'github',
+      );
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
+        { id: 'github.importantMetric' },
+        { id: 'github.numberMetric' },
+      ] as Metric[]);
+      mockedRegistry.getMetric.mockImplementation(id =>
+        id === 'github.importantMetric'
+          ? provider.getMetrics()[0]
+          : secondProvider.getMetrics()[0],
+      );
+      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
+        {
+          ...latestEntityMetric[0],
+          metricId: 'github.numberMetric',
+          value: 10,
+        },
+      ]);
+
+      service = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: mockedRegistry,
+        database: mockedDatabase,
+        logger: mockedLogger,
+        thresholdResolver: mockedThresholdResolver,
+        config: mockServices.rootConfig({
+          data: {
+            scorecard: {
+              disabledMetrics: ['github.importantMetric'],
+            },
+          },
+        }),
+      });
+
+      const result = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+      );
+
+      expect(mockedDatabase.readLatestEntityMetricValues).toHaveBeenCalledWith(
+        'component:default/test-component',
+        ['github.numberMetric'],
+      );
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('github.numberMetric');
+    });
+
+    it('should exclude metrics disabled via scorecard.io/disabled-metrics annotation', async () => {
+      const annotatedEntity = new MockEntityBuilder()
+        .withAnnotations({
+          'scorecard.io/disabled-metrics': 'github.importantMetric',
+        })
+        .build();
+      mockedCatalog.getEntityByRef.mockResolvedValue(annotatedEntity);
+
+      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([]);
+
+      const result = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+        ['github.importantMetric'],
+      );
+
+      expect(mockedDatabase.readLatestEntityMetricValues).toHaveBeenCalledWith(
+        'component:default/test-component',
+        [],
+      );
+      expect(result).toEqual([]);
+    });
+
+    it('should still return metrics in entityAnnotations.disabledMetrics.except when only disabled via annotation', async () => {
+      const annotatedEntity = new MockEntityBuilder()
+        .withAnnotations({
+          'scorecard.io/disabled-metrics': 'github.importantMetric',
+        })
+        .build();
+      mockedCatalog.getEntityByRef.mockResolvedValue(annotatedEntity);
+
+      service = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: mockedRegistry,
+        database: mockedDatabase,
+        logger: mockedLogger,
+        thresholdResolver: mockedThresholdResolver,
+        config: mockServices.rootConfig({
+          data: {
+            scorecard: {
+              entityAnnotations: {
+                disabledMetrics: {
+                  enabled: true,
+                  except: ['github.importantMetric'],
+                },
+              },
+            },
+          },
+        }),
+      });
+
+      const result = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+        ['github.importantMetric'],
+      );
+
+      expect(mockedDatabase.readLatestEntityMetricValues).toHaveBeenCalledWith(
+        'component:default/test-component',
+        ['github.importantMetric'],
+      );
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('github.importantMetric');
     });
   });
 
@@ -951,6 +1066,7 @@ describe('CatalogMetricService', () => {
         database: mockedDatabase,
         logger: mockedLogger,
         thresholdResolver: mockedThresholdResolver,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       const results = await service.getLatestEntityMetrics(

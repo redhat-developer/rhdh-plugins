@@ -143,6 +143,7 @@ describe('createRouter', () => {
       database: mockDatabaseMetricValues,
       logger: mockLogger,
       thresholdResolver,
+      config: mockServices.rootConfig({ data: {} }),
     });
 
     aggregationsService = createTestAggregationsService(
@@ -1284,6 +1285,7 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       readAggregatedMetricByEntityRefsSpyAgId = jest
@@ -1479,6 +1481,7 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       const getSpy = jest
@@ -1548,6 +1551,7 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       const getSpy = jest
@@ -1610,6 +1614,7 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       const getSpy = jest
@@ -1703,6 +1708,7 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       const getSpy = jest
@@ -2082,6 +2088,7 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       const aggregationsMetaService = createTestAggregationsService(
@@ -2174,6 +2181,7 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       const aggregationsSvcNoKpi = createTestAggregationsService(

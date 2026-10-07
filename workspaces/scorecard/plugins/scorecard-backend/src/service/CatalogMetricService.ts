@@ -38,6 +38,7 @@ import {
   BackstageCredentials,
   LoggerService,
 } from '@backstage/backend-plugin-api';
+import type { Config } from '@backstage/config';
 import { filterAuthorizedMetrics } from '../permissions/permissionUtils';
 import {
   PermissionCondition,
@@ -47,6 +48,7 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { isMetricCalculationError } from '../utils/metricCalculationError';
+import { isMetricIdDisabled } from '../utils/metricUtils';
 import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
@@ -59,6 +61,7 @@ type CatalogMetricServiceOptions = {
   database: DatabaseMetricValues;
   logger: LoggerService;
   thresholdResolver: ThresholdResolver;
+  config: Config;
 };
 
 export class CatalogMetricService {
@@ -77,6 +80,7 @@ export class CatalogMetricService {
   }
 
   private readonly logger: LoggerService;
+  private readonly config: Config;
 
   private readonly catalog: CatalogService;
   private readonly auth: AuthService;
@@ -95,6 +99,7 @@ export class CatalogMetricService {
     this.database = options.database;
     this.logger = options.logger;
     this.thresholdResolver = options.thresholdResolver;
+    this.config = options.config;
   }
 
   /**
@@ -126,9 +131,13 @@ export class CatalogMetricService {
       metricsToFetch,
       filter,
     );
+    const metricIdsToFetch = authorizedMetricsToFetch
+      .filter(m => !isMetricIdDisabled(this.config, m.id, entity, this.logger))
+      .map(m => m.id);
+
     const rawResults = await this.database.readLatestEntityMetricValues(
       entityRef,
-      authorizedMetricsToFetch.map(m => m.id),
+      metricIdsToFetch,
     );
 
     return rawResults.map(
