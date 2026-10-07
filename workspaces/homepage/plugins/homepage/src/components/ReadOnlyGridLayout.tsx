@@ -20,7 +20,12 @@
 // https://github.com/backstage/backstage/blob/master/plugins/home/src/components/CustomHomepage/CustomHomepageGrid.tsx
 // but without the drag and drop functionality.
 
-import type { ComponentType, ReactNode } from 'react';
+import {
+  cloneElement,
+  isValidElement,
+  type ComponentType,
+  type ReactNode,
+} from 'react';
 
 import { useMemo } from 'react';
 import { Layout, Responsive } from 'react-grid-layout';
@@ -46,6 +51,20 @@ interface Card {
   id: string;
   Component: ComponentType<any> | ReactNode;
   layouts: Record<string, Layout>;
+  props?: Record<string, unknown>;
+}
+
+function renderCardContent(
+  Component: Card['Component'],
+  props?: Record<string, unknown>,
+): ReactNode {
+  if (typeof Component === 'function') {
+    return <Component {...(props ?? {})} />;
+  }
+  if (isValidElement(Component) && props) {
+    return cloneElement(Component, props);
+  }
+  return Component;
 }
 /**
  * Props for the read-only grid layout.
@@ -79,7 +98,12 @@ export const ReadOnlyGridLayout = ({
             ? (component as { Content: ComponentType<any> }).Content
             : component;
 
-        return { id, Component: RenderContent, layouts };
+        return {
+          id,
+          Component: RenderContent,
+          layouts,
+          props: cardData.props,
+        };
       });
   }, [homepageCards]);
 
@@ -95,11 +119,7 @@ export const ReadOnlyGridLayout = ({
         sx={cardWrapperSx}
       >
         <ErrorBoundary>
-          {typeof card.Component === 'function' ? (
-            <card.Component />
-          ) : (
-            card.Component
-          )}
+          {renderCardContent(card.Component, card.props)}
         </ErrorBoundary>
       </Box>
     ));
