@@ -135,6 +135,28 @@ describe('RulesAcceptance', () => {
     expect(within(dialog).getByText(LONG_DESCRIPTION)).toBeInTheDocument();
   });
 
+  it('closes the dialog when Close is clicked', async () => {
+    mockRules([makeRule()]);
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Read more')).toBeInTheDocument();
+    });
+
+    await act(async () => {
+      await userEvent.click(screen.getByText('Read more'));
+    });
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    await act(async () => {
+      await userEvent.click(screen.getByText('Close'));
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
   it('does not render Read more for short descriptions', async () => {
     mockRules([makeRule({ description: 'A short rule.' })]);
     await renderComponent();
