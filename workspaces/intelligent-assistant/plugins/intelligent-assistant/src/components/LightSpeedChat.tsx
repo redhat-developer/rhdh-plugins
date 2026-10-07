@@ -2092,6 +2092,8 @@ export const LightspeedChat = ({
       onCreateSavedPrompt={createPrompt}
       onRequestSavedPromptDelete={requestSavedPromptDelete}
       showMcpSettings={mcpToolsPermissionResolved}
+      isCompact={!isFullscreenMode}
+      appendTo={() => chatModalScopeRef.current ?? document.body}
     />
   );
 
@@ -2137,19 +2139,19 @@ export const LightspeedChat = ({
         alerts={notebookAlerts}
         onRemoveAlert={handleRemoveNotebookAlert}
       />
-      {deleteNotebookId && (
-        <DeleteNotebookModal
-          isOpen={Boolean(deleteNotebookId)}
-          onClose={() => setDeleteNotebookId(null)}
-          onDeleted={handleNotebookDeleted}
-          sessionId={deleteNotebookId}
-          name={
-            notebooks.find(n => n.session_id === deleteNotebookId)?.name ?? ''
-          }
-          isCompact={!isFullscreenMode}
-        />
-      )}
       <ChatModalScope ref={chatModalScopeRef}>
+        {deleteNotebookId && (
+          <DeleteNotebookModal
+            isOpen={Boolean(deleteNotebookId)}
+            onClose={() => setDeleteNotebookId(null)}
+            onDeleted={handleNotebookDeleted}
+            sessionId={deleteNotebookId}
+            name={
+              notebooks.find(n => n.session_id === deleteNotebookId)?.name ?? ''
+            }
+            isCompact={!isFullscreenMode}
+          />
+        )}
         {isRenameModalOpen && (
           <RenameConversationModal
             isOpen={isRenameModalOpen}
@@ -2548,15 +2550,17 @@ export const LightspeedChat = ({
             appendTo={() => chatModalScopeRef.current ?? document.body}
           />
         )}
+        <DeleteSavedPromptModal
+          isOpen={isSavedPromptDeleteModalOpen}
+          promptName={promptToDelete?.name}
+          isDeleting={isSavedPromptDeleting}
+          error={savedPromptDeleteError}
+          onClose={closeSavedPromptDeleteModal}
+          onConfirm={confirmSavedPromptDelete}
+          isCompact={!isFullscreenMode}
+          appendTo={() => chatModalScopeRef.current ?? document.body}
+        />
       </ChatModalScope>
-      <DeleteSavedPromptModal
-        isOpen={isSavedPromptDeleteModalOpen}
-        promptName={promptToDelete?.name}
-        isDeleting={isSavedPromptDeleting}
-        error={savedPromptDeleteError}
-        onClose={closeSavedPromptDeleteModal}
-        onConfirm={confirmSavedPromptDelete}
-      />
       <Attachment />
     </>
   );
