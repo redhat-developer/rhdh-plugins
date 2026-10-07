@@ -17,7 +17,10 @@
 import type { AppNode } from '@backstage/frontend-plugin-api';
 
 import type { HomePageCardConfig } from '../types';
-import { applyReadOnlyWidgetLayout } from './widgetLayoutConfig';
+import {
+  applyReadOnlyWidgetLayout,
+  widgetLayoutSchema,
+} from './widgetLayoutConfig';
 
 function widget(
   extensionId: string,
@@ -92,6 +95,40 @@ describe('applyReadOnlyWidgetLayout', () => {
       'AggregatedCardWithGithubOpenPrs',
       'AggregatedCardWithJiraOpenIssues',
     ]);
+  });
+
+  it('mounts one read-only card per list item, each with its own props', () => {
+    const parsed = widgetLayoutSchema.parse({
+      ScorecardAggregatedCard: [
+        {
+          id: 'ScorecardOpenPrs',
+          props: { aggregationId: 'github.openPRs' },
+          breakpoints: { xl: { w: 4, h: 6, x: 0, y: 0 } },
+        },
+        {
+          id: 'ScorecardOpenIssues',
+          props: { aggregationId: 'jira.openIssues' },
+          breakpoints: { xl: { w: 4, h: 6, x: 4, y: 0 } },
+        },
+      ],
+    });
+
+    const cards = applyReadOnlyWidgetLayout(
+      [widget('scorecard-aggregated-card', 'ScorecardAggregatedCard')],
+      parsed,
+    );
+
+    expect(cards).toHaveLength(2);
+    expect(cards.map(card => card.props)).toEqual([
+      { aggregationId: 'github.openPRs' },
+      { aggregationId: 'jira.openIssues' },
+    ]);
+    expect(cards[0].breakpointLayouts).toEqual({
+      xl: { w: 4, h: 6, x: 0, y: 0 },
+    });
+    expect(cards[1].breakpointLayouts).toEqual({
+      xl: { w: 4, h: 6, x: 4, y: 0 },
+    });
   });
 
   it('keeps cards unchanged when widgetLayout is empty', () => {
