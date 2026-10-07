@@ -32,7 +32,7 @@ import {
   Content,
 } from '@backstage/core-components';
 import { TestApiProvider } from '@backstage/test-utils';
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 import type { Entity } from '@backstage/catalog-model';
 import type {
   MetricResult,
