@@ -327,6 +327,79 @@ describe('GithubClient', () => {
       ]);
     });
 
+    it('should use a successful status that is older than the first status page', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+      mockedGraphqlClient
+        .mockResolvedValueOnce({
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  id: 'deployment-node-204',
+                  databaseId: 204,
+                  commitOid: 'sha-success-after-many-failures',
+                  createdAt: '2026-05-18T10:00:00.000Z',
+                  environment: 'staging',
+                  latestStatus: { state: 'FAILURE' },
+                  statuses: {
+                    nodes: [
+                      {
+                        state: 'FAILURE',
+                        createdAt: '2026-05-18T12:00:00.000Z',
+                      },
+                    ],
+                    pageInfo: {
+                      hasNextPage: true,
+                      endCursor: 'status-cursor-1',
+                    },
+                  },
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          node: {
+            statuses: {
+              nodes: [
+                {
+                  state: 'SUCCESS',
+                  createdAt: '2026-05-18T11:00:00.000Z',
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 204,
+          sha: 'sha-success-after-many-failures',
+          createdAt: '2026-05-18T10:00:00.000Z',
+          environment: 'staging',
+          status: 'SUCCESS',
+        },
+      ]);
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(2);
+    });
+
     it('should use the latest status when the deployment never succeeded', async () => {
       const url = `https://github.com/owner/repo`;
       const from = new Date('2026-05-01T00:00:00.000Z');
