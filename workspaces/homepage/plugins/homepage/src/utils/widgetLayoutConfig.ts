@@ -31,10 +31,20 @@ const breakpointSchema = z
   .optional();
 
 const widgetLayoutEntrySchema = z.object({
+  id: z.string().optional(),
   priority: z.number().optional(),
   breakpoints: breakpointSchema,
   props: z.record(z.string(), z.unknown()).optional(),
 });
+
+/**
+ * One object configures the single registered widget. A list mounts one
+ * read-only copy per item, each with its own props.
+ */
+const widgetLayoutValueSchema = z.union([
+  widgetLayoutEntrySchema,
+  z.array(widgetLayoutEntrySchema).min(1),
+]);
 
 /**
  * `widgetLayout` config for `home-page-layout:homepage/dynamic-homepage-layout`.
@@ -42,7 +52,7 @@ const widgetLayoutEntrySchema = z.object({
  * The extension id also matches.
  */
 export const widgetLayoutSchema = z
-  .record(z.string(), widgetLayoutEntrySchema)
+  .record(z.string(), widgetLayoutValueSchema)
   .optional();
 
 export type WidgetLayoutConfig = NonNullable<
@@ -57,15 +67,18 @@ function widgetExtensionId(widget: HomePageCardConfig): string {
   return fromId || widget.name || '';
 }
 
-function layoutEntry(
+function layoutEntries(
   layoutConfig: WidgetLayoutConfig,
   widget: HomePageCardConfig,
-): WidgetLayoutEntry | undefined {
+): WidgetLayoutEntry[] {
   const extensionId = widgetExtensionId(widget);
-  return (
+  const value =
     layoutConfig[extensionId] ??
-    (widget.name ? layoutConfig[widget.name] : undefined)
-  );
+    (widget.name ? layoutConfig[widget.name] : undefined);
+  if (!value) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
 }
 
 function withLayout(
@@ -94,7 +107,7 @@ export function applyWidgetLayoutBreakpoints(
   layoutConfig: WidgetLayoutConfig = {},
 ): HomePageCardConfig[] {
   return widgets.map(widget => {
-    const entry = layoutEntry(layoutConfig, widget);
+    const entry = layoutEntries(layoutConfig, widget)[0];
     if (!entry?.breakpoints) {
       return widget;
     }
@@ -104,20 +117,27 @@ export function applyWidgetLayoutBreakpoints(
 
 /**
  * On a read-only homepage, forward `widgetLayout.props` into each widget
- * and apply its breakpoints and priority.
+ * and apply its breakpoints and priority. A list under one widget name
+ * mounts one copy per item.
  */
 export function applyReadOnlyWidgetLayout(
   widgets: HomePageCardConfig[],
   layoutConfig: WidgetLayoutConfig = {},
 ): HomePageCardConfig[] {
+  let order = 0;
   return widgets
-    .map((widget, order) => {
-      const entry = layoutEntry(layoutConfig, widget);
-      return {
-        card: withLayout(widget, entry, entry?.props ?? widget.props),
-        priority: entry?.priority ?? 0,
-        order,
-      };
+    .flatMap(widget => {
+      const entries = layoutEntries(layoutConfig, widget);
+      const copies = entries.length > 0 ? entries : [undefined];
+      return copies.map(entry => {
+        const item = {
+          card: withLayout(widget, entry, entry?.props ?? widget.props),
+          priority: entry?.priority ?? 0,
+          order,
+        };
+        order += 1;
+        return item;
+      });
     })
     .sort((a, b) => b.priority - a.priority || a.order - b.order)
     .map(item => item.card);

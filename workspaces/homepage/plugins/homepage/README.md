@@ -76,6 +76,23 @@ app:
 
 The key is the widget `name` (`ScorecardAggregatedCard`). The extension id (`scorecard-aggregated-card`) also matches.
 
+The same key can be a list. Each item becomes its own card, with its own `props`. Use this when one widget, such as `ScorecardAggregatedCard`, must appear more than once with a different `aggregationId`.
+
+```yaml
+widgetLayout:
+  ScorecardAggregatedCard:
+    - id: ScorecardOpenPrs
+      props:
+        aggregationId: github.openPRs
+      breakpoints:
+        xl: { w: 4, h: 6, x: 0, y: 0 }
+    - id: ScorecardOpenIssues
+      props:
+        aggregationId: jira.openIssues
+      breakpoints:
+        xl: { w: 4, h: 6, x: 4, y: 0 }
+```
+
 Visit tracking (for recently/top visited) still uses community home APIs when that package is installed:
 
 ```yaml
