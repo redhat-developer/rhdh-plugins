@@ -16,6 +16,8 @@
 
 export const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
 export const GITHUB_BATCH_SIZE = 100;
+/** Statuses loaded per deployment so a later inactive status does not hide success. */
+export const GITHUB_DEPLOYMENT_STATUSES_PAGE_SIZE = 100;
 
 /**
  * Default client-side cap for GitHub list/compare fetches (deployments,
