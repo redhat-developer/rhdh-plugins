@@ -73,6 +73,37 @@ async function startConnector(
 }
 
 describe('configured acquisition in the plugin', () => {
+  it('keeps skill-image tags separate and excludes unsuccessful extraction', async () => {
+    const aliases = ['quay.io/org/skill:latest', 'quay.io/org/skill:v1'];
+    const nonSkill = 'quay.io/org/container:v1';
+    discover.mockResolvedValue([...aliases, nonSkill]);
+    fetchImage.mockImplementation(async ref => {
+      if (ref === nonSkill) {
+        throw new Error('Image does not contain the required skill files');
+      }
+      return extracted;
+    });
+    const { server } = await startConnector({
+      quayDiscovery: { organization: 'org' },
+    });
+    const response = await request(server)
+      .get('/api/skill-image-connector/images')
+      .set('Authorization', mockCredentials.user.header());
+    expect(response.status).toBe(200);
+    expect(response.body.images).toEqual(
+      aliases.map(imageRef => ({
+        imageRef,
+        skillImageYaml: 'hé',
+        skillsMd: 'abc',
+      })),
+    );
+    expect(response.body.failedImages).toEqual([nonSkill]);
+    expect(discover.mock.calls[0][0].tag).toBeUndefined();
+    expect(logger.warn).not.toHaveBeenCalledWith(
+      expect.stringContaining("'undefined'"),
+    );
+  });
+
   it('shares resolved overrides and enforces the retained UTF-8 byte budget across images', async () => {
     discover.mockResolvedValue(['quay.io/org/discovered:v1']);
     const limits = {
@@ -160,7 +191,7 @@ describe('configured total image limit', () => {
         message.includes('were dropped'),
       );
       const droppedWarning = expect.stringContaining(
-        `${75 - expected} discovered repository(ies) were dropped`,
+        `${75 - expected} discovered image candidate(s) were dropped`,
       );
       expect(droppedWarnings).toEqual(
         expected === 75 ? [] : [[droppedWarning]],

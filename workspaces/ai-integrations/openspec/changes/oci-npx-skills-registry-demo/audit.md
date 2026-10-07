@@ -1,52 +1,43 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-01T18:52:37Z
+**Last audited:** 2026-10-07T17:44:41Z
 
-This focused follow-up reviews the task 2.1 acquisition/configuration changes
-against the design, OCI connector scenarios, task status, runtime implementation,
-and regression tests, including source-specific 404 diagnostics. The reporting
-flag suppresses only discovered-image 404 warnings/errors; explicit image and
-organization-listing diagnostics and raw API failure accounting are preserved.
-The follow-up also covers optional `maxImages` configuration: the default remains
-25, explicit images and discovered candidates share the configured total, explicit
-references take priority, and discovery duplicates do not consume another slot.
-Tests cover a 75-repository inventory, default and overridden limits, explicit
-list validation, and invalid numeric values. This candidate budget is separate
-from the unchanged four-operation concurrency bound and D2 snapshot limits.
-It supplements the previously recorded independent
-specification audit; it is not a new independent audit of all runtime code.
-No new specification-coherence findings were identified within this scope.
+This focused follow-up reviews the all-active-tag discovery pivot against the
+proposal, design, OCI/common/provider specifications, task status, implementation,
+and regression tests. It supplements the earlier independent specification
+reviews, including the 2026-10-02 review; it is not a claim that the remaining
+connector and provider tasks have been implemented.
 
-Task 1.1 is implemented in `ai-skills-common` (PR #5061); task 1.4 documents the
-completed shared-library portion and remaining connector tests. Task 2.1 is
-implemented in PR #5057. Tasks 2.2–2.4 and the other unchecked tasks remain pending.
-The footer in `tasks.md` and the task 2.1 follow-up in D7 now agree on that scope.
+An omitted or blank discovery tag now selects all active tags. Explicit tags
+remain exact filters, and `tag: latest` preserves the former default. Repository
+and tag pages share the existing request utilities and one 100-page budget.
+Distinct repository/tag candidates remain separate even for identical digests;
+`maxImages` counts those candidates together with explicit references.
 
-The OCI specification, design, and plugin README describe the same optional
-settings, separate byte-limit scopes, retry boundaries, and cancellation behavior.
-The existing retained-content budget is explicitly distinguished from the future
-D7 per-image download/decompression budget. Shared redirect checks are not claimed
-to complete D7's configured-origin policy. D2/D3/D5 contracts and the npx/provider
-requirements are unchanged.
+The normalized OCI key changes from repository-only to repository plus exact,
+case-sensitive tag. D3/D4/D5, the OCI/common/provider specs, and the shared fixtures
+now agree: every valid skill-image tag yields its own record and catalog entity,
+a moved tag retains its identity, and confirmed non-skills yield no entity.
+Digest-addressed source URI serialization and declared-version mapping do not
+change. The shared string-key validator and identity helper already support this
+contract; regression tests cover same-digest tagged keys and distinct names.
+The npx identity and acquisition requirements are unchanged.
 
-Strict OpenSpec validation passed. Runtime validation evidence is reported with
-the implementation handoff; a live-cluster test remains the maintainer's next step.
-Recheck this audit when changing the corresponding artifacts.
-**Last audited:** 2026-10-02T16:00:00Z
+Runtime work remains scoped to task 2.1. The current raw `/images` endpoint keeps
+its response shape and existing failure accounting. Discovery truncation is
+logged, and tag-list failures follow the existing discovery error path. Complete
+normalized snapshot status, non-skill classification, digest-pinned acquisition,
+periodic refresh, and actual catalog entity production remain in unchecked tasks
+2.2–2.5 and section 4. Raw explicit digest references remain supported without
+inventing a tag. Shared tasks 1.1 and 1.3 remain complete, with the shared-library
+portion of 1.4 noted separately.
 
-Audit clean (no CRITICAL). The independent auditor returned no findings for the
-final artifacts. All required planning artifacts are present and marked done by
-OpenSpec. Categories A–H were evaluated with the workspace conventions and sibling
-ownership map; cross-change ownership checks were not degraded.
-
-Strict OpenSpec validation, relative links, workspace TypeScript, and workspace
-Prettier checks passed. This audit evaluates specification coherence, not runtime
-implementation; task 1.1 is checked (implemented in `ai-skills-common` PR #5061),
-task 1.3 is checked (implemented in `ai-skills-common` PR #5071), and task 1.4
-is annotated with shared-library completion status.
-
-Fixes to one file can introduce new drift elsewhere — re-run the audit after
-resolving remaining findings.
+Independent verification passed with no outstanding findings. Complete package
+suites passed (233 connector tests and 166 shared-library tests), along with
+workspace type checking/build, package lint, and strict OpenSpec validation.
+Verifier results and validation commands are recorded in the journal and handoff.
+The maintainer subsequently reported successful testing and authorized a local
+commit; signing, pushing, and the next Fullsend review remain maintainer-owned.
 
 ### Summary
 

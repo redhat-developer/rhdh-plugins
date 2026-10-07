@@ -52,9 +52,12 @@ export const MAX_MANIFEST_SIZE = 5 * 1024 * 1024;
 export const MAX_DISCOVERY_RESPONSE_SIZE = 5 * 1024 * 1024;
 export const MAX_TOKEN_RESPONSE_SIZE = 1024 * 1024;
 export const MAX_REDIRECTS = 3;
+/** Shared logical-page budget for Quay repository and tag enumeration. */
 export const MAX_DISCOVERY_PAGES = 100;
+/** Maximum page size accepted by the Quay tag-list API. */
+export const QUAY_TAG_PAGE_SIZE = 100;
 export const MAX_TAR_ENTRIES = 200;
-/** Default total candidate limit for explicit images and discovered repositories. */
+/** Default total candidate limit for explicit images and discovered repository tags. */
 export const MAX_CONFIGURED_IMAGES = 25;
 export const MAX_CONCURRENT_IMAGE_FETCHES = 4;
 export const MAX_RETRIES = 2;
@@ -119,8 +122,8 @@ export interface QuayDiscoveryConfig {
   registry: string;
   /** Public organization whose repositories will be discovered. */
   organization: string;
-  /** Tag to select for each discovered repository. Defaults to "latest". */
-  tag: string;
+  /** Exact tag to select for each repository. Omit to discover all active tags. */
+  tag?: string;
 }
 
 /** Plugin configuration for a single skill image source. */

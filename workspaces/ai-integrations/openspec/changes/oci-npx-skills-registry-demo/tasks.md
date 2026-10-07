@@ -9,11 +9,11 @@
 
 ## 2. OCI connector and REST API
 
-- [x] 2.1 Integrate with the #4747 connector, add paginated public Quay organization discovery and configured tag selection, and retain `/images` compatibility.
-- [ ] 2.2 Resolve tags once, verify digest-addressed manifests and blobs, and expose the resolved manifest digest and stable repository key.
+- [x] 2.1 Integrate with the #4747 connector, add paginated public Quay repository and active-tag discovery (all tags when the tag is omitted, otherwise an exact tag filter), preserve distinct tagged references including same-digest aliases, and retain `/images` compatibility.
+- [ ] 2.2 Resolve each selected tag once, verify digest-addressed manifests and blobs, and expose the resolved manifest digest and stable `<registry>/<repository>:<tag>` key.
 - [ ] 2.3 Normalize annotated-layer and tar/tar+gzip SkillCard/Markdown layouts using the shared mapping; support valid skillctl images without mandatory manifest metadata annotations.
 - [ ] 2.4 Enforce design D7's origin, timeout, concurrency, extraction, and size bounds; test integrity failures, traversal, decompression limits, non-skills, malformed candidates, and ambiguous duplicate skill files.
-- [ ] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository keys, and Backstage startup/periodic refresh scheduling; test unknown source IDs, loading, partial discovery, and empty success.
+- [ ] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository/tag keys, and Backstage startup/periodic refresh scheduling; test unknown source IDs, loading, partial repository/tag discovery, and empty success.
 
 ## 3. npx connector and REST API
 
@@ -25,10 +25,10 @@
 ## 4. Common skill catalog entity provider
 
 - [ ] 4.1 Implement one provider with independently configured source instances; resolve connector URLs with Backstage discovery and use service tokens targeted to the receiving plugin ID.
-- [ ] 4.2 Validate snapshots and construct upstream-compatible `AiResource` entities using design D3/D5 mappings, configured defaults, stable names, and integrity annotations.
+- [ ] 4.2 Validate snapshots and construct upstream-compatible `AiResource` entities using design D3/D5 mappings, configured defaults, stable names, and integrity annotations; emit one entity per valid OCI skill-image tag, including aliases of the same digest, and none for confirmed non-skills.
 - [ ] 4.3 Persist last-known-good entities, tuples, digests, observation times, and pending deltas/next ownership state with Backstage's database service; recover pending mutations before consuming new snapshots.
 - [ ] 4.4 Implement ready/partial/loading/failed handling, stale/repeated snapshot handling, and safe replay after catalog mutation failure or a crash before ownership commit.
-- [ ] 4.5 Test partial-result retention, ready-result removal, successful empty discovery, restart during outage, interrupted additions followed by disappearance, invalid responses, duplicate configuration, and identity collisions.
+- [ ] 4.5 Test partial-result retention, ready-result removal, successful empty discovery, restart during outage, interrupted additions followed by disappearance, invalid responses, duplicate configuration, identity collisions, same-digest OCI tags producing distinct entities, and a tag moving without changing entity identity.
 
 ## 5. Configuration and integration verification
 
@@ -39,6 +39,8 @@
 
 Task 1.1 was implemented by the `ai-skills-common` package (PR #5061). The
 shared-library portions of task 1.4 were completed in the same PR. Task 2.1 is
-implemented by PR #5057, including its reviewed acquisition/configuration follow-up.
+implemented by PR #5057, including its acquisition/configuration and all-active-tag
+discovery follow-ups. The normalized repository/tag key and per-tag catalog entity
+requirements are specified here for the remaining implementation tasks.
 Unchecked tasks describe remaining connector and provider implementation;
 the task 2.1 follow-up does not complete tasks 2.2–2.4.

@@ -314,6 +314,20 @@ describe('validateSnapshot', () => {
   });
 
   describe('record key uniqueness', () => {
+    it('accepts distinct OCI tags sharing one manifest and keeps failures tag-specific', () => {
+      const result = validateSnapshot({
+        ...validOciSnapshotReady,
+        status: 'partial',
+        skills: ['latest', 'v1'].map(tag => ({
+          ...validOciRecordFull,
+          key: `quay.io/octo/hello-world-skill:${tag}`,
+        })),
+        failedSkillKeys: ['quay.io/octo/hello-world-skill:v2'],
+      });
+      expect(result.valid).toBe(true);
+      expect(result.errors).toEqual([]);
+    });
+
     it('rejects duplicate skill keys', () => {
       const result = validateSnapshot(invalidSnapshotDuplicateKeys);
       expect(result.valid).toBe(false);

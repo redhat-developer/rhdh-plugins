@@ -192,7 +192,7 @@ export function readSkillImageConfigs(
  *   quayDiscovery:
  *     registry: quay.io          # optional, defaults to quay.io
  *     organization: my-org       # required
- *     tag: latest                # optional, defaults to latest
+ *     tag: latest                # optional exact filter; omit for all active tags
  * ```
  */
 export function readQuayDiscoveryConfig(
@@ -227,10 +227,20 @@ export function readQuayDiscoveryConfig(
       `Invalid quayDiscovery.registry value '${registry}': must be a valid registry host`,
     );
   }
-  const tag = safeGetOptionalString(discoveryConfig, 'tag')?.trim() || 'latest';
-  validateTag(tag, 'quayDiscovery.tag');
+  const configuredTag = discoveryConfig.getOptional('tag');
+  if (
+    configuredTag !== undefined &&
+    configuredTag !== null &&
+    typeof configuredTag !== 'string'
+  ) {
+    throw new InputError('quayDiscovery.tag must be a string when provided');
+  }
+  const tag = (configuredTag as string | undefined | null)?.trim() || undefined;
+  if (tag !== undefined) {
+    validateTag(tag, 'quayDiscovery.tag');
+  }
 
-  return { registry, organization, tag };
+  return { registry, organization, ...(tag === undefined ? {} : { tag }) };
 }
 
 /**
@@ -268,7 +278,7 @@ export function mergeDiscoveredRefs(
 
   if (discoveredSkipped > 0) {
     logger.warn(
-      `${discoveredSkipped} discovered repository(ies) were dropped because the total ` +
+      `${discoveredSkipped} discovered image candidate(s) were dropped because the total ` +
         `image count would exceed the maximum of ${maxImages}`,
     );
   }
@@ -477,7 +487,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               // Discovered images always use mutable tags
               if (mergeResult.added > 0) {
                 pluginLogger.warn(
-                  `${mergeResult.added} discovered image(s) use the mutable tag '${quayDiscoveryConfig.tag}'. ` +
+                  `${mergeResult.added} discovered image(s) use mutable tags. ` +
                     'Use digest references in production to prevent tag mutation attacks.',
                 );
               }

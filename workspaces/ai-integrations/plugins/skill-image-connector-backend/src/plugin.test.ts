@@ -158,19 +158,22 @@ describe('readSkillImageConfigs', () => {
 });
 
 describe('readQuayDiscoveryConfig', () => {
-  it.each(['bad tag', '../bad', '-bad', 'a'.repeat(129)])(
-    'rejects invalid tag %s at configuration time',
-    tag => {
-      const config = new ConfigReader({
-        skillImageConnector: {
-          quayDiscovery: { organization: 'test-org', tag },
-        },
-      });
-      expect(() => readQuayDiscoveryConfig(config)).toThrow(
-        'quayDiscovery.tag',
-      );
-    },
-  );
+  it.each([
+    'bad tag',
+    '../bad',
+    '-bad',
+    '*',
+    'v.*',
+    '^v[0-9]+$',
+    'a'.repeat(129),
+  ])('rejects invalid tag %s at configuration time', tag => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: { organization: 'test-org', tag },
+      },
+    });
+    expect(() => readQuayDiscoveryConfig(config)).toThrow('quayDiscovery.tag');
+  });
 
   it('returns undefined when no config', () => {
     const config = new ConfigReader({});
@@ -193,7 +196,7 @@ describe('readQuayDiscoveryConfig', () => {
     expect(readQuayDiscoveryConfig(config)).toBeUndefined();
   });
 
-  it('reads organization with default registry and tag', () => {
+  it('leaves the tag unset to discover all active tags by default', () => {
     const config = new ConfigReader({
       skillImageConnector: {
         quayDiscovery: {
@@ -205,8 +208,42 @@ describe('readQuayDiscoveryConfig', () => {
     expect(result).toEqual({
       registry: 'quay.io',
       organization: 'my-org',
-      tag: 'latest',
     });
+  });
+
+  it.each(['', '   ', null])(
+    'treats an empty tag (%p) as all active tags',
+    tag => {
+      const config = new ConfigReader({
+        skillImageConnector: {
+          quayDiscovery: { organization: 'my-org', tag },
+        },
+      });
+      expect(readQuayDiscoveryConfig(config)?.tag).toBeUndefined();
+    },
+  );
+
+  it.each([false, 123, ['latest'], {}])(
+    'rejects non-string tag %p instead of enabling all-tag discovery',
+    tag => {
+      const config = new ConfigReader({
+        skillImageConnector: {
+          quayDiscovery: { organization: 'my-org', tag },
+        },
+      });
+      expect(() => readQuayDiscoveryConfig(config)).toThrow(
+        'quayDiscovery.tag',
+      );
+    },
+  );
+
+  it('preserves an explicit latest tag as an exact selection', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        quayDiscovery: { organization: 'my-org', tag: ' latest ' },
+      },
+    });
+    expect(readQuayDiscoveryConfig(config)?.tag).toBe('latest');
   });
 
   it('reads explicit registry and tag', () => {
@@ -302,7 +339,7 @@ describe('mergeDiscoveredRefs', () => {
     expect(result.added).toBe(2);
     expect(result.skipped).toBe(3);
     expect(mockLogger.warn).toHaveBeenCalledWith(
-      expect.stringContaining('3 discovered repository(ies) were dropped'),
+      expect.stringContaining('3 discovered image candidate(s) were dropped'),
     );
   });
 

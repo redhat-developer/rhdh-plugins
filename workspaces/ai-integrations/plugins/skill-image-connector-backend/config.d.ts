@@ -71,7 +71,10 @@ export interface Config {
        * @visibility backend
        */
       organization?: string;
-      /** @visibility backend */
+      /** Exact tag to try in each repository. Omit or leave blank to discover all active tags.
+       * Set latest explicitly to preserve the former default; wildcards and regex are not supported.
+       * @visibility backend
+       */
       tag?: string;
     };
   };
