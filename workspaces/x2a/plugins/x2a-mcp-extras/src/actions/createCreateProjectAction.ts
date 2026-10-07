@@ -134,6 +134,8 @@ The init phase cannot be started automatically from this tool - the user must vi
         }
       }
 
+      await x2aDatabase.validateAcceptedRules(input.acceptedRuleIds ?? []);
+
       const project = await x2aDatabase.createProject(
         {
           name: input.name,

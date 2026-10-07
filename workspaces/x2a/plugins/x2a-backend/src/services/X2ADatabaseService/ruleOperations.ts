@@ -112,31 +112,51 @@ export class RuleOperations {
     return deletedCount;
   }
 
+  async validateAcceptedRules(ruleIds: string[]): Promise<void> {
+    const requestedRules =
+      ruleIds.length > 0
+        ? await this.#dbClient('rules').whereIn('id', ruleIds)
+        : [];
+
+    const missingIds = ruleIds.filter(
+      id => !requestedRules.find((r: Record<string, unknown>) => r.id === id),
+    );
+    if (missingIds.length > 0) {
+      throw new InputError(`Rules not found: ${missingIds.join(', ')}`);
+    }
+
+    const requiredRules = await this.#dbClient('rules').where('required', true);
+
+    const allRulesMap = new Map<string, Record<string, unknown>>();
+    for (const row of [...requestedRules, ...requiredRules]) {
+      const r = row as Record<string, unknown>;
+      allRulesMap.set(r.id as string, r);
+    }
+
+    const totalChars = [...allRulesMap.values()].reduce(
+      (sum, r) => sum + (r.description as string).length,
+      0,
+    );
+    if (totalChars > MAX_ACCEPTED_RULES_TOTAL_CHARS) {
+      throw new InputError(
+        `Total accepted rules content (${totalChars} chars) exceeds the ${MAX_ACCEPTED_RULES_TOTAL_CHARS} character limit`,
+      );
+    }
+  }
+
   async attachRulesToProject(args: {
     projectId: string;
     ruleIds: string[];
   }): Promise<void> {
     const { projectId, ruleIds } = args;
 
-    // Fetch explicitly requested rules
     const requestedRules =
       ruleIds.length > 0
         ? await this.#dbClient('rules').whereIn('id', ruleIds)
         : [];
 
-    // Validate all provided IDs exist
-    const foundIds = new Set(
-      requestedRules.map((r: Record<string, unknown>) => r.id as string),
-    );
-    const missingIds = ruleIds.filter(id => !foundIds.has(id));
-    if (missingIds.length > 0) {
-      throw new InputError(`Rules not found: ${missingIds.join(', ')}`);
-    }
-
-    // Fetch required rules (auto-appended)
     const requiredRules = await this.#dbClient('rules').where('required', true);
 
-    // Merge and deduplicate
     const allRulesMap = new Map<string, Record<string, unknown>>();
     for (const row of [...requestedRules, ...requiredRules]) {
       const r = row as Record<string, unknown>;
@@ -146,16 +166,6 @@ export class RuleOperations {
     const snapshots: RuleSnapshot[] = [...allRulesMap.values()].map(row =>
       RuleEntity.fromRow(row).toSnapshot(),
     );
-
-    const totalChars = snapshots.reduce(
-      (sum, s) => sum + s.description.length,
-      0,
-    );
-    if (totalChars > MAX_ACCEPTED_RULES_TOTAL_CHARS) {
-      throw new InputError(
-        `Total accepted rules content (${totalChars} chars) exceeds the ${MAX_ACCEPTED_RULES_TOTAL_CHARS} character limit`,
-      );
-    }
 
     await this.#dbClient('projects')
       .where('id', projectId)

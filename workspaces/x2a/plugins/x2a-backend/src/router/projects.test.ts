@@ -281,6 +281,29 @@ describe('createRouter – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
+      'should reject project creation with non-existent rule IDs and not persist the project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const response = await request(app)
+          .post('/projects')
+          .send({
+            ...mockInputProject,
+            acceptedRuleIds: ['non-existent-id'],
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+
+        // Project must not have been persisted
+        const listResponse = await request(app).get('/projects').send();
+        expect(listResponse.status).toBe(200);
+        expect(listResponse.body.items).toHaveLength(0);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
       'should reject project creation when accepted rules total exceeds 50000 chars - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -304,6 +327,11 @@ describe('createRouter – projects', () => {
 
         expect(response.status).toBe(400);
         expect(response.body.error.name).toBe('InputError');
+
+        // Project must not have been persisted
+        const listResponse = await request(app).get('/projects').send();
+        expect(listResponse.status).toBe(200);
+        expect(listResponse.body.items).toHaveLength(0);
       },
       LONG_TEST_TIMEOUT,
     );

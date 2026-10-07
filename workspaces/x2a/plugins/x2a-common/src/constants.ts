@@ -116,6 +116,9 @@ export const ENTITY_REF_RE = /^(user|group):[a-z0-9_.-]+\/[a-z0-9_.-]+$/;
 /**
  * Maximum character length allowed for a single rule's description.
  *
+ * Keep in sync with the `maxLength` on rule `description` fields in
+ * plugins/x2a-backend/src/schema/openapi.yaml.
+ *
  * @public
  */
 export const MAX_RULE_DESCRIPTION_CHARS = 50_000;

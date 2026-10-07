@@ -140,6 +140,7 @@ paths:
                   description: Title of the rule
                 description:
                   type: string
+                  # Must match MAX_RULE_DESCRIPTION_CHARS in plugins/x2a-common/src/constants.ts
                   maxLength: 50000
                   description: Description of the rule
                 required:
@@ -194,6 +195,7 @@ paths:
                   description: Title of the rule
                 description:
                   type: string
+                  # Must match MAX_RULE_DESCRIPTION_CHARS in plugins/x2a-common/src/constants.ts
                   maxLength: 50000
                   description: Description of the rule
                 required:
