@@ -435,7 +435,7 @@ function normalizeSingleTag(tag: unknown): string | null {
  * validated against Backstage's tag rules, and deduplicated.
  * Invalid or overlength tags are omitted with diagnostics.
  */
-function normalizeTags(
+function normalizeTagCandidates(
   candidates: unknown[],
   diagnostics: NormalizationDiagnostic[],
 ): string[] | undefined {
@@ -464,7 +464,12 @@ function normalizeTags(
       if (normalized === null) {
         if (typeof candidate[i] === 'string') {
           const raw = (candidate[i] as string).trim();
-          if (raw.length > MAX_TAG_LENGTH) {
+          if (raw.length === 0) {
+            diagnostics.push({
+              field: 'tags',
+              message: `tags[${i}]: empty after trim, omitted`,
+            });
+          } else if (raw.length > MAX_TAG_LENGTH) {
             diagnostics.push({
               field: 'tags',
               message: `tags[${i}]: overlength tag '${truncateForDiagnostic(
@@ -648,7 +653,10 @@ export function normalizeOciMetadata(
   );
 
   // Tags: metadata.tags → frontmatter metadata.tags
-  const tags = normalizeTags([meta?.tags, fm?.metadata?.tags], diagnostics);
+  const tags = normalizeTagCandidates(
+    [meta?.tags, fm?.metadata?.tags],
+    diagnostics,
+  );
 
   // Build the record with trusted identity fields
   const record: OciSkillRecord = {
@@ -767,7 +775,7 @@ export function normalizeNpxMetadata(
   const authors = normalizeAuthors([fm?.metadata?.author], diagnostics);
 
   // Tags: frontmatter metadata.tags only
-  const tags = normalizeTags([fm?.metadata?.tags], diagnostics);
+  const tags = normalizeTagCandidates([fm?.metadata?.tags], diagnostics);
 
   // Build the record with trusted identity fields
   const record: NpxSkillRecord = {

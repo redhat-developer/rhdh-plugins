@@ -354,6 +354,24 @@ describe('normalizeOciMetadata', () => {
       expect(result.record!.tags).toEqual(['demo', 'hello-world']);
     });
 
+    it('accepts dots, underscores, and consecutive hyphens in catalog tags', () => {
+      const native: OciNativeInput = {
+        skillCard: {
+          metadata: {
+            name: 'Test',
+            tags: ['rhdh:2.2', 'has_underscore', 'in--valid'],
+          },
+        },
+      };
+      const result = normalizeOciMetadata(native, ociTrustedInput);
+      expect(result.record!.tags).toEqual([
+        'rhdh:2.2',
+        'has_underscore',
+        'in--valid',
+      ]);
+      expect(result.diagnostics).toHaveLength(0);
+    });
+
     it('deduplicates tags after normalization', () => {
       const native: OciNativeInput = {
         skillCard: {
@@ -383,6 +401,19 @@ describe('normalizeOciMetadata', () => {
           d => d.field === 'tags' && d.message.includes('invalid tag'),
         ),
       ).toBe(true);
+    });
+
+    it('reports whitespace-only tags as empty after trimming', () => {
+      const native: OciNativeInput = {
+        skillCard: {
+          metadata: { name: 'Test', tags: ['   '] },
+        },
+      };
+      const result = normalizeOciMetadata(native, ociTrustedInput);
+      expect(result.record!.tags).toBeUndefined();
+      expect(result.diagnostics).toEqual([
+        { field: 'tags', message: 'tags[0]: empty after trim, omitted' },
+      ]);
     });
 
     it('omits overlength tags with diagnostics', () => {
