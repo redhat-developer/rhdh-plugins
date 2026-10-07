@@ -70,6 +70,7 @@ const COL_TO_FIELD: Record<string, keyof SourceRow> = {
 
 export function formatMetricValue(
   value: MetricResult['result'] | undefined,
+  locale?: string,
 ): string {
   if (value?.value === null || value?.value === undefined) {
     return MISSING_EVALUATION_LABEL;
@@ -80,7 +81,7 @@ export function formatMetricValue(
     }
     return Number.isInteger(value.value)
       ? String(value.value)
-      : value.value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      : value.value.toLocaleString(locale, { maximumFractionDigits: 2 });
   }
   return String(value.value);
 }

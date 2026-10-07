@@ -74,7 +74,7 @@ export const toMetricSourceRows = (
         metric.metadata.description,
       ),
       value: formatWithMetricUnit(
-        formatMetricValue(metric.result),
+        formatMetricValue(metric.result, options.locale),
         metric.metadata.unit,
       ),
       evaluationKey,

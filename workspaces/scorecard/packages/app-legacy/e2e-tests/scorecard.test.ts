@@ -626,6 +626,7 @@ test.describe('Scorecard Plugin Tests', () => {
         },
         partialResponse: gitHubPartiallyAggregatedResponse,
         runAccessibility: true,
+        verifyDataSources: true,
       },
       getHomepageAggregationKpiTestContext,
     );
@@ -778,6 +779,7 @@ test.describe('Scorecard Plugin Tests', () => {
         aggregatedResponse: totalOpenBugsAggregatedResponse,
         partialResponse: totalOpenBugsPartiallyAggregatedResponse,
         runAccessibility: true,
+        verifyDataSources: true,
       },
       getHomepageAggregationKpiTestContext,
     );

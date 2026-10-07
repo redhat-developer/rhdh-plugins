@@ -25,7 +25,7 @@ import {
 } from '../../../utils';
 import { CardWrapper } from '../../Common/CardWrapper';
 import { MetricDataSources } from '../../DataSources/MetricDataSources';
-import { toDialogMetricResult } from '../../DataSources/toDialogMetricResult';
+import { toAggregatedDialogMetricResult } from '../../DataSources/toAggregatedDialogMetricResult';
 import { ResponsivePieChart } from '../../ScorecardHomepageSection/ResponsivePieChart';
 import { CardLegendContent } from '../components/CardLegendContent';
 import { CardPieTooltipContent } from '../components/CardPieTooltipContent';
@@ -33,6 +33,7 @@ import { CardChartContainer } from '../components/CardChartContainer';
 import { CardSubheader } from '../components/CardSubheader';
 import { CardTooltip } from '../components/CardTooltip';
 import { StatusGroupedCardComponentProps } from './types';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 export const StatusGroupedCardComponent = ({
   scorecard,
@@ -44,6 +45,7 @@ export const StatusGroupedCardComponent = ({
   dataTestId,
 }: StatusGroupedCardComponentProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] =
@@ -72,24 +74,17 @@ export const StatusGroupedCardComponent = ({
     />
   ) : null;
 
-  const topStatus = result.values?.reduce(
-    (max, v) => (v.count > max.count ? v : max),
-    result.values[0],
-  );
-
   const metricSnapshot = useMemo(
     () =>
-      toDialogMetricResult({
-        id: scorecardId,
-        title: cardTitle,
-        description,
+      toAggregatedDialogMetricResult({
+        t,
+        metricId: scorecardId,
+        cardTitle,
         type: 'number',
-        value: result.total,
         timestamp: result.timestamp,
-        evaluation: topStatus?.name ?? null,
-        thresholds: result.thresholds,
+        includeValueAndStatus: false,
       }),
-    [scorecardId, cardTitle, description, result, topStatus],
+    [t, scorecardId, cardTitle, result.timestamp],
   );
 
   const info = showInfo ? (
@@ -98,6 +93,9 @@ export const StatusGroupedCardComponent = ({
       metricId={scorecardId}
       lastSyncedTimestamp={result.timestamp}
       metric={metricSnapshot}
+      unavailableValueLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
+      unavailableStatusLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
+      showThresholdLegend={false}
     />
   ) : null;
 

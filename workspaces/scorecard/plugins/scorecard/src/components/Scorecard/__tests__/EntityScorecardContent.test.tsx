@@ -99,14 +99,6 @@ jest.mock('../EntitySparklineCard', () => ({
   },
 }));
 
-jest.mock('../../DataSources/metricSourceRows', () => ({
-  toMetricSourceRows: () => [],
-}));
-
-jest.mock('../../MetricGroupCard/thresholdBucketUtils', () => ({
-  buildThresholdBuckets: () => [],
-}));
-
 jest.mock('../../../hooks/useScorecards', () => ({
   useScorecards: jest.fn(),
 }));

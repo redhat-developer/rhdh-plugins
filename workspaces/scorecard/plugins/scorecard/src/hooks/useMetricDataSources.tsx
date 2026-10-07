@@ -27,9 +27,11 @@ import { toMetricSourceRows } from '../components/DataSources/metricSourceRows';
 import type { MenuAction } from '../components/DataSources/CardActionsMenu';
 import {
   buildThresholdBuckets,
+  hasMetricEvaluation,
   MISSING_EVALUATION_LABEL,
 } from '../components/MetricGroupCard/thresholdBucketUtils';
 import type { DataSourcesDialogProps } from '../components/DataSources/DataSourcesDialog';
+import type { SourceRow } from '../components/DataSources/DataSourcesDialogColumns';
 
 export type UseMetricDataSourcesOptions = {
   metricId: string;
@@ -38,6 +40,41 @@ export type UseMetricDataSourcesOptions = {
   fetchEnabled?: boolean;
   /** Full metric result — used to show actual value/status/evaluation in the dialog for non-composite metrics. */
   metric?: MetricResult;
+  /** Shown when the snapshot has no value (e.g. statusGrouped aggregations). */
+  unavailableValueLabel?: string;
+  /** Shown when the snapshot has no threshold evaluation. */
+  unavailableStatusLabel?: string;
+  /** When false, hide the dialog threshold legend. Defaults to true when a metric snapshot is present. */
+  showThresholdLegend?: boolean;
+};
+
+const applyUnavailableLabels = (
+  rows: SourceRow[],
+  metric: MetricResult,
+  unavailableValueLabel?: string,
+  unavailableStatusLabel?: string,
+): SourceRow[] => {
+  const missingValue =
+    metric.result?.value === null || metric.result?.value === undefined;
+  const missingStatus = !hasMetricEvaluation(metric);
+
+  if (
+    (!missingValue || !unavailableValueLabel) &&
+    (!missingStatus || !unavailableStatusLabel)
+  ) {
+    return rows;
+  }
+
+  return rows.map(row => ({
+    ...row,
+    value:
+      missingValue && unavailableValueLabel ? unavailableValueLabel : row.value,
+    statusLabel:
+      missingStatus && unavailableStatusLabel
+        ? unavailableStatusLabel
+        : row.statusLabel,
+    statusIcon: missingStatus && unavailableStatusLabel ? '' : row.statusIcon,
+  }));
 };
 
 export const useMetricDataSources = ({
@@ -45,6 +82,9 @@ export const useMetricDataSources = ({
   lastSyncedTimestamp,
   fetchEnabled = false,
   metric,
+  unavailableValueLabel,
+  unavailableStatusLabel,
+  showThresholdLegend = true,
 }: UseMetricDataSourcesOptions) => {
   const { t } = useTranslation();
   const locale = useLanguage();
@@ -72,7 +112,7 @@ export const useMetricDataSources = ({
   } = useMetricCollectors(metricId, shouldFetch);
 
   const sourceRows = useMemo(() => {
-    if (collectors && collectors.length > 0) {
+    if (fetchEnabled && collectors && collectors.length > 0) {
       return toCollectorSourceRows(collectors, {
         metricId,
         lastSynced: lastSyncedTimestamp
@@ -85,15 +125,33 @@ export const useMetricDataSources = ({
     }
 
     if (metric) {
-      return toMetricSourceRows([metric], { t, locale });
+      return applyUnavailableLabels(
+        toMetricSourceRows([metric], { t, locale }),
+        metric,
+        unavailableValueLabel,
+        unavailableStatusLabel,
+      );
     }
 
     return [];
-  }, [collectors, metric, metricId, lastSyncedTimestamp, locale, t]);
+  }, [
+    fetchEnabled,
+    collectors,
+    metric,
+    metricId,
+    lastSyncedTimestamp,
+    locale,
+    t,
+    unavailableValueLabel,
+    unavailableStatusLabel,
+  ]);
 
   const buckets = useMemo(
-    () => (metric ? buildThresholdBuckets([metric], t) : undefined),
-    [metric, t],
+    () =>
+      metric && showThresholdLegend
+        ? buildThresholdBuckets([metric], t)
+        : undefined,
+    [metric, showThresholdLegend, t],
   );
 
   const dialogProps: Pick<

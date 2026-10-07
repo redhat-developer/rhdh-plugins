@@ -160,4 +160,41 @@ describe('useMetricDataSources', () => {
     expect(row?.evaluationKey).toBe('success');
     expect(row?.thresholdExpression).toBe('<10');
   });
+
+  it('shows N/A for missing aggregated value and status when labels are provided', () => {
+    const metric: MetricResult = {
+      id: 'github.openPRs',
+      status: 'success',
+      metadata: {
+        title: 'GitHub open PRs',
+        description: 'Current count of open Pull Requests',
+        type: 'number',
+      },
+      result: {
+        value: null,
+        timestamp: '2026-09-22T04:31:25.653Z',
+        thresholdResult: {
+          status: 'success',
+          definition: undefined,
+          evaluation: null,
+        },
+      },
+    };
+
+    const { result } = renderHook(() =>
+      useMetricDataSources({
+        metricId: 'github.openPRs',
+        lastSyncedTimestamp: '2026-09-22T04:31:25.653Z',
+        metric,
+        unavailableValueLabel: 'N/A',
+        unavailableStatusLabel: 'N/A',
+        showThresholdLegend: false,
+      }),
+    );
+
+    expect(result.current.dialogProps.rows[0]?.value).toBe('N/A');
+    expect(result.current.dialogProps.rows[0]?.statusLabel).toBe('N/A');
+    expect(result.current.dialogProps.rows[0]?.statusIcon).toBe('');
+    expect(result.current.dialogProps.buckets).toBeUndefined();
+  });
 });

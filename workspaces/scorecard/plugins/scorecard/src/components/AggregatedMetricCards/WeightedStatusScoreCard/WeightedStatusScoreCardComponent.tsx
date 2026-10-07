@@ -21,10 +21,14 @@ import { useTheme } from '@mui/material/styles';
 
 import { CardWrapper } from '../../Common/CardWrapper';
 import type { PieData } from '../../types';
-import { getThresholdRuleColor, resolveStatusColor } from '../../../utils';
+import { resolveStatusColor } from '../../../utils';
+import { useTranslation } from '../../../hooks/useTranslation';
 import { ResponsivePieChart } from '../../ScorecardHomepageSection/ResponsivePieChart';
 import { MetricDataSources } from '../../DataSources/MetricDataSources';
-import { toDialogMetricResult } from '../../DataSources/toDialogMetricResult';
+import {
+  getEvaluationKeyFromChartColor,
+  toAggregatedDialogMetricResult,
+} from '../../DataSources/toAggregatedDialogMetricResult';
 import { CardSubheader } from '../components/CardSubheader';
 import { CardChartContainer } from '../components/CardChartContainer';
 import { CardTooltip } from '../components/CardTooltip';
@@ -55,6 +59,7 @@ export const WeightedStatusScoreCardComponent = ({
   dataTestId,
 }: WeightedStatusScoreCardComponentProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const [centerTooltipPosition, setCenterTooltipPosition] =
     useState<TooltipPosition | null>(null);
@@ -101,21 +106,17 @@ export const WeightedStatusScoreCardComponent = ({
     />
   ) : null;
 
-  const thresholdRules = scorecard.result.thresholds?.rules ?? [];
-  const evaluation = scorecard.result.aggregationChartDisplayColor
-    ? thresholdRules.find(
-        rule =>
-          getThresholdRuleColor(thresholdRules, rule.key) ===
-          scorecard.result.aggregationChartDisplayColor,
-      )?.key ?? null
-    : null;
+  const evaluation = getEvaluationKeyFromChartColor(
+    scorecard.result.aggregationChartDisplayColor,
+    scorecard.result.thresholds?.rules,
+  );
 
   const metricSnapshot = useMemo(
     () =>
-      toDialogMetricResult({
-        id: scorecard.id,
-        title: cardTitle,
-        description,
+      toAggregatedDialogMetricResult({
+        t,
+        metricId: scorecard.id,
+        cardTitle,
         type: 'number',
         unit: '%',
         value: scorecard.result.weightedStatusScore,
@@ -123,7 +124,7 @@ export const WeightedStatusScoreCardComponent = ({
         evaluation,
         thresholds: scorecard.result.thresholds,
       }),
-    [scorecard, cardTitle, description, evaluation],
+    [t, scorecard, cardTitle, evaluation],
   );
 
   const info = showInfo ? (
@@ -132,6 +133,7 @@ export const WeightedStatusScoreCardComponent = ({
       metricId={scorecard.id}
       lastSyncedTimestamp={scorecard.result.timestamp}
       metric={metricSnapshot}
+      unavailableStatusLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
     />
   ) : null;
 

@@ -21,12 +21,14 @@ import type { AggregatedMetricTimeSeriesResponse } from '@red-hat-developer-hub/
 import { CardWrapper } from '../Common/CardWrapper';
 import { SparklineChart } from '../SparklineChart';
 import { MetricDataSources } from '../DataSources/MetricDataSources';
-import { toDialogMetricResult } from '../DataSources/toDialogMetricResult';
+import {
+  getEvaluationKeyFromChartColor,
+  toAggregatedDialogMetricResult,
+} from '../DataSources/toAggregatedDialogMetricResult';
 import { CardSubheader } from './components/CardSubheader';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
-  getThresholdRuleColor,
   resolveStatusColor,
   SCORECARD_ERROR_STATE_COLOR,
   toAggregationSparklinePoints,
@@ -59,12 +61,9 @@ export const AggregatedSparklineCard = ({
   const lastPoint = series.points[series.points.length - 1];
   const thresholdRules = series.thresholds?.rules;
   const chartColorToken = series.aggregationChartDisplayColor;
-  const matchingThresholdKey = chartColorToken
-    ? thresholdRules?.find(
-        rule =>
-          getThresholdRuleColor(thresholdRules, rule.key) === chartColorToken,
-      )?.key
-    : undefined;
+  const matchingThresholdKey =
+    getEvaluationKeyFromChartColor(chartColorToken, thresholdRules) ??
+    undefined;
   const chartColor = resolveStatusColor(
     theme,
     chartColorToken ?? SCORECARD_ERROR_STATE_COLOR,
@@ -117,10 +116,10 @@ export const AggregatedSparklineCard = ({
       return undefined;
     }
 
-    return toDialogMetricResult({
-      id: series.metricId,
-      title: cardTitle,
-      description,
+    return toAggregatedDialogMetricResult({
+      t,
+      metricId: series.metricId,
+      cardTitle,
       type: series.metadata.type,
       unit: series.metadata.unit,
       value: lastPoint.value,
@@ -130,13 +129,13 @@ export const AggregatedSparklineCard = ({
       status: lastPoint.status,
     });
   }, [
+    t,
     lastPoint,
     series.metricId,
     series.metadata.type,
     series.metadata.unit,
     series.thresholds,
     cardTitle,
-    description,
     matchingThresholdKey,
   ]);
 
@@ -147,6 +146,8 @@ export const AggregatedSparklineCard = ({
       lastSyncedTimestamp={lastPoint?.timestamp}
       fetchEnabled
       metric={metricSnapshot}
+      unavailableValueLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
+      unavailableStatusLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
     />
   ) : null;
 

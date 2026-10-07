@@ -70,7 +70,13 @@ jest.mock('../../DataSources/DataSourcesDialog', () => ({
     buckets,
   }: {
     title: string;
-    rows: Array<{ plugin: string; metricId: string }>;
+    rows: Array<{
+      plugin: string;
+      metricId: string;
+      metricDescription?: string;
+      value?: string;
+      statusLabel?: string;
+    }>;
     isLoading?: boolean;
     error?: Error;
     buckets?: unknown[];
@@ -78,6 +84,9 @@ jest.mock('../../DataSources/DataSourcesDialog', () => ({
     <div data-testid="data-sources-dialog">
       <span data-testid="dialog-title">{title}</span>
       <span data-testid="dialog-metric-id">{rows[0]?.metricId ?? ''}</span>
+      <span data-testid="dialog-check">{rows[0]?.metricDescription ?? ''}</span>
+      <span data-testid="dialog-value">{rows[0]?.value ?? ''}</span>
+      <span data-testid="dialog-status">{rows[0]?.statusLabel ?? ''}</span>
       <span data-testid="dialog-collectors">
         {rows.map(row => row.plugin).join(',')}
       </span>
@@ -315,7 +324,7 @@ describe('AggregatedSparklineCard', () => {
       series: openPrsSeries,
       aggregationId: 'openPrsKpi',
       cardTitle: 'GitHub Open PRs KPI',
-      description: 'Current count of open Pull Requests',
+      description: 'Average open PRs across owned repositories.',
     });
 
     fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
@@ -324,6 +333,14 @@ describe('AggregatedSparklineCard', () => {
     expect(screen.getByTestId('dialog-metric-id')).toHaveTextContent(
       'github.openPRs',
     );
+    expect(screen.getByTestId('dialog-check')).toHaveTextContent(
+      'Current count of open Pull Requests for a given GitHub repository.',
+    );
+    expect(screen.getByTestId('dialog-check')).not.toHaveTextContent(
+      'Average open PRs across owned repositories.',
+    );
+    expect(screen.getByTestId('dialog-value')).toHaveTextContent('6.8');
+    expect(screen.getByTestId('dialog-status')).toHaveTextContent('Medium');
     expect(screen.getByTestId('dialog-collectors')).toHaveTextContent('Github');
     expect(screen.getByTestId('dialog-legend')).toHaveTextContent('true');
     expect(useMetricCollectorsMock).toHaveBeenCalledWith(
