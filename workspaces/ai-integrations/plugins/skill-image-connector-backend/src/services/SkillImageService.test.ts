@@ -697,7 +697,7 @@ describe('fetchAndExtractSkillImage', () => {
     });
   });
 
-  it('should reject gzip bomb that decompresses past MAX_BLOB_SIZE', async () => {
+  it('should reject a gzip bomb that exceeds the default blob size limit', async () => {
     // Create content that decompresses well past the 5 MB limit.
     // A 6 MB zero buffer compresses to a few KB with gzip.
     const largeContent = Buffer.alloc(6 * 1024 * 1024, 0);

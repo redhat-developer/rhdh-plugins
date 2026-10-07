@@ -263,9 +263,7 @@ describe('readQuayDiscoveryConfig', () => {
       tag: 'v2.0',
     });
   });
-});
 
-describe('readQuayDiscoveryConfig — validation', () => {
   it('throws when registry has invalid format', () => {
     const config = new ConfigReader({
       skillImageConnector: {
@@ -320,7 +318,7 @@ describe('mergeDiscoveredRefs', () => {
     expect(result.skipped).toBe(0);
   });
 
-  it('enforces MAX_CONFIGURED_IMAGES cap and warns about skipped repos', () => {
+  it('enforces the supplied image cap and warns about skipped repos', () => {
     const existing = Array.from({ length: 23 }, (_, i) => ({
       id: `image-${i}`,
       imageRef: `quay.io/org/img-${i}:v1`,

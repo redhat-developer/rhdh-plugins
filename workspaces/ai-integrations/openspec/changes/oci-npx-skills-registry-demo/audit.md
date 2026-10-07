@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-07T17:44:41Z
+**Last audited:** 2026-10-07T19:23:58Z
 
 This focused follow-up reviews the all-active-tag discovery pivot against the
 proposal, design, OCI/common/provider specifications, task status, implementation,
@@ -38,6 +38,32 @@ workspace type checking/build, package lint, and strict OpenSpec validation.
 Verifier results and validation commands are recorded in the journal and handoff.
 The maintainer subsequently reported successful testing and authorized a local
 commit; signing, pushing, and the next Fullsend review remain maintainer-owned.
+
+### Fullsend review follow-up
+
+The maintainer approved the review disposition against PR #5057 head
+`f01d89dfc11eb0f781ac86bef77d8bf4dd7af5d6`. This focused artifact check covers
+D7, task 2.4, and the added OCI DNS-change scenario. They consistently require
+destination validation for the address used by the connection. Task 2.4 remains
+unchecked; task 2.1 retains its existing preflight lookup and does not claim
+protection against DNS rebinding between validation and connection. The connector
+README now states that limitation and retains the network-egress guidance.
+
+The shared-library changeset uses a minor release and explains the transition
+from repository-only keys to tagged keys. Hashing and validators are unchanged,
+and upgrading the library alone does not migrate identities. Configurable
+fallback constants use `DEFAULT_*` names with unchanged values. Test grouping,
+blob-limit documentation, and the aggregate-budget comment are cleanup only.
+The maintainer's `app-config.yaml` is unchanged.
+
+The 233 connector tests, workspace `tsc:full` and `build:all`, and strict OpenSpec
+validation passed for this cleanup. No new runtime safety task is marked
+complete. The maintainer subsequently reported successful sanity testing and
+authorized a local commit. Signing, pushing, and the next Fullsend review remain
+maintainer-owned.
+The focused artifact check found no additional specification inconsistencies;
+summary counts below remain zero. The earlier independent verification remains
+recorded above and in the journal.
 
 ### Summary
 

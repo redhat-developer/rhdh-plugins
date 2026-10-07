@@ -556,7 +556,7 @@ export async function fetchManifest(
  * Downloads a blob (layer) from the registry, verifies its SHA-256 or
  * SHA-512 digest, and returns it as a Buffer.
  *
- * Enforces a maximum download size (MAX_BLOB_SIZE) to prevent
+ * Enforces options.maxBlobSizeBytes as the maximum download size to prevent
  * out-of-memory conditions from oversized or malicious blobs.
  */
 export async function fetchBlob(

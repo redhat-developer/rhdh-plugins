@@ -520,7 +520,8 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                   options,
                 );
 
-                // Enforce aggregate content budget before accepting the result
+                // Keep the budget check, increment, and insertion synchronous:
+                // an await between them would let concurrent results exceed it.
                 const contentSize =
                   Buffer.byteLength(result.skillImageYaml, 'utf-8') +
                   Buffer.byteLength(result.skillsMd, 'utf-8');

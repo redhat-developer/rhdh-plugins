@@ -12,7 +12,7 @@
 - [x] 2.1 Integrate with the #4747 connector, add paginated public Quay repository and active-tag discovery (all tags when the tag is omitted, otherwise an exact tag filter), preserve distinct tagged references including same-digest aliases, and retain `/images` compatibility.
 - [ ] 2.2 Resolve each selected tag once, verify digest-addressed manifests and blobs, and expose the resolved manifest digest and stable `<registry>/<repository>:<tag>` key.
 - [ ] 2.3 Normalize annotated-layer and tar/tar+gzip SkillCard/Markdown layouts using the shared mapping; support valid skillctl images without mandatory manifest metadata annotations.
-- [ ] 2.4 Enforce design D7's origin, timeout, concurrency, extraction, and size bounds; test integrity failures, traversal, decompression limits, non-skills, malformed candidates, and ambiguous duplicate skill files.
+- [ ] 2.4 Enforce design D7's origin, timeout, concurrency, extraction, and size bounds, including connection-level destination validation against DNS rebinding; test DNS changes between validation and connection, integrity failures, traversal, decompression limits, non-skills, malformed candidates, and ambiguous duplicate skill files.
 - [ ] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository/tag keys, and Backstage startup/periodic refresh scheduling; test unknown source IDs, loading, partial repository/tag discovery, and empty success.
 
 ## 3. npx connector and REST API

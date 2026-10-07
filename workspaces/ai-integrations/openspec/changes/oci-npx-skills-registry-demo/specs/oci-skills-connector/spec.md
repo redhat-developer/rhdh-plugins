@@ -66,6 +66,14 @@ apply design D7's download, decompression, entry-count, path, timeout, and
 concurrency bounds. Manifest metadata annotations SHALL NOT be required when
 valid skill files are present. Extraction SHALL run only in the connector and
 SHALL NOT execute skill content.
+The connector SHALL enforce design D7's origin and destination policy on the
+address used by each upstream connection, including redirects.
+
+#### Scenario: DNS changes after destination validation
+
+- **WHEN** a registry or redirect hostname passes a public-address preflight check but resolves to a disallowed address when connecting
+- **THEN** the connector prevents the request from reaching that disallowed destination
+- **AND** an independent preflight DNS lookup alone does not satisfy the destination policy
 
 #### Scenario: skillctl archive without manifest metadata annotations
 

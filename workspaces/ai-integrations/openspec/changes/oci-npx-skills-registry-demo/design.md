@@ -277,6 +277,10 @@ use HTTPS, stay within explicitly configured origins (npx defaults to its index
 origin), and reject credentials and private/loopback/link-local destinations,
 including redirected destinations. Internal connector calls use Backstage
 discovery/auth and are separate from these upstream egress restrictions.
+Destination validation must govern the address used by the connection, including
+after redirects. A preflight DNS lookup followed by an independent fetch lookup
+does not satisfy this requirement. Task 2.4 must close this DNS-rebinding gap and
+test address changes between validation and connection.
 
 Bound streaming reads, parsing, and concurrency: 30-second request timeouts,
 at most four concurrent artifact operations per source, five redirects, 1 MiB
@@ -329,10 +333,11 @@ explicit image references and false for discovered candidates. Discovered-image
 404s log at debug level; explicit references take precedence during merging.
 Other failures, including organization-listing 404s, retain diagnostics.
 The `/images` failure list and status calculation are unchanged.
-The existing three-redirect cap and destination checks are preserved; completing
-D7's configured-origin policy, five-redirect bound and per-image/refresh budgets
-remains part of unchecked task 2.4. The follow-up does not implement normalized
-snapshots, periodic refresh, or other unchecked tasks.
+The existing three-redirect cap and preflight destination checks are preserved;
+completing D7's configured-origin policy, connection-level destination validation,
+five-redirect bound and per-image/refresh budgets remains part of unchecked task
+2.4. The follow-up does not implement normalized snapshots, periodic refresh, or
+other unchecked tasks.
 
 Each refresh also has a five-minute total deadline, at most 100 discovery pages
 shared across repository and tag listings,

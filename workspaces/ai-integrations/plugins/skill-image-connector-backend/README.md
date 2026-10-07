@@ -172,7 +172,7 @@ Example response:
 
 ### Security model
 
-**Egress / SSRF protection:** The plugin resolves redirect target hostnames via DNS and rejects any that resolve to private, loopback, link-local, or reserved IP ranges (including IPv4-mapped IPv6). This prevents DNS-rebinding SSRF attacks through compromised registries. The registry allowlist and HTTPS checks complement but do not replace network-level egress controls; production deployments should also restrict backend egress at the network layer.
+**Egress / SSRF protection:** The plugin resolves redirect target hostnames via DNS and rejects any that resolve to private, loopback, link-local, or reserved IP ranges (including IPv4-mapped IPv6). This is a preflight check: the subsequent fetch resolves DNS independently, so the check does not prevent DNS rebinding between validation and connection. Connection-level destination validation remains part of OpenSpec task 2.4. Production deployments should restrict backend egress at the network layer in addition to the registry allowlist and HTTPS checks.
 
 **Authorization:** The `/images` endpoint is accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
 
