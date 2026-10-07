@@ -19,6 +19,7 @@ import crypto from 'node:crypto';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import {
+  MAX_ACCEPTED_RULES_TOTAL_CHARS,
   RuleEntity,
   type RuleSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -145,6 +146,16 @@ export class RuleOperations {
     const snapshots: RuleSnapshot[] = [...allRulesMap.values()].map(row =>
       RuleEntity.fromRow(row).toSnapshot(),
     );
+
+    const totalChars = snapshots.reduce(
+      (sum, s) => sum + s.description.length,
+      0,
+    );
+    if (totalChars > MAX_ACCEPTED_RULES_TOTAL_CHARS) {
+      throw new InputError(
+        `Total accepted rules content (${totalChars} chars) exceeds the ${MAX_ACCEPTED_RULES_TOTAL_CHARS} character limit`,
+      );
+    }
 
     await this.#dbClient('projects')
       .where('id', projectId)

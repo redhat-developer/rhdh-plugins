@@ -281,6 +281,62 @@ describe('createRouter – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
+      'should reject project creation when accepted rules total exceeds 50000 chars - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const ruleA = await request(app)
+          .post('/rules')
+          .send({ title: 'Rule A', description: 'a'.repeat(30000) });
+        const ruleB = await request(app)
+          .post('/rules')
+          .send({ title: 'Rule B', description: 'b'.repeat(21000) });
+        expect(ruleA.status).toBe(201);
+        expect(ruleB.status).toBe(201);
+
+        const response = await request(app)
+          .post('/projects')
+          .send({
+            ...mockInputProject,
+            acceptedRuleIds: [ruleA.body.id, ruleB.body.id],
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should accept project creation when accepted rules total is exactly 50000 chars - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const ruleA = await request(app)
+          .post('/rules')
+          .send({ title: 'Rule A', description: 'a'.repeat(25000) });
+        const ruleB = await request(app)
+          .post('/rules')
+          .send({ title: 'Rule B', description: 'b'.repeat(25000) });
+        expect(ruleA.status).toBe(201);
+        expect(ruleB.status).toBe(201);
+
+        const response = await request(app)
+          .post('/projects')
+          .send({
+            ...mockInputProject,
+            acceptedRuleIds: [ruleA.body.id, ruleB.body.id],
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body.acceptedRules).toHaveLength(2);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
       'should get a project by id - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);

@@ -334,6 +334,9 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Abbrechen',
     'rulesPage.dialog.createError': 'Regel konnte nicht erstellt werden',
     'rulesPage.dialog.updateError': 'Regel konnte nicht aktualisiert werden',
+    'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} Zeichen',
+    'rulesPage.dialog.descriptionTooLong':
+      'Die Beschreibung darf höchstens {{max}} Zeichen enthalten ({{count}} verwendet).',
     'modulePage.phases.runAdversarialReview':
       'Gegnerische Überprüfung ausführen',
     'modulePage.phases.adversarialReview': 'Gegnerische Überprüfung',

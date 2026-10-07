@@ -140,6 +140,7 @@ paths:
                   description: Title of the rule
                 description:
                   type: string
+                  maxLength: 50000
                   description: Description of the rule
                 required:
                   type: boolean
@@ -193,6 +194,7 @@ paths:
                   description: Title of the rule
                 description:
                   type: string
+                  maxLength: 50000
                   description: Description of the rule
                 required:
                   type: boolean

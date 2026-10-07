@@ -419,6 +419,9 @@ export const x2aPluginMessages = {
       cancel: 'Cancel',
       createError: 'Failed to create rule',
       updateError: 'Failed to update rule',
+      descriptionCharCount: '{{count}} / {{max}} characters',
+      descriptionTooLong:
+        'Description must be {{max}} characters or fewer ({{count}} used).',
     },
   },
   adversarialAgentsPage: {
