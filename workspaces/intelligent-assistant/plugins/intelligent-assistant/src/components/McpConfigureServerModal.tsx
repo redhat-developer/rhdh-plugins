@@ -141,6 +141,7 @@ export const McpConfigureServerModal = ({
   tokenValidationState,
   tokenHelperVariant,
   showTokenHelperText,
+  showCredentialModeHelperText,
   tokenHelperText,
   modalCredentialMode,
   onCredentialModeChange,
@@ -150,7 +151,6 @@ export const McpConfigureServerModal = ({
   isModalEnabledChecked,
   isModalEnabledToggleDisabled,
   modalDisplayStatus,
-  modalStatusDetail,
   modalStatusText,
   modalTools,
   modalToolCount,
@@ -345,7 +345,7 @@ export const McpConfigureServerModal = ({
               </FlexItem>
               <FlexItem>
                 {isModalEnabledToggleDisabled ? (
-                  <Tooltip content={modalStatusDetail}>
+                  <Tooltip content={modalStatusText}>
                     <Typography component="span">{enabledSwitch}</Typography>
                   </Tooltip>
                 ) : (
@@ -398,6 +398,17 @@ export const McpConfigureServerModal = ({
                           onChange={() => onCredentialModeChange('personal')}
                         />
                       </StackItem>
+                      {showCredentialModeHelperText && (
+                        <StackItem>
+                          <FormHelperText>
+                            <HelperText>
+                              <HelperTextItem variant={tokenHelperVariant}>
+                                {tokenHelperText}
+                              </HelperTextItem>
+                            </HelperText>
+                          </FormHelperText>
+                        </StackItem>
+                      )}
                     </Stack>
                   </FormGroup>
                 )}

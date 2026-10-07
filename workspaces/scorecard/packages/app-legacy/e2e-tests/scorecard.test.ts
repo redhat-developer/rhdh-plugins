@@ -537,7 +537,7 @@ test.describe('Scorecard Plugin Tests', () => {
         });
         await scorecardDrillDownPage.expectPageTitle(
           'filecheck.license',
-          aggregatedResponse.metadata.title,
+          evaluateMessage(translations.metric.filecheck.title, 'license'),
         );
       });
     });

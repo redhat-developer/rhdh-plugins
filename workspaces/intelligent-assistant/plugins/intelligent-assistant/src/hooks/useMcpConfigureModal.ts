@@ -293,6 +293,12 @@ export const useMcpConfigureModal = ({
   const showTokenHelperText =
     !hasSavedTokenInModal || tokenValidationState !== 'idle';
 
+  /** Org mode hides the PAT field — still surface save/validation feedback. */
+  const showCredentialModeHelperText =
+    showCredentialRadios &&
+    !showPersonalTokenField &&
+    tokenValidationState !== 'idle';
+
   const tokenHelperText =
     tokenValidationMessage || t('mcp.settings.enterToken');
 
@@ -356,6 +362,14 @@ export const useMcpConfigureModal = ({
   const save = useCallback(async () => {
     if (!editingServer) return;
 
+    const applySaveValidationFailure = (message: string) => {
+      setTokenValidationState('error');
+      setTokenValidationMessage(message);
+      // Keep Status in sync so the error is visible outside the PAT field
+      // (organization mode hides the personal-token helper).
+      setModalToolsError(message);
+    };
+
     const hasCredentialModeChange =
       modalCredentialMode !== initialCredentialMode;
     const hasTokenInputChange = tokenInputValue !== initialTokenInputValue;
@@ -383,8 +397,7 @@ export const useMcpConfigureModal = ({
         });
         const validationResult = await validateServer(editingServer.name);
         if (validationResult.status === 'error') {
-          setTokenValidationState('error');
-          setTokenValidationMessage(
+          applySaveValidationFailure(
             formatApiError(validationResult.validation?.error) ||
               t('mcp.settings.token.validationFailed'),
           );
@@ -392,8 +405,7 @@ export const useMcpConfigureModal = ({
         }
         close();
       } catch (e) {
-        setTokenValidationState('error');
-        setTokenValidationMessage(
+        applySaveValidationFailure(
           e instanceof Error
             ? e.message
             : `Failed to update ${editingServer.name} settings`,
@@ -421,8 +433,7 @@ export const useMcpConfigureModal = ({
     try {
       if (hasToken) {
         if (!editingServer.url) {
-          setTokenValidationState('error');
-          setTokenValidationMessage(
+          applySaveValidationFailure(
             t('mcp.settings.token.urlUnavailableForValidation'),
           );
           markFailedTokenAttempt();
@@ -434,8 +445,7 @@ export const useMcpConfigureModal = ({
           token,
         );
         if (!credentialValidation.valid) {
-          setTokenValidationState('error');
-          setTokenValidationMessage(
+          applySaveValidationFailure(
             formatApiError(credentialValidation.error) ||
               t('mcp.settings.token.invalidCredentials'),
           );
@@ -452,8 +462,7 @@ export const useMcpConfigureModal = ({
       });
       const validationResult = await validateServer(editingServer.name);
       if (validationResult.status === 'error') {
-        setTokenValidationState('error');
-        setTokenValidationMessage(
+        applySaveValidationFailure(
           formatApiError(validationResult.validation?.error) ||
             t('mcp.settings.token.validationFailed'),
         );
@@ -466,10 +475,10 @@ export const useMcpConfigureModal = ({
       }
       setTokenValidationState('success');
       setTokenValidationMessage(t('mcp.settings.token.connectionSuccessful'));
+      setModalToolsError(null);
       close();
     } catch (e) {
-      setTokenValidationState('error');
-      setTokenValidationMessage(
+      applySaveValidationFailure(
         e instanceof Error
           ? e.message
           : `Failed to update ${editingServer.name} token`,
@@ -523,15 +532,18 @@ export const useMcpConfigureModal = ({
       )
     : 'unknown';
 
+  const hasModalStatusError = Boolean(modalToolsError);
+
   const isModalEnabledToggleDisabled =
     !editingServer ||
     isUpdatingModalStatus ||
-    isEnabledToggleUnavailable(modalDisplayStatus) ||
+    isEnabledToggleUnavailable(modalDisplayStatus, hasModalStatusError) ||
     Boolean(isSaving[editingServer?.name ?? '']);
 
   const isModalEnabledChecked = getModalEnabledChecked({
     displayStatus: modalDisplayStatus,
     modalEnabled,
+    hasStatusError: hasModalStatusError,
   });
 
   const modalStatusDetail = editingServer
@@ -576,6 +588,9 @@ export const useMcpConfigureModal = ({
     if (modalToolsError) {
       return modalToolsError;
     }
+    if (tokenValidationState === 'error' && tokenValidationMessage) {
+      return tokenValidationMessage;
+    }
     return modalStatusDetail;
   })();
 
@@ -600,6 +615,7 @@ export const useMcpConfigureModal = ({
     tokenValidationState,
     tokenHelperVariant,
     showTokenHelperText,
+    showCredentialModeHelperText,
     tokenHelperText,
     modalCredentialMode,
     onCredentialModeChange,
