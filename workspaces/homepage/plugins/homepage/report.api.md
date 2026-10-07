@@ -84,6 +84,7 @@ const homepagePlugin: OverridableFrontendPlugin<
                       }
                     >
                   | undefined;
+                props?: Record<string, unknown> | undefined;
               }
             >
           | undefined;
@@ -106,6 +107,7 @@ const homepagePlugin: OverridableFrontendPlugin<
                       }
                     >
                   | undefined;
+                props?: Record<string, unknown> | undefined;
               }
             >
           | undefined;

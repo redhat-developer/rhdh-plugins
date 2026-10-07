@@ -48,9 +48,33 @@ app:
         config:
           customizable: true
           widgetLayout:
-            # keys match widget `name` / layout config
+            # keys are the widget `name`, same as scorecard widgetLayout
             ...
 ```
+
+On a read-only homepage (`customizable: false`), `props` is forwarded into the widget. The object is generic: each card reads the fields it understands. This is the same `widgetLayout` entry scorecard already uses, with `props` added.
+
+```yaml
+app:
+  extensions:
+    - home-page-layout:homepage/dynamic-homepage-layout:
+        config:
+          customizable: false
+          widgetLayout:
+            ScorecardAggregatedCard:
+              priority: 440
+              props:
+                aggregationId: github.openPRs
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+```
+
+The key is the widget `name` (`ScorecardAggregatedCard`). The extension id (`scorecard-aggregated-card`) also matches.
 
 Visit tracking (for recently/top visited) still uses community home APIs when that package is installed:
 
