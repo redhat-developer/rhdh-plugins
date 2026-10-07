@@ -119,6 +119,7 @@ export const scorecardPlugin = createBackendPlugin({
         );
 
         const catalogMetricService = new CatalogMetricService({
+          config,
           catalog,
           auth,
           registry: metricProvidersRegistry,
@@ -159,6 +160,8 @@ export const scorecardPlugin = createBackendPlugin({
         createScorecardActions({
           actionsRegistry,
           auth,
+          config,
+          logger,
           permissions,
           catalog,
           metricProvidersRegistry,
@@ -167,6 +170,7 @@ export const scorecardPlugin = createBackendPlugin({
 
         httpRouter.use(
           await createRouter({
+            config,
             metricProvidersRegistry,
             service,
             catalog,
