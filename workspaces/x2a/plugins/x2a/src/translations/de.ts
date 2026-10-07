@@ -303,6 +303,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'scaffolder.rulesAcceptance.required': 'erforderlich',
     'scaffolder.rulesAcceptance.fetchError':
       'Regeln konnten nicht abgerufen werden',
+    'scaffolder.rulesAcceptance.readMore': 'Mehr anzeigen',
+    'scaffolder.rulesAcceptance.close': 'Schließen',
     'rulesPage.title': 'Konvertierungsregeln',
     'rulesPage.subtitle':
       'Verwalten Sie Regeln, die Projekte bei ihrer Erstellung akzeptieren müssen.',

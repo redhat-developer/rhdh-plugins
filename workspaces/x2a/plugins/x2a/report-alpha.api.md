@@ -379,6 +379,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'scaffolder.rulesAcceptance.loadingRules': string;
     readonly 'scaffolder.rulesAcceptance.noRulesConfigured': string;
     readonly 'scaffolder.rulesAcceptance.fetchError': string;
+    readonly 'scaffolder.rulesAcceptance.readMore': string;
+    readonly 'scaffolder.rulesAcceptance.close': string;
     readonly 'rulesPage.dialog.cancel': string;
     readonly 'rulesPage.dialog.updateError': string;
     readonly 'rulesPage.dialog.createTitle': string;

@@ -278,6 +278,8 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'ルールは設定されていません。',
     'scaffolder.rulesAcceptance.required': '必須',
+    'scaffolder.rulesAcceptance.readMore': '続きを読む',
+    'scaffolder.rulesAcceptance.close': '閉じる',
   },
 });
 
