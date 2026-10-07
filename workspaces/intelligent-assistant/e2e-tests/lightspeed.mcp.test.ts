@@ -349,6 +349,46 @@ test.describe('Intelligent assistant MCP', () => {
           await mcpToken.cancel();
           await mcpToken.closeMcpPanel();
         });
+
+        test('disables Enabled toggle when Status shows a tools/validation HTTP error — Overlay', async () => {
+          const serverName = 'mcp-observability-tools';
+          const noUrlError = 'Server has no URL — not found in LCS or config';
+          await mcpToken.gotoMcpSettings(
+            {
+              servers: [
+                mcpServer(serverName, {
+                  enabled: true,
+                  status: 'connected',
+                  hasToken: true,
+                  hasUserToken: true,
+                  hasOrgToken: false,
+                  toolCount: 0,
+                }),
+              ],
+            },
+            'Overlay',
+            {
+              failServerValidateFor: serverName,
+              failServerValidateError: noUrlError,
+              failServerValidateAsHttpError: true,
+            },
+          );
+          await mcpToken.openEditServer(serverName);
+
+          const modal = mcpCredentialConfigureModal(sharedPage);
+          await expect(modal.getByText(noUrlError).first()).toBeVisible();
+          await expect(
+            modal.getByRole('switch', {
+              name: evaluateMessage(
+                translations['mcp.settings.toggleServerAriaLabel'],
+                serverName,
+              ),
+            }),
+          ).toBeDisabled();
+
+          await mcpToken.cancel();
+          await mcpToken.closeMcpPanel();
+        });
       });
 
       test.describe('Credential source modes', () => {
@@ -462,6 +502,59 @@ test.describe('Intelligent assistant MCP', () => {
             serverName,
             formatMcpToolCountStatus(translations, 2),
           );
+          await mcpToken.closeMcpPanel();
+        });
+
+        test('shows API error when organization Save validation fails — Overlay', async () => {
+          const serverName = 'missing-from-lcs-mcp';
+          const noUrlError = 'Server has no URL — not found in LCS or config';
+          await mcpToken.gotoMcpSettings(
+            {
+              servers: [
+                mcpServer(serverName, {
+                  enabled: true,
+                  status: 'connected',
+                  hasToken: true,
+                  hasUserToken: true,
+                  hasOrgToken: true,
+                  toolCount: 0,
+                }),
+              ],
+            },
+            'Overlay',
+            {
+              failServerValidateFor: serverName,
+              failServerValidateError: noUrlError,
+              failServerValidateAsHttpError: true,
+            },
+          );
+          await mcpToken.openEditServer(serverName);
+
+          const modal = mcpCredentialConfigureModal(sharedPage);
+          await expect(modal.getByText(noUrlError).first()).toBeVisible();
+
+          const organizationTokenRadio = modal.getByRole('radio', {
+            name: translations[
+              'mcp.settings.modal.credentialMode.organization'
+            ],
+          });
+          await organizationTokenRadio.click();
+          await expect(mcpPersonalAccessTokenInput(sharedPage)).toBeHidden();
+          await mcpToken.save();
+
+          // Error must stay visible without PAT helper (org mode) and modal stays open.
+          await expect(modal.getByText(noUrlError).first()).toBeVisible();
+          await expect(modal).toBeVisible();
+          await expect(
+            modal.getByRole('switch', {
+              name: evaluateMessage(
+                translations['mcp.settings.toggleServerAriaLabel'],
+                serverName,
+              ),
+            }),
+          ).toBeDisabled();
+
+          await mcpToken.cancel();
           await mcpToken.closeMcpPanel();
         });
 
