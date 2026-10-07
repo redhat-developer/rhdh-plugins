@@ -48,11 +48,13 @@ app:
         config:
           customizable: true
           widgetLayout:
-            # keys are the widget `name`, same as scorecard widgetLayout
+            # keys are the widget name or extension id
             ...
 ```
 
-On a read-only homepage (`customizable: false`), `props` is forwarded into the widget. The object is generic: each card reads the fields it understands. This is the same `widgetLayout` entry scorecard already uses, with `props` added.
+On a read-only homepage (`customizable: false`), `props` from `widgetLayout` is forwarded into the widget. Each widget reads the fields it understands.
+
+The key is the widget `name`, or the extension id (the last segment of `home-page-widget:<plugin>/<id>`).
 
 ```yaml
 app:
@@ -61,36 +63,34 @@ app:
         config:
           customizable: false
           widgetLayout:
-            ScorecardAggregatedCard:
-              priority: 440
+            my-widget:
+              priority: 100
               props:
-                aggregationId: github.openPRs
+                title: Hello from config
               breakpoints:
-                xl: { w: 4, h: 6 }
-                lg: { w: 4, h: 6 }
-                md: { w: 4, h: 6 }
-                sm: { w: 4, h: 6 }
-                xs: { w: 4, h: 6 }
-                xxs: { w: 4, h: 6 }
+                xl: { w: 6, h: 4 }
+                lg: { w: 6, h: 4 }
+                md: { w: 6, h: 4 }
+                sm: { w: 12, h: 4 }
+                xs: { w: 12, h: 4 }
+                xxs: { w: 12, h: 4 }
 ```
 
-The key is the widget `name` (`ScorecardAggregatedCard`). The extension id (`scorecard-aggregated-card`) also matches.
-
-The same key can be a list. Each item becomes its own card, with its own `props`. Use this when one widget, such as `ScorecardAggregatedCard`, must appear more than once with a different `aggregationId`.
+The same key can be a list. Each item becomes its own card, with its own `props`, breakpoints, and priority.
 
 ```yaml
 widgetLayout:
-  ScorecardAggregatedCard:
-    - id: ScorecardOpenPrs
+  my-widget:
+    - id: first-copy
       props:
-        aggregationId: github.openPRs
+        title: First copy
       breakpoints:
-        xl: { w: 4, h: 6, x: 0, y: 0 }
-    - id: ScorecardOpenIssues
+        xl: { w: 6, h: 4, x: 0, y: 0 }
+    - id: second-copy
       props:
-        aggregationId: jira.openIssues
+        title: Second copy
       breakpoints:
-        xl: { w: 4, h: 6, x: 4, y: 0 }
+        xl: { w: 6, h: 4, x: 6, y: 0 }
 ```
 
 Visit tracking (for recently/top visited) still uses community home APIs when that package is installed:
