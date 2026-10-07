@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Ref, useState } from 'react';
+import { Ref, useCallback, useRef, useState } from 'react';
 
 import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
@@ -42,6 +42,7 @@ import {
   RhUiEllipsisVerticalFillIcon,
 } from '@patternfly/react-icons';
 
+import { useCloseOnOutsidePointerDown } from '../hooks/useCloseOnOutsidePointerDown';
 import { useTranslation } from '../hooks/useTranslation';
 import { McpSettingsIcon } from './McpSettingsIcon';
 import { ModelSelectorToggleText } from './ModelSelectorToggleText';
@@ -85,9 +86,16 @@ const StyledOptionsDropdown = styled(ChatbotHeaderOptionsDropdown)({
 const SelectorToggle = styled(MenuToggle, {
   shouldForwardProp: prop => prop !== 'dimmed',
 })<{ dimmed?: boolean }>(({ theme, dimmed }) => ({
+  minWidth: 0,
+  maxWidth: '100%',
   ...(dimmed && {
     backgroundColor: theme.palette.action.disabled,
   }),
+  '& .pf-v6-c-menu-toggle__text, & .pf-v5-c-menu-toggle__text': {
+    minWidth: 0,
+    maxWidth: '100%',
+    overflow: 'hidden',
+  },
 }));
 
 const StyledDropdownGroup = styled(DropdownGroup)({
@@ -114,7 +122,15 @@ export const LightspeedChatBoxHeader = ({
   setDisplayMode,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
+  const modelSelectorRootRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+  const closeModelMenu = useCallback(() => setIsOptionsMenuOpen(false), []);
+
+  useCloseOnOutsidePointerDown(
+    isOptionsMenuOpen && !isModelSelectorDisabled && !hideModelSelector,
+    closeModelMenu,
+    modelSelectorRootRef,
+  );
 
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
@@ -155,34 +171,36 @@ export const LightspeedChatBoxHeader = ({
   return (
     <ChatbotHeaderActions>
       {!hideModelSelector && (
-        <StyledDropdown
-          isOpen={isOptionsMenuOpen}
-          onSelect={(_e, value) => {
-            handleSelectedModel(value as string);
-            setIsOptionsMenuOpen(false);
-          }}
-          onOpenChange={isOpen => setIsOptionsMenuOpen(isOpen)}
-          popperProps={{ position: 'right' }}
-          shouldFocusToggleOnSelect
-          shouldFocusFirstItemOnOpen={false}
-          toggle={toggle}
-          isScrollable={isModelDropdownScrollable}
-          maxMenuHeight={isModelDropdownScrollable ? '240px' : undefined}
-        >
-          <DropdownList>
-            {models.map(model => (
-              <StyledDropdownGroup key={model.label}>
-                <DropdownItem
-                  value={model.value}
-                  key={model.value}
-                  isSelected={selectedModel === model.value}
-                >
-                  {model.label}
-                </DropdownItem>
-              </StyledDropdownGroup>
-            ))}
-          </DropdownList>
-        </StyledDropdown>
+        <div ref={modelSelectorRootRef}>
+          <StyledDropdown
+            isOpen={isOptionsMenuOpen}
+            onSelect={(_e, value) => {
+              handleSelectedModel(value as string);
+              setIsOptionsMenuOpen(false);
+            }}
+            onOpenChange={isOpen => setIsOptionsMenuOpen(isOpen)}
+            popperProps={{ position: 'right' }}
+            shouldFocusToggleOnSelect
+            shouldFocusFirstItemOnOpen={false}
+            toggle={toggle}
+            isScrollable={isModelDropdownScrollable}
+            maxMenuHeight={isModelDropdownScrollable ? '240px' : undefined}
+          >
+            <DropdownList>
+              {models.map(model => (
+                <StyledDropdownGroup key={model.label}>
+                  <DropdownItem
+                    value={model.value}
+                    key={model.value}
+                    isSelected={selectedModel === model.value}
+                  >
+                    {model.label}
+                  </DropdownItem>
+                </StyledDropdownGroup>
+              ))}
+            </DropdownList>
+          </StyledDropdown>
+        </div>
       )}
       <StyledOptionsDropdown
         isCompact
