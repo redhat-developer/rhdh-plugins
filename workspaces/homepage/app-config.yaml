@@ -22,7 +22,7 @@ app:
           title: Dynamic Homepage
     - home-page-layout:homepage/dynamic-homepage-layout:
         config:
-          customizable: false # false for read-only homepage layout
+          customizable: true # false for read-only homepage layout
           widgetLayout:
             rhdh-onboarding-section:
               props:
