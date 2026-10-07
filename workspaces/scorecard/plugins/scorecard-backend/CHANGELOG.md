@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 4.4.2
+
+### Patch Changes
+
+- 25bdad6: Exclude metrics disabled via `scorecard.disabledMetrics` or the `scorecard.io/disabled-metrics` entity annotation from `getLatestEntityMetrics`, so stale stored values are no longer shown as scorecard cards after a metric is disabled.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.2
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.4.2
+
 ## 4.4.1
 
 ### Patch Changes
