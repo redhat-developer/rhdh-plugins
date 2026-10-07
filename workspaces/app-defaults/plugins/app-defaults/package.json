@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-app-defaults",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "license": "Apache-2.0",
   "description": "RHDH app module for the new frontend system",
   "main": "src/index.ts",
@@ -8,10 +8,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./app-defaults-module": "./src/appDefaultsModuleExport.ts",
+    "./app-layout-module": "./src/appLayoutModuleExport.ts",
     "./app-drawer-module": "./src/appDrawerModuleExport.ts",
     "./app-sidebar-module": "./src/appSidebarModuleExport.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
     "./catalog-plugin-override": "./src/catalogPluginOverrideExport.ts",
+    "./catalog-module": "./src/catalogModuleExport.ts",
     "./catalog-graph-plugin-override": "./src/catalogGraphPluginOverrideExport.ts",
     "./scaffolder-plugin-override": "./src/scaffolderPluginOverrideExport.ts",
     "./api-docs-plugin-override": "./src/apiDocsPluginOverrideExport.ts",
@@ -24,6 +26,9 @@
       "app-defaults-module": [
         "src/appDefaultsModuleExport.ts"
       ],
+      "app-layout-module": [
+        "src/appLayoutModuleExport.ts"
+      ],
       "app-drawer-module": [
         "src/appDrawerModuleExport.ts"
       ],
@@ -35,6 +40,9 @@
       ],
       "catalog-plugin-override": [
         "src/catalogPluginOverrideExport.ts"
+      ],
+      "catalog-module": [
+        "src/catalogModuleExport.ts"
       ],
       "catalog-graph-plugin-override": [
         "src/catalogGraphPluginOverrideExport.ts"

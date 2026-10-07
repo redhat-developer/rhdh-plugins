@@ -45,7 +45,12 @@ export { appDefaultsTranslationRef } from './translations';
 
 export { autoLogoutElement } from './autoLogout/autoLogoutExtension';
 
-export { appDrawerExtension, appDrawerModule } from './drawer/appDrawerModule';
+export {
+  appDrawerExtension,
+  appDrawerModule,
+  appLayoutExtension,
+  appLayoutModule,
+} from './layout/appLayoutModule';
 
 export { learningPathsModule } from './learning-paths';
 

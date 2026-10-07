@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-/**
- * @deprecated Use `appLayoutExtension` from `../layout/appLayoutModule`.
- * Kept for source compatibility with existing app-defaults imports.
- *
- * @public
- */
-export { appDrawerExtension, appDrawerModule } from '../layout/appLayoutModule';
+export { catalogModule as default } from './catalog/catalogModule';
