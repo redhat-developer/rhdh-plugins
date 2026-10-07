@@ -33,6 +33,7 @@ import {
 import {
   DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT,
   GITHUB_BATCH_SIZE,
+  GITHUB_DEPLOYMENT_STATUSES_PAGE_SIZE,
 } from './constants';
 import { buildCommitsPullRequestsQuery } from './queries/buildCommitsPullRequestsQuery';
 import { mapCommitsPullRequests } from './mappers';
@@ -144,6 +145,12 @@ export class GithubClient {
               latestStatus {
                 state
               }
+              statuses(first: ${GITHUB_DEPLOYMENT_STATUSES_PAGE_SIZE}) {
+                nodes {
+                  state
+                  createdAt
+                }
+              }
             }
             pageInfo {
               hasNextPage
@@ -204,7 +211,10 @@ export class GithubClient {
             sha: deployment.commitOid,
             createdAt: deployment.createdAt,
             environment: deployment.environment ?? null,
-            status: deployment.latestStatus?.state ?? null,
+            status: selectDeploymentStatus(
+              deployment.latestStatus,
+              deployment.statuses?.nodes,
+            ),
           });
         }
       }
@@ -408,4 +418,37 @@ export class GithubClient {
     // normalize to ASC for chronological processing (oldest -> newest).
     return workflowRuns.reverse();
   }
+}
+
+/**
+ * Prefer the latest successful status. Setting a deployment to success can
+ * mark earlier deployments in the same non-production environment inactive,
+ * so latestStatus is not the outcome that should be recorded. When no
+ * successful status exists, use latestStatus.
+ */
+function selectDeploymentStatus(
+  latestStatus: { state?: string | null } | null | undefined,
+  statuses:
+    | Array<{ state?: string | null; createdAt?: string | null } | null>
+    | null
+    | undefined,
+): string | null {
+  let latestSuccessful: { state: string; createdAt: number } | undefined;
+
+  for (const status of statuses ?? []) {
+    const state = status?.state;
+    if (!state || state.toLowerCase() !== 'success') {
+      continue;
+    }
+
+    const createdAt = Date.parse(status.createdAt ?? '');
+    const createdAtTime = Number.isNaN(createdAt)
+      ? Number.NEGATIVE_INFINITY
+      : createdAt;
+    if (!latestSuccessful || createdAtTime >= latestSuccessful.createdAt) {
+      latestSuccessful = { state, createdAt: createdAtTime };
+    }
+  }
+
+  return latestSuccessful?.state ?? latestStatus?.state ?? null;
 }

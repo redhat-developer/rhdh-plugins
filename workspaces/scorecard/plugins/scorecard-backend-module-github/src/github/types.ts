@@ -53,6 +53,12 @@ export type GithubDeploymentsQueryResponse = GraphQlQueryResponseData & {
         latestStatus?: {
           state?: string | null;
         } | null;
+        statuses?: {
+          nodes?: Array<{
+            state?: string | null;
+            createdAt?: string | null;
+          } | null> | null;
+        } | null;
       } | null> | null;
       pageInfo: {
         hasNextPage: boolean;
