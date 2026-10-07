@@ -14,30 +14,36 @@
  * limitations under the License.
  */
 
+import { styled } from '@mui/material/styles';
 import { Tooltip } from '@patternfly/react-core';
-
-import {
-  isModelSelectorLabelTruncated,
-  truncateModelSelectorLabel,
-} from '../utils/model-selector-utils';
 
 type ModelSelectorToggleTextProps = {
   label: string;
 };
 
+/**
+ * Tooltip needs a single element that can take a ref; keep ellipsis styles on
+ * that same node so PF Tooltip cloneElement does not drop the shrink chain.
+ */
+const ToggleLabel = styled('span')({
+  display: 'block',
+  flex: '1 1 auto',
+  minWidth: 0,
+  maxWidth: '100%',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
+/** Full label in the DOM; CSS ellipsis when the parent row is constrained. */
 export const ModelSelectorToggleText = ({
   label,
 }: ModelSelectorToggleTextProps) => {
   const trimmed = label.trim();
-  const display = truncateModelSelectorLabel(label);
-
-  if (!isModelSelectorLabelTruncated(label)) {
-    return <span>{display}</span>;
-  }
 
   return (
-    <Tooltip content={trimmed}>
-      <span>{display}</span>
+    <Tooltip content={trimmed} position="top">
+      <ToggleLabel title={trimmed}>{trimmed}</ToggleLabel>
     </Tooltip>
   );
 };
