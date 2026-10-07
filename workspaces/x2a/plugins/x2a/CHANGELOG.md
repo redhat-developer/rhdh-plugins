@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 2.0.3
+
+### Patch Changes
+
+- 1ceabb4: Show the full rule description in the create-project rules field. Long descriptions were truncated to 100 characters with no way to read the rest; a "Read more" link now opens a dialog with the complete text.
+- d8a5f82: Improve the module page details layout
+- 59efc1a: Added default prompt template when creating adversarial agent
+
 ## 2.0.2
 
 ### Patch Changes
