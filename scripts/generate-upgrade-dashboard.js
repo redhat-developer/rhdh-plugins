@@ -19,6 +19,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import semver from 'semver';
 import { listWorkspaces } from './list-workspaces.js';
+import { exec } from 'node:child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -87,11 +88,12 @@ function getVersionDifference(currentVersion, latestVersion) {
 
 // categorize workspaces by how outdated they are
 function categorizeWorkspaces(workspaces, latestVersion) {
-  const tiers = { tier1: [], tier2: [], tier3: [] };
+  const tiers = { tier1: [], tier2: [], tier3: [], tierArchived: [] };
 
   workspaces.forEach(workspace => {
     const versionDiff = getVersionDifference(workspace.version, latestVersion);
-    if (versionDiff >= 3) tiers.tier1.push(workspace);
+    if (versionDiff >= 8) tiers.tierArchived.push(workspace);
+    else if (versionDiff >= 3) tiers.tier1.push(workspace);
     else if (versionDiff === 2) tiers.tier2.push(workspace);
     else if (versionDiff === 1) tiers.tier3.push(workspace);
   });
@@ -131,7 +133,10 @@ function generateDashboard(workspaces, tiers, latestVersion) {
   output += '---\n\n';
 
   const totalOutdated =
-    tiers.tier1.length + tiers.tier2.length + tiers.tier3.length;
+    tiers.tier1.length +
+    tiers.tier2.length +
+    tiers.tier3.length +
+    tiers.tierArchived.length;
   if (totalOutdated === 0) {
     output += '## Summary: All workspaces are up to date! 🎉\n\n';
   } else {
@@ -140,9 +145,14 @@ function generateDashboard(workspaces, tiers, latestVersion) {
   const totalUpToDate = workspaces.length - totalOutdated;
 
   output += generateTierSummary(
+    tiers.tierArchived.length,
+    '⚠️',
+    'archived: >= 8 minor versions behind',
+  );
+  output += generateTierSummary(
     tiers.tier1.length,
     '🔴',
-    '≥ 3 minor versions behind',
+    '3-7 minor versions behind',
   );
   output += generateTierSummary(
     tiers.tier2.length,
@@ -157,7 +167,12 @@ function generateDashboard(workspaces, tiers, latestVersion) {
   output += generateTierSummary(totalUpToDate, '🟢', 'up to date');
   output += '\n';
 
-  output += generateTierTable(tiers.tier1, '🔴', '≥ 3 minor versions behind');
+  output += generateTierTable(
+    tiers.tierArchived,
+    '⚠️',
+    'archived: ≥ 8 minor versions behind',
+  );
+  output += generateTierTable(tiers.tier1, '🔴', '3-7 minor versions behind');
   output += generateTierTable(tiers.tier2, '🟠', '2 minor versions behind');
   output += generateTierTable(tiers.tier3, '🟡', '1 minor version behind');
 
@@ -168,12 +183,21 @@ function generateDashboard(workspaces, tiers, latestVersion) {
   return output;
 }
 
+function archiveOutdatedWorkspaces(outdatedWorkspaces) {
+  if (outdatedWorkspaces.lenght === 0) return;
+  outdatedWorkspaces.forEach(oneWorkspace => {
+    exec(`node scripts/archive.js ${oneWorkspace.name}`);
+  });
+}
+
 // main function
 async function main() {
   const latestVersion = await getLatestBackstageVersion();
   const workspaces = await getWorkspaceVersions();
   const tiers = categorizeWorkspaces(workspaces, latestVersion);
   const dashboard = generateDashboard(workspaces, tiers, latestVersion);
+
+  archiveOutdatedWorkspaces(tiers.tierArchived);
 
   console.log(dashboard);
 }
