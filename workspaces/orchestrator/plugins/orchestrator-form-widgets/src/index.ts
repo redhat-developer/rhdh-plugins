@@ -14,7 +14,32 @@
  * limitations under the License.
  */
 
-export {
-  orchestratorFormWidgetsPlugin,
-  orchestratorFormApiFactory,
-} from './plugin';
+import {
+  ApiBlueprint,
+  createApiFactory,
+  createFrontendPlugin,
+} from '@backstage/frontend-plugin-api';
+import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { FormWidgetsApi } from './FormWidgetsApi';
+
+const orchestratorFormApi = ApiBlueprint.make({
+  params: defineParams =>
+    defineParams(
+      createApiFactory({
+        api: orchestratorFormApiRef,
+        deps: {},
+        factory: () => new FormWidgetsApi(),
+      }),
+    ),
+});
+
+/**
+ * Orchestrator Form Widgets plugin for the new frontend system.
+ * Provides default RJSF widgets (SchemaUpdater, ActiveTextInput, etc.) for the Workflow Execution form.
+ *
+ * @public
+ */
+export default createFrontendPlugin({
+  pluginId: 'orchestrator-form-widgets',
+  extensions: [orchestratorFormApi],
+});

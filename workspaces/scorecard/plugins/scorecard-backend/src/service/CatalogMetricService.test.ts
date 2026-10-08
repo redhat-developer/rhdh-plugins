@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { NotFoundError } from '@backstage/errors';
+import { NotAllowedError, NotFoundError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { CatalogMetricService } from './CatalogMetricService';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
+  MockBooleanProvider,
   filecheckBatchProvider,
   filecheckBatchMetrics,
 } from '../../__fixtures__/mockProviders';
@@ -52,6 +53,7 @@ import { AggregatedMetricMapper } from './mappers';
 import { AggregatedMetricLoader } from './aggregations/AggregatedMetricLoader';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 
 jest.mock('../permissions/permissionUtils');
 
@@ -60,25 +62,25 @@ const provider = new MockNumberProvider('github.importantMetric', 'github');
 const latestEntityMetric = [
   {
     id: 1,
-    catalog_entity_ref: 'component:default/test-component',
-    metric_id: 'github.importantMetric',
+    catalogEntityRef: 'component:default/test-component',
+    metricId: 'github.importantMetric',
     value: 42,
     timestamp: new Date('2024-01-15T12:00:00.000Z'),
-    error_message: null,
+    errorMessage: null,
     status: 'success',
   } as DbMetricValue,
 ] as DbMetricValue[];
 
 const aggregatedMetric: DbAggregatedMetric = {
-  metric_id: 'github.importantMetric',
+  metricId: 'github.importantMetric',
   total: 2,
-  max_timestamp: new Date('2024-01-15T12:00:00.000Z'),
+  maxTimestamp: new Date('2024-01-15T12:00:00.000Z'),
   statusCounts: {
     success: 1,
     warning: 1,
   },
-  calculation_error_count: 0,
-  latest_entity_count: 2,
+  calculationErrorCount: 0,
+  latestEntityCount: 2,
 };
 
 const metricsList = [
@@ -157,6 +159,7 @@ describe('CatalogMetricService', () => {
       database: mockedDatabase,
       logger: mockedLogger,
       thresholdResolver: mockedThresholdResolver,
+      config: mockServices.rootConfig({ data: {} }),
     });
 
     jest.useFakeTimers();
@@ -195,10 +198,10 @@ describe('CatalogMetricService', () => {
       );
 
       const multipleMetrics = [
-        { ...latestEntityMetric[0], metric_id: 'github.importantMetric' },
+        { ...latestEntityMetric[0], metricId: 'github.importantMetric' },
         {
           ...latestEntityMetric[0],
-          metric_id: 'github.numberMetric',
+          metricId: 'github.numberMetric',
           value: 10,
         },
       ];
@@ -297,16 +300,6 @@ describe('CatalogMetricService', () => {
       expect(result).toEqual([]);
     });
 
-    it('should get provider by metric ID', async () => {
-      await service.getLatestEntityMetrics('component:default/test-component', [
-        'github.importantMetric',
-      ]);
-
-      expect(mockedRegistry.getProvider).toHaveBeenCalledWith(
-        'github.importantMetric',
-      );
-    });
-
     it('should get metric from registry', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
         'github.importantMetric',
@@ -317,7 +310,7 @@ describe('CatalogMetricService', () => {
       );
     });
 
-    it('should merge entity and provider thresholds', async () => {
+    it('should merge entity and metric thresholds', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
         'github.importantMetric',
       ]);
@@ -327,7 +320,6 @@ describe('CatalogMetricService', () => {
       ).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({ id: 'github.importantMetric' }),
-        provider.getProviderId(),
       );
     });
 
@@ -353,7 +345,7 @@ describe('CatalogMetricService', () => {
         {
           ...latestEntityMetric[0],
           value: null,
-          error_message: 'Error message during metric calculation',
+          errorMessage: 'Error message during metric calculation',
         },
       ]);
 
@@ -376,7 +368,7 @@ describe('CatalogMetricService', () => {
       mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
         {
           ...latestEntityMetric[0],
-          error_message: 'Threshold error message during metric calculation',
+          errorMessage: 'Threshold error message during metric calculation',
         },
       ]);
 
@@ -415,6 +407,8 @@ describe('CatalogMetricService', () => {
           description: provider.getMetrics()[0].description,
           type: provider.getMetrics()[0].type,
           history: provider.getMetrics()[0].history,
+          defaultVisualization: provider.getMetrics()[0].defaultVisualization,
+          collectorIds: provider.getMetrics()[0].collectorIds,
         }),
       );
       expect(resultMetric.result).toEqual(
@@ -451,6 +445,571 @@ describe('CatalogMetricService', () => {
         'Unable to evaluate thresholds, metric value is missing',
       );
     });
+
+    it('should exclude metrics disabled via scorecard.disabledMetrics app-config', async () => {
+      const secondProvider = new MockNumberProvider(
+        'github.numberMetric',
+        'github',
+      );
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
+        { id: 'github.importantMetric' },
+        { id: 'github.numberMetric' },
+      ] as Metric[]);
+      mockedRegistry.getMetric.mockImplementation(id =>
+        id === 'github.importantMetric'
+          ? provider.getMetrics()[0]
+          : secondProvider.getMetrics()[0],
+      );
+      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
+        {
+          ...latestEntityMetric[0],
+          metricId: 'github.numberMetric',
+          value: 10,
+        },
+      ]);
+
+      service = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: mockedRegistry,
+        database: mockedDatabase,
+        logger: mockedLogger,
+        thresholdResolver: mockedThresholdResolver,
+        config: mockServices.rootConfig({
+          data: {
+            scorecard: {
+              disabledMetrics: ['github.importantMetric'],
+            },
+          },
+        }),
+      });
+
+      const result = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+      );
+
+      expect(mockedDatabase.readLatestEntityMetricValues).toHaveBeenCalledWith(
+        'component:default/test-component',
+        ['github.numberMetric'],
+      );
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('github.numberMetric');
+    });
+
+    it('should exclude metrics disabled via scorecard.io/disabled-metrics annotation', async () => {
+      const annotatedEntity = new MockEntityBuilder()
+        .withAnnotations({
+          'scorecard.io/disabled-metrics': 'github.importantMetric',
+        })
+        .build();
+      mockedCatalog.getEntityByRef.mockResolvedValue(annotatedEntity);
+
+      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([]);
+
+      const result = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+        ['github.importantMetric'],
+      );
+
+      expect(mockedDatabase.readLatestEntityMetricValues).toHaveBeenCalledWith(
+        'component:default/test-component',
+        [],
+      );
+      expect(result).toEqual([]);
+    });
+
+    it('should still return metrics in entityAnnotations.disabledMetrics.except when only disabled via annotation', async () => {
+      const annotatedEntity = new MockEntityBuilder()
+        .withAnnotations({
+          'scorecard.io/disabled-metrics': 'github.importantMetric',
+        })
+        .build();
+      mockedCatalog.getEntityByRef.mockResolvedValue(annotatedEntity);
+
+      service = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: mockedRegistry,
+        database: mockedDatabase,
+        logger: mockedLogger,
+        thresholdResolver: mockedThresholdResolver,
+        config: mockServices.rootConfig({
+          data: {
+            scorecard: {
+              entityAnnotations: {
+                disabledMetrics: {
+                  enabled: true,
+                  except: ['github.importantMetric'],
+                },
+              },
+            },
+          },
+        }),
+      });
+
+      const result = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+        ['github.importantMetric'],
+      );
+
+      expect(mockedDatabase.readLatestEntityMetricValues).toHaveBeenCalledWith(
+        'component:default/test-component',
+        ['github.importantMetric'],
+      );
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('github.importantMetric');
+    });
+  });
+
+  describe('getEntityMetricTimeSeries', () => {
+    const from = new Date('2024-01-01T00:00:00.000Z');
+    const to = new Date('2024-01-03T23:59:59.000Z');
+    const entityRef = 'component:default/test-component';
+    const metricId = 'github.importantMetric';
+
+    beforeEach(() => {
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
+        provider.getMetrics()[0],
+      ]);
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue(
+        [],
+      );
+    });
+
+    it('should throw NotFoundError when entity is not found', async () => {
+      mockedCatalog.getEntityByRef.mockResolvedValue(undefined);
+
+      await expect(
+        service.getEntityMetricTimeSeries(entityRef, metricId, from, to),
+      ).rejects.toThrow(new NotFoundError(`Entity not found: ${entityRef}`));
+    });
+
+    it('should throw NotAllowedError when metric is not authorized', async () => {
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue(
+        [],
+      );
+
+      await expect(
+        service.getEntityMetricTimeSeries(
+          entityRef,
+          metricId,
+          from,
+          to,
+          permissionsFilter,
+        ),
+      ).rejects.toThrow(NotAllowedError);
+    });
+
+    it('should return metric metadata', async () => {
+      const metric = {
+        ...provider.getMetrics()[0],
+        unit: 'h',
+      };
+      mockedRegistry.getMetric.mockReturnValue(metric);
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
+        metric,
+      ]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.metadata).toEqual({
+        title: metric.title,
+        description: metric.description,
+        type: metric.type,
+        unit: metric.unit,
+        history: metric.history,
+        defaultVisualization: metric.defaultVisualization,
+        collectorIds: metric.collectorIds,
+      });
+    });
+
+    it('should return empty points when no data in range', async () => {
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result).toEqual({
+        metricId,
+        entityRef,
+        points: [],
+        metadata: {
+          title: provider.getMetrics()[0].title,
+          description: provider.getMetrics()[0].description,
+          type: provider.getMetrics()[0].type,
+          unit: provider.getMetrics()[0].unit,
+          history: provider.getMetrics()[0].history,
+          defaultVisualization: provider.getMetrics()[0].defaultVisualization,
+          collectorIds: provider.getMetrics()[0].collectorIds,
+        },
+        thresholds: { rules: mockThresholdRules },
+      });
+      expect(
+        mockedDatabase.readLatestEntityMetricValuesPerUtcDay,
+      ).toHaveBeenCalledWith(entityRef, metricId, from, to);
+      expect(
+        mockedThresholdResolver.resolveEntityThresholds,
+      ).toHaveBeenCalledWith(
+        mockEntity,
+        expect.objectContaining({ id: metricId }),
+      );
+    });
+
+    it('should map each daily DB row to a time-series point with read-time thresholdEvaluation', async () => {
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 3,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 9,
+          timestamp: new Date('2024-01-01T20:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+        {
+          id: 2,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 25,
+          timestamp: new Date('2024-01-02T12:00:00.000Z'),
+          errorMessage: null,
+          // Stale write-time status must be ignored in favor of read-time evaluation
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: 9,
+          timestamp: '2024-01-01T20:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+        {
+          value: 25,
+          timestamp: '2024-01-02T12:00:00.000Z',
+          thresholdEvaluation: 'warning',
+        },
+      ]);
+      expect(result.thresholds).toEqual({ rules: mockThresholdRules });
+    });
+
+    it('should classify number value 0 instead of leaving thresholdEvaluation null', async () => {
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 0,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: 0,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+      ]);
+    });
+
+    it('should classify boolean value false instead of leaving thresholdEvaluation null', async () => {
+      const booleanProvider = new MockBooleanProvider(
+        'jira.booleanMetric',
+        'jira',
+      );
+      const booleanMetric = booleanProvider.getMetrics()[0];
+      const booleanThresholds = booleanProvider.getDefaultThresholds();
+
+      mockedRegistry.getMetric.mockReturnValue(booleanMetric);
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
+        booleanMetric,
+      ]);
+      mockedThresholdResolver.resolveEntityThresholds.mockReturnValue(
+        booleanThresholds,
+      );
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: booleanMetric.id,
+          value: false,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        booleanMetric.id,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: false,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: 'error',
+        },
+      ]);
+    });
+
+    it('should map calculation-error rows to null value with error and omit thresholdEvaluation', async () => {
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 8,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+        {
+          id: 2,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: null,
+          timestamp: new Date('2024-01-02T16:00:00.000Z'),
+          errorMessage: 'GitHub API 500',
+          status: null,
+        },
+        {
+          id: 3,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 7,
+          timestamp: new Date('2024-01-03T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: 8,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+        {
+          value: null,
+          timestamp: '2024-01-02T16:00:00.000Z',
+          error: 'GitHub API 500',
+        },
+        {
+          value: 7,
+          timestamp: '2024-01-03T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+      ]);
+    });
+
+    it('should evaluate thresholdEvaluation from current thresholds even when DB status is null', async () => {
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 5,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: null,
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: 5,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+      ]);
+    });
+
+    it('should set error on the point when threshold evaluation fails', async () => {
+      jest
+        .spyOn(ThresholdEvaluator.prototype, 'getFirstMatchingThreshold')
+        .mockImplementation(() => {
+          throw new Error('Invalid threshold expression');
+        });
+
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 5,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: 5,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: null,
+          error: 'Error: Invalid threshold expression',
+        },
+      ]);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `Failed to evaluate thresholds for metric '${metricId}' on entity '${entityRef}'`,
+        ),
+      );
+    });
+
+    it('should set thresholdsError and skip classification when resolveEntityThresholds throws', async () => {
+      mockedThresholdResolver.resolveEntityThresholds.mockImplementation(() => {
+        throw new Error('Merge thresholds failed');
+      });
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 5,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(
+        mockedThresholdResolver.resolveMetricThresholds,
+      ).not.toHaveBeenCalled();
+      expect(result.thresholds).toBeUndefined();
+      expect(result.thresholdsError).toBe('Error: Merge thresholds failed');
+      expect(result.points).toEqual([
+        {
+          value: 5,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: null,
+        },
+      ]);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining(
+          `Failed to resolve thresholds for metric '${metricId}' on entity '${entityRef}'`,
+        ),
+      );
+    });
+
+    it('should keep calculation-error point errors when resolveEntityThresholds throws', async () => {
+      mockedThresholdResolver.resolveEntityThresholds.mockImplementation(() => {
+        throw new Error('Merge thresholds failed');
+      });
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 5,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+        {
+          id: 2,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: null,
+          timestamp: new Date('2024-01-02T16:00:00.000Z'),
+          errorMessage: 'GitHub API 500',
+          status: null,
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.thresholds).toBeUndefined();
+      expect(result.thresholdsError).toBe('Error: Merge thresholds failed');
+      expect(result.points).toEqual([
+        {
+          value: 5,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: null,
+        },
+        {
+          value: null,
+          timestamp: '2024-01-02T16:00:00.000Z',
+          error: 'GitHub API 500',
+        },
+      ]);
+    });
+
+    it('should pass permission filter to filterAuthorizedMetrics', async () => {
+      await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+        permissionsFilter,
+      );
+
+      expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
+        [provider.getMetrics()[0]],
+        permissionsFilter,
+      );
+    });
   });
 
   describe('getLatestEntityMetrics with batch providers', () => {
@@ -474,20 +1033,20 @@ describe('CatalogMetricService', () => {
       const batchDbResults = [
         {
           id: 1,
-          catalog_entity_ref: 'component:default/test-component',
-          metric_id: 'filecheck.readme',
+          catalogEntityRef: 'component:default/test-component',
+          metricId: 'filecheck.readme',
           value: true,
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
-          error_message: null,
+          errorMessage: null,
           status: 'success',
         },
         {
           id: 2,
-          catalog_entity_ref: 'component:default/test-component',
-          metric_id: 'filecheck.license',
+          catalogEntityRef: 'component:default/test-component',
+          metricId: 'filecheck.license',
           value: false,
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
-          error_message: null,
+          errorMessage: null,
           status: 'success',
         },
       ] as DbMetricValue[];
@@ -507,6 +1066,7 @@ describe('CatalogMetricService', () => {
         database: mockedDatabase,
         logger: mockedLogger,
         thresholdResolver: mockedThresholdResolver,
+        config: mockServices.rootConfig({ data: {} }),
       });
 
       const results = await service.getLatestEntityMetrics(
@@ -591,10 +1151,10 @@ describe('CatalogMetricService', () => {
         ).rejects.toThrow('Unsupported aggregation type: unknownAggregation');
       });
 
-      it('should use latest_entity_count for entitiesConsidered when fewer owned refs have metric rows', async () => {
+      it('should use latestEntityCount for entitiesConsidered when fewer owned refs have metric rows', async () => {
         mockedDatabase.readAggregatedMetricByEntityRefs.mockResolvedValue({
           ...aggregatedMetric,
-          latest_entity_count: 5,
+          latestEntityCount: 5,
         });
 
         const sparse = await service.getAggregatedMetricByEntityRefs(
@@ -629,7 +1189,7 @@ describe('CatalogMetricService', () => {
         expect(result).toEqual({
           values: {},
           total: 0,
-          timestamp: '2024-01-15T12:00:00.000Z',
+          timestamp: '1970-01-01T00:00:00.000Z',
           entitiesConsidered: 0,
           calculationErrorCount: 0,
         });
@@ -652,39 +1212,39 @@ describe('CatalogMetricService', () => {
     const mockMetricRows: DbMetricValue[] = [
       {
         id: 1,
-        catalog_entity_ref: 'component:default/service-a',
-        metric_id: 'github.importantMetric',
+        catalogEntityRef: 'component:default/service-a',
+        metricId: 'github.importantMetric',
         value: 15,
         timestamp: new Date('2024-01-15T12:00:00.000Z'),
-        error_message: null,
+        errorMessage: null,
         status: 'error',
-        entity_kind: 'Component',
-        entity_owner: 'team:default/platform',
-        entity_namespace: 'default',
+        entityKind: 'Component',
+        entityOwner: 'team:default/platform',
+        entityNamespace: 'default',
       },
       {
         id: 2,
-        catalog_entity_ref: 'component:default/service-b',
-        metric_id: 'github.importantMetric',
+        catalogEntityRef: 'component:default/service-b',
+        metricId: 'github.importantMetric',
         value: 8,
         timestamp: new Date('2024-01-15T11:00:00.000Z'),
-        error_message: null,
+        errorMessage: null,
         status: 'warning',
-        entity_kind: 'Component',
-        entity_owner: 'team:default/backend',
-        entity_namespace: 'default',
+        entityKind: 'Component',
+        entityOwner: 'team:default/backend',
+        entityNamespace: 'default',
       },
       {
         id: 3,
-        catalog_entity_ref: 'component:staging/service-c',
-        metric_id: 'github.importantMetric',
+        catalogEntityRef: 'component:staging/service-c',
+        metricId: 'github.importantMetric',
         value: 3,
         timestamp: new Date('2024-01-15T10:00:00.000Z'),
-        error_message: null,
+        errorMessage: null,
         status: 'success',
-        entity_kind: 'API',
-        entity_owner: 'team:default/platform',
-        entity_namespace: 'staging',
+        entityKind: 'API',
+        entityOwner: 'team:default/platform',
+        entityNamespace: 'staging',
       },
     ];
 
@@ -1286,7 +1846,7 @@ describe('CatalogMetricService', () => {
         {
           ...mockMetricRows[1],
           value: null,
-          error_message: 'Provider failed',
+          errorMessage: 'Provider failed',
           status: null,
         },
       ]);
@@ -1321,6 +1881,7 @@ describe('CatalogMetricService', () => {
         title: provider.getMetrics()[0].title,
         description: provider.getMetrics()[0].description,
         type: provider.getMetrics()[0].type,
+        unit: provider.getMetrics()[0].unit,
       });
     });
   });

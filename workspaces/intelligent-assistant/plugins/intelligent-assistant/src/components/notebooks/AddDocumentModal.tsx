@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import {
+  KeyboardEvent,
+  MouseEvent,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { FileRejection } from 'react-dropzone';
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -27,86 +31,146 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import {
+  Alert,
   MultipleFileUpload,
+  MultipleFileUploadContext,
   MultipleFileUploadMain,
+  Tooltip,
 } from '@patternfly/react-core';
 import { UploadIcon } from '@patternfly/react-icons';
 
-import { NOTEBOOK_MAX_FILES } from '../../const';
+import {
+  NOTEBOOK_EXTENSION_TO_FILE_TYPE,
+  NOTEBOOK_MAX_FILES,
+} from '../../const';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useTranslation } from '../../hooks/useTranslation';
+import { runFileUploads } from '../../utils/notebook-upload-runner';
 import {
   getNotebookAcceptedFileTypes,
   validateFiles,
 } from '../../utils/notebook-upload-utils';
+import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { FileListItem } from './FileListItem';
+import {
+  notebookDialogActionsSx,
+  notebookDialogCloseButtonSx,
+  notebookDialogContentSx,
+  notebookDialogPaperSx,
+  notebookDialogTitleSx,
+  notebookDialogTitleTextSx,
+  optionalStyle,
+} from './notebookDialogStyles';
 
-const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 24,
-    maxWidth: 578,
-  },
-  dialogTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '24px 24px 16px',
-  },
-  titleText: {
-    fontWeight: 500,
-    fontSize: '1.25rem',
-    lineHeight: '1.625rem',
-    letterSpacing: '-0.25px',
-  },
-  closeButton: {
-    color: theme.palette.text.primary,
-  },
-  dialogContent: {
-    padding: '0 24px 24px',
-  },
-  errorAlert: {
-    marginBottom: theme.spacing(2),
-  },
-  dropzone: {
-    '& .pf-v6-c-multiple-file-upload__main': {
-      borderColor: 'var(--pf-t--global--border--color--brand--default)',
-      transition: 'background-color 0.2s ease',
-      cursor: 'pointer',
-    },
-    '& .pf-v6-c-multiple-file-upload__main:hover': {
-      backgroundColor:
-        'color-mix(in srgb, var(--pf-t--global--color--brand--default) 10%, transparent)',
-    },
-  },
-  fileListContainer: {
-    marginTop: theme.spacing(2),
-    maxHeight: 200,
-    overflowY: 'auto',
-  },
-  fileListHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing(1),
-  },
-  fileCount: {
-    fontSize: '0.875rem',
-    color: theme.palette.text.secondary,
-  },
-  dialogActions: {
-    padding: '16px 24px',
-    justifyContent: 'flex-end',
-    gap: theme.spacing(1),
-  },
-  addButton: {
-    textTransform: 'none',
-  },
-  cancelButton: {
-    textTransform: 'none',
+const UNIQUE_FILE_TYPE_LABELS = [
+  ...new Set(Object.values(NOTEBOOK_EXTENSION_TO_FILE_TYPE)),
+].map(t => t.toUpperCase());
+
+const ErrorAlert = styled(Alert)(({ theme }) => ({
+  marginBottom: theme.spacing(2),
+  '--pf-v6-c-alert--PaddingBlockEnd': '0',
+  '& .pf-v6-c-alert__title': {
+    marginBlockStart: 0,
   },
 }));
+
+const Dropzone = styled('div', {
+  shouldForwardProp: prop => prop !== 'isDropzoneDisabled',
+})<{ isDropzoneDisabled?: boolean }>(({ theme, isDropzoneDisabled }) => ({
+  borderColor: 'var(--pf-t--global--border--color--brand--default)',
+  borderWidth: 2,
+  borderStyle: 'dashed',
+  borderRadius: theme.spacing(1),
+  transition: 'background-color 0.2s ease',
+  cursor: isDropzoneDisabled ? 'default' : 'pointer',
+  ...(isDropzoneDisabled
+    ? {
+        opacity: 0.5,
+        pointerEvents: 'none',
+        '&:hover': {
+          backgroundColor: 'transparent',
+        },
+      }
+    : {
+        '&:hover': {
+          backgroundColor:
+            'color-mix(in srgb, var(--pf-t--global--color--brand--default) 10%, transparent)',
+        },
+      }),
+  '& .pf-v6-c-multiple-file-upload__main': {
+    border: 'none',
+    paddingBottom: 0,
+  },
+  '& .pf-v6-c-multiple-file-upload__title-icon': {
+    fontSize: '2rem',
+  },
+}));
+
+const DropzoneClickAreaRoot = styled('div')(({ theme }) => ({
+  display: 'block',
+  padding: theme.spacing(2),
+  cursor: 'pointer',
+  '&[aria-disabled="true"]': {
+    cursor: 'default',
+  },
+}));
+
+const StyledUploadIcon = styled(UploadIcon)({
+  color: 'var(--pf-t--global--icon--color--brand--default)',
+});
+
+const FileTypeChip = styled('span')(({ theme }) => ({
+  display: 'inline-block',
+  padding: '2px 10px',
+  borderRadius: 12,
+  fontSize: '0.75rem',
+  fontWeight: 500,
+  backgroundColor:
+    theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.1)'
+      : 'rgba(0, 0, 0, 0.08)',
+  color: theme.palette.text.secondary,
+}));
+
+const DropzoneClickArea = ({
+  children,
+  isDisabled,
+  ariaLabel,
+}: {
+  children: React.ReactNode;
+  isDisabled?: boolean;
+  ariaLabel?: string;
+}) => {
+  const { open } = useContext(MultipleFileUploadContext);
+  const openFilePicker = (event: MouseEvent | KeyboardEvent) => {
+    event.stopPropagation();
+    open();
+  };
+  return (
+    <DropzoneClickAreaRoot
+      role="button"
+      aria-label={ariaLabel}
+      aria-disabled={isDisabled}
+      tabIndex={isDisabled ? -1 : 0}
+      onClick={isDisabled ? undefined : openFilePicker}
+      onKeyDown={
+        isDisabled
+          ? undefined
+          : e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openFilePicker(e);
+              }
+            }
+      }
+    >
+      {children}
+    </DropzoneClickAreaRoot>
+  );
+};
 
 type AddDocumentModalProps = {
   isOpen: boolean;
@@ -117,9 +181,10 @@ type AddDocumentModalProps = {
   onFilesUploading?: (files: File[]) => void;
   onUploadStarted?: (info: { fileName: string; documentId: string }) => void;
   onUploadFailed?: (fileName: string) => void;
-  onDuplicatesFound?: (files: File[]) => void;
+  onDuplicatesFound?: (duplicateFiles: File[], allFiles: File[]) => void;
   filesToAdd?: File[];
   onFilesAdded?: () => void;
+  isCompact?: boolean;
 };
 
 export const AddDocumentModal = ({
@@ -134,16 +199,22 @@ export const AddDocumentModal = ({
   onDuplicatesFound,
   filesToAdd,
   onFilesAdded,
+  isCompact = false,
 }: AddDocumentModalProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const uploadMutation = useUploadDocument();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-
   const totalExistingAndSelected =
     existingDocumentNames.length + selectedFiles.length;
   const remainingSlots = NOTEBOOK_MAX_FILES - totalExistingAndSelected;
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedFiles([]);
+      setValidationErrors([]);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (filesToAdd && filesToAdd.length > 0) {
@@ -164,18 +235,8 @@ export const AddDocumentModal = ({
 
     if (valid.length === 0) return;
 
-    const existingNamesSet = new Set([
-      ...existingDocumentNames,
-      ...selectedFiles.map(f => f.name),
-    ]);
-    const newFiles = valid.filter(f => !existingNamesSet.has(f.name));
-    const duplicateFiles = valid.filter(f =>
-      existingDocumentNames.includes(f.name),
-    );
-
-    if (duplicateFiles.length > 0) {
-      onDuplicatesFound?.(duplicateFiles);
-    }
+    const alreadySelectedNames = new Set(selectedFiles.map(f => f.name));
+    const newFiles = valid.filter(f => !alreadySelectedNames.has(f.name));
 
     if (newFiles.length > 0) {
       setSelectedFiles(prev => [...prev, ...newFiles]);
@@ -189,20 +250,20 @@ export const AddDocumentModal = ({
   const handleAddFiles = () => {
     if (selectedFiles.length === 0) return;
 
-    onFilesUploading?.(selectedFiles);
-    for (const file of selectedFiles) {
-      uploadMutation
-        .mutateAsync({ sessionId, file })
-        .then(data => {
-          onUploadStarted?.({
-            fileName: file.name,
-            documentId: data.document_id,
-          });
-        })
-        .catch(() => {
-          onUploadFailed?.(file.name);
-        });
+    const duplicateFiles = selectedFiles.filter(f =>
+      existingDocumentNames.includes(f.name),
+    );
+
+    if (duplicateFiles.length > 0) {
+      onDuplicatesFound?.(duplicateFiles, selectedFiles);
+      return;
     }
+
+    runFileUploads(uploadMutation, sessionId, selectedFiles, {
+      onUploading: onFilesUploading,
+      onStarted: onUploadStarted,
+      onFailed: onUploadFailed,
+    });
 
     setSelectedFiles([]);
     setValidationErrors([]);
@@ -224,17 +285,24 @@ export const AddDocumentModal = ({
     onClose();
   };
 
+  const scopedProps = getScopedDialogProps(isCompact);
+
   return (
     <Dialog
       open={isOpen}
       onClose={handleClose}
       aria-labelledby="add-document-modal-title"
+      {...scopedProps}
       PaperProps={{
-        className: classes.dialogPaper,
+        ...scopedProps.PaperProps,
+        sx: [
+          notebookDialogPaperSx(isCompact),
+          optionalStyle(scopedProps.PaperProps?.sx),
+        ],
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Typography component="h2" className={classes.titleText}>
+      <DialogTitle sx={notebookDialogTitleSx(isCompact)}>
+        <Typography component="h2" sx={notebookDialogTitleTextSx(isCompact)}>
           {t('notebook.upload.modal.title')}
           {selectedFiles.length > 0 &&
             ` (${selectedFiles.length}/${NOTEBOOK_MAX_FILES - existingDocumentNames.length})`}
@@ -242,17 +310,19 @@ export const AddDocumentModal = ({
         <IconButton
           aria-label={t('common.close')}
           onClick={handleClose}
-          className={classes.closeButton}
+          sx={notebookDialogCloseButtonSx}
           size="small"
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent className={classes.dialogContent}>
+      <DialogContent sx={notebookDialogContentSx(isCompact)}>
         {validationErrors.length > 0 && (
-          <Alert severity="error" className={classes.errorAlert}>
-            {validationErrors
+          <ErrorAlert
+            variant="danger"
+            isInline
+            title={validationErrors
               .map(errorKey => {
                 const message = (t as Function)(errorKey) as string;
                 return errorKey === 'notebook.upload.error.tooManyFiles'
@@ -260,38 +330,102 @@ export const AddDocumentModal = ({
                   : message;
               })
               .join('\n')}
-          </Alert>
+          />
         )}
 
         {hasUploadsInProgress && (
-          <Alert severity="info" className={classes.errorAlert}>
-            {t('notebook.view.documents.uploadsInProgress')}
-          </Alert>
+          <ErrorAlert
+            variant="info"
+            isInline
+            title={t('notebook.view.documents.uploadsInProgress')}
+          />
         )}
 
-        {remainingSlots > 0 && (
-          <MultipleFileUpload
-            className={classes.dropzone}
-            dropzoneProps={{
-              accept: getNotebookAcceptedFileTypes(),
-              onDropRejected: handleDropRejected,
-            }}
-            onFileDrop={handleFileDrop}
-          >
-            <MultipleFileUploadMain
-              titleIcon={<UploadIcon />}
-              titleText={t('notebook.upload.modal.dragDropTitle')}
-              titleTextSeparator={t('notebook.upload.modal.separator')}
-              infoText={t('notebook.upload.modal.infoText')}
-              browseButtonText={t('notebook.upload.modal.browseButton')}
-            />
-          </MultipleFileUpload>
-        )}
+        {(() => {
+          const isDropzoneDisabled = remainingSlots <= 0;
+          const dropzoneContent = (
+            <Dropzone isDropzoneDisabled={isDropzoneDisabled}>
+              <MultipleFileUpload
+                dropzoneProps={{
+                  accept: getNotebookAcceptedFileTypes(),
+                  onDropRejected: handleDropRejected,
+                  disabled: isDropzoneDisabled,
+                  noClick: true,
+                }}
+                onFileDrop={handleFileDrop}
+              >
+                <DropzoneClickArea
+                  isDisabled={isDropzoneDisabled}
+                  ariaLabel={t('notebook.upload.modal.dragDropTitle')}
+                >
+                  <MultipleFileUploadMain
+                    titleIcon={<StyledUploadIcon />}
+                    titleText={t('notebook.upload.modal.dragDropTitle')}
+                    isUploadButtonHidden
+                  />
+                  <Typography
+                    sx={{
+                      fontSize: '0.875rem',
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                      mt: 1,
+                    }}
+                  >
+                    {t('notebook.upload.modal.supportedFormats')}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 0.75,
+                      justifyContent: 'center',
+                      mt: 0.5,
+                    }}
+                  >
+                    {UNIQUE_FILE_TYPE_LABELS.map(label => (
+                      <FileTypeChip key={label}>{label}</FileTypeChip>
+                    ))}
+                  </Box>
+                  <Typography
+                    sx={{
+                      fontSize: '0.875rem',
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                      mt: 1,
+                    }}
+                  >
+                    {t('notebook.upload.modal.maxFileSize')}
+                  </Typography>
+                </DropzoneClickArea>
+              </MultipleFileUpload>
+            </Dropzone>
+          );
+
+          return isDropzoneDisabled ? (
+            <Tooltip
+              content={t('notebook.view.documents.maxReached')}
+              position="top"
+            >
+              <div>{dropzoneContent}</div>
+            </Tooltip>
+          ) : (
+            dropzoneContent
+          );
+        })()}
 
         {selectedFiles.length > 0 && (
-          <Box className={classes.fileListContainer}>
-            <Box className={classes.fileListHeader}>
-              <Typography className={classes.fileCount}>
+          <Box sx={{ mt: 2, maxHeight: 200, overflowY: 'auto' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 1,
+              }}
+            >
+              <Typography
+                sx={{ fontSize: '0.875rem', color: 'text.secondary' }}
+              >
                 {(t as Function)('notebook.upload.modal.selectedFiles', {
                   count: selectedFiles.length,
                   max: NOTEBOOK_MAX_FILES - existingDocumentNames.length,
@@ -315,24 +449,26 @@ export const AddDocumentModal = ({
         )}
       </DialogContent>
 
-      <DialogActions className={classes.dialogActions}>
-        <Button
-          onClick={handleClose}
-          className={classes.cancelButton}
-          color="inherit"
-        >
-          {t('common.cancel')}
-        </Button>
+      <DialogActions sx={notebookDialogActionsSx(isCompact)}>
         <Button
           onClick={handleAddFiles}
-          className={classes.addButton}
+          sx={{ textTransform: 'none' }}
           variant="contained"
           color="primary"
           disabled={selectedFiles.length === 0 || hasUploadsInProgress}
         >
-          {(t as Function)('notebook.upload.modal.addButton', {
-            count: selectedFiles.length,
-          })}
+          {selectedFiles.length > 0
+            ? (t as Function)('notebook.upload.modal.addButton', {
+                count: selectedFiles.length,
+              })
+            : t('notebook.upload.modal.addButtonEmpty')}
+        </Button>
+        <Button
+          onClick={handleClose}
+          sx={{ textTransform: 'none' }}
+          color="inherit"
+        >
+          {t('common.cancel')}
         </Button>
       </DialogActions>
     </Dialog>

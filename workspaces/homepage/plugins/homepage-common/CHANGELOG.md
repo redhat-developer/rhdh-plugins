@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-homepage-common
 
+## 0.6.0
+
+### Minor Changes
+
+- 5f73bdc: Backstage version bump to v1.54.6
+
+## 0.5.0
+
+### Minor Changes
+
+- a98b8cd: Backstage version bump to v1.54.0
+
 ## 0.4.0
 
 ### Minor Changes

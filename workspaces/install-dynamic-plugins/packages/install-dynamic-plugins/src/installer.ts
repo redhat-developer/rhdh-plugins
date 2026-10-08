@@ -42,18 +42,22 @@ import {
   filterDisabledOciPlugins,
   mergePlugin,
   preMergeOciDisabledState,
+  resolveInheritPackage,
 } from './merger';
+import { isOciInherit, tryParseOciRegistryAndPath } from './oci-key';
 import { computePluginHash } from './plugin-hash';
 import { Skopeo } from './skopeo';
+import { extractPluginName } from './plugin-name';
+import { isLocalPath, isOciUrl, isRefUrl, REF_PROTO } from './protocols';
 import {
   CONFIG_HASH_FILE,
   DPDY_FILENAME,
   type DynamicPluginsConfig,
   effectivePullPolicy,
   GLOBAL_CONFIG_FILENAME,
+  type IncludePluginList,
   isPluginDisabled,
   LOCK_FILENAME,
-  OCI_PROTO,
   type Plugin,
   type PluginMap,
   type PluginSpec,
@@ -232,6 +236,115 @@ async function loadDynamicPluginsConfig(
   return content;
 }
 
+/**
+ * Resolve `ref://` entries in the main plugin list to their full package URLs
+ * by matching the ref name against entries in the include lists. Matched
+ * packages must use `oci://`; `ref://` does not resolve to `https://`,
+ * `http://`, or local (`./`) packages.
+ *
+ * This must run before the pre-merge pass so that resolved entries are visible
+ * as standard OCI URLs and level overrides apply correctly.
+ *
+ * Mutates `plugin.package` in place for each resolved entry:
+ *
+ * @example
+ * // ref://backstage-plugin-foo → oci://quay.io/rhdh/backstage-plugin-foo@sha256:abc
+ */
+export function resolveRefPlugins(
+  mainPlugins: PluginSpec[],
+  includeLists: IncludePluginList[],
+): void {
+  const pluginsWithRef = mainPlugins.filter(p => isRefUrl(p.package));
+  if (pluginsWithRef.length === 0) return;
+
+  const nameToPackage = new Map<string, string>();
+
+  for (const [, plugins] of includeLists) {
+    for (const plugin of plugins) {
+      const name = extractPluginName(plugin.package);
+      if (name && !nameToPackage.has(name)) {
+        nameToPackage.set(name, plugin.package);
+      }
+    }
+  }
+
+  for (const plugin of pluginsWithRef) {
+    const refName = plugin.package.slice(REF_PROTO.length);
+
+    if (!refName) {
+      throw new InstallException(
+        'Invalid ref:// reference: empty plugin name in ref://',
+      );
+    }
+
+    const resolved = nameToPackage.get(refName);
+
+    if (!resolved) {
+      throw new InstallException(
+        `Cannot resolve ref:// reference: no plugin named '${refName}' found in included plugins`,
+      );
+    }
+
+    plugin.package = resolved;
+  }
+}
+
+/**
+ * Resolve `{{inherit}}` entries against the unfiltered include lists. This has
+ * to happen before the disabled pre-merge pass: a disabled catalog entry is a
+ * valid inheritance base that a higher-precedence main entry can re-enable.
+ */
+export function resolveInheritPlugins(
+  mainPlugins: PluginSpec[],
+  includeLists: IncludePluginList[],
+): void {
+  const pluginsWithInherit = mainPlugins.filter(plugin =>
+    isOciInherit(plugin.package),
+  );
+  if (pluginsWithInherit.length === 0) return;
+
+  const candidates = includeLists.flatMap(([sourceFile, plugins]) =>
+    plugins.map(plugin => ({
+      package: plugin.package,
+      disabled: isPluginDisabled(plugin),
+      sourceFile,
+    })),
+  );
+
+  for (const plugin of pluginsWithInherit) {
+    const requestedPackage = plugin.package;
+    const requested = tryParseOciRegistryAndPath(requestedPackage);
+    const disabledPathless =
+      isPluginDisabled(plugin) && requested?.path === null;
+    try {
+      plugin.package = resolveInheritPackage(requestedPackage, candidates, {
+        preservePathless: disabledPathless,
+      });
+      log(
+        `\n======= Resolved {{inherit}} plugin '${requestedPackage}' to '${plugin.package}'`,
+      );
+    } catch (error) {
+      if (!disabledPathless) throw error;
+      const reason = error instanceof Error ? error.message : String(error);
+      log(
+        `WARNING: Skipping unresolved disabled {{inherit}} plugin configuration '${requestedPackage}': ${reason}`,
+      );
+    }
+  }
+}
+
+function warnAboutDeprecatedDisabledKeys(
+  includeLists: IncludePluginList[],
+  mainPlugins: PluginSpec[],
+): void {
+  // Warn once per declared entry, including disabled OCI entries removed by
+  // the pre-merge filter and included entries overridden by the main config.
+  for (const [, plugins] of includeLists) {
+    for (const plugin of plugins) isPluginDisabled(plugin, log);
+  }
+  for (const plugin of mainPlugins) isPluginDisabled(plugin, log);
+}
+
 /** Resolve include paths, substitute the catalog-index placeholder, merge
  * everything into a single `PluginMap`, and compute change-detection hashes.
  *
@@ -256,7 +369,7 @@ async function loadAllPlugins(
     catalogDpdy,
   );
 
-  const includeLists: Array<[string, PluginSpec[]]> = [];
+  const includeLists: IncludePluginList[] = [];
   for (const inc of includes) {
     if (!(await fileExists(inc))) {
       log(`WARNING: include file ${inc} not found, skipping`);
@@ -279,10 +392,22 @@ async function loadAllPlugins(
   }
   const mainPlugins = content.plugins ?? [];
 
+  warnAboutDeprecatedDisabledKeys(includeLists, mainPlugins);
+
+  resolveRefPlugins(mainPlugins, includeLists);
+  // Collision validation must use the packages the user declared. Resolving
+  // an inherit reference replaces its requested registry with the catalog's
+  // registry, which must not create a synthetic same-level name collision.
+  const mainPackagesForNameCollision = mainPlugins.map(
+    plugin => plugin.package,
+  );
+  resolveInheritPlugins(mainPlugins, includeLists);
+
   const disabledRegistries = preMergeOciDisabledState(
     includeLists,
     mainPlugins,
     configFileAbs,
+    mainPackagesForNameCollision,
   );
 
   for (const [inc, plugins] of includeLists) {
@@ -375,15 +500,15 @@ function categorize(allPlugins: PluginMap): Categorized {
   const npm: Plugin[] = [];
   const skipped: Plugin[] = [];
   for (const plugin of Object.values(allPlugins)) {
-    if (isPluginDisabled(plugin, log)) {
+    if (isPluginDisabled(plugin)) {
       log(`\n======= Skipping disabled plugin ${plugin.package}`);
       continue;
     }
-    if (plugin.package.startsWith(OCI_PROTO)) {
+    if (isOciUrl(plugin.package)) {
       oci.push(plugin);
       continue;
     }
-    if (plugin.package.startsWith('./')) {
+    if (isLocalPath(plugin.package)) {
       const localPath = path.join(process.cwd(), plugin.package.slice(2));
       if (existsSync(localPath)) npm.push(plugin);
       else skipped.push(plugin);

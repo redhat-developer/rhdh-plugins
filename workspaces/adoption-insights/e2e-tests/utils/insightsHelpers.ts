@@ -20,6 +20,8 @@ import { Page, expect } from '@playwright/test';
  */
 const LOCALE_DISPLAY_NAMES: Record<string, string> = {
   en: 'English',
+  de: 'Deutsch',
+  es: 'Español',
   fr: 'Français',
   it: 'Italiano',
   ja: '日本語',
@@ -51,10 +53,30 @@ export async function navigate(page: Page, link: string) {
   }
 }
 
+export async function expandCollapsedSidebarGroup(page: Page) {
+  if (process.env.APP_MODE === 'legacy') {
+    return;
+  }
+
+  const insightsLink = page
+    .locator('nav a:has-text("Adoption Insights")')
+    .first();
+  if (await insightsLink.isVisible()) {
+    return;
+  }
+
+  // TODO: This is to find only the collapsed Admin menu. It would be better to inspect this by title and maybe a collapsed state.
+  await page
+    .locator('nav button:has(svg[data-testid="ExpandMoreIcon"])')
+    .first()
+    .click();
+}
+
 /**
  * Navigate to the Adoption Insights page
  */
 export async function navigateToInsights(page: Page, insightsTitle?: string) {
+  await expandCollapsedSidebarGroup(page);
   await navigate(page, insightsTitle || 'Adoption Insights');
 }
 

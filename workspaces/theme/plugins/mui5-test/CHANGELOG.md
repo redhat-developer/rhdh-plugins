@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-mui5-test
 
+## 0.5.1
+
+### Patch Changes
+
+- 461f84f: Align `@remixicon/react` to `>=4.6.0 <4.9.0` to avoid the license change introduced in 4.9.0 (see Backstage 1.51 release notes).
+
 ## 0.5.0
 
 ### Minor Changes

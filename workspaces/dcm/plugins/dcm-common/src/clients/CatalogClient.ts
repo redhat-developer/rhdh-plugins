@@ -22,6 +22,8 @@ import type {
   ServiceType,
   ServiceTypeList,
 } from '../types/catalog';
+import type { PaginationParams } from '../types/common';
+import { buildPaginationQuery } from '../utils/buildPaginationQuery';
 import type { CatalogApi } from './CatalogApi';
 import { DcmBaseClient } from './DcmBaseClient';
 
@@ -39,8 +41,12 @@ export class CatalogClient extends DcmBaseClient implements CatalogApi {
 
   // ── Service Types ──────────────────────────────────────────────────────────
 
-  async listServiceTypes(): Promise<ServiceTypeList> {
-    return this.fetch<ServiceTypeList>('service-types');
+  async listServiceTypes(
+    params: PaginationParams = {},
+  ): Promise<ServiceTypeList> {
+    return this.fetch<ServiceTypeList>(
+      `service-types${buildPaginationQuery(params)}`,
+    );
   }
 
   async getServiceType(serviceTypeId: string): Promise<ServiceType> {
@@ -56,8 +62,12 @@ export class CatalogClient extends DcmBaseClient implements CatalogApi {
 
   // ── Catalog Items ──────────────────────────────────────────────────────────
 
-  async listCatalogItems(): Promise<CatalogItemList> {
-    return this.fetch<CatalogItemList>('catalog-items');
+  async listCatalogItems(
+    params: PaginationParams = {},
+  ): Promise<CatalogItemList> {
+    return this.fetch<CatalogItemList>(
+      `catalog-items${buildPaginationQuery(params)}`,
+    );
   }
 
   async getCatalogItem(catalogItemId: string): Promise<CatalogItem> {
@@ -90,8 +100,12 @@ export class CatalogClient extends DcmBaseClient implements CatalogApi {
 
   // ── Catalog Item Instances ─────────────────────────────────────────────────
 
-  async listCatalogItemInstances(): Promise<CatalogItemInstanceList> {
-    return this.fetch<CatalogItemInstanceList>('catalog-item-instances');
+  async listCatalogItemInstances(
+    params: PaginationParams = {},
+  ): Promise<CatalogItemInstanceList> {
+    return this.fetch<CatalogItemInstanceList>(
+      `catalog-item-instances${buildPaginationQuery(params)}`,
+    );
   }
 
   async getCatalogItemInstance(

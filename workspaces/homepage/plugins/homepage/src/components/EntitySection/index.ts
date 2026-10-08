@@ -14,5 +14,3 @@
  * limitations under the License.
  */
 export { EntitySectionContent } from './EntitySection';
-export { EntitySection } from '../legacy/HomePageLegacyCards';
-export { EntitySection as default } from '../legacy/HomePageLegacyCards';

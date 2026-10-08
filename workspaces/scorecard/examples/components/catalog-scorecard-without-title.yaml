@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: catalog-scorecard-without-title
+  annotations:
+    scorecard/example: catalog
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: production

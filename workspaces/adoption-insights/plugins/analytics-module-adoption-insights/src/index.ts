@@ -13,4 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './api';
+
+/**
+ * Analytics module for Adoption Insights (new frontend system).
+ *
+ * @packageDocumentation
+ */
+import {
+  AnalyticsImplementationBlueprint,
+  configApiRef,
+  createFrontendPlugin,
+  identityApiRef,
+} from '@backstage/frontend-plugin-api';
+import { AdoptionInsightsAnalyticsApi } from './api/AdoptionInsightsAnalyticsApi';
+
+const adoptionInsightsAnalyticsImplementation =
+  AnalyticsImplementationBlueprint.make({
+    name: 'analytics-module-adoption-insights',
+    params: defineParams =>
+      defineParams({
+        deps: { configApi: configApiRef, identityApi: identityApiRef },
+        factory: ({ configApi, identityApi }) =>
+          AdoptionInsightsAnalyticsApi.fromConfig(configApi, { identityApi }),
+      }),
+  });
+
+/**
+ * The Adoption Insights analytics module for the new frontend system.
+ * @public
+ */
+export default createFrontendPlugin({
+  pluginId: 'analytics-module-adoption-insights',
+  extensions: [adoptionInsightsAnalyticsImplementation],
+});

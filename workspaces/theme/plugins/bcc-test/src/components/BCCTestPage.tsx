@@ -24,7 +24,9 @@ export const BCCTestPage = () => {
   return (
     <Page themeId="tool">
       <Header title="Backstage Core Components Tests">
-        <UserSettingsThemeToggle />
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          <UserSettingsThemeToggle />
+        </ul>
       </Header>
       <TabbedLayout>
         <TabbedLayout.Route

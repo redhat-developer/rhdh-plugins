@@ -1,0 +1,62 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Deterministic transform from MCP Registry server.json documents to
+ * Backstage mcp-server API entities (direct field mapping and
+ * annotation projection).
+ *
+ * @packageDocumentation
+ */
+
+export type {
+  McpServerDocument,
+  McpServerMeta,
+  McpRegistryRemote,
+  McpRegistryIcon,
+  McpRegistryPackage,
+  McpServerRepository,
+  McpServerMappingDefaults,
+  McpServerMappingResult,
+  McpInput,
+  McpInputWithVariables,
+  McpKeyValueInput,
+  McpArgument,
+  McpPositionalArgument,
+  McpNamedArgument,
+  McpLocalTransport,
+  McpStdioTransport,
+  McpStreamableHttpTransport,
+  McpSseTransport,
+} from './types';
+export {
+  mapServerToEntity,
+  validateRequiredFields,
+  mapRemotes,
+  buildLinks,
+  trackConsumedRemotePaths,
+} from './mapServerToEntity';
+export type { LinksResult } from './mapServerToEntity';
+export { isAllowedUrl } from './urlPolicy';
+export {
+  deriveMetadataName,
+  sanitizeSegment,
+  computeIdentityHashSuffix,
+  DEFAULT_PREFIX,
+} from './identity';
+export { computeRepositoryUrl } from './repository';
+export type { RepositoryUrlResult } from './repository';
+export { projectAnnotations } from './annotationProjection';

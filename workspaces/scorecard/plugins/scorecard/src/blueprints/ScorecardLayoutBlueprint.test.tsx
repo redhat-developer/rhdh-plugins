@@ -124,6 +124,42 @@ describe('ScorecardEntityContentLayoutBlueprint', () => {
     });
   });
 
+  it('should pass titleKey and descriptionKey through to the loaded component', async () => {
+    const MockLayout = (props: { groups: Record<string, any> }) => (
+      <div data-testid="mock-layout">{JSON.stringify(props.groups)}</div>
+    );
+
+    const extension = ScorecardEntityContentLayoutBlueprint.make({
+      params: {
+        title: 'Grid',
+        loader: async () => MockLayout,
+      },
+    });
+
+    const groups = {
+      quality: {
+        title: 'Quality',
+        titleKey: 'groups.quality.title',
+        description: 'Quality metrics',
+        descriptionKey: 'groups.quality.description',
+        metrics: ['sonarqube.codeCoverage'],
+      },
+    };
+
+    const tester = createExtensionTester(extension, { config: { groups } });
+
+    renderInTestApp(tester.reactElement());
+
+    await waitFor(() => {
+      expect(screen.getByTestId('mock-layout')).toBeInTheDocument();
+    });
+
+    const rendered = screen.getByTestId('mock-layout').textContent;
+    expect(rendered).toContain('groups.quality.title');
+    expect(rendered).toContain('groups.quality.description');
+    expect(rendered).toContain('Quality');
+  });
+
   it('should default groups to empty object when no config is provided', async () => {
     const MockLayout = (props: { groups: Record<string, any> }) => (
       <div data-testid="mock-layout">

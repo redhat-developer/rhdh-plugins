@@ -34,6 +34,8 @@ export const useAggregationMetadata = ({
   const { t } = useTranslation();
   const scorecardApi = useApi(scorecardApiRef);
 
+  const queryEnabled = Boolean(aggregationId?.trim()) && enabled;
+
   const { error, isLoading, data } = useQuery({
     queryKey: ['aggregationMetadata', aggregationId],
     queryFn: async () => {
@@ -50,12 +52,12 @@ export const useAggregationMetadata = ({
         );
       }
     },
-    enabled: Boolean(aggregationId?.trim()) && enabled,
+    enabled: queryEnabled,
   });
 
   return {
     data,
-    isLoading,
+    isLoading: queryEnabled && isLoading,
     error: error ?? undefined,
   };
 };

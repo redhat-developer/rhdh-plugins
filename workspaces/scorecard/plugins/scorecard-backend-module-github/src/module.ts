@@ -17,7 +17,13 @@ import {
   coreServices,
   createBackendModule,
 } from '@backstage/backend-plugin-api';
-import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  scorecardCollectorsExtensionPoint,
+  scorecardMetricsExtensionPoint,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { GithubDeploymentPullRequestsCollector } from './collectors/GithubDeploymentPullRequestsCollector';
+import { GithubDeploymentWorkflowRunsCollector } from './collectors/GithubDeploymentWorkflowRunsCollector';
+import { GithubDeploymentsCollector } from './collectors/GithubDeploymentsCollector';
 import { GithubOpenPRsProvider } from './metricProviders/GithubOpenPRsProvider';
 
 export const scorecardModuleGithub = createBackendModule({
@@ -26,11 +32,20 @@ export const scorecardModuleGithub = createBackendModule({
   register(reg) {
     reg.registerInit({
       deps: {
+        collectors: scorecardCollectorsExtensionPoint,
         config: coreServices.rootConfig,
+        logger: coreServices.logger,
         metrics: scorecardMetricsExtensionPoint,
       },
-      async init({ config, metrics }) {
-        metrics.addMetricProvider(GithubOpenPRsProvider.fromConfig(config));
+      async init({ collectors, config, logger, metrics }) {
+        collectors.addCollector(
+          GithubDeploymentsCollector.fromConfig(config, { logger }),
+          GithubDeploymentWorkflowRunsCollector.fromConfig(config, { logger }),
+          GithubDeploymentPullRequestsCollector.fromConfig(config, { logger }),
+        );
+        metrics.addMetricProvider(
+          GithubOpenPRsProvider.fromConfig(config, { logger }),
+        );
       },
     });
   },

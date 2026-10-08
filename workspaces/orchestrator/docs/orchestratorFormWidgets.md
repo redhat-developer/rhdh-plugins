@@ -41,10 +41,18 @@ Implementation of the HTTP endpoints is out of the scope of this library, they a
   - [ActiveMultiSelect widget](#activemultiselect-widget)
     - [ActiveMultiSelect Data Fetching and validation](#activemultiselect-data-fetching-and-validation)
     - [ActiveMultiSelect widget ui:props](#activemultiselect-widget-uiprops)
+  - [ActiveBoolean widget](#activeboolean-widget)
+    - [ActiveBoolean Data Fetching](#activeboolean-data-fetching)
+    - [ActiveBoolean widget ui:props](#activeboolean-widget-uiprops)
   - [ActiveText widget](#activetext-widget)
     - [ActiveText Data Fetching](#activetext-data-fetching)
     - [Dynamic Text Templating](#dynamic-text-templating)
     - [ActiveText widget ui:props](#activetext-widget-uiprops)
+  - [Field-Level Validation](#field-level-validation)
+    - [Validation on Blur](#validation-on-blur)
+    - [Validation on Change](#validation-on-change)
+    - [Validation on Both Blur and Change](#validation-on-both-blur-and-change)
+    - [Dependent Field Group Validation](#dependent-field-group-validation)
   - [Content of `ui:props`](#content-of-uiprops)
     - [List of widget properties](#list-of-widget-properties)
       - [Specifics for templates in fetch:body, validate:body, fetch:headers or validate:headers](#specifics-for-templates-in-fetchbody-validatebody-fetchheaders-or-validateheaders)
@@ -254,7 +262,7 @@ If you want to keep the field empty until the user interacts with it, set `fetch
 
 In addition to the AJV validation handled by the RJSF form, an external service can be utilized through the `validate:*` properties via HTTP requests.
 
-If specified, external validation is triggered both upon form submission and when moving to the next step.
+If specified, external validation is triggered both upon form submission and when moving to the next step. Additionally, validation can be triggered on blur or change using the `ui:validateOn` annotation (see [Field-Level Validation](#field-level-validation)).
 
 The validation is considered successful if an HTTP 200 response is received.
 
@@ -432,6 +440,69 @@ The widget supports following `ui:props`:
 
 [Check more details](#content-of-uiprops)
 
+## ActiveBoolean widget
+
+Referenced as: `"ui:widget": "ActiveBoolean"`.
+
+A smart boolean component based on the [@mui/material/Checkbox](https://mui.com/material-ui/api/checkbox/) keeping look&feel with other RJSF-default fields.
+
+This widget enables boolean (checkbox) fields to dynamically fetch their values from external APIs and respond to form changes, following the same patterns as other Active widgets.
+
+### ActiveBoolean Data Fetching
+
+When instantiated, it loads (prefetch) the **default** value using a single HTTP call based on the `fetch:*` from the `ui:props`.
+
+Once fetched, the `fetch:response:value` selector is used to pick the default value.
+This selector is expected to resolve into a boolean value, or a value that can be coerced to boolean:
+
+- Boolean values: `true`, `false`
+- String values: `"true"`, `"false"`, `"1"`, `"0"` (case-insensitive)
+- Numeric values: `1` (true), `0` (false), any non-zero number (true)
+
+The data are further re-fetched if the value of one of the `fetch:retrigger` referenced values is changed.
+If the `fetch:retrigger` is omitted, the fetch is issued just once to preload the data.
+
+Because a checkbox's default value only applies when the field is initially unchecked, any changes to the returned value in subsequent requests are ignored if the user has already interacted with the field.
+If you want to keep the field unchanged until the user interacts with it, set `fetch:skipInitialValue` to `true`.
+
+**Example:**
+
+```json
+"enableFeature": {
+  "type": "boolean",
+  "title": "Enable Advanced Features",
+  "ui:widget": "ActiveBoolean",
+  "ui:props": {
+    "fetch:url": "https://api.example.com/feature-flags?tenant=$${{current.tenantId}}",
+    "fetch:response:value": "features.advanced.enabled",
+    "fetch:response:default": false,
+    "fetch:retrigger": ["current.tenantId"]
+  }
+}
+```
+
+### ActiveBoolean widget ui:props
+
+The widget supports following `ui:props`:
+
+- fetch:url
+- fetch:headers
+- fetch:method
+- fetch:body
+- fetch:retrigger
+- fetch:clearOnRetrigger
+- fetch:retry:maxAttempts
+- fetch:retry:delay
+- fetch:retry:backoff
+- fetch:retry:statusCodes
+- fetch:error:ignoreUnready
+- fetch:error:silent
+- fetch:skipInitialValue
+- fetch:response:value
+- fetch:response:default
+
+[Check more details](#content-of-uiprops)
+
 ## ActiveText widget
 
 Referenced as: `"ui:widget": "ActiveText"`.
@@ -543,6 +614,126 @@ The widget supports the following `ui:props` (for detailed information on each, 
 - `fetch:retry:backoff`: Backoff multiplier applied to the delay
 - `fetch:retry:statusCodes`: Optional list of status codes to retry
 
+## Field-Level Validation
+
+By default, validation (both AJV schema validation and async `validate:url` HTTP validation) runs only when the user clicks **Next** or **Submit**. The `ui:validateOn` annotation enables immediate per-field validation triggered by user interaction, without waiting for form submission.
+
+This feature is supported by the `ActiveTextInput`, `ActiveDropdown`, and `ActiveMultiSelect` widgets.
+
+### Validation on Blur
+
+Trigger validation when the user leaves a field (tabs out or clicks another field):
+
+```json
+{
+  "userId": {
+    "type": "string",
+    "title": "User ID",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "blur",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/user/$${{current.userId}}"
+    }
+  }
+}
+```
+
+### Validation on Change
+
+Trigger validation while the user types. The validation is **debounced** (1 second delay) to avoid excessive network calls:
+
+```json
+{
+  "email": {
+    "type": "string",
+    "title": "Email",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "change",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/email",
+      "validate:method": "POST",
+      "validate:body": {
+        "email": "$${{current.email}}"
+      }
+    }
+  }
+}
+```
+
+### Validation on Both Blur and Change
+
+Use a comma-separated value to trigger on both events:
+
+```json
+{
+  "hostname": {
+    "type": "string",
+    "title": "Hostname",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "blur,change",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/hostname/$${{current.hostname}}"
+    }
+  }
+}
+```
+
+### Dependent Field Group Validation
+
+Use `ui:validateGroup` to link dependent fields that should be validated together. When all fields in a group have values and any member triggers validation, all other group members are validated automatically.
+
+This is useful for fields like **namespace + cluster** where the validity of one depends on the value of the other.
+
+```json
+{
+  "namespace": {
+    "type": "string",
+    "title": "Namespace",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "blur",
+    "ui:validateGroup": "ns-cluster",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/namespace",
+      "validate:method": "POST",
+      "validate:body": {
+        "namespace": "$${{current.namespace}}",
+        "cluster": "$${{current.cluster}}"
+      }
+    }
+  },
+  "cluster": {
+    "type": "string",
+    "title": "Cluster",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "blur",
+    "ui:validateGroup": "ns-cluster",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/cluster",
+      "validate:method": "POST",
+      "validate:body": {
+        "namespace": "$${{current.namespace}}",
+        "cluster": "$${{current.cluster}}"
+      }
+    }
+  }
+}
+```
+
+**How group validation works:**
+
+1. The user fills in `namespace` and blurs the field — only `namespace` is validated (because `cluster` is still empty).
+2. The user fills in `cluster` and blurs the field — both `cluster` **and** `namespace` are validated, because all group members now have values.
+3. The group name (`"ns-cluster"` in this example) is arbitrary — it just needs to match across all fields in the group.
+
+**Key points:**
+
+| Property           | Location     | Values                                | Description                                                                                                         |
+| ------------------ | ------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `ui:validateOn`    | Field schema | `"blur"`, `"change"`, `"blur,change"` | When to trigger field-level validation. If omitted, validation runs only on Next/Submit.                            |
+| `ui:validateGroup` | Field schema | Any string (group name)               | Links fields for group validation. All fields with the same group name are validated together when all have values. |
+
+> **Note:** Fields without `ui:validateOn` continue to validate only on Next/Submit — this feature is fully backward compatible.
+
 ## Content of `ui:props`
 
 A list of particular widgets supported by each widget can be found in its description above.
@@ -574,7 +765,7 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |    fetch:response:label     |                                                                                                                                                                                                           Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used i.e. by the ActiveDropdown to label the items.                                                                                                                                                                                                            |                                                                                                 |
 |    fetch:response:value     |                                                                                                                                                                                                   Like fetch:response:label, but gives i.e. ActiveDropdown item values (not visible to the user but actually used as the field value)                                                                                                                                                                                                   |                                                                                                 |
 | fetch:response:autocomplete |                                                                                                                                                                                              Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used for selecting list of strings for autocomplete feature (ActiveTextInput)                                                                                                                                                                                               |                                                                                                 |
-|        validate:url         |                                                                                                                                                                                                                            Like fetch:url but triggered for validation on form submit, form page transition                                                                                                                                                                                                                             |                                                                                                 |
+|        validate:url         |                                                                                                                                                       Like fetch:url but triggered for validation on form submit, form page transition. Can also be triggered on blur or change when `ui:validateOn` is set on the field (see [Field-Level Validation](#field-level-validation)).                                                                                                                                                       |                                                                                                 |
 |       validate:method       |                                                                                                                                                                                                                                                         Similar to fetch:method                                                                                                                                                                                                                                                         |                                                                                                 |
 |     validate:retrigger      |                                   An array similar to fetch:retrigger. Force revalidation of the field if a dependency is changed. In the most simple case when just the value of the particular field is listed (sort of \[“current.myField”\], the validation is triggered “on input”, i.e. when the user types a character in ActiveInputBox. The network calls are throttled. No matter if validate:retrigger is used, the validation happens at least on submit or transition to the next page.                                    |                                                                                                 |
 |        validate:body        |                                                                                                                                                                                                                                                          Similar to fetch:body                                                                                                                                                                                                                                                          |                                                                                                 |
@@ -728,6 +919,62 @@ The widgets manage waiting for asynchronous promises and chains of functions to 
 When exposing additional keys in the future, we will consider not only the [frontend-visibility](https://backstage.io/docs/conf/defining/#visibility) but security as well, since a malicious workflow can retrieve configuration of plugins or Backstage, eventually with their secrets.
 That’s the reason for listing the exposed keys explicitly.
 
+Values referenced through `rjsfConfig` are configured under `orchestrator.rjsf-widgets`:
+
+```yaml
+orchestrator:
+  rjsf-widgets:
+    defaultEnvironment: production
+```
+
+All values in this namespace are exposed to the frontend and must not contain secrets.
+
+#### Nested Configuration
+
+You can organize related parameters using nested objects (supported since v2.0+):
+
+```yaml
+orchestrator:
+  rjsf-widgets:
+    # Nested structures for widget-specific config
+    app-registration:
+      xParams:
+        name: app-registration
+        version: 0.21.0
+      environment: production
+
+    cloud-run:
+      xParams:
+        name: cloud-run
+        version: 1.0.0
+      region: us-central1
+
+    # Flat keys still work (backward compatible)
+    globalTimeout: '30s'
+    defaultEnvironment: production
+```
+
+**Accessing nested values in workflow schemas:**
+
+Access nested configuration using dot-path notation in templates:
+
+```json
+{
+  "ui:widget": "ActiveText",
+  "ui:props": {
+    "ui:text": "Deploying $${{rjsfConfig.app-registration.xParams.name}} v$${{rjsfConfig.app-registration.xParams.version}}"
+  }
+}
+```
+
+**Important notes:**
+
+- Templates resolve **leaf values only** (primitive strings, numbers, booleans)
+- Numbers and booleans are converted to strings: `version: 0.21.0` → `"0.21.0"`
+- Missing paths return `undefined` without crashing the form
+- Existing flat configurations continue to work
+- You can mix flat and nested keys in the same section
+
 |                                 Key Family                                  |                                                      Key                                                       |                                                                                                                                                                                                                                     Value of at runtime\<br\>(skipping promises for simplicity)                                                                                                                                                                                                                                     |
 | :-------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 |                                   current                                   |                                           \[whatever property name\]                                           |                                                                                                                    Value of other field/property of the form. The properties build hierarchy separated by `.` (dots) matching the structure of fields/objects defined by the data input schema. Arrays or branches of a complex object structure can be passed as well, data are encoded into JSON in that case.                                                                                                                    |
@@ -740,7 +987,7 @@ That’s the reason for listing the exposed keys explicitly.
 | atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |                                                  profileEmail                                                  |                                                                                                                                                                                                                                             ProfileInfoApi.getProfile(undefined).email                                                                                                                                                                                                                                              |
 | atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |                                                  profileName                                                   |                                                                                                                                                                                                                                          ProfileInfoApi.getProfile(undefined).displayName                                                                                                                                                                                                                                           |
 |                                customAuthApi                                | One of: openIdToken, token, profileEmail, profileName (availability depends on custom-provided implementation) | Encapsulated access to custom-implemented authentication provider API. The provider API id must match its ApiRef id (as passed to `createApiRef()` when building the API). Full format: `[KEY_FAMILY].[PLUGIN_ID].[KEY]`. Example: `customAuthApi.my.auth.github-two.token` to access `OAuthApi.getAccessToken()` (if implemented) via custom apiRef created by: `createApiRef({id: 'my.auth.github-two'})`. See more info about [custom-provider implementation](https://backstage.io/docs/auth/#custom-scmauthapi-implementation) |
-|                                 rjsfConfig                                  |                                         orchestrator.\[whatever key\]                                          |                                                                                                                                                                                                                           configApi.getOptionalString(\`${orchestrator.rjsf-widgets.\[whatever key\]}\`)                                                                                                                                                                                                                            |
+|                                 rjsfConfig                                  |                                        \[whatever key or nested.path\]                                         |                                                                                                                                                                                       configApi.getOptionalString(\`orchestrator.rjsf-widgets.${key}\`). Supports dot-path notation for nested config (e.g., `app-registration.xParams.name`)                                                                                                                                                                                       |
 |                                   backend                                   |                                                    baseUrl                                                     |                                                                                                                                                                                                             configApi.getString('backend.baseUrl') - useful for building URLs with proxy without hardcoding the backend                                                                                                                                                                                                             |
 
 ## Retrieving Data from Backstage Catalog

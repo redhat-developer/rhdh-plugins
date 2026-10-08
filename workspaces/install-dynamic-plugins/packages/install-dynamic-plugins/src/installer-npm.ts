@@ -20,6 +20,7 @@ import { verifyIntegrity } from './integrity';
 import { log } from './log';
 import { run } from './run';
 import { extractNpmPackage } from './tar-extract';
+import { isLocalPath } from './protocols';
 import { CONFIG_HASH_FILE, isPluginDisabled, type Plugin } from './types';
 import { markAsFresh } from './util';
 
@@ -57,7 +58,7 @@ export async function installNpmPlugin(
   const pkg = plugin.package;
   const config: Record<string, unknown> = plugin.pluginConfig ?? {};
 
-  const isLocal = pkg.startsWith('./');
+  const isLocal = isLocalPath(pkg);
   const actualPkg = isLocal ? path.join(process.cwd(), pkg.slice(2)) : pkg;
 
   const verifyRemoteIntegrity = !isLocal && !skipIntegrity;

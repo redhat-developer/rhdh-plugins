@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { validateJQLValue, validateIdentifier, sanitizeValue } from './utils';
+import {
+  joinJqlClauses,
+  jiraDateTimeToIso,
+  toJiraEpochMillis,
+  validateIdentifier,
+  validateJQLValue,
+} from './utils';
 
 describe('utils', () => {
   describe('validateJQLValue', () => {
@@ -41,9 +47,51 @@ describe('utils', () => {
     });
   });
 
-  describe('sanitizeValue', () => {
-    it('should sanitize value', () => {
-      expect(sanitizeValue('T"EST\\123')).toBe('T\\"EST\\\\123');
+  describe('joinJqlClauses', () => {
+    it('wraps clauses in parentheses and joins with AND', () => {
+      expect(
+        joinJqlClauses([
+          'project = "INC"',
+          'type = Incident',
+          'created >= 1780272000000',
+        ]),
+      ).toBe(
+        '(project = "INC") AND (type = Incident) AND (created >= 1780272000000)',
+      );
+    });
+
+    it('skips undefined, null, and empty clauses', () => {
+      expect(
+        joinJqlClauses([
+          'project = "INC"',
+          undefined,
+          null,
+          '',
+          'type = Incident',
+        ]),
+      ).toBe('(project = "INC") AND (type = Incident)');
+    });
+
+    it('returns an empty string when no clauses remain', () => {
+      expect(joinJqlClauses([undefined, null, ''])).toBe('');
+    });
+
+    it('wraps a single clause', () => {
+      expect(joinJqlClauses(['project = "INC"'])).toBe('(project = "INC")');
+    });
+  });
+
+  describe('toJiraEpochMillis', () => {
+    it('should convert ISO datetime to Unix epoch milliseconds', () => {
+      expect(toJiraEpochMillis('2026-06-01T10:05:00.000Z')).toBe(1780308300000);
+    });
+  });
+
+  describe('jiraDateTimeToIso', () => {
+    it('should reformat Jira datetime with colon-less offset to ISO-8601', () => {
+      expect(jiraDateTimeToIso('2026-07-15T18:21:34.862+0530')).toBe(
+        '2026-07-15T12:51:34.862Z',
+      );
     });
   });
 });

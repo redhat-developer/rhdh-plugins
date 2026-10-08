@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import List from '@mui/material/List';
@@ -23,8 +21,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { useEffect, useState } from 'react';
+
 import { QuickstartItemIcon } from './QuickstartItemIcon';
 import { QuickstartCtaLink } from './QuickstartCtaLink';
+import { QuickstartIcon } from './QuickstartIcon';
 import { QuickstartItemData } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../../utils';
@@ -45,25 +45,21 @@ export const QuickstartItem = ({
   handleOpen,
 }: QuickstartItemProps) => {
   const { t } = useTranslation();
-  const [stepCompleted, setStepCompleted] = useState<boolean>(false);
   const itemKey = `${item.title}-${index}`;
 
+  const [stepCompleted, setStepCompleted] = useState(
+    () => localStorage.getItem(itemKey) === 'true',
+  );
+
+  const markStepCompleted = () => {
+    localStorage.setItem(itemKey, 'true');
+    setStepCompleted(true);
+    setProgress();
+  };
+
   useEffect(() => {
-    const stepState = localStorage.getItem(itemKey);
-    if (stepState === 'true') {
-      setStepCompleted(true);
-    }
+    setStepCompleted(localStorage.getItem(itemKey) === 'true');
   }, [itemKey]);
-
-  useEffect(() => {
-    localStorage.setItem(itemKey, stepCompleted.toString());
-  }, [itemKey, stepCompleted]);
-
-  useEffect(() => {
-    if (stepCompleted) {
-      setProgress();
-    }
-  }, [stepCompleted, setProgress]);
 
   return (
     <Box component="li" sx={{ marginBottom: theme => `${theme.spacing(0.2)}` }}>
@@ -132,7 +128,10 @@ export const QuickstartItem = ({
               : { color: theme => theme.palette.text.secondary }),
           }}
         >
-          {open ? <ExpandLess /> : <ExpandMore />}
+          <QuickstartIcon
+            icon={open ? 'expand_less' : 'expand_more'}
+            size="small"
+          />
         </Box>
       </ListItem>
       <Collapse in={open} timeout="auto" unmountOnExit>
@@ -159,12 +158,7 @@ export const QuickstartItem = ({
             />
           </ListItem>
           <ListItem>
-            <QuickstartCtaLink
-              cta={item.cta}
-              onClick={() => {
-                setStepCompleted(true);
-              }}
-            />
+            <QuickstartCtaLink cta={item.cta} onClick={markStepCompleted} />
           </ListItem>
         </List>
       </Collapse>

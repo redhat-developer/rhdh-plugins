@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hasOwnProp, isNonNullable } from './TypeGuards';
+import { isNonNullable } from './TypeGuards';
 
 describe('isNonNullable', () => {
   it('returns false for null and undefined', () => {
@@ -27,16 +27,5 @@ describe('isNonNullable', () => {
     expect(isNonNullable(0)).toBe(true);
     expect(isNonNullable(false)).toBe(true);
     expect(isNonNullable({})).toBe(true);
-  });
-});
-
-describe('hasOwnProp', () => {
-  it('returns true for own properties', () => {
-    expect(hasOwnProp({ foo: 1 }, 'foo')).toBe(true);
-  });
-
-  it('returns false for missing or inherited properties', () => {
-    expect(hasOwnProp({ foo: 1 }, 'bar')).toBe(false);
-    expect(hasOwnProp({}, 'toString')).toBe(false);
   });
 });

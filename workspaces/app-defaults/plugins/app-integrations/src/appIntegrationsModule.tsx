@@ -70,7 +70,7 @@ const scmAuthApi = ApiBlueprint.make({
  * RHDH-style `scmIntegrationsApiRef` + `scmAuthApiRef` for `pluginId: 'app'`.
  * Default-export this module for dynamic frontend loading.
  *
- * @alpha
+ * @public
  */
 export const appIntegrationsModule = createFrontendModule({
   pluginId: 'app',

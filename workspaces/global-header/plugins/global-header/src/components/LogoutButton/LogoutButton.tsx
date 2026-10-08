@@ -46,7 +46,11 @@ export const LogoutButton = ({
         onClick={handleLogout}
         sx={{
           cursor: 'pointer',
+          py: 0.5,
+          px: 0,
           width: '100%',
+          boxSizing: 'border-box',
+          display: 'flex',
           color: 'inherit',
         }}
       >

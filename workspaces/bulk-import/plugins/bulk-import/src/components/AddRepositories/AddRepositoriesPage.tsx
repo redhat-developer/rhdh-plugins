@@ -35,7 +35,6 @@ export const AddRepositoriesPage = () => {
 
   const bulkImportViewPermissionResult = usePermission({
     permission: bulkImportPermission,
-    resourceRef: bulkImportPermission.resourceType,
   });
 
   const { numberOfApprovalTools } = useNumberOfApprovalTools();

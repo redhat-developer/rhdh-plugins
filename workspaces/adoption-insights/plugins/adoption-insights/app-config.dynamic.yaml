@@ -1,6 +1,7 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-adoption-insights:
+      # Legacy/OFS exports require `module: Legacy` — they are not available on the default module.
       translationResources:
         - importName: adoptionInsightsTranslations
           module: Alpha
@@ -8,9 +9,11 @@ dynamicPlugins:
       appIcons:
         - name: adoptionInsightsIcon
           importName: AdoptionInsightsIcon
+          module: Legacy
       dynamicRoutes:
         - path: /adoption-insights
           importName: AdoptionInsightsPage
+          module: Legacy
           menuItem:
             icon: adoptionInsightsIcon
             text: Adoption Insights

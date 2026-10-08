@@ -22,7 +22,7 @@ import type { DbMetricValue } from '../database/types';
  */
 export function isMetricCalculationError(row: {
   value: DbMetricValue['value'];
-  error_message: DbMetricValue['error_message'];
+  errorMessage: DbMetricValue['errorMessage'];
 }): boolean {
-  return row.error_message !== null && row.value === null;
+  return row.errorMessage !== null && row.value === null;
 }

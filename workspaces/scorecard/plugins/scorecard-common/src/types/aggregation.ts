@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-import { aggregationTypes } from '../constants/aggregations';
+import {
+  aggregationTypes,
+  scalarAggregationTypes,
+} from '../constants/aggregations';
 import { MetricType } from './Metric';
+import { ScorecardVisualizationType } from './scorecard';
 import { ThresholdConfig } from './threshold';
 
 /**
@@ -23,6 +27,11 @@ import { ThresholdConfig } from './threshold';
  */
 export type AggregationType =
   (typeof aggregationTypes)[keyof typeof aggregationTypes];
+
+/**
+ * @public
+ */
+export type ScalarAggregationType = (typeof scalarAggregationTypes)[number];
 
 /**
  * @public
@@ -57,12 +66,30 @@ export type AggregatedMetric = {
 /**
  * @public
  */
+export type ScalarAggregatedMetric = Omit<AggregatedMetric, 'values'> & {
+  value: number;
+};
+
+/**
+ * Optional filter applied to scalar aggregation KPIs.
+ * @public
+ */
+export type AggregationConfigFilter = {
+  status?: string;
+};
+
+/**
+ * @public
+ */
 export type AggregationMetadata = {
   title: string;
   description: string;
   type: MetricType;
+  unit?: string;
   history?: boolean;
+  visualization?: ScorecardVisualizationType;
   aggregationType: AggregationType;
+  filter?: AggregationConfigFilter;
 };
 
 /**
@@ -81,15 +108,24 @@ export type WeightedStatusScoreAggregationResult =
     weightedStatusScore: number;
     weightedStatusSum: number;
     weightedStatusMaxPossible: number;
-    aggregationChartDisplayColor: string;
+    aggregationChartDisplayColor: string | null;
   };
+
+/**
+ * @public
+ */
+export type ScalarAggregationResult = ScalarAggregatedMetric & {
+  thresholds: ThresholdConfig;
+  aggregationChartDisplayColor: string | null;
+};
 
 /**
  * @public
  */
 export type AggregationResultByType =
   | StatusGroupedAggregationResult
-  | WeightedStatusScoreAggregationResult;
+  | WeightedStatusScoreAggregationResult
+  | ScalarAggregationResult;
 
 /**
  * @public
@@ -104,8 +140,13 @@ export type AggregatedMetricResult = {
 /**
  * @public
  */
+export type StatusScoreAggregationOption = Record<string, number>;
+
+/**
+ * @public
+ */
 export type AggregationConfigOptions = {
-  statusScores: Record<string, number>;
+  statusScores?: StatusScoreAggregationOption;
   thresholds?: ThresholdConfig;
 };
 
@@ -118,5 +159,69 @@ export type AggregationConfig = {
   description: string;
   type: AggregationType;
   metricId: string;
+  filter?: AggregationConfigFilter;
   options?: AggregationConfigOptions;
 };
+
+/**
+ * Unique calculation-error message for a UTC day, with how many aggregated entities reported it.
+ * @public
+ */
+export type AggregatedTimeSeriesPointError = {
+  message: string;
+  count: number;
+};
+
+/**
+ * One UTC-day scalar aggregate across entities.
+ * @public
+ */
+export type ScalarAggregatedTimeSeriesPoint = {
+  /** Aggregate of latest successful values that day; `null` when `successCount` is 0. */
+  value: number | null;
+  /** Entities whose latest row that day has a real value. */
+  successCount: number;
+  /** Entities whose latest row that day is a calculation failure. */
+  errorCount: number;
+  /** `successCount + errorCount` (entities that reported that day). */
+  total: number;
+  /**
+   * `success` when `successCount > 0`, `error` when only calculation failures.
+   */
+  status: 'success' | 'error';
+  /**
+   * Unique error messages for that day. Omitted when there are none.
+   */
+  errors?: AggregatedTimeSeriesPointError[];
+  /** Maximum timestamp (ISO-8601) of the values aggregated for this point. */
+  timestamp: string;
+};
+
+/**
+ * Scalar aggregation over a specified time period, grouped by UTC day.
+ * The `points` array contains the aggregated values for each day where data was reported.
+ * @public
+ */
+export type ScalarAggregatedMetricTimeSeriesResponse = {
+  id: string;
+  metricId: string;
+  metadata: AggregationMetadata;
+  points: ScalarAggregatedTimeSeriesPoint[];
+  /**
+   * KPI `options.thresholds`, or `DEFAULT_NUMBER_THRESHOLDS` when omitted.
+   */
+  thresholds: ThresholdConfig;
+  /**
+   * Chart color from classifying the last **successful** point's `value` against
+   * `thresholds`. `null` when no day has a value or the matching rule has no color.
+   */
+  aggregationChartDisplayColor: string | null;
+};
+
+/**
+ * Daily portfolio aggregation time series.
+ * Currently only scalar aggregation types; other members may be added to as union later.
+ * @public
+ */
+export type AggregatedMetricTimeSeriesResponse =
+  ScalarAggregatedMetricTimeSeriesResponse;

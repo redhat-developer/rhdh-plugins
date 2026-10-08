@@ -1,5 +1,238 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.6
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.6
+
+## 5.3.5
+
+### Patch Changes
+
+- ab76946: Fix MUI5 style regressions: notebooks docked scroll, file chip outline border, footer divider, and document row alignment
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.5
+
+## 5.3.4
+
+### Patch Changes
+
+- 588f80f: Update README to use new `enabled` field when configuring plugins, as `disabled` is now deprecated
+- fb4ecee: Updated dependency `prettier` to `3.9.9`.
+- 262900c: Updated dependency `@patternfly/chatbot` to `6.9.0-prerelease.5`.
+- b47cbf3: Align Intelligent Assistant Chat/Notebooks shell with PatternFly defaults and fix sticky history close hover.
+- Updated dependencies [fb4ecee]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.4
+
+## 5.3.3
+
+### Patch Changes
+
+- 377efe3: Updated dependency `@patternfly/chatbot` to `6.9.0-prerelease.4`.
+  Updated dependency `@patternfly/react-core` to `6.6.1`.
+- a669321: Updated dependency `@testing-library/user-event` to `14.6.7`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.3
+
+## 5.3.2
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.2
+
+## 5.3.1
+
+### Patch Changes
+
+- 9dc3351: Split Module Federation entry points and lazy-load chat UI so NFS, FAB, and translations remotes ship minimal synchronous bundles.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.1
+
+## 5.3.0
+
+### Minor Changes
+
+- 0f9a3e8: Add screen context UX: kebab opt-in, context chip (recording/paused/unavailable), and gated DOM and screenshot attachments on send per RHIDP-14319.
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.0
+
+## 5.2.0
+
+### Minor Changes
+
+- d477924: Add Saved Prompts: create, list, and delete personal prompt templates from a settings panel (with enable/disable toggle and backend limit validation). Saved prompts appear in the chat history sidebar with search, expand/collapse, show all/less, a gear shortcut to settings, click-to-apply into the message input, and kebab actions (apply, send directly, delete). Settings state is shared between the sidebar and panel; fullscreen mode syncs the open tab via URL.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.2.0
+
+## 5.1.0
+
+### Minor Changes
+
+- c37b5f1: Gate Intelligent Assistant UI by consolidated RBAC permissions (`intelligent-assistant.chat`, `intelligent-assistant.notebooks`, `intelligent-assistant.mcp.tools`, `intelligent-assistant.skills`). Features are hidden when access is denied instead of showing permission-denied screens or read-only MCP mode.
+
+### Patch Changes
+
+- a9d54a1: Add createExtensionTester coverage for the NFS extensions and modules
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.1.0
+
+## 5.0.2
+
+### Patch Changes
+
+- 249596b: `GET /v1/models` now returns a `supportsVision` flag on each model, so the frontend can gate image attachments directly from the model list without a per-user `POST /v1/validate-model-vision` round-trip. Each LLM's capability is probed once via a lightweight LCS test-inference and memoised in a shared cache keyed by the model identifier: a confirmed `true` for 24h, a `false` only briefly (LCS returns the same 5xx for a genuinely non-vision model and a transient error, so a real model recovers quickly). Non-LLM models (e.g. embeddings) are reported as `supportsVision: false` without a probe, and a single failed probe no longer blocks the whole list.
+- 726c1de: Migrate Material UI v4 usages to MUI v5.
+- 63be96e: Updated dependency `react-router-dom` to `^6.30.6`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.2
+
+## 5.0.1
+
+### Patch Changes
+
+- 0f8225e: Show the LCORE `source` field as a label on each referenced document card so that RAG sources are distinguishable.
+- fe51be2: Backstage version bump to v1.54.6
+- Updated dependencies [fe51be2]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.1
+
+## 5.0.0
+
+### Major Changes
+
+- 5741af9: Consolidate Intelligent Assistant RBAC permissions into four feature-linked sets: `intelligent-assistant.chat`, `intelligent-assistant.notebooks`, `intelligent-assistant.mcp.tools`, and `intelligent-assistant.skills`. Update backend routes, frontend permission checks, example RBAC policies, and documentation to use the new permission names and exported constants.
+
+### Patch Changes
+
+- Updated dependencies [5741af9]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.0
+
+## 4.3.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.3.0
+
+## 4.2.0
+
+### Minor Changes
+
+- cc6ba08: Add DOM text extraction for deep context awareness — extracts structured page content (headings, tables, alerts, text) and sends as context alongside user messages
+- eb3e2d9: implement docked and overlay display modes for Notebook
+- 5238698: Backstage version bump to v1.54.5
+
+### Patch Changes
+
+- Updated dependencies [5238698]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.2.0
+
+## 4.1.0
+
+### Minor Changes
+
+- 6c8f76d: Removed public `iaSavedPromptsManagePermission` from the common package. Saved-prompts backend routes now require `intelligent-assistant.chat.use`. Operators should drop `intelligent-assistant.saved-prompts.manage` from RBAC CSVs; `chat.use` is enough.
+
+### Patch Changes
+
+- Updated dependencies [6c8f76d]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.1.0
+
+## 4.0.0
+
+### Major Changes
+
+- adb65c9: Breaking changes to MCP permissions using behavior-linked vocabulary rather than CRUD-linked vocabulary:
+
+  | Before (Lightspeed)     | Before (Intelligent Assistant)     | After              |
+  | ----------------------- | ---------------------------------- | ------------------ |
+  | `lightspeed.mcp.read`   | `intelligent-assistant.mcp.read`   | `mcp.tools.use`    |
+  | `lightspeed.mcp.manage` | `intelligent-assistant.mcp.manage` | `mcp.tools.manage` |
+
+  Removed permission CRUD action attributes; RBAC entries for these permission sets now use the generic `use` action.
+
+  Permission variable renamed from `iaMcpReadPermission` to `iaMcpUsePermission`; `iaMcpManagePermission` keeps its name.
+
+  Plugin documentation and example RBAC policy CSV updated to reflect the new MCP permission names.
+
+- 0ed3adc: Breaking changes to the notebooks permissions model that uses behavior-linked vocabulary:
+
+  | Before (Lightspeed)        | Before (Intelligent Assistant)        | After                                    |
+  | -------------------------- | ------------------------------------- | ---------------------------------------- |
+  | `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` | `intelligent-assistant.notebooks.use`    |
+  |                            |                                       | `intelligent-assistant.notebooks.manage` |
+  - `notebooks.use` covers list/read/create session, upload document, and query endpoints
+  - `notebooks.manage` covers update/delete session and document endpoints
+
+  Removed permission CRUD action attributes; RBAC entries for notebooks permission sets now use the generic `use` action.
+
+  Hard-coded permission names were replaced by constants from the permission entities.
+
+  Plugin documentation and example RBAC policy CSV updated to reflect the notebooks permission model.
+
+- f1dba9b: Breaking changes to the permissions model that uses behavior-linked vocabulary rather than CRUD-linked vocabulary:
+
+  | Before (Lightspeed)      | Before (Intelligent Assistant)      | After                               |
+  | ------------------------ | ----------------------------------- | ----------------------------------- |
+  | `lightspeed.chat.read`   | `intelligent-assistant.chat.read`   | `intelligent-assistant.chat.access` |
+  | `lightspeed.chat.create` | `intelligent-assistant.chat.create` | `intelligent-assistant.chat.use`    |
+  | `lightspeed.chat.delete` | `intelligent-assistant.chat.delete` | `intelligent-assistant.chat.manage` |
+  | `lightspeed.chat.update` | `intelligent-assistant.chat.update` | `intelligent-assistant.chat.manage` |
+
+  Changes are applied to `lightspeed` (Frontend), `lightspeed-backend`, and `lightspeed-common` plugins.
+
+  Removed permission CRUD action attributes, rbac entries for permission sets now to generic 'use' action, allows `intelligent-assistant.chat.manage` to combine the update and delete actions.
+
+  Any hard-coded permission names have been replaced by constants, source references permission names from the permission entities.
+
+  `Trans.test.tsx` component test unit has permission names to reflect Intelligent Assistant for RHDH.
+
+  Additionally, hard-coded permission names have been replaced by local constants with the new names set.
+
+  Plugin documentation changes to revise information to permissions model changes to Intelligent Assistant for RHDH.
+
+  Changed permission variable 'lightspeed' prefix to 'ia' to use Intelligent Assistant rebranding.
+
+  Changes to example RBAC policy CSV file to reflect Intelligent Assistant for RHDH.
+
+### Minor Changes
+
+- 4a8aa72: Replace modal-based notebook rename with inline double-click-to-edit rename on notebook cards and sidebar, and remove redundant PatternFly CSS overrides.
+- e996529: Add inline rename for notebook resources with click or kebab menu, optimistic updates with rollback, frontend conflict validation, and backend PATCH endpoint with rollback on failure
+- b2f8ea7: Add screenshot capture utility with sensitive data redaction and performance guardrails for deep context awareness
+
+### Patch Changes
+
+- fe5a58e: Improve notebook UI: enhance AddDocumentModal, OverwriteConfirmModal, NotebookCard, and NotebookView components with better UX text, document count formatting, and fix translation type errors
+- bb7a863: Fix singular/plural handling for notebook card and document sidebar resource count using i18next `_one`/`_other` suffix keys.
+- 549abd8: Fix MCP settings panel layout in docked and overlay modes to fill available space and remove gray borders
+- 82742f0: Unify notebook terminology from "document" to "resource" across all UI strings, translations, and backend messages.
+- e919230: bump monaco-editor to v0.56.0 to pick up dompurify update
+- Updated dependencies [3d1d7d7]
+- Updated dependencies [adb65c9]
+- Updated dependencies [0ed3adc]
+- Updated dependencies [f1dba9b]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.0.0
+
+## 3.2.0
+
+### Minor Changes
+
+- 81b7ed2: add saved prompts endpoint
+
+### Patch Changes
+
+- 3d96cd5: Disable model selector during active chat sessions, show localized tooltip, and move attach button to the left
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [81b7ed2]
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.2.0
+
 ## 3.1.0
 
 ### Minor Changes
@@ -109,6 +342,24 @@
 ### Patch Changes
 
 - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.9.0
+
+## 2.8.7
+
+### Patch Changes
+
+- 798b7d4: Updated dependency `monaco-editor` to `^0.56.0`.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.7
+
+## 2.8.6
+
+### Patch Changes
+
+- 3b0851a: Backport: Fix document upload gating and conversation deletion in notebooks
+
+  This backports fixes from commits f7d96f8, e49fc2c, and d5199d6 on main to the 1.10 release line:
+  - Prevent additional document uploads while another document is still being processed, avoiding race conditions in the notebook vector store
+  - Fix document deletion to use the proper conversations API abstraction instead of direct internal base URL access
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.6
 
 ## 2.8.5
 

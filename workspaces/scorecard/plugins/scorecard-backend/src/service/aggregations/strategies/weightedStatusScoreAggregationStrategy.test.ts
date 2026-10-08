@@ -15,192 +15,318 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
-  aggregationTypes,
-  Metric,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS } from '../../../constants/aggregationKPIs';
+  mockStatusGroupedAggregationConfig,
+  mockWeightedStatusScoreAggregationConfig,
+} from '../../../../__fixtures__/mockAggregationConfig';
+import { mockWeightedStatusScoreAggregationResult } from '../../../../__fixtures__/mockAggregatedMetricResult';
+import { mockHigherIsBetterThresholds } from '../../../../__fixtures__/mockThresholds';
+import { AggregatedMetricMapper } from '../../mappers';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import { WeightedStatusScoreAggregationStrategy } from './WeightedStatusScoreAggregationStrategy';
+import { mockGithubOpenPrsMetric } from '../../../../__fixtures__/mockMetric';
 
 describe('WeightedStatusScoreAggregationStrategy', () => {
-  const metric = {
-    id: 'github.openPRs',
-    title: 'Open PRs',
-    description: 'desc',
-    type: 'number',
-  } as Metric;
+  const metric = mockGithubOpenPrsMetric();
 
-  const thresholds: ThresholdConfig = {
-    rules: [
-      { key: 'error', expression: '>40' },
-      { key: 'warning', expression: '>20' },
-      { key: 'success', expression: '<=20' },
-    ],
-  };
-
-  it('computes weighted status score fields from loader output', async () => {
-    const loadStatusGroupedMetricByEntityRefs = jest.fn().mockResolvedValue({
-      values: { error: 1, warning: 1, success: 1 },
-      total: 3,
-      timestamp: '2025-01-01T10:30:00.000Z',
-      entitiesConsidered: 5,
-      calculationErrorCount: 2,
-    });
-
-    const loader = {
-      loadStatusGroupedMetricByEntityRefs,
-    } as unknown as AggregatedMetricLoader;
-
-    const logger = mockServices.logger.mock();
-    const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
-    const aggregationConfig = {
-      id: 'weightedKpi',
-      metricId: metric.id,
-      type: aggregationTypes.weightedStatusScore,
-      options: {
-        statusScores: { error: 0, warning: 50, success: 100 },
-        thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
-      },
-    } as const;
-
-    const out = await strategy.aggregate({
-      metric,
-      entityRefs: ['component:default/a'],
-      thresholds,
-      aggregationConfig: aggregationConfig as any,
-    });
-
-    expect(out.result).toEqual(
-      expect.objectContaining({
-        total: 3,
-        entitiesConsidered: 5,
-        calculationErrorCount: 2,
-        weightedStatusSum: 150,
-        weightedStatusMaxPossible: 300,
-        weightedStatusScore: 50,
-        aggregationChartDisplayColor: 'warning.main',
-      }),
-    );
-    expect(logger.warn).not.toHaveBeenCalled();
-    expect(logger.info).not.toHaveBeenCalled();
+  const aggregationConfig = mockWeightedStatusScoreAggregationConfig({
+    id: 'weightedOpenPrs',
+    metricId: metric.id,
   });
 
-  it('logs info and uses default result thresholds when thresholds is omitted', async () => {
-    const loadStatusGroupedMetricByEntityRefs = jest.fn().mockResolvedValue({
-      values: { error: 1, warning: 1, success: 1 },
+  const loadedStatusGroupedMetric = {
+    values: { success: 2 },
+    total: 2,
+    timestamp: '2025-01-01T10:30:00.000Z',
+    entitiesConsidered: 9,
+    calculationErrorCount: 2,
+  };
+
+  const mappedWeightedResult = {
+    total: loadedStatusGroupedMetric.total,
+    timestamp: loadedStatusGroupedMetric.timestamp,
+    entitiesConsidered: loadedStatusGroupedMetric.entitiesConsidered,
+    calculationErrorCount: loadedStatusGroupedMetric.calculationErrorCount,
+    values: [
+      { name: 'success', count: 2, score: 100 },
+      { name: 'error', count: 0, score: 0 },
+    ],
+    thresholds: mockHigherIsBetterThresholds,
+    weightedStatusScore: 100,
+    weightedStatusSum: 200,
+    weightedStatusMaxPossible: 200,
+    aggregationChartDisplayColor: 'success.main',
+  };
+
+  const entityRefs = ['component:default/a'];
+  const logger = mockServices.logger.mock();
+
+  const loader = {
+    loadStatusGroupedMetricByEntityRefs: jest
+      .fn()
+      .mockResolvedValue(loadedStatusGroupedMetric),
+  } as unknown as AggregatedMetricLoader;
+
+  const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
+
+  let spyMethods: {
+    toAggregatedMetricResultSpy: jest.SpyInstance;
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    spyMethods = {
+      toAggregatedMetricResultSpy: jest
+        .spyOn(AggregatedMetricMapper, 'toAggregatedMetricResult')
+        .mockReturnValue({
+          id: 'weightedOpenPrs',
+          status: 'success',
+          metadata: {
+            title: 'Open PRs',
+            description: 'desc',
+            type: 'number',
+            history: undefined,
+            aggregationType: aggregationTypes.weightedStatusScore,
+          },
+          result: mockWeightedStatusScoreAggregationResult,
+        }),
+    };
+  });
+
+  it('should throw when aggregation type is not weightedStatusScore', async () => {
+    const invalidAggregationConfig = mockStatusGroupedAggregationConfig({
+      id: 'openPrsByStatus',
+      metricId: metric.id,
+    });
+
+    await expect(() =>
+      strategy.aggregate({
+        metric,
+        entityRefs,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationConfig: invalidAggregationConfig,
+      }),
+    ).rejects.toThrow(
+      /Expected aggregation type "weightedStatusScore" but received "statusGrouped"/,
+    );
+  });
+
+  it('should throw when aggregation chart display color is not configured', async () => {
+    const customStatusThresholds = {
+      rules: [
+        { key: 'ok', expression: '>=80', color: 'green' },
+        { key: 'notOk', expression: '<80', color: 'red' },
+      ],
+    };
+    const aggregationConfigWithoutColors =
+      mockWeightedStatusScoreAggregationConfig({
+        id: 'weightedOpenPrs',
+        metricId: metric.id,
+        options: {
+          statusScores: { notOk: 0, maybe: 50, ok: 100 },
+          thresholds: {
+            rules: [
+              { key: 'ok', expression: '>=80' },
+              { key: 'notOk', expression: '<80' },
+            ],
+          },
+        },
+      });
+
+    (
+      loader.loadStatusGroupedMetricByEntityRefs as jest.Mock
+    ).mockResolvedValueOnce({
+      ...loadedStatusGroupedMetric,
+      values: { ok: 2 },
+    });
+
+    await expect(() =>
+      strategy.aggregate({
+        metric,
+        entityRefs,
+        thresholds: customStatusThresholds,
+        aggregationConfig: aggregationConfigWithoutColors,
+      }),
+    ).rejects.toThrow(
+      `The color for percentage '100' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.weightedOpenPrs.options.thresholds' configuration.`,
+    );
+  });
+
+  it('should use default thresholds when no provided', async () => {
+    const defaultAggregationConfig = mockWeightedStatusScoreAggregationConfig({
+      id: 'weightedOpenPrs',
+      metricId: metric.id,
+      options: {
+        statusScores: { error: 0, warning: 50, success: 100 },
+        thresholds: undefined,
+      },
+    });
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig: defaultAggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      mappedWeightedResult,
+      defaultAggregationConfig,
+    );
+  });
+
+  it('should load status-grouped aggregate', async () => {
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(loader.loadStatusGroupedMetricByEntityRefs).toHaveBeenCalledWith(
+      entityRefs,
+      metric.id,
+    );
+  });
+
+  it('should map to aggregated metric result', async () => {
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      mappedWeightedResult,
+      aggregationConfig,
+    );
+  });
+
+  it('should set aggregationChartDisplayColor to null when total is 0', async () => {
+    (
+      loader.loadStatusGroupedMetricByEntityRefs as jest.Mock
+    ).mockResolvedValueOnce({
+      ...loadedStatusGroupedMetric,
+      values: {},
+      total: 0,
+    });
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      {
+        ...mappedWeightedResult,
+        values: [
+          { name: 'success', count: 0, score: 100 },
+          { name: 'error', count: 0, score: 0 },
+        ],
+        weightedStatusScore: 0,
+        weightedStatusSum: 0,
+        weightedStatusMaxPossible: 0,
+        aggregationChartDisplayColor: null,
+        total: 0,
+      },
+      aggregationConfig,
+    );
+  });
+
+  it('should get aggregation result', async () => {
+    const result = await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(result).toEqual({
+      id: 'weightedOpenPrs',
+      status: 'success',
+      metadata: {
+        title: 'Open PRs',
+        description: 'desc',
+        type: 'number',
+        history: undefined,
+        aggregationType: aggregationTypes.weightedStatusScore,
+      },
+      result: mockWeightedStatusScoreAggregationResult,
+    });
+  });
+
+  it('should warn and treat unknown status scores as zero', async () => {
+    const metricWithUnknownStatus = {
+      values: { success: 2, mystery: 1 },
       total: 3,
       timestamp: '2025-01-01T10:30:00.000Z',
       entitiesConsidered: 3,
       calculationErrorCount: 0,
-    });
+    };
 
-    const loader = {
-      loadStatusGroupedMetricByEntityRefs,
-    } as unknown as AggregatedMetricLoader;
+    (loader.loadStatusGroupedMetricByEntityRefs as jest.Mock).mockResolvedValue(
+      metricWithUnknownStatus,
+    );
 
-    const logger = mockServices.logger.mock();
-    const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
-
-    const out = await strategy.aggregate({
+    await strategy.aggregate({
       metric,
-      entityRefs: ['component:default/a'],
-      thresholds,
-      aggregationConfig: {
-        id: 'weightedKpi',
-        metricId: metric.id,
-        type: aggregationTypes.weightedStatusScore,
-        options: {
-          statusScores: { error: 0, warning: 50, success: 100 },
-        },
-      } as any,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
     });
 
-    expect(logger.info).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'options.thresholds" is not configured for weightedStatusScore aggregation',
-      ),
+    expect(logger.warn).toHaveBeenCalledWith(
+      `The status "mystery" is not in the statusScores for weightedStatusScore aggregation of metric "${metric.id}"`,
     );
-    expect(out.result).toEqual(
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
       expect.objectContaining({
-        aggregationChartDisplayColor: 'warning.main',
+        weightedStatusSum: 200,
+        values: [
+          { name: 'success', count: 2, score: 100 },
+          { name: 'error', count: 0, score: 0 },
+        ],
       }),
+      aggregationConfig,
     );
   });
 
-  it('throws when options.statusScores is missing', async () => {
-    const loader = {
-      loadStatusGroupedMetricByEntityRefs: jest.fn().mockResolvedValue({
-        values: { success: 1 },
-        total: 1,
-        timestamp: '2025-01-01T10:30:00.000Z',
-        entitiesConsidered: 1,
-        calculationErrorCount: 0,
-      }),
-    } as unknown as AggregatedMetricLoader;
-
-    const logger = mockServices.logger.mock();
-    const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
-
-    await expect(
-      strategy.aggregate({
-        metric,
-        entityRefs: ['component:default/a'],
-        thresholds,
-        aggregationConfig: {
-          id: 'weightedKpi',
-          metricId: metric.id,
-          type: aggregationTypes.weightedStatusScore,
-        } as any,
-      }),
-    ).rejects.toThrow(
-      /statusScores.*required for weightedStatusScore aggregation/,
-    );
-  });
-
-  it('warns and ignores when loader returns a status not in the metric threshold rules', async () => {
-    const loadStatusGroupedMetricByEntityRefs = jest.fn().mockResolvedValue({
-      values: { error: 0, warning: 0, success: 1, orphan: 2 },
-      total: 3,
+  it('should return weightedStatusScore 0 when there are no entities', async () => {
+    const emptyMetric = {
+      values: {},
+      total: 0,
       timestamp: '2025-01-01T10:30:00.000Z',
-      entitiesConsidered: 4,
-      calculationErrorCount: 1,
-    });
+      entitiesConsidered: 0,
+      calculationErrorCount: 0,
+    };
 
-    const loader = {
-      loadStatusGroupedMetricByEntityRefs,
-    } as unknown as AggregatedMetricLoader;
+    (loader.loadStatusGroupedMetricByEntityRefs as jest.Mock).mockResolvedValue(
+      emptyMetric,
+    );
 
-    const logger = mockServices.logger.mock();
-    const strategy = new WeightedStatusScoreAggregationStrategy(loader, logger);
-
-    const aggregationConfig = {
-      id: 'weightedKpi',
-      metricId: metric.id,
-      type: aggregationTypes.weightedStatusScore,
-      options: {
-        statusScores: { error: 0, warning: 50, success: 100 },
-        thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
-      },
-    } as const;
-
-    const out = await strategy.aggregate({
+    await strategy.aggregate({
       metric,
-      entityRefs: ['component:default/a'],
-      thresholds,
-      aggregationConfig: aggregationConfig as any,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
     });
 
-    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('orphan'));
-    expect(out.result).toEqual(
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
       expect.objectContaining({
-        entitiesConsidered: 4,
-        calculationErrorCount: 1,
-        weightedStatusSum: 100,
-        weightedStatusMaxPossible: 300,
-        weightedStatusScore: 33.3,
+        weightedStatusScore: 0,
+        weightedStatusSum: 0,
+        weightedStatusMaxPossible: 0,
+        aggregationChartDisplayColor: null,
       }),
+      aggregationConfig,
     );
   });
 });

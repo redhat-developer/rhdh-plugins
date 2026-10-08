@@ -20,6 +20,7 @@ import type {
   Artifact,
   SourceTechnology,
   RuleSnapshot,
+  AdversarialAgentConfig,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
@@ -33,6 +34,7 @@ export interface X2AConfig {
     namespace: string;
     image: string;
     imageTag: string;
+    imagePullPolicy?: string;
     ttlSecondsAfterFinished: number;
     resources: {
       requests: {
@@ -119,5 +121,6 @@ export interface JobCreateParams {
   targetRepo: GitRepo;
   aapCredentials?: AAPCredentials;
   acceptedRules?: RuleSnapshot[];
+  adversarialAgents?: AdversarialAgentConfig[];
   refresh?: boolean;
 }

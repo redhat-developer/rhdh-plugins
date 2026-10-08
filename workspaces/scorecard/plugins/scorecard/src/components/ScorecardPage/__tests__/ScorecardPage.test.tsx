@@ -77,6 +77,7 @@ jest.mock('../../ScorecardHomepageSection/ScorecardHomepageCard', () => ({
     aggregationId?: string;
     showSubheader: boolean;
     showInfo: boolean;
+    isDrilldownPage?: boolean;
   }) => {
     mockScorecardHomepageCard(props);
     const id = `${props.aggregationId ?? ''}|${props.metricId ?? ''}`;
@@ -184,6 +185,7 @@ describe('ScorecardPage', () => {
       metricId: 'github.openPRs',
       showSubheader: false,
       showInfo: false,
+      isDrilldownPage: true,
     });
   });
 
@@ -200,6 +202,7 @@ describe('ScorecardPage', () => {
       metricId: 'github.openPRs',
       showSubheader: false,
       showInfo: false,
+      isDrilldownPage: true,
     });
     expect(mockEntitiesTable).toHaveBeenCalledWith(
       expect.objectContaining({ metricId: 'github.openPRs' }),

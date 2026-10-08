@@ -1,5 +1,99 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.4.0
+
+### Minor Changes
+
+- a6ada16: Replace PageMainContainer with a CSS-only PatternFly page-inset: BackstageSidebarPage is the sole scrollport, clipped with `clip-path` so the scrollbar follows the rounded well (no extra DOM wrapper).
+
+## 1.3.0
+
+### Minor Changes
+
+- 8c7f13a: Align BUI theme styling with PatternFly v6: add PageMainContainer for page inset, and close gaps for typography, forms, menus, tooltips, popovers, and buttons.
+
+### Patch Changes
+
+- e93cf90: Limit the NFS theme module to the RHDH light and dark themes.
+
+## 1.2.2
+
+### Patch Changes
+
+- ef6ab36: Wrap toggle button items to prevent clipped overflow (RHDHBUGS-3622)
+
+  This is a global `MuiToggleButtonGroup` theme override — it applies to every `ToggleButtonGroup` in RHDH, including those in dynamic plugins. Groups with two items will not wrap in practice, but consumers with wider groups should be aware.
+
+## 1.2.1
+
+### Patch Changes
+
+- 61f08f2: Fix the RHDH entity-page layout so content can grow beyond the viewport without
+  being clipped by the main content container.
+
+## 1.2.0
+
+### Minor Changes
+
+- e8c4cd7: feat: allow customers to customize BUI components via app-config (RHIDP-14510)
+
+  Adds two new `app.branding` configuration options:
+
+  - `customCSS`: raw CSS string injected as global styles (use at your own risk)
+  - `theme.{light|dark}.bui.tokens`: per-theme structured token overrides mapping to BUI CSS custom properties (`--bui-*`), allowing different values for light and dark themes
+
+### Patch Changes
+
+- a8731b1: Update theme workspace dependencies to Backstage 1.54.6.
+- 1a55424: Offset Backstage UI dialogs such as Inspect Entity below the global header so their title and close control stay visible.
+
+## 1.1.0
+
+### Minor Changes
+
+- d0fdac4: Add initial support for Backstage UI
+
+### Patch Changes
+
+- 889a5d0: Fix light-theme WCAG contrast and demo a11y issues so the theme e2e axe suite can enforce violations.
+- 1bb88d7: Make NFS BUI catalog entity `<main>` a flex column so Topology and Scorecard fill the content well instead of leaving a gap below short tab content (RHDHBUGS-3543).
+- a1601a9: Added `createSharedThemeProvider` internal utility that creates a single shared Provider for multiple themes, preventing full application remount when switching themes. All built-in RHDH themes now share one Provider.
+
+## 1.0.2
+
+### Patch Changes
+
+- 0f401be: Fixed empty space and background mismatch on short NFS pages: BackstageSidebarPage fills the viewport and becomes a column flex container so BUI Containers can grow, and content wells use mainSectionBackgroundColor to match the article/content area
+
+## 1.0.1
+
+### Patch Changes
+
+- f84bc9b: Made `app` optional in config schema to avoid requiring it when no branding is configured
+
+## 1.0.0
+
+### Major Changes
+
+- 1afcfdd: **BREAKING**: Graduated the New Frontend System (NFS) theme module to stable API.
+
+  The NFS theme module has been promoted from the `./alpha` subpath to the primary `.` entry point. The `./alpha` subpath has been removed.
+
+  Legacy (OFS) exports (`getThemes`, `getAllThemes`, `LogoFull`, `LogoIcon`, etc.) have been moved to the new `./legacy` subpath.
+
+  **Migration for NFS consumers (previously using `./alpha`):**
+
+  ```diff
+  - import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+  + import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
+  ```
+
+### Patch Changes
+
+- 10af16d: fix(theme): use MUI theme overrides for sidebar selected states instead of class name selectors
+
+  Replaced `class*=` CSS selectors with proper `styleOverrides.selected` on `BackstageSidebarItem` and `BackstageSidebarSubmenuItem`. The previous `class*=` approach failed in production where JSS minifies class names.
+
 ## 0.15.0
 
 ### Minor Changes

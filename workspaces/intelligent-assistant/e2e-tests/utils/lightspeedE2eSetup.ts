@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/// <reference types="node" />
 import type { Browser, Page } from '@playwright/test';
 import { models, conversations, mockedShields } from '../fixtures/responses';
 import { openLightspeed, switchToLocale } from './testHelper';
@@ -25,8 +26,14 @@ import {
   mockModels,
   mockNotebookLightspeedBackend,
   mockQuery,
+  mockSavedPrompts,
   mockShields,
 } from './devMode';
+import {
+  installIaPermissionsMock,
+  waitForIaPermissionAuthorize,
+  type IaPermissionMatrix,
+} from './iaPermissionsE2e';
 import { getTranslations, type LightspeedMessages } from './translations';
 
 /** Default user message used by the shared query mock in Lightspeed e2e. */
@@ -38,16 +45,92 @@ export type LightspeedE2eBootstrap = {
   translations: LightspeedMessages;
 };
 
-async function loginAsGuest(page: Page) {
-  const enter = page.getByRole('button', { name: 'Enter' });
-  await enter.click();
-  await page.waitForTimeout(2000);
+export type BootstrapLightspeedE2eOptions = {
+  /** When false, stay on catalog after guest login (overlay/FAB tests). Default true. */
+  openFullscreenChat?: boolean;
+};
 
-  if (process.env.APP_MODE !== 'nfs') {
-    await page
-      .getByRole('heading', { name: 'Red Hat Catalog' })
-      .waitFor({ state: 'visible', timeout: 5_000 });
+async function waitForLoggedInShell(page: Page) {
+  const enter = page.getByRole('button', { name: 'Enter' });
+  const legacyMain = page.locator('main[class*="BackstagePage-root"]').first();
+  const nfsCatalogTitle = page.locator('.bui-HeaderTitle').first();
+  const settings = page.getByRole('link', { name: 'Settings' });
+  const deadline = Date.now() + 15_000;
+
+  while (Date.now() < deadline) {
+    // Never treat the sign-in page as logged-in (NFS can render titles there).
+    if (await enter.isVisible().catch(() => false)) {
+      await page.waitForTimeout(250);
+      continue;
+    }
+    if (await legacyMain.isVisible().catch(() => false)) {
+      return;
+    }
+    if (await nfsCatalogTitle.isVisible().catch(() => false)) {
+      return;
+    }
+    if (await settings.isVisible().catch(() => false)) {
+      return;
+    }
+    await page.waitForTimeout(250);
   }
+
+  throw new Error('Timed out waiting for logged-in app shell');
+}
+
+/** RBAC e2e uses dedicated backend port 7008 — wait until it accepts requests. */
+async function waitForRbacBackendReady(page: Page): Promise<void> {
+  const backendBase =
+    process.env.PLAYWRIGHT_BACKEND_URL ?? 'http://localhost:7008';
+  const deadline = Date.now() + 120_000;
+
+  while (Date.now() < deadline) {
+    const status = await page.request
+      .get(`${backendBase}/api/catalog/entities`)
+      .then(response => response.status())
+      .catch(() => 0);
+    // 401 = up but unauthenticated; 200 = up with guest/cookie already set.
+    if (status === 200 || status === 401) {
+      return;
+    }
+    await page.waitForTimeout(500);
+  }
+
+  throw new Error(`RBAC e2e backend not ready at ${backendBase}`);
+}
+
+export async function loginAsGuest(page: Page) {
+  const enter = page.getByRole('button', { name: 'Enter' });
+  const maxAttempts = 3;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      if (await enter.isVisible().catch(() => false)) {
+        await enter.click();
+        await enter
+          .waitFor({ state: 'hidden', timeout: 15_000 })
+          .catch(() => {});
+      }
+      await waitForLoggedInShell(page);
+      return;
+    } catch {
+      if (attempt === maxAttempts) throw new Error('loginAsGuest failed');
+      await page.goto('/catalog');
+      await page.waitForTimeout(2000);
+    }
+  }
+}
+
+async function setupLightspeedApiMocks(page: Page) {
+  await mockModels(page, models);
+  await mockConversations(page);
+  await mockChatHistory(page);
+  await mockQuery(page, LIGHTSPEED_E2E_DEFAULT_BOT_QUERY, conversations);
+  await mockShields(page, mockedShields);
+  await mockMcpServers(page);
+  await mockFeedbackStatus(page);
+  await mockSavedPrompts(page);
+  await mockNotebookLightspeedBackend(page);
 }
 
 /**
@@ -56,26 +139,50 @@ async function loginAsGuest(page: Page) {
  */
 export async function bootstrapLightspeedE2ePage(
   browser: Browser,
+  options: BootstrapLightspeedE2eOptions = {},
 ): Promise<LightspeedE2eBootstrap> {
+  const { openFullscreenChat = true } = options;
   const context = await browser.newContext();
   const page = await context.newPage();
   const locale = await page.evaluate(() => globalThis.navigator.language);
   const translations = getTranslations(locale);
 
-  await mockModels(page, models);
-  await mockConversations(page);
-  await mockChatHistory(page);
-  await mockQuery(page, LIGHTSPEED_E2E_DEFAULT_BOT_QUERY, conversations);
-  await mockShields(page, mockedShields);
-  await mockMcpServers(page);
-  await mockFeedbackStatus(page);
-  await mockNotebookLightspeedBackend(page);
+  await setupLightspeedApiMocks(page);
 
-  await page.goto('/');
+  await page.goto('/catalog');
   await loginAsGuest(page);
 
   await switchToLocale(page, locale);
-  await openLightspeed(page);
+  if (openFullscreenChat) {
+    await openLightspeed(page);
+  }
 
   return { page, locale, translations };
+}
+
+/**
+ * Guest session with IA API mocks and a fixed permission matrix.
+ * Installs the authorize mock on the browser context before any navigation.
+ */
+export async function bootstrapLightspeedRbacE2ePage(
+  browser: Browser,
+  permissions: IaPermissionMatrix,
+): Promise<LightspeedE2eBootstrap> {
+  const context = await browser.newContext({ locale: 'en-US' });
+  await installIaPermissionsMock(context, permissions);
+
+  const page = await context.newPage();
+  const translations = getTranslations('en');
+
+  await setupLightspeedApiMocks(page);
+
+  await waitForRbacBackendReady(page);
+
+  // Arm before navigation so the authorize response cannot race past the waiter.
+  const authorizeSettled = waitForIaPermissionAuthorize(page);
+  await page.goto('/');
+  await loginAsGuest(page);
+  await authorizeSettled;
+
+  return { page, locale: 'en', translations };
 }

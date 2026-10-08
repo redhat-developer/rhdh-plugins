@@ -15,9 +15,11 @@
  */
 
 /**
- * Stub package root export for API reporting and bundlers. This plugin targets
- * the new frontend system only; use `./alpha` for public APIs.
+ * RHDH default SCM integrations APIs for the app plugin.
  *
  * @packageDocumentation
  */
-export default {};
+
+export { appIntegrationsModule } from './appIntegrationsModule';
+
+export { appIntegrationsModule as default } from './appIntegrationsModule';

@@ -35,8 +35,10 @@ import {
   PreviewSidebarSnapshotsType,
 } from './utils/ariaSnapshots';
 import { runAccessibilityTests, switchToLocale } from './utils/helpers';
+import { installMockBulkImportPermission } from './utils/permissionUtils';
 import {
   BulkImportMessages,
+  getBulkImportNavLabel,
   getSelectedRepositoriesHeading,
   getTranslations,
 } from './utils/translations';
@@ -70,6 +72,7 @@ test.describe('Bulk Import', () => {
     //
     // This lets us focus on UI behaviour without needing a real OAuth provider
     // set up in the test environment.
+    await installMockBulkImportPermission(sharedPage, 'ALLOW');
     await mockBulkImportSCMHostsResponse(sharedPage, mockSCMHostsData);
     await mockBulkImportRepositoriesResponse(sharedPage, mockRepositoriesData);
     await sharedPage.goto('/');
@@ -77,11 +80,6 @@ test.describe('Bulk Import', () => {
     const enterButton = sharedPage.getByRole('button', { name: 'Enter' });
     await expect(enterButton).toBeVisible();
     await enterButton.click();
-
-    // Wait for authentication to complete - wait for sidebar or main content to appear
-    await sharedPage.waitForLoadState('networkidle');
-    // Additional wait to ensure auth state is fully initialized
-    await sharedPage.waitForTimeout(500);
 
     const currentLocale = await sharedPage.evaluate(
       () => globalThis.navigator.language,
@@ -111,7 +109,9 @@ test.describe('Bulk Import', () => {
         }
 
         await sharedPage.reload();
-        await sharedPage.waitForLoadState('networkidle');
+        await expect(sharedPage.getByText('All Components')).toBeVisible({
+          timeout: 30000,
+        });
       }
     }
 
@@ -120,21 +120,11 @@ test.describe('Bulk Import', () => {
     translations = getTranslations(currentLocale);
     previewSidebarSnapshots = getPreviewSidebarSnapshots(translations);
 
-    // Sidebar text is not yet getting translated and will be covered as part of story https://issues.redhat.com/browse/RHIDP-12094.
-    // TODO: Revert the change once the story is resolved.
-    if (process.env.APP_MODE === 'legacy') {
-      await expect(
-        sharedPage.getByRole('link', { name: translations.sidebar.bulkImport }),
-      ).toBeVisible();
-      await sharedPage
-        .getByRole('link', { name: translations.sidebar.bulkImport })
-        .click();
-    } else {
-      await expect(
-        sharedPage.getByRole('link', { name: 'Bulk import' }),
-      ).toBeVisible();
-      await sharedPage.getByRole('link', { name: 'Bulk import' }).click();
-    }
+    const bulkImportNavLabel = getBulkImportNavLabel(currentLocale);
+    await expect(
+      sharedPage.getByRole('link', { name: bulkImportNavLabel }),
+    ).toBeVisible();
+    await sharedPage.getByRole('link', { name: bulkImportNavLabel }).click();
   });
 
   test.afterAll(async () => {

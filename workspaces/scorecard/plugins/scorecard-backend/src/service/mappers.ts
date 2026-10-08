@@ -17,56 +17,123 @@
 import {
   AggregatedMetric,
   AggregatedMetricResult,
+  AggregatedMetricTimeSeriesResponse,
   AggregationMetadata,
   Metric,
-  aggregationTypes,
   AggregationResultByType,
-  type AggregationConfig,
+  ScalarAggregatedMetric,
+  ScalarAggregatedTimeSeriesPoint,
+  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
+import type {
+  DbScalarAggregatedMetric,
+  DbScalarTimeSeriesPoint,
+} from '../database/types';
+import { ValidatedAggregationConfig } from '../validation/schemas/aggregationConfigSchemas';
+import { normalizeTimestamp } from '../utils/normalizeTimestamp';
 
 export class AggregatedMetricMapper {
   static toAggregatedMetric(
     aggregatedMetric?: DbAggregatedMetric,
   ): AggregatedMetric {
     const total = aggregatedMetric?.total ?? 0;
-    const timestamp = aggregatedMetric?.max_timestamp
-      ? new Date(aggregatedMetric.max_timestamp).toISOString()
-      : new Date().toISOString();
+    const timestamp = normalizeTimestamp(
+      aggregatedMetric?.maxTimestamp,
+    ).toISOString();
 
     return {
       values: aggregatedMetric?.statusCounts ?? {},
       total,
       timestamp,
-      entitiesConsidered: aggregatedMetric?.latest_entity_count ?? 0,
-      calculationErrorCount: aggregatedMetric?.calculation_error_count ?? 0,
+      entitiesConsidered: aggregatedMetric?.latestEntityCount ?? 0,
+      calculationErrorCount: aggregatedMetric?.calculationErrorCount ?? 0,
+    };
+  }
+
+  static toScalarAggregatedMetric(
+    scalarMetric?: DbScalarAggregatedMetric,
+  ): ScalarAggregatedMetric {
+    const timestamp = normalizeTimestamp(
+      scalarMetric?.maxTimestamp,
+    ).toISOString();
+
+    return {
+      value: scalarMetric?.value ?? 0,
+      total: scalarMetric?.total ?? 0,
+      entitiesConsidered: scalarMetric?.latestEntityCount ?? 0,
+      calculationErrorCount: scalarMetric?.calculationErrorCount ?? 0,
+      timestamp,
     };
   }
 
   static toAggregationMetadata(
     metric: Metric,
-    aggregationConfig?: AggregationConfig,
+    aggregationConfig: ValidatedAggregationConfig,
   ): AggregationMetadata {
-    return {
-      title: aggregationConfig?.title ?? metric.title,
-      description: aggregationConfig?.description ?? metric.description,
+    const metadata: AggregationMetadata = {
       type: metric.type,
+      unit: metric.unit,
       history: metric.history,
-      aggregationType:
-        aggregationConfig?.type ?? aggregationTypes.statusGrouped, // By default, return the status grouped aggregation type
+      visualization: metric.defaultVisualization,
+      title: aggregationConfig.title,
+      description: aggregationConfig.description,
+      aggregationType: aggregationConfig.type,
     };
+
+    if ('filter' in aggregationConfig && aggregationConfig.filter) {
+      metadata.filter = aggregationConfig.filter;
+    }
+
+    return metadata;
   }
 
   static toAggregatedMetricResult(
     metric: Metric,
     result: AggregationResultByType,
-    aggregationConfig?: AggregationConfig,
+    aggregationConfig: ValidatedAggregationConfig,
   ): AggregatedMetricResult {
     return {
       id: metric.id,
       status: 'success',
       metadata: this.toAggregationMetadata(metric, aggregationConfig),
       result,
+    };
+  }
+
+  static toScalarAggregatedTimeSeriesPoint(
+    row: DbScalarTimeSeriesPoint,
+  ): ScalarAggregatedTimeSeriesPoint {
+    const successCount = row.successCount;
+    const errorCount = row.errorCount;
+    const status: ScalarAggregatedTimeSeriesPoint['status'] =
+      successCount > 0 ? 'success' : 'error';
+
+    return {
+      value: successCount > 0 ? row.value : null,
+      successCount,
+      errorCount,
+      total: row.total,
+      status,
+      timestamp: row.maxTimestamp.toISOString(),
+      ...(row.errors.length > 0 ? { errors: row.errors } : {}),
+    };
+  }
+
+  static toScalarAggregatedMetricTimeSeriesResponse(
+    metric: Metric,
+    aggregationConfig: ValidatedAggregationConfig,
+    points: ScalarAggregatedTimeSeriesPoint[],
+    thresholds: ThresholdConfig,
+    aggregationChartDisplayColor: string | null,
+  ): AggregatedMetricTimeSeriesResponse {
+    return {
+      id: aggregationConfig.id,
+      metricId: metric.id,
+      points,
+      metadata: this.toAggregationMetadata(metric, aggregationConfig),
+      thresholds,
+      aggregationChartDisplayColor,
     };
   }
 }

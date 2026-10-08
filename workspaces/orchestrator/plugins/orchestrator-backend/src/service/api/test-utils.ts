@@ -17,6 +17,7 @@
 import { DateTime } from 'luxon';
 
 import {
+  PaginationInfoDTO,
   ProcessInstance,
   ProcessInstanceState,
   ProcessInstanceStateValues,
@@ -28,7 +29,42 @@ import {
   WorkflowOverviewListResult,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { Pagination } from '../../types/pagination';
+
 const BASE_DATE = '2023-02-19T11:45:21.123Z';
+
+export function buildPaginationTmp(
+  paginationInfo?: PaginationInfoDTO,
+): Pagination {
+  const pagination: Pagination = {
+    limit: undefined,
+    offset: undefined,
+    order: undefined,
+    sortField: undefined,
+  };
+
+  if (!paginationInfo) {
+    return pagination;
+  }
+  const { offset, pageSize, orderBy, orderDirection } = paginationInfo;
+
+  if (!Number.isNaN(Number(offset))) {
+    pagination.offset = Number(offset);
+  }
+
+  if (!Number.isNaN(Number(pageSize))) {
+    pagination.limit = Number(pageSize);
+  }
+
+  if (orderBy) {
+    pagination.sortField = String(orderBy);
+  }
+
+  if (orderDirection) {
+    pagination.order = String(orderDirection).toUpperCase();
+  }
+  return pagination;
+}
 
 interface WorkflowOverviewParams {
   suffix?: string;
@@ -347,6 +383,25 @@ states:
       produceEvents:
         - eventRef: released-event
           data: '{test: "testYOOOOOOOOOOOOOOOO"}'`,
+  };
+}
+
+/** Compiled workflows use start.stateName instead of a string start. */
+export function generateTestWorkflowInfoForEventypeWithStartStateName(
+  id: string = 'test_workflowId',
+  base: WorkflowInfo = generateTestWorkflowInfoForEventype(id),
+): WorkflowInfo {
+  const startMarker = 'start: listenToLock';
+  const compiledStart = 'start:\n  stateName: listenToLock';
+  const source = base.source as string;
+  if (!source.includes(startMarker)) {
+    throw new Error(
+      'Failed to rewrite start to start.stateName: base fixture missing "start: listenToLock"',
+    );
+  }
+  return {
+    ...base,
+    source: source.replace(startMarker, compiledStart),
   };
 }
 

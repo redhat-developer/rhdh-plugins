@@ -141,6 +141,9 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   listJobsForModule: jest
     .fn()
     .mockRejectedValue(new NotAllowedError('mock error')),
+  markJobsAsStale: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
   // rules
   createRule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   updateRule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
@@ -151,6 +154,22 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
     .fn()
     .mockRejectedValue(new NotAllowedError('mock error')),
   getAcceptedRulesForProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  // adversarial agents
+  createAdversarialAgent: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  listAdversarialAgents: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  getAdversarialAgent: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  updateAdversarialAgent: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  deleteAdversarialAgent: jest
     .fn()
     .mockRejectedValue(new NotAllowedError('mock error')),
 });

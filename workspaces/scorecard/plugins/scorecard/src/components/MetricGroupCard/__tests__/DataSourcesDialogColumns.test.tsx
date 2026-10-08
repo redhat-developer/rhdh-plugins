@@ -271,6 +271,7 @@ describe('buildColumnConfig', () => {
       statusIcon: 'scorecardErrorStatusIcon',
       statusColor: 'error.main',
       value: '12',
+      unit: undefined,
     });
 
     render(<>{statusCell!(row)}</>, { wrapper: TestWrapper });
@@ -280,8 +281,26 @@ describe('buildColumnConfig', () => {
       'data-icon',
       'scorecardErrorStatusIcon',
     );
-    expect(screen.getByTestId('tooltip').getAttribute('data-title')).toContain(
-      '12',
+    expect(screen.getByTestId('tooltip').getAttribute('data-title')).toBe(
+      'Value 12 matches threshold Error >7',
+    );
+  });
+
+  it('should append unit to threshold expressions in the status tooltip', () => {
+    const columns = buildColumnConfig(mockT as any);
+    const statusCell = columns.find(c => c.id === 'status')?.cell;
+    const row = createRow({
+      thresholdExpression: '<=10',
+      evaluationKey: 'success',
+      statusLabel: 'Success',
+      value: '5',
+      unit: 'h',
+    });
+
+    render(<>{statusCell!(row)}</>, { wrapper: TestWrapper });
+
+    expect(screen.getByTestId('tooltip').getAttribute('data-title')).toBe(
+      'Value 5 matches threshold Success <=10 h',
     );
   });
 
@@ -298,5 +317,26 @@ describe('buildColumnConfig', () => {
 
     expect(screen.getByText('—')).toBeInTheDocument();
     expect(screen.getByTestId('tooltip')).toHaveAttribute('data-title', '');
+  });
+
+  it('should show the collector explanation tooltip on N/A status', () => {
+    const columns = buildColumnConfig(mockT as any);
+    const statusCell = columns.find(c => c.id === 'status')?.cell;
+    const row = createRow({
+      metricId: 'dora.deploymentFrequency',
+      isCollector: true,
+      thresholdExpression: null,
+      evaluationKey: 'noEvaluation',
+      statusLabel: '-- N/A',
+      statusIcon: '',
+      value: '--',
+    });
+
+    render(<>{statusCell!(row)}</>, { wrapper: TestWrapper });
+
+    expect(screen.getByText('-- N/A')).toBeInTheDocument();
+    expect(screen.getByTestId('tooltip').getAttribute('data-title')).toBe(
+      'This collector provides input data only. The dora.deploymentFrequency check value is calculated from collectors and shown on the scorecard card.',
+    );
   });
 });

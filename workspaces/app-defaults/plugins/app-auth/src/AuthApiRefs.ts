@@ -27,7 +27,7 @@ import {
 /**
  * Combined surface for custom RHDH auth APIs backed by `OAuth2` in the app module.
  *
- * @alpha
+ * @public
  */
 export type CustomAuthApiRefType = OAuthApi &
   OpenIdConnectApi &
@@ -38,7 +38,7 @@ export type CustomAuthApiRefType = OAuthApi &
 /**
  * OIDC auth API for the RHDH multi-provider sign-in page.
  *
- * @alpha
+ * @public
  */
 export const oidcAuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
   id: 'internal.auth.oidc',
@@ -47,7 +47,7 @@ export const oidcAuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
 /**
  * Keycloak auth API for the RHDH multi-provider sign-in page (OIDC-backed).
  *
- * @alpha
+ * @public
  */
 export const keycloakAuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
   id: 'internal.auth.keycloak',
@@ -56,7 +56,7 @@ export const keycloakAuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
 /**
  * PingFederate auth API for the RHDH multi-provider sign-in page (OIDC-backed).
  *
- * @alpha
+ * @public
  */
 export const pingfederateAuthApiRef: ApiRef<CustomAuthApiRefType> =
   createApiRef({
@@ -66,7 +66,7 @@ export const pingfederateAuthApiRef: ApiRef<CustomAuthApiRefType> =
 /**
  * Auth0 auth API for the RHDH multi-provider sign-in page.
  *
- * @alpha
+ * @public
  */
 export const auth0AuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
   id: 'internal.auth.auth0',
@@ -75,7 +75,7 @@ export const auth0AuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
 /**
  * SAML auth API for the RHDH multi-provider sign-in page.
  *
- * @alpha
+ * @public
  */
 export const samlAuthApiRef: ApiRef<CustomAuthApiRefType> = createApiRef({
   id: 'internal.auth.saml',

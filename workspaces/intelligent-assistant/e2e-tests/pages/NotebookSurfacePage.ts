@@ -17,12 +17,12 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import type { LightspeedMessages } from '../utils/translations';
+import { substituteNotebookTemplate } from '../utils/notebookTranslation';
 import { openLightspeed } from '../utils/testHelper';
 
 import { NotebookAddDocumentModalPage } from './NotebookAddDocumentModalPage';
 import { NotebookDeleteDialogPage } from './NotebookDeleteDialogPage';
 import { NotebookOverwriteConfirmModalPage } from './NotebookOverwriteConfirmModalPage';
-import { RenameNotebookModalPage } from './RenameNotebookModalPage';
 
 /**
  * Display name for an untitled session on the grid (matches `UNTITLED_NOTEBOOK_NAME` from the plugin).
@@ -34,10 +34,15 @@ export const NOTEBOOK_UNTITLED_GRID_NAME = 'Untitled Notebook';
  * Same role as {@link ./LightspeedPage.ts}: shared locators/assertions keep specs short.
  */
 export class NotebookSurfacePage {
+  private readonly pluralRules: Intl.PluralRules;
+
   constructor(
     private readonly page: Page,
     private readonly t: LightspeedMessages,
-  ) {}
+    locale = 'en',
+  ) {
+    this.pluralRules = new Intl.PluralRules(locale);
+  }
 
   /**
    * Scoped to the fullscreen chatbot region that contains notebooks (list + notebook editor).
@@ -49,14 +54,27 @@ export class NotebookSurfacePage {
 
   async gotoFullscreenNotebooksTab(): Promise<void> {
     await openLightspeed(this.page);
-    await this.page
-      .getByRole('button', { name: this.t['aria.options.label'] })
-      .click();
-    await this.page
-      .getByRole('menuitem', {
-        name: this.t['settings.displayMode.fullscreen'],
-      })
-      .click();
+
+    // Fullscreen is persisted. Re-clicking the menu item still sets the
+    // notebook mode-switch flag even when display mode does not change, which
+    // makes the next editor close skip auto-delete of empty untitled notebooks.
+    const fullscreenTitle = this.page.getByRole('heading', {
+      name: this.t['chatbox.header.title'],
+    });
+    const alreadyFullscreen = await fullscreenTitle.isVisible();
+
+    if (!alreadyFullscreen) {
+      await this.page
+        .getByRole('button', { name: this.t['aria.options.label'] })
+        .click();
+      await this.page
+        .getByRole('menuitem', {
+          name: this.t['settings.displayMode.fullscreen'],
+        })
+        .click();
+      await expect(fullscreenTitle).toBeVisible();
+    }
+
     await this.page
       .getByRole('tab', { name: this.t['tabs.notebooks'] })
       .click();
@@ -64,6 +82,10 @@ export class NotebookSurfacePage {
 
   notebooksTab(): Locator {
     return this.page.getByRole('tab', { name: this.t['tabs.notebooks'] });
+  }
+
+  chatTab(): Locator {
+    return this.page.getByRole('tab', { name: this.t['tabs.chat'] });
   }
 
   myNotebooksHeading(): Locator {
@@ -121,7 +143,7 @@ export class NotebookSurfacePage {
     });
   }
 
-  /** Composer stub while no documents are attached. */
+  /** Composer stub while no resources are attached. */
   disabledComposerPlaceholder(): Locator {
     return this.chatbotRegion().getByRole('textbox', {
       name: this.t['notebook.view.input.placeholder'],
@@ -168,26 +190,112 @@ export class NotebookSurfacePage {
     return new NotebookDeleteDialogPage(this.page, this.t, notebookDisplayName);
   }
 
-  /** Shown after choosing Rename on a notebook card. `currentDisplayedName` is the title shown on that card. */
-  renameNotebookDialog(
-    currentDisplayedNotebookName: string,
-  ): RenameNotebookModalPage {
-    return new RenameNotebookModalPage(
-      this.page,
-      this.t,
-      currentDisplayedNotebookName,
-    );
+  /**
+   * After clicking Rename from the overflow menu, an inline TextInput appears on the card.
+   * Fill it and press Enter to commit the rename.
+   */
+  notebookCardInlineRenameInput(): Locator {
+    return this.inlineRenameInput();
+  }
+
+  async expectNotebookCardInlineRenameInputVisible(): Promise<void> {
+    await expect(this.notebookCardInlineRenameInput()).toBeVisible();
+  }
+
+  async expectNotebookCardInlineRenameInputHidden(): Promise<void> {
+    await expect(this.notebookCardInlineRenameInput()).toBeHidden();
+  }
+
+  async fillNotebookCardInlineRename(value: string): Promise<void> {
+    await this.notebookCardInlineRenameInput().fill(value);
+  }
+
+  async commitNotebookCardInlineRename(): Promise<void> {
+    await this.notebookCardInlineRenameInput().press('Enter');
+  }
+
+  async cancelNotebookCardInlineRenameWithEscape(): Promise<void> {
+    await this.notebookCardInlineRenameInput().press('Escape');
+  }
+
+  async saveNotebookCardInlineRenameWithBlur(newName: string): Promise<void> {
+    await this.fillNotebookCardInlineRename(newName);
+    await this.myNotebooksHeading().click();
+  }
+
+  async renameNotebookInline(newName: string): Promise<void> {
+    await this.expectNotebookCardInlineRenameInputVisible();
+    await this.fillNotebookCardInlineRename(newName);
+    await this.commitNotebookCardInlineRename();
+  }
+
+  /** Click the card title, enter a new name, and save with Enter. */
+  async renameNotebookCardViaTitleClick(
+    card: Locator,
+    newName: string,
+  ): Promise<void> {
+    await this.clickCardTitle(card);
+    await this.expectNotebookCardInlineRenameInputVisible();
+    await this.fillNotebookCardInlineRename(newName);
+    await this.commitNotebookCardInlineRename();
+  }
+
+  /** Open the card overflow menu, choose Rename, enter a new name, and save with Enter. */
+  async renameNotebookCardViaOverflowMenu(
+    card: Locator,
+    newName: string,
+  ): Promise<void> {
+    await this.notebookCardOverflowMenuButton(card).click();
+    await this.renameNotebookOverflowMenuItem().click();
+    await this.renameNotebookInline(newName);
+  }
+
+  async startNotebookCardInlineRenameFromOverflow(
+    card: Locator,
+  ): Promise<void> {
+    await this.notebookCardOverflowMenuButton(card).click();
+    await this.renameNotebookOverflowMenuItem().click();
+    await this.expectNotebookCardInlineRenameInputVisible();
+  }
+
+  /** Click the editor sidebar title, rename, and verify the title updates in place. */
+  async renameNotebookSidebarTitle(newName: string): Promise<void> {
+    await this.clickSidebarTitle();
+    await this.expectNotebookCardInlineRenameInputVisible();
+    await this.fillNotebookCardInlineRename(newName);
+    await this.commitNotebookCardInlineRename();
+    await expect(this.sidebarTitleText()).toContainText(newName);
+  }
+
+  async expectNotebookCardDisplayed(
+    notebookDisplayName: string,
+  ): Promise<void> {
+    await expect(
+      this.notebookCardByDisplayedName(notebookDisplayName),
+    ).toBeVisible();
+  }
+
+  /** Opens the card menu, confirms deletion, and waits for the card to disappear. */
+  async deleteNotebookCardFromGrid(notebookDisplayName: string): Promise<void> {
+    await this.notebookCardOverflowMenuButton(
+      this.notebookCardByDisplayedName(notebookDisplayName),
+    ).click();
+    await this.deleteNotebookOverflowMenuItem().click();
+    const confirmDelete =
+      this.notebookDeleteConfirmationDialog(notebookDisplayName);
+    await confirmDelete.confirmDeletion();
+    await this.expectNotebookCardAbsent(notebookDisplayName);
   }
 
   /**
-   * New notebook with no documents: upload prompts, disclaimer, disabled composer (+ tooltip when hovered), sidebar Add.
+   * New notebook with no resources: upload prompts, disclaimer, disabled composer (+ tooltip when hovered), sidebar Add.
    */
   async expectNewNotebookEditorEmptyStateOnboarding(): Promise<void> {
     await expect(this.closeNotebookButton()).toBeVisible();
     await expect(this.uploadResourceHeading()).toBeVisible();
     await expect(this.uploadResourceActionButton()).toBeVisible();
     await expect(
-      this.page.getByText(this.t['disclaimer.withValidation'], { exact: true }),
+      this.page.getByText(this.t['disclaimer'], { exact: true }),
     ).toBeVisible();
 
     const disabledPrompt = this.disabledComposerPlaceholder();
@@ -221,12 +329,21 @@ export class NotebookSurfacePage {
 
   /** Kebab on the first document row in the sidebar list. */
   firstListedDocumentOverflowMenuToggle(): Locator {
+    return this.chatbotRegion().locator('.doc-kebab').first();
+  }
+
+  /** First document filename in the sidebar (always visible, used as hover target). */
+  private firstDocumentFileName(): Locator {
     return this.chatbotRegion()
-      .getByRole('button', {
-        name: this.t['notebook.document.delete'],
-        exact: true,
-      })
+      .locator('[title]')
+      .filter({ hasText: /.+\..+/ })
       .first();
+  }
+
+  /** Hovers the first document row then clicks its kebab menu toggle. */
+  private async hoverDocumentRowAndClickKebab(): Promise<void> {
+    await this.firstDocumentFileName().hover();
+    await this.firstListedDocumentOverflowMenuToggle().click();
   }
 
   documentRowDeleteMenuItem(): Locator {
@@ -238,22 +355,80 @@ export class NotebookSurfacePage {
 
   /** The confirmation dialog that appears after choosing Delete document. */
   deleteDocumentConfirmDialog(): Locator {
-    return this.page.getByRole('dialog');
+    return this.page
+      .locator('[role="dialog"][aria-labelledby="delete-document-modal"]')
+      .filter({ hasText: this.t['notebook.document.delete.title'] });
+  }
+
+  private deleteDocumentDialogActions(): Locator {
+    return this.deleteDocumentConfirmDialog().locator(
+      '[class*="MuiDialogActions-root"]',
+    );
+  }
+
+  private deleteDocumentFooterButton(label: string): Locator {
+    const escapedLabel = label.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    return this.deleteDocumentDialogActions().locator(
+      `button:text-is("${escapedLabel}")`,
+    );
   }
 
   deleteDocumentConfirmButton(): Locator {
-    return this.deleteDocumentConfirmDialog().getByRole('button', {
-      name: this.t['notebook.document.delete.action'],
-      exact: true,
-    });
+    return this.deleteDocumentFooterButton(
+      this.t['notebook.document.delete.action'],
+    );
   }
 
   /** Opens the overflow menu on the first sidebar document, chooses Delete document, and confirms the deletion. */
   async deleteFirstListedDocumentFromSidebarOverflowMenu(): Promise<void> {
-    await this.firstListedDocumentOverflowMenuToggle().click();
+    await this.hoverDocumentRowAndClickKebab();
     await this.documentRowDeleteMenuItem().click();
     await expect(this.deleteDocumentConfirmDialog()).toBeVisible();
     await this.deleteDocumentConfirmButton().click();
+  }
+
+  /** Locates a document filename element in the sidebar by its text. */
+  documentFileName(name: string): Locator {
+    return this.chatbotRegion().getByText(name, { exact: true }).first();
+  }
+
+  /** "Rename" menu item in the document kebab dropdown. */
+  documentRowRenameMenuItem(): Locator {
+    return this.page.getByRole('menuitem', {
+      name: this.t['notebook.document.rename'],
+      exact: true,
+    });
+  }
+
+  /** Clicks the filename, clears input, types new name, presses Enter. */
+  async renameDocumentInlineViaClick(
+    oldName: string,
+    newName: string,
+  ): Promise<void> {
+    await this.documentFileName(oldName).click();
+    const input = this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.document.rename'],
+    });
+    await expect(input).toBeVisible({ timeout: 5_000 });
+    await input.clear();
+    await input.fill(newName);
+    await input.press('Enter');
+  }
+
+  /** Clicks kebab on the document row, clicks Rename, clears input, types new name, presses Enter. */
+  async renameDocumentViaKebabMenu(
+    oldName: string,
+    newName: string,
+  ): Promise<void> {
+    await this.hoverDocumentRowAndClickKebab();
+    await this.documentRowRenameMenuItem().click();
+    const input = this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.document.rename'],
+    });
+    await expect(input).toBeVisible({ timeout: 5_000 });
+    await input.clear();
+    await input.fill(newName);
+    await input.press('Enter');
   }
 
   async expectDocumentFileListedInSidebar(fileName: string): Promise<void> {
@@ -295,7 +470,7 @@ export class NotebookSurfacePage {
     await card.getByText(NOTEBOOK_UNTITLED_GRID_NAME, { exact: true }).click();
   }
 
-  /** Shown again when no documents remain in the sidebar list. */
+  /** Shown again when no resources remain in the sidebar list. */
   async expectNotebookEditorUploadResourceButtonVisible(
     timeout = 5_000,
   ): Promise<void> {
@@ -341,11 +516,38 @@ export class NotebookSurfacePage {
   }
 
   /**
-   * Shown on each card as count + plural label (same pattern as NotebookCard.tsx:
-   * `{ document_count } { t('notebooks.documents') }`, not `notebook.view.documents.count`).
+   * Shown on each card as a pluralized count label (same pattern as NotebookCard.tsx:
+   * `t('notebooks.documents', { count })` with `_one`/`_other` suffixes).
    */
   formatNotebookCardDocumentsSummary(documentCount: number): string {
-    return `${documentCount} ${this.t['notebooks.documents']}`;
+    const category = this.pluralRules.select(documentCount);
+    const key =
+      category === 'one'
+        ? 'notebooks.documents_one'
+        : 'notebooks.documents_other';
+    return (this.t[key] as string).replace('{{count}}', String(documentCount));
+  }
+
+  async expectNotebookCardShowsDocumentCount(
+    card: Locator,
+    documentCount: number,
+  ): Promise<void> {
+    await expect(card).toContainText(
+      this.formatNotebookCardDocumentsSummary(documentCount),
+    );
+  }
+
+  async expectNotebookOverflowMenuShowsRenameAndDeleteWithIcons(
+    card: Locator,
+  ): Promise<void> {
+    await this.notebookCardOverflowMenuButton(card).click();
+    const renameItem = this.renameNotebookOverflowMenuItem();
+    const deleteItem = this.deleteNotebookOverflowMenuItem();
+    await expect(renameItem).toBeVisible();
+    await expect(deleteItem).toBeVisible();
+    await expect(renameItem.locator('svg').first()).toBeVisible();
+    await expect(deleteItem.locator('svg').first()).toBeVisible();
+    await this.page.keyboard.press('Escape');
   }
 
   async expectUntitledNotebookCardCount(expected: number): Promise<void> {
@@ -377,5 +579,151 @@ export class NotebookSurfacePage {
     await expect(this.chatbotRegion()).toContainText(
       this.t['notebooks.updated.today'],
     );
+  }
+
+  /**
+   * Returns the title text span on a given notebook card (the element that supports click to rename).
+   */
+  notebookCardTitleText(card: Locator): Locator {
+    return card.locator(
+      `[title="${this.t['notebooks.rename.inline.tooltip']}"]`,
+    );
+  }
+
+  /**
+   * Returns the inline rename textbox (visible after triggering rename via click or overflow menu).
+   */
+  inlineRenameInput(): Locator {
+    return this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebooks.rename.inline.tooltip'],
+    });
+  }
+
+  /**
+   * Click the title text on a notebook card to trigger inline edit mode.
+   */
+  async clickCardTitle(card: Locator): Promise<void> {
+    await this.notebookCardTitleText(card).click();
+  }
+
+  /**
+   * Returns the sidebar title element (the one supporting click to rename inside the editor).
+   */
+  sidebarTitleText(): Locator {
+    return this.chatbotRegion().locator(
+      `[title="${this.t['notebooks.rename.inline.tooltip']}"]`,
+    );
+  }
+
+  /**
+   * Click the sidebar title to trigger inline edit mode inside the notebook editor.
+   */
+  async clickSidebarTitle(): Promise<void> {
+    await this.sidebarTitleText().click();
+  }
+
+  /** Compact overlay/docked panel header (`NotebookHeaderActions.tsx`). */
+  compactHeader(): Locator {
+    return this.page.locator('.pf-chatbot__header');
+  }
+
+  compactHeaderAddDocumentButton(): Locator {
+    return this.compactHeader().getByRole('button', {
+      name: this.t['notebook.view.documents.add'],
+    });
+  }
+
+  compactHeaderCloseNotebookButton(): Locator {
+    return this.compactHeader().getByRole('button', {
+      name: this.t['notebook.view.close'],
+    });
+  }
+
+  compactHeaderSidebarToggleButton(): Locator {
+    const collapseLabel = this.t['notebook.view.sidebar.collapse'];
+    const expandLabel = this.t['notebook.view.sidebar.expand'];
+    return this.compactHeader().getByRole('button', {
+      name: new RegExp(`${collapseLabel}|${expandLabel}`),
+    });
+  }
+
+  async clickCompactHeaderAddDocument(): Promise<void> {
+    await this.compactHeaderAddDocumentButton().click();
+  }
+
+  async clickCompactHeaderCloseNotebook(): Promise<void> {
+    await this.compactHeaderCloseNotebookButton().click();
+  }
+
+  async expectCompactHeaderActionsVisible(): Promise<void> {
+    await expect(this.compactHeaderCloseNotebookButton()).toBeVisible();
+    await expect(this.compactHeaderAddDocumentButton()).toBeVisible();
+    await expect(this.compactHeaderSidebarToggleButton()).toBeVisible();
+  }
+
+  /** Compact mode hides NotebookView topBar close; only the header action remains. */
+  async expectSingleNotebookCloseButton(): Promise<void> {
+    await expect(this.closeNotebookButton()).toHaveCount(1);
+  }
+
+  /**
+   * Toggles the resource panel via the compact header control and asserts the
+   * aria-label flips between collapse and expand wording.
+   */
+  async toggleCompactSidebarAndExpectLabelFlip(): Promise<void> {
+    const toggle = this.compactHeaderSidebarToggleButton();
+    await expect(toggle).toBeVisible();
+
+    const collapseLabel = this.t['notebook.view.sidebar.collapse'];
+    const expandLabel = this.t['notebook.view.sidebar.expand'];
+    const initialLabel = await toggle.getAttribute('aria-label');
+    const flippedLabel =
+      initialLabel === collapseLabel ? expandLabel : collapseLabel;
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-label', flippedLabel);
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-label', initialLabel!);
+  }
+
+  /** Expand the resource panel via the compact header toggle when collapsed. */
+  async ensureDocumentSidebarExpanded(): Promise<void> {
+    const toggle = this.compactHeaderSidebarToggleButton();
+    const expandLabel = this.t['notebook.view.sidebar.expand'];
+    if ((await toggle.getAttribute('aria-label')) === expandLabel) {
+      await toggle.click();
+      await expect(toggle).toHaveAttribute(
+        'aria-label',
+        this.t['notebook.view.sidebar.collapse'],
+      );
+    }
+  }
+
+  /** MUI dialogs in compact modes render inside the chatbot landmark. */
+  async expectDeleteDocumentModalWithinChatbot(): Promise<void> {
+    await expect(this.deleteDocumentConfirmDialog()).toBeVisible();
+  }
+
+  async openDeleteFirstDocumentConfirmation(): Promise<void> {
+    await this.hoverDocumentRowAndClickKebab();
+    await this.documentRowDeleteMenuItem().click();
+    await this.expectDeleteDocumentModalWithinChatbot();
+  }
+
+  async cancelDeleteDocumentConfirmation(): Promise<void> {
+    const cancel = this.deleteDocumentFooterButton(this.t['common.cancel']);
+    await cancel.click({ force: true });
+    await expect(this.deleteDocumentConfirmDialog()).toBeHidden();
+  }
+
+  async expectNotebookDeleteDialogWithinChatbot(
+    notebookDisplayName: string,
+  ): Promise<void> {
+    await expect(
+      this.page
+        .locator('[role="dialog"][aria-labelledby="delete-notebook-modal"]')
+        .filter({ hasText: notebookDisplayName }),
+    ).toBeVisible();
   }
 }

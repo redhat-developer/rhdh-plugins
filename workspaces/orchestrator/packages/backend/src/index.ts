@@ -55,6 +55,10 @@ backend.add(import('@backstage/plugin-search-backend-module-pg'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 
+// MCP actions (required for the Orchestrator MCP actions to be reachable by
+// an LLM/CLI client — see RHIDP-14041)
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
+
 // orchestrator
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend'),

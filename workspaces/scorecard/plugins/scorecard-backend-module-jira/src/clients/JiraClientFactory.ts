@@ -15,25 +15,59 @@
  */
 
 import type { Config } from '@backstage/config';
+import type {
+  AuthService,
+  DiscoveryService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import { JIRA_CONFIG_PATH } from '../constants';
 import { JiraClient } from '../clients/base';
 import { JiraDataCenterClientStrategy } from '../strategies/JiraDataCenterClientStrategy';
 import { JiraCloudClientStrategy } from '../strategies/JiraCloudClientStrategy';
-import { ConnectionStrategy } from '../strategies/ConnectionStrategy';
+import {
+  ConnectionStrategy,
+  DirectConnectionStrategy,
+  ProxyConnectionStrategy,
+} from '../strategies/ConnectionStrategy';
+import { Product } from './types';
 
 export class JiraClientFactory {
-  static create(
+  static fromConfig(
     config: Config,
-    connectionStrategy: ConnectionStrategy,
+    options: {
+      auth: AuthService;
+      discovery: DiscoveryService;
+      logger: LoggerService;
+    },
   ): JiraClient {
     const jiraConfig = config.getConfig(JIRA_CONFIG_PATH);
+    const proxyPath = jiraConfig.getOptionalString('proxyPath');
+
+    let connectionStrategy: ConnectionStrategy;
+    if (proxyPath) {
+      connectionStrategy = new ProxyConnectionStrategy(
+        proxyPath,
+        options.auth,
+        options.discovery,
+      );
+    } else {
+      connectionStrategy = new DirectConnectionStrategy(
+        jiraConfig.getString('baseUrl'),
+        jiraConfig.getString('token'),
+        jiraConfig.getString('product') as Product,
+      );
+    }
+
     const product = jiraConfig.getString('product');
 
     switch (product) {
       case 'datacenter':
-        return new JiraDataCenterClientStrategy(config, connectionStrategy);
+        return new JiraDataCenterClientStrategy(
+          connectionStrategy,
+          options.logger,
+        );
       case 'cloud':
-        return new JiraCloudClientStrategy(config, connectionStrategy);
+        return new JiraCloudClientStrategy(connectionStrategy, options.logger);
       default:
         throw new Error(
           `Invalid Jira product: ${product}. Valid products for 'jira.product' are: datacenter, cloud`,

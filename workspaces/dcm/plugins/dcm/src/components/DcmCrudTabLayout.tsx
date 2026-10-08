@@ -29,10 +29,12 @@ import {
 } from '@material-ui/core';
 import SyncIcon from '@material-ui/icons/Sync';
 import { Dispatch, SetStateAction } from 'react';
+import type React from 'react';
 import MuiAlert from '@material-ui/lab/Alert';
 import type { BoxProps } from '@material-ui/core/Box';
 import { DcmDataCenterTabEmptyState } from './DcmDataCenterTabEmptyState';
 import { DcmSearchCardAction } from './dcmTabListHelpers';
+import { CursorPaginatedTable } from './CursorPaginationControls';
 import { useDcmStyles } from './dcmStyles';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -60,11 +62,27 @@ export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
   search: string;
   onSearchChange: Dispatch<SetStateAction<string>>;
 
-  // ── Pagination ───────────────────────────────────────────────────────────
-  page: number;
-  pageSize: number;
-  onPageChange: (page: number, pageSize: number) => void;
-  onRowsPerPageChange: (pageSize: number) => void;
+  // ── Client-side pagination (mutually exclusive with cursorPagination) ────
+  page?: number;
+  pageSize?: number;
+  onPageChange?: (page: number, pageSize: number) => void;
+  onRowsPerPageChange?: (pageSize: number) => void;
+
+  /**
+   * When provided, server-side cursor-based pagination is used instead of the
+   * Backstage Table's built-in pager. The table is rendered with `paging:
+   * false` and {@link CursorPaginationControls} is shown below it.
+   */
+  cursorPagination?: {
+    hasNext: boolean;
+    hasPrev: boolean;
+    onNext: () => void;
+    onPrev: () => void;
+    loading?: boolean;
+    pageSize?: number;
+    onPageSizeChange?: (size: number) => void;
+    pageSizeOptions?: number[];
+  };
 
   // ── Empty state ──────────────────────────────────────────────────────────
   emptyTitle: string;
@@ -75,6 +93,18 @@ export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
 
   // ── Card header ──────────────────────────────────────────────────────────
   entityLabel: string;
+
+  // ── Extra toolbar content ────────────────────────────────────────────────
+  /** Optional content rendered alongside the primary action button in the toolbar row. */
+  toolbarExtra?: React.ReactNode;
+
+  /**
+   * When true, the global illustration empty-state is suppressed so that the
+   * toolbar (and any `toolbarExtra` controls) remains visible.  Use this when
+   * the caller has an active filter that may be the cause of the empty result —
+   * the user needs to be able to change the filter without a full page reload.
+   */
+  hasActiveFilter?: boolean;
 
   // ── Refresh ──────────────────────────────────────────────────────────────
   /** When provided, a refresh icon button is shown next to the search field. */
@@ -131,16 +161,19 @@ export function DcmCrudTabLayout<T extends object>({
   onDismissActionError,
   search,
   onSearchChange,
-  page,
-  pageSize,
+  page = 1,
+  pageSize = 5,
   onPageChange,
   onRowsPerPageChange,
+  cursorPagination,
   emptyTitle,
   emptyDescription,
   primaryActionLabel,
   onPrimaryAction,
   illustrationSrc,
   entityLabel,
+  toolbarExtra,
+  hasActiveFilter,
   onRefresh,
   refreshing,
 }: DcmCrudTabLayoutProps<T>) {
@@ -169,9 +202,19 @@ export function DcmCrudTabLayout<T extends object>({
     );
   }
 
-  if (items.length === 0) {
+  // Show global empty-state only when we are certain the dataset is truly
+  // empty (i.e. not just an empty cursor page on page 2+). If hasPrev is true
+  // the user deleted the last row on a non-first page — fall through to the
+  // table view so cursor controls remain accessible.
+  // When a filter is active the empty result may be filter-induced; skip the
+  // illustration empty-state so the toolbar (with the filter control) stays
+  // visible and the user can clear the filter without a full page reload.
+  if (items.length === 0 && !cursorPagination?.hasPrev && !hasActiveFilter) {
     return (
       <>
+        {toolbarExtra && (
+          <Box className={classes.toolbarRow}>{toolbarExtra}</Box>
+        )}
         {actionError && (
           <ActionErrorAlert
             message={actionError}
@@ -196,9 +239,12 @@ export function DcmCrudTabLayout<T extends object>({
         <Button variant="contained" color="primary" onClick={onPrimaryAction}>
           {primaryActionLabel}
         </Button>
+        {toolbarExtra}
       </Box>
       <InfoCard
-        title={`${entityLabel} (${filtered.length})`}
+        title={
+          cursorPagination ? entityLabel : `${entityLabel} (${filtered.length})`
+        }
         action={
           <Box display="flex" alignItems="center">
             <DcmSearchCardAction
@@ -237,28 +283,38 @@ export function DcmCrudTabLayout<T extends object>({
           />
         )}
         <Box className={classes.cardContent}>
-          <Table<T>
-            data={paginated}
-            columns={columns}
-            options={{
-              paging: true,
-              pageSize,
-              pageSizeOptions: [5, 10, 25],
-              search: false,
-              sorting: true,
-              padding: 'default',
-              toolbar: false,
-              /** Avoid blank rows padding the table to `pageSize` when fewer rows exist. */
-              emptyRowsWhenPaging: false,
-            }}
-            totalCount={filtered.length}
-            page={page}
-            onPageChange={onPageChange}
-            onRowsPerPageChange={onRowsPerPageChange}
-            localization={{
-              pagination: { labelRowsPerPage: t('common.rows') },
-            }}
-          />
+          {cursorPagination ? (
+            <CursorPaginatedTable<T>
+              data={filtered}
+              columns={columns}
+              pagination={cursorPagination}
+            />
+          ) : (
+            <Table<T>
+              data={paginated}
+              columns={columns}
+              options={{
+                paging: true,
+                pageSize,
+                pageSizeOptions: [5, 10, 25],
+                search: false,
+                sorting: true,
+                padding: 'default',
+                toolbar: false,
+                /** Avoid blank rows padding the table to `pageSize` when fewer rows exist. */
+                emptyRowsWhenPaging: false,
+              }}
+              totalCount={filtered.length}
+              page={Math.max(0, page - 1)}
+              onPageChange={
+                onPageChange ? (p, ps) => onPageChange(p + 1, ps) : undefined
+              }
+              onRowsPerPageChange={onRowsPerPageChange}
+              localization={{
+                pagination: { labelRowsPerPage: t('common.rows') },
+              }}
+            />
+          )}
         </Box>
       </InfoCard>
     </Box>

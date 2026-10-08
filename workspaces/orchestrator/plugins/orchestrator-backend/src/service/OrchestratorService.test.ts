@@ -102,7 +102,11 @@ describe('OrchestratorService', () => {
         serviceUrl,
       });
 
-      expect(sonataFlowServiceMock.abortInstance).toHaveBeenCalled();
+      expect(sonataFlowServiceMock.abortInstance).toHaveBeenCalledWith({
+        definitionId,
+        instanceId,
+        serviceUrl,
+      });
     });
   });
 
@@ -447,7 +451,12 @@ describe('OrchestratorService', () => {
         inputData,
       });
 
-      expect(result).toBeDefined();
+      expect(result).toEqual(executeResponse);
+      expect(sonataFlowServiceMock.executeWorkflow).toHaveBeenCalledWith({
+        definitionId,
+        serviceUrl,
+        inputData,
+      });
     });
   });
 

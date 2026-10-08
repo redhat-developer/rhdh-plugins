@@ -61,7 +61,7 @@ catalog:
 #       description: Open PRs across owned entities, grouped by status.
 #       type: statusGrouped
 #       metricId: github.openPRs
-#   plugins:
+#   metricProviders:
 #     github:
 #       openPRs:
 #         schedule:

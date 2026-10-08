@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-import type {
-  Metric,
-  ThresholdConfig,
-  AggregationConfig,
+import {
+  type Metric,
+  type ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
 
 export type AggregationOptions = {
   metric: Metric;
   entityRefs: string[];
   thresholds: ThresholdConfig;
-  aggregationConfig: AggregationConfig;
+  aggregationConfig: ValidatedAggregationConfig;
+};
+
+export type AggregationTimeSeriesOptions = AggregationOptions & {
+  from: Date;
+  to: Date;
 };

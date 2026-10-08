@@ -40,6 +40,17 @@ export interface Config {
     apiGatewayUrl?: string;
 
     /**
+     * Whether the DCM control plane requires per-user OIDC authentication.
+     *
+     * Must match the control plane's `auth.enabled` setting.
+     *
+     * @visibility backend
+     */
+    auth?: {
+      enabled?: boolean;
+    };
+
+    /**
      * Base URL for the SSO token endpoint.
      *
      * Defaults to "https://sso.redhat.com".

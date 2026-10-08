@@ -14,14 +14,16 @@ None. This is a new EntityProvider implementation.
 
 ### Requirement: RHOAI MCP Catalog API Connection
 
+The implementation MUST satisfy the scenarios below.
+
 The provider must connect to the RHOAI MCP catalog API and handle developer-preview API availability.
 
 #### Scenario: Provider connects to MCP catalog API
 
 - **WHEN** the `RhoaiMcpCatalogProvider` starts
-- **THEN** it reads endpoint URL from `catalog.providers.rhoai.mcpCatalog.endpoint`
-- **AND** it loads credentials from K8s Secret referenced in `catalog.providers.rhoai.mcpCatalog.auth.secretRef`
-- **AND** it loads custom CA bundle from `catalog.providers.rhoai.mcpCatalog.tls.caFile` (if configured)
+- **THEN** it reads endpoint URL from `ai-catalog.providers.rhoai.mcpCatalog.endpoint`
+- **AND** it loads credentials from K8s Secret referenced in `ai-catalog.providers.rhoai.mcpCatalog.auth.secretRef`
+- **AND** it loads custom CA bundle from `ai-catalog.providers.rhoai.mcpCatalog.tls.caFile` (if configured)
 - **AND** it validates connectivity by calling `GET <endpoint>/api/mcp/v1/servers?limit=1` with a 15-second timeout
 - **AND** on HTTP 200 with a JSON response body matching `{ "servers": [...], "total": <number> }`, it marks `mcpApiAvailable = true`
 - **AND** on HTTP 200 with an unexpected response schema (Zod validation failure), it logs a warning with the response body and proceeds with `mcpApiAvailable = false`
@@ -37,6 +39,8 @@ The provider must connect to the RHOAI MCP catalog API and handle developer-prev
 - **AND** every 10th refresh cycle, it retries the API connection (in case RHOAI was upgraded)
 
 ### Requirement: MCP Server Entity Emission
+
+The implementation MUST satisfy the scenarios below.
 
 MCP catalog entries must map to API entities with `spec.type: mcp-server`.
 
@@ -59,6 +63,8 @@ MCP catalog entries must map to API entities with `spec.type: mcp-server`.
 
 ### Requirement: Graceful Degradation on API Absence
 
+The implementation MUST satisfy the scenarios below.
+
 The provider must not block catalog startup when the MCP catalog API is unavailable.
 
 #### Scenario: Provider starts with MCP API unavailable
@@ -79,6 +85,8 @@ The provider must not block catalog startup when the MCP catalog API is unavaila
 
 ### Requirement: Developer-Preview API Stability Handling
 
+The implementation MUST satisfy the scenarios below.
+
 The MCP catalog API is developer preview and may change between RHOAI versions.
 
 #### Scenario: API response schema validation
@@ -98,6 +106,8 @@ The MCP catalog API is developer preview and may change between RHOAI versions.
 
 ### Requirement: Annotation Population
 
+The implementation MUST satisfy the scenarios below.
+
 All emitted MCP server entities must include standard RHDH annotations.
 
 #### Scenario: MCP server entities include standard annotations
@@ -113,10 +123,12 @@ All emitted MCP server entities must include standard RHDH annotations.
 
 - **WHEN** the provider emits an MCP server entity
 - **THEN** it includes `metadata.annotations['rhdh.io/ai-asset-category']` set to `mcp-server`
-- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-version']` set to the version extracted from the MCP server manifest via `normalizeAIAssetVersion()`, or `"unknown"` if the manifest omits version metadata
-- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-source']` set to `rhoai/<instance-id>`, where `<instance-id>` is the configuration key under `catalog.providers` (e.g., `rhoai`)
+- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-version']` set to the version extracted from the MCP server manifest via `normalizeAIAssetVersion()`; missing/unrecognized → `"0.0.0-unknown"` (do not use a local `"unknown"` fallback)
+- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-source']` set to `rhoai/<instance-id>`, where `<instance-id>` is the configuration key under `ai-catalog.providers` (e.g., `rhoai`)
 
 ### Requirement: Full Sync via applyMutation
+
+The implementation MUST satisfy the scenarios below.
 
 The provider must use Backstage's `applyMutation` for full sync and incremental updates.
 

@@ -18,6 +18,8 @@ None. This is a new reference configuration artifact.
 
 ### Requirement: MCP Registry Connector Configuration
 
+The implementation MUST satisfy the scenarios below.
+
 The reference YAML must demonstrate MCP Registry connector configuration fields.
 
 #### Scenario: MCP Registry with mirror endpoint and custom CA
@@ -25,7 +27,7 @@ The reference YAML must demonstrate MCP Registry connector configuration fields.
 - **WHEN** a deployer configures the MCP Registry connector for an air-gapped environment
 - **THEN** the reference YAML includes:
   ```yaml
-  catalog:
+  ai-catalog:
     providers:
       mcpRegistry:
         # Mirror endpoint overrides public registry.modelcontextprotocol.io
@@ -42,6 +44,8 @@ The reference YAML must demonstrate MCP Registry connector configuration fields.
 
 ### Requirement: RHOAI MCP Catalog Connector Configuration
 
+The implementation MUST satisfy the scenarios below.
+
 The reference YAML must demonstrate RHOAI connector configuration fields.
 
 #### Scenario: RHOAI cross-cluster with MCP catalog toggle
@@ -49,7 +53,7 @@ The reference YAML must demonstrate RHOAI connector configuration fields.
 - **WHEN** a deployer configures the RHOAI connector for a separate AI cluster
 - **THEN** the reference YAML includes:
   ```yaml
-  catalog:
+  ai-catalog:
     providers:
       rhoai:
         mcpCatalog:
@@ -71,6 +75,8 @@ The reference YAML must demonstrate RHOAI connector configuration fields.
 
 ### Requirement: OCI Skill Registry Connector Configuration
 
+The implementation MUST satisfy the scenarios below.
+
 The reference YAML must demonstrate OCI Skill connector configuration fields.
 
 #### Scenario: OCI connector with multiple registries
@@ -78,7 +84,7 @@ The reference YAML must demonstrate OCI Skill connector configuration fields.
 - **WHEN** a deployer configures the OCI Skill connector for multiple registries
 - **THEN** the reference YAML includes:
   ```yaml
-  catalog:
+  ai-catalog:
     providers:
       ociSkill:
         enabled: true
@@ -103,6 +109,8 @@ The reference YAML must demonstrate OCI Skill connector configuration fields.
 
 ### Requirement: Air-Gapped Deployment Variant
 
+The implementation MUST satisfy the scenarios below.
+
 The reference YAML must include a complete air-gapped deployment variant.
 
 #### Scenario: All connectors in air-gapped environment
@@ -118,6 +126,8 @@ The reference YAML must include a complete air-gapped deployment variant.
 
 ### Requirement: Inline Documentation
 
+The implementation MUST satisfy the scenarios below.
+
 Every configurable field must have a brief inline comment.
 
 #### Scenario: Field-level documentation
@@ -131,6 +141,8 @@ Every configurable field must have a brief inline comment.
 - **AND** the reference YAML is self-documenting without requiring external documentation
 
 ### Requirement: File Location
+
+The implementation MUST satisfy the scenarios below.
 
 The reference YAML must be discoverable in the repository.
 

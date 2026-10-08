@@ -1,10 +1,14 @@
 # Proposal: AI Catalog Entity Model
 
+> **Workspace status:** Follow-on entity-model and SDK planning; not part of
+> the current RHDH 2.1 Boost release. The archived `ogx-entity-provider` spec
+> is the current OGX release source of truth.
+
 ## Why
 
-The AI Catalog in Red Hat Developer Hub needs a standardized entity model to classify, track, and manage AI assets — agents, skills, MCP servers, models, and model servers — as first-class catalog entities. Today's Backstage catalog has no normalization scheme for these assets. External registries (Kagenti, LlamaStack, OCI skill repositories) use different categorization and version schemes, creating integration friction.
+The AI Catalog in Red Hat Developer Hub needs a standardized entity model to classify, track, and manage AI assets — agents, skills, MCP servers, models, and model servers — as first-class catalog entities. Today's Backstage catalog has no normalization scheme for these assets. External registries (Kagenti, OGX, OCI skill repositories) use different categorization and version schemes, creating integration friction.
 
-Enterprise deployments require operational quality from day one: air-gapped environments with custom CAs and K8s Secret-only credentials, delta sync to minimize catalog churn, and performance resilience at 5,000+ entities without degrading catalog latency. The entity model must also be migration-ready for future upstream Backstage entity kinds (RFCs #32062, #33060) so that RHDH can transition from custom annotations to first-class kinds without breaking consumers.
+Enterprise deployments require operational quality from day one: air-gapped environments with custom CAs and K8s Secret-only credentials, delta sync to minimize catalog churn, and performance resilience at 5,000+ entities without degrading catalog latency. The entity model must also be migration-ready for upstream Backstage entity kinds (e.g., `McpServerApiEntity` via [#34016](https://github.com/backstage/backstage/pull/34016), `AiResource` via [#33575](https://github.com/backstage/backstage/issues/33575)) so that RHDH can transition from custom annotations to first-class kinds without breaking consumers.
 
 Boost builds this as a foundational layer: a standardized annotation scheme, a shared entity provider SDK, and operational-quality patterns that every AI registry connector can adopt from the start.
 
@@ -26,7 +30,8 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 > Per RHDHPLAN-1505 stakeholder meeting:
 >
 > - **RHDHPLAN-1113 dependency:** Entity kind strategy is conditional. If RHDHPLAN-1113 lands before RHIDP-15258 work begins, the SDK adopts AIResource/AIContext kinds directly — no temporary Resource/Component mapping needed. If RHIDP-15258 starts first, Resource/Component is used as interim.
-> - **MCP resource mapping deferred for RHDH 2.1** — upstream due diligence pending.
+> - **MCP resource mapping is outside this current Boost release** — broader
+>   RHDHPLAN-1510 work owns the follow-on decision and upstream due diligence.
 
 ## What Boost Builds
 
@@ -34,7 +39,7 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 > _Consolidated into RHIDP-15258 (Entity-Provider SDK). Single story RHIDP-15255 covers all 3 annotations._
 
-- `rhdh.io/ai-asset-category` annotation with five defined values: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`
+- `rhdh.io/ai-asset-category` annotation with seven defined values: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
 - `rhdh.io/ai-asset-version` annotation with documented normalization rules (semver pass-through, date-based → semver, commit hash → version string)
 - `rhdh.io/ai-asset-source` annotation for provenance tracking (`connector-name/registry-instance-id`)
 - CatalogProcessor validator rejects entities with missing/invalid annotations at ingestion time
@@ -49,7 +54,7 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 - Shared validation utilities rejecting entities with missing/invalid annotations
 - Neo4j sync adapter interface for knowledge graph integration
 - SkillBundle metadata contract for skillcard.yaml schema
-- Published npm package (`@boost/entity-provider-sdk`)
+- Published npm package (`@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`)
 
 ### Delta Sync Framework
 
@@ -89,10 +94,10 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 ## Impact
 
-- `plugins/boost-backend/src/entity-provider-sdk/` — SDK package source
-- `plugins/boost-backend/src/catalog/processors/` — Annotation validator processor
-- `plugins/boost-backend-module-kagenti/src/provider/` — Kagenti provider implements SDK
-- `plugins/boost-backend-module-llamastack/src/provider/` — LlamaStack provider implements SDK
+- `plugins/boost-entity-provider-sdk/` — SDK package (types, annotations, validation, adapter interfaces)
+- `plugins/boost-entity-provider-sdk/src/AIAssetValidator.ts` — CatalogProcessor annotation validator
+- `plugins/kagenti-entity-provider/` — Kagenti provider implements SDK
+- `plugins/ogx-entity-provider/` — OGX provider implements SDK
 - `plugins/boost-backend-module-oci-skill/src/provider/` — OCI skill connector provider implements SDK
 - Reference app-config examples for air-gapped deployment
 - Load testing harness for catalog performance validation

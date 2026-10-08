@@ -84,13 +84,16 @@ Options define configuration that affect fetch jira issues global configuration,
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
+      # Scorecard-owned Jira datasource settings (auth stays under top-level jira:)
       openIssues:
         options:
-          # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
-          mandatoryFilter: Type = Task AND Resolution = Resolved
-          # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will replaces them
+          # Optional: replaces the default mandatory filter
+          # ("type = Bug AND resolution = Unresolved")
+          mandatoryFilter: type = Task AND resolution = Resolved
+          # Optional: global custom filter. Overridden by entity annotation
+          # jira/custom-filter when that annotation is set.
           customFilter: priority in ("Critical", "Blocker")
 ```
 
@@ -100,7 +103,7 @@ The Scorecard plugin uses Backstage's built-in scheduler service to automaticall
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
       openIssues:
         schedule:
@@ -112,7 +115,7 @@ scorecard:
             seconds: 5
 ```
 
-The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157).
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). For more details on how to configure schedule, see [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling).
 
 ## Installation
 
@@ -164,7 +167,7 @@ metadata:
     jira/label: UI
     # Optional: recommended to use Jira team ID instead of team title
     jira/team: 9d3ea319-fb5b-4621-9dab-05fe502283e
-    # Optional: Custom filters for loading data request. This filter replaces customFilters form app-config.yaml
+    # Optional: Custom JQL; overrides app-config openIssues.options.customFilter
     jira/custom-filter: 'reporter = "psycon98@yahoo.com" AND resolution is not EMPTY'
 spec:
   type: website
@@ -184,6 +187,67 @@ This metric counts all jira issues that match the filter condition specified in 
 - **Type**: `Number`
 - **Datasource**: `jira`
 
+## Collectors
+
+This module registers collectors to collect data from Jira to be used by composite metric providers:
+
+- `scorecard-backend-module-dora`:
+
+  - `jira:doraIncidents`
+
+### Collector contracts
+
+Collectors in Scorecard are schema-validated at runtime. Any custom collector replacing a Jira collector must return data that conforms to the same contract expected by consumers.
+
+`jira:doraIncidents`
+
+- **Input schema**
+  - `from: string` (ISO datetime)
+  - `to: string` (ISO datetime)
+  - `updatedSince: string` (ISO datetime)
+  - `issueType?: string` (optional; default `Incident`)
+- **Output schema**
+  - `incidents: Array<{ id: string; createdAt: string; updatedAt: string; resolutionAt: string | null }>`
+- **Annotation requirements**
+  - Uses `jira/incident-project-key` when present
+  - Falls back to `jira/project-key` when `jira/incident-project-key` is not set
+  - Requires at least one of those `project-key` annotations on the entity
+  - Optional incident-only filters (no fallback to open-issues annotations):
+    - `jira/incident-component`
+    - `jira/incident-label`
+    - `jira/incident-team`
+    - `jira/incident-issue-type` (overrides app-config `input.issueType` when set)
+- **Behavior**
+  - Collects Jira issues matching the configured issue type (default `Incident`)
+  - Does not apply the open-issues `mandatoryFilter` / global `customFilter` from app-config
+  - Client-side fetch cap: at most **1000** incidents are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window incidents
+
+Example entity annotations for `jira:doraIncidents` collector:
+
+```yaml
+# catalog-info.yaml
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: my-service
+  annotations:
+    # Jira project for incident collection:
+    jira/incident-project-key: INCIDENTS
+    # Optional fallback when jira/incident-project-key is not set:
+    jira/project-key: PROJECT
+    # Optional incident-only filters:
+    # jira/incident-component: Payments
+    # jira/incident-label: sev-1
+    # jira/incident-team: team-ops
+    # jira/incident-issue-type: Production Incident
+spec:
+  type: service
+  lifecycle: production
+  owner: team-a
+```
+
+For a complete collector implementation guide, see [collectors.md](../scorecard-backend/docs/collectors.md).
+
 ## Default thresholds
 
 Default thresholds for `jira.openIssues`:
@@ -191,7 +255,7 @@ Default thresholds for `jira.openIssues`:
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
       openIssues:
         thresholds:

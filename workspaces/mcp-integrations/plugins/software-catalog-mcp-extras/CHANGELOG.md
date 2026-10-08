@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras
 
+## 0.2.5
+
+### Patch Changes
+
+- dbce029: Bump mcp-integrations workspace to Backstage v1.54.0
+
 ## 0.2.4
 
 ### Patch Changes

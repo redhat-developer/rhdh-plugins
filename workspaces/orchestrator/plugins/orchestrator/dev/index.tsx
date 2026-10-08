@@ -26,19 +26,17 @@ import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 // eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
 import '@backstage/ui/css/styles.css';
 
-import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/alpha';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhAppDefaults from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
-import orchestratorPlugin, {
-  orchestratorTranslationsModule,
-} from '../src/alpha';
-import { devNavModule } from './nav';
+import orchestratorPlugin, { orchestratorTranslationsModule } from '../src';
 
 const App = createApp({
   features: [
+    rhdhAppDefaults,
     rhdhThemeModule,
     orchestratorTranslationsModule,
-    devNavModule,
     searchPlugin,
     catalogPlugin,
     orchestratorPlugin,

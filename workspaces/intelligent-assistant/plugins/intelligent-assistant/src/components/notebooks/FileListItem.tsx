@@ -14,55 +14,39 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core/styles';
-import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { TimesIcon } from '@patternfly/react-icons';
 
 import { FileTypeIcon } from './FileTypeIcon';
 
-const useStyles = makeStyles(theme => ({
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '8px 12px',
-    borderRadius: 8,
-    backgroundColor: theme.palette.type === 'dark' ? '#2a2a2a' : '#f5f5f5',
-    marginBottom: 8,
-    '&:last-child': {
-      marginBottom: 0,
-    },
+const Container = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '8px 12px',
+  borderRadius: 8,
+  border: '1px solid var(--pf-t--global--border--color--default)',
+  backgroundColor: 'var(--pf-t--global--background--color--secondary--default)',
+  marginBottom: 8,
+  '&:last-child': {
+    marginBottom: 0,
   },
-  fileInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 0,
-    gap: 12,
+});
+
+const RemoveButton = styled('button')({
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  padding: 4,
+  color: 'var(--pf-t--global--icon--color--subtle)',
+  '&:hover': {
+    color: 'var(--pf-t--global--icon--color--regular)',
   },
-  fileName: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontSize: '0.875rem',
-  },
-  fileSize: {
-    color: theme.palette.text.secondary,
-    fontSize: '0.75rem',
-    flexShrink: 0,
-    marginRight: 8,
-  },
-  removeButton: {
-    padding: 4,
-    color: theme.palette.action.active,
-    '&:hover': {
-      color: theme.palette.error.main,
-    },
-  },
-}));
+  display: 'inline-flex',
+  alignItems: 'center',
+  fontFamily: 'inherit',
+});
 
 type FileListItemProps = {
   file: File;
@@ -98,28 +82,51 @@ export const FileListItem = ({
   onRemove,
   removeAriaLabel = 'Remove file',
 }: FileListItemProps) => {
-  const classes = useStyles();
   const displayName = truncateFileName(file.name, MAX_FILENAME_LENGTH);
 
   return (
-    <Box className={classes.container}>
-      <Box className={classes.fileInfo}>
+    <Container>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          flex: 1,
+          minWidth: 0,
+          gap: 1.5,
+        }}
+      >
         <FileTypeIcon fileName={file.name} />
-        <Typography className={classes.fileName} title={file.name}>
+        <Typography
+          title={file.name}
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            fontSize: '0.875rem',
+          }}
+        >
           {displayName}
         </Typography>
       </Box>
-      <Typography className={classes.fileSize}>
+      <Typography
+        sx={{
+          color: 'text.secondary',
+          fontSize: '0.75rem',
+          flexShrink: 0,
+          mr: 1,
+        }}
+      >
         {formatFileSize(file.size)}
       </Typography>
-      <IconButton
-        className={classes.removeButton}
+      <RemoveButton
+        type="button"
         onClick={onRemove}
         aria-label={removeAriaLabel}
-        size="small"
       >
-        <CloseIcon fontSize="small" />
-      </IconButton>
-    </Box>
+        <TimesIcon style={{ width: 12, height: 12 }} />
+      </RemoveButton>
+    </Container>
   );
 };

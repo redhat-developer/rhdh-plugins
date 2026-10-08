@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-import type { AggregatedMetric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type {
+  AggregatedMetric,
+  AggregationConfigFilter,
+  ScalarAggregatedMetric,
+  ScalarAggregatedTimeSeriesPoint,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
+import type { ScalarAggregationFn } from '../../database/types';
 import { AggregatedMetricMapper } from '../mappers';
 
 export class AggregatedMetricLoader {
@@ -36,5 +42,53 @@ export class AggregatedMetricLoader {
       );
 
     return AggregatedMetricMapper.toAggregatedMetric(aggregatedMetric);
+  }
+
+  async loadScalarMetricByEntityRefs(
+    entityRefs: string[],
+    metricId: string,
+    aggregationFn: ScalarAggregationFn,
+    filter?: AggregationConfigFilter,
+  ): Promise<ScalarAggregatedMetric> {
+    if (entityRefs.length === 0) {
+      return AggregatedMetricMapper.toScalarAggregatedMetric();
+    }
+
+    const scalarMetric =
+      await this.database.readScalarAggregatedMetricByEntityRefs(
+        entityRefs,
+        metricId,
+        aggregationFn,
+        filter,
+      );
+
+    return AggregatedMetricMapper.toScalarAggregatedMetric(scalarMetric);
+  }
+
+  async loadScalarMetricTimeSeriesByEntityRefs(
+    entityRefs: string[],
+    metricId: string,
+    aggregationFn: ScalarAggregationFn,
+    from: Date,
+    to: Date,
+    filter?: AggregationConfigFilter,
+  ): Promise<ScalarAggregatedTimeSeriesPoint[]> {
+    if (entityRefs.length === 0) {
+      return [];
+    }
+
+    const rows =
+      await this.database.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+        entityRefs,
+        metricId,
+        aggregationFn,
+        from,
+        to,
+        filter,
+      );
+
+    return rows.map(row =>
+      AggregatedMetricMapper.toScalarAggregatedTimeSeriesPoint(row),
+    );
   }
 }

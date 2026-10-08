@@ -77,6 +77,12 @@ export const useFilteredPluginFacet = (
         ) {
           return false;
         }
+        if (
+          excludeFilterType === 'catalog-source' &&
+          filter.startsWith('catalog-source=')
+        ) {
+          return false;
+        }
         return true;
       });
 
@@ -124,6 +130,18 @@ export const useFilteredPluginFacet = (
         });
       }
 
+      // Apply catalog source filters
+      const catalogSources = activeFilters
+        .filter(filter => filter.startsWith('catalog-source='))
+        .map(filter => filter.substring('catalog-source='.length));
+      if (catalogSources.length > 0) {
+        filteredPlugins = filteredPlugins.filter(plugin => {
+          const source =
+            plugin.metadata?.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE];
+          return source !== undefined && catalogSources.includes(source);
+        });
+      }
+
       // Apply support type filters
       const showCustom = activeFilters.includes('custom');
       const supportLevels = activeFilters
@@ -156,6 +174,12 @@ export const useFilteredPluginFacet = (
         // Extract values based on facet path
         if (facet === 'spec.categories') {
           values = plugin.spec?.categories || [];
+        } else if (facet === 'metadata.annotations.catalog-source') {
+          const source =
+            plugin.metadata?.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE];
+          if (source) {
+            values = [source];
+          }
         } else if (facet === 'spec.authors.name') {
           if (plugin.spec?.authors && plugin.spec.authors.length > 0) {
             values = plugin.spec.authors

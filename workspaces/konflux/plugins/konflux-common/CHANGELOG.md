@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-konflux-common
 
+## 0.2.1
+
+### Patch Changes
+
+- e567d2b: Bumped Backstage version to 1.54.0.
+
+## 0.2.0
+
 ## 0.1.8
 
 ### Patch Changes

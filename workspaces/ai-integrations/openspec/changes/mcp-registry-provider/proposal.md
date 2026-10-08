@@ -1,0 +1,57 @@
+# Proposal: MCP Registry Provider
+
+## Why
+
+The [`mcp-registry-server-mapping`](../mcp-registry-server-mapping/proposal.md) change defines the pure `server.json` → `mcp-server` `API` entity transform, but explicitly leaves ingestion out of scope: nothing yet fetches entries from an [MCP Registry](https://github.com/modelcontextprotocol/registry) and puts the resulting entities into the Backstage catalog. Without a provider, an operator who points RHDH at a registry gets no catalog entities. This change delivers that missing runtime component — a Backstage catalog **entity provider** that periodically reads a registry's `server.json` entries and populates the catalog with `mcp-server` `API` entities — so MCP servers published to a registry become discoverable in RHDH.
+
+## What Changes
+
+- Introduce a **backend catalog entity provider plugin** (a Backstage `catalog-backend-module`) that, on a configured schedule, lists MCP servers from a configured registry and applies the [`mcp-registry-server-mapping`](../mcp-registry-server-mapping/proposal.md) transform to produce `mcp-server` `API` entities, then commits them to the catalog as a **full mutation** (so servers removed from the registry are pruned). The provider's `getProviderName()` and mutation `locationKey` are `mcp-registry-provider`; each entity also carries `backstage.io/managed-by-location` as `url:` plus normalized `baseUrl` (trailing `/` stripped), distinct from that `locationKey`, and `redhat.com/rhdh-mcp-registry-sync-status` (`ok` when mapping succeeds, `degraded` when last-good is retained).
+- Support **one registry** via idiomatic Backstage entity-provider configuration under `catalog.providers.mcpRegistry` (a single object, not a keyed map), configuring:
+  - `baseUrl` — the URL of the MCP Registry (**required**).
+  - `baseName` — optional identity prefix passed through as the [`mcp-registry-server-mapping`](../mcp-registry-server-mapping/proposal.md) caller-override `prefix` (mapping default `mcp.registry` when omitted). Introduced so a future multi-registry change can give each source a distinct `<prefix>__<name>__<version>` without redesigning the transform.
+  - `schedule` — optional sync frequency as a standard `SchedulerServiceTaskScheduleDefinition` (`frequency`, `timeout`, optional `initialDelay`); when omitted, default `frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`, no `initialDelay` (first sync after one `frequency` interval unless `initialDelay` is set).
+  - `apiVersion` — the version segment used in the API endpoint slug; **defaults to `v1`**.
+  - `pageLimit` — optional max **pages** fetched per sync; **defaults to `10`**. Exceeding it fails the run with no mutation.
+  - `pageSize` — optional registry page size, sent as `?limit=`; when omitted, `?limit=` is left unset so the MCP Registry default applies.
+  - `defaultOwner` — optional; the default `spec.owner` (a `User`/`Group` entity reference) applied to every produced `API` entity, passed as the caller-override default into the mapping (omit → mapping default `unknown`).
+- Implement **cursor pagination**: the servers endpoint (`<baseUrl>/<apiVersion>/servers`) is traversed by passing the prior response's `metadata.nextCursor` as the `cursor` query parameter until the cursor is absent, null, or empty (per the [generic registry API](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/api/generic-registry-api.md#basic-example-list-servers)), or until `pageLimit` (default `10`) would be exceeded — which fails the run. A repeated cursor also fails the run. Optional `pageSize` is sent as `?limit=`; when unset, that query is omitted.
+- Specify **resilient, agent-native sync behavior**: a single server entry that fails to map is logged without aborting the run; when a last-good entity exists for that registry `name`/`version`, it is retained in the full mutation with `redhat.com/rhdh-mcp-registry-sync-status: degraded`; successful mappings get `ok`; a registry transport/protocol error fails that sync run (no mutation) and is retried on the next scheduled tick.
+
+## Capabilities
+
+### New Capabilities
+
+- `mcp-registry-provider`: A scheduled Backstage catalog entity provider that reads MCP servers from one configured MCP Registry (with cursor pagination, optional `pageLimit` default `10`, and optional `pageSize` as `?limit=`), maps each `server.json` to an `mcp-server` `API` entity via [`mcp-registry-server-mapping`](../mcp-registry-server-mapping/proposal.md), and commits them to the catalog as a full mutation — including configuration (`catalog.providers.mcpRegistry` with `baseUrl` / optional `baseName`), scheduling, API-version slug construction, and error handling.
+
+### Modified Capabilities
+
+_(none — no long-lived specs exist under `openspec/specs/` yet; this change introduces a new capability and **consumes** the sibling `mcp-registry-server-mapping` capability as its transform.)_
+
+## Non-goals
+
+- **The mapping itself.** The `server.json` → entity transform, annotation projection, secret redaction, and identity/name rules are owned by [`mcp-registry-server-mapping`](../mcp-registry-server-mapping/proposal.md) and consumed here unchanged.
+- **A registry proxy or pass-through API.** Unlike the [reference proxy prototype](https://github.com/gabemontero/rhdh-plugins/tree/mcp-reg-proxy-proto), this plugin does not expose registry endpoints through RHDH; it is a one-way ingestion provider into the catalog.
+- **Registry authentication / write access.** Assumes an unauthenticated (or externally-fronted) read-only registry endpoint; per-registry auth credentials are a future extension.
+- **Runtime invocation, health checking, or tool discovery** of the ingested MCP servers.
+- **Multiple registries.** The initial implementation configures and syncs a single registry. A keyed map of instances (`catalog.providers.mcpRegistry.<id>`) is out of scope; `baseName` is the forward-compatible hook so a later change can override the mapping `prefix` per source.
+- **Cross-registry deduplication / merge** of the same server published to multiple registries (carried over from the mapping's non-goals; moot while only one registry is ingested).
+- **Frontend / catalog UI** changes; produced entities render via existing upstream `mcp-server` `API` entity support.
+
+## Canonical Touchpoints
+
+- **PRDs (`specifications/prd/`)**: None
+- **ADRs (`specifications/adr/`)**: None
+- **Long-lived specs (`openspec/specs/`)**: None (new capability only; `openspec/specs/` does not yet exist)
+
+**Change type**: feature-spec
+
+## Impact
+
+- **Depends on the sibling `mcp-registry-server-mapping` change** for the transform contract; this provider is the first consumer of that mapping and passes `defaultOwner` as the caller-override owner default and, when configured, `baseName` as the caller-override identity prefix.
+- **Depends on Backstage backend framework**: the catalog `EntityProvider` interface, `SchedulerService` (`SchedulerServiceTaskScheduleDefinition`), the new backend system (`createBackendModule` / `coreServices`), and `RootConfigService` for reading `catalog.providers.mcpRegistry`.
+- **Source API**: MCP Registry generic API — `GET <baseUrl>/<apiVersion>/servers?cursor=<opaque>` with optional `limit` from `pageSize`; when `pageSize` is unset, `limit` is omitted. Response `{ servers: [...], metadata: { count, nextCursor } }`. Cursors are opaque and traversed until absent.
+- **API-version discrepancy** (documented risk): the current reference registry serves `/v0` (proxy prototype) / `/v0.1` (docs), while `apiVersion` defaults to `v1` per this proposal; operators override `apiVersion` to match their registry.
+- **Consumers**: RHDH operators who configure a registry; developers and AI agents who then discover MCP servers via catalog search/filter over the `mcp-server` entities and their `modelcontextprotocol.io/*` annotations.
+- **Packaging**: a new backend plugin package (Backstage catalog-backend-module naming convention), wired into the backend via `backend.add(...)`.
+- **Upstream**: keep aligned with Backstage's entity-provider / scheduler APIs and the MCP Registry generic API as both evolve.

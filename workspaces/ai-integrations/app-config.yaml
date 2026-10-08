@@ -13,18 +13,8 @@ proxy:
     followRedirects: true
 
 backend:
-  # Used for enabling authentication, secret is shared by all backend plugins
-  # See https://backstage.io/docs/auth/service-to-service-auth for
-  # information on the format
-  # auth:
-  #   keys:
-  #     - secret: ${BACKEND_SECRET}
   auth:
-    externalAccess:
-      - type: static
-        options:
-          token: '${RHDH_TOKEN}'
-          subject: admin-curl-access
+    dangerouslyDisableDefaultAuthPolicy: true
   baseUrl: http://localhost:7007
   listen:
     port: 7007
@@ -50,7 +40,6 @@ backend:
       - host: '*.mozilla.org'
       - host: '*.openshift.com'
       - host: '*.openshiftapps.com'
-      - host: '${RHDH_BRIDGE_HOST:-localhost}'
 
 integrations:
   github:
@@ -85,7 +74,8 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
 
 scaffolder:
   {}
@@ -97,7 +87,17 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow:
-        [Component, System, API, Resource, Location, User, Group, AiResource]
+        [
+          Component,
+          System,
+          API,
+          AiModelServerAPI,
+          Resource,
+          Location,
+          User,
+          Group,
+          AiResource,
+        ]
   locations:
     # Local org + AiResource examples for entity-page verification (RHIDP-14558).
     # Paths are relative to the backend process cwd (typically packages/backend).
@@ -117,13 +117,89 @@ catalog:
       target: ../../examples/ai-resource-oci.yaml
       rules:
         - allow: [AiResource]
+    - type: file
+      target: ../../examples/ai-resource-agents.yaml
+      rules:
+        - allow: [AiResource]
+    - type: file
+      target: ../../examples/ai-model-server-api.yaml
+      rules:
+        - allow: [AiModelServerAPI]
+    # Example MCP server API entities as produced by
+    # catalog-backend-module-mcp-registry-provider from the sample registry seed
+    # at examples/mcp-registry/seed-data/seed.json.
+    #
+    # Comment out this location when deploying the MCP Registry provider against
+    # the same seed (e.g. `MCP_REGISTRY_DATA_DIR=./examples/mcp-registry/seed-data yarn start-local-mcp-registry`).
+    - type: file
+      target: ../../examples/api-mcp-servers.yaml
+      rules:
+        - allow: [API]
   providers:
     modelCatalog:
       # The field underneath should list the connector plugin ID that the entity provider accesses through
       # the discovery service
       kserve-kubeflow-connector:
-        # `http://localhost:9090` works in both local testing and when the bridge is running as a sidecar
-        # we'll hardcode for now and see about env vars later on once we officially take on running the bridge as
-        # a separate pod
-        # baseUrl: 'http://localhost:9090'
-        name: my-k8s-cluster
+        cluster-1:
+          name: my-k8s-cluster
+          #          url: '${K8S_CLUSTER_URL:-}'
+          #          serviceAccountToken: '${K8S_SA_TOKEN:-}'
+          #          skipTLSVerify: false
+          #          caData: '${K8S_CA_DATA:-}'
+          # Alternative: reference a cluster from the Backstage kubernetes plugin config
+          # kubernetesPluginRef: my-k8s-cluster
+          kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
+          default-owner: '${OWNER:-default-owner}'
+          default-lifecycle: '${LIFECYCLE:-production}'
+    mcpRegistry:
+      # Reserved instance id — only this key is supported today.
+      mcpRegistry:
+        # Required: base URL of the MCP Registry
+        baseUrl: '${MCP_REGISTRY_URL:-http://localhost:8080/}'
+        # Optional: base name (default: mcp.registry)
+        # baseName: mcp.registry
+        # Optional: API version (default: v1)
+        apiVersion: v0.1
+        # Optional: default entity owner (default: unknown)
+        defaultOwner: '${OWNER:-default-owner}'
+        # Optional: default entity lifecycle (default: production)
+        defaultLifecycle: '${LIFECYCLE:-production}'
+        # Optional: max pages fetched per sync (default: 10)
+        # pageLimit: 10
+        # Optional: registry page size sent as ?limit= (omitted by default)
+        # pageSize: 50
+        # Optional: max entries per complete traversal; soft-stops with end cursor (default: 5000)
+        # maxEntries: 5000
+        # Optional: ingest only servers with at least one native remote (default: false)
+        # remotesOnly: false
+        # Optional: request only the latest version of each server via ?version=latest (default: false)
+        # latestVersion: false
+        # Optional: allowlist of permitted hostnames for defense-in-depth SSRF protection.
+        # hostAllowList:
+        #   - registry.modelcontextprotocol.io
+        #   - staging.registry.modelcontextprotocol.io
+        # Optional: sync schedule (defaults shown below)
+        # schedule:
+        #   frequency: { minutes: 30 }
+        #   timeout: { minutes: 3 }
+        #   # Optional: defer the first sync
+        #   # initialDelay: { seconds: 15 }
+skillImageConnector:
+  allowedRegistries:
+    - quay.io
+  images:
+    - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+# Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
+# does NOT need to be installed, only its config section is needed.
+#kubernetes:
+#   serviceLocatorMethod:
+#     type: 'multiTenant'
+#   clusterLocatorMethods:
+#     - type: 'config'
+#       clusters:
+#         - name: my-k8s-cluster
+#           url: '${K8S_CLUSTER_URL}'
+#           serviceAccountToken: '${K8S_SA_TOKEN}'
+#           authProvider: serviceAccount
+#           skipTLSVerify: false
+#           caData: '${K8S_CA_DATA:-}'

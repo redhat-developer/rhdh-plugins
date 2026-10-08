@@ -1,6 +1,7 @@
 dist
 dist-types
 coverage
+e2e-test-report
 knip-report.md
 report.api.md
 report-alpha.api.md

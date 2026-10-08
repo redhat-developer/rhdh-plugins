@@ -16,6 +16,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: TopVisitedCard
+          module: Legacy
 ```
 
 ## Contributions

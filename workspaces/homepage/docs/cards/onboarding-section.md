@@ -15,6 +15,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: OnboardingSection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 6 }

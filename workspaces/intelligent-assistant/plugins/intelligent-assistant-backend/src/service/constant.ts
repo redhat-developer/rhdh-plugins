@@ -88,6 +88,7 @@ When you lack evidence, output ONLY: "I cannot answer this based on the provided
  * @reserved Reserved for future URL file type support
  */
 export const URL_FETCH_TIMEOUT_MS = 30000; // 30 second timeout for URL fetching
+export const VISION_PROBE_TIMEOUT_MS = 10000; // 10 second timeout for a model vision probe
 export const USER_AGENT = 'RHDH-Notebooks-Bot/1.0'; // User agent for HTTP requests
 export const MAX_URL_CONTENT_SIZE = 10 * 1024 * 1024; // 10MB max for URL fetched content
 
@@ -210,7 +211,11 @@ export const HTML_IGNORED_TAGS = new Set(['script', 'style']);
 
 export const POLL_INTERVAL_MS = 1000; // 1 second
 
-export const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
+export const SKIP_USER_ID_ENDPOINTS = new Set([
+  '/v1/models',
+  '/v1/shields',
+  '/v1/saved-prompts/config',
+]);
 
 // default number of message history being loaded
 export const DEFAULT_HISTORY_LENGTH = 10;

@@ -1,0 +1,26 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-scorecard:
+      # Legacy exports require `module: Legacy` — they are not available on the default module.
+      translationResources:
+        - importName: scorecardTranslations
+          module: Legacy
+          ref: scorecardTranslationRef
+      dynamicRoutes:
+        - path: /scorecard/aggregations/:aggregationId/metrics/:metricId
+          importName: ScorecardPage
+          module: Legacy
+      entityTabs:
+        - path: '/scorecard'
+          title: Scorecard
+          mountPoint: entity.page.scorecard
+      mountPoints:
+        - mountPoint: entity.page.scorecard/cards
+          importName: EntityScorecardContent
+          module: Legacy
+          config:
+            layout:
+              gridColumn: 1 / -1
+          if:
+            allOf:
+              - isKind: component

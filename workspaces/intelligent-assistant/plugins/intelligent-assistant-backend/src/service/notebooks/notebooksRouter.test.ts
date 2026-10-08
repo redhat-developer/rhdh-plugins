@@ -21,6 +21,8 @@ import express from 'express';
 import { setupServer } from 'msw/node';
 import request from 'supertest';
 
+import { iaNotebooksPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+
 import {
   lightspeedCoreHandlers,
   resetMockStorage,
@@ -311,6 +313,98 @@ describe('Notebooks Router', () => {
       });
     });
 
+    describe('PATCH /v1/sessions/:sessionId/documents/:documentId', () => {
+      it('should rename a document', async () => {
+        await request(app)
+          .put(`/notebooks/v1/sessions/${sessionId}/documents`)
+          .field('title', 'Original Name')
+          .field('fileType', 'txt')
+          .attach('file', Buffer.from('Content'), 'test.txt');
+
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Original Name')}`,
+          )
+          .send({ title: 'New Name' });
+
+        expect(response.status).toBe(200);
+        expect(response.body.document_id).toBe('New Name');
+        expect(response.body.message).toContain('renamed successfully');
+
+        const listResponse = await request(app).get(
+          `/notebooks/v1/sessions/${sessionId}/documents`,
+        );
+        expect(
+          listResponse.body.documents.map((d: any) => d.document_id),
+        ).toContain('New Name');
+      });
+
+      it('should return 400 if title is missing', async () => {
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Some Doc')}`,
+          )
+          .send({});
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('title is required');
+      });
+
+      it('should return 400 if title is empty string', async () => {
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Some Doc')}`,
+          )
+          .send({ title: '   ' });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toBe('title is required');
+      });
+
+      it('should return 400 if title exceeds 255 characters', async () => {
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Some Doc')}`,
+          )
+          .send({ title: 'a'.repeat(256) });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error).toContain('255 characters or less');
+      });
+
+      it('should return 404 for non-existent document', async () => {
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Non-existent')}`,
+          )
+          .send({ title: 'New Name' });
+
+        expect(response.status).toBe(404);
+      });
+
+      it('should return 409 when new title conflicts', async () => {
+        await request(app)
+          .put(`/notebooks/v1/sessions/${sessionId}/documents`)
+          .field('title', 'Doc A')
+          .field('fileType', 'txt')
+          .attach('file', Buffer.from('Content A'), 'a.txt');
+
+        await request(app)
+          .put(`/notebooks/v1/sessions/${sessionId}/documents`)
+          .field('title', 'Doc B')
+          .field('fileType', 'txt')
+          .attach('file', Buffer.from('Content B'), 'b.txt');
+
+        const response = await request(app)
+          .patch(
+            `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent('Doc A')}`,
+          )
+          .send({ title: 'Doc B' });
+
+        expect(response.status).toBe(409);
+      });
+    });
+
     describe('DELETE /v1/sessions/:sessionId/documents/:documentId', () => {
       it('should delete document', async () => {
         await request(app)
@@ -332,6 +426,61 @@ describe('Notebooks Router', () => {
         );
         expect(listResponse.body.documents).toHaveLength(0);
       });
+    });
+  });
+
+  describe('RBAC permission name contract', () => {
+    it('POST /v1/sessions checks intelligent-assistant.notebooks', async () => {
+      const authorize = jest.fn(async () => [
+        { result: AuthorizeResult.ALLOW },
+      ]);
+      const logger = mockServices.logger.mock();
+      const config = mockServices.rootConfig({
+        data: {
+          'intelligent-assistant': {
+            servicePort: 7007,
+            notebooks: {
+              enabled: true,
+              queryDefaults: {
+                model: 'test-model',
+                provider_id: 'test-provider',
+              },
+              sessionDefaults: {
+                provider_id: 'test-notebooks',
+                embedding_model: 'test-embedding-model',
+                embedding_dimension: 768,
+              },
+            },
+          },
+        },
+      });
+      const userInfo = mockServices.userInfo.mock({
+        getUserInfo: async () => ({
+          userEntityRef: mockUserId,
+          ownershipEntityRefs: [mockUserId],
+        }),
+      });
+      const permissions = mockServices.permissions.mock({ authorize });
+
+      const router = await createNotebooksRouter({
+        logger,
+        config,
+        httpAuth: mockServices.httpAuth(),
+        userInfo,
+        permissions,
+      });
+
+      const permissionApp = express();
+      permissionApp.use(router);
+
+      await request(permissionApp)
+        .post('/notebooks/v1/sessions')
+        .send({ name: 'Test Session' });
+
+      expect(authorize).toHaveBeenCalledWith(
+        [{ permission: iaNotebooksPermission }],
+        expect.objectContaining({ credentials: expect.anything() }),
+      );
     });
   });
 
@@ -530,14 +679,17 @@ describe('Notebooks Router', () => {
         .send({ name: 'Rate Limit Test' });
       const sessionId = sessionRes.body.session.session_id;
 
+      // Use an invalid body so the handler returns 400 without waiting on the
+      // upstream streaming /v1/responses call (not mocked in this suite).
       const first = await request(rateLimitedApp)
         .post(`/notebooks/v1/sessions/${sessionId}/query`)
-        .send({ query: 'What is this about?' });
+        .send({});
       const second = await request(rateLimitedApp)
         .post(`/notebooks/v1/sessions/${sessionId}/query`)
-        .send({ query: 'Another question?' });
+        .send({});
 
-      expect(first.status).not.toBe(429);
+      expect(first.status).toBe(400);
+      expect(first.body.error).toBe('query is required');
       expect(second.status).toBe(429);
       expect(second.headers['retry-after']).toBeDefined();
       expect(second.body.error.name).toBe('RateLimitExceeded');

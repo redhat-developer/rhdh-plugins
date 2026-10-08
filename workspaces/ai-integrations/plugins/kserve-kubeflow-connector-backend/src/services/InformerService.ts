@@ -15,106 +15,66 @@
  */
 
 import * as k8s from '@kubernetes/client-node';
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import {
   type ReconcilerConfig,
   type InferenceService,
-  type RegisteredModel,
-  type ModelVersion,
-  type ModelArtifact,
-  type KFMRInferenceService,
-  type ServingEnvironment,
-  type KServeInferenceService,
   type DiscoveryResponse,
-  KFMRClient,
-  InferenceServiceState,
+  type ModelCatalog,
+  sanitizeName,
 } from './types';
-import { ModelCatalog } from './types'; // '@redhat-ai-dev/model-catalog-types';
-import {
-  callBackstagePrinters,
-  getKubeFlowInferenceServicesForModelVersion,
-  loopOverKFMR,
-  sanitizeName as kfmrSanitizeName,
-  setupKFMR,
-} from './Kfmr';
 import { callBackstagePrinters as callKServeBackstagePrinters } from './KServe';
+import {
+  setupCatalogRoute,
+  createCatalogClient,
+  CATALOG_MODEL_ANNOTATION,
+  CATALOG_SOURCE_ANNOTATION,
+} from './Catalog';
 
-const inference_service_group = 'serving.kserve.io';
-const inference_service_version = 'v1beta1';
-const inference_service_plural = 'inferenceservices';
+const INFERENCE_SERVICE_GROUP = 'serving.kserve.io';
+const INFERENCE_SERVICE_VERSION = 'v1beta1';
+const INFERENCE_SERVICE_PLURAL = 'inferenceservices';
 
-// Re-export route constants for backwards compatibility
-export { route_group, route_version, route_plural } from './types';
+const LLM_INFERENCE_SERVICE_GROUP = 'serving.kserve.io';
+const LLM_INFERENCE_SERVICE_VERSION = 'v1alpha2';
+const LLM_INFERENCE_SERVICE_PLURAL = 'llminferenceservices';
 
-// Model card metadata interface (from server.go line 30-35)
 interface ModelCardMetadata {
   content: string;
-  lastUpdateTimeSinceEpoch: string;
+  resourceVersion: string;
   updateCount: number;
   needToUpdate: boolean;
 }
 
-// Global model cards storage (from server.go line 23)
-// This stores model card content indexed by modelCardKey
+// Stores model card content indexed by modelCardKey
 const modelCards = new Map<string, ModelCardMetadata>();
 
-// Model catalog metadata interface
 interface ModelCatalogMetadata {
   catalogData: ModelCatalog;
-  lastUpdateTimeSinceEpoch: string;
-  normalizerType: NormalizerType;
+  resourceVersion: string;
   updateCount: number;
   needToUpdate: boolean;
 }
 
-// Global model catalog storage
-// This stores model catalog data indexed by importKey
+// Stores model catalog data indexed by importKey
 const modelCatalog = new Map<string, ModelCatalogMetadata>();
 
-// Constants for condition types (matching Go constants from bridgerest package)
 const INF_SVC_IngressReady_CONDITION = 'IngressReady';
 const INF_SVC_PredictorReady_CONDITION = 'PredictorReady';
 const INF_SVC_Ready_CONDITION = 'Ready';
 
-// Label constants for KFMR-managed InferenceServices
-const INF_SVC_RM_ID_LABEL = 'modelregistry.opendatahub.io/registered-model-id';
-const INF_SVC_MV_ID_LABEL = 'modelregistry.opendatahub.io/model-version-id';
-// const INF_SVC_INF_SVC_ID_LABEL =
-//  'modelregistry.opendatahub.io/inference-service-id';
+// LLMInferenceService (v1alpha2) has a different condition set from InferenceService.
+// Only the 'Ready' condition is shared; there is no modelStatus.transitionStatus.
+const LLM_INF_SVC_Ready_CONDITION = 'Ready';
 
-// Normalizer types
-enum NormalizerType {
-  KubeflowNormalizer = 'kubeflow',
-  KServeNormalizer = 'kserve',
-}
+// Common HTTP-related appProtocol values recognized for Service port selection
+const HTTP_APP_PROTOCOLS = new Set(['http', 'https', 'h2c']);
+// Standard HTTP ports preferred when no appProtocol hint is available
+const PREFERRED_HTTP_PORTS = new Set([80, 443, 8080, 8443]);
 
-// Types are imported from ./types to avoid circular dependencies
-// Re-export for backwards compatibility
-export type {
-  Route,
-  RouteIngress,
-  RouteStatus,
-  ReconcilerConfig,
-} from './types';
-
-// Result type for processKFMR
-interface ProcessKFMRResult {
-  importKey: string;
-  lastUpdateTimeSinceEpoch: string;
-  modelCardKey: string;
-  modelCard?: string;
-  catalogData: ModelCatalog;
-}
-
-// Helper function to sanitize names (matching Go util.SanitizeName)
-function sanitizeName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-}
-
-// Helper function to build import key (matching Go util.BuildImportKeyAndURI)
 function buildImportKeyAndURI(
   namespace: string,
   name: string,
-  // format: string,
 ): [string, string] {
   const sanitizedNs = sanitizeName(namespace);
   const sanitizedName = sanitizeName(name);
@@ -123,17 +83,162 @@ function buildImportKeyAndURI(
   return [importKey, uri];
 }
 
-// Helper function to get authentication status for an InferenceService
-// Converted from Go GetAuthentication method (kserve.go line 358-382)
+// Deep-clone an InferenceService so the informer cache object is never mutated.
+function cloneInferenceService(is: InferenceService): InferenceService {
+  const clone = structuredClone(is);
+  return clone;
+}
+
+// Check whether the Ready condition is present and True, independent of
+// other conditions (IngressReady, PredictorReady) or transitionStatus.
+function hasReadyConditionTrue(is: InferenceService): boolean {
+  return (
+    is.status?.conditions?.some(
+      c => c.type === 'Ready' && c.status === 'True',
+    ) ?? false
+  );
+}
+
+// Select the best usable port from a Kubernetes Service.  Prefers ports
+// with an HTTP-related appProtocol, then common HTTP port numbers, then
+// falls back to the first TCP port.
+function selectServicePort(
+  ports: Array<{
+    port: number;
+    protocol?: string;
+    appProtocol?: string;
+    name?: string;
+  }>,
+): { port: number; https: boolean } | undefined {
+  const tcpPorts = ports.filter(p => !p.protocol || p.protocol === 'TCP');
+  if (tcpPorts.length === 0) return undefined;
+
+  // Prefer ports with an HTTP-related appProtocol
+  for (const p of tcpPorts) {
+    if (p.appProtocol && HTTP_APP_PROTOCOLS.has(p.appProtocol.toLowerCase())) {
+      return { port: p.port, https: p.appProtocol.toLowerCase() === 'https' };
+    }
+  }
+
+  // Prefer well-known HTTP ports
+  for (const p of tcpPorts) {
+    if (PREFERRED_HTTP_PORTS.has(p.port)) {
+      return { port: p.port, https: p.port === 443 || p.port === 8443 };
+    }
+  }
+
+  // Fall back to the first TCP port
+  return { port: tcpPorts[0].port, https: false };
+}
+
+// Find a Kubernetes Service in the same namespace owned by the given
+// resource and derive a cluster-internal URL from it.
+async function findOwnedServiceUrl(
+  coreClient: k8s.CoreV1Api,
+  namespace: string,
+  name: string,
+  kind: string,
+  logger: LoggerService,
+): Promise<string | undefined> {
+  try {
+    const response = await coreClient.listNamespacedService(namespace);
+    const services = response.body.items;
+
+    for (const svc of services) {
+      const ownerMatch = svc.metadata?.ownerReferences?.some(
+        ref => ref.kind === kind && ref.name === name,
+      );
+      if (!ownerMatch) continue;
+
+      const ports = svc.spec?.ports;
+      if (!ports || ports.length === 0) continue;
+
+      const selected = selectServicePort(ports);
+      if (!selected) continue;
+
+      const svcName = svc.metadata?.name;
+      if (!svcName) continue;
+
+      const scheme = selected.https ? 'https' : 'http';
+      const portSuffix =
+        (selected.port === 80 && !selected.https) ||
+        (selected.port === 443 && selected.https)
+          ? ''
+          : `:${selected.port}`;
+      const url = `${scheme}://${svcName}.${namespace}.svc.cluster.local${portSuffix}`;
+
+      logger.info(
+        `findOwnedServiceUrl: Derived cluster-internal URL ${url} from Service ${namespace}/${svcName} for ${kind} ${namespace}/${name}`,
+      );
+      return url;
+    }
+
+    logger.debug(
+      `findOwnedServiceUrl: No owned Service found for ${kind} ${namespace}/${name}`,
+    );
+  } catch (error) {
+    logger.error(
+      `findOwnedServiceUrl: Error listing Services for ${kind} ${namespace}/${name}`,
+      error as Error,
+    );
+  }
+  return undefined;
+}
+
+// Enrich an InferenceService with a cluster-internal URL derived from an
+// owned Kubernetes Service when the resource is Ready but has no status URL.
+// Returns a clone with the derived URL set, or the original object unchanged.
+async function enrichWithServiceUrl(
+  is: InferenceService,
+  coreClient: k8s.CoreV1Api | undefined,
+  logger: LoggerService,
+  kind: string,
+): Promise<InferenceService> {
+  // Preserve existing status URL — no fallback needed
+  if (is.status?.url || is.status?.address?.url) {
+    return is;
+  }
+
+  if (!coreClient) {
+    return is;
+  }
+
+  // Only attempt fallback when the Ready condition is True
+  if (!hasReadyConditionTrue(is)) {
+    return is;
+  }
+
+  const url = await findOwnedServiceUrl(
+    coreClient,
+    is.metadata.namespace,
+    is.metadata.name,
+    kind,
+    logger,
+  );
+  if (!url) {
+    return is;
+  }
+
+  // Clone to avoid mutating the informer cache object
+  const enriched = cloneInferenceService(is);
+  if (!enriched.status) {
+    enriched.status = {};
+  }
+  enriched.status.url = url;
+  return enriched;
+}
+
 // When auth is configured, a service account is created whose name is prefixed with
 // the inference service's name, and with the inference service set as an owner reference
 async function getAuthentication(
   coreClient: k8s.CoreV1Api | undefined,
   namespace: string,
   inferenceServiceName: string,
+  logger: LoggerService,
+  kind: string = 'InferenceService',
 ): Promise<boolean> {
   if (!coreClient) {
-    console.log(
+    logger.debug(
       `getAuthentication: No coreClient available for ${namespace}/${inferenceServiceName}`,
     );
     return false;
@@ -141,515 +246,146 @@ async function getAuthentication(
 
   try {
     const response = await coreClient.listNamespacedServiceAccount(namespace);
-    const saList = response.body.items;
+    const found = response.body.items.some(sa =>
+      sa.metadata?.ownerReferences?.some(
+        ref => ref.kind === kind && ref.name === inferenceServiceName,
+      ),
+    );
 
-    for (const sa of saList) {
-      if (!sa.metadata?.ownerReferences) {
-        continue;
-      }
-
-      for (const ownerRef of sa.metadata.ownerReferences) {
-        if (
-          ownerRef.kind === 'InferenceService' &&
-          ownerRef.name === inferenceServiceName
-        ) {
-          console.log(
-            `getAuthentication: Found ServiceAccount ${sa.metadata.name} with InferenceService owner reference for ${namespace}/${inferenceServiceName}`,
-          );
-          return true;
-        }
-      }
+    if (found) {
+      logger.debug(
+        `getAuthentication: Found ServiceAccount with ${kind} owner reference for ${namespace}/${inferenceServiceName}`,
+      );
     }
+
+    return found;
   } catch (error) {
-    console.error(
-      `getAuthentication: Error listing ServiceAccounts for ${namespace}/${inferenceServiceName}:`,
-      error,
+    logger.error(
+      `getAuthentication: Error listing ServiceAccounts for ${namespace}/${inferenceServiceName}`,
+      error as Error,
     );
   }
 
   return false;
 }
 
-// Helper function to list InferenceServices from informer cache or API
 // First tries the informer cache, then falls back to API if cache is empty
 async function listInferenceServices(
   client: k8s.CustomObjectsApi,
+  logger: LoggerService,
   informer?: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
-  labelFilter?: { [key: string]: string },
 ): Promise<InferenceService[]> {
-  // First try to get from informer cache
   if (informer) {
     const cachedList = informer.list() as InferenceService[];
-    if (cachedList && cachedList.length > 0) {
-      console.log(
+    if (cachedList?.length > 0) {
+      logger.debug(
         `listInferenceServices: Got ${cachedList.length} InferenceServices from informer cache`,
       );
-
-      // Apply label filter if provided
-      if (labelFilter && Object.keys(labelFilter).length > 0) {
-        const filtered = cachedList.filter(is => {
-          if (!is.metadata.labels) return false;
-          for (const [key, value] of Object.entries(labelFilter)) {
-            if (is.metadata.labels[key] !== value) {
-              return false;
-            }
-          }
-          return true;
-        });
-        console.log(
-          `listInferenceServices: Filtered to ${filtered.length} InferenceServices by labels`,
-        );
-        if (filtered.length > 0) {
-          return filtered;
-        }
-      } else {
-        return cachedList;
-      }
+      return cachedList;
     }
   }
 
-  // Fall back to API call
-  console.log(
+  logger.debug(
     'listInferenceServices: Informer cache empty, falling back to API',
   );
   try {
-    // Build label selector string if filter provided
-    let labelSelector: string | undefined;
-    if (labelFilter && Object.keys(labelFilter).length > 0) {
-      labelSelector = Object.entries(labelFilter)
-        .map(([k, v]) => `${k}=${v}`)
-        .join(',');
-    }
-
     const response = await client.listNamespacedCustomObject(
-      inference_service_group,
-      inference_service_version,
+      INFERENCE_SERVICE_GROUP,
+      INFERENCE_SERVICE_VERSION,
       '',
-      inference_service_plural,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      labelSelector,
+      INFERENCE_SERVICE_PLURAL,
     );
 
     const items = (response.body as any).items as InferenceService[];
-    console.log(
+    logger.debug(
       `listInferenceServices: Got ${
         items?.length || 0
       } InferenceServices from API`,
     );
     return items || [];
   } catch (error) {
-    console.error('listInferenceServices: Error listing from API:', error);
+    logger.error(
+      'listInferenceServices: Error listing from API',
+      error as Error,
+    );
     return [];
   }
 }
 
-// Helper function to check if KServe InferenceService maps to KFMR model
-// Converted from Go util.KServeInferenceServiceMapping (utils.go line 123)
-function kserveInferenceServiceMapping(
-  registeredModelId: string,
-  modelVersionId: string,
+// Falls back to direct API — LLMInferenceService informer cache is not stored on config
+async function listLLMInferenceServices(
+  client: k8s.CustomObjectsApi,
+  logger: LoggerService,
+  informer?: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
+): Promise<InferenceService[]> {
+  if (informer) {
+    const cachedList = informer.list() as InferenceService[];
+    if (cachedList?.length > 0) {
+      logger.debug(
+        `listLLMInferenceServices: Got ${cachedList.length} LLMInferenceServices from informer cache`,
+      );
+      return cachedList;
+    }
+  }
+
+  logger.debug(
+    'listLLMInferenceServices: Informer cache empty, falling back to API',
+  );
+  try {
+    const response = await client.listNamespacedCustomObject(
+      LLM_INFERENCE_SERVICE_GROUP,
+      LLM_INFERENCE_SERVICE_VERSION,
+      '',
+      LLM_INFERENCE_SERVICE_PLURAL,
+    );
+
+    const items = (response.body as any).items as InferenceService[];
+    logger.debug(
+      `listLLMInferenceServices: Got ${
+        items?.length || 0
+      } LLMInferenceServices from API`,
+    );
+    return items || [];
+  } catch (error: any) {
+    const statusCode = error?.statusCode ?? error?.response?.statusCode;
+    if (statusCode === 404 || statusCode === 503) {
+      // CRD not installed on this cluster — not an error condition
+      logger.warn(
+        `listLLMInferenceServices: LLMInferenceService CRD not available (${statusCode}), skipping`,
+      );
+    } else {
+      logger.error(
+        'listLLMInferenceServices: Error listing from API',
+        error as Error,
+      );
+    }
+    return [];
+  }
+}
+
+function isInferenceServiceReady(
   is: InferenceService,
+  logger: LoggerService,
 ): boolean {
-  // Check if labels exist (Go line 124-126)
-  if (!is.metadata.labels) {
-    return false;
-  }
+  const id = `${is.metadata.namespace}/${is.metadata.name}`;
 
-  // Check registered model ID label (Go line 128-135)
-  const rmVal = is.metadata.labels[INF_SVC_RM_ID_LABEL];
-  if (!rmVal) {
-    return false;
-  }
-
-  if (registeredModelId.trim() !== rmVal.trim()) {
-    return false;
-  }
-
-  // Check model version ID label (Go line 137-144)
-  const mvVal = is.metadata.labels[INF_SVC_MV_ID_LABEL];
-  if (!mvVal) {
-    return false;
-  }
-
-  if (modelVersionId.trim() !== mvVal.trim()) {
-    return false;
-  }
-
-  // All checks passed (Go line 146)
-  return true;
-}
-
-// Process KFMR (KubeFlow Model Registry) integration
-// Converted from Go processKFMR method (controller.go line 442)
-async function processKFMR(
-  namespace: string,
-  name: string,
-  is: InferenceService,
-  config: ReconcilerConfig,
-): Promise<ProcessKFMRResult | null> {
-  console.log(`processKFMR: Processing ${namespace}/${name}`);
-
-  // Check if KFMR is configured (Go line 444-448)
-  if (config.kfmrClients.size === 0) {
-    console.log(
-      `processKFMR: No KFMR routes configured for ${namespace}/${name}`,
-    );
-    return null;
-  }
-
-  console.log(`processKFMR: Have KFMR clients for ${namespace}/${name}`);
-  const replacer = (str: string) => str.replace(/ /g, ''); // Go line 451
-
-  const kfmrRMs: RegisteredModel[] = [];
-  const kfmrISs: KFMRInferenceService[] = [];
-
-  // Loop over KFMR clients (Go line 455)
-  for (const [key, kfmr] of config.kfmrClients.entries()) {
-    try {
-      // List registered models (Go line 456)
-      const rms = await kfmr.listRegisteredModels();
-      console.log(
-        `processKFMR: Found ${rms.length} registered models with registry ${key}`,
-      );
-      kfmrRMs.push(...rms);
-
-      // List inference services (Go line 464)
-      const iss = await kfmr.listInferenceServices();
-      console.log(
-        `processKFMR: Found ${iss.length} inference services from ${key}`,
-      );
-      kfmrISs.push(...iss);
-    } catch (error) {
-      console.error(
-        `processKFMR: Error listing models or services for ${namespace}/${name}:`,
-        error,
-      );
-      continue;
-    }
-
-    // Path 1: No KubeFlow inference services - match by model/version name (Go line 472)
-    if (kfmrISs.length === 0) {
-      console.log(
-        `processKFMR: No KubeFlow inference services for registry ${key}`,
-      );
-
-      for (const rm of kfmrRMs) {
-        if (!rm.id) continue;
-
-        try {
-          // List model versions (Go line 476)
-          const mvs = await kfmr.listModelVersions(rm.id);
-          console.log(
-            `processKFMR: Found ${mvs.length} model versions for registered model ${rm.id}`,
-          );
-
-          for (const mv of mvs) {
-            if (!mv.id) continue;
-
-            // Check if KServe InferenceService maps to this model version (Go line 482)
-            if (kserveInferenceServiceMapping(rm.id, mv.id, is)) {
-              console.log(
-                `processKFMR: Found mapping between KServe IS and model version ${mv.id}`,
-              );
-
-              // Get model artifacts (Go line 485)
-              let mas: ModelArtifact[] = [];
-              try {
-                mas = await kfmr.listModelArtifacts(mv.id);
-                console.log(
-                  `processKFMR: Found ${mas.length} model artifacts for model version ${mv.id}`,
-                );
-              } catch (error) {
-                console.error(
-                  `processKFMR: Error getting model artifacts for ${mv.id}:`,
-                  error,
-                );
-              }
-
-              if (!mas || mas.length === 0) {
-                console.log(
-                  `processKFMR: No model artifacts, bypassing backstage printers`,
-                );
-                continue;
-              }
-
-              // Get authentication status for the KServe InferenceService
-              const authentication = await getAuthentication(
-                config.coreClient,
-                is.metadata.namespace,
-                is.metadata.name,
-              );
-
-              // Call backstage printers (Go line 497)
-              const catalogData: ModelCatalog = await callBackstagePrinters(
-                config.defaultOwner,
-                config.defaultLifecycle,
-                rm,
-                mv,
-                mas,
-                null,
-                is as KServeInferenceService,
-                authentication,
-              );
-              console.log(
-                `processKFMR: Generated catalog data with ${
-                  catalogData.models.length
-                } models and ${catalogData.modelServer ? 1 : 0} model servers`,
-              );
-
-              // Build import key (Go line 515)
-              const [importKey] = buildImportKeyAndURI(
-                sanitizeName(rm.name),
-                sanitizeName(mv.name),
-              );
-
-              // Get last update timestamp (Go line 516)
-              let lastUpdateTimeSinceEpoch = mv.lastUpdateTimeSinceEpoch || '';
-              if (
-                rm.lastUpdateTimeSinceEpoch &&
-                rm.lastUpdateTimeSinceEpoch > lastUpdateTimeSinceEpoch
-              ) {
-                lastUpdateTimeSinceEpoch = rm.lastUpdateTimeSinceEpoch;
-              }
-
-              // Get model card if catalog URL exists (Go line 522)
-              let modelCard: string | undefined;
-              let modelCardKey = '';
-              if (kfmr.rootCatalogURL) {
-                for (const ma of mas) {
-                  if (ma.modelSourceClass && ma.modelSourceName) {
-                    try {
-                      modelCard = await kfmr.getModelCard(
-                        ma.modelSourceClass,
-                        ma.modelSourceName,
-                      );
-                      modelCardKey =
-                        replacer(ma.modelSourceClass) +
-                        replacer(ma.modelSourceName);
-                      console.log(
-                        `processKFMR: Built modelCardKey ${modelCardKey}`,
-                      );
-                      break;
-                    } catch (error) {
-                      console.error(
-                        `processKFMR: Error getting model card:`,
-                        error,
-                      );
-                    }
-                  }
-                }
-              }
-
-              return {
-                importKey,
-                lastUpdateTimeSinceEpoch,
-                modelCardKey,
-                modelCard,
-                catalogData,
-              };
-            }
-          }
-        } catch (error) {
-          console.error(
-            `processKFMR: Error listing model versions for ${rm.id}:`,
-            error,
-          );
-        }
-      }
-    }
-
-    // Path 2: Found KubeFlow inference services - match with KServe (Go line 542)
-    console.log(
-      `processKFMR: Found KubeFlow inference services while processing KServe IS ${namespace}/${name}`,
-    );
-
-    for (const rm of kfmrRMs) {
-      if (!rm.id) {
-        console.log(
-          `processKFMR: Registered model ${rm.name} has no ID, skipping`,
-        );
-        continue;
-      }
-
-      for (const kfmrIS of kfmrISs) {
-        // Check if KubeFlow IS matches registered model and KServe IS name (Go line 551)
-        if (
-          kfmrIS.id &&
-          kfmrIS.registeredModelId === rm.id &&
-          kfmrIS.name &&
-          is.metadata.name.startsWith(kfmrIS.name)
-        ) {
-          console.log(
-            `processKFMR: KServe IS name match, checking namespace ${namespace} and serving environment ${kfmrIS.servingEnvironmentId}`,
-          );
-
-          if (!kfmrIS.servingEnvironmentId) continue;
-
-          // Get serving environment (Go line 556)
-          let se: ServingEnvironment;
-          try {
-            se = await kfmr.getServingEnvironment(kfmrIS.servingEnvironmentId);
-          } catch (error) {
-            console.error(
-              `processKFMR: Error getting serving environment ${kfmrIS.servingEnvironmentId}:`,
-              error,
-            );
-            continue;
-          }
-
-          // Check if serving environment name matches namespace (Go line 562)
-          if (se.name === namespace) {
-            console.log(`processKFMR: Matched KServe IS ${namespace}/${name}`);
-
-            if (!kfmrIS.modelVersionId) continue;
-
-            // Get model version (Go line 569)
-            let mv: ModelVersion;
-            try {
-              mv = await kfmr.getModelVersion(kfmrIS.modelVersionId);
-            } catch (error) {
-              console.error(
-                `processKFMR: Error getting model version ${kfmrIS.modelVersionId}:`,
-                error,
-              );
-              continue;
-            }
-
-            // Get model artifacts (Go line 574)
-            let mas: ModelArtifact[] = [];
-            try {
-              mas = await kfmr.listModelArtifacts(kfmrIS.modelVersionId);
-            } catch (error) {
-              console.error(
-                `processKFMR: Error getting model artifacts for ${kfmrIS.modelVersionId}:`,
-                error,
-              );
-            }
-
-            if (!mv || !mas || mas.length === 0) {
-              console.log(
-                `processKFMR: Missing model version or artifacts, bypassing backstage printers`,
-              );
-              continue;
-            }
-
-            // Get authentication status for the KServe InferenceService
-            const authentication = await getAuthentication(
-              config.coreClient,
-              is.metadata.namespace,
-              is.metadata.name,
-            );
-
-            // Call backstage printers (Go line 585)
-            const catalogData: ModelCatalog = await callBackstagePrinters(
-              config.defaultOwner,
-              config.defaultLifecycle,
-              rm,
-              mv,
-              mas,
-              kfmrIS as KFMRInferenceService,
-              is as KServeInferenceService,
-              authentication,
-            );
-            console.log(
-              `processKFMR: Generated catalog data with ${
-                catalogData.models.length
-              } models and ${catalogData.modelServer ? 1 : 0} model servers`,
-            );
-
-            // Build import key (Go line 602)
-            const [importKey] = buildImportKeyAndURI(
-              sanitizeName(rm.name),
-              sanitizeName(mv.name),
-            );
-
-            // Get last update timestamp (Go line 603)
-            let lastUpdateTimeSinceEpoch = mv.lastUpdateTimeSinceEpoch || '';
-            if (
-              rm.lastUpdateTimeSinceEpoch &&
-              rm.lastUpdateTimeSinceEpoch > lastUpdateTimeSinceEpoch
-            ) {
-              lastUpdateTimeSinceEpoch = rm.lastUpdateTimeSinceEpoch;
-            }
-
-            // Get model card if catalog URL exists (Go line 609)
-            let modelCard: string | undefined;
-            let modelCardKey = '';
-            if (kfmr.rootCatalogURL) {
-              for (const ma of mas) {
-                if (ma.modelSourceClass && ma.modelSourceName) {
-                  try {
-                    modelCard = await kfmr.getModelCard(
-                      ma.modelSourceClass,
-                      ma.modelSourceName,
-                    );
-                    modelCardKey =
-                      replacer(ma.modelSourceClass) +
-                      replacer(ma.modelSourceName);
-                    console.log(
-                      `processKFMR: Built modelCardKey ${modelCardKey}`,
-                    );
-                    break;
-                  } catch (error) {
-                    console.error(
-                      `processKFMR: Error getting model card:`,
-                      error,
-                    );
-                  }
-                }
-              }
-            }
-
-            console.log(
-              `processKFMR: KServe IS ${namespace}/${name} returning importKey ${importKey}`,
-            );
-            return {
-              importKey,
-              lastUpdateTimeSinceEpoch,
-              modelCardKey,
-              modelCard,
-              catalogData,
-            };
-          }
-        }
-      }
-    }
-  }
-
-  // No match found, but not an error - caller can process as KServe-only (Go line 633)
-  console.log(`processKFMR: No KFMR match for ${namespace}/${name}`);
-  return null;
-}
-
-// Helper function to check if InferenceService status is ready
-function isInferenceServiceReady(is: InferenceService): boolean {
   if (!is.status) {
-    console.log(
-      `InferenceService ${is.metadata.namespace}/${is.metadata.name} has no status`,
-    );
+    logger.debug(`InferenceService ${id} has no status`);
     return false;
   }
 
-  // Check if conditions exist
-  if (!is.status.conditions || is.status.conditions.length === 0) {
-    console.log(
-      `InferenceService ${is.metadata.namespace}/${is.metadata.name} has no conditions`,
-    );
+  if (!is.status.conditions?.length) {
+    logger.debug(`InferenceService ${id} has no conditions`);
     return false;
   }
 
-  // Check model status transition status
   if (is.status.modelStatus?.transitionStatus !== 'UpToDate') {
-    console.log(
-      `InferenceService ${is.metadata.namespace}/${is.metadata.name} transitionStatus is not UpToDate: ${is.status.modelStatus?.transitionStatus}`,
+    logger.debug(
+      `InferenceService ${id} transitionStatus is not UpToDate: ${is.status.modelStatus?.transitionStatus}`,
     );
     return false;
   }
 
-  // Check required conditions
   for (const condition of is.status.conditions) {
     if (
       condition.type === INF_SVC_IngressReady_CONDITION ||
@@ -657,535 +393,381 @@ function isInferenceServiceReady(is: InferenceService): boolean {
       condition.type === INF_SVC_Ready_CONDITION
     ) {
       if (condition.status !== 'True') {
-        console.log(
-          `InferenceService ${is.metadata.namespace}/${is.metadata.name} condition ${condition.type} is not True: ${condition.status}`,
+        logger.debug(
+          `InferenceService ${id} condition ${condition.type} is not True: ${condition.status}`,
         );
         return false;
       }
     }
   }
 
-  // Check URL exists
   if (!is.status.url && !is.status.address?.url) {
-    console.log(
-      `InferenceService ${is.metadata.namespace}/${is.metadata.name} has no URL`,
-    );
+    logger.debug(`InferenceService ${id} has no URL`);
     return false;
   }
 
   return true;
 }
 
-// Main reconciliation logic (converted from Go Reconcile method starting at line 366)
+// LLMInferenceService (v1alpha2) has no modelStatus.transitionStatus and uses a
+// different condition set. Only the 'Ready' condition and a status URL are checked.
+function isLLMInferenceServiceReady(
+  is: InferenceService,
+  logger: LoggerService,
+): boolean {
+  const id = `${is.metadata.namespace}/${is.metadata.name}`;
+
+  if (!is.status) {
+    logger.debug(`LLMInferenceService ${id} has no status`);
+    return false;
+  }
+
+  if (!is.status.conditions?.length) {
+    logger.debug(`LLMInferenceService ${id} has no conditions`);
+    return false;
+  }
+
+  const readyCondition = is.status.conditions.find(
+    c => c.type === LLM_INF_SVC_Ready_CONDITION,
+  );
+  if (!readyCondition) {
+    logger.debug(`LLMInferenceService ${id} has no Ready condition`);
+    return false;
+  }
+  if (readyCondition.status !== 'True') {
+    logger.debug(
+      `LLMInferenceService ${id} Ready condition is not True: ${readyCondition.status} (${readyCondition.reason})`,
+    );
+    return false;
+  }
+
+  if (!is.status.url && !is.status.address?.url) {
+    logger.debug(`LLMInferenceService ${id} has no URL`);
+    return false;
+  }
+
+  return true;
+}
+
 async function reconcileInferenceService(
   is: InferenceService,
   config: ReconcilerConfig,
+  isLLM: boolean = false,
 ): Promise<void> {
   const namespace = is.metadata.namespace;
   const name = is.metadata.name;
+  const logger = config.logger!;
+  const kind = isLLM ? 'LLMInferenceService' : 'InferenceService';
 
-  console.log(`Reconciling InferenceService: ${namespace}/${name}`);
+  logger.debug(`Reconciling ${kind}: ${namespace}/${name}`);
 
-  // Variables to track the reconciliation state
-  let importKey = '';
-  let lastUpdateTimeSinceEpoch = '';
-  let modelCardKey = '';
-  let modelCard: string | undefined;
-  let catalogData: ModelCatalog | undefined;
-  let normalizerType = NormalizerType.KubeflowNormalizer;
+  // Attempt Service URL fallback before readiness check — may return a
+  // clone with a derived cluster-internal URL when the original has none.
+  const enriched = await enrichWithServiceUrl(
+    is,
+    config.coreClient,
+    logger,
+    kind,
+  );
 
-  // Step 1: Process KFMR if routes are available (line 365-369 in Go)
-  if (config.kfmrClients.size > 0) {
-    console.log(`Processing KFMR for ${namespace}/${name}`);
-    const result = await processKFMR(namespace, name, is, config);
-    if (result) {
-      importKey = result.importKey;
-      lastUpdateTimeSinceEpoch = result.lastUpdateTimeSinceEpoch;
-      modelCardKey = result.modelCardKey;
-      modelCard = result.modelCard;
-      catalogData = result.catalogData;
-    }
-  }
-
-  // Step 2: Handle KServe-only scenario if no importKey (lines 371-408 in Go)
-  if (!importKey) {
-    console.log(`Processing KServe-only mode for ${namespace}/${name}`);
-    normalizerType = NormalizerType.KServeNormalizer;
-
-    // Wait for status to reach a functional, ready state
-    if (!isInferenceServiceReady(is)) {
-      console.log(
-        `InferenceService ${namespace}/${name} is not ready yet, will retry later`,
-      );
-      // In a real implementation, this would requeue the reconciliation
-      return;
-    }
-
-    // Get authentication status by checking for ServiceAccount with InferenceService owner reference
-    const authentication = await getAuthentication(
-      config.coreClient,
-      namespace,
-      name,
-    );
-
-    // Call backstage printers (equivalent to kserve.CallBackstagePrinters in Go)
-    console.log(`Calling backstage printers for ${namespace}/${name}`);
-    catalogData = await callKServeBackstagePrinters(
-      config.defaultOwner,
-      config.defaultLifecycle,
-      is,
-      authentication,
-    );
-    console.log(
-      `Generated KServe catalog data with ${
-        catalogData.models.length
-      } models and ${catalogData.modelServer ? 1 : 0} model servers`,
-    );
-
-    // Build import key
-    [importKey] = buildImportKeyAndURI(namespace, name);
-    console.log(`Built importKey: ${importKey}`);
-  }
-
-  // Step 3: Process buffer and send to storage (lines 410-413 in Go)
-  if (!catalogData) {
-    console.error(
-      `No catalog data available for ${namespace}/${name}, skipping processModelCatalog`,
+  const ready = isLLM
+    ? isLLMInferenceServiceReady(enriched, logger)
+    : isInferenceServiceReady(enriched, logger);
+  if (!ready) {
+    logger.debug(
+      `${kind} ${namespace}/${name} is not ready yet, will retry later`,
     );
     return;
   }
 
-  console.log(
+  logger.info(`Reconciling ${kind}: ${namespace}/${name}`);
+
+  const authentication = await getAuthentication(
+    config.coreClient,
+    namespace,
+    name,
+    logger,
+    kind,
+  );
+
+  logger.debug(`Calling backstage printers for ${namespace}/${name}`);
+  const catalogData = await callKServeBackstagePrinters(
+    config.defaultOwner || 'default-owner',
+    config.defaultLifecycle || 'production',
+    enriched,
+    authentication,
+    logger,
+  );
+  logger.debug(
+    `Generated ${kind} catalog data with ${
+      catalogData.models.length
+    } models and ${catalogData.modelServer ? 1 : 0} model servers`,
+  );
+
+  const [importKey] = buildImportKeyAndURI(namespace, name);
+  logger.debug(`Built importKey: ${importKey}`);
+
+  logger.debug(
     `Processing buffer for ${namespace}/${name} with importKey: ${importKey}`,
   );
+
+  const [modelCardKey, modelCard] = await fetchModelCardViaAnnotations(
+    is,
+    config,
+  );
+
+  const resourceVersion = getResourceVersion(is);
+
   await processModelCatalog(
     importKey,
-    normalizerType,
-    lastUpdateTimeSinceEpoch,
+    resourceVersion,
     modelCardKey,
     modelCard,
     catalogData,
+    logger,
   );
 
-  console.log(`Successfully reconciled InferenceService: ${namespace}/${name}`);
+  logger.info(`Successfully reconciled ${kind}: ${namespace}/${name}`);
 }
 
-// Helper function to process buffer and send to storage (matching Go processBWriter)
+// Use metadata.resourceVersion instead of status condition timestamps
+// to detect changes. Kubernetes increments resourceVersion on ANY change
+// to a resource, including metadata-only updates (e.g. annotation changes),
+// whereas status condition lastTransitionTime only changes when status
+// conditions transition.
+function getResourceVersion(is: InferenceService): string {
+  return is.metadata.resourceVersion ?? '';
+}
+
+async function fetchModelCardViaAnnotations(
+  is: InferenceService,
+  config: ReconcilerConfig,
+): Promise<[string, string | undefined]> {
+  let modelCardKey = '';
+  let modelCard: string | undefined;
+  if (is.metadata.annotations && (config.catalogRoute || config.catalogUrl)) {
+    const catalogSource = is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
+    const catalogModel = is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
+    if (!catalogSource || !catalogModel) {
+      return [modelCardKey, modelCard];
+    }
+    modelCardKey = `${catalogSource}/${catalogModel}`;
+    const token = config.serviceAccountToken || '';
+    const catalogClient = createCatalogClient(
+      config.catalogRoute,
+      token,
+      config.catalogUrl,
+      config.logger,
+    );
+    try {
+      modelCard = await catalogClient?.getModelCard(
+        catalogSource,
+        catalogModel,
+      );
+    } catch (error) {
+      config.logger?.error(
+        'fetchModelCardViaAnnotation: getModelCard error',
+        error as Error,
+      );
+    }
+  }
+  return [modelCardKey, modelCard];
+}
+
 async function processModelCatalog(
   importKey: string,
-  normalizerType: NormalizerType,
-  lastUpdateTimeSinceEpoch: string,
+  resourceVersion: string,
   modelCardKey: string,
   modelCard: string | undefined,
   catalogData: ModelCatalog,
+  logger: LoggerService,
 ): Promise<void> {
-  console.log(
-    `processModelCatalog - key: ${importKey}, type: ${normalizerType}, epoch: ${lastUpdateTimeSinceEpoch}, modelCardKey: ${modelCardKey}`,
+  logger.debug(
+    `processModelCatalog - key: ${importKey}, resourceVersion: ${resourceVersion}, modelCardKey: ${modelCardKey}`,
   );
-  console.log(
+  logger.debug(
     `processModelCatalog - catalogData has ${
       catalogData.models.length
     } models and ${catalogData.modelServer ? 1 : 0} model servers`,
   );
 
-  // Handle model catalog storage
-  if (importKey && importKey.length > 0) {
+  if (importKey) {
     const existingCatalog = modelCatalog.get(importKey);
 
     if (!existingCatalog) {
-      // Create new model catalog metadata entry
       const mcm: ModelCatalogMetadata = {
         catalogData: catalogData,
-        lastUpdateTimeSinceEpoch: lastUpdateTimeSinceEpoch,
-        normalizerType: normalizerType,
+        resourceVersion: resourceVersion,
         needToUpdate: true,
         updateCount: 0,
       };
       modelCatalog.set(importKey, mcm);
-      console.log(
+      logger.debug(
         `processModelCatalog: Created new model catalog entry for key ${importKey}`,
       );
+    } else if (existingCatalog.resourceVersion !== resourceVersion) {
+      existingCatalog.resourceVersion = resourceVersion;
+      existingCatalog.catalogData = catalogData;
+      existingCatalog.needToUpdate = true;
+      existingCatalog.updateCount = 0;
+      modelCatalog.set(importKey, existingCatalog);
+      logger.debug(
+        `processModelCatalog: Updated model catalog entry for key ${importKey} (resourceVersion changed)`,
+      );
     } else {
-      // Update existing model catalog metadata if timestamp changed
-      if (
-        existingCatalog.lastUpdateTimeSinceEpoch !== lastUpdateTimeSinceEpoch
-      ) {
-        existingCatalog.lastUpdateTimeSinceEpoch = lastUpdateTimeSinceEpoch;
-        existingCatalog.catalogData = catalogData;
-        existingCatalog.normalizerType = normalizerType;
-        existingCatalog.needToUpdate = true;
-        existingCatalog.updateCount = 0;
-        modelCatalog.set(importKey, existingCatalog);
-        console.log(
-          `processModelCatalog: Updated model catalog entry for key ${importKey} (timestamp changed)`,
-        );
-      } else {
-        console.log(
-          `processModelCatalog: Model catalog for key ${importKey} already up to date`,
-        );
-      }
+      logger.debug(
+        `processModelCatalog: Model catalog for key ${importKey} already up to date`,
+      );
     }
   }
 
-  // Handle model card storage (converted from server.go lines 219-234)
-  if (modelCardKey && modelCardKey.length > 0) {
+  if (modelCardKey && modelCard !== undefined) {
     const existingMcm = modelCards.get(modelCardKey);
 
     if (!existingMcm) {
-      // Create new model card metadata entry
       const mcm: ModelCardMetadata = {
         content: modelCard || '',
-        lastUpdateTimeSinceEpoch: lastUpdateTimeSinceEpoch,
+        resourceVersion: resourceVersion,
         needToUpdate: true,
         updateCount: 0,
       };
       modelCards.set(modelCardKey, mcm);
-      console.log(
+      logger.debug(
         `processModelCatalog: Created new model card entry for key ${modelCardKey}`,
       );
+    } else if (existingMcm.resourceVersion !== resourceVersion) {
+      existingMcm.resourceVersion = resourceVersion;
+      existingMcm.content = modelCard || existingMcm.content;
+      existingMcm.needToUpdate = true;
+      existingMcm.updateCount = 0;
+      modelCards.set(modelCardKey, existingMcm);
+      logger.debug(
+        `processModelCatalog: Updated model card entry for key ${modelCardKey} (resourceVersion changed)`,
+      );
     } else {
-      // Update existing model card metadata if timestamp changed
-      if (existingMcm.lastUpdateTimeSinceEpoch !== lastUpdateTimeSinceEpoch) {
-        existingMcm.lastUpdateTimeSinceEpoch = lastUpdateTimeSinceEpoch;
-        existingMcm.content = modelCard || existingMcm.content;
-        existingMcm.needToUpdate = true;
-        existingMcm.updateCount = 0;
-        modelCards.set(modelCardKey, existingMcm);
-        console.log(
-          `processModelCatalog: Updated model card entry for key ${modelCardKey} (timestamp changed)`,
-        );
-      } else {
-        console.log(
-          `processModelCatalog: Model card for key ${modelCardKey} already up to date`,
-        );
-      }
+      logger.debug(
+        `processModelCatalog: Model card for key ${modelCardKey} already up to date`,
+      );
     }
   }
 }
 
-// Helper function to call backstage printers and process model catalog
-// Converted from innerStartCallBackstagePrinters (controller.go line 839-878)
-async function innerStartCallBackstagePrinters(
-  kfmr: KFMRClient,
-  rm: RegisteredModel,
-  mv: ModelVersion,
-  kfmrIS: KFMRInferenceService | null,
-  kserveIS: InferenceService | null,
-  maa: ModelArtifact[],
-  replacer: (str: string) => string,
-  importKey: string,
-  lastUpdateTimeSinceEpoch: string,
-  config: ReconcilerConfig,
-  authentication: boolean = false,
-): Promise<void> {
-  // Call backstage printers (Go line 852)
-  const catalogData: ModelCatalog = await callBackstagePrinters(
-    config.defaultOwner,
-    config.defaultLifecycle,
-    rm,
-    mv,
-    maa,
-    kfmrIS as KFMRInferenceService | null,
-    kserveIS as KServeInferenceService | null,
-    authentication,
-  );
-
-  // Get model card if catalog URL exists (Go line 859-870)
-  let modelCard: string | undefined;
-  let modelCardKey = '';
-  if (kfmr.rootCatalogURL) {
-    for (const ma of maa) {
-      if (ma.modelSourceClass && ma.modelSourceName) {
-        try {
-          modelCard = await kfmr.getModelCard(
-            ma.modelSourceClass,
-            ma.modelSourceName,
-          );
-          modelCardKey =
-            replacer(ma.modelSourceClass) + replacer(ma.modelSourceName);
-          console.log(`innerStart: built modelCardKey ${modelCardKey}`);
-          break;
-        } catch (error) {
-          console.error('innerStart: error getting model card:', error);
-        }
-      }
-    }
-  }
-
-  // Process model catalog (Go line 872)
-  await processModelCatalog(
-    importKey,
-    NormalizerType.KubeflowNormalizer,
-    lastUpdateTimeSinceEpoch,
-    modelCardKey,
-    modelCard,
-    catalogData,
-  );
-}
-
-// Main polling/sync function (converted from Go innerStart method starting at line 651)
-// This is called on delete events and during background polling to sync the current state
+// Called on delete events and during background polling to sync the current state.
+// Unlike the client-go informer, there is no re-list / re-sync with
+// the JavaScript/TypeScript informer.
 async function innerStart(
   client: k8s.CustomObjectsApi,
-  // coreClient: k8s.CoreV1Api,
   config: ReconcilerConfig,
+  llmInformer?: k8s.Informer<InferenceService> &
+    k8s.ObjectCache<InferenceService>,
 ): Promise<void> {
-  console.log('innerStart: Beginning reconciliation sync');
+  const logger = config.logger!;
+  logger.debug('innerStart: Beginning reconciliation sync');
 
-  const updConfig = await setupKFMR(config);
+  await setupCatalogRoute(config);
 
-  const keys: string[] = [];
+  const keys = new Set<string>();
+  const activeModelCardKeys = new Set<string>();
 
-  // Step 1: Process KFMR registries (lines 658-794 in Go)
-  const replacer = (str: string) => str.replace(/ /g, '');
-  console.log(`innerStart: len kfmr ${updConfig.kfmrClients.size}`);
-
-  for (const [registryKey, kfmr] of updConfig.kfmrClients.entries()) {
-    try {
-      // Call loopOverKFMR to get registered models, model versions, and model artifacts (Go line 664)
-      const { registeredModels, modelVersionsMap, modelArtifactsMap } =
-        await loopOverKFMR(kfmr as KFMRClient);
-
-      console.log(
-        `innerStart: len rms ${registeredModels.length} mvs ${modelVersionsMap.size} mas ${modelArtifactsMap.size}`,
-      );
-
-      // Process each registered model (Go line 670)
-      for (const rm of registeredModels) {
-        const rmNameKey = kfmrSanitizeName(rm.name);
-
-        // Get model versions for this registered model (Go line 671)
-        const mva = modelVersionsMap.get(rmNameKey);
-        if (!mva) {
-          console.log(`innerStart: mvs rm disconnect ${rm.name}`);
-          continue;
-        }
-
-        // Get model artifacts map for this registered model (Go line 676)
-        const maa = modelArtifactsMap.get(rmNameKey);
-        if (!maa) {
-          console.log(`innerStart: mas rm disconnect ${rm.name}`);
-          continue;
-        }
-
-        let foundKServe = false;
-
-        // Process each model version (Go line 682)
-        for (const mv of mva) {
-          if (!mv.id) continue;
-
-          // Build import key (Go line 684)
-          const [importKey] = buildImportKeyAndURI(
-            kfmrSanitizeName(rm.name),
-            kfmrSanitizeName(mv.name),
-          );
-          console.log(
-            `innerStart: importKey ${importKey} from rm ${rm.name} mv ${mv.name}`,
-          );
-
-          // Get last update timestamp (Go line 686-688)
-          let lastUpdateTimeSinceEpoch = mv.lastUpdateTimeSinceEpoch || '';
-          if (
-            rm.lastUpdateTimeSinceEpoch &&
-            rm.lastUpdateTimeSinceEpoch > lastUpdateTimeSinceEpoch
-          ) {
-            lastUpdateTimeSinceEpoch = rm.lastUpdateTimeSinceEpoch;
-          }
-
-          // Add import key to keys array (Go line 690)
-          keys.push(importKey);
-
-          // Get model artifacts for this model version
-          const mvArtifacts = maa.get(mv.id) || [];
-
-          // Get KubeFlow inference services for this model version (Go line 700-701)
-          let mvISL: KFMRInferenceService[] = [];
-          try {
-            mvISL = await getKubeFlowInferenceServicesForModelVersion(
-              kfmr as KFMRClient,
-              mv,
-            );
-          } catch (error) {
-            console.error(
-              'innerStart: error listing kubeflow inference services:',
-              error,
-            );
-            continue;
-          }
-
-          // If no KubeFlow inference services, call backstage printers without KServe (Go line 706-722)
-          if (mvISL.length === 0) {
-            try {
-              // No KServe InferenceService, so authentication is false
-              await innerStartCallBackstagePrinters(
-                kfmr as KFMRClient,
-                rm,
-                mv,
-                null,
-                null,
-                mvArtifacts,
-                replacer,
-                importKey,
-                lastUpdateTimeSinceEpoch,
-                config,
-                false,
-              );
-            } catch (error) {
-              console.log(
-                `innerStart: callBackstage printers len mvISL 0 error: ${error}`,
-              );
-            }
-            continue;
-          }
-
-          // Process each KubeFlow inference service (Go line 724)
-          for (const kis of mvISL) {
-            // Check if deployed (Go line 725-732)
-            if (kis.desiredState !== InferenceServiceState.Deployed) {
-              console.log(
-                `innerStart: kubeflow infsvc ${kis.name} id ${kis.id} not deployed`,
-              );
-              continue;
-            }
-
-            // Find matching KServe inference service by labels (Go line 734-753)
-            let kserveIS: InferenceService | null = null;
-            const labelFilter = {
-              [INF_SVC_RM_ID_LABEL]: rm.id!,
-              [INF_SVC_MV_ID_LABEL]: mv.id!,
-            };
-            const matchingISList = await listInferenceServices(
-              client,
-              config.informer,
-              labelFilter,
-            );
-            if (matchingISList.length > 0) {
-              kserveIS = matchingISList[0];
-              console.log(
-                `innerStart: found kserve infsvc ${kserveIS.metadata.namespace}:${kserveIS.metadata.name} from rm ${rm.id} mv ${mv.id} kubeflow is ${kis.id}`,
-              );
-            }
-
-            if (!kserveIS) {
-              continue;
-            }
-
-            // Get authentication status for the KServe InferenceService
-            const authentication = await getAuthentication(
-              config.coreClient,
-              kserveIS.metadata.namespace,
-              kserveIS.metadata.name,
-            );
-
-            // Call backstage printers with both KubeFlow and KServe (Go line 759-776)
-            try {
-              await innerStartCallBackstagePrinters(
-                kfmr as KFMRClient,
-                rm,
-                mv,
-                kis,
-                kserveIS,
-                mvArtifacts,
-                replacer,
-                importKey,
-                lastUpdateTimeSinceEpoch,
-                config,
-                authentication,
-              );
-            } catch (error) {
-              console.error(
-                `innerStart: error from call backstage printers: ${error}`,
-              );
-            }
-
-            // Break since only one kubeflow infsvc can match to kserve infsvc (Go line 776)
-            foundKServe = true;
-            break;
-          }
-
-          // If no KServe match found, call backstage printers without KServe (Go line 778-791)
-          if (!foundKServe) {
-            try {
-              // No KServe InferenceService, so authentication is false
-              await innerStartCallBackstagePrinters(
-                kfmr as KFMRClient,
-                rm,
-                mv,
-                null,
-                null,
-                mvArtifacts,
-                replacer,
-                importKey,
-                lastUpdateTimeSinceEpoch,
-                config,
-                false,
-              );
-            } catch (error) {
-              console.error(
-                `innerStart: error from call backstage printers (no kserve): ${error}`,
-              );
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error(`innerStart: err looping over KFMR ${registryKey}:`, error);
-    }
-  }
-
-  // Step 2: List all KServe InferenceServices (lines 796-824 in Go)
-  console.log('innerStart: Listing all KServe InferenceServices');
+  logger.debug('innerStart: Listing all KServe InferenceServices');
 
   try {
     const inferenceServices = await listInferenceServices(
       client,
+      logger,
       config.informer,
     );
-    console.log(
+    logger.debug(
       `innerStart: Found ${inferenceServices.length} KServe InferenceServices`,
     );
 
     for (const is of inferenceServices) {
-      let skip = false;
-
-      // Skip InferenceServices managed by KubeFlow (lines 803-816 in Go)
-      if (is.metadata.labels && config.kfmrClients.size > 0) {
-        for (const labelKey of Object.keys(is.metadata.labels)) {
-          if (
-            labelKey === INF_SVC_MV_ID_LABEL ||
-            labelKey === INF_SVC_RM_ID_LABEL
-          ) {
-            console.log(
-              `innerStart: Skipping InferenceService ${is.metadata.namespace}/${is.metadata.name} since it is managed by KubeFlow`,
-            );
-            skip = true;
-            break;
+      const [importKey] = buildImportKeyAndURI(
+        is.metadata.namespace,
+        is.metadata.name,
+      );
+      // Apply Service URL fallback before readiness check
+      const enriched = await enrichWithServiceUrl(
+        is,
+        config.coreClient,
+        logger,
+        'InferenceService',
+      );
+      if (isInferenceServiceReady(enriched, logger)) {
+        logger.debug(
+          `innerStart: Adding importKey ${importKey} for ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+        keys.add(importKey);
+        // Track model card keys for ready ISes with catalog annotations
+        if (is.metadata.annotations) {
+          const catalogSource =
+            is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
+          const catalogModel =
+            is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
+          if (catalogSource && catalogModel) {
+            activeModelCardKeys.add(`${catalogSource}/${catalogModel}`);
           }
         }
-      }
-
-      if (!skip) {
-        // Build import key for KServe-only InferenceService (line 819)
-        const [importKey] = buildImportKeyAndURI(
-          is.metadata.namespace,
-          is.metadata.name,
+      } else {
+        logger.debug(
+          `innerStart: Skipping importKey ${importKey} for non-ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
         );
-        console.log(
-          `innerStart: Adding importKey ${importKey} for KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
-        );
-        keys.push(importKey);
       }
     }
   } catch (error) {
-    console.error('innerStart: Error listing KServe InferenceServices:', error);
+    logger.error(
+      'innerStart: Error listing KServe InferenceServices',
+      error as Error,
+    );
   }
 
-  // Step 3: Clean up stale entries from modelCatalog (Go lines 826-835)
-  // Remove any model catalog entries whose keys are no longer present in the current reconciliation
+  logger.debug('innerStart: Listing all KServe LLMInferenceServices');
+
+  try {
+    const llmInferenceServices = await listLLMInferenceServices(
+      client,
+      logger,
+      llmInformer,
+    );
+    logger.debug(
+      `innerStart: Found ${llmInferenceServices.length} KServe LLMInferenceServices`,
+    );
+
+    for (const is of llmInferenceServices) {
+      const [importKey] = buildImportKeyAndURI(
+        is.metadata.namespace,
+        is.metadata.name,
+      );
+      // Apply Service URL fallback before readiness check
+      const enriched = await enrichWithServiceUrl(
+        is,
+        config.coreClient,
+        logger,
+        'LLMInferenceService',
+      );
+      if (isLLMInferenceServiceReady(enriched, logger)) {
+        logger.debug(
+          `innerStart: Adding importKey ${importKey} for ready KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+        keys.add(importKey);
+      } else {
+        logger.debug(
+          `innerStart: Skipping importKey ${importKey} for non-ready KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+      }
+    }
+  } catch (error) {
+    logger.error(
+      'innerStart: Error listing KServe LLMInferenceServices',
+      error as Error,
+    );
+  }
+
+  // Clean up stale entries from modelCatalog
   const keysToDelete: string[] = [];
   for (const catalogKey of modelCatalog.keys()) {
-    if (!keys.includes(catalogKey)) {
-      console.log(
+    if (!keys.has(catalogKey)) {
+      logger.debug(
         `innerStart: Model catalog key ${catalogKey} no longer exists in current keys, marking for deletion`,
       );
       keysToDelete.push(catalogKey);
@@ -1194,31 +776,46 @@ async function innerStart(
 
   for (const keyToDelete of keysToDelete) {
     modelCatalog.delete(keyToDelete);
-    console.log(
+    logger.debug(
       `innerStart: Deleted stale model catalog entry: ${keyToDelete}`,
     );
   }
 
   if (keysToDelete.length > 0) {
-    console.log(
+    logger.info(
       `innerStart: Cleaned up ${keysToDelete.length} stale model catalog entries`,
     );
   }
 
-  console.log('innerStart: Reconciliation sync complete');
+  // Clean up stale entries from modelCards
+  const modelCardKeysToDelete: string[] = [];
+  for (const mcKey of modelCards.keys()) {
+    if (!activeModelCardKeys.has(mcKey)) {
+      logger.debug(
+        `innerStart: Model card key ${mcKey} no longer exists in current keys, marking for deletion`,
+      );
+      modelCardKeysToDelete.push(mcKey);
+    }
+  }
+
+  for (const keyToDelete of modelCardKeysToDelete) {
+    modelCards.delete(keyToDelete);
+    logger.debug(`innerStart: Deleted stale model card entry: ${keyToDelete}`);
+  }
+
+  if (modelCardKeysToDelete.length > 0) {
+    logger.info(
+      `innerStart: Cleaned up ${modelCardKeysToDelete.length} stale model card entries`,
+    );
+  }
+
+  logger.debug('innerStart: Reconciliation sync complete');
 }
 
-// Get discovery URIs from model catalog (matching Go handleCatalogDiscoveryGet, server.go lines 162-182)
-// Returns all URIs from modelCatalog that have valid catalog data
 export function getDiscoveryUris(): DiscoveryResponse {
   const uris: string[] = [];
 
-  // Iterate over model catalog entries
-  // Since we cannot delete handlers in some routing frameworks, when we delete a location,
-  // rather than removing from the map, we might set contents to null/undefined,
-  // so we check for that before deciding to include the URI
   for (const [uri, metadata] of modelCatalog.entries()) {
-    // Only include URIs where catalogData exists and is valid
     if (metadata.catalogData) {
       uris.push(uri);
     }
@@ -1228,179 +825,279 @@ export function getDiscoveryUris(): DiscoveryResponse {
 }
 
 export function getModelCatalog(id: string): ModelCatalog | undefined {
-  const mcm = modelCatalog.get(id);
-  if (mcm) {
-    return mcm.catalogData;
-  }
-  return undefined;
+  return modelCatalog.get(id)?.catalogData;
 }
 
 export function getModelCard(id: string): string | undefined {
-  const mcm = modelCards.get(id);
-  if (mcm) {
-    return mcm?.content;
-  }
-  return undefined;
+  return modelCards.get(id)?.content;
 }
 
-export const setupInformer = async () => {
+/** @internal Clears module-level maps so tests run in isolation. */
+export function _resetForTesting(): void {
+  modelCatalog.clear();
+  modelCards.clear();
+}
+
+function buildKubeConfig(
+  config: ReconcilerConfig,
+  logger: LoggerService,
+): k8s.KubeConfig {
   const kc = new k8s.KubeConfig();
-  kc.loadFromDefault();
+  const clusterName = config.clusterName || 'target-cluster';
+
+  if (config.url && config.serviceAccountToken) {
+    if (config.skipTLSVerify) {
+      logger.warn(
+        `skipTLSVerify is enabled for cluster '${clusterName}' — TLS certificate validation is disabled, exposing the service account token to MITM interception`,
+      );
+    }
+    logger.info(
+      `Building KubeConfig from app-config fields for cluster '${clusterName}' at ${config.url}`,
+    );
+    kc.loadFromOptions({
+      clusters: [
+        {
+          name: clusterName,
+          server: config.url,
+          skipTLSVerify: config.skipTLSVerify ?? false,
+          caData: config.caData,
+        },
+      ],
+      users: [
+        {
+          name: 'backstage-sa',
+          token: config.serviceAccountToken,
+        },
+      ],
+      contexts: [
+        {
+          name: clusterName,
+          cluster: clusterName,
+          user: 'backstage-sa',
+        },
+      ],
+      currentContext: clusterName,
+    });
+  } else {
+    if (config.url || config.serviceAccountToken) {
+      logger.warn(
+        'Partial K8s config: both url and serviceAccountToken are required for config-based auth; falling back to loadFromDefault()',
+      );
+    }
+    logger.info(
+      'No config-based K8s credentials; using loadFromDefault() (KUBECONFIG env, ~/.kube/config, or oc login)',
+    );
+    kc.loadFromDefault();
+
+    let k8sToken: string | undefined = '';
+    const currentUser = kc.getCurrentUser();
+    if (currentUser !== null) {
+      k8sToken = currentUser.token;
+    } else {
+      const users = kc.getUsers();
+      for (const user of users) {
+        if (user.token !== null) {
+          k8sToken = user.token;
+          break;
+        }
+      }
+    }
+    if (process.env.K8S_TOKEN) {
+      k8sToken = process.env.K8S_TOKEN;
+    }
+    config.serviceAccountToken = k8sToken;
+  }
+
+  return kc;
+}
+
+function registerInformerHandlers(
+  informer: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
+  client: k8s.CustomObjectsApi,
+  config: ReconcilerConfig,
+  isLLM: boolean = false,
+): void {
+  const logger = config.logger!;
+  const kind = isLLM ? 'LLMInferenceService' : 'InferenceService';
+
+  informer.on('add', async (obj: InferenceService) => {
+    logger.debug(
+      `${kind} Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+    );
+    try {
+      await reconcileInferenceService(obj, config, isLLM);
+    } catch (error) {
+      logger.error(
+        `Error reconciling ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
+        error as Error,
+      );
+    }
+  });
+
+  informer.on('update', async (obj: InferenceService) => {
+    logger.debug(
+      `${kind} Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+    );
+    try {
+      await reconcileInferenceService(obj, config, isLLM);
+    } catch (error) {
+      logger.error(
+        `Error reconciling ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
+        error as Error,
+      );
+    }
+  });
+
+  informer.on('delete', async (obj: InferenceService) => {
+    logger.debug(
+      `${kind} Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+    );
+    try {
+      logger.debug(
+        `Initiating delete processing for ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
+      );
+      await innerStart(client, config, isLLM ? informer : undefined);
+      logger.debug(
+        `Delete processing completed for ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
+      );
+    } catch (error) {
+      logger.error(
+        `Error during delete processing for ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
+        error as Error,
+      );
+    }
+  });
+
+  informer.on('error', (err: any) => {
+    logger.error(`${kind} Informer error`, err as Error);
+    setTimeout(() => {
+      informer.start();
+    }, 5000);
+  });
+}
+
+function startBackgroundPolling(
+  client: k8s.CustomObjectsApi,
+  config: ReconcilerConfig,
+  logger: LoggerService,
+  llmInformer?: k8s.Informer<InferenceService> &
+    k8s.ObjectCache<InferenceService>,
+): void {
+  const pollingInterval = parseInt(
+    process.env.POLLING_INTERVAL || '600000',
+    10,
+  );
+
+  if (pollingInterval > 0) {
+    logger.info(
+      `Starting background polling every ${pollingInterval / 1000} seconds`,
+    );
+    (config.informer as any).__pollingTimer = setInterval(async () => {
+      try {
+        logger.debug('Background polling: Calling innerStart');
+        await innerStart(client, config, llmInformer);
+      } catch (error) {
+        logger.error(
+          'Background polling: Error during innerStart',
+          error as Error,
+        );
+      }
+    }, pollingInterval);
+  }
+}
+
+export const setupInformer = async (
+  config: ReconcilerConfig,
+  logger: LoggerService,
+) => {
+  config.logger = logger;
+
+  config.defaultLifecycle =
+    config.defaultLifecycle || process.env.LIFECYCLE || 'production';
+  config.defaultOwner =
+    config.defaultOwner || process.env.OWNER || 'default-owner';
+
+  const kc = buildKubeConfig(config, logger);
 
   const client = kc.makeApiClient(k8s.CustomObjectsApi);
   const coreClient = kc.makeApiClient(k8s.CoreV1Api);
 
-  let k8sToken: string | undefined = '';
-  const currentUser = kc.getCurrentUser();
-  if (currentUser !== null) {
-    k8sToken = currentUser.token;
-  } else {
-    const users = kc.getUsers();
-    for (const user of users) {
-      if (user.token !== null) {
-        k8sToken = user.token;
-        break;
-      }
-    }
-  }
-  if (process.env.K8S_TOKEN && process.env.K8S_TOKEN.length > 0) {
-    k8sToken = process.env.K8S_TOKEN;
-  }
+  config.routeClient = client;
+  config.coreClient = coreClient;
 
-  // Initialize configuration from environment variables
-  const config: ReconcilerConfig = {
-    kfmrClients: new Map(),
-    kfmrRoutes: new Map(),
-    kfmrCatalogRoute: undefined,
-    defaultLifecycle: process.env.LIFECYCLE || 'production',
-    defaultOwner: process.env.OWNER || 'default-owner',
-    k8sToken: k8sToken,
-    routeClient: client,
-    coreClient: coreClient,
-  };
-
-  console.log('Reconciler configuration (before setupKFMR):', {
+  logger.info('Reconciler configuration:', {
     defaultLifecycle: config.defaultLifecycle,
     defaultOwner: config.defaultOwner,
-    kfmrClients: config.kfmrClients.size,
   });
 
-  // Setup KFMR clients (equivalent to Go line 263: reconciler.setupKFMR(ctx))
   try {
-    await setupKFMR(config);
-    console.log(
-      `Reconciler configuration (after setupKFMR): KFMR clients initialized: ${config.kfmrClients.size}`,
+    await setupCatalogRoute(config);
+    logger.info(
+      `Catalog route discovered: ${config.catalogRoute ? 'yes' : 'no'}`,
     );
   } catch (error) {
-    console.error('Error setting up KFMR:', error);
+    logger.error('Error setting up catalog route', error as Error);
   }
 
+  // Informer for InferenceService (serving.kserve.io/v1beta1)
   const listFn: k8s.ListPromise<InferenceService> = () =>
     client.listClusterCustomObject(
-      inference_service_group,
-      inference_service_version,
-      inference_service_plural,
+      INFERENCE_SERVICE_GROUP,
+      INFERENCE_SERVICE_VERSION,
+      INFERENCE_SERVICE_PLURAL,
     ) as any;
 
   config.informer = k8s.makeInformer(
     kc,
-    `/apis/${inference_service_group}/${inference_service_version}/${inference_service_plural}`,
+    `/apis/${INFERENCE_SERVICE_GROUP}/${INFERENCE_SERVICE_VERSION}/${INFERENCE_SERVICE_PLURAL}`,
     listFn,
   );
 
-  config.informer.on('add', async (obj: InferenceService) => {
-    console.log(
-      `Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+  registerInformerHandlers(config.informer, client, config);
+
+  // Start each informer independently so a missing CRD or startup
+  // failure for one does not prevent the other from running.
+  logger.info('Starting informer for InferenceServices...');
+  try {
+    await config.informer.start();
+    logger.info('Informer started.');
+  } catch (error) {
+    logger.error(
+      'Failed to start InferenceService informer — v1beta1 resources will not be discovered',
+      error as Error,
     );
-
-    // Execute the reconciliation logic (converted from Go Reconcile method)
-    try {
-      await reconcileInferenceService(obj, config);
-    } catch (error) {
-      console.error(
-        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}:`,
-        error,
-      );
-    }
-  });
-
-  config.informer.on('update', async (obj: InferenceService) => {
-    console.log(
-      `Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
-    );
-
-    // Execute the reconciliation logic for updates as well
-    try {
-      await reconcileInferenceService(obj, config);
-    } catch (error) {
-      console.error(
-        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}:`,
-        error,
-      );
-    }
-  });
-
-  config.informer.on('delete', async (obj: InferenceService) => {
-    console.log(
-      `Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
-    );
-
-    // Delete processing: Call innerStart to sync the current state (Go code line 339-351)
-    // This will:
-    // 1. Poll KFMR to remove URLs/routes from model entries that depended on this InferenceService
-    // 2. If the delete resulted from archiving, remove the model from storage
-    // 3. Update the current key set to reflect the deletion
-    try {
-      console.log(
-        `Initiating delete processing for ${obj.metadata.namespace}/${obj.metadata.name}`,
-      );
-      await innerStart(client, /* coreClient,*/ config);
-      console.log(
-        `Delete processing completed for ${obj.metadata.namespace}/${obj.metadata.name}`,
-      );
-    } catch (error) {
-      console.error(
-        `Error during delete processing for ${obj.metadata.namespace}/${obj.metadata.name}:`,
-        error,
-      );
-    }
-  });
-
-  config.informer.on('error', (err: any) => {
-    console.error('Informer error:', err);
-    // Restart informer after a delay
-    setTimeout(() => {
-      config.informer?.start();
-    }, 5000);
-  });
-
-  console.log('Starting informer for InferenceServices...');
-  await config.informer.start();
-  console.log('Informer started.');
-
-  // Optional: Start background polling to supplement the informer
-  // This matches the Go Start method (lines 639-649)
-  // The controller relist does not duplicate delete events, so background polling
-  // provides more fine-grained control over what we attempt to relist
-  const pollingInterval = parseInt(
-    process.env.POLLING_INTERVAL || '120000',
-    10,
-  ); // Default 2 minutes
-
-  if (pollingInterval > 0) {
-    console.log(
-      `Starting background polling every ${pollingInterval / 1000} seconds`,
-    );
-    // Store the timer in case we need to stop it later
-    (config.informer as any).__pollingTimer = setInterval(async () => {
-      try {
-        console.log('Background polling: Calling innerStart');
-        await innerStart(client, /* coreClient,*/ config);
-      } catch (error) {
-        console.error('Background polling: Error during innerStart:', error);
-      }
-    }, pollingInterval);
   }
+
+  // Informer for LLMInferenceService (serving.kserve.io/v1alpha2)
+  const llmListFn: k8s.ListPromise<InferenceService> = () =>
+    client.listClusterCustomObject(
+      LLM_INFERENCE_SERVICE_GROUP,
+      LLM_INFERENCE_SERVICE_VERSION,
+      LLM_INFERENCE_SERVICE_PLURAL,
+    ) as any;
+
+  const llmInformer = k8s.makeInformer(
+    kc,
+    `/apis/${LLM_INFERENCE_SERVICE_GROUP}/${LLM_INFERENCE_SERVICE_VERSION}/${LLM_INFERENCE_SERVICE_PLURAL}`,
+    llmListFn,
+  );
+
+  registerInformerHandlers(llmInformer, client, config, true);
+
+  logger.info('Starting informer for LLMInferenceServices...');
+  try {
+    await llmInformer.start();
+    logger.info('LLM Informer started.');
+  } catch (error) {
+    logger.error(
+      'Failed to start LLMInferenceService informer — v1alpha2 resources will not be discovered',
+      error as Error,
+    );
+  }
+
+  // Background polling supplements both informers since there is no
+  // re-list / re-sync in the TypeScript informer.
+  startBackgroundPolling(client, config, logger, llmInformer);
 
   return config.informer;
 };

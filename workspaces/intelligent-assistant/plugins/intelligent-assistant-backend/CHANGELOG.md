@@ -1,5 +1,215 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.3.6
+
+### Patch Changes
+
+- c947abc: Expose `intelligent-assistant.screen-context` on the backend config schema with `@visibility frontend` so RHDH includes it in the frontend-injected config and the Enable screen context kebab option can appear.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.6
+
+## 5.3.5
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.5
+
+## 5.3.4
+
+### Patch Changes
+
+- fb4ecee: Updated dependency `prettier` to `3.9.9`.
+- Updated dependencies [fb4ecee]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.4
+
+## 5.3.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.3
+
+## 5.3.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.2
+
+## 5.3.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.1
+
+## 5.3.0
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- 84e4ad1: Retry vector store attach and file upload requests when lightspeed-core responds with HTTP 429 Too Many Requests. lightspeed-core bounds concurrent file uploads and vector store attaches with per-endpoint semaphores and rejects excess requests rather than queuing them, so bursty notebook uploads could fail intermittently. `VectorStoresOperator` now retries these two calls, honoring the `Retry-After` header when present and otherwise backing off exponentially (capped, up to 8 attempts).
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.0
+
+## 5.2.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.2.0
+
+## 5.1.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.1.0
+
+## 5.0.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.2
+
+## 5.0.1
+
+### Patch Changes
+
+- fe51be2: Backstage version bump to v1.54.6
+- Updated dependencies [fe51be2]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.1
+
+## 5.0.0
+
+### Major Changes
+
+- 5741af9: Consolidate Intelligent Assistant RBAC permissions into four feature-linked sets: `intelligent-assistant.chat`, `intelligent-assistant.notebooks`, `intelligent-assistant.mcp.tools`, and `intelligent-assistant.skills`. Update backend routes, frontend permission checks, example RBAC policies, and documentation to use the new permission names and exported constants.
+
+### Patch Changes
+
+- Updated dependencies [5741af9]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.0
+
+## 4.3.0
+
+### Minor Changes
+
+- cfdfe68: Accept WebP (`image/webp`) image attachments on the `/v1/query` route alongside the existing JPEG support, validating them by their `RIFF....WEBP` magic bytes.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.3.0
+
+## 4.2.0
+
+### Minor Changes
+
+- 5238698: Backstage version bump to v1.54.5
+
+### Patch Changes
+
+- Updated dependencies [5238698]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.2.0
+
+## 4.1.0
+
+### Minor Changes
+
+- 6c8f76d: Removed public `iaSavedPromptsManagePermission` from the common package. Saved-prompts backend routes now require `intelligent-assistant.chat.use`. Operators should drop `intelligent-assistant.saved-prompts.manage` from RBAC CSVs; `chat.use` is enough.
+
+### Patch Changes
+
+- c0d97e4: Removed unused `@langchain/core` and `@langchain/openai` dependencies left over after the backend switched from an in-process LangChain client to the Lightspeed Core HTTP proxy.
+- e5deac5: AI Notebooks will use markitdown to clean up data before vectorizing documents
+- Updated dependencies [6c8f76d]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.1.0
+
+## 4.0.0
+
+### Major Changes
+
+- adb65c9: Breaking changes to MCP permissions using behavior-linked vocabulary rather than CRUD-linked vocabulary:
+
+  | Before (Lightspeed)     | Before (Intelligent Assistant)     | After              |
+  | ----------------------- | ---------------------------------- | ------------------ |
+  | `lightspeed.mcp.read`   | `intelligent-assistant.mcp.read`   | `mcp.tools.use`    |
+  | `lightspeed.mcp.manage` | `intelligent-assistant.mcp.manage` | `mcp.tools.manage` |
+
+  Removed permission CRUD action attributes; RBAC entries for these permission sets now use the generic `use` action.
+
+  Permission variable renamed from `iaMcpReadPermission` to `iaMcpUsePermission`; `iaMcpManagePermission` keeps its name.
+
+  Plugin documentation and example RBAC policy CSV updated to reflect the new MCP permission names.
+
+- 0ed3adc: Breaking changes to the notebooks permissions model that uses behavior-linked vocabulary:
+
+  | Before (Lightspeed)        | Before (Intelligent Assistant)        | After                                    |
+  | -------------------------- | ------------------------------------- | ---------------------------------------- |
+  | `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` | `intelligent-assistant.notebooks.use`    |
+  |                            |                                       | `intelligent-assistant.notebooks.manage` |
+  - `notebooks.use` covers list/read/create session, upload document, and query endpoints
+  - `notebooks.manage` covers update/delete session and document endpoints
+
+  Removed permission CRUD action attributes; RBAC entries for notebooks permission sets now use the generic `use` action.
+
+  Hard-coded permission names were replaced by constants from the permission entities.
+
+  Plugin documentation and example RBAC policy CSV updated to reflect the notebooks permission model.
+
+- f1dba9b: Breaking changes to the permissions model that uses behavior-linked vocabulary rather than CRUD-linked vocabulary:
+
+  | Before (Lightspeed)      | Before (Intelligent Assistant)      | After                               |
+  | ------------------------ | ----------------------------------- | ----------------------------------- |
+  | `lightspeed.chat.read`   | `intelligent-assistant.chat.read`   | `intelligent-assistant.chat.access` |
+  | `lightspeed.chat.create` | `intelligent-assistant.chat.create` | `intelligent-assistant.chat.use`    |
+  | `lightspeed.chat.delete` | `intelligent-assistant.chat.delete` | `intelligent-assistant.chat.manage` |
+  | `lightspeed.chat.update` | `intelligent-assistant.chat.update` | `intelligent-assistant.chat.manage` |
+
+  Changes are applied to `lightspeed` (Frontend), `lightspeed-backend`, and `lightspeed-common` plugins.
+
+  Removed permission CRUD action attributes, rbac entries for permission sets now to generic 'use' action, allows `intelligent-assistant.chat.manage` to combine the update and delete actions.
+
+  Any hard-coded permission names have been replaced by constants, source references permission names from the permission entities.
+
+  `Trans.test.tsx` component test unit has permission names to reflect Intelligent Assistant for RHDH.
+
+  Additionally, hard-coded permission names have been replaced by local constants with the new names set.
+
+  Plugin documentation changes to revise information to permissions model changes to Intelligent Assistant for RHDH.
+
+  Changed permission variable 'lightspeed' prefix to 'ia' to use Intelligent Assistant rebranding.
+
+  Changes to example RBAC policy CSV file to reflect Intelligent Assistant for RHDH.
+
+### Minor Changes
+
+- e996529: Add inline rename for notebook resources with click or kebab menu, optimistic updates with rollback, frontend conflict validation, and backend PATCH endpoint with rollback on failure
+- 0f32982: Deep context inteeligent-assistant model vision verification for 500 is not cached anymore
+- 3d1d7d7: introduced new endpoint to proxy to LCORE /v1/skills endpoint, to be able to list available skills. also the backend endpoint will be gated by the new rbac permission: intelligent-assistant.skills.access
+
+### Patch Changes
+
+- 82742f0: Unify notebook terminology from "document" to "resource" across all UI strings, translations, and backend messages.
+- Updated dependencies [3d1d7d7]
+- Updated dependencies [adb65c9]
+- Updated dependencies [0ed3adc]
+- Updated dependencies [f1dba9b]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.0.0
+
+## 3.2.0
+
+### Minor Changes
+
+- 81b7ed2: add saved prompts endpoint
+- 9d2012f: add model-validation route to verify whether a model is multimodal. Can now attach images to models that support it.
+
+### Patch Changes
+
+- 21e3f43: Require `intelligent-assistant.chat.update` on `PUT /v2/conversations/:conversation_id` instead of the `intelligent-assistant.chat.create` permission.
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [81b7ed2]
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@3.2.0
+
 ## 3.1.0
 
 ### Patch Changes
@@ -87,6 +297,18 @@
 ### Patch Changes
 
 - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.9.0
+
+## 2.8.7
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.7
+
+## 2.8.6
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.6
 
 ## 2.8.5
 

@@ -18,6 +18,7 @@ import {
   Artifact,
   resolveScmProvider,
   Module,
+  ModulePhase,
   Project,
   Job,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -216,7 +217,7 @@ export const ModuleTable = ({
         const response =
           await clientService.projectsProjectIdModulesModuleIdCancelPost({
             path: { projectId: lastJob.projectId, moduleId: lastJob.moduleId },
-            body: { phase: lastJob.phase },
+            body: { phase: lastJob.phase as ModulePhase },
           });
         if (response.status !== 200) {
           const body = await response

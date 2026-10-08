@@ -1,5 +1,8 @@
 # Proposal: Cross-Connector Shared Infrastructure
 
+> **Workspace status:** Follow-on connector/backend infrastructure; not part
+> of the current RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 Boost delivers three AI catalog connectors — MCP Registry, RHOAI, and OCI Skill Registry — each discovering and surfacing AI entities (models, agents, tools) from external platforms. These connectors share common infrastructure requirements: custom CA bundle resolution for air-gapped deployments, K8s Secret-based credential injection, and fault isolation to prevent one connector failure from blocking other connectors or degrading non-AI catalog entities.
@@ -10,8 +13,8 @@ Duplicating CA/TLS handling, error logging, and enable/disable config across eac
 
 ### CA Bundle Resolution Utility
 
-- `loadCaBundle(connectorConfig: Config): Buffer | undefined` function — caller passes the Config subtree containing the `tls` block
-- Caller resolves config nesting before calling: e.g., `config.getConfig('catalog.providers.mcpRegistry')` for MCP, `config.getConfig('catalog.providers.rhoai.mcpCatalog')` for RHOAI, per-registry Config node for OCI
+- `loadCaBundle(connectorConfig: Config, logger: LoggerService): Buffer | undefined` function — caller passes the Config subtree containing the `tls` block
+- Caller resolves config nesting before calling: e.g., `config.getConfig('ai-catalog.providers.mcpRegistry'), logger` for MCP, `config.getConfig('ai-catalog.providers.rhoai.mcpCatalog'), logger` for RHOAI, per-registry Config node for OCI
 - Reads CA bundles from K8s Secret/ConfigMap mounts or direct file paths
 - Creates `https.Agent` with custom CA for HTTP client injection
 - Handles missing/invalid CA gracefully: log warning, return undefined, don't crash provider
@@ -26,7 +29,7 @@ Duplicating CA/TLS handling, error logging, and enable/disable config across eac
 
 ### Enable/Disable Pattern
 
-- `catalog.providers.<connectorId>.enabled: true/false` config schema
+- `ai-catalog.providers.<connectorId>.enabled: true/false` config schema
 - Registration guard: skip `catalog.addEntityProvider()` when disabled
 - Disabled connector produces zero resource usage (no scheduled tasks created)
 - Consistent pattern across all three connectors

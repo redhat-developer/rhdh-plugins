@@ -10,7 +10,7 @@ Include the following to the RHDH dynamic plugin configuration, replace `<tag>` 
 
 ```yaml
 plugins:
-  - disabled: false
+  - enabled: true
     package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator:<tag>!red-hat-developer-hub-backstage-plugin-orchestrator
     pluginConfig:
       dynamicPlugins:
@@ -43,18 +43,20 @@ plugins:
                   if:
                     anyOf:
                       - IsOrchestratorCatalogTabAvailable
-  - disabled: false
+  - enabled: true
     package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-backend:<tag>!red-hat-developer-hub-backstage-plugin-orchestrator-backend
     pluginConfig:
       orchestrator:
         dataIndexService:
           url: <data index url>
-  - disabled: false
+  - enabled: true
     package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets:<tag>!red-hat-developer-hub-backstage-plugin-orchestrator-form-widgets
     pluginConfig:
       dynamicPlugins:
         frontend:
-          red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
-  - disabled: false
+          # OFS: load BackstagePlugin from Legacy (PluginRoot is NFS after graduation)
+          red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets:
+            pluginModule: Legacy
+  - enabled: true
     package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:<tag>!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator
 ```

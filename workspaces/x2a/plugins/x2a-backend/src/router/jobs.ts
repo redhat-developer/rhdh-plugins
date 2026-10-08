@@ -18,7 +18,7 @@ import express from 'express';
 import type { Readable } from 'node:stream';
 import { InputError, NotFoundError } from '@backstage/errors';
 import {
-  ModulePhase,
+  MigrationPhase,
   Job,
   JobStatus,
   Phase,
@@ -146,12 +146,15 @@ export function registerJobRoutes(
     const { projectId, moduleId } = req.params;
     const rawStreaming = req.query.streaming as string | boolean | undefined;
     const streaming = rawStreaming === 'true' || rawStreaming === true;
-    const phase = req.query.phase as ModulePhase;
+    const phase = req.query.phase as MigrationPhase;
 
-    // Validate phase parameter (required)
-    if (!phase || !Phase.modulePhaseValues().includes(phase)) {
+    // Validate phase parameter (required) — all module-scoped phases except init
+    const validLogPhases = Phase.all()
+      .filter(p => p.isModulePhase())
+      .map(p => p.value);
+    if (!phase || !validLogPhases.includes(phase)) {
       throw new InputError(
-        'phase query parameter is required and must be one of: analyze, migrate, publish',
+        `phase query parameter is required and must be one of: ${validLogPhases.join(', ')}`,
       );
     }
 

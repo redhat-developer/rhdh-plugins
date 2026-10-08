@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { PaginationParams } from '../types/common';
 import type { Policy, PolicyList } from '../types/policy-manager';
 
 /**
@@ -22,7 +23,7 @@ import type { Policy, PolicyList } from '../types/policy-manager';
  * @public
  */
 export interface PolicyManagerApi {
-  listPolicies(): Promise<PolicyList>;
+  listPolicies(params?: PaginationParams): Promise<PolicyList>;
   getPolicy(policyId: string): Promise<Policy>;
   createPolicy(policy: Policy): Promise<Policy>;
   updatePolicy(policyId: string, patch: Partial<Policy>): Promise<Policy>;

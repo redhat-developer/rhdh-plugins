@@ -25,13 +25,18 @@ const scorecardTranslationFr = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': 'Chargement',
-    'dataSourcesDialog.title': '{{title}} sources',
+    'common.current': 'actuel',
+    'dataSourcesDialog.title': 'Sources {{title}}',
     'dataSourcesDialog.close': 'Fermer',
     'dataSourcesDialog.unknownPlugin': 'Inconnu',
     'dataSourcesDialog.statusTooltip':
-      'Valeur {{value}} correspond au seuil {{status}} {{expression}}',
+      'La valeur {{value}} correspond au seuil {{status}} {{expression}}',
+    'dataSourcesDialog.collectorStatusTooltip':
+      "Ce collecteur fournit uniquement des données d'entrée. La valeur du check {{metric}} est calculée à partir des collecteurs et affichée sur la carte scorecard.",
+    'dataSourcesDialog.collectorEmptyValue': '--',
+    'dataSourcesDialog.collectorUnavailableStatus': 'N/A',
     'dataSourcesDialog.columns.plugin': 'PLUGIN',
-    'dataSourcesDialog.columns.check': 'VÉRIFICATION',
+    'dataSourcesDialog.columns.check': 'VÉRIFIER',
     'dataSourcesDialog.columns.value': 'VALEUR',
     'dataSourcesDialog.columns.status': 'STATUT',
     'dataSourcesDialog.columns.lastSynced': 'DERNIÈRE SYNCHRONISATION',
@@ -86,9 +91,9 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.weightedStatusScoreCenterTooltipMaxLabel': 'Score maximal possible',
     'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Score total',
     'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
-      '{{status}}: {{count}} entity, score: {{score}}',
+      '{{status}}: entité {{count}}, score: {{score}}',
     'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
-      '{{status}}: {{count}} entities, score: {{score}}',
+      '{{status}}: {{count}} entités, score: {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       'Entité {{count}}, chaque {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
@@ -96,6 +101,21 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.weightedStatusScoreLegendTooltipRowTotal': 'Score total {{total}}',
     'metric.drillDownCalculationFailures':
       'Une ou plusieurs entités ont rencontré une erreur lors du calcul de cette métrique.',
+    'metric.dora.deploymentFrequency.description':
+      "Permet de suivre la fréquence à laquelle le code est déployé avec succès en production au cours des 30 derniers jours. Les athlètes d'élite interviennent à la demande (plusieurs fois par jour).",
+    'metric.dora.deploymentFrequency.title': 'DORA - Fréquence de déploiement',
+    'metric.dora.medianLeadTimeForChanges.description':
+      'Mesure le temps médian entre la validation du code et son déploiement en production au cours des 30 derniers jours. Les artistes de haut niveau ont un délai de préavis inférieur à 24 heures.',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - Délai médian de modification',
+    'metric.dora.changeFailureRate.description':
+      "Surveille le pourcentage de déploiements ayant entraîné une défaillance en production au cours des 30 derniers jours. Les entreprises les plus performantes maintiennent un taux d'échec du changement inférieur à 5 %.",
+    'metric.dora.changeFailureRate.title':
+      "DORA - Taux d'échec de modification",
+    'metric.dora.medianTimeToRestore.description':
+      "Permet de suivre le délai médian de rétablissement du service après un incident au cours des 30 derniers jours. Nos techniciens d'élite rétablissent le service en moins d'une heure.",
+    'metric.dora.medianTimeToRestore.title':
+      'DORA - Temps médian de restauration',
     'metric.filecheck.description':
       'Vérifie si le fichier {{name}} existe dans le référentiel.',
     'metric.filecheck.title': 'Vérification du fichier : {{name}}',
@@ -105,6 +125,11 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.homepageEntityCalculationHealth':
       '{{healthy}} / {{total}} entités sans erreurs de calcul de métrique',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entités',
+    'aggregation.min': 'Min',
+    'aggregation.max': 'Max.',
+    'aggregation.sum': 'Somme',
+    'aggregation.count': 'Nombre',
+    'aggregation.average': 'Moyenne',
     'metric.jira.openIssues.description':
       'Ce document met en évidence le nombre de problèmes critiques et bloquants actuellement ouverts dans Jira.',
     'metric.jira.openIssues.title': 'Tickets de blocage ouverts Jira',
@@ -156,8 +181,8 @@ const scorecardTranslationFr = createTranslationMessages({
       'Évaluation de la sécurité de SonarQube.',
     'metric.sonarqube.securityReviewRating.title':
       'Évaluation de la sécurité de SonarQube',
-    'metricGroupCard.menuAriaLabel': "Plus d'options",
-    'metricGroupCard.viewDataSources': 'Voir les sources',
+    'metricGroupCard.menuAriaLabel': 'Plus d’options',
+    'metricGroupCard.viewDataSources': 'Consulter les sources de données',
     'notFound.altText': 'Page introuvable',
     'notFound.contactSupport': "Contactez l'assistance",
     'notFound.description':
@@ -170,10 +195,13 @@ const scorecardTranslationFr = createTranslationMessages({
     'permissionRequired.description':
       "Pour afficher le plugin Scorecard, contactez votre administrateur pour lui accorder l'autorisation {{permission}}.",
     'permissionRequired.title': 'Autorisation manquante',
+    'thresholds.elite': 'Élite',
     'thresholds.entities_one': 'entité {{count}}',
     'thresholds.entities_other': '{{count}} entités',
     'thresholds.error': 'Erreur',
     'thresholds.exist': 'Exister',
+    'thresholds.low': 'Faible',
+    'thresholds.medium': 'Moyen',
     'thresholds.missing': 'Manquant',
     'thresholds.noEntities': "Aucune entité dans l'état {{category}}",
     'thresholds.success': 'Succès',
