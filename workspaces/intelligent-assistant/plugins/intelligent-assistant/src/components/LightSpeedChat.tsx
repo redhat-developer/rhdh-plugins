@@ -319,14 +319,51 @@ const NotebooksTabLabel = styled('span', {
   maxWidth: '100%',
 }));
 
-/** Layout-only wrapper for model selector / screen-context chip in MessageBar.actions. */
+/**
+ * Model + page-context chip row (inside the left actions group).
+ *
+ * Model ellipsizes first but keeps a ~6-character floor so the toggle never
+ * collapses to a single glyph. The context chip then takes leftover space and
+ * ellipsizes if the page title is still too long.
+ */
 const MessageBarActionsRow = styled('div')({
   display: 'flex',
-  flex: '1 1 0',
+  flex: '1 1 0%',
+  width: 'auto',
   minWidth: 0,
+  maxWidth: '100%',
   overflow: 'hidden',
   alignItems: 'center',
+  justifyContent: 'flex-start',
   gap: 8,
+});
+
+/** ~6 label chars + chevron + MenuToggle horizontal padding. */
+const MODEL_TOGGLE_MIN_WIDTH = 'calc(6ch + 1.25em + 16px)';
+
+/**
+ * Model may shrink below its label width, but not below ~6 visible characters.
+ * Child `width: 100%` defeats MenuToggle min-content so ellipsis engages.
+ */
+const MessageBarModelActionItem = styled('div')({
+  flex: '0 1 auto',
+  minWidth: MODEL_TOGGLE_MIN_WIDTH,
+  maxWidth: 'max-content',
+  overflow: 'hidden',
+  display: 'flex',
+  alignItems: 'center',
+});
+
+/**
+ * Context chip: content-sized (no grow). Shrinks / ellipsizes after the model
+ * has already hit its ~6-character minimum width.
+ */
+const MessageBarChipActionItem = styled('div')({
+  flex: '0 1 auto',
+  minWidth: 0,
+  overflow: 'hidden',
+  display: 'flex',
+  alignItems: 'center',
 });
 
 // Align footer with MessageBox inset (override PF 90%/60rem full-page footer).
@@ -357,6 +394,34 @@ const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
         ? theme.palette.grey[100]
         : 'var(--pf-t--global--background--color--secondary--default)',
   },
+  // Mic/send size first; left group (attach + model/chip) only gets leftover.
+  // Without this, a long model id sizes the left group to content and crowds
+  // the mic without ever triggering ellipsis.
+  '& .pf-chatbot__message-bar-actions.pf-m-grouped': {
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1fr) auto',
+    justifyContent: 'stretch',
+    minWidth: 0,
+    maxWidth: '100%',
+    overflow: 'hidden',
+    width: '100%',
+  },
+  '& .pf-chatbot__message-bar-actions.pf-m-grouped > .pf-chatbot__message-bar-actions-group:first-of-type':
+    {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 'var(--pf-t--global--spacer--gap--action-to-action--plain, 0.5rem)',
+      minWidth: 0,
+      maxWidth: '100%',
+      overflow: 'hidden',
+      '& > button, & > .pf-v6-c-button, & > .pf-v5-c-button': {
+        flexShrink: 0,
+      },
+    },
+  '& .pf-chatbot__message-bar-actions.pf-m-grouped > .pf-chatbot__message-bar-actions-group:last-of-type':
+    {
+      justifySelf: 'end',
+    },
 }));
 
 const StyledSelectList = styled(SelectList)({
@@ -1961,23 +2026,27 @@ export const LightspeedChat = ({
           }}
           additionalActions={
             <MessageBarActionsRow>
-              <MessageBarModelSelector
-                selectedModel={selectedModel}
-                models={models}
-                onSelect={handleSelectedModel}
-                disabled={isSendButtonDisabled || messages.length > 0}
-                disabledTooltip={t('modelSelector.disabledTooltip')}
-              />
+              <MessageBarModelActionItem>
+                <MessageBarModelSelector
+                  selectedModel={selectedModel}
+                  models={models}
+                  onSelect={handleSelectedModel}
+                  disabled={isSendButtonDisabled || messages.length > 0}
+                  disabledTooltip={t('modelSelector.disabledTooltip')}
+                />
+              </MessageBarModelActionItem>
               {screenContextEnabled &&
                 isScreenContextSharingEnabled &&
                 showChatPanel && (
-                  <ScreenContextChip
-                    state={screenContextChipState}
-                    domEnabled={domExtractionEnabled}
-                    screenshotsEnabled={screenshotsEnabled}
-                    supportsVision={selectedModelSupportsVision}
-                    onTogglePaused={toggleScreenContextPaused}
-                  />
+                  <MessageBarChipActionItem>
+                    <ScreenContextChip
+                      state={screenContextChipState}
+                      domEnabled={domExtractionEnabled}
+                      screenshotsEnabled={screenshotsEnabled}
+                      supportsVision={selectedModelSupportsVision}
+                      onTogglePaused={toggleScreenContextPaused}
+                    />
+                  </MessageBarChipActionItem>
                 )}
             </MessageBarActionsRow>
           }

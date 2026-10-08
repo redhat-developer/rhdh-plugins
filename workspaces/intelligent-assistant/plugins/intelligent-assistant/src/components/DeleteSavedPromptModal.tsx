@@ -25,7 +25,7 @@ import {
 
 import { useTranslation } from '../hooks/useTranslation';
 
-const deleteSavedPromptModalZIndexStyles = {
+const deleteSavedPromptModalBackdropStyles = {
   '.delete-saved-prompt-modal-backdrop': {
     '--pf-v6-c-backdrop--ZIndex': '2000 !important',
     '--pf-v5-c-backdrop--ZIndex': '2000 !important',
@@ -53,7 +53,7 @@ export const DeleteSavedPromptModal = ({
 
   return (
     <>
-      <GlobalStyles styles={deleteSavedPromptModalZIndexStyles} />
+      <GlobalStyles styles={deleteSavedPromptModalBackdropStyles} />
       <Modal
         variant="small"
         isOpen={isOpen}
