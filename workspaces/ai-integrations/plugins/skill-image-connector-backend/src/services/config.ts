@@ -19,7 +19,11 @@ import { InputError } from '@backstage/errors';
 import type { SkillImageOptions } from './types';
 import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_TIMER_DELAY_MS } from './types';
 
-/** Resolve optional acquisition settings without mutating shared defaults. */
+/**
+ * Resolve numeric acquisition settings without importing network acquisition services
+ * or mutating shared defaults. Image and discovery config parsing stays in plugin.ts
+ * to reuse the OCI reference, tag, and token-realm validators from OciClient.
+ */
 export function readSkillImageOptions(config: Config): SkillImageOptions {
   const source = config.getOptionalConfig('skillImageConnector');
   const options = { ...DEFAULT_SKILL_IMAGE_OPTIONS };

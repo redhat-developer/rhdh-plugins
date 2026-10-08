@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-08T13:28:39Z
+**Last audited:** 2026-10-08T17:37:21Z
 
 This focused follow-up reviews the all-active-tag discovery pivot against the
 proposal, design, OCI/common/provider specifications, task status, implementation,
@@ -87,6 +87,32 @@ the reverse-completion case; workspace type checking and connector lint passed.
 The maintainer's app-config.yaml is unchanged. The maintainer subsequently
 reported successful testing and authorized a local commit. Signing, pushing,
 and the next Fullsend review remain maintainer-owned.
+
+### Task 2.1 documentation clarification
+
+The maintainer approved the review disposition for PR #5057 head
+`190bcba8814ef747a5b476991a13f65d1c71dae0`. This focused consistency check
+covers the task 2.1 wording and the configuration documentation; it does not
+replace the independent audits recorded above.
+
+Task 2.1 now explicitly includes the seven optional acquisition settings and
+shared HTTP/retry utilities already documented in D7. Configuration JSDoc states
+the existing runtime ranges: byte limits and `maxImages` are positive safe
+integers, `maxRetries` is a nonnegative safe integer, and timeout/base-delay
+values are integers from 1 through 2,147,483,647 milliseconds. A comment explains
+the separation between numeric option parsing and configuration parsing that
+reuses OCI validators. No schema annotations, validation behavior, task status,
+or acquisition behavior change.
+
+D5 already documents the catalog identity transition, and D7/task 2.4 retain
+connection-level destination validation as future work. The minor changeset and
+shared pagination bounds remain unchanged. This focused check found no new
+cross-artifact inconsistencies; summary counts below remain zero. The
+maintainer's `app-config.yaml` edits are untouched. Strict OpenSpec validation
+and formatting checks of the revised documentation passed. The workspace-wide
+formatting check reports only the maintainer's existing `app-config.yaml`
+formatting; that file was left untouched. The documentation changes remain
+uncommitted for maintainer review.
 
 ### Summary
 

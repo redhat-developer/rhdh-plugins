@@ -16,31 +16,31 @@
 
 export interface Config {
   skillImageConnector?: {
-    /** Request deadline including redirects, authentication and body reading. Defaults to 30000 ms.
+    /** Request deadline including redirects, authentication and body reading. Integer from 1 to 2147483647 ms; defaults to 30000 ms.
      * @visibility backend
      */
     fetchTimeoutMs?: number;
-    /** Maximum bytes per downloaded blob and decompressed layer. Defaults to 5242880.
+    /** Maximum bytes per downloaded blob and decompressed layer. Safe integer from 1 to 9007199254740991; defaults to 5242880.
      * @visibility backend
      */
     maxBlobSizeBytes?: number;
-    /** Maximum combined retained skill YAML and Markdown bytes across images. Defaults to 52428800.
+    /** Maximum combined retained skill YAML and Markdown bytes across images. Safe integer from 1 to 9007199254740991; defaults to 52428800.
      * @visibility backend
      */
     maxAggregateContentSizeBytes?: number;
-    /** Maximum bytes per Quay discovery response. Defaults to 5242880.
+    /** Maximum bytes per Quay discovery response. Safe integer from 1 to 9007199254740991; defaults to 5242880.
      * @visibility backend
      */
     maxDiscoveryResponseSizeBytes?: number;
-    /** Maximum combined explicit images and discovered candidates to process. Positive integer; defaults to 25.
+    /** Maximum combined explicit images and discovered candidates to process. Safe integer from 1 to 9007199254740991; defaults to 25.
      * @visibility backend
      */
     maxImages?: number;
-    /** Retries after the initial page/image attempt. Defaults to 2; 0 disables retries.
+    /** Retries after the initial page/image attempt. Safe integer from 0 to 9007199254740991; defaults to 2; 0 disables retries.
      * @visibility backend
      */
     maxRetries?: number;
-    /** Initial retry delay in milliseconds, doubled on subsequent retries. Defaults to 2000.
+    /** Initial retry delay in milliseconds, doubled on subsequent retries. Integer from 1 to 2147483647 ms; defaults to 2000.
      * @visibility backend
      */
     retryBaseDelayMs?: number;
