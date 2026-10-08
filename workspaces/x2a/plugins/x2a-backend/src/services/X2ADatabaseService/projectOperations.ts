@@ -217,7 +217,7 @@ export class ProjectOperations {
       `updateProject called for projectId: ${projectId} by ${calledByUserRef}`,
     );
 
-    const updateFields: Record<string, string> = {};
+    const updateFields: Record<string, string | null> = {};
     if (input.name !== undefined) updateFields.name = input.name;
     if (input.ownedBy !== undefined) updateFields.owned_by = input.ownedBy;
     if (input.description !== undefined)

@@ -1,0 +1,36 @@
+{
+  "description": "Material UI v4 enforcement policy for rhdh-plugins. Single source of truth for migrated workspace scope, CI verify checks, and future lint expansion.",
+  "migratedWorkspaces": [
+    "adoption-insights",
+    "ai-integrations",
+    "app-defaults",
+    "bulk-import",
+    "extensions",
+    "global-header",
+    "homepage",
+    "intelligent-assistant",
+    "orchestrator",
+    "quickstart",
+    "scorecard",
+    "theme",
+    "translations"
+  ],
+  "allowedPackageJsonPaths": [
+    "workspaces/augment/packages/app/package.json",
+    "workspaces/cost-management/packages/app-legacy/package.json",
+    "workspaces/cost-management/plugins/cost-management/package.json",
+    "workspaces/dcm/packages/app/package.json",
+    "workspaces/dcm/plugins/dcm/package.json",
+    "workspaces/extensions/packages/app-legacy/package.json",
+    "workspaces/konflux/packages/app/package.json",
+    "workspaces/konflux/plugins/konflux/package.json",
+    "workspaces/mcp-integrations/packages/app/package.json",
+    "workspaces/theme/plugins/mui4-test/package.json",
+    "workspaces/x2a/plugins/x2a-dcr/package.json",
+    "workspaces/x2a/plugins/x2a/package.json"
+  ],
+  "allowedSourcePathPrefixes": [
+    "workspaces/extensions/packages/app-legacy/",
+    "workspaces/theme/plugins/mui4-test/"
+  ]
+}

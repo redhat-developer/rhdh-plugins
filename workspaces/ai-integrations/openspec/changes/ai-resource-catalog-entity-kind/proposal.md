@@ -1,32 +1,32 @@
-# Proposal: AIResource Catalog Entity Kind
+# Proposal: AiResource Catalog Entity Kind
 
 ## Why
 
 AI coding tools consume reusable assets such as skills, rules, prompts, and agent definitions that teams publish in source repositories or OCI images. There is no standard way in this workspace to register those assets as catalog entities, validate their location metadata safely, and make them discoverable through standard RHDH catalog APIs and entity pages.
 
-Adding first-class `AIResource` catalog support closes that gap while staying aligned with the upstream Backstage `AiResource` kind. Upstream intentionally has no `spec.location` field — asset content is referenced via the standard `backstage.io/source-location` annotation.
+Adding first-class `AiResource` catalog support closes that gap while staying aligned with the upstream Backstage `AiResource` kind. Upstream intentionally has no `spec.location` field — asset content is referenced via the standard `backstage.io/source-location` annotation.
 
 ## What Changes
 
-- Introduce support for the upstream `AiResource` / `AIResource` catalog kind in this workspace.
+- Introduce support for the upstream `AiResource` catalog kind in this workspace.
 - Use `backstage.io/source-location` as the canonical asset location for both git/HTTPS and OCI-backed entities.
 - Represent OCI-backed assets with the Backstage location-ref form `url:oci://…` (location type `url`, target scheme `oci://`).
-- Validate AIResource entities during ingestion, including RHDH-specific `spec.scope` support and OCI source-location format rules.
+- Validate AiResource entities during ingestion, including RHDH-specific `spec.scope` support and OCI source-location format rules.
 - Reuse existing Backstage catalog behavior for entity YAML registration (git/HTTPS/`file` catalog locations).
 - Add an OCI catalog processor that validates OCI `source-location` format only and makes zero outbound registry calls.
 - Do **not** introduce RHDH `spec.location` (removed / not used for OCI skill support).
-- Render AIResource entities on the standard catalog entity page.
-- Expose AIResource entities through standard catalog search and filter APIs.
+- Render AiResource entities on the standard catalog entity page.
+- Expose AiResource entities through standard catalog search and filter APIs.
 - Add local workspace documentation and OpenSpec artifacts so implementation agents can work from this workspace directly.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `ai-resource-entity-schema`: Schema and validation rules for the `AIResource` kind, including `spec.scope` as an RHDH extension and OCI `source-location` validation.
-- `ai-resource-catalog-ingestion`: Catalog backend support for git/HTTPS-backed and OCI-referenced AIResource ingestion (format validation only for OCI).
-- `ai-resource-entity-page`: Standard entity page rendering for AIResource entities, including source-aware location display and TechDocs integration.
-- `ai-resource-discovery`: Catalog API, filtering, and full-text search support for AIResource entities.
+- `ai-resource-entity-schema`: Schema and validation rules for the `AiResource` kind, including `spec.scope` as an RHDH extension and OCI `source-location` validation.
+- `ai-resource-catalog-ingestion`: Catalog backend support for git/HTTPS-backed and OCI-referenced AiResource ingestion (format validation only for OCI).
+- `ai-resource-entity-page`: Standard entity page rendering for AiResource entities, including source-aware location display and TechDocs integration.
+- `ai-resource-discovery`: Catalog API, filtering, and full-text search support for AiResource entities.
 
 ### Modified Capabilities
 
@@ -54,8 +54,8 @@ _(none - this is a net-new capability area in this workspace)_
 
 ## Impact
 
-- **Catalog backend**: Adds AIResource-specific ingestion and OCI `source-location` validation behavior
-- **Schema handling**: Extends upstream AIResource behavior with RHDH-specific `spec.scope` validation only (no `spec.location`)
-- **Frontend**: Reuses the standard entity page layout for AIResource entities
-- **Catalog API**: No breaking API changes; AIResource appears through standard entity and search endpoints
+- **Catalog backend**: Adds AiResource-specific ingestion and OCI `source-location` validation behavior
+- **Schema handling**: Extends upstream AiResource behavior with RHDH-specific `spec.scope` validation only (no `spec.location`)
+- **Frontend**: Reuses the standard entity page layout for AiResource entities
+- **Catalog API**: No breaking API changes; AiResource appears through standard entity and search endpoints
 - **Documentation**: Adds local OpenSpec materials to make the workspace self-contained for implementation

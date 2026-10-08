@@ -20,6 +20,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 import type { z } from 'zod';
+import type { CollectorMetadata } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Collector, CollectorContract } from '../api';
 import { DefaultScorecardCollectorsService } from './DefaultScorecardCollectorsService';
 
@@ -30,6 +31,7 @@ import { DefaultScorecardCollectorsService } from './DefaultScorecardCollectorsS
 export interface ScorecardCollectorsService {
   init(options: { collectors: Array<Collector> }): void;
   hasCollector(collectorId: string): boolean;
+  getCollectorMetadata(collectorId: string): CollectorMetadata;
   collect<
     TInputSchema extends z.ZodTypeAny,
     TOutputSchema extends z.ZodTypeAny,
@@ -43,6 +45,11 @@ export interface ScorecardCollectorsService {
 
 /**
  * Service reference for adding and consuming collectors in the scorecard plugin.
+ *
+ * `defaultFactory` is a fallback, you should register the explicit `scorecardCollectorsServiceFactory`
+ * when using multiple copies of `scorecard-node` in one Backstage application, to have only one instance of
+ * `scorecard.collectors.service`.
+ *
  * @public
  */
 export const scorecardCollectorsServiceRef =
@@ -55,3 +62,14 @@ export const scorecardCollectorsServiceRef =
         factory: async () => new DefaultScorecardCollectorsService(),
       }),
   });
+
+/**
+ * Explicit factory for {@link scorecardCollectorsServiceRef}.
+ *
+ * @public
+ */
+export const scorecardCollectorsServiceFactory = createServiceFactory({
+  service: scorecardCollectorsServiceRef,
+  deps: {},
+  factory: async () => new DefaultScorecardCollectorsService(),
+});

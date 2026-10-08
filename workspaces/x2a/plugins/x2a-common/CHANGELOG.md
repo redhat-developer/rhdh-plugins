@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-common
 
+## 2.0.1
+
+### Patch Changes
+
+- 6db5c1d: implemented adversarial agents
+- 3bf5e1b: Downstream phase jobs are automatically marked as stale when an upstream phase completes successfully.
+
+## 2.0.0
+
+### Major Changes
+
+- 20421e9: Updating x2a plugins to RHDH 1.10, including NFS for testing.
+
 ## 1.4.0
 
 ### Minor Changes

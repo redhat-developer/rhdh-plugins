@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { ConfigReader } from '@backstage/config';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -27,13 +26,10 @@ import {
   SONARQUBE_PROJECT_KEY_ANNOTATION,
   SonarQubeMetricId,
 } from './SonarQubeConfig';
-import { mockServices } from '@backstage/backend-test-utils';
-
-jest.mock('../clients/SonarQubeClient');
-
-const mockLogger = mockServices.logger.mock();
 
 const emptyThresholds: ThresholdConfig = { rules: [] };
+
+const stubClient = {} as SonarQubeClient;
 
 class TestBooleanBasic extends SonarQubeBasicMetricProvider<'boolean'> {
   constructor(
@@ -57,32 +53,16 @@ class TestNumberBasic extends SonarQubeBasicMetricProvider<'number'> {
 
 const providers = [
   {
-    provider: new TestBooleanBasic(
-      makeClient(),
-      'qualityGate',
-      emptyThresholds,
-    ),
-    metricId: 'qualityGate',
-    type: 'boolean',
+    provider: new TestBooleanBasic(stubClient, 'qualityGate', emptyThresholds),
+    metricId: 'qualityGate' as const,
+    type: 'boolean' as const,
   },
   {
-    provider: new TestNumberBasic(makeClient(), 'openIssues', emptyThresholds),
-    metricId: 'openIssues',
-    type: 'number',
+    provider: new TestNumberBasic(stubClient, 'openIssues', emptyThresholds),
+    metricId: 'openIssues' as const,
+    type: 'number' as const,
   },
 ];
-
-beforeEach(() => {
-  jest.clearAllMocks();
-  const { SonarQubeClient: MockClient } = jest.requireMock(
-    '../clients/SonarQubeClient',
-  );
-  MockClient.mockImplementation(() => ({}));
-});
-
-function makeClient(): SonarQubeClient {
-  return new SonarQubeClient(new ConfigReader({}), mockLogger);
-}
 
 describe('SonarQubeBasicMetricProvider', () => {
   describe('getProviderDatasourceId', () => {
@@ -107,11 +87,17 @@ describe('SonarQubeBasicMetricProvider', () => {
   describe('getMetrics', () => {
     it.each(providers)(
       'should return metrics with correct type and thresholds for $type metric type',
-      ({ provider, type }) => {
+      ({ provider, type, metricId }) => {
         const metrics = provider.getMetrics();
         expect(metrics).toHaveLength(1);
-        expect(metrics[0].type).toBe(type);
-        expect(metrics[0].thresholds).toBe(emptyThresholds);
+        expect(metrics[0]).toEqual({
+          id: SONARQUBE_METRIC_CONFIG[metricId].id,
+          title: SONARQUBE_METRIC_CONFIG[metricId].title,
+          description: SONARQUBE_METRIC_CONFIG[metricId].description,
+          type,
+          thresholds: emptyThresholds,
+          history: true,
+        });
       },
     );
   });

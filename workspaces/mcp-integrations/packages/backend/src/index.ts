@@ -73,4 +73,7 @@ backend.add(
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras'),
 );
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-kubernetes-mcp-extras'),
+);
 backend.start();

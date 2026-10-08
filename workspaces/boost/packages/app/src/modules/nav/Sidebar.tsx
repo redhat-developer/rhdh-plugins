@@ -22,16 +22,19 @@ import {
   SidebarScrollWrapper,
   SidebarSpace,
 } from '@backstage/core-components';
+import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import MenuIcon from '@mui/icons-material/Menu';
+import { aiCatalogTranslationRef } from '@red-hat-developer-hub/backstage-plugin-ai-catalog';
 
 import { SidebarLogo } from './SidebarLogo';
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
-    component: ({ navItems }) => {
+    component: function SidebarNavigation({ navItems }) {
+      const { t } = useTranslationRef(aiCatalogTranslationRef);
       const nav = navItems.withComponent(item => (
         <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
       ));
@@ -44,7 +47,7 @@ export const SidebarContent = NavContentBlueprint.make({
             <SidebarItem
               icon={AutoAwesomeIcon}
               to="/ai-catalog"
-              text="AI Catalog"
+              text={t('nav.aiCatalog')}
             />
             {nav.take('page:catalog')}
             <SidebarScrollWrapper>

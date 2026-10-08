@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { mockServices } from '@backstage/backend-test-utils';
-import { join } from 'path';
+import { basename, join } from 'path';
 import fs from 'fs';
 
 import { TranslationService } from './TranslationService';
@@ -55,7 +55,6 @@ describe('TranslationService', () => {
     mockConfig = mockServices.rootConfig({
       data: {
         i18n: {
-          locales: ['en', 'de'],
           overrides: safeTestPaths,
         },
       },
@@ -127,7 +126,7 @@ describe('TranslationService', () => {
       );
     });
 
-    it('should filter out translations not in configured locales', async () => {
+    it('should not filter JSON locales using legacy i18n.locales', async () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
@@ -163,11 +162,12 @@ describe('TranslationService', () => {
       expect(result.translations).toEqual({
         plugin: {
           en: { hello: 'world' },
+          de: { hello: 'welt' },
         },
       });
     });
 
-    it('should return empty object if locales in the override translations are not configured in app-config', async () => {
+    it('should return JSON locales regardless of legacy i18n.locales', async () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
@@ -194,14 +194,15 @@ describe('TranslationService', () => {
 
       const result = await service.getTranslations();
 
-      expect(result.translations).toEqual({});
+      expect(result.translations).toEqual({
+        plugin: { de: { hello: 'welt' } },
+      });
     });
 
     it('should process internal directory files when auto-detected', async () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en', 'de'],
             overrides: [],
           },
         },
@@ -262,7 +263,6 @@ describe('TranslationService', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [join(testDir, 'override.json')],
           },
         },
@@ -327,11 +327,64 @@ describe('TranslationService', () => {
       });
     });
 
+    it('should process shipped catalogs in precedence order before customer files', async () => {
+      const catalogFiles = [
+        'rhdh-plugins-de.json',
+        'rhdh-de.json',
+        'customer-de.json',
+        'community-plugins-de.json',
+        'backstage-de.json',
+      ];
+      const messagesByFile: Record<string, string> = {
+        'backstage-de.json': 'Backstage',
+        'community-plugins-de.json': 'Community plugins',
+        'rhdh-plugins-de.json': 'RHDH plugins',
+        'rhdh-de.json': 'RHDH',
+        'customer-de.json': 'Customer',
+      };
+
+      mockConfig = mockServices.rootConfig({
+        data: { i18n: { overrides: [] } },
+      });
+      service = new TranslationService(mockConfig, mockLogger);
+      (fs.readdirSync as jest.Mock).mockReturnValue(catalogFiles);
+      (fs.existsSync as jest.Mock).mockImplementation(
+        (filePath: string) =>
+          filePath.endsWith('/src') ||
+          filePath.endsWith('\\src') ||
+          filePath.endsWith('/src/translations') ||
+          filePath.endsWith('\\src\\translations') ||
+          filePath.endsWith('.json'),
+      );
+      (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => true });
+      (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) =>
+        JSON.stringify({
+          plugin: {
+            de: { title: messagesByFile[basename(filePath)] },
+          },
+        }),
+      );
+
+      const result = await service.getTranslations();
+
+      expect(result.translations.plugin.de.title).toBe('Customer');
+      expect(
+        (fs.readFileSync as jest.Mock).mock.calls.map(([filePath]) =>
+          basename(filePath),
+        ),
+      ).toEqual([
+        'backstage-de.json',
+        'community-plugins-de.json',
+        'rhdh-plugins-de.json',
+        'rhdh-de.json',
+        'customer-de.json',
+      ]);
+    });
+
     it('should handle internal directory not found gracefully', async () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [join(testDir, 'override.json')],
           },
         },
@@ -363,7 +416,6 @@ describe('TranslationService', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [],
           },
         },
@@ -403,7 +455,6 @@ describe('TranslationService', () => {
       mockConfig = mockServices.rootConfig({
         data: {
           i18n: {
-            locales: ['en'],
             overrides: [],
           },
         },

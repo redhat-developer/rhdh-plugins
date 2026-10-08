@@ -4,10 +4,16 @@
 
 ```ts
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import { scorecardCollectorsServiceFactory } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 // @public
-const scorecardPlugin: BackendFeature;
-export default scorecardPlugin;
+const _default: BackendFeature;
+export default _default;
+
+export { scorecardCollectorsServiceFactory };
+
+// @public
+export const scorecardPlugin: BackendFeature;
 
 // (No @packageDocumentation comment for this package)
 ```

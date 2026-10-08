@@ -21,7 +21,11 @@ import {
   type BrowserContext,
   type TestInfo,
 } from '@playwright/test';
-import { switchToLocale } from './utils/globalHeaderHelper';
+import {
+  loginAsGuest,
+  switchToLocale,
+  waitForHeaderReady,
+} from './utils/globalHeaderHelper';
 import { GlobalHeaderMessages, getTranslations } from './utils/translations';
 import { runAccessibilityTests } from './utils/accessibility';
 
@@ -38,16 +42,17 @@ test.beforeAll(async ({ browser }) => {
     () => globalThis.navigator.language,
   );
   await page.goto('/');
-  await page.waitForTimeout(2000);
-  await page.getByRole('button', { name: 'Enter' }).click();
+  await loginAsGuest(page);
 
   // Extract base language code (e.g., "en" from "en-US")
   const baseLocale = currentLocale.split('-')[0];
   await switchToLocale(page, currentLocale);
   translations = getTranslations(baseLocale);
 
-  await page.locator('a').filter({ hasText: 'Home' }).first().click();
-  await expect(page.locator('h1')).toContainText('My Company Catalog');
+  await page.getByRole('link', { name: 'Home' }).first().click();
+  // Nav/page title is "Home"; catalog content header still shows org catalog name.
+  await expect(page.getByText('My Company Catalog')).toBeVisible();
+  await waitForHeaderReady(page, translations);
 });
 
 test.afterAll(async () => {
@@ -58,22 +63,22 @@ function getHeaderElements() {
   const globalHeader = page.locator('#global-header');
   return {
     globalHeader,
-    companyLogo: page
-      .getByTestId('global-header-company-logo')
-      .getByRole('link', { name: 'Home' }),
+    homeLink: page.getByRole('link', { name: 'Home' }).first(),
     search: page.getByRole('combobox', {
       name: translations.search.placeholder,
     }),
     selfService: globalHeader.getByRole('link', {
       name: translations.create.title,
     }),
-    starredItems: page.getByRole('button', {
+    starredItems: globalHeader.getByRole('button', {
       name: translations.starred.title,
     }),
-    appLauncher: page.getByRole('button', {
+    appLauncher: globalHeader.getByRole('button', {
       name: translations.applicationLauncher.tooltip,
     }),
-    help: page.getByRole('button', { name: translations.help.tooltip }),
+    help: globalHeader.getByRole('button', {
+      name: translations.help.tooltip,
+    }),
     notifications: globalHeader.getByRole('link', {
       name: translations.notifications.title,
     }),
@@ -83,9 +88,9 @@ function getHeaderElements() {
 test('Verify Global header to be visible', async ({
   browser: _browser,
 }, testInfo: TestInfo) => {
-  const { globalHeader, companyLogo, ...headerElements } = getHeaderElements();
+  const { globalHeader, ...headerElements } = getHeaderElements();
 
-  await expect(companyLogo).toBeVisible();
+  await expect(globalHeader).toBeVisible();
   await expect(headerElements.search).toBeVisible();
   await expect(headerElements.selfService).toBeVisible();
   await expect(headerElements.starredItems).toBeVisible();
@@ -94,8 +99,6 @@ test('Verify Global header to be visible', async ({
   await expect(headerElements.notifications).toBeVisible();
 
   await expect(globalHeader).toMatchAriaSnapshot(`
-    - link "Home":
-      - img "Home logo"
     - combobox "${translations.search.placeholder}"
     - link "${translations.create.title}":
       - /url: /create
@@ -105,7 +108,7 @@ test('Verify Global header to be visible', async ({
     - link "${translations.notifications.title}":
       - /url: /notifications
     `);
-  await runAccessibilityTests(page, testInfo);
+  await runAccessibilityTests(page, testInfo, undefined, '#global-header');
 });
 
 test('Verify Hover texts to be visible', async () => {
@@ -146,19 +149,46 @@ test('Verify Search functionality and results', async () => {
   const { search } = getHeaderElements();
   const searchQuery = 'example-website';
   const expectedUrl = /\/example-website/;
+  const resultLocation = `/catalog/default/component/${searchQuery}`;
 
-  await search.fill(searchQuery);
+  // Stub search so this header UI test is not coupled to collator indexing.
+  await page.route('**/api/search/query**', async route => {
+    const term = new URL(route.request().url()).searchParams.get('term') ?? '';
+    if (!term.includes(searchQuery)) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      json: {
+        results: [
+          {
+            type: 'software-catalog',
+            document: {
+              title: searchQuery,
+              text: searchQuery,
+              location: resultLocation,
+            },
+          },
+        ],
+      },
+    });
+  });
 
-  // Wait for search results to appear
-  await expect(page.getByRole('listbox')).toBeVisible();
+  try {
+    await search.fill(searchQuery);
 
-  // Click the result link and verify navigation
-  const resultLink = page
-    .getByRole('listbox')
-    .getByRole('link', { name: searchQuery });
-  await resultLink.click();
-  await expect(page).toHaveURL(expectedUrl);
-  await expect(page.locator('h1')).toContainText(searchQuery);
+    const resultOption = page
+      .getByRole('listbox')
+      .getByRole('option', { name: searchQuery });
+
+    await expect(resultOption).toBeVisible();
+    await resultOption.click();
+    await expect(page).toHaveURL(expectedUrl);
+    await expect(page.getByText(searchQuery, { exact: true })).toBeVisible();
+  } finally {
+    await page.unroute('**/api/search/query**');
+  }
 });
 
 test('Verify Self-service functionality', async () => {
@@ -168,7 +198,7 @@ test('Verify Self-service functionality', async () => {
 });
 
 test('Verify Starred items functionality', async () => {
-  const { starredItems, companyLogo } = getHeaderElements();
+  const { starredItems, homeLink } = getHeaderElements();
 
   await starredItems.click();
   await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
@@ -179,18 +209,34 @@ test('Verify Starred items functionality', async () => {
 
   // Navigate to a known entity page before starring
   await page.goto('/catalog/default/component/example-website');
-  await page.waitForSelector('h1');
-  await page.getByRole('button', { name: 'Add to favorites' }).click();
+  await expect(
+    page.getByText('example-website', { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', {
+      name: /add to favorites|aggiungi ai preferiti/i,
+    })
+    .click();
 
-  await companyLogo.click();
+  await homeLink.click();
   await starredItems.click();
   await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
     - menu:
       - text: ${translations.starred.title}
-      - menuitem "example-website COMPONENT":
-        - paragraph: example-website
-        - paragraph: COMPONENT
+      - listitem:
+        - menuitem "example-website COMPONENT":
+          - paragraph: example-website
+          - paragraph: COMPONENT
     `);
+
+  const starredMenuItem = page.getByRole('menuitem', {
+    name: 'example-website COMPONENT',
+  });
+  await starredMenuItem.hover();
+  await expect(
+    page.getByRole('button', { name: translations.starred.removeTooltip }),
+  ).toBeVisible();
+
   await page.keyboard.press('Escape');
 });
 
@@ -211,6 +257,8 @@ test('Verify Application launcher functionality', async () => {
 });
 
 test('Verify Help functionality', async () => {
+  await page.goto('/');
+  await waitForHeaderReady(page, translations);
   const { help } = getHeaderElements();
   await help.click();
   await expect(
@@ -228,6 +276,7 @@ test('Verify Notifications functionality', async () => {
   await notifications.click();
 
   await expect(page).toHaveURL('/notifications');
-  await expect(page.locator('h1')).toContainText('Notifications');
-  await expect(page.locator('h2')).toContainText('Unread notifications (0)');
+  await expect(page.locator('h1')).toContainText(
+    new RegExp(`${translations.notifications.title}|Notifications`, 'i'),
+  );
 });

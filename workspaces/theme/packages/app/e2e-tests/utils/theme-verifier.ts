@@ -29,10 +29,11 @@ export class ThemeVerifier {
   };
 
   async setTheme(theme: string) {
-    await this.page
-      .locator('nav')
-      .getByRole('link', { name: 'Settings' })
-      .click();
+    const settingsLink = this.page
+      .getByTestId('sidebar-root')
+      .getByRole('link', { name: 'Settings' });
+
+    await settingsLink.click();
     await expect(
       this.page.locator('nav').getByText('Settings').first(),
     ).toBeVisible();
@@ -43,10 +44,7 @@ export class ThemeVerifier {
     });
 
     // TODO: https://issues.redhat.com/browse/RHDHBUGS-2076 navigating back to settings page is needed until the issue is resolved
-    await this.page
-      .locator('nav')
-      .getByRole('link', { name: 'Settings' })
-      .click();
+    await settingsLink.click();
 
     await expect(themeButton).toHaveAttribute('aria-pressed', 'true');
   }

@@ -13,6 +13,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: QuickAccessCard
+          module: Legacy
           config:
             layouts:
               xl: { h: 8 }

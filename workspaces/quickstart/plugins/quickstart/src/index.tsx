@@ -20,20 +20,21 @@ import {
   createFrontendPlugin,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/blueprints';
 
 import { quickstartTranslations } from './translations';
 import { QUICKSTART_DRAWER_ID } from './const';
-import { QuickstartDrawerContent } from './QuickstartDrawerContent';
-import { QuickstartHelpMenuItem } from './QuickstartHelpMenuItem';
-import { QuickstartInit } from './QuickstartInit';
+import {
+  QuickstartDrawerContentElement,
+  QuickstartInitElement,
+} from './lazyQuickstartUi';
 
 const quickstartDrawer = AppDrawerContentBlueprint.make({
   name: 'quickstart',
   params: {
     id: QUICKSTART_DRAWER_ID,
-    element: <QuickstartDrawerContent />,
+    element: QuickstartDrawerContentElement,
     resizable: true,
     defaultWidth: 500,
   },
@@ -43,15 +44,20 @@ const quickstartHelpMenuItem = GlobalHeaderMenuItemBlueprint.make({
   name: 'quickstart',
   params: {
     target: 'help',
-    component: QuickstartHelpMenuItem,
     priority: 50,
+    loader: async () => {
+      const { QuickstartHelpMenuItem } = await import(
+        './QuickstartHelpMenuItem'
+      );
+      return QuickstartHelpMenuItem;
+    },
   },
 });
 
 const quickstartInitElement = AppRootElementBlueprint.make({
   name: 'quickstart-init',
   params: {
-    element: <QuickstartInit />,
+    element: QuickstartInitElement,
   },
 });
 
@@ -97,5 +103,3 @@ export {
   quickstartTranslationRef,
   quickstartTranslations,
 } from './translations';
-
-export * from './legacyExports';

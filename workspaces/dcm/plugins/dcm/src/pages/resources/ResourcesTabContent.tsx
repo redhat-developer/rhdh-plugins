@@ -14,68 +14,61 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { TableColumn, Progress } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
+
 import { Box, Button, Chip, Typography } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import type { ServiceTypeInstance } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { resourcesApiRef } from '../../apis';
-import { extractApiError } from '../../utils/extractApiError';
+import { useDcmClients } from '../../api/DcmClientsContext';
 import { DcmSearchTableCard } from '../../components/dcmTabListHelpers';
 import { useDcmStyles } from '../../components/dcmStyles';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { DcmDataCenterTabEmptyState } from '../../components/DcmDataCenterTabEmptyState';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
+import { usePaginatedFetch } from '../../hooks/usePaginatedFetch';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export function ResourcesTabContent() {
   const classes = useDcmStyles();
-  const resourcesApi = useApi(resourcesApiRef);
+  const { resourcesApi } = useDcmClients();
   const { t } = useTranslation();
 
-  const [instances, setInstances] = useState<ServiceTypeInstance[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = usePersistedPageSize('resources');
+  const [search, setSearch] = useState('');
 
-  const load = useCallback(() => {
-    setLoading(true);
-    setLoadError(null);
-    resourcesApi
-      .listServiceTypeInstances()
-      .then(res => setInstances(res.instances ?? []))
-      .catch(err => setLoadError(extractApiError(err)))
-      .finally(() => setLoading(false));
-  }, [resourcesApi]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  useEffect(() => {
-    setPage(0);
-  }, [search]);
+  const {
+    data,
+    loading,
+    error,
+    hasNext,
+    hasPrev,
+    goNext,
+    goPrev,
+    resetToFirstPage,
+  } = usePaginatedFetch<ServiceTypeInstance>({
+    fetchFn: ({ pageToken, pageSize: ps }) =>
+      resourcesApi
+        .listServiceTypeInstances({ page_token: pageToken, max_page_size: ps })
+        .then(res => ({
+          items: res.instances ?? [],
+          nextPageToken: res.next_page_token ?? '',
+        })),
+    pageSize,
+  });
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return instances;
+    if (!search.trim()) return data;
     const q = search.toLowerCase();
-    return instances.filter(
+    return data.filter(
       inst =>
         (inst.id ?? '').toLowerCase().includes(q) ||
         (inst.spec?.service_type ?? '').toLowerCase().includes(q) ||
-        (inst.provider_name ?? '').toLowerCase().includes(q) ||
+        (inst.agent_name ?? '').toLowerCase().includes(q) ||
         (inst.status ?? '').toLowerCase().includes(q),
     );
-  }, [instances, search]);
-
-  const paginated = useMemo(() => {
-    const start = page * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, page, pageSize]);
+  }, [data, search]);
 
   const columns = useMemo<TableColumn<ServiceTypeInstance>[]>(
     () => [
@@ -107,11 +100,12 @@ export function ResourcesTabContent() {
           ),
       },
       {
+        // as degraded when the associated agent is unavailable.
         title: t('resources.columns.provider'),
-        field: 'provider_name',
+        field: 'agent_name',
         render: inst => (
           <TruncatedText
-            text={inst.provider_name}
+            text={inst.agent_name}
             variant="body2"
             bold={false}
             maxWidth={200}
@@ -145,21 +139,21 @@ export function ResourcesTabContent() {
     [classes, t],
   );
 
-  if (loading) return <Progress />;
+  if (loading && data.length === 0) return <Progress />;
 
-  if (loadError) {
+  if (error) {
     return (
       <Box p={2}>
         <MuiAlert
           severity="error"
           variant="outlined"
           action={
-            <Button color="inherit" size="small" onClick={load}>
+            <Button color="inherit" size="small" onClick={resetToFirstPage}>
               {t('common.retry')}
             </Button>
           }
         >
-          {loadError}
+          {error}
         </MuiAlert>
       </Box>
     );
@@ -167,7 +161,7 @@ export function ResourcesTabContent() {
 
   return (
     <Box className={classes.root}>
-      {instances.length === 0 ? (
+      {data.length === 0 && !hasPrev ? (
         <DcmDataCenterTabEmptyState
           title={t('resources.emptyTitle')}
           description={t('resources.emptyDescription')}
@@ -176,15 +170,24 @@ export function ResourcesTabContent() {
       ) : (
         <DcmSearchTableCard<ServiceTypeInstance>
           title={(t as any)('resources.cardTitle', { count: filtered.length })}
-          data={paginated}
+          data={filtered}
           columns={columns}
           totalCount={filtered.length}
-          page={page}
+          page={1}
           pageSize={pageSize}
-          setPage={setPage}
+          setPage={() => {}}
           setPageSize={setPageSize}
           search={search}
           setSearch={setSearch}
+          cursorPagination={{
+            hasNext,
+            hasPrev,
+            onNext: goNext,
+            onPrev: goPrev,
+            loading,
+            pageSize,
+            onPageSizeChange: setPageSize,
+          }}
         />
       )}
     </Box>

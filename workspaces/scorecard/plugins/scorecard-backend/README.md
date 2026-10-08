@@ -94,13 +94,14 @@ For more information about schedule configuration options, see the [Metric Colle
 
 The following metric providers are available:
 
-| Provider       | Metric ID         | Title                       | Description                                                                                                                     | Type    |
-| -------------- | ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **GitHub**     | `github.openPRs`  | GitHub open PRs             | Count of open Pull Requests in GitHub                                                                                           | number  |
-| **Filecheck**  | `filecheck.*`     | File Checks                 | Checks whether specific files (e.g., `README.md`, `LICENSE`, `CODEOWNERS`) exist in a repository.                               | boolean |
-| **Jira**       | `jira.openIssues` | Jira open issues            | The number of opened issues in Jira                                                                                             | number  |
-| **OpenSSF**    | `openssf.*`       | OpenSSF Security Scorecards | 18 security metrics from OpenSSF Scorecards (e.g., `openssf.codeReview`, `openssf.maintained`). Each returns a score from 0-10. | number  |
-| **Dependabot** | `dependabot.*`    | Dependabot Alerts           | Critical, High, Medium and Low CVE Alerts                                                                                       | number  |
+| Provider       | Metric ID                                                                                                         | Title                       | Description                                                                                                                     | Type    |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **GitHub**     | `github.openPRs`                                                                                                  | GitHub open PRs             | Count of open Pull Requests in GitHub                                                                                           | number  |
+| **Filecheck**  | `filecheck.*`                                                                                                     | File Checks                 | Checks whether specific files (e.g., `README.md`, `LICENSE`, `CODEOWNERS`) exist in a repository.                               | boolean |
+| **Jira**       | `jira.openIssues`                                                                                                 | Jira open issues            | The number of opened issues in Jira                                                                                             | number  |
+| **OpenSSF**    | `openssf.*`                                                                                                       | OpenSSF Security Scorecards | 18 security metrics from OpenSSF Scorecards (e.g., `openssf.codeReview`, `openssf.maintained`). Each returns a score from 0-10. | number  |
+| **Dependabot** | `dependabot.*`                                                                                                    | Dependabot Alerts           | Critical, High, Medium and Low CVE Alerts                                                                                       | number  |
+| **DORA**       | `dora.deploymentFrequency`, `dora.medianLeadTimeForChanges`, `dora.medianTimeToRestore`, `dora.changeFailureRate` | DORA Metrics                | Software delivery performance metrics based on DORA (DevOps Research and Assessment)                                            | number  |
 
 To use these providers, install the corresponding backend modules:
 
@@ -109,10 +110,11 @@ To use these providers, install the corresponding backend modules:
 - OpenSSF: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf`](../scorecard-backend-module-openssf/README.md)
 - Dependabot: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot`](../scorecard-backend-module-dependabot/README.md)
 - Filecheck: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck`](../scorecard-backend-module-filecheck/README.md)
+- DORA: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora`](../scorecard-backend-module-dora/README.md)
 
 ### Disabling Metrics
 
-Administrators can disable metric checks globally via app-config, and users can disable them for concrete entity via `scorecard.io/disabled-metrics` annotation. For more details, see [disabled-metrics-logic.md](./docs/disabled-metrics-logic.md).
+Administrators can disable metric checks globally via `scorecard.disabledMetrics`, and users can disable them per entity via the `scorecard.io/disabled-metrics` annotation. Whether that annotation is honored is controlled by `scorecard.entityAnnotations.enabled` (global switch for all scorecard entity annotations) and `scorecard.entityAnnotations.disabledMetrics` (`enabled` / `except`). For more details, see [disabled-metrics-logic.md](./docs/disabled-metrics-logic.md).
 
 ## Thresholds
 
@@ -120,13 +122,25 @@ Thresholds define conditions to assign metric values to specific visual categori
 
 - **Provider Defaults**: Metric providers define default thresholds
 - **App Configuration**: Override defaults through `app-config.yaml`
-- **Entity Annotations**: Override specific thresholds per entity using catalog annotations
+- **Entity Annotations**: Override specific thresholds per entity using catalog annotations, can be disabled or restricted per metric via `scorecard.entityAnnotations.enabled` and `scorecard.entityAnnotations.thresholds`, see [threshold entity annotations](./docs/thresholds.md#3-entity-annotation-overrides)
 
-Thresholds are evaluated in order, and the first matching rule determines the category. The plugin supports various operators for number metrics (`>`, `>=`, `<`, `<=`, `==`, `!=`, `-` (range)) and boolean metrics (`==`, `!=`). For **number** metrics, configurations loaded through validated paths must cover the **entire real line** when two or more rules are defined (no gaps between intervals); **`weightedStatusScore`** KPI **`options.thresholds`** follow the same rule.
+Thresholds are evaluated in order, and the first matching rule determines the category. The plugin supports various operators for number metrics (`>`, `>=`, `<`, `<=`, `==`, `!=`, `-` (range)) and boolean metrics (`==`, `!=`). For **number** metrics, configurations loaded through validated paths must cover the **entire real line** when two or more rules are defined (no gaps between intervals).
 
-For comprehensive threshold configuration guide, examples, best practices, interval validation, and **aggregation KPI result thresholds** for **`type: weightedStatusScore`**, see [thresholds.md](./docs/thresholds.md).
+Thresholds can also be configured for some aggregation homepage cards. To configure card thresholds, use the `app-config.yaml` file and provide configuration under `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`. Check the table below to see which aggregation types support thresholds:
 
-## Aggregation KPIs (homepage and `GET /aggregations`)
+| Aggregation Type      | Type ID               | Is configuration supported |
+| --------------------- | --------------------- | -------------------------- |
+| Status Grouped        | `statusGrouped`       | **NO**                     |
+| Weighted Status Score | `weightedStatusScore` | **YES**                    |
+| Sum                   | `sum`                 | **YES**                    |
+| Average               | `average`             | **YES**                    |
+| Max                   | `max`                 | **YES**                    |
+| Min                   | `min`                 | **YES**                    |
+| Count                 | `count`               | **YES**                    |
+
+For a comprehensive threshold configuration guide, examples, best practices, interval validation, and **aggregation KPI result thresholds**, see [thresholds.md](./docs/thresholds.md).
+
+## Aggregation KPIs
 
 Aggregated scorecard data for the authenticated user’s owned entities is exposed under **`GET /aggregations/:aggregationId`**. Optional entries in **`scorecard.aggregationKPIs`** assign a stable **aggregation id** (KPI key), custom **title** and **description**, **type**, and the backing **metricId**.
 
@@ -165,19 +179,64 @@ scorecard:
             - key: error
               expression: '<10'
               color: error.main
+    totalCriticalPRs:
+      title: Total Critical PRs
+      description: Sum of open PRs for entities in error status
+      type: sum
+      metricId: github.openPRs
+      filter:
+        status: error
+      options:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<30'
+              color: '#6bb300'
+            - key: warning
+              expression: '30-80'
+              color: 'rgb(224, 189, 108)'
+            - key: error
+              expression: '>80'
+              color: '#be1ec7'
+    avgOpenIssues:
+      title: Average Open Issues
+      description: Mean open issues count per entity
+      type: average
+      metricId: jira.openIssues
+    avgDeploymentFrequency:
+      title: Average deployment frequency
+      description: Mean weekly production deploys across catalog entities you own.
+      type: average
+      metricId: dora.deploymentFrequency
+    entitiesWithOpenPrs:
+      title: Entities with Open PRs
+      description: Count of entities with a stored open-prs value
+      type: count
+      metricId: github.openPRs
+    maxOpenPrs:
+      title: Maximum Open PRs
+      description: Maximum open PR count per entity
+      type: max
+      metricId: github.openPRs
+    minOpenIssues:
+      title: Minimum Open Issues
+      description: Minimum open issues count per entity
+      type: min
+      metricId: jira.openIssues
 ```
 
-| Field         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `title`       | Display title for this aggregation (returned in API metadata).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `description` | Display description for this aggregation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `type`        | Aggregation algorithm: `statusGrouped` (counts per threshold status) or `weightedStatusScore` (normalized weighted score).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `metricId`    | Metric provider id used to load thresholds and compute counts.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `options`     | Optional for `statusGrouped`. **Required** for `weightedStatusScore`: must include **`options.statusScores`** — map status keys to numeric weights (typically one entry per **metric threshold rule key**). Optionally **`options.thresholds`** (same shape as metric thresholds; see [thresholds.md — Aggregation KPI result thresholds](./docs/thresholds.md#4-aggregation-kpi-result-thresholds-weightedstatusscore-type)); evaluated on **`weightedStatusScore`** (**0–100** portfolio percentage, **one decimal**); first match sets **`aggregationChartDisplayColor`**. The API includes **`weightedStatusScore`**, **`weightedStatusSum`**, **`weightedStatusMaxPossible`**, and **`aggregationChartDisplayColor`** (from configured or default result thresholds). |
+| Field         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`       | Display title for this aggregation (returned in API metadata).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `description` | Display description for this aggregation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `type`        | Aggregation algorithm: `statusGrouped` (counts per threshold status), `weightedStatusScore` (normalized weighted score), or a **scalar** type — `sum`, `average`, `max`, `min`, `count` (rollup of latest numeric metric values; see [aggregation.md](./docs/aggregation.md#aggregation-types)). Scalar types require a **number** metric.                                                                                                                                                                                                                                                                                                                                                                                  |
+| `metricId`    | Metric provider id used to load thresholds and compute counts or values.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `filter`      | Optional for **scalar types** only (silently ignored on **`statusGrouped`** / **`weightedStatusScore`**). **`filter.status`**: threshold status key (case-sensitive). Only latest rows with that status contribute to **`value`** and **`total`**. Must match a threshold rule **`key`** for **`metricId`** from provider defaults or app-config overrides at **`scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`** (or provider-level **`scorecard.metricProviders.<datasource>.<providerName>.thresholds`**) (validated at startup for scalar types). **`entitiesConsidered`** and **`calculationErrorCount`** stay full-portfolio. Returned in API **`metadata.filter`** when set. |
+| `options`     | **Optional:** extra configuration attributes required to further configure the aggregated card for a specific type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 - **Path**: `scorecard.aggregationKPIs.<aggregationId>`.
-- If **`aggregationKPIs` is omitted** or a given id is not listed, **`GET /aggregations/:aggregationId`** still works when **`aggregationId` equals the metric id** (e.g. `github.openPRs`): the backend uses that metric with the default `statusGrouped` aggregation and metric-defined title/description.
-- **Startup validation**: the backend validates every **`scorecard.aggregationKPIs`** entry when the plugin loads. Invalid configuration (including **`weightedStatusScore`** KPIs without **`options.statusScores`**, bad expressions, or unregistered **`metricId`**) causes the backend to **fail to start** with a clear error. At runtime, some edge cases may still be logged (for example skipping a KPI with unusable weights); prefer correcting app-config. See [aggregation.md](./docs/aggregation.md#configuration-validation).
+- If **`aggregationKPIs` is omitted** or a given id is not listed, aggregation KPIs still work, See [Default aggregation](./docs/aggregation.md#default-aggregation).
+- **Startup validation**: the backend validates every **`scorecard.aggregationKPIs`** entry when the plugin loads. Invalid configuration (including **`weightedStatusScore`** KPIs without **`options.statusScores`**, non-count scalar types on boolean metrics, invalid **`filter.status`** keys on scalar types, bad threshold expressions, or unregistered **`metricId`**) causes the backend to **fail to start** with a clear error. At runtime, some edge cases may still be logged (for example skipping a KPI with unusable weights); prefer correcting app-config. See [aggregation.md](./docs/aggregation.md#configuration-validation).
 
 **Homepage cards** are configured in the app (for example Dynamic Home Page mount points). They should pass **`aggregationId`** matching a key in `aggregationKPIs` or the metric id for the default case. See the [Scorecard frontend plugin README](../scorecard/README.md#homepage-scorecard-cards).
 
@@ -246,14 +305,140 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service?
   -H "Authorization: Bearer <token>"
 ```
 
+### `GET /metrics/catalog/:kind/:namespace/:name/time-series`
+
+Returns daily time-series points for one metric on a catalog entity. Each point is the latest sample (`MAX(id)` among success or calculation-error rows) for that UTC calendar day. On a mixed day the later sample wins, so a later error is returned as `{ "value": null, "error": "..." }` (and clients can gap a sparkline). Days with no rows (or only null without `error_message`) are omitted. Returns `200` with `points: []` when the entity and metric are authorized but no data exists in the range.
+
+The response also includes entity-resolved `thresholds` (provider defaults, then app-config, then entity annotation overrides) for sparkline legend rendering. Successful points include `thresholdEvaluation`: the matched threshold rule key from **read-time** evaluation of the point's `value` against those current `thresholds` (e.g. `success`, `warning`, `error`). This keeps legend keys and point classifications consistent when config changes. Calculation-error points omit `thresholdEvaluation`. When no rule matches, `thresholdEvaluation` is `null` (no per-point `error`). Threshold evaluation failures set that point's `error` (with `thresholdEvaluation` `null`).
+
+When entity threshold resolution fails (e.g. malformed annotation overrides), the response omits `thresholds`, sets top-level `thresholdsError` with the failure message, and leaves successful points unclassified (`thresholdEvaluation` `null`, no per-point `error`). There is no silent fallback to app-config / provider defaults.
+
+#### Path Parameters
+
+| Parameter   | Type   | Required | Description                        |
+| ----------- | ------ | -------- | ---------------------------------- |
+| `kind`      | string | Yes      | Entity kind (e.g., `component`)    |
+| `namespace` | string | Yes      | Entity namespace (e.g., `default`) |
+| `name`      | string | Yes      | Entity name                        |
+
+#### Query Parameters
+
+| Parameter  | Type   | Required | Description                                                          |
+| ---------- | ------ | -------- | -------------------------------------------------------------------- |
+| `metricId` | string | Yes      | Metric ID (e.g., `github.openPRs`)                                   |
+| `from`     | string | Yes      | Inclusive range start (ISO-8601)                                     |
+| `to`       | string | Yes      | Inclusive range end (ISO-8601); must be `>= from`; max span 365 days |
+
+#### Permissions
+
+Requires `scorecard.metric.read` permission and `catalog.entity.read` permission for the specific entity.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service/time-series?metricId=github.openPRs&from=2026-04-01T00:00:00.000Z&to=2026-04-30T23:59:59.999Z" \
+  -H "Authorization: Bearer <token>"
+```
+
+#### Example Response
+
+```json
+{
+  "metricId": "github.openPRs",
+  "entityRef": "component:default/my-service",
+  "metadata": {
+    "title": "GitHub open PRs",
+    "description": "The number of open pull requests.",
+    "type": "number",
+    "history": true,
+    "defaultVisualization": "donut"
+  },
+  "points": [
+    {
+      "value": 8,
+      "timestamp": "2026-04-27T23:10:00.000Z",
+      "thresholdEvaluation": "success"
+    },
+    {
+      "value": null,
+      "timestamp": "2026-04-28T16:00:00.000Z",
+      "error": "GitHub API 500"
+    },
+    {
+      "value": 25,
+      "timestamp": "2026-04-29T22:55:00.000Z",
+      "thresholdEvaluation": "warning"
+    },
+    {
+      "value": 12,
+      "timestamp": "2026-04-30T18:00:00.000Z",
+      "thresholdEvaluation": null,
+      "error": "Error: Invalid threshold expression"
+    }
+  ],
+  "thresholds": {
+    "rules": [
+      { "key": "success", "expression": "<10" },
+      { "key": "warning", "expression": "10-50" },
+      { "key": "error", "expression": ">50" }
+    ]
+  }
+}
+```
+
+### `GET /metrics/:metricId/collectors`
+
+Returns the collectors used as data sources for a composite metric calculation.
+
+#### Path Parameters
+
+| Parameter  | Type   | Required | Description                                                  |
+| ---------- | ------ | -------- | ------------------------------------------------------------ |
+| `metricId` | string | Yes      | Metric ID (e.g., `dora.changeFailureRate`, `github.openPRs`) |
+
+#### Permissions
+
+Requires `scorecard.metric.read` permission for the requested metric.
+
+#### Behavior
+
+- Returns `{ "collectors": [ ... ] }` with one entry per collector ID on the metric.
+- Metrics that do not use collectors (no `collectorIds`) return `{ "collectors": [] }`.
+- Unknown `metricId` returns `404 NotFoundError`.
+- Missing permission for the metric returns `403 NotAllowedError`.
+- A metric that references a collector ID that is not registered returns `500`.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/dora.changeFailureRate/collectors" \
+  -H "Authorization: Bearer <token>"
+```
+
+#### Example Response
+
+```json
+{
+  "collectors": [
+    {
+      "id": "github:doraDeployments",
+      "description": "Collects GitHub deployments."
+    },
+    {
+      "id": "jira:doraIncidents",
+      "description": "Collects Jira incidents."
+    }
+  ]
+}
+```
+
 ### `GET /aggregations/:aggregationId`
 
 Returns aggregated metrics for the authenticated user across all catalog entities they own (same ownership rules as the legacy route; see [aggregation.md](./docs/aggregation.md)).
 
-The **`aggregationId`** is either:
+Response **`result`** shape depends on **`metadata.aggregationType`**: status counts for **`statusGrouped`**, weighted score fields for **`weightedStatusScore`**, or scalar fields for **`sum`** / **`average`** / **`max`** / **`min`** / **`count`** — see [Scalar result fields](./docs/aggregation.md#scalar-result-fields). Scalar KPIs may also return **`metadata.filter`** when **`filter.status`** is configured.
 
-- A key under **`scorecard.aggregationKPIs`** in app-config (KPI-specific title, description, type, and `metricId`), or
-- The **metric id** itself when no KPI entry exists (default **statusGrouped** behavior).
+The **`aggregationId`** is a key under **`scorecard.aggregationKPIs`**, or a metric id when no KPI is configured. See [Default aggregation](#default-aggregation).
 
 #### Path Parameters
 
@@ -276,14 +461,101 @@ curl -X GET "{{url}}/api/scorecard/aggregations/github.openPRs" \
   -H "Authorization: Bearer <token>"
 ```
 
+### `GET /aggregations/:aggregationId/time-series`
+
+Returns a **daily** history of a **scalar** KPI (`sum`, `average`, `max`, `min`, or `count`) across entities you own. Each response point is one UTC day: Scorecard takes **latest stored row** for each owned entity that day (including calculation failures), then rolls successful values up with the KPI’s aggregation type. Optional **`filter.status`** applies only to successes. UTC days with no rows are omitted; a day with only failures is included with **`value: null`**, **`status: error`** and **`errors`** list.
+
+Only [scalar](./docs/aggregation.md#scalar-types) aggregation types are supported. **`statusGrouped`** and **`weightedStatusScore`** return **`400 Bad Request`**. See [aggregation.md](./docs/aggregation.md#get-aggregationsaggregationidtime-series) for details.
+
+#### Path Parameters
+
+| Parameter       | Type   | Required | Description                                                                                                          |
+| --------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `aggregationId` | string | Yes      | Same as `GET /aggregations/:aggregationId`. Must resolve to a scalar type (`sum`, `average`, `max`, `min`, `count`). |
+
+#### Query Parameters
+
+| Parameter | Type   | Required | Description                                                          |
+| --------- | ------ | -------- | -------------------------------------------------------------------- |
+| `from`    | string | Yes      | Inclusive range start (ISO-8601)                                     |
+| `to`      | string | Yes      | Inclusive range end (ISO-8601); must be `>= from`; max span 365 days |
+
+#### Authentication / permissions
+
+Requires user authentication, `scorecard.metric.read` permission, and `catalog.entity.read` permission for each aggregated entity.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/aggregations/avgDeploymentFrequency/time-series?from=2026-08-24T00:00:00.000Z&to=2026-08-24T23:59:59.999Z" \
+  -H "Authorization: Bearer <token>"
+```
+
+### Example Response
+
+```json
+{
+  "id": "avgDeploymentFrequency",
+  "metricId": "dora.deploymentFrequency",
+  "metadata": {
+    "title": "Average Deployment Frequency",
+    "description": "This KPI provides average weekly production deploys over a 30-day window per entity.",
+    "type": "number",
+    "unit": "/week",
+    "history": true,
+    "visualization": "sparkline",
+    "aggregationType": "average"
+  },
+  "points": [
+    {
+      "value": 6.8,
+      "successCount": 4,
+      "errorCount": 3,
+      "total": 7,
+      "status": "success",
+      "timestamp": "2026-08-24T00:00:00.000Z",
+      "errors": [
+        { "message": "GitHub API error", "count": 2 },
+        { "message": "timeout", "count": 1 }
+      ]
+    }
+  ],
+  "thresholds": {
+    "rules": [
+      {
+        "key": "elite",
+        "expression": ">=7",
+        "color": "success.main",
+        "icon": "scorecardSuccessStatusIcon"
+      },
+      {
+        "key": "medium",
+        "expression": "1-7",
+        "color": "warning.main",
+        "icon": "scorecardWarningStatusIcon"
+      },
+      {
+        "key": "error",
+        "expression": "<1",
+        "color": "error.main",
+        "icon": "scorecardErrorStatusIcon"
+      }
+    ]
+  },
+  "aggregationChartDisplayColor": "warning.main"
+}
+```
+
 ### `GET /aggregations/:aggregationId/metadata`
 
-Returns **title**, **description**, **type**, **history**, and **aggregationType** for the aggregation without computing full aggregate counts. Uses the same resolution rules as `GET /aggregations/:aggregationId` (KPI config vs metric id fallback).
+Returns **title**, **description**, **type**, **unit**, **history**, **visualization**, **aggregationType** for the aggregation without computing full aggregate counts. Includes **`filter`** when the KPI is a scalar type with **`filter.status`** configured. Uses the same resolution rules as `GET /aggregations/:aggregationId` (KPI config vs metric id fallback).
 
 ```bash
 curl -X GET "{{url}}/api/scorecard/aggregations/openIssuesKpi/metadata" \
   -H "Authorization: Bearer <token>"
 ```
+
+For endpoint details, see [aggregation.md](./docs/aggregation.md#get-aggregationsaggregationidmetadata).
 
 ### `GET /metrics/:metricId/catalog/aggregations` (deprecated; removal planned)
 

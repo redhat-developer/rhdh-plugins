@@ -13,4 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { scorecardPlugin as default } from './plugin';
+import { createBackendFeatureLoader } from '@backstage/backend-plugin-api';
+import { scorecardCollectorsServiceFactory } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { scorecardPlugin } from './plugin';
+
+/**
+ * Registers the collectors service factory and the scorecard plugin as a default export.
+ *
+ * Bundling them as a default export ensures RHDH's dynamic plugin loader (which only
+ * reads the default export) picks up the factory alongside the plugin as a single instance.
+ *
+ * @public
+ */
+export default createBackendFeatureLoader({
+  *loader() {
+    yield scorecardCollectorsServiceFactory;
+    yield scorecardPlugin;
+  },
+});
+
+export { scorecardPlugin };
+export { scorecardCollectorsServiceFactory };

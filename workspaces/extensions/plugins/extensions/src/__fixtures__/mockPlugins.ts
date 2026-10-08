@@ -27,6 +27,9 @@ export const mockPlugins: ExtensionsPlugin[] = [
     metadata: {
       namespace: 'default',
       name: 'plugin-1',
+      annotations: {
+        'extensions.backstage.io/catalog-source': 'primary',
+      },
     },
   },
   {
@@ -36,6 +39,9 @@ export const mockPlugins: ExtensionsPlugin[] = [
       namespace: 'default',
       name: 'plugin-2',
       title: 'Plugin 2',
+      annotations: {
+        'extensions.backstage.io/catalog-source': 'community',
+      },
     },
   },
 ];

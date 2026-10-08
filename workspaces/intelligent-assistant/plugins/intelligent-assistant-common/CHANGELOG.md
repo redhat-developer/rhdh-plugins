@@ -1,5 +1,132 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common
 
+## 5.3.6
+
+## 5.3.5
+
+## 5.3.4
+
+### Patch Changes
+
+- fb4ecee: Updated dependency `prettier` to `3.9.9`.
+
+## 5.3.3
+
+## 5.3.2
+
+## 5.3.1
+
+## 5.3.0
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+
+## 5.2.0
+
+## 5.1.0
+
+## 5.0.2
+
+## 5.0.1
+
+### Patch Changes
+
+- fe51be2: Backstage version bump to v1.54.6
+
+## 5.0.0
+
+### Major Changes
+
+- 5741af9: Consolidate Intelligent Assistant RBAC permissions into four feature-linked sets: `intelligent-assistant.chat`, `intelligent-assistant.notebooks`, `intelligent-assistant.mcp.tools`, and `intelligent-assistant.skills`. Update backend routes, frontend permission checks, example RBAC policies, and documentation to use the new permission names and exported constants.
+
+## 4.3.0
+
+## 4.2.0
+
+### Minor Changes
+
+- 5238698: Backstage version bump to v1.54.5
+
+## 4.1.0
+
+### Minor Changes
+
+- 6c8f76d: Removed public `iaSavedPromptsManagePermission` from the common package. Saved-prompts backend routes now require `intelligent-assistant.chat.use`. Operators should drop `intelligent-assistant.saved-prompts.manage` from RBAC CSVs; `chat.use` is enough.
+
+## 4.0.0
+
+### Major Changes
+
+- adb65c9: Breaking changes to MCP permissions using behavior-linked vocabulary rather than CRUD-linked vocabulary:
+
+  | Before (Lightspeed)     | Before (Intelligent Assistant)     | After              |
+  | ----------------------- | ---------------------------------- | ------------------ |
+  | `lightspeed.mcp.read`   | `intelligent-assistant.mcp.read`   | `mcp.tools.use`    |
+  | `lightspeed.mcp.manage` | `intelligent-assistant.mcp.manage` | `mcp.tools.manage` |
+
+  Removed permission CRUD action attributes; RBAC entries for these permission sets now use the generic `use` action.
+
+  Permission variable renamed from `iaMcpReadPermission` to `iaMcpUsePermission`; `iaMcpManagePermission` keeps its name.
+
+  Plugin documentation and example RBAC policy CSV updated to reflect the new MCP permission names.
+
+- 0ed3adc: Breaking changes to the notebooks permissions model that uses behavior-linked vocabulary:
+
+  | Before (Lightspeed)        | Before (Intelligent Assistant)        | After                                    |
+  | -------------------------- | ------------------------------------- | ---------------------------------------- |
+  | `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` | `intelligent-assistant.notebooks.use`    |
+  |                            |                                       | `intelligent-assistant.notebooks.manage` |
+  - `notebooks.use` covers list/read/create session, upload document, and query endpoints
+  - `notebooks.manage` covers update/delete session and document endpoints
+
+  Removed permission CRUD action attributes; RBAC entries for notebooks permission sets now use the generic `use` action.
+
+  Hard-coded permission names were replaced by constants from the permission entities.
+
+  Plugin documentation and example RBAC policy CSV updated to reflect the notebooks permission model.
+
+- f1dba9b: Breaking changes to the permissions model that uses behavior-linked vocabulary rather than CRUD-linked vocabulary:
+
+  | Before (Lightspeed)      | Before (Intelligent Assistant)      | After                               |
+  | ------------------------ | ----------------------------------- | ----------------------------------- |
+  | `lightspeed.chat.read`   | `intelligent-assistant.chat.read`   | `intelligent-assistant.chat.access` |
+  | `lightspeed.chat.create` | `intelligent-assistant.chat.create` | `intelligent-assistant.chat.use`    |
+  | `lightspeed.chat.delete` | `intelligent-assistant.chat.delete` | `intelligent-assistant.chat.manage` |
+  | `lightspeed.chat.update` | `intelligent-assistant.chat.update` | `intelligent-assistant.chat.manage` |
+
+  Changes are applied to `lightspeed` (Frontend), `lightspeed-backend`, and `lightspeed-common` plugins.
+
+  Removed permission CRUD action attributes, rbac entries for permission sets now to generic 'use' action, allows `intelligent-assistant.chat.manage` to combine the update and delete actions.
+
+  Any hard-coded permission names have been replaced by constants, source references permission names from the permission entities.
+
+  `Trans.test.tsx` component test unit has permission names to reflect Intelligent Assistant for RHDH.
+
+  Additionally, hard-coded permission names have been replaced by local constants with the new names set.
+
+  Plugin documentation changes to revise information to permissions model changes to Intelligent Assistant for RHDH.
+
+  Changed permission variable 'lightspeed' prefix to 'ia' to use Intelligent Assistant rebranding.
+
+  Changes to example RBAC policy CSV file to reflect Intelligent Assistant for RHDH.
+
+### Patch Changes
+
+- 3d1d7d7: introduced new endpoint to proxy to LCORE /v1/skills endpoint, to be able to list available skills. also the backend endpoint will be gated by the new rbac permission: intelligent-assistant.skills.access
+
+## 3.2.0
+
+### Minor Changes
+
+- 81b7ed2: add saved prompts endpoint
+
+### Patch Changes
+
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+
 ## 3.1.0
 
 ## 3.0.3
@@ -28,6 +155,10 @@
 ## 2.9.1
 
 ## 2.9.0
+
+## 2.8.7
+
+## 2.8.6
 
 ## 2.8.5
 

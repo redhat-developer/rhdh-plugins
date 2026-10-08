@@ -25,12 +25,17 @@ const scorecardTranslationJa = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
     'common.loading': '読み込み中',
+    'common.current': '現在',
     'dataSourcesDialog.title': '{{title}} ソース',
     'dataSourcesDialog.close': '閉じる',
     'dataSourcesDialog.unknownPlugin': '不明',
     'dataSourcesDialog.statusTooltip':
-      '値 {{value}} はしきい値 {{status}} {{expression}} に一致します',
-    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+      '値 {{value}} はしきい値 {{status}} {{expression}} と一致します',
+    'dataSourcesDialog.collectorStatusTooltip':
+      'このコレクターは入力データのみを提供します。{{metric}} チェック値はコレクターから計算され、スコアカードのカードに表示されます。',
+    'dataSourcesDialog.collectorEmptyValue': '--',
+    'dataSourcesDialog.collectorUnavailableStatus': '該当なし',
+    'dataSourcesDialog.columns.plugin': 'プラグイン',
     'dataSourcesDialog.columns.check': 'チェック',
     'dataSourcesDialog.columns.value': '値',
     'dataSourcesDialog.columns.status': 'ステータス',
@@ -85,9 +90,9 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.weightedStatusScoreCenterTooltipMaxLabel': '最高スコア',
     'metric.weightedStatusScoreCenterTooltipTotalLabel': '合計スコア',
     'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
-      '{{status}}: {{count}} entity, score: {{score}}',
+      '{{status}}: {{count}} エンティティー、スコア: {{score}}',
     'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
-      '{{status}}: {{count}} entities, score: {{score}}',
+      '{{status}}: {{count}} エンティティー、スコア: {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
       '{{count}} 個のエンティティー、各 {{score}}',
     'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
@@ -95,6 +100,19 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.weightedStatusScoreLegendTooltipRowTotal': '合計スコア {{total}}',
     'metric.drillDownCalculationFailures':
       'このメトリクスの計算中に 1 つ以上のエンティティーが失敗しました。',
+    'metric.dora.deploymentFrequency.description':
+      '過去 30 日間に、コードが実稼働環境に正常にデプロイされた頻度を追跡します。Elite パフォーマーは、オンデマンドで (1 日に複数回) デプロイを実行します。',
+    'metric.dora.deploymentFrequency.title': 'DORA - デプロイメントの頻度',
+    'metric.dora.medianLeadTimeForChanges.description':
+      '過去 30 日間における、コードコミットから実稼働環境へのデプロイメントまでの所要時間の中央値を計測します。Elite パフォーマーのリードタイムは 24 時間未満です。',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - 変更のリードタイムの中央値',
+    'metric.dora.changeFailureRate.description':
+      '過去 30 日間の実稼働環境において、障害を引き起こしたデプロイメントの割合を監視します。Elite パフォーマーの変更失敗率は 5% 未満を維持しています。',
+    'metric.dora.changeFailureRate.title': 'DORA - 変更失敗率',
+    'metric.dora.medianTimeToRestore.description':
+      '過去 30 日間のインシデント発生後における、サービス復元時間の中央値を追跡します。Elite パフォーマーは、1 時間未満でサービスを復元します。',
+    'metric.dora.medianTimeToRestore.title': 'DORA - 復元時間の中央値',
     'metric.filecheck.description':
       'リポジトリー内に {{name}} ファイルが存在するかどうかを確認します。',
     'metric.filecheck.title': 'ファイルチェック: {{name}}',
@@ -104,6 +122,11 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.homepageEntityCalculationHealth':
       'メトリクス計算エラーのないエンティティー: {{healthy}} / {{total}}',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} エンティティー',
+    'aggregation.min': '最小',
+    'aggregation.max': '最大',
+    'aggregation.sum': '合計',
+    'aggregation.count': 'カウント',
+    'aggregation.average': '平均',
     'metric.jira.openIssues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
     'metric.jira.openIssues.title':
@@ -154,7 +177,7 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.sonarqube.securityReviewRating.title':
       'SonarQube のセキュリティーレビュー評価',
     'metricGroupCard.menuAriaLabel': 'その他のオプション',
-    'metricGroupCard.viewDataSources': 'ソースを表示',
+    'metricGroupCard.viewDataSources': 'データソースを表示する',
     'notFound.altText': 'ページが見つかりません',
     'notFound.contactSupport': 'サポートにお問い合わせください',
     'notFound.description':
@@ -167,10 +190,13 @@ const scorecardTranslationJa = createTranslationMessages({
     'permissionRequired.description':
       'スコアカードプラグインを表示するには、管理者に連絡して {{permission}} 権限を付与してもらうよう依頼してください。',
     'permissionRequired.title': '権限がありません',
+    'thresholds.elite': 'Elite',
     'thresholds.entities_one': '{{count}} 個のエンティティー',
     'thresholds.entities_other': '{{count}} 個のエンティティー',
     'thresholds.error': 'エラー',
     'thresholds.exist': '存在する',
+    'thresholds.low': '低',
+    'thresholds.medium': '中',
     'thresholds.missing': 'なし',
     'thresholds.noEntities': '{{category}} 状態のエンティティーはありません',
     'thresholds.success': '成功',

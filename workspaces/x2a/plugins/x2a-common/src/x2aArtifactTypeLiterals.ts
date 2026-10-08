@@ -26,6 +26,8 @@ export const X2A_ARTIFACT_TYPE_VALUES = [
   'migration_plan',
   'module_migration_plan',
   'migrated_sources',
+  'adversarial_report',
+  'adversarial_report_json',
   'project_metadata',
   'ansible_project',
 ] as const satisfies readonly ArtifactType[];

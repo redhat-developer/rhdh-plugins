@@ -15,13 +15,10 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
-import {
-  ChatDrawerContent,
-  HelpDrawerContent,
-  HelpDrawerMenuItem,
-} from './DrawerDemoContent';
+import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
+import { ChatDrawerContent, HelpDrawerContent } from './DrawerDemoContent';
+import { HelpDrawerMenuItem } from './HelpDrawerMenuItem';
 
 const chatDrawer = AppDrawerContentBlueprint.make({
   name: 'demo-chat',

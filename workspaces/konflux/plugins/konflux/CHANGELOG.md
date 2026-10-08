@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-konflux
 
+## 0.2.1
+
+### Patch Changes
+
+- e567d2b: Bumped Backstage version to 1.54.0.
+- Updated dependencies [e567d2b]
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.2.1
+
+## 0.2.0
+
+### Minor Changes
+
+- 400949f: Added support for the New Frontend System (NFS) with an alpha export, required for RHDH 2.1 compatibility.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-konflux-common@0.2.0
+
 ## 0.1.8
 
 ### Patch Changes

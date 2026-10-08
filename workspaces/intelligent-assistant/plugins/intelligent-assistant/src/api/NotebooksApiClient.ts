@@ -200,6 +200,21 @@ export class NotebooksApiClient implements NotebooksAPI {
     }));
   }
 
+  async renameDocument(
+    sessionId: string,
+    documentId: string,
+    newTitle: string,
+  ) {
+    const baseUrl = await this.getBaseUrl();
+    await this.fetchJson(
+      `${baseUrl}/v1/sessions/${encodeURIComponent(sessionId)}/documents/${encodeURIComponent(documentId)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ title: newTitle }),
+      },
+    );
+  }
+
   async deleteDocument(sessionId: string, documentId: string) {
     const baseUrl = await this.getBaseUrl();
     await this.fetchJson(
@@ -220,6 +235,7 @@ export class NotebooksApiClient implements NotebooksAPI {
   async querySession(
     sessionId: string,
     query: string,
+    options?: { signal?: AbortSignal },
   ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
     const baseUrl = await this.getBaseUrl();
     const response = await this.fetchApi.fetch(
@@ -228,6 +244,7 @@ export class NotebooksApiClient implements NotebooksAPI {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
+        signal: options?.signal,
       },
     );
 

@@ -15,8 +15,10 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: CatalogStarredEntitiesCard
+          module: Legacy
         - mountPoint: home.page/cards
           importName: CatalogStarredEntitiesCard
+          module: Legacy
           config:
             props:
               groupByKind: true

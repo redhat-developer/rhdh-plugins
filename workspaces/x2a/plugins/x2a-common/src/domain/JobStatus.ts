@@ -23,6 +23,7 @@ export class JobStatus {
   static readonly SUCCESS = new JobStatus('success');
   static readonly ERROR = new JobStatus('error');
   static readonly CANCELLED = new JobStatus('cancelled');
+  static readonly STALE = new JobStatus('stale');
 
   private static readonly BY_VALUE = new Map<string, JobStatus>(
     [
@@ -31,6 +32,7 @@ export class JobStatus {
       JobStatus.SUCCESS,
       JobStatus.ERROR,
       JobStatus.CANCELLED,
+      JobStatus.STALE,
     ].map(s => [s.value, s]),
   );
 
@@ -53,6 +55,7 @@ export class JobStatus {
       JobStatus.SUCCESS,
       JobStatus.ERROR,
       JobStatus.CANCELLED,
+      JobStatus.STALE,
     ];
   }
 
@@ -65,7 +68,12 @@ export class JobStatus {
   }
 
   static finishedStatuses(): readonly JobStatus[] {
-    return [JobStatus.SUCCESS, JobStatus.ERROR, JobStatus.CANCELLED];
+    return [
+      JobStatus.SUCCESS,
+      JobStatus.ERROR,
+      JobStatus.CANCELLED,
+      JobStatus.STALE,
+    ];
   }
 
   isActive(): boolean {
@@ -94,6 +102,10 @@ export class JobStatus {
 
   isCancelled(): boolean {
     return this === JobStatus.CANCELLED;
+  }
+
+  isStale(): boolean {
+    return this === JobStatus.STALE;
   }
 
   equals(other: JobStatus): boolean {

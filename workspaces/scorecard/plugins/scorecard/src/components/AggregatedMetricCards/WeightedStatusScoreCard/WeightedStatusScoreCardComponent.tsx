@@ -73,10 +73,9 @@ export const WeightedStatusScoreCardComponent = ({
 
   const centerPercentLabel = `${formatPercentage(weightedStatusScorePercent)}%`;
 
-  const arcResolvedColor = resolveStatusColor(
-    theme,
-    scorecard.result.aggregationChartDisplayColor,
-  );
+  const arcResolvedColor = scorecard.result.aggregationChartDisplayColor
+    ? resolveStatusColor(theme, scorecard.result.aggregationChartDisplayColor)
+    : theme.palette.grey[300];
 
   const weightedStatusScorePieData: PieData[] = [
     {

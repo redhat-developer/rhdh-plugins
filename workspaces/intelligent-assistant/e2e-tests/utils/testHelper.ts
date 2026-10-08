@@ -49,9 +49,46 @@ export const switchToLocale = async (page: Page, locale: string) => {
   await page.locator('a').filter({ hasText: 'Home' }).click();
 };
 
+async function ensureGuestSession(page: Page) {
+  const enter = page.getByRole('button', { name: 'Enter' });
+  if (!(await enter.isVisible().catch(() => false))) {
+    return;
+  }
+  await enter.click();
+  await enter.waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {});
+  const settings = page.getByRole('link', { name: 'Settings' });
+  const legacyMain = page.locator('main[class*="BackstagePage-root"]').first();
+  await Promise.race([
+    settings.waitFor({ state: 'visible', timeout: 15_000 }),
+    legacyMain.waitFor({ state: 'visible', timeout: 15_000 }),
+  ]).catch(() => {});
+}
+
+export const waitForChatbotVisible = async (page: Page) => {
+  const chatbot = page.getByLabel('Chatbot', { exact: true });
+  const deadline = Date.now() + 30_000;
+
+  while (Date.now() < deadline) {
+    if (await chatbot.isVisible().catch(() => false)) {
+      return;
+    }
+    await ensureGuestSession(page);
+    if (await chatbot.isVisible().catch(() => false)) {
+      return;
+    }
+    await page.waitForTimeout(250);
+  }
+
+  await chatbot.waitFor({ state: 'visible', timeout: 1_000 });
+};
+
 export const openLightspeed = async (page: Page) => {
   await page.goto('/intelligent-assistant');
-  await page.locator('.pf-chatbot__messagebox').waitFor({ state: 'visible' });
+  await ensureGuestSession(page);
+  if (!page.url().includes('intelligent-assistant')) {
+    await page.goto('/intelligent-assistant');
+  }
+  await waitForChatbotVisible(page);
 };
 
 export const sendMessage = async (

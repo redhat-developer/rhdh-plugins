@@ -13,6 +13,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: FeaturedDocsCard
+          module: Legacy
 ```
 
 ## Available props

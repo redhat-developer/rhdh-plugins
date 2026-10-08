@@ -21,12 +21,8 @@ import { InstallException } from './errors';
 import { log } from './log';
 import { resolveImage } from './image-resolver';
 import { type Skopeo } from './skopeo';
-import {
-  DOCKER_PROTO,
-  DPDY_FILENAME,
-  MAX_ENTRY_SIZE,
-  OCI_PROTO,
-} from './types';
+import { DOCKER_PROTO, isDockerUrl, OCI_PROTO } from './protocols';
+import { DPDY_FILENAME, MAX_ENTRY_SIZE } from './types';
 import { fileExists, isAllowedEntryType, isInside } from './util';
 
 type OciManifest = {
@@ -98,7 +94,7 @@ export async function extractCatalogIndexLayers(
     path.join(os.tmpdir(), 'rhdh-catalog-index-'),
   );
   try {
-    const url = resolved.startsWith(DOCKER_PROTO)
+    const url = isDockerUrl(resolved)
       ? resolved
       : `${DOCKER_PROTO}${resolved.replace(OCI_PROTO, '')}`;
     const localDir = path.join(workDir, 'idx');

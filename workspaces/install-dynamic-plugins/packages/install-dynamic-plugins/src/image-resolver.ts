@@ -15,7 +15,8 @@
  */
 import { log } from './log';
 import { type Skopeo } from './skopeo';
-import { DOCKER_PROTO, OCI_PROTO, RHDH_FALLBACK, RHDH_REGISTRY } from './types';
+import { DOCKER_PROTO, isDockerUrl, isOciUrl, OCI_PROTO } from './protocols';
+import { RHDH_FALLBACK, RHDH_REGISTRY } from './types';
 
 /**
  * Resolve a (possibly oci:// / docker://) image reference. If it points at
@@ -38,9 +39,9 @@ export async function resolveImage(
 }
 
 function stripProto(image: string): { proto: string; raw: string } {
-  if (image.startsWith(OCI_PROTO))
+  if (isOciUrl(image))
     return { proto: OCI_PROTO, raw: image.slice(OCI_PROTO.length) };
-  if (image.startsWith(DOCKER_PROTO))
+  if (isDockerUrl(image))
     return { proto: DOCKER_PROTO, raw: image.slice(DOCKER_PROTO.length) };
   return { proto: '', raw: image };
 }

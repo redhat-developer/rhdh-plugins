@@ -17,7 +17,7 @@
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 
-import { AiCatalogFilterBlueprint } from '@red-hat-developer-hub/backstage-plugin-boost';
+import { AiCatalogFilterBlueprint } from '@red-hat-developer-hub/backstage-plugin-ai-catalog';
 
 function uniqueSorted(
   items: (string | undefined)[],
@@ -66,6 +66,6 @@ const lifecycleFilterExt = AiCatalogFilterBlueprint.make({
 });
 
 export const sampleFilterModule = createFrontendModule({
-  pluginId: 'boost',
+  pluginId: 'ai-catalog',
   extensions: [lifecycleFilterExt],
 });

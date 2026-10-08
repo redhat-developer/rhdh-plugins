@@ -26,4 +26,6 @@ export type ArtifactType =
   | 'module_migration_plan'
   | 'migrated_sources'
   | 'project_metadata'
-  | 'ansible_project';
+  | 'ansible_project'
+  | 'adversarial_report'
+  | 'adversarial_report_json';

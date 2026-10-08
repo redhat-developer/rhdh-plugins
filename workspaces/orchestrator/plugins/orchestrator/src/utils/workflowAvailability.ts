@@ -16,9 +16,6 @@
 
 import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-export const isWorkflowUnavailable = (isAvailable?: boolean): boolean =>
-  isAvailable === false;
-
 export const hasWorkflowAvailabilityDetails = (
   availability?: WorkflowOverviewDTO['availability'],
 ): availability is NonNullable<WorkflowOverviewDTO['availability']> =>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ComponentType } from 'react';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { FormWidgetsApi } from './FormWidgetsApi';
 import * as utils from './utils';
 
@@ -23,15 +23,20 @@ jest.mock('./utils', () => {
   return {
     ...actual,
     useGetExtraErrors: jest.fn(),
+    useGetExtraErrorsForField: jest.fn(),
   };
 });
 
 const mockedUseGetExtraErrors = utils.useGetExtraErrors as jest.Mock;
+const mockedUseGetExtraErrorsForField =
+  utils.useGetExtraErrorsForField as jest.Mock;
 
 describe('FormWidgetsApi', () => {
   beforeEach(() => {
     mockedUseGetExtraErrors.mockReset();
     mockedUseGetExtraErrors.mockReturnValue(jest.fn());
+    mockedUseGetExtraErrorsForField.mockReset();
+    mockedUseGetExtraErrorsForField.mockReturnValue(jest.fn());
   });
 
   it('returns undefined review component by default', () => {
@@ -39,7 +44,10 @@ describe('FormWidgetsApi', () => {
     expect(api.getReviewComponent?.()).toBeUndefined();
   });
 
-  it('decorates form component with widgets and context props', () => {
+  it('decorates form component with widgets and context props', async () => {
+    // Pre-load the lazy module so import() resolves from cache
+    await import('./FormDecoratorContent');
+
     const api = new FormWidgetsApi();
     const receivedProps: Record<string, unknown>[] = [];
 
@@ -61,6 +69,10 @@ describe('FormWidgetsApi', () => {
       />,
     );
 
+    // Flush the microtask queue so the dynamic import resolves
+    // and the state update re-renders the component
+    await act(async () => {});
+
     expect(receivedProps).toHaveLength(1);
     expect(receivedProps[0].widgets).toEqual(
       expect.objectContaining({
@@ -73,6 +85,9 @@ describe('FormWidgetsApi', () => {
     );
     expect(receivedProps[0].customValidate).toEqual(expect.any(Function));
     expect(receivedProps[0].getExtraErrors).toEqual(expect.any(Function));
+    expect(receivedProps[0].getExtraErrorsForField).toEqual(
+      expect.any(Function),
+    );
     expect(receivedProps[0].formContext).toEqual(
       expect.objectContaining({
         formData: expect.any(Object),

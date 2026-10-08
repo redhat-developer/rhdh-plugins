@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
@@ -37,10 +37,12 @@ import {
   clearExtraErrorAtPath,
   rjsfIdToFieldPath,
 } from '../utils/clearExtraErrorAtPath';
+import { getFieldValidationConfig } from '../utils/fieldValidationConfig';
 import { getActiveStepKey } from '../utils/getSortedStepEntries';
 import { normalizeErrorSchema } from '../utils/resolveStepErrorSchema';
 import { useStepperContext } from '../utils/StepperContext';
 import { toRootExtraErrors } from '../utils/toRootExtraErrors';
+import { useFieldValidation } from '../utils/useFieldValidation';
 import useValidator from '../utils/useValidator';
 import { AuthRequester } from './AuthRequester';
 import HiddenObjectFieldTemplate from './HiddenObjectFieldTemplate';
@@ -70,6 +72,23 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
   const validator = useValidator(isMultiStep);
   const { t } = useTranslation();
 
+  const formDataRef = useRef<JsonObject>(formContext?.formData ?? {});
+  useEffect(() => {
+    formDataRef.current = formContext?.formData ?? {};
+  }, [formContext?.formData]);
+
+  const { validatingFields, triggerFieldValidation } = useFieldValidation({
+    uiSchema: formContext?.uiSchema ?? {},
+    getExtraErrorsForField: decoratorProps.getExtraErrorsForField,
+    setExtraErrors,
+    formDataRef,
+  });
+
+  const enhancedFormContext = useMemo(
+    () => (formContext ? { ...formContext, validatingFields } : formContext),
+    [formContext, validatingFields],
+  );
+
   useEffect(() => {
     clearFormErrorsRef.current = () => {
       setExtraErrors(undefined);
@@ -84,21 +103,18 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     return <div>{t('formDecorator.error')}</div>;
   }
 
-  const {
-    uiSchema,
-    schema,
-    onSubmit: _onSubmit,
-    children,
-    formData,
-    setFormData,
-  } = formContext;
+  const { onSubmit: _onSubmit, children, setFormData } = formContext;
 
   const getActiveKey = () => {
     if (!isMultiStep) {
       return undefined;
     }
 
-    return getActiveStepKey(schema, activeStep, formData);
+    return getActiveStepKey(
+      formContext.schema,
+      activeStep,
+      formContext.formData,
+    );
   };
 
   const onSubmit = async (_formData: JsonObject) => {
@@ -106,14 +122,16 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     let _extraErrors: ErrorSchema<JsonObject> | undefined = undefined;
     let _validationError: Error | undefined = undefined;
     const activeKey = getActiveKey();
+    const { uiSchema: currentUiSchema } = formContext;
     const shouldScopeExtraErrors =
-      Boolean(activeKey) && Boolean(uiSchema?.[activeKey as string]);
-    const extraErrorsFormData = (_formData ?? formData) as JsonObject;
+      Boolean(activeKey) && Boolean(currentUiSchema?.[activeKey as string]);
+    const extraErrorsFormData = (_formData ??
+      formContext.formData) as JsonObject;
     const extraErrorsUiSchema = shouldScopeExtraErrors
       ? ({
-          [activeKey as string]: uiSchema?.[activeKey as string],
+          [activeKey as string]: currentUiSchema?.[activeKey as string],
         } as OrchestratorFormContextProps['uiSchema'])
-      : uiSchema;
+      : currentUiSchema;
 
     if (decoratorProps.getExtraErrors) {
       try {
@@ -150,16 +168,36 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     }
   };
 
+  const onBlur = (id: string, _value: unknown) => {
+    const fieldPath = rjsfIdToFieldPath(id);
+    if (fieldPath) {
+      triggerFieldValidation(fieldPath, 'blur');
+    }
+  };
+
   const onChange = (
     e: IChangeEvent<JsonObject, JSONSchema7, OrchestratorFormContextProps>,
     id?: string,
   ) => {
     const fieldPath = rjsfIdToFieldPath(id);
-    setExtraErrors(prev => clearExtraErrorAtPath(prev, fieldPath));
+    const hasChangeValidation =
+      fieldPath &&
+      getFieldValidationConfig(
+        formContext.uiSchema,
+        fieldPath,
+      )?.validateOn.includes('change');
+    if (!hasChangeValidation) {
+      setExtraErrors(prev => clearExtraErrorAtPath(prev, fieldPath));
+    }
     setValidationError(undefined);
-    setFormData(e.formData || {});
+    const latestFormData = e.formData || {};
+    formDataRef.current = latestFormData;
+    setFormData(latestFormData);
     if (decoratorProps.onChange) {
       decoratorProps.onChange(e, id);
+    }
+    if (fieldPath) {
+      triggerFieldValidation(fieldPath, 'change');
     }
   };
 
@@ -172,21 +210,22 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       )}
       <Grid item>
         <MuiForm
-          {...omit(decoratorProps, 'getExtraErrors')}
+          {...omit(decoratorProps, 'getExtraErrors', 'getExtraErrorsForField')}
           widgets={{ AuthRequester, ...decoratorProps.widgets }}
           fields={isMultiStep ? { ObjectField: StepperObjectField } : {}}
           templates={{
             ObjectFieldTemplate: HiddenObjectFieldTemplate,
           }}
-          uiSchema={uiSchema}
+          uiSchema={formContext.uiSchema}
           validator={validator}
-          schema={schema}
-          formData={formData}
-          formContext={formContext}
+          schema={formContext.schema}
+          formData={formContext.formData}
+          formContext={enhancedFormContext}
           noHtml5Validate
           extraErrors={normalizeErrorSchema(extraErrors)}
           onSubmit={e => onSubmit(e.formData || {})}
           onChange={onChange}
+          onBlur={onBlur}
         >
           {children}
         </MuiForm>

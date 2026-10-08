@@ -1,5 +1,134 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot
 
+## 1.1.4
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.2
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@4.4.2
+
+## 1.1.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@4.4.1
+
+## 1.1.2
+
+### Patch Changes
+
+- Updated dependencies [8c690d2]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.4.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.0
+
+## 1.1.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@4.3.1
+
+## 1.1.0
+
+### Minor Changes
+
+- a7a1b4a: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- Updated dependencies [9c1936e]
+- Updated dependencies [2bb0ec5]
+- Updated dependencies [485fadb]
+- Updated dependencies [befccc2]
+- Updated dependencies [c380e6b]
+- Updated dependencies [fea86e8]
+- Updated dependencies [ff6683f]
+- Updated dependencies [ecb789b]
+- Updated dependencies [47ac76d]
+- Updated dependencies [c7b7410]
+- Updated dependencies [f3f71a5]
+- Updated dependencies [a7a1b4a]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.3.0
+
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [e486f80]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.2.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.2.0
+
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [3af0fb2]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.1.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.1.0
+
+## 1.0.0
+
+### Major Changes
+
+- 8c14679: **BREAKING**: Scorecard provider configuration now lives under top-level `scorecard.metricProviders` instead of `scorecard.plugins`. Provider IDs must be `<datasource>.<providerName>` (no longer equal to the datasource alone). Entity annotations for thresholds use now the full metric ID instead of provider ID.
+
+  Thresholds from configuration are determined by the most specific setting (**metric > provider**):
+
+  1. `metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`
+  2. `metricProviders.<datasource>.<providerName>.thresholds`
+
+  Config keys are local names (no datasource prefix). Entity annotations use the full metric ID:
+  `scorecard.io/<metricId>.thresholds.rules.<key>`.
+
+  Filecheck provider ID is now `filecheck.fileExistence`; files move under `options`:
+
+  ```diff
+   scorecard:
+  -  plugins:
+  -    filecheck:
+  -      files:
+  -        license: LICENSE
+  -        codeowners: CODEOWNERS
+  -      thresholds: ...
+  -      schedule: ...
+  +  metricProviders:
+  +    filecheck:
+  +      fileExistence:
+  +        options:
+  +          files:
+  +            license: LICENSE
+  +            codeowners: CODEOWNERS
+  +        thresholds: ...
+  +        schedule: ...
+  ```
+
+  Migration from the previous `scorecard.plugins` layout:
+
+  ```diff
+   scorecard:
+  -  plugins:
+  +  metricProviders:
+       github:
+         openPRs:
+           schedule: ...
+           thresholds: ...
+  ```
+
+### Patch Changes
+
+- Updated dependencies [8c14679]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.0.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.0.0
+
+## 0.4.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@3.0.1
+
 ## 0.4.0
 
 ### Minor Changes

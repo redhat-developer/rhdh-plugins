@@ -20,7 +20,12 @@ import {
   TestDatabases,
 } from '@backstage/backend-test-utils';
 import { DatabaseMetricValues } from './DatabaseMetricValues';
-import { DbMetricValueCreate } from './types';
+import {
+  DbMetricValueCreate,
+  DbScalarTimeSeriesPoint,
+  ScalarAggregationFn,
+} from './types';
+import { toMetricValueRow } from './utils/mapMetricValueRow';
 import { migrate } from './migration';
 
 jest.setTimeout(60000);
@@ -29,24 +34,24 @@ const baseTimestamp = new Date('2023-01-01T00:00:00Z');
 
 const metricValues: DbMetricValueCreate[] = [
   {
-    catalog_entity_ref: 'component:default/test-service',
-    metric_id: 'github.metric1',
+    catalogEntityRef: 'component:default/test-service',
+    metricId: 'github.metric1',
     value: 41,
     timestamp: baseTimestamp,
     status: 'success',
   },
   {
-    catalog_entity_ref: 'component:default/another-service',
-    metric_id: 'github.metric1',
+    catalogEntityRef: 'component:default/another-service',
+    metricId: 'github.metric1',
     value: 25,
     timestamp: baseTimestamp,
     status: 'success',
   },
   {
-    catalog_entity_ref: 'component:default/another-service',
-    metric_id: 'github.metric2',
+    catalogEntityRef: 'component:default/another-service',
+    metricId: 'github.metric2',
     timestamp: baseTimestamp,
-    error_message: 'Failed to fetch metric',
+    errorMessage: 'Failed to fetch metric',
   },
 ];
 
@@ -54,15 +59,15 @@ const createMetricValue = (overrides: {
   entityRef: string;
   metricId?: string;
   timestamp?: Date;
-  value?: number | null;
+  value?: number | boolean | null;
   status?: string | null;
   errorMessage?: string | null;
 }) => ({
-  catalog_entity_ref: overrides.entityRef,
-  metric_id: overrides.metricId ?? 'github.metric1',
+  catalogEntityRef: overrides.entityRef,
+  metricId: overrides.metricId ?? 'github.metric1',
   timestamp: overrides.timestamp ?? baseTimestamp,
   value: overrides.value === undefined ? 10 : overrides.value,
-  error_message: overrides.errorMessage ?? null,
+  errorMessage: overrides.errorMessage ?? null,
   status: overrides.status === undefined ? 'success' : overrides.status,
 });
 
@@ -146,27 +151,29 @@ describe('DatabaseMetricValues', () => {
         const baseTime = new Date('2023-01-01T00:00:00Z');
         const laterTime = new Date('2023-01-01T01:00:00Z');
 
-        await client('metric_values').insert([
-          {
-            ...metricValues[0],
-            timestamp: baseTime, // older time
-          },
-          {
-            ...metricValues[1],
-            timestamp: laterTime, // newer time, value should be returned
-          },
-          {
-            ...metricValues[2],
-            timestamp: laterTime, // newer time, different entity
-          },
-          {
-            catalog_entity_ref: 'component:default/test-service',
-            metric_id: 'github.metric2',
-            value: undefined,
-            timestamp: baseTime,
-            error_message: 'Failed to fetch metric',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              ...metricValues[0],
+              timestamp: baseTime, // older time
+            },
+            {
+              ...metricValues[1],
+              timestamp: laterTime, // newer time, value should be returned
+            },
+            {
+              ...metricValues[2],
+              timestamp: laterTime, // newer time, different entity
+            },
+            {
+              catalogEntityRef: 'component:default/test-service',
+              metricId: 'github.metric2',
+              value: undefined,
+              timestamp: baseTime,
+              errorMessage: 'Failed to fetch metric',
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readLatestEntityMetricValues(
           'component:default/test-service',
@@ -175,24 +182,529 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toHaveLength(2);
 
-        const metric1Result = result.find(
-          r => r.metric_id === 'github.metric1',
-        );
-        const metric2Result = result.find(
-          r => r.metric_id === 'github.metric2',
-        );
+        const metric1Result = result.find(r => r.metricId === 'github.metric1');
+        const metric2Result = result.find(r => r.metricId === 'github.metric2');
 
         expect(metric1Result).toMatchObject({
-          catalog_entity_ref: 'component:default/test-service',
-          metric_id: 'github.metric1',
+          catalogEntityRef: 'component:default/test-service',
+          metricId: 'github.metric1',
           value: 41,
         });
 
         expect(metric2Result).toMatchObject({
-          catalog_entity_ref: 'component:default/test-service',
-          metric_id: 'github.metric2',
+          catalogEntityRef: 'component:default/test-service',
+          metricId: 'github.metric2',
           value: null,
         });
+      },
+    );
+  });
+
+  describe('readLatestEntityMetricValuesPerUtcDay', () => {
+    it.each(databases.eachSupportedId())(
+      'should return one row per UTC day with highest id - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 1,
+              timestamp: new Date('2023-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 2,
+              timestamp: new Date('2023-01-02T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 3,
+              timestamp: new Date('2023-01-03T10:00:00Z'),
+            }),
+            // outside range
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 99,
+              timestamp: new Date('2023-01-05T10:00:00Z'),
+            }),
+            // different entity
+            createMetricValue({
+              entityRef: 'component:default/other-service',
+              metricId,
+              value: 50,
+              timestamp: new Date('2023-01-02T12:00:00Z'),
+            }),
+            // different metric
+            createMetricValue({
+              entityRef,
+              metricId: 'github.metric2',
+              value: 50,
+              timestamp: new Date('2023-01-02T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-03T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(3);
+        expect(result.map(r => r.value)).toEqual([1, 2, 3]);
+        expect(result.every(r => r.catalogEntityRef === entityRef)).toBe(true);
+        expect(result.every(r => r.metricId === metricId)).toBe(true);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should keep only the highest id among samples on the same UTC day - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 8,
+              timestamp: new Date('2023-01-01T08:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 9,
+              timestamp: new Date('2023-01-01T20:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBe(9);
+        expect(result[0].timestamp.toISOString()).toBe(
+          '2023-01-01T20:00:00.000Z',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should include inclusive range bounds - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+        const from = new Date('2023-01-01T12:00:00Z');
+        const to = new Date('2023-01-02T12:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 1,
+              timestamp: from,
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 2,
+              timestamp: to,
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 3,
+              timestamp: new Date('2023-01-01T11:59:59Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 4,
+              timestamp: new Date('2023-01-02T12:00:01Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          from,
+          to,
+        );
+
+        expect(result.map(r => r.value)).toEqual([1, 2]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should treat UTC midnight as a new day matching getUTC* - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 1,
+              timestamp: new Date('2026-04-27T23:30:00.000Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 2,
+              timestamp: new Date('2026-04-28T00:15:00.000Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2026-04-27T00:00:00.000Z'),
+          new Date('2026-04-28T23:59:59.999Z'),
+        );
+
+        expect(result).toHaveLength(2);
+        expect(result.map(r => r.value)).toEqual([1, 2]);
+        expect(result[0].timestamp.toISOString()).toBe(
+          '2026-04-27T23:30:00.000Z',
+        );
+        expect(result[1].timestamp.toISOString()).toBe(
+          '2026-04-28T00:15:00.000Z',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should bucket by UTC day when Postgres session TimeZone is non-UTC - %p',
+      async databaseId => {
+        if (databaseId !== 'POSTGRES_15') {
+          return;
+        }
+
+        const { client } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        // Knex dateTime → timestamptz. TO_CHAR(timestamptz) uses the session TimeZone,
+        // so America/New_York would put both of these UTC instants on local 2026-04-27.
+        // Keep SET LOCAL + queries on one connection via a transaction.
+        await client.transaction(async trx => {
+          await trx.raw(`SET LOCAL TIME ZONE 'America/New_York'`);
+
+          await trx('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef,
+                metricId,
+                value: 1,
+                timestamp: new Date('2026-04-27T23:30:00.000Z'),
+              }),
+              createMetricValue({
+                entityRef,
+                metricId,
+                value: 2,
+                timestamp: new Date('2026-04-28T00:15:00.000Z'),
+              }),
+            ].map(toMetricValueRow),
+          );
+
+          const db = new DatabaseMetricValues(trx);
+          const result = await db.readLatestEntityMetricValuesPerUtcDay(
+            entityRef,
+            metricId,
+            new Date('2026-04-27T00:00:00.000Z'),
+            new Date('2026-04-28T23:59:59.999Z'),
+          );
+
+          expect(result).toHaveLength(2);
+          expect(result.map(r => r.value)).toEqual([1, 2]);
+          expect(result[0].timestamp.toISOString()).toBe(
+            '2026-04-27T23:30:00.000Z',
+          );
+          expect(result[1].timestamp.toISOString()).toBe(
+            '2026-04-28T00:15:00.000Z',
+          );
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should map JSON literal null with error_message as calculation error - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: entityRef,
+            metric_id: metricId,
+            // Simulates a JSON literal null (not SQL NULL), seen in production DB rows.
+            value: 'null',
+            timestamp: new Date('2023-01-01T10:00:00Z'),
+            error_message: 'GitHub API 500',
+            status: null,
+          },
+        ]);
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBeNull();
+        expect(result[0].errorMessage).toBe('GitHub API 500');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should treat 0 and boolean false as successes - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 0,
+              timestamp: new Date('2023-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: false,
+              timestamp: new Date('2023-01-02T10:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-02T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(2);
+        expect(result[0].value).toBe(0);
+        // Boolean false must not be treated as a missing value. Knex/better-sqlite3
+        // may round-trip JSON `false` as `0`; either form is a successful sample.
+        expect(result[1].value).not.toBeNull();
+        expect(result[1].errorMessage).toBeNull();
+        expect([false, 0]).toContain(result[1].value);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return empty array when no data in range - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          'component:default/test-service',
+          'github.metric1',
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-02T00:00:00Z'),
+        );
+
+        expect(result).toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should include latest calculation error for error-only days - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: 'GitHub API 500',
+              timestamp: new Date('2023-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: 'timeout',
+              timestamp: new Date('2023-01-01T16:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBeNull();
+        expect(result[0].errorMessage).toBe('timeout');
+        expect(result[0].timestamp.toISOString()).toBe(
+          '2023-01-01T16:00:00.000Z',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should prefer a later error over an earlier success on the same UTC day - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 5,
+              timestamp: new Date('2023-01-01T09:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: 'fail',
+              timestamp: new Date('2023-01-01T21:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBeNull();
+        expect(result[0].errorMessage).toBe('fail');
+        expect(result[0].timestamp.toISOString()).toBe(
+          '2023-01-01T21:00:00.000Z',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should prefer a later success over an earlier error on the same UTC day - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: 'fail',
+              timestamp: new Date('2023-01-01T09:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 3,
+              timestamp: new Date('2023-01-01T18:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBe(3);
+        expect(result[0].errorMessage).toBeNull();
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should omit days that only have null without error_message - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 8,
+              timestamp: new Date('2023-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: null,
+              timestamp: new Date('2023-01-02T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 7,
+              timestamp: new Date('2023-01-03T10:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-03T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(2);
+        expect(result.map(r => r.value)).toEqual([8, 7]);
       },
     );
   });
@@ -203,15 +715,17 @@ describe('DatabaseMetricValues', () => {
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
-        await client('metric_values').insert([
-          {
-            ...metricValues[0],
-            timestamp: new Date('2022-01-01T00:00:00Z'),
-          },
-          {
-            ...metricValues[1],
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              ...metricValues[0],
+              timestamp: new Date('2022-01-01T00:00:00Z'),
+            },
+            {
+              ...metricValues[1],
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.cleanupExpiredMetrics(
           new Date('2023-01-01T00:00:00Z'),
@@ -228,23 +742,25 @@ describe('DatabaseMetricValues', () => {
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            value: 5,
-            status: 'success',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service2',
-            value: 25,
-            status: 'warning',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service3',
-            value: 60,
-            status: 'critical',
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              value: 5,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: 25,
+              status: 'warning',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service3',
+              value: 60,
+              status: 'critical',
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readAggregatedMetricByEntityRefs(
           [
@@ -256,42 +772,44 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toEqual({
-          metric_id: 'github.metric1',
+          metricId: 'github.metric1',
           total: 3,
           statusCounts: expect.objectContaining({
             success: 1,
             warning: 1,
             critical: 1,
           }),
-          max_timestamp: baseTimestamp,
-          calculation_error_count: 0,
-          latest_entity_count: 3,
+          maxTimestamp: baseTimestamp,
+          calculationErrorCount: 0,
+          latestEntityCount: 3,
         });
       },
     );
 
     it.each(databases.eachSupportedId())(
-      'should filter by catalog entity refs and metric_id - %p',
+      'should filter by catalog entity refs and metricId - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            metricId: 'github.metric1',
-            status: 'success',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service2',
-            metricId: 'github.metric1',
-            status: 'warning',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            metricId: 'github.metric2',
-            status: 'error',
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              status: 'warning',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              metricId: 'github.metric2',
+              status: 'error',
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readAggregatedMetricByEntityRefs(
           ['component:default/service1'],
@@ -299,12 +817,12 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toEqual({
-          metric_id: 'github.metric1',
+          metricId: 'github.metric1',
           total: 1,
           statusCounts: { success: 1 },
-          max_timestamp: baseTimestamp,
-          calculation_error_count: 0,
-          latest_entity_count: 1,
+          maxTimestamp: baseTimestamp,
+          calculationErrorCount: 0,
+          latestEntityCount: 1,
         });
       },
     );
@@ -317,28 +835,30 @@ describe('DatabaseMetricValues', () => {
         const olderTime = new Date('2023-01-01T00:00:00Z');
         const newerTime = new Date('2023-01-01T01:00:00Z');
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            timestamp: olderTime,
-            status: 'success',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            timestamp: newerTime,
-            status: 'error',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service2',
-            timestamp: olderTime,
-            status: 'success',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service2',
-            timestamp: newerTime,
-            status: 'error',
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              timestamp: olderTime,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              timestamp: newerTime,
+              status: 'error',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              timestamp: olderTime,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              timestamp: newerTime,
+              status: 'error',
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readAggregatedMetricByEntityRefs(
           ['component:default/service1', 'component:default/service2'],
@@ -346,12 +866,12 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toEqual({
-          metric_id: 'github.metric1',
+          metricId: 'github.metric1',
           total: 2,
           statusCounts: { error: 2 },
-          max_timestamp: newerTime,
-          calculation_error_count: 0,
-          latest_entity_count: 2,
+          maxTimestamp: newerTime,
+          calculationErrorCount: 0,
+          latestEntityCount: 2,
         });
       },
     );
@@ -361,25 +881,27 @@ describe('DatabaseMetricValues', () => {
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            value: 5,
-            status: 'success',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service2',
-            value: null,
-            status: 'error',
-            errorMessage: 'Fetch failed',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service3',
-            value: 5,
-            status: null,
-            errorMessage: 'Invalid thresholds',
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              value: 5,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: null,
+              status: 'error',
+              errorMessage: 'Fetch failed',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service3',
+              value: 5,
+              status: null,
+              errorMessage: 'Invalid thresholds',
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readAggregatedMetricByEntityRefs(
           [
@@ -391,12 +913,12 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toEqual({
-          metric_id: 'github.metric1',
+          metricId: 'github.metric1',
           total: 1,
           statusCounts: { success: 1 },
-          max_timestamp: baseTimestamp,
-          calculation_error_count: 1,
-          latest_entity_count: 3,
+          maxTimestamp: baseTimestamp,
+          calculationErrorCount: 1,
+          latestEntityCount: 3,
         });
       },
     );
@@ -410,28 +932,30 @@ describe('DatabaseMetricValues', () => {
         const time2 = new Date('2023-01-01T01:00:00Z');
         const time3 = new Date('2023-01-01T02:00:00Z');
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            timestamp: time1,
-            status: 'success',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            timestamp: time2,
-            status: 'success',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service2',
-            timestamp: time3,
-            status: 'error',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service3',
-            timestamp: time2,
-            status: 'warning',
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              timestamp: time1,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              timestamp: time2,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              timestamp: time3,
+              status: 'error',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service3',
+              timestamp: time2,
+              status: 'warning',
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readAggregatedMetricByEntityRefs(
           [
@@ -443,16 +967,16 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toEqual({
-          metric_id: 'github.metric1',
+          metricId: 'github.metric1',
           total: 3,
           statusCounts: expect.objectContaining({
             success: 1,
             error: 1,
             warning: 1,
           }),
-          max_timestamp: time3,
-          calculation_error_count: 0,
-          latest_entity_count: 3,
+          maxTimestamp: time3,
+          calculationErrorCount: 0,
+          latestEntityCount: 3,
         });
       },
     );
@@ -462,28 +986,30 @@ describe('DatabaseMetricValues', () => {
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            value: 25,
-            status: 'warning',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service2',
-            value: 30,
-            status: 'warning',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service3',
-            value: 1,
-            status: 'success',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service4',
-            value: 35,
-            status: 'warning',
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              value: 25,
+              status: 'warning',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: 30,
+              status: 'warning',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service3',
+              value: 1,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service4',
+              value: 35,
+              status: 'warning',
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readAggregatedMetricByEntityRefs(
           [
@@ -495,12 +1021,12 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toEqual({
-          metric_id: 'github.metric1',
+          metricId: 'github.metric1',
           statusCounts: { success: 1, warning: 2 },
           total: 3,
-          max_timestamp: baseTimestamp,
-          calculation_error_count: 0,
-          latest_entity_count: 3,
+          maxTimestamp: baseTimestamp,
+          calculationErrorCount: 0,
+          latestEntityCount: 3,
         });
       },
     );
@@ -510,20 +1036,22 @@ describe('DatabaseMetricValues', () => {
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            value: null,
-            status: null,
-            errorMessage: 'boom-a',
-          }),
-          createMetricValue({
-            entityRef: 'component:default/service2',
-            value: null,
-            status: null,
-            errorMessage: 'boom-b',
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              value: null,
+              status: null,
+              errorMessage: 'boom-a',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: null,
+              status: null,
+              errorMessage: 'boom-b',
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readAggregatedMetricByEntityRefs(
           ['component:default/service1', 'component:default/service2'],
@@ -531,12 +1059,12 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toEqual({
-          metric_id: 'github.metric1',
+          metricId: 'github.metric1',
           total: 0,
           statusCounts: {},
-          max_timestamp: baseTimestamp,
-          calculation_error_count: 2,
-          latest_entity_count: 2,
+          maxTimestamp: baseTimestamp,
+          calculationErrorCount: 2,
+          latestEntityCount: 2,
         });
       },
     );
@@ -572,12 +1100,12 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toEqual({
-          metric_id: 'github.metric1',
+          metricId: 'github.metric1',
           total: 1,
           statusCounts: { warning: 1 },
-          max_timestamp: baseTimestamp,
-          calculation_error_count: 1,
-          latest_entity_count: 2,
+          maxTimestamp: baseTimestamp,
+          calculationErrorCount: 1,
+          latestEntityCount: 2,
         });
       },
     );
@@ -587,17 +1115,33 @@ describe('DatabaseMetricValues', () => {
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef: 'component:default/service1',
-            status: 'success',
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              status: 'success',
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readAggregatedMetricByEntityRefs(
           ['component:default/non-existent'],
           'github.metric1',
         );
+        expect(result).toBeUndefined();
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return undefined when catalog entity refs list is empty - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          [],
+          'github.metric1',
+        );
+
         expect(result).toBeUndefined();
       },
     );
@@ -613,44 +1157,46 @@ describe('DatabaseMetricValues', () => {
         const laterTime = new Date('2023-01-01T01:00:00Z');
 
         // Insert test data with different statuses
-        await client('metric_values').insert([
-          // Older value for service1 - should be ignored
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 999,
-            timestamp: baseTime,
-            status: 'success',
-          },
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp: laterTime,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp: laterTime,
-            status: 'success',
-          },
-          {
-            catalog_entity_ref: 'component:default/service3',
-            metric_id: 'github.metric1',
-            value: 15,
-            timestamp: laterTime,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service4',
-            metric_id: 'github.metric1',
-            value: 3,
-            timestamp: laterTime,
-            status: 'warning',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            // Older value for service1 - should be ignored
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 999,
+              timestamp: baseTime,
+              status: 'success',
+            },
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp: laterTime,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp: laterTime,
+              status: 'success',
+            },
+            {
+              catalogEntityRef: 'component:default/service3',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp: laterTime,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service4',
+              metricId: 'github.metric1',
+              value: 3,
+              timestamp: laterTime,
+              status: 'warning',
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
@@ -666,7 +1212,7 @@ describe('DatabaseMetricValues', () => {
 
         // Verify it's the latest values (not the old one for service1)
         const service1Result = result.find(
-          r => r.catalog_entity_ref === 'component:default/service1',
+          r => r.catalogEntityRef === 'component:default/service1',
         );
         expect(service1Result?.value).toBe(10); // Not 999 from older entry
       },
@@ -679,29 +1225,31 @@ describe('DatabaseMetricValues', () => {
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'success',
-          },
-          {
-            catalog_entity_ref: 'component:default/service3',
-            metric_id: 'github.metric1',
-            value: 15,
-            timestamp,
-            status: 'warning',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'success',
+            },
+            {
+              catalogEntityRef: 'component:default/service3',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp,
+              status: 'warning',
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
           pagination: { limit: 10, offset: 0 },
@@ -719,43 +1267,45 @@ describe('DatabaseMetricValues', () => {
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
         // Insert 5 entities with same status
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 1,
-            timestamp,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 2,
-            timestamp,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service3',
-            metric_id: 'github.metric1',
-            value: 3,
-            timestamp,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service4',
-            metric_id: 'github.metric1',
-            value: 4,
-            timestamp,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service5',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'error',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 1,
+              timestamp,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 2,
+              timestamp,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service3',
+              metricId: 'github.metric1',
+              value: 3,
+              timestamp,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service4',
+              metricId: 'github.metric1',
+              value: 4,
+              timestamp,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service5',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+            },
+          ].map(toMetricValueRow),
+        );
 
         // Page 1: limit 2
         const page1 = await db.readEntityMetricsWithFilters('github.metric1', {
@@ -805,35 +1355,37 @@ describe('DatabaseMetricValues', () => {
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
         // Insert entities with different kinds
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'api:default/api1',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'error',
-            entity_kind: 'API',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 15,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/backend',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'api:default/api1',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+              entityKind: 'API',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/backend',
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
@@ -843,8 +1395,56 @@ describe('DatabaseMetricValues', () => {
 
         // Should only return Component entities
         expect(result).toHaveLength(2);
-        expect(result[0].entity_kind).toBe('Component');
-        expect(result[1].entity_kind).toBe('Component');
+        expect(result[0].entityKind).toBe('Component');
+        expect(result[1].entityKind).toBe('Component');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should filter by entity namespace - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+              entityNamespace: 'default',
+            },
+            {
+              catalogEntityRef: 'component:production/service2',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+              entityNamespace: 'production',
+            },
+            {
+              catalogEntityRef: 'component:default/service3',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp,
+              status: 'error',
+              entityNamespace: 'default',
+            },
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
+          status: 'error',
+          entityNamespace: 'default',
+          pagination: { limit: 10, offset: 0 },
+        });
+
+        expect(result).toHaveLength(2);
+        expect(result[0].entityNamespace).toBe('default');
+        expect(result[1].entityNamespace).toBe('default');
       },
     );
 
@@ -856,35 +1456,37 @@ describe('DatabaseMetricValues', () => {
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
         // Insert entities with different owners
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/backend',
-          },
-          {
-            catalog_entity_ref: 'component:default/service3',
-            metric_id: 'github.metric1',
-            value: 15,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/backend',
+            },
+            {
+              catalogEntityRef: 'component:default/service3',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
@@ -894,8 +1496,8 @@ describe('DatabaseMetricValues', () => {
 
         // Should only return entities owned by team:default/platform
         expect(result).toHaveLength(2);
-        expect(result[0].entity_owner).toBe('team:default/platform');
-        expect(result[1].entity_owner).toBe('team:default/platform');
+        expect(result[0].entityOwner).toBe('team:default/platform');
+        expect(result[1].entityOwner).toBe('team:default/platform');
       },
     );
 
@@ -907,44 +1509,46 @@ describe('DatabaseMetricValues', () => {
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
         // Insert diverse test data
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'api:default/api1',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'error',
-            entity_kind: 'API',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 15,
-            timestamp,
-            status: 'warning',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/service3',
-            metric_id: 'github.metric1',
-            value: 20,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/backend',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'api:default/api1',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+              entityKind: 'API',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp,
+              status: 'warning',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/service3',
+              metricId: 'github.metric1',
+              value: 20,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/backend',
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error', // Only error status
@@ -955,10 +1559,10 @@ describe('DatabaseMetricValues', () => {
 
         // Should only return service1 (Component, error, platform)
         expect(result).toHaveLength(1);
-        expect(result[0].catalog_entity_ref).toBe('component:default/service1');
+        expect(result[0].catalogEntityRef).toBe('component:default/service1');
         expect(result[0].status).toBe('error');
-        expect(result[0].entity_kind).toBe('Component');
-        expect(result[0].entity_owner).toBe('team:default/platform');
+        expect(result[0].entityKind).toBe('Component');
+        expect(result[0].entityOwner).toBe('team:default/platform');
       },
     );
 
@@ -969,35 +1573,37 @@ describe('DatabaseMetricValues', () => {
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/service3',
-            metric_id: 'github.metric1',
-            value: 15,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/service3',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+          ].map(toMetricValueRow),
+        );
 
         // No pagination parameter - should return all
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
@@ -1009,33 +1615,35 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should handle null entity_kind and entity_owner - %p',
+      'should handle null entityKind and entityOwner - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
         // Insert entity with null kind/owner (legacy data)
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp,
-            status: 'error',
-            entity_kind: null,
-            entity_owner: null,
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+              entityKind: null,
+              entityOwner: null,
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+          ].map(toMetricValueRow),
+        );
 
         // Should return both when no filters
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
@@ -1056,7 +1664,7 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(filteredResult).toHaveLength(1);
-        expect(filteredResult[0].catalog_entity_ref).toBe(
+        expect(filteredResult[0].catalogEntityRef).toBe(
           'component:default/service2',
         );
       },
@@ -1069,26 +1677,28 @@ describe('DatabaseMetricValues', () => {
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp,
-            status: 'success',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'warning',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/backend',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'success',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'warning',
+              entityKind: 'Component',
+              entityOwner: 'team:default/backend',
+            },
+          ].map(toMetricValueRow),
+        );
 
         // No owner filter — all rows for the metric are returned.
         // Per-row authorization is enforced downstream by catalog.getEntitiesByRefs.
@@ -1107,35 +1717,37 @@ describe('DatabaseMetricValues', () => {
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service1',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/service2',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/backend',
-          },
-          {
-            catalog_entity_ref: 'component:default/service3',
-            metric_id: 'github.metric1',
-            value: 8,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/other',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/service2',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/backend',
+            },
+            {
+              catalogEntityRef: 'component:default/service3',
+              metricId: 'github.metric1',
+              value: 8,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/other',
+            },
+          ].map(toMetricValueRow),
+        );
 
         // Passing two owners returns only those two teams' entities.
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
@@ -1147,7 +1759,7 @@ describe('DatabaseMetricValues', () => {
         expect(result).toHaveLength(2);
         expect(
           result
-            .map(r => r.entity_owner)
+            .map(r => r.entityOwner)
             .filter((o): o is string => o !== null)
             .sort((a, b) => a.localeCompare(b)),
         ).toEqual(['team:default/backend', 'team:default/platform']);
@@ -1155,41 +1767,43 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should filter by entityName substring via catalog_entity_ref LIKE - %p',
+      'should filter by entityName substring via catalogEntityRef LIKE - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/my-service',
-            metric_id: 'github.metric1',
-            value: 10,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/service-api',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-          {
-            catalog_entity_ref: 'component:default/unrelated',
-            metric_id: 'github.metric1',
-            value: 15,
-            timestamp,
-            status: 'error',
-            entity_kind: 'Component',
-            entity_owner: 'team:default/platform',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/my-service',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/service-api',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+            {
+              catalogEntityRef: 'component:default/unrelated',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp,
+              status: 'error',
+              entityKind: 'Component',
+              entityOwner: 'team:default/platform',
+            },
+          ].map(toMetricValueRow),
+        );
 
         // 'service' should match 'my-service' and 'service-api' but not 'unrelated'
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
@@ -1200,7 +1814,7 @@ describe('DatabaseMetricValues', () => {
         expect(result).toHaveLength(2);
         expect(
           result
-            .map(r => r.catalog_entity_ref)
+            .map(r => r.catalogEntityRef)
             .sort((a, b) => a.localeCompare(b)),
         ).toEqual([
           'component:default/my-service',
@@ -1210,35 +1824,37 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should sort by catalog_entity_ref ascending when sortBy=entityName - %p',
+      'should sort by catalogEntityRef ascending when sortBy=entityName - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service-c',
-            metric_id: 'github.metric1',
-            value: 1,
-            timestamp,
-            status: 'success',
-          },
-          {
-            catalog_entity_ref: 'component:default/service-a',
-            metric_id: 'github.metric1',
-            value: 2,
-            timestamp,
-            status: 'success',
-          },
-          {
-            catalog_entity_ref: 'component:default/service-b',
-            metric_id: 'github.metric1',
-            value: 3,
-            timestamp,
-            status: 'success',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service-c',
+              metricId: 'github.metric1',
+              value: 1,
+              timestamp,
+              status: 'success',
+            },
+            {
+              catalogEntityRef: 'component:default/service-a',
+              metricId: 'github.metric1',
+              value: 2,
+              timestamp,
+              status: 'success',
+            },
+            {
+              catalogEntityRef: 'component:default/service-b',
+              metricId: 'github.metric1',
+              value: 3,
+              timestamp,
+              status: 'success',
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
           sortBy: 'entityName',
@@ -1247,15 +1863,9 @@ describe('DatabaseMetricValues', () => {
         });
 
         expect(result).toHaveLength(3);
-        expect(result[0].catalog_entity_ref).toBe(
-          'component:default/service-a',
-        );
-        expect(result[1].catalog_entity_ref).toBe(
-          'component:default/service-b',
-        );
-        expect(result[2].catalog_entity_ref).toBe(
-          'component:default/service-c',
-        );
+        expect(result[0].catalogEntityRef).toBe('component:default/service-a');
+        expect(result[1].catalogEntityRef).toBe('component:default/service-b');
+        expect(result[2].catalogEntityRef).toBe('component:default/service-c');
       },
     );
 
@@ -1266,29 +1876,31 @@ describe('DatabaseMetricValues', () => {
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service-a',
-            metric_id: 'github.metric1',
-            value: null,
-            timestamp,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service-b',
-            metric_id: 'github.metric1',
-            value: 5,
-            timestamp,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service-c',
-            metric_id: 'github.metric1',
-            value: 15,
-            timestamp,
-            status: 'error',
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service-a',
+              metricId: 'github.metric1',
+              value: null,
+              timestamp,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service-b',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service-c',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp,
+              status: 'error',
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
           sortBy: 'metricValue',
@@ -1310,36 +1922,38 @@ describe('DatabaseMetricValues', () => {
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        await client('metric_values').insert([
-          {
-            catalog_entity_ref: 'component:default/service-c',
-            metric_id: 'github.metric1',
-            value: 1,
-            timestamp,
-            status: 'warning',
-          },
-          {
-            catalog_entity_ref: 'component:default/service-a',
-            metric_id: 'github.metric1',
-            value: 2,
-            timestamp,
-            status: 'error',
-          },
-          {
-            catalog_entity_ref: 'component:default/service-b',
-            metric_id: 'github.metric1',
-            value: 3,
-            timestamp,
-            status: 'success',
-          },
-          {
-            catalog_entity_ref: 'component:default/service-d',
-            metric_id: 'github.metric1',
-            value: 4,
-            timestamp,
-            status: null,
-          },
-        ]);
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service-c',
+              metricId: 'github.metric1',
+              value: 1,
+              timestamp,
+              status: 'warning',
+            },
+            {
+              catalogEntityRef: 'component:default/service-a',
+              metricId: 'github.metric1',
+              value: 2,
+              timestamp,
+              status: 'error',
+            },
+            {
+              catalogEntityRef: 'component:default/service-b',
+              metricId: 'github.metric1',
+              value: 3,
+              timestamp,
+              status: 'success',
+            },
+            {
+              catalogEntityRef: 'component:default/service-d',
+              metricId: 'github.metric1',
+              value: 4,
+              timestamp,
+              status: null,
+            },
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
           sortBy: 'status',
@@ -1353,6 +1967,1550 @@ describe('DatabaseMetricValues', () => {
         expect(result[1].status).toBe('success');
         expect(result[2].status).toBe('warning');
         expect(result[3].status).toBeNull();
+      },
+    );
+  });
+
+  describe('readScalarAggregatedMetricByEntityRefs', () => {
+    describe.each(databases.eachSupportedId())('%p', databaseId => {
+      let db: DatabaseMetricValues;
+
+      beforeAll(async () => {
+        const database = await createDatabase(databaseId);
+        const { client } = database;
+        db = database.db;
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              value: 10,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: 25,
+              status: 'warning',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service3',
+              value: 5,
+              status: 'error',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: 2,
+              status: 'success',
+            }),
+          ].map(toMetricValueRow),
+        );
+      });
+
+      it('should sum raw metric values across latest rows', async () => {
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+          'sum',
+        );
+
+        expect(result).toEqual({
+          metricId: 'github.metric1',
+          value: 17,
+          total: 3,
+          latestEntityCount: 3,
+          calculationErrorCount: 0,
+          maxTimestamp: baseTimestamp,
+        });
+      });
+
+      it('should average raw metric values across latest rows', async () => {
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+          'average',
+        );
+
+        expect(result).toMatchObject({
+          metricId: 'github.metric1',
+          total: 3,
+          latestEntityCount: 3,
+          calculationErrorCount: 0,
+          maxTimestamp: baseTimestamp,
+        });
+        expect(result?.value).toBeCloseTo(17 / 3);
+      });
+
+      it('should count raw metric values across latest rows', async () => {
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+          'count',
+        );
+
+        expect(result).toEqual({
+          metricId: 'github.metric1',
+          value: 3,
+          total: 3,
+          latestEntityCount: 3,
+          calculationErrorCount: 0,
+          maxTimestamp: baseTimestamp,
+        });
+      });
+
+      it('should max raw metric values across latest rows', async () => {
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+          'max',
+        );
+
+        expect(result).toEqual({
+          metricId: 'github.metric1',
+          value: 10,
+          total: 3,
+          latestEntityCount: 3,
+          calculationErrorCount: 0,
+          maxTimestamp: baseTimestamp,
+        });
+      });
+
+      it('should min raw metric values across latest rows', async () => {
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+          'min',
+        );
+
+        expect(result).toEqual({
+          metricId: 'github.metric1',
+          value: 2,
+          total: 3,
+          latestEntityCount: 3,
+          calculationErrorCount: 0,
+          maxTimestamp: baseTimestamp,
+        });
+      });
+    });
+
+    it.each(databases.eachSupportedId())(
+      'should exclude calculation failures and use latest row per entity - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const olderTime = new Date('2023-01-01T00:00:00Z');
+        const newerTime = new Date('2023-01-01T01:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              timestamp: olderTime,
+              value: 5,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              timestamp: newerTime,
+              value: 15,
+              status: 'warning',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: null,
+              status: null,
+              errorMessage: 'Failed to fetch',
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          ['component:default/service1', 'component:default/service2'],
+          'github.metric1',
+          'sum',
+        );
+
+        expect(result).toEqual({
+          metricId: 'github.metric1',
+          value: 15,
+          total: 1,
+          latestEntityCount: 2,
+          calculationErrorCount: 1,
+          maxTimestamp: newerTime,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return undefined when entity refs have no metric rows - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          ['component:default/service-without-data'],
+          'github.metric1',
+          'sum',
+        );
+
+        expect(result).toBeUndefined();
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should exclude rows with null value from aggregate - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/service1',
+              value: 10,
+              status: 'success',
+            }),
+            createMetricValue({
+              entityRef: 'component:default/service2',
+              value: null,
+              status: null,
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          ['component:default/service1', 'component:default/service2'],
+          'github.metric1',
+          'sum',
+        );
+
+        expect(result?.value).toBe(10);
+        expect(result?.total).toBe(1);
+        expect(result?.latestEntityCount).toBe(2);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return undefined when entity refs list is empty - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result = await db.readScalarAggregatedMetricByEntityRefs(
+          [],
+          'github.metric1',
+          'sum',
+        );
+
+        expect(result).toBeUndefined();
+      },
+    );
+
+    describe.each(databases.eachSupportedId())(
+      'status filter - %p',
+      databaseId => {
+        let db: DatabaseMetricValues;
+
+        beforeAll(async () => {
+          const database = await createDatabase(databaseId);
+          const { client } = database;
+          db = database.db;
+
+          await client('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef: 'component:default/service1',
+                value: 10,
+                status: 'success',
+              }),
+              createMetricValue({
+                entityRef: 'component:default/service2',
+                value: 25,
+                status: 'error',
+              }),
+              createMetricValue({
+                entityRef: 'component:default/service3',
+                value: 5,
+                status: 'error',
+              }),
+              createMetricValue({
+                entityRef: 'component:default/service4',
+                value: null,
+                status: null,
+                errorMessage: 'Failed to fetch',
+              }),
+            ].map(toMetricValueRow),
+          );
+        });
+
+        const entityRefs = [
+          'component:default/service1',
+          'component:default/service2',
+          'component:default/service3',
+          'component:default/service4',
+        ];
+
+        const portfolioCounts = {
+          latestEntityCount: 4,
+          calculationErrorCount: 1,
+          maxTimestamp: baseTimestamp,
+        };
+
+        it.each([
+          ['sum', 'error', { value: 30, total: 2 }],
+          ['count', 'error', { value: 2, total: 2 }],
+          ['max', 'error', { value: 25, total: 2 }],
+          ['min', 'error', { value: 5, total: 2 }],
+          ['average', 'error', { value: 15, total: 2 }],
+          ['sum', 'success', { value: 10, total: 1 }],
+        ] as const)(
+          'should %s only rows matching filter.status=%s',
+          async (aggregationFn, status, expected) => {
+            const result = await db.readScalarAggregatedMetricByEntityRefs(
+              entityRefs,
+              'github.metric1',
+              aggregationFn,
+              { status },
+            );
+
+            expect(result).toEqual({
+              metricId: 'github.metric1',
+              ...expected,
+              ...portfolioCounts,
+            });
+          },
+        );
+
+        it('should return zero value and total when no rows match filter.status', async () => {
+          const result = await db.readScalarAggregatedMetricByEntityRefs(
+            entityRefs,
+            'github.metric1',
+            'sum',
+            { status: 'warning' },
+          );
+
+          expect(result).toEqual({
+            metricId: 'github.metric1',
+            value: 0,
+            total: 0,
+            ...portfolioCounts,
+          });
+        });
+      },
+    );
+  });
+
+  describe('readScalarAggregatedMetricTimeSeriesByEntityRefs', () => {
+    const entityRefs = [
+      'component:default/a',
+      'component:default/b',
+      'component:default/c',
+    ];
+    const from = new Date('2024-01-01T00:00:00Z');
+    const to = new Date('2024-01-02T23:59:59Z');
+
+    it.each(databases.eachSupportedId())(
+      'should filter in [from, to] range - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 1,
+              timestamp: new Date('2024-01-01T23:59:59Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 7,
+              timestamp: new Date('2024-01-02T00:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 13,
+              timestamp: new Date('2024-01-03T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 28,
+              timestamp: new Date('2024-01-04T00:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            new Date('2024-01-02T00:00:00Z'),
+            new Date('2024-01-03T23:59:59Z'),
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-02T00:00:00Z'),
+            value: 7,
+            successCount: 1,
+            errorCount: 0,
+            total: 1,
+            errors: [],
+          },
+          {
+            maxTimestamp: new Date('2024-01-03T10:00:00Z'),
+            value: 13,
+            successCount: 1,
+            errorCount: 0,
+            total: 1,
+            errors: [],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should filter by catalog entity refs and metricId - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              metricId: 'github:otherMetric',
+              value: 10,
+              timestamp: new Date('2024-01-01T08:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 14,
+              timestamp: new Date('2024-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 1,
+              timestamp: new Date('2024-01-01T10:30:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            new Date('2024-01-01T00:00:00Z'),
+            new Date('2024-01-01T23:59:59Z'),
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-01T10:00:00Z'),
+            value: 14,
+            successCount: 1,
+            errorCount: 0,
+            total: 1,
+            errors: [],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should use the latest row per UTC day when multiple success samples - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              timestamp: new Date('2024-01-01T08:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 14,
+              timestamp: new Date('2024-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 1,
+              timestamp: new Date('2024-01-01T10:30:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 20, // A latest
+              timestamp: new Date('2024-01-01T11:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 7, // B latest
+              timestamp: new Date('2024-01-01T11:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a', // A next day
+              value: 40,
+              timestamp: new Date('2024-01-02T10:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a', 'component:default/b'],
+            'github.metric1',
+            'sum',
+            new Date('2024-01-01T00:00:00Z'),
+            new Date('2024-01-03T23:59:59Z'),
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-01T11:00:00Z'),
+            value: 27,
+            successCount: 2,
+            errorCount: 0,
+            total: 2,
+            errors: [],
+          },
+          {
+            maxTimestamp: new Date('2024-01-02T10:00:00Z'),
+            value: 40,
+            successCount: 1,
+            errorCount: 0,
+            total: 1,
+            errors: [],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return max timestamp across all values in a day point - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const aBaseTimestamp = new Date('2024-01-01T08:00:00Z');
+        const aLastTimestamp = new Date('2024-01-01T20:00:00Z');
+        const bLaterTimestampLastInserted = new Date('2024-01-01T15:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            // earlier A value, not in aggregation
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 1,
+              timestamp: aBaseTimestamp,
+            }),
+            // last A value
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              timestamp: aLastTimestamp,
+            }),
+            // last B value, timestamp before A
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 3,
+              timestamp: bLaterTimestampLastInserted,
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a', 'component:default/b'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: aLastTimestamp,
+            value: 13,
+            successCount: 2,
+            errorCount: 0,
+            total: 2,
+            errors: [],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return max timestamp across all values in a day point including calculation errors - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const aBaseTimestamp = new Date('2024-01-01T08:00:00Z');
+        const aLastErrorTimestamp = new Date('2024-01-01T20:00:00Z');
+        const bLaterTimestampLastInserted = new Date('2024-01-01T15:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 1,
+              timestamp: aBaseTimestamp,
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: aLastErrorTimestamp,
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: null,
+              errorMessage: 'timeout',
+              status: null,
+              timestamp: bLaterTimestampLastInserted,
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a', 'component:default/b'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: aLastErrorTimestamp,
+            value: null,
+            successCount: 0,
+            errorCount: 2,
+            total: 2,
+            errors: [
+              { message: 'boom', count: 1 },
+              { message: 'timeout', count: 1 },
+            ],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should use the latest row per UTC day when multiple samples and latest is calculation error - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              timestamp: new Date('2024-01-01T08:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: new Date('2024-01-01T18:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            new Date('2024-01-01T00:00:00Z'),
+            new Date('2024-01-01T23:59:59Z'),
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-01T18:00:00Z'),
+            value: null,
+            successCount: 0,
+            errorCount: 1,
+            total: 1,
+            errors: [{ message: 'boom', count: 1 }],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should bucket by UTC day when Postgres session TimeZone is non-UTC - %p',
+      async databaseId => {
+        if (databaseId !== 'POSTGRES_15') {
+          return;
+        }
+
+        const { client } = await createDatabase(databaseId);
+
+        // Knex dateTime is timestamptz. TO_CHAR(timestamptz) uses session
+        // TimeZone. These instants are the same UTC day (2026-04-28) but
+        // different America/New_York calendar days (EDT = UTC-4; local
+        // midnight is 04:00Z). Keep SET LOCAL and the query on one connection.
+        await client.transaction(async trx => {
+          await trx.raw(`SET LOCAL TimeZone TO 'America/New_York'`);
+
+          await trx('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef: 'component:default/a',
+                value: 1,
+                timestamp: new Date('2026-04-28T03:30:00.000Z'), // 27 Apr 23:30 EDT
+              }),
+              createMetricValue({
+                entityRef: 'component:default/b',
+                value: 2,
+                timestamp: new Date('2026-04-28T04:30:00.000Z'), // 28 Apr 00:30 EDT
+              }),
+            ].map(toMetricValueRow),
+          );
+
+          const result: DbScalarTimeSeriesPoint[] =
+            await new DatabaseMetricValues(
+              trx,
+            ).readScalarAggregatedMetricTimeSeriesByEntityRefs(
+              ['component:default/a', 'component:default/b'],
+              'github.metric1',
+              'sum',
+              new Date('2026-04-27T00:00:00.000Z'),
+              new Date('2026-04-29T00:00:00.000Z'),
+            );
+
+          // TO_CHAR uses UTC TimeZone instead of session TimeZone
+          expect(result).toEqual([
+            {
+              maxTimestamp: new Date('2026-04-28T04:30:00.000Z'),
+              value: 3,
+              successCount: 2,
+              errorCount: 0,
+              total: 2,
+              errors: [],
+            },
+          ]);
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return empty points when entity refs list is empty - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            [],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return empty points when no rows exist in range - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 1,
+              timestamp: new Date('2023-12-31T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should handle days with only calculation errors for every aggregation function - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const aggregationFunctions: ScalarAggregationFn[] = [
+          'sum',
+          'average',
+          'count',
+          'max',
+          'min',
+        ];
+
+        for (const aggregationFn of aggregationFunctions) {
+          const result =
+            await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+              ['component:default/a'],
+              'github.metric1',
+              aggregationFn,
+              from,
+              to,
+            );
+
+          expect(result).toEqual([
+            {
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+              value: null,
+              successCount: 0,
+              errorCount: 1,
+              total: 1,
+              errors: [{ message: 'boom', count: 1 }],
+            },
+          ]);
+        }
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should group distinct error messages and sort by count then message - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/c',
+              value: null,
+              errorMessage: 'timeout',
+              status: null,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/d',
+              value: null,
+              errorMessage: 'error',
+              status: null,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/e',
+              value: null,
+              errorMessage: 'timeout',
+              status: null,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            [
+              'component:default/a',
+              'component:default/b',
+              'component:default/c',
+              'component:default/d',
+              'component:default/e',
+            ],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+            value: 10,
+            successCount: 1,
+            errorCount: 4,
+            total: 5,
+            errors: [
+              { message: 'timeout', count: 2 },
+              { message: 'boom', count: 1 },
+              { message: 'error', count: 1 },
+            ],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should omit days whose latest rows are missing value with no error_message - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: null,
+              errorMessage: null,
+              status: 'success',
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 4,
+              timestamp: new Date('2024-01-02T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-02T12:00:00Z'),
+            value: 4,
+            successCount: 1,
+            errorCount: 0,
+            total: 1,
+            errors: [],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should treat JSON null value with error_message as a calculation error - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/a',
+            metric_id: 'github.metric1',
+            value: 'null',
+            timestamp: new Date('2024-01-01T12:00:00Z'),
+            error_message: 'boom',
+            status: null,
+          },
+        ]);
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+            value: null,
+            successCount: 0,
+            errorCount: 1,
+            total: 1,
+            errors: [{ message: 'boom', count: 1 }],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should not treat error_message with a present value as a calculation error - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 8,
+              errorMessage: 'threshold config invalid',
+              status: null,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+            value: 8,
+            successCount: 1,
+            errorCount: 0,
+            total: 1,
+            errors: [],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should treat 0 as a successful value, not missing - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 0,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+            value: 0,
+            successCount: 1,
+            errorCount: 0,
+            total: 1,
+            errors: [],
+          },
+        ]);
+      },
+    );
+
+    describe.each(databases.eachSupportedId())(
+      'aggregate latest value per entity per UTC day - %p',
+      databaseId => {
+        let db: DatabaseMetricValues;
+
+        beforeAll(async () => {
+          const database = await createDatabase(databaseId);
+          const { client } = database;
+          db = database.db;
+
+          const day1 = new Date('2024-01-01T12:00:00Z');
+          const day1Later = new Date('2024-01-01T18:00:00Z');
+          const day2 = new Date('2024-01-02T12:00:00Z');
+
+          await client('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef: 'component:default/a',
+                value: 10,
+                timestamp: day1,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/a',
+                value: 20,
+                timestamp: day1Later,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/b',
+                value: 40,
+                timestamp: day1,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/c',
+                value: null,
+                errorMessage: 'boom',
+                status: null,
+                timestamp: day1,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/a',
+                value: 5,
+                timestamp: day2,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/b',
+                value: null,
+                errorMessage: 'boom',
+                status: null,
+                timestamp: day2,
+              }),
+            ].map(toMetricValueRow),
+          );
+        });
+
+        it.each([
+          [
+            'sum',
+            [
+              {
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
+                value: 60,
+                successCount: 2,
+                errorCount: 1,
+                total: 3,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+              {
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
+                value: 5,
+                successCount: 1,
+                errorCount: 1,
+                total: 2,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+            ],
+          ],
+          [
+            'average',
+            [
+              {
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
+                value: 30,
+                successCount: 2,
+                errorCount: 1,
+                total: 3,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+              {
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
+                value: 5,
+                successCount: 1,
+                errorCount: 1,
+                total: 2,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+            ],
+          ],
+          [
+            'count',
+            [
+              {
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
+                value: 2,
+                successCount: 2,
+                errorCount: 1,
+                total: 3,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+              {
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
+                value: 1,
+                successCount: 1,
+                errorCount: 1,
+                total: 2,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+            ],
+          ],
+          [
+            'max',
+            [
+              {
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
+                value: 40,
+                successCount: 2,
+                errorCount: 1,
+                total: 3,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+              {
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
+                value: 5,
+                successCount: 1,
+                errorCount: 1,
+                total: 2,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+            ],
+          ],
+          [
+            'min',
+            [
+              {
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
+                value: 20,
+                successCount: 2,
+                errorCount: 1,
+                total: 3,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+              {
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
+                value: 5,
+                successCount: 1,
+                errorCount: 1,
+                total: 2,
+                errors: [{ message: 'boom', count: 1 }],
+              },
+            ],
+          ],
+        ] as const)(
+          'should %s across UTC days',
+          async (aggregationFn, expected) => {
+            const result =
+              await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+                entityRefs,
+                'github.metric1',
+                aggregationFn,
+                from,
+                to,
+              );
+
+            expect(result).toEqual(expected);
+          },
+        );
+      },
+    );
+
+    describe.each(databases.eachSupportedId())(
+      'filter.status - %p',
+      databaseId => {
+        let db: DatabaseMetricValues;
+
+        beforeAll(async () => {
+          const database = await createDatabase(databaseId);
+          const { client } = database;
+          db = database.db;
+
+          await client('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef: 'component:default/a',
+                value: 10,
+                status: 'error',
+                timestamp: new Date('2024-01-01T12:00:00Z'),
+              }),
+              createMetricValue({
+                entityRef: 'component:default/b',
+                value: 40,
+                status: 'success',
+                timestamp: new Date('2024-01-01T12:00:00Z'),
+              }),
+              createMetricValue({
+                entityRef: 'component:default/c',
+                value: 25,
+                status: 'error',
+                timestamp: new Date('2024-01-01T12:00:00Z'),
+              }),
+            ].map(toMetricValueRow),
+          );
+        });
+
+        it.each([
+          [
+            'sum',
+            'error',
+            {
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+              value: 35,
+              successCount: 2,
+              errorCount: 0,
+              total: 2,
+              errors: [],
+            },
+          ],
+          [
+            'count',
+            'error',
+            {
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+              value: 2,
+              successCount: 2,
+              errorCount: 0,
+              total: 2,
+              errors: [],
+            },
+          ],
+          [
+            'max',
+            'error',
+            {
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+              value: 25,
+              successCount: 2,
+              errorCount: 0,
+              total: 2,
+              errors: [],
+            },
+          ],
+          [
+            'min',
+            'error',
+            {
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+              value: 10,
+              successCount: 2,
+              errorCount: 0,
+              total: 2,
+              errors: [],
+            },
+          ],
+          [
+            'average',
+            'error',
+            {
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+              value: 17.5,
+              successCount: 2,
+              errorCount: 0,
+              total: 2,
+              errors: [],
+            },
+          ],
+          [
+            'sum',
+            'success',
+            {
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+              value: 40,
+              successCount: 1,
+              errorCount: 0,
+              total: 1,
+              errors: [],
+            },
+          ],
+        ] as const)(
+          'should %s only rows matching filter.status=%s',
+          async (aggregationFn, status, expected) => {
+            const result =
+              await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+                entityRefs,
+                'github.metric1',
+                aggregationFn,
+                from,
+                to,
+                { status },
+              );
+
+            expect(result).toEqual([expected]);
+          },
+        );
+
+        it.each(['sum', 'average', 'count', 'max', 'min'] as const)(
+          'should omit the day when no rows match filter.status for %s',
+          async aggregationFn => {
+            const result =
+              await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+                entityRefs,
+                'github.metric1',
+                aggregationFn,
+                from,
+                to,
+                { status: 'warning' },
+              );
+
+            expect(result).toEqual([]);
+          },
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should keep calculation errors when filter.status excludes their null status - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              status: 'error',
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 40,
+              status: 'success',
+              timestamp: new Date('2024-01-01T13:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/c',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            entityRefs,
+            'github.metric1',
+            'sum',
+            from,
+            to,
+            { status: 'error' },
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
+            value: 10,
+            successCount: 1,
+            errorCount: 1,
+            total: 2,
+            errors: [{ message: 'boom', count: 1 }],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return empty points when filter.status matches no successes and there are no calculation errors - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              status: 'success',
+              timestamp: new Date('2024-01-01T20:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 40,
+              status: 'error',
+              timestamp: new Date('2024-01-01T18:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a', 'component:default/b'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+            { status: 'warning' },
+          );
+
+        expect(result).toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should use max timestamp from calculation errors when filter.status excludes all successes - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const excludedSuccessTimestamp = new Date('2024-01-01T20:00:00Z');
+        const errorTimestamp = new Date('2024-01-01T10:00:00Z');
+        const errorLaterTimestamp = new Date('2024-01-01T11:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              status: 'success',
+              timestamp: excludedSuccessTimestamp,
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: errorLaterTimestamp,
+            }),
+            createMetricValue({
+              entityRef: 'component:default/c',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: errorTimestamp,
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            [
+              'component:default/a',
+              'component:default/b',
+              'component:default/c',
+            ],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+            { status: 'error' },
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: errorLaterTimestamp,
+            value: null,
+            successCount: 0,
+            errorCount: 2,
+            total: 2,
+            errors: [{ message: 'boom', count: 2 }],
+          },
+        ]);
       },
     );
   });

@@ -139,7 +139,13 @@ describe('mcpServersDisplayUtils', () => {
       expect(isEnabledToggleUnavailable('failed')).toBe(true);
     });
 
-    it('returns false for ok and disabled statuses', () => {
+    it('returns true when Status shows a tools/validation error', () => {
+      expect(isEnabledToggleUnavailable('ok', true)).toBe(true);
+      expect(isEnabledToggleUnavailable('unknown', true)).toBe(true);
+      expect(isEnabledToggleUnavailable('disabled', true)).toBe(true);
+    });
+
+    it('returns false for ok and disabled statuses without a Status error', () => {
       expect(isEnabledToggleUnavailable('ok')).toBe(false);
       expect(isEnabledToggleUnavailable('disabled')).toBe(false);
     });
@@ -382,6 +388,16 @@ describe('mcpServersDisplayUtils', () => {
         isModalEnabledChecked({
           displayStatus: 'ok',
           modalEnabled: false,
+        }),
+      ).toBe(false);
+    });
+
+    it('shows off when Status shows a tools/validation error', () => {
+      expect(
+        isModalEnabledChecked({
+          displayStatus: 'ok',
+          modalEnabled: true,
+          hasStatusError: true,
         }),
       ).toBe(false);
     });

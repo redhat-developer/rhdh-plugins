@@ -18,6 +18,8 @@ import { render, screen } from '@testing-library/react';
 
 import { Trans } from '../Trans';
 
+const iaChatPermissionName = 'intelligent-assistant.chat';
+
 // Mock the useTranslation hook
 jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: () => ({
@@ -134,14 +136,9 @@ describe('Trans Component', () => {
     it('should handle permission description formatting', () => {
       render(
         <Trans
-          message="To view intelligent assistant plugin, contact your administrator to give the <b>intelligent-assistant.chat.read</b> and <b>intelligent-assistant.chat.create</b> permissions."
+          message={`To view intelligent assistant plugin, contact your administrator to give the <b>${iaChatPermissionName}</b> permission.`}
           components={{
-            '<b>intelligent-assistant.chat.read</b>': (
-              <b>intelligent-assistant.chat.read</b>
-            ),
-            '<b>intelligent-assistant.chat.create</b>': (
-              <b>intelligent-assistant.chat.create</b>
-            ),
+            [`<b>${iaChatPermissionName}</b>`]: <b>{iaChatPermissionName}</b>,
           }}
         />,
       );
@@ -150,20 +147,10 @@ describe('Trans Component', () => {
       expect(
         screen.getByText(/To view intelligent assistant plugin/),
       ).toBeInTheDocument();
-      expect(
-        screen.getByText('intelligent-assistant.chat.read'),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText('intelligent-assistant.chat.create'),
-      ).toBeInTheDocument();
+      expect(screen.getByText(iaChatPermissionName)).toBeInTheDocument();
 
-      // Check that permission names are bold
-      expect(screen.getByText('intelligent-assistant.chat.read').tagName).toBe(
-        'B',
-      );
-      expect(
-        screen.getByText('intelligent-assistant.chat.create').tagName,
-      ).toBe('B');
+      // Check that permission name is bold
+      expect(screen.getByText(iaChatPermissionName).tagName).toBe('B');
     });
   });
 

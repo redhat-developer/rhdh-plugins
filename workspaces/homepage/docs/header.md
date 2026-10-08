@@ -46,6 +46,7 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage for customizable homepage
+          module: Legacy
           config:
             props:
               title: 'Howdy {{firstName}} or {{dispayName}}'
@@ -73,6 +74,7 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
+          module: Legacy
           config:
             props:
               title: Our custom RHDH instance
@@ -94,6 +96,7 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
+          module: Legacy
           config:
             props:
               title: Welcome to your RHDH instance!
@@ -119,6 +122,7 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
+          module: Legacy
           config:
             props:
               title: Welcome back!
@@ -151,6 +155,7 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
+          module: Legacy
           config:
             props:
               localClock:
@@ -168,6 +173,7 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
+          module: Legacy
           config:
             props:
               localClock:
@@ -187,6 +193,7 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
+          module: Legacy
           config:
             props:
               localClock:
@@ -205,6 +212,7 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
+          module: Legacy
           config:
             props:
               localClock:
@@ -247,6 +255,7 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage # or DynamicCustomizableHomePage
+          module: Legacy
           config:
             props:
               worldClocks:

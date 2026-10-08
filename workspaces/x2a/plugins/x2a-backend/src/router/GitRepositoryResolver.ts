@@ -76,4 +76,28 @@ export class GitRepositoryResolver {
       ),
     };
   }
+
+  resolveTargetOnly(params: {
+    project: Pick<
+      ResolveParams['project'],
+      'targetRepoUrl' | 'targetRepoBranch'
+    >;
+    targetRepoAuth?: { token: string };
+  }): GitRepository {
+    const targetToken =
+      params.targetRepoAuth?.token ??
+      this.config.getOptionalString('x2a.git.targetRepo.token');
+
+    if (!targetToken) {
+      throw new InputError(
+        'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
+      );
+    }
+
+    return new GitRepository(
+      params.project.targetRepoUrl,
+      params.project.targetRepoBranch,
+      targetToken,
+    );
+  }
 }

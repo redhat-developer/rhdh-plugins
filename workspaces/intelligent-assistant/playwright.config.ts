@@ -64,6 +64,7 @@ export default defineConfig({
 
   projects: LOCALES.map(locale => ({
     name: locale,
+    testIgnore: '**/lightspeed.permissions.test.ts',
     use: {
       channel: 'chrome' as const,
       locale,

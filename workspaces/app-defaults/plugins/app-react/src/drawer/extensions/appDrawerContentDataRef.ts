@@ -21,7 +21,7 @@ import type { AppDrawerContent } from '../types';
 /**
  * Extension data ref carrying drawer content from a plugin to the host.
  *
- * @alpha
+ * @public
  */
 export const appDrawerContentDataRef =
   createExtensionDataRef<AppDrawerContent>().with({

@@ -15,7 +15,7 @@ All four severity metrics share the same default thresholds. Default thresholds 
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     dependabot:
       alertsCritical:
         thresholds:

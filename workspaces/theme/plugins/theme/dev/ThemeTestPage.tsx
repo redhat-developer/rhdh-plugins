@@ -21,7 +21,9 @@ import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
 export const ThemeTestPage = () => (
   <Page themeId="tool">
     <Header title="Theme Test Page">
-      <UserSettingsThemeToggle />
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        <UserSettingsThemeToggle />
+      </ul>
     </Header>
     <Content>
       <Grid container>

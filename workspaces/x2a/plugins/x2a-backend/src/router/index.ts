@@ -19,6 +19,7 @@ import { resolvePackagePath } from '@backstage/backend-plugin-api';
 
 import { createOpenApiRouter } from '../schema/openapi';
 import type { RouterDeps } from './types';
+import { registerAdversarialAgentRoutes } from './adversarialAgents';
 import { registerProjectRoutes } from './projects';
 import { registerModuleRoutes } from './modules';
 import { registerJobRoutes } from './jobs';
@@ -47,6 +48,7 @@ export async function createRouter(deps: RouterDeps): Promise<express.Router> {
   registerModuleRoutes(apiRouter, deps);
   registerJobRoutes(apiRouter, deps);
   registerRuleRoutes(apiRouter, deps);
+  registerAdversarialAgentRoutes(apiRouter, deps);
 
   // Mount API router under main router
   mainRouter.use(apiRouter);

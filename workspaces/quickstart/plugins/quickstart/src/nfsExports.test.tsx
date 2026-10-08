@@ -31,4 +31,11 @@ describe('quickstart NFS exports', () => {
   it('should export quickstartTranslationsModule', () => {
     expect(quickstartTranslationsModule).toBeDefined();
   });
+
+  it('should not re-export legacy OFS components from the NFS entry', () => {
+    expect(
+      (quickstartPlugin as { QuickstartDrawerProvider?: unknown })
+        .QuickstartDrawerProvider,
+    ).toBeUndefined();
+  });
 });

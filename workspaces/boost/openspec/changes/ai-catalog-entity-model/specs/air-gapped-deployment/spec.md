@@ -121,7 +121,7 @@ Reference app-config YAML, Helm values, and Operator CR examples MUST be provide
   global:
     dynamic:
       plugins:
-        - package: '@boost/plugin-boost-backend-module-kagenti'
+        - package: '@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti'
           disabled: false
 
   boost:

@@ -20,10 +20,14 @@ import {
   InfoCard,
   Progress,
   ResponseErrorPanel,
-  StructuredMetadataTable,
 } from '@backstage/core-components';
 
 import { makeStyles } from 'tss-react/mui';
+
+import {
+  generateReviewTableData,
+  NestedReviewTable,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { formatMetadataForDisplay } from '../../utils/formatMetadataForDisplay';
@@ -54,10 +58,20 @@ export const WorkflowInputs: FC<{
   const { t } = useTranslation();
   const { classes } = useStyles();
   const inputs = value?.data;
-  const displayInputs = useMemo(
-    () => (inputs ? formatMetadataForDisplay(inputs) : inputs),
-    [inputs],
-  );
+  const inputSchema = value?.inputSchema;
+  const displayInputs = useMemo(() => {
+    if (!inputs) {
+      return inputs;
+    }
+
+    if (inputSchema) {
+      return generateReviewTableData(inputSchema, inputs, {
+        includeHiddenFields: true,
+      });
+    }
+
+    return formatMetadataForDisplay(inputs);
+  }, [inputSchema, inputs]);
   return (
     <InfoCard
       title={t('run.inputs')}
@@ -78,7 +92,7 @@ export const WorkflowInputs: FC<{
 
       {!loading && !responseError && displayInputs && (
         <div className={classes.metadataTable}>
-          <StructuredMetadataTable dense metadata={displayInputs} />
+          <NestedReviewTable data={displayInputs} />
         </div>
       )}
     </InfoCard>

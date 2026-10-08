@@ -1,5 +1,72 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 9.1.1
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- fe07a78: Updated dependency `@openapitools/openapi-generator-cli` to `2.41.0`.
+  Updated dependency `@playwright/test` to `1.63.0`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.1.1
+
+## 9.1.0
+
+### Minor Changes
+
+- 2b31f6c: Convert `bulk.import` from a resource permission to a feature permission, and register the NFS bulk import page using the `if` permission predicate.
+
+### Patch Changes
+
+- Updated dependencies [2b31f6c]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.1.0
+
+## 9.0.1
+
+### Patch Changes
+
+- df4bcba: Backstage version bump to v1.54.6
+- Updated dependencies [df4bcba]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.0.1
+
+## 9.0.0
+
+### Major Changes
+
+- b9198f8: Orchestrator import mode now requires short-lived GitHub App installation tokens for `authTokens` and fails closed when only a classic PAT is available. Plugin-to-plugin calls to Orchestrator now use `auth.getPluginRequestToken` instead of forwarding the incoming user bearer token. Operator docs cover App setup, token TTL limits for long-running workflows, GitLab residual risk, RBAC, and deployment hardening.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.0.0
+
+## 8.0.3
+
+### Patch Changes
+
+- 9ff7395: Updated dependency `js-yaml` to `^4.3.1`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.3
+
+## 8.0.2
+
+### Patch Changes
+
+- 6ea9977: Document contributor guides for local development and CI bump-trust testing, and link them from the package READMEs.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.2
+
+## 8.0.1
+
+### Patch Changes
+
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 503c66e: Updated dependency `@openapitools/openapi-generator-cli` to `2.40.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.15.0`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.1
+
 ## 8.0.0
 
 ### Minor Changes

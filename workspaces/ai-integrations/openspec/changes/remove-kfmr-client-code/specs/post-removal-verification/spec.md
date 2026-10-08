@@ -20,6 +20,8 @@ After removal, the connector plugin SHALL contain zero references to KubeFlow Mo
 - **THEN** the interfaces `KFMRClient`, `KFMRInferenceService`, `InferenceServiceList`, and `LoopOverKFMRResult` do not exist
 - **AND** `ReconcilerConfig` does not contain fields `kfmrClients` or `kfmrRoutes`
 - **AND** `ReconcilerConfig` contains `catalogRoute` (renamed from `kfmrCatalogRoute`) for Model Catalog route storage
+- **AND** `ReconcilerConfig` contains `catalogUrl` for config-based catalog URL
+- **AND** `NormalizerType` enum does not exist (deleted — only KServe normalizer remains)
 - **AND** `CatalogModel` interface is preserved (it is a Model Catalog type, not a registry type)
 
 #### Scenario: No KFMR label constants remain
@@ -55,13 +57,21 @@ The KubeFlow Model Catalog API support SHALL remain functional after KFMR remova
 #### Scenario: Catalog route discovery is functional
 
 - **WHEN** the connector starts and discovers OpenShift routes managed by `model-registry-operator`
+- **AND** no `catalogUrl` is configured
 - **THEN** routes with `catalog` in the name are stored on `ReconcilerConfig.catalogRoute`
 - **AND** the catalog route's ingress host is used to construct the catalog base URL
 
+#### Scenario: Config-based catalog URL takes precedence
+
+- **WHEN** `kubeflow-model-catalog-url` is set in `catalog.providers.modelCatalog.<id>` config
+- **THEN** the configured URL is stored on `ReconcilerConfig.catalogUrl`
+- **AND** `setupCatalogRoute()` skips route discovery
+- **AND** `createCatalogClient()` uses the configured URL instead of route ingress
+
 #### Scenario: getModelCard is callable
 
-- **WHEN** a `sourceId` and `modelName` are provided to the relocated `getModelCard()` function
-- **AND** the catalog route has been discovered
+- **WHEN** a `sourceId` and `modelName` are provided to `createCatalogClient().getModelCard()`
+- **AND** a catalog URL is available (via config or route discovery)
 - **THEN** a GET request is made to the Model Catalog API at `/api/model_catalog/v1alpha1/sources/{sourceId}/models/{modelName}`
 - **AND** the `readme` field of the returned `CatalogModel` is returned
 
@@ -112,3 +122,53 @@ The connector plugin SHALL compile and type-check cleanly after all changes.
 
 - **WHEN** `yarn test:all` is run from the workspace root
 - **THEN** all existing tests pass
+
+---
+
+### Requirement: Annotation-based model card lookup is functional
+
+InferenceService CRs annotated with `rhdh.io/catalog-source` and `rhdh.io/catalog-model` SHALL trigger model card retrieval from the Model Catalog API.
+
+#### Scenario: Annotated InferenceService gets model card
+
+- **WHEN** a KServe `InferenceService` CR has annotations `rhdh.io/catalog-source` and `rhdh.io/catalog-model`
+- **AND** a catalog URL is available (via config or route discovery)
+- **THEN** `fetchModelCardViaAnnotations()` calls `createCatalogClient().getModelCard()` with the annotation values
+- **AND** the retrieved model card (readme) is populated on the resulting entity
+
+#### Scenario: Non-annotated InferenceService skips model card lookup
+
+- **WHEN** a KServe `InferenceService` CR does not have `rhdh.io/catalog-source` or `rhdh.io/catalog-model` annotations
+- **THEN** no model card lookup is attempted for that InferenceService
+
+---
+
+### Requirement: Backstage config fields are functional
+
+The connector SHALL read `kubeflow-model-catalog-url`, `default-owner`, and `default-lifecycle` from Backstage config under `catalog.providers.modelCatalog.<id>`.
+
+#### Scenario: Config fields populate ConnectorConfig
+
+- **WHEN** `catalog.providers.modelCatalog.<id>` contains `kubeflow-model-catalog-url`, `default-owner`, and `default-lifecycle`
+- **THEN** `plugin.ts` creates a `ConnectorConfig` with the corresponding values
+- **AND** `setupInformer()` receives the `ConnectorConfig`
+- **AND** config values take precedence over environment variables (`KUBEFLOW_MODEL_CATALOG_URL`, `OWNER`, `LIFECYCLE`)
+
+#### Scenario: Environment variable fallback
+
+- **WHEN** config fields are not set
+- **THEN** `setupInformer()` falls back to environment variables `OWNER` and `LIFECYCLE`
+- **AND** if environment variables are also unset, defaults to `"default-owner"` and `"production"`
+
+---
+
+### Requirement: NormalizerType enum is fully removed
+
+The `NormalizerType` enum and `normalizerType` field SHALL be completely removed since only the KServe normalizer exists.
+
+#### Scenario: No NormalizerType references remain
+
+- **WHEN** all TypeScript files under `plugins/kserve-kubeflow-connector-backend/src/` are searched
+- **THEN** no references to `NormalizerType`, `KServeNormalizer`, `KubeflowNormalizer`, or `normalizerType` exist
+- **AND** `processModelCatalog` does not accept a `normalizerType` parameter
+- **AND** `ModelCatalogMetadata` does not contain a `normalizerType` field

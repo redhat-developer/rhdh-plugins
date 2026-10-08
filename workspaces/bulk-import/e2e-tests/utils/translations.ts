@@ -92,3 +92,14 @@ export function getSelectedRepositoriesHeading(
 ): string {
   return `${translations.addRepositories.selectedLabel} ${translations.addRepositories.selectedRepositories} (${count})`;
 }
+
+/**
+ * Sidebar label for the bulk import page.
+ * Legacy uses translated nav text; NFS still uses a hardcoded English title (RHIDP-12094).
+ */
+export function getBulkImportNavLabel(locale: string): string {
+  if (process.env.APP_MODE === 'legacy') {
+    return getTranslations(locale).sidebar.bulkImport;
+  }
+  return 'Bulk import';
+}

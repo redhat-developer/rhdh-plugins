@@ -44,6 +44,11 @@ export type NotebooksAPI = {
     newTitle?: string,
   ) => Promise<UploadDocumentResponse>;
   listDocuments: (sessionId: string) => Promise<SessionDocument[]>;
+  renameDocument: (
+    sessionId: string,
+    documentId: string,
+    newTitle: string,
+  ) => Promise<void>;
   deleteDocument: (sessionId: string, documentId: string) => Promise<void>;
   getDocumentStatus: (
     sessionId: string,
@@ -52,6 +57,7 @@ export type NotebooksAPI = {
   querySession: (
     sessionId: string,
     query: string,
+    options?: { signal?: AbortSignal },
   ) => Promise<ReadableStreamDefaultReader<Uint8Array>>;
 };
 

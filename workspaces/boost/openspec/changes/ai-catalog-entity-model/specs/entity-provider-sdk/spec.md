@@ -21,7 +21,7 @@ The SDK MUST define TypeScript interfaces for AI asset entity providers covering
 #### Scenario: AIAssetEntityProvider interface definition (RHIDP-15259)
 
 - **WHEN** a developer implements an AI asset entity provider
-- **THEN** they implement the `AIAssetEntityProvider` interface from `@boost/entity-provider-sdk`
+- **THEN** they implement the `AIAssetEntityProvider` interface from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
 - **AND** the interface requires methods: `connect()`, `* entities()` (async generator), `getProviderName()`, `getProviderId()`
 - **AND** the interface supports both full-refresh and incremental-sync patterns (incremental via optional `delta()` method)
 
@@ -39,25 +39,20 @@ The SDK MUST define TypeScript interfaces for AI asset entity providers covering
 - **AND** **WHEN** a provider implements the optional `delta(cursor?: string)` method
 - **THEN** it operates in incremental mode: yields only additions/updates/deletions since the cursor
 
-#### Scenario: Existing Kagenti and LlamaStack providers compile (RHIDP-15259)
-
-- **WHEN** the SDK package is published
-- **THEN** the Kagenti provider (`plugins/boost-backend-module-kagenti`) compiles against the SDK interface without errors
-- **AND** the LlamaStack provider (`plugins/boost-backend-module-llamastack`) compiles against the SDK interface without errors
-
 ### Requirement: Published SDK Package with Validation
 
 The SDK MUST be published as an installable npm package with shared validation utilities.
 
 #### Scenario: SDK package is installable (RHIDP-15260)
 
-- **WHEN** a developer runs `npm install @boost/entity-provider-sdk`
+- **WHEN** a developer runs `npm install @red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
 - **THEN** the package installs successfully
 - **AND** the package exports: `AIAssetEntityProvider`, `AIAssetCategory`, annotation constants, `validateAIAssetEntity()`, `normalizeAIAssetVersion()`
+- **AND** the package exports the delta sync framework: `DeltaSyncManager`, `InMemoryCursorStore`, `CursorStore`, `CursorState`, `ApplyDeltaOptions`, `DeltaSyncManagerOptions`
 
 #### Scenario: Annotation constants exported (RHIDP-15260)
 
-- **WHEN** a developer imports from `@boost/entity-provider-sdk`
+- **WHEN** a developer imports from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
 - **THEN** they can use constants: `AI_ASSET_CATEGORY_ANNOTATION = 'rhdh.io/ai-asset-category'`, `AI_ASSET_VERSION_ANNOTATION = 'rhdh.io/ai-asset-version'`, `AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source'`
 
 #### Scenario: Shared validation rejects invalid entities (RHIDP-15260)
@@ -81,7 +76,7 @@ The SDK MUST define a TypeScript interface for Neo4j sync adapters with node/rel
 #### Scenario: Neo4jSyncAdapter interface definition (RHIDP-15303)
 
 - **WHEN** a developer implements a Neo4j sync adapter
-- **THEN** they implement the `Neo4jSyncAdapter` interface from `@boost/entity-provider-sdk`
+- **THEN** they implement the `Neo4jSyncAdapter` interface from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
 - **AND** the interface requires methods: `createNode()`, `updateNode()`, `deleteNode()`, `createRelationship()`
 
 #### Scenario: Relationship type constants (RHIDP-15303)
@@ -102,7 +97,7 @@ The SDK MUST define the TypeScript type for SkillBundle metadata (skillcard.yaml
 #### Scenario: SkillBundleMetadata type definition (RHIDP-15303)
 
 - **WHEN** a developer parses a `skillcard.yaml` file
-- **THEN** they use the `SkillBundleMetadata` type from `@boost/entity-provider-sdk`
+- **THEN** they use the `SkillBundleMetadata` type from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
 - **AND** the type defines fields: `name: string`, `version: string`, `description?: string`, `author?: string`, `tags?: string[]`, `runtime?: { language: string, dependencies?: Record<string, string> }`, `mcp?: { servers: string[] }`
 
 #### Scenario: OCI skill registry uses SkillBundleMetadata (RHIDP-15303)

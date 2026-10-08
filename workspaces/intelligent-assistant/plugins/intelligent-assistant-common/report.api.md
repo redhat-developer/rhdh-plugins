@@ -6,26 +6,51 @@
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
 // @public
-export const lightspeedChatCreatePermission: BasicPermission;
+export const iaChatPermission: BasicPermission;
 
 // @public
-export const lightspeedChatDeletePermission: BasicPermission;
+export const iaMcpToolsPermission: BasicPermission;
 
 // @public
-export const lightspeedChatReadPermission: BasicPermission;
+export const iaNotebooksPermission: BasicPermission;
 
 // @public
-export const lightspeedChatUpdatePermission: BasicPermission;
+export const iaPermissions: BasicPermission[];
 
 // @public
-export const lightspeedMcpManagePermission: BasicPermission;
+export const iaSkillsPermission: BasicPermission;
 
 // @public
-export const lightspeedMcpReadPermission: BasicPermission;
+export interface SavedPrompt {
+  content: string;
+  created_at: string;
+  id: string;
+  name: string;
+  updated_at: string;
+}
 
 // @public
-export const lightspeedNotebooksUsePermission: BasicPermission;
+export interface SavedPromptCreateRequest {
+  content: string;
+  name: string;
+}
 
 // @public
-export const lightspeedPermissions: BasicPermission[];
+export interface SavedPromptDeleteResponse {
+  deleted: boolean;
+  prompt_id: string;
+  response: string;
+}
+
+// @public
+export interface SavedPromptsConfig {
+  max_content_length: number;
+  max_display_name_length: number;
+  max_prompts_per_user: number;
+}
+
+// @public
+export interface SavedPromptsListResponse {
+  prompts: SavedPrompt[];
+}
 ```

@@ -1,11 +1,55 @@
 #!/bin/sh
 set -eu
 
+# Fullsend yarn wrapper for the rhdh-plugins per-repo install.
+# FULLSEND_TARGET_REPO_DIR is the sandbox checkout of this repo (rhdh-plugins),
+# not redhat-developer/rhdh.
 : "${FULLSEND_TARGET_REPO_DIR:?FULLSEND_TARGET_REPO_DIR is required}"
 
-yarn_js="${FULLSEND_TARGET_REPO_DIR}/.yarn/releases/yarn-4.12.0.cjs"
-if [ ! -f "${yarn_js}" ]; then
-  echo "vendored Yarn executable not found: ${yarn_js}" >&2
+yarnrc="${FULLSEND_TARGET_REPO_DIR}/.yarnrc.yml"
+yarn_js=""
+yarn_path=""
+
+# Prefer yarnPath from the target checkout's .yarnrc.yml (tracks Yarn bumps).
+if [ -f "${yarnrc}" ]; then
+  yarn_path="$(
+    sed -n 's/^[[:space:]]*yarnPath:[[:space:]]*//p' "${yarnrc}" \
+      | head -n 1 \
+      | tr -d "\"'" \
+      | sed 's/[[:space:]]*#.*//' \
+      | sed 's/[[:space:]]*$//'
+  )"
+  if [ -n "${yarn_path}" ]; then
+    case "${yarn_path}" in
+      /*) yarn_js="${yarn_path}" ;;
+      *) yarn_js="${FULLSEND_TARGET_REPO_DIR}/${yarn_path}" ;;
+    esac
+  fi
+fi
+
+# Fallback: exactly one vendored yarn-*.cjs under .yarn/releases.
+if [ -z "${yarn_js}" ] || [ ! -f "${yarn_js}" ]; then
+  yarn_js_fallback=""
+  for candidate in "${FULLSEND_TARGET_REPO_DIR}"/.yarn/releases/yarn-*.cjs; do
+    [ -f "${candidate}" ] || continue
+    if [ -n "${yarn_js_fallback}" ]; then
+      # Multiple binaries; do not guess.
+      yarn_js_fallback=""
+      break
+    fi
+    yarn_js_fallback="${candidate}"
+  done
+  if [ -n "${yarn_js_fallback}" ]; then
+    echo "yarnPath missing or invalid in ${yarnrc} (yarnPath=${yarn_path:-unset}); falling back to ${yarn_js_fallback}" >&2
+    yarn_js="${yarn_js_fallback}"
+  fi
+fi
+
+if [ -z "${yarn_js}" ] || [ ! -f "${yarn_js}" ]; then
+  echo "vendored Yarn executable not found" >&2
+  echo "  yarnrc: ${yarnrc}" >&2
+  echo "  yarnPath: ${yarn_path:-unset}" >&2
+  echo "  yarn_js: ${yarn_js:-unset}" >&2
   exit 1
 fi
 

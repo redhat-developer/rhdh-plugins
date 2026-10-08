@@ -14,28 +14,31 @@
  * limitations under the License.
  */
 
-import { Content, Header, Page } from '@backstage/core-components';
+import { Content, ErrorPage, Header, Page } from '@backstage/core-components';
 
-import { createStyles, makeStyles } from '@material-ui/core/styles';
-
+import { useIaChatPermission } from '../hooks/useIaChatPermission';
+import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
-
-const useStyles = makeStyles(() =>
-  createStyles({
-    container: {
-      padding: '0px',
-    },
-  }),
-);
 
 /**
  * Lightspeed Page - Routable fullscreen/embedded mode
  * @public
  */
 export const LightspeedPage = () => {
-  const classes = useStyles();
   const { t } = useTranslation();
+  const { allowed: hasChatAccess, loading: chatPermissionLoading } =
+    useIaChatPermission();
+  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
+    useIaNotebooksPermission();
+
+  const permissionsLoading =
+    chatPermissionLoading || notebooksPermissionLoading;
+  const hasPluginAccess = hasChatAccess || hasNotebooksAccess;
+
+  if (!permissionsLoading && !hasPluginAccess) {
+    return <ErrorPage status="404" statusMessage="Page not found" />;
+  }
 
   return (
     <Page themeId="tool">
@@ -44,7 +47,7 @@ export const LightspeedPage = () => {
         style={{ display: 'none' }}
         pageTitleOverride={t('page.title')}
       />
-      <Content className={classes.container}>
+      <Content noPadding>
         <LightspeedChatContainer />
       </Content>
     </Page>

@@ -19,12 +19,13 @@ import { useRouteRef } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { x2aAdminWritePermission } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useTranslation } from '../../hooks/useTranslation';
-import { rulesRouteRef } from '../../routes';
+import { rulesRouteRef, adversarialAgentsRouteRef } from '../../routes';
 import { ProjectList } from '../ProjectList';
 
 export const Dashboard = () => {
   const { t } = useTranslation();
   const rulesPath = useRouteRef(rulesRouteRef);
+  const adversarialAgentsPath = useRouteRef(adversarialAgentsRouteRef);
   const { allowed: isAdmin, loading: permLoading } = usePermission({
     permission: x2aAdminWritePermission,
   });
@@ -36,6 +37,13 @@ export const Dashboard = () => {
           <Box display="flex" alignItems="center">
             <LinkButton variant="outlined" color="default" to={rulesPath()}>
               {t('rulesPage.manageRules')}
+            </LinkButton>
+            <LinkButton
+              variant="outlined"
+              color="default"
+              to={adversarialAgentsPath()}
+            >
+              {t('adversarialAgentsPage.manageAdversarialAgents')}
             </LinkButton>
           </Box>
         )}

@@ -14,113 +14,217 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
-import { makeStyles, Typography } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import {
   Button,
   Dropdown,
   DropdownItem,
   DropdownList,
+  Flex,
+  FlexItem,
+  HelperText,
+  HelperTextItem,
+  Icon,
   MenuToggle,
   Spinner,
+  TextInput,
   Tooltip,
 } from '@patternfly/react-core';
-import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
+import {
+  AddCircleOIcon,
+  EllipsisVIcon,
+  PencilAltIcon,
+  TrashIcon,
+} from '@patternfly/react-icons';
 
-import { NOTEBOOK_MAX_FILES } from '../../const';
+import { NOTEBOOK_MAX_FILES, NOTEBOOK_MAX_TITLE_LENGTH } from '../../const';
+import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
 import { FileTypeIcon } from './FileTypeIcon';
 import { SidebarCollapseIcon } from './SidebarCollapseIcon';
 
-const useStyles = makeStyles(theme => ({
-  sidebar: {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: '100%',
-    padding: theme.spacing(2),
-    overflow: 'hidden',
+const Sidebar = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '100%',
+  height: '100%',
+  padding: theme.spacing(2),
+  overflow: 'hidden',
+}));
+
+const TitleRow = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: theme.spacing(2),
+  gap: theme.spacing(1),
+}));
+
+const NotebookTitle = styled(Typography)({
+  fontWeight: 500,
+  fontSize: '1.25rem',
+  lineHeight: '2rem',
+  letterSpacing: '-0.25px',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  flex: '0 1 auto',
+  minWidth: 0,
+  cursor: 'pointer',
+  borderRadius: 4,
+  padding: '2px 6px',
+  '&:hover': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--action--plain--hover)',
   },
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: theme.spacing(2),
-    gap: theme.spacing(1),
-  },
-  title: {
+});
+
+const TitleInput = styled(TextInput)({
+  flex: 1,
+  minWidth: 0,
+  '--pf-v6-c-form-control--FontSize': '1.25rem',
+  '--pf-v6-c-form-control--LineHeight': '2rem',
+  '--pf-v6-c-form-control--before--BorderStyle': 'none',
+  '& input': {
     fontWeight: 500,
-    fontSize: '1.25rem',
-    lineHeight: '2rem',
     letterSpacing: '-0.25px',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    flex: 1,
-    minWidth: 0,
+    padding: '0 4px',
+    outline: 'none',
   },
-  collapseButton: {
-    flexShrink: 0,
+});
+
+const DocumentsRow = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+});
+
+const DocumentCount = styled(Typography)({
+  fontWeight: 700,
+  fontSize: '1.125rem',
+  lineHeight: '2rem',
+});
+
+const AddButton = styled(Button)({
+  textTransform: 'none',
+});
+
+const DocumentsList = styled('div')(({ theme }) => ({
+  marginTop: theme.spacing(2),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(0.5),
+  overflowY: 'auto',
+  flex: 1,
+}));
+
+// Hover chrome only — alignment comes from PF Flex alignItemsCenter.
+const DocumentItem = styled(Flex)(({ theme }) => ({
+  padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
+  borderRadius: 'var(--pf-t--global--border--radius--small)',
+  '&:hover': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--action--plain--hover)',
   },
-  documentsRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  documentCount: {
-    fontWeight: 700,
-    fontSize: '1.125rem',
-    lineHeight: '2rem',
-  },
-  addButton: {
-    textTransform: 'none',
-  },
-  documentsList: {
-    marginTop: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
-    overflowY: 'auto',
-    flex: 1,
-  },
-  documentItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    padding: `${theme.spacing(1)}px ${theme.spacing(0.5)}px`,
-    borderRadius: 4,
-  },
-  fileIcon: {
-    flexShrink: 0,
-    color: theme.palette.grey[500],
-    fontSize: '1rem',
-  },
-  fileName: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontSize: '0.875rem',
-    lineHeight: '1.25rem',
-  },
-  spinnerContainer: {
-    flexShrink: 0,
-  },
-  kebabToggle: {
-    padding: 0,
-    flexShrink: 0,
-  },
-  kebabDropdownMenu: {
-    '& .pf-v6-c-menu__list': {
-      paddingInlineStart: 0,
-      marginBlockStart: 0,
-      marginBlockEnd: 0,
-    },
+  '&:hover .doc-kebab, &:focus-within .doc-kebab': {
+    visibility: 'visible',
   },
 }));
+
+const FileName = styled(Typography)({
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  fontSize: '0.875rem',
+  lineHeight: '1.25rem',
+  cursor: 'pointer',
+  borderRadius: 'var(--pf-t--global--border--radius--small)',
+  padding: '2px 6px',
+  '&:hover': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--action--plain--hover)',
+  },
+});
+
+const RenameFields = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  flex: 1,
+  minWidth: 0,
+  gap: 'var(--pf-t--global--spacer--xs)',
+});
+
+const RenameInput = styled(TextInput)({
+  flex: 1,
+  minWidth: 0,
+  alignItems: 'center',
+  '--pf-v6-c-form-control--m-error--after--BorderWidth': '2px',
+  '--pf-v6-c-form-control--FontSize': '0.875rem',
+  '--pf-v6-c-form-control--LineHeight': '1.25rem',
+  '& input': {
+    padding: '2px 4px',
+    outline: 'none',
+  },
+  '& .pf-v6-c-form-control__utilities': {
+    alignSelf: 'center',
+    alignItems: 'center',
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+});
+
+const RenameExtension = styled(Typography)({
+  flexShrink: 0,
+  fontSize: '0.875rem',
+  lineHeight: '1.25rem',
+  whiteSpace: 'nowrap',
+});
+
+const RenameHelperText = styled('div')({
+  width: '100%',
+  paddingTop: 'var(--pf-t--global--spacer--xs)',
+  paddingInlineStart: 'calc(28px + var(--pf-t--global--spacer--sm))',
+  '& .pf-v6-c-helper-text__item-text': {
+    color: 'var(--pf-t--global--color--status--danger--default)',
+  },
+});
+
+const SpinnerContainer = styled('div')({
+  flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const KebabToggle = styled(MenuToggle)({
+  padding: 0,
+  flexShrink: 0,
+  visibility: 'hidden',
+});
+
+const KebabDropdown = styled(Dropdown)({
+  '& .pf-v6-c-menu__list': {
+    paddingInlineStart: 0,
+    marginBlockStart: 0,
+    marginBlockEnd: 0,
+  },
+});
+
+const splitFileName = (
+  fileName: string,
+): { baseName: string; extension: string } => {
+  if (!fileName) return { baseName: '', extension: '' };
+  const lastDot = fileName.lastIndexOf('.');
+  if (lastDot <= 0) return { baseName: fileName, extension: '' };
+  return {
+    baseName: fileName.slice(0, lastDot),
+    extension: fileName.slice(lastDot),
+  };
+};
 
 type DocumentSidebarProps = {
   notebookName: string;
@@ -133,6 +237,8 @@ type DocumentSidebarProps = {
   onToggleCollapse: () => void;
   onAddDocument: () => void;
   onDeleteDocument?: (documentId: string) => void;
+  onRenameDocument?: (documentId: string, newTitle: string) => void;
+  onRenameNotebook?: (newName: string) => void;
 };
 
 export const DocumentSidebar = ({
@@ -146,10 +252,99 @@ export const DocumentSidebar = ({
   onToggleCollapse,
   onAddDocument,
   onDeleteDocument,
+  onRenameDocument,
+  onRenameNotebook,
 }: DocumentSidebarProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const [openMenuDocId, setOpenMenuDocId] = useState<string | null>(null);
+  const [editingDocId, setEditingDocId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const startEditing = useCallback((docId: string, currentTitle: string) => {
+    const { baseName } = splitFileName(currentTitle);
+    setEditingDocId(docId);
+    setEditName(baseName);
+    setOpenMenuDocId(null);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 0);
+  }, []);
+
+  const cancelEditing = useCallback(() => {
+    setEditingDocId(null);
+    setEditName('');
+  }, []);
+
+  const getValidationError = useCallback(
+    (docId: string, originalTitle: string): string | null => {
+      const trimmedBase = editName.trim();
+      if (!trimmedBase) return null;
+      const { baseName, extension } = splitFileName(originalTitle);
+      if (trimmedBase === baseName) return null;
+      const newFullName = trimmedBase + extension;
+      if (newFullName.length > NOTEBOOK_MAX_TITLE_LENGTH) {
+        return t('notebook.document.rename.tooLong');
+      }
+      const conflict = documents.some(
+        d => d.document_id !== docId && d.title === newFullName,
+      );
+      return conflict ? t('notebook.document.rename.conflict') : null;
+    },
+    [editName, documents, t],
+  );
+
+  const saveRename = useCallback(
+    (docId: string, originalTitle: string) => {
+      const trimmedBase = editName.trim();
+      const { baseName, extension } = splitFileName(originalTitle);
+      if (!trimmedBase || trimmedBase === baseName) {
+        cancelEditing();
+        return;
+      }
+      const newFullName = trimmedBase + extension;
+      if (newFullName.length > NOTEBOOK_MAX_TITLE_LENGTH) {
+        cancelEditing();
+        return;
+      }
+      if (
+        documents.some(d => d.document_id !== docId && d.title === newFullName)
+      ) {
+        cancelEditing();
+        return;
+      }
+      onRenameDocument?.(docId, newFullName);
+      cancelEditing();
+    },
+    [editName, documents, onRenameDocument, cancelEditing],
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent, docId: string, originalTitle: string) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        saveRename(docId, originalTitle);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        cancelEditing();
+      }
+    },
+    [saveRename, cancelEditing],
+  );
+
+  const {
+    isEditing: isEditingTitle,
+    editValue: editTitle,
+    setEditValue: setEditTitle,
+    inputRef: titleInputRef,
+    startEditing: startEditingTitle,
+    save: saveTitle,
+    handleKeyDown: handleTitleKeyDown,
+  } = useInlineEdit({
+    currentName: notebookName,
+    onSave: newName => onRenameNotebook?.(newName),
+  });
 
   if (collapsed) {
     return null;
@@ -163,27 +358,45 @@ export const DocumentSidebar = ({
   const isAddDisabled = totalCount >= NOTEBOOK_MAX_FILES;
 
   return (
-    <div className={classes.sidebar}>
-      <div className={classes.titleRow}>
-        <Typography className={classes.title}>{notebookName}</Typography>
+    <Sidebar>
+      <TitleRow>
+        {isEditingTitle ? (
+          <TitleInput
+            ref={titleInputRef}
+            value={editTitle}
+            onChange={(_event, value) => setEditTitle(value)}
+            onBlur={saveTitle}
+            onKeyDown={handleTitleKeyDown}
+            aria-label={t('notebooks.rename.inline.tooltip')}
+          />
+        ) : (
+          <NotebookTitle
+            title={t('notebooks.rename.inline.tooltip')}
+            onClick={startEditingTitle}
+          >
+            {notebookName}
+          </NotebookTitle>
+        )}
         <Tooltip content={t('notebook.view.sidebar.collapse')} position="right">
           <Button
             variant="plain"
-            className={classes.collapseButton}
+            icon={
+              <Icon size="lg" isInline>
+                <SidebarCollapseIcon />
+              </Icon>
+            }
             onClick={onToggleCollapse}
             aria-label={t('notebook.view.sidebar.collapse')}
-          >
-            <SidebarCollapseIcon />
-          </Button>
+          />
         </Tooltip>
-      </div>
+      </TitleRow>
 
-      <div className={classes.documentsRow}>
-        <Typography className={classes.documentCount}>
-          {t('notebook.view.documents.count', {
+      <DocumentsRow>
+        <DocumentCount>
+          {(t as Function)('notebook.view.documents.count', {
             count: totalCount,
-          } as any)}
-        </Typography>
+          })}
+        </DocumentCount>
         {isAddDisabled ? (
           <Tooltip
             content={
@@ -194,102 +407,179 @@ export const DocumentSidebar = ({
             position="top"
           >
             <Typography component="div">
-              <Button
-                variant="link"
-                className={classes.addButton}
-                icon={<PlusCircleIcon />}
-                isDisabled
-              >
+              <AddButton variant="link" icon={<AddCircleOIcon />} isDisabled>
                 {t('notebook.view.documents.add')}
-              </Button>
+              </AddButton>
             </Typography>
           </Tooltip>
         ) : (
-          <Button
+          <AddButton
             variant="link"
-            className={classes.addButton}
-            icon={<PlusCircleIcon />}
+            icon={<AddCircleOIcon />}
             onClick={onAddDocument}
           >
             {t('notebook.view.documents.add')}
-          </Button>
+          </AddButton>
         )}
-      </div>
+      </DocumentsRow>
 
       {(documents.length > 0 || activePending.length > 0) && (
-        <div className={classes.documentsList}>
-          {documents.map(doc => (
-            <div key={doc.document_id} className={classes.documentItem}>
-              <FileTypeIcon fileName={doc.title} />
-              <Typography className={classes.fileName}>{doc.title}</Typography>
-              {deletingDocumentIds?.has(doc.document_id) ? (
-                <div className={classes.spinnerContainer}>
-                  <Spinner
-                    size="md"
-                    aria-label={t('notebook.document.delete')}
-                  />
-                </div>
-              ) : (
-                <Dropdown
-                  className={classes.kebabDropdownMenu}
-                  isOpen={openMenuDocId === doc.document_id}
-                  popperProps={{
-                    position: 'end',
-                    preventOverflow: true,
-                  }}
-                  onOpenChange={isOpen =>
-                    setOpenMenuDocId(isOpen ? doc.document_id : null)
-                  }
-                  toggle={toggleRef => (
-                    <MenuToggle
-                      ref={toggleRef}
-                      variant="plain"
-                      className={classes.kebabToggle}
-                      isExpanded={openMenuDocId === doc.document_id}
-                      onClick={event => {
-                        event.stopPropagation();
-                        setOpenMenuDocId(current =>
-                          current === doc.document_id ? null : doc.document_id,
-                        );
-                      }}
-                      aria-label={t('notebook.document.delete')}
-                    >
-                      <EllipsisVIcon />
-                    </MenuToggle>
-                  )}
+        <DocumentsList>
+          {documents.map(doc => {
+            const isEditing = editingDocId === doc.document_id;
+            const validationError = isEditing
+              ? getValidationError(doc.document_id, doc.title)
+              : null;
+
+            return (
+              <div key={doc.document_id}>
+                <DocumentItem
+                  alignItems={{ default: 'alignItemsCenter' }}
+                  spaceItems={{ default: 'spaceItemsSm' }}
+                  flexWrap={{ default: 'nowrap' }}
                 >
-                  <DropdownList>
-                    <DropdownItem
-                      key="delete"
-                      onClick={event => {
-                        event.stopPropagation();
-                        setOpenMenuDocId(null);
-                        onDeleteDocument?.(doc.document_id);
-                      }}
-                    >
-                      {t('notebook.document.delete')}
-                    </DropdownItem>
-                  </DropdownList>
-                </Dropdown>
-              )}
-            </div>
-          ))}
+                  <FlexItem>
+                    <FileTypeIcon fileName={doc.title} />
+                  </FlexItem>
+                  <FlexItem
+                    flex={{ default: 'flex_1' }}
+                    style={{ minWidth: 0 }}
+                  >
+                    {isEditing ? (
+                      <RenameFields>
+                        <RenameInput
+                          ref={inputRef}
+                          value={editName}
+                          onChange={(_event, value) => setEditName(value)}
+                          onBlur={() => saveRename(doc.document_id, doc.title)}
+                          onKeyDown={event =>
+                            handleKeyDown(event, doc.document_id, doc.title)
+                          }
+                          validated={validationError ? 'error' : 'default'}
+                          aria-label={t('notebook.document.rename')}
+                        />
+                        <RenameExtension>
+                          {splitFileName(doc.title).extension}
+                        </RenameExtension>
+                      </RenameFields>
+                    ) : (
+                      <FileName
+                        title={t('notebook.document.rename.tooltip')}
+                        onClick={() => startEditing(doc.document_id, doc.title)}
+                      >
+                        {doc.title}
+                      </FileName>
+                    )}
+                  </FlexItem>
+                  <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
+                    {deletingDocumentIds?.has(doc.document_id) ? (
+                      <SpinnerContainer>
+                        <Spinner
+                          size="md"
+                          aria-label={t('notebook.document.delete')}
+                        />
+                      </SpinnerContainer>
+                    ) : (
+                      <KebabDropdown
+                        isOpen={openMenuDocId === doc.document_id}
+                        popperProps={{
+                          position: 'end',
+                          preventOverflow: true,
+                        }}
+                        onOpenChange={isOpen =>
+                          setOpenMenuDocId(isOpen ? doc.document_id : null)
+                        }
+                        toggle={toggleRef => (
+                          <KebabToggle
+                            ref={toggleRef}
+                            variant="plain"
+                            className="doc-kebab"
+                            style={
+                              openMenuDocId === doc.document_id
+                                ? { visibility: 'visible' }
+                                : undefined
+                            }
+                            isExpanded={openMenuDocId === doc.document_id}
+                            onClick={event => {
+                              event.stopPropagation();
+                              setOpenMenuDocId(current =>
+                                current === doc.document_id
+                                  ? null
+                                  : doc.document_id,
+                              );
+                            }}
+                            aria-label={`${t('aria.options.label')} ${doc.title}`}
+                          >
+                            <EllipsisVIcon />
+                          </KebabToggle>
+                        )}
+                      >
+                        <DropdownList>
+                          <DropdownItem
+                            key="rename"
+                            icon={<PencilAltIcon />}
+                            onClick={event => {
+                              event.stopPropagation();
+                              startEditing(doc.document_id, doc.title);
+                            }}
+                          >
+                            {t('notebook.document.rename')}
+                          </DropdownItem>
+                          <DropdownItem
+                            key="delete"
+                            icon={<TrashIcon />}
+                            onClick={event => {
+                              event.stopPropagation();
+                              setOpenMenuDocId(null);
+                              onDeleteDocument?.(doc.document_id);
+                            }}
+                          >
+                            {t('notebook.document.delete')}
+                          </DropdownItem>
+                        </DropdownList>
+                      </KebabDropdown>
+                    )}
+                  </FlexItem>
+                </DocumentItem>
+                {validationError && (
+                  <RenameHelperText>
+                    <HelperText>
+                      <HelperTextItem variant="error">
+                        {validationError}
+                      </HelperTextItem>
+                    </HelperText>
+                  </RenameHelperText>
+                )}
+              </div>
+            );
+          })}
           {activePending.map(fileName => (
-            <div key={`pending-${fileName}`} className={classes.documentItem}>
-              <FileTypeIcon fileName={fileName} />
-              <Typography className={classes.fileName}>{fileName}</Typography>
+            <DocumentItem
+              key={`pending-${fileName}`}
+              alignItems={{ default: 'alignItemsCenter' }}
+              spaceItems={{ default: 'spaceItemsSm' }}
+              flexWrap={{ default: 'nowrap' }}
+            >
+              <FlexItem>
+                <FileTypeIcon fileName={fileName} />
+              </FlexItem>
+              <FlexItem flex={{ default: 'flex_1' }} style={{ minWidth: 0 }}>
+                <FileName>{fileName}</FileName>
+              </FlexItem>
               {!completedFileNames?.has(fileName) && (
-                <div className={classes.spinnerContainer}>
-                  <Spinner
-                    size="md"
-                    aria-label={t('notebook.view.documents.uploading')}
-                  />
-                </div>
+                <FlexItem alignSelf={{ default: 'alignSelfCenter' }}>
+                  <SpinnerContainer>
+                    <Spinner
+                      size="md"
+                      aria-label={t('notebook.view.documents.uploading')}
+                    />
+                  </SpinnerContainer>
+                </FlexItem>
               )}
-            </div>
+            </DocumentItem>
           ))}
-        </div>
+        </DocumentsList>
       )}
-    </div>
+    </Sidebar>
   );
 };

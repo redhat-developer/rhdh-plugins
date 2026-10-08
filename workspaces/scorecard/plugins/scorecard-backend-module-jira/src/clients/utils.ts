@@ -32,6 +32,43 @@ export function validateIdentifier(value: string, fieldName: string): string {
   return value;
 }
 
-export function sanitizeValue(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+export function joinJqlClauses(
+  clauses: Array<string | undefined | null>,
+): string {
+  return clauses
+    .filter((value): value is string => Boolean(value && value !== ''))
+    .map(value => `(${value})`)
+    .join(' AND ');
+}
+
+/**
+ * Converts a validated ISO datetime to Unix epoch milliseconds for JQL.
+ *
+ * Unquoted numbers in JQL date comparisons are treated as milliseconds since
+ * epoch (1970-01-01). Quoted `"yyyy-MM-dd HH:mm"` values use the configured
+ * (usually server) timezone. Epoch avoids that skew.
+ *
+ * @see https://support.atlassian.com/jira-software-cloud/docs/jql-fields/ (`created`, `updated` fields)
+ * @see https://confluence.atlassian.com/jiracoreserver/advanced-searching-fields-reference-939937719.html (`created`, `updated` fields)
+ */
+export function toJiraEpochMillis(value: string): number {
+  return new Date(value).getTime();
+}
+
+/**
+ * Reformats a datetime from a Jira API response to strict ISO-8601.
+ * Jira may return offsets without a colon (`+0530`); those are normalized.
+ */
+export function jiraDateTimeToIso(value: string): string {
+  const normalizedValue = normalizeJiraOffset(value);
+  const parsedDate = new Date(normalizedValue);
+  if (Number.isNaN(parsedDate.getTime())) {
+    throw new TypeError(`Invalid Jira datetime "${value}"`);
+  }
+  return parsedDate.toISOString();
+}
+
+/** Jira can return offsets like `+0530`; ISO expects `+05:30`. */
+function normalizeJiraOffset(value: string): string {
+  return value.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
 }

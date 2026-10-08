@@ -24,7 +24,7 @@ import {
   createApiFactory,
 } from '@backstage/core-plugin-api';
 
-import { AdoptionInsightsAnalyticsApiFactory } from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights';
+import { AdoptionInsightsAnalyticsApiFactory } from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights/legacy';
 
 export const apis: AnyApiFactory[] = [
   createApiFactory({

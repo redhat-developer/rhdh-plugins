@@ -2,19 +2,20 @@
 #
 # Build x2a dynamic plugins and package them as OCI images.
 #
-# Usage: ./scripts/build-dynamic-plugins.sh [--push] [--tag <tag>] [--report]
+# Usage: ./scripts/build-dynamic-plugins.sh [--push] [--tag <tag>] [--registry <registry>] [--report]
 #
 # Options:
-#   --push       Push built images to the registry after packaging
-#   --tag <tag>  Additional tag to apply to images (e.g., nightly, latest)
-#   --report     Print a JSON report of all plugin images and exit (no build)
+#   --push                 Push built images to the registry after packaging
+#   --tag <tag>            Additional tag to apply to images (e.g., nightly, latest)
+#   --registry <registry>  Image registry prefix (default: quay.io/x2ansible)
+#   --report               Print a JSON report of all plugin images and exit (no build)
 #
 # Produces OCI images:
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a:<version>
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-backend:<version>
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-dcr:<version>
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-mcp-extras:<version>
-#   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a:<version>
+#   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-scaffolder-module:<version>
 #
 #   And optionally with custom tag if --tag is specified
 #
@@ -23,7 +24,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-RHDH_CLI_VERSION="1.9.1"
+RHDH_CLI_VERSION="${RHDH_CLI_VERSION:-2.1.2}"
 EMBED_COMMON="@red-hat-developer-hub/backstage-plugin-x2a-common"
 EMBED_NODE="@red-hat-developer-hub/backstage-plugin-x2a-node"
 IMAGE_REGISTRY="quay.io/x2ansible"
@@ -44,7 +45,7 @@ declare -A PLUGIN_IMAGES=(
   ["x2a-backend"]="red-hat-developer-hub-backstage-plugin-x2a-backend"
   ["x2a-dcr"]="red-hat-developer-hub-backstage-plugin-x2a-dcr"
   ["x2a-mcp-extras"]="red-hat-developer-hub-backstage-plugin-x2a-mcp-extras"
-  ["scaffolder-backend-module-x2a"]="red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a"
+  ["scaffolder-backend-module-x2a"]="red-hat-developer-hub-backstage-plugin-x2a-scaffolder-module"
 )
 
 # ---------------------------------------------------------------------------
@@ -210,6 +211,14 @@ parse_args() {
           exit 1
         fi
         CUSTOM_TAG="$2"
+        shift 2
+        ;;
+      --registry)
+        if [[ -z "${2:-}" ]]; then
+          echo "ERROR: --registry requires a value" >&2
+          exit 1
+        fi
+        IMAGE_REGISTRY="$2"
         shift 2
         ;;
       --report)

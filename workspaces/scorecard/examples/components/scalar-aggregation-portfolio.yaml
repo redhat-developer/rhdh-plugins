@@ -1,0 +1,44 @@
+---
+# Portfolio for scalar aggregation KPI testing (sum / count / min / max / average).
+# Owned by group:development/guests so they appear for the local guest user.
+# Use different GitHub repos so min/max/sum are not identical.
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: scalar-agg-rhdh
+  description: Medium/high open-PR repo for max/sum scalar KPI testing
+  annotations:
+    github.com/project-slug: redhat-developer/rhdh
+    backstage.io/source-location: url:https://github.com/redhat-developer/rhdh
+    jira/project-key: RSPT
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: experimental
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: scalar-agg-small-repo
+  description: Smaller GitHub repo so min open-PR count differs from max
+  annotations:
+    github.com/project-slug: ciiay/rhdh-test-catalog
+    backstage.io/source-location: url:https://github.com/ciiay/rhdh-test-catalog
+    jira/project-key: RSPT
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: experimental
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: scalar-agg-github-error
+  description: Invalid GitHub slug to produce a calculation error (excluded from scalar value, counted in calculationErrorCount)
+  annotations:
+    github.com/project-slug: not-a-real-org/missing-repo-for-scorecard-tests
+    backstage.io/source-location: url:https://github.com/not-a-real-org/missing-repo-for-scorecard-tests
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: experimental

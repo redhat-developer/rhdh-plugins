@@ -66,7 +66,7 @@ export function newMockRootConfig({
 }: NewMockRootConfigProps = {}): Config {
   const jira = {
     baseUrl: 'https://example.com/api',
-    token: 'Fds31dsF32',
+    token: 'dummyToken',
     product: 'cloud',
     proxyPath: '/jira/api',
     ...jiraConfig,
@@ -76,7 +76,7 @@ export function newMockRootConfig({
     data: {
       jira,
       scorecard: {
-        plugins: {
+        metricProviders: {
           jira: {
             openIssues: {
               options,

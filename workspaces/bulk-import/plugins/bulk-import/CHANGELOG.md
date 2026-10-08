@@ -1,5 +1,73 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.1.1
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- fe07a78: Updated dependency `@openapitools/openapi-generator-cli` to `2.41.0`.
+  Updated dependency `@playwright/test` to `1.63.0`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.1.1
+
+## 9.1.0
+
+### Minor Changes
+
+- 2b31f6c: Convert `bulk.import` from a resource permission to a feature permission, and register the NFS bulk import page using the `if` permission predicate.
+
+### Patch Changes
+
+- 77cc007: Cover the new frontend system wiring with createExtensionTester: the page's path and title, that the page and the API extension are registered on the plugin, and that both route refs survive. The existing NFS test only covers the translations module, which is a separate FrontendModule — so it stays green against a plugin whose own extensions array is empty.
+- Updated dependencies [2b31f6c]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.1.0
+
+## 9.0.1
+
+### Patch Changes
+
+- df4bcba: Backstage version bump to v1.54.6
+- Updated dependencies [df4bcba]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.0.1
+
+## 9.0.0
+
+### Patch Changes
+
+- b9198f8: Show orchestrator import job errors, such as a missing GitHub App installation token, as alerts on the add-repositories page.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.0.0
+
+## 8.0.3
+
+### Patch Changes
+
+- d12494f: Updated dependency `@playwright/test` to `1.62.0`.
+- 9ff7395: Updated dependency `js-yaml` to `^4.3.1`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.3
+
+## 8.0.2
+
+### Patch Changes
+
+- 6ea9977: Document contributor guides for local development and CI bump-trust testing, and link them from the package READMEs.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.2
+
+## 8.0.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 503c66e: Updated dependency `@openapitools/openapi-generator-cli` to `2.40.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.15.0`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.1
+
 ## 8.0.0
 
 ### Major Changes

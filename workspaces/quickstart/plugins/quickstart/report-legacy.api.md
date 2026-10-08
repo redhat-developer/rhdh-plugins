@@ -31,9 +31,7 @@ export const filterQuickstartItemsByRole: (
 ) => QuickstartItemData[];
 
 // @public
-export const QuickstartButton: (
-  input: QuickstartButtonProps,
-) => JSX_2.Element | null;
+export const QuickstartButton: React.ComponentType<QuickstartButtonProps>;
 
 // @public
 export interface QuickstartButtonProps {
@@ -58,9 +56,7 @@ export interface QuickstartDrawerContextType {
 }
 
 // @public
-export const QuickstartDrawerProvider: (
-  input: PropsWithChildren,
-) => JSX_2.Element;
+export const QuickstartDrawerProvider: React.ComponentType<PropsWithChildren>;
 
 // @public
 export const QuickstartDrawerStateExposer: (

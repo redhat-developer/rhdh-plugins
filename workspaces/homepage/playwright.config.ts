@@ -17,16 +17,8 @@
 import { defineConfig } from '@playwright/test';
 
 const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
-// APP_MODE: 'legacy' (app-legacy) or 'nfs' (app with new frontend system)
-const appMode = process.env.APP_MODE || 'legacy';
-const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
-
-// Single e2e test suite (packages/app/e2e-tests) runs for both legacy and nfs via APP_MODE
-const testDir = 'e2e-tests';
 
 const baseConfig = `${__dirname}/app-config.yaml`;
-const adminConfig = `${__dirname}/app-config-admin.yaml`;
-const developerConfig = `${__dirname}/app-config-developer.yaml`;
 
 export default defineConfig({
   // E2E tests run full app + login + locale; beforeAll can take 30–60s
@@ -38,32 +30,17 @@ export default defineConfig({
 
   webServer: process.env.PLAYWRIGHT_URL
     ? []
-    : [
-        {
-          command: `${startCommand} --config ${baseConfig}`,
-          port: 3000,
-          reuseExistingServer: true,
-          cwd: __dirname,
-        },
-        {
-          command: `${startCommand} --config ${baseConfig} --config ${adminConfig}`,
-          port: 3001,
-          reuseExistingServer: true,
-          cwd: __dirname,
-        },
-        {
-          command: `${startCommand} --config ${baseConfig} --config ${developerConfig}`,
-          port: 3002,
-          reuseExistingServer: true,
-          cwd: __dirname,
-        },
-      ],
+    : {
+        command: `yarn start --config ${baseConfig}`,
+        port: 3000,
+        reuseExistingServer: true,
+        cwd: __dirname,
+      },
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [
-    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
-  ],
+  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
@@ -71,9 +48,9 @@ export default defineConfig({
     permissions: ['clipboard-read', 'clipboard-write'],
   },
 
-  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
+  outputDir: 'node_modules/.cache/e2e-test-results',
 
-  testDir,
+  testDir: 'e2e-tests',
 
   projects: [
     // en: run all tests (no grep)

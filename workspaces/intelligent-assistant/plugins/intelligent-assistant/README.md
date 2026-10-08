@@ -37,17 +37,16 @@ The Lightspeed plugin has support for the permission framework.
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access lightspeed UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV
-p, role:default/team_a, intelligent-assistant.chat.read, read, allow
-p, role:default/team_a, intelligent-assistant.chat.create, create, allow
-p, role:default/team_a, intelligent-assistant.chat.delete, delete, allow
-p, role:default/team_a, intelligent-assistant.chat.update, update, allow
+p, role:default/team_a, intelligent-assistant.chat, use, allow
 
 # Required for Notebooks feature (if enabled)
-p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks, use, allow
 
 # Required for MCP server management (if configured)
-p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
-p, role:default/team_a, intelligent-assistant.mcp.manage, update, allow
+p, role:default/team_a, intelligent-assistant.mcp.tools, use, allow
+
+# Required for Skills feature (if enabled)
+p, role:default/team_a, intelligent-assistant.skills, use, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 
@@ -160,16 +159,58 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 
 Intelligent assistant supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
 
-### MCP servers settings
+### Screen Context
 
-Intelligent assistant includes an MCP servers settings panel where users can:
+Screen context attaches structured page content from the current RHDH viewport to chat messages (headings, tables, alerts, form fields, filters, and optional screenshots) so the LLM can give more accurate, context-aware responses.
+
+Enablement has two levels:
+
+1. **Administrator** — set `screen-context.enabled: true` in `app-config.yaml` (default: `false`).
+2. **User** — opt in from the chatbot options (kebab) menu with **Enable screen context**. Sharing is off until the user opts in.
+
+When sharing is on, a **context chip** in the message bar shows the current page label and state:
+
+- **Recording** — context will be attached on send; click the chip to pause.
+- **Paused** — context is not attached; click to resume.
+- **Unavailable** — fullscreen mode; switch to Overlay or Docked to use screen context.
+
+Configure in `app-config.yaml`:
+
+```yaml
+intelligent-assistant:
+  screen-context:
+    enabled: true # Master switch for screen context (default: false)
+    screenshots:
+      enabled: true # Screenshot capture within screen context (default: true)
+    dom-extraction:
+      enabled: true # DOM text extraction (default: true when screen-context is on)
+      maxChars: 8000 # Max characters extracted per page (default: 8000)
+```
+
+- `screen-context.enabled` — enables the full screen-context feature (DOM extraction and optional screenshots). Users must still opt in via the kebab menu.
+- `screen-context.screenshots.enabled` — toggles screenshot capture. Screenshots are only attached when the selected model supports vision (`supportsVision`).
+- `screen-context.dom-extraction.enabled` — toggles DOM text extraction independently of screenshots.
+- `screen-context.dom-extraction.maxChars` — caps the extracted text size to control LLM token usage.
+
+Form fields are emitted as cleaned HTML to preserve label/input structure; all other sections are plain text.
+
+### Settings panel
+
+Open the settings panel from the chatbot options menu (**MCP and Prompt Settings**). The panel has two tabs:
+
+- **MCP servers** — manage MCP server connections
+- **Saved prompts** — create, view, and delete reusable prompts
+
+#### MCP servers
+
+From the MCP servers tab, users can:
 
 - View configured MCP servers and current status
 - Enable or disable eligible servers
 - Configure a personal token per server
 - See inline status and validation feedback
 
-#### Token validation behavior
+##### Token validation behavior
 
 When configuring a server token in the settings modal, the token is validated
 automatically after typing stops briefly. The input shows inline feedback:
@@ -178,6 +219,22 @@ automatically after typing stops briefly. The input shows inline feedback:
 - Error: `Authorization failed. Try again.`
 
 Users can then save the configuration after validation feedback is displayed.
+
+#### Saved prompts
+
+From the Saved prompts tab, users can:
+
+- Create prompts with a title and prompt body
+- Delete saved prompts they no longer need
+- Enable or disable the saved prompts feature (when disabled, prompts are hidden from the chat history sidebar)
+
+Saved prompts also appear in the **chat history sidebar** under **Saved prompts**, where users can apply a prompt to the input box, send it directly, or open settings from the section gear icon.
+
+When saved prompts are enabled, they can also surface in the welcome prompt area using priority-based selection alongside app-config and default sample prompts.
+
+#### PatternFly Chatbot dependency
+
+Saved prompts sidebar integration requires `@patternfly/chatbot@6.9.0-prerelease.2` (or newer) for `ConversationGroup` APIs used in chat history navigation. Upgrade to the stable `6.9.0` release when it is available.
 
 ### Notebooks (Developer Preview)
 
@@ -232,7 +289,7 @@ Enable the plugin and its extensions in your dynamic plugins configuration:
 ```yaml
 plugins:
   - package: './local-plugins/red-hat-developer-hub-backstage-plugin-intelligent-assistant'
-    disabled: false
+    enabled: true
 ```
 
 Then configure extensions in `app-config.yaml`:
@@ -266,7 +323,7 @@ OFS mode uses Scalprum for dynamic plugin loading. Legacy exports require `modul
 ```yaml
 plugins:
   - package: './local-plugins/red-hat-developer-hub-backstage-plugin-intelligent-assistant'
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:

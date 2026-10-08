@@ -30,7 +30,10 @@ export const getLastPhaseReached = (
   for (const phase of phases) {
     const job = rowData[phase];
     if (job?.phase) {
-      if (ignoreCancelled && job.status === 'cancelled') {
+      if (
+        ignoreCancelled &&
+        (job.status === 'cancelled' || job.status === 'stale')
+      ) {
         continue;
       }
       return job;

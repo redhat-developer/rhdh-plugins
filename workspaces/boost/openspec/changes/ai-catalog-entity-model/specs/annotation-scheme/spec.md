@@ -18,19 +18,26 @@ The vocabulary includes `rule` and `skill-bundle` in addition to the original fi
 - **THEN** the entity MUST have `metadata.annotations['rhdh.io/ai-asset-category']` set to one of: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
 - **AND** the CatalogProcessor validator accepts the entity
 
-#### Scenario: Missing or invalid category annotation rejected (AI entities only)
+#### Scenario: Missing category annotation rejected (AI entities only)
 
-- **WHEN** an entity is ingested that carries any `rhdh.io/ai-asset-*` annotation but has a missing or invalid `rhdh.io/ai-asset-category` value
+- **WHEN** an entity is ingested that carries any `rhdh.io/ai-asset-*` annotation but has no `rhdh.io/ai-asset-category` value
 - **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
 - **AND** the entity does NOT appear in the catalog
 - **AND** the error is logged with entity identifier and source registry
 - **AND** entities without any `rhdh.io/ai-asset-*` annotation are NOT affected by this validator
 
+#### Scenario: Invalid category annotation rejected with value shown (AI entities only)
+
+- **WHEN** an entity is ingested that carries any `rhdh.io/ai-asset-*` annotation and has an invalid `rhdh.io/ai-asset-category` value (e.g. `invalid-type`)
+- **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid rhdh.io/ai-asset-category value 'invalid-type'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
+- **AND** the entity does NOT appear in the catalog
+- **AND** the error is logged with entity identifier and source registry
+
 #### Scenario: All entity providers populate category annotation (RHIDP-15255)
 
 - **WHEN** the Kagenti entity provider emits an agent entity
 - **THEN** the entity has `rhdh.io/ai-asset-category: agent`
-- **AND** **WHEN** the LlamaStack entity provider emits a model entity
+- **AND** **WHEN** the OGX entity provider emits a model entity
 - **THEN** the entity has `rhdh.io/ai-asset-category: ai-model`
 - **AND** **WHEN** the OCI skill registry provider emits a skill entity
 - **THEN** the entity has `rhdh.io/ai-asset-category: skill`
@@ -66,7 +73,7 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-version` annotation with 
 
 #### Scenario: SDK exports normalizeAIAssetVersion utility (RHIDP-15255)
 
-- **WHEN** a developer imports `normalizeAIAssetVersion` from `@boost/entity-provider-sdk`
+- **WHEN** a developer imports `normalizeAIAssetVersion` from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
 - **THEN** it is a function accepting `sourceVersion: string` and returning normalized semver string
 - **AND** it implements all four normalization rules (semver pass-through, date-based, commit hash, fallback)
 - **AND** unit tests cover all normalization rules
@@ -75,11 +82,13 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-version` annotation with 
 
 All AI asset entities MUST carry the `rhdh.io/ai-asset-source` annotation identifying the connector and registry instance.
 
+Additional connector names may be added when new connectors ship. The CatalogProcessor/SDK today only requires a non-empty string and MUST NOT enum-validate `connector-name`.
+
 #### Scenario: Source annotation format (RHIDP-15255)
 
 - **WHEN** an entity provider emits an entity
 - **THEN** the entity has `metadata.annotations['rhdh.io/ai-asset-source']` in format: `connector-name/registry-instance-id`
-- **AND** `connector-name` is one of: `kagenti`, `llamastack`, `oci-skill-registry`
+- **AND** `connector-name` is one of: `kagenti`, `ogx`, `oci-skill-registry`, `mcp-registry`, `rhoai`
 - **AND** `registry-instance-id` is the app-config provider instance ID (e.g., `default`, `prod-kagenti`, `dev-skills`)
 
 #### Scenario: Kagenti provider source annotation (RHIDP-15255)
@@ -91,6 +100,16 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-source` annotation identi
 
 - **WHEN** the OCI skill registry provider with instance ID `default` emits an entity
 - **THEN** the entity has `rhdh.io/ai-asset-source: oci-skill-registry/default`
+
+#### Scenario: MCP Registry provider source annotation (RHIDP-15255)
+
+- **WHEN** the MCP Registry provider with instance ID `mcpRegistryPrimary` emits an entity
+- **THEN** the entity has `rhdh.io/ai-asset-source: mcp-registry/mcpRegistryPrimary`
+
+#### Scenario: RHOAI provider source annotation (RHIDP-15255)
+
+- **WHEN** the RHOAI provider with instance ID `default` emits an entity
+- **THEN** the entity has `rhdh.io/ai-asset-source: rhoai/default`
 
 #### Scenario: Audit traceability via source annotation (RHIDP-15255)
 
@@ -105,7 +124,7 @@ A documented mapping from custom annotations to upstream Backstage entity kinds 
 #### Scenario: Migration design document exists (RHIDP-15302)
 
 - **WHEN** the migration-readiness spec is reviewed
-- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `AIResource` + `ai-agent` + `agent` → `AIAgent`)
+- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `AIResource` + `skill` + `skill` → `AiResource` casing alignment)
 - **AND** it identifies consumer-facing changes during migration (e.g., catalog UI filters, queries, entity refs)
 - **AND** it documents the AIResource starting point per RHDHPLAN-1113 (resolved 2026-07-20)
 

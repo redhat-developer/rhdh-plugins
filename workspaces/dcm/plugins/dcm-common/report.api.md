@@ -8,6 +8,89 @@ import type { DiscoveryApi } from '@backstage/core-plugin-api';
 import type { FetchApi } from '@backstage/core-plugin-api';
 
 // @public
+export interface Agent {
+  agent_id?: string;
+  cost: AgentCost;
+  create_time?: string;
+  environment: string;
+  health_status?: AgentHealthStatus;
+  last_heartbeat?: string;
+  name: string;
+  service_types: string[];
+  topic_name: string;
+  update_time?: string;
+}
+
+// @public
+export type AgentCost =
+  | 'low'
+  | 'medium-low'
+  | 'medium'
+  | 'medium-high'
+  | 'high';
+
+// @public
+export type AgentHealthStatus = 'ready' | 'congested' | 'unavailable';
+
+// @public
+export interface AgentList {
+  // (undocumented)
+  agents?: Agent[];
+  // (undocumented)
+  next_page_token?: string;
+}
+
+// @public
+export interface AgentRegistrationRequest {
+  // (undocumented)
+  cost: AgentCost;
+  // (undocumented)
+  environment: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  service_types: string[];
+  topic_name: string;
+}
+
+// @public
+export interface AgentsApi {
+  // (undocumented)
+  agentHeartbeat(agentId: string, heartbeat: HeartbeatRequest): Promise<Agent>;
+  // (undocumented)
+  createAgent(agent: AgentRegistrationRequest): Promise<Agent>;
+  // (undocumented)
+  getAgent(agentId: string): Promise<Agent>;
+  // (undocumented)
+  listAgents(
+    params?: PaginationParams & {
+      health_status?: AgentHealthStatus;
+    },
+  ): Promise<AgentList>;
+}
+
+// @public
+export class AgentsClient extends DcmBaseClient implements AgentsApi {
+  // (undocumented)
+  agentHeartbeat(agentId: string, heartbeat: HeartbeatRequest): Promise<Agent>;
+  // (undocumented)
+  createAgent(agent: AgentRegistrationRequest): Promise<Agent>;
+  // (undocumented)
+  getAgent(agentId: string): Promise<Agent>;
+  // (undocumented)
+  listAgents(
+    params?: PaginationParams & {
+      health_status?: AgentHealthStatus;
+    },
+  ): Promise<AgentList>;
+  // (undocumented)
+  protected readonly serviceName = 'Agents';
+}
+
+// @public
+export function buildPaginationQuery(params: PaginationParams): string;
+
+// @public
 export interface CatalogApi {
   // (undocumented)
   createCatalogItem(catalogItem: CatalogItem): Promise<CatalogItem>;
@@ -30,11 +113,13 @@ export interface CatalogApi {
   // (undocumented)
   getServiceType(serviceTypeId: string): Promise<ServiceType>;
   // (undocumented)
-  listCatalogItemInstances(): Promise<CatalogItemInstanceList>;
+  listCatalogItemInstances(
+    params?: PaginationParams,
+  ): Promise<CatalogItemInstanceList>;
   // (undocumented)
-  listCatalogItems(): Promise<CatalogItemList>;
+  listCatalogItems(params?: PaginationParams): Promise<CatalogItemList>;
   // (undocumented)
-  listServiceTypes(): Promise<ServiceTypeList>;
+  listServiceTypes(params?: PaginationParams): Promise<ServiceTypeList>;
   rehydrateCatalogItemInstance(
     catalogItemInstanceId: string,
   ): Promise<CatalogItemInstance>;
@@ -68,11 +153,13 @@ export class CatalogClient extends DcmBaseClient implements CatalogApi {
   // (undocumented)
   getServiceType(serviceTypeId: string): Promise<ServiceType>;
   // (undocumented)
-  listCatalogItemInstances(): Promise<CatalogItemInstanceList>;
+  listCatalogItemInstances(
+    params?: PaginationParams,
+  ): Promise<CatalogItemInstanceList>;
   // (undocumented)
-  listCatalogItems(): Promise<CatalogItemList>;
+  listCatalogItems(params?: PaginationParams): Promise<CatalogItemList>;
   // (undocumented)
-  listServiceTypes(): Promise<ServiceTypeList>;
+  listServiceTypes(params?: PaginationParams): Promise<ServiceTypeList>;
   // (undocumented)
   rehydrateCatalogItemInstance(
     catalogItemInstanceId: string,
@@ -114,7 +201,6 @@ export interface CatalogItemInstance {
   display_name: string;
   // (undocumented)
   path?: string;
-  resource_id?: string;
   // (undocumented)
   spec: CatalogItemInstanceSpec;
   // (undocumented)
@@ -126,7 +212,7 @@ export interface CatalogItemInstance {
 // @public
 export interface CatalogItemInstanceList {
   // (undocumented)
-  next_page_token: string;
+  next_page_token?: string;
   // (undocumented)
   results: CatalogItemInstance[];
 }
@@ -135,6 +221,7 @@ export interface CatalogItemInstanceList {
 export interface CatalogItemInstanceSpec {
   // (undocumented)
   catalog_item_id: string;
+  resource_ids?: string[];
   // (undocumented)
   user_values: UserValue[];
 }
@@ -142,17 +229,22 @@ export interface CatalogItemInstanceSpec {
 // @public
 export interface CatalogItemList {
   // (undocumented)
-  next_page_token: string;
+  next_page_token?: string;
   // (undocumented)
   results: CatalogItem[];
 }
 
 // @public
 export interface CatalogItemSpec {
-  // (undocumented)
+  resources?: CatalogResource[];
+}
+
+// @public
+export interface CatalogResource {
   fields?: FieldConfiguration[];
-  // (undocumented)
-  service_type?: string;
+  name: string;
+  requires_resources?: string[];
+  service_type: string;
 }
 
 // @public
@@ -183,7 +275,11 @@ export interface DcmApiError {
 
 // @public
 export abstract class DcmBaseClient {
-  constructor(options: { discoveryApi: DiscoveryApi; fetchApi: FetchApi });
+  constructor(options: {
+    discoveryApi: DiscoveryApi;
+    fetchApi: FetchApi;
+    getAccessToken?: DcmOidcTokenProvider;
+  });
   // (undocumented)
   protected readonly discoveryApi: DiscoveryApi;
   // (undocumented)
@@ -233,6 +329,11 @@ export interface DcmHealth {
 }
 
 // @public
+export type DcmOidcTokenProvider = () =>
+  | Promise<string | undefined>
+  | undefined;
+
+// @public
 export const dcmPluginPermissions: BasicPermission[];
 
 // @public
@@ -271,11 +372,24 @@ export interface FieldConfigurationDependsOn {
 }
 
 // @public
+export interface HeartbeatRequest {
+  consumer_lag: number;
+  timestamp: string;
+}
+
+// @public
 export interface ListServiceTypeInstancesParams {
+  agent_name?: string;
   max_page_size?: number;
   page_token?: string;
-  provider?: string;
+  service_type?: string;
   show_deleted?: boolean;
+}
+
+// @public
+export interface PaginationParams {
+  max_page_size?: number;
+  page_token?: string;
 }
 
 // @public
@@ -319,7 +433,7 @@ export interface PolicyManagerApi {
   // (undocumented)
   getPolicy(policyId: string): Promise<Policy>;
   // (undocumented)
-  listPolicies(): Promise<PolicyList>;
+  listPolicies(params?: PaginationParams): Promise<PolicyList>;
   // (undocumented)
   updatePolicy(policyId: string, patch: Partial<Policy>): Promise<Policy>;
 }
@@ -336,7 +450,7 @@ export class PolicyManagerClient
   // (undocumented)
   getPolicy(policyId: string): Promise<Policy>;
   // (undocumented)
-  listPolicies(): Promise<PolicyList>;
+  listPolicies(params?: PaginationParams): Promise<PolicyList>;
   // (undocumented)
   protected readonly serviceName = 'Policy Manager';
   // (undocumented)
@@ -345,97 +459,6 @@ export class PolicyManagerClient
 
 // @public
 export type PolicyType = 'GLOBAL' | 'USER';
-
-// @public
-export interface Provider {
-  // (undocumented)
-  create_time?: string;
-  // (undocumented)
-  display_name?: string;
-  endpoint: string;
-  // (undocumented)
-  health_status?: string;
-  id?: string;
-  // (undocumented)
-  metadata?: ProviderMetadata;
-  // (undocumented)
-  name: string;
-  operations?: string[];
-  path?: string;
-  schema_version: string;
-  // (undocumented)
-  service_type: string;
-  status?: ProviderStatus;
-  // (undocumented)
-  update_time?: string;
-}
-
-// @public
-export interface ProviderList {
-  // (undocumented)
-  next_page_token?: string;
-  // (undocumented)
-  providers?: Provider[];
-}
-
-// @public
-export interface ProviderMetadata {
-  // (undocumented)
-  [key: string]: unknown;
-  // (undocumented)
-  region_code?: string;
-  // (undocumented)
-  resources?: ResourceCapacity;
-  // (undocumented)
-  status?: string;
-  // (undocumented)
-  zone?: string;
-}
-
-// @public
-export interface ProvidersApi {
-  // (undocumented)
-  applyProvider(providerId: string, provider: Provider): Promise<Provider>;
-  // (undocumented)
-  createProvider(provider: Provider): Promise<Provider>;
-  // (undocumented)
-  deleteProvider(providerId: string): Promise<void>;
-  // (undocumented)
-  getProvider(providerId: string): Promise<Provider>;
-  // (undocumented)
-  listProviders(): Promise<ProviderList>;
-}
-
-// @public
-export class ProvidersClient extends DcmBaseClient implements ProvidersApi {
-  // (undocumented)
-  applyProvider(providerId: string, provider: Provider): Promise<Provider>;
-  // (undocumented)
-  createProvider(provider: Provider): Promise<Provider>;
-  // (undocumented)
-  deleteProvider(providerId: string): Promise<void>;
-  // (undocumented)
-  getProvider(providerId: string): Promise<Provider>;
-  // (undocumented)
-  listProviders(): Promise<ProviderList>;
-  // (undocumented)
-  protected readonly serviceName = 'Providers';
-}
-
-// @public
-export type ProviderStatus = 'registered' | 'updated';
-
-// @public
-export interface ResourceCapacity {
-  // (undocumented)
-  total_cpu?: number;
-  // (undocumented)
-  total_memory?: string;
-  // (undocumented)
-  total_node?: number;
-  // (undocumented)
-  total_storage?: string;
-}
 
 // @public
 export interface ResourcesApi {
@@ -475,19 +498,23 @@ export interface ServiceType {
 
 // @public
 export interface ServiceTypeInstance {
+  agent_name?: string | null;
   // (undocumented)
   create_time?: string;
-  // (undocumented)
-  delete_time?: string;
-  deleted?: boolean;
+  deletion_status?: ServiceTypeInstanceDeletionStatus;
   id: string;
   path?: string;
-  provider_name?: string;
   spec?: ServiceTypeInstanceSpec;
   status?: string;
   // (undocumented)
   update_time?: string;
 }
+
+// @public
+export type ServiceTypeInstanceDeletionStatus =
+  | 'SCHEDULED'
+  | 'FAILED'
+  | 'DELETED';
 
 // @public
 export interface ServiceTypeInstanceList {
@@ -507,7 +534,7 @@ export interface ServiceTypeInstanceSpec {
 // @public
 export interface ServiceTypeList {
   // (undocumented)
-  next_page_token: string;
+  next_page_token?: string;
   // (undocumented)
   results: ServiceType[];
 }
@@ -516,6 +543,7 @@ export interface ServiceTypeList {
 export interface UserValue {
   // (undocumented)
   path: string;
+  resource: string;
   // (undocumented)
   value: unknown;
 }

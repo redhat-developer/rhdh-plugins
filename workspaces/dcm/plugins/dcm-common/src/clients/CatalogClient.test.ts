@@ -27,8 +27,8 @@ const MOCK_INSTANCE: CatalogItemInstance = {
   spec: {
     catalog_item_id: 'ci-1',
     user_values: [],
+    resource_ids: ['res-new'],
   },
-  resource_id: 'res-new',
 };
 
 function makeClient(fetchFn: jest.Mock) {
@@ -36,7 +36,14 @@ function makeClient(fetchFn: jest.Mock) {
     getBaseUrl: jest.fn().mockResolvedValue(BASE_URL),
   };
   const fetchApi: FetchApi = { fetch: fetchFn };
-  return new CatalogClient({ discoveryApi, fetchApi });
+  const oidcAuthApi = {
+    getAccessToken: jest.fn().mockResolvedValue('oidc-token'),
+  };
+  return new CatalogClient({
+    discoveryApi,
+    fetchApi,
+    getAccessToken: oidcAuthApi.getAccessToken,
+  });
 }
 
 function okJson(data: unknown): Response {

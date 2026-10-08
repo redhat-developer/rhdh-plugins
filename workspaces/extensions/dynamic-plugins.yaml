@@ -1,8 +1,8 @@
 plugins:
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
-    disabled: false
+    enabled: true
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
-    disabled: true
+    enabled: false
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -17,27 +17,30 @@ plugins:
                   icon: bulkImportIcon
                   text: Bulk import
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
-    disabled: false
+    enabled: true
     pluginConfig:
       dynamicPlugins:
         frontend:
           red-hat-developer-hub.backstage-plugin-extensions:
             appIcons:
               - name: extensions
+                module: Legacy
                 importName: ExtensionsIcon
             dynamicRoutes:
               - path: /extensions
+                module: Legacy
                 importName: DynamicExtensionsPluginRouter
             mountPoints:
               - mountPoint: internal.plugins/tab
+                module: Legacy
                 importName: DynamicExtensionsPluginContent
                 config:
                   path: extensions
                   title: Catalog
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
-    disabled: false
+    enabled: true
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
-    disabled: false
+    enabled: true
     # TODO: enable
     pluginConfig:
       dynamicPlugins:
@@ -53,4 +56,4 @@ plugins:
                     anyOf:
                       - isQuayAvailable
   - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
-    disabled: false
+    enabled: true

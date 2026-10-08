@@ -16,6 +16,18 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, Page, TestInfo } from '@playwright/test';
 
+/**
+ * Upstream library false positives that cannot be fixed in the theme plugin:
+ * - aria-valid-attr-value: @backstage/ui / react-aria use React useId() IDs
+ *   containing ":" in aria-controls (axe rejects colon IDREFs).
+ * - nested-interactive: @material-table/core nests focusable controls inside
+ *   MuiTableSortLabel (role=button). Demo also sets options.draggable=false.
+ */
+const UPSTREAM_AXE_DISABLE_RULES = [
+  'aria-valid-attr-value',
+  'nested-interactive',
+] as const;
+
 export async function runAccessibilityTests(
   page: Page,
   testInfo: TestInfo,
@@ -26,6 +38,7 @@ export async function runAccessibilityTests(
 ) {
   const accessibilityScanResults = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .disableRules([...UPSTREAM_AXE_DISABLE_RULES])
     .analyze();
 
   await testInfo.attach(attachName, {

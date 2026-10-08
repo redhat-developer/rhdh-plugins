@@ -39,6 +39,10 @@ const RENOVATE_PRESETS_DIR = path.join(
   'workspace',
 );
 
+const CODECOV_YML = path.join(ROOT, 'codecov.yml');
+const LABELER_YML = path.join(ROOT, '.github', 'labeler.yml');
+const PR_LABELER_YML = path.join(ROOT, '.github', 'pr-labeler.yml');
+
 function printUsage() {
   console.log(`Usage:
   node scripts/archive.js <workspace> [plugin-dir-or-package-suffix] ["reason"]
@@ -114,6 +118,40 @@ async function removeWorkspaceFromCodeowners(workspace) {
   const filteredLines = lines.filter(line => !workspacePattern.test(line));
   await fs.writeFile(CODEOWNERS, filteredLines.join('\n'));
   console.log('Updated CODEOWNERS');
+}
+
+async function removeWorkspaceEntryFromLabelerFile(filePath, workspace) {
+  const relPath = path.relative(ROOT, filePath);
+  console.log(`Removing workspace/${workspace} entry from ${relPath}...`);
+  const content = await fs.readFile(filePath, 'utf8');
+  const key = `workspace/${workspace}:`;
+  const paragraphs = content.split('\n\n');
+  const filtered = paragraphs.filter(p => !p.startsWith(key));
+  if (filtered.length === paragraphs.length) {
+    console.log(
+      `No workspace/${workspace} entry found in ${relPath} (skipping).`,
+    );
+    return;
+  }
+  await fs.writeFile(filePath, filtered.join('\n\n'));
+  console.log(`Updated ${relPath}`);
+}
+
+async function removeWorkspaceFromCodecovYml(workspace) {
+  console.log(`Removing workspace ${workspace} flag from codecov.yml...`);
+  const content = await fs.readFile(CODECOV_YML, 'utf8');
+  const lines = content.split('\n');
+  const pathLine = `        - workspaces/${workspace}/`;
+  const index = lines.indexOf(pathLine);
+  if (index === -1) {
+    console.log(
+      `No codecov.yml flag entry found for workspace "${workspace}" (skipping).`,
+    );
+    return;
+  }
+  lines.splice(index - 2, 3);
+  await fs.writeFile(CODECOV_YML, lines.join('\n'));
+  console.log('Updated codecov.yml');
 }
 
 async function removeWorkspaceFromRenovateJson(workspace) {
@@ -289,11 +327,14 @@ async function main() {
 
   if (fullWorkspace) {
     console.log(
-      '\nFull workspace archival: updating CODEOWNERS and Renovate configuration...',
+      '\nFull workspace archival: updating CODEOWNERS, Renovate, CI and coverage configuration...',
     );
     await removeWorkspaceFromCodeowners(workspace);
     await removeRenovatePresetFile(workspace);
     await removeWorkspaceFromRenovateJson(workspace);
+    await removeWorkspaceFromCodecovYml(workspace);
+    await removeWorkspaceEntryFromLabelerFile(LABELER_YML, workspace);
+    await removeWorkspaceEntryFromLabelerFile(PR_LABELER_YML, workspace);
   }
 
   console.log(

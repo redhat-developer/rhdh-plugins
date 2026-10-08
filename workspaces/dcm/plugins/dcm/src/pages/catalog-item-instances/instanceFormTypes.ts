@@ -46,13 +46,22 @@ export type UserValueRow = {
   required?: boolean;
 };
 
+/** User values for a single named resource within the catalog item. */
+export type ResourceUserValues = {
+  /** Matches the corresponding {@link CatalogResource.name}. */
+  resourceName: string;
+  values: UserValueRow[];
+};
+
 export type InstanceForm = {
   api_version: string;
   display_name: string;
   catalog_item_id: string;
-  /** Populated from the selected catalog item's editable fields. */
-  user_values: UserValueRow[];
+  /** Editable field values grouped by resource. */
+  resource_values: ResourceUserValues[];
 };
+
+// ─── Scalar validation ──────────────────────────────────────────────────────
 
 function buildInstanceSchema(t?: TFunction) {
   const m = makeTranslator(t);
@@ -102,10 +111,15 @@ function buildInstanceSchema(t?: TFunction) {
   });
 }
 
+type ScalarShape = Pick<
+  InstanceForm,
+  'display_name' | 'catalog_item_id' | 'api_version'
+>;
+
 export function validateInstanceForm(
   form: InstanceForm,
   t?: TFunction,
-): Partial<Record<keyof InstanceForm, string>> {
+): Partial<Record<keyof ScalarShape, string>> {
   const { validate } = createYupValidator<InstanceForm>(
     buildInstanceSchema(t),
     f => ({
@@ -126,47 +140,7 @@ const { isValid: isInstanceScalarValid } = createYupValidator<InstanceForm>(
   }),
 );
 
-export function emptyInstanceForm(): InstanceForm {
-  return {
-    api_version: 'v1alpha1',
-    display_name: '',
-    catalog_item_id: '',
-    user_values: [],
-  };
-}
-
-/** Serialise a field's default value to a form string for display. */
-function defaultToString(val: unknown): string {
-  if (val === undefined || val === null) return '';
-  if (typeof val === 'string') return val;
-  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
-  try {
-    return JSON.stringify(val);
-  } catch {
-    return '';
-  }
-}
-
-/** Extract typed schema metadata from a {@link FieldConfiguration}. */
-function extractSchemaInfo(
-  field: FieldConfiguration,
-): Pick<
-  UserValueRow,
-  'schemaType' | 'enumValues' | 'schemaMin' | 'schemaMax' | 'required'
-> {
-  const schema = field.validation_schema ?? {};
-  const schemaType =
-    typeof schema.type === 'string' ? schema.type.toLowerCase() : undefined;
-  const enumValues =
-    Array.isArray(schema.enum) &&
-    schema.enum.every(v => typeof v === 'string' || typeof v === 'number')
-      ? (schema.enum as (string | number)[]).map(String)
-      : undefined;
-  const schemaMin = pickNumericBound(schema, 'minimum', 'min');
-  const schemaMax = pickNumericBound(schema, 'maximum', 'max');
-  const required = schema.required === true;
-  return { schemaType, enumValues, schemaMin, schemaMax, required };
-}
+// ─── Per-resource field validation ─────────────────────────────────────────
 
 /**
  * Validates user-value rows against their schema constraints.
@@ -177,7 +151,6 @@ export function validateUserValues(
   t?: TFunction,
 ): Record<number, string> {
   const m = makeTranslator(t);
-
   const errors: Record<number, string> = {};
 
   rows.forEach((row, i) => {
@@ -226,26 +199,87 @@ export function validateUserValues(
 }
 
 export function isInstanceFormValid(f: InstanceForm): boolean {
-  return (
-    isInstanceScalarValid(f) &&
-    Object.keys(validateUserValues(f.user_values)).length === 0
-  );
+  if (!isInstanceScalarValid(f)) return false;
+  for (const rv of f.resource_values) {
+    if (Object.keys(validateUserValues(rv.values)).length !== 0) return false;
+  }
+  return true;
 }
 
-/** Build UserValueRows from the selected catalog item's editable fields. */
-export function buildUserValueRows(
-  item: CatalogItem | undefined,
-): UserValueRow[] {
-  if (!item?.spec?.fields) return [];
-  return item.spec.fields
-    .filter(field => field.editable)
-    .map(field => ({
-      path: field.path,
-      displayName: field.display_name ?? field.path,
-      value: defaultToString(field.default),
-      ...extractSchemaInfo(field),
-    }));
+// ─── Empty constructors ─────────────────────────────────────────────────────
+
+export function emptyInstanceForm(): InstanceForm {
+  return {
+    api_version: 'v1alpha1',
+    display_name: '',
+    catalog_item_id: '',
+    resource_values: [],
+  };
 }
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/** Serialise a field's default value to a form string for display. */
+function defaultToString(val: unknown): string {
+  if (val === undefined || val === null) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  try {
+    return JSON.stringify(val);
+  } catch {
+    return '';
+  }
+}
+
+/** Extract typed schema metadata from a {@link FieldConfiguration}. */
+function extractSchemaInfo(
+  field: FieldConfiguration,
+): Pick<
+  UserValueRow,
+  'schemaType' | 'enumValues' | 'schemaMin' | 'schemaMax' | 'required'
+> {
+  const schema = field.validation_schema ?? {};
+  const schemaType =
+    typeof schema.type === 'string' ? schema.type.toLowerCase() : undefined;
+  const enumValues =
+    Array.isArray(schema.enum) &&
+    schema.enum.every(v => typeof v === 'string' || typeof v === 'number')
+      ? (schema.enum as (string | number)[]).map(String)
+      : undefined;
+  const schemaMin = pickNumericBound(schema, 'minimum', 'min');
+  const schemaMax = pickNumericBound(schema, 'maximum', 'max');
+  const required = schema.required === true;
+  return { schemaType, enumValues, schemaMin, schemaMax, required };
+}
+
+function fieldToUserValueRow(field: FieldConfiguration): UserValueRow {
+  return {
+    path: field.path,
+    displayName: field.display_name ?? field.path,
+    value: defaultToString(field.default),
+    ...extractSchemaInfo(field),
+  };
+}
+
+/**
+ * Build {@link ResourceUserValues}[] from the selected catalog item.
+ * Only resources with at least one editable field produce an entry.
+ */
+export function buildResourceUserValues(
+  item: CatalogItem | undefined,
+): ResourceUserValues[] {
+  if (!item?.spec?.resources) return [];
+  return item.spec.resources
+    .map(resource => ({
+      resourceName: resource.name,
+      values: (resource.fields ?? [])
+        .filter(f => f.editable)
+        .map(fieldToUserValueRow),
+    }))
+    .filter(rv => rv.values.length > 0);
+}
+
+// ─── API serialisation ──────────────────────────────────────────────────────
 
 /**
  * Coerce a string form value back to the typed value the API expects,
@@ -279,9 +313,15 @@ function coerceValue(raw: string, schemaType?: string): unknown {
 }
 
 export function formToInstance(f: InstanceForm): CatalogItemInstance {
-  const userValues: UserValue[] = f.user_values
-    .filter(r => r.value.trim() !== '')
-    .map(r => ({ path: r.path, value: coerceValue(r.value, r.schemaType) }));
+  const userValues: UserValue[] = f.resource_values.flatMap(rv =>
+    rv.values
+      .filter(r => r.value.trim() !== '')
+      .map(r => ({
+        resource: rv.resourceName,
+        path: r.path,
+        value: coerceValue(r.value, r.schemaType),
+      })),
+  );
 
   return {
     api_version: f.api_version.trim(),

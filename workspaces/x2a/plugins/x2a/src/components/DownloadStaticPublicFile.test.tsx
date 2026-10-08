@@ -25,28 +25,20 @@ describe('DownloadStaticPublicFile', () => {
     getBaseUrl: jest.fn().mockResolvedValue(MOCK_BASE_URL),
   };
 
-  const origLocation = globalThis.location;
+  const onNavigate = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    Object.defineProperty(globalThis, 'location', {
-      writable: true,
-      value: { ...origLocation, href: '' },
-    });
-  });
-
-  afterEach(() => {
-    Object.defineProperty(globalThis, 'location', {
-      writable: true,
-      value: origLocation,
-    });
   });
 
   const renderComponent = (entry: string) =>
     renderInTestApp(
       <TestApiProvider apis={[[discoveryApiRef, discoveryApi]]}>
         <Routes>
-          <Route path="/download/*" element={<DownloadStaticPublicFile />} />
+          <Route
+            path="/download/*"
+            element={<DownloadStaticPublicFile onNavigate={onNavigate} />}
+          />
         </Routes>
       </TestApiProvider>,
       { routeEntries: [entry] },
@@ -56,7 +48,7 @@ describe('DownloadStaticPublicFile', () => {
     await renderComponent('/download/sample-projects.csv');
 
     expect(discoveryApi.getBaseUrl).toHaveBeenCalledWith('x2a');
-    expect(globalThis.location.href).toBe(
+    expect(onNavigate).toHaveBeenCalledWith(
       `${MOCK_BASE_URL}/static/sample-projects.csv`,
     );
   });
@@ -64,7 +56,7 @@ describe('DownloadStaticPublicFile', () => {
   it('handles nested file paths', async () => {
     await renderComponent('/download/subdir/file.txt');
 
-    expect(globalThis.location.href).toBe(
+    expect(onNavigate).toHaveBeenCalledWith(
       `${MOCK_BASE_URL}/static/subdir/file.txt`,
     );
   });
@@ -72,7 +64,7 @@ describe('DownloadStaticPublicFile', () => {
   it('does not redirect when no file path is provided', async () => {
     await renderComponent('/download/');
 
-    expect(globalThis.location.href).toBe('');
+    expect(onNavigate).not.toHaveBeenCalled();
   });
 
   it('renders nothing', async () => {

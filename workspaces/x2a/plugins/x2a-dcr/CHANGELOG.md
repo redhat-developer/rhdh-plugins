@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-dcr
 
+## 1.0.0
+
+### Major Changes
+
+- 20421e9: Updating x2a plugins to RHDH 1.10, including NFS for testing.
+
 ## 0.2.0
 
 ### Minor Changes

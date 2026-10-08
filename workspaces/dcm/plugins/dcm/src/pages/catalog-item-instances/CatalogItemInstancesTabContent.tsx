@@ -16,7 +16,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
-import { useApi } from '@backstage/core-plugin-api';
+
 import {
   Box,
   Button,
@@ -33,22 +33,18 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
 import DeleteIcon from '@material-ui/icons/Delete';
-import type {
-  CatalogItem,
-  CatalogItemInstance,
-} from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import type { CatalogItemInstance } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { catalogApiRef } from '../../apis';
+import { useDcmClients } from '../../api/DcmClientsContext';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
-import { DcmFormDialog } from '../../components/DcmFormDialog';
-import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
-import { useCrudTab } from '../../hooks/useCrudTab';
+import { useInfiniteSelect } from '../../hooks/useInfiniteSelect';
+import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
-import { InstanceFormFields } from './components/InstanceFormFields';
+import { InstanceWizardDialog } from './components/InstanceWizardDialog';
 import {
   emptyInstanceForm,
   formToInstance,
@@ -69,7 +65,6 @@ const useStyles = makeStyles(() => ({
     flexWrap: 'nowrap',
     gap: 4,
   },
-  /** Lets Tooltip wrap disabled IconButton (ref + layout) without raw `<span>`. */
   tooltipTrigger: {
     display: 'inline-flex',
   },
@@ -77,25 +72,39 @@ const useStyles = makeStyles(() => ({
 
 export function CatalogItemInstancesTabContent() {
   const classes = useStyles();
-  const catalogApi = useApi(catalogApiRef);
+  const { catalogApi } = useDcmClients();
   const { t } = useTranslation();
 
-  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
+  // Paginated catalog-item list for the create-instance dropdown.
+  // Loads the first 100 on mount; subsequent pages are appended as the user
+  // scrolls inside the dropdown menu (see InstanceWizardDialog).
+  const {
+    items: catalogItems,
+    loadingMore: loadingMoreCatalogItems,
+    error: catalogItemsError,
+    loadMore: loadMoreCatalogItems,
+  } = useInfiniteSelect((token?: string) =>
+    catalogApi.listCatalogItems({ max_page_size: 100, page_token: token }),
+  );
+
   const [rehydratingId, setRehydratingId] = useState<string | null>(null);
   const [rehydrateError, setRehydrateError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [rehydrateConfirmInst, setRehydrateConfirmInst] =
     useState<CatalogItemInstance | null>(null);
 
-  const crud = useCrudTab<CatalogItemInstance, InstanceForm>({
-    loadFn: async () => {
-      const [instanceList, itemList] = await Promise.all([
-        catalogApi.listCatalogItemInstances().then(r => r.results ?? []),
-        catalogApi.listCatalogItems().then(r => r.results ?? []),
-      ]);
-      setCatalogItems(itemList);
-      return instanceList;
-    },
+  const crud = usePaginatedCrudTab<CatalogItemInstance, InstanceForm>({
+    loadFn: ({ pageToken, pageSize: ps }) =>
+      catalogApi
+        .listCatalogItemInstances({
+          page_token: pageToken,
+          max_page_size: ps,
+        })
+        .then(r => ({
+          items: r.results ?? [],
+          nextPageToken: r.next_page_token,
+        })),
+    storageKey: 'catalog-item-instances',
     createFn: form =>
       catalogApi.createCatalogItemInstance(formToInstance(form)),
     deleteFn: id => catalogApi.deleteCatalogItemInstance(id),
@@ -104,11 +113,10 @@ export function CatalogItemInstancesTabContent() {
       inst.display_name,
       inst.spec?.catalog_item_id,
       inst.uid,
-      inst.resource_id,
+      ...(inst.spec?.resource_ids ?? []),
     ],
     emptyForm: emptyInstanceForm,
     isValid: isInstanceFormValid,
-    storageKey: 'catalog-item-instances',
   });
 
   const { handleOpenDelete, setItems } = crud;
@@ -173,18 +181,23 @@ export function CatalogItemInstancesTabContent() {
         ),
       },
       {
-        title: t('instances.columns.resourceId'),
-        field: 'resource_id',
-        render: inst => (
-          <TruncatedText
-            text={inst.resource_id}
-            variant="body2"
-            color="textSecondary"
-            bold={false}
-            maxWidth={180}
-            fallback={<DcmEmptyCell />}
-          />
-        ),
+        title: t('instances.columns.resourceIds'),
+        field: 'spec.resource_ids',
+        sorting: false,
+        render: inst => {
+          const ids = inst.spec?.resource_ids ?? [];
+          if (ids.length === 0) return <DcmEmptyCell />;
+          return (
+            <TruncatedText
+              text={ids.join(', ')}
+              variant="body2"
+              color="textSecondary"
+              bold={false}
+              maxWidth={180}
+              fallback={<DcmEmptyCell />}
+            />
+          );
+        },
       },
       {
         title: t('instances.columns.apiVersion'),
@@ -267,28 +280,21 @@ export function CatalogItemInstancesTabContent() {
     ],
   );
 
-  type ScalarTouched = Partial<
-    Record<Exclude<keyof InstanceForm, 'user_values'>, boolean>
-  >;
-
   return (
     <>
       <DcmCrudTabLayout<CatalogItemInstance>
         items={crud.items}
         filtered={crud.filtered}
-        paginated={crud.paginated}
+        paginated={crud.filtered}
         columns={columns}
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={rehydrateError}
+        actionError={catalogItemsError ?? rehydrateError}
         onDismissActionError={() => setRehydrateError(null)}
         search={crud.search}
-        onSearchChange={crud.setSearch}
-        page={crud.page}
-        pageSize={crud.pageSize}
-        onPageChange={crud.onPageChange}
-        onRowsPerPageChange={crud.onRowsPerPageChange}
+        onSearchChange={crud.handleSearchChange}
+        cursorPagination={crud.cursorPagination}
         emptyTitle={t('instances.emptyTitle')}
         emptyDescription={t('instances.emptyDescription')}
         primaryActionLabel={t('instances.createButton')}
@@ -297,35 +303,20 @@ export function CatalogItemInstancesTabContent() {
         entityLabel={t('instances.entityLabel')}
       />
 
-      <DcmFormDialog
+      <InstanceWizardDialog
         open={crud.createOpen}
         onClose={crud.handleCloseCreate}
         title={t('instances.createDialogTitle')}
-        maxWidth="sm"
-        error={crud.createError}
+        form={crud.createForm}
+        setForm={crud.setCreateForm}
+        catalogItems={catalogItems}
+        onLoadMoreCatalogItems={loadMoreCatalogItems}
+        loadingMoreCatalogItems={loadingMoreCatalogItems}
+        onSubmit={crud.handleCreateSubmit}
+        submitLabel={t('instances.createButton')}
         submitting={crud.createSubmitting}
-        actions={
-          <DcmFormDialogActions
-            onSubmit={crud.handleCreateSubmit}
-            onCancel={crud.handleCloseCreate}
-            submitLabel={t('instances.createButton')}
-            submitting={crud.createSubmitting}
-            disabled={!isInstanceFormValid(crud.createForm)}
-          />
-        }
-      >
-        <InstanceFormFields
-          form={crud.createForm}
-          setForm={crud.setCreateForm}
-          catalogItems={catalogItems}
-          touched={crud.createTouched as ScalarTouched}
-          setTouched={
-            crud.setCreateTouched as React.Dispatch<
-              React.SetStateAction<ScalarTouched>
-            >
-          }
-        />
-      </DcmFormDialog>
+        error={crud.createError}
+      />
 
       <DcmDeleteDialog
         open={crud.deleteOpen}

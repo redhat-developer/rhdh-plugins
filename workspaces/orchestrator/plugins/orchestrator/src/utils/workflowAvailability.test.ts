@@ -14,18 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  hasWorkflowAvailabilityDetails,
-  isWorkflowUnavailable,
-} from './workflowAvailability';
-
-describe('isWorkflowUnavailable', () => {
-  it('returns true only when availability is explicitly false', () => {
-    expect(isWorkflowUnavailable(false)).toBe(true);
-    expect(isWorkflowUnavailable(true)).toBe(false);
-    expect(isWorkflowUnavailable(undefined)).toBe(false);
-  });
-});
+import { hasWorkflowAvailabilityDetails } from './workflowAvailability';
 
 describe('hasWorkflowAvailabilityDetails', () => {
   it('returns true only for unavailable availability details', () => {

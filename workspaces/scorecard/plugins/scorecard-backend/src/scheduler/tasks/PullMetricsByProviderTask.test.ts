@@ -22,7 +22,7 @@ import {
   MockNumberProvider,
   MockBatchBooleanProvider,
 } from '../../../__fixtures__/mockProviders';
-import { Config } from '@backstage/config';
+import type { Config } from '@backstage/config';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { mockDatabaseMetricValues } from '../../../__fixtures__/mockDatabaseMetricValues';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
@@ -62,7 +62,13 @@ describe('PullMetricsByProviderTask', () => {
     mockConfig = mockServices.rootConfig({
       data: {
         scorecard: {
-          schedule: scheduleConfig,
+          metricProviders: {
+            github: {
+              testMetric: {
+                schedule: scheduleConfig,
+              },
+            },
+          },
         },
       },
     });
@@ -126,25 +132,44 @@ describe('PullMetricsByProviderTask', () => {
 
   describe('start', () => {
     beforeEach(async () => {
-      (task as any).getScheduleFromConfig = jest
-        .fn()
-        .mockReturnValue({ frequency: { hours: 1 } });
       (task as any).pullProviderMetrics = jest
         .fn()
         .mockResolvedValue(undefined);
       await (task as any).start();
     });
 
-    it('should get scheduled from config', () => {
-      expect((task as any).getScheduleFromConfig).toHaveBeenCalledWith(
-        'scorecard.plugins.github.testMetric.schedule',
+    it('should create a scheduled task runner with schedule from config', () => {
+      expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledTimes(1);
+      expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledWith(
+        scheduleConfig,
       );
     });
 
-    it('should create a scheduled task runner with correct schedule', () => {
-      expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledTimes(1);
+    it('should use the default schedule when none is configured', async () => {
+      mockScheduler.createScheduledTaskRunner.mockClear();
+      const taskWithoutSchedule = new PullMetricsByProviderTask(
+        {
+          scheduler: mockScheduler,
+          logger: mockLogger,
+          database: mockDatabaseMetricValues,
+          config: mockServices.rootConfig({ data: {} }),
+          catalog: mockCatalog,
+          auth: mockAuth,
+          thresholdEvaluator: mockThresholdEvaluator,
+          thresholdResolver: mockThresholdResolver,
+        },
+        mockProvider,
+      );
+      (taskWithoutSchedule as any).pullProviderMetrics = jest
+        .fn()
+        .mockResolvedValue(undefined);
+
+      await (taskWithoutSchedule as any).start();
+
       expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledWith({
         frequency: { hours: 1 },
+        timeout: { minutes: 15 },
+        initialDelay: { minutes: 1 },
       });
     });
 
@@ -157,21 +182,36 @@ describe('PullMetricsByProviderTask', () => {
     });
   });
 
-  describe('getScheduleFromConfig', () => {
-    it('should return the default schedule if not configured', () => {
-      const config = (task as any).getScheduleFromConfig(
-        'scorecard.schedule.notExists',
-      );
-      expect(config).toEqual({
-        frequency: { hours: 1 },
-        timeout: { minutes: 15 },
-        initialDelay: { minutes: 1 },
-      });
-    });
+  describe('start - scheduled fn error handling', () => {
+    it('should log error when scheduled task fn fails without rethrowing', async () => {
+      const childLogger = {
+        error: jest.fn(),
+        info: jest.fn(),
+        debug: jest.fn(),
+        warn: jest.fn(),
+        child: jest.fn(),
+      };
+      mockLogger.child.mockReturnValue(childLogger as any);
 
-    it('should return the schedule from config if configured', () => {
-      const config = (task as any).getScheduleFromConfig('scorecard.schedule');
-      expect(config).toEqual(scheduleConfig);
+      const pullError = new Error('pull failed');
+      jest
+        .spyOn(task as any, 'pullProviderMetrics')
+        .mockRejectedValue(pullError);
+
+      await task.start();
+
+      const { fn } = mockTaskRunner.run.mock.calls[0][0];
+      await expect(fn()).resolves.toBeUndefined();
+
+      expect(mockLogger.child).toHaveBeenCalledWith({
+        class: 'PullMetricsByProviderTask',
+        taskId: 'github.testMetric',
+        taskInstanceId: expect.any(String),
+      });
+      expect(childLogger.error).toHaveBeenCalledWith(
+        'github.testMetric pulling metrics failed, Error: pull failed',
+        pullError,
+      );
     });
   });
 
@@ -223,26 +263,16 @@ describe('PullMetricsByProviderTask', () => {
       expect(getOwnServiceCredentialsSpy).toHaveBeenCalledWith();
     });
 
-    it('should resolve thresholds for entity/metric/provider', async () => {
+    it('should resolve thresholds for entity/metric', async () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
       const metric = mockProvider.getMetrics()[0];
       expect(
         mockThresholdResolver.resolveEntityThresholds,
-      ).toHaveBeenNthCalledWith(
-        1,
-        mockEntities[0],
-        metric,
-        mockProvider.getProviderId(),
-      );
+      ).toHaveBeenNthCalledWith(1, mockEntities[0], metric);
       expect(
         mockThresholdResolver.resolveEntityThresholds,
-      ).toHaveBeenNthCalledWith(
-        2,
-        mockEntities[1],
-        metric,
-        mockProvider.getProviderId(),
-      );
+      ).toHaveBeenNthCalledWith(2, mockEntities[1], metric);
     });
 
     it('should calculate metrics', async () => {
@@ -267,21 +297,21 @@ describe('PullMetricsByProviderTask', () => {
     it('should create metric values', async () => {
       const metricValues = [
         {
-          catalog_entity_ref: 'component:default/test1',
-          entity_kind: 'component',
-          entity_namespace: undefined,
-          entity_owner: undefined,
-          metric_id: 'github.testMetric',
+          catalogEntityRef: 'component:default/test1',
+          entityKind: 'component',
+          entityNamespace: undefined,
+          entityOwner: undefined,
+          metricId: 'github.testMetric',
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           value: 42,
           status: 'success',
         },
         {
-          catalog_entity_ref: 'component:default/test2',
-          metric_id: 'github.testMetric',
-          entity_kind: 'component',
-          entity_namespace: undefined,
-          entity_owner: undefined,
+          catalogEntityRef: 'component:default/test2',
+          metricId: 'github.testMetric',
+          entityKind: 'component',
+          entityNamespace: undefined,
+          entityOwner: undefined,
           status: 'success',
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           value: 42,
@@ -319,7 +349,7 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(createMetricValuesSpy).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ entity_owner: 'group:default/my-team' }),
+          expect.objectContaining({ entityOwner: 'group:default/my-team' }),
         ]),
       );
     });
@@ -347,12 +377,12 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(createMetricValuesSpy).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ entity_owner: 'group:default/my-team' }),
+          expect.objectContaining({ entityOwner: 'group:default/my-team' }),
         ]),
       );
     });
 
-    it('should produce the same entity_owner regardless of whether spec.owner is a short name or full ref', async () => {
+    it('should produce the same entityOwner regardless of whether spec.owner is a short name or full ref', async () => {
       const shortNameEntity = {
         apiVersion: '1.0.0',
         kind: 'Component',
@@ -380,8 +410,8 @@ describe('PullMetricsByProviderTask', () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
       const saved = createMetricValuesSpy.mock.calls[0][0];
-      expect(saved[0].entity_owner).toBe('group:default/my-team');
-      expect(saved[1].entity_owner).toBe('group:default/my-team');
+      expect(saved[0].entityOwner).toBe('group:default/my-team');
+      expect(saved[1].entityOwner).toBe('group:default/my-team');
     });
 
     it('should log completion', async () => {
@@ -422,26 +452,27 @@ describe('PullMetricsByProviderTask', () => {
       expect(createMetricValuesSpy).toHaveBeenCalledWith([]);
     });
 
-    it('should throw error if pullProviderMetrics fails', async () => {
-      (task as any).pullProviderMetrics = jest
-        .fn()
-        .mockRejectedValue(new Error('test error'));
+    it('should log and rethrow when catalog query fails', async () => {
+      mockCatalog.queryEntities
+        .mockReset()
+        .mockRejectedValue(new Error('catalog down'));
 
       await expect(
         (task as any).pullProviderMetrics(mockProvider, mockLogger),
-      ).rejects.toThrow('test error');
-      await expect(
-        (task as any).pullProviderMetrics(mockProvider, mockLogger),
-      ).rejects.toThrow('test error');
+      ).rejects.toThrow('catalog down');
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to pull metrics for github.testMetric: Error: catalog down',
+      );
     });
 
-    describe('batch providers', () => {
+    describe('batch providers (return multiple metrics)', () => {
       let mockBatchProvider: MockBatchBooleanProvider;
 
       beforeEach(() => {
         mockBatchProvider = new MockBatchBooleanProvider(
           'filecheck',
-          'filecheck',
+          'filecheck.fileExistence',
           [
             { id: 'readme', path: 'README.md' },
             { id: 'license', path: 'LICENSE' },
@@ -486,26 +517,26 @@ describe('PullMetricsByProviderTask', () => {
         expect(createMetricValuesSpy).toHaveBeenCalledWith(
           expect.arrayContaining([
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.readme',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.readme',
               value: true,
               status: 'success',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.license',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.license',
               value: true,
               status: 'success',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test2',
-              metric_id: 'filecheck.readme',
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.readme',
               value: true,
               status: 'success',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test2',
-              metric_id: 'filecheck.license',
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.license',
               value: true,
               status: 'success',
             }),
@@ -540,24 +571,55 @@ describe('PullMetricsByProviderTask', () => {
         expect(createMetricValuesSpy).toHaveBeenCalledWith(
           expect.arrayContaining([
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.readme',
-              error_message: 'GitHub API error',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.readme',
+              errorMessage: 'GitHub API error',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.license',
-              error_message: 'GitHub API error',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.license',
+              errorMessage: 'GitHub API error',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test2',
-              metric_id: 'filecheck.readme',
-              error_message: 'GitHub API error',
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.readme',
+              errorMessage: 'GitHub API error',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test2',
-              metric_id: 'filecheck.license',
-              error_message: 'GitHub API error',
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.license',
+              errorMessage: 'GitHub API error',
+            }),
+          ]),
+        );
+      });
+
+      it('should create error record when calculateMetrics omits a metric id', async () => {
+        jest
+          .spyOn(mockBatchProvider, 'calculateMetrics')
+          .mockResolvedValue(new Map([['filecheck.readme', true]]));
+
+        const createMetricValuesSpy = jest.spyOn(
+          mockDatabaseMetricValues,
+          'createMetricValues',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        expect(createMetricValuesSpy).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.license',
+              value: undefined,
+              errorMessage:
+                "calculateMetrics() did not return an entry for metric 'filecheck.license'",
+            }),
+            expect.objectContaining({
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.license',
+              value: undefined,
+              errorMessage:
+                "calculateMetrics() did not return an entry for metric 'filecheck.license'",
             }),
           ]),
         );
@@ -580,10 +642,10 @@ describe('PullMetricsByProviderTask', () => {
         expect(createMetricValuesSpy).toHaveBeenCalledWith(
           expect.arrayContaining([
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.readme',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.readme',
               value: true,
-              error_message: 'Threshold evaluation failed',
+              errorMessage: 'Threshold evaluation failed',
             }),
           ]),
         );
@@ -648,8 +710,8 @@ describe('PullMetricsByProviderTask', () => {
 
         expect(createMetricValuesSpy).toHaveBeenCalledWith([
           expect.objectContaining({
-            catalog_entity_ref: 'component:default/partial-disabled',
-            metric_id: 'filecheck.readme',
+            catalogEntityRef: 'component:default/partial-disabled',
+            metricId: 'filecheck.readme',
             value: true,
           }),
         ]);
@@ -687,7 +749,7 @@ describe('PullMetricsByProviderTask', () => {
 
         const savedRecords = createMetricValuesSpy.mock.calls[0][0];
         const metricIds = savedRecords.map(
-          (r: { metric_id: string }) => r.metric_id,
+          (r: { metricId: string }) => r.metricId,
         );
         expect(metricIds).not.toContain('filecheck.license');
         expect(metricIds).toContain('filecheck.readme');
@@ -723,27 +785,50 @@ describe('PullMetricsByProviderTask', () => {
 
         expect(createMetricValuesSpy).toHaveBeenCalledWith([
           expect.objectContaining({
-            catalog_entity_ref: 'component:default/partial-disabled',
-            metric_id: 'filecheck.readme',
-            error_message: 'GitHub API error',
+            catalogEntityRef: 'component:default/partial-disabled',
+            metricId: 'filecheck.readme',
+            errorMessage: 'GitHub API error',
           }),
         ]);
         const savedRecords = createMetricValuesSpy.mock.calls[0][0];
         expect(savedRecords).toHaveLength(1);
       });
 
-      it('should get schedule from correct config path for batch provider', async () => {
-        (task as any).getScheduleFromConfig = jest
-          .fn()
-          .mockReturnValue({ frequency: { hours: 1 } });
-        (task as any).pullProviderMetrics = jest
+      it('should use provider schedule from config', async () => {
+        mockScheduler.createScheduledTaskRunner.mockClear();
+        const batchTask = new PullMetricsByProviderTask(
+          {
+            scheduler: mockScheduler,
+            logger: mockLogger,
+            database: mockDatabaseMetricValues,
+            config: mockServices.rootConfig({
+              data: {
+                scorecard: {
+                  metricProviders: {
+                    filecheck: {
+                      fileExistence: {
+                        schedule: scheduleConfig,
+                      },
+                    },
+                  },
+                },
+              },
+            }),
+            catalog: mockCatalog,
+            auth: mockAuth,
+            thresholdEvaluator: mockThresholdEvaluator,
+            thresholdResolver: mockThresholdResolver,
+          },
+          mockBatchProvider,
+        );
+        (batchTask as any).pullProviderMetrics = jest
           .fn()
           .mockResolvedValue(undefined);
 
-        await (task as any).start();
+        await (batchTask as any).start();
 
-        expect((task as any).getScheduleFromConfig).toHaveBeenCalledWith(
-          'scorecard.plugins.filecheck.schedule',
+        expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledWith(
+          scheduleConfig,
         );
       });
     });

@@ -13,6 +13,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: SearchBar
+          module: Legacy
           config:
             layouts:
               xl: { w: 10, h: 1, x: 1 }

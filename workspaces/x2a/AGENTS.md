@@ -131,15 +131,15 @@ This is a Yarn workspaces monorepo (`packages/*`, `plugins/*`).
 
 ### Plugins
 
-| Directory                               | Role                                                  | npm name                                                                |
-| --------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------------------- |
-| `plugins/x2a`                           | Frontend plugin                                       | `@red-hat-developer-hub/backstage-plugin-x2a`                           |
-| `plugins/x2a-backend`                   | Backend plugin (REST API, K8s jobs, DB)               | `@red-hat-developer-hub/backstage-plugin-x2a-backend`                   |
-| `plugins/x2a-common`                    | Shared library (types, domain objects, CSV parsing)   | `@red-hat-developer-hub/backstage-plugin-x2a-common`                    |
-| `plugins/x2a-node`                      | Backend node library (service interfaces, refs)       | `@red-hat-developer-hub/backstage-plugin-x2a-node`                      |
-| `plugins/x2a-dcr`                       | Frontend plugin for OAuth Dynamic Client Registration | `@red-hat-developer-hub/backstage-plugin-x2a-dcr`                       |
-| `plugins/x2a-mcp-extras`                | Backend plugin exposing MCP tools                     | `@red-hat-developer-hub/backstage-plugin-x2a-mcp-extras`                |
-| `plugins/scaffolder-backend-module-x2a` | Scaffolder module for project creation templates      | `@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a` |
+| Directory                               | Role                                                  | npm name                                                        |
+| --------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------- |
+| `plugins/x2a`                           | Frontend plugin                                       | `@red-hat-developer-hub/backstage-plugin-x2a`                   |
+| `plugins/x2a-backend`                   | Backend plugin (REST API, K8s jobs, DB)               | `@red-hat-developer-hub/backstage-plugin-x2a-backend`           |
+| `plugins/x2a-common`                    | Shared library (types, domain objects, CSV parsing)   | `@red-hat-developer-hub/backstage-plugin-x2a-common`            |
+| `plugins/x2a-node`                      | Backend node library (service interfaces, refs)       | `@red-hat-developer-hub/backstage-plugin-x2a-node`              |
+| `plugins/x2a-dcr`                       | Frontend plugin for OAuth Dynamic Client Registration | `@red-hat-developer-hub/backstage-plugin-x2a-dcr`               |
+| `plugins/x2a-mcp-extras`                | Backend plugin exposing MCP tools                     | `@red-hat-developer-hub/backstage-plugin-x2a-mcp-extras`        |
+| `plugins/scaffolder-backend-module-x2a` | Scaffolder module for project creation templates      | `@red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module` |
 
 ### Key directories inside plugins
 

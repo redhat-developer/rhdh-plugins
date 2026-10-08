@@ -4,14 +4,8 @@
 
 ```ts
 import type { ConfigApi } from '@backstage/core-plugin-api';
-import { FrontendModule } from '@backstage/frontend-plugin-api';
 import type { OAuthApi } from '@backstage/core-plugin-api';
 import { ScmAuthApi } from '@backstage/integration-react';
-
-// @alpha
-const appIntegrationsModule: FrontendModule;
-export { appIntegrationsModule };
-export default appIntegrationsModule;
 
 // @alpha
 export function mergeScmAuthFromDeps(deps: ScmAuthFactoryDeps): ScmAuthApi;

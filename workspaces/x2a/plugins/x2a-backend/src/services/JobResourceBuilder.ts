@@ -204,9 +204,14 @@ export class JobResourceBuilder {
    *
    * @param params - Job creation parameters
    * @param config - X2A configuration from app-config.yaml
+   * @param adversarialAgentsConfigMap - Optional ConfigMap name for adversarial agents
    * @returns V1Job resource ready to be created in Kubernetes
    */
-  static buildJobSpec(params: JobCreateParams, config: X2AConfig): V1Job {
+  static buildJobSpec(
+    params: JobCreateParams,
+    config: X2AConfig,
+    adversarialAgentsConfigMap?: string,
+  ): V1Job {
     const shortId = crypto.randomBytes(4).toString('hex');
     const jobName = `job-x2a-${params.phase}-${shortId}`;
     const projectSecretName = `x2a-project-secret-${params.projectId}`;
@@ -269,6 +274,8 @@ export class JobResourceBuilder {
               {
                 name: 'x2a',
                 image: `${config.kubernetes.image}:${config.kubernetes.imageTag}`,
+                imagePullPolicy:
+                  config.kubernetes.imagePullPolicy ?? 'IfNotPresent',
                 command: ['/bin/bash', '-c'],
                 args: [this.buildMainContainerScript(params, config)],
                 // Mount both secrets:
@@ -404,6 +411,15 @@ export class JobResourceBuilder {
                         },
                       ]
                     : []),
+                  ...(adversarialAgentsConfigMap
+                    ? [
+                        {
+                          name: 'adversarial-agents-config',
+                          mountPath: '/config/adversarial-agents',
+                          readOnly: true,
+                        },
+                      ]
+                    : []),
                 ],
                 resources: {
                   requests: {
@@ -417,7 +433,7 @@ export class JobResourceBuilder {
                 },
               },
             ],
-            // Shared volume for git repositories + optional rules ConfigMap
+            // Shared volume for git repositories + optional rules ConfigMap + optional adversarial agents ConfigMap
             volumes: [
               {
                 name: 'workspace',
@@ -429,6 +445,16 @@ export class JobResourceBuilder {
                       name: 'rules',
                       configMap: {
                         name: rulesConfigMapName,
+                      },
+                    },
+                  ]
+                : []),
+              ...(adversarialAgentsConfigMap
+                ? [
+                    {
+                      name: 'adversarial-agents-config',
+                      configMap: {
+                        name: adversarialAgentsConfigMap,
                       },
                     },
                   ]
@@ -538,6 +564,52 @@ export class JobResourceBuilder {
         ownerReferences: [ownerReference],
       },
       data,
+    };
+  }
+
+  /**
+   * Builds a ConfigMap containing adversarial agent snapshots for the job.
+   * Owned by the job (auto-deleted when job is deleted).
+   *
+   * @param jobId - Job UUID
+   * @param params - Job creation parameters containing adversarial agents snapshots
+   * @param ownerReference - Owner reference to the parent Job for garbage collection
+   * @returns V1ConfigMap resource, or undefined if no agents
+   */
+  static buildAdversarialAgentsConfigMap(
+    configMapName: string,
+    params: JobCreateParams,
+    ownerReference: V1OwnerReference,
+  ): V1ConfigMap | undefined {
+    if (!params.adversarialAgents || params.adversarialAgents.length === 0) {
+      return undefined;
+    }
+
+    // The ConfigMap contains a single agents.json file with all agent snapshots
+    const agentsJSON = JSON.stringify(params.adversarialAgents, null, 2);
+
+    return {
+      apiVersion: 'v1',
+      kind: 'ConfigMap',
+      metadata: {
+        name: configMapName,
+        labels: {
+          'app.kubernetes.io/name': 'x2a-convertor',
+          'app.kubernetes.io/component': 'adversarial-agents',
+          'app.kubernetes.io/managed-by': 'x2a-backend-plugin',
+          'x2a.redhat.com/job-id': params.jobId,
+        },
+        annotations: {
+          'x2a.redhat.com/created-by': 'x2a-backend-plugin',
+          'x2a.redhat.com/description':
+            'Adversarial agent definitions for X2A job (auto-deleted with job)',
+          'x2a.redhat.com/agent-count': String(params.adversarialAgents.length),
+        },
+        ownerReferences: [ownerReference],
+      },
+      data: {
+        'agents.json': agentsJSON,
+      },
     };
   }
 

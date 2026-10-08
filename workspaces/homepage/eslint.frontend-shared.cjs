@@ -14,27 +14,4 @@
  * limitations under the License.
  */
 
-module.exports = function materialUiMigrationEslintConfig(packageDir) {
-  return require('@backstage/cli/config/eslint-factory')(packageDir, {
-    restrictedImports: [
-      {
-        name: '@material-ui/core',
-        message: 'Use @mui/material instead of Material UI v4.',
-      },
-      {
-        name: '@material-ui/lab',
-        message: 'Use @mui/material or @mui/lab instead of Material UI v4.',
-      },
-      {
-        name: 'makeStyles',
-        message:
-          'Use @mui/material sx/styled, or Backstage UI instead makeStyles.',
-      },
-      {
-        name: '@material-ui/icons',
-        message:
-          "Use '@mui/icons-material/<Icon>' instead of Material UI v4 (e.g. import MenuIcon from '@mui/icons-material/Menu').",
-      },
-    ],
-  });
-};
+module.exports = require('../../eslint.frontend-shared.cjs');

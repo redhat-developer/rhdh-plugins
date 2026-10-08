@@ -17,18 +17,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
-
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import type {
   LightspeedDrawerContextType,
   LightspeedEmbeddedNotebooksTarget,
 } from '../components/LightspeedDrawerContext';
-import { LIGHTSPEED_APP_DRAWER_ID, LIGHTSPEED_PATH } from '../const';
+import {
+  ChatbotDisplayMode,
+  LIGHTSPEED_APP_DRAWER_ID,
+  LIGHTSPEED_DOCKED_DRAWER_WIDTH_PX,
+  LIGHTSPEED_PATH,
+} from '../const';
 import type { FileContent } from '../types';
 import { useBackstageUserIdentity } from './useBackstageUserIdentity';
 import { useDisplayModeSettings } from './useDisplayModeSettings';
+import type { SettingsTab } from './useSettingsPanelUrlState';
 
 function lightspeedRoutePath(conversationId?: string): string {
   return conversationId
@@ -58,7 +62,9 @@ export function useLightspeedProviderState(): {
   const [displayModeState, setDisplayModeState] =
     useState<ChatbotDisplayMode>(persistedDisplayMode);
   const [isOpen, setIsOpen] = useState(false);
-  const [drawerWidth, setDrawerWidth] = useState(400);
+  const [drawerWidth, setDrawerWidth] = useState(
+    LIGHTSPEED_DOCKED_DRAWER_WIDTH_PX,
+  );
   const [currentConversationIdState, setCurrentConversationIdState] = useState<
     string | undefined
   >(undefined);
@@ -67,6 +73,13 @@ export function useLightspeedProviderState(): {
     FileContent[]
   >([]);
   const [shellViewTab, setShellViewTabState] = useState(0);
+  const [activeNotebookId, setActiveNotebookId] = useState<string | undefined>(
+    undefined,
+  );
+  const [settingsTab, setSettingsTabState] = useState<SettingsTab | null>(null);
+  const setSettingsTab = useCallback((tab: SettingsTab | null) => {
+    setSettingsTabState(tab);
+  }, []);
   const shellViewTabRef = useRef(shellViewTab);
   shellViewTabRef.current = shellViewTab;
   const setShellViewTab = useCallback((tab: number) => {
@@ -84,10 +97,14 @@ export function useLightspeedProviderState(): {
   const lightspeedPathnamePrevRef = useRef<string | null>(null);
 
   const isLightspeedRouteRef = useRef(false);
+  const isOnNotebooksPathRef = useRef(false);
   const persistedDisplayModeRef = useRef(persistedDisplayMode);
 
   const isLightspeedRoute = location.pathname.startsWith(LIGHTSPEED_PATH);
   isLightspeedRouteRef.current = isLightspeedRoute;
+  isOnNotebooksPathRef.current = location.pathname.startsWith(
+    `${LIGHTSPEED_PATH}/notebooks`,
+  );
   persistedDisplayModeRef.current = persistedDisplayMode;
   const conversationMatch = useMatch(
     `${LIGHTSPEED_PATH}/conversation/:conversationId`,
@@ -258,14 +275,23 @@ export function useLightspeedProviderState(): {
       setCurrentConversationIdState(id);
       // Refs: first-stream completion calls onStart after unmount / mode change; a stale
       // embedded + /lightspeed closure would navigate back to fullscreen without this.
+      // Skip navigation when the user is on a notebooks path — conversation route updates
+      // must not overwrite the notebooks URL (fixes notebook closing on mode switch).
       if (
         persistedDisplayModeRef.current === ChatbotDisplayMode.embedded &&
-        isLightspeedRouteRef.current
+        isLightspeedRouteRef.current &&
+        !isOnNotebooksPathRef.current
       ) {
-        navigate(lightspeedRoutePath(id), { replace: true });
+        navigate(
+          {
+            pathname: lightspeedRoutePath(id),
+            search: location.search,
+          },
+          { replace: true },
+        );
       }
     },
-    [navigate],
+    [navigate, location.search],
   );
 
   const setDraftMessage = useCallback((message: string) => {
@@ -311,9 +337,6 @@ export function useLightspeedProviderState(): {
         }
         setIsOpen(true);
       } else {
-        // Notebooks exist only in fullscreen; leaving embedded for overlay/docked
-        // must not keep shellViewTab on Notebooks (next fullscreen open should be Chat).
-        setShellViewTab(0);
         if (isLightspeedRoute) {
           leavingLightspeedForNonEmbeddedShellRef.current = true;
           pendingOverlayThreadHandoffRef.current = true;
@@ -329,7 +352,6 @@ export function useLightspeedProviderState(): {
       leaveLightspeedRouteForShellDisplayMode,
       navigate,
       setPersistedDisplayMode,
-      setShellViewTab,
       syncShellDrawerForMode,
     ],
   );
@@ -356,6 +378,10 @@ export function useLightspeedProviderState(): {
       consumePendingOverlayThreadHandoff,
       shellViewTab,
       setShellViewTab,
+      activeNotebookId,
+      setActiveNotebookId,
+      settingsTab,
+      setSettingsTab,
     }),
     [
       isOpen,
@@ -372,6 +398,10 @@ export function useLightspeedProviderState(): {
       consumePendingOverlayThreadHandoff,
       shellViewTab,
       setShellViewTab,
+      activeNotebookId,
+      setActiveNotebookId,
+      settingsTab,
+      setSettingsTab,
     ],
   );
 

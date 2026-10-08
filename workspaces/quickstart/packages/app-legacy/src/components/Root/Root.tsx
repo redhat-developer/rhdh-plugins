@@ -39,13 +39,13 @@ import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import {
   defaultGlobalHeaderComponentsMountPoints,
   GlobalHeaderComponent,
-} from '@red-hat-developer-hub/backstage-plugin-global-header';
+} from '@red-hat-developer-hub/backstage-plugin-global-header/legacy';
 import Box from '@mui/material/Box';
 import {
   QuickstartDrawerProvider,
   QuickstartDrawerContent,
   QuickstartDrawerStateExposer,
-} from '@red-hat-developer-hub/backstage-plugin-quickstart';
+} from '@red-hat-developer-hub/backstage-plugin-quickstart/legacy';
 import { QuickstartSidebarItem } from './QuickstartSidebarItem';
 import { Administration } from '@backstage-community/plugin-rbac';
 import { ApplicationDrawer } from './ApplicationDrawer';

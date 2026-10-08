@@ -1,0 +1,88 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {
+  StatusOK,
+  StatusWarning,
+  StatusError,
+  StatusPending,
+} from '@backstage/core-components';
+import { Box, makeStyles, Typography } from '@material-ui/core';
+
+const useStyles = makeStyles(theme => ({
+  chip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: 16,
+    padding: '2px 10px 2px 6px',
+    gap: 4,
+    whiteSpace: 'nowrap' as const,
+    '& *': {
+      fontSize: '0.75rem !important',
+      lineHeight: '1.4 !important',
+    },
+    '& svg': {
+      width: '0.875rem !important',
+      height: '0.875rem !important',
+    },
+  },
+}));
+
+/**
+ * Maps an agent `health_status` value to a Backstage Status component.
+ *
+ * Mapping:
+ *   ready       → StatusOK
+ *   congested   → StatusWarning
+ *   unavailable → StatusError
+ */
+export function AgentHealthStatus({
+  value,
+}: Readonly<{ value?: string | null }>) {
+  const classes = useStyles();
+
+  if (!value) {
+    return (
+      <Typography variant="caption" color="textSecondary">
+        -
+      </Typography>
+    );
+  }
+
+  let StatusComponent: React.ElementType;
+  switch (value.toLowerCase()) {
+    case 'ready':
+      StatusComponent = StatusOK;
+      break;
+    case 'congested':
+      StatusComponent = StatusWarning;
+      break;
+    case 'unavailable':
+      StatusComponent = StatusError;
+      break;
+    default:
+      StatusComponent = StatusPending;
+      break;
+  }
+
+  return (
+    <Box className={classes.chip}>
+      <StatusComponent>{value}</StatusComponent>
+    </Box>
+  );
+}

@@ -27,8 +27,9 @@ import {
 export const dcmMessages = {
   page: {
     title: 'Data Center',
+    notFound: 'Page not found',
     tabs: {
-      providers: 'Providers',
+      agents: 'Agents',
       policies: 'Policies',
       serviceTypes: 'Service types',
       catalogItems: 'Catalog items',
@@ -49,6 +50,11 @@ export const dcmMessages = {
     saving: 'Saving\u2026',
     close: 'Close',
     rows: 'rows',
+    previousPage: 'Previous',
+    nextPage: 'Next',
+    next: 'Next',
+    back: 'Back',
+    loadingMore: 'Loading more\u2026',
   },
   deleteDialog: {
     title: 'Delete {{resourceLabel}}',
@@ -56,48 +62,45 @@ export const dcmMessages = {
     cancelButton: 'Cancel',
     body: 'Are you sure you want to delete {{resourceName}}? This action cannot be undone.',
   },
-  providers: {
-    emptyTitle: 'No providers registered',
+  agents: {
+    emptyTitle: 'No agents registered',
     emptyDescription:
-      'Register a service provider to allow DCM to provision resources on external infrastructure (e.g. OpenShift, AWS).',
+      'Environment agents register with the control plane and send periodic heartbeats. Register an agent to allow DCM to manage workloads on external environments.',
     registerButton: 'Register',
-    entityLabel: 'Providers',
-    registerDialogTitle: 'Register provider',
-    editDialogTitle: 'Edit provider',
-    saveButton: 'Save',
-    createSuccess: 'Provider registered successfully.',
-    updateSuccess: 'Provider updated successfully.',
-    deleteSuccess: 'Provider deleted successfully.',
-    deleteLabel: 'provider',
+    entityLabel: 'Agents',
+    registerDialogTitle: 'Register agent',
+    createSuccess: 'Agent registered successfully.',
     columns: {
-      displayName: 'Display name',
       name: 'Name',
-      endpoint: 'Endpoint',
-      serviceType: 'Service type',
-      operations: 'Operations',
-      status: 'Status',
+      environment: 'Environment',
+      serviceTypes: 'Service types',
+      cost: 'Cost',
+      topic: 'Topic',
+      health: 'Health',
+      lastHeartbeat: 'Last heartbeat',
+    },
+    filter: {
+      healthLabel: 'Health status',
+      healthAll: 'All',
+      healthReady: 'Ready',
+      healthCongested: 'Congested',
+      healthUnavailable: 'Unavailable',
     },
     form: {
       nameLabel: 'Name *',
-      namePlaceholder: 'e.g. my-k8s-provider',
+      namePlaceholder: 'e.g. env-agent-west-1',
       nameHelper:
         'Unique slug identifier \u2014 only lowercase letters, numbers, and hyphens',
-      nameHelperEditMode: 'Provider name cannot be changed after creation',
-      endpointLabel: 'Endpoint *',
-      endpointPlaceholder: 'https://api.example.com',
-      endpointHelper:
-        'Full URL of the provider API (e.g. https://api.example.com)',
-      serviceTypeLabel: 'Service type *',
-      serviceTypeEmpty: 'No service types available',
-      serviceTypeSelect: 'Select a service type\u2026',
-      serviceTypeHelperNoTypes:
-        'Create a service type first in the Service types tab',
-      serviceTypeHelperDefault: 'Select from registered service types',
-      schemaVersionLabel: 'Schema version *',
-      schemaVersionHelper:
-        'e.g. v1, v1alpha1, v2beta2 \u2014 only v<number>[alpha|beta][number]',
-      operationsLabel: 'Operations',
-      operationsHelper: 'Select the operations this provider supports',
+      environmentLabel: 'Environment *',
+      environmentPlaceholder: 'e.g. production',
+      environmentHelper: 'Environment label for the agent',
+      serviceTypesLabel: 'Service types *',
+      serviceTypesHelper: 'Service types this agent can provide',
+      costLabel: 'Cost *',
+      costHelper: 'Relative cost weight used for placement decisions',
+      topicNameLabel: 'Topic name *',
+      topicNamePlaceholder: 'e.g. dcm.agent.env-agent-west-1',
+      topicNameHelper: 'NATS topic name \u2014 must start with dcm.agent.',
     },
   },
   policies: {
@@ -158,7 +161,7 @@ export const dcmMessages = {
   catalogItems: {
     emptyTitle: 'No catalog items defined',
     emptyDescription:
-      'Catalog items are service templates that developers can provision. Each catalog item references a service type and defines the fields available for customization.',
+      'Catalog items are service templates that developers can provision. Each catalog item references one or more service types and defines the fields available for customization.',
     createButton: 'Create',
     entityLabel: 'Catalog items',
     createDrawerTitle: 'Create catalog item',
@@ -171,12 +174,14 @@ export const dcmMessages = {
     columns: {
       displayName: 'Display name',
       apiVersion: 'API version',
-      serviceType: 'Service type',
+      resources: 'Resources',
       fields: 'Fields',
       created: 'Created',
     },
     fieldCount_one: '1 field',
     fieldCount_other: '{{count}} fields',
+    resourceCount_one: '1 resource',
+    resourceCount_other: '{{count}} resources',
     form: {
       importButton: 'Import from file',
       importTooltip:
@@ -193,7 +198,8 @@ export const dcmMessages = {
       serviceTypeHelperEdit: 'Service type cannot be changed after creation',
       serviceTypeHelperNoTypes:
         'No service types available \u2014 create one in the Service types tab',
-      serviceTypeHelperDefault: 'Select the service type this item is based on',
+      serviceTypeHelperDefault:
+        'Select the service type this resource is based on',
       fieldsLabel: 'Fields *',
       fieldsCaption: '(at least one required)',
       fieldsErrorEmpty: 'Add at least one field with a non-empty path.',
@@ -219,11 +225,29 @@ export const dcmMessages = {
       schemaMustBeObject: 'Must be a JSON object, not an array or primitive',
       schemaInvalidJson: 'Invalid JSON syntax',
     },
+    wizard: {
+      tabOverview: 'Overview',
+      tabApi: 'API',
+      tabResources: 'Resources',
+      resourcesDescription:
+        'Add one or more resources. Each resource references a service type and defines its own field configurations.',
+      resourcesRequired: 'At least one resource is required.',
+      addResourceButton: 'Add resource',
+      removeResource: 'Remove resource',
+      unnamedResource: '(unnamed)',
+      resourceNameLabel: 'Resource name *',
+      resourceNameHelper:
+        'Unique identifier within this catalog item \u2014 e.g. app, ordersDb',
+      requiresResourcesLabel: 'Requires resources',
+      requiresResourcesHelper:
+        'Select other resources that must be provisioned before this one',
+      apiVersionImmutable: 'API version cannot be changed after creation',
+    },
   },
   instances: {
     emptyTitle: 'No instances provisioned',
     emptyDescription:
-      'Catalog item instances represent provisioned services. Create an instance from a catalog item to provision a service on the registered provider infrastructure.',
+      'Catalog item instances represent provisioned services. Create an instance from a catalog item to provision a service on a registered environment agent.',
     createButton: 'Create',
     entityLabel: 'Catalog item instances',
     createDialogTitle: 'Create catalog item instance',
@@ -242,7 +266,7 @@ export const dcmMessages = {
     columns: {
       displayName: 'Display name',
       catalogItem: 'Catalog item',
-      resourceId: 'Resource ID',
+      resourceIds: 'Resource IDs',
       apiVersion: 'API version',
       created: 'Created',
     },
@@ -261,7 +285,10 @@ export const dcmMessages = {
         'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1',
       fieldValuesSection: 'Field values',
       fieldValuesSectionHint: '(editable fields defined by this catalog item)',
-      noEditableFields: 'This catalog item has no editable fields.',
+      noEditableFields: 'This resource has no editable fields.',
+    },
+    wizard: {
+      tabOverview: 'Overview',
     },
   },
   resources: {
@@ -284,18 +311,15 @@ export const dcmMessages = {
     ariaLabel: 'Copy to clipboard',
   },
   validation: {
-    provider: {
+    agent: {
       nameRequired: 'Name is required',
       namePattern:
         'Only lowercase letters, numbers, and hyphens are allowed (must start with a letter)',
-      endpointRequired: 'Endpoint is required',
-      endpointPattern:
-        'Must start with http:// or https:// (e.g. https://my-service:8081/api)',
-      serviceTypeRequired: 'Service type is required',
-      serviceTypeMin: 'Please select a service type from the list',
-      schemaVersionRequired: 'Schema version is required',
-      schemaVersionPattern:
-        'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1, v2beta2',
+      environmentRequired: 'Environment is required',
+      serviceTypesRequired: 'At least one service type is required',
+      costRequired: 'Cost is required',
+      topicNameRequired: 'Topic name is required',
+      topicNamePattern: 'Topic name must start with dcm.agent.',
     },
     policy: {
       displayNameRequired: 'Display name is required',
@@ -322,6 +346,14 @@ export const dcmMessages = {
       apiVersionPattern:
         'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1',
       serviceTypeRequired: 'Service type is required',
+      resourceNameRequired: 'Resource name is required',
+      resourceNameDuplicate:
+        'Resource name must be unique within the catalog item',
+      resourceNamePattern:
+        'Only letters, numbers, hyphens and underscores are allowed (must start with a letter)',
+      requiresResourcesCycle:
+        'Circular dependency detected \u2014 this resource indirectly requires itself',
+      resourcesRequired: 'At least one resource is required',
       duplicatePath: 'Duplicate path \u2014 paths must be unique',
       invalidJson:
         'Invalid JSON \u2014 fix the syntax or use a plain string value',

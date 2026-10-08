@@ -1,5 +1,8 @@
 # Design: MCP Registry Connector — Productization & Air-Gapped Support
 
+> **Workspace status:** Follow-on connector design; not part of the current
+> RHDH 2.1 frontend and OGX release baseline.
+
 ## Context
 
 The upstream MCP Registry entity provider (RHDHPLAN-393) provides a Backstage catalog provider that polls the public MCP Registry (`registry.modelcontextprotocol.io`) and emits Backstage entities for discovered MCP servers. It assumes internet connectivity and uses the public registry endpoint by default.
@@ -20,7 +23,9 @@ This productization effort wraps the upstream connector with RHDH-specific harde
 >
 > - **RHDHPLAN-393 complementary:** This productization wrapper layers on top of RHDHPLAN-393's upstream MCP Registry connector. No ingestion duplication — RHDHPLAN-393 provides core MCP server discovery, this connector adds air-gapped support, credential management, and AI Asset annotation enrichment.
 > - **RHDHPLAN-404 dependency:** The upstream RHDHPLAN-393 connector emits API entities with `spec.type: mcp-server` (a recent Backstage addition). This productization wrapper is kind-agnostic — it enriches annotations regardless of entity kind.
-> - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector focuses on MCP server entity discovery only.
+> - **MCP resource mapping is outside this current Boost release:** mapping MCP
+>   resources (tools, prompts) remains broader follow-on work. This connector
+>   focuses on MCP server entity discovery only.
 
 ## Goals
 
@@ -95,7 +100,7 @@ The wrapper intercepts `getProviderName()` and `connect()` to inject mirror endp
 
 ### Decision 2: Mirror Endpoint Configuration via app-config
 
-**Decision:** Use `catalog.providers.mcpRegistry.endpoint` in app-config to override the public registry endpoint. When unset, fall back to `registry.modelcontextprotocol.io`.
+**Decision:** Use `ai-catalog.providers.mcpRegistry.endpoint` in app-config to override the public registry endpoint. When unset, fall back to `registry.modelcontextprotocol.io`.
 
 **Rationale:**
 
@@ -111,7 +116,7 @@ The wrapper intercepts `getProviderName()` and `connect()` to inject mirror endp
 **Configuration schema:**
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       # Optional mirror endpoint (falls back to registry.modelcontextprotocol.io)
@@ -158,7 +163,7 @@ catalog:
 ```typescript
 import { loadCaBundle } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
 
-const connectorConfig = config.getConfig('catalog.providers.mcpRegistry');
+const connectorConfig = config.getConfig('ai-catalog.providers.mcpRegistry');
 const caBundle = loadCaBundle(connectorConfig);
 
 // Pass CA bundle to HTTP client
@@ -203,7 +208,7 @@ metadata:
     rhdh.io/ai-asset-category: mcp-server
 
     # Version metadata (extracted from MCP server manifest if available)
-    rhdh.io/ai-asset-version: '1.0.0' # or "unknown" if not available
+    rhdh.io/ai-asset-version: '1.0.0' # normalized via normalizeAIAssetVersion(); missing/unrecognized → "0.0.0-unknown"
 
     # Source identifier — connector type + config key (e.g., "mcp-registry/mcpRegistry")
     rhdh.io/ai-asset-source: mcp-registry/<instance-id>
@@ -219,8 +224,9 @@ function enrichWithAiAssetAnnotations(entity: Entity): Entity {
       ...entity.metadata,
       annotations: {
         'rhdh.io/ai-asset-category': 'mcp-server',
-        'rhdh.io/ai-asset-version':
-          normalizeAIAssetVersion(extractVersion(entity)) || 'unknown',
+        'rhdh.io/ai-asset-version': normalizeAIAssetVersion(
+          extractVersion(entity) || '',
+        ),
         'rhdh.io/ai-asset-source': `mcp-registry/${connectorId}`,
         ...entity.metadata.annotations,
       },

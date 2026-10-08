@@ -27,7 +27,7 @@ import {
   UserSettingsSignInAvatar,
 } from '@backstage/plugin-user-settings';
 import { SidebarSearchModal } from '@backstage/plugin-search';
-import { Administration } from '@backstage-community/plugin-rbac';
+import { Administration } from '@backstage-community/plugin-rbac/legacy';
 
 import {
   Sidebar,
@@ -46,7 +46,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
 
-import { ExtensionsIcon } from '@red-hat-developer-hub/backstage-plugin-extensions';
+import { ExtensionsIcon } from '@red-hat-developer-hub/backstage-plugin-extensions/legacy';
 
 const useSidebarLogoStyles = makeStyles({
   root: {

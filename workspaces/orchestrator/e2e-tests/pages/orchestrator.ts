@@ -32,6 +32,22 @@ export type UiPropsWorkflowInputs = {
   objectExample: string;
 };
 
+export type NewComponentInputs = {
+  organizationName: string;
+  repositoryName: string;
+  description: string;
+  owner: string;
+  system: string;
+  port: string;
+};
+
+export type JavaMetadata = {
+  groupId: string;
+  artifactId: string;
+  javaPackageNamespace: string;
+  version: string;
+};
+
 type SampleRetryHits = {
   allProps: number;
   statusCodesNoMatch: number;
@@ -64,6 +80,46 @@ export class Orchestrator {
       .waitFor({ state: 'visible', timeout: 30_000 });
   }
 
+  /**
+   * NFS AppSidebar places Orchestrator in the Administration group
+   * (`SidebarItemBlueprint` group: 'admin'). Legacy Root keeps it under Menu.
+   */
+  async expectOrchestratorUnderAdministration() {
+    if (process.env.APP_MODE === 'legacy') {
+      return;
+    }
+    const administrationLabels: Record<string, string> = {
+      en: 'Administration',
+      de: 'Administration',
+      es: 'Administración',
+      fr: 'Administration',
+      it: 'Amministrazione',
+      ja: '管理',
+    };
+    const administration =
+      administrationLabels[this.locale] ?? 'Administration';
+    const sidebar = this.page.getByRole('navigation', {
+      name: 'sidebar nav',
+    });
+    const adminToggle = sidebar.getByRole('button', { name: administration });
+    const orchestratorLink = sidebar.getByRole('link', {
+      name: 'Orchestrator',
+    });
+    await expect(adminToggle).toBeVisible({ timeout: 15_000 });
+
+    // /orchestrator should auto-expand the group; expand if still collapsed.
+    if (!(await orchestratorLink.isVisible().catch(() => false))) {
+      await adminToggle.click();
+    }
+    await expect(orchestratorLink).toBeVisible();
+
+    // Collapse/expand proves the link lives inside the Administration group.
+    await adminToggle.click();
+    await expect(orchestratorLink).toBeHidden();
+    await adminToggle.click();
+    await expect(orchestratorLink).toBeVisible();
+  }
+
   async navigateToWorkflowRunTab(navText: string) {
     const navLink = this.page.getByRole('tab', { name: navText }).first();
     await navLink.waitFor({ state: 'visible', timeout: 60_000 });
@@ -81,17 +137,29 @@ export class Orchestrator {
 
   async searchWorkflow(workflowName: string) {
     await this.orchestratorHelper.searchInputPlaceholder(workflowName);
-    await expect(
-      this.page.getByRole('row', { name: workflowName }),
-    ).toBeVisible();
+    await expect(this.workflowTableRow(workflowName)).toBeVisible();
   }
 
   async openWorkflowFromTable(workflowName: string) {
-    await this.page
-      .getByRole('row', { name: workflowName })
-      .getByRole('link', { name: workflowName })
+    const namePattern = new RegExp(
+      `^${workflowName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+      'i',
+    );
+    await this.workflowTableRow(workflowName)
+      .getByRole('link', { name: namePattern })
       .click();
-    await this.orchestratorHelper.verifyHeading(workflowName);
+    await this.orchestratorHelper.verifyHeading(namePattern);
+  }
+
+  /** Row for a workflow name; exact link match avoids substring clashes. */
+  private workflowTableRow(workflowName: string) {
+    const namePattern = new RegExp(
+      `^${workflowName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+      'i',
+    );
+    return this.page.getByRole('row').filter({
+      has: this.page.getByRole('link', { name: namePattern }),
+    });
   }
 
   async clickRunWorkflowFromDetails() {
@@ -126,6 +194,74 @@ export class Orchestrator {
     await this.orchestratorHelper.clickButton(this.translations.common.next);
   }
 
+  async fillNewComponentInputs(inputs: NewComponentInputs) {
+    await this.page
+      .getByRole('textbox', { name: 'Organization Name' })
+      .fill(inputs.organizationName);
+    await this.page
+      .getByRole('textbox', { name: 'Repository Name' })
+      .fill(inputs.repositoryName);
+    await this.page
+      .getByRole('textbox', { name: 'Description' })
+      .fill(inputs.description);
+    await this.page.getByRole('textbox', { name: 'Owner' }).fill(inputs.owner);
+    await this.page
+      .getByRole('textbox', { name: 'System' })
+      .fill(inputs.system);
+    await this.page.getByRole('spinbutton', { name: 'Port' }).fill(inputs.port);
+  }
+
+  async fillJavaMetadata(inputs: JavaMetadata) {
+    await this.page
+      .getByRole('textbox', { name: 'Group ID' })
+      .fill(inputs.groupId);
+    await this.page
+      .getByRole('textbox', { name: 'Artifact ID' })
+      .fill(inputs.artifactId);
+    await this.page
+      .getByRole('textbox', { name: 'Java Package Namespace' })
+      .fill(inputs.javaPackageNamespace);
+    await this.page
+      .getByRole('textbox', { name: 'Version' })
+      .fill(inputs.version);
+  }
+
+  async verifyNewComponentInputs(inputs: NewComponentInputs) {
+    await expect(
+      this.page.getByRole('textbox', { name: 'Organization Name' }),
+    ).toHaveValue(inputs.organizationName);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Repository Name' }),
+    ).toHaveValue(inputs.repositoryName);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Description' }),
+    ).toHaveValue(inputs.description);
+    await expect(this.page.getByRole('textbox', { name: 'Owner' })).toHaveValue(
+      inputs.owner,
+    );
+    await expect(
+      this.page.getByRole('textbox', { name: 'System' }),
+    ).toHaveValue(inputs.system);
+    await expect(
+      this.page.getByRole('spinbutton', { name: 'Port' }),
+    ).toHaveValue(inputs.port);
+  }
+
+  async verifyJavaMetadata(inputs: JavaMetadata) {
+    await expect(
+      this.page.getByRole('textbox', { name: 'Group ID' }),
+    ).toHaveValue(inputs.groupId);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Artifact ID' }),
+    ).toHaveValue(inputs.artifactId);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Java Package Namespace' }),
+    ).toHaveValue(inputs.javaPackageNamespace);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Version' }),
+    ).toHaveValue(inputs.version);
+  }
+
   async submitWorkflowRunFromReview() {
     await expect(
       this.page.getByText(this.translations.run.title).first(),
@@ -144,13 +280,20 @@ export class Orchestrator {
       ),
     ).toBeVisible({ timeout: 60_000 });
 
-    const resultsText =
-      this.locale === 'ja'
-        ? `${this.translations.run.results}${this.translations.table.actions.run}`
-        : `${this.translations.run.results}${this.translations.run.status.completed}`;
+    // Results card title and completed alert are separate nodes. Successful
+    // runs render run.status.completedAt (with a timestamp), not the bare
+    // run.status.completed string — so do not rely on concatenated text.
+    await expect(
+      this.page.getByText(this.translations.run.results, { exact: true }),
+    ).toBeVisible();
+    const completedAtPattern = this.translations.run.status.completedAt
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace('\\{\\{time\\}\\}', '.+');
+    await expect(
+      this.page.getByText(new RegExp(completedAtPattern)),
+    ).toBeVisible();
 
     const instanceDetailTexts = [
-      resultsText,
       `${this.translations.workflow.fields.workflow}${displayWorkflowName}`,
       `${this.translations.workflow.fields.workflowStatus} ${this.translations.workflow.status.available}`,
     ];
@@ -163,6 +306,7 @@ export class Orchestrator {
       this.translations.workflow.fields.duration,
       this.translations.workflow.fields.started,
       this.translations.workflow.fields.description,
+      this.translations.workflow.fields.runBy, // Run by on workflow instance detail page (RHIDP-15924)
     ];
     for (const heading of instanceDetailHeadings) {
       await expect(
@@ -179,10 +323,12 @@ export class Orchestrator {
     return `"${fieldName}": "${escapedValue}"`;
   }
 
+  // View run variables opens modal (RHIDP-15924)
   async verifyUiPropsWorkflowRunVariables(inputs: UiPropsWorkflowInputs) {
     await this.orchestratorHelper.clickLink(
       this.translations.run.viewVariables,
     );
+    // Verify modal/dialog is open with run variables
     await expect(
       this.page.getByText(`{ "name": "${inputs.name}"`),
     ).toBeVisible();
@@ -367,11 +513,20 @@ export class Orchestrator {
     await expect(
       this.page.getByText(this.translations.workflow.progress, { exact: true }),
     ).toBeVisible();
+    // Read-only progress graph on run details (RHIDP-15924)
+    await expect(this.page.locator('.react-flow').first()).toBeVisible();
     await expect(
       this.page
         .locator('div')
         .filter({ hasText: this.translations.table.status.completed })
         .first(),
+    ).toBeVisible();
+
+    // Verify Run by field on workflow run details page (RHIDP-15924)
+    await expect(
+      this.page.getByRole('heading', {
+        name: this.translations.workflow.fields.runBy,
+      }),
     ).toBeVisible();
   }
 
@@ -403,7 +558,23 @@ export class Orchestrator {
       }),
     ).toBeVisible();
     await expect(this.page.locator('pre').first()).toBeVisible();
-    await expect(this.page.getByRole('button', { name: 'Copy' })).toBeVisible();
+    await expect(
+      this.page.getByRole('button', { name: 'Copy' }).first(),
+    ).toBeVisible();
+
+    // Verify Input schema card on details page (RHIDP-15924)
+    await expect(
+      this.page.getByText(this.translations.workflow.inputSchema, {
+        exact: true,
+      }),
+    ).toBeVisible();
+
+    // Verify Success ratio card on workflow details (RHIDP-15924)
+    await expect(
+      this.page.getByText(this.translations.workflow.successRatio, {
+        exact: true,
+      }),
+    ).toBeVisible();
   }
 
   async verifyWorkflowRunsTabHeading(runsCount?: number) {

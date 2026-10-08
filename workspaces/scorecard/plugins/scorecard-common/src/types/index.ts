@@ -17,3 +17,5 @@
 export * from './Metric';
 export * from './threshold';
 export * from './aggregation';
+export * from './collector';
+export * from './scorecard';

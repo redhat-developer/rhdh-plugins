@@ -55,7 +55,7 @@ export type ThresholdRule = {
 };
 
 /**
- * Threshold configuration
+ * Threshold configuration that categorizes metric values.
  * @public
  */
 export type ThresholdConfig = {

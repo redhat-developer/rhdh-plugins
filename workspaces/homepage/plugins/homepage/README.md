@@ -2,96 +2,85 @@
 
 This is a dynamic version of the upstream [home page plugin](https://github.com/backstage/backstage/tree/master/plugins/home).
 
-Instead of manually adding supported "home page cards" to a custom route, it allows dynamic plugins to expose such cards. The plugin supports both the **New Frontend System (NFS)** and the **legacy** dynamic plugin model (Scalprum).
+The plugin targets Backstage's **New Frontend System (NFS)**. Translations remain available at `./alpha`.
 
 ## New Frontend System
 
-If you're using Backstage's new frontend system, add the plugin to your app:
+The homepage package is its **own** frontend plugin (`pluginId: homepage`) with its own page (`page:homepage`). It works **without** community `@backstage/plugin-home`.
+
+Widgets/layout attach to `page:homepage` on the homepage plugin. Persona-based defaults (`homepage.defaultWidgets` / homepage-backend) are applied only by that layout. When `homepageHomeModule` is installed, the same widgets are mirrored onto community `page:home` (NFS allows only one `attachTo` per extension), but community home keeps the upstream layout and does not call homepage-backend.
 
 ```tsx
 // packages/app/src/App.tsx
 import { createApp } from '@backstage/frontend-defaults';
 import {
-  homePageDevModule,
+  homepagePlugin,
+  homepageHomeModule, // optional: only if community home is also installed
   homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-homepage';
 
 export default createApp({
   features: [
-    // ... other plugins (nav, signIn, etc.)
-    homePageDevModule,
+    homepagePlugin,
     homepageTranslationsModule,
+    // homepageHomeModule, // optional when using community home alongside
   ],
 });
 ```
 
-The plugin will automatically provide:
-
-- A homepage at `/home` (or the path configured via `page:home`)
-- Default widgets: Onboarding, Entity Catalog, Templates, Quick Access, Search, Recently Visited, Top Visited, and more
-- Customizable or read-only layout based on configuration, default layout being customizable
-
 ### Configuration
-
-Add the following to your `app-config.yaml`:
 
 ```yaml
 app:
   extensions:
-    # Register the home page route (default: /)
-    - page:home:
+    # Disable community home when using homepage alone (avoids two home pages)
+    - page:home: false
+
+    # Homepage-owned route (configurable)
+    - page:homepage:
         config:
-          path: /
-    # Enable visit tracking (optional)
-    - api:home/visits: true
-    - app-root-element:home/visit-listener: true
-    # Configure the dynamic homepage layout
-    - home-page-layout:home/dynamic-homepage-layout:
+          path: / # or /home, /start, etc.
+
+    # Optional: disable homepage instead of community home
+    # - page:homepage: false
+
+    - home-page-layout:homepage/dynamic-homepage-layout:
         config:
-          customizable: true # or false for read-only layout
+          customizable: true
           widgetLayout:
-            RhdhTemplateSection:
-              priority: 300 # priority is considered for only Read-only Grid layout
-              breakpoints:
-                xl: { w: 12, h: 5 }
-                lg: { w: 12, h: 5 }
-                # ... md, sm, xs, xxs
-            RhdhEntitySection:
-              priority: 200
-              breakpoints:
-                xl: { w: 12, h: 7 }
-                # ...
-            RhdhOnboardingSection:
-              priority: 100
-              breakpoints:
-                xl: { w: 12, h: 6 }
-                # ...
+            # keys match widget `name` / layout config
+            ...
 ```
 
-### Modules
+Visit tracking (for recently/top visited) still uses community home APIs when that package is installed:
 
-The following modules are available from the alpha export:
+```yaml
+app:
+  extensions:
+    - api:home/visits: true
+    - app-root-element:home/visit-listener: true
+```
 
-| Module                       | Description                                                                                                             |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `homePageDevModule`          | Home page layout and widgets (Onboarding, Entity, Templates, Quick Access, Search, Recently Visited, Top Visited, etc.) |
-| `homepageTranslationsModule` | i18n translations (en, de, es, fr, it, ja)                                                                              |
+### Plugins / modules
+
+| Export                       | Type             | Description                                                                 |
+| ---------------------------- | ---------------- | --------------------------------------------------------------------------- |
+| `homepagePlugin` (default)   | `FrontendPlugin` | Own plugin with `page:homepage` + widgets/layout/APIs.                      |
+| `homepageHomeModule`         | `FrontendModule` | Optional: mirror RH widgets onto `page:home`; disable toolkit/joke/starred. |
+| `homepageTranslationsModule` | `FrontendModule` | i18n translations                                                           |
+
+`homepageTranslationsModule` (`pluginId: 'app'`) is also available as a dedicated Module Federation entry:
+
+- `@red-hat-developer-hub/backstage-plugin-homepage/homepage-translations-module`
 
 ### Extensions
 
-The `homePageDevModule` extends the `home` plugin (`@backstage/plugin-home`) with:
+- `page:homepage` – Homepage route (config: `path`)
+- `home-page-layout:homepage/dynamic-homepage-layout` – persona filtering via homepage-backend (`page:homepage` only)
+- `home-page-widget:homepage/...` – Onboarding, Entity, Templates, Quick Access, Search, Featured docs, Recently/Top visited, Catalog starred (mirrored as `home-page-widget:home/...` via `homepageHomeModule`, without RH layout filtering)
+- `api:homepage/quickaccess`, `api:homepage/default-widgets`
 
-- `home-page-layout:home/dynamic-homepage-layout` – Custom layout with config-driven widget arrangement and priority
-- `home-page-widget:home/rhdh-onboarding-section` – Onboarding section
-- `home-page-widget:home/rhdh-entity-section` – Software catalog section
-- `home-page-widget:home/rhdh-template-section` – Templates section
-- `home-page-widget:home/quick-access-card` – Quick access card
-- `home-page-widget:home/search-bar` – Search bar
-- `home-page-widget:home/featured-docs-card` – Featured docs
-- `home-page-widget:home/recently-visited` – Recently visited
-- `home-page-widget:home/top-visited` – Top visited
-- `api:home/quickaccess` – Quick access API
+## Migration
 
-## Legacy System (Dynamic Plugins)
-
-For the legacy Scalprum-based dynamic plugin model, use the main export and configure via `app-config.dynamic.yaml`. See `app-config.dynamic.yaml` in this package for the mount point configuration.
+- **NFS**: change imports from `@red-hat-developer-hub/backstage-plugin-homepage/alpha` to `@red-hat-developer-hub/backstage-plugin-homepage`.
+- **Translations**: remain available at `./alpha` and via `homepageTranslationsModule`.

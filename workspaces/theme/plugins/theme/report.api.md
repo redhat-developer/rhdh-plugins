@@ -4,9 +4,17 @@
 
 ```ts
 import { FrontendModule } from '@backstage/frontend-plugin-api';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
+
+// @public (undocumented)
+export const LogoFull: (props: React.ComponentProps<'svg'>) => JSX_2.Element;
+
+// @public (undocumented)
+export const LogoIcon: (props: React.ComponentProps<'svg'>) => JSX_2.Element;
 
 // @public
-export const rhdhThemeModule: FrontendModule;
+const rhdhThemeModule: FrontendModule;
+export default rhdhThemeModule;
 
 // (No @packageDocumentation comment for this package)
 ```

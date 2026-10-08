@@ -21,6 +21,7 @@ import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
   ENTITY_REF_RE,
   JobStatus,
+  Phase,
   x2aAdminWritePermission,
   x2aUserPermission,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -171,6 +172,20 @@ export function registerProjectRoutes(
         throw new NotAllowedError(
           'You are not allowed to create a project for the given group',
         );
+      }
+    }
+
+    // Pre-validate rule IDs to avoid orphan projects on invalid input
+    if (requestBody.acceptedRuleIds?.length) {
+      const ruleChecks = await Promise.all(
+        requestBody.acceptedRuleIds.map(async id => ({
+          id,
+          exists: !!(await x2aDatabase.getRule({ id })),
+        })),
+      );
+      const missingRules = ruleChecks.filter(r => !r.exists).map(r => r.id);
+      if (missingRules.length) {
+        throw new InputError(`Rules not found: ${missingRules.join(', ')}`);
       }
     }
 
@@ -455,6 +470,138 @@ export function registerProjectRoutes(
       );
 
       return res.json({ status: 'pending', jobId: job.id } as any);
+    },
+  );
+
+  router.post(
+    '/projects/:projectId/adversarial-run',
+    async (req: express.Request, res: express.Response) => {
+      const endpoint = 'POST /projects/:projectId/adversarial-run';
+      const { projectId } = req.params;
+      logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+      const adversarialRunSchema = z.object({
+        phase: z.enum(['analyze', 'migrate']),
+        moduleId: z.string().uuid(),
+        agentIds: z.array(z.string().uuid()).min(1),
+        targetRepoAuth: z.object({ token: z.string() }).optional(),
+      });
+
+      const parsedBody = adversarialRunSchema.safeParse(req.body);
+      if (!parsedBody.success) {
+        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+      }
+      const { phase, moduleId, agentIds, targetRepoAuth } = parsedBody.data;
+
+      const { project, userRef } = await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        httpAuth,
+        permissionsSvc,
+        catalog,
+      });
+
+      assertProjectHasDirName(project);
+
+      const adversarialAgents = await x2aDatabase.listAdversarialAgents({
+        ids: agentIds,
+        phase,
+      });
+      if (adversarialAgents.length !== agentIds.length) {
+        const foundIds = new Set(adversarialAgents.map(a => a.id));
+        const missingIds = agentIds.filter(id => !foundIds.has(id));
+        return res.status(400).json({
+          error: 'AgentIdMismatch',
+          message: `Some agent IDs were not found or are not valid for the ${phase} phase`,
+          missingIds,
+        });
+      }
+
+      const module = await x2aDatabase.getModule({ id: moduleId });
+      if (!module) {
+        throw new InputError(`Module "${moduleId}" not found`);
+      }
+      if (module.projectId !== projectId) {
+        throw new InputError(
+          `Module "${moduleId}" does not belong to project "${projectId}"`,
+        );
+      }
+
+      // Check for a running adversarial job for this module+phase
+      const adversarialPhase = Phase.from(`adversarial-${phase}`);
+      const existingJobs = await x2aDatabase.listJobsForModule({
+        projectId,
+        moduleId,
+      });
+      const activeAdversarialJobs = existingJobs.filter(
+        j =>
+          j.phase === adversarialPhase.value &&
+          JobStatus.from(j.status).isActive(),
+      );
+      const reconciledJobs = await Promise.all(
+        activeAdversarialJobs.map(job =>
+          reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
+        ),
+      );
+      const activeAdversarialJob = reconciledJobs.find(job =>
+        JobStatus.from(job.status).isActive(),
+      );
+      if (activeAdversarialJob) {
+        return res.status(409).json({
+          error: 'JobAlreadyRunning',
+          message: `An adversarial-${phase} job is already running for this module`,
+          activeJobId: activeAdversarialJob.id,
+        });
+      }
+
+      const targetRepo = gitRepoResolver.resolveTargetOnly({
+        project,
+        targetRepoAuth,
+      });
+
+      const callbackToken = CallbackToken.generate();
+      const job = await x2aDatabase.createJob({
+        projectId,
+        moduleId,
+        phase: adversarialPhase.value,
+        status: 'pending',
+        callbackToken: callbackToken.value,
+      });
+
+      const baseUrl =
+        config.getOptionalString('x2a.callbackBaseUrl') ??
+        (await discoveryApi.getBaseUrl('x2a'));
+      const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
+
+      const { k8sJobName } = await kubeService.createJob({
+        jobId: job.id,
+        projectId,
+        projectName: project.name,
+        projectDirName: project.dirName,
+        phase: adversarialPhase.value,
+        user: userRef,
+        callbackToken: callbackToken.value,
+        callbackUrl,
+        moduleId,
+        moduleName: module.name,
+        sourceRepo: targetRepo,
+        targetRepo,
+        adversarialAgents: adversarialAgents.map(a => a.toConfig()),
+      });
+
+      await x2aDatabase.updateJob({
+        id: job.id,
+        k8sJobName,
+        status: 'running',
+      });
+
+      logger.info(
+        `Adversarial-${phase} job created: jobId=${job.id}, moduleId=${moduleId}, k8sJobName=${k8sJobName}`,
+      );
+
+      return res.status(202).json({ jobId: job.id, k8sJobName } as any);
     },
   );
 }

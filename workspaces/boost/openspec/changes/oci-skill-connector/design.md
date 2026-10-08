@@ -186,7 +186,7 @@ spec:
 
 - Use `Promise.all()` with concurrency limiter (e.g., `p-limit` library)
 - Emit entities in batches as they're processed — no wait for all 2,000 to finish
-- Config option: `catalog.providers.ociSkill.discovery.concurrency` (default 20, max 50)
+- Config option: `ai-catalog.providers.ociSkill.discovery.concurrency` (default 20, max 50)
 
 ### Decision 6: Relationship to RHDHPLAN-1507 framework
 

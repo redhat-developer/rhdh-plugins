@@ -33,9 +33,9 @@ import type MonacoEditor from 'monaco-editor';
 import { useCodeEditor } from './CodeEditorContext';
 
 // Import Monaco Editor modules - CodeEditor is lazy-loaded via CodeEditorCard
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution';
+import 'monaco-editor/languages/definitions/yaml/register';
 // @ts-ignore
-import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
+import * as monacoEditor from 'monaco-editor/editor';
 
 loader.config({ monaco: monacoEditor });
 

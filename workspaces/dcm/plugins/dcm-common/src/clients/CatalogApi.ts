@@ -22,6 +22,7 @@ import type {
   ServiceType,
   ServiceTypeList,
 } from '../types/catalog';
+import type { PaginationParams } from '../types/common';
 
 /**
  * Interface for the DCM Catalog API client.
@@ -30,12 +31,12 @@ import type {
  */
 export interface CatalogApi {
   // Service Types
-  listServiceTypes(): Promise<ServiceTypeList>;
+  listServiceTypes(params?: PaginationParams): Promise<ServiceTypeList>;
   getServiceType(serviceTypeId: string): Promise<ServiceType>;
   createServiceType(serviceType: ServiceType): Promise<ServiceType>;
 
   // Catalog Items
-  listCatalogItems(): Promise<CatalogItemList>;
+  listCatalogItems(params?: PaginationParams): Promise<CatalogItemList>;
   getCatalogItem(catalogItemId: string): Promise<CatalogItem>;
   createCatalogItem(catalogItem: CatalogItem): Promise<CatalogItem>;
   updateCatalogItem(
@@ -45,7 +46,9 @@ export interface CatalogApi {
   deleteCatalogItem(catalogItemId: string): Promise<void>;
 
   // Catalog Item Instances
-  listCatalogItemInstances(): Promise<CatalogItemInstanceList>;
+  listCatalogItemInstances(
+    params?: PaginationParams,
+  ): Promise<CatalogItemInstanceList>;
   getCatalogItemInstance(
     catalogItemInstanceId: string,
   ): Promise<CatalogItemInstance>;

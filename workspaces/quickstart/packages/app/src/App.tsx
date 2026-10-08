@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 import { createApp } from '@backstage/frontend-defaults';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 import {
   quickstartInitModule,
   quickstartTranslationsModule,
