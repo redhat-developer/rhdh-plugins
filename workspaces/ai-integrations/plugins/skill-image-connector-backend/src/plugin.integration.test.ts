@@ -28,7 +28,14 @@ import {
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
 import { HttpResponseError } from './services/HttpClient';
-import { ManifestResponseError } from './services/OciClient';
+import { fetchManifest, ManifestResponseError } from './services/OciClient';
+
+jest.mock('./services/OciClient', () => ({
+  ...jest.requireActual<typeof import('./services/OciClient')>(
+    './services/OciClient',
+  ),
+  fetchManifest: jest.fn(),
+}));
 
 jest.mock('./services/QuayDiscovery', () => ({
   discoverQuayRepositories: jest.fn(),
@@ -42,6 +49,9 @@ jest.mock('./services/SkillImageService', () => ({
 const logger = mockServices.logger.mock();
 const fetchImage = jest.mocked(fetchAndExtractSkillImage);
 const discover = jest.mocked(discoverQuayRepositories);
+const resolveManifest = jest.mocked(fetchManifest);
+const resolvedDigest = `sha256:${'a'.repeat(64)}`;
+const pinnedRef = (ref: string) => `${ref}@${resolvedDigest}`;
 const extracted = {
   skillImageYaml: 'hé',
   skillsMd: 'abc',
@@ -49,9 +59,22 @@ const extracted = {
   skillsMdPath: '/unused/SKILLS.md',
 };
 beforeEach(() => {
-  jest.clearAllMocks();
+  jest.resetAllMocks();
   logger.child.mockReturnValue(logger);
-  fetchImage.mockResolvedValue(extracted);
+  jest.mocked(cleanupSkillImageExtraction).mockResolvedValue(undefined);
+  fetchImage.mockImplementation(async () => ({ ...extracted }));
+  resolveManifest.mockResolvedValue({
+    manifest: {
+      schemaVersion: 2,
+      config: {
+        mediaType: 'application/vnd.oci.image.config.v1+json',
+        digest: resolvedDigest,
+        size: 0,
+      },
+      layers: [],
+    },
+    digest: resolvedDigest,
+  });
 });
 
 async function startConnector(
@@ -79,10 +102,10 @@ describe('configured acquisition in the plugin', () => {
     const nonSkill = 'quay.io/org/container:v1';
     discover.mockResolvedValue([...aliases, nonSkill]);
     fetchImage.mockImplementation(async ref => {
-      if (ref === nonSkill) {
+      if (ref === pinnedRef(nonSkill)) {
         throw new Error('Image does not contain the required skill files');
       }
-      return extracted;
+      return { ...extracted };
     });
     const { server } = await startConnector({
       quayDiscovery: { organization: 'org' },
@@ -134,7 +157,14 @@ describe('configured acquisition in the plugin', () => {
     });
     expect(response.body.failedImages).toEqual(['quay.io/org/discovered:v1']);
     expect(cleanupSkillImageExtraction).toHaveBeenCalledWith(
-      extracted,
+      {
+        ...extracted,
+        acquisition: {
+          key: 'quay.io/org/discovered:v1',
+          digest: resolvedDigest,
+          sourceUri: `oci://quay.io/org/discovered@${resolvedDigest}`,
+        },
+      },
       expect.anything(),
     );
     expect(discover.mock.calls[0][3]).toEqual(limits);
@@ -162,7 +192,7 @@ describe('configured acquisition in the plugin', () => {
     });
     discover.mockResolvedValue([discoveredRef]);
     fetchImage.mockImplementation(ref =>
-      ref === explicitRef
+      ref === pinnedRef(explicitRef)
         ? explicitResult
         : Promise.resolve(discoveredExtraction),
     );
@@ -189,8 +219,8 @@ describe('configured acquisition in the plugin', () => {
         failedImages: [],
       });
       expect(fetchImage.mock.calls.map(([ref]) => ref)).toEqual([
-        explicitRef,
-        discoveredRef,
+        pinnedRef(explicitRef),
+        pinnedRef(discoveredRef),
       ]);
       expect(cleanupSkillImageExtraction).not.toHaveBeenCalled();
     } finally {
