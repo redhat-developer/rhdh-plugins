@@ -9,9 +9,20 @@ app:
           defaultLanguage: 'en'
     - api:home/visits: true
     - app-root-element:home/visit-listener: true
-    - page:home:
+    - page:home: false
+    - page:homepage:
         config:
           path: /
+    
+    # Disable all home page widgets
+    - home-page-widget:homepage/rhdh-entity-section: false
+    - home-page-widget:homepage/rhdh-template-section: false
+    - home-page-widget:homepage/quickaccess-card: false
+    - home-page-widget:homepage/search-bar: false
+    - home-page-widget:homepage/featured-docs-card: false
+    - home-page-widget:homepage/catalog-starred-entities-card: false
+    - home-page-widget:homepage/recently-visited-card: false
+    - home-page-widget:homepage/top-visited-card: false
 
     # Scorecard tab: entity shows tab if it matches any filter below.
     - entity-content:scorecard/entity-content-scorecard:
@@ -49,19 +60,44 @@ app:
                 - sonarqube.securityHotspots
                 - sonarqube.securityRating
 
-    - home-page-layout:home/dynamic-homepage-layout:
+    - home-page-layout:homepage/dynamic-homepage-layout:
         config:
           customizable: true
           widgetLayout:
-            AggregatedCardWithDeprecatedMetricId:
-              priority: 410
-              breakpoints:
-                xl: { w: 4, h: 6 }
-                lg: { w: 4, h: 6 }
-                md: { w: 4, h: 6 }
-                sm: { w: 4, h: 6 }
-                xs: { w: 4, h: 6 }
-                xxs: { w: 4, h: 6 }
+            ScorecardAggregatedCard:
+              - id: ScorecardOpenPrs
+                props:
+                  aggregationId: openPrsKpi
+                priority: 410
+                breakpoints:
+                  xl: { w: 4, h: 6, x: 0, y: 0 }
+                  lg: { w: 4, h: 6, x: 0, y: 0 }
+                  md: { w: 6, h: 6, x: 0, y: 0 }
+                  sm: { w: 6, h: 6, x: 0, y: 0 }
+                  xs: { w: 12, h: 6, x: 0, y: 0 }
+                  xxs: { w: 12, h: 6, x: 0, y: 0 }
+              - id: ScorecardOpenIssues
+                props:
+                  aggregationId: openIssuesKpi
+                priority: 420
+                breakpoints:
+                  xl: { w: 4, h: 6, x: 4, y: 0 }
+                  lg: { w: 4, h: 6, x: 4, y: 0 }
+                  md: { w: 6, h: 6, x: 6, y: 0 }
+                  sm: { w: 6, h: 6, x: 6, y: 0 }
+                  xs: { w: 12, h: 6, x: 0, y: 6 }
+                  xxs: { w: 12, h: 6, x: 0, y: 6 }
+              - id: ScorecardDoraDeploymentFrequency
+                props:
+                  aggregationId: doraDeploymentFrequencyKpi
+                priority: 430
+                breakpoints:
+                  xl: { w: 4, h: 6, x: 8, y: 0 }
+                  lg: { w: 4, h: 6, x: 8, y: 0 }
+                  md: { w: 6, h: 6, x: 8, y: 0 }
+                  sm: { w: 6, h: 6, x: 8, y: 0 }
+                  xs: { w: 12, h: 6, x: 8, y: 0 }
+                  xxs: { w: 12, h: 6, x: 8, y: 0 }
 
 organization:
   name: My Company

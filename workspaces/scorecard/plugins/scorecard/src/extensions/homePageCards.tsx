@@ -67,6 +67,7 @@ function ConfigurableScorecardWidgetRenderer({
  */
 export const scorecardAggregatedCardWidget = HomePageWidgetBlueprint.make({
   name: 'scorecard-aggregated-card',
+  attachTo: { id: 'page:homepage', input: 'widgets' },
   params: {
     name: 'ScorecardAggregatedCard',
     title: 'Scorecard',
