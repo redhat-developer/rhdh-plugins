@@ -19,7 +19,7 @@ import {
   configApiRef,
   identityApiRef,
 } from '@backstage/core-plugin-api';
-import { AdoptionInsightsAnalyticsApi } from '../src';
+import { AdoptionInsightsAnalyticsApi } from '../src/api';
 import { Playground } from './Playground';
 
 createDevApp()

@@ -49,6 +49,10 @@ const DEFAULT_LANGUAGE = 'en';
 export interface I18nextTranslationApiOptions {
   languageApi: AppLanguageApi;
   resources?: Array<TranslationMessages | TranslationResource>;
+  /** JSON catalog and pod-mounted overrides served by translations-backend. */
+  loadJsonTranslations?: () => Promise<
+    Record<string, Record<string, Record<string, string>>>
+  >;
 }
 
 function removeNulls(
@@ -80,6 +84,8 @@ class ResourceLoader {
       namespace: string;
       messages: Record<string, string | null>;
     }) => void,
+    private readonly loadJsonTranslations?: I18nextTranslationApiOptions['loadJsonTranslations'],
+    private readonly onJsonTranslationsLoaded: () => void = () => {},
   ) {}
 
   addTranslationResource(resource: TranslationResource) {
@@ -101,12 +107,7 @@ class ResourceLoader {
 
   needsLoading(language: string, namespace: string) {
     const key = this.#getLoaderKey(language, namespace);
-    const loader = this.#loaders.get(key);
-    if (!loader) {
-      return false;
-    }
-
-    return !this.#loaded.has(key);
+    return this.#loaders.has(key) && !this.#loaded.has(key);
   }
 
   async load(language: string, namespace: string): Promise<void> {
@@ -127,16 +128,39 @@ class ResourceLoader {
       return;
     }
 
-    const load = loader().then(
-      result => {
-        this.onLoad({ language, namespace, messages: result.messages });
-        this.#loaded.add(key);
-      },
-      error => {
-        this.#loaded.add(key); // Do not try to load failed resources again
-        throw error;
-      },
-    );
+    const load = Promise.resolve()
+      .then(() => loader?.())
+      .then(
+        resource => {
+          if (resource) {
+            this.onLoad({
+              language,
+              namespace,
+              messages: resource.messages,
+            });
+          }
+          this.#loaded.add(key);
+
+          if (this.loadJsonTranslations) {
+            void Promise.resolve()
+              .then(() => this.loadJsonTranslations?.())
+              .then(jsonTranslations => {
+                const overrides = jsonTranslations?.[namespace]?.[language];
+                if (overrides) {
+                  this.onLoad({ language, namespace, messages: overrides });
+                  this.onJsonTranslationsLoaded();
+                }
+              })
+              .catch(() => {
+                // JSON loading is optional; keep local translations available.
+              });
+          }
+        },
+        error => {
+          this.#loaded.add(key); // Do not try to load failed resources again
+          throw error;
+        },
+      );
     this.#loading.set(key, load);
     await load;
   }
@@ -267,15 +291,20 @@ export class I18nextTranslationApi implements TranslationApi {
       i18n.changeLanguage(initialLanguage);
     }
 
-    const loader = new ResourceLoader(loaded => {
-      i18n.addResourceBundle(
-        loaded.language,
-        loaded.namespace,
-        removeNulls(loaded.messages),
-        false, // do not merge with existing translations
-        true, // overwrite translations
-      );
-    });
+    let notifyJsonTranslationsLoaded = () => {};
+    const loader = new ResourceLoader(
+      loaded => {
+        i18n.addResourceBundle(
+          loaded.language,
+          loaded.namespace,
+          removeNulls(loaded.messages),
+          false, // do not merge with existing translations
+          true, // incoming keys overwrite existing translations
+        );
+      },
+      options.loadJsonTranslations,
+      () => notifyJsonTranslationsLoaded(),
+    );
 
     const resources = options?.resources || [];
     // Iterate in reverse, giving higher priority to resources registered later
@@ -301,6 +330,16 @@ export class I18nextTranslationApi implements TranslationApi {
       options.languageApi.getLanguage().language,
       interpolator,
     );
+    notifyJsonTranslationsLoaded = () => instance.#notifyTranslationListeners();
+
+    if (options.loadJsonTranslations) {
+      void options
+        .loadJsonTranslations()
+        .then(translations => instance.#applyJsonTranslations(translations))
+        .catch(() => {
+          // JSON loading is optional; keep local translations available.
+        });
+    }
 
     options.languageApi.language$().subscribe(({ language }) => {
       instance.#changeLanguage(language);
@@ -384,7 +423,10 @@ export class I18nextTranslationApi implements TranslationApi {
         }
       };
 
-      if (this.#loader.needsLoading(this.#language, internalRef.id)) {
+      const initialSnapshot = this.#createSnapshot(internalRef);
+      if (initialSnapshot.ready) {
+        subscriber.next(initialSnapshot);
+      } else {
         loadResource();
       }
 
@@ -399,8 +441,29 @@ export class I18nextTranslationApi implements TranslationApi {
     if (this.#language !== language) {
       this.#language = language;
       this.#i18n.changeLanguage(language);
-      this.#languageChangeListeners.forEach(listener => listener());
+      this.#notifyTranslationListeners();
     }
+  }
+
+  #notifyTranslationListeners(): void {
+    this.#languageChangeListeners.forEach(listener => listener());
+  }
+
+  #applyJsonTranslations(
+    translations: Record<string, Record<string, Record<string, string>>>,
+  ): void {
+    for (const [namespace, languages] of Object.entries(translations)) {
+      for (const [language, messages] of Object.entries(languages)) {
+        this.#i18n.addResourceBundle(
+          language,
+          namespace,
+          messages,
+          false, // shallowly merge flat messages, preserving unspecified keys
+          true, // incoming keys overwrite existing translations
+        );
+      }
+    }
+    this.#notifyTranslationListeners();
   }
 
   #createSnapshot<TMessages extends { [key in string]: string }>(

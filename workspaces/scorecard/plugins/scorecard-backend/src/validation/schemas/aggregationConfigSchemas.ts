@@ -15,7 +15,12 @@
  */
 
 import { z } from 'zod';
-import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  aggregationTypes,
+  type ScalarAggregationType,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { aggregationThresholdsConfigSchema } from './aggregationThresholdsConfigSchema';
+import { aggregationFilterSchema } from './aggregationFilterSchema';
 
 const baseAggregationConfigSchema = z.object({
   id: z.string().min(1).max(128),
@@ -38,21 +43,49 @@ const weightedStatusScoreAggregationConfigSchema = z.object({
       .refine(scores => Object.keys(scores).length > 0, {
         message: 'options.statusScores must contain at least one weight value',
       }),
-    thresholds: z
-      .object({
-        rules: z.array(
-          z.object({
-            key: z.string(),
-            expression: z.string(),
-            color: z.string(),
-          }),
-        ),
-      })
-      .optional(),
+    thresholds: aggregationThresholdsConfigSchema.optional(),
   }),
 });
+
+function scalarAggregationConfigSchema(type: ScalarAggregationType) {
+  return z.object({
+    ...baseAggregationConfigSchema.shape,
+    type: z.literal(type),
+    filter: aggregationFilterSchema.optional(),
+    options: z
+      .strictObject({
+        thresholds: aggregationThresholdsConfigSchema.optional(),
+      })
+      .optional(),
+  });
+}
 
 export const aggregationConfigSchema = z.discriminatedUnion('type', [
   statusGroupedAggregationConfigSchema,
   weightedStatusScoreAggregationConfigSchema,
+  scalarAggregationConfigSchema(aggregationTypes.sum),
+  scalarAggregationConfigSchema(aggregationTypes.average),
+  scalarAggregationConfigSchema(aggregationTypes.max),
+  scalarAggregationConfigSchema(aggregationTypes.min),
+  scalarAggregationConfigSchema(aggregationTypes.count),
 ]);
+
+/** Post-validation aggregation KPI config (Zod discriminated union). */
+export type ValidatedAggregationConfig = z.infer<
+  typeof aggregationConfigSchema
+>;
+
+export type WeightedStatusScoreAggregationConfig = Extract<
+  ValidatedAggregationConfig,
+  { type: typeof aggregationTypes.weightedStatusScore }
+>;
+
+export type ScalarAggregationConfig = Extract<
+  ValidatedAggregationConfig,
+  { type: ScalarAggregationType }
+>;
+
+export type StatusGroupedAggregationConfig = Extract<
+  ValidatedAggregationConfig,
+  { type: typeof aggregationTypes.statusGrouped }
+>;

@@ -55,7 +55,6 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
 
   const { allowed } = usePermission({
     permission: bulkImportPermission,
-    resourceRef: bulkImportPermission.resourceType,
   });
   const { value, loading } = useAsync(async () => {
     if (repoUrl) {

@@ -68,7 +68,12 @@ export class HomePage {
       cardName === AGGREGATED_CARDS_WIDGET_TITLES.gitHubOpenPrsWeightedKpi
     ) {
       cardPattern =
-        /Scorecard:\s*GitHub open PRs \(weighted health\)|ScorecardOpenPrsWeightedKpi/i;
+        /Scorecard:\s*GitHub open PRs \(weighted health\)|ScorecardGitHubOpenPrsWeightedKpi/i;
+    } else if (
+      cardName === AGGREGATED_CARDS_WIDGET_TITLES.licenseFileExistsKpi
+    ) {
+      cardPattern =
+        /Scorecard:\s*LICENSE file exists|scorecard-filecheck\.license/i;
     } else {
       cardPattern = new RegExp(escapeRegex(cardName), 'i');
     }

@@ -14,28 +14,40 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@backstage/catalog-model';
 import { ConflictError, NotFoundError } from '@backstage/errors';
-import {
-  Metric,
-  MetricValue,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   MetricProvider,
   ThresholdConfigFormatError,
   validateThresholdsForMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  validateMetricId,
+  validateProviderId,
+} from '../validation/validateMetricProviderIds';
 
 /**
  * Registry of all registered metric providers.
  */
 export class MetricProvidersRegistry {
+  /** metricId → provider (a multi-metric provider is stored under each of its metric IDs) */
   private readonly metricProviders = new Map<string, MetricProvider>();
+  /** datasourceId → set of metricIds for that datasource */
   private readonly datasourceIndex = new Map<string, Set<string>>();
+  /** Registered provider IDs (unique; used for scheduler task / config keys) */
+  private readonly registeredProviderIds = new Set<string>();
 
   register(metricProvider: MetricProvider): void {
     const providerDatasource = metricProvider.getProviderDatasourceId();
     const providerId = metricProvider.getProviderId();
+
+    validateProviderId(providerId, providerDatasource);
+
+    if (this.registeredProviderIds.has(providerId)) {
+      throw new ConflictError(
+        `Metric provider with ID '${providerId}' has already been registered`,
+      );
+    }
 
     const metrics = metricProvider.getMetrics();
     const metricIds = metrics.map(m => m.id);
@@ -43,18 +55,11 @@ export class MetricProvidersRegistry {
     for (const metric of metrics) {
       const metricId = metric.id;
 
-      // Validate: Provider ID format (datasource.metricName)
-      const expectedPrefix = `${providerDatasource}.`;
-      if (!metricId.startsWith(expectedPrefix) || metricId === expectedPrefix) {
-        throw new Error(
-          `Invalid metric provider with ID ${metricId}, must have format ` +
-            `'${providerDatasource}.<metricName>' where metric name is not empty`,
-        );
-      }
+      validateMetricId(metricId, providerDatasource);
 
       if (this.metricProviders.has(metricId)) {
         throw new ConflictError(
-          `Metric provider with ID '${metricId}' has already been registered`,
+          `Metric with ID '${metricId}' has already been registered`,
         );
       }
 
@@ -68,16 +73,18 @@ export class MetricProvidersRegistry {
       }
     }
 
+    this.registeredProviderIds.add(providerId);
+
     for (const metricId of metricIds) {
       this.metricProviders.set(metricId, metricProvider);
 
       // Index by datasource
-      let datasourceProviders = this.datasourceIndex.get(providerDatasource);
-      if (!datasourceProviders) {
-        datasourceProviders = new Set();
-        this.datasourceIndex.set(providerDatasource, datasourceProviders);
+      let datasourceMetricIds = this.datasourceIndex.get(providerDatasource);
+      if (!datasourceMetricIds) {
+        datasourceMetricIds = new Set();
+        this.datasourceIndex.set(providerDatasource, datasourceMetricIds);
       }
-      datasourceProviders.add(metricId);
+      datasourceMetricIds.add(metricId);
     }
   }
 
@@ -106,38 +113,6 @@ export class MetricProvidersRegistry {
     throw new NotFoundError(
       `Metric '${metricId}' not found in provider '${provider.getProviderId()}'`,
     );
-  }
-
-  async calculateMetric(
-    metricId: string,
-    entity: Entity,
-  ): Promise<MetricValue> {
-    const provider = this.getProvider(metricId);
-    const results = await provider.calculateMetrics(entity);
-    const value = results.get(metricId);
-    if (value === undefined) {
-      throw new Error(
-        `Provider '${provider.getProviderId()}' did not return a value for metric '${metricId}'`,
-      );
-    }
-    return value;
-  }
-
-  async calculateMetrics(
-    metricIds: string[],
-    entity: Entity,
-  ): Promise<{ metricId: string; value?: MetricValue; error?: Error }[]> {
-    const results = await Promise.allSettled(
-      metricIds.map(metricId => this.calculateMetric(metricId, entity)),
-    );
-
-    return results.map((result, index) => {
-      const metricId = metricIds[index];
-      if (result.status === 'fulfilled') {
-        return { metricId, value: result.value };
-      }
-      return { metricId, error: result.reason as Error };
-    });
   }
 
   listProviders(): MetricProvider[] {

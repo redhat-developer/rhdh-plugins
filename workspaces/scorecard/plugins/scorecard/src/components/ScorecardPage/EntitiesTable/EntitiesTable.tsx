@@ -30,6 +30,10 @@ import { useAggregatedScorecardEntities } from '../../../hooks/useAggregatedScor
 import { useAggregatedScorecard } from '../../../hooks/useAggregatedScorecard';
 import { useEntityMetadataMap } from '../../../hooks/useEntityMetadataMap';
 import { SCORECARD_ENTITIES_TABLE_HEADERS } from '../../../utils';
+import {
+  type EntitiesTableSortState,
+  getDefaultEntitiesTableSort,
+} from '../../../utils/getDefaultEntitiesTableSort';
 import { useTranslation } from '../../../hooks/useTranslation';
 
 import { EntitiesTableStateRow } from './EntitiesTableStateRow';
@@ -55,21 +59,34 @@ export const EntitiesTable = ({
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
   const { t } = useTranslation();
 
-  const [sortState, setSortState] = useState<{
-    orderBy: string | null;
-    order: 'asc' | 'desc';
-  }>({
-    orderBy: null,
-    order: 'asc',
-  });
-
-  const { orderBy, order } = sortState;
+  const [userSortOverride, setUserSortOverride] =
+    useState<EntitiesTableSortState | null>(null);
 
   const { ownershipEntityRefs, loading: ownershipLoading } =
     useOwnershipEntityRefs();
 
   // TODO: Remove metricId once we deprecate it. We need to keep it for backward compatibility.
   const resolvedMetricId = aggregationId || metricId || '';
+
+  const { data: aggregatedScorecard, isLoading: loadingAggregatedScorecard } =
+    useAggregatedScorecard({
+      aggregationId: resolvedMetricId,
+      enabled: Boolean(resolvedMetricId?.trim()) && !ownershipLoading,
+    });
+
+  const defaultSort = useMemo(
+    () =>
+      getDefaultEntitiesTableSort(
+        aggregatedScorecard?.metadata?.aggregationType,
+      ),
+    [aggregatedScorecard?.metadata?.aggregationType],
+  );
+
+  const { orderBy, order } = userSortOverride ?? defaultSort;
+
+  const entitiesQueryEnabled =
+    !ownershipLoading &&
+    (!aggregationId?.trim() || !loadingAggregatedScorecard);
 
   const {
     aggregatedScorecardEntities,
@@ -82,12 +99,7 @@ export const EntitiesTable = ({
     ownershipEntityRefs,
     orderBy,
     order,
-    enabled: !ownershipLoading,
-  });
-
-  const { data: aggregatedScorecard } = useAggregatedScorecard({
-    aggregationId: resolvedMetricId,
-    enabled: !!metricId && !ownershipLoading && !loadingDataEntities,
+    enabled: entitiesQueryEnabled,
   });
 
   const thresholdRules = aggregatedScorecard?.result?.thresholds?.rules ?? [];
@@ -109,13 +121,17 @@ export const EntitiesTable = ({
     [],
   );
 
-  const handleSortRequest = useCallback((columnId: string) => {
-    setSortState(prev =>
-      prev.orderBy !== columnId
-        ? { orderBy: columnId, order: 'asc' }
-        : { ...prev, order: prev.order === 'asc' ? 'desc' : 'asc' },
-    );
-  }, []);
+  const handleSortRequest = useCallback(
+    (columnId: string) => {
+      setUserSortOverride(prev => {
+        const current = prev ?? defaultSort;
+        return current.orderBy !== columnId
+          ? { orderBy: columnId, order: 'asc' }
+          : { ...current, order: current.order === 'asc' ? 'desc' : 'asc' };
+      });
+    },
+    [defaultSort],
+  );
 
   const entityRefs = useMemo(
     () =>

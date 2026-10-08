@@ -22,6 +22,33 @@ app:
             - kind: api # e.g. any API entity
             - type: service # e.g. Component or System with spec.type: service
 
+    # Grid layout – enabled with metric grouping
+    - scorecard-layout:scorecard/scorecard-entity-layout-grid:
+        disabled: false
+        config:
+          groups:
+            security-vulnerabilities:
+              title: Security Vulnerabilities
+              description: Track security issues across your repositories
+              metrics:
+                - sonarqube.securityRating
+
+            code-quality:
+              title: Code Quality
+              description: Code quality and maintainability metrics
+              metrics:
+                - sonarqube.qualityGate
+                - sonarqube.codeCoverage
+                - sonarqube.maintainabilityRating
+
+            sonarqube-coverage:
+              title: SonarQube Coverage
+              description: SonarQube coverage metrics
+              metrics:
+                - sonarqube.openIssues
+                - sonarqube.securityHotspots
+                - sonarqube.securityRating
+
     - home-page-layout:home/dynamic-homepage-layout:
         config:
           customizable: true
@@ -35,6 +62,16 @@ app:
                 sm: { w: 4, h: 6 }
                 xs: { w: 4, h: 6 }
                 xxs: { w: 4, h: 6 }
+
+            AggregatedCardWithDeprecatedDoraChangeFailureRate:
+              priority: 415
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
 
             AggregatedCardWithDefaultAggregation:
               priority: 420
@@ -85,6 +122,96 @@ app:
                 xxs: { w: 4, h: 6, x: 8 }
             AggregatedCardWithGithubOpenPrsWeighted:
               priority: 470
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
+            AggregatedCardWithMaxOpenPrs:
+              priority: 480
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+            AggregatedCardWithMinOpenPrs:
+              priority: 490
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
+            AggregatedCardWithTotalOpenBugs:
+              priority: 500
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
+            AggregatedCardWithEntitiesWithOpenPrs:
+              priority: 510
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+            AggregatedCardWithAvgOpenPrs:
+              priority: 520
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
+            AggregatedCardWithInvalidMetricId:
+              priority: 525
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
+            AggregatedCardWithDoraDeploymentFrequency:
+              priority: 530
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
+            AggregatedCardWithDoraChangeFailureRate:
+              priority: 540
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+            AggregatedCardWithDoraMedianLeadTimeForChanges:
+              priority: 550
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
+            AggregatedCardWithDoraMedianTimeToRestore:
+              priority: 560
               breakpoints:
                 xl: { w: 4, h: 6, x: 8 }
                 lg: { w: 4, h: 6, x: 8 }
@@ -238,15 +365,95 @@ sonarqube:
 # Scorecard development configuration
 scorecard:
   aggregationKPIs:
+    doraDeploymentFrequencyKpi:
+      title: DORA - Deployment Frequency
+      type: average
+      description: Tracks how often code is deployed to production over the past 30 days. Elite performers deploy on demand (multiple times per day).
+      metricId: dora.deploymentFrequency
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '>=7'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '1-7'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: low
+              expression: '<1'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+    doraChangeFailureRateKpi:
+      title: DORA - Change Failure Rate
+      type: average
+      description: Monitors the percentage of deployments that cause a failure in production over the past 30 days. Elite performers maintain a change failure rate below 5%.
+      metricId: dora.changeFailureRate
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '<5'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '5-15'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: low
+              expression: '>15'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+    doraMedianLeadTimeForChangesKpi:
+      title: DORA - Lead Time for Changes
+      type: average
+      description: Measures the median time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours.
+      metricId: dora.medianLeadTimeForChanges
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '<24'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '24-168'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: low
+              expression: '>168'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+    doraMedianTimeToRestoreKpi:
+      title: DORA - Median Time to Restore
+      type: average
+      description: Tracks the median time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.
+      metricId: dora.medianTimeToRestore
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '<1'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '1-24'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: low
+              expression: '>24'
+              color: error.main
+              icon: scorecardErrorStatusIcon
     openPrsKpi:
       title: GitHub Open PRs KPI
       type: statusGrouped
-      description: This KPI is provide information about GitHub open PRs grouped by status.
+      description: This KPI provides information about GitHub open PRs grouped by status.
       metricId: github.openPRs
     openPrsWeightedKpi:
-      title: GitHub Open PRs (weighted health)
+      title: GitHub Open PRs KPI (weighted health)
       type: weightedStatusScore
-      description: Weighted health score for open PRs by threshold status across your entities.
+      description: This KPI provides a weighted health score for open PRs by threshold status across your entities.
       metricId: github.openPRs
       options:
         statusScores:
@@ -267,14 +474,131 @@ scorecard:
     openIssuesKpi:
       title: Jira Open Issues KPI
       type: statusGrouped
-      description: This KPI is provide information about Jira open issues grouped by status.
+      description: This KPI provides information about Jira open issues grouped by status.
       metricId: jira.openIssues
     licenseFileExistsKpi:
       title: License File Exists KPI
       type: statusGrouped
-      description: This KPI is provide information about whether the license file exists in the repository.
+      description: This KPI provides information about whether the license file exists in the repository.
       metricId: filecheck.license
+    totalCriticalPRs:
+      title: Total Critical PRs
+      description: This KPI provides a sum of open PRs for entities in error status.
+      type: sum
+      metricId: github.openPRs
+      filter:
+        status: error
+      options:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<30'
+              color: '#6bb300'
+            - key: warning
+              expression: '30-80'
+              color: 'rgb(224, 189, 108)'
+            - key: error
+              expression: '>80'
+              color: '#be1ec7'
+    avgOpenIssues:
+      title: Average Open Issues
+      description: This KPI provides a mean open issues count per entity.
+      type: average
+      metricId: jira.openIssues
+    entitiesWithOpenPrs:
+      title: Entities with Open PRs
+      description: This KPI provides a count of entities with a stored open-prs value.
+      type: count
+      metricId: github.openPRs
+    maxOpenPrs:
+      title: Maximum Open PRs
+      description: This KPI provides a maximum open PR count per entity.
+      type: max
+      metricId: github.openPRs
+    minOpenIssues:
+      title: Minimum Open Issues
+      description: This KPI provides a minimum open issues count per entity.
+      type: min
+      metricId: jira.openIssues
+    minOpenPrs:
+      title: Minimum Open PRs
+      description: Lowest open PR count among owned entities.
+      type: min
+      metricId: github.openPRs
+    avgOpenPrs:
+      title: Average Open PRs
+      description: Mean open PR count per entity.
+      type: average
+      metricId: github.openPRs
+    totalOpenBugs:
+      title: Total Open Bugs
+      description: Sum of open issues across owned entities.
+      type: sum
+      metricId: jira.openIssues
+      options:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<30'
+              color: '#6bb300'
+            - key: warning
+              expression: '30-80'
+              color: 'rgb(224, 189, 108)'
+            - key: error
+              expression: '>80'
+              color: '#be1ec7'
+
+  # Globally disabled metrics — these checks never run, regardless of entity annotations.
+  # disabledMetrics:
+  #   - openssf.packaging
+
+  # Control whether entity annotations can override scorecard behavior.
+  # entityAnnotations:
+  #   # Global switch: if false, all scorecard entity annotations are ignored. Default: true.
+  #   enabled: true
+  #   # Per-entity threshold override annotations (scorecard.io/<metricId>.thresholds.rules.<key>).
+  #   thresholds:
+  #     # If true (default), entities can customize thresholds via annotations
+  #     # for metrics not listed in `except`; if false, threshold annotations have no effect.
+  #     enabled: true
+  #     # Metric IDs listed here cannot have their thresholds customized via entity annotations.
+  #     except:
+  #       - github.openPRs
+  #   # Per-entity disabled-metrics annotation (scorecard.io/disabled-metrics).
+  #   disabledMetrics:
+  #     # If true (default), entities can disable metrics via annotation
+  #     # for metrics not listed in `except`; if false, the annotation has no effect.
+  #     enabled: true
+  #     # Entity annotations cannot disable metric IDs listed here
+  #     # (these checks always run unless mentioned in scorecard.disabledMetrics).
+  #     except:
+  #       - openssf.maintained
+
   plugins:
+    dora:
+      # Optional DORA source-data retention and freshness controls
+      # dataRetentionDays: 365
+      # staleAfterMs: 60000
+      # deploymentLookbackMs: 172800000
+      # incidentLookbackMs: 300000
+
+      productionEnvironments: ['production']
+      collectors:
+        deployments:
+          id: github:doraDeployments
+          # Uncomment the following to use workflow runs
+          # id: github:doraDeploymentWorkflowRuns
+          # input:
+          #   workflowName: Create Test Deployment on PR Merge
+        deploymentPullRequests:
+          id: github:doraDeploymentPullRequests
+        incidents:
+          id: jira:doraIncidents
+          # Optional: override default Incident issue type
+          # input:
+          #   issueType: CustomIncident
+
+  metricProviders:
     jira:
       openIssues:
         schedule:
@@ -287,11 +611,50 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
+    catalog:
+      requiredAttributes:
+        options:
+          filter:
+            kind: Component
+            metadata.annotations.scorecard/example: catalog
+          metrics:
+            title:
+              title: Title is required
+              description: Every component should have a human-readable title.
+              field: metadata.title
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
     filecheck:
-      files:
-        license: 'LICENSE'
-        codeowners: 'CODEOWNERS'
-      schedule:
-        frequency: { minutes: 5 }
-        timeout: { minutes: 10 }
-        initialDelay: { seconds: 10 }
+      fileExistence:
+        options:
+          files:
+            license: 'LICENSE'
+            codeowners: 'CODEOWNERS'
+            readme: 'README.md'
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+    dora:
+      deploymentFrequency:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      medianLeadTimeForChanges:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      changeFailureRate:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      medianTimeToRestore:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }

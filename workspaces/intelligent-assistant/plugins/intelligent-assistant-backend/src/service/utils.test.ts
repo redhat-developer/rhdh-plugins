@@ -175,10 +175,18 @@ describe('handleLCSFetchError', () => {
 const userRef = 'user:default/test-user';
 
 describe('rewriteProxyPath', () => {
-  it.each(['/v1/models', '/v1/shields'])(
+  it.each(['/v1/models', '/v1/shields', '/v1/saved-prompts/config'])(
     'returns path unchanged for skip endpoint %s',
     path => {
       expect(rewriteProxyPath(path, userRef)).toBe(path);
+    },
+  );
+
+  it.each(['/v1/saved-prompts', '/v1/saved-prompts/abc'])(
+    'appends user_id for saved-prompts path %s',
+    path => {
+      const result = rewriteProxyPath(path, userRef);
+      expect(result).toBe(`${path}?user_id=${encodeURIComponent(userRef)}`);
     },
   );
 

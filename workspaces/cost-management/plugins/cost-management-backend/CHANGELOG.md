@@ -1,5 +1,32 @@
 # @red-hat-developer-hub/plugin-cost-management-backend
 
+## 2.4.1
+
+### Patch Changes
+
+- 13a7589: Fix cluster and project UI filters on the Optimizations page. The backend proxy was stripping client-supplied `cluster`/`project` query params because it used the same keys for RBAC injection. Changed RBAC injection to use `filter[exact:cluster]`/`filter[exact:project]` keys so UI search params pass through while RBAC security is still enforced.
+- 9a1afbf: Updated dependency `@types/lodash` to `4.17.25`.
+  - @red-hat-developer-hub/plugin-cost-management-common@2.4.1
+
+## 2.4.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/plugin-cost-management-common@2.4.0
+
+## 2.3.0
+
+### Minor Changes
+
+- 1fc6bbe: Backstage version bump to v1.54.6
+
+  Also includes the workspace resolutions cleanup and MSW bump from #4459.
+
+### Patch Changes
+
+- Updated dependencies [1fc6bbe]
+  - @red-hat-developer-hub/plugin-cost-management-common@2.3.0
+
 ## 2.2.1
 
 ### Patch Changes

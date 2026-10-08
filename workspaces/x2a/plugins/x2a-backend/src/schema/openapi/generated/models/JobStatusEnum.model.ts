@@ -26,4 +26,5 @@ export type JobStatusEnum =
   | 'running'
   | 'success'
   | 'error'
-  | 'cancelled';
+  | 'cancelled'
+  | 'stale';

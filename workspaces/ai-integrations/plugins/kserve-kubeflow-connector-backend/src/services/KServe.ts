@@ -14,20 +14,28 @@
  * limitations under the License.
  */
 
-// Converted from kserve.go in model-catalog-bridge
-
-import { PropertyKeys } from './Kfmr';
 import {
+  PropertyKeys,
+  type InferenceService,
   type ModelCatalog,
   type Model,
   type ModelServer,
   Type as APIType,
-} from './types'; // '@redhat-ai-dev/model-catalog-types';
+  sanitizeName,
+} from './types';
+import type { LoggerService } from '@backstage/backend-plugin-api';
+import { CATALOG_SOURCE_ANNOTATION, CATALOG_MODEL_ANNOTATION } from './Catalog';
 
-// Annotation prefix (from brdgtypes package)
-const ANNOTATION_PREFIX = 'model-catalog-bridge.ai.redhat.com/';
+const ANNOTATION_PREFIX = 'rhdh.io/';
 
-// Model framework constants (from kserve.go line 25-36)
+export const SYSTEM_ANNOTATION = `${ANNOTATION_PREFIX}system`;
+export const SERVER_TYPE_ANNOTATION = `${ANNOTATION_PREFIX}serverType`;
+export const MODEL_PREFIX_ANNOTATION = `${ANNOTATION_PREFIX}model-`;
+export const DEFAULT_ANNOTATION = `${ANNOTATION_PREFIX}default`;
+export const OWNER_ANNOTATION = `${ANNOTATION_PREFIX}owner`;
+export const LIFECYCLE_ANNOTATION = `${ANNOTATION_PREFIX}lifecycle`;
+export const API_ENTITY_REF_ANNOTATION = `${ANNOTATION_PREFIX}api-entity-ref`;
+
 const FRAMEWORK_SKLEARN = 'sklearn';
 const FRAMEWORK_XGBOOST = 'xgboost';
 const FRAMEWORK_TENSORFLOW = 'tensorflow';
@@ -39,138 +47,55 @@ const FRAMEWORK_PMML = 'pmml';
 const FRAMEWORK_LIGHTGBM = 'lightgbm';
 const FRAMEWORK_PADDLE = 'paddle';
 
-// InferenceService interface (matching KServe API)
-export interface KServeInferenceService {
-  metadata: {
-    name: string;
-    namespace: string;
-    labels?: { [key: string]: string };
-    annotations?: { [key: string]: string };
-  };
-  spec: {
-    predictor: {
-      sklearn?: any;
-      xgboost?: any;
-      tensorflow?: any;
-      pytorch?: any;
-      triton?: any;
-      onnx?: any;
-      huggingface?: any;
-      pmml?: any;
-      lightgbm?: any;
-      paddle?: any;
-      model?: {
-        modelFormat: {
-          name: string;
-          version?: string;
-        };
-        storageURI?: string;
-        storage?: {
-          path?: string;
-        };
-      };
-    };
-    explainer?: {
-      art?: {
-        type: string;
-      };
-    };
-  };
-  status?: {
-    url?: {
-      toString(): string;
-    };
-    address?: {
-      url: string;
-    };
-    components?: {
-      [key: string]: {
-        url?: {
-          toString(): string;
-        };
-        restURL?: {
-          toString(): string;
-        };
-        grpcURL?: {
-          toString(): string;
-        };
-      };
-    };
-  };
-}
-
-// Re-export types from @redhat-ai-dev/model-catalog-types for use by consumers
-export type { ModelCatalog, Model, ModelServer };
-
-// Helper function: Sanitize name
-function sanitizeName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-}
-
-// Helper function: Fix key for annotation (kserve.go line 315)
 function fixKeyForAnnotation(key: string): string {
-  const lowerKey = key.toLowerCase();
-  return lowerKey.replace(/ /g, '');
+  return key.toLowerCase().replace(/ /g, '');
 }
 
-// Helper function: Get string property value from annotations (kserve.go line 322)
 function getStringPropVal(
   key: string,
-  is: KServeInferenceService,
+  is: InferenceService,
 ): string | undefined {
-  if (!is || !is.metadata.annotations) {
+  if (!is?.metadata.annotations) {
     return undefined;
   }
 
   const annotationKey = `${ANNOTATION_PREFIX}${fixKeyForAnnotation(key)}`;
-  const val = is.metadata.annotations[annotationKey];
-
-  return val || undefined;
+  return is.metadata.annotations[annotationKey] || undefined;
 }
 
-// Get name (namespace_name format) - kserve.go line 54
-function getName(is: KServeInferenceService): string {
+function getName(is: InferenceService): string {
   return `${is.metadata.namespace}_${is.metadata.name}`;
 }
 
-// Get description - kserve.go line 60
-function getDescription(is: KServeInferenceService): string {
+function getDescription(is: InferenceService): string {
   return `KServe instance ${is.metadata.namespace}:${is.metadata.name}`;
 }
 
-// Get tags from predictor spec - kserve.go line 113
-function getTags(is: KServeInferenceService): string[] {
-  const tags: string[] = [];
+const PREDICTOR_FRAMEWORK_KEYS: ReadonlyArray<[string, string]> = [
+  ['sklearn', FRAMEWORK_SKLEARN],
+  ['xgboost', FRAMEWORK_XGBOOST],
+  ['tensorflow', FRAMEWORK_TENSORFLOW],
+  ['pytorch', FRAMEWORK_PYTORCH],
+  ['triton', FRAMEWORK_TRITON],
+  ['onnx', FRAMEWORK_ONNX],
+  ['huggingface', FRAMEWORK_HUGGINGFACE],
+  ['pmml', FRAMEWORK_PMML],
+  ['lightgbm', FRAMEWORK_LIGHTGBM],
+  ['paddle', FRAMEWORK_PADDLE],
+];
 
-  if (!is) {
-    return tags;
+function getPredictorTags(predictor: any, is: InferenceService): string[] {
+  const tags: string[] = PREDICTOR_FRAMEWORK_KEYS.filter(
+    ([key]) => predictor[key],
+  ).map(([, tag]) => tag);
+
+  if (predictor.model?.modelFormat) {
+    const { name, version } = predictor.model.modelFormat;
+    tags.push(
+      version ? `${name}-${version}`.toLowerCase() : name.toLowerCase(),
+    );
   }
 
-  const predictor = is.spec.predictor;
-
-  // Check predictor types (Go uses fallthrough, so we check all)
-  if (predictor.sklearn) tags.push(FRAMEWORK_SKLEARN);
-  if (predictor.xgboost) tags.push(FRAMEWORK_XGBOOST);
-  if (predictor.tensorflow) tags.push(FRAMEWORK_TENSORFLOW);
-  if (predictor.pytorch) tags.push(FRAMEWORK_PYTORCH);
-  if (predictor.triton) tags.push(FRAMEWORK_TRITON);
-  if (predictor.onnx) tags.push(FRAMEWORK_ONNX);
-  if (predictor.huggingface) tags.push(FRAMEWORK_HUGGINGFACE);
-  if (predictor.pmml) tags.push(FRAMEWORK_PMML);
-  if (predictor.lightgbm) tags.push(FRAMEWORK_LIGHTGBM);
-  if (predictor.paddle) tags.push(FRAMEWORK_PADDLE);
-
-  // Generic model format
-  if (predictor.model) {
-    const modelFormat = predictor.model.modelFormat;
-    let tag = modelFormat.name;
-    if (modelFormat.version) {
-      tag = `${tag}-${modelFormat.version}`;
-    }
-    tags.push(tag.toLowerCase());
-  }
-
-  // Explainer
   if (is.spec.explainer?.art) {
     tags.push(is.spec.explainer.art.type.toLowerCase());
   }
@@ -178,8 +103,26 @@ function getTags(is: KServeInferenceService): string[] {
   return tags;
 }
 
-// Get tags from labels - used for ModelServer and API - kserve.go line 391
-function getTagsFromLabels(is: KServeInferenceService): string[] {
+function getTags(is: InferenceService): string[] {
+  if (!is) {
+    return [];
+  }
+
+  // InferenceService (v1beta1) uses spec.predictor; LLMInferenceService (v1alpha2)
+  // uses spec.model directly with no predictor field.
+  if (is.spec.predictor) {
+    return getPredictorTags(is.spec.predictor, is);
+  }
+
+  // LLMInferenceService: use the model name as a tag
+  if (is.spec.model?.name) {
+    return [sanitizeName(is.spec.model.name)];
+  }
+
+  return [];
+}
+
+function getTagsFromLabels(is: InferenceService): string[] {
   const tags: string[] = [];
 
   if (!is.metadata.labels) {
@@ -194,57 +137,94 @@ function getTagsFromLabels(is: KServeInferenceService): string[] {
   return tags;
 }
 
-// Get artifact location URL - kserve.go line 580
-function getArtifactLocationURL(
-  is: KServeInferenceService,
-): string | undefined {
-  const model = is.spec.predictor.model;
-
-  if (model?.storageURI) {
-    return model.storageURI;
+function getArtifactLocationURL(is: InferenceService): string | undefined {
+  // InferenceService (v1beta1): storage is under spec.predictor.model
+  const predictorModel = is.spec.predictor?.model;
+  if (predictorModel?.storageURI) {
+    return predictorModel.storageURI;
+  }
+  if (predictorModel?.storage?.path) {
+    return `s3://${predictorModel.storage.path}`;
   }
 
-  if (model?.storage?.path) {
-    return `s3://${model.storage.path}`;
+  // LLMInferenceService (v1alpha2): storage URI is at spec.model.uri
+  if (is.spec.model?.uri) {
+    return is.spec.model.uri;
   }
 
   return undefined;
 }
 
-// Main function: Call backstage printers for KServe
-// Converted from CallBackstagePrinters (kserve.go line 260)
 export async function callBackstagePrinters(
   owner: string,
   lifecycle: string,
-  is: KServeInferenceService,
+  is: InferenceService,
   authentication: boolean = false,
+  logger?: LoggerService,
 ): Promise<ModelCatalog> {
-  console.log(
+  logger?.debug(
     `KServe.callBackstagePrinters: namespace=${is.metadata.namespace}, name=${is.metadata.name}, authentication=${authentication}`,
   );
 
   return generateModelCatalog(owner, lifecycle, is, authentication);
 }
 
-// Generate model catalog (kserve.go line 269-276)
 function generateModelCatalog(
   owner: string,
   lifecycle: string,
-  is: KServeInferenceService,
+  is: InferenceService,
   authentication: boolean,
 ): ModelCatalog {
-  const name = `${sanitizeName(getName(is))}`;
+  const name = sanitizeName(getName(is));
 
-  // Get property values with fallbacks
   const ownerValue =
     getStringPropVal(PropertyKeys.Owner, is) || sanitizeName(owner);
   const lifecycleValue =
     getStringPropVal(PropertyKeys.Lifecycle, is) || lifecycle;
   const description =
     getStringPropVal(PropertyKeys.DescriptionKey, is) || getDescription(is);
-  const techdocsUrl = getStringPropVal(PropertyKeys.TechDocsKey, is);
+  let techdocsUrl = getStringPropVal(PropertyKeys.TechDocsKey, is);
 
-  // Build model object (kserve.go line 646-674)
+  // Auto-set TechDocsKey when catalog annotations are present and
+  // techdocsUrl is not already set via an explicit annotation.
+  if (techdocsUrl === undefined && is.metadata.annotations) {
+    const sourceId = is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
+    const modelName = is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
+    if (sourceId && modelName) {
+      // Path only — ModelCatalogGenerator.ts prepends svcUrl and wraps
+      // in the url: prefix.
+      techdocsUrl = `/modelcard/${sourceId}/${modelName}`;
+    }
+  }
+
+  // Build models from rhdh.io/model-* annotations when present,
+  // otherwise fall back to a single model named after the InferenceService.
+  const modelPrefixModels: Model[] = [];
+  if (is.metadata.annotations) {
+    for (const [k, v] of Object.entries(is.metadata.annotations)) {
+      if (k.startsWith(MODEL_PREFIX_ANNOTATION)) {
+        modelPrefixModels.push({
+          name: sanitizeName(v),
+          owner: sanitizeName(ownerValue),
+          lifecycle: lifecycleValue,
+          description: description,
+          tags: getTags(is),
+          artifactLocationURL: getArtifactLocationURL(is),
+          ethics: getStringPropVal(PropertyKeys.EthicsKey, is),
+          howToUseURL: getStringPropVal(PropertyKeys.HowToUseKey, is),
+          support: getStringPropVal(PropertyKeys.SupportKey, is),
+          training: getStringPropVal(PropertyKeys.TrainingKey, is),
+          usage: getStringPropVal(PropertyKeys.UsageKey, is),
+          license: getStringPropVal(PropertyKeys.LicenseKey, is),
+          annotations: {
+            'model-name': is.metadata.name,
+            ...(techdocsUrl ? { [PropertyKeys.TechDocsKey]: techdocsUrl } : {}),
+          },
+        });
+      }
+    }
+  }
+
   const model: Model = {
     name: name,
     owner: sanitizeName(ownerValue),
@@ -264,7 +244,12 @@ function generateModelCatalog(
     },
   };
 
-  // Determine API type
+  // Sort annotation-derived models by name for deterministic ordering,
+  // since Object.entries() order is not guaranteed across K8s API responses.
+  modelPrefixModels.sort((a, b) => a.name.localeCompare(b.name));
+
+  const models = modelPrefixModels.length > 0 ? modelPrefixModels : [model];
+
   const apiTypeStr = getStringPropVal(PropertyKeys.APITypeKey, is);
   let apiType = APIType.Openapi;
   if (apiTypeStr) {
@@ -283,7 +268,32 @@ function generateModelCatalog(
     }
   }
 
-  // Build model server object (kserve.go line 679-698)
+  // Propagate system, serverType, default, owner, and lifecycle annotations
+  // to the ModelServer so ModelCatalogGenerator can map them to entity fields.
+  const serverAnnotations: Record<string, string> = {};
+  if (is.metadata.annotations) {
+    const systemVal = is.metadata.annotations[SYSTEM_ANNOTATION];
+    if (systemVal) serverAnnotations[SYSTEM_ANNOTATION] = systemVal;
+
+    const serverTypeVal = is.metadata.annotations[SERVER_TYPE_ANNOTATION];
+    if (serverTypeVal)
+      serverAnnotations[SERVER_TYPE_ANNOTATION] = serverTypeVal;
+
+    const defaultVal = is.metadata.annotations[DEFAULT_ANNOTATION];
+    if (defaultVal)
+      serverAnnotations[DEFAULT_ANNOTATION] = sanitizeName(defaultVal);
+
+    const ownerVal = is.metadata.annotations[OWNER_ANNOTATION];
+    if (ownerVal) serverAnnotations[OWNER_ANNOTATION] = sanitizeName(ownerVal);
+
+    const lifecycleVal = is.metadata.annotations[LIFECYCLE_ANNOTATION];
+    if (lifecycleVal) serverAnnotations[LIFECYCLE_ANNOTATION] = lifecycleVal;
+
+    const apiEntityRefVal = is.metadata.annotations[API_ENTITY_REF_ANNOTATION];
+    if (apiEntityRefVal)
+      serverAnnotations[API_ENTITY_REF_ANNOTATION] = apiEntityRefVal;
+  }
+
   const modelServer: ModelServer = {
     name: sanitizeName(name),
     owner: sanitizeName(ownerValue),
@@ -293,6 +303,9 @@ function generateModelCatalog(
     usage: getStringPropVal(PropertyKeys.UsageKey, is),
     tags: getTagsFromLabels(is),
     authentication: authentication,
+    ...(Object.keys(serverAnnotations).length > 0 && {
+      annotations: serverAnnotations,
+    }),
     API: {
       type: apiType,
       spec: getStringPropVal(PropertyKeys.APISpecKey, is) || 'TBD',
@@ -302,10 +315,7 @@ function generateModelCatalog(
   };
 
   return {
-    models: [model],
+    models,
     modelServer: modelServer,
   };
 }
-
-// Export helper functions that may be needed
-export { getName, getDescription, getTags };

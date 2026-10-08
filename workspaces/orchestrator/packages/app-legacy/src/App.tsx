@@ -46,19 +46,19 @@ import {
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
-import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
-import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
+import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator/legacy';
+import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/legacy';
 import { customAuthProviderPlugin } from 'custom-authentication-provider-module';
-import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
-import { RbacPage } from '@backstage-community/plugin-rbac';
+import { RbacPage } from '@backstage-community/plugin-rbac/legacy';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { Root } from './components/Root';
 import { searchPage } from './components/search/SearchPage';
-import { orchestratorTranslations } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+import { orchestratorTranslations } from '@red-hat-developer-hub/backstage-plugin-orchestrator/legacy';
 
 const app = createApp({
   apis,

@@ -45,6 +45,8 @@ export interface Module {
   analyze?: Job;
   migrate?: Job;
   publish?: Job;
+  adversarialAnalyze?: Job;
+  adversarialMigrate?: Job;
   status?: ModuleStatus;
   /**
    * Detailed error information if the module failed to execute

@@ -92,12 +92,78 @@ describe('DefaultScorecardCollectorsService', () => {
         'Collector ID cannot be empty',
       );
     });
+  });
 
-    it('throws when hasCollector is called before initialization', () => {
+  describe('hasCollector', () => {
+    it('returns true for a registered collector', () => {
+      const collector = makeCollector();
+      const service = new DefaultScorecardCollectorsService();
+
+      service.init({ collectors: [collector] });
+      expect(service.hasCollector(collectorId)).toBe(true);
+    });
+
+    it('returns false for an unregistered collector', () => {
+      const collector = makeCollector();
+      const service = new DefaultScorecardCollectorsService();
+
+      service.init({ collectors: [collector] });
+      expect(service.hasCollector('github:unregistered')).toBe(false);
+    });
+
+    it('throws when called before initialization', () => {
       const service = new DefaultScorecardCollectorsService();
 
       expect(() => service.hasCollector(collectorId)).toThrow(
         'Scorecard collectors service has not been initialized',
+      );
+    });
+
+    it('throws when collector id is empty', () => {
+      const service = new DefaultScorecardCollectorsService();
+      service.init({ collectors: [makeCollector()] });
+
+      expect(() => service.hasCollector('')).toThrow(
+        'Collector ID cannot be empty',
+      );
+    });
+  });
+
+  describe('getCollectorMetadata', () => {
+    it('returns id and description for a registered collector', () => {
+      const collector = makeCollector();
+      const service = new DefaultScorecardCollectorsService();
+      service.init({ collectors: [collector] });
+
+      expect(service.getCollectorMetadata(collectorId)).toEqual({
+        id: collectorId,
+        description: 'Test collector',
+      });
+    });
+
+    it('throws when called before initialization', () => {
+      const service = new DefaultScorecardCollectorsService();
+
+      expect(() => service.getCollectorMetadata(collectorId)).toThrow(
+        'Scorecard collectors service has not been initialized',
+      );
+    });
+
+    it('throws when collector id is empty', () => {
+      const service = new DefaultScorecardCollectorsService();
+      service.init({ collectors: [makeCollector()] });
+
+      expect(() => service.getCollectorMetadata('')).toThrow(
+        'Collector ID cannot be empty',
+      );
+    });
+
+    it('throws when collector is not registered', () => {
+      const service = new DefaultScorecardCollectorsService();
+      service.init({ collectors: [makeCollector()] });
+
+      expect(() => service.getCollectorMetadata('missing:collector')).toThrow(
+        `No collector registered for collector ID 'missing:collector'.`,
       );
     });
   });

@@ -72,7 +72,7 @@ await this.syncClient.connect(endpoint);
 
 ### Decision 2: configScope annotation strategy
 
-Each `boost.connectors.<id>.*` field is `configScope: db-overridable` — these are the runtime-tunable fields. Deployment-time fields (`tls.caFile`, `credentials.*`, `namespace`) live under `ai-catalog.providers.<id>.*` and are not part of this schema (see Goals namespace table above).
+Each user-facing `boost.connectors.<id>.*` field is `configScope: db-overridable` — these are the runtime-tunable fields. The per-connector `__schemaVersion` leaf is internal metadata with `configScope: db-only`. Deployment-time fields (`tls.caFile`, `credentials.*`, `namespace`) live under `ai-catalog.providers.<id>.*` and are not part of this schema (see Goals namespace table above).
 
 | Field                  | configScope      | Rationale                                          |
 | ---------------------- | ---------------- | -------------------------------------------------- |
@@ -82,10 +82,11 @@ Each `boost.connectors.<id>.*` field is `configScope: db-overridable` — these 
 | `schedule.cron`        | `db-overridable` | Admin can change cron schedule at runtime          |
 | `batchSize`            | `db-overridable` | Admin can tune performance at runtime              |
 | `timeout.connectionMs` | `db-overridable` | Admin can adjust for network conditions at runtime |
+| `__schemaVersion`      | `db-only`        | Internal migration metadata; not admin-editable    |
 
 **Runtime state lives in the health store, not the config resolver:** Fields like `lastSyncTimestamp` and `lastSyncOutcome` are pure runtime state owned by the `boost_sync_attempts` table (see ingestion-health-dashboard Decision 1). They are not config — they are operational state written by providers after each sync. Run status (running/idle) is derived from these fields, not stored as a separate column. Querying them goes through the health API (`GET /api/boost/ingestion-health`), not `RuntimeConfigResolver`.
 
-**Why all fields are db-overridable:** The `boost.connectors` schema only contains runtime-tunable fields by design. Deployment-time fields (mount paths, Secret references, namespace) belong to `ai-catalog.providers` — they can't change at runtime without a pod restart, so they are excluded from this schema entirely rather than marked `yaml-only`.
+**Why user-facing fields are db-overridable:** The `boost.connectors` schema contains runtime-tunable fields by design, plus `__schemaVersion` as `db-only` internal metadata. Deployment-time fields (mount paths, Secret references, namespace) belong to `ai-catalog.providers` — they can't change at runtime without a pod restart, so they are excluded from this schema entirely rather than marked `yaml-only`.
 
 ### Decision 3: Propagation mechanism — polling-based via reconciliation cycles
 

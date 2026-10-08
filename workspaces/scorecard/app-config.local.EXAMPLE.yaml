@@ -77,7 +77,7 @@ scorecard:
             - key: error
               expression: '<51'
               color: '#be1ec7' # purple
-  plugins:
+  metricProviders:
     jira:
       openIssues:
         schedule:
@@ -90,7 +90,6 @@ scorecard:
         #   customFilter: priority = High
     github:
       openPRs:
-        # Example threshold overrides; remove to use provider defaults.
         thresholds:
           rules:
             - key: success

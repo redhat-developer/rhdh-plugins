@@ -1,16 +1,12 @@
 # [Backstage](https://backstage.io)
 
-## Running the module
+## Running the modules
 
-To run the rhdh model catalog backend module in development mode:
+To run ai-integrations in development mode:
 
-1. Ensure the following environment variables are set:
+1. Run `yarn install` to install dependencies
 
-- `RHDH_AI_BRIDGE_SERVER`: Set to the server hosting the RHDH AI Bridge
-- `RHDH_BRIDGE_HOST`: Similar as above, but without the protocol
-- `RHDH_TOKEN`: Any 8 character password to use for authentication with RHDH
-
-2. Run `yarn install` to install dependencies
+2. Run `yarn clean`, `yarn:tsc:full`, and `yarn build:all` to compile
 
 3. Run `yarn dev` to launch the module
 
@@ -33,3 +29,15 @@ If you would like to build with `docker`, add the `--user-docker` tag like so:
 ```
 npx --yes @red-hat-developer-hub/cli@latest plugin package --tag --tag "${PLUGIN_CONTAINER_TAG}" --use-docker
 ```
+
+## MCP Registry
+
+### Official Live Deployments
+
+To ingest MCP servers from the official MCP Registry into the catalog, see
+[Using Official MCP Registries](./docs/using-official-mcp-registries.md).
+
+### Deploy Locally
+
+To run a local MCP Registry for provider development, see
+[Deploy MCP Registry Locally](./docs/deploy-mcp-registry-locally.md).

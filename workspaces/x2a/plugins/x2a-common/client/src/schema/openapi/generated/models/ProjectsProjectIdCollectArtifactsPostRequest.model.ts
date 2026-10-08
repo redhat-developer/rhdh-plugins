@@ -42,7 +42,7 @@ export interface ProjectsProjectIdCollectArtifactsPostRequest {
   artifacts?: Array<Artifact>;
   telemetry?: Telemetry;
   /**
-   * Git commit SHA from the job's push to target repo
+   * Git commit SHA from the job\'s push to target repo
    */
   commitId?: string;
 }

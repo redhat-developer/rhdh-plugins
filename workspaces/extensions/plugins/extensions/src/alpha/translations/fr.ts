@@ -89,6 +89,7 @@ const extensionsTranslationFr = createTranslationMessages({
     'search.category': 'Catégorie',
     'search.author': 'Auteur',
     'search.supportType': 'Type de support',
+    'search.catalogSource': 'Source du catalogue',
     'search.noResults':
       'Aucun plugin ne correspond à vos critères de recherche',
     'search.filterBy': 'Filtrer par',
@@ -213,6 +214,7 @@ const extensionsTranslationFr = createTranslationMessages({
     'metadata.category': 'Catégorie',
     'metadata.versions': 'Versions',
     'metadata.backstageCompatibility': 'Version de compatibilité backstage',
+    'metadata.catalogSource': 'Source du catalogue',
     'supportTypes.verifiedBy': 'Vérifié par {{value}} ({{count}})',
     'supportTypes.customPlugins': 'Plugins personnalisés ({{count}})',
     'collection.kubernetes': 'Kubernetes',

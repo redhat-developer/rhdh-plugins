@@ -293,6 +293,10 @@ describe('validateAttachmentsForModel', () => {
     const VALID_JPEG_B64 = Buffer.from([
       0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10,
     ]).toString('base64');
+    // "RIFF" + 4-byte size + "WEBP"
+    const VALID_WEBP_B64 = Buffer.from([
+      0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+    ]).toString('base64');
     const INVALID_IMAGE_B64 = Buffer.from('Hello world').toString('base64');
 
     beforeEach(() => {
@@ -312,6 +316,44 @@ describe('validateAttachmentsForModel', () => {
             attachment_type: 'image',
             content_type: 'image/jpeg',
             content: VALID_JPEG_B64,
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+
+    it('should accept image with valid WebP magic bytes', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        provider: 'openai',
+        attachments: [
+          {
+            attachment_type: 'image',
+            content_type: 'image/webp',
+            content: VALID_WEBP_B64,
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+
+    it('should accept WebP image with data URL prefix', () => {
+      mockReq.body = {
+        model: 'gpt-4',
+        provider: 'openai',
+        attachments: [
+          {
+            attachment_type: 'image',
+            content_type: 'image/webp',
+            content: `data:image/webp;base64,${VALID_WEBP_B64}`,
           },
         ],
       };
@@ -358,7 +400,7 @@ describe('validateAttachmentsForModel', () => {
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
-        error: 'Image attachment does not contain a valid JPEG file',
+        error: 'Image attachment does not contain a valid JPEG or WebP file',
       });
       expect(mockNext).not.toHaveBeenCalled();
     });

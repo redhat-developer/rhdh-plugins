@@ -50,11 +50,26 @@ export interface CatalogItem {
 
 /** Spec section of a {@link CatalogItem}. */
 export interface CatalogItemSpec {
-  service_type?: string;
+  /** One or more named resources — each declares a service type and field configs. */
+  resources?: CatalogResource[];
+}
+
+/**
+ * A named resource within a {@link CatalogItemSpec}.
+ * `name` and `service_type` are immutable after creation.
+ */
+export interface CatalogResource {
+  /** Unique identifier within the catalog item (e.g. "app", "ordersDb"). */
+  name: string;
+  /** The service type for this resource (e.g. "vm", "three-tier-app-demo"). */
+  service_type: string;
+  /** Names of other resources that must be ready before this one is provisioned. */
+  requires_resources?: string[];
+  /** Field configurations for this resource. */
   fields?: FieldConfiguration[];
 }
 
-/** A single field within a {@link CatalogItemSpec}. */
+/** A single field within a {@link CatalogResource}. */
 export interface FieldConfiguration {
   path: string;
   display_name?: string;
@@ -77,9 +92,11 @@ export interface CatalogItemInstance {
   api_version: string;
   display_name: string;
   spec: CatalogItemInstanceSpec;
-  /** External resource identifier (readOnly). */
-  resource_id?: string;
   path?: string;
+  /** Placement run id (readOnly). */
+  run_id?: string;
+  /** Service type instance IDs created by the placement run (readOnly). */
+  resource_ids?: string[];
   create_time?: string;
   update_time?: string;
 }
@@ -92,6 +109,8 @@ export interface CatalogItemInstanceSpec {
 
 /** A user-supplied value for a field in a {@link CatalogItemInstanceSpec}. */
 export interface UserValue {
+  /** The resource name within the catalog item this value targets. */
+  resource: string;
   path: string;
   value: unknown;
 }
@@ -99,17 +118,17 @@ export interface UserValue {
 /** Paginated list of {@link ServiceType} resources. */
 export interface ServiceTypeList {
   results: ServiceType[];
-  next_page_token: string;
+  next_page_token?: string;
 }
 
 /** Paginated list of {@link CatalogItem} resources. */
 export interface CatalogItemList {
   results: CatalogItem[];
-  next_page_token: string;
+  next_page_token?: string;
 }
 
 /** Paginated list of {@link CatalogItemInstance} resources. */
 export interface CatalogItemInstanceList {
   results: CatalogItemInstance[];
-  next_page_token: string;
+  next_page_token?: string;
 }

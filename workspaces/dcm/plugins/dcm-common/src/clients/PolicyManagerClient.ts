@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import type { PaginationParams } from '../types/common';
 import type { Policy, PolicyList } from '../types/policy-manager';
+import { buildPaginationQuery } from '../utils/buildPaginationQuery';
 import type { PolicyManagerApi } from './PolicyManagerApi';
 import { DcmBaseClient } from './DcmBaseClient';
 
@@ -33,8 +35,8 @@ export class PolicyManagerClient
 {
   protected readonly serviceName = 'Policy Manager';
 
-  async listPolicies(): Promise<PolicyList> {
-    return this.fetch<PolicyList>('policies');
+  async listPolicies(params: PaginationParams = {}): Promise<PolicyList> {
+    return this.fetch<PolicyList>(`policies${buildPaginationQuery(params)}`);
   }
 
   async getPolicy(policyId: string): Promise<Policy> {

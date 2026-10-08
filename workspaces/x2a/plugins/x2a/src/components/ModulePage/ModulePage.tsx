@@ -25,7 +25,9 @@ import {
 import { Box, Grid } from '@material-ui/core';
 import {
   resolveScmProvider,
+  CancellablePhase,
   MigrationPhase,
+  ModulePhase,
   Module,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -38,7 +40,6 @@ import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
 import { usePolledFetch } from '../../hooks/usePolledFetch';
 import { useRepoAuthentication } from '../../repoAuth';
-import { ArtifactsCard } from './ArtifactsCard';
 import { ModuleDetailsCard } from './ModuleDetailsCard';
 import { PhasesCard } from './PhasesCard';
 import { ModulePageBreadcrumb } from './ModulePageBreadcrumb';
@@ -83,8 +84,7 @@ export const ModulePage = () => {
 
   const handleRunPhase = useCallback(
     async (phase: MigrationPhase) => {
-      if (!project || phase === 'init') {
-        // The init phase belongs to the project's page
+      if (!project) {
         return;
       }
       setError(undefined);
@@ -111,7 +111,7 @@ export const ModulePage = () => {
           await clientService.projectsProjectIdModulesModuleIdRunPost({
             path: { projectId, moduleId },
             body: {
-              phase,
+              phase: phase as ModulePhase,
               sourceRepoAuth: { token: sourceRepoAuthToken },
               targetRepoAuth: { token: targetRepoAuthToken },
             },
@@ -143,10 +143,63 @@ export const ModulePage = () => {
     ],
   );
 
+  const handleRunAdversarial = useCallback(
+    async (phase: 'analyze' | 'migrate', agentIds: string[]) => {
+      if (!project) return;
+      setError(undefined);
+
+      try {
+        const targetRepoAuthToken = (
+          await repoAuthentication.authenticate([
+            resolveScmProvider(
+              project.targetRepoUrl,
+              hostMap,
+            ).getAuthTokenDescriptor(false),
+          ])
+        )[0].token;
+
+        const response =
+          await clientService.projectsProjectIdAdversarialRunPost({
+            path: { projectId },
+            body: {
+              phase,
+              moduleId,
+              agentIds,
+              targetRepoAuth: { token: targetRepoAuthToken },
+            },
+          });
+
+        if (response.status !== 202) {
+          const body = (await response.json().catch(() => ({}))) as {
+            message?: string;
+          };
+          setError(body.message || t('modulePage.phases.adversarialRunError'));
+        }
+
+        refetch();
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('modulePage.phases.adversarialRunError'),
+        );
+      }
+    },
+    [
+      clientService,
+      t,
+      projectId,
+      moduleId,
+      project,
+      repoAuthentication,
+      hostMap,
+      refetch,
+    ],
+  );
+
   const handleCancelPhase = useCallback(
     async (phase: MigrationPhase) => {
-      if (!project || phase === 'init') {
-        // The init phase belongs to the project's page
+      if (!project) {
         return;
       }
       setError(undefined);
@@ -155,7 +208,7 @@ export const ModulePage = () => {
         const response =
           await clientService.projectsProjectIdModulesModuleIdCancelPost({
             path: { projectId, moduleId },
-            body: { phase },
+            body: { phase: phase as CancellablePhase },
           });
         if (response.status !== 200) {
           const body = await response
@@ -205,16 +258,13 @@ export const ModulePage = () => {
         {isLoading && <Progress />}
         {!isLoading && (
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <ArtifactsCard
+            <Grid item xs={12}>
+              <ModuleDetailsCard
                 module={module}
                 targetRepoUrl={project?.targetRepoUrl || ''}
                 targetRepoBranch={project?.targetRepoBranch || ''}
                 migrationPlanArtifact={project?.migrationPlan}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <ModuleDetailsCard module={module} />
             </Grid>
             <Grid item xs={12}>
               <PhasesCard
@@ -224,6 +274,7 @@ export const ModulePage = () => {
                 moduleId={moduleId}
                 onRunPhase={handleRunPhase}
                 onCancelPhase={handleCancelPhase}
+                onRunAdversarial={handleRunAdversarial}
                 activeTab={activeTab}
                 handleTabChange={handleTabChange}
               />

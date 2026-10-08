@@ -1,0 +1,10 @@
+# English (EN) - Ports: Frontend 3000, Backend 7007
+app:
+  baseUrl: http://localhost:3000
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  cors:
+    origin: http://localhost:3000

@@ -26,11 +26,11 @@ export class NotebookDeleteDialogPage {
     private readonly notebookDisplayName: string,
   ) {}
 
-  /** Dialog anchored by visible notebook title (matches MUI `DeleteNotebookModal` content). */
+  /** Dialog anchored by accessible name derived from aria-labelledby (matches MUI `DeleteNotebookModal`). */
   dialog(): Locator {
-    return this.page
-      .getByRole('dialog')
-      .filter({ hasText: this.notebookDisplayName });
+    return this.page.getByRole('dialog', {
+      name: new RegExp(this.notebookDisplayName),
+    });
   }
 
   deleteNotebookConfirmButton(): Locator {
@@ -51,6 +51,11 @@ export class NotebookDeleteDialogPage {
   }
 
   async confirmDeletion(): Promise<void> {
-    await this.deleteNotebookConfirmButton().click();
+    const deleteBtn = this.page.locator(
+      '#delete-notebook-modal-body ~ div button',
+      { hasText: this.t['notebooks.delete.action'] },
+    );
+    await deleteBtn.waitFor({ state: 'visible', timeout: 30_000 });
+    await deleteBtn.click({ force: true });
   }
 }

@@ -16,17 +16,11 @@
 
 export type Product = 'datacenter' | 'cloud';
 
-export interface JiraOptions {
-  mandatoryFilter?: string;
-  customFilter?: string;
-}
-
-export interface JiraEntityFilters {
-  project: string;
-  component?: string;
-  label?: string;
-  team?: string;
-  customFilter?: string;
+export interface JiraIssue {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  resolutionAt: string | null;
 }
 
 export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';

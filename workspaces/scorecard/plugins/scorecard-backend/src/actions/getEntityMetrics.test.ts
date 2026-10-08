@@ -47,6 +47,7 @@ describe('createGetEntityMetricsAction', () => {
           title: 'Open PRs',
           description: 'Number of open pull requests',
           type: 'number',
+          defaultVisualization: 'sparkline',
         },
         result: {
           value: 5,

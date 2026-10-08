@@ -29,6 +29,7 @@ function getQueryClient() {
           staleTime: 5 * 60 * 1000, // 5 minutes
           gcTime: 5 * 60 * 1000, // 5 minutes
           retry: 1,
+          retryOnMount: false, // the query will not be retried on mount if it contains an error
           refetchOnWindowFocus: false, // do not refetch when window regains focus
         },
       },

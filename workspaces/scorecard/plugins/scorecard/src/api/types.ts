@@ -22,6 +22,9 @@ import {
   AggregationMetadata,
   Metric,
   EntityMetricDetailResponse,
+  MetricTimeSeriesResponse,
+  AggregatedMetricTimeSeriesResponse,
+  CollectorMetadata,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { GetAggregatedScorecardEntitiesOptions } from '../components/types';
 
@@ -33,6 +36,19 @@ export type ScorecardApiClientOptions = {
 export type ScorecardOptions = {
   entity: Entity;
   metricIds?: string[];
+};
+
+export type GetMetricTimeSeriesOptions = {
+  entity: Entity;
+  metricId: string;
+  from: string;
+  to: string;
+};
+
+export type GetAggregationTimeSeriesOptions = {
+  aggregationId: string;
+  from: string;
+  to: string;
 };
 
 export interface ScorecardApi {
@@ -86,4 +102,32 @@ export interface ScorecardApi {
    * @throws Error if the request fails or returns invalid data
    */
   getAggregationMetadata(aggregationId: string): Promise<AggregationMetadata>;
+
+  /**
+   * Retrieves a daily scalar aggregation time series for a KPI or metric id.
+   * @param options - Aggregation ID and inclusive ISO-8601 range
+   * @returns Promise resolving to daily aggregated points and KPI metadata
+   * @throws Error if the request fails or returns invalid data
+   */
+  getAggregationTimeSeries(
+    options: GetAggregationTimeSeriesOptions,
+  ): Promise<AggregatedMetricTimeSeriesResponse>;
+
+  /**
+   * Retrieves a daily time series for one metric on a catalog entity.
+   * @param options - Entity, metric ID, and inclusive ISO-8601 range
+   * @returns Promise resolving to time-series points and metric metadata
+   * @throws Error if the request fails or returns invalid data
+   */
+  getMetricTimeSeries(
+    options: GetMetricTimeSeriesOptions,
+  ): Promise<MetricTimeSeriesResponse>;
+
+  /**
+   * Retrieves collector metadata for a composite metric.
+   * @param metricId - Metric ID whose collectors should be listed
+   * @returns Promise resolving to collector id and description entries
+   * @throws Error if the request fails or returns invalid data
+   */
+  getMetricCollectors(metricId: string): Promise<CollectorMetadata[]>;
 }

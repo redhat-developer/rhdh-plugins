@@ -41,7 +41,7 @@ Follow these instructions to install the orchestrator plugin in a Backstage envi
 
    ```tsx title="packages/app/src/App.tsx"
    /* highlight-add-next-line */
-   import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+   import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator/legacy';
 
    const routes = (
      <FlatRoutes>
@@ -56,7 +56,7 @@ Follow these instructions to install the orchestrator plugin in a Backstage envi
 
    ```tsx title="packages/app/src/components/Root/Root.tsx"
    /* highlight-add-next-line */
-   import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+   import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator/legacy';
 
    export const Root = ({ children }: PropsWithChildren<{}>) => (
      <SidebarPage>
@@ -86,8 +86,8 @@ If your app uses `createApp` from `@backstage/frontend-defaults`, add the orches
 import { createApp } from '@backstage/frontend-defaults';
 import orchestratorPlugin, {
   orchestratorTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator/alpha';
-import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
 
 export default createApp({
   features: [

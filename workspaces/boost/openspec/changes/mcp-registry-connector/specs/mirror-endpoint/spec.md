@@ -18,10 +18,14 @@ None — this is a new productization wrapper around the upstream MCP Registry e
 
 ### Requirement: Configurable Registry Endpoint
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Configured endpoint is used
+
 **WHEN** the connector is configured with a custom mirror endpoint in app-config:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com
@@ -38,7 +42,7 @@ catalog:
 **WHEN** the connector is configured without a custom mirror endpoint:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry: {}
 ```
@@ -52,7 +56,7 @@ catalog:
 **WHEN** the connector is configured with an invalid mirror endpoint URL:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: not-a-valid-url
@@ -69,7 +73,7 @@ catalog:
 **WHEN** the connector is configured with a non-HTTPS mirror endpoint:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: http://registry.internal.example.com
@@ -83,10 +87,14 @@ catalog:
 
 ### Requirement: Zero-Internet Validation
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Public endpoint is not contacted
+
 **WHEN** the connector is configured with a mirror endpoint:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com
@@ -112,6 +120,10 @@ catalog:
 
 ### Requirement: Endpoint Validation at Startup
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Endpoint is validated at startup
+
 **WHEN** the connector starts with a configured mirror endpoint:
 
 **THEN** the connector validates that the endpoint URL is well-formed (scheme://host[:port][/path]).
@@ -136,6 +148,10 @@ catalog:
 
 ### Requirement: Mirror Endpoint Configuration Override
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Configuration precedence is explicit
+
 **WHEN** the connector is configured with both `endpoint` and environment variable `MCP_REGISTRY_ENDPOINT`:
 
 **THEN** the app-config `endpoint` value takes precedence over the environment variable.
@@ -151,6 +167,10 @@ catalog:
 **AND** the connector logs that the endpoint was configured via environment variable.
 
 ### Requirement: Prometheus Metrics for Endpoint Usage
+
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Endpoint usage metrics are emitted
 
 **WHEN** the connector makes HTTP requests to the registry endpoint:
 

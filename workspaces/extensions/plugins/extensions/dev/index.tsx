@@ -27,26 +27,20 @@ import ReactDOM from 'react-dom/client';
 import {
   ApiBlueprint,
   createFrontendModule,
-  createFrontendPlugin,
   pluginHeaderActionsApiRef,
 } from '@backstage/frontend-plugin-api';
-import {
-  Sidebar,
-  SidebarGroup,
-  SidebarItem,
-  SidebarScrollWrapper,
-  SidebarSpace,
-} from '@backstage/core-components';
-import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import {
   SidebarLanguageSwitcher,
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
 
-import { extensionsPage, extensionsTranslationsModule } from '../src/alpha';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhAppDefaults from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+import { SidebarElementBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
+
+import extensionsPlugin from '../src';
+import translations from '../src/translations';
 import { extensionsApiRef, dynamicPluginsInfoApiRef } from '../src/api';
-import { allRoutes } from '../src/routes';
 import { MockExtensionsApi } from './__data__/mockExtensions';
 
 const mockDynamicPluginsInfo = {
@@ -90,49 +84,40 @@ const pluginHeaderActionsModule = createFrontendModule({
   extensions: [mockPluginHeaderActionsApi],
 });
 
-const extensionsDevPlugin = createFrontendPlugin({
+const extensionsDevModule = createFrontendModule({
   pluginId: 'extensions',
-  info: { packageJson: () => import('../package.json') },
-  extensions: [mockExtensionApi, mockDynamicPluginsInfoApi, extensionsPage],
-  routes: allRoutes,
-});
-
-const devSidebarContent = NavContentBlueprint.make({
-  params: {
-    component: ({ items }) => (
-      <Sidebar>
-        <SidebarScrollWrapper>
-          {items.map(item => (
-            <SidebarItem
-              key={item.title}
-              to={item.to}
-              text={item.title}
-              icon={item.icon}
-            />
-          ))}
-        </SidebarScrollWrapper>
-        <SidebarSpace />
-        <SidebarGroup label="Settings">
-          <SidebarLanguageSwitcher />
-          <SidebarSignOutButton />
-        </SidebarGroup>
-      </Sidebar>
-    ),
-  },
+  extensions: [mockExtensionApi, mockDynamicPluginsInfoApi],
 });
 
 const devNavModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [devSidebarContent],
+  extensions: [
+    SidebarElementBlueprint.make({
+      name: 'SidebarLanguageSwitcher',
+      params: {
+        component: SidebarLanguageSwitcher,
+        priority: -10000,
+      },
+    }),
+    SidebarElementBlueprint.make({
+      name: 'SidebarSignOutButton',
+      params: {
+        component: SidebarSignOutButton,
+        priority: -10001,
+      },
+    }),
+  ],
 });
 
 const app = createApp({
   features: [
-    pluginHeaderActionsModule,
-    extensionsTranslationsModule,
-    extensionsDevPlugin,
-    devNavModule,
+    rhdhAppDefaults,
     rhdhThemeModule,
+    devNavModule,
+    pluginHeaderActionsModule,
+    translations,
+    extensionsPlugin,
+    extensionsDevModule,
   ],
 });
 

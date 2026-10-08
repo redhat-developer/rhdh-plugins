@@ -25,9 +25,16 @@ import FormControl from '@mui/material/FormControl';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
-import { AddRepositoriesFormValues, PullRequestPreviewData } from '../../types';
+import {
+  AddRepositoriesFormValues,
+  ErrorType,
+  ImportFlow,
+  PullRequestPreviewData,
+} from '../../types';
 import { getImageForIconClass } from '../../utils/icons';
+import { getCustomisedErrorMessage } from '../../utils/repository-utils';
 import { useDrawer } from '../DrawerContext';
 import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
@@ -36,9 +43,13 @@ import { AddRepositoriesTable } from './AddRepositoriesTable';
 export const AddRepositories = ({ error }: { error?: any }) => {
   const { t } = useTranslation();
   const configApi = useApi(configApiRef);
+  const importFlow = useImportFlow();
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
-  const { setFieldValue, values } =
+  const { setFieldValue, values, status } =
     useFormikContext<AddRepositoriesFormValues>();
+  const jobErrors = (status?.errors as ErrorType) || {};
+  const showOrchestratorJobErrors =
+    importFlow === ImportFlow.Orchestrator && Object.keys(jobErrors).length > 0;
 
   // Check if integrations are configured
   const hasGitHubIntegration = configApi.has('integrations.github');
@@ -184,6 +195,38 @@ export const AddRepositories = ({ error }: { error?: any }) => {
                   error?.err ??
                   t('errors.failedToCreatePullRequest')}
               </Alert>
+            </div>
+          )}
+          {showOrchestratorJobErrors && (
+            <div
+              style={{ paddingBottom: '10px' }}
+              data-testid="orchestrator-job-errors"
+            >
+              {Object.entries(jobErrors).map(([repoId, jobError]) => {
+                const { message } = getCustomisedErrorMessage(
+                  jobError.error.message,
+                  (key: string) => t(key as any, {}),
+                );
+                const repoLabel = [
+                  jobError.repository.organization,
+                  jobError.repository.name,
+                ]
+                  .filter(Boolean)
+                  .join('/');
+                return (
+                  <Alert
+                    key={repoId}
+                    severity="error"
+                    sx={{ mb: 1 }}
+                    data-testid={`orchestrator-job-error-${repoId}`}
+                  >
+                    <AlertTitle>
+                      {repoLabel || t('errors.errorOccurred')}
+                    </AlertTitle>
+                    {message}
+                  </Alert>
+                );
+              })}
             </div>
           )}
           <AddRepositoriesTable />

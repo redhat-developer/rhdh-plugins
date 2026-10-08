@@ -3,7 +3,7 @@
 ## 1. Relocate Shared Utilities from Kfmr.ts
 
 - [ ] 1.1 Move `PropertyKeys` constant object from `Kfmr.ts` to `types.ts`
-- [ ] 1.2 Move `NormalizerFormat` enum from `Kfmr.ts` to `types.ts`
+- [x] 1.2 ~~Move `NormalizerFormat` enum from `Kfmr.ts` to `types.ts`~~ — `NormalizerFormat` retained in `types.ts`; `NormalizerType` enum deleted entirely (only KServe normalizer remains, making the enum unnecessary)
 - [ ] 1.3 Move `getTagsFromCustomProps` function from `Kfmr.ts` to `types.ts`
 - [ ] 1.4 Move `getStringPropVal` function from `Kfmr.ts` to `types.ts`
 - [ ] 1.5 Move `sanitizeName` and `sanitizeModelVersion` functions from `Kfmr.ts` to `types.ts`
@@ -36,7 +36,7 @@
 - [ ] 4.1 Remove KFMR-only imports from `./Kfmr` (`setupKFMR`, `loopOverKFMR`, `callBackstagePrinters`, `getKubeFlowInferenceServicesForModelVersion`, `sanitizeName as kfmrSanitizeName`)
 - [ ] 4.2 Remove KFMR type imports (`KFMRClient`, `KFMRInferenceService`)
 - [ ] 4.3 Remove KFMR label constants (`INF_SVC_RM_ID_LABEL`, `INF_SVC_MV_ID_LABEL`, commented `INF_SVC_INF_SVC_ID_LABEL`)
-- [ ] 4.4 Remove `KubeflowNormalizer` value from `NormalizerType` enum (keep `KServeNormalizer` only)
+- [x] 4.4 ~~Remove `KubeflowNormalizer` value from `NormalizerType` enum (keep `KServeNormalizer` only)~~ — entire `NormalizerType` enum deleted; `normalizerType` field removed from `ModelCatalogMetadata` and `processModelCatalog` parameter
 - [ ] 4.5 Remove `ProcessKFMRResult` interface
 - [ ] 4.6 Remove KFMR-only logic from `processKFMR`: registered model listing, model version matching, KFMR inference service correlation, and KFMR-specific `callBackstagePrinters` calls. **Preserve** the model card fetching logic (lines 421-444) — relocate it to a utility that can be called from the KServe reconciliation path
 - [ ] 4.7 Remove the helper function that checks if a KServe InferenceService maps to a KFMR model (the function using `INF_SVC_RM_ID_LABEL`/`INF_SVC_MV_ID_LABEL`, ~lines 249-283)
@@ -51,20 +51,39 @@
 - [ ] 5.2 Delete `plugins/kserve-kubeflow-connector-backend/src/services/Kfmr.ts`
 - [ ] 5.3 Verify no remaining imports reference `./Kfmr` in any file under `plugins/kserve-kubeflow-connector-backend/src/`
 
-## 6. Clean Up Dependencies
+## 6. Add Backstage Config Fields and ConnectorConfig
 
-- [ ] 6.1 Check if `undici` is imported anywhere other than `Kfmr.ts` — if not, check whether the relocated catalog client (`getModelCard`) uses `undici` (via `getFromModelRegistry`). If catalog code still needs it, keep `undici`; otherwise remove from `package.json`
-- [ ] 6.2 Check if `MODEL_REGISTRY_ROUTE_ENV_VAR` or `MODEL_REGISTRY_TOKEN_ENV_VAR` are referenced outside `Kfmr.ts` — if not, confirm they are gone with the file deletion
-- [ ] 6.3 Remove any KFMR-related environment variable documentation or comments in `plugin.ts`, `router.ts`, or config files
+- [x] 6.1 Add `kubeflow-model-catalog-url`, `default-owner`, `default-lifecycle` fields to `app-config.yaml` under `catalog.providers.modelCatalog.<id>`
+- [x] 6.2 Add `ConnectorConfig` interface to `InformerService.ts` with `catalogUrl?`, `defaultOwner?`, `defaultLifecycle?`
+- [x] 6.3 Update `setupInformer()` to accept optional `ConnectorConfig` parameter; config values take precedence over env vars
+- [x] 6.4 Add `coreServices.rootConfig` to `plugin.ts` deps; read config from `catalog.providers.modelCatalog` and create `ConnectorConfig`
+- [x] 6.5 Add `catalogUrl?: string` to `ReconcilerConfig` in `types.ts`
+- [x] 6.6 Update `createCatalogClient()` in `Catalog.ts` to accept optional `catalogUrl` parameter; URL takes precedence over route ingress
+- [x] 6.7 Add early return in `setupCatalogRoute()` when `catalogUrl` is configured (skip route discovery)
 
-## 7. Verification
+## 7. Annotation-Based Model Card Lookup
 
-- [ ] 7.1 `yarn tsc` passes with no errors
-- [ ] 7.2 `yarn build:all` succeeds
-- [ ] 7.3 `yarn test:all` passes (existing workspace tests)
-- [ ] 7.4 `grep -rn 'loopOverKFMR\|setupKFMR\|KFMRClient\|KFMRInferenceService\|processKFMR\|KubeflowNormalizer\|kfmrClients\|kfmrRoutes' --include='*.ts' plugins/kserve-kubeflow-connector-backend/src/` returns zero results (note: `kfmrCatalogRoute` renamed to `catalogRoute`, so "kfmr" should not appear except in comments explaining the rename)
-- [ ] 7.5 `PropertyKeys` is importable from `./types` and `KServe.ts` compiles correctly
-- [ ] 7.6 `getModelCard()` is importable from the relocated catalog module and compiles correctly
-- [ ] 7.7 `CatalogModel` type is available from `types.ts`
-- [ ] 7.8 `catalogRoute` (formerly `kfmrCatalogRoute`) is present on `ReconcilerConfig`
-- [ ] 7.9 Connector plugin starts without errors in dev environment (KServe path exercised, no KFMR errors, catalog route discovery still functional)
+- [x] 7.1 Add `CATALOG_SOURCE_ANNOTATION = 'rhdh.io/catalog-source'` and `CATALOG_MODEL_ANNOTATION = 'rhdh.io/catalog-model'` to `Catalog.ts`
+- [x] 7.2 Add `fetchModelCardViaAnnotations()` function to `InformerService.ts` — reads annotations from InferenceService CR, calls `createCatalogClient().getModelCard()`
+- [x] 7.3 Wire `fetchModelCardViaAnnotations()` into `reconcileInferenceService` for annotated InferenceService CRs
+
+## 8. Clean Up Dependencies
+
+- [ ] 8.1 Check if `undici` is imported anywhere other than `Kfmr.ts` — if not, check whether the relocated catalog client (`getModelCard`) uses `undici` (via `getFromModelRegistry`). If catalog code still needs it, keep `undici`; otherwise remove from `package.json`
+- [ ] 8.2 Check if `MODEL_REGISTRY_ROUTE_ENV_VAR` or `MODEL_REGISTRY_TOKEN_ENV_VAR` are referenced outside `Kfmr.ts` — if not, confirm they are gone with the file deletion
+- [ ] 8.3 Remove any KFMR-related environment variable documentation or comments in `plugin.ts`, `router.ts`, or config files
+
+## 9. Verification
+
+- [ ] 9.1 `yarn tsc` passes with no errors
+- [ ] 9.2 `yarn build:all` succeeds
+- [ ] 9.3 `yarn test:all` passes (existing workspace tests)
+- [ ] 9.4 `grep -rn 'loopOverKFMR\|setupKFMR\|KFMRClient\|KFMRInferenceService\|processKFMR\|KubeflowNormalizer\|kfmrClients\|kfmrRoutes\|NormalizerType' --include='*.ts' plugins/kserve-kubeflow-connector-backend/src/` returns zero results (note: `kfmrCatalogRoute` renamed to `catalogRoute`, so "kfmr" should not appear except in comments explaining the rename)
+- [ ] 9.5 `PropertyKeys` is importable from `./types` and `KServe.ts` compiles correctly
+- [ ] 9.6 `getModelCard()` is importable from the relocated catalog module and compiles correctly
+- [ ] 9.7 `CatalogModel` type is available from `types.ts`
+- [ ] 9.8 `catalogRoute` (formerly `kfmrCatalogRoute`) and `catalogUrl` are present on `ReconcilerConfig`
+- [ ] 9.9 `ConnectorConfig` is exported from `InformerService.ts` and `setupInformer()` accepts it
+- [ ] 9.10 Config fields `kubeflow-model-catalog-url`, `default-owner`, `default-lifecycle` are readable from `catalog.providers.modelCatalog` in `plugin.ts`
+- [ ] 9.11 Annotation-based model card lookup works: InferenceService CR with `rhdh.io/catalog-source` and `rhdh.io/catalog-model` annotations triggers model card fetching
+- [ ] 9.12 Connector plugin starts without errors in dev environment (KServe path exercised, no KFMR errors, catalog route/URL discovery functional)

@@ -27,12 +27,24 @@
   },
   "packageRules": [
     {
+      "description": "Disable Yarn packageManager updates via renovate; use skill rhdh-yarn-bump from https://github.com/redhat-developer/rhdh-skills/blob/main/skills/ci/rhdh-yarn-bump/SKILL.md instead",
+      "enabled": false,
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["packageManager", "devEngines.packageManager"],
+      "matchPackageNames": ["yarn"]
+    },
+    {
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions"
     },
     {
       "matchPackageNames": ["node-fetch"],
       "allowedVersions": "<3.0.0"
+    },
+    {
+      "description": "Limit @remixicon/react to versions below 4.9.0 due to a license change in that release",
+      "matchPackageNames": ["@remixicon/react"],
+      "allowedVersions": "<4.9.0"
     },
     {
       "matchPackageNames": ["typescript"],

@@ -31,7 +31,10 @@ import type {
   RuleSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { RuleEntity } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  RuleEntity,
+  AdversarialAgentEntity,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { CreateJobInput } from './types';
 
@@ -167,6 +170,8 @@ export interface X2ADatabaseServiceApi {
 
   deleteJob(args: { id: string }): Promise<number>;
 
+  markJobsAsStale(jobIds: string[]): Promise<void>;
+
   // Rules
 
   createRule(input: {
@@ -196,4 +201,33 @@ export interface X2ADatabaseServiceApi {
   getAcceptedRulesForProject(args: {
     projectId: string;
   }): Promise<RuleSnapshot[]>;
+
+  // Adversarial Agents
+
+  createAdversarialAgent(input: {
+    name: string;
+    prompt: string;
+    phases: string[];
+    critical: boolean;
+    createdBy: string;
+  }): Promise<AdversarialAgentEntity>;
+
+  listAdversarialAgents(filters?: {
+    phase?: string;
+    ids?: string[];
+  }): Promise<AdversarialAgentEntity[]>;
+
+  getAdversarialAgent(opts: {
+    id: string;
+  }): Promise<AdversarialAgentEntity | undefined>;
+
+  updateAdversarialAgent(opts: {
+    id: string;
+    name: string;
+    prompt: string;
+    phases: string[];
+    critical: boolean;
+  }): Promise<AdversarialAgentEntity | undefined>;
+
+  deleteAdversarialAgent(opts: { id: string }): Promise<number>;
 }

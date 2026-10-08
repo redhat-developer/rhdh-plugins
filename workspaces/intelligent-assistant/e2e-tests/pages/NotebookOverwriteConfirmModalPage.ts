@@ -17,9 +17,10 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import type { LightspeedMessages } from '../utils/translations';
+import { substituteNotebookTemplate } from '../utils/notebookTranslation';
 
 /**
- * “Overwrite Files?” confirmation when staging a file whose name already exists in the notebook (`OverwriteConfirmModal.tsx`).
+ * "File already exists" confirmation when uploading a file whose name already exists in the notebook (`OverwriteConfirmModal.tsx`).
  */
 export class NotebookOverwriteConfirmModalPage {
   constructor(
@@ -28,7 +29,6 @@ export class NotebookOverwriteConfirmModalPage {
   ) {}
 
   dialog(): Locator {
-    /** MUI dialogs may not use the plain title as the whole accessible name across engines. */
     return this.page.getByRole('dialog').filter({
       has: this.page.getByRole('heading', {
         name: this.t['notebook.overwrite.modal.title'],
@@ -39,16 +39,14 @@ export class NotebookOverwriteConfirmModalPage {
 
   async expectDialogVisible(timeout = 15_000): Promise<void> {
     await expect(this.dialog()).toBeVisible({ timeout });
-    await expect(
-      this.dialog().getByText(this.t['notebook.overwrite.modal.description'], {
-        exact: true,
-      }),
-    ).toBeVisible();
   }
 
-  async clickCancel(): Promise<void> {
+  async clickBack(): Promise<void> {
     await this.dialog()
-      .getByRole('button', { name: this.t['common.cancel'], exact: true })
+      .getByRole('button', {
+        name: this.t['notebook.overwrite.modal.back'],
+        exact: true,
+      })
       .click();
   }
 
@@ -58,12 +56,19 @@ export class NotebookOverwriteConfirmModalPage {
     ).toBeVisible();
   }
 
-  async clickOverwrite(): Promise<void> {
+  uploadButtonPattern(): RegExp {
+    const escaped = substituteNotebookTemplate(
+      this.t['notebook.overwrite.modal.action'],
+      { count: '\\d+' },
+    )
+      .replace('(', '\\(')
+      .replace(')', '\\)');
+    return new RegExp(escaped);
+  }
+
+  async clickUpload(): Promise<void> {
     await this.dialog()
-      .getByRole('button', {
-        name: this.t['notebook.overwrite.modal.action'],
-        exact: true,
-      })
+      .getByRole('button', { name: this.uploadButtonPattern() })
       .click();
   }
 }

@@ -43,6 +43,13 @@ export function isMetricIdDisabled(
     return true;
   }
 
+  const entityAnnotationsGlobalEnabled = config.getOptionalBoolean(
+    'scorecard.entityAnnotations.enabled',
+  );
+  if (entityAnnotationsGlobalEnabled === false) {
+    return false;
+  }
+
   const entityAnnotationsDisabledMetricsConfig = config.getOptionalConfig(
     'scorecard.entityAnnotations.disabledMetrics',
   );

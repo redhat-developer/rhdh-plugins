@@ -35,15 +35,12 @@ export const intelligentAssistantMessages = {
   'notebooks.empty.description':
     'Start a new notebook to organize your sources and generate AI-powered insights.',
   'notebooks.empty.action': 'Create a new notebook',
-  'notebooks.documents': 'Documents',
+  'notebooks.documents_one': '{{count}} Resource',
+  'notebooks.documents_other': '{{count}} Resources',
   'notebooks.actions.rename': 'Rename',
   'notebooks.actions.delete': 'Delete',
-  'notebooks.rename.title': 'Rename {{name}}?',
-  'notebooks.rename.description':
-    'Please input the new name for this notebook and click submit to proceed.',
-  'notebooks.rename.label': 'New name',
-  'notebooks.rename.placeholder': 'New name',
-  'notebooks.rename.action': 'Submit',
+  'notebooks.rename.inline.tooltip': 'Click to rename',
+  'notebooks.rename.inline.error': 'Failed to rename "{{notebookName}}".',
   'notebooks.delete.title': 'Delete {{name}}?',
   'notebooks.delete.message':
     "You'll no longer see this notebook here. This will also delete related activity like prompts, responses, and feedback from your activity.",
@@ -63,35 +60,40 @@ export const intelligentAssistantMessages = {
   // Notebook view
   'notebook.view.title': 'Untitled notebook',
   'notebook.view.close': 'Close notebook',
-  'notebook.view.documents.count': '{{count}} Documents',
+  'notebook.view.documents.count_one': '{{count}} Resource',
+  'notebook.view.documents.count_other': '{{count}} Resources',
   'notebook.view.documents.add': 'Add',
-  'notebook.view.upload.heading': 'Upload a resource to get started',
-  'notebook.view.upload.action': 'Upload a resource',
+  'notebook.view.upload.heading': 'Add a resource to get started',
+  'notebook.view.upload.action': 'Add a resource',
   'notebook.view.processing.heading': 'Processing resources...',
   'notebook.view.processing.description':
     'Your files are being indexed. You can start asking questions once processing is complete.',
-  'notebook.view.input.placeholder': 'Ask about your documents...',
+  'notebook.view.input.placeholder': 'Ask about your resources...',
   'notebook.view.input.disabledTooltip':
     'Select at least one loaded resource to start chatting',
   'notebook.view.sidebar.collapse': 'Collapse sidebar',
   'notebook.view.sidebar.expand': 'Expand sidebar',
   'notebook.view.sidebar.resize': 'Resize sidebar',
-  'notebook.view.documents.uploading': 'Uploading document',
+  'notebook.view.documents.uploading': 'Uploading resource',
   'notebook.view.documents.maxReached':
-    'Maximum 10 documents are allowed. Delete a document to upload a new document.',
+    'Maximum 10 resources are allowed. Delete a resource to upload a new resource.',
   'notebook.view.documents.uploadsInProgress':
-    'Please wait for current uploads to complete before adding more documents.',
+    'Please wait for current uploads to complete before adding more resources.',
   'notebook.upload.failed': '"{{fileName}}" upload failed.',
 
   // Notebook upload modal
-  'notebook.upload.modal.title': 'Add a document to Notebook',
-  'notebook.upload.modal.dragDropTitle': 'Drag and drop files here',
+  'notebook.upload.modal.title': 'Add resources',
+  'notebook.upload.modal.dragDropTitle':
+    'Drag and drop files here, or click to browse',
   'notebook.upload.modal.browseButton': 'Upload',
   'notebook.upload.modal.separator': 'or',
   'notebook.upload.modal.infoText':
     'Accepted file types: .md, .txt, .pdf, .json, .yaml, .log',
+  'notebook.upload.modal.supportedFormats': 'Supported formats:',
+  'notebook.upload.modal.maxFileSize': 'Maximum file size is 25 MB.',
   'notebook.upload.modal.selectedFiles': '{{count}} of {{max}} files selected',
   'notebook.upload.modal.addButton': 'Add ({{count}})',
+  'notebook.upload.modal.addButtonEmpty': 'Add',
   'notebook.upload.modal.removeFile': 'Remove {{fileName}}',
   'notebook.upload.error.unsupportedType':
     'Upload error: Unsupported file type(s) found. Please upload only supported file types.',
@@ -101,10 +103,24 @@ export const intelligentAssistantMessages = {
     'Upload error: Maximum of {{max}} files allowed.',
 
   // Notebook overwrite modal
-  'notebook.overwrite.modal.title': 'Overwrite Files?',
+  'notebook.overwrite.modal.title': 'File already exists',
+  'notebook.overwrite.modal.title.one': 'File already exists',
+  'notebook.overwrite.modal.title.other': 'Files already exist',
   'notebook.overwrite.modal.description':
-    'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
-  'notebook.overwrite.modal.action': 'Overwrite',
+    '{{duplicateCount}} files already exist in this notebook. {{newCount}} new resources will be added regardless.',
+  'notebook.overwrite.modal.description.one':
+    '{{duplicateCount}} file already exists in this notebook. {{newCount}} new resources will be added regardless.',
+  'notebook.overwrite.modal.description.other':
+    '{{duplicateCount}} files already exist in this notebook. {{newCount}} new resources will be added regardless.',
+  'notebook.overwrite.modal.replace': 'Replace existing files',
+  'notebook.overwrite.modal.ignore': 'Ignore duplicated files',
+  'notebook.overwrite.modal.action': 'Upload ({{count}})',
+  'notebook.overwrite.modal.back': 'Back',
+  'notebook.document.rename': 'Rename',
+  'notebook.document.rename.tooltip': 'Click to rename',
+  'notebook.document.rename.error': 'Failed to rename "{{documentName}}".',
+  'notebook.document.rename.conflict': 'Name already exists.',
+  'notebook.document.rename.tooLong': 'Name too long (max 255).',
   'notebook.document.delete': 'Delete',
   'notebook.document.delete.title': 'Remove resource?',
   'notebook.document.delete.description':
@@ -162,14 +178,6 @@ export const intelligentAssistantMessages = {
   'conversation.rename.confirm.action': 'Rename',
   'conversation.rename.placeholder': 'Chat name',
 
-  // Permissions
-  'permission.required.title': 'Missing permissions',
-  'permission.required.description':
-    'To view <subject/>, contact your administrator to give the <permissions/> permission.',
-  'permission.subject.plugin': 'the intelligent assistant plugin',
-  'permission.subject.notebooks': 'the intelligent assistant notebooks',
-  'permission.notebooks.goBack': 'Go back',
-
   // LCORE / LLM (no models registered)
   'lcore.notConfigured.title': 'Connect an LLM to get started',
   'lcore.notConfigured.description':
@@ -182,9 +190,7 @@ export const intelligentAssistantMessages = {
     'The intelligent assistant backend did not return a model list. Check that the service is running and reachable, then try again.',
 
   // Disclaimers
-  'disclaimer.withValidation':
-    "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
-  'disclaimer.withoutValidation':
+  disclaimer:
     "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
 
   // Footer and feedback
@@ -220,6 +226,10 @@ export const intelligentAssistantMessages = {
   // Model selector
   'modelSelector.disabledTooltip':
     'Each chat session supports only one model. To switch models, open a new chat.',
+  'modelSelector.visionScreenshot.line1': 'Image analysis supported.',
+  'modelSelector.visionScreenshot.line2':
+    'A screenshot will be included with your message.',
+  'modelSelector.visionScreenshot.ariaLabel': 'Vision model screenshot context',
 
   // Accessibility and ARIA labels
   'aria.chatbotSelector': 'Chatbot selector',
@@ -281,7 +291,6 @@ export const intelligentAssistantMessages = {
 
   // Alt texts for icons
   'icon.lightspeed.alt': 'intelligent assistant icon',
-  'icon.permissionRequired.alt': 'permission required icon',
 
   // Message utilities
   'message.options.label': 'Options',
@@ -322,20 +331,61 @@ export const intelligentAssistantMessages = {
   // Conversation categorization
   'conversation.category.pinnedChats': 'Pinned chats',
   'conversation.category.recent': 'Chats',
+  'conversation.category.savedPrompts': 'Saved prompts',
 
   // lightspeed settings
   'settings.pinned.enable': 'Enable pinned chats',
   'settings.pinned.disable': 'Disable pinned chats',
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
   'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
-  'settings.mcp.label': 'MCP settings',
+  'settings.savedPrompts.enable': 'Enable saved prompts',
+  'settings.savedPrompts.disable': 'Disable saved prompts',
+  'settings.savedPrompts.enabled.description':
+    'Saved prompts are currently enabled',
+  'settings.savedPrompts.disabled.description':
+    'Saved prompts are currently disabled',
+  'settings.screenContext.enable': 'Enable screen context',
+  'settings.screenContext.disable': 'Disable screen context',
+  'settings.screenContext.enabled.description':
+    'Screen context sharing is currently enabled',
+  'settings.screenContext.disabled.description':
+    'Screen context sharing is currently disabled',
+
+  'contextChip.label.paused': 'Context: paused',
+  'contextChip.label.unavailable': 'Context: unavailable',
+  'contextChip.label.softwareTemplates': 'Software templates',
+  'contextChip.tooltip.askAbout': 'Ask about {{label}}.',
+  'contextChip.tooltip.template': 'Ask how to fill in the {{label}} template.',
+  'contextChip.tooltip.search': 'Ask about your search: {{label}}.',
+  'contextChip.tooltip.paused':
+    'Screen context is paused. Click to resume sharing your current screen with the intelligent assistant.',
+  'contextChip.tooltip.unavailable':
+    'Screen context is not available in fullscreen mode. Switch to Overlay or Docked mode to enable it.',
+  'contextChip.tooltip.line2.fullContext':
+    'Page text and a screenshot will be sent with your message.',
+  'contextChip.tooltip.line2.adminLimited':
+    'Screen context sharing is limited by administrator settings.',
+  'contextChip.tooltip.line2.screenshotOnly':
+    'Text extraction is disabled by your administrator. Screenshot only.',
+  'contextChip.tooltip.line2.domOffNoVision':
+    'Text extraction is disabled by your administrator. Your model does not support image analysis.',
+  'contextChip.tooltip.line2.textOnlyNoVision':
+    'Text context only - your model does not support image analysis.',
+  'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
+    'Text context only - screenshot capture is disabled by your administrator.',
+  'contextChip.tooltip.line2.textOnlyCombined':
+    'Text context only - your model does not support image analysis and screenshot capture is disabled by your administrator.',
+  'contextChip.aria.pause': 'Pause screen context: {{label}}',
+  'contextChip.aria.resume': 'Resume screen context',
+  'settings.panel.title': 'Settings',
+  'settings.mcp.label': 'MCP and Prompt Settings',
+  'settings.prompt.label': 'Prompt Settings',
   'settings.mcp.badge': 'New',
 
   // MCP settings
   'mcp.settings.title': 'MCP servers',
   'mcp.settings.selectedCount': '{{selectedCount}} of {{totalCount}} selected',
   'mcp.settings.closeAriaLabel': 'Close MCP settings',
-  'mcp.settings.readOnlyAccess': 'You have read-only access to MCP servers.',
   'mcp.settings.tableAriaLabel': 'MCP servers table',
   'mcp.settings.enabled': 'Enabled',
   'mcp.settings.name': 'Name',
@@ -428,6 +478,44 @@ export const intelligentAssistantMessages = {
 
   // Deep thinking
   'reasoning.thinking': 'Show thinking',
+
+  // Saved prompts settings
+  'savedPrompts.tab.title': 'Saved prompts',
+  'savedPrompts.disabled.title': 'Saved prompts are disabled',
+  'savedPrompts.disabled.body':
+    'Saved prompts are hidden from the chat history panel. Enable them to display your prompts in the sidebar.',
+  'savedPrompts.disabled.enableLink': 'Enable saved prompts',
+  'savedPrompts.count.zero': 'No prompts',
+  'savedPrompts.count_one': '1 prompt',
+  'savedPrompts.count_other': '{{count}} prompts',
+  'savedPrompts.newPrompt': '+ New prompt',
+  'savedPrompts.form.titleLabel': 'Title',
+  'savedPrompts.form.titlePlaceholder': 'Prompt title',
+  'savedPrompts.form.contentLabel': 'Prompt',
+  'savedPrompts.form.contentPlaceholder': 'Prompt content',
+  'savedPrompts.form.save': 'Save',
+  'savedPrompts.form.cancel': 'Cancel',
+  'savedPrompts.validation.titleMaxLength':
+    'Title must be {{max}} characters or fewer.',
+  'savedPrompts.validation.contentMaxLength':
+    'Prompt must be {{max}} characters or fewer.',
+  'savedPrompts.limitReached':
+    'Prompt limit reached. Delete an existing prompt to create a new one.',
+  'savedPrompts.actions.apply': 'Apply in input box',
+  'savedPrompts.actions.send': 'Send directly',
+  'savedPrompts.actions.sendDisabledStreaming': 'Wait for response to finish',
+  'savedPrompts.actions.delete': 'Delete',
+  'savedPrompts.actions.menuAriaLabel': 'Actions for {{name}}',
+  'savedPrompts.delete.confirm.title': "Delete '{{name}}'?",
+  'savedPrompts.delete.confirm.message':
+    'This saved prompt will be permanently removed.',
+  'savedPrompts.delete.confirm.action': 'Delete',
+  'savedPrompts.empty.description':
+    'Save frequently used prompts to quickly reuse them in your conversations without typing them again. Saved prompts also appear in the chat history panel for quick access.',
+  'savedPrompts.sidebar.showAll': 'Show all',
+  'savedPrompts.sidebar.showLess': 'Show less',
+  'savedPrompts.sidebar.openSettings': 'Open saved prompts settings',
+  'savedPrompts.sidebar.empty': 'No saved prompts yet',
 };
 
 /**

@@ -15,8 +15,8 @@
  */
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
-import { catalogApiRef } from '../../apis';
+import { renderInTestApp } from '@backstage/test-utils';
+import { DcmClientsTestProvider } from '../../api/DcmClientsContext';
 import { ServiceTypesTabContent } from './ServiceTypesTabContent';
 
 jest.mock('../../hooks/useTranslation', () => {
@@ -43,17 +43,17 @@ const MOCK_SERVICE_TYPES = [
 
 function renderWith(mockCatalogApi: { listServiceTypes: jest.Mock }) {
   return render(
-    <TestApiProvider apis={[[catalogApiRef, mockCatalogApi]]}>
+    <DcmClientsTestProvider clients={{ catalogApi: mockCatalogApi }}>
       <ServiceTypesTabContent />
-    </TestApiProvider>,
+    </DcmClientsTestProvider>,
   );
 }
 
 async function renderWithApp(mockCatalogApi: { listServiceTypes: jest.Mock }) {
   return renderInTestApp(
-    <TestApiProvider apis={[[catalogApiRef, mockCatalogApi]]}>
+    <DcmClientsTestProvider clients={{ catalogApi: mockCatalogApi }}>
       <ServiceTypesTabContent />
-    </TestApiProvider>,
+    </DcmClientsTestProvider>,
   );
 }
 
@@ -69,9 +69,9 @@ describe('ServiceTypesTabContent', () => {
       };
       renderWith(mockApi);
 
-      await waitFor(() =>
-        expect(screen.getByText(/Service unavailable/i)).toBeInTheDocument(),
-      );
+      expect(
+        await screen.findByText(/Service unavailable/i),
+      ).toBeInTheDocument();
     });
 
     it('shows a Retry button when the API rejects', async () => {
@@ -82,11 +82,9 @@ describe('ServiceTypesTabContent', () => {
       };
       renderWith(mockApi);
 
-      await waitFor(() =>
-        expect(
-          screen.getByRole('button', { name: /retry/i }),
-        ).toBeInTheDocument(),
-      );
+      expect(
+        await screen.findByRole('button', { name: /retry/i }),
+      ).toBeInTheDocument();
     });
 
     it('re-calls listServiceTypes when Retry is clicked', async () => {
@@ -146,11 +144,9 @@ describe('ServiceTypesTabContent', () => {
       };
       renderWith(mockApi);
 
-      await waitFor(() =>
-        expect(
-          screen.getByText(/no service types defined/i),
-        ).toBeInTheDocument(),
-      );
+      expect(
+        await screen.findByText(/no service types defined/i),
+      ).toBeInTheDocument();
     });
 
     it('does not show an error alert when the list is empty', async () => {
@@ -159,11 +155,9 @@ describe('ServiceTypesTabContent', () => {
       };
       renderWith(mockApi);
 
-      await waitFor(() =>
-        expect(
-          screen.getByText(/no service types defined/i),
-        ).toBeInTheDocument(),
-      );
+      expect(
+        await screen.findByText(/no service types defined/i),
+      ).toBeInTheDocument();
       expect(
         screen.queryByRole('button', { name: /retry/i }),
       ).not.toBeInTheDocument();

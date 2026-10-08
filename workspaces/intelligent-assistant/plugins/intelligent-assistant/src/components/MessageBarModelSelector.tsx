@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { Ref, useEffect, useState } from 'react';
+import { Fragment, Ref, useEffect, useMemo, useState } from 'react';
 
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import {
   Dropdown,
   DropdownItem,
@@ -25,46 +26,116 @@ import {
   MenuToggleElement,
   Tooltip,
 } from '@patternfly/react-core';
-import { AngleDownIcon } from '@patternfly/react-icons';
+import {
+  AngleDownIcon,
+  CheckIcon,
+  OutlinedImageIcon,
+} from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 
 type MessageBarModelSelectorProps = {
   selectedModel: string;
-  models: { label: string; value: string; provider: string }[];
+  models: {
+    label: string;
+    value: string;
+    provider: string;
+    supportsVision?: boolean;
+  }[];
   onSelect: (model: string) => void;
   disabled?: boolean;
   disabledTooltip?: string;
 };
 
-const useStyles = makeStyles(theme => ({
-  selectorToggle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    color: theme.palette.text.secondary,
-    fontSize: 14,
-    fontWeight: 500,
-    cursor: 'pointer',
-    padding: '4px 8px',
-    borderRadius: 8,
-    border: 'none',
-    background: 'transparent',
-    '&:hover': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    '&:disabled': {
-      cursor: 'not-allowed',
-      opacity: 0.5,
-    },
+const SelectorToggle = styled(MenuToggle)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  color: theme.palette.text.secondary,
+  fontSize: 14,
+  fontWeight: 500,
+  cursor: 'pointer',
+  padding: '4px 8px',
+  borderRadius: 8,
+  border: 'none',
+  background: 'transparent',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
   },
-  dropdown: {
-    '& ul, & li': {
-      padding: 0,
-      margin: 0,
-    },
+  '&:disabled': {
+    cursor: 'not-allowed',
+    opacity: 0.5,
   },
 }));
+
+const VisionIndicatorIcon = styled(OutlinedImageIcon)(({ theme }) => ({
+  width: 16,
+  height: 16,
+  color: theme.palette.text.secondary,
+  flexShrink: 0,
+}));
+
+const VisionIndicatorWrap = styled('span')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  lineHeight: 1,
+});
+
+/** Fixed-width slot so vision icons align across rows (empty when unsupported). */
+const VisionSlot = styled('span')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: 16,
+  height: 16,
+});
+
+/** Fixed-width slot so the select tick aligns across rows (empty when not selected). */
+const TickSlot = styled('span')(({ theme }) => ({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: '1em',
+  height: '1em',
+  color: theme.palette.primary.main,
+}));
+
+const ModelLabel = styled('span')({
+  flex: '1 1 auto',
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
+const ModelItemContent = styled('span')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  width: '100%',
+  minWidth: 0,
+});
+
+const StyledDropdown = styled(Dropdown)({
+  '& ul, & li': {
+    padding: 0,
+    margin: 0,
+  },
+  '& .pf-v6-c-menu__item-main': {
+    width: '100%',
+  },
+  '& .pf-v6-c-menu__item-text': {
+    flex: '1 1 auto',
+    minWidth: 0,
+    overflow: 'hidden',
+  },
+  // We render our own fixed tick column; hide PF's conditional select icon.
+  '& .pf-v6-c-menu__item-select-icon': {
+    display: 'none',
+  },
+});
 
 export const MessageBarModelSelector = ({
   selectedModel,
@@ -74,7 +145,6 @@ export const MessageBarModelSelector = ({
   disabledTooltip,
 }: MessageBarModelSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const classes = useStyles();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -86,24 +156,33 @@ export const MessageBarModelSelector = ({
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
 
+  const visionScreenshotTooltip = useMemo(
+    () => (
+      <Fragment>
+        {t('modelSelector.visionScreenshot.line1')}
+        <br />
+        {t('modelSelector.visionScreenshot.line2')}
+      </Fragment>
+    ),
+    [t],
+  );
+
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
-    <MenuToggle
+    <SelectorToggle
       ref={toggleRef}
       onClick={() => setIsOpen(!isOpen)}
       isExpanded={isOpen}
       isDisabled={disabled}
       variant="plain"
-      className={classes.selectorToggle}
       aria-label={t('aria.chatbotSelector')}
     >
       {selectedModelLabel}
       <AngleDownIcon />
-    </MenuToggle>
+    </SelectorToggle>
   );
 
   const dropdown = (
-    <Dropdown
-      className={classes.dropdown}
+    <StyledDropdown
       isOpen={isOpen && !disabled}
       onSelect={(_e, value) => {
         if (disabled) return;
@@ -119,23 +198,54 @@ export const MessageBarModelSelector = ({
       maxMenuHeight={models.length > 10 ? '240px' : undefined}
     >
       <DropdownList>
-        {models.map(model => (
-          <DropdownItem
-            value={model.value}
-            key={model.value}
-            isSelected={selectedModel === model.value}
-          >
-            {model.label}
-          </DropdownItem>
-        ))}
+        {models.map(model => {
+          const isSelected = selectedModel === model.value;
+          return (
+            <DropdownItem
+              value={model.value}
+              key={model.value}
+              isSelected={isSelected}
+            >
+              <ModelItemContent>
+                <ModelLabel title={model.label}>{model.label}</ModelLabel>
+                {model.supportsVision ? (
+                  <VisionSlot className="lightspeed-model-vision-slot">
+                    <Tooltip content={visionScreenshotTooltip}>
+                      <VisionIndicatorWrap
+                        aria-label={t(
+                          'modelSelector.visionScreenshot.ariaLabel',
+                        )}
+                        onClick={event => event.stopPropagation()}
+                        onMouseDown={event => event.stopPropagation()}
+                      >
+                        <VisionIndicatorIcon aria-hidden />
+                      </VisionIndicatorWrap>
+                    </Tooltip>
+                  </VisionSlot>
+                ) : (
+                  <VisionSlot
+                    className="lightspeed-model-vision-slot"
+                    aria-hidden
+                  />
+                )}
+                <TickSlot
+                  className="lightspeed-model-tick-slot"
+                  aria-hidden={!isSelected}
+                >
+                  {isSelected ? <CheckIcon aria-hidden /> : null}
+                </TickSlot>
+              </ModelItemContent>
+            </DropdownItem>
+          );
+        })}
       </DropdownList>
-    </Dropdown>
+    </StyledDropdown>
   );
 
   if (disabled && disabledTooltip) {
     return (
       <Tooltip content={disabledTooltip}>
-        <span>{dropdown}</span>
+        <Typography component="span">{dropdown}</Typography>
       </Tooltip>
     );
   }

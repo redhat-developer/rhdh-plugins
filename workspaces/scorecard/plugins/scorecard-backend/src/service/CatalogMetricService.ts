@@ -22,16 +22,23 @@ import {
   ScorecardEntityHealthSummary,
   aggregationTypes,
   AggregatedMetric,
+  MetricTimeSeriesResponse,
+  MetricTimeSeriesPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Entity } from '@backstage/catalog-model';
 import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
-import { NotFoundError, stringifyError } from '@backstage/errors';
+import {
+  NotAllowedError,
+  NotFoundError,
+  stringifyError,
+} from '@backstage/errors';
 import {
   AuthService,
   BackstageCredentials,
   LoggerService,
 } from '@backstage/backend-plugin-api';
+import type { Config } from '@backstage/config';
 import { filterAuthorizedMetrics } from '../permissions/permissionUtils';
 import {
   PermissionCondition,
@@ -41,9 +48,11 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { isMetricCalculationError } from '../utils/metricCalculationError';
+import { isMetricIdDisabled } from '../utils/metricUtils';
 import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 
 type CatalogMetricServiceOptions = {
   catalog: CatalogService;
@@ -52,6 +61,7 @@ type CatalogMetricServiceOptions = {
   database: DatabaseMetricValues;
   logger: LoggerService;
   thresholdResolver: ThresholdResolver;
+  config: Config;
 };
 
 export class CatalogMetricService {
@@ -70,12 +80,14 @@ export class CatalogMetricService {
   }
 
   private readonly logger: LoggerService;
+  private readonly config: Config;
 
   private readonly catalog: CatalogService;
   private readonly auth: AuthService;
   private readonly registry: MetricProvidersRegistry;
   private readonly database: DatabaseMetricValues;
   private readonly thresholdResolver: ThresholdResolver;
+  private readonly thresholdEvaluator = new ThresholdEvaluator();
 
   private static readonly MAX_FETCHABLE_ROWS = 10_000;
   private static readonly BATCH_SIZE = 100;
@@ -87,6 +99,7 @@ export class CatalogMetricService {
     this.database = options.database;
     this.logger = options.logger;
     this.thresholdResolver = options.thresholdResolver;
+    this.config = options.config;
   }
 
   /**
@@ -118,31 +131,33 @@ export class CatalogMetricService {
       metricsToFetch,
       filter,
     );
+    const metricIdsToFetch = authorizedMetricsToFetch
+      .filter(m => !isMetricIdDisabled(this.config, m.id, entity, this.logger))
+      .map(m => m.id);
+
     const rawResults = await this.database.readLatestEntityMetricValues(
       entityRef,
-      authorizedMetricsToFetch.map(m => m.id),
+      metricIdsToFetch,
     );
 
     return rawResults.map(
-      ({ metric_id, value, error_message, timestamp, status }) => {
+      ({ metricId, value, errorMessage, timestamp, status }) => {
         let thresholds: ThresholdConfig | undefined;
         let thresholdError: string | undefined;
 
-        const provider = this.registry.getProvider(metric_id);
-        const metric = this.registry.getMetric(metric_id);
+        const metric = this.registry.getMetric(metricId);
 
         try {
           thresholds = this.thresholdResolver.resolveEntityThresholds(
             entity,
             metric,
-            provider.getProviderId(),
           );
 
           if (value === null) {
             thresholdError =
               'Unable to evaluate thresholds, metric value is missing';
-          } else if (error_message) {
-            thresholdError = error_message;
+          } else if (errorMessage) {
+            thresholdError = errorMessage;
           }
         } catch (error) {
           thresholdError = stringifyError(error);
@@ -150,7 +165,7 @@ export class CatalogMetricService {
 
         const isMetricCalcError = isMetricCalculationError({
           value,
-          error_message,
+          errorMessage,
         });
 
         return {
@@ -160,11 +175,14 @@ export class CatalogMetricService {
             title: metric.title,
             description: metric.description,
             type: metric.type,
+            unit: metric.unit,
             history: metric.history,
+            defaultVisualization: metric.defaultVisualization,
+            collectorIds: metric.collectorIds,
           },
           ...(isMetricCalcError && {
             error:
-              error_message ??
+              errorMessage ??
               stringifyError(new Error(`Metric value is 'undefined'`)),
           }),
           result: {
@@ -180,6 +198,120 @@ export class CatalogMetricService {
         };
       },
     );
+  }
+
+  /**
+   * Get a daily time series for one metric on one catalog entity.
+   *
+   * Returns at most one point per UTC calendar day: the latest sample
+   * (`MAX(id)`), whether success or calculation error. Calculation failures
+   * use `value: null` and `error`. Threshold evaluation failures also set
+   * `error` (with `thresholdEvaluation` null). When entity threshold
+   * resolution fails, `thresholdsError` is set on the response and points are
+   * not classified (`thresholdEvaluation` null, no per-point `error`).
+   *
+   * @param entityRef - Entity reference in format "kind:namespace/name"
+   * @param metricId - Metric ID to fetch
+   * @param from - Inclusive range start
+   * @param to - Inclusive range end
+   * @param filter - Permission filter
+   */
+  async getEntityMetricTimeSeries(
+    entityRef: string,
+    metricId: string,
+    from: Date,
+    to: Date,
+    filter?: PermissionCriteria<
+      PermissionCondition<string, PermissionRuleParams>
+    >,
+  ): Promise<MetricTimeSeriesResponse> {
+    const entity = await this.catalog.getEntityByRef(entityRef, {
+      credentials: await this.auth.getOwnServiceCredentials(),
+    });
+    if (!entity) {
+      throw new NotFoundError(`Entity not found: ${entityRef}`);
+    }
+
+    const metric = this.registry.getMetric(metricId);
+    const authorizedMetrics = filterAuthorizedMetrics([metric], filter);
+    if (authorizedMetrics.length === 0) {
+      throw new NotAllowedError(
+        `To view the scorecard metrics, your administrator must grant you the required permission.`,
+      );
+    }
+
+    const rows = await this.database.readLatestEntityMetricValuesPerUtcDay(
+      entityRef,
+      metricId,
+      from,
+      to,
+    );
+
+    let thresholds: ThresholdConfig | undefined;
+    let thresholdsError: string | undefined;
+    try {
+      thresholds = this.thresholdResolver.resolveEntityThresholds(
+        entity,
+        metric,
+      );
+    } catch (err) {
+      thresholdsError = stringifyError(err);
+      this.logger.warn(
+        `Failed to resolve thresholds for metric '${metric.id}' on entity '${entityRef}': ${thresholdsError}`,
+      );
+    }
+
+    const points: MetricTimeSeriesPoint[] = rows.map(row => {
+      if (isMetricCalculationError(row)) {
+        return {
+          value: null,
+          timestamp: row.timestamp.toISOString(),
+          error: row.errorMessage!,
+        };
+      }
+
+      let thresholdEvaluation: string | null = null;
+      let error: string | undefined;
+      if (row.value !== null && thresholds) {
+        try {
+          thresholdEvaluation =
+            this.thresholdEvaluator.getFirstMatchingThreshold(
+              row.value,
+              metric.type,
+              thresholds,
+            ) ?? null;
+        } catch (err) {
+          error = stringifyError(err);
+          this.logger.warn(
+            `Failed to evaluate thresholds for metric '${metric.id}' on entity '${entityRef}': ${error}`,
+          );
+        }
+      }
+
+      return {
+        value: row.value,
+        timestamp: row.timestamp.toISOString(),
+        thresholdEvaluation,
+        ...(error ? { error } : {}),
+      };
+    });
+
+    return {
+      metricId: metric.id,
+      entityRef,
+      points,
+      metadata: {
+        title: metric.title,
+        description: metric.description,
+        type: metric.type,
+        unit: metric.unit,
+        history: metric.history,
+        defaultVisualization: metric.defaultVisualization,
+        collectorIds: metric.collectorIds,
+      },
+      ...(thresholds ? { thresholds } : {}),
+      ...(thresholdsError ? { thresholdsError } : {}),
+    };
   }
 
   /**
@@ -282,6 +414,7 @@ export class CatalogMetricService {
           title: metric.title,
           description: metric.description,
           type: metric.type,
+          unit: metric.unit,
         },
         entities: [],
         pagination: {
@@ -324,7 +457,7 @@ export class CatalogMetricService {
         const batch = rows.slice(i, i + CatalogMetricService.BATCH_SIZE);
         const response = await this.catalog.getEntitiesByRefs(
           {
-            entityRefs: batch.map(row => row.catalog_entity_ref),
+            entityRefs: batch.map(row => row.catalogEntityRef),
             fields: [
               'kind',
               'metadata.name',
@@ -339,7 +472,7 @@ export class CatalogMetricService {
         for (let j = 0; j < batch.length; j++) {
           const entity = response.items[j];
           if (!entity) continue; // null = unauthorized or not found, skip
-          entityMap.set(batch[j].catalog_entity_ref, entity);
+          entityMap.set(batch[j].catalogEntityRef, entity);
           accessibleRows.push(batch[j]);
         }
       }
@@ -353,6 +486,7 @@ export class CatalogMetricService {
           title: metric.title,
           description: metric.description,
           type: metric.type,
+          unit: metric.unit,
         },
         entities: [],
         pagination: {
@@ -385,6 +519,7 @@ export class CatalogMetricService {
           title: metric.title,
           description: metric.description,
           type: metric.type,
+          unit: metric.unit,
         },
         entities: [],
         pagination: {
@@ -404,10 +539,10 @@ export class CatalogMetricService {
     // Enrich page rows from the cached entity map
     const enrichedEntities: EntityMetricDetail[] = [];
     for (const row of pageRows) {
-      const entity = entityMap.get(row.catalog_entity_ref);
+      const entity = entityMap.get(row.catalogEntityRef);
       if (!entity) continue;
       enrichedEntities.push({
-        entityRef: row.catalog_entity_ref,
+        entityRef: row.catalogEntityRef,
         entityNamespace: entity.metadata.namespace,
         entityName: entity.metadata.name,
         entityKind: entity.kind,
@@ -425,6 +560,7 @@ export class CatalogMetricService {
         title: metric.title,
         description: metric.description,
         type: metric.type,
+        unit: metric.unit,
       },
       entities: enrichedEntities,
       pagination: {

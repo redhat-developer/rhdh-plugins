@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import type {
-  AggregatedMetricResult,
-  StatusGroupedAggregationResult,
+import {
+  aggregationTypes,
+  type AggregatedMetricResult,
+  type StatusGroupedAggregationResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { AggregatedMetricMapper } from '../../mappers';
 import type { AggregatedMetricLoader } from '../AggregatedMetricLoader';
@@ -30,6 +31,12 @@ export class StatusGroupedAggregationStrategy implements AggregationStrategy {
     options: AggregationOptions,
   ): Promise<AggregatedMetricResult> {
     const { entityRefs, metric, thresholds, aggregationConfig } = options;
+
+    if (aggregationConfig.type !== aggregationTypes.statusGrouped) {
+      throw new Error(
+        `Expected aggregation type "${aggregationTypes.statusGrouped}" but received "${aggregationConfig.type}"`,
+      );
+    }
 
     const aggregatedMetric =
       await this.loader.loadStatusGroupedMetricByEntityRefs(

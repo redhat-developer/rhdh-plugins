@@ -18,27 +18,28 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { makeStyles, Typography } from '@material-ui/core';
+import { styled, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import {
   ChatbotContent,
   ChatbotFooter,
   MessageBar,
-  MessageProps,
+  MessageBox,
 } from '@patternfly/chatbot';
 import {
   Alert,
-  AlertActionCloseButton,
-  AlertGroup,
-  AlertVariant,
   Button,
   Drawer,
   DrawerContent,
   DrawerContentBody,
   DrawerPanelContent,
+  Flex,
+  FlexItem,
+  Icon,
   Tooltip,
   type AlertProps,
 } from '@patternfly/react-core';
-import { TimesIcon } from '@patternfly/react-icons';
+import { AddCircleOIcon, PlusIcon, TimesIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
@@ -52,222 +53,197 @@ import {
   useDocumentStatusPolling,
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
+import { useRenameDocument } from '../../hooks/notebooks/useRenameDocument';
+import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
+import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
-import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
+import { useStopConversation } from '../../hooks/useStopConversation';
 import { useTranslation } from '../../hooks/useTranslation';
+import botAvatarDark from '../../images/bot-avatar-dark.svg';
+import botAvatarLight from '../../images/bot-avatar.svg';
+import userAvatar from '../../images/user-avatar.svg';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
+import { runFileUploads } from '../../utils/notebook-upload-runner';
 import { LightspeedChatBox } from '../LightspeedChatBox';
+import { ToastAlertGroup } from '../ToastAlertGroup';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
+import { useNotebookStream } from './NotebookStreamProvider';
 import { OverwriteConfirmModal } from './OverwriteConfirmModal';
-import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
+import { SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    height: '100%',
-    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
+const Root = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+  width: '100%',
+  overflow: 'hidden',
+});
+
+const StyledDrawer = styled(Drawer)({
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+});
+
+const StyledDrawerContent = styled(DrawerContent)({
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+});
+
+const StyledDrawerContentBody = styled(DrawerContentBody)({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+});
+
+const MainArea = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+});
+
+const ContentColumn = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minWidth: 0,
+  minHeight: 0,
+  overflow: 'hidden',
+});
+
+const TopBar = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  padding: `${theme.spacing(1.5)} ${theme.spacing(2)}`,
+}));
+
+const MainContent = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+});
+
+// Match Chat new-chat welcome: grow with content and let StyledChatbotContent scroll.
+// A flex:1 + height:100% MessageBox fills the parent so outer overflowY never engages,
+// and justifyContent:flex-end on that inner scroller clips overflow without a usable
+// scrollbar (RHDHBUGS-3751 / notebook details welcome in overlay & docked).
+const WelcomeMessageBox = styled(MessageBox)({
+  flex: 'none',
+  height: 'auto !important',
+  overflow: 'visible',
+  maxWidth: 'unset !important',
+  width: '100%',
+  justifyContent: 'flex-end',
+});
+
+/** Pushes welcome content to the bottom when the panel is taller than the content. */
+const WelcomeContentSpacer = styled('div')({
+  flex: 1,
+  minHeight: 0,
+});
+
+const NotebookContentArea = styled('div')(({ theme }) => ({
+  width: '100%',
+  marginBlockStart: theme.spacing(3),
+}));
+
+const PromptSuggestions = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
+  width: '100%',
+  marginBlock: theme.spacing(3),
+  justifyContent: 'flex-start',
+}));
+
+// Empty-docs alert sits between content and footer; match MessageBox inset.
+const FooterAlignedDisclaimer = styled('div')(({ theme }) => ({
+  width: '100%',
+  boxSizing: 'border-box',
+  paddingInline: 'var(--pf-t--global--spacer--lg)',
+  paddingBlockEnd: theme.spacing(1),
+  '.pf-chatbot.pf-m-compact &': {
+    paddingInline: 'var(--pf-t--global--spacer--md)',
   },
-  drawerContainer: {
-    flex: 1,
-    minHeight: 0,
-    '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__panel-main, & .pf-v5-c-drawer__panel-main': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__panel-body, & .pf-v5-c-drawer__panel-body': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__splitter, & .pf-v5-c-drawer__splitter': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default)',
-    },
-  },
-  expandStrip: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingTop: theme.spacing(1.5),
-    gap: theme.spacing(1),
-    borderRight: '1px solid var(--pf-t--global--border--color--default)',
+}));
+
+const PromptPill = styled('button')(({ theme }) => ({
+  appearance: 'none',
+  background: 'transparent',
+  border: '1px solid var(--pf-t--global--border--color--default)',
+  borderRadius: '999px',
+  padding: `${theme.spacing(1)} ${theme.spacing(2.5)}`,
+  fontSize: '0.875rem',
+  color: 'var(--pf-t--global--text--color--regular)',
+  cursor: 'pointer',
+  transition: 'background-color 0.15s, border-color 0.15s',
+  '&:hover': {
     backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
+      'var(--pf-t--global--background--color--secondary--default)',
+    borderColor: 'var(--pf-t--global--border--color--hover)',
   },
-  addIconButton: {
-    padding: 0,
-    minWidth: 0,
-    lineHeight: 1,
+}));
+
+const StyledChatbotContent = styled(ChatbotContent)({
+  minHeight: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  // PF sets `overflow: hidden` after `overflow-y: auto` on .pf-chatbot__content,
+  // which clips the docked landing page with no way to scroll (RHDHBUGS-3751).
+  // Double class + !important so we beat the PF stylesheet order.
+  '&&': {
+    overflowX: 'hidden',
+    overflowY: 'auto',
   },
-  mainArea: {
-    display: 'flex',
-    flexDirection: 'row',
-    height: '100%',
-    minWidth: 0,
+  WebkitOverflowScrolling: 'touch',
+  '& .pf-chatbot__message-contents': {
+    overflowX: 'hidden',
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
   },
-  topBar: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
+});
+
+const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
+
+// Align footer with MessageBox inset (override PF 90%/60rem full-page footer).
+const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
+  backgroundColor: `${floatingBg} !important`,
+  alignItems: 'stretch',
+  // Match Chat: hide ChatbotFooter's injected <hr> (MessageBar supplies the edge).
+  '& > .pf-v6-c-divider': {
+    display: 'none',
   },
-  closeButton: {
-    textTransform: 'none',
-  },
-  mainContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-  },
-  drawerContentBody: {
-    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
-    height: '100%',
-  },
-  contentColumn: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-    minHeight: 0,
-    overflow: 'hidden',
-  },
-  notebookDisclaimerStrip: {
-    width: '100%',
-    maxWidth: 'unset',
+  '&>.pf-chatbot__footer-container': {
+    width: '100% !important',
+    maxWidth: 'unset !important',
     margin: 0,
-    padding: `0 0 ${theme.spacing(1)}px`,
-    boxSizing: 'border-box',
+    padding:
+      'var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg) !important',
+  },
+  '.pf-chatbot.pf-m-compact & > .pf-chatbot__footer-container': {
+    padding:
+      '0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md) !important',
+  },
+  '& .pf-chatbot__message-bar': {
     backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-    '& .pf-v6-c-alert, & .pf-v5-c-alert': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--secondary--default) !important',
-    },
-    '& .pf-v6-c-alert__content, & .pf-v5-c-alert__content': {
-      backgroundColor: 'transparent !important',
-    },
-    '& .pf-v6-c-alert__body, & .pf-v5-c-alert__body': {
-      backgroundColor: 'transparent !important',
-    },
-    '& .pf-v6-c-alert__description, & .pf-v5-c-alert__description': {
-      backgroundColor: 'transparent !important',
-    },
-  },
-  notebookDisclaimerInner: {
-    width: '95%',
-    maxWidth: 'unset',
-    margin: '0 auto',
-  },
-  toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
-    '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
-  },
-  toastAlert: {
-    maxWidth: '350px',
-    '& .pf-v6-c-alert__title': {
-      margin: 0,
-    },
-  },
-  welcomeContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    overflow: 'auto',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebookEmptyUpload: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebookContentArea: {
-    width: '95%',
-    maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto 0 auto`,
-    padding: 0,
-  },
-  notebookHeading: {
-    fontSize: '2rem',
-    fontWeight: 500,
-    lineHeight: 1.25,
-    padding: `${theme.spacing(1)}px 0`,
-  },
-  notebookSummary: {
-    fontSize: '1rem',
-    lineHeight: 2,
-    color: 'var(--pf-t--global--text--color--regular)',
-    paddingTop: theme.spacing(0.5),
-  },
-  promptSuggestions: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: theme.spacing(1),
-    width: '95%',
-    maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto ${theme.spacing(3)}px auto`,
-    justifyContent: 'flex-start',
-  },
-  promptPill: {
-    appearance: 'none' as const,
-    background: 'transparent',
-    border: `1px solid var(--pf-t--global--border--color--default)`,
-    borderRadius: '999px',
-    padding: `${theme.spacing(1)}px ${theme.spacing(2.5)}px`,
-    fontSize: '0.875rem',
-    color: 'var(--pf-t--global--text--color--regular)',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s, border-color 0.15s',
-    '&:hover': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--secondary--default)',
-      borderColor: 'var(--pf-t--global--border--color--hover)',
-    },
-  },
-  footer: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default) !important',
-    '&>.pf-chatbot__footer-container': {
-      width: '95% !important',
-      maxWidth: 'unset !important',
-    },
-    '& .pf-chatbot__message-bar': {
-      backgroundColor:
-        theme.palette.type === 'light'
-          ? theme.palette.grey[100]
-          : 'var(--pf-t--global--background--color--secondary--default)',
-    },
-    '& .pf-chatbot__button--send, & .pf-chatbot__button--microphone': {
-      '--pf-v6-c-button--BorderRadius':
-        'var(--pf-t--global--border--radius--pill)',
-      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
-    },
-  },
-  chatContent: {
-    minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    overflow: 'auto',
+      theme.palette.mode === 'light'
+        ? theme.palette.grey[100]
+        : 'var(--pf-t--global--background--color--secondary--default)',
   },
 }));
 
@@ -283,6 +259,12 @@ type NotebookViewProps = {
   profileLoading: boolean;
   topicRestrictionEnabled: boolean;
   onClose: () => void;
+  isCompact?: boolean;
+  sidebarCollapsed: boolean;
+  onSidebarCollapsedChange: (collapsed: boolean) => void;
+  isUploadModalOpen: boolean;
+  onUploadModalOpenChange: (open: boolean) => void;
+  onUploadsInProgressChange?: (inProgress: boolean) => void;
 };
 
 export const NotebookView = ({
@@ -297,8 +279,16 @@ export const NotebookView = ({
   profileLoading,
   topicRestrictionEnabled,
   onClose,
+  isCompact = false,
+  sidebarCollapsed,
+  onSidebarCollapsedChange,
+  isUploadModalOpen,
+  onUploadModalOpenChange,
+  onUploadsInProgressChange,
 }: NotebookViewProps) => {
-  const classes = useStyles();
+  const theme = useTheme();
+  const botAvatar =
+    theme.palette.mode === 'dark' ? botAvatarDark : botAvatarLight;
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const configApi = useApi(configApiRef);
@@ -314,7 +304,19 @@ export const NotebookView = ({
   const [conversationId, setConversationId] = useState(
     metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
   );
-  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
+  const { mutate: stopConversation } = useStopConversation();
+
+  // Streaming lives in a store above the display-mode remount boundary, so it
+  // survives overlay/docked/fullscreen switches. This view only subscribes.
+  const {
+    messages: streamMessages,
+    status: streamStatus,
+    requestId,
+    send: sendNotebookStream,
+    stop: stopNotebookStream,
+  } = useNotebookStream(sessionId);
+  const isStreaming = streamStatus === 'streaming';
+
   const [announcement, setAnnouncement] = useState<string | undefined>(
     undefined,
   );
@@ -330,62 +332,87 @@ export const NotebookView = ({
     setDeleteDocumentTarget({ id: documentId, name: documentId });
   }, []);
 
-  const onComplete = useCallback(
-    (message: string) => {
-      setIsSendButtonDisabled(false);
-      setAnnouncement(`Message from Bot: ${message}`);
-      queryClient.invalidateQueries({
-        queryKey: ['conversationMessages', conversationId],
-      });
-    },
-    [queryClient, conversationId],
+  const { mutateAsync: renameDocument } = useRenameDocument();
+
+  // Read-only: persisted (server) messages + transform. Displayed when the
+  // store has no live/finished stream for this session. Sending is handled by
+  // the stream store, not this hook.
+  const { conversationMessages, scrollToBottomRef } = useConversationMessages(
+    conversationId,
+    userName,
+    notebookModel,
+    '',
+    avatar,
   );
 
-  const onStart = useCallback((conv_id: string) => {
-    setConversationId(conv_id);
-  }, []);
+  // Show the store's transcript whenever there is an active or finished stream
+  // for this session; otherwise fall back to persisted server messages.
+  const messages =
+    streamStatus === 'idle' ? conversationMessages : streamMessages;
 
-  const createMessageAdapter = useCallback(
-    async (vars: CreateMessageVariables) => {
-      return notebookCreateMessage({
-        prompt: vars.prompt,
-        sessionId,
-      });
-    },
-    [notebookCreateMessage, sessionId],
-  );
-
-  const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
-    useConversationMessages(
-      conversationId,
-      userName,
-      notebookModel,
-      '',
-      avatar,
-      onComplete,
-      onStart,
-      createMessageAdapter,
-    );
-
-  const [messages, setMessages] =
-    useState<MessageProps[]>(conversationMessages);
-
+  // Keep the local conversation id in sync when the store resolves a temp
+  // conversation to its real id (written into the session query cache).
   useEffect(() => {
-    setMessages(conversationMessages);
-  }, [conversationMessages]);
+    if (
+      metadata?.conversation_id &&
+      metadata.conversation_id !== conversationId
+    ) {
+      setConversationId(metadata.conversation_id);
+    }
+  }, [metadata?.conversation_id, conversationId]);
+
+  // Announce the completed bot response for screen readers.
+  const prevStatusRef = useRef(streamStatus);
+  useEffect(() => {
+    if (prevStatusRef.current === 'streaming' && streamStatus === 'complete') {
+      const last = streamMessages[streamMessages.length - 1];
+      if (last?.role === 'bot' && last.content) {
+        setAnnouncement(`Message from Bot: ${last.content}`);
+      }
+    }
+    prevStatusRef.current = streamStatus;
+  }, [streamStatus, streamMessages]);
 
   const sendMessage = useCallback(
     (message: string | number) => {
+      const text = message.toString();
+      if (!text.trim()) return;
       setAnnouncement(
-        t('conversation.announcement.userMessage' as any, {
-          prompt: message.toString(),
-        }),
+        t('conversation.announcement.userMessage' as any, { prompt: text }),
       );
-      handleInputPrompt(message.toString(), []);
-      setIsSendButtonDisabled(true);
+      sendNotebookStream({
+        prompt: text,
+        seedMessages: messages,
+        conversationId,
+        userName,
+        avatar: avatar || userAvatar,
+        botAvatar,
+        selectedModel: notebookModel,
+        createMessage: (prompt: string, options?: { signal?: AbortSignal }) =>
+          notebookCreateMessage({ prompt, sessionId, signal: options?.signal }),
+      });
     },
-    [handleInputPrompt, t],
+    [
+      sendNotebookStream,
+      messages,
+      conversationId,
+      userName,
+      avatar,
+      botAvatar,
+      notebookModel,
+      notebookCreateMessage,
+      sessionId,
+      t,
+    ],
   );
+
+  const handleStopButton = useCallback(() => {
+    if (requestId) {
+      stopConversation(requestId);
+    }
+    stopNotebookStream();
+    setAnnouncement(t('conversation.announcement.responseStopped'));
+  }, [requestId, stopConversation, stopNotebookStream, t]);
 
   const notebookPrompts = useNotebookWelcomePrompts();
   const welcomePrompts = notebookPrompts.map(title => ({
@@ -393,8 +420,8 @@ export const NotebookView = ({
     onClick: () => sendMessage(title),
   }));
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const uploadMutation = useUploadDocument();
+
   const [uploadingFileNames, setUploadingFileNames] = useState<string[]>([]);
   const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [toastAlerts, setToastAlerts] = useState<Partial<AlertProps>[]>([]);
@@ -403,8 +430,33 @@ export const NotebookView = ({
     new Set(),
   );
   const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
+  const [allFilesForOverwrite, setAllFilesForOverwrite] = useState<File[]>([]);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
+
+  const handleRenameDocument = useCallback(
+    async (documentId: string, newTitle: string) => {
+      try {
+        await renameDocument({ sessionId, documentId, newTitle });
+      } catch {
+        setToastAlerts(prev => [
+          {
+            key: Date.now() + documentId,
+            title: (t as Function)('notebook.document.rename.error', {
+              documentName: documentId,
+            }) as string,
+            variant: 'danger',
+          },
+          ...prev,
+        ]);
+      }
+    },
+    [renameDocument, sessionId, t],
+  );
+  const handleRenameNotebook = useRenameNotebookWithAlert({
+    setAlerts: setToastAlerts,
+    getNotebookName: () => notebookName,
+  });
 
   const confirmDeleteDocument = useCallback(async () => {
     if (!deleteDocumentTarget) return;
@@ -435,8 +487,12 @@ export const NotebookView = ({
     }
   }, [deleteDocumentTarget, notebooksApi, sessionId, queryClient, t]);
 
-  const handleOpenUploadModal = () => setIsUploadModalOpen(true);
-  const handleCloseUploadModal = () => setIsUploadModalOpen(false);
+  const handleOpenUploadModal = () => onUploadModalOpenChange(true);
+  const handleCloseUploadModal = () => onUploadModalOpenChange(false);
+
+  const handleCloseNotebook = () => {
+    onClose();
+  };
 
   const handleFilesUploading = (files: File[]) => {
     setUploadingFileNames(prev => {
@@ -472,28 +528,43 @@ export const NotebookView = ({
     ]);
   };
 
-  const handleDuplicatesFound = (files: File[]) => {
-    setFilesToOverwrite(files);
+  const handleDuplicatesFound = (duplicateFiles: File[], allFiles: File[]) => {
+    setFilesToOverwrite(duplicateFiles);
+    setAllFilesForOverwrite(allFiles);
+    onUploadModalOpenChange(false);
     setIsOverwriteModalOpen(true);
   };
 
-  const handleOverwriteConfirm = () => {
-    const files = filesToOverwrite;
+  const handleOverwriteConfirm = (filesToUpload: File[]) => {
     setIsOverwriteModalOpen(false);
     setFilesToOverwrite([]);
+    setAllFilesForOverwrite([]);
 
-    if (files.length === 0) return;
+    if (filesToUpload.length === 0) return;
 
-    setFilesToAddToModal(files);
+    runFileUploads(uploadMutation, sessionId, filesToUpload, {
+      onUploading: handleFilesUploading,
+      onStarted: handleUploadStarted,
+      onFailed: handleUploadFailed,
+    });
   };
 
   const handleFilesAddedToModal = () => {
     setFilesToAddToModal([]);
   };
 
+  const handleOverwriteBack = () => {
+    setIsOverwriteModalOpen(false);
+    setFilesToAddToModal(allFilesForOverwrite);
+    setFilesToOverwrite([]);
+    setAllFilesForOverwrite([]);
+    onUploadModalOpenChange(true);
+  };
+
   const handleOverwriteCancel = () => {
     setIsOverwriteModalOpen(false);
     setFilesToOverwrite([]);
+    setAllFilesForOverwrite([]);
   };
 
   const pollingResults = useDocumentStatusPolling(sessionId, pendingUploads);
@@ -560,12 +631,17 @@ export const NotebookView = ({
   const isAddDisabled =
     totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
 
+  useEffect(() => {
+    onUploadsInProgressChange?.(hasUploadsInProgress);
+  }, [hasUploadsInProgress, onUploadsInProgressChange]);
+
   const panelContent = (
     <DrawerPanelContent
-      isResizable
-      defaultSize="310px"
-      minSize="232px"
-      maxSize="50%"
+      isResizable={!isCompact}
+      defaultSize={isCompact ? '100%' : '310px'}
+      minSize={isCompact ? '100%' : '232px'}
+      maxSize={isCompact ? '100%' : '50%'}
+      hasNoBorder
       resizeAriaLabel={t('notebook.view.sidebar.resize')}
     >
       <DocumentSidebar
@@ -576,37 +652,46 @@ export const NotebookView = ({
         deletingDocumentIds={deletingDocumentIds}
         collapsed={sidebarCollapsed}
         hasUploadsInProgress={hasUploadsInProgress}
-        onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
+        onToggleCollapse={() => onSidebarCollapsedChange(!sidebarCollapsed)}
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
+        onRenameDocument={handleRenameDocument}
+        onRenameNotebook={newName => handleRenameNotebook(sessionId, newName)}
       />
     </DrawerPanelContent>
   );
 
   const renderNotebookDisclaimerAlert = () => (
-    <div className={classes.notebookDisclaimerStrip}>
-      <div className={classes.notebookDisclaimerInner}>
-        <Alert isInline variant="info" title={t('aria.important')}>
-          {t('disclaimer.withoutValidation')}
-        </Alert>
-      </div>
-    </div>
+    <Alert isInline variant="info" title={t('aria.important')}>
+      {t('disclaimer')}
+    </Alert>
   );
 
   const renderMainContent = () => {
     if (hasNoDocuments && messages.length === 0) {
       return (
-        <Typography component="span" className={classes.notebookEmptyUpload}>
-          <UploadResourceScreen
-            onUploadClick={handleOpenUploadModal}
-            isProcessing={uploadingFileNames.length > 0}
-          />
-        </Typography>
+        <StyledChatbotContent isPrimary>
+          <Typography
+            component="span"
+            sx={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0,
+              minWidth: 0,
+            }}
+          >
+            <UploadResourceScreen
+              onUploadClick={handleOpenUploadModal}
+              isProcessing={uploadingFileNames.length > 0}
+            />
+          </Typography>
+        </StyledChatbotContent>
       );
     }
     if (messages.length > 0) {
       return (
-        <ChatbotContent className={classes.chatContent}>
+        <StyledChatbotContent isPrimary>
           <LightspeedChatBox
             userName={userName}
             messages={messages}
@@ -615,180 +700,230 @@ export const NotebookView = ({
             ref={scrollToBottomRef}
             welcomePrompts={[]}
             conversationId={conversationId}
-            isStreaming={isSendButtonDisabled}
+            isStreaming={isStreaming}
             topicRestrictionEnabled={topicRestrictionEnabled}
             showSourcesChipPopover
           />
-        </ChatbotContent>
+        </StyledChatbotContent>
       );
     }
     return (
-      <div className={classes.welcomeContainer}>
-        <div style={{ flex: 1 }} />
-        {renderNotebookDisclaimerAlert()}
-        <div className={classes.notebookContentArea}>
-          <Typography className={classes.notebookHeading}>
-            {notebookName}
-          </Typography>
-          {topicSummary && (
-            <Typography className={classes.notebookSummary}>
-              {topicSummary}
+      <StyledChatbotContent isPrimary>
+        <WelcomeContentSpacer aria-hidden />
+        <WelcomeMessageBox>
+          {renderNotebookDisclaimerAlert()}
+          <NotebookContentArea>
+            <Typography
+              sx={{
+                fontSize: '2rem',
+                fontWeight: 500,
+                lineHeight: 1.25,
+                py: 1,
+              }}
+            >
+              {notebookName}
             </Typography>
-          )}
-        </div>
-        {welcomePrompts.length > 0 && (
-          <div className={classes.promptSuggestions}>
-            {welcomePrompts.map(prompt => (
-              <button
-                key={prompt.title}
-                type="button"
-                className={classes.promptPill}
-                onClick={prompt.onClick}
+            {topicSummary && (
+              <Typography
+                sx={{
+                  fontSize: '1rem',
+                  lineHeight: 2,
+                  color: 'var(--pf-t--global--text--color--regular)',
+                  pt: 0.5,
+                }}
               >
-                {prompt.title}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+                {topicSummary}
+              </Typography>
+            )}
+          </NotebookContentArea>
+          {welcomePrompts.length > 0 && (
+            <PromptSuggestions>
+              {welcomePrompts.map(prompt => (
+                <PromptPill
+                  key={prompt.title}
+                  type="button"
+                  onClick={prompt.onClick}
+                >
+                  {prompt.title}
+                </PromptPill>
+              ))}
+            </PromptSuggestions>
+          )}
+        </WelcomeMessageBox>
+      </StyledChatbotContent>
     );
   };
 
   return (
-    <div className={classes.root}>
-      {toastAlerts.length > 0 && (
-        <AlertGroup
-          hasAnimations
-          isToast
-          isLiveRegion
-          className={classes.toastAlertGroup}
-        >
-          {toastAlerts.map(({ key, title, variant }) => (
-            <Alert
-              key={key}
-              variant={AlertVariant[variant ?? 'success']}
-              title={title}
-              className={classes.toastAlert}
-              timeout={2000}
-              onTimeout={() => handleRemoveToastAlert(key as React.Key)}
-              actionClose={
-                <AlertActionCloseButton
-                  title={title as string}
-                  variantLabel={`${variant ?? 'success'} alert`}
-                  onClose={() => handleRemoveToastAlert(key as React.Key)}
-                />
-              }
-            />
-          ))}
-        </AlertGroup>
-      )}
-      <Drawer
-        isExpanded={!sidebarCollapsed}
-        isInline
-        position="start"
-        className={classes.drawerContainer}
-      >
-        <DrawerContent
+    <Root sx={isCompact ? { position: 'relative' } : undefined}>
+      <ToastAlertGroup
+        alerts={toastAlerts}
+        onRemoveAlert={handleRemoveToastAlert}
+      />
+      <StyledDrawer isExpanded={!sidebarCollapsed} isInline position="start">
+        <StyledDrawerContent
           panelContent={!sidebarCollapsed ? panelContent : undefined}
         >
-          <DrawerContentBody className={classes.drawerContentBody}>
-            <div className={classes.mainArea}>
-              {sidebarCollapsed && (
-                <div className={classes.expandStrip}>
-                  <Tooltip
-                    content={t('notebook.view.sidebar.expand')}
-                    position="right"
-                  >
-                    <Button
-                      variant="plain"
-                      onClick={() => setSidebarCollapsed(false)}
-                      aria-label={t('notebook.view.sidebar.expand')}
-                      size="sm"
+          <StyledDrawerContentBody>
+            <MainArea>
+              {sidebarCollapsed && !isCompact && (
+                <Flex
+                  direction={{ default: 'column' }}
+                  alignItems={{ default: 'alignItemsCenter' }}
+                  spaceItems={{ default: 'spaceItemsMd' }}
+                  flex={{ default: 'flexNone' }}
+                  style={{
+                    paddingBlockStart: 'var(--pf-t--global--spacer--md)',
+                    paddingInline: 'var(--pf-t--global--spacer--xs)',
+                  }}
+                >
+                  <FlexItem>
+                    <Tooltip
+                      content={t('notebook.view.sidebar.expand')}
+                      position="right"
                     >
-                      <SidebarExpandIcon />
-                    </Button>
-                  </Tooltip>
-                  <Tooltip
-                    content={(() => {
-                      if (hasUploadsInProgress)
-                        return t('notebook.view.documents.uploadsInProgress');
-                      if (isAddDisabled)
-                        return t('notebook.view.documents.maxReached');
-                      return t('notebook.view.documents.add');
-                    })()}
-                    position="right"
-                  >
-                    <Typography component="span">
                       <Button
                         variant="plain"
-                        className={classes.addIconButton}
+                        icon={
+                          <Icon size="lg" isInline>
+                            <SidebarExpandIcon />
+                          </Icon>
+                        }
+                        onClick={() => onSidebarCollapsedChange(false)}
+                        aria-label={t('notebook.view.sidebar.expand')}
+                      />
+                    </Tooltip>
+                  </FlexItem>
+                  <FlexItem>
+                    <Tooltip
+                      content={(() => {
+                        if (hasUploadsInProgress)
+                          return t('notebook.view.documents.uploadsInProgress');
+                        if (isAddDisabled)
+                          return t('notebook.view.documents.maxReached');
+                        return t('notebook.view.documents.add');
+                      })()}
+                      position="right"
+                    >
+                      <Button
+                        variant="plain"
+                        icon={
+                          <Icon isInline>
+                            <AddCircleOIcon
+                              color={
+                                isAddDisabled
+                                  ? 'var(--pf-t--global--icon--color--disabled)'
+                                  : 'var(--pf-t--global--color--brand--default)'
+                              }
+                            />
+                          </Icon>
+                        }
                         onClick={
                           isAddDisabled ? undefined : handleOpenUploadModal
                         }
                         aria-label={t('notebook.view.documents.add')}
                         isDisabled={isAddDisabled}
-                      >
-                        <AddCircleFilledIcon disabled={isAddDisabled} />
-                      </Button>
-                    </Typography>
-                  </Tooltip>
-                </div>
+                      />
+                    </Tooltip>
+                  </FlexItem>
+                </Flex>
               )}
 
-              <div className={classes.contentColumn}>
-                <div className={classes.topBar}>
-                  <Button
-                    variant="link"
-                    className={classes.closeButton}
-                    onClick={onClose}
-                    icon={<TimesIcon />}
-                    iconPosition="end"
-                  >
-                    {t('notebook.view.close')}
-                  </Button>
-                </div>
-
-                <div className={classes.mainContent}>{renderMainContent()}</div>
-
-                {hasNoDocuments &&
-                  messages.length === 0 &&
-                  renderNotebookDisclaimerAlert()}
-
-                <ChatbotFooter className={classes.footer}>
-                  {hasNoDocuments ? (
-                    <Tooltip
-                      content={t('notebook.view.input.disabledTooltip')}
-                      position="top"
+              <ContentColumn>
+                {!isCompact && (
+                  <TopBar>
+                    <Button
+                      variant="link"
+                      style={{ textTransform: 'none' }}
+                      onClick={handleCloseNotebook}
+                      icon={<TimesIcon />}
+                      iconPosition="end"
                     >
-                      <div>
-                        <MessageBar
-                          hasAttachButton={false}
-                          hasMicrophoneButton={false}
-                          hasStopButton={false}
-                          isSendButtonDisabled
-                          isDisabled
-                          onSendMessage={sendMessage}
-                          placeholder={t('notebook.view.input.placeholder')}
-                        />
-                      </div>
-                    </Tooltip>
-                  ) : (
-                    <MessageBar
-                      hasAttachButton={false}
-                      hasMicrophoneButton
-                      hasStopButton={false}
-                      isSendButtonDisabled={isSendButtonDisabled}
-                      onSendMessage={sendMessage}
-                      placeholder={t('notebook.view.input.placeholder')}
-                    />
-                  )}
+                      {t('notebook.view.close')}
+                    </Button>
+                  </TopBar>
+                )}
+
+                <MainContent>{renderMainContent()}</MainContent>
+
+                {hasNoDocuments && messages.length === 0 && (
+                  <FooterAlignedDisclaimer>
+                    {renderNotebookDisclaimerAlert()}
+                  </FooterAlignedDisclaimer>
+                )}
+
+                <StyledChatbotFooter isPrimary>
+                  {(() => {
+                    const addResourceAction = (
+                      <Button
+                        variant="plain"
+                        onClick={handleOpenUploadModal}
+                        aria-label={t('notebook.view.documents.add')}
+                        size="sm"
+                      >
+                        <PlusIcon />
+                      </Button>
+                    );
+                    return hasNoDocuments ? (
+                      <Tooltip
+                        content={t('notebook.view.input.disabledTooltip')}
+                        position="top"
+                      >
+                        <div>
+                          <MessageBar
+                            isPrimary
+                            hasAttachButton={false}
+                            hasMicrophoneButton={false}
+                            hasStopButton={false}
+                            isSendButtonDisabled
+                            isDisabled
+                            onSendMessage={sendMessage}
+                            placeholder={t('notebook.view.input.placeholder')}
+                            forceMultilineLayout
+                            additionalActions={addResourceAction}
+                            buttonProps={{
+                              send: {
+                                tooltipContent: t('tooltip.send'),
+                              },
+                            }}
+                          />
+                        </div>
+                      </Tooltip>
+                    ) : (
+                      <MessageBar
+                        isPrimary
+                        hasAttachButton={false}
+                        hasMicrophoneButton
+                        hasStopButton={isStreaming}
+                        handleStopButton={
+                          isStreaming ? handleStopButton : undefined
+                        }
+                        isSendButtonDisabled={isStreaming}
+                        onSendMessage={sendMessage}
+                        placeholder={t('notebook.view.input.placeholder')}
+                        forceMultilineLayout
+                        additionalActions={addResourceAction}
+                        buttonProps={{
+                          microphone: {
+                            tooltipContent: {
+                              active: t('tooltip.microphone.active'),
+                              inactive: t('tooltip.microphone.inactive'),
+                            },
+                          },
+                          send: {
+                            tooltipContent: t('tooltip.send'),
+                          },
+                        }}
+                      />
+                    );
+                  })()}
                   <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
-                </ChatbotFooter>
-              </div>
-            </div>
-          </DrawerContentBody>
-        </DrawerContent>
-      </Drawer>
+                </StyledChatbotFooter>
+              </ContentColumn>
+            </MainArea>
+          </StyledDrawerContentBody>
+        </StyledDrawerContent>
+      </StyledDrawer>
 
       <AddDocumentModal
         isOpen={isUploadModalOpen}
@@ -802,13 +937,17 @@ export const NotebookView = ({
         onDuplicatesFound={handleDuplicatesFound}
         filesToAdd={filesToAddToModal}
         onFilesAdded={handleFilesAddedToModal}
+        isCompact={isCompact}
       />
 
       <OverwriteConfirmModal
         isOpen={isOverwriteModalOpen}
         onClose={handleOverwriteCancel}
         onConfirm={handleOverwriteConfirm}
-        fileNames={filesToOverwrite.map(f => f.name)}
+        onBack={handleOverwriteBack}
+        allFiles={allFilesForOverwrite}
+        duplicateFileNames={filesToOverwrite.map(f => f.name)}
+        isCompact={isCompact}
       />
 
       <DeleteDocumentModal
@@ -816,7 +955,8 @@ export const NotebookView = ({
         onClose={() => setDeleteDocumentTarget(null)}
         onConfirm={confirmDeleteDocument}
         documentName={deleteDocumentTarget?.name ?? ''}
+        isCompact={isCompact}
       />
-    </div>
+    </Root>
   );
 };

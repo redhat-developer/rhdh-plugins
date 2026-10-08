@@ -1,5 +1,67 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 3.1.0
+
+### Minor Changes
+
+- d471129: Allow a read-only NFS homepage to forward widget props from `widgetLayout`, including several copies of the same widget with different props.
+
+### Patch Changes
+
+- a669321: Updated dependency `@testing-library/user-event` to `14.6.7`.
+
+## 3.0.0
+
+### Major Changes
+
+- 860ea4f: Remove the `/legacy` subpath export and the legacy frontend system plugin implementation.
+
+### Minor Changes
+
+- ad959e1: Give the homepage NFS plugin its own configurable page (`page:homepage`) so it works without community `@backstage/plugin-home`, and apply persona-based `homepage.defaultWidgets` filtering only on that page via homepage-backend. When `homepageHomeModule` is installed, the same widgets are also registered on community `page:home` (without the RH layout / homepage-backend filtering). Community `page:home` and `page:homepage` can be enabled or disabled independently via app-config.
+
+### Patch Changes
+
+- d378db5: Remove the deprecated `/alpha` subpath export now that NFS modules have graduated to the primary package entry point.
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+
+## 2.0.0
+
+### Major Changes
+
+- b6a2508: **BREAKING:** Graduate NFS homepage exports from `/alpha` to the primary entry point, and move OFS exports to `./legacy`.
+  `/alpha` now only re-exports translations.
+
+  Note: Dynamic plugin config must use `module: Legacy` now.
+
+### Minor Changes
+
+- 5f73bdc: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- 95238a4: Updated peerDependency `react-router-dom` from `6.30.4` to `6.30.6` so it matches the workspace lockfile.
+- Updated dependencies [5f73bdc]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.6.0
+
+## 1.18.0
+
+### Minor Changes
+
+- a98b8cd: Backstage version bump to v1.54.0
+
+### Patch Changes
+
+- fb31c7c: Updated dependency `react-grid-layout` to `1.5.4`.
+- Updated dependencies [a98b8cd]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.5.0
+
+## 1.17.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+
 ## 1.17.0
 
 ### Minor Changes

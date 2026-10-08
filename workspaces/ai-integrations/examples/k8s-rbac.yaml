@@ -1,0 +1,62 @@
+# K8s RBAC resources for the kserve-kubeflow-connector-backend plugin.
+# Apply with: kubectl apply -f k8s-rbac.yaml
+#
+# These grant the minimum permissions the connector needs:
+#   - InferenceServices (serving.kserve.io): informer watch/list/get
+#   - Routes (route.openshift.io): catalog route discovery (OpenShift only)
+#   - ServiceAccounts (core): authentication check for InferenceService owners
+#
+# NOTE: This example uses a ClusterRole/ClusterRoleBinding for cluster-wide
+# access. If InferenceServices are confined to known namespaces, consider
+# using namespace-scoped Roles and RoleBindings instead to limit visibility.
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backstage-kserve-connector
+  # change to whatever namespace you use
+  namespace: backstage
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: backstage-kserve-connector
+rules:
+  - apiGroups:
+      - serving.kserve.io
+    resources:
+      - inferenceservices
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - route.openshift.io
+    resources:
+      - routes
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ''
+    resources:
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+      # we used to watch as well
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: backstage-kserve-connector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: backstage-kserve-connector
+subjects:
+  - kind: ServiceAccount
+    name: backstage-kserve-connector
+    # change to whatever namespace you use
+    namespace: backstage

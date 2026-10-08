@@ -224,6 +224,68 @@ describe('MessageBarModelSelector', () => {
     expect(screen.getByText('Granite 3.3')).toBeInTheDocument();
   });
 
+  it('shows vision screenshot indicator on vision-capable models in the list', async () => {
+    const modelsWithVision = [
+      {
+        label: 'Granite Vision',
+        value: 'granite-vision',
+        provider: 'ibm',
+        supportsVision: true,
+      },
+      {
+        label: 'Granite Text',
+        value: 'granite-text',
+        provider: 'ibm',
+        supportsVision: false,
+      },
+    ];
+
+    render(
+      <MessageBarModelSelector
+        selectedModel="granite-text"
+        models={modelsWithVision}
+        onSelect={mockOnSelect}
+      />,
+    );
+
+    const toggle = screen.getByRole('button', { name: 'Chatbot selector' });
+    expect(
+      screen.queryByLabelText('Vision model screenshot context'),
+    ).not.toBeInTheDocument();
+
+    await userEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(
+        screen.getByLabelText('Vision model screenshot context'),
+      ).toBeInTheDocument();
+    });
+
+    const visionItem = screen.getByRole('menuitem', {
+      name: /Granite Vision/,
+    });
+    const textItem = screen.getByRole('menuitem', { name: 'Granite Text' });
+
+    expect(
+      visionItem.querySelector('.lightspeed-model-vision-slot'),
+    ).toBeInTheDocument();
+    expect(
+      textItem.querySelector('.lightspeed-model-vision-slot'),
+    ).toBeInTheDocument();
+    expect(
+      textItem.querySelector('[aria-label="Vision model screenshot context"]'),
+    ).not.toBeInTheDocument();
+
+    // Fixed tick column on every row; checkmark only on the selected item.
+    expect(
+      visionItem.querySelector('.lightspeed-model-tick-slot')
+        ?.childElementCount,
+    ).toBe(0);
+    expect(
+      textItem.querySelector('.lightspeed-model-tick-slot')?.childElementCount,
+    ).toBe(1);
+  });
+
   it('should render with empty models list', () => {
     render(
       <MessageBarModelSelector

@@ -18,9 +18,8 @@ import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 import adoptionInsightsPlugin, {
   adoptionInsightsTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-adoption-insights/alpha';
-import adoptionInsightsAnalyticsPlugin from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights/alpha';
-import { navModule } from './modules/nav';
+} from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
+import adoptionInsightsAnalyticsPlugin from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights';
 import { signInModule } from './modules/signIn';
 
 export default createApp({
@@ -30,7 +29,6 @@ export default createApp({
     adoptionInsightsPlugin,
     adoptionInsightsTranslationsModule,
     adoptionInsightsAnalyticsPlugin,
-    navModule,
     signInModule,
   ],
 });

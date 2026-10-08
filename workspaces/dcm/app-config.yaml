@@ -41,7 +41,15 @@ techdocs:
 
 auth:
   providers:
+    # Local development only. Replace this with the OIDC provider below for
+    # a deployed environment.
     guest: {}
+    # oidc:
+    #   production:
+    #     metadataUrl: https://keycloak.example.com/realms/rhdh/.well-known/openid-configuration
+    #     clientId: rhdh-auth
+    #     clientSecret: ${AUTH_OIDC_CLIENT_SECRET}
+    #     prompt: auto
 
 permission:
   enabled: true
@@ -61,6 +69,9 @@ permission:
 scaffolder: {}
 
 dcm:
+  # The standalone app uses the DCM control plane's auth-disabled mode.
+  auth:
+    enabled: false
   policyPacks:
     - security-baseline
     - compliance-pci
@@ -70,10 +81,10 @@ dcm:
   # Override in app-config.local.yaml for local development.
   # apiUrl: https://your-control-plane.example.com
   #
-  # SSO credentials for the backend to obtain a bearer token:
-  # ssoBaseUrl: https://sso.redhat.com
-  # clientId: your-client-id
-  # clientSecret: your-client-secret
+  # Set auth.enabled to true only when the DCM control plane's auth.enabled is
+  # also true. In that mode, configure an OIDC provider under auth.providers.
+  # The normal RHDH Authorization header authenticates the request to this
+  # backend, while the user's OIDC token is forwarded to DCM by the proxy.
 
 catalog:
   import:

@@ -30,9 +30,11 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage
+          module: Legacy
       mountPoints:
         - mountPoint: home.page/cards
           importName: OnboardingSection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 6 }
@@ -43,6 +45,7 @@ dynamicPlugins:
               xxs: { w: 12, h: 14 }
         - mountPoint: home.page/cards
           importName: EntitySection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 7 }
@@ -53,6 +56,7 @@ dynamicPlugins:
               xxs: { w: 12, h: 15 }
         - mountPoint: home.page/cards
           importName: TemplateSection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 5 }
@@ -74,9 +78,11 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicCustomizableHomePage
+          module: Legacy
       mountPoints:
         - mountPoint: home.page/cards
           importName: OnboardingSection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 6 }
@@ -87,6 +93,7 @@ dynamicPlugins:
               xxs: { w: 12, h: 14 }
         - mountPoint: home.page/cards
           importName: EntitySection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 7 }
@@ -97,6 +104,7 @@ dynamicPlugins:
               xxs: { w: 12, h: 15 }
         - mountPoint: home.page/cards
           importName: TemplateSection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 5 }
@@ -108,8 +116,10 @@ dynamicPlugins:
         # Additional cards available in "Add widget" dialog
         - mountPoint: home.page/cards
           importName: RecentlyVisitedCard
+          module: Legacy
         - mountPoint: home.page/cards
           importName: TopVisitedCard
+          module: Legacy
 ```
 
 The customizable homepage provides:
@@ -134,6 +144,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Headline
+          module: Legacy
           config:
             layouts:
               xl: { h: 1 }

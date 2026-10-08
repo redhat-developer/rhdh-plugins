@@ -59,7 +59,9 @@ async function main() {
 
   const packageList = diff.split('\n');
 
-  const workspaces = new Set(['noop']);
+  const workspaces = new Set(
+    process.env.INCLUDE_NOOP === 'false' ? [] : ['noop'],
+  );
   for (const path of packageList) {
     const match = path.match(/^workspaces\/([^/]+)\//);
     if (match) {

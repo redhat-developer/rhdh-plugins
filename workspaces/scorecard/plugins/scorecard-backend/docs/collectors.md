@@ -18,9 +18,11 @@ Collector APIs are provided by `@red-hat-developer-hub/backstage-plugin-scorecar
 - `ScorecardCollectorsService`
 - `scorecardCollectorsServiceRef`
 
+`ScorecardCollectorsService` is resolved through `scorecardCollectorsServiceRef` and a default factory.
+
 ## Collector ID convention
 
-Collector IDs follow the `datasource:name` format (e.g.,`github:deployments`, `github:workflowRuns`).
+Collector IDs follow the `datasource:name` format (e.g.,`github:doraDeployments`, `github:doraDeploymentWorkflowRuns`).
 This distinguishes them visually from metric/provider IDs which use dot notation. Prefer to use `camelCase`
 for collector names.
 
@@ -82,6 +84,12 @@ export class CustomDeploymentsCollector
 }
 ```
 
+## Secrets and credentials
+
+> [!IMPORTANT]
+> Never pass secrets through a collector's `input`. Configure credentials through `app-config` instead.
+> Collectors do not support secrets, if they ever will be added, they will be a separate key from `input`.
+
 ## Register collectors in a backend module
 
 Register collectors through `scorecardCollectorsExtensionPoint`:
@@ -109,7 +117,7 @@ export const scorecardModuleCustomDatasource = createBackendModule({
 
 ## Use collectors from a metric provider
 
-To read collected values, add `scorecardCollectorsServiceRef` in as a dependency for your backend module, pass it to the provider, and call `collect(...)` inside `calculateMetric`:
+To read collected values, add `scorecardCollectorsServiceRef` in as a dependency for your backend module, pass it to the provider, and call `collect(...)` inside `calculateMetrics`:
 
 ```ts
 import { createBackendModule } from '@backstage/backend-plugin-api';
@@ -160,7 +168,7 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 
   // Other MetricProvider methods omitted
 
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const collected = await this.collectorsService.collect({
       collectorId: 'customDatasource:customDeployments',
       contract: {
@@ -174,7 +182,9 @@ export class MyMetricProvider implements MetricProvider<'number'> {
       },
     });
 
-    return collected.deployments.length;
+    const results = new Map<string, number>();
+    results.set('myDatasource.exampleMetric', collected.deployments.length);
+    return results;
   }
 }
 ```

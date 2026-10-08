@@ -24,6 +24,7 @@ import {
   StatusOK,
   StatusPending,
   StatusRunning,
+  StatusWarning,
 } from '@backstage/core-components';
 
 export const PhaseStatusIcon = ({
@@ -44,6 +45,8 @@ export const PhaseStatusIcon = ({
       return <StatusPending>{children}</StatusPending>;
     case 'cancelled':
       return <StatusAborted>{children}</StatusAborted>;
+    case 'stale':
+      return <StatusWarning>{children}</StatusWarning>;
     default:
       // to work nicely in the tab titles
       return null;

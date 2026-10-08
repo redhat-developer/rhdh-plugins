@@ -15,7 +15,6 @@
  */
 
 import { render, waitFor } from '@testing-library/react';
-import React from 'react';
 import App from './App';
 
 describe('App', () => {
@@ -36,7 +35,7 @@ describe('App', () => {
       ] as any,
     };
 
-    const rendered = render(<App />);
+    const rendered = render(App.createRoot());
 
     await waitFor(() => {
       expect(rendered.baseElement).toBeInTheDocument();

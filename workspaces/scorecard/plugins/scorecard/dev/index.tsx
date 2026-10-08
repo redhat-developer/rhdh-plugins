@@ -46,12 +46,15 @@ import {
 } from '@backstage/dev-utils';
 
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import scorecardPlugin, { scorecardTranslationsModule } from '../src';
 import { scorecardApiRef } from '../src/api';
 
 import { MockScorecardApi, mockCatalogApi } from './mocks';
+import { applyPluginDevMainUnclip } from './unclipMain';
+
+applyPluginDevMainUnclip();
 
 const pluginHeaderActionsApiRef = createApiRef<{
   getPluginHeaderActions(pluginId: string): Array<JSX.Element | null>;
@@ -152,3 +155,5 @@ const app = createApp({
 const root = app.createRoot();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(root);
+applyPluginDevMainUnclip();
+requestAnimationFrame(() => applyPluginDevMainUnclip());

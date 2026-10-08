@@ -1,5 +1,37 @@
 ## @red-hat-developer-hub/backstage-plugin-bulk-import-common [0.2.0](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.1.0...@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.2.0) (2024-07-25)
 
+## 9.1.1
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+
+## 9.1.0
+
+### Minor Changes
+
+- 2b31f6c: Convert `bulk.import` from a resource permission to a feature permission, and register the NFS bulk import page using the `if` permission predicate.
+
+## 9.0.1
+
+### Patch Changes
+
+- df4bcba: Backstage version bump to v1.54.6
+
+## 9.0.0
+
+## 8.0.3
+
+## 8.0.2
+
+## 8.0.1
+
+### Patch Changes
+
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+
 ## 8.0.0
 
 ### Minor Changes

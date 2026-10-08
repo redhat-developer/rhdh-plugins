@@ -2,7 +2,7 @@
 
 ## What is fullsend?
 
-[Fullsend](https://github.com/fullsend-ai/fullsend) is an agentic SDLC platform that provides AI-powered agents for triage, code review, code generation, and retrospectives. It runs as a GitHub Actions pipeline, triggered by GitHub events, and uses Vertex AI (Anthropic Claude) for inference.
+[Fullsend](https://github.com/fullsend-ai/fullsend) is an agentic SDLC platform that provides AI-powered agents for triage, code review, code generation, and retrospectives. It runs as a GitHub Actions pipeline, triggered by GitHub events or the Jira poller, and uses Vertex AI (Anthropic Claude) for inference.
 
 ## Pilot scope
 
@@ -56,6 +56,35 @@ Available commands:
 | `/fs-review` | Run review on a PR |
 | `/fs-fix` | Fix issues flagged in a review |
 | `/fs-fix-stop` | Disable fix agent for a PR (adds `fullsend-no-fix` label) |
+
+### Jira pilot for RHDH AI
+
+The [Jira poll workflow](../.github/workflows/fullsend-poll-jira.yml) checks
+every five minutes for `/fs-triage` and `/fs-code` comments on RHIDP work
+items. Fullsend checks the command author's Jira project role. The existing
+GitHub Fullsend commands are unchanged.
+
+Each Jira query requires all of these gates:
+
+- Project: `RHIDP`.
+- Jira `Team`: `RHDH AI`, selected by `cf[10001]` and its Atlassian team ID.
+- Label: `fullsend` (agent opt-in).
+- Status category is not Done.
+
+Add the `fullsend` label to an eligible Jira work item before posting a
+command. `/fs-triage` does not automatically start coding; use `/fs-code`
+explicitly when implementation is ready. Grillme and spec commands are not
+part of this Jira pilot.
+
+To expand the cohort, add a project/team pair to the `poll_project` calls in
+the workflow. Keep the `fullsend` opt-in label for each cohort.
+
+Before enabling the scheduled workflow, configure the Actions variable
+`JIRA_BASE_URL` and secrets `JIRA_TOKEN` and `JIRA_USER_EMAIL`. The workflow
+fails visibly when any are missing. Its existing Fullsend GCP and mint
+credentials are also required for the downstream agents. The RHDH AI team ID
+comes from Parasol's poller for `https://stage-redhat.atlassian.net`; verify
+the ID if `JIRA_BASE_URL` points to a different Jira instance.
 
 ## Coexistence with PR Agent
 

@@ -15,6 +15,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: MarkdownCard
+          module: Legacy
           config:
             layouts:
               xl: { w: 6, h: 4 }
@@ -34,6 +35,7 @@ dynamicPlugins:
                 * [GitHub RHDH Plugins](https://github.com/redhat-developer/rhdh-plugins)
         - mountPoint: home.page/cards
           importName: Markdown
+          module: Legacy
           config:
             layouts:
               xl: { w: 6, h: 4, x: 6 }

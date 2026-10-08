@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -26,53 +25,18 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { Trans } from '../Trans';
+import { optionalStyle } from './notebookDialogStyles';
 
-const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 16,
-  },
-  dialogTitle: {
-    padding: '16px 20px',
-    fontStyle: 'inherit',
-  },
-  dialogContent: {
-    paddingTop: 0,
-  },
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  titleText: {
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.text.primary,
-  },
-  dialogActions: {
-    justifyContent: 'left',
-    padding: theme.spacing(2.5),
-    gap: theme.spacing(1),
-  },
-  removeButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-  cancelButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-}));
+const pillButtonSx = { textTransform: 'none', borderRadius: 999 } as const;
 
 type DeleteDocumentModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   documentName: string;
+  isCompact?: boolean;
 };
 
 export const DeleteDocumentModal = ({
@@ -80,8 +44,9 @@ export const DeleteDocumentModal = ({
   onClose,
   onConfirm,
   documentName,
+  isCompact = false,
 }: DeleteDocumentModalProps) => {
-  const classes = useStyles();
+  const scopedProps = getScopedDialogProps(isCompact);
   const { t } = useTranslation();
 
   return (
@@ -91,21 +56,36 @@ export const DeleteDocumentModal = ({
       aria-labelledby="delete-document-modal"
       aria-describedby="delete-document-modal-body"
       fullWidth
+      {...scopedProps}
       PaperProps={{
-        className: classes.dialogPaper,
+        ...scopedProps.PaperProps,
+        sx: [
+          { borderRadius: isCompact ? '12px' : '16px' },
+          optionalStyle(scopedProps.PaperProps?.sx),
+        ],
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Box className={classes.titleRow}>
-          <Typography component="span" className={classes.titleText}>
+      <DialogTitle
+        sx={{
+          p: isCompact ? '12px 16px !important' : '16px 20px',
+          fontStyle: 'inherit',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold' }}>
             {t('notebook.document.delete.title')}
           </Typography>
           <IconButton
-            aria-label="close"
+            aria-label={t('common.close')}
             onClick={onClose}
             title={t('common.close')}
-            size="large"
-            className={classes.closeButton}
+            size={isCompact ? 'small' : 'large'}
+            sx={{
+              position: 'absolute',
+              right: 1,
+              top: 1,
+              color: 'text.primary',
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -113,7 +93,15 @@ export const DeleteDocumentModal = ({
       </DialogTitle>
       <DialogContent
         id="delete-document-modal-body"
-        className={classes.dialogContent}
+        sx={theme => ({
+          pt: 0,
+          ...(isCompact && {
+            paddingTop: '0 !important',
+            paddingBottom: `${theme.spacing(1)} !important`,
+            paddingLeft: `${theme.spacing(2)} !important`,
+            paddingRight: `${theme.spacing(2)} !important`,
+          }),
+        })}
       >
         <Typography variant="body2">
           <Trans
@@ -124,20 +112,22 @@ export const DeleteDocumentModal = ({
           />
         </Typography>
       </DialogContent>
-      <DialogActions className={classes.dialogActions}>
+      <DialogActions
+        sx={{
+          justifyContent: 'left',
+          p: isCompact ? '12px !important' : 2.5,
+          gap: 1,
+        }}
+      >
         <Button
           variant="contained"
           color="error"
-          className={classes.removeButton}
+          sx={pillButtonSx}
           onClick={onConfirm}
         >
           {t('notebook.document.delete.action')}
         </Button>
-        <Button
-          variant="outlined"
-          className={classes.cancelButton}
-          onClick={onClose}
-        >
+        <Button variant="outlined" sx={pillButtonSx} onClick={onClose}>
           {t('common.cancel')}
         </Button>
       </DialogActions>

@@ -14,55 +14,39 @@
  * limitations under the License.
  */
 
-import { PropsWithChildren } from 'react';
+import { lazy, PropsWithChildren, Suspense } from 'react';
 
-import { makeStyles } from '@mui/styles';
-import { ChatbotModal } from '@patternfly/chatbot';
-
-import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
-import { LightspeedChatContainer } from './LightspeedChatContainer';
+import { ChatLoadingFallback } from './ChatLoadingFallback';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
+import { NotebookStreamProvider } from './notebooks/NotebookStreamProvider';
 
-const useStyles = makeStyles(theme => ({
-  chatbotModal: {
-    boxShadow:
-      '0 14px 20px -7px rgba(0, 0, 0, 0.22), 0 32px 50px 6px rgba(0, 0, 0, 0.16), 0 12px 60px 12px rgba(0, 0, 0, 0.14) !important',
-    bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 5em)`,
-    right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
-    maxWidth: 'min(30rem, calc(100vw - 32px)) !important',
-    overflowX: 'hidden' as const,
-    transition: 'margin-right 0.3s ease',
-    'body.docked-drawer-open &': {
-      marginRight: DOCKED_CONTENT_OFFSET,
-    },
-  },
-}));
+const LazyLightspeedOverlayChat = lazy(() =>
+  import('./LightspeedOverlayChat').then(m => ({
+    default: m.LightspeedOverlayChat,
+  })),
+);
 
 /**
  * @public
  */
 export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
-  const classes = useStyles();
   const { contextValue, shouldRenderOverlayModal, closeChatbot } =
     useLightspeedProviderState();
 
   return (
     <LightspeedDrawerContext.Provider value={contextValue}>
-      {children}
-      {shouldRenderOverlayModal && (
-        <ChatbotModal
-          isOpen
-          displayMode={contextValue.displayMode}
-          disableFocusTrap
-          onEscapePress={() => closeChatbot()}
-          ouiaId="LightspeedChatbotModal"
-          aria-labelledby="lightspeed-chatpopup-modal"
-          className={classes.chatbotModal}
-        >
-          <LightspeedChatContainer />
-        </ChatbotModal>
-      )}
+      <NotebookStreamProvider>
+        {children}
+        {shouldRenderOverlayModal && (
+          <Suspense fallback={<ChatLoadingFallback variant="overlay" />}>
+            <LazyLightspeedOverlayChat
+              displayMode={contextValue.displayMode}
+              onEscapePress={() => closeChatbot()}
+            />
+          </Suspense>
+        )}
+      </NotebookStreamProvider>
     </LightspeedDrawerContext.Provider>
   );
 };

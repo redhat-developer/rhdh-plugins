@@ -44,9 +44,9 @@ metadata:
 
 ## Metrics
 
-18 metrics from [OpenSSF checks](https://github.com/ossf/scorecard/blob/main/docs/checks.md):
+18 metrics from [OpenSSF checks](https://github.com/ossf/scorecard/blob/main/docs/checks.md). Provider ID for all of them is `openssf.securityScorecard`:
 
-| Metric                         | Description                                                                                 |
+| Metric ID                      | Description                                                                                 |
 | ------------------------------ | ------------------------------------------------------------------------------------------- |
 | `openssf.binaryArtifacts`      | No executable (binary) artifacts in the source repository.                                  |
 | `openssf.branchProtection`     | Default and release branches protected (e.g. require review, status checks, no force push). |
@@ -69,14 +69,14 @@ metadata:
 
 ## Default thresholds
 
-All OpenSSF metrics share the same default thresholds. Default thresholds for `openssf.maintained`:
+All OpenSSF metrics share the same default thresholds. Provider-level thresholds for `openssf.securityScorecard` apply to every `openssf.*` metric:
 
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     openssf:
-      maintained:
+      securityScorecard:
         thresholds:
           rules:
             - key: success
@@ -87,7 +87,7 @@ scorecard:
               expression: '<2'
 ```
 
-Higher scores are better (OpenSSF check scores are 0–10). Replace `maintained` with any OpenSSF metric name (e.g. `branchProtection`, `license`). See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
+Higher scores are better (OpenSSF check scores are 0–10). To override one metric, set `metrics.<metricName>.thresholds` under `securityScorecard` (for example `metrics.maintained`). See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
 
 ## Troubleshooting
 

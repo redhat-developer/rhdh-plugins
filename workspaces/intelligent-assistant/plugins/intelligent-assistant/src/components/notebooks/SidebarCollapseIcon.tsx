@@ -14,37 +14,28 @@
  * limitations under the License.
  */
 
-type IconProps = {
+import { createIcon } from '@patternfly/react-icons/dist/esm/createIcon';
+
+/**
+ * PatternFly createIcon components so Button `icon` / Icon wrappers center
+ * them like stock PF icons (raw <svg size={18}> was shifting in the hit target).
+ */
+export const SidebarCollapseIcon = createIcon({
+  name: 'SidebarCollapseIcon',
+  width: 24,
+  height: 24,
+  svgPath: 'M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z',
+});
+
+export const SidebarExpandIcon = createIcon({
+  name: 'SidebarExpandIcon',
+  width: 24,
+  height: 24,
+  svgPath: 'M9 21V3H11V21H9ZM13 17V7L18 12L13 17Z',
+});
+
+type AddCircleFilledIconProps = {
   className?: string;
-};
-
-export const SidebarCollapseIcon = ({ className }: IconProps) => (
-  <svg
-    className={className}
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z" fill="currentColor" />
-  </svg>
-);
-
-export const SidebarExpandIcon = ({ className }: IconProps) => (
-  <svg
-    className={className}
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M9 21V3H11V21H9ZM13 17V7L18 12L13 17Z" fill="currentColor" />
-  </svg>
-);
-
-type AddCircleFilledIconProps = IconProps & {
   disabled?: boolean;
 };
 

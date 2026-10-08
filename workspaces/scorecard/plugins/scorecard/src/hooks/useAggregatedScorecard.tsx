@@ -54,7 +54,7 @@ export const useAggregatedScorecard = ({
 
   return {
     data,
-    isLoading,
+    isLoading: enabled && isLoading,
     error: error ?? undefined,
   };
 };

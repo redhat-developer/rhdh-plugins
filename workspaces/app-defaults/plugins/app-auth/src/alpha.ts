@@ -15,14 +15,9 @@
  */
 
 /**
- * New Frontend System: RHDH sign-in and auth API extensions for the app plugin.
+ * Alpha exports: sign-in page translations.
  *
  * @packageDocumentation
  */
 
-export { appAuthModule } from './appAuthModule';
-export { SignInPage } from './components/SignInPage';
-export * from './AuthApiRefs';
 export * from './translations/signIn';
-
-export { appAuthModule as default } from './appAuthModule';

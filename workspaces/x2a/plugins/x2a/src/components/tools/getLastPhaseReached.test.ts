@@ -126,5 +126,28 @@ describe('getLastPhaseReached', () => {
       expect(result?.phase).toBe('analyze');
       expect(result?.status).toBe('running');
     });
+
+    it('skips stale migrate and returns analyze', () => {
+      const module: Module = {
+        ...baseModule,
+        analyze: makeJob('analyze', 'success'),
+        migrate: makeJob('migrate', 'stale'),
+      };
+      const result = getLastPhaseReached(module, true);
+      expect(result?.phase).toBe('analyze');
+      expect(result?.status).toBe('success');
+    });
+
+    it('skips stale migrate and publish and returns analyze', () => {
+      const module: Module = {
+        ...baseModule,
+        analyze: makeJob('analyze', 'success'),
+        migrate: makeJob('migrate', 'stale'),
+        publish: makeJob('publish', 'stale'),
+      };
+      const result = getLastPhaseReached(module, true);
+      expect(result?.phase).toBe('analyze');
+      expect(result?.status).toBe('success');
+    });
   });
 });

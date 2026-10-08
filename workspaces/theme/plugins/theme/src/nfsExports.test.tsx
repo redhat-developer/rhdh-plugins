@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import { rhdhThemeModule } from './index';
+import rhdhThemeModule from './index';
 
 describe('theme NFS exports', () => {
   it('should export rhdhThemeModule', () => {
     expect(rhdhThemeModule).toBeDefined();
+    expect(rhdhThemeModule.pluginId).toBe('app');
+    expect(rhdhThemeModule.$$type).toBe('@backstage/FrontendModule');
   });
 });

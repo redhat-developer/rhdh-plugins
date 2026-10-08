@@ -14,5 +14,3 @@
  * limitations under the License.
  */
 export { OnboardingSectionContent } from './OnboardingSection';
-export { OnboardingSection } from '../legacy/HomePageLegacyCards';
-export { OnboardingSection as default } from '../legacy/HomePageLegacyCards';

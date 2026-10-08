@@ -460,4 +460,21 @@ export class JobOperations {
 
     return deletedCount;
   }
+
+  async markJobsAsStale(jobIds: string[]): Promise<void> {
+    if (jobIds.length === 0) {
+      return;
+    }
+
+    this.#logger.info(`markJobsAsStale called for ${jobIds.length} jobs`);
+
+    const updatedCount = await this.#dbClient('jobs')
+      .whereIn('id', jobIds)
+      .whereNotIn('status', ['pending', 'running'])
+      .update({ status: 'stale' });
+
+    this.#logger.info(
+      `Marked ${updatedCount} jobs as stale (${jobIds.length - updatedCount} were skipped as active)`,
+    );
+  }
 }

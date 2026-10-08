@@ -7,22 +7,38 @@ exports[`ModelCatalogResourceEntityProvider should connect and run should resolv
       "entities": [
         {
           "entity": {
-            "apiVersion": "backstage.io/v1beta1",
-            "kind": "Resource",
+            "apiVersion": "backstage.io/v1alpha1",
+            "kind": "AiModelServerAPI",
             "metadata": {
               "annotations": {
                 "backstage.io/managed-by-location": "ModelCatalogResourceEntityProvider:development",
                 "backstage.io/managed-by-origin-location": "ModelCatalogResourceEntityProvider:development",
               },
-              "description": "IBM Granite code model",
-              "links": [],
-              "name": "ibm-granite",
-              "tags": [],
+              "description": "Test model server",
+              "links": [
+                {
+                  "title": "API",
+                  "url": "https://api.example.com",
+                },
+              ],
+              "name": "test-model-server",
+              "tags": [
+                "auth-not-required",
+              ],
             },
             "spec": {
-              "dependencyOf": [],
+              "lifecycle": "production",
+              "models": {
+                "available": [
+                  "ibm-granite",
+                ],
+                "default": "ibm-granite",
+              },
               "owner": "user:example-user",
-              "type": "ai-model",
+              "requiresApiKey": false,
+              "serverType": "openapi",
+              "serverUrl": "https://api.example.com",
+              "type": "ai-model-server",
             },
           },
           "locationKey": "ModelCatalogResourceEntityProvider:development",

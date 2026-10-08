@@ -2,6 +2,8 @@
 
 This is an extension module to the `backstage-plugin-orchestrator-backend` plugin. It provides access to the Loki log provider
 
+For local development and contributor workflows, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Prerequisites
 
 Before installing this module, ensure that the Orchestrator backend plugin is integrated into your Backstage instance. Follow the [Orchestrator README](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator) for setup instructions.

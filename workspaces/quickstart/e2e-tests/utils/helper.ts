@@ -51,8 +51,16 @@ export class UIhelper {
       .first()
       .click();
   }
+  async clickLinkByText(
+    text: string | RegExp,
+    options: { exact: boolean } = { exact: false },
+  ) {
+    await this.page
+      .getByRole('link', { name: text, exact: options?.exact })
+      .first()
+      .click();
+  }
   async verifyButtonURL(label: string | RegExp, url: string) {
-    // Use locator('a') to find the actual anchor tag, not getByRole which may see button role
     const anchor = this.page.locator('a').filter({ hasText: label });
     expect(await anchor.first().getAttribute('href')).toContain(url);
   }

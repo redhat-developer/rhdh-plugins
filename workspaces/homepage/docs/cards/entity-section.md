@@ -16,6 +16,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: EntitySection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 7 }

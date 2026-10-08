@@ -166,6 +166,25 @@ describe('preMergeOciDisabledState — path-less + multiple explicit paths', () 
 });
 
 describe('preMergeOciDisabledState — same-level duplicates', () => {
+  it('reports forbidden included inherit before checking name collisions', () => {
+    const first = 'oci://quay.io/team-a/catalog:{{inherit}}!plugin-a';
+    const second =
+      'oci://registry.example.com/team-b/catalog:{{inherit}}!plugin-b';
+
+    expect(() =>
+      preMergeOciDisabledState(
+        [
+          ['first.yaml', [{ package: first }]],
+          ['second.yaml', [{ package: second }]],
+        ],
+        [],
+        'main.yaml',
+      ),
+    ).toThrow(
+      `Cannot use {{inherit}} in included plugin configuration '${first}' in first.yaml`,
+    );
+  });
+
   it('warns and ignores duplicate disabled entries at the same level', () => {
     const warn = jest
       .spyOn(process.stdout, 'write')
@@ -198,6 +217,108 @@ describe('preMergeOciDisabledState — same-level duplicates', () => {
     expect(() =>
       preMergeOciDisabledState([['include.yaml', include]], [], 'main.yaml'),
     ).toThrow(/Duplicate OCI plugin configuration/);
+  });
+
+  it('lets an enabled entry replace a disabled duplicate at the same level', () => {
+    const include: PluginSpec[] = [
+      {
+        package: 'oci://registry.example.com/plugin:1.0!a',
+        disabled: true,
+      },
+      { package: 'oci://registry.example.com/plugin:1.0!a' },
+    ];
+
+    expect(() =>
+      preMergeOciDisabledState([['include.yaml', include]], [], 'main.yaml'),
+    ).not.toThrow();
+  });
+
+  it('rejects different images with the same final segment and names both', () => {
+    const first = 'oci://quay.io/team-a/catalog:1.0!catalog-backend';
+    const second =
+      'oci://registry.example.com/team-b/catalog:2.0!catalog-backend';
+
+    expect(() =>
+      preMergeOciDisabledState(
+        [
+          ['first.yaml', [{ package: first }]],
+          ['second.yaml', [{ package: second }]],
+        ],
+        [],
+        'main.yaml',
+      ),
+    ).toThrow(
+      `Duplicate OCI plugin configurations '${first}' (in first.yaml) and '${second}' (in second.yaml) both resolve to the plugin name 'catalog'`,
+    );
+  });
+
+  it('warns instead of failing when a same-name image is disabled', () => {
+    const warn = jest
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+    try {
+      const enabled = 'oci://quay.io/team-a/catalog:1.0!catalog-backend';
+      const disabled =
+        'oci://registry.example.com/team-b/catalog:2.0!catalog-backend';
+
+      expect(() =>
+        preMergeOciDisabledState(
+          [
+            ['enabled.yaml', [{ package: enabled }]],
+            ['disabled.yaml', [{ package: disabled, disabled: true }]],
+          ],
+          [],
+          'main.yaml',
+        ),
+      ).not.toThrow();
+
+      const out = warn.mock.calls.map(args => String(args[0])).join('\n');
+      expect(out).toContain(
+        `WARNING: Ignoring disabled OCI plugin configuration '${disabled}'`,
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('does not let a disabled entry hide a later enabled collision', () => {
+    const warn = jest
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+    try {
+      const disabled =
+        'oci://disabled.example.com/team/catalog:1.0!catalog-backend';
+      const firstEnabled = 'oci://quay.io/team/catalog:2.0!catalog-backend';
+      const secondEnabled =
+        'oci://registry.example.com/team/catalog:3.0!catalog-backend';
+
+      expect(() =>
+        preMergeOciDisabledState(
+          [
+            ['disabled.yaml', [{ package: disabled, enabled: false }]],
+            ['first.yaml', [{ package: firstEnabled }]],
+            ['second.yaml', [{ package: secondEnabled }]],
+          ],
+          [],
+          'main.yaml',
+        ),
+      ).toThrow(
+        `Duplicate OCI plugin configurations '${firstEnabled}' (in first.yaml) and '${secondEnabled}' (in second.yaml)`,
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('preserves distinct explicit paths from the same image', () => {
+    const include: PluginSpec[] = [
+      { package: 'oci://quay.io/acme/bundle:1.0!plugin-a' },
+      { package: 'oci://quay.io/acme/bundle:1.0!plugin-b' },
+    ];
+
+    expect(() =>
+      preMergeOciDisabledState([['include.yaml', include]], [], 'main.yaml'),
+    ).not.toThrow();
   });
 });
 

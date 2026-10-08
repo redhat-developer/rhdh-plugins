@@ -27,4 +27,5 @@ export type ModuleStatus =
   | 'success'
   | 'error'
   | 'cancelled'
-  | 'removed';
+  | 'removed'
+  | 'stale';

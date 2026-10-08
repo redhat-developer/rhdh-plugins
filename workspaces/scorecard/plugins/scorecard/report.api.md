@@ -159,6 +159,15 @@ const _default: OverridableFrontendPlugin<
         filter?: string | FilterPredicate | ((entity: Entity) => boolean);
       };
     }>;
+    'home-page-widget:scorecard/scorecard-avg-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-avg-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
     'home-page-widget:scorecard/scorecard-default-aggregation': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-default-aggregation';
@@ -168,9 +177,63 @@ const _default: OverridableFrontendPlugin<
       inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
+    'home-page-widget:scorecard/scorecard-deprecated-dora-change-failure-rate': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-deprecated-dora-change-failure-rate';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
     'home-page-widget:scorecard/scorecard-deprecated-metric-id': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-deprecated-metric-id';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-change-failure-rate': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-change-failure-rate';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-deployment-frequency': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-deployment-frequency';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-median-lead-time-for-changes': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-median-lead-time-for-changes';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-dora-median-time-to-restore': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-dora-median-time-to-restore';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-entities-with-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-entities-with-open-prs';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
@@ -189,6 +252,15 @@ const _default: OverridableFrontendPlugin<
     'home-page-widget:scorecard/scorecard-github-filecheck-license': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-github-filecheck-license';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-github-filecheck-readme': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-github-filecheck-readme';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
@@ -216,6 +288,33 @@ const _default: OverridableFrontendPlugin<
     'home-page-widget:scorecard/scorecard-jira-open-issues': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-jira-open-issues';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-max-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-max-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-min-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-min-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-total-open-bugs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-total-open-bugs';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
@@ -324,7 +423,9 @@ const _default: OverridableFrontendPlugin<
           {
             title: string;
             metrics: string[];
+            titleKey?: string | undefined;
             description?: string | undefined;
+            descriptionKey?: string | undefined;
           }
         >;
       };
@@ -335,7 +436,9 @@ const _default: OverridableFrontendPlugin<
               {
                 title: string;
                 metrics: string[];
+                titleKey?: string | undefined;
                 description?: string | undefined;
+                descriptionKey?: string | undefined;
               }
             >
           | undefined;
@@ -359,7 +462,9 @@ export interface ScorecardLayoutProps {
     string,
     {
       title: string;
+      titleKey?: string;
       description?: string;
+      descriptionKey?: string;
       metrics: string[];
     }
   >;
@@ -383,6 +488,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.description': string;
     readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
+    readonly 'common.current': string;
     readonly 'common.loading': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.missingAggregationId': string;
@@ -398,6 +504,14 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.noDataFoundMessage': string;
     readonly 'errors.unsupportedAggregationType': string;
     readonly 'errors.authenticationErrorMessage': string;
+    readonly 'metric.dora.deploymentFrequency.title': string;
+    readonly 'metric.dora.deploymentFrequency.description': string;
+    readonly 'metric.dora.medianLeadTimeForChanges.title': string;
+    readonly 'metric.dora.medianLeadTimeForChanges.description': string;
+    readonly 'metric.dora.changeFailureRate.title': string;
+    readonly 'metric.dora.changeFailureRate.description': string;
+    readonly 'metric.dora.medianTimeToRestore.title': string;
+    readonly 'metric.dora.medianTimeToRestore.description': string;
     readonly 'metric.github.openPRs.title': string;
     readonly 'metric.github.openPRs.description': string;
     readonly 'metric.jira.openIssues.title': string;
@@ -441,9 +555,17 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.drillDownCalculationFailures': string;
     readonly 'metric.homepageEntityHealthRatio': string;
     readonly 'metric.homepageEntityCalculationHealth': string;
+    readonly 'aggregation.min': string;
+    readonly 'aggregation.max': string;
+    readonly 'aggregation.sum': string;
+    readonly 'aggregation.count': string;
+    readonly 'aggregation.average': string;
     readonly 'thresholds.success': string;
     readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;
+    readonly 'thresholds.elite': string;
+    readonly 'thresholds.medium': string;
+    readonly 'thresholds.low': string;
     readonly 'thresholds.exist': string;
     readonly 'thresholds.missing': string;
     readonly 'thresholds.noEntities': string;
@@ -453,6 +575,9 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'dataSourcesDialog.close': string;
     readonly 'dataSourcesDialog.unknownPlugin': string;
     readonly 'dataSourcesDialog.statusTooltip': string;
+    readonly 'dataSourcesDialog.collectorStatusTooltip': string;
+    readonly 'dataSourcesDialog.collectorEmptyValue': string;
+    readonly 'dataSourcesDialog.collectorUnavailableStatus': string;
     readonly 'dataSourcesDialog.columns.plugin': string;
     readonly 'dataSourcesDialog.columns.check': string;
     readonly 'dataSourcesDialog.columns.value': string;

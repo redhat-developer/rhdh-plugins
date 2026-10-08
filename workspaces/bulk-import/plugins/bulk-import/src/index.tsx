@@ -27,12 +27,20 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 
+import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
+
 import {
   bulkImportApiRef,
   BulkImportBackendClient,
 } from './api/BulkImportBackendClient';
 import BulkImportIcon from './components/BulkImportIcon';
 import { bulkImportTranslations } from './translations';
+
+const bulkImportAccess = {
+  permissions: {
+    $contains: bulkImportPermission.name,
+  },
+};
 
 const rootRouteRef = createRouteRef();
 const importHistoryRouteRef = createSubRouteRef({
@@ -57,6 +65,8 @@ const bulkImportApi = ApiBlueprint.make({
 });
 
 const bulkImportPage = PageBlueprint.make({
+  // Re-visit this when we have the custom NavContent Extension in place. Ref Jira: https://redhat.atlassian.net/browse/RHIDP-12094
+  if: bulkImportAccess,
   params: {
     title: 'Bulk import',
     icon: <BulkImportIcon />,

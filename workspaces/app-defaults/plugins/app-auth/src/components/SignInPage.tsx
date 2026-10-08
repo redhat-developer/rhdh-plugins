@@ -46,10 +46,9 @@ import {
 } from '../AuthApiRefs';
 import { signInTranslationRef } from '../translations/signIn';
 
-const DEFAULT_PROVIDER = 'github';
-
 const createProviders = (t: (key: string, params?: any) => string) =>
   new Map<string, SignInProviderConfig | string>([
+    ['guest', 'guest'],
     [
       'auth0',
       {
@@ -209,17 +208,11 @@ export function SignInPage(props: SignInPageProps): React.JSX.Element {
       </ErrorPanel>
     );
   }
-  const isDevEnv = authEnvironment === 'development';
 
   const signInPage = configApi.getOptional<string | string[]>('signInPage');
   let providerNames: string[];
   if (signInPage === undefined) {
-    const fromAuth =
-      configApi
-        .getOptionalConfig('auth.providers')
-        ?.keys()
-        ?.filter(providerId => providerId !== 'guest') ?? [];
-    providerNames = fromAuth.length > 0 ? fromAuth : [DEFAULT_PROVIDER];
+    providerNames = configApi.getOptionalConfig('auth.providers')?.keys() ?? [];
   } else {
     providerNames = Array.isArray(signInPage) ? signInPage : [signInPage];
   }
@@ -233,27 +226,39 @@ export function SignInPage(props: SignInPageProps): React.JSX.Element {
     );
 
   if (providerConfigs.length === 0) {
-    const defaultProvider = providers.get(DEFAULT_PROVIDER);
-    if (defaultProvider) providerConfigs.push(defaultProvider);
+    return (
+      <ErrorPanel
+        error={new Error(t('signIn.config.noConfiguredProviders.error'))}
+        title={t('signIn.config.noConfiguredProviders.panelTitle')}
+      >
+        <Typography variant="body2" component="div">
+          {t('signIn.config.noConfiguredProviders.description', {
+            replace: {
+              authProvidersKey: <code>auth.providers</code>,
+            },
+          })}
+        </Typography>
+      </ErrorPanel>
+    );
   }
 
-  if (providerConfigs.some(config => typeof config === 'string')) {
+  if (
+    providerConfigs.some(
+      config => typeof config === 'string' && config !== 'guest',
+    )
+  ) {
     const proxiedProvider = providerConfigs.find(
       config => typeof config === 'string',
     ) as string;
     return <ProxiedSignInPage {...props} provider={proxiedProvider} />;
   }
 
-  const providerList = isDevEnv
-    ? ['guest' as const, ...(providerConfigs as SignInProviderConfig[])]
-    : (providerConfigs as SignInProviderConfig[]);
-
   return (
     <CCSignInPage
       {...props}
       title={t('signIn.page.title')}
       align="center"
-      providers={providerList}
+      providers={providerConfigs as SignInProviderConfig[]}
     />
   );
 }

@@ -38,6 +38,15 @@ import {
   transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
 import {
+  applyToolResultToToolCalls,
+  createTempToolCallsCacheSessionPrefix,
+  normalizeToolCalls,
+  parseSSEBuffer,
+  parseToolCallFromEvent,
+  parseToolResultFromEvent,
+  toolCallIdKey,
+} from '../utils/stream-event-helpers';
+import {
   clearSharedToolCallsCacheSessionPrefix,
   getSharedToolCallsCache,
   migrateSharedToolCallsCacheSessionPrefixToConversation,
@@ -47,58 +56,6 @@ import {
   CreateMessageVariables,
   useCreateConversationMessage,
 } from './useCreateCoversationMessage';
-
-const toolCallIdKey = (id: string | number): string => {
-  return String(id);
-};
-
-const normalizeToolCalls = (
-  calls: (ToolCall | undefined)[] | undefined,
-): ToolCall[] => (calls ?? []).filter((tc): tc is ToolCall => tc !== null);
-
-const isMcpStyleToolCallPayload = (
-  data: Record<string, any> | undefined,
-): boolean => {
-  return (
-    !!data &&
-    typeof data.name === 'string' &&
-    data.name.trim().length > 0 &&
-    data.id !== null
-  );
-};
-
-/** Legacy tool_result uses data.token with at least tool_name and response. */
-const isLegacyToolResultToken = (
-  token: unknown,
-): token is { tool_name: string; response?: unknown } => {
-  return (
-    !!token &&
-    typeof token === 'object' &&
-    !Array.isArray(token) &&
-    typeof (token as { tool_name?: string }).tool_name === 'string' &&
-    (token as { tool_name: string }).tool_name.length > 0
-  );
-};
-
-let tempToolCallsCachePrefixFallbackSeq = 0;
-
-/** Unique prefix per temp send so late streams cannot migrate another session's tool cache. */
-function createTempToolCallsCacheSessionPrefix(): string {
-  const suffix =
-    globalThis.crypto?.randomUUID?.() ??
-    `${Date.now()}-${++tempToolCallsCachePrefixFallbackSeq}`;
-  return `lightspeed-temp:${suffix}`;
-}
-
-const legacyToolResultToString = (response: unknown): string => {
-  if (!response) return '';
-  if (typeof response === 'string') return response;
-  try {
-    return JSON.stringify(response);
-  } catch {
-    return String(response);
-  }
-};
 
 // Fetch all conversation messages
 export const useFetchConversationMessages = (
@@ -165,7 +122,7 @@ export const useConversationMessages = (
   createMessageOverride?: (
     vars: CreateMessageVariables,
   ) => Promise<ReadableStreamDefaultReader<Uint8Array>>,
-  onRequestIdReady?: (request_id: string) => void,
+  onRequestIdReady?: (request_id: string, conversation_id?: string) => void,
 ): UseConversationMessagesReturn => {
   const theme = useTheme();
   const botAvatar =
@@ -371,81 +328,41 @@ export const useConversationMessages = (
 
             buffer += decoder.decode(value, { stream: true });
 
-            // Process all complete messages separated by double newlines
-            const parts = buffer.split('\n\n');
-            buffer = parts.pop()!;
+            const {
+              events: parsedEvents,
+              parseErrors,
+              remainder,
+            } = parseSSEBuffer(buffer);
+            buffer = remainder;
 
-            for (const part of parts) {
-              const lines = part
-                .split('\n')
-                .filter(line => line.startsWith('data:'));
+            if (parseErrors.length > 0) {
+              // eslint-disable-next-line no-console
+              console.warn('Error parsing JSON:', parseErrors[0]);
+              if (typeof onComplete === 'function') {
+                onComplete('Invalid JSON received');
+              }
+            }
 
-              const jsonString = lines
-                .map(line => line.trim().slice(5).trim())
-                .join('');
+            for (const { event, data } of parsedEvents) {
               try {
-                const { event, data } = JSON.parse(jsonString);
                 if (event === 'start') {
                   requestId = data?.request_id;
-                  onRequestIdReady?.(requestId);
 
                   if (currentConversation === TEMP_CONVERSATION_ID) {
-                    // If the conversation is temp, we need to set the new conversation id
                     newConversationId = data?.conversation_id;
                   }
+
+                  onRequestIdReady?.(requestId, newConversationId || undefined);
                 }
 
-                // Handle tool_call event
                 if (event === 'tool_call') {
-                  const toolCallData = data?.token;
-                  const legacyObjectCall =
-                    typeof toolCallData === 'object' &&
-                    toolCallData !== null &&
-                    !Array.isArray(toolCallData) &&
-                    (toolCallData as { tool_name?: string }).tool_name;
-
-                  const mcpStyle = isMcpStyleToolCallPayload(data);
-                  const rawArgs = data?.args ?? data?.arguments;
-                  const mcpArgs: Record<string, any> =
-                    rawArgs &&
-                    typeof rawArgs === 'object' &&
-                    !Array.isArray(rawArgs)
-                      ? rawArgs
-                      : {};
-
-                  let toolCall: ToolCall | undefined;
-                  // Prefer legacy token object when present (backward compatible)
-                  if (legacyObjectCall && data.id !== null) {
-                    toolCall = {
-                      id: data.id,
-                      toolName: (toolCallData as { tool_name: string })
-                        .tool_name,
-                      arguments:
-                        (toolCallData as { arguments?: Record<string, any> })
-                          .arguments || {},
-                      startTime: Date.now(),
-                      isLoading: true,
-                    };
-                  } else if (mcpStyle) {
-                    toolCall = {
-                      id: data.id,
-                      toolName: data.name.trim(),
-                      description:
-                        typeof data.type === 'string' && data.type !== data.name
-                          ? data.type
-                          : undefined,
-                      arguments: mcpArgs,
-                      startTime: Date.now(),
-                      isLoading: true,
-                    };
-                  }
+                  const toolCall = parseToolCallFromEvent(data);
 
                   if (toolCall && data.id !== null) {
                     const newToolCall: ToolCall = toolCall;
                     pendingToolCalls.current[toolCallIdKey(data.id)] =
                       newToolCall;
 
-                    // Update the bot message with the pending tool call
                     setConversations(prevConversations => {
                       const conversation =
                         prevConversations[currentConversation] ?? [];
@@ -463,7 +380,6 @@ export const useConversationMessages = (
                       ];
                       lastMessage.toolCalls = nextToolCalls;
 
-                      // Cache tool calls for this message (message pair index)
                       const messageIndex = Math.floor(lastMessageIndex / 2);
                       const cacheKey = `${toolCallsCacheKeyPrefix}-${messageIndex}`;
                       setSharedToolCallsCache(cacheKey, nextToolCalls);
@@ -479,7 +395,6 @@ export const useConversationMessages = (
                       };
                     });
 
-                    // Also update streaming ref
                     const [humanMessage, aiMessage] =
                       streamingConversations.current[currentConversation] || [];
                     if (aiMessage) {
@@ -500,52 +415,13 @@ export const useConversationMessages = (
                   }
                 }
 
-                // Handle tool_result event
                 if (event === 'tool_result') {
-                  const tokenResult = data?.token;
-                  const legacyResult = isLegacyToolResultToken(tokenResult);
+                  const result = parseToolResultFromEvent(
+                    data,
+                    pendingToolCalls.current,
+                  );
 
-                  const mcpHasContent =
-                    data?.id !== null &&
-                    data.content !== undefined &&
-                    !legacyResult;
-
-                  let responsePayload: string | undefined;
-                  let matchToolName: string | undefined;
-                  let toolIdKey: string | undefined;
-
-                  if (legacyResult) {
-                    responsePayload = legacyToolResultToString(
-                      tokenResult.response,
-                    );
-                    matchToolName = tokenResult.tool_name;
-                    toolIdKey =
-                      data?.id !== null ? toolCallIdKey(data.id) : undefined;
-                  } else if (mcpHasContent) {
-                    toolIdKey = toolCallIdKey(data.id);
-                    responsePayload =
-                      typeof data.content === 'string'
-                        ? data.content
-                        : JSON.stringify(data.content);
-                    if (
-                      typeof data.status === 'string' &&
-                      data.status !== 'success'
-                    ) {
-                      responsePayload = `[${data.status}] ${responsePayload}`;
-                    }
-                  }
-
-                  if (
-                    responsePayload !== undefined &&
-                    toolIdKey !== undefined
-                  ) {
-                    const pendingCall = pendingToolCalls.current[toolIdKey];
-                    const endTime = Date.now();
-                    const executionTime = pendingCall
-                      ? (endTime - pendingCall.startTime) / 1000
-                      : 0;
-
-                    // Update the tool call with result
+                  if (result) {
                     setConversations(prevConversations => {
                       const conversation =
                         prevConversations[currentConversation] ?? [];
@@ -554,29 +430,13 @@ export const useConversationMessages = (
                       if (lastMessageIndex < 0) return prevConversations;
 
                       const lastMessage = { ...conversation[lastMessageIndex] };
-                      const toolCalls = lastMessage.toolCalls || [];
-
-                      // Find and update the matching tool call
-                      const updatedToolCalls = toolCalls.map(tc => {
-                        const idMatches =
-                          toolCallIdKey(tc.id) === toolIdKey ||
-                          (matchToolName !== undefined &&
-                            tc.toolName === matchToolName);
-                        if (idMatches) {
-                          return {
-                            ...tc,
-                            response: responsePayload,
-                            endTime,
-                            executionTime,
-                            isLoading: false,
-                          };
-                        }
-                        return tc;
-                      });
+                      const updatedToolCalls = applyToolResultToToolCalls(
+                        lastMessage.toolCalls || [],
+                        result,
+                      );
 
                       lastMessage.toolCalls = updatedToolCalls;
 
-                      // Update cache with completed tool call
                       const messageIndex = Math.floor(lastMessageIndex / 2);
                       const cacheKey = `${toolCallsCacheKeyPrefix}-${messageIndex}`;
                       setSharedToolCallsCache(cacheKey, updatedToolCalls);
@@ -592,35 +452,20 @@ export const useConversationMessages = (
                       };
                     });
 
-                    // Also update streaming ref
                     const [humanMessage, aiMessage] =
                       streamingConversations.current[currentConversation] || [];
                     if (aiMessage) {
-                      const toolCalls = aiMessage.toolCalls || [];
-                      const updatedToolCalls = toolCalls.map(tc => {
-                        const idMatches =
-                          toolCallIdKey(tc.id) === toolIdKey ||
-                          (matchToolName !== undefined &&
-                            tc.toolName === matchToolName);
-                        if (idMatches) {
-                          return {
-                            ...tc,
-                            response: responsePayload,
-                            endTime,
-                            executionTime,
-                            isLoading: false,
-                          };
-                        }
-                        return tc;
-                      });
+                      const updatedToolCalls = applyToolResultToToolCalls(
+                        aiMessage.toolCalls || [],
+                        result,
+                      );
                       streamingConversations.current[currentConversation] = [
                         humanMessage,
                         { ...aiMessage, toolCalls: updatedToolCalls },
                       ];
                     }
 
-                    // Clean up pending tool call
-                    delete pendingToolCalls.current[toolIdKey];
+                    delete pendingToolCalls.current[result.toolIdKey];
                   }
                 }
 

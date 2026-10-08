@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-common
 
+## 1.0.4
+
+## 1.0.3
+
+## 1.0.2
+
+## 1.0.1
+
+## 1.0.0
+
+### Minor Changes
+
+- 8a42ace: Backstage version bump to v1.54.6
+
+## 0.9.1
+
+### Patch Changes
+
+- d623d36: Refreshed `yarn.lock` to align resolved dependency versions.
+
 ## 0.9.0
 
 ### Minor Changes

@@ -16,13 +16,13 @@
 
 import { SidebarItem } from '@backstage/core-components';
 import WavingHandOutlinedIcon from '@mui/icons-material/WavingHandOutlined';
-import { useQuickstartDrawerContext } from '@red-hat-developer-hub/backstage-plugin-quickstart';
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
-import { useMemo } from 'react';
 import {
+  useQuickstartDrawerContext,
   filterQuickstartItemsByRole,
   QuickstartItemData,
-} from '@red-hat-developer-hub/backstage-plugin-quickstart';
+} from '@red-hat-developer-hub/backstage-plugin-quickstart/legacy';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import { useMemo } from 'react';
 
 export const QuickstartSidebarItem = () => {
   const configApi = useApi(configApiRef);

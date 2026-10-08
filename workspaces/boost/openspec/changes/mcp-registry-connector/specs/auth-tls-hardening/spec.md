@@ -18,10 +18,14 @@ None — this is a new productization wrapper around the upstream MCP Registry e
 
 ### Requirement: Custom CA Bundle from Mounted Path
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Custom CA bundle is applied
+
 **WHEN** the connector is configured with a custom CA bundle path:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com
@@ -71,10 +75,14 @@ catalog:
 
 ### Requirement: Kubernetes Secret-Based Credentials
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Secret credentials are loaded
+
 **WHEN** the connector is configured with a Kubernetes Secret reference for authentication:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com
@@ -130,10 +138,14 @@ catalog:
 
 ### Requirement: Per-Connector TLS Configuration
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Connector instances keep TLS settings isolated
+
 **WHEN** multiple MCP Registry connector instances are configured with different TLS settings:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistryPrimary:
       endpoint: https://registry-primary.internal.example.com
@@ -154,6 +166,10 @@ catalog:
 **AND** connector instances do not share CA bundles or TLS configuration state.
 
 ### Requirement: TLS Certificate Validation Enforcement
+
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: TLS validation is enforced
 
 **WHEN** the connector makes HTTPS requests to the registry endpoint:
 
@@ -179,6 +195,10 @@ catalog:
 
 ### Requirement: Shared CA Bundle Utility Integration
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Shared CA utility is used
+
 **WHEN** the connector loads a custom CA bundle:
 
 **THEN** the connector uses the shared `loadCaBundle()` utility from `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` (RHIDP-15316).
@@ -198,6 +218,10 @@ catalog:
 **AND** the error message includes the missing package name and version.
 
 ### Requirement: Prometheus Metrics for TLS and Auth
+
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: TLS and authentication metrics are emitted
 
 **WHEN** the connector validates TLS certificates:
 

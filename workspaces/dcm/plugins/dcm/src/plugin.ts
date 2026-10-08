@@ -21,15 +21,15 @@ import {
   fetchApiRef,
 } from '@backstage/core-plugin-api';
 import {
+  AgentsClient,
   CatalogClient,
   PolicyManagerClient,
-  ProvidersClient,
   ResourcesClient,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 
 import {
   rootRouteRef,
-  providersRouteRef,
+  agentsRouteRef,
   policiesRouteRef,
   serviceTypesRouteRef,
   catalogItemsRouteRef,
@@ -37,11 +37,13 @@ import {
   resourcesRouteRef,
 } from './routes';
 import {
+  agentsApiRef,
   catalogApiRef,
   policyManagerApiRef,
-  providersApiRef,
   resourcesApiRef,
 } from './apis';
+import { dcmAuthApiFactory, dcmAuthApiRef } from './api/AuthApiRefs';
+import { markDefaultDcmClient } from './api/DefaultDcmClient';
 
 /**
  * DCM plugin instance.
@@ -52,7 +54,7 @@ export const dcmPlugin = createPlugin({
   id: 'dcm',
   routes: {
     root: rootRouteRef,
-    providers: providersRouteRef,
+    agents: agentsRouteRef,
     policies: policiesRouteRef,
     serviceTypes: serviceTypesRouteRef,
     catalogItems: catalogItemsRouteRef,
@@ -60,32 +62,73 @@ export const dcmPlugin = createPlugin({
     resources: resourcesRouteRef,
   },
   apis: [
+    dcmAuthApiFactory,
     createApiFactory({
       api: catalogApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
-        return new CatalogClient({ discoveryApi, fetchApi });
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        dcmAuthApi: dcmAuthApiRef,
+      },
+      factory({ discoveryApi, fetchApi, dcmAuthApi }) {
+        return markDefaultDcmClient(
+          new CatalogClient({
+            discoveryApi,
+            fetchApi,
+            getAccessToken: dcmAuthApi.getAccessToken,
+          }),
+        );
       },
     }),
     createApiFactory({
       api: policyManagerApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
-        return new PolicyManagerClient({ discoveryApi, fetchApi });
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        dcmAuthApi: dcmAuthApiRef,
+      },
+      factory({ discoveryApi, fetchApi, dcmAuthApi }) {
+        return markDefaultDcmClient(
+          new PolicyManagerClient({
+            discoveryApi,
+            fetchApi,
+            getAccessToken: dcmAuthApi.getAccessToken,
+          }),
+        );
       },
     }),
     createApiFactory({
-      api: providersApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
-        return new ProvidersClient({ discoveryApi, fetchApi });
+      api: agentsApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        dcmAuthApi: dcmAuthApiRef,
+      },
+      factory({ discoveryApi, fetchApi, dcmAuthApi }) {
+        return markDefaultDcmClient(
+          new AgentsClient({
+            discoveryApi,
+            fetchApi,
+            getAccessToken: dcmAuthApi.getAccessToken,
+          }),
+        );
       },
     }),
     createApiFactory({
       api: resourcesApiRef,
-      deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
-      factory({ discoveryApi, fetchApi }) {
-        return new ResourcesClient({ discoveryApi, fetchApi });
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+        dcmAuthApi: dcmAuthApiRef,
+      },
+      factory({ discoveryApi, fetchApi, dcmAuthApi }) {
+        return markDefaultDcmClient(
+          new ResourcesClient({
+            discoveryApi,
+            fetchApi,
+            getAccessToken: dcmAuthApi.getAccessToken,
+          }),
+        );
       },
     }),
   ],

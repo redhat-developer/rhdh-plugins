@@ -17,17 +17,12 @@
 import {
   WeightedStatusScoreAggregationResult,
   AggregatedMetricResult,
-  AggregationMetadata,
-  aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { AggregatedMetricCardBaseProps } from '../types';
 
 export type WeightedStatusScoreCardComponentProps =
   AggregatedMetricCardBaseProps & {
-    scorecard: Omit<AggregatedMetricResult, 'result' | 'metadata'> & {
-      metadata: AggregationMetadata & {
-        aggregationType: typeof aggregationTypes.weightedStatusScore;
-      };
+    scorecard: Omit<AggregatedMetricResult, 'result'> & {
       result: WeightedStatusScoreAggregationResult;
     };
   };

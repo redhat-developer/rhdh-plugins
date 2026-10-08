@@ -131,6 +131,57 @@ export class VectorStoresOperator {
   }
 
   /**
+   * Perform a fetch, retrying when lightspeed-core responds with 429 Too Many
+   * Requests. lightspeed-core bounds concurrent file uploads and vector store
+   * attaches with per-endpoint semaphores (max_concurrent_file_uploads /
+   * max_concurrent_vector_store_attaches); when those are momentarily full it
+   * rejects with 429 rather than queuing. Retrying here lets bursty batch
+   * uploads succeed instead of failing. Honors the Retry-After header when the
+   * server sends one, otherwise backs off exponentially with a cap.
+   * @param input - Request URL
+   * @param init - Fetch init options
+   * @param operation - Operation description for logging
+   * @param maxRetries - Maximum number of retries on 429 (default 8)
+   * @returns The fetch Response (may still be non-ok for callers to handle)
+   */
+  private async fetchWithRetry(
+    input: string,
+    init: RequestInit,
+    operation: string,
+    maxRetries = 8,
+  ): Promise<Response> {
+    // attempt 0 is the initial request; 1..maxRetries are the retries.
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const response = await fetch(input, init);
+      if (response.status !== 429 || attempt === maxRetries) {
+        return response;
+      }
+      // Release the socket back to the undici connection pool immediately. An
+      // unconsumed 429 body keeps the connection out of the pool until the
+      // Response is garbage-collected, which compounds across retries under the
+      // bursty concurrent uploads this retry logic exists to handle.
+      await response.body?.cancel();
+      const retry = attempt + 1;
+      const retryAfter = Number(response.headers.get('retry-after'));
+      const delayMs =
+        Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : // Add jitter so several requests rejected at once don't recompute
+            // the same delay and retry in lockstep, recreating the contention.
+            Math.min(2 ** retry * 250 + Math.random() * 250, 5000);
+      this.logger.warn(
+        `Rate limited (429) while trying to ${operation}; retrying in ${Math.round(
+          delayMs,
+        )}ms (attempt ${retry}/${maxRetries})`,
+      );
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+    // Unreachable: the final iteration (attempt === maxRetries) always returns.
+    // Present only to satisfy the Promise<Response> return-type checker.
+    throw new Error(`Exhausted retries while trying to ${operation}`);
+  }
+
+  /**
    * Vector Stores API - mirrors LlamaStackClient.vectorStores structure
    */
   vectorStores = {
@@ -298,7 +349,7 @@ export class VectorStoresOperator {
           params,
         );
 
-        const response = await fetch(
+        const response = await this.fetchWithRetry(
           `${this.baseURL}/v1/vector-stores/${vectorStoreId}/files`,
           {
             method: 'POST',
@@ -307,6 +358,7 @@ export class VectorStoresOperator {
             },
             body: JSON.stringify(params),
           },
+          'add file to vector store',
         );
 
         if (!response.ok) {
@@ -446,11 +498,15 @@ export class VectorStoresOperator {
         formData.resume();
       });
 
-      const response = await fetch(`${this.baseURL}/v1/files`, {
-        method: 'POST',
-        body: formBuffer as unknown as BodyInit,
-        headers: formData.getHeaders(),
-      });
+      const response = await this.fetchWithRetry(
+        `${this.baseURL}/v1/files`,
+        {
+          method: 'POST',
+          body: formBuffer as unknown as BodyInit,
+          headers: formData.getHeaders(),
+        },
+        'upload file',
+      );
 
       if (!response.ok) {
         await handleHttpError(response, this.logger, 'upload file');

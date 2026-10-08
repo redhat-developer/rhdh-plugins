@@ -35,7 +35,18 @@ import {
   aggregatedCardWithJiraOpenIssuesWidget,
   aggregatedCardWithGithubFilecheckLicenseWidget,
   aggregatedCardWithGithubFilecheckCodeownersWidget,
+  aggregatedCardWithGithubFilecheckReadmeWidget,
   aggregatedCardWithGithubOpenPrsWeightedWidget,
+  aggregatedCardWithMaxOpenPrsWidget,
+  aggregatedCardWithMinOpenPrsWidget,
+  aggregatedCardWithTotalOpenBugsWidget,
+  aggregatedCardWithEntitiesWithOpenPrsWidget,
+  aggregatedCardWithAvgOpenPrsWidget,
+  aggregatedCardWithDoraDeploymentFrequencyWidget,
+  aggregatedCardWithDoraChangeFailureRateWidget,
+  aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
+  aggregatedCardWithDoraMedianTimeToRestoreWidget,
+  aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
 } from './extensions/homePageCards';
 import { scorecardIconBundle } from './extensions/icons';
 import { scorecardPage } from './extensions/scorecardPage';
@@ -45,6 +56,7 @@ import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtension
  * Extension for Scorecard translations.
  */
 const scorecardTranslation = TranslationBlueprint.make({
+  name: 'scorecard-translations',
   params: {
     resource: scorecardTranslations,
   },
@@ -72,7 +84,18 @@ export default createFrontendPlugin({
     aggregatedCardWithGithubOpenPrsWidget,
     aggregatedCardWithGithubFilecheckLicenseWidget,
     aggregatedCardWithGithubFilecheckCodeownersWidget,
+    aggregatedCardWithGithubFilecheckReadmeWidget,
     aggregatedCardWithGithubOpenPrsWeightedWidget,
+    aggregatedCardWithMaxOpenPrsWidget,
+    aggregatedCardWithMinOpenPrsWidget,
+    aggregatedCardWithTotalOpenBugsWidget,
+    aggregatedCardWithEntitiesWithOpenPrsWidget,
+    aggregatedCardWithAvgOpenPrsWidget,
+    aggregatedCardWithDoraDeploymentFrequencyWidget,
+    aggregatedCardWithDoraChangeFailureRateWidget,
+    aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
+    aggregatedCardWithDoraMedianTimeToRestoreWidget,
+    aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
   ],
   routes: {
     root: rootRouteRef,

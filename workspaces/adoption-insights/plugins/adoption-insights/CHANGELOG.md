@@ -1,5 +1,60 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 1.0.4
+
+### Patch Changes
+
+- 7a0b7d2: Register the Adoption Insights nav entry through `SidebarItemBlueprint` in the `admin` group, and adopt RHDH app-defaults for the NFS demo app sidebar instead of a custom nav module.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.4
+
+## 1.0.3
+
+### Patch Changes
+
+- ea52ee5: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.15.0`.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.3
+
+## 1.0.2
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.2
+
+## 1.0.1
+
+### Patch Changes
+
+- 0d097ce: The Adoption Insights page is only shown when the user is authorized for `adoption-insights.events.read`.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.1
+
+## 1.0.0
+
+### Major Changes
+
+- b4476cf: **BREAKING:** Graduate NFS plugin exports from `/alpha` to the primary package entry point. OFS exports move to `/legacy`. Translations remain available at `/alpha`.
+
+  NFS apps should import plugins from the package root instead of `/alpha`. Legacy OFS apps should import from `/legacy`.
+
+### Minor Changes
+
+- 8a42ace: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- e0d0d5f: Cover the new frontend system wiring with createExtensionTester: the page's path, title and route ref, and that both the page and the API extension are registered on the plugin. The existing alpha tests all pass against a plugin whose extensions array is empty, which is one of the two ways an NFS plugin fails silently.
+- Updated dependencies [8a42ace]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.0
+
+## 0.9.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+- d623d36: Refreshed `yarn.lock` to align resolved dependency versions.
+- Updated dependencies [d623d36]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.9.1
+
 ## 0.9.0
 
 ### Minor Changes

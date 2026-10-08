@@ -15,9 +15,10 @@
  */
 
 /**
- * New Frontend System extension APIs for the RHDH app shell.
+ * Alpha (unstable) API surface for the RHDH app shell shared components.
  *
  * @packageDocumentation
  */
 
-export * from './drawer';
+export { EntityHeaderBui, EntityContextMenu } from './catalog';
+export type { EntityContextMenuItemDataWithNode } from './catalog';

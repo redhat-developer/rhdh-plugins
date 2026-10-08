@@ -1,0 +1,95 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.example-labs/workspace-fs",
+  "description": "MCP server for sandboxed workspace filesystem read and write operations.",
+  "title": "Workspace Filesystem",
+  "repository": {
+    "url": "https://github.com/example-labs/mcp-servers",
+    "source": "github",
+    "id": "c1a2b3d4-e5f6-7890-abcd-ef1234567890"
+  },
+  "version": "1.4.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@example-labs/mcp-server-workspace-fs",
+      "version": "1.4.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "valueHint": "workspace_root",
+          "description": "Workspace root directory to expose",
+          "default": "/home/developer/workspace",
+          "isRequired": true,
+          "isRepeated": true
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "LOG_LEVEL",
+          "description": "Logging level (debug, info, warn, error)",
+          "default": "warn"
+        }
+      ]
+    },
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/example-labs/workspace-fs:1.4.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "description": "Bind-mount a host path into the container",
+          "name": "--mount",
+          "value": "type=bind,src={source_path},dst={target_path}",
+          "isRequired": true,
+          "isRepeated": true,
+          "variables": {
+            "source_path": {
+              "description": "Host path to mount",
+              "format": "filepath",
+              "isRequired": true
+            },
+            "target_path": {
+              "description": "Mount point inside the container under `/workspace`.",
+              "isRequired": true,
+              "default": "/workspace"
+            }
+          }
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "positional",
+          "valueHint": "workspace_root",
+          "value": "/workspace"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "LOG_LEVEL",
+          "description": "Logging level (debug, info, warn, error)",
+          "default": "warn"
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "tool": "ci-publisher",
+      "version": "4.0.0",
+      "build_info": {
+        "commit": "9f8e7d6c5b4a3210",
+        "timestamp": "2025-06-02T18:40:00Z",
+        "pipeline_id": "workspace-fs-build-2048",
+        "environment": "staging"
+      }
+    }
+  }
+}

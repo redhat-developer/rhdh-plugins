@@ -15,21 +15,29 @@
  */
 
 import { DatabaseMetricValues } from '../src/database/DatabaseMetricValues';
-import { DbMetricValue, DbAggregatedMetric } from '../src/database/types';
+import {
+  DbMetricValue,
+  DbAggregatedMetric,
+  DbScalarAggregatedMetric,
+} from '../src/database/types';
 
 type BuildMockDatabaseMetricValuesParams = {
   metricValues?: DbMetricValue[];
   latestEntityMetric?: DbMetricValue[];
   countOfExpiredMetrics?: number;
   aggregatedMetric?: DbAggregatedMetric;
+  scalarAggregatedMetric?: DbScalarAggregatedMetric;
   entityMetricsByStatus?: { rows: DbMetricValue[]; total: number };
 };
 
 export const mockDatabaseMetricValues = {
   createMetricValues: jest.fn(),
   readLatestEntityMetricValues: jest.fn(),
+  readLatestEntityMetricValuesPerUtcDay: jest.fn(),
   cleanupExpiredMetrics: jest.fn(),
   readAggregatedMetricByEntityRefs: jest.fn(),
+  readScalarAggregatedMetricByEntityRefs: jest.fn(),
+  readScalarAggregatedMetricTimeSeriesByEntityRefs: jest.fn(),
   readEntityMetricsWithFilters: jest.fn(),
 } as unknown as jest.Mocked<DatabaseMetricValues>;
 
@@ -38,6 +46,7 @@ export const buildMockDatabaseMetricValues = ({
   latestEntityMetric,
   countOfExpiredMetrics,
   aggregatedMetric,
+  scalarAggregatedMetric,
   entityMetricsByStatus,
 }: BuildMockDatabaseMetricValuesParams) => {
   const createMetricValues = metricValues
@@ -56,6 +65,10 @@ export const buildMockDatabaseMetricValues = ({
     ? jest.fn().mockResolvedValue(aggregatedMetric)
     : mockDatabaseMetricValues.readAggregatedMetricByEntityRefs;
 
+  const readScalarAggregatedMetricByEntityRefs = scalarAggregatedMetric
+    ? jest.fn().mockResolvedValue(scalarAggregatedMetric)
+    : mockDatabaseMetricValues.readScalarAggregatedMetricByEntityRefs;
+
   const readEntityMetricsWithFilters = entityMetricsByStatus
     ? jest.fn().mockResolvedValue(entityMetricsByStatus)
     : mockDatabaseMetricValues.readEntityMetricsWithFilters;
@@ -63,8 +76,13 @@ export const buildMockDatabaseMetricValues = ({
   return {
     createMetricValues,
     readLatestEntityMetricValues,
+    readLatestEntityMetricValuesPerUtcDay:
+      mockDatabaseMetricValues.readLatestEntityMetricValuesPerUtcDay,
     cleanupExpiredMetrics,
     readAggregatedMetricByEntityRefs,
+    readScalarAggregatedMetricByEntityRefs,
+    readScalarAggregatedMetricTimeSeriesByEntityRefs:
+      mockDatabaseMetricValues.readScalarAggregatedMetricTimeSeriesByEntityRefs,
     readEntityMetricsWithFilters,
   } as unknown as jest.Mocked<DatabaseMetricValues>;
 };

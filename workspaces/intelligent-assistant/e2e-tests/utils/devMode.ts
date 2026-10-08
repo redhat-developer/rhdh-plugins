@@ -21,9 +21,11 @@ import {
   contentsWithRedactedThinking,
   E2E_MCP_VALID_TOKEN,
   generateQueryResponse,
+  generateQueryResponseWithReferencedDocuments,
   mockedMcpServersResponse,
   modelBaseUrl,
   type McpServersListMock,
+  type SavedPromptMock,
 } from '../fixtures/responses';
 
 let mcpServersMockState: McpServersListMock;
@@ -32,6 +34,12 @@ export type MockMcpServersOptions = {
   failServerValidateFor?: string;
   /** Shown as `validation.error` when POST validate fails for `failServerValidateFor` (use product i18n, e.g. `mcp.settings.token.validationFailed`). */
   failServerValidateError?: string;
+  /**
+   * When true with `failServerValidateFor`, POST `/mcp-servers/:name/validate`
+   * returns HTTP 400 `{ error }` (mirrors missing LCS/config URL) instead of a
+   * 200 body with `status: 'error'`.
+   */
+  failServerValidateAsHttpError?: boolean;
   /**
    * Optional per-server tool names returned by POST `/mcp-servers/:name/validate`.
    * This allows modal "Tools" list assertions to mirror real server names.
@@ -362,6 +370,82 @@ function createNotebookLightspeedRouteHandler(page: Page) {
     return true;
   };
 
+  const fulfillDocumentRename = async (
+    route: Route,
+    sid: string,
+    encodedDocId: string,
+  ): Promise<boolean> => {
+    const docId = decodeURIComponent(encodedDocId);
+    const docs = docsFor(sid);
+    const existing = docs.get(docId);
+    if (!existing) {
+      await route.fulfill({
+        status: 404,
+        json: { status: 'error', error: 'Document not found' },
+      });
+      return true;
+    }
+
+    let body: { title?: string };
+    try {
+      body = route.request().postDataJSON();
+    } catch {
+      await route.fulfill({
+        status: 400,
+        json: { status: 'error', error: 'Invalid JSON body' },
+      });
+      return true;
+    }
+
+    const title = body?.title?.trim();
+    if (!title) {
+      await route.fulfill({
+        status: 400,
+        json: { status: 'error', error: 'title is required' },
+      });
+      return true;
+    }
+    if (title.length > 255) {
+      await route.fulfill({
+        status: 400,
+        json: {
+          status: 'error',
+          error: 'title must be 255 characters or less',
+        },
+      });
+      return true;
+    }
+
+    for (const [id, doc] of docs.entries()) {
+      if (id !== docId && (doc as Record<string, unknown>).title === title) {
+        await route.fulfill({
+          status: 409,
+          json: {
+            status: 'error',
+            error: `A document with the title "${title}" already exists`,
+          },
+        });
+        return true;
+      }
+    }
+
+    const now = new Date().toISOString();
+    const renamed = { ...existing, title, document_id: title, updated_at: now };
+    docs.delete(docId);
+    docs.set(title, renamed);
+    touchSessionAfterDocChange(sid, now);
+
+    await route.fulfill({
+      json: {
+        status: 'success',
+        document_id: title,
+        session_id: sid,
+        message: 'Document renamed successfully',
+      },
+    });
+    return true;
+  };
+
   const fulfillDocumentStatus = async (
     route: Route,
     method: string,
@@ -374,7 +458,7 @@ function createNotebookLightspeedRouteHandler(page: Page) {
     if (!docsFor(sid).has(docId)) {
       await route.fulfill({
         status: 404,
-        json: { status: 'error', error: 'Document not found' },
+        json: { status: 'error', error: 'Resource not found' },
       });
       return true;
     }
@@ -413,6 +497,9 @@ function createNotebookLightspeedRouteHandler(page: Page) {
       return fulfillDocumentStatus(route, method, sid, tail[2]);
     }
     if (tail.length === 3 && tail[1] === 'documents' && tail[2]) {
+      if (method === 'PATCH') {
+        return fulfillDocumentRename(route, sid, tail[2]);
+      }
       return fulfillDocumentDelete(route, method, sid, tail[2]);
     }
     return false;
@@ -528,6 +615,7 @@ export async function mockQuery(
   query: string,
   conversations: any[],
 ) {
+  await page.unroute(`${modelBaseUrl}/v1/query`);
   await page.route(`${modelBaseUrl}/v1/query`, async route => {
     const payload = route.request().postDataJSON();
 
@@ -539,6 +627,32 @@ export async function mockQuery(
         ? conversations[1].conversation_id
         : conversations[0].conversation_id,
     );
+    await route.fulfill({ body });
+  });
+}
+
+/** Mock query SSE that returns `referenced_documents` on the `end` event (BYOK / OKP). */
+export async function mockQueryWithReferencedDocuments(
+  page: Page,
+  query: string,
+  conversations: any[],
+  referencedDocuments: Record<string, unknown>[],
+) {
+  await page.unroute(`${modelBaseUrl}/v1/query`);
+  await page.route(`${modelBaseUrl}/v1/query`, async route => {
+    const payload = route.request().postDataJSON();
+    if (payload.conversation_id) {
+      conversations[1].conversation_id = payload.conversation_id;
+    }
+    const conversationId =
+      conversations[1].conversation_id ?? conversations[0].conversation_id;
+    const body =
+      payload.query === query
+        ? generateQueryResponseWithReferencedDocuments(
+            conversationId,
+            referencedDocuments,
+          )
+        : generateQueryResponse(conversationId);
     await route.fulfill({ body });
   });
 }
@@ -633,15 +747,23 @@ export async function mockMcpServers(
       }
       const name = decodeURIComponent(nameSeg);
       if (mcpMockOptions.failServerValidateFor === name) {
+        const errorMessage =
+          mcpMockOptions.failServerValidateError ??
+          'Upstream MCP validation failed.';
+        if (mcpMockOptions.failServerValidateAsHttpError) {
+          await route.fulfill({
+            status: 400,
+            json: { error: errorMessage },
+          });
+          return;
+        }
         await route.fulfill({
           json: {
             name,
             status: 'error' as const,
             toolCount: 0,
             validation: {
-              error:
-                mcpMockOptions.failServerValidateError ??
-                'Upstream MCP validation failed.',
+              error: errorMessage,
             },
           },
         });
@@ -756,5 +878,93 @@ export async function mockFeedbackReceived(page: Page) {
         response: 'feedback received',
       }),
     });
+  });
+}
+
+const savedPromptsByPage = new WeakMap<Page, SavedPromptMock[]>();
+const savedPromptsRouteGlob = `${modelBaseUrl}/v1/saved-prompts**`;
+
+const defaultSavedPromptsConfig = {
+  max_prompts_per_user: 50,
+  max_display_name_length: 255,
+  max_content_length: 10000,
+};
+
+/** Update seeded prompts for an existing mock route (used between tests). */
+export function seedSavedPrompts(page: Page, prompts: SavedPromptMock[] = []) {
+  savedPromptsByPage.set(page, [...prompts]);
+}
+
+/** Per-page in-memory saved prompts mock (starts empty unless seeded). */
+export async function mockSavedPrompts(
+  page: Page,
+  initialPrompts: SavedPromptMock[] = [],
+) {
+  seedSavedPrompts(page, initialPrompts);
+
+  await page.unroute(savedPromptsRouteGlob);
+  await page.route(savedPromptsRouteGlob, async route => {
+    const url = new URL(route.request().url());
+    const method = route.request().method();
+    const prompts = savedPromptsByPage.get(page) ?? [];
+
+    if (url.pathname.endsWith('/v1/saved-prompts/config')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(defaultSavedPromptsConfig),
+      });
+      return;
+    }
+
+    if (method === 'GET' && url.pathname.endsWith('/v1/saved-prompts')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ prompts }),
+      });
+      return;
+    }
+
+    if (method === 'POST' && url.pathname.endsWith('/v1/saved-prompts')) {
+      const body = route.request().postDataJSON() as {
+        name: string;
+        content: string;
+      };
+      const now = new Date().toISOString();
+      const created = {
+        id: randomUUID(),
+        name: body.name,
+        content: body.content,
+        created_at: now,
+        updated_at: now,
+      };
+      prompts.push(created);
+      savedPromptsByPage.set(page, prompts);
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(created),
+      });
+      return;
+    }
+
+    if (method === 'DELETE') {
+      const promptId = url.pathname.split('/').pop() ?? '';
+      const nextPrompts = prompts.filter(prompt => prompt.id !== promptId);
+      savedPromptsByPage.set(page, nextPrompts);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          prompt_id: promptId,
+          deleted: true,
+          response: 'Saved prompt deleted successfully',
+        }),
+      });
+      return;
+    }
+
+    await route.continue();
   });
 }

@@ -23,6 +23,7 @@ export async function runAccessibilityTests(
   attachName = 'accessibility-scan-results.json',
   options?: {
     includeSelectors?: string[];
+    disableRules?: string[];
   },
 ) {
   let axeBuilder = new AxeBuilder({ page }).withTags([
@@ -33,6 +34,9 @@ export async function runAccessibilityTests(
   ]);
   for (const selector of options?.includeSelectors ?? []) {
     axeBuilder = axeBuilder.include(selector);
+  }
+  if (options?.disableRules?.length) {
+    axeBuilder = axeBuilder.disableRules(options.disableRules);
   }
   const accessibilityScanResults = await axeBuilder.analyze();
 

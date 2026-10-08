@@ -25,7 +25,7 @@
 - [ ] 2.5 Implement descriptive error logging for invalid skillcards (include image ref, validation failure details)
 - [ ] 2.6 Implement entity building as `kind: AiResource` with `spec.type: skill`
 - [ ] 2.7 Populate `metadata.annotations['rhdh.io/ai-asset-category']: skill`
-- [ ] 2.8 Populate `metadata.annotations['rhdh.io/ai-asset-source']: oci-skill-registry/<instance-id>` (where `<instance-id>` is the configuration key under `catalog.providers`, e.g., `default`) and `metadata.annotations['rhdh.io/oci-image-ref']: <registry>/<namespace>/<image>:<tag>` for the full OCI reference
+- [ ] 2.8 Populate `metadata.annotations['rhdh.io/ai-asset-source']: oci-skill-registry/<instance-id>` (where `<instance-id>` is the configuration key under `ai-catalog.providers`, e.g., `default`) and `metadata.annotations['rhdh.io/oci-image-ref']: <registry>/<namespace>/<image>:<tag>` for the full OCI reference
 - [ ] 2.9 Populate `metadata.annotations['rhdh.io/ai-asset-digest']: <sha256>`
 - [ ] 2.10 Implement default values for missing optional fields (`spec.owner: unknown`, `metadata.tags: []`)
 - [ ] 2.11 Implement entity metadata population from skillcard fields (`owner`, `tags`, `links`)
@@ -37,7 +37,7 @@
 ## 3. Incremental Sync and Caching (P1) — RHIDP-15326
 
 - [ ] 3.1 Implement in-memory digest cache with structure `{ [imageRef]: { digest, lastSeen, skillEntityRef } }`
-- [ ] 3.2 Implement configurable TTL on cache entries (default 5 minutes via `catalog.providers.ociSkill.cache.ttlMinutes`) with automatic expiration
+- [ ] 3.2 Implement configurable TTL on cache entries (default 5 minutes via `ai-catalog.providers.ociSkill.cache.ttlMinutes`) with automatic expiration
 - [ ] 3.3 Implement digest comparison logic: detect added, changed, removed skills
 - [ ] 3.4 Implement delta mutation emission via `applyMutation({ type: 'delta', added, removed })`
 - [ ] 3.5 Implement full mutation on first sync (`applyMutation({ type: 'full', entities })`)
@@ -69,7 +69,7 @@
 
 - [ ] 5.1 Create mock OCI registry test harness with 2,000 synthetic skill images
 - [ ] 5.2 Implement mock registry endpoints: `GET /v2/<name>/tags/list`, `GET /v2/<name>/manifests/<ref>`, `GET /v2/<name>/blobs/<digest>`
-- [ ] 5.3 Implement parallel manifest fetch with configurable concurrency (`catalog.providers.ociSkill.discovery.concurrency: 20`)
+- [ ] 5.3 Implement parallel manifest fetch with configurable concurrency (`ai-catalog.providers.ociSkill.discovery.concurrency: 20`)
 - [ ] 5.4 Implement batch processing of manifests (100 per batch, configurable)
 - [ ] 5.5 Implement memory-bounded processing (no buffering all 2,000 manifests at once)
 - [ ] 5.6 Add integration test: validate full sync of 2,000 images completes within 5 minutes
@@ -118,7 +118,7 @@
 - [ ] 9.2 Document K8s pull secret setup (how to create and mount pull secrets)
 - [ ] 9.3 Document custom CA bundle setup for self-signed registries
 - [ ] 9.4 Document multi-registry configuration examples
-- [ ] 9.5 Document performance tuning parameters (`catalog.providers.ociSkill.discovery.concurrency`, batch size)
+- [ ] 9.5 Document performance tuning parameters (`ai-catalog.providers.ociSkill.discovery.concurrency`, batch size)
 - [ ] 9.6 Document entity annotation scheme (`rhdh.io/ai-asset-*`)
 - [ ] 9.7 Document troubleshooting guide (common errors, authentication failures, rate limiting)
 - [ ] 9.8 Add architecture diagram showing OCI client → manifest fetch → skillcard parse → entity emission flow

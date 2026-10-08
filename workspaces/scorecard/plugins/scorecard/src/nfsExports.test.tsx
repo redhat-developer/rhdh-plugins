@@ -15,13 +15,21 @@
  */
 
 import scorecardPlugin, { scorecardTranslationsModule } from './index';
+import translationsModuleDefault from './scorecardTranslationsModuleExport';
 
 describe('scorecard NFS exports', () => {
   it('should export the scorecard plugin as default', () => {
     expect(scorecardPlugin).toBeDefined();
   });
 
-  it('should export scorecardTranslationsModule', () => {
+  it('should export scorecardTranslationsModule as a FrontendModule', () => {
     expect(scorecardTranslationsModule).toBeDefined();
+    expect(scorecardTranslationsModule.$$type).toBe(
+      '@backstage/FrontendModule',
+    );
+  });
+
+  it('should export the translations module as default for NFS discovery', () => {
+    expect(translationsModuleDefault).toBe(scorecardTranslationsModule);
   });
 });

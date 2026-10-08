@@ -22,17 +22,40 @@ import LightIcon from '@mui/icons-material/WbSunnyRounded';
 import DarkIcon from '@mui/icons-material/Brightness2Rounded';
 import { createTheme } from '@mui/material/styles';
 
-import {
-  createThemeProvider,
-  createThemeProviderForThemeName,
-  createThemeProviderForThemeConfig,
-} from './components/ThemeProvider';
+import { createSharedThemeProvider } from './components/ThemeProvider';
 import * as backstage from './backstage';
 import * as rhdh from './rhdh';
 
-export const lightThemeProvider = createThemeProviderForThemeName('light');
+const sharedProvider = createSharedThemeProvider({
+  light: { name: 'light' },
+  dark: { name: 'dark' },
+  'light-customized': {
+    config: {
+      mode: 'light',
+      variant: 'rhdh',
+      palette: {
+        primary: { main: '#ff0000' },
+        secondary: { main: '#00ff00' },
+      },
+    },
+  },
+  'dark-customized': {
+    config: {
+      mode: 'dark',
+      variant: 'rhdh',
+      palette: {
+        primary: { main: '#ff0000' },
+        secondary: { main: '#00ff00' },
+      },
+    },
+  },
+  'backstage-light': { theme: themes.light },
+  'backstage-dark': { theme: themes.dark },
+});
 
-export const darkThemeProvider = createThemeProviderForThemeName('dark');
+export const lightThemeProvider = sharedProvider;
+
+export const darkThemeProvider = sharedProvider;
 
 export const getAllThemes = (): AppTheme[] => {
   return [
@@ -41,56 +64,42 @@ export const getAllThemes = (): AppTheme[] => {
       title: 'RHDH Light (latest)',
       variant: 'light',
       icon: <LightIcon />,
-      Provider: createThemeProviderForThemeName('light'),
+      Provider: sharedProvider,
     },
     {
       id: 'dark',
       title: 'RHDH Dark (latest)',
       variant: 'dark',
       icon: <DarkIcon />,
-      Provider: createThemeProviderForThemeName('dark'),
+      Provider: sharedProvider,
     },
     {
       id: 'light-customized',
       title: 'RHDH Light (customized)',
       variant: 'light',
       icon: <LightIcon />,
-      Provider: createThemeProviderForThemeConfig({
-        mode: 'light',
-        variant: 'rhdh',
-        palette: {
-          primary: { main: '#ff0000' },
-          secondary: { main: '#00ff00' },
-        },
-      }),
+      Provider: sharedProvider,
     },
     {
       id: 'dark-customized',
       title: 'RHDH Dark (customized)',
       variant: 'dark',
       icon: <DarkIcon />,
-      Provider: createThemeProviderForThemeConfig({
-        mode: 'dark',
-        variant: 'rhdh',
-        palette: {
-          primary: { main: '#ff0000' },
-          secondary: { main: '#00ff00' },
-        },
-      }),
+      Provider: sharedProvider,
     },
     {
       id: 'backstage-light',
       title: 'Backstage Light',
       variant: 'light',
       icon: <LightIcon />,
-      Provider: createThemeProvider(themes.light),
+      Provider: sharedProvider,
     },
     {
       id: 'backstage-dark',
       title: 'Backstage Dark',
       variant: 'dark',
       icon: <DarkIcon />,
-      Provider: createThemeProvider(themes.dark),
+      Provider: sharedProvider,
     },
   ];
 };
@@ -106,14 +115,14 @@ export const getThemes = (): AppTheme[] => {
       title: 'Light',
       variant: 'light',
       icon: <LightIcon />,
-      Provider: createThemeProviderForThemeName('light'),
+      Provider: sharedProvider,
     },
     {
       id: 'dark',
       title: 'Dark',
       variant: 'dark',
       icon: <DarkIcon />,
-      Provider: createThemeProviderForThemeName('dark'),
+      Provider: sharedProvider,
     },
   ];
 };

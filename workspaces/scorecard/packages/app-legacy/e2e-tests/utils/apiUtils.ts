@@ -196,6 +196,40 @@ export async function mockMetricsApi(
   });
 }
 
+type DrillDownMetricId = 'github.openPRs' | 'jira.openIssues';
+
+const DRILL_DOWN_AGGREGATION_ROUTES: Record<DrillDownMetricId, string> = {
+  'github.openPRs': GITHUB_AGGREGATION_ROUTE,
+  'jira.openIssues': JIRA_AGGREGATION_ROUTE,
+};
+
+/**
+ * Mocks drill-down "missing permission" scenario: metrics API 200, aggregations 403, entities 403.
+ */
+export async function mockDrillDownMissingPermission(
+  page: Page,
+  metricId: DrillDownMetricId,
+  metricsResponse: { metrics: object[] },
+) {
+  await mockMetricsApi(page, metricsResponse);
+  await page.route(DRILL_DOWN_AGGREGATION_ROUTES[metricId], async route => {
+    await route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: notAllowedError403Body(`/metrics/${metricId}/catalog/aggregations`),
+    });
+  });
+  await page.route(entitiesDrillDownPattern(metricId), async route => {
+    await route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: notAllowedError403Body(
+        `/metrics/${metricId}/catalog/aggregations/entities?page=1&pageSize=5`,
+      ),
+    });
+  });
+}
+
 /**
  * Mocks Jira drill-down "missing permission" scenario: metrics API 200, aggregations 403, entities 403.
  * Use with direct navigation to /scorecard/aggregations/jira.openIssues/metrics/jira.openIssues
@@ -204,25 +238,19 @@ export async function mockJiraDrillDownMissingPermission(
   page: Page,
   metricsResponse: { metrics: object[] },
 ) {
-  await mockMetricsApi(page, metricsResponse);
-  await page.route(JIRA_AGGREGATION_ROUTE, async route => {
-    await route.fulfill({
-      status: 403,
-      contentType: 'application/json',
-      body: notAllowedError403Body(
-        '/metrics/jira.openIssues/catalog/aggregations',
-      ),
-    });
-  });
-  await page.route(entitiesDrillDownPattern('jira.openIssues'), async route => {
-    await route.fulfill({
-      status: 403,
-      contentType: 'application/json',
-      body: notAllowedError403Body(
-        '/metrics/jira.openIssues/catalog/aggregations/entities?page=1&pageSize=5',
-      ),
-    });
-  });
+  await mockDrillDownMissingPermission(
+    page,
+    'jira.openIssues',
+    metricsResponse,
+  );
+}
+
+/** Mocks GitHub drill-down "missing permission" scenario. */
+export async function mockGitHubDrillDownMissingPermission(
+  page: Page,
+  metricsResponse: { metrics: object[] },
+) {
+  await mockDrillDownMissingPermission(page, 'github.openPRs', metricsResponse);
 }
 
 /**

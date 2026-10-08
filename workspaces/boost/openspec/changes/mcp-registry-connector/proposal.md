@@ -1,5 +1,8 @@
 # Proposal: MCP Registry Connector — Productization & Air-Gapped Support
 
+> **Workspace status:** Follow-on connector productization; not part of the
+> current RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 RHDHPLAN-393 delivers the upstream MCP Registry entity provider, enabling discovery and ingestion of Model Context Protocol servers from the public MCP Registry (`registry.modelcontextprotocol.io`). This works for internet-connected deployments where the public registry is accessible.
@@ -20,13 +23,15 @@ This change layers productization on top of the upstream connector, adding air-g
 >
 > - **RHDHPLAN-393 complementary:** This productization wrapper layers on top of RHDHPLAN-393's upstream MCP Registry connector. No ingestion duplication — RHDHPLAN-393 provides core MCP server discovery, this connector adds air-gapped support, credential management, and AI Asset annotation enrichment.
 > - **RHDHPLAN-404 dependency:** The upstream RHDHPLAN-393 connector emits API entities with `spec.type: mcp-server` (a recent Backstage addition). This productization wrapper is kind-agnostic — it enriches annotations regardless of entity kind.
-> - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector focuses on MCP server entity discovery only.
+> - **MCP resource mapping is outside this current Boost release:** mapping MCP
+>   resources (tools, prompts) as catalog entities remains broader follow-on
+>   work. This connector focuses on MCP server entity discovery only.
 
 ## What Boost Builds
 
 ### Mirror Endpoint Configuration
 
-- **Configurable registry endpoint** via `catalog.providers.mcpRegistry.endpoint` in app-config
+- **Configurable registry endpoint** via `ai-catalog.providers.mcpRegistry.endpoint` in app-config
 - **Fallback to public registry** when no mirror endpoint is configured
 - **Zero-internet validation** — integration test ensuring no outbound traffic to the public endpoint when mirror is configured
 - **Endpoint validation** — reject invalid URLs at startup
@@ -40,7 +45,7 @@ This change layers productization on top of the upstream connector, adding air-g
 
 ### AI Asset Annotation Enrichment
 
-- **Annotation population during entity emission** — entities carry `rhdh.io/ai-asset-category: mcp-server`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source: mcp-registry/<instance-id>` annotations (where `<instance-id>` is the configuration key under `catalog.providers`, e.g., `mcpRegistry`)
+- **Annotation population during entity emission** — entities carry `rhdh.io/ai-asset-category: mcp-server`, `rhdh.io/ai-asset-version`, `rhdh.io/ai-asset-source: mcp-registry/<instance-id>` annotations (where `<instance-id>` is the configuration key under `ai-catalog.providers`, e.g., `mcpRegistry`)
 - **Enrichment pipeline** — annotations added after upstream connector emits entities, before `applyMutation`
 - **SDK validation integration** — enriched entities pass through RHDHPLAN-1507's SDK validation layer
 - **Missing annotation handling** — entities without version metadata get annotation placeholders
@@ -70,7 +75,7 @@ This change layers productization on top of the upstream connector, adding air-g
 **Configuration schema:**
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com # Mirror endpoint (optional)

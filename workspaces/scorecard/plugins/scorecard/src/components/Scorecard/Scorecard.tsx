@@ -53,6 +53,7 @@ interface ScorecardProps {
   value: MetricValue | null;
   metricType: MetricType;
   thresholds?: ThresholdResult;
+  unit?: string;
   isMetricDataError?: boolean;
   metricDataError?: string;
   isThresholdError?: boolean;
@@ -175,6 +176,7 @@ const Scorecard = ({
   value,
   metricType,
   thresholds,
+  unit,
   isMetricDataError = false,
   metricDataError,
   isThresholdError = false,
@@ -317,7 +319,7 @@ const Scorecard = ({
                 height: '76px',
               }}
               content={props => (
-                <CustomLegend {...props} thresholds={thresholds} />
+                <CustomLegend {...props} thresholds={thresholds} unit={unit} />
               )}
             />
 

@@ -6,7 +6,9 @@
     "plugins/*/src",
     "plugins/*/config.d.ts",
     "plugins/*/dev",
-    "plugins/*/migrations"
+    "plugins/*/migrations",
+    "e2e-tests",
+    "playwright.config.ts"
   ],
   "files": [],
   "exclude": ["node_modules", "**/node_modules"],

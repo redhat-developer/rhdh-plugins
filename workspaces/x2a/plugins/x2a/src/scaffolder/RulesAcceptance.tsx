@@ -25,6 +25,12 @@ import {
   Typography,
   CircularProgress,
   Box,
+  Link,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import type { Rule } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -42,6 +48,10 @@ const useStyles = makeStyles(() => ({
     marginBottom: 8,
   },
 }));
+
+// Rule descriptions are truncated in the checklist to keep rows compact;
+// the full text is available via the "Read more" dialog.
+const DESCRIPTION_PREVIEW_LIMIT = 100;
 
 /**
  * RulesAcceptance custom scaffolder field.
@@ -63,6 +73,7 @@ export const RulesAcceptance = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [viewRule, setViewRule] = useState<Rule | null>(null);
 
   const { title, description } = schema;
 
@@ -188,14 +199,49 @@ export const RulesAcceptance = ({
                 )}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                {rule.description.length > 100
-                  ? `${rule.description.slice(0, 100)}...`
-                  : rule.description}
+                {rule.description.length > DESCRIPTION_PREVIEW_LIMIT ? (
+                  <>
+                    {`${rule.description.slice(0, DESCRIPTION_PREVIEW_LIMIT)}... `}
+                    <Link
+                      component="button"
+                      type="button"
+                      variant="body2"
+                      onClick={event => {
+                        // Prevent the surrounding label from toggling the checkbox.
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setViewRule(rule);
+                      }}
+                    >
+                      {t('scaffolder.rulesAcceptance.readMore')}
+                    </Link>
+                  </>
+                ) : (
+                  rule.description
+                )}
               </Typography>
             </Box>
           }
         />
       ))}
+      <Dialog
+        open={viewRule !== null}
+        onClose={() => setViewRule(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{viewRule?.title}</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" style={{ whiteSpace: 'pre-wrap' }}>
+            {viewRule?.description}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewRule(null)} color="primary">
+            {t('scaffolder.rulesAcceptance.close')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

@@ -14,22 +14,10 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
-
 import { DEFAULT_MAX_FILE_SIZE_MB } from '../../constant';
-import {
-  isValidFileSize,
-  isValidFileType,
-  parseFileContent,
-} from './documentHelpers';
+import { isValidFileSize, isValidFileType } from './documentHelpers';
 
 describe('documentHelpers', () => {
-  const logger = mockServices.logger.mock();
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('isValidFileSize', () => {
     const MB = 1024 * 1024;
 
@@ -91,40 +79,6 @@ describe('documentHelpers', () => {
     it('should return false for empty or invalid input', () => {
       expect(isValidFileType('')).toBe(false);
       expect(isValidFileType('.')).toBe(false);
-    });
-  });
-
-  describe('parseFileContent', () => {
-    it('should throw error when no file uploaded for non-URL type', async () => {
-      await expect(parseFileContent(logger, 'txt', undefined)).rejects.toThrow(
-        'No file uploaded',
-      );
-    });
-
-    it('should throw error when file size exceeds limit', async () => {
-      const largeFile = {
-        buffer: Buffer.from('test'),
-        originalname: 'large.txt',
-        size: 21 * 1024 * 1024, // 21MB
-      } as Express.Multer.File;
-
-      await expect(parseFileContent(logger, 'txt', largeFile)).rejects.toThrow(
-        `File size exceeds ${DEFAULT_MAX_FILE_SIZE_MB / 1024 / 1024}MB limit`,
-      );
-    });
-
-    it('should parse valid file successfully', async () => {
-      const file = {
-        buffer: Buffer.from('test content'),
-        originalname: 'test.txt',
-        size: 1024,
-      } as Express.Multer.File;
-
-      const result = await parseFileContent(logger, 'txt', file);
-
-      expect(result.content).toBe('test content');
-      expect(result.metadata.fileName).toBe('test.txt');
-      expect(result.metadata.fileType).toBe('txt');
     });
   });
 });

@@ -29,7 +29,6 @@ export const BulkImportSidebarItem = () => {
   const { t } = useTranslation();
   const { loading: isUserLoading, allowed } = usePermission({
     permission: bulkImportPermission,
-    resourceRef: bulkImportPermission.resourceType,
   });
 
   const config = useApi(configApiRef);

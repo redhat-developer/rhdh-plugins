@@ -14,42 +14,30 @@
  * limitations under the License.
  */
 
-import type { Config } from '@backstage/config';
-import type { Entity } from '@backstage/catalog-model';
-import { JiraEntityFilters, JiraOptions, RequestOptions } from './types';
-import { JIRA_MANDATORY_FILTER, OPEN_ISSUES_CONFIG_PATH } from '../constants';
-import { ScorecardJiraAnnotations } from '../annotations';
-import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
+import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { JsonObject } from '@backstage/types';
+import type { z } from 'zod';
+import { JiraIssue, Method, RequestOptions } from './types';
 import { ConnectionStrategy } from '../strategies/ConnectionStrategy';
 
-const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
-  ScorecardJiraAnnotations;
-
 export abstract class JiraClient {
-  protected readonly options?: JiraOptions;
   protected readonly connectionStrategy: ConnectionStrategy;
+  protected readonly logger: LoggerService;
 
-  constructor(rootConfig: Config, connectionStrategy: ConnectionStrategy) {
+  constructor(connectionStrategy: ConnectionStrategy, logger: LoggerService) {
     this.connectionStrategy = connectionStrategy;
-
-    const jiraOptions = rootConfig.getOptionalConfig(
-      `${OPEN_ISSUES_CONFIG_PATH}.options`,
-    );
-    if (jiraOptions) {
-      this.options = {
-        mandatoryFilter: jiraOptions.getOptionalString('mandatoryFilter'),
-        customFilter: jiraOptions.getOptionalString('customFilter'),
-      };
-    }
+    this.logger = logger;
   }
 
-  protected abstract getSearchEndpoint(): string;
+  protected abstract getSearchCountEndpoint(): string;
 
   protected abstract buildSearchBody(jql: string): string;
 
   protected abstract extractIssueCountFromResponse(data: unknown): number;
 
   protected abstract getApiVersion(): number;
+
+  public abstract getIssues(jql: string): Promise<JiraIssue[]>;
 
   protected async sendRequest({
     url,
@@ -83,76 +71,18 @@ export abstract class JiraClient {
     }
   }
 
-  protected getFiltersFromEntity(entity: Entity): JiraEntityFilters {
-    const annotations = entity?.metadata?.annotations || {};
-
-    const projectKey = annotations[PROJECT_KEY];
-    if (!projectKey) {
-      throw new Error(
-        `Missing required '${PROJECT_KEY}' annotation for entity '${
-          entity.metadata?.name || 'unknown'
-        }'`,
-      );
-    }
-
-    const sanitizedProjectKey = sanitizeValue(projectKey);
-    const filters: JiraEntityFilters = {
-      project: `project = "${validateJQLValue(
-        sanitizedProjectKey,
-        PROJECT_KEY,
-      )}"`,
-    };
-
-    const component = annotations[COMPONENT];
-    if (component) {
-      const sanitizedComponent = sanitizeValue(component);
-      filters.component = `component = "${validateJQLValue(
-        sanitizedComponent,
-        COMPONENT,
-      )}"`;
-    }
-
-    const label = annotations[LABEL];
-    if (label) {
-      const sanitizedLabel = sanitizeValue(label);
-      filters.label = `labels = "${validateJQLValue(sanitizedLabel, LABEL)}"`;
-    }
-
-    const team = annotations[TEAM];
-    if (team) {
-      const sanitizedTeam = sanitizeValue(team);
-      filters.team = `team = ${validateIdentifier(sanitizedTeam, TEAM)}`;
-    }
-
-    const customFilter = annotations[CUSTOM_FILTER];
-    if (customFilter) {
-      filters.customFilter = customFilter;
-    }
-
-    return filters;
-  }
-
-  protected buildJqlFilters(filters: JiraEntityFilters): string {
-    const { customFilter: annotationCustomFilter } = filters;
-    const { mandatoryFilter, customFilter: optionsCustomFilter } =
-      this.options || {};
-
-    const defaultFilterQuery = mandatoryFilter ?? JIRA_MANDATORY_FILTER;
-
-    const customFilterQuery =
-      !annotationCustomFilter && optionsCustomFilter
-        ? optionsCustomFilter
-        : null;
-
-    return Object.values({
-      ...filters,
-      defaultFilterQuery,
-      customFilterQuery,
-    })
-      .filter(value => value && value !== '')
-      .map(value => `(${value})`)
-      .join(' AND ');
-  }
+  public abstract sendPaginatedRequest<TPage, TOut>(options: {
+    url: string;
+    method: Method;
+    body?: JsonObject;
+    responseSchema: z.ZodType<TPage>;
+    mapper: (page: TPage) => TOut[];
+    /**
+     * Client-side cap on total mapped items across all pages.
+     * Defaults to 1000.
+     */
+    fetchItemsLimit?: number;
+  }): Promise<TOut[]>;
 
   protected async getBaseUrl(): Promise<string> {
     const apiVersion = this.getApiVersion();
@@ -163,12 +93,9 @@ export abstract class JiraClient {
     return this.connectionStrategy.getAuthHeaders();
   }
 
-  public async getCountOpenIssues(entity: Entity): Promise<number> {
+  public async getCountOpenIssues(jql: string): Promise<number> {
     const baseUrl = await this.getBaseUrl();
-    const countOpenIssuesUrl = `${baseUrl}${this.getSearchEndpoint()}`;
-
-    const filters = this.getFiltersFromEntity(entity);
-    const jql = this.buildJqlFilters(filters);
+    const countOpenIssuesUrl = `${baseUrl}${this.getSearchCountEndpoint()}`;
     const headers = await this.getAuthHeaders();
 
     const data = await this.sendRequest({

@@ -1,5 +1,141 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 6.2.4
+
+### Patch Changes
+
+- 40735a7: Add an Orchestrator sidebar item via `SidebarItemBlueprint` and rely on app-defaults navigation instead of a custom nav module in the NFS app and plugin playground.
+
+## 6.2.3
+
+### Patch Changes
+
+- f5f0d02: Updated translations for RHDH 2.1 (s3297).
+
+## 6.2.2
+
+### Patch Changes
+
+- 2bebbeb: Updated dependency `prettier` to `3.9.8`.
+- 22ab37c: Updated dependency `prettier` to `3.9.7`.
+- Updated dependencies [2bebbeb]
+- Updated dependencies [22ab37c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.12.2
+
+## 6.2.1
+
+### Patch Changes
+
+- 99d7b85: Updated the workflow instance Inputs card to use the same nested rendering format.
+
+## 6.2.0
+
+### Minor Changes
+
+- 089172b: Disable the scaffolder Choose button for unavailable orchestrator workflow templates via the app-defaults TemplateCard action extension.
+
+### Patch Changes
+
+- 47fdead: Remove unused dependencies and declare imports that were previously unlisted.
+- Updated dependencies [47fdead]
+- Updated dependencies [213b75e]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.11.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.12.1
+
+## 6.1.0
+
+### Minor Changes
+
+- 279803c: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- 99da62c: Fix All Runs table column order resetting to default after sorting. Dragged column positions are now preserved across sort and data refetch operations.
+- 1e3a2fb: Fix Orchestrator empty state layout on wide viewports by targeting MuiGrid selectors instead of deprecated BackstageEmptyState class names.
+- c7f1b5d: trim unused production exports and dead symbols
+- 8e9abb8: Export named NFS extensions and add a Recipe A test so an unattached Workflows blueprint cannot pass silently.
+- Updated dependencies [279803c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.10.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.12.0
+
+## 6.0.0
+
+### Major Changes
+
+- 2e4c46e: **BREAKING**: Graduated the New Frontend System (NFS) orchestrator plugins to stable API.
+
+  The NFS plugins (`createFrontendPlugin`) have been promoted from the `./alpha` subpath to the primary `.` entry point. Legacy (OFS) exports have been moved to the new `./legacy` subpath.
+
+  For `@red-hat-developer-hub/backstage-plugin-orchestrator`, the `./alpha` subpath now only exports translations. For `@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets`, the `./alpha` subpath has been removed.
+
+  **Migration for NFS consumers (previously using `./alpha`):**
+
+  ```diff
+  - import orchestratorPlugin, { orchestratorTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-orchestrator/alpha';
+  - import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/alpha';
+  + import orchestratorPlugin, { orchestratorTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+  + import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
+  ```
+
+  **Migration for OFS consumers:**
+
+  ```diff
+  - import { OrchestratorPage, OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+  - import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
+  + import { OrchestratorPage, OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator/legacy';
+  + import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/legacy';
+  ```
+
+  **Migration for dynamic plugin configurations:**
+
+  Legacy exports require `module: Legacy` — they are not available on the default module.
+  OFS deployments must also load form-widgets via `pluginModule: Legacy` so RHDH registers the OFS `BackstagePlugin` (PluginRoot is now NFS).
+
+  ```yaml
+  dynamicPlugins:
+    frontend:
+      red-hat-developer-hub.backstage-plugin-orchestrator:
+        # Legacy exports require `module: Legacy`
+        dynamicRoutes:
+          - path: /orchestrator
+            importName: OrchestratorPage
+            module: Legacy
+      red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets:
+        pluginModule: Legacy
+  ```
+
+### Patch Changes
+
+- e0093e0: Remove unused `@janus-idp/backstage-plugin-audit-log-node` and `@janus-idp/cli` dependencies.
+- Updated dependencies [a64f76d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.10.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.11.0
+
+## 5.11.0
+
+### Minor Changes
+
+- f48dfb4: Add conditional RBAC policy support for orchestrator workflows using the `IS_ALLOWED_WORKFLOW_ID` rule. Dynamic workflow-specific permissions (`orchestrator.workflow.<workflowId>` and `orchestrator.workflow.use.<workflowId>`) are deprecated and will be removed in the next release.
+
+  Migrate from deprecated dynamic permissions to conditional policies. See `docs/MIGRATION-CONDITIONAL-POLICIES.md`.
+
+### Patch Changes
+
+- e5788bb: Reduce NFS Module Federation sync size by lazy-loading heavy dependencies.
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- e3fb07a: Export translations module as default for NFS auto-discovery
+- Updated dependencies [f48dfb4]
+- Updated dependencies [c74276c]
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.9.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.9.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.10.1
+
 ## 5.10.0
 
 ### Minor Changes

@@ -177,6 +177,20 @@ describe('useAggregationMetadata', () => {
     );
   });
 
+  it('should not report loading when the query is disabled', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: true,
+      error: null,
+      data: undefined,
+    } as any);
+
+    const { result } = renderHook(() =>
+      useAggregationMetadata({ aggregationId: 'kpi1', enabled: false }),
+    );
+
+    expect(result.current.isLoading).toBe(false);
+  });
+
   it('should call getAggregationMetadata with aggregationId in queryFn', async () => {
     mockScorecardApi.getAggregationMetadata.mockResolvedValue(mockMeta);
     mockUseQuery.mockReturnValue({
