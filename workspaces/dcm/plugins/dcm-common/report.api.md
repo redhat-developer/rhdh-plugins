@@ -201,6 +201,8 @@ export interface CatalogItemInstance {
   display_name: string;
   // (undocumented)
   path?: string;
+  resource_ids?: string[];
+  run_id?: string;
   // (undocumented)
   spec: CatalogItemInstanceSpec;
   // (undocumented)
@@ -221,7 +223,6 @@ export interface CatalogItemInstanceList {
 export interface CatalogItemInstanceSpec {
   // (undocumented)
   catalog_item_id: string;
-  resource_ids?: string[];
   // (undocumented)
   user_values: UserValue[];
 }
