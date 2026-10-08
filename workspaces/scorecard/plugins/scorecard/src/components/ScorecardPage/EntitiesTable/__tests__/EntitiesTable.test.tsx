@@ -16,9 +16,14 @@
 
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { ComponentProps } from 'react';
+import {
+  aggregationTypes,
+  DEFAULT_NUMBER_THRESHOLDS,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { EntitiesTable } from '../EntitiesTable';
+import type { EntitiesRow } from '../EntitiesRow';
 
 const mockT = jest.fn((key: string, params?: { count?: number }) => {
   if (
@@ -110,8 +115,15 @@ jest.mock('../EntitiesTableFooter', () => ({
 }));
 
 jest.mock('../EntitiesRow', () => ({
-  EntitiesRow: ({ entity }: { entity: any }) => (
-    <tr data-testid="entities-row" data-entity-ref={entity.entityRef} />
+  EntitiesRow: ({
+    entity,
+    thresholdRules,
+  }: Pick<ComponentProps<typeof EntitiesRow>, 'entity' | 'thresholdRules'>) => (
+    <tr
+      data-testid="entities-row"
+      data-entity-ref={entity.entityRef}
+      data-threshold-keys={thresholdRules.map(rule => rule.key).join(',')}
+    />
   ),
 }));
 
@@ -122,6 +134,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe('EntitiesTable', () => {
   const defaultAggregatedData = {
     metricMetadata: { title: 'Open PRs' },
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
     entityHealth: {
       totalEntities: 2,
       calculationErrorCount: 0,
@@ -308,6 +321,10 @@ describe('EntitiesTable', () => {
     expect(rows[1]).toHaveAttribute(
       'data-entity-ref',
       'component:default/service-b',
+    );
+    expect(rows[0]).toHaveAttribute(
+      'data-threshold-keys',
+      'success,warning,error',
     );
   });
 
