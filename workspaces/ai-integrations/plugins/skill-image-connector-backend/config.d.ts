@@ -66,8 +66,8 @@ export interface Config {
       registry?: string;
       /**
        * The Quay organization whose public repositories are discovered.
-       * Although typed as optional, discovery is silently skipped when this
-       * field is omitted — it is effectively required for discovery to function.
+       * Needed to enable discovery. If omitted or blank, discovery is skipped
+       * with a warning.
        * @visibility backend
        */
       organization?: string;

@@ -140,6 +140,84 @@ describe('configured acquisition in the plugin', () => {
     expect(fetchImage.mock.calls[0][5]).toEqual(limits);
     expect(fetchImage.mock.calls[1][5]).toBe(discover.mock.calls[0][3]);
   });
+
+  it('enforces the retained byte budget when discovery finishes before an explicit image', async () => {
+    const explicitRef = 'quay.io/org/explicit:v1';
+    const discoveredRef = 'quay.io/org/discovered:v1';
+    const explicitExtraction = {
+      ...extracted,
+      skillImageYamlPath: '/explicit/skillimage.yaml',
+      skillsMdPath: '/explicit/SKILLS.md',
+    };
+    const discoveredExtraction = {
+      ...extracted,
+      skillImageYamlPath: '/discovered/skillimage.yaml',
+      skillsMdPath: '/discovered/SKILLS.md',
+    };
+    const maxAggregateContentSizeBytes = 10;
+    let finishExplicit!: (result: typeof extracted) => void;
+    const explicitResult = new Promise<typeof extracted>(resolve => {
+      finishExplicit = resolve;
+    });
+    discover.mockResolvedValue([discoveredRef]);
+    fetchImage.mockImplementation(ref =>
+      ref === explicitRef
+        ? explicitResult
+        : Promise.resolve(discoveredExtraction),
+    );
+
+    const { server } = await startConnector({
+      maxAggregateContentSizeBytes,
+      images: [{ imageRef: explicitRef }],
+      quayDiscovery: { organization: 'org', tag: 'v1' },
+    });
+    const retainedImage = {
+      imageRef: discoveredRef,
+      skillImageYaml: discoveredExtraction.skillImageYaml,
+      skillsMd: discoveredExtraction.skillsMd,
+    };
+
+    try {
+      const loading = await request(server)
+        .get('/api/skill-image-connector/images')
+        .set('Authorization', mockCredentials.user.header());
+      expect(loading.status).toBe(200);
+      expect(loading.body).toEqual({
+        status: 'loading',
+        images: [retainedImage],
+        failedImages: [],
+      });
+      expect(fetchImage.mock.calls.map(([ref]) => ref)).toEqual([
+        explicitRef,
+        discoveredRef,
+      ]);
+      expect(cleanupSkillImageExtraction).not.toHaveBeenCalled();
+    } finally {
+      // Release the pending result even if an assertion fails so shutdown can finish.
+      finishExplicit(explicitExtraction);
+    }
+
+    const response = await request(server)
+      .get('/api/skill-image-connector/images')
+      .set('Authorization', mockCredentials.user.header());
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      status: 'ready',
+      images: [retainedImage],
+      failedImages: [explicitRef],
+    });
+    const retainedBytes =
+      Buffer.byteLength(response.body.images[0].skillImageYaml, 'utf-8') +
+      Buffer.byteLength(response.body.images[0].skillsMd, 'utf-8');
+    expect(retainedBytes).toBe(6);
+    expect(retainedBytes).toBeLessThanOrEqual(maxAggregateContentSizeBytes);
+    expect(cleanupSkillImageExtraction).toHaveBeenCalledTimes(1);
+    expect(cleanupSkillImageExtraction).toHaveBeenCalledWith(
+      explicitExtraction,
+      expect.anything(),
+    );
+  });
+
   it('honors zero retries in the image path and reports a failed image', async () => {
     fetchImage.mockRejectedValue(new HttpResponseError('unavailable', 503));
     const { server } = await startConnector({

@@ -328,9 +328,9 @@ acquisition/extraction without nested per-request retries. Parent cancellation
 stops work and backoff. Shared helpers enforce bounded streaming reads, clean up
 unused responses, and classify transient errors by HTTP status or network causes.
 Quay pagination and OCI authentication/extraction remain separate responsibilities.
-Image-error reporting takes an internal `warnOnNotFound` boolean: true for
-explicit image references and false for discovered candidates. Discovered-image
-404s log at debug level; explicit references take precedence during merging.
+Image-error reporting takes an internal `logNotFoundAsError` boolean: true logs
+404s at error level for explicit image references, and false selects debug level
+for discovered candidates. Explicit references take precedence during merging.
 Other failures, including organization-listing 404s, retain diagnostics.
 The `/images` failure list and status calculation are unchanged.
 The existing three-redirect cap and preflight destination checks are preserved;

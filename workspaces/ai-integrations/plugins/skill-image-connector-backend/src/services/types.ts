@@ -136,6 +136,6 @@ export interface SkillImageConfig {
   imageRef: string;
   /** Optional credentials for a private registry. */
   credentials?: RegistryCredentials;
-  /** Internal reporting policy: false for discovered candidates; defaults to true. */
-  warnOnNotFound?: boolean;
+  /** Internal 404 logging policy: true logs errors (default); false logs debug for discovered candidates. */
+  logNotFoundAsError?: boolean;
 }

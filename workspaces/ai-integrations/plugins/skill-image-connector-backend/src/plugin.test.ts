@@ -296,12 +296,12 @@ describe('mergeDiscoveredRefs', () => {
     expect(result.merged[1]).toEqual({
       id: 'discovered-0',
       imageRef: 'quay.io/org/new-a:latest',
-      warnOnNotFound: false,
+      logNotFoundAsError: false,
     });
     expect(result.merged[2]).toEqual({
       id: 'discovered-1',
       imageRef: 'quay.io/org/new-b:latest',
-      warnOnNotFound: false,
+      logNotFoundAsError: false,
     });
     expect(result.added).toBe(2);
     expect(result.skipped).toBe(0);

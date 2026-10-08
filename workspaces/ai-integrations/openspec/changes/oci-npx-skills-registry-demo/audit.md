@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-07T19:23:58Z
+**Last audited:** 2026-10-08T13:28:39Z
 
 This focused follow-up reviews the all-active-tag discovery pivot against the
 proposal, design, OCI/common/provider specifications, task status, implementation,
@@ -64,6 +64,29 @@ maintainer-owned.
 The focused artifact check found no additional specification inconsistencies;
 summary counts below remain zero. The earlier independent verification remains
 recorded above and in the journal.
+
+### Latest Fullsend review clarification
+
+The maintainer accepted the review disposition for PR #5057 head
+`c5b6dd7268d59c69a74bfc6417caebe2c485ede4`. A global review comment and replies
+record the decisions; all ten current threads are resolved. Resolution records
+planned fixes and deferred scope, not a claim that the local edits are pushed.
+
+The internal 404 logging flag is named `logNotFoundAsError` in code and design.
+It retains error logging for explicit images and debug logging for discovered
+candidates. Configuration comments and the README clarify that an omitted or
+blank organization skips discovery with a warning; the field remains optional.
+A controlled integration test retains a discovered image before releasing a
+pending explicit result, then verifies the retained-byte budget and cleanup of
+the rejected explicit result. Candidate admission priority is unchanged.
+
+This focused check found no specification contradictions. The minor changeset,
+per-tag identities, task 2.4 connection safety, and task 2.5 partial-discovery
+scope remain unchanged. The full connector suite passed with 234 tests, including
+the reverse-completion case; workspace type checking and connector lint passed.
+The maintainer's app-config.yaml is unchanged. The maintainer subsequently
+reported successful testing and authorized a local commit. Signing, pushing,
+and the next Fullsend review remain maintainer-owned.
 
 ### Summary
 

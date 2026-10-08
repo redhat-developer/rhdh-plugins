@@ -52,12 +52,15 @@ skillImageConnector:
       #   tokenRealm: https://auth.example.com/token
   # Option 2: Automatic public Quay organization discovery
   quayDiscovery:
-    organization: my-skills-org # required
+    organization: my-skills-org # needed to enable discovery
     # registry: quay.io          # optional, defaults to quay.io
     # tag: latest                # optional exact filter; omit for all active tags
 ```
 
 Both explicit images and Quay discovery can be used together. Discovered repository/tag references are merged with explicit images; duplicate full references are skipped. Different tags remain separate even when they point to the same manifest digest.
+
+If `quayDiscovery` is present but `organization` is omitted or blank, the connector
+logs a warning and skips discovery. Explicitly configured images still process.
 
 Omitting `quayDiscovery.tag` now means **all active tags**, a change from the old
 `latest` default. Set `tag: latest` explicitly to retain that behavior. Historical
@@ -92,7 +95,7 @@ requires one entity per valid skill-image tag, keyed by
 | `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images and discovery registries.                               |
 | `skillImageConnector.quayDiscovery`                   | `object` | Optional public Quay organization discovery configuration.                                                                    |
 | `skillImageConnector.quayDiscovery.registry`          | `string` | Quay registry host (defaults to `quay.io`).                                                                                   |
-| `skillImageConnector.quayDiscovery.organization`      | `string` | Public organization whose repositories will be discovered. Required when `quayDiscovery` is set.                              |
+| `skillImageConnector.quayDiscovery.organization`      | `string` | Public organization whose repositories will be discovered. Omission or a blank value skips discovery with a warning.          |
 | `skillImageConnector.quayDiscovery.tag`               | `string` | Optional exact tag filter. Omit or leave blank to enumerate all active tags; set `latest` explicitly for the former behavior. |
 
 By default, at most 25 image candidates are processed, including explicit images and discovered repository/tag candidates. Set `skillImageConnector.maxImages` to raise or lower this total (for example, `100` to attempt up to 100 distinct image references). A repository with many tags consumes multiple candidate slots; increasing this cap does not guarantee every tag fits. Explicit images take priority, and discovered references already present in the explicit list do not consume another slot. An explicit list exceeding the limit fails startup validation; excess discovered candidates are skipped with a warning. This bounds candidates attempted, not successful skill extractions: repositories without the selected tag still consume a slot. It does not change the concurrency limit of four image operations.
@@ -139,7 +142,7 @@ A discovered repository may not have an explicitly selected tag, and an enumerat
 acquiring discovered images are logged only at debug level; explicitly configured
 images retain their error diagnostics because their references are expected to
 exist. When discovery finds an explicitly configured reference, the explicit
-reporting policy wins. The internal `warnOnNotFound` flag selects this behavior;
+reporting policy wins. The internal `logNotFoundAsError` flag selects this behavior;
 it is not an additional app-config setting. Other acquisition errors and a 404
 from the Quay organization-listing endpoint are still reported. Missing images
 remain in `failedImages`, and the existing `/images` status calculation is unchanged.

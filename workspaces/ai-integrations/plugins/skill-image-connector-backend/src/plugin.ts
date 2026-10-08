@@ -191,7 +191,7 @@ export function readSkillImageConfigs(
  * skillImageConnector:
  *   quayDiscovery:
  *     registry: quay.io          # optional, defaults to quay.io
- *     organization: my-org       # required
+ *     organization: my-org       # enables discovery; omitted/blank skips with a warning
  *     tag: latest                # optional exact filter; omit for all active tags
  * ```
  */
@@ -268,7 +268,7 @@ export function mergeDiscoveredRefs(
       allImageConfigs.push({
         id: `discovered-${discoveredAdded}`,
         imageRef: ref,
-        warnOnNotFound: false,
+        logNotFoundAsError: false,
       });
       discoveredAdded++;
     } else {
@@ -295,10 +295,10 @@ function logImageProcessingFailure(
   logger: LoggerService,
   imageRef: string,
   error: unknown,
-  warnOnNotFound: boolean,
+  logNotFoundAsError: boolean,
 ): void {
   if (
-    !warnOnNotFound &&
+    !logNotFoundAsError &&
     error instanceof HttpResponseError &&
     error.status === 404
   ) {
@@ -552,7 +552,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                     pluginLogger,
                     imgConfig.imageRef,
                     error,
-                    imgConfig.warnOnNotFound ?? true,
+                    imgConfig.logNotFoundAsError ?? true,
                   );
                 }
               }
