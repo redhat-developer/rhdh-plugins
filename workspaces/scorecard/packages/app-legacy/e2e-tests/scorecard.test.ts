@@ -60,6 +60,7 @@ import {
   gitHubPartiallyAggregatedResponse,
   gitHubWeightedPartiallyAggregatedResponse,
   licenseFileExistsAggregatedResponse,
+  licenseFileExistsEntitiesDrillDownResponse,
   githubEntitiesDrillDownWithCalculationErrorsResponse,
   weightedKpiEntitiesDrillDownResponse,
 } from './utils/scorecardResponseUtils';
@@ -511,6 +512,11 @@ test.describe('Scorecard Plugin Tests', () => {
           route: ScorecardRoutes.LICENSE_FILE_EXISTS_KPI_AGGREGATION_ROUTE,
           response: aggregatedResponse,
         });
+        await mockScorecardEntitiesDrillDown(
+          page,
+          licenseFileExistsEntitiesDrillDownResponse,
+          'filecheck.license',
+        );
         card = homePage.getCard(aggregationMetadata.id);
       });
 
@@ -540,7 +546,7 @@ test.describe('Scorecard Plugin Tests', () => {
         });
         await scorecardDrillDownPage.expectPageTitle(
           'filecheck.license',
-          evaluateMessage(translations.metric.filecheck.title, 'license'),
+          aggregatedResponse.metadata.title,
         );
       });
     });
@@ -634,6 +640,11 @@ test.describe('Scorecard Plugin Tests', () => {
           route: ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
           response: openPrsWeightedAggregatedResponse,
         });
+        await mockScorecardEntitiesDrillDown(
+          page,
+          weightedKpiEntitiesDrillDownResponse,
+          'github.openPRs',
+        );
       });
 
       test.describe('Validate "weightedStatusScore" type card content', () => {

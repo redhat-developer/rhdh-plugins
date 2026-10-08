@@ -24,6 +24,15 @@ const DEFAULT_NUMBER_THRESHOLDS = {
   ],
 };
 
+// Matches the configured thresholds for `openPrsWeightedKpi` in app-config.yaml.
+const OPEN_PRS_WEIGHTED_KPI_THRESHOLDS = {
+  rules: [
+    { key: 'success', expression: '>=80', color: '#6bb300' },
+    { key: 'warning', expression: '30-80', color: '#FFC0CB' },
+    { key: 'error', expression: '<30', color: '#be1ec7' },
+  ],
+};
+
 export const customScorecardResponse = [
   {
     id: 'github.openPRs',
@@ -235,7 +244,7 @@ export const openPrsWeightedAggregatedResponse = {
     entitiesConsidered: 10,
     calculationErrorCount: 0,
     timestamp: '2026-01-24T14:10:32.858Z',
-    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    thresholds: OPEN_PRS_WEIGHTED_KPI_THRESHOLDS,
     weightedStatusScore: 51.5,
     weightedStatusSum: 515,
     weightedStatusMaxPossible: 1000,
@@ -278,7 +287,7 @@ export const emptyOpenPrsWeightedAggregatedResponse = {
       { count: 0, name: 'error', score: 0 },
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
-    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    thresholds: OPEN_PRS_WEIGHTED_KPI_THRESHOLDS,
     weightedStatusScore: 0,
     weightedStatusSum: 0,
     weightedStatusMaxPossible: 0,
@@ -681,6 +690,7 @@ export const emptyGithubAggregatedResponse = {
 /** Mock response for GET .../api/scorecard/metrics/github.openPRs/catalog/aggregations/entities (10 entities, in sync with githubAggregatedResponse) */
 export const githubEntitiesDrillDownResponse = {
   metricId: 'github.openPRs',
+  thresholds: DEFAULT_NUMBER_THRESHOLDS,
   metricMetadata: {
     title: 'GitHub open PRs',
     description:
@@ -806,6 +816,7 @@ export const githubEntitiesDrillDownResponse = {
 /** Mock response for GET .../api/scorecard/metrics/jira.openIssues/catalog/aggregations/entities (in sync with jiraAggregatedResponse) */
 export const jiraEntitiesDrillDownResponse = {
   metricId: 'jira.openIssues',
+  thresholds: DEFAULT_NUMBER_THRESHOLDS,
   metricMetadata: {
     title: 'Jira open blocking tickets',
     description:
@@ -871,6 +882,7 @@ export const jiraEntitiesDrillDownResponse = {
 /** Mock response for GitHub entities drill-down when aggregation has no data (empty list). */
 export const githubEntitiesDrillDownNoDataResponse = {
   metricId: 'github.openPRs',
+  thresholds: DEFAULT_NUMBER_THRESHOLDS,
   metricMetadata: {
     title: 'GitHub open PRs',
     description:
@@ -895,6 +907,7 @@ export const githubEntitiesDrillDownNoDataResponse = {
 /** Mock response for Jira entities drill-down when aggregation has no data (empty list). */
 export const jiraEntitiesDrillDownNoDataResponse = {
   metricId: 'jira.openIssues',
+  thresholds: DEFAULT_NUMBER_THRESHOLDS,
   metricMetadata: {
     title: 'Jira open blocking tickets',
     description:
@@ -998,9 +1011,54 @@ export const licenseFileExistsKpiMetadataResponse = {
 
 const FILECHECK_BOOLEAN_THRESHOLDS = {
   rules: [
-    { key: 'exist', expression: '==true' },
-    { key: 'missing', expression: '==false' },
+    { key: 'exist', expression: '==true', color: 'success.main' },
+    { key: 'missing', expression: '==false', color: 'error.main' },
   ],
+};
+
+export const licenseFileExistsEntitiesDrillDownResponse = {
+  metricId: 'filecheck.license',
+  thresholds: FILECHECK_BOOLEAN_THRESHOLDS,
+  metricMetadata: {
+    title: 'License File Exists KPI',
+    description:
+      'This KPI provides information about whether the license file exists in the repository.',
+    type: 'boolean',
+  },
+  entities: [
+    {
+      entityRef: 'component:default/license-present',
+      entityNamespace: 'default',
+      entityName: 'license-present',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: true,
+      timestamp: '2026-01-24T14:10:32.776Z',
+      status: 'exist',
+    },
+    {
+      entityRef: 'component:default/license-missing',
+      entityNamespace: 'default',
+      entityName: 'license-missing',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: false,
+      timestamp: '2026-01-24T14:10:32.776Z',
+      status: 'missing',
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 5,
+    total: 2,
+    totalPages: 1,
+    isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 2,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
 };
 
 /** Matches `scorecard.aggregationKPIs.licenseFileExistsKpi` in app-config.yaml */
@@ -1058,6 +1116,7 @@ export const jiraEntitiesDrillDownWithCalculationErrorsResponse = {
 
 export const githubEntitiesDrillDownWithUnavailableRowsResponse = {
   metricId: 'github.openPRs',
+  thresholds: DEFAULT_NUMBER_THRESHOLDS,
   metricMetadata: githubEntitiesDrillDownResponse.metricMetadata,
   entities: [
     {
@@ -1107,6 +1166,7 @@ export const githubEntitiesDrillDownWithUnavailableRowsResponse = {
 
 export const weightedKpiEntitiesDrillDownResponse = {
   metricId: 'github.openPRs',
+  thresholds: DEFAULT_NUMBER_THRESHOLDS,
   metricMetadata: {
     title: 'GitHub Open PRs KPI (weighted health)',
     description:

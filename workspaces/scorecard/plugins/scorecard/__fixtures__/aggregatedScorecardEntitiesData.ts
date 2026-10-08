@@ -15,6 +15,14 @@
  */
 
 import { subMinutes, subHours, subDays } from 'date-fns';
+import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+const FILECHECK_BOOLEAN_THRESHOLDS = {
+  rules: [
+    { key: 'exist', expression: '==true', color: 'success.main' },
+    { key: 'missing', expression: '==false', color: 'error.main' },
+  ],
+};
 
 export const mockAggregatedScorecardEntitiesData = (
   metricId: string,
@@ -22,111 +30,123 @@ export const mockAggregatedScorecardEntitiesData = (
   pageSize: number,
 ) => {
   const now = new Date();
+  const isFilecheckMetric = metricId.startsWith('filecheck.');
+
+  const entities = [
+    // 1 minute ago
+    {
+      entityRef: 'component:default/service-one-minute',
+      entityName: 'service-one-minute',
+      entityNamespace: 'default',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 5,
+      timestamp: now.toISOString(),
+      status: 'success',
+    },
+
+    // 15 minutes ago
+    {
+      entityRef: 'component:default/service-fifteen-minutes',
+      entityName: 'service-fifteen-minutes',
+      entityNamespace: 'default',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 10,
+      timestamp: subMinutes(now, 15).toISOString(),
+      status: 'success',
+    },
+
+    // 1 hour ago
+    {
+      entityRef: 'component:default/service-one-hour',
+      entityName: 'service-one-hour',
+      entityNamespace: 'default',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 30,
+      timestamp: subHours(now, 1).toISOString(),
+      status: 'warning',
+    },
+
+    // 5 hours ago
+    {
+      entityRef: 'component:default/service-five-hours',
+      entityName: 'service-five-hours',
+      entityNamespace: 'default',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 50,
+      timestamp: subHours(now, 5).toISOString(),
+      status: 'error',
+    },
+
+    // Yesterday
+    {
+      entityRef: 'component:default/service-yesterday',
+      entityName: 'service-yesterday',
+      entityNamespace: 'default',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 30,
+      timestamp: subDays(now, 1).toISOString(),
+      status: 'error',
+    },
+
+    // 3 days ago
+    {
+      entityRef: 'component:default/service-three-days',
+      entityName: 'service-three-days',
+      entityNamespace: 'default',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 40,
+      timestamp: subDays(now, 3).toISOString(),
+      status: 'success',
+    },
+
+    // 7+ days ago → formatted date
+    {
+      entityRef: 'component:default/service-old',
+      entityName: 'service-old',
+      entityNamespace: 'default',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 50,
+      timestamp: subDays(now, 10).toISOString(),
+      status: 'error',
+    },
+
+    // Invalid timestamp
+    {
+      entityRef: 'component:default/service-invalid',
+      entityName: 'service-invalid',
+      entityNamespace: 'default',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 0,
+      timestamp: 'invalid-date',
+      status: 'error',
+    },
+  ];
 
   return {
     metricId,
+    thresholds: isFilecheckMetric
+      ? FILECHECK_BOOLEAN_THRESHOLDS
+      : DEFAULT_NUMBER_THRESHOLDS,
     metricMetadata: {
       title: 'Example Metric',
       description: 'Example Metric Description',
-      type: 'number',
+      type: isFilecheckMetric ? 'boolean' : 'number',
     },
-    entities: [
-      // 1 minute ago
-      {
-        entityRef: 'component:default/service-one-minute',
-        entityName: 'service-one-minute',
-        entityNamespace: 'default',
-        entityKind: 'Component',
-        owner: 'group:default/platform',
-        metricValue: 5,
-        timestamp: now.toISOString(),
-        status: 'success',
-      },
-
-      // 15 minutes ago
-      {
-        entityRef: 'component:default/service-fifteen-minutes',
-        entityName: 'service-fifteen-minutes',
-        entityNamespace: 'default',
-        entityKind: 'Component',
-        owner: 'group:default/platform',
-        metricValue: 10,
-        timestamp: subMinutes(now, 15).toISOString(),
-        status: 'success',
-      },
-
-      // 1 hour ago
-      {
-        entityRef: 'component:default/service-one-hour',
-        entityName: 'service-one-hour',
-        entityNamespace: 'default',
-        entityKind: 'Component',
-        owner: 'group:default/platform',
-        metricValue: 30,
-        timestamp: subHours(now, 1).toISOString(),
-        status: 'warning',
-      },
-
-      // 5 hours ago
-      {
-        entityRef: 'component:default/service-five-hours',
-        entityName: 'service-five-hours',
-        entityNamespace: 'default',
-        entityKind: 'Component',
-        owner: 'group:default/platform',
-        metricValue: 50,
-        timestamp: subHours(now, 5).toISOString(),
-        status: 'error',
-      },
-
-      // Yesterday
-      {
-        entityRef: 'component:default/service-yesterday',
-        entityName: 'service-yesterday',
-        entityNamespace: 'default',
-        entityKind: 'Component',
-        owner: 'group:default/platform',
-        metricValue: 30,
-        timestamp: subDays(now, 1).toISOString(),
-        status: 'error',
-      },
-
-      // 3 days ago
-      {
-        entityRef: 'component:default/service-three-days',
-        entityName: 'service-three-days',
-        entityNamespace: 'default',
-        entityKind: 'Component',
-        owner: 'group:default/platform',
-        metricValue: 40,
-        timestamp: subDays(now, 3).toISOString(),
-        status: 'success',
-      },
-
-      // 7+ days ago → formatted date
-      {
-        entityRef: 'component:default/service-old',
-        entityName: 'service-old',
-        entityNamespace: 'default',
-        entityKind: 'Component',
-        owner: 'group:default/platform',
-        metricValue: 50,
-        timestamp: subDays(now, 10).toISOString(),
-        status: 'error',
-      },
-
-      // Invalid timestamp
-      {
-        entityRef: 'component:default/service-invalid',
-        entityName: 'service-invalid',
-        entityNamespace: 'default',
-        entityKind: 'Component',
-        owner: 'group:default/platform',
-        metricValue: 0,
-        timestamp: 'invalid-date',
-        status: 'error',
-      },
-    ],
+    entities: isFilecheckMetric
+      ? entities.map((entity, index) => ({
+          ...entity,
+          metricValue: index % 2 === 0,
+          status: index % 2 === 0 ? 'exist' : 'missing',
+        }))
+      : entities,
     pagination: {
       page,
       pageSize,
