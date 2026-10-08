@@ -1,5 +1,44 @@
 # @red-hat-developer-hub/backstage-plugin-dcm
 
+## 2.1.0
+
+### Minor Changes
+
+- bcc1e28: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- 66c1975: Align Catalog Item Instance types with the catalog OpenAPI: move
+  `resource_ids` to the top level (alongside `run_id`) and remove it from
+  `spec`. Instances table reads `resource_ids` again so the column is no
+  longer blank.
+- 787186a: Show a 404 error page for unknown paths under /dcm instead of falling back
+  to the first tab.
+- 5ec37f9: Preserve host-provided DCM client API overrides when the dynamic-plugin OIDC
+  fallback is active.
+- fbab9df: Support DCM authentication-disabled deployments without a host OIDC provider.
+
+  The DCM frontend now avoids OIDC API resolution and token forwarding when
+  `dcm.auth.enabled` is false, while preserving host-provided client overrides
+  and OIDC token forwarding for authentication-enabled deployments. The backend proxy continues to require
+  normal RHDH authentication and omits the DCM upstream Authorization header
+  when DCM authentication is disabled.
+
+- 1a8807f: Align Resources types with the latest service-type-instances OpenAPI spec:
+  replace `provider_name` with `agent_name`, replace `deleted`/`delete_time`
+  with `deletion_status`, and update list query params (`service_type`,
+  `agent_name` replace `provider`).
+- a9b743d: Split image generation into dedicated OCI and Docker scripts with an interactive entrypoint.
+
+  `generate-image.sh` now prompts for image type and version (or accepts `oci|docker <version>`). OCI builds always push `:VERSION` and tag `:latest` via skopeo; Docker builds always push `:VERSION` and `:main`.
+
+- Updated dependencies [66c1975]
+- Updated dependencies [fbab9df]
+- Updated dependencies [1a8807f]
+- Updated dependencies [a9b743d]
+- Updated dependencies [bcc1e28]
+  - @red-hat-developer-hub/backstage-plugin-dcm-common@2.1.0
+
 ## 2.0.0
 
 ### Major Changes

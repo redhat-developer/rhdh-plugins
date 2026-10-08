@@ -1,5 +1,32 @@
 # @red-hat-developer-hub/backstage-plugin-dcm-backend
 
+## 2.1.0
+
+### Minor Changes
+
+- bcc1e28: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- fbab9df: Support DCM authentication-disabled deployments without a host OIDC provider.
+
+  The DCM frontend now avoids OIDC API resolution and token forwarding when
+  `dcm.auth.enabled` is false, while preserving host-provided client overrides
+  and OIDC token forwarding for authentication-enabled deployments. The backend proxy continues to require
+  normal RHDH authentication and omits the DCM upstream Authorization header
+  when DCM authentication is disabled.
+
+- a9b743d: Split image generation into dedicated OCI and Docker scripts with an interactive entrypoint.
+
+  `generate-image.sh` now prompts for image type and version (or accepts `oci|docker <version>`). OCI builds always push `:VERSION` and tag `:latest` via skopeo; Docker builds always push `:VERSION` and `:main`.
+
+- Updated dependencies [66c1975]
+- Updated dependencies [fbab9df]
+- Updated dependencies [1a8807f]
+- Updated dependencies [a9b743d]
+- Updated dependencies [bcc1e28]
+  - @red-hat-developer-hub/backstage-plugin-dcm-common@2.1.0
+
 ## 2.0.0
 
 ### Major Changes
