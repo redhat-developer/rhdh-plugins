@@ -64,16 +64,23 @@ describe('scorecard-backend-module-sonarqube', () => {
     expect(res.status).toBe(200);
     expect(res.body.metrics).toHaveLength(12);
 
-    const ids = res.body.metrics.map((m: { id: string }) => m.id);
-    expect(ids).toEqual(
-      expect.arrayContaining([
-        'sonarqube.qualityGate',
-        'sonarqube.openIssues',
-        'sonarqube.securityRating',
-        'sonarqube.reliabilityRating',
-        'sonarqube.maintainabilityRating',
-        'sonarqube.codeCoverage',
-      ]),
+    expect(res.body.metrics).toEqual(
+      expect.arrayContaining(
+        [
+          { id: 'sonarqube.qualityGate', type: 'boolean' },
+          { id: 'sonarqube.openIssues', type: 'number' },
+          { id: 'sonarqube.securityRating', type: 'number' },
+          { id: 'sonarqube.securityIssues', type: 'number' },
+          { id: 'sonarqube.securityReviewRating', type: 'number' },
+          { id: 'sonarqube.securityHotspots', type: 'number' },
+          { id: 'sonarqube.reliabilityRating', type: 'number' },
+          { id: 'sonarqube.reliabilityIssues', type: 'number' },
+          { id: 'sonarqube.maintainabilityRating', type: 'number' },
+          { id: 'sonarqube.maintainabilityIssues', type: 'number' },
+          { id: 'sonarqube.codeCoverage', type: 'number' },
+          { id: 'sonarqube.codeDuplications', type: 'number' },
+        ].map(metric => expect.objectContaining(metric)),
+      ),
     );
   });
 });
