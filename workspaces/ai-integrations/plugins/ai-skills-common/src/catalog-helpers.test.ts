@@ -154,7 +154,7 @@ describe('normalizeTags', () => {
   });
 
   it('drops tags with invalid characters', () => {
-    const result = normalizeTags(['has space', 'has_underscore', 'valid-tag']);
+    const result = normalizeTags(['has space', 'has@symbol', 'valid-tag']);
     expect(result.tags).toEqual(['valid-tag']);
     expect(result.diagnostics).toHaveLength(2);
   });
@@ -165,10 +165,10 @@ describe('normalizeTags', () => {
     expect(result.diagnostics).toHaveLength(0);
   });
 
-  it('drops tags with dots (not in valid charset)', () => {
-    const result = normalizeTags(['rhdh:2.2']);
-    expect(result.tags).toEqual([]);
-    expect(result.diagnostics).toHaveLength(1);
+  it('accepts dots and underscores within tags', () => {
+    const result = normalizeTags(['rhdh:2.2', 'has_underscore']);
+    expect(result.tags).toEqual(['rhdh:2.2', 'has_underscore']);
+    expect(result.diagnostics).toHaveLength(0);
   });
 
   it('drops tags starting with a hyphen', () => {
@@ -183,10 +183,10 @@ describe('normalizeTags', () => {
     expect(result.diagnostics).toHaveLength(1);
   });
 
-  it('drops tags with consecutive hyphens', () => {
+  it('accepts tags with consecutive hyphens', () => {
     const result = normalizeTags(['in--valid', 'valid']);
-    expect(result.tags).toEqual(['valid']);
-    expect(result.diagnostics).toHaveLength(1);
+    expect(result.tags).toEqual(['in--valid', 'valid']);
+    expect(result.diagnostics).toHaveLength(0);
   });
 
   it('handles mixed valid and invalid tags', () => {
