@@ -267,9 +267,9 @@ export function mcpPersonalAccessTokenInput(page: Page): Locator {
 
 /** Configure-server modal for MCP settings (works for token and DCR flows). */
 export function mcpCredentialConfigureModal(page: Page): Locator {
-  return page
-    .getByRole('dialog')
-    .filter({ has: page.locator('#mcp-configure-modal-body') });
+  // Must match the configure dialog itself. A "contains #mcp-configure-modal-body"
+  // filter also matches the parent overlay chatbot dialog (strict-mode failures).
+  return page.locator('[role="dialog"][aria-labelledby="mcp-configure-modal"]');
 }
 
 /** Clear (×) control on the PAT field (`mcp.settings.token.clearAriaLabel`). */
