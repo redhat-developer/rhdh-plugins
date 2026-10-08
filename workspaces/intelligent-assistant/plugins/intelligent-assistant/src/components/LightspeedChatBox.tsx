@@ -25,7 +25,6 @@ import {
 import { keyframes, styled } from '@mui/material/styles';
 import {
   ChatbotDisplayMode,
-  ChatbotWelcomePrompt,
   DeepThinking,
   DeepThinkingProps,
   Message,
@@ -44,6 +43,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
 import { parseReasoning } from '../utils/reasoningParser';
 import { mapToPatternFlyToolCall } from '../utils/toolCallMapper';
+import { LightspeedWelcomePrompt } from './LightspeedWelcomePrompt';
 import { SourcesChipModal } from './SourcesChipModal';
 
 const DEEP_THINKING_CLASS = 'lightspeed-deep-thinking';
@@ -224,7 +224,7 @@ export const LightspeedChatBox = forwardRef(
           <br />
         </div>
         {welcomePrompts.length ? (
-          <ChatbotWelcomePrompt
+          <LightspeedWelcomePrompt
             title={t('chatbox.welcome.greeting' as any, {
               userName: profileLoading
                 ? t('user.loading')

@@ -129,6 +129,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'lcore.loadError.title': string;
     readonly 'lcore.loadError.description': string;
     readonly 'footer.accuracy.label': string;
+    readonly 'footer.accuracy.notebook.label': string;
     readonly 'common.cancel': string;
     readonly 'common.close': string;
     readonly 'common.readMore': string;

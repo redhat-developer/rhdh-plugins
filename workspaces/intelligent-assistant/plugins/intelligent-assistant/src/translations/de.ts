@@ -56,7 +56,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'chatbox.fileUpload.infoText':
       'Unterstützte Dateitypen: .txt, .yaml und .json. Die max. Dateigröße beträgt 25 MB.',
     'chatbox.header.title': 'Intelligenter Assistent im Developer Hub',
-    'chatbox.message.placeholder': 'Nachricht senden',
+    'chatbox.message.placeholder': 'Prompt eingeben.',
     'chatbox.provider.other': 'Andere',
     'chatbox.search.placeholder': 'Suchen',
     'chatbox.welcome.description': 'wie kann ich Ihnen heute helfen?',
@@ -118,7 +118,9 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'file.upload.error.unsupportedType':
       'Nicht unterstützter Dateityp. Unterstützte Dateitypen: .txt, .yaml und .json.',
     'footer.accuracy.label':
-      'KI-generierte Inhalte sollten vor der Verwendung stets geprüft werden.',
+      'Red Hat Developer Hub Intelligent Assistant verwendet KI. Bitte auf Fehler prüfen.',
+    'footer.accuracy.notebook.label':
+      'KI-Inhalte können ungenau sein. Vor der Verwendung prüfen.',
     'icon.lightspeed.alt': 'Symbol „Intelligenter Assistent“',
     'lcore.loadError.description':
       'Das Backend des intelligenten Assistenten hat keine Modellliste zurückgegeben. Überprüfen Sie, ob der Dienst aktiv und erreichbar ist, und versuchen Sie es dann erneut.',
