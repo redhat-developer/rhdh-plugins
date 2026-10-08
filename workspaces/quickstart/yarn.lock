@@ -3920,8 +3920,8 @@ __metadata:
   linkType: hard
 
 "@backstage/plugin-techdocs-node@npm:^1.15.3, @backstage/plugin-techdocs-node@npm:^1.15.4":
-  version: 1.15.4
-  resolution: "@backstage/plugin-techdocs-node@npm:1.15.4"
+  version: 1.15.6
+  resolution: "@backstage/plugin-techdocs-node@npm:1.15.6"
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.350.0"
     "@aws-sdk/credential-providers": "npm:^3.350.0"
@@ -3952,7 +3952,7 @@ __metadata:
     p-limit: "npm:^3.1.0"
     recursive-readdir: "npm:^2.2.2"
     winston: "npm:^3.2.1"
-  checksum: 10c0/bc8edc73bce61c2f597c24299a34f55d83c74a8be12f55fc56f3fa7810ea8cdbf89a9fdc0aec2d4e7eb2f96e641da1f5b342eddcaed2a86169d9731715d064c1
+  checksum: 10c0/d2bd3ea8c22515f16fa1a2acfd27ef73befea0fb1cc08a6f66eb5050ce4cb3ddb3e2a83afb300a7c45091828a151e88e154bfa657a68d49d54f1cf0111751816
   languageName: node
   linkType: hard
 
