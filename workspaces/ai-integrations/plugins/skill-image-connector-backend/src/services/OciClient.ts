@@ -456,9 +456,21 @@ async function registryFetch(
   );
 }
 
+/** Result of fetching and verifying an OCI manifest. */
+export interface ManifestResult {
+  /** The parsed OCI manifest. */
+  manifest: OciManifest;
+  /** SHA-256 digest of the raw manifest bytes. */
+  digest: string;
+}
+
 /**
  * Fetches an OCI image manifest from a registry using the OCI
  * Distribution Spec v2 HTTP API.
+ *
+ * Always computes and returns the SHA-256 digest of the raw manifest
+ * bytes. When the image reference includes an explicit digest, the
+ * raw bytes are verified against it before the manifest is decoded.
  *
  * Detects manifest lists / image indexes and throws a descriptive
  * error rather than returning an unexpected schema.
@@ -469,7 +481,7 @@ export async function fetchManifest(
   credentials?: RegistryCredentials,
   signal?: AbortSignal,
   options: SkillImageOptions = DEFAULT_SKILL_IMAGE_OPTIONS,
-): Promise<OciManifest> {
+): Promise<ManifestResult> {
   return withRequestTimeout(
     async requestSignal => {
       const reference = imageRef.digest ?? imageRef.tag;
@@ -505,27 +517,38 @@ export async function fetchManifest(
         response,
         MAX_MANIFEST_SIZE,
       );
+
+      // Always compute the SHA-256 digest of the raw manifest bytes.
+      // This is the resolved digest for tag-based fetches and the
+      // verified digest for digest-based fetches.
+      const computedHex = createHash('sha256')
+        .update(manifestBuffer)
+        .digest('hex');
+      const computedDigest = `sha256:${computedHex}`;
+
+      // When an explicit digest was requested, verify the raw bytes
+      // match before decoding any metadata or fetching layers.
+      const requestedDigest = imageRef.digest;
+      if (requestedDigest) {
+        const digestInfo = parseDigest(requestedDigest);
+        if (!digestInfo) {
+          throw new Error(`Invalid manifest digest ${requestedDigest}`);
+        }
+        const actualHex = createHash(digestInfo.algorithm)
+          .update(manifestBuffer)
+          .digest('hex');
+        if (actualHex !== digestInfo.hex) {
+          throw new Error(
+            `Manifest digest mismatch for ${requestedDigest}: got ${digestInfo.algorithm}:${actualHex}`,
+          );
+        }
+      }
+
       const manifest = JSON.parse(manifestBuffer.toString('utf-8')) as
         | (OciManifest & {
             manifests?: unknown[];
           })
         | undefined;
-
-      const manifestDigest = imageRef.digest;
-      if (manifestDigest) {
-        const digestInfo = parseDigest(manifestDigest);
-        if (!digestInfo) {
-          throw new Error(`Invalid manifest digest ${manifestDigest}`);
-        }
-        const actualDigest = createHash(digestInfo.algorithm)
-          .update(manifestBuffer)
-          .digest('hex');
-        if (actualDigest !== digestInfo.hex) {
-          throw new Error(
-            `Manifest digest mismatch for ${manifestDigest}: got ${digestInfo.algorithm}:${actualDigest}`,
-          );
-        }
-      }
 
       if (!manifest || typeof manifest !== 'object') {
         throw new TypeError('Registry returned an invalid OCI manifest object');
@@ -554,7 +577,7 @@ export async function fetchManifest(
         );
       }
 
-      return manifest;
+      return { manifest, digest: computedDigest };
     },
     signal,
     options.fetchTimeoutMs,

@@ -106,6 +106,21 @@ export interface OciDescriptor {
   annotations?: Record<string, string>;
 }
 
+/**
+ * Verified acquisition metadata for tagged OCI skill images.
+ *
+ * Present only for tag-based acquisitions. Explicit digest references
+ * do not establish a tag and therefore have no tagged identity.
+ */
+export interface AcquisitionMetadata {
+  /** Stable key: `<lowercase-registry>/<repository>:<exact-tag>`. */
+  key: string;
+  /** Verified manifest digest: `sha256:<64 lowercase hex digits>`. */
+  digest: string;
+  /** Digest-addressed source URI: `oci://<registry>/<repository>@sha256:<hex>`. */
+  sourceUri: string;
+}
+
 /** Result of extracting a skill image. */
 export interface SkillImageExtraction {
   /** Path where skillimage.yaml was written. */
@@ -116,6 +131,8 @@ export interface SkillImageExtraction {
   skillImageYaml: string;
   /** Content of SKILLS.md as a string. */
   skillsMd: string;
+  /** Present for tagged acquisitions; absent for explicit digest references. */
+  acquisition?: AcquisitionMetadata;
 }
 
 /**
@@ -130,6 +147,7 @@ export interface QuayDiscoveryConfig {
   tag?: string;
 }
 
+/** Plugin configuration for a single skill image source. */
 /** Plugin configuration for a single skill image source. */
 export interface SkillImageConfig {
   /** Identifier for this image config entry. */
