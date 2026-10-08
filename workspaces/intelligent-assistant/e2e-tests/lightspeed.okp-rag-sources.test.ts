@@ -16,7 +16,8 @@
 
 /**
  * RHIDP-14132 / RHDHPLAN-1189 — OKP product-docs RAG citations (mocked LCORE).
- * Mirrors lightspeed.byok-rag-sources.test.ts; covers online + offline OKP URL shapes.
+ * Covers online + offline OKP URL shapes in one chat response (no-citation /
+ * SourcesChip paths are already covered by BYOK / unit suites).
  */
 
 import { expect, test, type Page } from '@playwright/test';
@@ -32,11 +33,7 @@ import {
   okpOfflineReferencedDocuments,
   okpOnlineReferencedDocuments,
 } from './fixtures/responses';
-import {
-  botMessageRegion,
-  expectInlineRagSourceLabels,
-  expectNoInlineSourceCards,
-} from './pages/LightspeedPage';
+import { botMessageRegion } from './pages/LightspeedPage';
 import {
   mockChatHistory,
   mockConversations,
@@ -50,11 +47,13 @@ import {
 import { sendMessage } from './utils/testHelper';
 import type { LightspeedMessages } from './utils/translations';
 
-const OKP_ONLINE_PROMPT =
+const OKP_CITATION_PROMPT =
   'How do I get started with Red Hat Developer Hub? Cite product docs.';
-const OKP_OFFLINE_PROMPT =
-  'How do I configure authentication in Developer Hub? Cite product docs.';
-const NO_OKP_CITATION_PROMPT = 'Tell me a generic fact with no citations';
+
+const okpOnlineAndOfflineReferencedDocuments = [
+  ...okpOnlineReferencedDocuments,
+  ...okpOfflineReferencedDocuments,
+];
 
 test.describe('OKP product-docs RAG source citations', () => {
   let sharedPage: Page;
@@ -76,49 +75,38 @@ test.describe('OKP product-docs RAG source citations', () => {
     );
   });
 
-  test('OKP online mode shows docs.redhat.com citation link and rag label', async () => {
+  test('OKP online and offline citations render links and rag labels', async () => {
     await mockQueryWithReferencedDocuments(
       sharedPage,
-      OKP_ONLINE_PROMPT,
+      OKP_CITATION_PROMPT,
       conversations,
-      okpOnlineReferencedDocuments,
+      okpOnlineAndOfflineReferencedDocuments,
     );
 
-    await sendMessage(OKP_ONLINE_PROMPT, sharedPage, translations);
+    await sendMessage(OKP_CITATION_PROMPT, sharedPage, translations);
 
     const botMessage = botMessageRegion(sharedPage);
     await expect(botMessage).toContainText(botResponse);
+    await expect(botMessage.locator('.pf-chatbot__sources-card')).toHaveCount(
+      1,
+    );
+
     await expect(botMessage.getByText(OKP_E2E_ONLINE_DOC_TITLE)).toBeVisible();
     await expect(
       botMessage.getByRole('link', { name: OKP_E2E_ONLINE_DOC_TITLE }),
     ).toHaveAttribute('href', OKP_E2E_ONLINE_DOC_URL);
-    await expectInlineRagSourceLabels(sharedPage, [OKP_E2E_RAG_SOURCE]);
-  });
+    await expect(
+      botMessage.getByText(OKP_E2E_RAG_SOURCE, { exact: true }),
+    ).toBeVisible();
 
-  test('OKP offline mode shows OKP portal citation link and rag label', async () => {
-    await mockQueryWithReferencedDocuments(
-      sharedPage,
-      OKP_OFFLINE_PROMPT,
-      conversations,
-      okpOfflineReferencedDocuments,
-    );
+    await botMessage.getByRole('button', { name: 'Go to next page' }).click();
 
-    await sendMessage(OKP_OFFLINE_PROMPT, sharedPage, translations);
-
-    const botMessage = botMessageRegion(sharedPage);
-    await expect(botMessage).toContainText(botResponse);
     await expect(botMessage.getByText(OKP_E2E_OFFLINE_DOC_TITLE)).toBeVisible();
     await expect(
       botMessage.getByRole('link', { name: OKP_E2E_OFFLINE_DOC_TITLE }),
     ).toHaveAttribute('href', OKP_E2E_OFFLINE_DOC_URL);
-    await expectInlineRagSourceLabels(sharedPage, [OKP_E2E_RAG_SOURCE]);
-  });
-
-  test('response without OKP citations renders with no source cards', async () => {
-    await sendMessage(NO_OKP_CITATION_PROMPT, sharedPage, translations);
-
-    const botMessage = botMessageRegion(sharedPage);
-    await expect(botMessage).toContainText(botResponse);
-    await expectNoInlineSourceCards(sharedPage);
+    await expect(
+      botMessage.getByText(OKP_E2E_RAG_SOURCE, { exact: true }),
+    ).toBeVisible();
   });
 });

@@ -411,31 +411,6 @@ describe('transformDocumentsToSources', () => {
     );
   });
 
-  it('should map OKP online mode docs.redhat.com citations to external sources', () => {
-    const okpOnlineDocs: ReferencedDocuments = [
-      {
-        doc_title: 'About Red Hat Developer Hub',
-        doc_description: 'OKP online product documentation chunk',
-        doc_url:
-          'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/about_red_hat_developer_hub/index',
-        source: 'rhdh-product-docs',
-      },
-    ];
-
-    const sources = transformDocumentsToSources(okpOnlineDocs);
-    expect(sources?.sources).toHaveLength(1);
-    expect(sources?.sources[0]).toEqual(
-      expect.objectContaining({
-        title: 'About Red Hat Developer Hub',
-        body: 'OKP online product documentation chunk',
-        link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/about_red_hat_developer_hub/index',
-        isExternal: true,
-        ragSource: 'rhdh-product-docs',
-        headerContent: expect.anything(),
-      }),
-    );
-  });
-
   it('should map OKP offline mode portal URLs to external sources', () => {
     const okpOfflineDocs: ReferencedDocuments = [
       {
