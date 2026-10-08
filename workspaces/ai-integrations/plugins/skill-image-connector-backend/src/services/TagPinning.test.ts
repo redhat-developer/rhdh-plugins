@@ -17,6 +17,7 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { createHash } from 'node:crypto';
 import { fetchManifest } from './OciClient';
+import { buildAcquisitionKey, buildSourceUri } from '../plugin';
 import type { OciManifest, ImageRef } from './types';
 
 // Mock DNS to prevent real lookups
@@ -168,15 +169,21 @@ describe('Tag pinning: identity metadata', () => {
       repository: 'org/repo',
       tag: 'V1-Beta',
     };
-    const key = `${imageRef.registry.toLowerCase()}/${imageRef.repository}:${
-      imageRef.tag
-    }`;
+    const key = buildAcquisitionKey(imageRef);
     expect(key).toBe('quay.io/org/repo:V1-Beta');
   });
 
   it('preserves case-sensitive tags in keys', () => {
-    const keyLower = 'quay.io/org/repo:v1';
-    const keyUpper = 'quay.io/org/repo:V1';
+    const keyLower = buildAcquisitionKey({
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'v1',
+    });
+    const keyUpper = buildAcquisitionKey({
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'V1',
+    });
     expect(keyLower).not.toBe(keyUpper);
   });
 
@@ -184,11 +191,19 @@ describe('Tag pinning: identity metadata', () => {
     const manifest = makeManifest();
     const digest = manifestDigest(manifest);
 
-    const keyLatest = `quay.io/org/repo:latest`;
-    const keyV1 = `quay.io/org/repo:v1`;
+    const keyLatest = buildAcquisitionKey({
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'latest',
+    });
+    const keyV1 = buildAcquisitionKey({
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'v1',
+    });
 
-    // Both resolve to the same digest
-    const uri = `oci://quay.io/org/repo@${digest}`;
+    // Both resolve to the same digest — same source URI
+    const uri = buildSourceUri('quay.io', 'org/repo', digest);
 
     // Keys are different
     expect(keyLatest).not.toBe(keyV1);
@@ -198,7 +213,7 @@ describe('Tag pinning: identity metadata', () => {
 
   it('sourceUri digest agrees with the returned digest', () => {
     const digest = `sha256:${'ab'.repeat(32)}`;
-    const sourceUri = `oci://quay.io/org/repo@${digest}`;
+    const sourceUri = buildSourceUri('quay.io', 'org/repo', digest);
     expect(sourceUri).toContain(digest);
     // Extract digest from URI and compare
     const uriDigest = sourceUri.split('@')[1];
@@ -227,13 +242,19 @@ describe('Tag pinning: identity metadata', () => {
     // Different digests
     expect(digestA).not.toBe(digestB);
 
-    // Same key
-    const key = 'quay.io/org/repo:v1';
-    expect(key).toBe('quay.io/org/repo:v1');
+    // Same key from the production function
+    const imageRef: ImageRef = {
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'v1',
+    };
+    const keyA = buildAcquisitionKey(imageRef);
+    const keyB = buildAcquisitionKey(imageRef);
+    expect(keyA).toBe(keyB);
 
-    // Different source URIs
-    const uriA = `oci://quay.io/org/repo@${digestA}`;
-    const uriB = `oci://quay.io/org/repo@${digestB}`;
+    // Different source URIs from the production function
+    const uriA = buildSourceUri('quay.io', 'org/repo', digestA);
+    const uriB = buildSourceUri('quay.io', 'org/repo', digestB);
     expect(uriA).not.toBe(uriB);
   });
 });

@@ -327,8 +327,10 @@ function logImageProcessingFailure(
  *
  * The key uses the lowercase registry host, repository path, and exact
  * case-sensitive tag. It excludes the manifest digest.
+ *
+ * @internal Exported for testing.
  */
-function buildAcquisitionKey(imageRef: {
+export function buildAcquisitionKey(imageRef: {
   registry: string;
   repository: string;
   tag: string;
@@ -342,8 +344,10 @@ function buildAcquisitionKey(imageRef: {
  * Builds a digest-addressed OCI source URI.
  *
  * Returns `oci://<registry>/<repository>@<digest>`.
+ *
+ * @internal Exported for testing.
  */
-function buildSourceUri(
+export function buildSourceUri(
   registry: string,
   repository: string,
   digest: string,
@@ -425,18 +429,19 @@ async function fetchWithRetry(
     signal,
   );
 
-  // Attach verified acquisition metadata for tagged references
-  extraction.acquisition = {
-    key: buildAcquisitionKey(imageRef),
-    digest: resolvedDigest,
-    sourceUri: buildSourceUri(
-      imageRef.registry,
-      imageRef.repository,
-      resolvedDigest,
-    ),
+  // Return a new object with verified acquisition metadata for tagged references
+  return {
+    ...extraction,
+    acquisition: {
+      key: buildAcquisitionKey(imageRef),
+      digest: resolvedDigest,
+      sourceUri: buildSourceUri(
+        imageRef.registry,
+        imageRef.repository,
+        resolvedDigest,
+      ),
+    },
   };
-
-  return extraction;
 }
 
 /**

@@ -106,6 +106,14 @@ export interface OciDescriptor {
   annotations?: Record<string, string>;
 }
 
+/** Result of fetching and verifying an OCI manifest. */
+export interface ManifestResult {
+  /** The parsed OCI manifest. */
+  manifest: OciManifest;
+  /** SHA-256 digest of the raw manifest bytes. */
+  digest: string;
+}
+
 /**
  * Verified acquisition metadata for tagged OCI skill images.
  *
@@ -147,7 +155,6 @@ export interface QuayDiscoveryConfig {
   tag?: string;
 }
 
-/** Plugin configuration for a single skill image source. */
 /** Plugin configuration for a single skill image source. */
 export interface SkillImageConfig {
   /** Identifier for this image config entry. */

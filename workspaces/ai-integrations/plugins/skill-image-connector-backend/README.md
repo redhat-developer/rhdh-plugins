@@ -118,7 +118,7 @@ All of these backend-only settings are optional. Omitted settings use the shared
 | `maxRetries`                      | `2`        | Retries after the initial page or image acquisition attempt. Set `0` to disable.             |
 | `retryBaseDelayMs`                | `2000`     | Initial backoff; doubled for each further retry and capped at Node's timer limit.            |
 
-Manifest responses retain their separate 5 MiB limit; token responses retain their 1 MiB limit. Repository and tag pagination (100 pages combined), redirects (three), concurrent image operations (four), and tar entries (200) also have distinct shared defaults. The image retry wraps the whole acquisition/extraction; individual OCI requests do not add another retry loop.
+Manifest responses retain their separate 5 MiB limit; token responses retain their 1 MiB limit. Repository and tag pagination (100 pages combined), redirects (three), concurrent image operations (four), and tar entries (200) also have distinct shared defaults. For tag-based references, tag resolution and image acquisition/extraction each have independent retry scopes: transient failures during tag resolution are retried before the resolved digest is used for acquisition, and transient failures during acquisition are retried using the already-pinned digest. Explicit digest references use a single retry scope wrapping the whole acquisition/extraction. Individual OCI requests do not add another retry loop.
 
 Discovery and OCI requests share HTTP redirect validation, response cleanup, and bounded body reading. Redirects must use HTTPS, reject URL credentials, localhost and literal IPs, and pass a DNS check for non-public destinations. Authorization headers are removed when following cross-origin redirects. These checks do not replace the future D7 configured-origin policy or implement normalized snapshots.
 
@@ -129,12 +129,13 @@ On startup the plugin:
 1. Cleans up stale extraction directories from any previous abnormal termination.
 2. Reads configured image references from `app-config.yaml`.
 3. If `quayDiscovery` is configured, discovers public repositories using paginated API calls. With no tag filter, it then lists active tags for each repository; an exact tag filter skips tag listing. Distinct references are sorted before merging with the explicit image list and applying `maxImages`.
-4. Fetches the OCI manifest from the registry using the Distribution Spec v2 HTTP API.
-5. Determines the extraction strategy:
+4. For each tag-based image reference, resolves the mutable tag to a SHA-256 manifest digest using the Distribution Spec v2 HTTP API. All subsequent fetches (including retries) use the pinned digest, preventing a moved tag from redirecting to different content mid-acquisition. Explicit digest references skip this resolution step.
+5. Fetches the OCI manifest from the registry using the pinned digest (or the original digest reference).
+6. Determines the extraction strategy:
    - **Annotated layers**: Two individual layers annotated with `org.opencontainers.image.title` set to `skillimage.yaml`/`skill.yaml` and `SKILLS.md`/`SKILL.md`.
    - **Tar archives**: One or more `tar` or `tar+gzip` layers (as produced by `skillctl`) containing the skill files as tar entries.
-6. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
-7. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
+7. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
+8. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
 
 Transient discovery and registry failures (network errors including wrapped fetch causes, HTTP 5xx, and request timeouts) are retried up to two times by default, with 2-second then 4-second backoff. Discovery retries one page with a fresh timeout each time; image processing retries the full acquisition/extraction. Validation failures, size violations, malformed JSON, and non-5xx HTTP failures are not retried. Shutdown cancels active requests and backoff promptly. OCI authentication challenges are handled separately within the same request deadline.
 

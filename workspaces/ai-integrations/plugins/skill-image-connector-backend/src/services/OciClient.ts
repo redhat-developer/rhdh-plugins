@@ -19,10 +19,13 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import { createHash } from 'node:crypto';
 import type {
   ImageRef,
+  ManifestResult,
   OciManifest,
   RegistryCredentials,
   SkillImageOptions,
 } from './types';
+
+export type { ManifestResult } from './types';
 import {
   DEFAULT_SKILL_IMAGE_OPTIONS,
   MAX_MANIFEST_SIZE,
@@ -454,14 +457,6 @@ async function registryFetch(
     },
     requestSignal,
   );
-}
-
-/** Result of fetching and verifying an OCI manifest. */
-export interface ManifestResult {
-  /** The parsed OCI manifest. */
-  manifest: OciManifest;
-  /** SHA-256 digest of the raw manifest bytes. */
-  digest: string;
 }
 
 /**
