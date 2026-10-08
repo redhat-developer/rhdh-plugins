@@ -631,7 +631,7 @@ export async function mockQuery(
   });
 }
 
-/** Mock query SSE that returns BYOK `referenced_documents` on the `end` event. */
+/** Mock query SSE that returns `referenced_documents` on the `end` event (BYOK / OKP). */
 export async function mockQueryWithReferencedDocuments(
   page: Page,
   query: string,
