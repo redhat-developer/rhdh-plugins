@@ -57,7 +57,7 @@ skillImageConnector:
     # tag: latest                # optional exact filter; omit for all active tags
 ```
 
-Both explicit images and Quay discovery can be used together. Discovered repository/tag references are merged with explicit images; duplicate full references are skipped. Different tags remain separate even when they point to the same manifest digest.
+Both explicit images and Quay discovery can be used together. Discovered repository/tag references are merged with explicit images; duplicate full references are skipped. Duplicate comparisons ignore registry hostname casing while preserving repository paths, exact tag casing, and ports. The first explicit entry retains its original reference and credentials and takes priority over discovery. Different tags remain separate even when they point to the same manifest digest.
 
 If `quayDiscovery` is present but `organization` is omitted or blank, the connector
 logs a warning and skips discovery. Explicitly configured images still process.
@@ -175,7 +175,7 @@ Example response:
 
 ### Security model
 
-**Egress / SSRF protection:** The plugin resolves redirect target hostnames via DNS and rejects any that resolve to private, loopback, link-local, or reserved IP ranges (including IPv4-mapped IPv6). This is a preflight check: the subsequent fetch resolves DNS independently, so the check does not prevent DNS rebinding between validation and connection. Connection-level destination validation remains part of OpenSpec task 2.4. Production deployments should restrict backend egress at the network layer in addition to the registry allowlist and HTTPS checks.
+**Egress / SSRF protection:** The plugin resolves redirect target hostnames via DNS and rejects any that resolve to private, loopback, link-local, or reserved IP ranges (including IPv4-mapped IPv6). Initial requests do not receive this DNS preflight check. Operators must ensure configured registry hosts and permitted token-realm hosts resolve only to public addresses. The redirect check is a preflight check: the subsequent fetch resolves DNS independently, so it does not prevent DNS rebinding between validation and connection. Connection-level destination validation covering both initial requests and redirects remains part of OpenSpec task 2.4. Production deployments should restrict backend egress at the network layer in addition to the registry allowlist and HTTPS checks.
 
 **Authorization:** The `/images` endpoint is accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
 

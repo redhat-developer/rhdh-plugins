@@ -50,7 +50,7 @@ export const DEFAULT_FETCH_TIMEOUT_MS = 30_000;
 /** Default maximum size of one Quay discovery response (5 MiB). */
 export const DEFAULT_MAX_DISCOVERY_RESPONSE_SIZE = 5 * 1024 * 1024;
 /** Default total candidate limit for explicit images and discovered repository tags. */
-export const DEFAULT_MAX_CONFIGURED_IMAGES = 25;
+export const DEFAULT_MAX_IMAGES = 25;
 /** Default additional retry attempts after an initial failure. */
 export const DEFAULT_MAX_RETRIES = 2;
 /** Default delay in milliseconds before retry backoff (2 seconds). */
@@ -85,7 +85,7 @@ export const DEFAULT_SKILL_IMAGE_OPTIONS: SkillImageOptions = Object.freeze({
   maxBlobSizeBytes: DEFAULT_MAX_BLOB_SIZE,
   maxAggregateContentSizeBytes: DEFAULT_MAX_AGGREGATE_CONTENT_SIZE,
   maxDiscoveryResponseSizeBytes: DEFAULT_MAX_DISCOVERY_RESPONSE_SIZE,
-  maxImages: DEFAULT_MAX_CONFIGURED_IMAGES,
+  maxImages: DEFAULT_MAX_IMAGES,
   maxRetries: DEFAULT_MAX_RETRIES,
   retryBaseDelayMs: DEFAULT_RETRY_BASE_DELAY_MS,
 });

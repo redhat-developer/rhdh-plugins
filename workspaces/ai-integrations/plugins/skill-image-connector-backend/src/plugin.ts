@@ -112,6 +112,15 @@ function readImageCredentials(
   };
 }
 
+/** Comparison key only: preserve the original reference and tag casing. */
+function imageRefComparisonKey(imageRef: string): string {
+  return imageRef.replace(
+    /^((?:oci:\/\/)?)([^/]+)\//,
+    (_match, prefix: string, registry: string) =>
+      `${prefix}${registry.toLowerCase()}/`,
+  );
+}
+
 function parseConfiguredImage(
   entry: Config,
   index: number,
@@ -126,14 +135,15 @@ function parseConfiguredImage(
     return undefined;
   }
 
-  if (seenImageRefs.has(imageRef)) {
+  const comparisonKey = imageRefComparisonKey(imageRef);
+  if (seenImageRefs.has(comparisonKey)) {
     logger?.warn(
       `Skipping duplicate skill image configuration for ${imageRef}`,
     );
     return undefined;
   }
 
-  seenImageRefs.add(imageRef);
+  seenImageRefs.add(comparisonKey);
   const credentials = readImageCredentials(entry, imageRef);
   return {
     id: `image-${index}`,
@@ -255,15 +265,18 @@ export function mergeDiscoveredRefs(
   logger: Pick<LoggerService, 'warn'>,
 ): { merged: SkillImageConfig[]; added: number; skipped: number } {
   const allImageConfigs: SkillImageConfig[] = [...existingConfigs];
-  const existingRefSet = new Set(existingConfigs.map(c => c.imageRef));
+  const existingRefSet = new Set(
+    existingConfigs.map(c => imageRefComparisonKey(c.imageRef)),
+  );
   let discoveredAdded = 0;
   let discoveredSkipped = 0;
 
   for (const ref of discoveredRefs) {
-    if (existingRefSet.has(ref)) {
+    const comparisonKey = imageRefComparisonKey(ref);
+    if (existingRefSet.has(comparisonKey)) {
       continue;
     }
-    existingRefSet.add(ref);
+    existingRefSet.add(comparisonKey);
     if (allImageConfigs.length < maxImages) {
       allImageConfigs.push({
         id: `discovered-${discoveredAdded}`,

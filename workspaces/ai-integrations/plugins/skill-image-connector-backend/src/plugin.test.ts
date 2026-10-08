@@ -110,6 +110,49 @@ describe('readSkillImageConfigs', () => {
     ]);
   });
 
+  it.each(['', 'oci://'])(
+    'should deduplicate hostname casing with prefix %p and preserve the first credentials',
+    prefix => {
+      const config = new ConfigReader({
+        skillImageConnector: {
+          images: [
+            {
+              imageRef: `${prefix}QUAY.IO/org/skill:v1`,
+              credentials: { username: 'user', password: 'secret' },
+            },
+            { imageRef: `${prefix}quay.io/org/skill:v1` },
+          ],
+        },
+      });
+
+      expect(readSkillImageConfigs(config)).toEqual([
+        {
+          id: 'image-0',
+          imageRef: `${prefix}QUAY.IO/org/skill:v1`,
+          credentials: { username: 'user', password: 'secret' },
+        },
+      ]);
+    },
+  );
+
+  it('should keep explicit refs with distinct tag casing or ports', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        images: [
+          { imageRef: 'QUAY.IO:443/org/skill:v1' },
+          { imageRef: 'quay.io:443/org/skill:V1' },
+          { imageRef: 'quay.io:8443/org/skill:v1' },
+        ],
+      },
+    });
+
+    expect(readSkillImageConfigs(config).map(entry => entry.imageRef)).toEqual([
+      'QUAY.IO:443/org/skill:v1',
+      'quay.io:443/org/skill:V1',
+      'quay.io:8443/org/skill:v1',
+    ]);
+  });
+
   it('should allow an explicit token realm without registry credentials', () => {
     const config = new ConfigReader({
       skillImageConnector: {
@@ -315,6 +358,73 @@ describe('mergeDiscoveredRefs', () => {
 
     expect(result.merged).toHaveLength(2);
     expect(result.added).toBe(1);
+    expect(result.skipped).toBe(0);
+  });
+
+  it('preserves explicit configuration when hostname casing differs without consuming a slot', () => {
+    const existing = [
+      {
+        id: 'image-0',
+        imageRef: 'QUAY.IO/org/skill:v1',
+        credentials: { username: 'user', password: 'secret' },
+        logNotFoundAsError: true,
+      },
+    ];
+    const discovered = ['quay.io/org/skill:v1', 'quay.io/org/new:v1'];
+
+    const result = mergeDiscoveredRefs(existing, discovered, 2, mockLogger);
+
+    expect(result.merged).toEqual([
+      {
+        id: 'image-0',
+        imageRef: 'QUAY.IO/org/skill:v1',
+        credentials: { username: 'user', password: 'secret' },
+        logNotFoundAsError: true,
+      },
+      {
+        id: 'discovered-0',
+        imageRef: 'quay.io/org/new:v1',
+        logNotFoundAsError: false,
+      },
+    ]);
+    expect(result.added).toBe(1);
+    expect(result.skipped).toBe(0);
+    expect(mockLogger.warn).not.toHaveBeenCalled();
+  });
+
+  it('deduplicates hostname casing among discovered refs', () => {
+    const result = mergeDiscoveredRefs(
+      [],
+      ['QUAY.IO/org/skill:v1', 'quay.io/org/skill:v1'],
+      1,
+      mockLogger,
+    );
+
+    expect(result.merged).toEqual([
+      {
+        id: 'discovered-0',
+        imageRef: 'QUAY.IO/org/skill:v1',
+        logNotFoundAsError: false,
+      },
+    ]);
+    expect(result.added).toBe(1);
+    expect(result.skipped).toBe(0);
+  });
+
+  it('keeps discovered refs with distinct tag casing or ports', () => {
+    const result = mergeDiscoveredRefs(
+      [{ id: 'image-0', imageRef: 'QUAY.IO:443/org/skill:v1' }],
+      ['quay.io:443/org/skill:V1', 'quay.io:8443/org/skill:v1'],
+      3,
+      mockLogger,
+    );
+
+    expect(result.merged.map(entry => entry.imageRef)).toEqual([
+      'QUAY.IO:443/org/skill:v1',
+      'quay.io:443/org/skill:V1',
+      'quay.io:8443/org/skill:v1',
+    ]);
+    expect(result.added).toBe(2);
     expect(result.skipped).toBe(0);
   });
 
