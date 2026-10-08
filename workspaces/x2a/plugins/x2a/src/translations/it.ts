@@ -307,6 +307,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Nessuna regola configurata.',
     'scaffolder.rulesAcceptance.required': 'obbligatorio',
     'scaffolder.rulesAcceptance.fetchError': 'Impossibile recuperare le regole',
+    'scaffolder.rulesAcceptance.readMore': 'Leggi di più',
+    'scaffolder.rulesAcceptance.close': 'Chiudi',
     'rulesPage.title': 'Regole di conversione',
     'rulesPage.subtitle':
       'Gestisci le regole che i progetti devono accettare al momento della creazione.',

@@ -382,6 +382,8 @@ export const x2aPluginMessages = {
       noRulesConfigured: 'No rules configured.',
       required: 'required',
       fetchError: 'Failed to fetch rules',
+      readMore: 'Read more',
+      close: 'Close',
     },
   },
   rulesPage: {
