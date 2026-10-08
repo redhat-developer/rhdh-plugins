@@ -51,7 +51,7 @@ export type ComparisonOperator = {
 // @public
 export type ComparisonSign = '>=' | '<=' | '>' | '<' | '==' | '!=';
 
-// @public (undocumented)
+// @public
 export function daysToMilliseconds(days: number): number;
 
 // @public
