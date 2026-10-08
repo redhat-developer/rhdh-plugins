@@ -71,20 +71,38 @@ const homepagePlugin: OverridableFrontendPlugin<
         widgetLayout:
           | Record<
               string,
-              {
-                priority?: number | undefined;
-                breakpoints?:
-                  | Record<
-                      string,
-                      {
-                        w?: number | undefined;
-                        h?: number | undefined;
-                        x?: number | undefined;
-                        y?: number | undefined;
-                      }
-                    >
-                  | undefined;
-              }
+              | {
+                  id?: string | undefined;
+                  priority?: number | undefined;
+                  breakpoints?:
+                    | Record<
+                        string,
+                        {
+                          w?: number | undefined;
+                          h?: number | undefined;
+                          x?: number | undefined;
+                          y?: number | undefined;
+                        }
+                      >
+                    | undefined;
+                  props?: Record<string, unknown> | undefined;
+                }
+              | {
+                  id?: string | undefined;
+                  priority?: number | undefined;
+                  breakpoints?:
+                    | Record<
+                        string,
+                        {
+                          w?: number | undefined;
+                          h?: number | undefined;
+                          x?: number | undefined;
+                          y?: number | undefined;
+                        }
+                      >
+                    | undefined;
+                  props?: Record<string, unknown> | undefined;
+                }[]
             >
           | undefined;
       };
@@ -93,20 +111,38 @@ const homepagePlugin: OverridableFrontendPlugin<
         widgetLayout?:
           | Record<
               string,
-              {
-                priority?: number | undefined;
-                breakpoints?:
-                  | Record<
-                      string,
-                      {
-                        w?: number | undefined;
-                        h?: number | undefined;
-                        x?: number | undefined;
-                        y?: number | undefined;
-                      }
-                    >
-                  | undefined;
-              }
+              | {
+                  id?: string | undefined;
+                  priority?: number | undefined;
+                  breakpoints?:
+                    | Record<
+                        string,
+                        {
+                          w?: number | undefined;
+                          h?: number | undefined;
+                          x?: number | undefined;
+                          y?: number | undefined;
+                        }
+                      >
+                    | undefined;
+                  props?: Record<string, unknown> | undefined;
+                }
+              | {
+                  id?: string | undefined;
+                  priority?: number | undefined;
+                  breakpoints?:
+                    | Record<
+                        string,
+                        {
+                          w?: number | undefined;
+                          h?: number | undefined;
+                          x?: number | undefined;
+                          y?: number | undefined;
+                        }
+                      >
+                    | undefined;
+                  props?: Record<string, unknown> | undefined;
+                }[]
             >
           | undefined;
       };
