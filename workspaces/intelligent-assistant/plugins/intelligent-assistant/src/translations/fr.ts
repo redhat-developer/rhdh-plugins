@@ -57,7 +57,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'chatbox.fileUpload.infoText':
       'Les types de fichiers pris en charge sont : .txt, .yaml et .json. La taille maximale des fichiers est de 25 Mo.',
     'chatbox.header.title': 'Assistant intelligent du centre de développement',
-    'chatbox.message.placeholder': 'Envoyer un message',
+    'chatbox.message.placeholder': 'Saisissez un prompt.',
     'chatbox.provider.other': 'Autre',
     'chatbox.search.placeholder': 'Recherche',
     'chatbox.welcome.description': "Comment puis-je vous aider aujourd'hui ?",
@@ -121,7 +121,9 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'file.upload.error.unsupportedType':
       'Type de fichier non pris en charge. Les types pris en charge sont : .txt, .yaml et .json.',
     'footer.accuracy.label':
-      "Toujours vérifier le contenu généré par l'IA avant utilisation.",
+      "Red Hat Developer Hub Intelligent Assistant utilise l'IA. Vérifiez s'il y a des erreurs.",
+    'footer.accuracy.notebook.label':
+      "Le contenu généré par l'IA peut être inexact. Vérifiez-le avant utilisation.",
     'icon.lightspeed.alt': "icône d'assistant intelligent",
     'lcore.loadError.description':
       "Le système d'assistance intelligent n'a pas renvoyé de liste de modèles. Vérifiez que le service est en cours d'exécution et accessible, puis réessayez.",
