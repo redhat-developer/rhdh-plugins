@@ -13,7 +13,7 @@ app:
     - page:homepage:
         config:
           path: /
-    
+
     # Disable all home page widgets
     - home-page-widget:homepage/rhdh-entity-section: false
     - home-page-widget:homepage/rhdh-template-section: false
