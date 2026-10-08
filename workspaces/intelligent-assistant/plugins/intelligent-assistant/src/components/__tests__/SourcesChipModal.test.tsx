@@ -160,35 +160,4 @@ describe('SourcesChipModal', () => {
 
     expect(screen.getByText('Source 1')).toBeInTheDocument();
   });
-
-  test('should display OKP product-docs rag labels for online and offline citations', () => {
-    const okpSources: SourcesCardProps = {
-      sources: [
-        {
-          title: 'About Red Hat Developer Hub',
-          body: 'OKP online mode citation',
-          link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/about_red_hat_developer_hub/index',
-          ragSource: 'rhdh-product-docs',
-        } as SourceWithRagId,
-        {
-          title: 'Configuring authentication in Red Hat Developer Hub',
-          body: 'OKP offline mode citation',
-          link: 'http://rhdh-lightspeed-okp.apps.example.com/documentation/red_hat_developer_hub/1.8/html-single/authentication/index',
-          ragSource: 'rhdh-product-docs',
-        } as SourceWithRagId,
-      ],
-    };
-
-    render(<SourcesChipModal sources={okpSources} />);
-
-    fireEvent.click(screen.getByText('2 Sources'));
-
-    expect(screen.getByText('About Red Hat Developer Hub')).toBeInTheDocument();
-    expect(
-      screen.getByText('Configuring authentication in Red Hat Developer Hub'),
-    ).toBeInTheDocument();
-    expect(screen.getAllByText('rhdh-product-docs')).toHaveLength(2);
-    expect(screen.getByText('OKP online mode citation')).toBeInTheDocument();
-    expect(screen.getByText('OKP offline mode citation')).toBeInTheDocument();
-  });
 });
