@@ -39,6 +39,15 @@ import {
 
 export const OCI_REGISTRY_PATTERN =
   /^(?:\[[0-9a-fA-F:]+\]|[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?)(?::\d{1,5})?$/;
+
+/** Identifies manifest failures so discovery only quiets expected missing tags. */
+export class ManifestResponseError extends HttpResponseError {
+  constructor(message: string, status: number) {
+    super(message, status);
+    this.name = 'ManifestResponseError';
+  }
+}
+
 const OCI_REPOSITORY_PATTERN =
   /^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*(?:\/[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*)*$/;
 const OCI_TAG_PATTERN = /^\w[\w.-]{0,127}$/;
@@ -484,7 +493,7 @@ export async function fetchManifest(
 
       if (!response.ok) {
         await cancelResponseBody(response);
-        throw new HttpResponseError(
+        throw new ManifestResponseError(
           `Failed to fetch manifest for ${imageReference(imageRef)}: ${
             response.status
           } ${response.statusText}`,

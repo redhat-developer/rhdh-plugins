@@ -23,6 +23,7 @@ import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
 import { createRouter } from './router';
 import {
+  ManifestResponseError,
   OCI_REGISTRY_PATTERN,
   validateTag,
   parseImageRef,
@@ -42,7 +43,6 @@ import type {
 } from './services/types';
 import { MAX_CONCURRENT_IMAGE_FETCHES } from './services/types';
 import { withRetry } from './services/Retry';
-import { HttpResponseError } from './services/HttpClient';
 import { readSkillImageOptions } from './services/config';
 import type { SkillImageProcessingStatus } from './router';
 
@@ -299,7 +299,7 @@ function logImageProcessingFailure(
 ): void {
   if (
     !logNotFoundAsError &&
-    error instanceof HttpResponseError &&
+    error instanceof ManifestResponseError &&
     error.status === 404
   ) {
     logger.debug(`Discovered skill image ${imageRef} was not found (404)`);

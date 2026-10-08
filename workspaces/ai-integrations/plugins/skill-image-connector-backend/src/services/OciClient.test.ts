@@ -16,7 +16,12 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { createHash } from 'node:crypto';
-import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
+import {
+  ManifestResponseError,
+  parseImageRef,
+  fetchManifest,
+  fetchBlob,
+} from './OciClient';
 import type { OciManifest } from './types';
 import { DEFAULT_SKILL_IMAGE_OPTIONS } from './types';
 import { isPrivateAddress } from './HttpClient';
@@ -199,7 +204,7 @@ describe('fetchManifest', () => {
         { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
         logger,
       ),
-    ).rejects.toThrow('Failed to fetch manifest');
+    ).rejects.toBeInstanceOf(ManifestResponseError);
     expect(cancel).toHaveBeenCalled();
   });
 

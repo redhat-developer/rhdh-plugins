@@ -28,6 +28,7 @@ import {
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
 import { HttpResponseError } from './services/HttpClient';
+import { ManifestResponseError } from './services/OciClient';
 
 jest.mock('./services/QuayDiscovery', () => ({
   discoverQuayRepositories: jest.fn(),
@@ -310,7 +311,7 @@ describe('source-specific 404 logging', () => {
     'reports missing images only when explicitly configured: %s',
     async explicit => {
       const imageRef = 'quay.io/org/skill:missing';
-      const error = new HttpResponseError(
+      const error = new ManifestResponseError(
         'Failed to fetch manifest: 404 Not Found',
         404,
       );
@@ -369,6 +370,28 @@ describe('source-specific 404 logging', () => {
     await request(server)
       .get('/api/skill-image-connector/images')
       .set('Authorization', mockCredentials.user.header());
+    expect(logger.error).toHaveBeenCalledWith(
+      `Failed to process skill image ${imageRef}`,
+      error,
+    );
+  });
+
+  it.each([
+    ['bearer token', 'Bearer token request failed: 404 Not Found'],
+    ['blob', 'Failed to fetch blob: 404 Not Found'],
+  ])('reports a %s 404 for discovered images', async (_, message) => {
+    const imageRef = 'quay.io/org/skill:v1';
+    const error = new HttpResponseError(message, 404);
+    discover.mockResolvedValue([imageRef]);
+    fetchImage.mockRejectedValue(error);
+    const { server } = await startConnector({
+      maxRetries: 0,
+      quayDiscovery: { organization: 'org', tag: 'v1' },
+    });
+    const response = await request(server)
+      .get('/api/skill-image-connector/images')
+      .set('Authorization', mockCredentials.user.header());
+    expect(response.body.failedImages).toEqual([imageRef]);
     expect(logger.error).toHaveBeenCalledWith(
       `Failed to process skill image ${imageRef}`,
       error,
