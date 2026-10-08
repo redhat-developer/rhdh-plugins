@@ -21,6 +21,14 @@ import {
   aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
+export const DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS = {
+  rules: [
+    { key: 'success', expression: '>=80', color: 'success.main' },
+    { key: 'warning', expression: '30-80', color: 'warning.main' },
+    { key: 'error', expression: '<30', color: 'error.main' },
+  ],
+};
+
 export const mockScorecardSuccessData = [
   {
     id: 'github.openPRs',
@@ -176,7 +184,7 @@ export const mockAggregatedScorecardData = {
       ],
       total: 8,
       timestamp: '2024-01-15T10:30:00Z',
-      thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS,
       weightedStatusScore: 75,
       weightedStatusSum: 18,
       weightedStatusMaxPossible: 24,
