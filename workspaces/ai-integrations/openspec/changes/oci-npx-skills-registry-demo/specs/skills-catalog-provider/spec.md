@@ -26,7 +26,10 @@ configured defaults. It SHALL set non-empty `rhdh.io/ai-asset-category: skill`,
 `rhdh.io/ai-asset-version`, and `rhdh.io/ai-asset-source` annotations.
 It SHALL set `backstage.io/source-location` and the appropriate OCI/npx reference
 annotation using D5's exact serialization. It SHALL NOT project unmapped
-connector metadata into new entity fields.
+connector metadata into new entity fields. Each discovered tag confirmed to be
+a valid OCI skill image SHALL produce its own entity using its repository/tag
+key, even when another tag has identical content or declared version. Confirmed
+non-skills SHALL produce no entity.
 
 #### Scenario: Source metadata lacks owner and version
 
@@ -44,6 +47,19 @@ connector metadata into new entity fields.
 
 - **WHEN** a record keeps its source identity and key but changes its display name
 - **THEN** the provider updates the existing entity's title without creating a new entity name
+
+#### Scenario: Several valid skill-image tags in one repository
+
+- **WHEN** one repository has two tags containing valid skills and one tag containing a confirmed non-skill
+- **THEN** the provider creates two entities with distinct identity-derived names
+- **AND** the non-skill tag produces no entity
+- **AND** identical manifest digests or declared skill versions do not collapse the two valid tagged records
+
+#### Scenario: A tag moves to new content
+
+- **WHEN** an existing repository/tag key resolves to new valid content
+- **THEN** the provider updates that tag's existing entity and integrity references
+- **AND** it does not replace the entity identity or mutate a different tag's entry
 
 ### Requirement: Source validation and ownership isolation
 

@@ -33,7 +33,7 @@ describe('computeCatalogName', () => {
     const name = computeCatalogName({
       type: 'oci',
       id: 'quay-public',
-      key: 'quay.io/octo/hello-world-skill',
+      key: 'quay.io/octo/hello-world-skill:1.0.0-draft',
     });
     expect(name).toMatch(/^skill-[a-f0-9]{56}$/);
   });
@@ -91,12 +91,23 @@ describe('computeCatalogName', () => {
     expect(nameA).not.toBe(nameB);
   });
 
+  it('keeps OCI tag identities distinct, including tag case', () => {
+    const names = ['latest', 'v1', 'V1'].map(tag =>
+      computeCatalogName({
+        type: 'oci',
+        id: 'quay-public',
+        key: `quay.io/octo/hello-world-skill:${tag}`,
+      }),
+    );
+    expect(new Set(names).size).toBe(3);
+  });
+
   it('is not affected by display name or digest changes', () => {
     // Identity is only [type, id, key] — other metadata does not matter
     const tuple = {
       type: 'oci' as const,
       id: 'quay-public',
-      key: 'quay.io/octo/hello-world-skill',
+      key: 'quay.io/octo/hello-world-skill:1.0.0-draft',
     };
     const name = computeCatalogName(tuple);
     // Same tuple always yields same name regardless of external metadata
