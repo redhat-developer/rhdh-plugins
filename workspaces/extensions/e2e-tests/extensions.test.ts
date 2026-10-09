@@ -141,6 +141,56 @@ test.describe('Admin > Extensions', () => {
       await extensions.emptyCategoryComboBox();
     });
 
+    test('Verify catalog source filters in extensions', async ({
+      browser: _browser,
+    }) => {
+      await extensionHelper.clickTab(translations.header.catalog);
+      await extensions.selectDropdown(translations.search.catalogSource);
+      await extensions.catalogSourceFilters();
+      await extensions.selectCatalogSourceFilter('Red Hat');
+      await expect(sharedPage).toHaveURL(/filter=catalog-source(%3D|=)redhat/);
+      await extensionHelper.verifyHeading('Bulk Import');
+      await extensions.clickReadMoreByPluginTitle('Bulk Import');
+      await expect(
+        sharedPage.getByRole('heading', {
+          name: translations.metadata.catalogSource,
+        }),
+      ).toBeVisible();
+      const detailChip = sharedPage
+        .getByRole('article')
+        .locator('span')
+        .filter({ hasText: 'Red Hat' });
+      await expect(detailChip).toBeVisible();
+      await detailChip.hover();
+      await expect(
+        sharedPage
+          .getByRole('tooltip')
+          .getByText('Plugins provided and supported by Red Hat'),
+      ).toBeVisible();
+      await extensionHelper.closeBar('Close');
+      await extensions.selectCatalogSourceFilter('Red Hat');
+      await extensions.selectCatalogSourceFilter('Community');
+      await expect(sharedPage).toHaveURL(
+        /filter=catalog-source(%3D|=)community/,
+      );
+      await extensionHelper.verifyHeading('Pipelines with Tekton');
+      const tektonCard = sharedPage
+        .locator('.v5-MuiPaper-outlined')
+        .filter({ hasText: 'Pipelines with Tekton' });
+      const communityLink = tektonCard.getByRole('link', { name: 'Community' });
+      await expect(communityLink).toBeVisible();
+      await communityLink.hover();
+      await expect(
+        sharedPage
+          .getByRole('tooltip')
+          .getByText('Community-maintained plugins'),
+      ).toBeVisible();
+      await extensions.selectCatalogSourceFilter('Community');
+      await extensions.selectDropdown(translations.search.catalogSource);
+      await extensions.notChecked('Community');
+      await sharedPage.keyboard.press('Escape');
+    });
+
     test('Verify Generally available badge in extensions', async ({
       browser: _browser,
     }) => {
