@@ -9643,6 +9643,7 @@ __metadata:
     "@backstage/frontend-test-utils": "npm:^0.6.3"
     "@backstage/plugin-app-react": "npm:^0.2.6"
     "@backstage/plugin-catalog": "npm:^2.0.8"
+    "@backstage/plugin-catalog-common": "npm:^1.2.0"
     "@backstage/plugin-catalog-react": "npm:^3.2.2"
     "@backstage/plugin-permission-react": "npm:^0.5.4"
     "@backstage/plugin-scaffolder-common": "npm:^2.2.3"
@@ -9662,6 +9663,7 @@ __metadata:
     zod: "npm:^3.25.76 || ^4.0.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.30.6
   languageName: unknown
   linkType: soft
 

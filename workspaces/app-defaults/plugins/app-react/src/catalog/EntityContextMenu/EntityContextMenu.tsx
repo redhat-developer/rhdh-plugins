@@ -15,15 +15,30 @@
  */
 
 // Based on https://github.com/backstage/backstage/blob/v1.54.6/plugins/catalog/src/alpha/components/EntityContextMenu/EntityContextMenu.tsx
+// Fallback items cover a Backstage gap: EntityLayoutBui does not forward
+// contextMenuItems into custom EntityHeaderLayoutBlueprint components, so the
+// localized header would otherwise open an empty Menu ("No results found.").
 
+import { type ComponentProps, useEffect, useRef } from 'react';
 import {
   type AppNode,
   ExtensionBoundary,
   IconComponent,
+  dialogApiRef,
   useTranslationRef,
 } from '@backstage/frontend-plugin-api';
+import { alertApiRef, useApi, useRouteRef } from '@backstage/core-plugin-api';
+import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import { catalogTranslationRef } from '@backstage/plugin-catalog';
-import type { EntityContextMenuItemData } from '@backstage/plugin-catalog-react/alpha';
+import { catalogEntityDeletePermission } from '@backstage/plugin-catalog-common/alpha';
+import {
+  UnregisterEntityDialog,
+  useEntity,
+} from '@backstage/plugin-catalog-react';
+import {
+  useEntityPermission,
+  type EntityContextMenuItemData,
+} from '@backstage/plugin-catalog-react/alpha';
 import {
   ButtonIcon,
   Menu,
@@ -31,7 +46,14 @@ import {
   MenuSeparator,
   MenuTrigger,
 } from '@backstage/ui';
-import { RiMore2Line } from '@remixicon/react';
+import {
+  RiBugLine,
+  RiDeleteBinLine,
+  RiFileCopyLine,
+  RiMore2Line,
+} from '@remixicon/react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import useCopyToClipboard from 'react-use/esm/useCopyToClipboard';
 
 /**
  * `EntityContextMenuItemDataWithNode` copy from `@backstage/plugin-catalog`, because its not exported.
@@ -87,6 +109,97 @@ function EntityContextMenuItem(props: {
   );
 }
 
+function UnregisterEntityDialogWithCloseOnRouteChange(
+  props: ComponentProps<typeof UnregisterEntityDialog>,
+) {
+  const { pathname } = useLocation();
+  const initialPathname = useRef(pathname);
+  const { onClose } = props;
+
+  useEffect(() => {
+    if (pathname !== initialPathname.current) {
+      onClose();
+    }
+  }, [pathname, onClose]);
+
+  return <UnregisterEntityDialog {...props} />;
+}
+
+/**
+ * Stock catalog actions used when EntityLayoutBui omits contextMenuItems for a
+ * custom header layout (LocalizedEntityHeaderLayout).
+ */
+function DefaultEntityContextMenuItems() {
+  const { entity } = useEntity();
+  const { t } = useTranslationRef(catalogTranslationRef);
+  const alertApi = useApi(alertApiRef);
+  const dialogApi = useApi(dialogApiRef);
+  const navigate = useNavigate();
+  const [, setSearchParams] = useSearchParams();
+  const [copyState, copyToClipboard] = useCopyToClipboard();
+  const catalogIndexRoute = useRouteRef(catalogPlugin.routes.catalogIndex);
+  const unregisterRedirectRoute = useRouteRef(
+    catalogPlugin.externalRoutes.unregisterRedirect,
+  );
+  const unregisterPermission = useEntityPermission(
+    catalogEntityDeletePermission,
+  );
+
+  useEffect(() => {
+    if (!copyState.error && copyState.value) {
+      alertApi.post({
+        message: t('entityContextMenu.copiedMessage'),
+        severity: 'info',
+        display: 'transient',
+      });
+    }
+  }, [copyState, alertApi, t]);
+
+  return (
+    <>
+      <MenuItem
+        iconStart={<RiDeleteBinLine size={16} />}
+        isDisabled={!unregisterPermission.allowed}
+        onAction={() => {
+          dialogApi.open(({ dialog }) => (
+            <UnregisterEntityDialogWithCloseOnRouteChange
+              open
+              entity={entity}
+              onClose={() => dialog.close()}
+              onConfirm={() => {
+                dialog.close();
+                navigate(
+                  unregisterRedirectRoute
+                    ? unregisterRedirectRoute()
+                    : catalogIndexRoute(),
+                );
+              }}
+            />
+          ));
+        }}
+      >
+        {t('entityContextMenu.unregisterMenuTitle')}
+      </MenuItem>
+      <MenuItem
+        iconStart={<RiBugLine size={16} />}
+        onAction={() => {
+          setSearchParams('inspect');
+        }}
+      >
+        {t('entityContextMenu.inspectMenuTitle')}
+      </MenuItem>
+      <MenuItem
+        iconStart={<RiFileCopyLine size={16} />}
+        onAction={() => {
+          copyToClipboard(window.location.toString());
+        }}
+      >
+        {t('entityContextMenu.copyURLMenuTitle')}
+      </MenuItem>
+    </>
+  );
+}
+
 /**
  * `EntityContextMenu` copy from `@backstage/plugin-catalog`, because its not exported.
  * @alpha
@@ -101,6 +214,10 @@ export function EntityContextMenu(props: {
 }) {
   const { UNSTABLE_extraContextMenuItems, contextMenuItems } = props;
   const { t } = useTranslationRef(catalogTranslationRef);
+
+  const hasExtensionItems = Boolean(contextMenuItems?.length);
+  const hasExtraItems = Boolean(UNSTABLE_extraContextMenuItems?.length);
+  const useDefaultItems = !hasExtensionItems && !hasExtraItems;
 
   return (
     <MenuTrigger>
@@ -119,12 +236,11 @@ export function EntityContextMenu(props: {
             {item.title}
           </MenuItem>
         ))}
-        {UNSTABLE_extraContextMenuItems?.length && contextMenuItems?.length ? (
-          <MenuSeparator />
-        ) : null}
+        {hasExtraItems && hasExtensionItems ? <MenuSeparator /> : null}
         {contextMenuItems?.map(item => (
           <EntityContextMenuItem key={item.node.spec.id} item={item} />
         ))}
+        {useDefaultItems ? <DefaultEntityContextMenuItems /> : null}
       </Menu>
     </MenuTrigger>
   );
