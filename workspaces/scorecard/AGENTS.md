@@ -214,3 +214,82 @@ When reviewing changes to `ThresholdResolver`, the `Metric` type,
 | `OpenSSFConfig.ts`                  | `scorecard-backend-module-openssf`    | OpenSSF provider metric and threshold definitions                 |
 | `FilecheckConfig.ts`                | `scorecard-backend-module-filecheck`  | Filecheck provider metric and threshold definitions               |
 | `DoraConfig.ts`                     | `scorecard-backend-module-dora`       | DORA provider config, collector wiring, and threshold definitions |
+
+## Frontend Component Conventions
+
+### i18n Translation Key Namespaces
+
+Translation keys in `ref.ts` are organized by domain. Each top-level
+key in `scorecardMessages` defines a namespace:
+
+- `metric.<id>.title` / `metric.<id>.description` — display names and
+  descriptions for individual metrics (e.g., `metric.github.openPRs`).
+- `aggregation.<type>` — labels for scalar aggregation types: `min`,
+  `max`, `sum`, `count`, `average`.
+- `thresholds.<status>` — threshold status labels (`success`, `warning`,
+  `error`, `elite`, etc.).
+- `errors.<key>` — error messages shown to the user.
+- `common.<key>` — shared UI labels (`loading`, etc.).
+
+When adding new translation keys, place them under the correct
+namespace. In particular, aggregation-specific labels belong under
+`aggregation.*`, not `metric.*`. The `ref.ts` file is the canonical
+namespace map — check it before adding keys.
+
+### Empty and Error State Rendering
+
+When a scalar aggregation has no successful samples
+(`result.total === 0`), the card must render in a neutral grey state —
+not apply threshold coloring that would imply a valid result. The
+`ScalarStatCard` implements this by skipping threshold evaluation when
+`result.total` is zero and falling back to `theme.palette.grey[500]`.
+
+The general principle: **do not render success/failure coloring when
+the underlying data is absent or entirely errored.** A value of `0`
+produced by all-failed calculations is a placeholder, not a measurement.
+Rendering it with a green success color misleads the user into thinking
+the metric was evaluated successfully.
+
+When reviewing or implementing card components, verify that the
+threshold color path is guarded by a check on `result.total > 0` (or
+the equivalent for the card type).
+
+### AggregatedMetricCard Dispatch Pattern
+
+`AggregatedMetricCard` uses result-shape-based discrimination to select
+the card variant, not aggregation type name matching. The type guards in
+`isScalarAggregation.ts` check structural properties of the result
+object:
+
+- `isScalarAggregationResult` — `typeof result.value === 'number'` and
+  no `values` array.
+- `isDistributionAggregationResult` — `Array.isArray(result.values)`.
+- `isWeightedStatusScoreResult` — distribution shape plus a numeric
+  `weightedStatusScore` field.
+
+This means new aggregation types that produce a single numeric value
+automatically render as scalar cards, and new types that produce a
+status-grouped distribution automatically render as donut charts,
+without requiring changes to `AggregatedMetricCard`.
+
+When reviewing changes to card dispatch or aggregation result types,
+verify that the type guards still discriminate on shape (field presence
+and type), not on string-matching the `aggregationType` name.
+
+### Frontend/Backend Threshold Evaluation Boundary
+
+Threshold evaluation is the backend's responsibility. The frontend
+mirrors the logic only for display coloring purposes via
+`getMatchingThresholdKey()` in `matchThresholdRule.ts`. The frontend
+should defer to backend-provided threshold values when available
+(follow-up tracked in RHIDP-16510).
+
+When reviewing changes to frontend threshold logic:
+
+- Changes to `getMatchingThresholdKey`, `getStatusConfig`, or
+  `resolveStatusColor` affect how every card renders threshold colors.
+  Flag these as high severity.
+- Verify that the frontend logic stays consistent with the backend
+  `ThresholdResolver`. If the backend changes how thresholds are
+  evaluated, the frontend must be updated to match — or the coloring
+  will diverge from the actual threshold status.
