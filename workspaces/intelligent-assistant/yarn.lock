@@ -8376,9 +8376,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.9.0-prerelease.5":
-  version: 6.9.0-prerelease.5
-  resolution: "@patternfly/chatbot@npm:6.9.0-prerelease.5"
+"@patternfly/chatbot@npm:6.9.0-prerelease.6":
+  version: 6.9.0-prerelease.6
+  resolution: "@patternfly/chatbot@npm:6.9.0-prerelease.6"
   dependencies:
     "@patternfly/react-code-editor": "npm:^6.6.0"
     "@patternfly/react-core": "npm:^6.6.0"
@@ -8406,7 +8406,7 @@ __metadata:
       optional: false
     monaco-editor:
       optional: false
-  checksum: 10c0/246d34fda0a13872a1aade680b328cf2bf61fe14117e083693dd88991ee03b6123414e25efcbe995468e69d8246f64138b9eb255c4fd9582c36d5606d16def5b
+  checksum: 10c0/cce3552b4e9aee6c868a50b97a1b772a1e24e27a03414d077d1be7557c4e29afacbd69dc2304e1b3e7a2118462e30e3cf45ae17f5e30f61f2b460d6b971d4e5f
   languageName: node
   linkType: hard
 
@@ -9536,7 +9536,7 @@ __metadata:
     "@monaco-editor/react": "npm:^4.7.0"
     "@mui/icons-material": "npm:^6.1.8"
     "@mui/material": "npm:^5.12.2"
-    "@patternfly/chatbot": "npm:6.9.0-prerelease.5"
+    "@patternfly/chatbot": "npm:6.9.0-prerelease.6"
     "@patternfly/react-core": "npm:6.6.1"
     "@patternfly/react-icons": "npm:^6.5.0"
     "@patternfly/react-table": "npm:^6.4.1"
