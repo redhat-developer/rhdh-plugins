@@ -21,12 +21,17 @@ import {
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
+import {
+  buildOciRef,
+  isValidDigest,
+} from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { createRouter } from './router';
 import {
   ManifestResponseError,
   OCI_REGISTRY_PATTERN,
   validateTag,
   parseImageRef,
+  fetchManifest,
 } from './services/OciClient';
 import { discoverQuayRepositories } from './services/QuayDiscovery';
 import {
@@ -321,7 +326,51 @@ function logImageProcessingFailure(
   logger.error(`Failed to process skill image ${imageRef}`, error as Error);
 }
 
-/** Retry the whole image acquisition without nesting per-request retries. */
+/**
+ * Builds a stable OCI skill key from a parsed image reference.
+ *
+ * The key uses the lowercase registry host, repository path, and exact
+ * case-sensitive tag. It excludes the manifest digest.
+ *
+ * @internal Exported for testing.
+ */
+export function buildAcquisitionKey(imageRef: {
+  registry: string;
+  repository: string;
+  tag: string;
+}): string {
+  return `${imageRef.registry.toLowerCase()}/${imageRef.repository}:${
+    imageRef.tag
+  }`;
+}
+
+/**
+ * Builds a digest-addressed OCI source URI.
+ *
+ * Returns `oci://<registry>/<repository>@<digest>`.
+ *
+ * @internal Exported for testing.
+ */
+export function buildSourceUri(
+  registry: string,
+  repository: string,
+  digest: string,
+): string {
+  return buildOciRef(registry, repository, digest);
+}
+
+/**
+ * Resolves a tag to a digest, then retries the whole image acquisition
+ * using the pinned digest. Tag resolution and image extraction each
+ * use the configured retry policy independently.
+ *
+ * For tag references: the tag is resolved once. All subsequent manifest
+ * fetches (including retries) use the pinned digest, preventing a
+ * mutable tag from redirecting to different content mid-acquisition.
+ *
+ * For explicit digest references: acquisition proceeds directly without
+ * a separate resolution step, and no tagged identity is produced.
+ */
 async function fetchWithRetry(
   imageRefStr: string,
   workDir: string | undefined,
@@ -330,10 +379,51 @@ async function fetchWithRetry(
   signal: AbortSignal,
   options: SkillImageOptions,
 ): Promise<SkillImageExtraction> {
-  return withRetry(
+  const imageRef = parseImageRef(imageRefStr);
+
+  // Explicit digest reference — no tag resolution, no tagged identity
+  if (imageRef.digest) {
+    return withRetry(
+      () =>
+        fetchAndExtractSkillImage(
+          imageRefStr,
+          workDir,
+          logger,
+          credentials,
+          signal,
+          options,
+        ),
+      options,
+      logger,
+      imageRefStr,
+      signal,
+    );
+  }
+
+  // Tag reference — resolve the mutable tag to a SHA-256 digest first.
+  // Failed resolution attempts use the existing bounded retry policy.
+  logger.info(`Resolving tag for ${imageRefStr}`);
+  const { digest: resolvedDigest } = await withRetry(
+    () => fetchManifest(imageRef, logger, credentials, signal, options),
+    options,
+    logger,
+    `tag resolution for ${imageRefStr}`,
+    signal,
+  );
+  if (!isValidDigest(resolvedDigest)) {
+    throw new Error(`Invalid resolved manifest digest for ${imageRefStr}`);
+  }
+  logger.info(`Resolved ${imageRefStr} to ${resolvedDigest}`);
+
+  // Build the pinned reference: tag is preserved for identity, digest
+  // ensures all subsequent fetches address the resolved content.
+  const pinnedRefStr = `${imageRef.registry}/${imageRef.repository}:${imageRef.tag}@${resolvedDigest}`;
+
+  // Acquisition with pinned digest — retries reuse the resolved digest
+  const extraction = await withRetry(
     () =>
       fetchAndExtractSkillImage(
-        imageRefStr,
+        pinnedRefStr,
         workDir,
         logger,
         credentials,
@@ -345,6 +435,20 @@ async function fetchWithRetry(
     imageRefStr,
     signal,
   );
+
+  // Return a new object with verified acquisition metadata for tagged references
+  return {
+    ...extraction,
+    acquisition: {
+      key: buildAcquisitionKey(imageRef),
+      digest: resolvedDigest,
+      sourceUri: buildSourceUri(
+        imageRef.registry,
+        imageRef.repository,
+        resolvedDigest,
+      ),
+    },
+  };
 }
 
 /**

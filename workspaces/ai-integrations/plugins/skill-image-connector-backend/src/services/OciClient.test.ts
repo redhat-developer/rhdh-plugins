@@ -148,7 +148,7 @@ describe('fetchManifest', () => {
     jest.resetAllMocks();
   });
 
-  it('should fetch and return manifest', async () => {
+  it('should fetch and return manifest with computed digest', async () => {
     const mockManifest: OciManifest = {
       schemaVersion: 2,
       config: {
@@ -167,12 +167,16 @@ describe('fetchManifest', () => {
         },
       ],
     };
+    const manifestBuffer = Buffer.from(JSON.stringify(mockManifest));
+    const expectedDigest = `sha256:${createHash('sha256')
+      .update(manifestBuffer)
+      .digest('hex')}`;
 
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => mockManifest,
-      arrayBuffer: async () => Buffer.from(JSON.stringify(mockManifest)),
+      arrayBuffer: async () => manifestBuffer,
       headers: new Map(),
     });
 
@@ -180,7 +184,8 @@ describe('fetchManifest', () => {
       { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
       logger,
     );
-    expect(result).toEqual(mockManifest);
+    expect(result.manifest).toEqual(mockManifest);
+    expect(result.digest).toBe(expectedDigest);
     expect(global.fetch).toHaveBeenCalledWith(
       'https://quay.io/v2/org/repo/manifests/v1',
       expect.objectContaining({
@@ -276,7 +281,7 @@ describe('fetchManifest', () => {
       headers: new Map(),
     });
 
-    await fetchManifest(
+    const result = await fetchManifest(
       {
         registry: 'quay.io',
         repository: 'org/repo',
@@ -289,6 +294,7 @@ describe('fetchManifest', () => {
       `https://quay.io/v2/org/repo/manifests/${manifestDigest}`,
       expect.any(Object),
     );
+    expect(result.digest).toBe(manifestDigest);
   });
 
   it('should reject a digest reference when the manifest bytes do not match', async () => {
@@ -371,7 +377,7 @@ describe('fetchManifest', () => {
       logger,
       { tokenRealm: 'https://auth.example.com/token' },
     );
-    expect(result).toEqual(mockManifest);
+    expect(result.manifest).toEqual(mockManifest);
     expect(global.fetch).toHaveBeenCalledTimes(3);
     expect(cancelUnauthorizedBody).toHaveBeenCalled();
   });

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { OciSkillRecord } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+
 /** Parsed OCI image reference. */
 export interface ImageRef {
   /** Registry host (e.g. "quay.io"). */
@@ -106,6 +108,29 @@ export interface OciDescriptor {
   annotations?: Record<string, string>;
 }
 
+/** Result of fetching and verifying an OCI manifest. */
+export interface ManifestResult {
+  /** The parsed OCI manifest. */
+  manifest: OciManifest;
+  /** SHA-256 digest of the raw manifest bytes. */
+  digest: string;
+}
+
+/**
+ * Verified acquisition metadata for tagged OCI skill images.
+ *
+ * Present only for tag-based acquisitions. Explicit digest references
+ * do not establish a tag and therefore have no tagged identity.
+ */
+export interface AcquisitionMetadata {
+  /** Stable key: `<lowercase-registry>/<repository>:<exact-tag>`. */
+  key: OciSkillRecord['key'];
+  /** Verified manifest digest: `sha256:<64 lowercase hex digits>`. */
+  digest: OciSkillRecord['digest'];
+  /** Digest-addressed source URI: `oci://<registry>/<repository>@sha256:<hex>`. */
+  sourceUri: OciSkillRecord['sourceUri'];
+}
+
 /** Result of extracting a skill image. */
 export interface SkillImageExtraction {
   /** Path where skillimage.yaml was written. */
@@ -116,6 +141,8 @@ export interface SkillImageExtraction {
   skillImageYaml: string;
   /** Content of SKILLS.md as a string. */
   skillsMd: string;
+  /** Present for tagged acquisitions; absent for explicit digest references. */
+  acquisition?: AcquisitionMetadata;
 }
 
 /**

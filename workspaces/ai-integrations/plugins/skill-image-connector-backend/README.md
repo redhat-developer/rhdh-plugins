@@ -118,7 +118,7 @@ All of these backend-only settings are optional. Omitted settings use the shared
 | `maxRetries`                      | `2`        | Retries after the initial page or image acquisition attempt. Set `0` to disable.             |
 | `retryBaseDelayMs`                | `2000`     | Initial backoff; doubled for each further retry and capped at Node's timer limit.            |
 
-Manifest responses retain their separate 5 MiB limit; token responses retain their 1 MiB limit. Repository and tag pagination (100 pages combined), redirects (three), concurrent image operations (four), and tar entries (200) also have distinct shared defaults. The image retry wraps the whole acquisition/extraction; individual OCI requests do not add another retry loop.
+Manifest responses retain their separate 5 MiB limit; token responses retain their 1 MiB limit. Repository and tag pagination (100 pages combined), redirects (three), concurrent image operations (four), and tar entries (200) also have distinct shared defaults. For tag-based references, tag resolution and image acquisition/extraction each have independent retry scopes: transient failures during tag resolution are retried before the resolved digest is used for acquisition, and transient failures during acquisition are retried using the already-pinned digest. Explicit digest references use a single retry scope wrapping the whole acquisition/extraction. Individual OCI requests do not add another retry loop.
 
 Discovery and OCI requests share HTTP redirect validation, response cleanup, and bounded body reading. Redirects must use HTTPS, reject URL credentials, localhost and literal IPs, and pass a DNS check for non-public destinations. Authorization headers are removed when following cross-origin redirects. These checks do not replace the future D7 configured-origin policy or implement normalized snapshots.
 
@@ -129,12 +129,13 @@ On startup the plugin:
 1. Cleans up stale extraction directories from any previous abnormal termination.
 2. Reads configured image references from `app-config.yaml`.
 3. If `quayDiscovery` is configured, discovers public repositories using paginated API calls. With no tag filter, it then lists active tags for each repository; an exact tag filter skips tag listing. Distinct references are sorted before merging with the explicit image list and applying `maxImages`.
-4. Fetches the OCI manifest from the registry using the Distribution Spec v2 HTTP API.
-5. Determines the extraction strategy:
+4. For each tag-based image reference, resolves the mutable tag to a SHA-256 manifest digest using the Distribution Spec v2 HTTP API. All subsequent fetches (including retries) use the pinned digest, preventing a moved tag from redirecting to different content mid-acquisition. Explicit digest references skip this resolution step.
+5. Fetches the OCI manifest from the registry using the pinned digest (or the original digest reference) and verifies its raw bytes before parsing or fetching layers.
+6. Determines the extraction strategy:
    - **Annotated layers**: Two individual layers annotated with `org.opencontainers.image.title` set to `skillimage.yaml`/`skill.yaml` and `SKILLS.md`/`SKILL.md`.
    - **Tar archives**: One or more `tar` or `tar+gzip` layers (as produced by `skillctl`) containing the skill files as tar entries.
-6. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
-7. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
+7. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
+8. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
 
 Transient discovery and registry failures (network errors including wrapped fetch causes, HTTP 5xx, and request timeouts) are retried up to two times by default, with 2-second then 4-second backoff. Discovery retries one page with a fresh timeout each time; image processing retries the full acquisition/extraction. Validation failures, size violations, malformed JSON, and non-5xx HTTP failures are not retried. Shutdown cancels active requests and backoff promptly. OCI authentication challenges are handled separately within the same request deadline.
 
@@ -146,6 +147,38 @@ reporting policy wins. The internal `logNotFoundAsError` flag selects this behav
 it is not an additional app-config setting. Other acquisition errors and a 404
 from the Quay organization-listing endpoint are still reported. Missing images
 remain in `failedImages`, and the existing `/images` status calculation is unchanged.
+
+### Verified acquisition metadata
+
+Successful tagged acquisitions retain typed internal `acquisition` metadata:
+
+```json
+{
+  "key": "quay.io/org/skill:V1",
+  "digest": "sha256:<64 lowercase hex digits>",
+  "sourceUri": "oci://quay.io/org/skill@sha256:<same hex digits>"
+}
+```
+
+The key uses a lowercase registry host and the exact tag. Aliases of the same
+digest retain distinct keys and share a source URI. A subsequent acquisition
+after tag movement keeps the key and updates the digest and source URI. The
+shared `ai-skills-common` validator and reference builder govern these fields.
+Explicit digest references retain raw acquisition without inventing a tagged
+identity. This metadata is internal; the existing `/images` payload is unchanged.
+Normalization and the `/skills/:sourceId` endpoint remain tasks 2.3 and 2.5.
+
+To reproduce the pinning and integrity checks without a live registry, run from
+`plugins/skill-image-connector-backend`:
+
+```sh
+yarn test --watchAll=false --runInBand src/plugin.pinning.test.ts src/plugin.integration.test.ts src/services/TagPinning.test.ts src/services/OciClient.test.ts
+```
+
+The deterministic registry fixtures exercise the actual plugin, OCI client, and
+extraction service, including tag movement, a transient blob failure after
+resolution, resolution retries, manifest mismatches before layer fetching, blob
+size/digest mismatches, alias identities, and explicitly digest-addressed images.
 
 ## API
 
