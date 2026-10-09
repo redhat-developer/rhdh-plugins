@@ -64,6 +64,15 @@ app:
         config:
           customizable: true
           widgetLayout:
+            rhdh-onboarding-section:
+              priority: 500
+              breakpoints:
+                xl: { x: 0, y: 0, w: 12, h: 6 }
+                lg: { x: 0, y: 0, w: 12, h: 6 }
+                md: { x: 0, y: 0, w: 12, h: 6 }
+                sm: { x: 0, y: 0, w: 12, h: 6 }
+                xs: { x: 0, y: 0, w: 12, h: 6 }
+                xxs: { x: 0, y: 0, w: 12, h: 6 }
             ScorecardAggregatedCard:
               - id: ScorecardOpenPrs
                 props:
