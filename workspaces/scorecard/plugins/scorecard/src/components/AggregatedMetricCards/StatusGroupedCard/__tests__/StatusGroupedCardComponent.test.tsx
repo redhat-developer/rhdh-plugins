@@ -57,6 +57,7 @@ jest.mock('../../../DataSources/DataSourcesDialog', () => ({
     buckets,
   }: {
     rows: Array<{
+      plugin?: string;
       metricDescription?: string;
       value?: string;
       statusLabel?: string;
@@ -68,9 +69,23 @@ jest.mock('../../../DataSources/DataSourcesDialog', () => ({
       <span data-testid="dialog-value">{rows[0]?.value ?? ''}</span>
       <span data-testid="dialog-status">{rows[0]?.statusLabel ?? ''}</span>
       <span data-testid="dialog-legend">{String(Boolean(buckets))}</span>
+      <span data-testid="dialog-collectors">
+        {rows.map(row => row.plugin).join(',')}
+      </span>
     </div>
   ),
 }));
+
+const doraCollectors = [
+  {
+    id: 'github:doraDeploymentWorkflowRuns',
+    description: 'Collects deployments from GitHub Actions.',
+  },
+  {
+    id: 'jira:doraIncidents',
+    description: 'Collects Jira incidents.',
+  },
+];
 
 jest.mock('../../../ScorecardHomepageSection/ResponsivePieChart', () => ({
   ResponsivePieChart: () => <div data-testid="responsive-pie-chart" />,
@@ -108,6 +123,11 @@ describe('StatusGroupedCardComponent data sources', () => {
       { wrapper: TestWrapper },
     );
 
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'github.openPRs',
+      false,
+    );
+
     fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
 
     expect(screen.getByTestId('dialog-check')).toHaveTextContent(
@@ -119,5 +139,42 @@ describe('StatusGroupedCardComponent data sources', () => {
     expect(screen.getByTestId('dialog-value')).toHaveTextContent('N/A');
     expect(screen.getByTestId('dialog-status')).toHaveTextContent('N/A');
     expect(screen.getByTestId('dialog-legend')).toHaveTextContent('false');
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'github.openPRs',
+      true,
+    );
+  });
+
+  it('lists collectors for composite metrics that are not sparklines', () => {
+    useMetricCollectorsMock.mockReturnValue({
+      data: doraCollectors,
+      isLoading: false,
+      error: undefined,
+    });
+
+    const scorecard = {
+      ...mockAggregatedScorecardData[aggregationTypes.statusGrouped],
+      id: 'dora.changeFailureRate',
+    };
+
+    render(
+      <StatusGroupedCardComponent
+        scorecard={scorecard as any}
+        aggregationId="doraCfrKpi"
+        cardTitle="DORA Change Failure Rate"
+        description="Distribution of change failure rate across owned services."
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
+
+    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent(
+      'GitHub,Jira',
+    );
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'dora.changeFailureRate',
+      true,
+    );
   });
 });

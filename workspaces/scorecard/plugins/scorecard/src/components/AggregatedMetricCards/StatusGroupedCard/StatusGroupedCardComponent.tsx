@@ -92,6 +92,7 @@ export const StatusGroupedCardComponent = ({
       title={cardTitle}
       metricId={scorecardId}
       lastSyncedTimestamp={result.timestamp}
+      fetchEnabled
       metric={metricSnapshot}
       unavailableValueLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
       unavailableStatusLabel={t('dataSourcesDialog.collectorUnavailableStatus')}

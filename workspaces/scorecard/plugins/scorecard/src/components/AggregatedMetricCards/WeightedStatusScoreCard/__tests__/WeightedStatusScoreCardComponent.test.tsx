@@ -19,7 +19,6 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 import {
   aggregationTypes,
-  DEFAULT_NUMBER_THRESHOLDS,
   type AggregatedMetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
@@ -59,6 +58,7 @@ jest.mock('../../../DataSources/DataSourcesDialog', () => ({
     rows,
   }: {
     rows: Array<{
+      plugin?: string;
       metricDescription?: string;
       value?: string;
       statusLabel?: string;
@@ -68,15 +68,38 @@ jest.mock('../../../DataSources/DataSourcesDialog', () => ({
       <span data-testid="dialog-check">{rows[0]?.metricDescription ?? ''}</span>
       <span data-testid="dialog-value">{rows[0]?.value ?? ''}</span>
       <span data-testid="dialog-status">{rows[0]?.statusLabel ?? ''}</span>
+      <span data-testid="dialog-collectors">
+        {rows.map(row => row.plugin).join(',')}
+      </span>
     </div>
   ),
 }));
+
+const doraCollectors = [
+  {
+    id: 'github:doraDeploymentWorkflowRuns',
+    description: 'Collects deployments from GitHub Actions.',
+  },
+  {
+    id: 'jira:doraIncidents',
+    description: 'Collects Jira incidents.',
+  },
+];
 
 jest.mock('../../../ScorecardHomepageSection/ResponsivePieChart', () => ({
   ResponsivePieChart: () => <div data-testid="responsive-pie-chart" />,
 }));
 
 const useMetricCollectorsMock = useMetricCollectors as jest.Mock;
+
+/** Aggregation KPI thresholds (0–100), including custom colors. */
+const weightedKpiThresholds = {
+  rules: [
+    { key: 'success', expression: '>=80', color: '#6bb300' },
+    { key: 'warning', expression: '30-80', color: 'rgb(224, 189, 108)' },
+    { key: 'error', expression: '<30', color: '#be1ec7' },
+  ],
+};
 
 const scorecard: AggregatedMetricResult = {
   id: 'github.openPRs',
@@ -96,13 +119,13 @@ const scorecard: AggregatedMetricResult = {
     ],
     total: 8,
     timestamp: '2024-01-01T00:00:00Z',
-    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    thresholds: weightedKpiThresholds,
     entitiesConsidered: 8,
     calculationErrorCount: 0,
     weightedStatusScore: 75,
     weightedStatusSum: 18,
     weightedStatusMaxPossible: 24,
-    aggregationChartDisplayColor: 'warning.main',
+    aggregationChartDisplayColor: 'rgb(224, 189, 108)',
   },
 };
 
@@ -122,7 +145,7 @@ describe('WeightedStatusScoreCardComponent data sources', () => {
     });
   });
 
-  it('shows the metric check description, percent value, and chart-color status', () => {
+  it('shows the metric check description, percent value, and aggregation KPI status', () => {
     render(
       <WeightedStatusScoreCardComponent
         scorecard={scorecard as any}
@@ -131,6 +154,11 @@ describe('WeightedStatusScoreCardComponent data sources', () => {
         description="Weighted health score for owned repositories."
       />,
       { wrapper: TestWrapper },
+    );
+
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'github.openPRs',
+      false,
     );
 
     fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
@@ -144,5 +172,68 @@ describe('WeightedStatusScoreCardComponent data sources', () => {
     expect(screen.getByTestId('dialog-value')).toHaveTextContent('75%');
     expect(screen.getByTestId('dialog-status')).toHaveTextContent('Warning');
     expect(screen.getByTestId('dialog-status')).not.toHaveTextContent('Error');
+    expect(screen.getByTestId('dialog-status')).not.toHaveTextContent('N/A');
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'github.openPRs',
+      true,
+    );
+  });
+
+  it('shows aggregation status even when the chart color does not match KPI rule colors', () => {
+    render(
+      <WeightedStatusScoreCardComponent
+        scorecard={
+          {
+            ...scorecard,
+            result: {
+              ...scorecard.result,
+              aggregationChartDisplayColor: '#FFC0CB',
+            },
+          } as any
+        }
+        aggregationId="openPrsWeightedKpi"
+        cardTitle="GitHub Open PRs weighted health"
+        description="Weighted health score for owned repositories."
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
+
+    expect(screen.getByTestId('dialog-status')).toHaveTextContent('Warning');
+    expect(screen.getByTestId('dialog-status')).not.toHaveTextContent('N/A');
+  });
+
+  it('lists collectors for composite metrics that are not sparklines', () => {
+    useMetricCollectorsMock.mockReturnValue({
+      data: doraCollectors,
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(
+      <WeightedStatusScoreCardComponent
+        scorecard={
+          {
+            ...scorecard,
+            id: 'dora.changeFailureRate',
+          } as any
+        }
+        aggregationId="doraCfrKpi"
+        cardTitle="DORA Change Failure Rate"
+        description="Weighted health for change failure rate."
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
+
+    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent(
+      'GitHub,Jira',
+    );
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'dora.changeFailureRate',
+      true,
+    );
   });
 });

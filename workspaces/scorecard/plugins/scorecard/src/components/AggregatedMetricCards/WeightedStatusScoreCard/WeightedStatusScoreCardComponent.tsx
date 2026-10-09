@@ -26,7 +26,7 @@ import { useTranslation } from '../../../hooks/useTranslation';
 import { ResponsivePieChart } from '../../ScorecardHomepageSection/ResponsivePieChart';
 import { MetricDataSources } from '../../DataSources/MetricDataSources';
 import {
-  getEvaluationKeyFromChartColor,
+  getWeightedStatusScoreEvaluation,
   toAggregatedDialogMetricResult,
 } from '../../DataSources/toAggregatedDialogMetricResult';
 import { CardSubheader } from '../components/CardSubheader';
@@ -106,10 +106,12 @@ export const WeightedStatusScoreCardComponent = ({
     />
   ) : null;
 
-  const evaluation = getEvaluationKeyFromChartColor(
-    scorecard.result.aggregationChartDisplayColor,
-    scorecard.result.thresholds?.rules,
-  );
+  const evaluation = getWeightedStatusScoreEvaluation({
+    weightedStatusScore: scorecard.result.weightedStatusScore,
+    total: scorecard.result.total,
+    thresholds: scorecard.result.thresholds,
+    displayColor: scorecard.result.aggregationChartDisplayColor,
+  });
 
   const metricSnapshot = useMemo(
     () =>
@@ -132,6 +134,7 @@ export const WeightedStatusScoreCardComponent = ({
       title={cardTitle}
       metricId={scorecard.id}
       lastSyncedTimestamp={scorecard.result.timestamp}
+      fetchEnabled
       metric={metricSnapshot}
       unavailableStatusLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
     />

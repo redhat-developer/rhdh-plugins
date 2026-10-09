@@ -59,6 +59,7 @@ jest.mock('../../../DataSources/DataSourcesDialog', () => ({
     rows,
   }: {
     rows: Array<{
+      plugin?: string;
       metricDescription?: string;
       value?: string;
       statusLabel?: string;
@@ -68,9 +69,23 @@ jest.mock('../../../DataSources/DataSourcesDialog', () => ({
       <span data-testid="dialog-check">{rows[0]?.metricDescription ?? ''}</span>
       <span data-testid="dialog-value">{rows[0]?.value ?? ''}</span>
       <span data-testid="dialog-status">{rows[0]?.statusLabel ?? ''}</span>
+      <span data-testid="dialog-collectors">
+        {rows.map(row => row.plugin).join(',')}
+      </span>
     </div>
   ),
 }));
+
+const doraCollectors = [
+  {
+    id: 'github:doraDeploymentWorkflowRuns',
+    description: 'Collects deployments from GitHub Actions.',
+  },
+  {
+    id: 'jira:doraIncidents',
+    description: 'Collects Jira incidents.',
+  },
+];
 
 const useMetricCollectorsMock = useMetricCollectors as jest.Mock;
 
@@ -122,6 +137,11 @@ describe('ScalarStatCard data sources', () => {
       { wrapper: TestWrapper },
     );
 
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'github.openPRs',
+      false,
+    );
+
     fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
 
     expect(screen.getByTestId('dialog-check')).toHaveTextContent(
@@ -132,5 +152,42 @@ describe('ScalarStatCard data sources', () => {
     );
     expect(screen.getByTestId('dialog-value')).toHaveTextContent('12');
     expect(screen.getByTestId('dialog-status')).toHaveTextContent('Warning');
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'github.openPRs',
+      true,
+    );
+  });
+
+  it('lists collectors for composite metrics that are not sparklines', () => {
+    useMetricCollectorsMock.mockReturnValue({
+      data: doraCollectors,
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(
+      <ScalarStatCard
+        scorecard={
+          {
+            ...scorecard,
+            id: 'dora.changeFailureRate',
+          } as any
+        }
+        aggregationId="doraCfrKpi"
+        cardTitle="DORA Change Failure Rate"
+        description="Average change failure rate across owned services."
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
+
+    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent(
+      'GitHub,Jira',
+    );
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'dora.changeFailureRate',
+      true,
+    );
   });
 });

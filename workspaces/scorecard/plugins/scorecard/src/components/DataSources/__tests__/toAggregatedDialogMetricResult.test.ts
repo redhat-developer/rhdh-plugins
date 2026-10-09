@@ -20,6 +20,7 @@ import { mockT } from '../../../test-utils/mockTranslations';
 import {
   getEvaluationKeyFromChartColor,
   getMetricCheckDescription,
+  getWeightedStatusScoreEvaluation,
   toAggregatedDialogMetricResult,
 } from '../toAggregatedDialogMetricResult';
 
@@ -110,6 +111,69 @@ describe('getEvaluationKeyFromChartColor', () => {
       getEvaluationKeyFromChartColor(null, [
         { key: 'success', expression: '<10', color: 'success.main' },
       ]),
+    ).toBeNull();
+  });
+});
+
+describe('getWeightedStatusScoreEvaluation', () => {
+  const kpiThresholds = {
+    rules: [
+      { key: 'success', expression: '>=80', color: '#6bb300' },
+      {
+        key: 'warning',
+        expression: '30-80',
+        color: 'rgb(224, 189, 108)',
+      },
+      { key: 'error', expression: '<30', color: '#be1ec7' },
+    ],
+  };
+
+  it('matches the 0–100 score against aggregation KPI thresholds', () => {
+    expect(
+      getWeightedStatusScoreEvaluation({
+        weightedStatusScore: 75,
+        total: 8,
+        thresholds: kpiThresholds,
+        displayColor: 'rgb(224, 189, 108)',
+      }),
+    ).toBe('warning');
+    expect(
+      getWeightedStatusScoreEvaluation({
+        weightedStatusScore: 90,
+        total: 8,
+        thresholds: kpiThresholds,
+        displayColor: '#6bb300',
+      }),
+    ).toBe('success');
+    expect(
+      getWeightedStatusScoreEvaluation({
+        weightedStatusScore: 10,
+        total: 8,
+        thresholds: kpiThresholds,
+        displayColor: '#be1ec7',
+      }),
+    ).toBe('error');
+  });
+
+  it('still resolves status when the chart color does not match KPI rule colors', () => {
+    expect(
+      getWeightedStatusScoreEvaluation({
+        weightedStatusScore: 51.5,
+        total: 10,
+        thresholds: kpiThresholds,
+        displayColor: '#FFC0CB',
+      }),
+    ).toBe('warning');
+  });
+
+  it('returns null when there are no entities in the aggregation', () => {
+    expect(
+      getWeightedStatusScoreEvaluation({
+        weightedStatusScore: 0,
+        total: 0,
+        thresholds: kpiThresholds,
+        displayColor: '#6bb300',
+      }),
     ).toBeNull();
   });
 });

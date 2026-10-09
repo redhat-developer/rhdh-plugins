@@ -111,6 +111,7 @@ export const ScalarStatCard = ({
       title={cardTitle}
       metricId={scorecardId}
       lastSyncedTimestamp={result.timestamp}
+      fetchEnabled
       metric={metricSnapshot}
       unavailableStatusLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
     />

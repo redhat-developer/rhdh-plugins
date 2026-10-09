@@ -23,7 +23,11 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardTranslationRef } from '../../translations';
-import { getThresholdRuleColor, resolveMetricTranslation } from '../../utils';
+import {
+  getMatchingThresholdKey,
+  getThresholdRuleColor,
+  resolveMetricTranslation,
+} from '../../utils';
 import { toDialogMetricResult } from './toDialogMetricResult';
 
 type ScorecardTranslate = TranslationFunction<typeof scorecardTranslationRef.T>;
@@ -38,10 +42,14 @@ export function getMetricCheckDescription(
 /**
  * Maps the aggregation chart color back to a threshold key.
  *
- * Do not replace this with `getMatchingThresholdKey(aggregatedValue)` — KPI
- * thresholds (e.g. weighted score 0–100) are not the same as default number
- * metric rules (`>50` → error). The backend already classified the value and
- * sent `aggregationChartDisplayColor`; invert that color to the rule key.
+ * For scalar/sparkline aggregations, `result.thresholds` may still be
+ * metric-scale rules (`>50` → error), so do not match the aggregated number
+ * with `getMatchingThresholdKey`. The backend already classified the value
+ * and sent `aggregationChartDisplayColor`; invert that color to the rule key.
+ *
+ * For weightedStatusScore, use {@link getWeightedStatusScoreEvaluation}
+ * instead — those results carry 0–100 KPI thresholds, so matching the score
+ * is the correct status.
  */
 export function getEvaluationKeyFromChartColor(
   displayColor: string | null | undefined,
@@ -54,6 +62,36 @@ export function getEvaluationKeyFromChartColor(
   return (
     rules.find(rule => getThresholdRuleColor(rules, rule.key) === displayColor)
       ?.key ?? null
+  );
+}
+
+/**
+ * Resolves View data sources status for a weightedStatusScore card.
+ *
+ * `result.thresholds` are the 0–100 aggregation KPI rules, not per-metric
+ * rules. Match the score against those rules so custom hex/rgb KPI colors
+ * still map to Success/Warning/Error. Fall back to chart-color inversion.
+ * Empty aggregations (`total === 0`) have no status.
+ */
+export function getWeightedStatusScoreEvaluation({
+  weightedStatusScore,
+  total,
+  thresholds,
+  displayColor,
+}: {
+  weightedStatusScore: number;
+  total: number;
+  thresholds?: ThresholdConfig;
+  displayColor?: string | null;
+}): string | null {
+  if (total <= 0) {
+    return null;
+  }
+
+  return (
+    getMatchingThresholdKey(weightedStatusScore, thresholds) ??
+    getEvaluationKeyFromChartColor(displayColor, thresholds?.rules) ??
+    null
   );
 }
 
