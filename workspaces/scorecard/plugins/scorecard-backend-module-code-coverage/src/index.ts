@@ -20,4 +20,5 @@
  * @packageDocumentation
  */
 
+/** @public */
 export { scorecardModuleCodeCoverage as default } from './module';
