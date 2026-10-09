@@ -32,6 +32,79 @@ export function validateIdentifier(value: string, fieldName: string): string {
   return value;
 }
 
+/**
+ * Validates that a user-supplied JQL filter expression (e.g. the
+ * `jira/custom-filter` annotation) cannot break out of the parentheses
+ * {@link joinJqlClauses} wraps it in.
+ */
+export function validateJqlExpression(
+  value: string,
+  fieldName: string,
+): string {
+  const QUOTE_CHARS = new Set(['"', "'"]);
+  const OPEN_BRACKETS: Record<string, string> = { '(': ')', '[': ']' };
+  const CLOSE_BRACKETS: Record<string, string> = { ')': '(', ']': '[' };
+  const FIRST_PRINTABLE_ASCII = 0x20; // ' '
+
+  const fail = (reason: string): never => {
+    throw new Error(`${fieldName} is not a valid JQL filter: ${reason}.`);
+  };
+
+  const characters = [...value];
+
+  if (characters.some(char => char.charCodeAt(0) < FIRST_PRINTABLE_ASCII)) {
+    fail('must not contain control characters');
+  }
+
+  const stack: string[] = [];
+  let quoteChar: string | null = null;
+
+  for (let i = 0; i < value.length; i += 1) {
+    const char = value[i];
+
+    if (quoteChar) {
+      // inside a quoted string literal
+      if (char === '\\') {
+        i += 1; // skip escaped character
+      } else if (char === quoteChar) {
+        quoteChar = null; // close quote
+      }
+      continue;
+    }
+
+    if (QUOTE_CHARS.has(char)) {
+      // open quote
+      quoteChar = char;
+      continue;
+    }
+
+    if (char in OPEN_BRACKETS) {
+      stack.push(char);
+    } else if (char in CLOSE_BRACKETS) {
+      if (stack.pop() !== CLOSE_BRACKETS[char]) {
+        fail(char === ')' ? 'unbalanced parentheses' : 'unbalanced brackets');
+      }
+    }
+  }
+
+  if (quoteChar) {
+    fail('unterminated string literal');
+  }
+  if (stack.includes('(')) {
+    fail('unbalanced parentheses');
+  }
+  if (stack.includes('[')) {
+    fail('unbalanced brackets');
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    fail('must not be empty');
+  }
+
+  return trimmedValue;
+}
+
 export function joinJqlClauses(
   clauses: Array<string | undefined | null>,
 ): string {
