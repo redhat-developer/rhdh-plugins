@@ -1,0 +1,19 @@
+# Admin persona — Frontend 3001, Backend 7008
+# Catalog: user:default/admin-user → group:default/admins
+app:
+  baseUrl: http://localhost:3001
+
+backend:
+  baseUrl: http://localhost:7008
+  listen:
+    port: 7008
+  cors:
+    origin: http://localhost:3001
+
+auth:
+  providers:
+    guest:
+      userEntityRef: user:default/admin-user
+      ownershipEntityRefs:
+        - user:default/admin-user
+        - group:default/admins
