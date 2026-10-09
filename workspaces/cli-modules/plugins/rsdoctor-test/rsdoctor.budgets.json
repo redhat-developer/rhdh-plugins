@@ -1,0 +1,20 @@
+{
+  "maxInitialSize": "1.5 MB",
+  "maxTotalSize": "4.5 MB",
+  "maxChunkSize": "600 KB",
+  "maxChunks": 450,
+  "chunks": {
+    "main": "30 KB",
+    "backstage": "300 KB",
+    "vendor": "250 KB",
+    "module-*": "300 KB",
+    "*": "550 KB"
+  },
+  "baseline": {
+    "maxInitialIncrease": "5%",
+    "maxTotalIncrease": "5%",
+    "maxChunkIncrease": "10%",
+    "newChunks": "100 KB",
+    "maxNewChunks": 20
+  }
+}
