@@ -507,7 +507,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           overflow: 'visible',
           textOverflow: 'clip',
           whiteSpace: 'normal',
-          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
           '& > span[class*="MuiTableSortLabel-active"]': {
             color: `${rhdhPrimary.main} !important`,
           },

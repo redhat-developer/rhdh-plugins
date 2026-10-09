@@ -609,7 +609,7 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
     overflow: visible;
     text-overflow: clip;
     white-space: normal;
-    word-break: break-word;
+    overflow-wrap: break-word;
   }
   .bui-TableCell {
     padding: var(--bui-space-4);
