@@ -638,6 +638,10 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     return this.#ruleOps.deleteRule({ id });
   }
 
+  async validateAcceptedRules(ruleIds: string[]): Promise<void> {
+    return this.#ruleOps.validateAcceptedRules(ruleIds);
+  }
+
   async attachRulesToProject(args: {
     projectId: string;
     ruleIds: string[];

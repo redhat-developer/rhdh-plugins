@@ -112,3 +112,20 @@ export const RUN_NEXT_DEEP_LINK_HASH = '#runnext';
  * @public
  */
 export const ENTITY_REF_RE = /^(user|group):[a-z0-9_.-]+\/[a-z0-9_.-]+$/;
+
+/**
+ * Maximum character length allowed for a single rule's description.
+ *
+ * Keep in sync with the `maxLength` on rule `description` fields in
+ * plugins/x2a-backend/src/schema/openapi.yaml.
+ *
+ * @public
+ */
+export const MAX_RULE_DESCRIPTION_CHARS = 50_000;
+
+/**
+ * Maximum total character length allowed across all accepted rules attached to a project.
+ *
+ * @public
+ */
+export const MAX_ACCEPTED_RULES_TOTAL_CHARS = 50_000;

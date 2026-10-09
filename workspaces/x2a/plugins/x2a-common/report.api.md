@@ -480,10 +480,16 @@ export type JobStatusEnum =
   | 'stale';
 
 // @public
+export const MAX_ACCEPTED_RULES_TOTAL_CHARS = 50000;
+
+// @public
 export const MAX_BACKOFF_MS: number;
 
 // @public
 export const MAX_CONCURRENT_BULK_RUN = 3;
+
+// @public
+export const MAX_RULE_DESCRIPTION_CHARS = 50000;
 
 // @public (undocumented)
 export type MigrationPhase =
