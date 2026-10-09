@@ -52,7 +52,10 @@ export function validateJqlExpression(
 
   const characters = [...value];
 
-  if (characters.some(char => char.charCodeAt(0) < FIRST_PRINTABLE_ASCII)) {
+  const containsControlChars = characters.some(
+    char => char.charCodeAt(0) < FIRST_PRINTABLE_ASCII,
+  );
+  if (containsControlChars) {
     fail('must not contain control characters');
   }
 
@@ -82,7 +85,9 @@ export function validateJqlExpression(
       stack.push(char);
     } else if (char in CLOSE_BRACKETS) {
       if (stack.pop() !== CLOSE_BRACKETS[char]) {
-        fail(char === ')' ? 'unbalanced parentheses' : 'unbalanced brackets');
+        const reason =
+          char === ')' ? 'unbalanced parentheses' : 'unbalanced brackets';
+        fail(reason);
       }
     }
   }
