@@ -38,7 +38,6 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5",
-    "@spotify/prettier-config": "^15.0.0",
     "@types/json-schema": "7.0.15",
     "@types/react": "^18.2.58",
     "prettier": "3.9.9",
