@@ -37,6 +37,7 @@ export {
   createBotMessage,
   createMessage,
   createUserMessage,
+  enrichMessagesWithPersistedSources,
   getConversationModelFromMessages,
   getConversationsData,
   getTimestamp,

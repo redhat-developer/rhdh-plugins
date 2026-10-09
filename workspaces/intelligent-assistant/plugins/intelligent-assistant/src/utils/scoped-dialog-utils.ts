@@ -47,6 +47,8 @@ export function getScopedDialogProps(
     sx: {
       position: 'absolute',
       inset: 0,
+      // Above PatternFly chat history drawer (z-index 1300).
+      zIndex: 1400,
       margin: 0,
       '& [class*="Backdrop-root"]': {
         position: 'absolute',

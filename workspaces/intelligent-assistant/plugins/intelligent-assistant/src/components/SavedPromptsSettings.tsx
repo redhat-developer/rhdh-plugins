@@ -55,6 +55,9 @@ type SavedPromptsSettingsProps = {
   savedPromptsError?: string | null;
   onCreateSavedPrompt?: (name: string, content: string) => Promise<void>;
   onRequestDelete?: (prompt: SavedPrompt) => void;
+  isCompact?: boolean;
+  /** Compact mode host for PatternFly Modal portal (overlay/docked). */
+  appendTo?: () => HTMLElement;
 };
 
 type SavedPromptsSettingsContentProps = SavedPromptsSettingsProps & {
@@ -351,6 +354,8 @@ const SavedPromptsSettingsWithHook = (props: SavedPromptsSettingsProps) => {
         error={deleteError}
         onClose={closeDeleteModal}
         onConfirm={confirmDelete}
+        isCompact={props.isCompact}
+        appendTo={props.appendTo}
       />
     </>
   );
