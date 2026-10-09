@@ -16,7 +16,6 @@
 
 import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ResponseErrorPanel } from '@backstage/core-components';
-import Masonry from '@mui/lab/Masonry';
 
 import { ScorecardLayoutProps } from '../../blueprints/ScorecardLayoutBlueprint';
 import { useScorecards } from '../../hooks/useScorecards';
@@ -28,6 +27,7 @@ import { MetricGroupCard } from '../MetricGroupCard';
 import { dedupeMetricsById } from '../MetricGroupCard/thresholdBucketUtils';
 import { EntityScorecardContent } from './EntityScorecardContent';
 import { EntityMetricCard } from './EntityMetricCard';
+import { EntityScorecardGrid } from './entityScorecardGridSx';
 import { getTranslatedTextWithFallback } from '../../utils';
 
 export const ScorecardEntityContentGridView = ({
@@ -98,9 +98,9 @@ export const ScorecardEntityContentGridView = ({
   ));
 
   return (
-    <Masonry columns={{ xs: 1, sm: 2, lg: 3 }} spacing={2} sequential>
+    <EntityScorecardGrid>
       {groupCards}
       {ungroupedCards}
-    </Masonry>
+    </EntityScorecardGrid>
   );
 };

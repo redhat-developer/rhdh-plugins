@@ -17,13 +17,12 @@
 import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ResponseErrorPanel } from '@backstage/core-components';
 
-import Box from '@mui/material/Box';
-
 import NoScorecardsState from '../Common/NoScorecardsState';
 import { useScorecards } from '../../hooks/useScorecards';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { CardLoading } from '../Common/CardLoading';
 import { EntityMetricCard } from './EntityMetricCard';
+import { EntityScorecardGrid } from './entityScorecardGridSx';
 
 const EntityScorecardContentInner = () => {
   const { data: scorecards, isLoading, error } = useScorecards();
@@ -44,20 +43,11 @@ const EntityScorecardContentInner = () => {
   }
 
   return (
-    <Box
-      display="grid"
-      gridTemplateColumns={{
-        xs: '1fr',
-        sm: 'repeat(2, 1fr)',
-        lg: 'repeat(3, 1fr)',
-      }}
-      gap={2}
-      sx={{ alignItems: 'start' }}
-    >
+    <EntityScorecardGrid>
       {scorecards?.map((metric: MetricResult) => (
         <EntityMetricCard key={metric.id} metric={metric} />
       ))}
-    </Box>
+    </EntityScorecardGrid>
   );
 };
 

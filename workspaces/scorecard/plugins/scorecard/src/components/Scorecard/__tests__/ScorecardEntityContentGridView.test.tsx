@@ -547,7 +547,7 @@ describe('ScorecardEntityContentGridView', () => {
     });
   });
 
-  it('should render both group cards and ungrouped cards in Masonry layout', () => {
+  it('should render both group cards and ungrouped cards in container-query grid', () => {
     useScorecardsMock.mockReturnValue({
       data: mockScorecardSuccessData,
       isLoading: false,
@@ -563,6 +563,7 @@ describe('ScorecardEntityContentGridView', () => {
 
     render(<ScorecardEntityContentGridView groups={groups} />);
 
+    expect(screen.getByTestId('scorecard-entity-grid')).toBeInTheDocument();
     expect(screen.getByTestId('metric-group-card')).toBeInTheDocument();
     expect(screen.getAllByTestId('scorecard-card')).toHaveLength(1);
   });
