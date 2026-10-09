@@ -2248,9 +2248,207 @@ describe('CatalogMetricService', () => {
     });
   });
 
+  describe('getUserAndGroupOwnerRefs', () => {
+    const metricId = 'github.importantMetric';
+    const userEntityRef = 'user:development/test-user';
+    let mockCredentials: BackstageCredentials;
+
+    beforeEach(() => {
+      mockCredentials = {} as BackstageCredentials;
+      mockedCatalog.getEntityByRef.mockResolvedValue(
+        new MockEntityBuilder()
+          .withKind('User')
+          .withMetadata({ name: 'test-user', namespace: 'development' })
+          .build(),
+      );
+    });
+
+    it('should throw NotFoundError when user entity is not found', async () => {
+      mockedCatalog.getEntityByRef.mockResolvedValue(undefined);
+
+      await expect(
+        service.getUserAndGroupOwnerRefs(userEntityRef, metricId, {
+          credentials: mockCredentials,
+        }),
+      ).rejects.toThrow('User entity not found in catalog');
+    });
+
+    it('should return only the user ref when the user has no memberOf relations', async () => {
+      const result = await service.getUserAndGroupOwnerRefs(
+        userEntityRef,
+        metricId,
+        { credentials: mockCredentials },
+      );
+
+      expect(result).toEqual([userEntityRef]);
+    });
+
+    it('should include memberOf group refs after the user ref', async () => {
+      mockedCatalog.getEntityByRef.mockResolvedValue(
+        new MockEntityBuilder()
+          .withKind('User')
+          .withMetadata({ name: 'test-user', namespace: 'development' })
+          .withRelations([
+            {
+              type: RELATION_MEMBER_OF,
+              targetRef: 'group:development/developers',
+            },
+            {
+              type: RELATION_MEMBER_OF,
+              targetRef: 'group:development/platform',
+            },
+          ])
+          .build(),
+      );
+
+      const result = await service.getUserAndGroupOwnerRefs(
+        userEntityRef,
+        metricId,
+        { credentials: mockCredentials },
+      );
+
+      expect(result).toEqual([
+        userEntityRef,
+        'group:development/developers',
+        'group:development/platform',
+      ]);
+    });
+
+    it('should return empty array without catalog lookup when metric is globally disabled', async () => {
+      service = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: mockedRegistry,
+        database: mockedDatabase,
+        logger: mockedLogger,
+        thresholdResolver: mockedThresholdResolver,
+        config: mockServices.rootConfig({
+          data: {
+            scorecard: {
+              disabledMetrics: [metricId],
+            },
+          },
+        }),
+      });
+
+      const result = await service.getUserAndGroupOwnerRefs(
+        userEntityRef,
+        metricId,
+        { credentials: mockCredentials },
+      );
+
+      expect(result).toEqual([]);
+      expect(mockedCatalog.getEntityByRef).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getEntitiesOwnedByOwnerRef', () => {
+    const metricId = 'github.importantMetric';
+    const ownerRef = 'user:development/test-user';
+    let mockCredentials: BackstageCredentials;
+
+    beforeEach(() => {
+      mockCredentials = {} as BackstageCredentials;
+    });
+
+    it('should return entity refs owned by the owner ref', async () => {
+      const ownedEntity = new MockEntityBuilder()
+        .withMetadata({ name: 'user-component', namespace: 'development' })
+        .build();
+      mockedCatalog.queryEntities.mockResolvedValue({
+        items: [ownedEntity],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 1,
+      });
+
+      const result = await service.getEntitiesOwnedByOwnerRef(
+        ownerRef,
+        metricId,
+        { credentials: mockCredentials },
+      );
+
+      expect(result).toEqual(['component:development/user-component']);
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledWith(
+        {
+          filter: {
+            [`relations.${RELATION_OWNED_BY}`]: ownerRef,
+          },
+          fields: ['kind', 'metadata'],
+          limit: 50,
+        },
+        { credentials: mockCredentials },
+      );
+    });
+
+    it('should follow catalog cursor pages until exhausted', async () => {
+      const page1Entity = new MockEntityBuilder()
+        .withMetadata({ name: 'page-one', namespace: 'development' })
+        .build();
+      const page2Entity = new MockEntityBuilder()
+        .withMetadata({ name: 'page-two', namespace: 'development' })
+        .build();
+
+      mockedCatalog.queryEntities
+        .mockResolvedValueOnce({
+          items: [page1Entity],
+          pageInfo: { nextCursor: 'cursor-page-2' },
+          totalItems: 2,
+        })
+        .mockResolvedValueOnce({
+          items: [page2Entity],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 2,
+        });
+
+      const result = await service.getEntitiesOwnedByOwnerRef(
+        ownerRef,
+        metricId,
+        { credentials: mockCredentials },
+      );
+
+      expect(result).toEqual([
+        'component:development/page-one',
+        'component:development/page-two',
+      ]);
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(2);
+      expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ cursor: 'cursor-page-2' }),
+        { credentials: mockCredentials },
+      );
+    });
+
+    it('should exclude entities that disable the metric via annotation', async () => {
+      const enabledEntity = new MockEntityBuilder()
+        .withMetadata({ name: 'enabled-component', namespace: 'development' })
+        .build();
+      const disabledEntity = new MockEntityBuilder()
+        .withMetadata({ name: 'disabled-component', namespace: 'development' })
+        .withAnnotations({
+          'scorecard.io/disabled-metrics': metricId,
+        })
+        .build();
+
+      mockedCatalog.queryEntities.mockResolvedValue({
+        items: [enabledEntity, disabledEntity],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 2,
+      });
+
+      const result = await service.getEntitiesOwnedByOwnerRef(
+        ownerRef,
+        metricId,
+        { credentials: mockCredentials },
+      );
+
+      expect(result).toEqual(['component:development/enabled-component']);
+    });
+  });
+
   describe('getEntitiesOwnedByUser', () => {
     const metricId = 'github.importantMetric';
     const userEntityRef = 'user:development/test-user';
+    const groupRef = 'group:development/developers';
     let mockCredentials: BackstageCredentials;
     let userEntity: Entity;
     let userOwnedEntity: Entity;
@@ -2303,14 +2501,14 @@ describe('CatalogMetricService', () => {
       );
     });
 
-    it('should include entities owned by the user memberOf groups', async () => {
+    it('should query each owner ref in parallel and preserve owner order in the result', async () => {
       const userWithGroups = new MockEntityBuilder()
         .withKind('User')
         .withMetadata({ name: 'test-user', namespace: 'development' })
         .withRelations([
           {
             type: RELATION_MEMBER_OF,
-            targetRef: 'group:development/developers',
+            targetRef: groupRef,
           },
         ])
         .build();
@@ -2319,17 +2517,31 @@ describe('CatalogMetricService', () => {
         .build();
 
       mockedCatalog.getEntityByRef.mockResolvedValue(userWithGroups);
-      mockedCatalog.queryEntities
-        .mockResolvedValueOnce({
-          items: [userOwnedEntity],
+      // Resolve by owner filter so parallel Promise.all fan-out is order-safe
+      mockedCatalog.queryEntities.mockImplementation(async (request: any) => {
+        const ownedBy = (
+          request.filter as Record<string, string> | undefined
+        )?.[`relations.${RELATION_OWNED_BY}`];
+        if (ownedBy === userEntityRef) {
+          return {
+            items: [userOwnedEntity],
+            pageInfo: { nextCursor: undefined },
+            totalItems: 1,
+          };
+        }
+        if (ownedBy === groupRef) {
+          return {
+            items: [groupOwnedEntity],
+            pageInfo: { nextCursor: undefined },
+            totalItems: 1,
+          };
+        }
+        return {
+          items: [],
           pageInfo: { nextCursor: undefined },
-          totalItems: 1,
-        })
-        .mockResolvedValueOnce({
-          items: [groupOwnedEntity],
-          pageInfo: { nextCursor: undefined },
-          totalItems: 1,
-        });
+          totalItems: 0,
+        };
+      });
 
       const result = await service.getEntitiesOwnedByUser(
         userEntityRef,
@@ -2342,6 +2554,22 @@ describe('CatalogMetricService', () => {
         'component:development/group-component',
       ]);
       expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(2);
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledWith(
+        expect.objectContaining({
+          filter: {
+            [`relations.${RELATION_OWNED_BY}`]: userEntityRef,
+          },
+        }),
+        { credentials: mockCredentials },
+      );
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledWith(
+        expect.objectContaining({
+          filter: {
+            [`relations.${RELATION_OWNED_BY}`]: groupRef,
+          },
+        }),
+        { credentials: mockCredentials },
+      );
     });
 
     it('should return empty array without catalog walk when metric is globally disabled', async () => {
