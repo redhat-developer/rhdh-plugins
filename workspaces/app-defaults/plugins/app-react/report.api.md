@@ -89,10 +89,10 @@ export interface ApplicationDrawerProps {
 export const appReactTranslationRef: TranslationRef<
   'plugin.app-react',
   {
+    readonly 'pages.Create': 'Self-Service';
     readonly 'pages.Home': 'Home';
     readonly 'pages.Catalog': 'Catalog';
     readonly 'pages.APIs': 'APIs';
-    readonly 'pages.Create': 'Self-Service';
     readonly 'pages.Docs': 'Docs';
     readonly 'pages.Learning Paths': 'Learning Paths';
     readonly 'pages.Settings': 'Settings';
@@ -102,6 +102,7 @@ export const appReactTranslationRef: TranslationRef<
     readonly 'pages.Administration': 'Administration';
     readonly 'pages.RBAC': 'RBAC';
     readonly 'pages.Plugins': 'Plugins';
+    readonly 'pageTabs.Templating Extensions': 'Templating Extensions';
     readonly 'pageTabs.General': 'General';
     readonly 'pageTabs.Authentication Providers': 'Authentication Providers';
     readonly 'pageTabs.Feature Flags': 'Feature Flags';
@@ -109,7 +110,6 @@ export const appReactTranslationRef: TranslationRef<
     readonly 'pageTabs.Tasks': 'Tasks';
     readonly 'pageTabs.Actions': 'Actions';
     readonly 'pageTabs.Template Editor': 'Template Editor';
-    readonly 'pageTabs.Templating Extensions': 'Templating Extensions';
     readonly 'pageTabs.Info': 'Info';
     readonly 'pageTabs.Config': 'Config';
     readonly 'pageTabs.Scheduled Tasks': 'Scheduled Tasks';
