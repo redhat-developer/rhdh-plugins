@@ -11,7 +11,7 @@ For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModul
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
 - **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie), **`weightedStatusScore`** (weighted health donut), and scalar types (`sum`, `average`, `max`, `min`, `count`) configured under **`scorecard.aggregationKPIs`**.
 - **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
-- **Metric group cards (grid layout)** — Group related metrics into cards with threshold bucket tiles, a filterable/sortable data sources dialog, and a Masonry grid layout. Enabled via app-config.yaml.
+- **Metric group cards (grid layout)** — Group related metrics into cards with threshold bucket tiles, a filterable/sortable data sources dialog, and a container-query CSS grid layout. Enabled via app-config.yaml.
 
 ## Getting started
 
@@ -162,7 +162,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - Metrics listed in `groups` are rendered as **MetricGroupCard** components. Each card shows threshold bucket tiles (e.g. Passing, Warning, Failing) with counts. Clicking a tile opens a **data sources dialog** pre-filtered to that status.
    - The data sources dialog displays a sortable, filterable table with columns: Plugin, Check, Value, Status, and Last Synced. A threshold legend allows toggling visibility by status.
    - Metrics **not** listed in any group are rendered as individual Scorecard cards below the group cards.
-   - All cards are arranged in a responsive **Masonry** grid (1 column on mobile, 2 on tablet, 3 on desktop).
+   - All cards are arranged in a responsive **CSS grid** that uses container queries (1 / 2 / 3 columns based on the entity tab width, not the viewport), so the layout reflows when a docked drawer such as Quickstart is open.
    - If `groups` is empty or omitted, the grid layout falls back to the default `EntityScorecardContent` view (individual cards for all metrics).
    - When multiple layout extensions are enabled, the Scorecard tab renders a toggle to switch between them.
 
