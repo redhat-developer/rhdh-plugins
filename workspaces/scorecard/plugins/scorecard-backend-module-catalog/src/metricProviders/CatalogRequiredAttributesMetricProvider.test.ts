@@ -341,6 +341,32 @@ describe('createCatalogRequiredAttributesMetricProvider', () => {
     expect(provider).toBeUndefined();
   });
 
+  it('throws when options.filter is missing', () => {
+    expect(() =>
+      createCatalogRequiredAttributesMetricProvider(
+        new ConfigReader({
+          scorecard: {
+            metricProviders: {
+              catalog: {
+                requiredAttributes: {
+                  options: {
+                    metrics: {
+                      title: {
+                        title: 'Has title',
+                        description: 'Entity metadata.title is set',
+                        field: 'metadata.title',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toThrow(/Missing required config value at '.*filter/);
+  });
+
   it('should create provider with a single metric', () => {
     const config = new ConfigReader(buildConfig({ title: titleMetric() }));
     const provider = createCatalogRequiredAttributesMetricProvider(config);

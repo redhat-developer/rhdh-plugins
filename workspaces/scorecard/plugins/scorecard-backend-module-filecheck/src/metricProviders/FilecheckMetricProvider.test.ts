@@ -208,6 +208,18 @@ describe('FilecheckMetricProvider', () => {
         "Invalid file path for 'bad': path must be relative without leading './', '../' or '/'",
       );
     });
+
+    it('should throw error when file path starts with ../', () => {
+      const config = new ConfigReader(
+        filecheckConfig({ bad: '../secret.txt' }),
+      );
+
+      expect(() =>
+        createFilecheckMetricProvider(config, mockUrlReader, mockCacheService),
+      ).toThrow(
+        "Invalid file path for 'bad': path must be relative without leading './', '../' or '/'",
+      );
+    });
   });
 
   describe('provider methods', () => {

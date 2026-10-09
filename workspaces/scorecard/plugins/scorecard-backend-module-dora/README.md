@@ -223,3 +223,7 @@ The module schedules a daily background task, `scorecard-dora:cleanup-expired-da
 
 - Changing a collector's `id` or `input` values triggers a full 30-day data refresh, as it creates a new data identity.
 - Updating catalog entity annotations _does not_ invalidate stored DORA data. Deployments, incidents, and pull requests are keyed to the `catalog_entity_ref` captured at write time, meaning data persists even if annotations change.
+
+## Development
+
+Local module harness and test commands are in [DEVELOPING.md](./DEVELOPING.md).

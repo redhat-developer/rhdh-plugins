@@ -63,5 +63,27 @@ describe('scorecard-backend-module-openssf', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.metrics).toHaveLength(18);
+    expect(res.body.metrics.map((metric: { id: string }) => metric.id)).toEqual(
+      expect.arrayContaining([
+        'openssf.binaryArtifacts',
+        'openssf.branchProtection',
+        'openssf.ciiBestPractices',
+        'openssf.ciTests',
+        'openssf.codeReview',
+        'openssf.contributors',
+        'openssf.dangerousWorkflow',
+        'openssf.dependencyUpdateTool',
+        'openssf.fuzzing',
+        'openssf.license',
+        'openssf.maintained',
+        'openssf.packaging',
+        'openssf.pinnedDependencies',
+        'openssf.sast',
+        'openssf.securityPolicy',
+        'openssf.signedReleases',
+        'openssf.tokenPermissions',
+        'openssf.vulnerabilities',
+      ]),
+    );
   });
 });
