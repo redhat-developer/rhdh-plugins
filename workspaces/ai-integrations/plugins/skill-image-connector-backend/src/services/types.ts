@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { OciSkillRecord } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+
 /** Parsed OCI image reference. */
 export interface ImageRef {
   /** Registry host (e.g. "quay.io"). */
@@ -122,11 +124,11 @@ export interface ManifestResult {
  */
 export interface AcquisitionMetadata {
   /** Stable key: `<lowercase-registry>/<repository>:<exact-tag>`. */
-  key: string;
+  key: OciSkillRecord['key'];
   /** Verified manifest digest: `sha256:<64 lowercase hex digits>`. */
-  digest: string;
+  digest: OciSkillRecord['digest'];
   /** Digest-addressed source URI: `oci://<registry>/<repository>@sha256:<hex>`. */
-  sourceUri: string;
+  sourceUri: OciSkillRecord['sourceUri'];
 }
 
 /** Result of extracting a skill image. */

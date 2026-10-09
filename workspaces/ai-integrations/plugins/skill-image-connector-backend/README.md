@@ -130,7 +130,7 @@ On startup the plugin:
 2. Reads configured image references from `app-config.yaml`.
 3. If `quayDiscovery` is configured, discovers public repositories using paginated API calls. With no tag filter, it then lists active tags for each repository; an exact tag filter skips tag listing. Distinct references are sorted before merging with the explicit image list and applying `maxImages`.
 4. For each tag-based image reference, resolves the mutable tag to a SHA-256 manifest digest using the Distribution Spec v2 HTTP API. All subsequent fetches (including retries) use the pinned digest, preventing a moved tag from redirecting to different content mid-acquisition. Explicit digest references skip this resolution step.
-5. Fetches the OCI manifest from the registry using the pinned digest (or the original digest reference).
+5. Fetches the OCI manifest from the registry using the pinned digest (or the original digest reference) and verifies its raw bytes before parsing or fetching layers.
 6. Determines the extraction strategy:
    - **Annotated layers**: Two individual layers annotated with `org.opencontainers.image.title` set to `skillimage.yaml`/`skill.yaml` and `SKILLS.md`/`SKILL.md`.
    - **Tar archives**: One or more `tar` or `tar+gzip` layers (as produced by `skillctl`) containing the skill files as tar entries.
@@ -147,6 +147,38 @@ reporting policy wins. The internal `logNotFoundAsError` flag selects this behav
 it is not an additional app-config setting. Other acquisition errors and a 404
 from the Quay organization-listing endpoint are still reported. Missing images
 remain in `failedImages`, and the existing `/images` status calculation is unchanged.
+
+### Verified acquisition metadata
+
+Successful tagged acquisitions retain typed internal `acquisition` metadata:
+
+```json
+{
+  "key": "quay.io/org/skill:V1",
+  "digest": "sha256:<64 lowercase hex digits>",
+  "sourceUri": "oci://quay.io/org/skill@sha256:<same hex digits>"
+}
+```
+
+The key uses a lowercase registry host and the exact tag. Aliases of the same
+digest retain distinct keys and share a source URI. A subsequent acquisition
+after tag movement keeps the key and updates the digest and source URI. The
+shared `ai-skills-common` validator and reference builder govern these fields.
+Explicit digest references retain raw acquisition without inventing a tagged
+identity. This metadata is internal; the existing `/images` payload is unchanged.
+Normalization and the `/skills/:sourceId` endpoint remain tasks 2.3 and 2.5.
+
+To reproduce the pinning and integrity checks without a live registry, run from
+`plugins/skill-image-connector-backend`:
+
+```sh
+yarn test --watchAll=false --runInBand src/plugin.pinning.test.ts src/plugin.integration.test.ts src/services/TagPinning.test.ts src/services/OciClient.test.ts
+```
+
+The deterministic registry fixtures exercise the actual plugin, OCI client, and
+extraction service, including tag movement, a transient blob failure after
+resolution, resolution retries, manifest mismatches before layer fetching, blob
+size/digest mismatches, alias identities, and explicitly digest-addressed images.
 
 ## API
 

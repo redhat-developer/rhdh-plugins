@@ -21,6 +21,10 @@ import {
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
+import {
+  buildOciRef,
+  isValidDigest,
+} from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { createRouter } from './router';
 import {
   ManifestResponseError,
@@ -352,7 +356,7 @@ export function buildSourceUri(
   repository: string,
   digest: string,
 ): string {
-  return `oci://${registry}/${repository}@${digest}`;
+  return buildOciRef(registry, repository, digest);
 }
 
 /**
@@ -406,6 +410,9 @@ async function fetchWithRetry(
     `tag resolution for ${imageRefStr}`,
     signal,
   );
+  if (!isValidDigest(resolvedDigest)) {
+    throw new Error(`Invalid resolved manifest digest for ${imageRefStr}`);
+  }
   logger.info(`Resolved ${imageRefStr} to ${resolvedDigest}`);
 
   // Build the pinned reference: tag is preserved for identity, digest

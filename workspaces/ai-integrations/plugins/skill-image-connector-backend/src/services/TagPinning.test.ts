@@ -260,8 +260,8 @@ describe('Tag pinning: identity metadata', () => {
 });
 
 describe('Tag pinning: digest pinning across retries', () => {
-  it('uses pinned digest reference when retrying after resolution', async () => {
-    // Simulate: resolve tag → get digestA, then on retry fetch by digestA
+  it('fetches a resolved manifest by digest', async () => {
+    // Resolve a tag, then verify its digest-addressed manifest fetch.
     const manifest = makeManifest();
     const buffer = Buffer.from(JSON.stringify(manifest));
     const digest = `sha256:${createHash('sha256')

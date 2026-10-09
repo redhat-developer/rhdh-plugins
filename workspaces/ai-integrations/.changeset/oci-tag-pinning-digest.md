@@ -8,3 +8,6 @@ Resolve and pin OCI skill tags to verified content.
 - **Manifest integrity verification:** Raw manifest bytes are verified against the digest before JSON parsing, per the OCI Distribution Spec.
 - **Acquisition metadata:** Tagged acquisitions expose `AcquisitionMetadata` with a stable key (`<lowercase-registry>/<repository>:<tag>`), verified digest, and digest-addressed `sourceUri` (`oci://<registry>/<repository>@sha256:<hex>`). Explicit digest references pass through without tagged identity.
 - **Two-phase retry:** Tag resolution and image extraction each have independent retry scopes, ensuring transient failures after resolution reuse the pinned digest.
+
+- **Shared contract reuse:** Validate resolved digests and build source URIs with `ai-skills-common`; acquisition metadata uses the shared OCI record field types.
+- **Blob integrity coverage:** Reuse existing descriptor size and digest verification, with acquisition-flow regression tests for corrupted content, moving tags, and retries after resolution.

@@ -97,6 +97,39 @@ async function startConnector(
 }
 
 describe('configured acquisition in the plugin', () => {
+  it.each([undefined, '', 'sha256:bad', `sha512:${'a'.repeat(128)}`])(
+    'rejects an invalid resolution digest %p before extraction',
+    async digest => {
+      resolveManifest.mockResolvedValue({
+        manifest: {
+          schemaVersion: 2,
+          config: { mediaType: '', digest: resolvedDigest, size: 0 },
+          layers: [],
+        },
+        digest: digest as string,
+      });
+      const imageRef = 'quay.io/org/skill:v1';
+      const { server } = await startConnector({
+        maxRetries: 0,
+        images: [{ imageRef }],
+      });
+      const response = await request(server)
+        .get('/api/skill-image-connector/images')
+        .set('Authorization', mockCredentials.user.header());
+
+      expect(response.body).toEqual({
+        status: 'failed',
+        images: [],
+        failedImages: [imageRef],
+      });
+      expect(fetchImage).not.toHaveBeenCalled();
+      expect(logger.error).toHaveBeenCalledWith(
+        `Failed to process skill image ${imageRef}`,
+        expect.objectContaining({ message: expect.stringContaining('digest') }),
+      );
+    },
+  );
+
   it('keeps skill-image tags separate and excludes unsuccessful extraction', async () => {
     const aliases = ['quay.io/org/skill:latest', 'quay.io/org/skill:v1'];
     const nonSkill = 'quay.io/org/container:v1';
