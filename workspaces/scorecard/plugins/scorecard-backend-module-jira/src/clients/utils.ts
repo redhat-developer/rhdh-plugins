@@ -14,6 +14,29 @@
  * limitations under the License.
  */
 
+export function validateJiraAuthToken(
+  token: string,
+  fieldName: string,
+): string {
+  const jiraAuthSchemePattern = /^(Basic|Bearer) /i;
+
+  const match = jiraAuthSchemePattern.exec(token);
+  if (!match) {
+    throw new Error(
+      `${fieldName} must be a full Authorization value starting with 'Basic ' or 'Bearer ' (for example, 'Basic <base64>' or 'Bearer <token>').`,
+    );
+  }
+
+  const credential = token.slice(match[0].length);
+  if (credential.trim().length === 0) {
+    throw new Error(
+      `${fieldName} credential after Basic/Bearer scheme must be non-empty.`,
+    );
+  }
+
+  return token;
+}
+
 export function validateJQLValue(value: string, fieldName: string): string {
   if (!/^[a-zA-Z0-9 _-]+$/.test(value)) {
     throw new Error(

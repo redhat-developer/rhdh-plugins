@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-export type Product = 'datacenter' | 'cloud';
-
 export interface JiraIssue {
   id: string;
   createdAt: string;

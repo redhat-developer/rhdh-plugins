@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Product } from '../clients/types';
 import { DiscoveryService, AuthService } from '@backstage/backend-plugin-api';
 
 export interface ConnectionStrategy {
@@ -25,12 +24,10 @@ export interface ConnectionStrategy {
 export class DirectConnectionStrategy implements ConnectionStrategy {
   private readonly baseUrl: string;
   private readonly token: string;
-  private readonly product: Product;
 
-  constructor(baseUrl: string, token: string, product: Product) {
+  constructor(baseUrl: string, token: string) {
     this.baseUrl = baseUrl;
     this.token = token;
-    this.product = product;
   }
 
   async getBaseUrl(apiVersion: number): Promise<string> {
@@ -38,9 +35,8 @@ export class DirectConnectionStrategy implements ConnectionStrategy {
   }
 
   async getAuthHeaders(): Promise<Record<string, string>> {
-    const authScheme = this.product === 'cloud' ? 'Basic' : 'Bearer';
     return {
-      Authorization: `${authScheme} ${this.token}`,
+      Authorization: this.token,
     };
   }
 }
