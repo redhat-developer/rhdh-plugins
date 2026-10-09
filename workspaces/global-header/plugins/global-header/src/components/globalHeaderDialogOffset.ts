@@ -22,11 +22,14 @@
  * token).
  *
  * - Publishes the masthead height CSS variable for consumers.
- * - Pushes the fixed Backstage sidebar drawer below the full-width masthead
- *   (`top` + `height: 100vh - header`).
+ * - Pushes the fixed Backstage sidebar root below the full-width masthead
+ *   (`top` + `height: 100vh - header`); the absolute drawer fills the root.
  * - Offsets BUI dialog overlays so the sticky AppBar (z-index 1100) does not
  *   cover the title/close control (RHDHBUGS-3603). Overlay z-index is raised
  *   above the AppBar default of 1000.
+ *
+ * Drawer reset targets `[data-testid="sidebar-root"] > *` because production
+ * JSS often hashes class names without `BackstageSidebar-drawer`.
  *
  * A raw style tag is used instead of MUI GlobalStyles so NFS demo apps
  * and dynamic-plugin bundles pick this up without depending on a shared
@@ -41,7 +44,7 @@ export const GLOBAL_HEADER_DIALOG_OFFSET_CSS = `
   height: calc(100vh - var(--rhdh-global-header-height, 64px)) !important;
   bottom: auto !important;
 }
-:root:has(#global-header) [class*="BackstageSidebar-drawer"] {
+:root:has(#global-header) [data-testid="sidebar-root"] > * {
   top: 0 !important;
   height: 100% !important;
   bottom: 0 !important;
