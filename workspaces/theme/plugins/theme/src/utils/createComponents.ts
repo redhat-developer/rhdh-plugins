@@ -503,6 +503,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         head: {
           textTransform: 'unset !important',
           color: `${general.tableColumnTitleColor} !important`,
+          // RHDHBUGS-3893: wrap narrow table headers instead of truncating.
+          overflow: 'visible',
+          textOverflow: 'clip',
+          whiteSpace: 'normal',
+          wordBreak: 'break-word',
           '& > span[class*="MuiTableSortLabel-active"]': {
             color: `${rhdhPrimary.main} !important`,
           },
