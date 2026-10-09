@@ -26,7 +26,6 @@ import scorecardPlugin, {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 import { signInModule } from './modules/signIn';
 import { navModule } from './modules/nav';
-import { iconsModule } from './modules/icons';
 
 /*
  * app: Backstage app using the New Frontend System (NFS).
@@ -38,7 +37,6 @@ const app = createApp({
     homepageTranslationsModule,
     scorecardPlugin,
     scorecardTranslationsModule,
-    iconsModule,
     signInModule,
     navModule,
   ],
