@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.12.0
+
 ## 1.11.0
 
 ### Patch Changes
