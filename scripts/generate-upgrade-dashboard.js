@@ -19,7 +19,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import semver from 'semver';
 import { listWorkspaces } from './list-workspaces.js';
-import { exec } from 'node:child_process';
+import { execFile } from 'node:child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,6 +103,13 @@ function categorizeWorkspaces(workspaces, latestVersion) {
     tier.sort((a, b) => a.name.localeCompare(b.name)),
   );
 
+  if (process.env.GITHUB_OUTPUT) {
+    fs.appendFileSync(
+      process.env.GITHUB_OUTPUT,
+      `ARCHIVED_WORKSPACES=${tiers.tierArchived.map(w => w.name).join(',')}\n`,
+    );
+  }
+
   return tiers;
 }
 
@@ -183,21 +190,12 @@ function generateDashboard(workspaces, tiers, latestVersion) {
   return output;
 }
 
-function archiveOutdatedWorkspaces(outdatedWorkspaces) {
-  if (outdatedWorkspaces.lenght === 0) return;
-  outdatedWorkspaces.forEach(oneWorkspace => {
-    exec(`node scripts/archive.js ${oneWorkspace.name}`);
-  });
-}
-
 // main function
 async function main() {
   const latestVersion = await getLatestBackstageVersion();
   const workspaces = await getWorkspaceVersions();
   const tiers = categorizeWorkspaces(workspaces, latestVersion);
   const dashboard = generateDashboard(workspaces, tiers, latestVersion);
-
-  archiveOutdatedWorkspaces(tiers.tierArchived);
 
   console.log(dashboard);
 }

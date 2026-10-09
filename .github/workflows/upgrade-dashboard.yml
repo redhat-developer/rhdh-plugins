@@ -1,8 +1,9 @@
 name: Backstage Upgrade Dashboard
 
 permissions:
-  contents: read
+  contents: write
   issues: write
+  pull-requests: write
 
 on:
   push:
@@ -36,6 +37,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Update Issue
+        id: update_issue
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
@@ -48,3 +50,68 @@ jobs:
               issue_number: 1333,
               body: dashboardContent
             });
+
+      - name: Archive outdated workspaces
+        if: steps.update_issue.outputs.ARCHIVED_WORKSPACES != ''
+        env:
+          ARCHIVED_WORKSPACES: ${{ steps.update_issue.outputs.ARCHIVED_WORKSPACES }}
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra workspaces <<< "$ARCHIVED_WORKSPACES"
+          for workspace in "${workspaces[@]}"; do
+            node scripts/archive.js "$workspace"
+            rm -rf "workspaces/$workspace"
+          done
+
+      - name: Update lockfile after archival
+        if: steps.update_issue.outputs.ARCHIVED_WORKSPACES != ''
+        run: yarn install
+
+      # archive.js appends rows and JSON entries that are not prettier-formatted,
+      # which would fail the prettier:check CI job on the generated pull request.
+      # Scoped to changed files so the PR does not pick up unrelated reformatting.
+      - name: Format archival changes
+        if: steps.update_issue.outputs.ARCHIVED_WORKSPACES != ''
+        run: |
+          set -euo pipefail
+          git diff --name-only --diff-filter=d \
+            | xargs --no-run-if-empty npx prettier --write --ignore-unknown
+
+      - name: Open archival pull request
+        if: steps.update_issue.outputs.ARCHIVED_WORKSPACES != ''
+        env:
+          GH_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
+          ARCHIVED_WORKSPACES: ${{ steps.update_issue.outputs.ARCHIVED_WORKSPACES }}
+        run: |
+          set -euo pipefail
+
+          branch="chore/archive-workspaces-$(echo "$ARCHIVED_WORKSPACES" | tr ',' '-')"
+
+          if gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --head "$branch" \
+            --state all \
+            --json number \
+            --jq '.[0].number // empty' | grep -q .; then
+            echo "An archival pull request already exists for '$branch'; skipping."
+            exit 0
+          fi
+
+          git config user.name 'rhdh-bot'
+          git config user.email 'rhdh-bot@redhat.com'
+          git switch --create "$branch"
+          git add -A
+          git commit -m "chore: archive outdated workspaces (${ARCHIVED_WORKSPACES})"
+          git push --set-upstream origin "$branch"
+
+          body_file=$(mktemp)
+          printf 'Automatically archived the following workspaces, which are 8 or more Backstage minor versions behind: `%s`.\n\nThe workspace directories have been removed and the archival bookkeeping updated by `scripts/archive.js`. See [CONTRIBUTING.md](https://github.com/%s/blob/main/CONTRIBUTING.md#archiving-a-plugin-or-workspace) for the process this follows. Please review before merging.\n' \
+            "$ARCHIVED_WORKSPACES" \
+            "$GITHUB_REPOSITORY" > "$body_file"
+
+          gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$branch" \
+            --title "chore: archive outdated workspaces" \
+            --body-file "$body_file"
