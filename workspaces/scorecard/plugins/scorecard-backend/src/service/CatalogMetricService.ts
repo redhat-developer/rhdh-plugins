@@ -69,8 +69,6 @@ type CatalogMetricServiceOptions = {
   config: Config;
 };
 
-const QUERY_ENTITIES_BATCH_SIZE = 50;
-
 export class CatalogMetricService {
   private static entityHealthSummary(
     accessibleRows: DbMetricValue[],
@@ -94,8 +92,8 @@ export class CatalogMetricService {
   private readonly registry: MetricProvidersRegistry;
   private readonly database: DatabaseMetricValues;
   private readonly thresholdResolver: ThresholdResolver;
-  private readonly thresholdEvaluator = new ThresholdEvaluator();
   private readonly globalDisabledMetrics: string[];
+  private readonly thresholdEvaluator = new ThresholdEvaluator();
 
   private static readonly MAX_FETCHABLE_ROWS = 10_000;
   private static readonly BATCH_SIZE = 100;
@@ -107,9 +105,9 @@ export class CatalogMetricService {
     this.database = options.database;
     this.logger = options.logger;
     this.thresholdResolver = options.thresholdResolver;
-    this.config = options.config;
     this.globalDisabledMetrics =
       options.config.getOptionalStringArray('scorecard.disabledMetrics') ?? [];
+    this.config = options.config;
   }
 
   /**
@@ -658,7 +656,7 @@ export class CatalogMetricService {
   }
 
   /**
-   * Get the entities owned by a user and their groups.
+   * Get the user and its members entities.
    *
    * @param userEntityRef - User entity reference in format "kind:namespace/name"
    * @param metricId - Metric ID to filter entities by
@@ -666,7 +664,7 @@ export class CatalogMetricService {
    * @param options.credentials - Backstage credentials
    * @returns Array of entity references in format "kind:namespace/name"
    */
-  async getEntitiesOwnedByUser(
+  async getUserAndGroupOwnerRefs(
     userEntityRef: string,
     metricId: string,
     options: {
@@ -701,35 +699,79 @@ export class CatalogMetricService {
       }
     }
 
+    return ownerRefs;
+  }
+
+  async getEntitiesOwnedByOwnerRef(
+    ownerRef: string,
+    metricId: string,
+    options: {
+      credentials: BackstageCredentials;
+    },
+  ): Promise<string[]> {
+    const QUERY_ENTITIES_BATCH_SIZE = 50;
+
+    let cursor: string | undefined = undefined;
+
+    const { credentials } = options;
     const entitiesOwnedByUserAndGroups: string[] = [];
 
-    for (const ownerRef of ownerRefs) {
-      let cursor: string | undefined = undefined;
-
-      do {
-        const entities = await this.catalog.queryEntities(
-          {
-            filter: {
-              [`relations.${RELATION_OWNED_BY}`]: ownerRef,
-            },
-            fields: ['kind', 'metadata'],
-            limit: QUERY_ENTITIES_BATCH_SIZE,
-            ...(cursor ? { cursor } : {}),
+    do {
+      const entities = await this.catalog.queryEntities(
+        {
+          filter: {
+            [`relations.${RELATION_OWNED_BY}`]: ownerRef,
           },
-          { credentials },
-        );
+          fields: ['kind', 'metadata'],
+          limit: QUERY_ENTITIES_BATCH_SIZE,
+          ...(cursor ? { cursor } : {}),
+        },
+        { credentials },
+      );
 
-        cursor = entities.pageInfo.nextCursor;
+      cursor = entities.pageInfo.nextCursor;
 
-        for (const entity of entities.items) {
-          if (isMetricIdDisabled(this.config, metricId, entity, this.logger)) {
-            continue;
-          }
-          entitiesOwnedByUserAndGroups.push(stringifyEntityRef(entity));
+      for (const entity of entities.items) {
+        if (isMetricIdDisabled(this.config, metricId, entity, this.logger)) {
+          continue;
         }
-      } while (cursor !== undefined);
-    }
+        entitiesOwnedByUserAndGroups.push(stringifyEntityRef(entity));
+      }
+    } while (cursor !== undefined);
 
     return entitiesOwnedByUserAndGroups;
+  }
+
+  /**
+   * Get the entities owned by a user and their groups.
+   *
+   * @param userEntityRef - User entity reference in format "kind:namespace/name"
+   * @param metricId - Metric ID to filter entities by
+   * @param options - Options for the query
+   * @param options.credentials - Backstage credentials
+   * @returns Array of entity references in format "kind:namespace/name"
+   */
+  async getEntitiesOwnedByUser(
+    userEntityRef: string,
+    metricId: string,
+    options: {
+      credentials: BackstageCredentials;
+    },
+  ): Promise<string[]> {
+    const { credentials } = options;
+
+    const ownerRefs = await this.getUserAndGroupOwnerRefs(
+      userEntityRef,
+      metricId,
+      { credentials },
+    );
+
+    const entitiesOwnedByOwnerRefs = await Promise.all(
+      ownerRefs.map(ownerRef =>
+        this.getEntitiesOwnedByOwnerRef(ownerRef, metricId, { credentials }),
+      ),
+    );
+
+    return entitiesOwnedByOwnerRefs.flat();
   }
 }
