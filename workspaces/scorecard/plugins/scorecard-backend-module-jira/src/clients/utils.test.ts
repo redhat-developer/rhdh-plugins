@@ -20,6 +20,7 @@ import {
   toJiraEpochMillis,
   validateIdentifier,
   validateJQLValue,
+  validateJqlExpression,
 } from './utils';
 
 describe('utils', () => {
@@ -44,6 +45,39 @@ describe('utils', () => {
 
     it('should return valid identifier', () => {
       expect(validateIdentifier('TEST', 'jira/project-key')).toBe('TEST');
+    });
+  });
+
+  describe('validateJqlExpression', () => {
+    it.each([
+      ['priority = High'],
+      ['assignee = 000000:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'],
+      ['summary ~ "fix (regression)"'],
+      ['project in (A, B) AND cf[10001] = 5'],
+      ['assignee in membersOf("jira-users")'],
+      ['summary ~ "say \\"hi\\""'],
+    ])('accepts valid JQL expression %p', value => {
+      expect(validateJqlExpression(value, 'jira/custom-filter')).toBe(value);
+    });
+
+    it('trims surrounding whitespace', () => {
+      expect(
+        validateJqlExpression('  priority = High  ', 'jira/custom-filter'),
+      ).toBe('priority = High');
+    });
+
+    it.each([
+      ['x = 1) OR (1 = 1', 'unbalanced parentheses'],
+      ['(x = 1', 'unbalanced parentheses'],
+      ['cf[10001 = 5', 'unbalanced brackets'],
+      ['x = 1]', 'unbalanced brackets'],
+      ['status = "Done', 'unterminated string literal'],
+      ['a = 1\nb = 2', 'must not contain control characters'],
+      ['   ', 'must not be empty'],
+    ])('rejects %p (%s)', (value, reason) => {
+      expect(() => validateJqlExpression(value, 'jira/custom-filter')).toThrow(
+        `jira/custom-filter is not a valid JQL filter: ${reason}.`,
+      );
     });
   });
 
