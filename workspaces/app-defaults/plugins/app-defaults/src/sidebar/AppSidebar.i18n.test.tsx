@@ -16,6 +16,7 @@
 
 import { screen } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/frontend-test-utils';
+import { usePermission } from '@backstage/plugin-permission-react';
 
 // Localize sidebar titles by mapping the `pages.<title>` keys, mirroring the
 // runtime lookup. Unknown keys fall back to the provided default value.
@@ -31,6 +32,17 @@ jest.mock('@backstage/frontend-plugin-api', () => ({
       messages[key] ?? options?.defaultValue ?? key,
   }),
 }));
+
+jest.mock('@backstage/plugin-permission-react', () => ({
+  ...jest.requireActual('@backstage/plugin-permission-react'),
+  usePermission: jest.fn(),
+}));
+
+const mockUsePermission = usePermission as jest.Mock;
+
+beforeEach(() => {
+  mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+});
 
 // eslint-disable-next-line import/first
 import { AppSidebar } from './AppSidebar';

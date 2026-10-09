@@ -32,26 +32,34 @@ import { SidebarSearch } from './SidebarSearch';
 /**
  * Default sidebar layout shipped with the app defaults module.
  *
- * Top to bottom: the company logo, a small gap, the search modal, a divider,
- * everything contributed at priority 0
- * (auto-discovered pages, plugin items and groups), a spacer that pushes the
- * rest to the bottom, a divider, the notifications item, a final divider,
- * the Administration group, and the Settings group. The search modal and
- * the notifications item declare their page paths, so the plain
- * auto-discovered entries for the search and notifications pages are hidden.
+ * Top to bottom: the company logo, a small gap, the search modal, a divider
+ * below search, then three menu sections rendered by `AppSidebar`:
+ * 1. default / built-in items (path allowlist),
+ * 2. optional plugin items (with a divider only when this section is non-empty),
+ * 3. a spacer, then Administration / Settings / notifications (with a divider
+ *    only when the bottom block has visible entries).
+ *
+ * The search modal and the notifications item declare their page paths, so
+ * the plain auto-discovered entries for those pages are hidden. Search is
+ * enabled by default; notifications stay disabled until opted in.
  *
  * The Administration group has no link of its own; it ships with the RBAC
  * item and collects any further items plugins contribute with
  * `group: 'admin'`. The RBAC item is route-guarded, so the group stays
- * hidden until the RBAC plugin (or another admin item) is present. The
- * Settings group links to the settings page and replaces the
- * auto-discovered settings entry; plugins can add items with
- * `group: 'settings'`.
+ * hidden until the RBAC plugin (or another admin item) is present.
+ * `AppSidebar` also hides Administration for users without admin permission.
+ * The Settings group links to the settings page; it is hidden by default when
+ * the global header is present and can be forced with `app.sidebar.settings`.
+ * The company logo is likewise hidden when the global header is present and
+ * can be forced with `app.sidebar.logo`.
  *
  * Each element can be disabled or moved from `app-config.yaml`, e.g.
  *
  * ```yaml
  * app:
+ *   sidebar:
+ *     settings: true
+ *     logo: true
  *   extensions:
  *     - sidebar-element:app/notifications: false
  *     - sidebar-spacer:app/bottom:
@@ -76,12 +84,12 @@ export const sidebarLogoSpacer = SidebarSpacerBlueprint.make({
 });
 
 /**
- * Search modal pinned to the top. Disabled by default; enable via
- * `app-config.yaml`. Extension ID: `sidebar-element:app/search`.
+ * Search modal pinned to the top. Extension ID: `sidebar-element:app/search`.
+ * Claims `/search` so the auto-discovered Search page does not appear as a
+ * regular middle-section item.
  */
 export const sidebarSearchElement = SidebarElementBlueprint.make({
   name: 'search',
-  disabled: true,
   params: {
     component: SidebarSearch,
     to: '/search',
@@ -101,12 +109,6 @@ export const sidebarBottomSpacer = SidebarSpacerBlueprint.make({
   params: { priority: -30, grow: true },
 });
 
-/** Separates the bottom block. Extension ID: `sidebar-divider:app/bottom`. */
-export const sidebarBottomDivider = SidebarDividerBlueprint.make({
-  name: 'bottom',
-  params: { priority: -35 },
-});
-
 /**
  * Notifications item. Disabled by default; enable via `app-config.yaml`.
  * Extension ID: `sidebar-element:app/notifications`.
@@ -119,12 +121,6 @@ export const sidebarNotificationsElement = SidebarElementBlueprint.make({
     to: '/notifications',
     priority: -40,
   },
-});
-
-/** Divider above the settings block. Extension ID: `sidebar-divider:app/settings`. */
-export const sidebarSettingsDivider = SidebarDividerBlueprint.make({
-  name: 'settings',
-  params: { priority: -90 },
 });
 
 /**
@@ -184,9 +180,7 @@ export const defaultSidebarExtensions = [
   sidebarSearchElement,
   sidebarSearchDivider,
   sidebarBottomSpacer,
-  sidebarBottomDivider,
   sidebarNotificationsElement,
-  sidebarSettingsDivider,
   sidebarAdminGroup,
   sidebarRbacItem,
   sidebarSettingsGroup,

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { screen, fireEvent } from '@testing-library/react';
+import MenuItem from '@mui/material/MenuItem';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { renderInTestApp } from '@backstage/test-utils';
 
@@ -115,5 +116,37 @@ describe('HeaderDropdownComponent', () => {
 
     // The tooltip should now be visible
     expect(await screen.findByText('Test Tooltip')).toBeInTheDocument();
+  });
+
+  it('stretches mixed li/a menuitems to the full list width', async () => {
+    const anchorEl = document.createElement('button');
+    document.body.appendChild(anchorEl);
+
+    await renderInTestApp(
+      <HeaderDropdownComponent
+        buttonContent={<span>Click Me</span>}
+        onOpen={mockOnOpen}
+        onClose={mockOnClose}
+        anchorEl={anchorEl}
+      >
+        <MenuItem>Quick start</MenuItem>
+        <MenuItem component="a" href="https://example.com">
+          Support with a longer label
+        </MenuItem>
+      </HeaderDropdownComponent>,
+    );
+
+    const menu = await screen.findByRole('menu');
+    expect(menu).toHaveStyle({
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'stretch',
+    });
+
+    const items = screen.getAllByRole('menuitem');
+    expect(items).toHaveLength(2);
+    items.forEach(item => {
+      expect(item).toHaveStyle({ width: '100%' });
+    });
   });
 });
