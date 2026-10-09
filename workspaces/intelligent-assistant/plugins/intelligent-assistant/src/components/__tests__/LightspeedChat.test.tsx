@@ -39,12 +39,18 @@ import userEvent from '@testing-library/user-event';
 import { lightspeedApiRef } from '../../api/api';
 import { notebooksApiRef } from '../../api/notebooksApi';
 import { useConversations, useNotebookSessions } from '../../hooks';
+import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { MuiThemeTestProvider } from '../../test-utils/MuiThemeTestProvider';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
 import { NotebookStreamProvider } from '../notebooks/NotebookStreamProvider';
+
+const mockUseConversationMessages =
+  useConversationMessages as jest.MockedFunction<
+    typeof useConversationMessages
+  >;
 
 const identityApi = {
   async getCredentials() {
@@ -105,6 +111,9 @@ jest.mock('../../hooks/useDeleteConversation', () => ({
 jest.mock('../../hooks/useConversationMessages', () => ({
   useConversationMessages: jest.fn().mockReturnValue({
     conversationMessages: [],
+    handleInputPrompt: jest.fn(),
+    scrollToBottomRef: { current: null },
+    streamingConversationId: null,
   }),
 }));
 
@@ -251,38 +260,48 @@ const mockNotebooksApi = {
 const setupLightspeedChat = (
   initialPath = '/intelligent-assistant',
   configApi = configAPi,
-) => (
-  <MuiThemeTestProvider>
-    <MemoryRouter initialEntries={[initialPath]}>
-      <TestApiProvider
-        apis={[
-          [identityApiRef, identityApi],
-          [configApiRef, configApi],
-          [storageApiRef, mockApis.storage()],
-          [lightspeedApiRef, mockLightspeedApi],
-          [notebooksApiRef, mockNotebooksApi],
-        ]}
-      >
-        <FileAttachmentContextProvider>
-          <QueryClientProvider client={queryClient}>
-            <NotebookStreamProvider>
-              <LightspeedChat
-                selectedModel="granite"
-                profileLoading={false}
-                handleSelectedModel={() => {}}
-                topicRestrictionEnabled={false}
-                selectedProvider="openai"
-                models={[]}
-                avatar="test"
-                userName="user:test"
-              />
-            </NotebookStreamProvider>
-          </QueryClientProvider>
-        </FileAttachmentContextProvider>
-      </TestApiProvider>
-    </MemoryRouter>
-  </MuiThemeTestProvider>
-);
+  {
+    selectedModel = 'granite',
+    handleSelectedModel = () => {},
+  }: {
+    selectedModel?: string;
+    handleSelectedModel?: (item: string) => void;
+  } = {},
+) => {
+  const resolvedConfigApi = configApi ?? configAPi;
+  return (
+    <MuiThemeTestProvider>
+      <MemoryRouter initialEntries={[initialPath]}>
+        <TestApiProvider
+          apis={[
+            [identityApiRef, identityApi],
+            [configApiRef, resolvedConfigApi],
+            [storageApiRef, mockApis.storage()],
+            [lightspeedApiRef, mockLightspeedApi],
+            [notebooksApiRef, mockNotebooksApi],
+          ]}
+        >
+          <FileAttachmentContextProvider>
+            <QueryClientProvider client={queryClient}>
+              <NotebookStreamProvider>
+                <LightspeedChat
+                  selectedModel={selectedModel}
+                  profileLoading={false}
+                  handleSelectedModel={handleSelectedModel}
+                  topicRestrictionEnabled={false}
+                  selectedProvider="openai"
+                  models={[]}
+                  avatar="test"
+                  userName="user:test"
+                />
+              </NotebookStreamProvider>
+            </QueryClientProvider>
+          </FileAttachmentContextProvider>
+        </TestApiProvider>
+      </MemoryRouter>
+    </MuiThemeTestProvider>
+  );
+};
 
 describe('LightspeedChat', () => {
   const mockSetDisplayMode = jest.fn();
@@ -326,6 +345,12 @@ describe('LightspeedChat', () => {
     localStorage.clear();
     jest.clearAllMocks();
     mockNavigate.mockClear();
+    mockUseConversationMessages.mockReturnValue({
+      conversationMessages: [],
+      handleInputPrompt: jest.fn(),
+      scrollToBottomRef: { current: null },
+      streamingConversationId: null,
+    } as unknown as ReturnType<typeof useConversationMessages>);
   });
 
   afterEach(() => {
@@ -334,6 +359,77 @@ describe('LightspeedChat', () => {
 
   const localStorageKey = 'lastOpenedConversation';
   const mockUser = 'user:test';
+
+  it('should restore MessageBar model from the active conversation', async () => {
+    const handleSelectedModel = jest.fn();
+    mockUseConversations.mockReturnValue({
+      data: [
+        {
+          conversation_id: 'chat-a',
+          topic_summary: 'Chat A',
+          last_message_timestamp: Date.now() / 1000,
+        },
+      ],
+      isRefetching: false,
+      isLoading: false,
+    } as Partial<ReturnType<typeof useConversations>> as ReturnType<
+      typeof useConversations
+    >);
+    localStorage.setItem(
+      localStorageKey,
+      JSON.stringify({ [mockUser]: 'chat-a' }),
+    );
+    mockUseConversationMessages.mockReturnValue({
+      conversationMessages: [
+        { role: 'user', name: 'user:test', content: 'hi', timestamp: '' },
+        {
+          role: 'bot',
+          name: 'llama-3.1',
+          content: 'hello',
+          timestamp: '',
+        },
+      ],
+      handleInputPrompt: jest.fn(),
+      scrollToBottomRef: { current: null },
+      streamingConversationId: null,
+    } as unknown as ReturnType<typeof useConversationMessages>);
+
+    render(
+      setupLightspeedChat('/intelligent-assistant', undefined, {
+        selectedModel: 'granite',
+        handleSelectedModel,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(handleSelectedModel).toHaveBeenCalledWith('llama-3.1');
+    });
+  });
+
+  it('should not overwrite model selection for a new empty chat', async () => {
+    const handleSelectedModel = jest.fn();
+    mockUseConversationMessages.mockReturnValue({
+      conversationMessages: [],
+      handleInputPrompt: jest.fn(),
+      scrollToBottomRef: { current: null },
+      streamingConversationId: null,
+    } as unknown as ReturnType<typeof useConversationMessages>);
+
+    render(
+      setupLightspeedChat('/intelligent-assistant', undefined, {
+        selectedModel: 'granite',
+        handleSelectedModel,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Developer Hub Intelligent Assistant'),
+      ).toBeInTheDocument();
+    });
+
+    expect(handleSelectedModel).not.toHaveBeenCalled();
+  });
 
   it('should render lightspeed chat', async () => {
     render(setupLightspeedChat());

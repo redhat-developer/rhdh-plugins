@@ -1,0 +1,12 @@
+# E2E-only catalog users (loaded via test_yamls overlays). Do not use examples/.
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  namespace: default
+  name: overlap-user
+spec:
+  # In both groups so unless can win on overlapping membership
+  memberOf: [admins, developers]
+---
+
