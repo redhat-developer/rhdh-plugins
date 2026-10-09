@@ -52,9 +52,11 @@ export function validateJqlExpression(
 
   const characters = [...value];
 
-  const containsControlChars = characters.some(
-    char => char.charCodeAt(0) < FIRST_PRINTABLE_ASCII,
-  );
+  const containsControlChars = characters.some(char => {
+    const charCode = char.codePointAt(0);
+
+    return charCode ? charCode < FIRST_PRINTABLE_ASCII : false;
+  });
   if (containsControlChars) {
     fail('must not contain control characters');
   }
