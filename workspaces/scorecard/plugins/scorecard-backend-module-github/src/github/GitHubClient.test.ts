@@ -204,6 +204,256 @@ describe('GithubClient', () => {
       expect(getCredentialsSpy).toHaveBeenCalledWith({ url });
     });
 
+    it('should use the latest successful status when a newer status is inactive', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+      mockedGraphqlClient.mockResolvedValue({
+        repository: {
+          deployments: {
+            nodes: [
+              {
+                databaseId: 201,
+                commitOid: 'sha-inactivated-after-success',
+                createdAt: '2026-05-10T10:00:00.000Z',
+                environment: 'staging',
+                latestStatus: { state: 'INACTIVE' },
+                statuses: {
+                  nodes: [
+                    {
+                      state: 'INACTIVE',
+                      createdAt: '2026-05-12T10:00:00.000Z',
+                    },
+                    {
+                      state: 'SUCCESS',
+                      createdAt: '2026-05-11T10:00:00.000Z',
+                    },
+                    {
+                      state: 'SUCCESS',
+                      createdAt: '2026-05-10T12:00:00.000Z',
+                    },
+                    {
+                      state: 'IN_PROGRESS',
+                      createdAt: '2026-05-10T10:30:00.000Z',
+                    },
+                  ],
+                },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: null,
+            },
+          },
+        },
+      });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 201,
+          sha: 'sha-inactivated-after-success',
+          createdAt: '2026-05-10T10:00:00.000Z',
+          environment: 'staging',
+          status: 'SUCCESS',
+        },
+      ]);
+      expect(mockedGraphqlClient).toHaveBeenCalledWith(
+        expect.stringContaining('statuses'),
+        expect.objectContaining({
+          owner: repository.owner,
+          repo: repository.repo,
+        }),
+      );
+    });
+
+    it('should use the latest successful status when a newer status failed', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+      mockedGraphqlClient.mockResolvedValue({
+        repository: {
+          deployments: {
+            nodes: [
+              {
+                databaseId: 202,
+                commitOid: 'sha-success-then-failure',
+                createdAt: '2026-05-18T10:00:00.000Z',
+                environment: 'staging',
+                latestStatus: { state: 'FAILURE' },
+                statuses: {
+                  nodes: [
+                    {
+                      state: 'FAILURE',
+                      createdAt: '2026-05-18T12:00:00.000Z',
+                    },
+                    {
+                      state: 'SUCCESS',
+                      createdAt: '2026-05-18T11:00:00.000Z',
+                    },
+                  ],
+                },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: null,
+            },
+          },
+        },
+      });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 202,
+          sha: 'sha-success-then-failure',
+          createdAt: '2026-05-18T10:00:00.000Z',
+          environment: 'staging',
+          status: 'SUCCESS',
+        },
+      ]);
+    });
+
+    it('should use a successful status that is older than the first status page', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+      mockedGraphqlClient
+        .mockResolvedValueOnce({
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  id: 'deployment-node-204',
+                  databaseId: 204,
+                  commitOid: 'sha-success-after-many-failures',
+                  createdAt: '2026-05-18T10:00:00.000Z',
+                  environment: 'staging',
+                  latestStatus: { state: 'FAILURE' },
+                  statuses: {
+                    nodes: [
+                      {
+                        state: 'FAILURE',
+                        createdAt: '2026-05-18T12:00:00.000Z',
+                      },
+                    ],
+                    pageInfo: {
+                      hasNextPage: true,
+                      endCursor: 'status-cursor-1',
+                    },
+                  },
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          node: {
+            statuses: {
+              nodes: [
+                {
+                  state: 'SUCCESS',
+                  createdAt: '2026-05-18T11:00:00.000Z',
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 204,
+          sha: 'sha-success-after-many-failures',
+          createdAt: '2026-05-18T10:00:00.000Z',
+          environment: 'staging',
+          status: 'SUCCESS',
+        },
+      ]);
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(2);
+    });
+
+    it('should use the latest status when the deployment never succeeded', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+      mockedGraphqlClient.mockResolvedValue({
+        repository: {
+          deployments: {
+            nodes: [
+              {
+                databaseId: 203,
+                commitOid: 'sha-failed',
+                createdAt: '2026-05-19T10:00:00.000Z',
+                environment: 'staging',
+                latestStatus: { state: 'FAILURE' },
+                statuses: {
+                  nodes: [
+                    {
+                      state: 'FAILURE',
+                      createdAt: '2026-05-19T12:00:00.000Z',
+                    },
+                    {
+                      state: 'ERROR',
+                      createdAt: '2026-05-19T11:00:00.000Z',
+                    },
+                  ],
+                },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: null,
+            },
+          },
+        },
+      });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 203,
+          sha: 'sha-failed',
+          createdAt: '2026-05-19T10:00:00.000Z',
+          environment: 'staging',
+          status: 'FAILURE',
+        },
+      ]);
+    });
+
     it('should stop paging once fetchItemsLimit of in-window deployments is reached', async () => {
       const url = `https://github.com/owner/repo`;
       const from = new Date('2026-05-01T00:00:00.000Z');
