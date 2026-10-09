@@ -24,10 +24,11 @@ const MOCK_INSTANCE: CatalogItemInstance = {
   api_version: 'v1alpha1',
   display_name: 'Test instance',
   uid: 'inst-1',
+  run_id: 'run-1',
+  resource_ids: ['res-new'],
   spec: {
     catalog_item_id: 'ci-1',
     user_values: [],
-    resource_ids: ['res-new'],
   },
 };
 

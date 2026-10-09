@@ -64,6 +64,18 @@ describe('GlobalHeader', () => {
     expect(document.getElementById('global-header')).toBeInTheDocument();
   });
 
+  it('spans the full viewport width', () => {
+    render(
+      <GlobalHeaderProvider components={[]} menuItems={[]}>
+        <GlobalHeader />
+      </GlobalHeaderProvider>,
+    );
+
+    expect(document.getElementById('global-header')).toHaveStyle({
+      width: '100%',
+    });
+  });
+
   it('injects BUI dialog overlay offset styles', () => {
     render(
       <GlobalHeaderProvider components={[]} menuItems={[]}>

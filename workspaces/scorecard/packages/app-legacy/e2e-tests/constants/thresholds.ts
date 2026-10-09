@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-/**
- * Translations remain available at the `/alpha` export.
- * NFS plugin and modules have graduated to the primary package entry point.
- */
-export * from './translations';
+/** Matches the configured thresholds for `openPrsWeightedKpi` in app-config.yaml. */
+export const OPEN_PRS_WEIGHTED_KPI_THRESHOLDS = {
+  rules: [
+    { key: 'success', expression: '>=80', color: '#6bb300' },
+    { key: 'warning', expression: '30-80', color: '#FFC0CB' },
+    { key: 'error', expression: '<30', color: '#be1ec7' },
+  ],
+};
+
+export const FILECHECK_BOOLEAN_THRESHOLDS = {
+  rules: [
+    { key: 'exist', expression: '==true', color: 'success.main' },
+    { key: 'missing', expression: '==false', color: 'error.main' },
+  ],
+};

@@ -37,8 +37,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release download v0.43.0 --repo fullsend-ai/fullsend \
-            -p 'fullsend_0.43.0_linux_amd64.tar.gz' -O - | tar xz
+          gh release download v0.45.0 --repo fullsend-ai/fullsend \
+            -p 'fullsend_0.45.0_linux_amd64.tar.gz' -O - | tar xz
           sudo mv fullsend /usr/local/bin/
           fullsend --version
 

@@ -307,6 +307,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'scaffolder.rulesAcceptance.required': 'requerido',
     'scaffolder.rulesAcceptance.fetchError':
       'No se pudieron extraer las reglas',
+    'scaffolder.rulesAcceptance.readMore': 'Leer más',
+    'scaffolder.rulesAcceptance.close': 'Cerrar',
     'rulesPage.title': 'Reglas de conversión',
     'rulesPage.subtitle':
       'Gestione las reglas que los proyectos deben aceptar en el momento de su creación.',

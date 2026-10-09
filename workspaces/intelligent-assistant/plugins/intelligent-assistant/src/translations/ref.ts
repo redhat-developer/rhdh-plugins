@@ -194,7 +194,10 @@ export const intelligentAssistantMessages = {
     "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
 
   // Footer and feedback
-  'footer.accuracy.label': 'Always review AI generated content prior to use.',
+  'footer.accuracy.label':
+    'Red Hat Developer Hub Intelligent Assistant uses AI. Check for mistakes.',
+  'footer.accuracy.notebook.label':
+    'AI content may be inaccurate. Verify before use.',
 
   // Common actions
   'common.cancel': 'Cancel',
@@ -218,7 +221,7 @@ export const intelligentAssistantMessages = {
     'Adjust your search query and try again. Check your spelling or try a more general term.',
   'chatbox.welcome.greeting': 'Hello, {{userName}}',
   'chatbox.welcome.description': 'How can I help you today?',
-  'chatbox.message.placeholder': 'Send a message',
+  'chatbox.message.placeholder': 'Enter a prompt.',
   'chatbox.fileUpload.failed': 'File upload failed',
   'chatbox.fileUpload.infoText':
     'Supported file types are: .txt, .yaml, and .json. The maximum file size is 25 MB.',

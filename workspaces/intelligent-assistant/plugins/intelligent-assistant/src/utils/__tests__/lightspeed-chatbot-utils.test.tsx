@@ -24,6 +24,7 @@ import {
   createMessage,
   createUserMessage,
   getCategorizeMessages,
+  getConversationModelFromMessages,
   getTimestamp,
   getTimestampVariablesString,
   normalizeChatUserInput,
@@ -284,6 +285,29 @@ describe('createUserMessage', () => {
   });
 });
 
+describe('getConversationModelFromMessages', () => {
+  it('returns the latest bot message model name', () => {
+    expect(
+      getConversationModelFromMessages([
+        { role: 'user', name: 'alice' },
+        { role: 'bot', name: 'granite-3.3' },
+        { role: 'user', name: 'alice' },
+        { role: 'bot', name: 'llama-3.1' },
+      ]),
+    ).toBe('llama-3.1');
+  });
+
+  it('returns undefined when there is no bot model', () => {
+    expect(getConversationModelFromMessages([])).toBeUndefined();
+    expect(
+      getConversationModelFromMessages([{ role: 'user', name: 'alice' }]),
+    ).toBeUndefined();
+    expect(
+      getConversationModelFromMessages([{ role: 'bot', name: '  ' }]),
+    ).toBeUndefined();
+  });
+});
+
 describe('createBotMessage', () => {
   it('should create a bot message with provided properties', () => {
     const message = createBotMessage({
@@ -407,6 +431,31 @@ describe('transformDocumentsToSources', () => {
             body: 'Document description test',
           }),
         ]),
+      }),
+    );
+  });
+
+  it('should map OKP offline mode portal URLs to external sources', () => {
+    const okpOfflineDocs: ReferencedDocuments = [
+      {
+        doc_title: 'Configuring authentication in Red Hat Developer Hub',
+        doc_description: 'OKP offline product documentation chunk',
+        doc_url:
+          'http://rhdh-lightspeed-okp.apps.example.com/documentation/red_hat_developer_hub/1.8/html-single/authentication/index',
+        source: 'rhdh-product-docs',
+      },
+    ];
+
+    const sources = transformDocumentsToSources(okpOfflineDocs);
+    expect(sources?.sources).toHaveLength(1);
+    expect(sources?.sources[0]).toEqual(
+      expect.objectContaining({
+        title: 'Configuring authentication in Red Hat Developer Hub',
+        body: 'OKP offline product documentation chunk',
+        link: 'http://rhdh-lightspeed-okp.apps.example.com/documentation/red_hat_developer_hub/1.8/html-single/authentication/index',
+        isExternal: true,
+        ragSource: 'rhdh-product-docs',
+        headerContent: expect.anything(),
       }),
     );
   });

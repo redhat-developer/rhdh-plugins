@@ -104,7 +104,7 @@ Select the first non-empty, correctly typed value in each ordered mapping.
 
 | Concept                  | OCI native fields                                                         | npx native fields                                        | Normalized field                    | Catalog mapping                                                    |
 | ------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------ |
-| Stable identity          | Registry host and repository, excluding tag/digest                        | Discovery entry `name` within the configured index       | `key`                               | D5 deterministic `metadata.name`                                   |
+| Stable identity          | Registry host, repository, and exact tag, excluding digest                | Discovery entry `name` within the configured index       | `key`                               | D5 deterministic `metadata.name`                                   |
 | Display name             | `metadata.display-name`, `metadata.name`, frontmatter `name`              | Frontmatter `name`, discovery entry `name`               | `name`                              | `metadata.title`                                                   |
 | Description              | `metadata.description`, frontmatter `description`                         | Frontmatter `description`, discovery entry `description` | `description`                       | `metadata.description`                                             |
 | Version                  | `metadata.version`, frontmatter `metadata.version`, frontmatter `version` | Frontmatter `metadata.version`, frontmatter `version`    | `version`                           | `rhdh.io/ai-asset-version` using D5                                |
@@ -139,10 +139,21 @@ not a prerequisite for these two connectors.
 
 ### D4 — Source acquisition and OCI extraction
 
-OCI keys use `<registry>/<repository>` with a lowercase registry host and the
-registry's repository path. The OCI connector discovers repositories in a configured public Quay organization
-using pagination and selects a configured tag (`latest` by default). It resolves
-the tag once, fetches the manifest by SHA-256 digest, verifies the manifest bytes,
+OCI keys use `<registry>/<repository>:<tag>` with a lowercase registry host, the
+registry's repository path, and the exact case-sensitive tag. The OCI connector
+discovers repositories in a configured public Quay organization using pagination.
+An omitted or blank `quayDiscovery.tag` selects all currently active tags in each
+repository. Enumerate the paginated Quay tag-list API with `onlyActiveTags=true`;
+expired tag history and untagged manifests are not candidates. A supplied tag is
+an exact OCI tag filter, including an explicit `latest`; wildcard and regex
+syntax are not supported. Exact-tag discovery retains its direct manifest-fetch
+path without enumerating tags. Explicit `images[].imageRef` parsing is unchanged.
+
+Each distinct repository/tag reference is a candidate. Deduplicate repeated
+references from listing pages and explicit configuration, never by manifest
+digest: two tags pointing at identical skill content produce two records and two
+catalog entities. A tag moving to a new manifest updates the same stable key.
+The connector resolves each selected tag once, fetches the manifest by SHA-256 digest, verifies the manifest bytes,
 and verifies each downloaded blob against its descriptor before parsing it.
 Records expose the same manifest digest and digest-addressed `sourceUri`.
 
@@ -155,7 +166,8 @@ hints, not a mandatory gate: a valid skillctl archive without those annotations
 can still produce a record. An inspected image without both files is skipped
 as a non-skill; fetch failures, malformed candidate metadata, and integrity or
 limit failures make the snapshot incomplete. The connector reports the stable
-repository key for known failed candidates. It does not execute skill content.
+repository/tag key for known failed candidates. Confirmed non-skills emit neither
+a normalized record nor a catalog entity. It does not execute skill content.
 
 This is an explicit revision of the earlier manifest-only design. Bounded
 extraction happens in the connector. The common provider and the existing
@@ -183,10 +195,19 @@ Identity is the tuple `[source.type, source.id, record.key]`. Compute SHA-256
 over its compact JSON UTF-8 encoding and use `skill-` plus the first 56 lowercase
 hex digits as `metadata.name`. Persist the tuple alongside the entity reference;
 reject and diagnose a hash collision instead of overwriting a different tuple.
-Names, versions, tags, and content digests do not affect entity identity. A source
+Display names, declared versions, catalog metadata tags, and content digests do
+not affect entity identity. OCI transport tags are part of `record.key`: distinct
+tags produce distinct entity names, including aliases of the same digest. The
+tag is not used as a declared skill version. A source
 ID or native key change creates a different identity; no cross-source deduplication
 is implied. Duplicate `(connectorPluginId, sourceId)` consumers or duplicate
 `(source.type, source.id)` assignments are configuration errors.
+
+This revises the earlier repository-only OCI identity. Existing experimental
+repository-only entries are removed only after a complete valid `ready` snapshot
+under D6 while tagged identities are added; incomplete snapshots retain old
+entries. No shared JSON field or source-reference URI shape changes: keys remain
+strings, and two tagged records may share a digest-addressed `sourceUri`.
 
 The provider removes at most one leading `v`, validates the resulting declared
 version as SemVer, and otherwise emits
@@ -256,6 +277,10 @@ use HTTPS, stay within explicitly configured origins (npx defaults to its index
 origin), and reject credentials and private/loopback/link-local destinations,
 including redirected destinations. Internal connector calls use Backstage
 discovery/auth and are separate from these upstream egress restrictions.
+Destination validation must govern the address used by the connection, including
+after redirects. A preflight DNS lookup followed by an independent fetch lookup
+does not satisfy this requirement. Task 2.4 must close this DNS-rebinding gap and
+test address changes between validation and connection.
 
 Bound streaming reads, parsing, and concurrency: 30-second request timeouts,
 at most four concurrent artifact operations per source, five redirects, 1 MiB
@@ -268,14 +293,62 @@ and manifests to 5 MiB per response. A reached bound is an incomplete result,
 not evidence of absence. Logs include source/key context and counters without
 raw skill bodies, credentials, or tokens.
 
-Each refresh also has a five-minute total deadline, at most 100 discovery pages,
+The task 2.1 `/images` acquisition path shares HTTP utilities between OCI fetching
+and Quay discovery and shares retry orchestration with image processing. Its
+backend-only `skillImageConnector` configuration accepts optional `fetchTimeoutMs`
+(default 30,000), `maxBlobSizeBytes` (5 MiB),
+`maxAggregateContentSizeBytes` (50 MiB), `maxDiscoveryResponseSizeBytes` (5 MiB),
+`maxImages` (25), `maxRetries` (2), and `retryBaseDelayMs` (2,000). Omission preserves defaults;
+invalid values fail configuration validation, and zero retries disables retries.
+The positive-integer `maxImages` limit applies to combined explicit images and
+discovered repository/tag candidates attempted at startup. Each tag consumes a
+slot, even if another tag has the same digest or extraction identifies a non-skill.
+Explicit images take priority;
+duplicate discovered references do not consume additional slots. An explicit
+list exceeding the configured limit fails startup validation; excess discovered
+candidates are skipped with a warning. Missing tags still consume candidate
+slots. Raising this limit does not change the concurrency limit of four.
+The startup discovery path uses one 100-page budget shared by repository and tag
+listing requests, with bounded retries for each logical page. It deduplicates
+repository listings, traverses repositories in Unicode code-point order, detects
+repeated repository tokens and tag pages that make no progress, and sorts full
+discovered references before applying the combined image cap. Exhausted budgets
+and incomplete pagination are logged; the existing raw `/images` response has no
+`partial` status. Structured completeness propagation remains task 2.5. Tag-list
+request or malformed-page failures follow the existing discovery failure path;
+they are not treated as successful empty discovery.
+These byte sizes are independent: the aggregate setting bounds retained decoded
+skill content across accepted images, not D7's total downloaded/decompressed
+budget per image. The task 2.1 defaults are acquisition defaults that operators
+may override; D2 normalized-response limits remain unchanged.
+
+Discovery retries one page with a new deadline per attempt. OCI authentication,
+redirects, and body reading share one request deadline; the image retry wraps
+acquisition/extraction without nested per-request retries. Parent cancellation
+stops work and backoff. Shared helpers enforce bounded streaming reads, clean up
+unused responses, and classify transient errors by HTTP status or network causes.
+Quay pagination and OCI authentication/extraction remain separate responsibilities.
+Image-error reporting takes an internal `logNotFoundAsError` boolean: true logs
+404s at error level for explicit image references, and false selects debug level
+for discovered candidates. Explicit references take precedence during merging.
+Other failures, including organization-listing 404s, retain diagnostics.
+The `/images` failure list and status calculation are unchanged.
+The existing three-redirect cap and preflight destination checks are preserved;
+completing D7's configured-origin policy, connection-level destination validation,
+five-redirect bound and per-image/refresh budgets remains part of unchecked task
+2.4. The follow-up does not implement normalized snapshots, periodic refresh, or
+other unchecked tasks.
+
+Each refresh also has a five-minute total deadline, at most 100 discovery pages
+shared across repository and tag listings,
 and at most 1,000 inspected candidates (including skipped and failed candidates).
 Detect repeated pagination tokens/URLs and stop instead of following a cycle.
 Budget exhaustion or a pagination cycle publishes a bounded `partial` snapshot;
 these limits bound work even when a source contains many non-skills.
 
 Source configuration owns stable source ID, public registry/index location,
-OCI selected tag, allowed origins, and refresh schedule. Catalog configuration
+OCI optional exact tag filter (all active tags by default), allowed origins, and
+refresh schedule. Catalog configuration
 owns `connectorPluginId`, `sourceId`, expected source type, catalog namespace,
 `defaultOwner`, `defaultLifecycle`, and polling schedule. Source IDs are unique
 within each source type; plugin IDs are transport addresses, not identity keys.

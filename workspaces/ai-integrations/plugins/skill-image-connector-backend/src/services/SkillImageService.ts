@@ -20,7 +20,8 @@ import platformPath from 'node:path';
 import os from 'node:os';
 import { gunzipSync } from 'node:zlib';
 import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
-import { MAX_BLOB_SIZE } from './types';
+import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_TAR_ENTRIES } from './types';
+import type { SkillImageOptions } from './types';
 import type {
   OciManifest,
   OciDescriptor,
@@ -59,9 +60,6 @@ const TAR_MEDIA_TYPES = new Set([
   'application/vnd.oci.image.layer.v1.tar+gzip',
 ]);
 
-/** Maximum number of tar entries inspected per layer to avoid DoS. */
-const MAX_TAR_ENTRIES = 200;
-
 // ── Tar extraction helpers ──────────────────────────────────────────
 
 interface TarEntry {
@@ -73,9 +71,9 @@ interface TarEntry {
  * Decompresses a buffer if it starts with the gzip magic bytes (0x1f 0x8b),
  * otherwise returns it unchanged.
  */
-function maybeDecompress(buf: Buffer): Buffer {
+function maybeDecompress(buf: Buffer, maxBlobSizeBytes: number): Buffer {
   if (buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b) {
-    return gunzipSync(buf, { maxOutputLength: MAX_BLOB_SIZE });
+    return gunzipSync(buf, { maxOutputLength: maxBlobSizeBytes });
   }
   return buf;
 }
@@ -288,6 +286,7 @@ export async function fetchAndExtractSkillImage(
   logger: LoggerService,
   credentials?: RegistryCredentials,
   signal?: AbortSignal,
+  options: SkillImageOptions = DEFAULT_SKILL_IMAGE_OPTIONS,
 ): Promise<SkillImageExtraction> {
   const baseDir = workDir ?? os.tmpdir();
   const imageRef = parseImageRef(imageRefStr);
@@ -295,7 +294,13 @@ export async function fetchAndExtractSkillImage(
   logger.info(`Processing skill image ${imageRefStr}`);
 
   // 1. Fetch the manifest
-  const manifest = await fetchManifest(imageRef, logger, credentials, signal);
+  const manifest = await fetchManifest(
+    imageRef,
+    logger,
+    credentials,
+    signal,
+    options,
+  );
 
   // 2. Determine extraction strategy
   const strategy = validateSkillImageManifest(manifest);
@@ -317,6 +322,7 @@ export async function fetchAndExtractSkillImage(
           credentials,
           blobSignal,
           blobController,
+          options,
         )
       : await fetchTarContents(
           imageRef,
@@ -324,6 +330,7 @@ export async function fetchAndExtractSkillImage(
           logger,
           credentials,
           blobSignal,
+          options,
         );
 
   // 4. Write to local storage following the pattern from
@@ -391,6 +398,7 @@ async function fetchAnnotatedContents(
   credentials: RegistryCredentials | undefined,
   blobSignal: AbortSignal,
   blobController: AbortController,
+  options: SkillImageOptions,
 ): Promise<ExtractedSkillContents> {
   const cancelSiblings = <T>(promise: Promise<T>): Promise<T> =>
     promise.catch(error => {
@@ -406,6 +414,7 @@ async function fetchAnnotatedContents(
         logger,
         credentials,
         blobSignal,
+        options,
       ),
     ),
     cancelSiblings(
@@ -416,6 +425,7 @@ async function fetchAnnotatedContents(
         logger,
         credentials,
         blobSignal,
+        options,
       ),
     ),
   ]);
@@ -432,6 +442,7 @@ async function fetchTarContents(
   logger: LoggerService,
   credentials: RegistryCredentials | undefined,
   blobSignal: AbortSignal,
+  options: SkillImageOptions,
 ): Promise<ExtractedSkillContents> {
   let yamlBuf: Buffer | undefined;
   let mdBuf: Buffer | undefined;
@@ -447,8 +458,11 @@ async function fetchTarContents(
       logger,
       credentials,
       blobSignal,
+      options,
     );
-    const entries = parseTarEntries(maybeDecompress(blob));
+    const entries = parseTarEntries(
+      maybeDecompress(blob, options.maxBlobSizeBytes),
+    );
     yamlBuf ??= findTarFile(entries, YAML_NAMES);
     mdBuf ??= findTarFile(entries, MD_NAMES);
   }

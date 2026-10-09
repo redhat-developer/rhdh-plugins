@@ -27,7 +27,8 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
     main: '#92c5f9',
   },
   navigation: {
-    background: '#292929',
+    // Match page-inset / app-bar / sidebar chrome (PatternFly shell).
+    background: '#151515',
     indicator: 'transparent',
     color: '#ffffff',
     selectedColor: '#ffffff',

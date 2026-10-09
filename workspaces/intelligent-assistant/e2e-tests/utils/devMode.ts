@@ -35,6 +35,12 @@ export type MockMcpServersOptions = {
   /** Shown as `validation.error` when POST validate fails for `failServerValidateFor` (use product i18n, e.g. `mcp.settings.token.validationFailed`). */
   failServerValidateError?: string;
   /**
+   * When true with `failServerValidateFor`, POST `/mcp-servers/:name/validate`
+   * returns HTTP 400 `{ error }` (mirrors missing LCS/config URL) instead of a
+   * 200 body with `status: 'error'`.
+   */
+  failServerValidateAsHttpError?: boolean;
+  /**
    * Optional per-server tool names returned by POST `/mcp-servers/:name/validate`.
    * This allows modal "Tools" list assertions to mirror real server names.
    */
@@ -625,7 +631,7 @@ export async function mockQuery(
   });
 }
 
-/** Mock query SSE that returns BYOK `referenced_documents` on the `end` event. */
+/** Mock query SSE that returns `referenced_documents` on the `end` event (BYOK / OKP). */
 export async function mockQueryWithReferencedDocuments(
   page: Page,
   query: string,
@@ -741,15 +747,23 @@ export async function mockMcpServers(
       }
       const name = decodeURIComponent(nameSeg);
       if (mcpMockOptions.failServerValidateFor === name) {
+        const errorMessage =
+          mcpMockOptions.failServerValidateError ??
+          'Upstream MCP validation failed.';
+        if (mcpMockOptions.failServerValidateAsHttpError) {
+          await route.fulfill({
+            status: 400,
+            json: { error: errorMessage },
+          });
+          return;
+        }
         await route.fulfill({
           json: {
             name,
             status: 'error' as const,
             toolCount: 0,
             validation: {
-              error:
-                mcpMockOptions.failServerValidateError ??
-                'Upstream MCP validation failed.',
+              error: errorMessage,
             },
           },
         });

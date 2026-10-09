@@ -77,7 +77,9 @@ even if no failed keys are known. `failed` SHALL have no skill records.
 ### Requirement: Stable identity and serialized references
 
 The shared library SHALL implement design D5's identity tuple and deterministic catalog name,
-SemVer fallback, and source-reference construction/parsing. OCI URI digests SHALL
+SemVer fallback, and source-reference construction/parsing. OCI discovery keys
+SHALL include the exact tag as `<registry>/<repository>:<tag>`; metadata tags and
+content digests SHALL NOT replace that identity. OCI URI digests SHALL
 match the record digest. HTTPS artifact URLs SHALL contain neither credentials
 nor fragments, query-string credentials, or signed access tokens; npx
 references SHALL serialize as `<sourceUri>#<digest>` with a lowercase SHA-256
@@ -87,6 +89,13 @@ digest and round-trip without losing non-sensitive URL query parameters.
 
 - **WHEN** a record's name or digest changes but its source type, source ID, and key do not
 - **THEN** its computed catalog entity name remains identical
+
+#### Scenario: OCI tag aliases remain distinct
+
+- **WHEN** two OCI records have different repository/tag keys but the same manifest digest and source URI
+- **THEN** the shared snapshot validator accepts both distinct keys
+- **AND** the identity helper computes a different catalog entity name for each tag
+- **AND** a repeated identical repository/tag key is still rejected as a duplicate
 
 #### Scenario: Missing declared semantic version
 

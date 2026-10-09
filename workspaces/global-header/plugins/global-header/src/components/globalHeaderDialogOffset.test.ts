@@ -17,6 +17,21 @@
 import { GLOBAL_HEADER_DIALOG_OFFSET_CSS } from './globalHeaderDialogOffset';
 
 describe('GLOBAL_HEADER_DIALOG_OFFSET_CSS', () => {
+  it('offsets BUI dialog overlays and the fixed sidebar root below the masthead', () => {
+    expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain(
+      '--rhdh-global-header-height: 64px',
+    );
+    expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain(
+      'data-testid="sidebar-root"',
+    );
+    expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain(
+      '[data-testid="sidebar-root"] > *',
+    );
+    expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain(
+      'calc(100vh - var(--rhdh-global-header-height, 64px))',
+    );
+  });
+
   it('offsets BUI dialog overlays below the masthead', () => {
     expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain('bui-DialogOverlay');
     expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain(

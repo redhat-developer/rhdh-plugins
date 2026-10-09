@@ -23,6 +23,22 @@ export interface Config {
      */
     sidebar?: {
       /**
+       * Show the Settings group in the sidebar. When unset, Settings is shown
+       * unless the global header is present (settings then live in the header
+       * user menu). Set to `true` to force the sidebar Settings entry on, or
+       * `false` to hide it even without a global header.
+       * @visibility frontend
+       */
+      settings?: boolean;
+      /**
+       * Show the company logo (and its gap) in the sidebar. When unset, the
+       * logo is shown unless the global header is present (the masthead
+       * already shows the company logo). Set to `true` to force the sidebar
+       * logo on, or `false` to hide it even without a global header.
+       * @visibility frontend
+       */
+      logo?: boolean;
+      /**
        * Items without a group render at the top level. Other items render
        * inside the group with the matching id.
        * @visibility frontend

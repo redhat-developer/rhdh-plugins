@@ -19,23 +19,57 @@ import { defineConfig } from '@playwright/test';
 const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 
 const baseConfig = `${__dirname}/app-config.yaml`;
+const testConfigDir = `${__dirname}/e2e-tests/test_yamls`;
+const defaultWidgetsConfig = `${testConfigDir}/app-config-e2e-default-widgets.yaml`;
+
+const PERSONA_SERVERS = [
+  {
+    frontendPort: 3001,
+    backendPort: 7008,
+    overlay: `${testConfigDir}/app-config-e2e-admin.yaml`,
+  },
+  {
+    frontendPort: 3002,
+    backendPort: 7009,
+    overlay: `${testConfigDir}/app-config-e2e-developer.yaml`,
+  },
+  {
+    frontendPort: 3003,
+    backendPort: 7010,
+    overlay: `${testConfigDir}/app-config-e2e-overlap.yaml`,
+  },
+] as const;
 
 export default defineConfig({
   // E2E tests run full app + login + locale; beforeAll can take 30–60s
   timeout: 120 * 1000,
 
   expect: {
-    timeout: 5000,
+    timeout: 15000,
   },
+
+  // One worker avoids guest-auth flakes when 4 Backstage stacks are up
+  workers: 1,
+  fullyParallel: false,
 
   webServer: process.env.PLAYWRIGHT_URL
     ? []
-    : {
-        command: `yarn start --config ${baseConfig}`,
-        port: 3000,
-        reuseExistingServer: true,
-        cwd: __dirname,
-      },
+    : [
+        {
+          command: `yarn start --config ${baseConfig}`,
+          url: 'http://localhost:7007/.backstage/health/v1/readiness',
+          timeout: 240000,
+          reuseExistingServer: !process.env.CI,
+          cwd: __dirname,
+        },
+        ...PERSONA_SERVERS.map(persona => ({
+          command: `yarn start --config ${baseConfig} --config ${defaultWidgetsConfig} --config ${persona.overlay}`,
+          url: `http://localhost:${persona.backendPort}/.backstage/health/v1/readiness`,
+          timeout: 240000,
+          reuseExistingServer: !process.env.CI,
+          cwd: __dirname,
+        })),
+      ],
 
   retries: process.env.CI ? 2 : 0,
 
@@ -53,7 +87,6 @@ export default defineConfig({
   testDir: 'e2e-tests',
 
   projects: [
-    // en: run all tests (no grep)
     {
       name: 'en',
       use: {
@@ -61,7 +94,6 @@ export default defineConfig({
         locale: 'en',
       },
     },
-    // de, es, fr, it, ja: run only Cards tests (locale-specific content)
     ...LOCALES.filter(locale => locale !== 'en').map(locale => ({
       name: locale,
       testMatch: '**/homepageCards.test.ts',

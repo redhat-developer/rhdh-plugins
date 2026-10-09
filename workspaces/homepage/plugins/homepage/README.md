@@ -48,8 +48,49 @@ app:
         config:
           customizable: true
           widgetLayout:
-            # keys match widget `name` / layout config
+            # keys are the widget name or extension id
             ...
+```
+
+On a read-only homepage (`customizable: false`), `props` from `widgetLayout` is forwarded into the widget. Each widget reads the fields it understands.
+
+The key is the widget `name`, or the extension id (the last segment of `home-page-widget:<plugin>/<id>`).
+
+```yaml
+app:
+  extensions:
+    - home-page-layout:homepage/dynamic-homepage-layout:
+        config:
+          customizable: false
+          widgetLayout:
+            my-widget:
+              priority: 100
+              props:
+                title: Hello from config
+              breakpoints:
+                xl: { w: 6, h: 4 }
+                lg: { w: 6, h: 4 }
+                md: { w: 6, h: 4 }
+                sm: { w: 12, h: 4 }
+                xs: { w: 12, h: 4 }
+                xxs: { w: 12, h: 4 }
+```
+
+The same key can be a list. Each item becomes its own card, with its own `props`, breakpoints, and priority.
+
+```yaml
+widgetLayout:
+  my-widget:
+    - id: first-copy
+      props:
+        title: First copy
+      breakpoints:
+        xl: { w: 6, h: 4, x: 0, y: 0 }
+    - id: second-copy
+      props:
+        title: Second copy
+      breakpoints:
+        xl: { w: 6, h: 4, x: 6, y: 0 }
 ```
 
 Visit tracking (for recently/top visited) still uses community home APIs when that package is installed:

@@ -16,17 +16,15 @@
 
 import { createApp } from '@backstage/frontend-defaults';
 
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
-import {
-  homePageModule,
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
+import homepagePlugin, {
   homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-homepage';
 import scorecardPlugin, {
   scorecardTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 import { signInModule } from './modules/signIn';
 import { navModule } from './modules/nav';
-import { iconsModule } from './modules/icons';
 
 /*
  * app: Backstage app using the New Frontend System (NFS).
@@ -34,11 +32,10 @@ import { iconsModule } from './modules/icons';
 const app = createApp({
   features: [
     rhdhThemeModule,
-    homePageModule,
+    homepagePlugin,
     homepageTranslationsModule,
     scorecardPlugin,
     scorecardTranslationsModule,
-    iconsModule,
     signInModule,
     navModule,
   ],

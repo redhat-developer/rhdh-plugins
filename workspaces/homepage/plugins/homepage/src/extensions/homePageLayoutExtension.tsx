@@ -16,8 +16,8 @@
 
 import { HomePageLayoutBlueprint } from '@backstage/plugin-home-react/alpha';
 import { z } from 'zod';
-import { HomePageCardConfig } from '../types';
 import { homepageLayoutAttachTo } from './homepageAttach';
+import { widgetLayoutSchema } from '../utils/widgetLayoutConfig';
 
 /**
  * Custom home page layout for `page:homepage` only.
@@ -31,29 +31,11 @@ export const homePageLayoutExtension =
     attachTo: homepageLayoutAttachTo,
     configSchema: {
       customizable: z.boolean().optional(),
-      widgetLayout: z
-        .record(
-          z.string(),
-          z.object({
-            priority: z.number().optional(),
-            breakpoints: z
-              .record(
-                z.string(),
-                z.object({
-                  w: z.number().optional(),
-                  h: z.number().optional(),
-                  x: z.number().optional(),
-                  y: z.number().optional(),
-                }),
-              )
-              .optional(),
-          }),
-        )
-        .optional(),
+      widgetLayout: widgetLayoutSchema,
     },
     factory(originalFactory, { config }) {
       const customizable = config.customizable ?? true;
-      const layoutConfig = config.widgetLayout ?? {};
+      const widgetLayout = config.widgetLayout ?? {};
 
       return originalFactory({
         loader: async () => {
@@ -62,30 +44,11 @@ export const homePageLayoutExtension =
           );
 
           return function CustomHomePageLayout({ widgets }) {
-            const processedWidgets: HomePageCardConfig[] = widgets
-              .map(widget => {
-                const widgetConfig = layoutConfig[widget.name ?? ''];
-                const configBreakpoints = widgetConfig?.breakpoints;
-
-                if (!configBreakpoints) return widget;
-
-                return {
-                  ...widget,
-                  breakpointLayouts: configBreakpoints,
-                };
-              })
-              .sort((a, b) => {
-                if (customizable) return 0;
-
-                const priorityA = layoutConfig[a.name ?? '']?.priority ?? 0;
-                const priorityB = layoutConfig[b.name ?? '']?.priority ?? 0;
-                return priorityB - priorityA;
-              });
-
             return (
               <HomePageLayout
-                widgets={processedWidgets}
+                widgets={widgets}
                 customizable={customizable}
+                widgetLayout={widgetLayout}
               />
             );
           };

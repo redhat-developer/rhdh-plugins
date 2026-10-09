@@ -34,18 +34,61 @@ export interface RegistryCredentials {
   tokenRealm?: string;
 }
 
-/** Maximum allowed blob download size in bytes (5 MB). */
-export const MAX_BLOB_SIZE = 5 * 1024 * 1024;
+/** Default maximum blob download size in bytes (5 MiB). */
+export const DEFAULT_MAX_BLOB_SIZE = 5 * 1024 * 1024;
 
 /**
- * Maximum aggregate content retained in memory across all images (50 MB).
+ * Default maximum aggregate content retained across all images (50 MiB).
  * Limits the combined size of decoded skillimage.yaml and SKILLS.md strings
  * to prevent unbounded memory growth with many configured images.
  */
-export const MAX_AGGREGATE_CONTENT_SIZE = 50 * 1024 * 1024;
+export const DEFAULT_MAX_AGGREGATE_CONTENT_SIZE = 50 * 1024 * 1024;
 
 /** Default fetch timeout in milliseconds (30 seconds). */
-export const FETCH_TIMEOUT_MS = 30_000;
+export const DEFAULT_FETCH_TIMEOUT_MS = 30_000;
+
+/** Default maximum size of one Quay discovery response (5 MiB). */
+export const DEFAULT_MAX_DISCOVERY_RESPONSE_SIZE = 5 * 1024 * 1024;
+/** Default total candidate limit for explicit images and discovered repository tags. */
+export const DEFAULT_MAX_IMAGES = 25;
+/** Default additional retry attempts after an initial failure. */
+export const DEFAULT_MAX_RETRIES = 2;
+/** Default delay in milliseconds before retry backoff (2 seconds). */
+export const DEFAULT_RETRY_BASE_DELAY_MS = 2_000;
+
+/** Fixed acquisition ceilings. Byte limits have distinct scopes. */
+export const MAX_MANIFEST_SIZE = 5 * 1024 * 1024;
+export const MAX_TOKEN_RESPONSE_SIZE = 1024 * 1024;
+export const MAX_REDIRECTS = 3;
+/** Shared logical-page budget for Quay repository and tag enumeration. */
+export const MAX_DISCOVERY_PAGES = 100;
+/** Maximum page size accepted by the Quay tag-list API. */
+export const QUAY_TAG_PAGE_SIZE = 100;
+export const MAX_TAR_ENTRIES = 200;
+export const MAX_CONCURRENT_IMAGE_FETCHES = 4;
+/** Largest delay supported by Node's timers without clamping to 1 ms. */
+export const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
+
+/** Validated backend settings, resolved once at plugin initialization. */
+export interface SkillImageOptions {
+  readonly fetchTimeoutMs: number;
+  readonly maxBlobSizeBytes: number;
+  readonly maxAggregateContentSizeBytes: number;
+  readonly maxDiscoveryResponseSizeBytes: number;
+  readonly maxImages: number;
+  readonly maxRetries: number;
+  readonly retryBaseDelayMs: number;
+}
+
+export const DEFAULT_SKILL_IMAGE_OPTIONS: SkillImageOptions = Object.freeze({
+  fetchTimeoutMs: DEFAULT_FETCH_TIMEOUT_MS,
+  maxBlobSizeBytes: DEFAULT_MAX_BLOB_SIZE,
+  maxAggregateContentSizeBytes: DEFAULT_MAX_AGGREGATE_CONTENT_SIZE,
+  maxDiscoveryResponseSizeBytes: DEFAULT_MAX_DISCOVERY_RESPONSE_SIZE,
+  maxImages: DEFAULT_MAX_IMAGES,
+  maxRetries: DEFAULT_MAX_RETRIES,
+  retryBaseDelayMs: DEFAULT_RETRY_BASE_DELAY_MS,
+});
 
 /** Minimal OCI manifest descriptor (image manifest V2 schema 2). */
 export interface OciManifest {
@@ -75,6 +118,18 @@ export interface SkillImageExtraction {
   skillsMd: string;
 }
 
+/**
+ * Configuration for Quay organization discovery.
+ */
+export interface QuayDiscoveryConfig {
+  /** Quay registry host (e.g. "quay.io"). */
+  registry: string;
+  /** Public organization whose repositories will be discovered. */
+  organization: string;
+  /** Exact tag to select for each repository. Omit to discover all active tags. */
+  tag?: string;
+}
+
 /** Plugin configuration for a single skill image source. */
 export interface SkillImageConfig {
   /** Identifier for this image config entry. */
@@ -83,4 +138,6 @@ export interface SkillImageConfig {
   imageRef: string;
   /** Optional credentials for a private registry. */
   credentials?: RegistryCredentials;
+  /** Internal 404 logging policy: true logs errors (default); false logs debug for discovered candidates. */
+  logNotFoundAsError?: boolean;
 }

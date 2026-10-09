@@ -261,6 +261,46 @@ export const byokReferencedDocumentWithoutSource = [
   },
 ];
 
+/**
+ * OKP (Online Knowledge Portal) product-docs RAG — RHIDP-14132 / RHDHPLAN-1189.
+ * Vector store name stays `rhdh-product-docs` (RHIDP-14140). Online mode uses
+ * docs.redhat.com `reference_url`; offline mode uses OKP-served paths.
+ */
+export const OKP_E2E_RAG_SOURCE = 'rhdh-product-docs';
+
+export const OKP_E2E_ONLINE_DOC_TITLE = 'About Red Hat Developer Hub';
+
+export const OKP_E2E_ONLINE_DOC_URL =
+  'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/about_red_hat_developer_hub/index';
+
+export const OKP_E2E_OFFLINE_DOC_TITLE =
+  'Configuring authentication in Red Hat Developer Hub';
+
+export const OKP_E2E_OFFLINE_DOC_URL =
+  'http://rhdh-lightspeed-okp.apps.example.com/documentation/red_hat_developer_hub/1.8/html-single/authentication/index';
+
+/** LCORE `referenced_documents` for OKP online mode (external docs.redhat.com). */
+export const okpOnlineReferencedDocuments = [
+  {
+    doc_title: OKP_E2E_ONLINE_DOC_TITLE,
+    doc_url: OKP_E2E_ONLINE_DOC_URL,
+    doc_description:
+      'RHDH product documentation retrieved via OKP online mode.',
+    source: OKP_E2E_RAG_SOURCE,
+  },
+];
+
+/** LCORE `referenced_documents` for OKP offline mode (OKP base URL paths). */
+export const okpOfflineReferencedDocuments = [
+  {
+    doc_title: OKP_E2E_OFFLINE_DOC_TITLE,
+    doc_url: OKP_E2E_OFFLINE_DOC_URL,
+    doc_description:
+      'RHDH product documentation retrieved via OKP offline mode.',
+    source: OKP_E2E_RAG_SOURCE,
+  },
+];
+
 /** SSE `start.request_id` in {@link generateQueryResponse}. */
 const mockStreamRequestId = '0e3c4cd7-2817-4c34-91a2-6944550364df';
 

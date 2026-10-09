@@ -402,6 +402,7 @@ export class CatalogMetricService {
   ): Promise<EntityMetricDetailResponse> {
     // Get metric metadata
     const metric = this.registry.getMetric(metricId);
+    const thresholds = this.thresholdResolver.resolveMetricThresholds(metric);
 
     // High-page early-exit guard
     if (
@@ -410,6 +411,7 @@ export class CatalogMetricService {
     ) {
       return {
         metricId: metric.id,
+        thresholds,
         metricMetadata: {
           title: metric.title,
           description: metric.description,
@@ -482,6 +484,7 @@ export class CatalogMetricService {
       this.logger.error('Failed to fetch entities from catalog', { error });
       return {
         metricId: metric.id,
+        thresholds,
         metricMetadata: {
           title: metric.title,
           description: metric.description,
@@ -515,6 +518,7 @@ export class CatalogMetricService {
     if (pageRows.length === 0) {
       return {
         metricId: metric.id,
+        thresholds,
         metricMetadata: {
           title: metric.title,
           description: metric.description,
@@ -556,6 +560,7 @@ export class CatalogMetricService {
     // Format and return response
     return {
       metricId: metric.id,
+      thresholds,
       metricMetadata: {
         title: metric.title,
         description: metric.description,

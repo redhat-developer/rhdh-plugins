@@ -259,4 +259,41 @@ export class HomePageCustomization {
   async deleteFirstCard(): Promise<void> {
     await this.deleteButtons().first().click();
   }
+
+  /** Clears CustomHomepageGrid / home layout keys so server defaults apply. */
+  async clearHomeLayoutStorage(): Promise<void> {
+    await this.page.evaluate(() => {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (
+          key &&
+          (key.includes('home.customHomepage') ||
+            key.includes('customHomepage') ||
+            /[/:]home$/.test(key))
+        ) {
+          keysToRemove.push(key);
+        }
+      }
+      for (const key of keysToRemove) {
+        localStorage.removeItem(key);
+      }
+    });
+  }
+
+  /** If the grid was saved empty, restore server defaults then save. */
+  async ensureDefaultWidgetsVisible(): Promise<void> {
+    const needsRestore =
+      (await this.page
+        .getByText('Restore defaults')
+        .isVisible()
+        .catch(() => false)) ||
+      (await this.page
+        .getByText('No widgets added')
+        .isVisible()
+        .catch(() => false));
+    if (needsRestore) {
+      await this.restoreDefaultWidgets();
+    }
+  }
 }
