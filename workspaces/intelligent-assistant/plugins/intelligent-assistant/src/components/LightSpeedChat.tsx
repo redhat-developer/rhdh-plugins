@@ -16,8 +16,10 @@
 
 import {
   ChangeEvent,
+  lazy,
   MouseEvent,
   Ref,
+  Suspense,
   SyntheticEvent,
   useCallback,
   useEffect,
@@ -127,7 +129,6 @@ import {
   SortOption,
 } from '../utils/lightspeed-chatbox-utils';
 import { buildScreenContextAttachments } from '../utils/screen-context-utils';
-import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
 import { CollapsedHistoryStrip } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
@@ -150,6 +151,9 @@ import { SavedPromptMenuItems } from './SavedPromptMenuItems';
 import { ScreenContextChip } from './ScreenContextChip';
 import { SettingsPanel } from './SettingsPanel';
 import { ToastAlertGroup } from './ToastAlertGroup';
+
+// Monaco + CodeModal stay off the chat sync chunk until a file is opened.
+const Attachment = lazy(() => import('./Attachment'));
 
 const ConditionalWrapper = ({
   condition,
@@ -1120,6 +1124,7 @@ export const LightspeedChat = ({
     uploadError,
     showAlert,
     fileContents,
+    currentFileContent,
     setShowAlert,
     setFileContents,
     handleFileUpload,
@@ -2529,7 +2534,11 @@ export const LightspeedChat = ({
         onClose={closeSavedPromptDeleteModal}
         onConfirm={confirmSavedPromptDelete}
       />
-      <Attachment />
+      {currentFileContent ? (
+        <Suspense fallback={null}>
+          <Attachment />
+        </Suspense>
+      ) : null}
     </>
   );
 };
