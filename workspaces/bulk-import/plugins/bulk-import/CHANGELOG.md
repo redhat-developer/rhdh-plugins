@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.1.2
+
+### Patch Changes
+
+- a669321: Updated dependency `@testing-library/user-event` to `14.6.7`.
+- fb4ecee: Updated dependency `prettier` to `3.9.9`.
+- Updated dependencies [fb4ecee]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.1.2
+
 ## 9.1.1
 
 ### Patch Changes
