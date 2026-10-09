@@ -13,25 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-// Inline default thresholds for e2e mocks (matches scorecard-common DEFAULT_NUMBER_THRESHOLDS)
-const DEFAULT_NUMBER_THRESHOLDS = {
-  rules: [
-    { key: 'success', expression: '<10' },
-    { key: 'warning', expression: '10-50' },
-    { key: 'error', expression: '>50' },
-  ],
-};
-
-// Matches the configured thresholds for `openPrsWeightedKpi` in app-config.yaml.
-const OPEN_PRS_WEIGHTED_KPI_THRESHOLDS = {
-  rules: [
-    { key: 'success', expression: '>=80', color: '#6bb300' },
-    { key: 'warning', expression: '30-80', color: '#FFC0CB' },
-    { key: 'error', expression: '<30', color: '#be1ec7' },
-  ],
-};
+import {
+  aggregationTypes,
+  DEFAULT_NUMBER_THRESHOLDS,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  FILECHECK_BOOLEAN_THRESHOLDS,
+  OPEN_PRS_WEIGHTED_KPI_THRESHOLDS,
+} from '../constants/thresholds';
 
 export const customScorecardResponse = [
   {
@@ -1007,13 +996,6 @@ export const licenseFileExistsKpiMetadataResponse = {
   type: 'boolean',
   history: true,
   aggregationType: 'statusGrouped',
-};
-
-const FILECHECK_BOOLEAN_THRESHOLDS = {
-  rules: [
-    { key: 'exist', expression: '==true', color: 'success.main' },
-    { key: 'missing', expression: '==false', color: 'error.main' },
-  ],
 };
 
 export const licenseFileExistsEntitiesDrillDownResponse = {

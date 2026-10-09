@@ -20,14 +20,7 @@ import {
   MetricResult,
   aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-export const DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS = {
-  rules: [
-    { key: 'success', expression: '>=80', color: 'success.main' },
-    { key: 'warning', expression: '30-80', color: 'warning.main' },
-    { key: 'error', expression: '<30', color: 'error.main' },
-  ],
-};
+import { DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS } from './thresholdData';
 
 export const mockScorecardSuccessData = [
   {

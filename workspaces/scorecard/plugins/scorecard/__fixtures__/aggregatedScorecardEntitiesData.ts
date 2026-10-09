@@ -16,13 +16,7 @@
 
 import { subMinutes, subHours, subDays } from 'date-fns';
 import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-const FILECHECK_BOOLEAN_THRESHOLDS = {
-  rules: [
-    { key: 'exist', expression: '==true', color: 'success.main' },
-    { key: 'missing', expression: '==false', color: 'error.main' },
-  ],
-};
+import { FILECHECK_BOOLEAN_THRESHOLDS } from './thresholdData';
 
 export const mockAggregatedScorecardEntitiesData = (
   metricId: string,

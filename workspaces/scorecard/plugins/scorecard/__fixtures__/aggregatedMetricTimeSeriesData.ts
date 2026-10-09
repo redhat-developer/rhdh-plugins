@@ -21,6 +21,12 @@ import {
   type ScalarAggregatedTimeSeriesPoint,
   type ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  CHANGE_FAILURE_RATE_THRESHOLDS,
+  DEPLOYMENT_FREQUENCY_THRESHOLDS,
+  LEAD_TIME_THRESHOLDS,
+  MTTR_THRESHOLDS,
+} from './thresholdData';
 
 type SeriesProfile = {
   metricId: string;
@@ -31,30 +37,6 @@ type SeriesProfile = {
   aggregationChartDisplayColor: string;
   /** Oldest → newest. `null` is a calculation-error day. */
   dailyValues: Array<number | null>;
-};
-
-const DEPLOYMENT_FREQUENCY_THRESHOLDS: ThresholdConfig = {
-  rules: [
-    { key: 'elite', expression: '>=7', color: 'success.main' },
-    { key: 'medium', expression: '1-7', color: 'warning.main' },
-    { key: 'error', expression: '<1', color: 'error.main' },
-  ],
-};
-
-const CHANGE_FAILURE_RATE_THRESHOLDS: ThresholdConfig = {
-  rules: [
-    { key: 'elite', expression: '<5', color: 'success.main' },
-    { key: 'medium', expression: '5-15', color: 'warning.main' },
-    { key: 'low', expression: '>15', color: 'error.main' },
-  ],
-};
-
-const LEAD_TIME_THRESHOLDS: ThresholdConfig = {
-  rules: [
-    { key: 'elite', expression: '<24', color: 'success.main' },
-    { key: 'medium', expression: '24-168', color: 'warning.main' },
-    { key: 'low', expression: '>168', color: 'error.main' },
-  ],
 };
 
 const DEPLOYMENT_FREQUENCY_PROFILE: SeriesProfile = {
@@ -119,7 +101,7 @@ const LEAD_TIME_PROFILE: SeriesProfile = {
   description:
     'This KPI provides average median lead time for changes in hours over a 30-day window per entity.',
   unit: 'h',
-  thresholds: LEAD_TIME_THRESHOLDS,
+  thresholds: MTTR_THRESHOLDS,
   aggregationChartDisplayColor: 'error.main',
   dailyValues: [
     120,
