@@ -22,7 +22,7 @@ import { useScorecards } from '../../hooks/useScorecards';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { CardLoading } from '../Common/CardLoading';
 import { EntityMetricCard } from './EntityMetricCard';
-import { EntityScorecardGrid } from './entityScorecardGridSx';
+import { EntityScorecardMasonry } from './EntityScorecardMasonry';
 
 const EntityScorecardContentInner = () => {
   const { data: scorecards, isLoading, error } = useScorecards();
@@ -38,16 +38,16 @@ const EntityScorecardContentInner = () => {
     return <ResponseErrorPanel error={error} />;
   }
 
-  if (!isLoading && scorecards?.length === 0) {
+  if (!scorecards?.length) {
     return <NoScorecardsState />;
   }
 
   return (
-    <EntityScorecardGrid>
-      {scorecards?.map((metric: MetricResult) => (
+    <EntityScorecardMasonry>
+      {scorecards.map((metric: MetricResult) => (
         <EntityMetricCard key={metric.id} metric={metric} />
       ))}
-    </EntityScorecardGrid>
+    </EntityScorecardMasonry>
   );
 };
 

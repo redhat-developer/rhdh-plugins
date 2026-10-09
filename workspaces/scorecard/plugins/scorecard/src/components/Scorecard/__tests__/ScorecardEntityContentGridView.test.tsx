@@ -21,11 +21,39 @@ import { useScorecards } from '../../../hooks/useScorecards';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { getStatusConfig } from '../../../utils';
 
+// jsdom does not provide ResizeObserver; required by EntityScorecardMasonry
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+Object.defineProperty(window, 'ResizeObserver', {
+  writable: true,
+  configurable: true,
+  value: ResizeObserverMock,
+});
+
 jest.mock('@backstage/core-components', () => ({
   ResponseErrorPanel: ({ error }: { error: Error }) => (
     <div data-testid="error-panel">{error.message}</div>
   ),
 }));
+
+jest.mock('@mui/lab/Masonry', () => {
+  return function MockMasonry({
+    children,
+    columns,
+  }: {
+    children?: JSX.Element;
+    columns?: number;
+  }) {
+    return (
+      <div data-testid="scorecard-masonry" data-columns={columns}>
+        {children}
+      </div>
+    );
+  };
+});
 
 jest.mock('../../Common/NoScorecardsState', () => {
   return function MockNoScorecardsState() {
@@ -547,7 +575,7 @@ describe('ScorecardEntityContentGridView', () => {
     });
   });
 
-  it('should render both group cards and ungrouped cards in container-query grid', () => {
+  it('should render both group cards and ungrouped cards in container-width Masonry', () => {
     useScorecardsMock.mockReturnValue({
       data: mockScorecardSuccessData,
       isLoading: false,

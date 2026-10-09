@@ -27,7 +27,7 @@ import { MetricGroupCard } from '../MetricGroupCard';
 import { dedupeMetricsById } from '../MetricGroupCard/thresholdBucketUtils';
 import { EntityScorecardContent } from './EntityScorecardContent';
 import { EntityMetricCard } from './EntityMetricCard';
-import { EntityScorecardGrid } from './entityScorecardGridSx';
+import { EntityScorecardMasonry } from './EntityScorecardMasonry';
 import { getTranslatedTextWithFallback } from '../../utils';
 
 export const ScorecardEntityContentGridView = ({
@@ -98,9 +98,9 @@ export const ScorecardEntityContentGridView = ({
   ));
 
   return (
-    <EntityScorecardGrid>
+    <EntityScorecardMasonry>
       {groupCards}
       {ungroupedCards}
-    </EntityScorecardGrid>
+    </EntityScorecardMasonry>
   );
 };

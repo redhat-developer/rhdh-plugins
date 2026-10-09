@@ -68,6 +68,7 @@
     "@backstage/theme": "^0.7.3",
     "@backstage/ui": "^0.17.1",
     "@mui/icons-material": "5.18.0",
+    "@mui/lab": "5.0.0-alpha.177",
     "@mui/material": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "@tanstack/react-query": "^5.95.2",
