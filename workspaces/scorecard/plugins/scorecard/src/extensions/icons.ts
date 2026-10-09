@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { IconBundleBlueprint } from '@backstage/plugin-app-react';
+import ScorecardSuccessStatusIcon from '@mui/icons-material/CheckCircleOutline';
+import ScorecardWarningStatusIcon from '@mui/icons-material/WarningAmber';
+import ScorecardErrorStatusIcon from '@mui/icons-material/DangerousOutlined';
 
-import {
-  ScorecardErrorStatusIcon,
-  ScorecardSuccessStatusIcon,
-  ScorecardWarningStatusIcon,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
-
-export const iconsModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [
-    IconBundleBlueprint.make({
-      params: {
-        icons: {
-          scorecardSuccessStatusIcon: ScorecardSuccessStatusIcon,
-          scorecardWarningStatusIcon: ScorecardWarningStatusIcon,
-          scorecardErrorStatusIcon: ScorecardErrorStatusIcon,
-        },
-      },
-    }),
-  ],
+export const scorecardIconBundle = IconBundleBlueprint.make({
+  params: {
+    icons: {
+      scorecardSuccessStatusIcon: ScorecardSuccessStatusIcon,
+      scorecardWarningStatusIcon: ScorecardWarningStatusIcon,
+      scorecardErrorStatusIcon: ScorecardErrorStatusIcon,
+    },
+  },
 });
