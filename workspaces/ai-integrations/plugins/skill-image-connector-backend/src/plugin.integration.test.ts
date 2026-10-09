@@ -244,9 +244,28 @@ describe('configured acquisition in the plugin', () => {
     expect(retainedBytes).toBeLessThanOrEqual(maxAggregateContentSizeBytes);
     expect(cleanupSkillImageExtraction).toHaveBeenCalledTimes(1);
     expect(cleanupSkillImageExtraction).toHaveBeenCalledWith(
-      explicitExtraction,
+      {
+        ...explicitExtraction,
+        acquisition: {
+          key: explicitRef,
+          digest: resolvedDigest,
+          sourceUri: `oci://quay.io/org/explicit@${resolvedDigest}`,
+        },
+      },
       expect.anything(),
     );
+    expect(explicitExtraction).toEqual({
+      skillImageYaml: 'hé',
+      skillsMd: 'abc',
+      skillImageYamlPath: '/explicit/skillimage.yaml',
+      skillsMdPath: '/explicit/SKILLS.md',
+    });
+    expect(discoveredExtraction).toEqual({
+      skillImageYaml: 'hé',
+      skillsMd: 'abc',
+      skillImageYamlPath: '/discovered/skillimage.yaml',
+      skillsMdPath: '/discovered/SKILLS.md',
+    });
   });
 
   it('honors zero retries in the image path and reports a failed image', async () => {
