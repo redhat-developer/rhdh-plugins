@@ -433,37 +433,49 @@ export class CatalogMetricService {
     const metric = this.registry.getMetric(metricId);
     const thresholds = this.thresholdResolver.resolveMetricThresholds(metric);
 
+    const emptyResponse = (): EntityMetricDetailResponse => ({
+      metricId: metric.id,
+      thresholds,
+      metricMetadata: {
+        title: metric.title,
+        description: metric.description,
+        type: metric.type,
+        unit: metric.unit,
+      },
+      entities: [],
+      pagination: {
+        page: options.page,
+        pageSize: options.limit,
+        total: 0,
+        totalPages: 0,
+        isCapped: false,
+      },
+      entityHealth: CatalogMetricService.entityHealthSummary([], false),
+    });
+
+    if (this.globalDisabledMetrics.includes(metricId)) {
+      this.logger.debug(`Disabled metric by app-config: ${metricId}`);
+      return emptyResponse();
+    }
+
     // High-page early-exit guard
     if (
       (options.page - 1) * options.limit >=
       CatalogMetricService.MAX_FETCHABLE_ROWS
     ) {
-      return {
-        metricId: metric.id,
-        thresholds,
-        metricMetadata: {
-          title: metric.title,
-          description: metric.description,
-          type: metric.type,
-          unit: metric.unit,
-        },
-        entities: [],
-        pagination: {
-          page: options.page,
-          pageSize: options.limit,
-          total: 0,
-          totalPages: 0,
-          isCapped: false,
-        },
-        entityHealth: CatalogMetricService.entityHealthSummary([], false),
-      };
+      return emptyResponse();
     }
 
-    // Query database with all DB filters first
-    // At the moment, this is going to be an O(MAX_FETCHABLE_ROWS) cost and is intentional to avoid leaking
-    // pre-auth counts. MAX_FETCHABLE_ROWS and BATCH_SIZE are to be used as a method to of adjustment to
-    // find the right amount of performance
-    const rows = await this.database.readEntityMetricsWithFilters(metricId, {
+    // Fetch successive DB windows in sort order, then apply catalog authorization and
+    // disabled-metric filtering until we have MAX_FETCHABLE_ROWS eligible rows or the
+    // database is exhausted. Cost is intentional to avoid leaking pre-auth counts;
+    // MAX_FETCHABLE_ROWS and BATCH_SIZE tune the performance tradeoff.
+    const entityMap = new Map<string, Entity>();
+    const accessibleRows: DbMetricValue[] = [];
+    let dbOffset = 0;
+    let moreDbRowsMayExist = false;
+
+    const dbFilterOptions = {
       status: options.status,
       entityName: options.entityName,
       entityKind: options.kind,
@@ -471,73 +483,103 @@ export class CatalogMetricService {
       entityOwner: options.owner,
       sortBy: options.sortBy,
       sortOrder: options.sortOrder,
-      pagination: {
-        limit: CatalogMetricService.MAX_FETCHABLE_ROWS,
-        offset: 0,
-      },
-    });
+    };
 
-    // Filter to authorized rows by batching through catalog.getEntitiesByRefs with user
-    // credentials. The catalog enforces auth natively: null = unauthorized or deleted.
-    // We also cache the returned Entity objects so we can enrich the page rows without
-    // a second catalog round-trip. Sequential processing preserves DB sort order.
-    const entityMap = new Map<string, Entity>();
-    const accessibleRows: DbMetricValue[] = [];
     try {
-      for (let i = 0; i < rows.length; i += CatalogMetricService.BATCH_SIZE) {
-        const batch = rows.slice(i, i + CatalogMetricService.BATCH_SIZE);
-        const response = await this.catalog.getEntitiesByRefs(
+      while (accessibleRows.length < CatalogMetricService.MAX_FETCHABLE_ROWS) {
+        const rows = await this.database.readEntityMetricsWithFilters(
+          metricId,
           {
-            entityRefs: batch.map(row => row.catalogEntityRef),
-            fields: [
-              'kind',
-              'metadata.name',
-              'metadata.namespace',
-              'metadata.annotations',
-              'spec.owner',
-            ],
+            ...dbFilterOptions,
+            pagination: {
+              limit: CatalogMetricService.MAX_FETCHABLE_ROWS,
+              offset: dbOffset,
+            },
           },
-          { credentials },
         );
 
-        // Filter out the unauthorized entities and those with the metric disabled
-        for (let j = 0; j < batch.length; j++) {
-          const entity = response.items[j];
-          if (!entity) continue; // null = unauthorized or not found, skip
-          if (isMetricIdDisabled(this.config, metricId, entity, this.logger)) {
-            continue;
+        if (rows.length === 0) {
+          moreDbRowsMayExist = false;
+          break;
+        }
+
+        // Filter to authorized rows by batching through catalog.getEntitiesByRefs with
+        // user credentials. The catalog enforces auth natively: null = unauthorized or
+        // deleted. Cache Entity objects so we can enrich the page without a second
+        // catalog round-trip. Sequential processing preserves DB sort order.
+        let stoppedAtEligibleCap = false;
+        for (
+          let i = 0;
+          i < rows.length && !stoppedAtEligibleCap;
+          i += CatalogMetricService.BATCH_SIZE
+        ) {
+          const batch = rows.slice(i, i + CatalogMetricService.BATCH_SIZE);
+          const response = await this.catalog.getEntitiesByRefs(
+            {
+              entityRefs: batch.map(row => row.catalogEntityRef),
+              fields: [
+                'kind',
+                'metadata.name',
+                'metadata.namespace',
+                'metadata.annotations',
+                'spec.owner',
+              ],
+            },
+            { credentials },
+          );
+
+          for (let j = 0; j < batch.length; j++) {
+            const entity = response.items[j];
+            if (!entity) continue; // null = unauthorized or not found, skip
+            if (
+              isMetricIdDisabled(this.config, metricId, entity, this.logger)
+            ) {
+              continue;
+            }
+            if (
+              accessibleRows.length >= CatalogMetricService.MAX_FETCHABLE_ROWS
+            ) {
+              // Eligible cap reached with remaining rows in this window (or later
+              // windows) that have not been fully evaluated.
+              stoppedAtEligibleCap = true;
+              moreDbRowsMayExist = true;
+              break;
+            }
+            entityMap.set(batch[j].catalogEntityRef, entity);
+            accessibleRows.push(batch[j]);
           }
-          entityMap.set(batch[j].catalogEntityRef, entity);
-          accessibleRows.push(batch[j]);
+        }
+
+        if (stoppedAtEligibleCap) {
+          break;
+        }
+
+        if (rows.length < CatalogMetricService.MAX_FETCHABLE_ROWS) {
+          // Database exhausted for the current filters/sort.
+          moreDbRowsMayExist = false;
+          break;
+        }
+
+        // Full DB window consumed; more rows may exist beyond this offset.
+        dbOffset += rows.length;
+        moreDbRowsMayExist = true;
+
+        if (accessibleRows.length >= CatalogMetricService.MAX_FETCHABLE_ROWS) {
+          break;
         }
       }
     } catch (error) {
       // Fail secure: if the catalog is unavailable we cannot confirm authorization,
       // so return empty rather than potentially unauthorized data.
       this.logger.error('Failed to fetch entities from catalog', { error });
-      return {
-        metricId: metric.id,
-        thresholds,
-        metricMetadata: {
-          title: metric.title,
-          description: metric.description,
-          type: metric.type,
-          unit: metric.unit,
-        },
-        entities: [],
-        pagination: {
-          page: options.page,
-          pageSize: options.limit,
-          total: 0,
-          totalPages: 0,
-          isCapped: false,
-        },
-        entityHealth: CatalogMetricService.entityHealthSummary([], false),
-      };
+      return emptyResponse();
     }
 
-    // True when DB results were capped; pagination.total may undercount the full dataset.
-    const isCapped = rows.length === CatalogMetricService.MAX_FETCHABLE_ROWS;
+    // True when the eligible-result cap was reached while more DB rows may exist;
+    // pagination.total / entityHealth counts may undercount the full dataset.
+    const isCapped =
+      accessibleRows.length === CatalogMetricService.MAX_FETCHABLE_ROWS &&
+      moreDbRowsMayExist;
 
     // Apply pagination to filtered entities
     const totalFiltered = accessibleRows.length;
