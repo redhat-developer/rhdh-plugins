@@ -103,6 +103,20 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         ':root:has(#global-header)': {
           '--rhdh-global-header-height': '64px',
         },
+        // Offset the fixed sidebar root below the masthead; drawer fills root.
+        // (Do not offset the absolute drawer by header height — that stacks
+        // with the root offset and leaves a gap under the header.)
+        ':root:has(#global-header) [data-testid="sidebar-root"]': {
+          top: 'var(--rhdh-global-header-height, 64px) !important',
+          height:
+            'calc(100vh - var(--rhdh-global-header-height, 64px)) !important',
+          bottom: 'auto !important',
+        },
+        ':root:has(#global-header) [data-testid="sidebar-root"] > *': {
+          top: '0 !important',
+          height: '100% !important',
+          bottom: '0 !important',
+        },
         // Branding lives in the masthead; hide the sidebar mark to avoid a
         // duplicate company logo (PatternFly header + nav pattern).
         ':root:has(#global-header) [data-testid="sidebar-company-logo"], :root:has(#global-header) [data-testid="sidebar-home-logo"]':
@@ -734,10 +748,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           paddingBottom: '1.5rem',
           backgroundColor: sidebarBackgroundColor,
           alignItems: 'stretch',
-          // Fixed sidebar clears the full-width in-flow / sticky masthead
-          // (PatternFly page + OFS Root). Falls back to 0 when no header.
-          top: `var(--rhdh-global-header-height, 0px) !important`,
-          height: `calc(100vh - var(--rhdh-global-header-height, 0px)) !important`,
+          // Drawer is position:absolute inside the fixed sidebar-root.
+          // Masthead clearance is applied on the root (CssBaseline); keep the
+          // drawer filling the root so offsets do not stack.
+          top: '0 !important',
+          height: '100% !important',
           bottom: '0 !important',
           '& hr': {
             backgroundColor: general.sidebarDividerColor,

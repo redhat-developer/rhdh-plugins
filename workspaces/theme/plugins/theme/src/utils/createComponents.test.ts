@@ -268,13 +268,18 @@ describe('createComponents', () => {
     expect(String(overrides)).toContain('!important');
   });
 
-  it('offsets the fixed sidebar below the full-width masthead', () => {
+  it('offsets the fixed sidebar root below the full-width masthead', () => {
     const actual = createComponents({});
+    const overrides = actual.MuiCssBaseline?.styleOverrides;
+    expect(typeof overrides).toBe('function');
+    expect(String(overrides)).toContain('[data-testid="sidebar-root"]');
+    expect(String(overrides)).toContain(
+      'calc(100vh - var(--rhdh-global-header-height, 64px))',
+    );
     expect(actual.BackstageSidebar?.styleOverrides?.drawer).toEqual(
       expect.objectContaining({
-        top: 'var(--rhdh-global-header-height, 0px) !important',
-        height:
-          'calc(100vh - var(--rhdh-global-header-height, 0px)) !important',
+        top: '0 !important',
+        height: '100% !important',
         bottom: '0 !important',
       }),
     );

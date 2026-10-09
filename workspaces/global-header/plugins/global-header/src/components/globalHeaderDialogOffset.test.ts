@@ -25,7 +25,7 @@ describe('GLOBAL_HEADER_DIALOG_OFFSET_CSS', () => {
       'data-testid="sidebar-root"',
     );
     expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain(
-      'BackstageSidebar-drawer',
+      '[data-testid="sidebar-root"] > *',
     );
     expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain(
       'calc(100vh - var(--rhdh-global-header-height, 64px))',
