@@ -31,13 +31,18 @@ const defaultCardLayout = {
   },
 } as const;
 
+type ScorecardHomepageCardProps = {
+  metricId?: string;
+  aggregationId?: string;
+};
+
+const aggregationIdDescription =
+  'KPI key from scorecard.aggregationKPIs, or a metric ID such as github.openPRs.';
+
 function lazyScorecardWidget(
   factory: (
-    ScorecardHomepageCardWithProvider: ComponentType<{
-      metricId?: string;
-      aggregationId?: string;
-    }>,
-  ) => () => ReactElement,
+    ScorecardHomepageCardWithProvider: ComponentType<ScorecardHomepageCardProps>,
+  ) => (props?: ScorecardHomepageCardProps) => ReactElement,
 ) {
   return async () => {
     const { ScorecardHomepageCardWithProvider } = await import(
@@ -47,380 +52,53 @@ function lazyScorecardWidget(
   };
 }
 
-function BorderlessHomeWidgetRenderer({ Content }: RendererProps) {
-  return <Content />;
+/** Forwards homepage card settings, including `aggregationId`, into the card. */
+function ConfigurableScorecardWidgetRenderer({
+  Content,
+  ...rest
+}: RendererProps) {
+  return <Content {...rest} />;
 }
 
 /**
- * NFS widget: AggregatedCardWithDeprecatedMetricId.
+ * NFS homepage card for one scorecard aggregation.
+ *
+ * Set Aggregation ID in the card settings on an editable homepage.
  */
-export const aggregatedCardWithDeprecatedMetricIdWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-deprecated-metric-id',
-    params: {
-      name: 'AggregatedCardWithDeprecatedMetricId',
-      title: 'Scorecard: With deprecated metricId property (Jira)',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          <ScorecardHomepageCardWithProvider metricId="jira.openIssues" />,
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithDefaultAggregation.
- */
-export const aggregatedCardWithDefaultAggregationWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-default-aggregation',
-    params: {
-      name: 'AggregatedCardWithDefaultAggregation',
-      title: 'Scorecard: With default aggregation config (GitHub)',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          <ScorecardHomepageCardWithProvider aggregationId="github.openPRs" />,
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithJiraOpenIssues.
- */
-export const aggregatedCardWithJiraOpenIssuesWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-jira-open-issues',
-    params: {
-      name: 'AggregatedCardWithJiraOpenIssues',
-      title: 'Scorecard: Jira open blocking tickets',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          <ScorecardHomepageCardWithProvider aggregationId="openIssuesKpi" />,
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithGithubOpenPrs.
- */
-export const aggregatedCardWithGithubOpenPrsWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-github-open-prs',
-    params: {
-      name: 'AggregatedCardWithGithubOpenPrs',
-      title: 'Scorecard: GitHub open PRs',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          <ScorecardHomepageCardWithProvider aggregationId="openPrsKpi" />,
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithGithubFilecheckLicense.
- */
-export const aggregatedCardWithGithubFilecheckLicenseWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-github-filecheck-license',
-    params: {
-      name: 'AggregatedCardWithGithubFilecheckLicense',
-      title: 'Scorecard: LICENSE file exists',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider aggregationId="licenseFileExistsKpi" />
-          ),
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithGithubFilecheckCodeowners.
- */
-export const aggregatedCardWithGithubFilecheckCodeownersWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-github-filecheck-codeowners',
-    params: {
-      name: 'AggregatedCardWithGithubFilecheckCodeowners',
-      title: 'Scorecard: CODEOWNERS file exists',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider aggregationId="filecheck.codeowners" />
-          ),
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithGithubFilecheckReadme.
- */
-export const aggregatedCardWithGithubFilecheckReadmeWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-github-filecheck-readme',
-    params: {
-      name: 'AggregatedCardWithGithubFilecheckReadme',
-      title: 'Scorecard: README file exists',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider aggregationId="filecheck.readme" />
-          ),
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithGithubOpenPrsWeighted.
- */
-export const aggregatedCardWithGithubOpenPrsWeightedWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-github-open-prs-weighted',
-    params: {
-      name: 'AggregatedCardWithGithubOpenPrsWeighted',
-      title: 'Scorecard: GitHub open PRs (weighted health)',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider aggregationId="openPrsWeightedKpi" />
-          ),
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithMaxOpenPrs (scalar max).
- */
-export const aggregatedCardWithMaxOpenPrsWidget = HomePageWidgetBlueprint.make({
-  name: 'scorecard-max-open-prs',
+export const scorecardAggregatedCardWidget = HomePageWidgetBlueprint.make({
+  name: 'scorecard-aggregated-card',
+  attachTo: { id: 'page:homepage', input: 'widgets' },
   params: {
-    name: 'AggregatedCardWithMaxOpenPrs',
-    title: 'Scorecard: Maximum open PRs',
+    name: 'ScorecardAggregatedCard',
+    title: 'Scorecard',
+    description:
+      'Aggregated scorecard. Set Aggregation ID to a KPI key from scorecard.aggregationKPIs, or to a metric ID such as github.openPRs.',
     layout: defaultCardLayout,
-    componentProps: {
-      Renderer: BorderlessHomeWidgetRenderer,
+    settings: {
+      schema: {
+        title: 'Scorecard settings',
+        type: 'object',
+        required: ['aggregationId'],
+        properties: {
+          aggregationId: {
+            title: 'Aggregation ID',
+            type: 'string',
+            minLength: 1,
+            description: aggregationIdDescription,
+          },
+        },
+      },
     },
-    components: lazyScorecardWidget(ScorecardHomepageCardWithProvider => () => (
-      <ScorecardHomepageCardWithProvider aggregationId="maxOpenPrs" />
-    )),
+    componentProps: {
+      Renderer: ConfigurableScorecardWidgetRenderer,
+    },
+    components: lazyScorecardWidget(
+      ScorecardHomepageCardWithProvider => props =>
+        (
+          <ScorecardHomepageCardWithProvider
+            aggregationId={props?.aggregationId}
+          />
+        ),
+    ),
   },
 });
-
-/**
- * NFS widget: AggregatedCardWithMinOpenPrs (scalar min).
- */
-export const aggregatedCardWithMinOpenPrsWidget = HomePageWidgetBlueprint.make({
-  name: 'scorecard-min-open-prs',
-  params: {
-    name: 'AggregatedCardWithMinOpenPrs',
-    title: 'Scorecard: Minimum open PRs',
-    layout: defaultCardLayout,
-    componentProps: {
-      Renderer: BorderlessHomeWidgetRenderer,
-    },
-    components: lazyScorecardWidget(ScorecardHomepageCardWithProvider => () => (
-      <ScorecardHomepageCardWithProvider aggregationId="minOpenPrs" />
-    )),
-  },
-});
-
-/**
- * NFS widget: AggregatedCardWithTotalOpenBugs (scalar sum).
- */
-export const aggregatedCardWithTotalOpenBugsWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-total-open-bugs',
-    params: {
-      name: 'AggregatedCardWithTotalOpenBugs',
-      title: 'Scorecard: Total open bugs',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          <ScorecardHomepageCardWithProvider aggregationId="totalOpenBugs" />,
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithEntitiesWithOpenPrs (scalar count).
- */
-export const aggregatedCardWithEntitiesWithOpenPrsWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-entities-with-open-prs',
-    params: {
-      name: 'AggregatedCardWithEntitiesWithOpenPrs',
-      title: 'Scorecard: Entities with open PRs',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider aggregationId="entitiesWithOpenPrs" />
-          ),
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithAvgOpenPrs (scalar average).
- */
-export const aggregatedCardWithAvgOpenPrsWidget = HomePageWidgetBlueprint.make({
-  name: 'scorecard-avg-open-prs',
-  params: {
-    name: 'AggregatedCardWithAvgOpenPrs',
-    title: 'Scorecard: Average open PRs',
-    layout: defaultCardLayout,
-    componentProps: {
-      Renderer: BorderlessHomeWidgetRenderer,
-    },
-    components: lazyScorecardWidget(ScorecardHomepageCardWithProvider => () => (
-      <ScorecardHomepageCardWithProvider aggregationId="avgOpenPrs" />
-    )),
-  },
-});
-
-/**
- * NFS widget: AggregatedCardWithDoraDeploymentFrequency (scalar sparkline).
- */
-export const aggregatedCardWithDoraDeploymentFrequencyWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-dora-deployment-frequency',
-    params: {
-      name: 'AggregatedCardWithDoraDeploymentFrequency',
-      title: 'Scorecard: DORA - Deployment Frequency',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider aggregationId="doraDeploymentFrequencyKpi" />
-          ),
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithDoraChangeFailureRate (scalar sparkline).
- */
-export const aggregatedCardWithDoraChangeFailureRateWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-dora-change-failure-rate',
-    params: {
-      name: 'AggregatedCardWithDoraChangeFailureRate',
-      title: 'Scorecard: DORA - Change Failure Rate',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider aggregationId="doraChangeFailureRateKpi" />
-          ),
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithDoraMedianLeadTimeForChanges (scalar sparkline).
- */
-export const aggregatedCardWithDoraMedianLeadTimeForChangesWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-dora-median-lead-time-for-changes',
-    params: {
-      name: 'AggregatedCardWithDoraMedianLeadTimeForChanges',
-      title: 'Scorecard: DORA - Lead Time for Changes',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider aggregationId="doraMedianLeadTimeForChangesKpi" />
-          ),
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithDoraMedianTimeToRestore (scalar sparkline).
- */
-export const aggregatedCardWithDoraMedianTimeToRestoreWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-dora-median-time-to-restore',
-    params: {
-      name: 'AggregatedCardWithDoraMedianTimeToRestore',
-      title: 'Scorecard: DORA - Median Time to Restore',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider aggregationId="doraMedianTimeToRestoreKpi" />
-          ),
-      ),
-    },
-  });
-
-/**
- * NFS widget: AggregatedCardWithDeprecatedDoraChangeFailureRate.
- */
-export const aggregatedCardWithDeprecatedDoraChangeFailureRateWidget =
-  HomePageWidgetBlueprint.make({
-    name: 'scorecard-deprecated-dora-change-failure-rate',
-    params: {
-      name: 'AggregatedCardWithDeprecatedDoraChangeFailureRate',
-      title: 'Scorecard: DORA - Change Failure Rate (deprecated metricId)',
-      layout: defaultCardLayout,
-      componentProps: {
-        Renderer: BorderlessHomeWidgetRenderer,
-      },
-      components: lazyScorecardWidget(
-        ScorecardHomepageCardWithProvider => () =>
-          (
-            <ScorecardHomepageCardWithProvider metricId="dora.changeFailureRate" />
-          ),
-      ),
-    },
-  });

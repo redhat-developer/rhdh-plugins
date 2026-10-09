@@ -50,11 +50,46 @@ export class HomePage {
     await this.page.getByRole('button', { name: 'Clear all' }).click();
   }
 
-  async addCard(cardName: string) {
+  private async openAddWidgetDialog() {
     await this.page.getByRole('button', { name: 'Add widget' }).click();
     await expect(
       this.page.getByRole('heading', { name: 'Add new widget to dashboard' }),
     ).toBeVisible();
+  }
+
+  /**
+   * NFS homepage only ships one Scorecard widget. Add it, then set Aggregation ID
+   * in the card settings so the card test id matches that id.
+   * Call this while the homepage is already in edit mode.
+   */
+  async addScorecardCard(aggregationId: string) {
+    await this.openAddWidgetDialog();
+    await this.page.getByRole('button', { name: /^Scorecard(?!:)/ }).click();
+    await expect(
+      this.page.getByRole('heading', { name: 'Add new widget to dashboard' }),
+    ).toBeHidden();
+
+    // A card with no aggregation id renders nothing, so it has no
+    // scorecard-homepage-card- test id yet. The new widget is appended last;
+    // the first overlay button is its settings gear.
+    const settingsButton = this.page
+      .locator('.react-grid-item')
+      .last()
+      .locator('.overlayGridItem')
+      .first()
+      .getByRole('button');
+    await expect(settingsButton).toBeVisible();
+    await settingsButton.click();
+
+    const dialog = this.page.locator('.widgetSettingsDialog');
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel('Aggregation ID').fill(aggregationId);
+    await dialog.getByRole('button', { name: 'Submit' }).click();
+    await expect(dialog).toBeHidden();
+  }
+
+  async addCard(cardName: string) {
+    await this.openAddWidgetDialog();
 
     let cardPattern: RegExp;
     if (cardName === 'Onboarding section') {
