@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.7
+
+### Patch Changes
+
+- 1d1461c: Disable MCP Enabled toggle when Status shows an error, and surface Save validation errors in organization credential mode.
+- 9125990: Restore the MessageBar model selector from the active conversation when switching chats, instead of always showing the last globally selected model.
+- 0753336: Ellipsize long model names and the current-page chip from available message-bar width (context chip keeps priority when both are present) and show the full name in a tooltip when truncated. The chat header selector now displays the model label instead of the raw value.
+
+  Raise the delete-conversation modal backdrop z-index so it covers the host app masthead; the header no longer stays bright while the rest of the page is dimmed.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.7
+
 ## 5.3.6
 
 ### Patch Changes
