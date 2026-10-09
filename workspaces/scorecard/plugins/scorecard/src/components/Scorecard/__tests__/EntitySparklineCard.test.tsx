@@ -20,6 +20,7 @@ import {
   type MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
+import { CHANGE_FAILURE_RATE_THRESHOLDS } from '../../../../__fixtures__/thresholdData';
 import { EntitySparklineCard } from '../EntitySparklineCard';
 import { useMetricCollectors } from '../../../hooks/useMetricCollectors';
 import { useMetricTimeSeries } from '../../../hooks/useMetricTimeSeries';
@@ -101,26 +102,6 @@ jest.mock('recharts', () => {
 
 const useMetricTimeSeriesMock = useMetricTimeSeries as jest.Mock;
 const useMetricCollectorsMock = useMetricCollectors as jest.Mock;
-
-const CHANGE_FAILURE_RATE_THRESHOLDS = {
-  rules: [
-    {
-      key: 'elite',
-      expression: '<5',
-      color: ScorecardThresholdRuleColors.SUCCESS,
-    },
-    {
-      key: 'medium',
-      expression: '5-15',
-      color: ScorecardThresholdRuleColors.WARNING,
-    },
-    {
-      key: 'low',
-      expression: '>15',
-      color: ScorecardThresholdRuleColors.ERROR,
-    },
-  ],
-};
 
 const metric: MetricResult = {
   id: 'dora.changeFailureRate',

@@ -24,7 +24,7 @@ import {
   DEFAULT_NUMBER_THRESHOLDS,
   type AggregatedMetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS } from '../../../../__fixtures__/scorecardData';
+import { DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS } from '../../../../__fixtures__/thresholdData';
 // --------------------
 // Mocks
 // --------------------
