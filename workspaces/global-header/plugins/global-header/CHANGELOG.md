@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 4.0.0
+
+### Major Changes
+
+- 2ec9351: Remove the `/legacy` subpath export and the legacy frontend system plugin implementation.
+
+### Patch Changes
+
+- f8d9ade: Make the masthead span the full viewport width and show the company logo by default, matching PatternFly / OFS header layout. Publish `--rhdh-global-header-height` and offset the fixed Backstage sidebar root below the masthead (`height: 100vh − header`, drawer fills the root) so the header can take the full viewport width.
+- 87b306d: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.15.0`.
+
 ## 3.1.0
 
 ### Minor Changes
