@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
+const QUOTE_CHARS = new Set(['"', "'"]);
+const OPEN_BRACKETS: Record<string, string> = { '(': ')', '[': ']' };
+const CLOSE_BRACKETS: Record<string, string> = { ')': '(', ']': '[' };
+const BRACKET_LABELS: Record<string, string> = {
+  '(': 'parentheses',
+  '[': 'brackets',
+};
+const FIRST_PRINTABLE_ASCII = 0x20; // ' '
+
 export function validateJQLValue(value: string, fieldName: string): string {
   if (!/^[a-zA-Z0-9 _-]+$/.test(value)) {
     throw new Error(
@@ -41,15 +50,28 @@ export function validateJqlExpression(
   value: string,
   fieldName: string,
 ): string {
-  const QUOTE_CHARS = new Set(['"', "'"]);
-  const OPEN_BRACKETS: Record<string, string> = { '(': ')', '[': ']' };
-  const CLOSE_BRACKETS: Record<string, string> = { ')': '(', ']': '[' };
-  const FIRST_PRINTABLE_ASCII = 0x20; // ' '
-
   const fail = (reason: string): never => {
     throw new Error(`${fieldName} is not a valid JQL filter: ${reason}.`);
   };
 
+  if (containsControlCharacter(value)) {
+    fail('must not contain control characters');
+  }
+
+  const bracketImbalance = findBracketImbalance(value);
+  if (bracketImbalance) {
+    fail(bracketImbalance);
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    fail('must not be empty');
+  }
+
+  return trimmedValue;
+}
+
+function containsControlCharacter(value: string): boolean {
   const characters = [...value];
 
   const containsControlChars = characters.some(char => {
@@ -57,9 +79,18 @@ export function validateJqlExpression(
 
     return charCode ? charCode < FIRST_PRINTABLE_ASCII : false;
   });
-  if (containsControlChars) {
-    fail('must not contain control characters');
-  }
+  return containsControlChars;
+}
+
+/**
+ * Scans a JQL expression for an unterminated string literal or unbalanced
+ * brackets outside of string literals. Returns the failure reason, or
+ * `null` if the expression is balanced.
+ */
+function findBracketImbalance(value: string): string | null {
+  const unbalancedReason = (openBracket: string): string => {
+    return `unbalanced ${BRACKET_LABELS[openBracket]}`;
+  };
 
   const stack: string[] = [];
   let quoteChar: string | null = null;
@@ -78,38 +109,31 @@ export function validateJqlExpression(
     }
 
     if (QUOTE_CHARS.has(char)) {
-      // open quote
-      quoteChar = char;
+      quoteChar = char; // open quote
       continue;
     }
 
     if (char in OPEN_BRACKETS) {
       stack.push(char);
-    } else if (char in CLOSE_BRACKETS) {
-      if (stack.pop() !== CLOSE_BRACKETS[char]) {
-        const reason =
-          char === ')' ? 'unbalanced parentheses' : 'unbalanced brackets';
-        fail(reason);
-      }
+      continue;
+    }
+
+    if (char in CLOSE_BRACKETS && stack.pop() !== CLOSE_BRACKETS[char]) {
+      return unbalancedReason(CLOSE_BRACKETS[char]);
     }
   }
 
   if (quoteChar) {
-    fail('unterminated string literal');
+    return 'unterminated string literal';
   }
   if (stack.includes('(')) {
-    fail('unbalanced parentheses');
+    return unbalancedReason('(');
   }
   if (stack.includes('[')) {
-    fail('unbalanced brackets');
+    return unbalancedReason('[');
   }
 
-  const trimmedValue = value.trim();
-  if (!trimmedValue) {
-    fail('must not be empty');
-  }
-
-  return trimmedValue;
+  return null;
 }
 
 export function joinJqlClauses(
