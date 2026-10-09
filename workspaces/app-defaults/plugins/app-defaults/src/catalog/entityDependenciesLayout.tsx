@@ -18,25 +18,49 @@ import type { EntityContentLayoutProps } from '@backstage/plugin-catalog-react/a
 
 import { Grid } from './entityPage/Grid';
 
-const graphColumn = {
-  lg: '1 / span 6',
-  md: '1 / span 6',
-  xs: '1 / -1',
+/**
+ * Container widths (px) for the Dependencies tab layout only.
+ * Independent of {@link ./entityPage/Grid} entity-page breakpoints.
+ */
+const DEPENDENCIES_LAYOUT_BREAKPOINTS = {
+  sm: 600,
+  md: 900,
+  lg: 1400,
+  xl: 1536,
 } as const;
 
-const listColumn = {
-  lg: '7 / -1',
-  md: '7 / -1',
-  xs: '1 / -1',
-} as const;
+/**
+ * Min container width for side-by-side info/list columns.
+ * Below this, cards stack full width so tables are not squeezed (RHDHBUGS-3893).
+ */
+const DEPENDENCIES_TWO_COLUMN_MIN_WIDTH = DEPENDENCIES_LAYOUT_BREAKPOINTS.lg;
 
 const fullWidthColumn = {
   xs: '1 / -1',
 } as const;
 
+const twoColumnMinQuery = `@container (min-width: ${DEPENDENCIES_TWO_COLUMN_MIN_WIDTH}px)`;
+
 const gridItemSx = {
   minWidth: 0,
   maxWidth: '100%',
+} as const;
+
+const twoColumnInfoSx = {
+  ...gridItemSx,
+  gridColumn: fullWidthColumn,
+  [twoColumnMinQuery]: {
+    gridColumn: '1 / span 6',
+    gridRow: '1 / span 6',
+  },
+} as const;
+
+const twoColumnListSx = {
+  ...gridItemSx,
+  gridColumn: fullWidthColumn,
+  [twoColumnMinQuery]: {
+    gridColumn: '7 / -1',
+  },
 } as const;
 
 /**
@@ -61,22 +85,15 @@ export const EntityDependenciesLayout = ({
   // non-empty group spans full width (e.g. list cards after the graph card
   // is disabled, or graph-only when list cards are absent).
   const useTwoColumns = hasInfo && hasLists;
-  const infoColumn = useTwoColumns ? graphColumn : fullWidthColumn;
-  const contentColumn = useTwoColumns ? listColumn : fullWidthColumn;
+  const infoSx = useTwoColumns ? twoColumnInfoSx : gridItemSx;
+  const listSx = useTwoColumns
+    ? twoColumnListSx
+    : { ...gridItemSx, gridColumn: fullWidthColumn };
 
   return (
     <Grid container>
       {hasInfo ? (
-        <Grid
-          item
-          sx={{
-            ...gridItemSx,
-            gridColumn: infoColumn,
-            gridRow: useTwoColumns
-              ? { md: '1 / span 6', lg: '1 / span 6' }
-              : undefined,
-          }}
-        >
+        <Grid item sx={infoSx}>
           <Grid container>
             {infoCards.map((card, index) => (
               <Grid
@@ -91,11 +108,7 @@ export const EntityDependenciesLayout = ({
         </Grid>
       ) : null}
       {listCards.map((card, index) => (
-        <Grid
-          item
-          key={card.element.key ?? index}
-          sx={{ ...gridItemSx, gridColumn: contentColumn }}
-        >
+        <Grid item key={card.element.key ?? index} sx={listSx}>
           {card.element}
         </Grid>
       ))}
