@@ -36,7 +36,7 @@ import type { SourceRow } from '../components/DataSources/DataSourcesDialogColum
 export type UseMetricDataSourcesOptions = {
   metricId: string;
   lastSyncedTimestamp?: string;
-  /** When true the hook fetches collector metadata via the collectors API when the dialog opens (composite metrics like DORA). Defaults to false. Empty collector lists fall back to the metric snapshot. */
+  /** When true the hook fetches collector metadata via the collectors API when the dialog opens (composite metrics like DORA). Defaults to false. Empty lists and fetch errors fall back to the metric snapshot. */
   fetchEnabled?: boolean;
   /** Full metric result — used to show actual value/status/evaluation in the dialog for non-composite metrics. */
   metric?: MetricResult;
@@ -161,8 +161,8 @@ export const useMetricDataSources = ({
     open: isOpen,
     onClose: handleClose,
     rows: sourceRows,
-    isLoading: shouldFetch && isLoading,
-    error: shouldFetch ? error : undefined,
+    isLoading: shouldFetch && isLoading && !metric,
+    error: shouldFetch && !metric ? error : undefined,
     buckets,
   };
 
