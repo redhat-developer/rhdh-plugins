@@ -480,16 +480,19 @@ test.describe('Scorecard Plugin Tests', () => {
       await mockAllDefaultHomepageAggregationsSuccess(page);
 
       await homePage.navigateToHome();
-      await homePage.enterEditMode();
-      await homePage.clearAllCards();
-      await homePage.addCard('Onboarding section');
-      await homePage.saveChanges();
 
-      for (const instanceId of Object.values(AGGREGATED_CARDS_METRIC_IDS)) {
-        await homePage.expectCardNotVisible(instanceId);
+      if (process.env.APP_MODE === 'nfs') {
+        await homePage.enterEditMode();
+        await homePage.clearAllCards();
+        await homePage.addCard('Onboarding section');
+        await homePage.saveChanges();
+
+        for (const instanceId of Object.values(AGGREGATED_CARDS_METRIC_IDS)) {
+          await homePage.expectCardNotVisible(instanceId);
+        }
+
+        await addAggregatedScorecardWidgets(homePage);
       }
-
-      await addAggregatedScorecardWidgets(homePage);
 
       for (const instanceId of Object.values(AGGREGATED_CARDS_METRIC_IDS)) {
         await homePage.expectCardVisible(instanceId);

@@ -9,9 +9,20 @@ app:
           defaultLanguage: 'en'
     - api:home/visits: true
     - app-root-element:home/visit-listener: true
-    - page:home:
+    - page:home: false
+    - page:homepage:
         config:
           path: /
+
+    # Disable all home page widgets
+    - home-page-widget:homepage/rhdh-entity-section: false
+    - home-page-widget:homepage/rhdh-template-section: false
+    - home-page-widget:homepage/quickaccess-card: false
+    - home-page-widget:homepage/search-bar: false
+    - home-page-widget:homepage/featured-docs-card: false
+    - home-page-widget:homepage/catalog-starred-entities-card: false
+    - home-page-widget:homepage/recently-visited-card: false
+    - home-page-widget:homepage/top-visited-card: false
 
     # Scorecard tab: entity shows tab if it matches any filter below.
     - entity-content:scorecard/entity-content-scorecard:
@@ -49,176 +60,53 @@ app:
                 - sonarqube.securityHotspots
                 - sonarqube.securityRating
 
-    - home-page-layout:home/dynamic-homepage-layout:
+    - home-page-layout:homepage/dynamic-homepage-layout:
         config:
           customizable: true
           widgetLayout:
-            AggregatedCardWithDeprecatedMetricId:
-              priority: 410
-              breakpoints:
-                xl: { w: 4, h: 6 }
-                lg: { w: 4, h: 6 }
-                md: { w: 4, h: 6 }
-                sm: { w: 4, h: 6 }
-                xs: { w: 4, h: 6 }
-                xxs: { w: 4, h: 6 }
-
-            AggregatedCardWithDeprecatedDoraChangeFailureRate:
-              priority: 415
-              breakpoints:
-                xl: { w: 4, h: 6, x: 4 }
-                lg: { w: 4, h: 6, x: 4 }
-                md: { w: 4, h: 6, x: 4 }
-                sm: { w: 4, h: 6, x: 4 }
-                xs: { w: 4, h: 6, x: 4 }
-                xxs: { w: 4, h: 6, x: 4 }
-
-            AggregatedCardWithDefaultAggregation:
-              priority: 420
-              breakpoints:
-                xl: { w: 4, h: 6, x: 4 }
-                lg: { w: 4, h: 6, x: 4 }
-                md: { w: 4, h: 6, x: 4 }
-                sm: { w: 4, h: 6, x: 4 }
-                xs: { w: 4, h: 6, x: 4 }
-                xxs: { w: 4, h: 6, x: 4 }
-
-            AggregatedCardWithJiraOpenIssues:
-              priority: 430
-              breakpoints:
-                xl: { w: 4, h: 6 }
-                lg: { w: 4, h: 6 }
-                md: { w: 4, h: 6 }
-                sm: { w: 4, h: 6 }
-                xs: { w: 4, h: 6 }
-                xxs: { w: 4, h: 6 }
-
-            AggregatedCardWithGithubOpenPrs:
-              priority: 440
-              breakpoints:
-                xl: { w: 4, h: 6, x: 4 }
-                lg: { w: 4, h: 6, x: 4 }
-                md: { w: 4, h: 6, x: 4 }
-                sm: { w: 4, h: 6, x: 4 }
-                xs: { w: 4, h: 6, x: 4 }
-                xxs: { w: 4, h: 6, x: 4 }
-            AggregatedCardWithGithubFilecheckLicense:
-              priority: 450
-              breakpoints:
-                xl: { w: 4, h: 6 }
-                lg: { w: 4, h: 6 }
-                md: { w: 4, h: 6 }
-                sm: { w: 4, h: 6 }
-                xs: { w: 4, h: 6 }
-                xxs: { w: 4, h: 6 }
-            AggregatedCardWithGithubFilecheckCodeowners:
-              priority: 460
-              breakpoints:
-                xl: { w: 4, h: 6, x: 8 }
-                lg: { w: 4, h: 6, x: 8 }
-                md: { w: 4, h: 6, x: 8 }
-                sm: { w: 4, h: 6, x: 8 }
-                xs: { w: 4, h: 6, x: 8 }
-                xxs: { w: 4, h: 6, x: 8 }
-            AggregatedCardWithGithubOpenPrsWeighted:
-              priority: 470
-              breakpoints:
-                xl: { w: 4, h: 6, x: 8 }
-                lg: { w: 4, h: 6, x: 8 }
-                md: { w: 4, h: 6, x: 8 }
-                sm: { w: 4, h: 6, x: 8 }
-                xs: { w: 4, h: 6, x: 8 }
-                xxs: { w: 4, h: 6, x: 8 }
-            AggregatedCardWithMaxOpenPrs:
-              priority: 480
-              breakpoints:
-                xl: { w: 4, h: 6 }
-                lg: { w: 4, h: 6 }
-                md: { w: 4, h: 6 }
-                sm: { w: 4, h: 6 }
-                xs: { w: 4, h: 6 }
-                xxs: { w: 4, h: 6 }
-            AggregatedCardWithMinOpenPrs:
-              priority: 490
-              breakpoints:
-                xl: { w: 4, h: 6, x: 4 }
-                lg: { w: 4, h: 6, x: 4 }
-                md: { w: 4, h: 6, x: 4 }
-                sm: { w: 4, h: 6, x: 4 }
-                xs: { w: 4, h: 6, x: 4 }
-                xxs: { w: 4, h: 6, x: 4 }
-            AggregatedCardWithTotalOpenBugs:
+            rhdh-onboarding-section:
               priority: 500
               breakpoints:
-                xl: { w: 4, h: 6, x: 8 }
-                lg: { w: 4, h: 6, x: 8 }
-                md: { w: 4, h: 6, x: 8 }
-                sm: { w: 4, h: 6, x: 8 }
-                xs: { w: 4, h: 6, x: 8 }
-                xxs: { w: 4, h: 6, x: 8 }
-            AggregatedCardWithEntitiesWithOpenPrs:
-              priority: 510
-              breakpoints:
-                xl: { w: 4, h: 6 }
-                lg: { w: 4, h: 6 }
-                md: { w: 4, h: 6 }
-                sm: { w: 4, h: 6 }
-                xs: { w: 4, h: 6 }
-                xxs: { w: 4, h: 6 }
-            AggregatedCardWithAvgOpenPrs:
-              priority: 520
-              breakpoints:
-                xl: { w: 4, h: 6, x: 4 }
-                lg: { w: 4, h: 6, x: 4 }
-                md: { w: 4, h: 6, x: 4 }
-                sm: { w: 4, h: 6, x: 4 }
-                xs: { w: 4, h: 6, x: 4 }
-                xxs: { w: 4, h: 6, x: 4 }
-            AggregatedCardWithInvalidMetricId:
-              priority: 525
-              breakpoints:
-                xl: { w: 4, h: 6, x: 8 }
-                lg: { w: 4, h: 6, x: 8 }
-                md: { w: 4, h: 6, x: 8 }
-                sm: { w: 4, h: 6, x: 8 }
-                xs: { w: 4, h: 6, x: 8 }
-                xxs: { w: 4, h: 6, x: 8 }
-            AggregatedCardWithDoraDeploymentFrequency:
-              priority: 530
-              breakpoints:
-                xl: { w: 4, h: 6, x: 8 }
-                lg: { w: 4, h: 6, x: 8 }
-                md: { w: 4, h: 6, x: 8 }
-                sm: { w: 4, h: 6, x: 8 }
-                xs: { w: 4, h: 6, x: 8 }
-                xxs: { w: 4, h: 6, x: 8 }
-            AggregatedCardWithDoraChangeFailureRate:
-              priority: 540
-              breakpoints:
-                xl: { w: 4, h: 6 }
-                lg: { w: 4, h: 6 }
-                md: { w: 4, h: 6 }
-                sm: { w: 4, h: 6 }
-                xs: { w: 4, h: 6 }
-                xxs: { w: 4, h: 6 }
-            AggregatedCardWithDoraMedianLeadTimeForChanges:
-              priority: 550
-              breakpoints:
-                xl: { w: 4, h: 6, x: 4 }
-                lg: { w: 4, h: 6, x: 4 }
-                md: { w: 4, h: 6, x: 4 }
-                sm: { w: 4, h: 6, x: 4 }
-                xs: { w: 4, h: 6, x: 4 }
-                xxs: { w: 4, h: 6, x: 4 }
-            AggregatedCardWithDoraMedianTimeToRestore:
-              priority: 560
-              breakpoints:
-                xl: { w: 4, h: 6, x: 8 }
-                lg: { w: 4, h: 6, x: 8 }
-                md: { w: 4, h: 6, x: 8 }
-                sm: { w: 4, h: 6, x: 8 }
-                xs: { w: 4, h: 6, x: 8 }
-                xxs: { w: 4, h: 6, x: 8 }
+                xl: { x: 0, y: 0, w: 12, h: 6 }
+                lg: { x: 0, y: 0, w: 12, h: 6 }
+                md: { x: 0, y: 0, w: 12, h: 6 }
+                sm: { x: 0, y: 0, w: 12, h: 6 }
+                xs: { x: 0, y: 0, w: 12, h: 6 }
+                xxs: { x: 0, y: 0, w: 12, h: 6 }
+            ScorecardAggregatedCard:
+              - id: ScorecardOpenPrs
+                props:
+                  aggregationId: openPrsKpi
+                priority: 410
+                breakpoints:
+                  xl: { w: 4, h: 6, x: 0, y: 0 }
+                  lg: { w: 4, h: 6, x: 0, y: 0 }
+                  md: { w: 6, h: 6, x: 0, y: 0 }
+                  sm: { w: 6, h: 6, x: 0, y: 0 }
+                  xs: { w: 12, h: 6, x: 0, y: 0 }
+                  xxs: { w: 12, h: 6, x: 0, y: 0 }
+              - id: ScorecardOpenIssues
+                props:
+                  aggregationId: openIssuesKpi
+                priority: 420
+                breakpoints:
+                  xl: { w: 4, h: 6, x: 4, y: 0 }
+                  lg: { w: 4, h: 6, x: 4, y: 0 }
+                  md: { w: 6, h: 6, x: 6, y: 0 }
+                  sm: { w: 6, h: 6, x: 6, y: 0 }
+                  xs: { w: 12, h: 6, x: 0, y: 6 }
+                  xxs: { w: 12, h: 6, x: 0, y: 6 }
+              - id: ScorecardDoraDeploymentFrequency
+                props:
+                  aggregationId: doraDeploymentFrequencyKpi
+                priority: 430
+                breakpoints:
+                  xl: { w: 4, h: 6, x: 8, y: 0 }
+                  lg: { w: 4, h: 6, x: 8, y: 0 }
+                  md: { w: 6, h: 6, x: 8, y: 0 }
+                  sm: { w: 6, h: 6, x: 8, y: 0 }
+                  xs: { w: 12, h: 6, x: 8, y: 0 }
+                  xxs: { w: 12, h: 6, x: 8, y: 0 }
 
 organization:
   name: My Company

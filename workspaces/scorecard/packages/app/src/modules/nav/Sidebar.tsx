@@ -47,7 +47,7 @@ export const SidebarContent = NavContentBlueprint.make({
           </SidebarGroup>
           <SidebarDivider />
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
-            {nav.take('page:home')}
+            {nav.take('page:homepage')}
             {nav.take('page:catalog')}
             <MyGroupsSidebarItem
               singularTitle="My Group"
