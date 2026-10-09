@@ -1,0 +1,195 @@
+name: CI Nightly
+
+on:
+  # Run every night at 00:00 UTC
+  schedule:
+    - cron: '0 0 * * *'
+  # Allow manual runs, optionally scoped to a subset of workspaces
+  workflow_dispatch:
+    inputs:
+      workspaces:
+        description: 'Optional JSON string array of workspaces to run, e.g. ["global-header","theme"]. When empty all workspaces run.'
+        required: false
+        type: string
+
+jobs:
+  list-workspaces:
+    name: List workspaces
+    runs-on: ubuntu-latest
+    outputs:
+      workspaces: ${{ steps.list-workspaces.outputs.workspaces }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/ # Needed for auth
+
+      - name: List workspaces
+        id: list-workspaces
+        run: node ./scripts/ci/list-all-workspaces.js
+        env:
+          WORKSPACES: ${{ inputs.workspaces }}
+
+  ci:
+    name: Workspace ${{ matrix.workspace }}, CI step for node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    needs: list-workspaces
+    strategy:
+      matrix:
+        workspace: ${{ fromJSON(needs.list-workspaces.outputs.workspaces) }}
+        node-version: [22, 24]
+      fail-fast: false
+    defaults:
+      run:
+        working-directory: ./workspaces/${{ matrix.workspace }}
+
+    env:
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=8192
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Node ${{ matrix.node-version }}
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.org/ # Needed for auth
+
+      - name: yarn install
+        run: yarn install --immutable
+
+      - name: check for missing repo fixes
+        run: yarn fix --check
+
+      - name: validate config
+        if: ${{ hashFiles(format('workspaces/{0}/app-config.yaml', matrix.workspace)) != '' }}
+        run: yarn backstage-cli config:check --lax
+
+      - name: type checking and declarations
+        run: yarn tsc:full
+
+      - name: prettier
+        run: yarn prettier:check
+
+      - name: read knip-reports flag from bcp.json
+        id: bcp
+        run: |
+          echo "Checking for bcp.json in workspace: workspaces/${{ matrix.workspace }}"
+          if [ -f bcp.json ]; then
+            echo "Reading knip-reports flag..."
+            KNIP_REPORTS=$(jq -r '.["knip-reports"]' bcp.json)
+            echo "knip-reports value: $KNIP_REPORTS"
+            echo "knip_reports=$KNIP_REPORTS" >> $GITHUB_OUTPUT
+          else
+            echo "bcp.json not found. Defaulting knip_reports to false."
+            echo "knip_reports=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: check knip reports
+        if: ${{ steps.bcp.outputs.knip_reports == 'true' }}
+        run: yarn build:knip-reports --ci
+
+      - name: check api reports and generate API reference
+        run: yarn build:api-reports:only --ci
+
+      - name: build all packages
+        run: yarn backstage-cli repo build --all
+
+      - name: lint
+        run: yarn backstage-cli repo lint --since origin/main
+
+      - name: publish check
+        run: yarn backstage-cli repo fix --check --publish
+
+      - name: Install jest-junit reporter
+        run: |
+          npm install jest-junit@17.0.0 --ignore-scripts --prefix ${{ runner.temp }}/jest-junit
+          mkdir -p ${{ runner.temp }}/test-results/${{ matrix.workspace }}
+
+      - name: Test changed packages
+        id: tests
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ${{ runner.temp }}/test-results/${{ matrix.workspace }}
+          JEST_JUNIT_CLASSNAME: '{filepath}'
+          JEST_JUNIT_UNIQUE_OUTPUT_NAME: 'true'
+        run: yarn test:all --maxWorkers=3 --reporters=default --reporters=${{ runner.temp }}/jest-junit/node_modules/jest-junit
+
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        with:
+          flags: ${{ matrix.workspace }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
+        with:
+          flags: ${{ matrix.workspace }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ runner.temp }}/test-results/${{ matrix.workspace }}
+          fail_ci_if_error: false
+
+      - name: install playwright
+        if: ${{ hashFiles(format('workspaces/{0}/playwright.config.ts', matrix.workspace)) != '' }}
+        run: yarn playwright install --with-deps chromium chrome
+
+      - name: run playwright tests
+        if: ${{ hashFiles(format('workspaces/{0}/playwright.config.ts', matrix.workspace)) != '' }}
+        run: yarn playwright test
+
+      - name: ensure clean working directory
+        run: |
+          if files=$(git ls-files --exclude-standard --others --modified) && [[ -z "$files" ]]; then
+            exit 0
+          else
+            echo ""
+            echo "Working directory has been modified:"
+            echo ""
+            git status --short
+            echo ""
+            exit 1
+          fi
+
+  verify:
+    name: Workspace ${{ matrix.workspace }}, Verify step
+    runs-on: ubuntu-latest
+    needs: list-workspaces
+    strategy:
+      matrix:
+        workspace: ${{ fromJSON(needs.list-workspaces.outputs.workspaces) }}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Setup node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Install root dependencies
+        run: yarn install --immutable
+      - name: Verify lockfile duplicates
+        run: node scripts/ci/verify-lockfile-duplicates.js workspaces/${{ matrix.workspace }}/yarn.lock
+      - name: Verify changesets
+        run: node scripts/ci/verify-changesets.js ${{ matrix.workspace }}
+
+  result:
+    if: ${{ always() }}
+    name: check all required jobs
+    runs-on: ubuntu-latest
+    needs: [ci, verify]
+    steps:
+      - run: exit 1
+        if: >-
+          ${{
+               contains(needs.*.result, 'failure')
+            || contains(needs.*.result, 'cancelled')
+            || contains(needs.*.result, 'skipped')
+          }}
