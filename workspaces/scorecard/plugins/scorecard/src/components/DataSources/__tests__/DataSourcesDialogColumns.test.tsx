@@ -73,7 +73,7 @@ jest.mock('../StatusIcon', () => ({
   ),
 }));
 
-jest.mock('../thresholdBucketUtils', () => ({
+jest.mock('../../MetricGroupCard/thresholdBucketUtils', () => ({
   MISSING_EVALUATION_LABEL: '—',
 }));
 
@@ -120,7 +120,11 @@ describe('formatMetricValue', () => {
   });
 
   it('should stringify numeric values', () => {
-    expect(formatMetricValue(createResult(12.5))).toBe('12.5');
+    expect(formatMetricValue(createResult(12.5), 'en')).toBe('12.5');
+  });
+
+  it('should format fractional values with the given locale', () => {
+    expect(formatMetricValue(createResult(12.5), 'de-DE')).toBe('12,5');
   });
 
   it('should stringify boolean values', () => {

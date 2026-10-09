@@ -18,7 +18,7 @@
 export const OPEN_PRS_WEIGHTED_KPI_THRESHOLDS = {
   rules: [
     { key: 'success', expression: '>=80', color: '#6bb300' },
-    { key: 'warning', expression: '30-80', color: '#FFC0CB' },
+    { key: 'warning', expression: '30-80', color: 'rgb(224, 189, 108)' },
     { key: 'error', expression: '<30', color: '#be1ec7' },
   ],
 };

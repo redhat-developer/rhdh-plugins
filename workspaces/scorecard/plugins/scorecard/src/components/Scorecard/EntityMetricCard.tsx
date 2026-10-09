@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/License-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,11 +22,13 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { getStatusConfig, resolveMetricTranslation } from '../../utils';
 import { isSparklineVisualization } from '../../utils/metricVisualization';
 import { hasMetricDataError, hasThresholdError } from '../../utils/statusUtils';
+import { MetricDataSources } from '../DataSources/MetricDataSources';
 import { EntitySparklineCard } from './EntitySparklineCard';
 import Scorecard from './Scorecard';
 
 export const EntityMetricCard = ({ metric }: { metric: MetricResult }) => {
   const { t } = useTranslation();
+
   const title = resolveMetricTranslation(
     t,
     metric.id,
@@ -76,6 +78,15 @@ export const EntityMetricCard = ({ metric }: { metric: MetricResult }) => {
         metricDataError={metric?.error}
         isThresholdError={isThresholdError}
         thresholdError={metric.result?.thresholdResult?.error}
+        info={
+          <MetricDataSources
+            title={title}
+            metricId={metric.id}
+            lastSyncedTimestamp={metric.result?.timestamp}
+            fetchEnabled={(metric.metadata.collectorIds?.length ?? 0) > 0}
+            metric={metric}
+          />
+        }
       />
     </Box>
   );

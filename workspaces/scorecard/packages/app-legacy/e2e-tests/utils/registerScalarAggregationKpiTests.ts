@@ -51,6 +51,7 @@ type ScalarAggregationKpiTestConfig = {
     };
   };
   runAccessibility?: boolean;
+  verifyDataSources?: boolean;
 };
 
 export function registerScalarAggregationKpiTests(
@@ -64,6 +65,7 @@ export function registerScalarAggregationKpiTests(
     aggregatedResponse,
     partialResponse,
     runAccessibility = false,
+    verifyDataSources,
   } = config;
 
   test.describe(`Configured aggregation KPI - "${type}" type`, () => {
@@ -121,6 +123,27 @@ export function registerScalarAggregationKpiTests(
       await expect(card).toBeVisible();
       await homePage.verifyLastUpdatedTooltip(card, lastUpdatedFormatted);
     });
+
+    if (verifyDataSources) {
+      test('Verify view data sources shows metric check, aggregated value, and status', async () => {
+        const { homePage, translations } = getContext();
+        const metricCheck =
+          translations.metric[aggregationMetadata.metricId].description;
+        const cardDescription = aggregatedResponse.metadata.description;
+        const dialog = await homePage.openDataSourcesDialog(card);
+
+        await expect(dialog).toContainText(metricCheck);
+        if (metricCheck !== cardDescription) {
+          await expect(dialog).not.toContainText(cardDescription);
+        }
+        await expect(dialog).toContainText(
+          String(aggregatedResponse.result.value),
+        );
+        await expect(dialog).toContainText(translations.thresholds.warning);
+
+        await homePage.closeDataSourcesDialog(dialog);
+      });
+    }
 
     test('Verify drill-down link', async () => {
       const { homePage, scorecardDrillDownPage } = getContext();

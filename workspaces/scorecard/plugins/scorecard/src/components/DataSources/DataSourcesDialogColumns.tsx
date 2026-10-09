@@ -29,7 +29,7 @@ import MuiTooltip from '@mui/material/Tooltip';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { formatWithMetricUnit } from '../../utils';
-import { MISSING_EVALUATION_LABEL } from './thresholdBucketUtils';
+import { MISSING_EVALUATION_LABEL } from '../MetricGroupCard/thresholdBucketUtils';
 import { StatusIcon } from './StatusIcon';
 
 export interface SourceRow extends TableItem {
@@ -70,9 +70,18 @@ const COL_TO_FIELD: Record<string, keyof SourceRow> = {
 
 export function formatMetricValue(
   value: MetricResult['result'] | undefined,
+  locale?: string,
 ): string {
   if (value?.value === null || value?.value === undefined) {
     return MISSING_EVALUATION_LABEL;
+  }
+  if (typeof value.value === 'number') {
+    if (!Number.isFinite(value.value)) {
+      return MISSING_EVALUATION_LABEL;
+    }
+    return Number.isInteger(value.value)
+      ? String(value.value)
+      : value.value.toLocaleString(locale, { maximumFractionDigits: 2 });
   }
   return String(value.value);
 }

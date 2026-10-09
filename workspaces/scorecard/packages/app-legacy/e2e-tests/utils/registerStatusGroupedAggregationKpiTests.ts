@@ -67,6 +67,7 @@ type StatusGroupedAggregationKpiTestConfig = {
     result: { entitiesConsidered: number; calculationErrorCount: number };
   };
   runAccessibility?: boolean;
+  verifyDataSources?: boolean;
 };
 
 function resolveCardLabels(
@@ -121,6 +122,7 @@ export function registerStatusGroupedAggregationKpiTests(
     drillDown,
     partialResponse,
     runAccessibility = false,
+    verifyDataSources,
   } = config;
 
   const defaultTitleTestName =
@@ -195,6 +197,29 @@ export function registerStatusGroupedAggregationKpiTests(
         await homePage.verifyThresholdTooltip(card, state, count, percentage);
       }
     });
+
+    if (verifyDataSources) {
+      test('Verify view data sources shows metric check and N/A value/status', async () => {
+        const { homePage, translations } = getContext();
+        const metricCheck =
+          translations.metric[aggregationMetadata.metricId].description;
+        const cardDescription = aggregatedResponse.metadata.description;
+        const dialog = await homePage.openDataSourcesDialog(card);
+
+        await expect(dialog).toContainText(metricCheck);
+        if (metricCheck !== cardDescription) {
+          await expect(dialog).not.toContainText(cardDescription);
+        }
+        await expect(
+          dialog.getByText(
+            translations.dataSourcesDialog.collectorUnavailableStatus,
+            { exact: true },
+          ),
+        ).toHaveCount(2);
+
+        await homePage.closeDataSourcesDialog(dialog);
+      });
+    }
 
     test(
       drillDown?.testName ?? 'Verify status grouped drill-down link',

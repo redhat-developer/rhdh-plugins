@@ -37,7 +37,7 @@ import {
   type SourceRow,
 } from './DataSourcesDialogColumns';
 import { ThresholdLegend } from './ThresholdLegend';
-import type { ThresholdBucket } from './types';
+import type { ThresholdBucket } from '../MetricGroupCard/types';
 
 export type { SourceRow };
 

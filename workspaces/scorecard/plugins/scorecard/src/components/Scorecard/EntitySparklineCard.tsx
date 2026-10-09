@@ -27,7 +27,7 @@ import { ScorecardQueryProvider } from '../../api';
 import { CardWrapper } from '../Common/CardWrapper';
 import { CardLoading } from '../Common/CardLoading';
 import { SparklineChart } from '../SparklineChart';
-import { SparklineDataSources } from '../SparklineChart/SparklineDataSources';
+import { MetricDataSources } from '../DataSources/MetricDataSources';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useMetricTimeSeries } from '../../hooks/useMetricTimeSeries';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -158,11 +158,12 @@ const EntitySparklineCardContent = ({
       width="100%"
       childrenHeight="auto"
       info={
-        <SparklineDataSources
+        <MetricDataSources
           title={title}
           metricId={metric.id}
           lastSyncedTimestamp={metric.result?.timestamp}
           fetchEnabled={collectorIds.length > 0}
+          metric={metric}
         />
       }
     >
