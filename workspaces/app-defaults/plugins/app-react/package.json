@@ -57,6 +57,7 @@
     "@backstage/frontend-plugin-api": "^0.18.0",
     "@backstage/plugin-app-react": "^0.2.6",
     "@backstage/plugin-catalog": "^2.0.8",
+    "@backstage/plugin-catalog-common": "^1.2.0",
     "@backstage/plugin-catalog-react": "^3.2.2",
     "@backstage/plugin-permission-react": "^0.5.4",
     "@backstage/plugin-scaffolder-common": "^2.2.3",
@@ -70,7 +71,8 @@
     "zod": "^3.25.76 || ^4.0.0"
   },
   "peerDependencies": {
-    "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+    "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
+    "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5",
