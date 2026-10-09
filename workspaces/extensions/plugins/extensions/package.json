@@ -75,7 +75,7 @@
     "@red-hat-developer-hub/backstage-plugin-app-react": "^1.8.1",
     "@red-hat-developer-hub/backstage-plugin-extensions-common": "workspace:^",
     "@tanstack/react-query": "^5.60.5",
-    "monaco-editor": "^0.56.0",
+    "monaco-editor": "^0.57.0",
     "yaml": "^2.7.0"
   },
   "peerDependencies": {
