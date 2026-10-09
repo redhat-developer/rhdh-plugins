@@ -25,6 +25,7 @@ import {
   createUserMessage,
   enrichMessagesWithPersistedSources,
   getCategorizeMessages,
+  getConversationModelFromMessages,
   getTimestamp,
   getTimestampVariablesString,
   normalizeChatUserInput,
@@ -282,6 +283,29 @@ describe('createUserMessage', () => {
       content: 'Hello, this is John',
       timestamp: '2024-10-30T13:00:00Z',
     });
+  });
+});
+
+describe('getConversationModelFromMessages', () => {
+  it('returns the latest bot message model name', () => {
+    expect(
+      getConversationModelFromMessages([
+        { role: 'user', name: 'alice' },
+        { role: 'bot', name: 'granite-3.3' },
+        { role: 'user', name: 'alice' },
+        { role: 'bot', name: 'llama-3.1' },
+      ]),
+    ).toBe('llama-3.1');
+  });
+
+  it('returns undefined when there is no bot model', () => {
+    expect(getConversationModelFromMessages([])).toBeUndefined();
+    expect(
+      getConversationModelFromMessages([{ role: 'user', name: 'alice' }]),
+    ).toBeUndefined();
+    expect(
+      getConversationModelFromMessages([{ role: 'bot', name: '  ' }]),
+    ).toBeUndefined();
   });
 });
 

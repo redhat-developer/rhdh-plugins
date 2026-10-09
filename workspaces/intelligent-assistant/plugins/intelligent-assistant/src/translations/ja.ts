@@ -57,7 +57,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'chatbox.fileUpload.infoText':
       'サポートされているファイルの種類は、.txt、.yaml、.json です。最大ファイルサイズは 25 MB です。',
     'chatbox.header.title': 'Developer Hub Intelligent Assistant',
-    'chatbox.message.placeholder': 'メッセージを送信する',
+    'chatbox.message.placeholder': 'プロンプトを入力してください。',
     'chatbox.provider.other': 'その他',
     'chatbox.search.placeholder': '検索',
     'chatbox.welcome.description': '今日は何をお手伝いしましょうか?',
@@ -118,7 +118,9 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'file.upload.error.unsupportedType':
       'サポートされていないファイルタイプです。サポートされているタイプは、.txt、.yaml、.json です。',
     'footer.accuracy.label':
-      'AI によって生成されたコンテンツは、使用する前に必ず確認してください。',
+      'Red Hat Developer Hub Intelligent Assistant は AI を使用します。誤りがないか確認してください。',
+    'footer.accuracy.notebook.label':
+      'AI のコンテンツは不正確な場合があります。使用前に確認してください。',
     'icon.lightspeed.alt': 'Intelligent Assistant アイコン',
     'lcore.loadError.description':
       'Intelligent Assistant のバックエンドはモデルリストを返しませんでした。サービスが稼働していてアクセス可能であることを確認してから、再試行してください。',
