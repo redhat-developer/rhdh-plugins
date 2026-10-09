@@ -17,13 +17,12 @@
 import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ResponseErrorPanel } from '@backstage/core-components';
 
-import Box from '@mui/material/Box';
-
 import NoScorecardsState from '../Common/NoScorecardsState';
 import { useScorecards } from '../../hooks/useScorecards';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { CardLoading } from '../Common/CardLoading';
 import { EntityMetricCard } from './EntityMetricCard';
+import { EntityScorecardMasonry } from './EntityScorecardMasonry';
 
 const EntityScorecardContentInner = () => {
   const { data: scorecards, isLoading, error } = useScorecards();
@@ -39,25 +38,16 @@ const EntityScorecardContentInner = () => {
     return <ResponseErrorPanel error={error} />;
   }
 
-  if (!isLoading && scorecards?.length === 0) {
+  if (!scorecards?.length) {
     return <NoScorecardsState />;
   }
 
   return (
-    <Box
-      display="grid"
-      gridTemplateColumns={{
-        xs: '1fr',
-        sm: 'repeat(2, 1fr)',
-        lg: 'repeat(3, 1fr)',
-      }}
-      gap={2}
-      sx={{ alignItems: 'start' }}
-    >
-      {scorecards?.map((metric: MetricResult) => (
+    <EntityScorecardMasonry>
+      {scorecards.map((metric: MetricResult) => (
         <EntityMetricCard key={metric.id} metric={metric} />
       ))}
-    </Box>
+    </EntityScorecardMasonry>
   );
 };
 

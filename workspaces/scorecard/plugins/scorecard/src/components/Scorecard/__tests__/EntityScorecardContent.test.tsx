@@ -20,6 +20,24 @@ import { mockScorecardSuccessData } from '../../../../__fixtures__/scorecardData
 import { getStatusConfig } from '../../../utils';
 import { useScorecards } from '../../../hooks/useScorecards';
 
+// jsdom does not provide ResizeObserver; required by EntityScorecardMasonry
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+Object.defineProperty(window, 'ResizeObserver', {
+  writable: true,
+  configurable: true,
+  value: ResizeObserverMock,
+});
+
+jest.mock('@mui/lab/Masonry', () => {
+  return function MockMasonry({ children }: { children?: JSX.Element }) {
+    return <div data-testid="scorecard-masonry">{children}</div>;
+  };
+});
+
 // Mock the child components
 jest.mock('../../Common/NoScorecardsState', () => {
   return function MockNoScorecardsState() {
