@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.13.3
+
+### Patch Changes
+
+- fb4ecee: Updated dependency `prettier` to `3.9.9`.
+
 ## 8.13.2
 
 ### Patch Changes
