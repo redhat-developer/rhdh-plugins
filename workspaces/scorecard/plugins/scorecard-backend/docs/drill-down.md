@@ -77,7 +77,7 @@ Requires `scorecard.metric.read` permission. Additionally:
   entityHealth: {
     totalEntities: number; // Same as pagination.total for this response
     calculationErrorCount: number; // Latest row is a metric calculation failure (error_message set, value null)
-    countsArePartial: boolean; // True when the DB fetch window was capped
+    countsArePartial: boolean; // True when the eligible-result cap was reached and more DB rows may exist
   };
 }
 

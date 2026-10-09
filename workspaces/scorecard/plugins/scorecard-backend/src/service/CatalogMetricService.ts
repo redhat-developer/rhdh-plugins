@@ -25,7 +25,12 @@ import {
   MetricTimeSeriesResponse,
   MetricTimeSeriesPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { Entity } from '@backstage/catalog-model';
+import {
+  RELATION_MEMBER_OF,
+  RELATION_OWNED_BY,
+  stringifyEntityRef,
+  type Entity,
+} from '@backstage/catalog-model';
 import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
@@ -87,6 +92,7 @@ export class CatalogMetricService {
   private readonly registry: MetricProvidersRegistry;
   private readonly database: DatabaseMetricValues;
   private readonly thresholdResolver: ThresholdResolver;
+  private readonly globalDisabledMetrics: string[];
   private readonly thresholdEvaluator = new ThresholdEvaluator();
 
   private static readonly MAX_FETCHABLE_ROWS = 10_000;
@@ -99,6 +105,8 @@ export class CatalogMetricService {
     this.database = options.database;
     this.logger = options.logger;
     this.thresholdResolver = options.thresholdResolver;
+    this.globalDisabledMetrics =
+      options.config.getOptionalStringArray('scorecard.disabledMetrics') ?? [];
     this.config = options.config;
   }
 
@@ -240,13 +248,6 @@ export class CatalogMetricService {
       );
     }
 
-    const rows = await this.database.readLatestEntityMetricValuesPerUtcDay(
-      entityRef,
-      metricId,
-      from,
-      to,
-    );
-
     let thresholds: ThresholdConfig | undefined;
     let thresholdsError: string | undefined;
     try {
@@ -260,6 +261,32 @@ export class CatalogMetricService {
         `Failed to resolve thresholds for metric '${metric.id}' on entity '${entityRef}': ${thresholdsError}`,
       );
     }
+
+    if (isMetricIdDisabled(this.config, metricId, entity, this.logger)) {
+      return {
+        metricId: metric.id,
+        entityRef,
+        points: [],
+        metadata: {
+          title: metric.title,
+          description: metric.description,
+          type: metric.type,
+          unit: metric.unit,
+          history: metric.history,
+          defaultVisualization: metric.defaultVisualization,
+          collectorIds: metric.collectorIds,
+        },
+        ...(thresholds ? { thresholds } : {}),
+        ...(thresholdsError ? { thresholdsError } : {}),
+      };
+    }
+
+    const rows = await this.database.readLatestEntityMetricValuesPerUtcDay(
+      entityRef,
+      metricId,
+      from,
+      to,
+    );
 
     const points: MetricTimeSeriesPoint[] = rows.map(row => {
       if (isMetricCalculationError(row)) {
@@ -404,37 +431,49 @@ export class CatalogMetricService {
     const metric = this.registry.getMetric(metricId);
     const thresholds = this.thresholdResolver.resolveMetricThresholds(metric);
 
+    const emptyResponse = (): EntityMetricDetailResponse => ({
+      metricId: metric.id,
+      thresholds,
+      metricMetadata: {
+        title: metric.title,
+        description: metric.description,
+        type: metric.type,
+        unit: metric.unit,
+      },
+      entities: [],
+      pagination: {
+        page: options.page,
+        pageSize: options.limit,
+        total: 0,
+        totalPages: 0,
+        isCapped: false,
+      },
+      entityHealth: CatalogMetricService.entityHealthSummary([], false),
+    });
+
+    if (this.globalDisabledMetrics.includes(metricId)) {
+      this.logger.debug(`Disabled metric by app-config: ${metricId}`);
+      return emptyResponse();
+    }
+
     // High-page early-exit guard
     if (
       (options.page - 1) * options.limit >=
       CatalogMetricService.MAX_FETCHABLE_ROWS
     ) {
-      return {
-        metricId: metric.id,
-        thresholds,
-        metricMetadata: {
-          title: metric.title,
-          description: metric.description,
-          type: metric.type,
-          unit: metric.unit,
-        },
-        entities: [],
-        pagination: {
-          page: options.page,
-          pageSize: options.limit,
-          total: 0,
-          totalPages: 0,
-          isCapped: false,
-        },
-        entityHealth: CatalogMetricService.entityHealthSummary([], false),
-      };
+      return emptyResponse();
     }
 
-    // Query database with all DB filters first
-    // At the moment, this is going to be an O(MAX_FETCHABLE_ROWS) cost and is intentional to avoid leaking
-    // pre-auth counts. MAX_FETCHABLE_ROWS and BATCH_SIZE are to be used as a method to of adjustment to
-    // find the right amount of performance
-    const rows = await this.database.readEntityMetricsWithFilters(metricId, {
+    // Fetch successive DB windows in sort order, then apply catalog authorization and
+    // disabled-metric filtering until we have MAX_FETCHABLE_ROWS eligible rows or the
+    // database is exhausted. Cost is intentional to avoid leaking pre-auth counts;
+    // MAX_FETCHABLE_ROWS and BATCH_SIZE tune the performance tradeoff.
+    const entityMap = new Map<string, Entity>();
+    const accessibleRows: DbMetricValue[] = [];
+    let dbOffset = 0;
+    let moreDbRowsMayExist = false;
+
+    const dbFilterOptions = {
       status: options.status,
       entityName: options.entityName,
       entityKind: options.kind,
@@ -442,69 +481,103 @@ export class CatalogMetricService {
       entityOwner: options.owner,
       sortBy: options.sortBy,
       sortOrder: options.sortOrder,
-      pagination: {
-        limit: CatalogMetricService.MAX_FETCHABLE_ROWS,
-        offset: 0,
-      },
-    });
+    };
 
-    // Filter to authorized rows by batching through catalog.getEntitiesByRefs with user
-    // credentials. The catalog enforces auth natively: null = unauthorized or deleted.
-    // We also cache the returned Entity objects so we can enrich the page rows without
-    // a second catalog round-trip. Sequential processing preserves DB sort order.
-    const entityMap = new Map<string, Entity>();
-    const accessibleRows: DbMetricValue[] = [];
     try {
-      for (let i = 0; i < rows.length; i += CatalogMetricService.BATCH_SIZE) {
-        const batch = rows.slice(i, i + CatalogMetricService.BATCH_SIZE);
-        const response = await this.catalog.getEntitiesByRefs(
+      while (accessibleRows.length < CatalogMetricService.MAX_FETCHABLE_ROWS) {
+        const rows = await this.database.readEntityMetricsWithFilters(
+          metricId,
           {
-            entityRefs: batch.map(row => row.catalogEntityRef),
-            fields: [
-              'kind',
-              'metadata.name',
-              'metadata.namespace',
-              'spec.owner',
-            ],
+            ...dbFilterOptions,
+            pagination: {
+              limit: CatalogMetricService.MAX_FETCHABLE_ROWS,
+              offset: dbOffset,
+            },
           },
-          { credentials },
         );
 
-        // Filter out the unauthorized entities
-        for (let j = 0; j < batch.length; j++) {
-          const entity = response.items[j];
-          if (!entity) continue; // null = unauthorized or not found, skip
-          entityMap.set(batch[j].catalogEntityRef, entity);
-          accessibleRows.push(batch[j]);
+        if (rows.length === 0) {
+          moreDbRowsMayExist = false;
+          break;
+        }
+
+        // Filter to authorized rows by batching through catalog.getEntitiesByRefs with
+        // user credentials. The catalog enforces auth natively: null = unauthorized or
+        // deleted. Cache Entity objects so we can enrich the page without a second
+        // catalog round-trip. Sequential processing preserves DB sort order.
+        let stoppedAtEligibleCap = false;
+        for (
+          let i = 0;
+          i < rows.length && !stoppedAtEligibleCap;
+          i += CatalogMetricService.BATCH_SIZE
+        ) {
+          const batch = rows.slice(i, i + CatalogMetricService.BATCH_SIZE);
+          const response = await this.catalog.getEntitiesByRefs(
+            {
+              entityRefs: batch.map(row => row.catalogEntityRef),
+              fields: [
+                'kind',
+                'metadata.name',
+                'metadata.namespace',
+                'metadata.annotations',
+                'spec.owner',
+              ],
+            },
+            { credentials },
+          );
+
+          for (let j = 0; j < batch.length; j++) {
+            const entity = response.items[j];
+            if (!entity) continue; // null = unauthorized or not found, skip
+            if (
+              isMetricIdDisabled(this.config, metricId, entity, this.logger)
+            ) {
+              continue;
+            }
+            if (
+              accessibleRows.length >= CatalogMetricService.MAX_FETCHABLE_ROWS
+            ) {
+              // Eligible cap reached with remaining rows in this window (or later
+              // windows) that have not been fully evaluated.
+              stoppedAtEligibleCap = true;
+              moreDbRowsMayExist = true;
+              break;
+            }
+            entityMap.set(batch[j].catalogEntityRef, entity);
+            accessibleRows.push(batch[j]);
+          }
+        }
+
+        if (stoppedAtEligibleCap) {
+          break;
+        }
+
+        if (rows.length < CatalogMetricService.MAX_FETCHABLE_ROWS) {
+          // Database exhausted for the current filters/sort.
+          moreDbRowsMayExist = false;
+          break;
+        }
+
+        // Full DB window consumed; more rows may exist beyond this offset.
+        dbOffset += rows.length;
+        moreDbRowsMayExist = true;
+
+        if (accessibleRows.length >= CatalogMetricService.MAX_FETCHABLE_ROWS) {
+          break;
         }
       }
     } catch (error) {
       // Fail secure: if the catalog is unavailable we cannot confirm authorization,
       // so return empty rather than potentially unauthorized data.
       this.logger.error('Failed to fetch entities from catalog', { error });
-      return {
-        metricId: metric.id,
-        thresholds,
-        metricMetadata: {
-          title: metric.title,
-          description: metric.description,
-          type: metric.type,
-          unit: metric.unit,
-        },
-        entities: [],
-        pagination: {
-          page: options.page,
-          pageSize: options.limit,
-          total: 0,
-          totalPages: 0,
-          isCapped: false,
-        },
-        entityHealth: CatalogMetricService.entityHealthSummary([], false),
-      };
+      return emptyResponse();
     }
 
-    // True when DB results were capped; pagination.total may undercount the full dataset.
-    const isCapped = rows.length === CatalogMetricService.MAX_FETCHABLE_ROWS;
+    // True when the eligible-result cap was reached while more DB rows may exist;
+    // pagination.total / entityHealth counts may undercount the full dataset.
+    const isCapped =
+      accessibleRows.length === CatalogMetricService.MAX_FETCHABLE_ROWS &&
+      moreDbRowsMayExist;
 
     // Apply pagination to filtered entities
     const totalFiltered = accessibleRows.length;
@@ -580,5 +653,125 @@ export class CatalogMetricService {
         isCapped,
       ),
     };
+  }
+
+  /**
+   * Get the user and its members entities.
+   *
+   * @param userEntityRef - User entity reference in format "kind:namespace/name"
+   * @param metricId - Metric ID to filter entities by
+   * @param options - Options for the query
+   * @param options.credentials - Backstage credentials
+   * @returns Array of entity references in format "kind:namespace/name"
+   */
+  async getUserAndGroupOwnerRefs(
+    userEntityRef: string,
+    metricId: string,
+    options: {
+      credentials: BackstageCredentials;
+    },
+  ): Promise<string[]> {
+    const { credentials } = options;
+
+    if (this.globalDisabledMetrics.includes(metricId)) {
+      this.logger.debug(`Disabled metric by app-config: ${metricId}`);
+      return [];
+    }
+
+    const userEntity = await this.catalog.getEntityByRef(userEntityRef, {
+      credentials,
+    });
+
+    if (!userEntity) {
+      throw new NotFoundError('User entity not found in catalog');
+    }
+
+    const ownerRefs: string[] = [userEntityRef];
+
+    const memberOfRelations =
+      userEntity.relations?.filter(
+        relation => relation.type === RELATION_MEMBER_OF,
+      ) ?? [];
+
+    if (memberOfRelations.length > 0) {
+      for (const relation of memberOfRelations) {
+        ownerRefs.push(relation.targetRef);
+      }
+    }
+
+    return ownerRefs;
+  }
+
+  async getEntitiesOwnedByOwnerRef(
+    ownerRef: string,
+    metricId: string,
+    options: {
+      credentials: BackstageCredentials;
+    },
+  ): Promise<string[]> {
+    const QUERY_ENTITIES_BATCH_SIZE = 50;
+
+    let cursor: string | undefined = undefined;
+
+    const { credentials } = options;
+    const entitiesOwnedByUserAndGroups: string[] = [];
+
+    do {
+      const entities = await this.catalog.queryEntities(
+        {
+          filter: {
+            [`relations.${RELATION_OWNED_BY}`]: ownerRef,
+          },
+          fields: ['kind', 'metadata'],
+          limit: QUERY_ENTITIES_BATCH_SIZE,
+          ...(cursor ? { cursor } : {}),
+        },
+        { credentials },
+      );
+
+      cursor = entities.pageInfo.nextCursor;
+
+      for (const entity of entities.items) {
+        if (isMetricIdDisabled(this.config, metricId, entity, this.logger)) {
+          continue;
+        }
+        entitiesOwnedByUserAndGroups.push(stringifyEntityRef(entity));
+      }
+    } while (cursor !== undefined);
+
+    return entitiesOwnedByUserAndGroups;
+  }
+
+  /**
+   * Get the entities owned by a user and their groups.
+   *
+   * @param userEntityRef - User entity reference in format "kind:namespace/name"
+   * @param metricId - Metric ID to filter entities by
+   * @param options - Options for the query
+   * @param options.credentials - Backstage credentials
+   * @returns Array of entity references in format "kind:namespace/name"
+   */
+  async getEntitiesOwnedByUser(
+    userEntityRef: string,
+    metricId: string,
+    options: {
+      credentials: BackstageCredentials;
+    },
+  ): Promise<string[]> {
+    const { credentials } = options;
+
+    const ownerRefs = await this.getUserAndGroupOwnerRefs(
+      userEntityRef,
+      metricId,
+      { credentials },
+    );
+
+    const entitiesOwnedByOwnerRefs = await Promise.all(
+      ownerRefs.map(ownerRef =>
+        this.getEntitiesOwnedByOwnerRef(ownerRef, metricId, { credentials }),
+      ),
+    );
+
+    return entitiesOwnedByOwnerRefs.flat();
   }
 }
