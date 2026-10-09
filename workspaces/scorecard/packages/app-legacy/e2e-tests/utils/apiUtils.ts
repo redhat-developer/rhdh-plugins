@@ -260,7 +260,10 @@ export async function mockGitHubDrillDownMissingPermission(
 export async function mockScorecardEntitiesDrillDown(
   page: Page,
   responseData: object,
-  metricId: 'github.openPRs' | 'jira.openIssues' = 'github.openPRs',
+  metricId:
+    | 'github.openPRs'
+    | 'jira.openIssues'
+    | 'filecheck.license' = 'github.openPRs',
   status = 200,
 ) {
   await page.route(entitiesDrillDownPattern(metricId), async route => {
