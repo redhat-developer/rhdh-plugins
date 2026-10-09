@@ -251,16 +251,16 @@ Reference: [Migrating entity pages to the new frontend system](https://github.co
 
 Use the app-defaults workspace dev app (`yarn start` in `workspaces/app-defaults`) and example catalog entities.
 
-| Check                  | Steps                                    | Expected                                                                 |
-| ---------------------- | ---------------------------------------- | ------------------------------------------------------------------------ |
-| RHIDP-16564 AC         | Open a **component** → **Overview**      | About (and Links) in the **left** column                                 |
-| Component overview     | **component** → Overview                 | No depends-on / subcomponent / consumed-provided API cards               |
-| Component Dependencies | **component** → **Dependencies**         | Graph on the left; dependency and API list cards on the right            |
-| API overview           | **api** → Overview                       | Relations graph on the right; no API **Definition** card                 |
-| API Definition         | **api** → Documentation → **Definition** | Definition content present                                               |
-| System overview        | **system** → Overview                    | Relations graph on the right                                             |
-| System Diagram         | **system** → **System Diagram**          | Diagram tab content loads                                                |
-| Group / User           | **group** or **user** → Overview         | About left; no duplicate org profile cards on overview (verify visually) |
+| Check                  | Steps                                    | Expected                                                                   |
+| ---------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| RHIDP-16564 AC         | Open a **component** → **Overview**      | About (and Links) in the **left** column                                   |
+| Component overview     | **component** → Overview                 | No depends-on / subcomponent / consumed-provided API cards                 |
+| Component Dependencies | **component** → **Dependencies**         | Graph and list cards side by side at lg+; stacked full width when narrower |
+| API overview           | **api** → Overview                       | Relations graph on the right; no API **Definition** card                   |
+| API Definition         | **api** → Documentation → **Definition** | Definition content present                                                 |
+| System overview        | **system** → Overview                    | Relations graph on the right                                               |
+| System Diagram         | **system** → **System Diagram**          | Diagram tab content loads                                                  |
+| Group / User           | **group** or **user** → Overview         | About left; no duplicate org profile cards on overview (verify visually)   |
 
 ## Links
 
