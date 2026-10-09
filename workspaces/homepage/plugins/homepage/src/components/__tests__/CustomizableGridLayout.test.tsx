@@ -18,29 +18,11 @@ import { createElement } from 'react';
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { mockUseTranslation } from '../../test-utils/mockTranslations';
-import { CustomizableGrid } from '../CustomizableGrid';
-import { HomePageCardMountPoint } from '../../types';
-
-jest.mock('../../hooks/useTranslation', () => ({
-  useTranslation: () => mockUseTranslation(),
-}));
+import { CustomizableGridLayout } from '../CustomizableGridLayout';
+import { HomePageCardConfig } from '../../types';
 
 jest.mock('../../hooks/useContainerQuery', () => ({
   useContainerQuery: jest.fn(),
-}));
-
-jest.mock('../../plugin', () => ({
-  dynamicHomePagePlugin: {
-    provide: jest.fn(() => {
-      const Card = () => createElement('div', { 'data-testid': 'grid-card' });
-      return Card;
-    }),
-  },
-}));
-
-jest.mock('@backstage/plugin-home-react', () => ({
-  createCardExtension: jest.fn(config => config),
 }));
 
 jest.mock('@backstage/plugin-home', () => ({
@@ -57,45 +39,51 @@ jest.mock('@backstage/plugin-home', () => ({
   ),
 }));
 
-const HeadlineCard = () => createElement('div', null, 'Headline');
-const SearchCard = () => createElement('div', null, 'Search');
+const HeadlineCard = createElement(
+  'div',
+  { 'data-testid': 'headline-card' },
+  'Headline',
+);
+const SearchCard = createElement(
+  'div',
+  { 'data-testid': 'search-card' },
+  'Search',
+);
 
-const mountPoints = [
+const homepageCards = [
   {
-    Component: HeadlineCard,
-    config: {
-      id: 'headline',
-      title: 'Headline',
-      layouts: {
-        xl: { x: 0, y: 0, w: 12, h: 2 },
-      },
+    name: 'headline',
+    component: HeadlineCard,
+    node: HeadlineCard,
+    breakpointLayouts: {
+      xl: { x: 0, y: 0, w: 12, h: 2 },
     },
   },
   {
-    Component: SearchCard,
-    config: {
-      id: 'search',
-      title: 'Search Bar',
-    },
+    name: 'search',
+    component: SearchCard,
+    node: SearchCard,
   },
   {
-    Component: SearchCard,
-    config: {},
+    name: 'skipped',
+    component: createElement('div', null, 'Skipped'),
   },
-] as HomePageCardMountPoint[];
+] as unknown as HomePageCardConfig[];
 
-describe('CustomizableGrid', () => {
-  it('renders customizable homepage grid with configured cards', () => {
+describe('CustomizableGridLayout', () => {
+  it('renders customizable homepage grid with default layout config', () => {
     render(
       <ThemeProvider theme={createTheme()}>
-        <CustomizableGrid mountPoints={mountPoints} />
+        <CustomizableGridLayout homepageCards={homepageCards} />
       </ThemeProvider>,
     );
 
     expect(screen.getByTestId('custom-homepage-grid')).toHaveAttribute(
       'data-config-length',
-      '1',
+      '2',
     );
-    expect(screen.getAllByTestId('grid-card')).toHaveLength(2);
+    expect(screen.getByTestId('headline-card')).toBeInTheDocument();
+    expect(screen.getByTestId('search-card')).toBeInTheDocument();
+    expect(screen.getByText('Skipped')).toBeInTheDocument();
   });
 });

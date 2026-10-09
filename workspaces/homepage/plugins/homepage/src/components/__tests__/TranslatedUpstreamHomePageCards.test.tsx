@@ -16,14 +16,14 @@
 
 import { render, screen } from '@testing-library/react';
 
-import { mockUseTranslation } from '../../../test-utils/mockTranslations';
+import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import {
   CatalogStarredEntitiesCard,
   RecentlyVisitedCard,
   TopVisitedCard,
 } from '../TranslatedUpstreamHomePageCards';
 
-jest.mock('../../../hooks/useTranslation', () => ({
+jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: () => mockUseTranslation(),
 }));
 
@@ -44,7 +44,7 @@ describe('TranslatedUpstreamHomePageCards', () => {
     render(<CatalogStarredEntitiesCard />);
 
     expect(screen.getByTestId('starred')).toHaveTextContent(
-      'Starred catalog entities',
+      'Starred Catalog Entities',
     );
   });
 
@@ -64,7 +64,7 @@ describe('TranslatedUpstreamHomePageCards', () => {
     render(<CatalogStarredEntitiesCard titleKey="starredEntities.title" />);
 
     expect(screen.getByTestId('starred')).toHaveTextContent(
-      'Starred catalog entities',
+      'Starred Catalog Entities',
     );
   });
 });

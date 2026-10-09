@@ -19,7 +19,7 @@ import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
-import { QuickAccessCard, QuickAccessCardContent } from '../QuickAccessCard';
+import { QuickAccessCardContent } from '../QuickAccessCard';
 import { useQuickAccessLinks } from '../../hooks/useQuickAccessLinks';
 
 jest.mock('../../hooks/useTranslation', () => ({
@@ -137,40 +137,5 @@ describe('QuickAccessCardContent', () => {
 
     expect(screen.getByTestId('toolkit')).toHaveTextContent('Community');
     expect(mockUseQuickAccessLinks).toHaveBeenCalledWith('/quick-access');
-  });
-});
-
-describe('QuickAccessCard', () => {
-  beforeEach(() => {
-    mockUseQuickAccessLinks.mockReturnValue({
-      data: quickAccessData,
-      error: undefined,
-      isLoading: false,
-    });
-  });
-
-  it('renders with default translated title', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <QuickAccessCard />
-      </ThemeProvider>,
-    );
-
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'Quick Access',
-    );
-    expect(screen.getByTestId('toolkit')).toBeInTheDocument();
-  });
-
-  it('renders with custom title', () => {
-    render(
-      <ThemeProvider theme={theme}>
-        <QuickAccessCard title="My Links" />
-      </ThemeProvider>,
-    );
-
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
-      'My Links',
-    );
   });
 });

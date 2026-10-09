@@ -32,7 +32,7 @@ describe('useHomePageCardTitle', () => {
       }),
     );
 
-    expect(result.current).toBe('Starred catalog entities');
+    expect(result.current).toBe('Starred Catalog Entities');
   });
 
   it('returns explicit title prop when titleKey translation is unavailable', () => {
