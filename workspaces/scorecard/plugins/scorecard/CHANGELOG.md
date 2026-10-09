@@ -1,5 +1,28 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.5.0
+
+### Minor Changes
+
+- 9bf0bea: Removed the transitional `/alpha` re-export of translations. Translations are available from the main entry point; the `./alpha` package export path is no longer provided.
+- ba7839e: **BREAKING** Remove the fixed NFS homepage scorecard widgets. Use `home-page-widget:scorecard/scorecard-aggregated-card` (`ScorecardAggregatedCard`, title Scorecard) and set `aggregationId` in the card settings.
+
+  Allow a custom aggregation id on an editable NFS Scorecard homepage card so it can target a KPI key or a metric id such as `github.openPRs`.
+
+### Patch Changes
+
+- 2d9734e: Moved scorecard status icon registration from the app's `/legacy` import into the plugin's own `IconBundleBlueprint` extension, so consuming apps no longer need to register scorecard-specific icons manually.
+- b8d8662: Correct weighted status score aggregation responses to return the thresholds used to classify
+  the aggregate score. Drill-down `/metrics/:metricId/catalog/aggregations/entities` responses
+  now include the underlying metric thresholds used to classify entity statuses. The entity rows
+  are now consistent with statuses shown on entity scorecard page, while the aggregate card uses
+  aggregation thresholds for its own scope. Entity-specific threshold annotation overrides can
+  still affect an individual entity's status, but are not represented by the drill-down response's
+  shared threshold set.
+- 223f9db: Import `ThemeConfig` from `@red-hat-developer-hub/backstage-plugin-theme/legacy` for theme `1.4.0`.
+- Updated dependencies [b8d8662]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.0
+
 ## 4.4.2
 
 ### Patch Changes
