@@ -19,6 +19,7 @@ import { render, screen } from '@testing-library/react';
 
 import { ReadOnlyGridLayout } from '../ReadOnlyGridLayout';
 import { HomePageCardConfig } from '../../types';
+import { BREAKPOINTS, buildCardLayouts } from '../../utils/gridDefaults';
 
 jest.mock('react-use/lib/useMeasure', () => ({
   __esModule: true,
@@ -73,22 +74,16 @@ describe('ReadOnlyGridLayout', () => {
     expect(screen.getByText('Card Content')).toBeInTheDocument();
 
     const layout = getCardLayout();
-    expect(layout.xl).toMatchObject({ w: 6, h: 4 });
-    // Only configured breakpoints are present — not full default set
-    expect(layout.lg).toBeUndefined();
-    expect(layout.xxs).toBeUndefined();
+    expect(Object.keys(layout)).toEqual(['xl']);
+    expect(layout.xl).toMatchObject({ i: '1', x: 0, y: 0, w: 6, h: 4 });
   });
 
-  it('renders cards with default layouts when none are configured', () => {
+  it('fills every breakpoint with full-width default layout when breakpointLayouts is omitted', () => {
     render(<ReadOnlyGridLayout homepageCards={homepageCardsWithoutLayout} />);
 
-    expect(screen.getByText('Card Content')).toBeInTheDocument();
-
     const layout = getCardLayout();
-    expect(layout.xl).toMatchObject({ w: 12, h: 4 });
-    // Defaults fill every breakpoint
-    expect(layout.lg).toBeDefined();
-    expect(layout.xxs).toBeDefined();
+    expect(Object.keys(layout)).toEqual([...BREAKPOINTS]);
+    expect(layout).toEqual(buildCardLayouts('1'));
   });
 
   it('renders component from Content wrapper when provided', () => {
