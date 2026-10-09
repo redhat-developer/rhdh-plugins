@@ -360,6 +360,54 @@ describe('createRouter – modules (run & cancel)', () => {
       },
       LONG_TEST_TIMEOUT,
     );
+
+    it.each(supportedDatabaseIds)(
+      'marks the DB job error when kubeService.createJob fails - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+        const kubeError = new Error(
+          'Timed out waiting for x2a-cluster-trusted-ca key ca-bundle.crt',
+        );
+        const mockCreateJob = jest
+          .fn()
+          .mockRejectedValueOnce(kubeError)
+          .mockResolvedValue({ k8sJobName: 'k8s-job' });
+        const app = await createApp(client, undefined, undefined, {
+          createJob: mockCreateJob,
+        });
+
+        const first = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send(runBody);
+
+        expect(first.status).toBeGreaterThanOrEqual(500);
+        expect(first.body.error.message).toContain(
+          'Timed out waiting for x2a-cluster-trusted-ca',
+        );
+
+        const jobs = await x2aDatabase.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          lastJobOnly: true,
+        });
+        expect(jobs[0]?.status).toBe('error');
+        expect(jobs[0]?.errorDetails).toContain(
+          'Timed out waiting for x2a-cluster-trusted-ca',
+        );
+
+        const second = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send(runBody);
+        expect(second.status).not.toBe(409);
+        expect(second.body.error).not.toBe('JobAlreadyRunning');
+        expect(second.status).toBe(200);
+      },
+      LONG_TEST_TIMEOUT,
+    );
   });
 
   describe('POST /projects/:projectId/modules/:moduleId/cancel', () => {

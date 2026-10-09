@@ -127,6 +127,37 @@ export interface Config {
          */
         token?: string;
       };
+      /**
+       * Extra CA certificates (PEM) for git clone/push in converter Jobs.
+       * Paste issuing CA and intermediates not already in the convertor image
+       * store, not the GitLab/GitHub leaf (server) certificate. The Job
+       * concatenates this with the image trust store.
+       * Use a YAML literal block (`|`). Do not use ${ENV} substitution —
+       * it typically strips PEM newlines.
+       * @visibility secret
+       */
+      caBundle?: string;
+      /**
+       * When true, mount the OpenShift-injected cluster trusted CA bundle
+       * into converter Jobs. The plugin creates an empty ConfigMap labeled
+       * `config.openshift.io/inject-trusted-cabundle: "true"` and waits for
+       * Cluster Network Operator to fill `ca-bundle.crt` (RHCOS CAs plus
+       * Proxy trustedCA / user-ca-bundle). OpenShift only; default false.
+       * If `ca-bundle.crt` never appears, Job creation fails (not a silent
+       * no-op) — even when caBundle is also set. Vanilla Kubernetes / kind
+       * / CI must leave this false. GitLab’s issuing CA must already be in
+       * cluster trust for this to replace pasting PEM.
+       * @visibility backend
+       */
+      useClusterTrustedCABundle?: boolean;
+      /**
+       * When true, skip git TLS verification in converter Jobs
+       * (`GIT_SSL_NO_VERIFY=1`). Last resort for labs; MITM risk on all git
+       * HTTPS in the Job (source and target, including GitHub). Default false.
+       * Ignored when caBundle or useClusterTrustedCABundle is set.
+       * @visibility backend
+       */
+      skipSSLVerification?: boolean;
     };
     /**
      * Credentials configuration for X2A

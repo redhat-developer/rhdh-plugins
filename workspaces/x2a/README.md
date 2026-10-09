@@ -310,6 +310,37 @@ yarn dev
 
 **Warning:** `NODE_TLS_REJECT_UNAUTHORIZED=0` disables certificate verification for **all** outbound HTTPS connections in the Node.js process, not just Kubernetes. **Do not use this in production.**
 
+#### Converter Job git TLS (GitLab / private SCM)
+
+`git clone` and `git push` run **inside the converter Job**, not in the RHDH Node process. Hub settings such as `NODE_EXTRA_CA_CERTS` do **not** apply to those clones.
+
+`x2a.git.caBundle` and `x2a.git.skipSSLVerification` apply to **every** converter Job (init, analyze, migrate, publish, adversarial) and to **all git HTTPS in that Job** (source clone and target clone/push), including public hosts such as GitHub if skip is enabled.
+
+Paste the **issuing CA and any intermediates** missing from the convertor image store — not the GitLab (or GitHub) **leaf/server** certificate. A leaf cert will not fix `self-signed certificate in certificate chain`. Capture the chain with `openssl s_client -showcerts -connect gitlab.example:443` (or export the issuing CA from a browser). The Job concatenates your extras with the image trust store.
+
+On OpenShift, set `x2a.git.useClusterTrustedCABundle: true` to reuse CAs already in cluster trust (`openshift-config` `user-ca-bundle` / Proxy `trustedCA`) instead of pasting the same PEM. The plugin creates ConfigMap `x2a-cluster-trusted-ca` with **label** `config.openshift.io/inject-trusted-cabundle: "true"` and waits for Cluster Network Operator to fill `ca-bundle.crt`. That injected bundle **replaces** the convertor image CA store (`GIT_SSL_CAINFO`). The injected bundle normally includes RHCOS public CAs, so GitHub / public target HTTPS still work; a replace-not-merge `user-ca-bundle` misconfig would break those clones too. Extra `caBundle` PEM, if also set, is concatenated onto the injected bundle — not onto the image store.
+
+The service account in `x2a.kubernetes.namespace` needs ConfigMap **get**, **create**, and **patch** (extra-CA only needed create). If `ca-bundle.crt` never appears, Job creation **fails** even when `caBundle` is set — extra PEM is not a fallback. Vanilla Kubernetes / kind never inject; leave the flag false there.
+
+Timeout or 403 fails Job creation; retry once CNO has populated `ca-bundle.crt`. GitLab’s issuing CA must already be in cluster trust for this flag to replace pasting PEM.
+
+Use a YAML literal block. Do **not** use `${GIT_CA_BUNDLE}` (or similar) for the PEM — environment substitution typically strips newlines.
+
+```yaml
+x2a:
+  git:
+    # OpenShift only. Reuse cluster trust instead of duplicating PEM.
+    # useClusterTrustedCABundle: true
+    caBundle: |
+      -----BEGIN CERTIFICATE-----
+      ...issuing CA...
+      -----END CERTIFICATE-----
+      -----BEGIN CERTIFICATE-----
+      ...intermediate, if needed...
+      -----END CERTIFICATE-----
+    # skipSSLVerification: false  # lab-only MITM hatch; ignored when caBundle or useClusterTrustedCABundle is set
+```
+
 ### Verifying Kubernetes Connection
 
 The plugin's `KubeService` provides methods to interact with Kubernetes resources. Check the logs when starting the backend to see if the Kubernetes configuration was loaded successfully:
