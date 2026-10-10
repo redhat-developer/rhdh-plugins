@@ -43,6 +43,9 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       "Aucune entité n'est encore documentée, ou vous n'avez pas l'autorisation d'en consulter. La documentation apparaîtra ici une fois que les entités comportant des annotations TechDocs seront enregistrées et que vous y aurez accès.",
     'docs.emptyState.importButtonTitle': 'Enregistrer un composant',
+    'notFound.title': 'Page introuvable',
+    'notFound.description':
+      'La page que vous recherchez a peut-être été supprimée, renommée ou est temporairement indisponible.',
     'learningPaths.title': "Parcours d'apprentissage",
     'learningPaths.error.title': 'Impossible de récupérer les données',
     'learningPaths.error.unknownError': 'Erreur inconnue',

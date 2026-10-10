@@ -45,6 +45,8 @@ export const appDefaultsTranslationRef: TranslationRef<
     readonly 'docs.emptyState.title': 'No documentation available';
     readonly 'docs.emptyState.description': 'There are no documented entities yet, or you do not have permission to view any. Documentation will appear here once entities with TechDocs annotations are registered and you have access.';
     readonly 'docs.emptyState.importButtonTitle': 'Register a component';
+    readonly 'notFound.title': 'Page not found';
+    readonly 'notFound.description': 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.';
     readonly 'learningPaths.title': 'Learning Paths';
     readonly 'learningPaths.error.title': 'Could not fetch data.';
     readonly 'learningPaths.error.unknownError': 'Unknown error';
@@ -272,6 +274,54 @@ export type LogoURLs =
     }
   | string
   | undefined;
+
+// @public
+export const notFoundExtension: OverridableExtensionDefinition<{
+  kind: 'component';
+  name: 'core-not-found-error-page';
+  config: {};
+  configInput: {};
+  output: ExtensionDataRef<
+    {
+      ref: SwappableComponentRef;
+      loader:
+        | (() => (props: {}) => JSX.Element | null)
+        | (() => Promise<(props: {}) => JSX.Element | null>);
+    },
+    'core.swappableComponent',
+    {}
+  >;
+  inputs: {};
+  params: <Ref extends SwappableComponentRef<any>>(params: {
+    component: Ref extends SwappableComponentRef<
+      any,
+      infer IExternalComponentProps
+    >
+      ? {
+          ref: Ref;
+        } & ((props: IExternalComponentProps) => JSX.Element | null)
+      : never;
+    loader: Ref extends SwappableComponentRef<infer IInnerComponentProps, any>
+      ?
+          | (() => (props: IInnerComponentProps) => JSX.Element | null)
+          | (() => Promise<(props: IInnerComponentProps) => JSX.Element | null>)
+      : never;
+  }) => ExtensionBlueprintParams<{
+    component: Ref extends SwappableComponentRef<
+      any,
+      infer IExternalComponentProps
+    >
+      ? {
+          ref: Ref;
+        } & ((props: IExternalComponentProps) => JSX.Element | null)
+      : never;
+    loader: Ref extends SwappableComponentRef<infer IInnerComponentProps, any>
+      ?
+          | (() => (props: IInnerComponentProps) => JSX.Element | null)
+          | (() => Promise<(props: IInnerComponentProps) => JSX.Element | null>)
+      : never;
+  }>;
+}>;
 
 // @public
 export const useBrandingFullLogo: (logo?: LogoURLs) => string | undefined;
