@@ -19,22 +19,9 @@ export interface Config {
     branding?: {
       /**
        * Base64 URI for the full logo. If the value is a string, it is used as the logo for both themes.
-       * @visibility frontend
+       * @deepVisibility frontend
        */
-      fullLogo?:
-        | string
-        | {
-            /**
-             * Base64 URI for the logo in light theme
-             * @visibility frontend
-             */
-            light: string;
-            /**
-             * Base64 URI for the logo in dark theme
-             * @visibility frontend
-             */
-            dark: string;
-          };
+      fullLogo?: string | Record<string, string>;
       /**
        * Fallback width for the full logo in the global header.
        * Accepts any valid CSS length (e.g. `'200px'`, `'12rem'`).

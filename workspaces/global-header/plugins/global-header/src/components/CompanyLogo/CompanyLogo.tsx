@@ -15,76 +15,70 @@
  */
 
 import { Link } from '@backstage/core-components';
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import {
+  appThemeApiRef,
+  configApiRef,
+  useApi,
+} from '@backstage/frontend-plugin-api';
 import Box from '@mui/material/Box';
-import { defaultFullLogo } from '../../defaults/defaultFullLogo';
-import { useAppBarBackgroundScheme } from '../../hooks/useAppBarBackgroundScheme';
-import { CompanyLogoProps, LogoURLs } from './types';
+import RedHatDeveloperHubLogo from './RedHatDeveloperHubLogo';
 
-export type { CompanyLogoProps, LogoURLs } from './types';
+/**
+ * An interface representing the URLs for light and dark variants of a logo.
+ * @public
+ */
+export type LogoURLs = Record<string, string> | string;
 
-function resolveBrandingFullLogo(
-  logo: LogoURLs | undefined,
-  appBarBackgroundScheme: 'dark' | 'light',
-  configuredFullLogo: LogoURLs | undefined,
-): string | undefined {
-  const fullLogoURI =
-    typeof configuredFullLogo === 'string'
-      ? configuredFullLogo
-      : configuredFullLogo?.[appBarBackgroundScheme];
-
-  const propsLogoURI =
-    typeof logo === 'string' ? logo : logo?.[appBarBackgroundScheme];
-
-  return propsLogoURI ?? fullLogoURI ?? undefined;
+/**
+ * @public
+ */
+export interface CompanyLogoProps {
+  /** An object containing the logo URLs */
+  logo?: LogoURLs;
+  /** The route to link the logo to */
+  to?: string;
+  /**
+   * The width of the logo in pixels (defaults to 150px). This prop fixes an
+   * issue where encoded SVGs without an explicit width would not render.
+   * You likely do not need to set this prop, but we recommend setting it
+   * to a value under 200px.
+   */
+  width?: string | number;
+  /**
+   * The maximum height of the logo in pixels (defaults to 40px).
+   * Note that changing this value may result in changes in the height of the global header.
+   **/
+  height?: string | number;
 }
-
-const LogoRender = ({
-  logoUri,
-  width = 150,
-  height = 40,
-}: {
-  logoUri: string;
-  width?: number | string;
-  height?: number | string;
-}) => {
-  return (
-    <img
-      data-testid="home-logo"
-      src={logoUri}
-      alt="Home logo"
-      style={{
-        objectFit: 'contain',
-        objectPosition: 'left',
-        maxHeight: height,
-      }}
-      width={width}
-    />
-  );
-};
 
 /**
  * Company logo for the global header app bar.
  *
  * @public
  */
-export const CompanyLogo = ({
-  logo,
-  width,
-  height,
-  to = '/',
-}: CompanyLogoProps) => {
-  const appBarBackgroundScheme = useAppBarBackgroundScheme();
+export const CompanyLogo = (props: CompanyLogoProps) => {
   const configApi = useApi(configApiRef);
-  const configuredFullLogo = configApi.getOptional<LogoURLs>(
-    'app.branding.fullLogo',
-  );
-  const logoURL =
-    resolveBrandingFullLogo(logo, appBarBackgroundScheme, configuredFullLogo) ??
-    defaultFullLogo[appBarBackgroundScheme];
-  const fullLogoWidth = configApi.getOptional<number | string>(
-    'app.branding.fullLogoWidth',
-  );
+  const themeApi = useApi(appThemeApiRef);
+
+  const themeId = themeApi.getActiveThemeId();
+  const themeVariant = themeApi
+    .getInstalledThemes()
+    .find(theme => theme.id === themeId)?.variant;
+  const logoURLs =
+    props.logo ?? configApi.getOptional<LogoURLs>('app.branding.fullLogo');
+  const logoURI =
+    (typeof logoURLs === 'string' ? logoURLs : null) ??
+    (typeof logoURLs === 'object'
+      ? logoURLs?.[themeId!] ?? logoURLs?.[themeVariant!]
+      : null);
+
+  const to = props.to ?? '/';
+  const width =
+    props.width ??
+    configApi.getOptional<number | string>('app.branding.fullLogoWidth') ??
+    150;
+  const height = props.height ?? 40;
+
   return (
     <Box
       data-testid="global-header-company-logo"
@@ -106,11 +100,23 @@ export const CompanyLogo = ({
           alignItems: 'center',
         }}
       >
-        <LogoRender
-          logoUri={logoURL}
-          width={width ?? fullLogoWidth}
-          height={height}
-        />
+        {logoURI ? (
+          <img
+            data-testid="home-logo"
+            src={logoURI}
+            alt="Home logo"
+            style={{
+              objectFit: 'contain',
+              objectPosition: 'left',
+              maxHeight: height,
+            }}
+            width={width}
+          />
+        ) : (
+          <RedHatDeveloperHubLogo
+            textFill={themeVariant === 'dark' ? 'white' : 'black'}
+          />
+        )}
       </Link>
     </Box>
   );

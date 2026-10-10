@@ -1,5 +1,7 @@
 dist
+dist-dynamic
 dist-types
 coverage
+e2e-test-report*
 .vscode
 .eslintrc.js
