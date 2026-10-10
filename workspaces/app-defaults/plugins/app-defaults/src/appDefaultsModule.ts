@@ -24,6 +24,7 @@ import {
 import { autoLogoutElement } from './autoLogout/autoLogoutExtension';
 import { appLayoutExtension } from './layout/appLayoutModule';
 import { commonIconsExtension } from './icons/commonIconsExtension';
+import { notFoundExtension } from './not-found/notFoundExtension';
 import { localizedPageLayoutExtension } from './pageLayout/pageLayoutExtension';
 import { appSidebarExtension } from './sidebar/appSidebarModule';
 import { defaultSidebarExtensions } from './sidebar/defaultSidebarExtensions';
@@ -49,6 +50,7 @@ export const appDefaultsModule = createFrontendModule({
     templateCardExtension,
     commonIconsExtension,
     localizedPageLayoutExtension,
+    notFoundExtension,
     autoLogoutElement,
   ],
 });

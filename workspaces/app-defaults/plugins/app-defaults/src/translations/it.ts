@@ -43,6 +43,9 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       "Non sono ancora presenti entità documentate, oppure non disponi dell'autorizzazione per visualizzarle. La documentazione apparirà qui una volta che le entità con annotazioni TechDocs saranno registrate e avrai accesso.",
     'docs.emptyState.importButtonTitle': 'Registra un componente',
+    'notFound.title': 'Pagina non trovata',
+    'notFound.description':
+      'La pagina cercata potrebbe essere stata rimossa, rinominata o temporaneamente non disponibile.',
     'learningPaths.title': 'Learning Path',
     'learningPaths.error.title': 'Impossibile estrarre i dati.',
     'learningPaths.error.unknownError': 'Errore sconosciuto',
