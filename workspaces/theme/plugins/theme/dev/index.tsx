@@ -28,20 +28,15 @@ import {
   createFrontendPlugin,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import {
-  Sidebar,
-  SidebarGroup,
-  SidebarItem,
-  SidebarScrollWrapper,
-  SidebarSpace,
-} from '@backstage/core-components';
-import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import { createRouteRef } from '@backstage/core-plugin-api';
 import {
   SidebarLanguageSwitcher,
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
+
+import rhdhAppDefaults from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+import { SidebarElementBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import rhdhThemeModule from '../src';
 import { ThemeTestPage } from './ThemeTestPage';
@@ -67,32 +62,28 @@ const themeDevPageModule = createFrontendPlugin({
   routes: { root: rootRouteRef },
 });
 
-const devSidebarContent = NavContentBlueprint.make({
-  params: {
-    component: ({ items }) => (
-      <Sidebar>
-        <SidebarGroup label="Menu">
-          <SidebarScrollWrapper>
-            {items.map(item => (
-              <SidebarItem {...item} key={`${item.title}`} />
-            ))}
-          </SidebarScrollWrapper>
-        </SidebarGroup>
-        <SidebarSpace />
-        <SidebarLanguageSwitcher />
-        <SidebarSignOutButton />
-      </Sidebar>
-    ),
-  },
-});
-
 const devNavModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [devSidebarContent],
+  extensions: [
+    SidebarElementBlueprint.make({
+      name: 'SidebarLanguageSwitcher',
+      params: {
+        component: SidebarLanguageSwitcher,
+        priority: -10000,
+      },
+    }),
+    SidebarElementBlueprint.make({
+      name: 'SidebarSignOutButton',
+      params: {
+        component: SidebarSignOutButton,
+        priority: -10001,
+      },
+    }),
+  ],
 });
 
 const app = createApp({
-  features: [rhdhThemeModule, themeDevPageModule, devNavModule],
+  features: [rhdhAppDefaults, rhdhThemeModule, themeDevPageModule, devNavModule],
 });
 
 const root = app.createRoot();
