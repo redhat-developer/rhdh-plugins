@@ -54,4 +54,4 @@ export { CompanyLogo } from './components/CompanyLogo/CompanyLogo';
 export type {
   CompanyLogoProps,
   LogoURLs,
-} from './components/CompanyLogo/types';
+} from './components/CompanyLogo/CompanyLogo';
