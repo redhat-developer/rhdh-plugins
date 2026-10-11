@@ -88,6 +88,40 @@ describe('fab-anchor-utils', () => {
     );
   });
 
+  it('encodes docked-drawer FAB shift in inset-inline-end (overlay must not re-add it)', () => {
+    // FAB already shifted left for a ~500px Quickstart drawer + gutter.
+    const fab = document.createElement('div');
+    fab.getBoundingClientRect = () =>
+      ({
+        width: 48,
+        height: 48,
+        top: 900,
+        left: 700,
+        right: 748,
+        bottom: 948,
+        x: 700,
+        y: 900,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 1280,
+    });
+
+    publishLightspeedFabAnchorVars({ fabElement: fab, theme });
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        LIGHTSPEED_FAB_ANCHOR_VARS.insetInlineEnd,
+      ),
+    ).toBe('532px');
+  });
+
   it('clears all published anchor vars', () => {
     const fab = document.createElement('div');
     fab.getBoundingClientRect = () =>

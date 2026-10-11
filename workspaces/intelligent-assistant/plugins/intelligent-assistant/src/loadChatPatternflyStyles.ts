@@ -17,7 +17,11 @@
 let loadPromise: Promise<void> | undefined;
 let stylesLoaded = false;
 
-/** True after {@link loadChatPatternflyStyles} has resolved successfully. */
+/**
+ * True after PatternFly chat CSS has finished loading at least once.
+ * Used to avoid a one-frame ChatLoadingFallback flash on remount (e.g.
+ * overlay/docked → fullscreen) when styles are already in the document.
+ */
 export function areChatPatternflyStylesLoaded(): boolean {
   return stylesLoaded;
 }

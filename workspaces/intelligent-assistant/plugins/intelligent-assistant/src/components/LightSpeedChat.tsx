@@ -266,6 +266,9 @@ const StyledChatbot = styled(Chatbot, {
     },
   '& .pf-chatbot-container': {
     minHeight: 0,
+    // PF `.pf-chatbot--embedded { border-radius: 0 }` squares the page fill;
+    // inherit the shell-matching radius from FullHeightContent.
+    borderRadius: 'inherit',
   },
   '& .pf-chatbot__header-container': {
     flexShrink: 0,
@@ -274,17 +277,42 @@ const StyledChatbot = styled(Chatbot, {
   '& .pf-chatbot__footer > .pf-v6-c-divider, & .pf-chatbot__header__divider': {
     margin: 0,
   },
+  // Override PF base `.pf-chatbot { height: 70vh }`. Embedded mode only sets
+  // `min-height: 100%`, so the page route otherwise stays at 70vh
+  // (RHDHBUGS-3925). Compact overlay/docked fill a sized parent (minHeight 0
+  // for flex scroll); fullscreen must keep minHeight 100% so a loose parent
+  // cannot collapse the page to content height.
+  height: '100% !important',
+  minHeight: isCompact ? '0 !important' : '100% !important',
+  flex: isCompact ? undefined : '1 1 auto',
+  overflow: 'hidden',
+  // Beat PF `.pf-chatbot--embedded { border-radius: 0 }` so the page well
+  // can show the same rounded corners as other RHDH routes.
+  borderRadius: 'inherit !important',
   ...(isCompact
     ? {
-        height: '100% !important',
-        minHeight: '0 !important',
-        overflow: 'hidden',
+        // Overlay + docked: floating-secondary shell (#151515 dark), same as
+        // LightspeedOverlayChat modal chrome / PF basic demo.
+        backgroundColor:
+          'var(--pf-t--global--background--color--floating--secondary--default) !important',
+        '& .pf-chatbot__header, & .pf-chatbot__header-container, & .pf-chatbot__content, & .pf-chatbot__footer':
+          {
+            backgroundColor:
+              'var(--pf-t--global--background--color--floating--secondary--default) !important',
+          },
         '& .pf-chatbot__header': {
           alignItems: 'center',
           paddingBlockEnd: 0,
         },
       }
-    : {}),
+    : {
+        // Page route only: PF embedded adds `box-shadow: --pf-t--global--
+        // box-shadow--lg` (and glass border). Other RHDH main wells are
+        // borderless; drop both so fullscreen matches Catalog/Settings.
+        // Overlay keeps elevation via LightspeedOverlayChat's modal styles.
+        boxShadow: 'none !important',
+        border: 'none !important',
+      }),
   // Only expand the history panel when open; 100% while collapsed covers the tab bar.
   ...(isCompact && compactDrawerOpen
     ? {
@@ -429,9 +457,12 @@ const MessageBarChipActionItem = styled('div')({
 });
 
 // Align footer with MessageBox inset (override PF 90%/60rem full-page footer).
-const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
+// Do not override footer background — PF isPrimary matches MessageBar
+// (e.g. #292929 dark); a floating-default paint left a seam under the input.
+const StyledChatbotFooter = styled(ChatbotFooter, {
+  shouldForwardProp: prop => prop !== '$overlay',
+})<{ $overlay?: boolean }>(({ theme, $overlay }) => ({
   '&.pf-chatbot__footer': {
-    backgroundColor: `${floatingBg} !important`,
     alignItems: 'stretch',
   },
   // ChatbotFooter always injects an <hr>; MessageBar already has its own edge,
@@ -450,12 +481,17 @@ const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
     padding:
       '0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md) !important',
   },
-  '& .pf-chatbot__message-bar': {
-    backgroundColor:
-      theme.palette.mode === 'light'
-        ? theme.palette.grey[100]
-        : 'var(--pf-t--global--background--color--secondary--default)',
-  },
+  // Light page shell only — floating chrome keeps PF control-default pill.
+  ...($overlay
+    ? {}
+    : {
+        '& .pf-chatbot__message-bar': {
+          backgroundColor:
+            theme.palette.mode === 'light'
+              ? theme.palette.grey[100]
+              : undefined,
+        },
+      }),
   // Mic/send size first; left group (attach + model/chip) only gets leftover.
   // Without this, a long model id sizes the left group to content and crowds
   // the mic without ever triggering ellipsis.
@@ -755,6 +791,12 @@ export const LightspeedChat = ({
     setSettingsTab: setPersistedSettingsTab,
   } = useLightspeedDrawerContext();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  const isOverlayMode = displayMode === ChatbotDisplayMode.default;
+  const isDockedMode = displayMode === ChatbotDisplayMode.docked;
+  // Overlay + docked: skip isPrimary so header/content/footer use
+  // floating-secondary (PF basic demo / #151515 in dark). Fullscreen keeps
+  // the page-well primary paint.
+  const useFloatingSecondaryChrome = isOverlayMode || isDockedMode;
   const {
     isOpen: isSettingsOpen,
     activeTab: activeSettingsTab,
@@ -1130,6 +1172,26 @@ export const LightspeedChat = ({
       setChatHeaderBgColor(computedBg);
     }
   }, [displayMode, isSettingsOpen]);
+
+  // App DrawerPanel paints sidebarBackgroundColor; match overlay's
+  // floating-secondary shell while docked so dark mode reads the same.
+  useLayoutEffect(() => {
+    if (!isDockedMode || typeof document === 'undefined') {
+      return undefined;
+    }
+    const paper = document.querySelector<HTMLElement>(
+      'body.docked-drawer-open [class*="MuiDrawer-paper"]',
+    );
+    if (!paper) {
+      return undefined;
+    }
+    const previous = paper.style.backgroundColor;
+    paper.style.backgroundColor =
+      'var(--pf-t--global--background--color--floating--secondary--default)';
+    return () => {
+      paper.style.backgroundColor = previous;
+    };
+  }, [isDockedMode]);
 
   useEffect(() => {
     if (
@@ -2052,7 +2114,10 @@ export const LightspeedChat = ({
 
   const chatMainContent = (
     <>
-      <StyledChatbotContent isPrimary hasOverflow={hasChatContentOverflow}>
+      <StyledChatbotContent
+        isPrimary={!useFloatingSecondaryChrome}
+        hasOverflow={hasChatContentOverflow}
+      >
         <ContentScroll ref={contentScrollRef}>
           {welcomePrompts.length > 0 && <ContentSpacer aria-hidden />}
           <LightspeedChatBox
@@ -2076,11 +2141,14 @@ export const LightspeedChat = ({
           )}
         </ContentScroll>
       </StyledChatbotContent>
-      <StyledChatbotFooter isPrimary>
+      <StyledChatbotFooter
+        $overlay={useFloatingSecondaryChrome}
+        isPrimary={!useFloatingSecondaryChrome}
+      >
         <FilePreview />
         <MessageBar
           key={messageBarKey}
-          isPrimary
+          isPrimary={!useFloatingSecondaryChrome}
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
@@ -2584,7 +2652,7 @@ export const LightspeedChat = ({
                   />
                 )}
                 {showNotebooksPanel && canShowNotebooks && !activeNotebook && (
-                  <StyledChatbotContent isPrimary>
+                  <StyledChatbotContent isPrimary={!useFloatingSecondaryChrome}>
                     <NotebooksTab
                       notebooks={notebooks}
                       hasNotebooks={hasNotebooks}
