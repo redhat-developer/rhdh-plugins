@@ -2296,7 +2296,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/errors@npm:^1.2.7, @backstage/errors@npm:^1.3.1":
+"@backstage/errors@npm:^1.3.1":
   version: 1.3.1
   resolution: "@backstage/errors@npm:1.3.1"
   dependencies:
@@ -2316,7 +2316,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/filter-predicates@npm:^0.1.1, @backstage/filter-predicates@npm:^0.1.4, @backstage/filter-predicates@npm:^0.1.5":
+"@backstage/filter-predicates@npm:^0.1.4, @backstage/filter-predicates@npm:^0.1.5":
   version: 0.1.5
   resolution: "@backstage/filter-predicates@npm:0.1.5"
   dependencies:
@@ -2329,15 +2329,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/frontend-plugin-api@npm:^0.15.1":
-  version: 0.15.1
-  resolution: "@backstage/frontend-plugin-api@npm:0.15.1"
+"@backstage/frontend-plugin-api@npm:^0.17.2":
+  version: 0.17.3
+  resolution: "@backstage/frontend-plugin-api@npm:0.17.3"
   dependencies:
-    "@backstage/errors": "npm:^1.2.7"
-    "@backstage/filter-predicates": "npm:^0.1.1"
+    "@backstage/config": "npm:^1.3.8"
+    "@backstage/errors": "npm:^1.3.1"
+    "@backstage/filter-predicates": "npm:^0.1.4"
     "@backstage/types": "npm:^1.2.2"
     "@backstage/version-bridge": "npm:^1.0.12"
-    zod: "npm:^3.25.76 || ^4.0.0"
+    "@standard-schema/spec": "npm:^1.1.0"
+    zod: "npm:^4.0.0"
     zod-to-json-schema: "npm:^3.25.1"
   peerDependencies:
     "@types/react": ^17.0.0 || ^18.0.0
@@ -2347,7 +2349,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/e40d2bbd8eb2b55eaced37e8f855cece9ed74092a89949a474e38ed6f06c20d289fef4595ee6267375effc9983ae6dfb8fc91d8d2d2b7d7a1642ced248ec1f01
+  checksum: 10/16da36c4d922b0ac0d5a146476ad00bc82bb1033a164be5f5f9d282a144c06a5ea7d3a093993133521bbcf865f543194d065079660137931d0f7d5a263bd8472
   languageName: node
   linkType: hard
 
@@ -2527,7 +2529,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-app-react@npm:^0.2.1, @backstage/plugin-app-react@npm:^0.2.6":
+"@backstage/plugin-app-react@npm:^0.2.4, @backstage/plugin-app-react@npm:^0.2.6":
   version: 0.2.7
   resolution: "@backstage/plugin-app-react@npm:0.2.7"
   dependencies:
@@ -5178,7 +5180,7 @@ __metadata:
     "@backstage/e2e-test-utils": "npm:^0.1.2"
     "@backstage/repo-tools": "npm:^0.19.0"
     "@changesets/cli": "npm:^2.27.1"
-    "@playwright/test": "npm:1.60.0"
+    "@playwright/test": "npm:1.64.0"
     "@types/jest": "npm:^29.5.12"
     "@types/node": "npm:^20.0.0"
     "@types/webpack-env": "npm:^1.18.4"
@@ -7452,14 +7454,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.60.0":
-  version: 1.60.0
-  resolution: "@playwright/test@npm:1.60.0"
+"@playwright/test@npm:1.64.0":
+  version: 1.64.0
+  resolution: "@playwright/test@npm:1.64.0"
   dependencies:
-    playwright: "npm:1.60.0"
+    playwright: "npm:1.64.0"
   bin:
     playwright: cli.js
-  checksum: 10/a13d369014e1934b0aa484c5d59537f5249af0fe006ac4ecbcbe14c673221412706193ea2d9cf3b2c0cc69e3ddbb4daddb006f0bedfdeb05f687776ed8c35f5f
+  checksum: 10/150071109a165e413f390bea574c2d6508788b713dbc0ae58ba3bfed7d5befa621f862b4a818fab502e409365f465bf90641dc1da7a64ccd4910a0124e8cd3bf
   languageName: node
   linkType: hard
 
@@ -8278,21 +8280,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.0":
-  version: 0.14.11
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.11"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.15.0":
+  version: 0.15.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.15.0"
   dependencies:
-    "@backstage/frontend-plugin-api": "npm:^0.15.1"
-    "@backstage/plugin-app-react": "npm:^0.2.1"
+    "@backstage/frontend-plugin-api": "npm:^0.17.2"
+    "@backstage/plugin-app-react": "npm:^0.2.4"
     "@mui/icons-material": "npm:^5.17.1"
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.12.4
-    "@backstage/theme": ^0.7.2
+    "@backstage/core-plugin-api": ^1.12.7
+    "@backstage/theme": ^0.7.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10/741fa4807394f563015b01b632cf1a4cb05eb16fb5ab0b18e9fb9a8f441ffa0fb19f2093d35f62431284b438db97795b50197241c7608554d6134eb76198dd61
+  checksum: 10/e6ed47a5e48238d7a68a715efa42922702e7b76070b8f01102c8fdcbfd5d73cec6ed2b419ce10b6d5051a681a356d27f899800428172b2247d1053a61eac0a3c
   languageName: node
   linkType: hard
 
@@ -12771,7 +12773,7 @@ __metadata:
     "@material-ui/icons": "npm:^4.9.1"
     "@patternfly/patternfly": "npm:^6.3.0"
     "@red-hat-developer-hub/backstage-plugin-dcm": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
@@ -24638,27 +24640,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.60.0":
-  version: 1.60.0
-  resolution: "playwright-core@npm:1.60.0"
+"playwright-core@npm:1.64.0":
+  version: 1.64.0
+  resolution: "playwright-core@npm:1.64.0"
   bin:
     playwright-core: cli.js
-  checksum: 10/66c0f83d627e673261c848dd6fe1f2856d5b5b6859268acb61a45c00f5bf926e596a351a9c481a3a4e82a45022c7c6b5d99ebc3906fc6876ac582ed6f7e16190
+  checksum: 10/38b1c9a4ebe96ab5ee282a9743cb57dd5abb4d1370ad5570b676b71d0864e6f9feb9feebe74e15af4af6828ebaca3670f77bdcdc1979a1fa02462465456edc12
   languageName: node
   linkType: hard
 
-"playwright@npm:1.60.0":
-  version: 1.60.0
-  resolution: "playwright@npm:1.60.0"
+"playwright@npm:1.64.0":
+  version: 1.64.0
+  resolution: "playwright@npm:1.64.0"
   dependencies:
-    fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.60.0"
-  dependenciesMeta:
-    fsevents:
-      optional: true
+    playwright-core: "npm:1.64.0"
   bin:
     playwright: cli.js
-  checksum: 10/8569770637ee35d08cca3b53a5b56c21e9236bd1ac4718456d5988fb8acd51c5b3cc2cf90748363a36199529e870a9b6c68d6fc9e19571261cd867005d6331c1
+  checksum: 10/8e68bd0db79a9b5812b08c8ad5e9280359b37f38d53bf6eaf73891140014edb61566ab11df2f4401bf70a12a78518467c2d44c258cdf069a5a0469753dbe1c69
   languageName: node
   linkType: hard
 
