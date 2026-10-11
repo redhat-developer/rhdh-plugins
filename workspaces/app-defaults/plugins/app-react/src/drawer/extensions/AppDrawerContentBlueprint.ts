@@ -22,6 +22,11 @@ import { appDrawerContentDataRef } from './appDrawerContentDataRef';
 /**
  * Blueprint for plugins to contribute drawer content to the app drawer.
  *
+ * Drawers attach to the `drawers` input of the `app/layout` extension
+ * provided by `@red-hat-developer-hub/backstage-plugin-app-defaults`, which
+ * renders the active drawer next to the sidebar and the page content, below
+ * the app headers.
+ *
  * The `resizable`, `defaultWidth`, and `priority` fields can be overridden by
  * deployers via `app-config.yaml` without changing plugin code:
  *
@@ -51,7 +56,7 @@ import { appDrawerContentDataRef } from './appDrawerContentDataRef';
  */
 export const AppDrawerContentBlueprint = createExtensionBlueprint({
   kind: 'app-drawer-content',
-  attachTo: { id: 'app-root-wrapper:app/drawer', input: 'drawers' },
+  attachTo: { id: 'app/layout', input: 'drawers' },
   output: [appDrawerContentDataRef],
   dataRefs: {
     content: appDrawerContentDataRef,
