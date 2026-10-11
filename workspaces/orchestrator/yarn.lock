@@ -1700,9 +1700,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac@npm:2.3.4, @backstage-community/plugin-rbac@npm:^2.3.4":
-  version: 2.3.4
-  resolution: "@backstage-community/plugin-rbac@npm:2.3.4"
+"@backstage-community/plugin-rbac@npm:2.3.6, @backstage-community/plugin-rbac@npm:^2.3.4":
+  version: 2.3.6
+  resolution: "@backstage-community/plugin-rbac@npm:2.3.6"
   dependencies:
     "@backstage-community/plugin-rbac-common": "npm:^2.1.1"
     "@backstage/catalog-model": "npm:^1.10.0"
@@ -1729,7 +1729,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 10c0/53b91cc39b9c304b2276fcc96656e209870dba07a7d0091f88b48e27e96d326906a97a50a8bd262c6fa4ce71139c6a5792583b194fd81a86ef0e2cec50a2803b
+  checksum: 10c0/80df2d739824d404564b3f607656f3f0e391ed48d517a9fa4da1a166b413e55fe9f61ddb0167489847f35d02eaeb6fb5e69f2e5a42c7a7989bda8798e5de82e6
   languageName: node
   linkType: hard
 
@@ -15203,7 +15203,7 @@ __metadata:
   resolution: "app@workspace:packages/app"
   dependencies:
     "@axe-core/playwright": "npm:^4.10.0"
-    "@backstage-community/plugin-rbac": "npm:2.3.4"
+    "@backstage-community/plugin-rbac": "npm:2.3.6"
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/core-compat-api": "npm:^0.5.14"
     "@backstage/core-components": "npm:^0.18.13"
