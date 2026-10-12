@@ -293,8 +293,8 @@ export async function fetchAndExtractSkillImage(
 
   logger.info(`Processing skill image ${imageRefStr}`);
 
-  // 1. Fetch the manifest
-  const manifest = await fetchManifest(
+  // 1. Fetch the manifest and compute/verify its digest
+  const { manifest } = await fetchManifest(
     imageRef,
     logger,
     credentials,
