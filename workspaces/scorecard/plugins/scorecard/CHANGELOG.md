@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.5.1
+
+### Patch Changes
+
+- 97ef9ec: Drive the entity Scorecard tab Masonry column count from the tab content width (ResizeObserver) instead of viewport breakpoints, so cards densify without gaps and reflow when a docked app drawer (e.g. Quickstart) is open.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.1
+
 ## 4.5.0
 
 ### Minor Changes
