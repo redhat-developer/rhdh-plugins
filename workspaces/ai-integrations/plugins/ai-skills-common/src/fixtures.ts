@@ -612,7 +612,7 @@ export const ociNativeInputMinimal: OciNativeInput = {
  * @public
  */
 export const ociTrustedInput: TrustedSourceInput = {
-  key: 'quay.io/octo/hello-world-skill',
+  key: 'quay.io/octo/hello-world-skill:1.0.0-draft',
   sourceUri:
     'oci://quay.io/octo/hello-world-skill@sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789',
   digest:

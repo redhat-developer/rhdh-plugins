@@ -152,7 +152,7 @@ describe('normalizeOciMetadata', () => {
       const r = result.record!;
 
       // Trusted fields
-      expect(r.key).toBe(ociTrustedInput.key);
+      expect(r.key).toBe('quay.io/octo/hello-world-skill:1.0.0-draft');
       expect(r.sourceUri).toBe(ociTrustedInput.sourceUri);
       expect(r.digest).toBe(ociTrustedInput.digest);
 
