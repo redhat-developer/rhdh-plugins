@@ -31,9 +31,16 @@ jest.mock('@backstage/plugin-home', () => ({
     config,
   }: {
     children: React.ReactNode;
-    config: unknown[];
+    config: Array<{ width: number; height: number }>;
   }) => (
-    <div data-testid="custom-homepage-grid" data-config-length={config.length}>
+    <div
+      data-testid="custom-homepage-grid"
+      data-config-length={config.length}
+      data-first-width={config[0]?.width}
+      data-first-height={config[0]?.height}
+      data-second-width={config[1]?.width}
+      data-second-height={config[1]?.height}
+    >
       {children}
     </div>
   ),
@@ -65,25 +72,28 @@ const homepageCards = [
     node: SearchCard,
   },
   {
-    name: 'skipped',
-    component: createElement('div', null, 'Skipped'),
+    // Cards without a node still render as children, but are omitted from grid config.
+    name: 'without-node',
+    component: createElement('div', null, 'Without node'),
   },
 ] as unknown as HomePageCardConfig[];
 
 describe('CustomizableGridLayout', () => {
-  it('renders customizable homepage grid with default layout config', () => {
+  it('builds grid config from cards with nodes and passes layout size', () => {
     render(
       <ThemeProvider theme={createTheme()}>
         <CustomizableGridLayout homepageCards={homepageCards} />
       </ThemeProvider>,
     );
 
-    expect(screen.getByTestId('custom-homepage-grid')).toHaveAttribute(
-      'data-config-length',
-      '2',
-    );
+    const grid = screen.getByTestId('custom-homepage-grid');
+    expect(grid).toHaveAttribute('data-config-length', '2');
+    expect(grid).toHaveAttribute('data-first-width', '12');
+    expect(grid).toHaveAttribute('data-first-height', '2');
+    expect(grid).toHaveAttribute('data-second-width', '12');
+    expect(grid).toHaveAttribute('data-second-height', '4');
     expect(screen.getByTestId('headline-card')).toBeInTheDocument();
     expect(screen.getByTestId('search-card')).toBeInTheDocument();
-    expect(screen.getByText('Skipped')).toBeInTheDocument();
+    expect(screen.getByText('Without node')).toBeInTheDocument();
   });
 });

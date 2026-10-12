@@ -39,11 +39,15 @@ jest.mock('../CustomizableGridLayout', () => ({
   CustomizableGridLayout: ({
     homepageCards,
   }: {
-    homepageCards: { name?: string }[];
+    homepageCards: {
+      name?: string;
+      breakpointLayouts?: { xl?: { h?: number } };
+    }[];
   }) => (
     <div
       data-testid="customizable-grid"
       data-card-names={homepageCards.map(card => card.name).join(',')}
+      data-first-xl-h={String(homepageCards[0]?.breakpointLayouts?.xl?.h ?? '')}
     />
   ),
 }));
@@ -192,5 +196,30 @@ describe('HomePageLayout', () => {
       'No home page widgets configured or found.',
     );
     expect(screen.queryByTestId('customizable-grid')).not.toBeInTheDocument();
+  });
+
+  it('applies widgetLayout breakpoints on the customizable grid', () => {
+    mockUseDefaultWidgets.mockReturnValue({
+      defaultWidgets: undefined,
+      loading: false,
+      error: undefined,
+    });
+
+    render(
+      <HomePageLayout
+        widgets={widgets}
+        customizable
+        widgetLayout={{
+          'quickaccess-card': {
+            breakpoints: { xl: { w: 6, h: 8 } },
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId('customizable-grid')).toHaveAttribute(
+      'data-first-xl-h',
+      '8',
+    );
   });
 });

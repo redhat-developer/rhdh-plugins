@@ -60,11 +60,9 @@ describe('TranslatedUpstreamHomePageCards', () => {
     expect(screen.getByTestId('top')).toHaveTextContent('Top Visited');
   });
 
-  it('uses titleKey when provided', () => {
-    render(<CatalogStarredEntitiesCard titleKey="starredEntities.title" />);
+  it('uses a non-default titleKey override when provided', () => {
+    render(<CatalogStarredEntitiesCard titleKey="featuredDocs.title" />);
 
-    expect(screen.getByTestId('starred')).toHaveTextContent(
-      'Starred Catalog Entities',
-    );
+    expect(screen.getByTestId('starred')).toHaveTextContent('Featured Docs');
   });
 });

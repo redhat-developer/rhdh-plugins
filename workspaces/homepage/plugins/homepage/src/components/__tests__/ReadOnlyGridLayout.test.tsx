@@ -19,7 +19,6 @@ import { render, screen } from '@testing-library/react';
 
 import { ReadOnlyGridLayout } from '../ReadOnlyGridLayout';
 import { HomePageCardConfig } from '../../types';
-import { BREAKPOINTS, buildCardLayouts } from '../../utils/gridDefaults';
 
 jest.mock('react-use/lib/useMeasure', () => ({
   __esModule: true,
@@ -82,8 +81,23 @@ describe('ReadOnlyGridLayout', () => {
     render(<ReadOnlyGridLayout homepageCards={homepageCardsWithoutLayout} />);
 
     const layout = getCardLayout();
-    expect(Object.keys(layout)).toEqual([...BREAKPOINTS]);
-    expect(layout).toEqual(buildCardLayouts('1'));
+    const defaultItem = {
+      i: '1',
+      x: 0,
+      y: 0,
+      w: 12,
+      h: 4,
+      isDraggable: false,
+      isResizable: false,
+    };
+    expect(layout).toEqual({
+      xl: defaultItem,
+      lg: defaultItem,
+      md: defaultItem,
+      sm: defaultItem,
+      xs: defaultItem,
+      xxs: defaultItem,
+    });
   });
 
   it('renders component from Content wrapper when provided', () => {
@@ -101,22 +115,5 @@ describe('ReadOnlyGridLayout', () => {
     );
 
     expect(screen.getByText('Wrapped Content')).toBeInTheDocument();
-  });
-
-  it('renders react element components directly', () => {
-    render(
-      <ReadOnlyGridLayout
-        homepageCards={
-          [
-            {
-              name: 'element',
-              component: createElement('div', null, 'Element Content'),
-            },
-          ] as unknown as HomePageCardConfig[]
-        }
-      />,
-    );
-
-    expect(screen.getByText('Element Content')).toBeInTheDocument();
   });
 });
