@@ -19,8 +19,8 @@ import { useLocation } from 'react-router-dom';
 import {
   ErrorBoundary,
   Sidebar,
+  SidebarDivider,
   SidebarItem,
-  SidebarScrollWrapper,
   SidebarSubmenu,
   SidebarSubmenuItem,
   useSidebarOpenState,
@@ -32,10 +32,12 @@ import {
 } from '@backstage/frontend-plugin-api';
 import type { IconComponent } from '@backstage/frontend-plugin-api';
 import type { NavContentNavItems } from '@backstage/plugin-app-react';
-import {
-  type SidebarElementData,
-  type SidebarItemData,
-  type SidebarItemGroupData,
+import { usePermission } from '@backstage/plugin-permission-react';
+import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
+import type {
+  SidebarElementData,
+  SidebarItemData,
+  SidebarItemGroupData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
@@ -45,15 +47,57 @@ import ExtensionIcon from '@mui/icons-material/Extension';
 
 import {
   buildSidebarModel,
+  type SidebarModelEntry,
   type SidebarModelGroup,
   type SidebarModelIcon,
   type SidebarModelItem,
 } from './buildSidebarModel';
+import { classifySidebarEntries } from './classifySidebarEntries';
 import {
   readConfigSidebarGroups,
   readConfigSidebarItems,
 } from './readSidebarConfig';
+import { SIDEBAR_MASTHEAD_OFFSET_CSS } from './sidebarMastheadOffset';
+import { useHasGlobalHeader } from './useHasGlobalHeader';
 import { useTranslateTitle } from '../pageLayout/useTranslateTitle';
+
+const GLOBAL_HEADER_HEIGHT_VAR = '--rhdh-global-header-height';
+
+function isLogoChromeEntry(entry: SidebarModelEntry): boolean {
+  return (
+    entry.kind === 'element' &&
+    (entry.element.id === 'sidebar-element:app/logo' ||
+      entry.element.id === 'sidebar-spacer:app/logo')
+  );
+}
+
+function isSearchChromeEntry(entry: SidebarModelEntry): boolean {
+  return (
+    entry.kind === 'element' &&
+    (entry.element.id === 'sidebar-element:app/search' ||
+      entry.element.id === 'sidebar-divider:app/search')
+  );
+}
+
+/**
+ * Keeps Search (+ its divider) immediately below the logo chrome, ahead of
+ * any other positive-priority contributions.
+ */
+function orderChromeEntries(entries: SidebarModelEntry[]): SidebarModelEntry[] {
+  const logo: SidebarModelEntry[] = [];
+  const search: SidebarModelEntry[] = [];
+  const rest: SidebarModelEntry[] = [];
+  for (const entry of entries) {
+    if (isLogoChromeEntry(entry)) {
+      logo.push(entry);
+    } else if (isSearchChromeEntry(entry)) {
+      search.push(entry);
+    } else {
+      rest.push(entry);
+    }
+  }
+  return [...logo, ...search, ...rest];
+}
 
 /**
  * Props for {@link AppSidebar}.
@@ -208,12 +252,23 @@ function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
 }
 
 /**
- * Sidebar that renders contributed items, groups and custom elements ordered
- * by priority (higher first, ties broken by title). Grouped items render in a
- * collapsible list below the group entry or in a flyout submenu, custom
- * elements render their own component at the top level, and
- * nav items auto-discovered from page extensions are merged in unless a
- * contributed item already links to the same path.
+ * Sidebar that renders contributed items, groups and custom elements in three
+ * menu sections (default / optional plugins / admin+settings), ordered by
+ * priority within each section. Grouped items render in a collapsible list
+ * below the group entry or in a flyout submenu, custom elements render their
+ * own component, and nav items auto-discovered from page extensions are merged
+ * in unless a contributed item already links to the same path.
+ *
+ * Default (top) vs optional (middle) placement uses an allowlist of built-in
+ * paths. A divider is shown between top and middle only when the middle
+ * section has entries, and between the scroll area and the bottom block only
+ * when the bottom block has visible entries.
+ *
+ * Administration is shown only when the user has admin permission and the
+ * group still has visible children. Settings and the company logo are hidden
+ * by default when the global header is present (settings live in the header
+ * user menu; the masthead already shows the logo) and can be forced on or off
+ * with `app.sidebar.settings` and `app.sidebar.logo`.
  *
  * Items and groups declared under `app.sidebar` in `app-config.yaml` are
  * merged into the same model, so deployers can add entries without writing a
@@ -237,6 +292,17 @@ export const AppSidebar = ({
     () => readConfigSidebarGroups(configApi),
     [configApi],
   );
+  const hasGlobalHeader = useHasGlobalHeader();
+  const settingsConfig = configApi.getOptionalBoolean('app.sidebar.settings');
+  const showSettings = settingsConfig ?? !hasGlobalHeader;
+  const logoConfig = configApi.getOptionalBoolean('app.sidebar.logo');
+  const showLogo = logoConfig ?? !hasGlobalHeader;
+
+  const { loading: adminPermissionLoading, allowed: canShowAdministration } =
+    usePermission({
+      permission: policyEntityCreatePermission,
+      resourceRef: undefined,
+    });
 
   const entries = buildSidebarModel({
     items: [...items, ...configItems],
@@ -245,7 +311,79 @@ export const AppSidebar = ({
     navItems: navItems?.rest(),
   });
 
-  const renderEntry = (entry: (typeof entries)[number]) => {
+  const { chrome, spacers, top, middle, bottom } = useMemo(
+    () => classifySidebarEntries(entries),
+    [entries],
+  );
+
+  const visibleChrome = useMemo(
+    () =>
+      orderChromeEntries(
+        showLogo ? chrome : chrome.filter(entry => !isLogoChromeEntry(entry)),
+      ),
+    [chrome, showLogo],
+  );
+
+  const visibleSpacers = useMemo(
+    () =>
+      showLogo ? spacers : spacers.filter(entry => !isLogoChromeEntry(entry)),
+    [spacers, showLogo],
+  );
+
+  useEffect(() => {
+    if (!hasGlobalHeader) {
+      document.documentElement.style.removeProperty(GLOBAL_HEADER_HEIGHT_VAR);
+      return undefined;
+    }
+
+    const header = document.getElementById('global-header');
+    if (!header) {
+      return undefined;
+    }
+
+    const publishHeight = () => {
+      const height = Math.round(header.getBoundingClientRect().height);
+      document.documentElement.style.setProperty(
+        GLOBAL_HEADER_HEIGHT_VAR,
+        `${height}px`,
+      );
+    };
+
+    publishHeight();
+
+    if (typeof ResizeObserver === 'undefined') {
+      return () => {
+        document.documentElement.style.removeProperty(GLOBAL_HEADER_HEIGHT_VAR);
+      };
+    }
+
+    const observer = new ResizeObserver(publishHeight);
+    observer.observe(header);
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty(GLOBAL_HEADER_HEIGHT_VAR);
+    };
+  }, [hasGlobalHeader]);
+
+  const visibleBottom = useMemo(
+    () =>
+      bottom.filter(entry => {
+        if (entry.kind === 'group' && entry.group.id === 'settings') {
+          return showSettings;
+        }
+        if (entry.kind === 'group' && entry.group.id === 'admin') {
+          return (
+            !adminPermissionLoading &&
+            canShowAdministration &&
+            entry.group.items.length > 0
+          );
+        }
+        return true;
+      }),
+    [bottom, showSettings, adminPermissionLoading, canShowAdministration],
+  );
+
+  const renderEntry = (entry: SidebarModelEntry) => {
     switch (entry.kind) {
       case 'item':
         return <SidebarModelItemEntry key={entry.item.id} item={entry.item} />;
@@ -266,34 +404,39 @@ export const AppSidebar = ({
     }
   };
 
-  // Entries are ordered by priority (higher first). Positive-priority entries
-  // (logo, search) stay pinned above the scroll wrapper and negative-priority
-  // entries (notifications, the Administration and Settings groups, and the
-  // spacer that pushes them down) stay pinned below it. The main menu items at
-  // the default priority scroll independently inside the wrapper.
-  const entryPriority = (entry: (typeof entries)[number]) => {
-    switch (entry.kind) {
-      case 'item':
-        return entry.item.priority;
-      case 'group':
-        return entry.group.priority;
-      case 'element':
-        return entry.element.priority;
-      default:
-        return 0;
-    }
-  };
-  const topEntries = entries.filter(entry => entryPriority(entry) > 0);
-  const mainEntries = entries.filter(entry => entryPriority(entry) === 0);
-  const bottomEntries = entries.filter(entry => entryPriority(entry) < 0);
-
   return (
-    <Sidebar>
-      {topEntries.map(renderEntry)}
-      <SidebarScrollWrapper>
-        {mainEntries.map(renderEntry)}
-      </SidebarScrollWrapper>
-      {bottomEntries.map(renderEntry)}
-    </Sidebar>
+    <>
+      {hasGlobalHeader ? (
+        <style data-rhdh-sidebar-masthead-offset="">
+          {SIDEBAR_MASTHEAD_OFFSET_CSS}
+        </style>
+      ) : null}
+      <Sidebar>
+        {visibleChrome.map(renderEntry)}
+        {/*
+          Custom scroller instead of Backstage SidebarScrollWrapper, which
+          toggles overflow on hover and shifts items when the classic
+          scrollbar appears. scrollbar-gutter: stable keeps alignment fixed.
+        */}
+        <Box
+          data-testid="sidebar-menu-scroll"
+          sx={{
+            flex: '0 1 auto',
+            minHeight: '48px',
+            width: '100%',
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            scrollbarGutter: 'stable',
+          }}
+        >
+          {top.map(renderEntry)}
+          {middle.length > 0 && top.length > 0 ? <SidebarDivider /> : null}
+          {middle.map(renderEntry)}
+        </Box>
+        {visibleSpacers.map(renderEntry)}
+        {visibleBottom.length > 0 ? <SidebarDivider /> : null}
+        {visibleBottom.map(renderEntry)}
+      </Sidebar>
+    </>
   );
 };
