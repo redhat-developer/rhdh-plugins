@@ -88,52 +88,66 @@ function containsControlCharacter(value: string): boolean {
  * `null` if the expression is balanced.
  */
 function findBracketImbalance(value: string): string | null {
+  const masked = maskStringLiterals(value);
+  if (masked === null) {
+    return 'unterminated string literal';
+  }
+
+  return findUnbalancedBracket(masked);
+}
+
+/**
+ * Replaces every string literal in a JQL expression -- quotes
+ * included -- with spaces, so that a later scan can treat the result as
+ * quote-free. Returns `null` when a literal is never closed.
+ */
+function maskStringLiterals(value: string): string | null {
+  const maskedChars: string[] = [];
+  let currentQuoteChar: string | null = null;
+  let escaped = false;
+
+  for (const char of value) {
+    const insideLiteral = currentQuoteChar !== null || QUOTE_CHARS.has(char);
+    maskedChars.push(insideLiteral ? ' ' : char);
+
+    if (escaped) {
+      escaped = false;
+    } else if (currentQuoteChar === null) {
+      currentQuoteChar = QUOTE_CHARS.has(char) ? char : null;
+    } else if (char === '\\') {
+      escaped = true;
+    } else if (char === currentQuoteChar) {
+      currentQuoteChar = null; // close quote
+    }
+  }
+
+  const isStringLiteralClosed = currentQuoteChar === null;
+
+  return isStringLiteralClosed ? maskedChars.join('') : null;
+}
+
+/**
+ * Balances `(`/`)` and `[`/`]` in text that is already known to contain
+ * no string literals. Returns the failure reason, or `null` if balanced.
+ */
+function findUnbalancedBracket(value: string): string | null {
   const unbalancedReason = (openBracket: string): string => {
     return `unbalanced ${BRACKET_LABELS[openBracket]}`;
   };
 
   const stack: string[] = [];
-  let quoteChar: string | null = null;
 
-  for (let i = 0; i < value.length; i += 1) {
-    const char = value[i];
-
-    if (quoteChar) {
-      // inside a quoted string literal
-      if (char === '\\') {
-        i += 1; // skip escaped character
-      } else if (char === quoteChar) {
-        quoteChar = null; // close quote
-      }
-      continue;
-    }
-
-    if (QUOTE_CHARS.has(char)) {
-      quoteChar = char; // open quote
-      continue;
-    }
-
+  for (const char of value) {
     if (char in OPEN_BRACKETS) {
       stack.push(char);
-      continue;
-    }
-
-    if (char in CLOSE_BRACKETS && stack.pop() !== CLOSE_BRACKETS[char]) {
+    } else if (char in CLOSE_BRACKETS && stack.pop() !== CLOSE_BRACKETS[char]) {
       return unbalancedReason(CLOSE_BRACKETS[char]);
     }
   }
 
-  if (quoteChar) {
-    return 'unterminated string literal';
-  }
-  if (stack.includes('(')) {
-    return unbalancedReason('(');
-  }
-  if (stack.includes('[')) {
-    return unbalancedReason('[');
-  }
+  const stackTop = stack.pop();
 
-  return null;
+  return stackTop ? unbalancedReason(stackTop) : null;
 }
 
 export function joinJqlClauses(
