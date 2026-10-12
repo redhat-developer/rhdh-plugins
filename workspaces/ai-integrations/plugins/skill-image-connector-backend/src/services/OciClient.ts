@@ -24,8 +24,6 @@ import type {
   RegistryCredentials,
   SkillImageOptions,
 } from './types';
-
-export type { ManifestResult } from './types';
 import {
   DEFAULT_SKILL_IMAGE_OPTIONS,
   MAX_MANIFEST_SIZE,
@@ -39,6 +37,8 @@ import {
   withRequestTimeout,
   HttpResponseError,
 } from './HttpClient';
+
+export type { ManifestResult } from './types';
 
 export const OCI_REGISTRY_PATTERN =
   /^(?:\[[0-9a-fA-F:]+\]|[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?)(?::\d{1,5})?$/;

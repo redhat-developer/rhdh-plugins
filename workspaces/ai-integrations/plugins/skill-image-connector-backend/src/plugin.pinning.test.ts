@@ -26,8 +26,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import request from 'supertest';
-import { skillImageConnectorPlugin } from './plugin';
+import {
+  buildAcquisitionKey,
+  buildSourceUri,
+  skillImageConnectorPlugin,
+} from './plugin';
 import * as imageService from './services/SkillImageService';
+import type { ImageRef, OciManifest } from './services/types';
 
 // Observe metadata passed to cleanup while retaining real acquisition and cleanup.
 jest.mock('./services/SkillImageService', () => {
@@ -335,5 +340,125 @@ describe('tag pinning through plugin acquisition', () => {
     expect(urls.filter(url => url.includes('/manifests/'))).toEqual([
       `${registryUrl}/manifests/${original.digest}`,
     ]);
+  });
+});
+
+function makeManifest(layers: OciManifest['layers'] = []): OciManifest {
+  return {
+    schemaVersion: 2,
+    config: {
+      mediaType: 'application/vnd.oci.image.config.v1+json',
+      digest: 'sha256:cfg',
+      size: 10,
+    },
+    layers,
+  };
+}
+
+function manifestDigest(manifest: OciManifest): string {
+  const buffer = Buffer.from(JSON.stringify(manifest));
+  return `sha256:${createHash('sha256').update(buffer).digest('hex')}`;
+}
+
+describe('Tag pinning: identity metadata', () => {
+  it('produces a stable key with lowercase registry and exact tag', () => {
+    const ref: ImageRef = {
+      registry: 'Quay.IO',
+      repository: 'org/repo',
+      tag: 'V1-Beta',
+    };
+    const key = buildAcquisitionKey(ref);
+    expect(key).toBe('quay.io/org/repo:V1-Beta');
+  });
+
+  it('preserves case-sensitive tags in keys', () => {
+    const keyLower = buildAcquisitionKey({
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'v1',
+    });
+    const keyUpper = buildAcquisitionKey({
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'V1',
+    });
+    expect(keyLower).not.toBe(keyUpper);
+  });
+
+  it('same-digest aliases produce distinct keys', () => {
+    const manifest = makeManifest();
+    const digest = manifestDigest(manifest);
+
+    const keyLatest = buildAcquisitionKey({
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'latest',
+    });
+    const keyV1 = buildAcquisitionKey({
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'v1',
+    });
+
+    // Both resolve to the same digest — same source URI
+    const uri = buildSourceUri('quay.io', 'org/repo', digest);
+
+    // Keys are different
+    expect(keyLatest).not.toBe(keyV1);
+    // Source URIs are the same (same digest)
+    expect(uri).toBe(`oci://quay.io/org/repo@${digest}`);
+  });
+
+  it('sourceUri digest agrees with the returned digest', () => {
+    const digest = `sha256:${'ab'.repeat(32)}`;
+    const sourceUri = buildSourceUri('quay.io', 'org/repo', digest);
+    expect(sourceUri).toContain(digest);
+    // Extract digest from URI and compare
+    const uriDigest = sourceUri.split('@')[1];
+    expect(uriDigest).toBe(digest);
+  });
+
+  it('sourceUri lowercases the registry to match the acquisition key', () => {
+    const digest = `sha256:${'ab'.repeat(32)}`;
+    const sourceUri = buildSourceUri('Quay.IO', 'org/repo', digest);
+    expect(sourceUri).toBe(`oci://quay.io/org/repo@${digest}`);
+  });
+
+  it('tag moving to new content keeps the same key', () => {
+    const manifestA = makeManifest([
+      {
+        mediaType: 'application/vnd.oci.image.layer.v1.tar',
+        digest: 'sha256:aaa',
+        size: 100,
+      },
+    ]);
+    const manifestB = makeManifest([
+      {
+        mediaType: 'application/vnd.oci.image.layer.v1.tar',
+        digest: 'sha256:bbb',
+        size: 200,
+      },
+    ]);
+
+    const digestA = manifestDigest(manifestA);
+    const digestB = manifestDigest(manifestB);
+
+    // Different digests
+    expect(digestA).not.toBe(digestB);
+
+    // Same key from the production function
+    const ref: ImageRef = {
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'v1',
+    };
+    const keyA = buildAcquisitionKey(ref);
+    const keyB = buildAcquisitionKey(ref);
+    expect(keyA).toBe(keyB);
+
+    // Different source URIs from the production function
+    const uriA = buildSourceUri('quay.io', 'org/repo', digestA);
+    const uriB = buildSourceUri('quay.io', 'org/repo', digestB);
+    expect(uriA).not.toBe(uriB);
   });
 });

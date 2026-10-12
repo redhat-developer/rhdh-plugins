@@ -347,7 +347,11 @@ export function buildAcquisitionKey(imageRef: {
 /**
  * Builds a digest-addressed OCI source URI.
  *
- * Returns `oci://<registry>/<repository>@<digest>`.
+ * Returns `oci://<registry>/<repository>@<digest>` with the registry
+ * lowercased to match the normalization in {@link buildAcquisitionKey}.
+ *
+ * Delegates to the shared `buildOciRef` helper, insulating the plugin
+ * from changes in the common library's API surface.
  *
  * @internal Exported for testing.
  */
@@ -356,7 +360,7 @@ export function buildSourceUri(
   repository: string,
   digest: string,
 ): string {
-  return buildOciRef(registry, repository, digest);
+  return buildOciRef(registry.toLowerCase(), repository, digest);
 }
 
 /**
