@@ -389,7 +389,7 @@ describe('normalizeOciMetadata', () => {
       expect(result.record!.tags).toEqual(['demo', 'hello-world']);
     });
 
-    it('accepts dots, underscores, and consecutive hyphens in catalog tags', () => {
+    it('omits dots, underscores, and consecutive hyphens in catalog tags', () => {
       const native: OciNativeInput = {
         skillCard: {
           metadata: {
@@ -399,12 +399,8 @@ describe('normalizeOciMetadata', () => {
         },
       };
       const result = normalizeOciMetadata(native, ociTrustedInput);
-      expect(result.record!.tags).toEqual([
-        'rhdh:2.2',
-        'has_underscore',
-        'in--valid',
-      ]);
-      expect(result.diagnostics).toHaveLength(0);
+      expect(result.record!.tags).toBeUndefined();
+      expect(result.diagnostics).toHaveLength(3);
     });
 
     it('deduplicates tags after normalization', () => {

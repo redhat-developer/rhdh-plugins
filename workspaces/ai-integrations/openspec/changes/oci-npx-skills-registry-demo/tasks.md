@@ -42,9 +42,7 @@ shared-library portions of task 1.4 were completed in the same PR. Task 1.2
 was implemented by PR #5072, adding `normalizeOciMetadata` and
 `normalizeNpxMetadata` functions with D3 precedence, tag/author normalization,
 allowlisted extensions, diagnostics, and native metadata fixtures with
-conflicting-version scenarios. All remaining tasks describe future
-implementation in connector and provider packages.
-shared-library portions of task 1.4 were completed in the same PR. Task 2.1 is
+conflicting-version scenarios. Task 2.1 is
 implemented by PR #5057, including its acquisition/configuration and all-active-tag
 discovery follow-ups. The normalized repository/tag key and per-tag catalog entity
 requirements are specified here for the remaining implementation tasks.

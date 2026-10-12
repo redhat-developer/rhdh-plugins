@@ -269,9 +269,6 @@ export interface NormalizationResult<T> {
   diagnostics: NormalizationDiagnostic[];
 }
 
-// Re-export constants from tag-constants for backward compatibility
-export { CATALOG_TAG_PATTERN, MAX_TAG_LENGTH } from './tag-constants';
-
 /** Maximum length for user-controlled values interpolated into diagnostics. */
 const DIAGNOSTIC_VALUE_MAX_LENGTH = 80;
 

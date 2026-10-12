@@ -24,25 +24,18 @@
 /**
  * Catalog tag validation pattern.
  *
- * Tags must consist of lowercase alphanumeric characters plus `:`, `+`,
- * `#`, `.`, `_`, `-`. Must start and end with an alphanumeric character
- * or one of `:`, `+`, `#`.
+ * Tags contain lowercase alphanumeric characters, colons, plus signs,
+ * and hash characters, separated by single hyphens.
  *
  * @remarks
- * This pattern intentionally extends the standard Backstage catalog tag
- * validation rule to allow dots (`.`), underscores (`_`), and
- * consecutive hyphens — per D3/D5 design requirements for OCI and npx
- * metadata normalization. If Backstage changes its tag validation
- * pattern in a future release, this constant must be updated to match,
- * and such a change will be a semver-breaking update to downstream
- * consumers.
- *
- * The pattern is not imported from `@backstage/catalog-model` because
- * that package is not a dependency of this library.
+ * This pattern matches Backstage's default catalog tag validator.
+ * Tests compare it and the length limit with `makeValidator().isValidTag`
+ * from `@backstage/catalog-model`, a development-only dependency.
+ * Runtime consumers do not need a Backstage dependency for validation.
  *
  * @public
  */
-export const CATALOG_TAG_PATTERN = /^[a-z0-9:+#]([a-z0-9:+#._-]*[a-z0-9:+#])?$/;
+export const CATALOG_TAG_PATTERN = /^[a-z0-9:+#]+(-[a-z0-9:+#]+)*$/;
 
 /**
  * Maximum tag length accepted by the Backstage catalog.

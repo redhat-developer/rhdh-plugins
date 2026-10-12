@@ -80,7 +80,13 @@ export function computeCatalogName(tuple: IdentityTuple): string {
 export interface NormalizeTagsResult {
   /** Valid, deduplicated tags in lowercase. */
   tags: string[];
-  /** Diagnostic messages for tags that were dropped. */
+  /**
+   * Diagnostic messages for tags that were dropped.
+   *
+   * @remarks
+   * Message text is informational and may change. Consumers must not
+   * treat wording as a stable API or use it for programmatic decisions.
+   */
   diagnostics: string[];
 }
 

@@ -157,10 +157,10 @@ Catalog side effects.
   `[type, id, key]`, prefixed with `skill-` (first 56 hex digits).
 - `normalizeTags(tags)` — trims, lowercases, deduplicates, and validates
   tags against `CATALOG_TAG_PATTERN` and `MAX_TAG_LENGTH`. The tag
-  pattern intentionally extends the standard Backstage catalog tag
-  validation rule to allow colons (`:`), plus signs (`+`), hash
-  characters (`#`), dots (`.`), and underscores (`_`) per D3/D5
-  design requirements. Returns valid tags and diagnostics for
+  pattern matches Backstage's default catalog validator: lowercase letters,
+  digits, colons (`:`), plus signs (`+`), and hash characters (`#`), separated
+  by single hyphens. Dots, underscores, and consecutive hyphens are invalid.
+  Parity tests use Backstage's validator to detect drift. Returns valid tags and diagnostics for
   dropped entries.
 - `resolveVersion(declaredVersion, digest)` — strips at most one leading
   `v`, validates as SemVer, and falls back to `0.0.0+<first 12 hex digits
