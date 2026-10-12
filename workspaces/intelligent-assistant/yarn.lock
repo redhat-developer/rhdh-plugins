@@ -8410,6 +8410,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@patternfly/react-code-editor@npm:6.6.0":
+  version: 6.6.0
+  resolution: "@patternfly/react-code-editor@npm:6.6.0"
+  dependencies:
+    "@monaco-editor/react": "npm:^4.7.0"
+    "@patternfly/react-core": "npm:^6.6.0"
+    "@patternfly/react-icons": "npm:^6.6.0"
+    "@patternfly/react-styles": "npm:^6.6.0"
+    react-dropzone: "npm:14.3.5"
+    tslib: "npm:^2.8.1"
+  peerDependencies:
+    react: ^17 || ^18 || ^19
+    react-dom: ^17 || ^18 || ^19
+  checksum: 10c0/3ad3fe326e1cb59fff0c73b5757c55092a2396e87e39008e3027975137605f9c81aaa9e123bf6c6e5f112540ffae71d753aa20b15cf7fa7e5ab3115a7320ab6e
+  languageName: node
+  linkType: hard
+
 "@patternfly/react-code-editor@npm:^6.6.0":
   version: 6.6.2
   resolution: "@patternfly/react-code-editor@npm:6.6.2"
@@ -8456,7 +8473,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-icons@npm:^6.5.0, @patternfly/react-icons@npm:^6.6.1":
+"@patternfly/react-icons@npm:^6.5.0, @patternfly/react-icons@npm:^6.6.0, @patternfly/react-icons@npm:^6.6.1":
   version: 6.6.1
   resolution: "@patternfly/react-icons@npm:6.6.1"
   dependencies:
@@ -9537,6 +9554,7 @@ __metadata:
     "@mui/icons-material": "npm:^6.1.8"
     "@mui/material": "npm:^5.12.2"
     "@patternfly/chatbot": "npm:6.9.0-prerelease.5"
+    "@patternfly/react-code-editor": "npm:6.6.0"
     "@patternfly/react-core": "npm:6.6.1"
     "@patternfly/react-icons": "npm:^6.5.0"
     "@patternfly/react-table": "npm:^6.4.1"
