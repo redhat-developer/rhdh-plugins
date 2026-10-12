@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 4.5.1
+
+### Patch Changes
+
+- 7bf7e10: Fetch successive database windows when building drill-down results so catalog authorization and disabled-metric filtering can reach the eligible-result cap instead of stopping after the first 10,000 database rows.
+- 7bf7e10: Exclude metrics disabled via `scorecard.disabledMetrics` or the `scorecard.io/disabled-metrics` entity annotation from homepage aggregations, aggregation time series, drill-down tables, and entity metric time series, so stale stored values are no longer shown after a metric is disabled.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.1
+
 ## 4.5.0
 
 ### Patch Changes
