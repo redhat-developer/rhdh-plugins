@@ -44,9 +44,12 @@ export interface Config {
      *
      * Must match the control plane's `auth.enabled` setting.
      *
-     * @visibility backend
+     * @visibility frontend
      */
     auth?: {
+      /**
+       * @visibility frontend
+       */
       enabled?: boolean;
     };
 
