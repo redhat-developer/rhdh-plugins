@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.12.0
+
+### Patch Changes
+
+- 10e954f: Restore Inspect / Unregister / Copy entity actions in the entity header kebab when a custom entity header layout is active (avoids empty Menu "No results found.")
+
 ## 1.11.0
 
 ### Patch Changes
