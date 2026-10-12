@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.8
+
+### Patch Changes
+
+- 50ec702: Fix overlay chat shifting to the left when Quickstart (or any docked drawer) is open by stopping a second `DOCKED_CONTENT_OFFSET` margin — horizontal position already follows the measured FAB inset.
+- 9af7ab5: Fix docked/overlay clipping by clearing PatternFly drawer min-width in the compact shell and overlaying chat history and notebook documents panels. Isolate chat stacking so those overlays no longer block the dock width resizer.
+- 50ec702: Fix Intelligent Assistant fullscreen page to fill the RHDH content well with matching shell corners, and keep the message composer and AI disclaimer footnote visible without scrolling (fill the theme SidebarPage height instead of a broken local 100vh calc; pin the chat footer and stop the history drawer from scrolling content+footer together). Also keep a solid circular FAB and avoid a short loading flash when switching from overlay/docked mode. Hide the model-selector tooltip while the menu is open so the tip does not intercept model option clicks.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.8
+
 ## 5.3.7
 
 ### Patch Changes
