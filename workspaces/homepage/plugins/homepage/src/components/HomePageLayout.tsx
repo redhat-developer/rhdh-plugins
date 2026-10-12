@@ -28,6 +28,11 @@ import { ReadOnlyGridLayout } from './ReadOnlyGridLayout';
 import { CustomizableGridLayout } from './CustomizableGridLayout';
 import { HomePageCardConfig } from '../types';
 import { applyDefaultWidgetsToNfsWidgets } from './applyDefaultWidgets';
+import {
+  applyReadOnlyWidgetLayout,
+  applyWidgetLayoutBreakpoints,
+  WidgetLayoutConfig,
+} from '../utils/widgetLayoutConfig';
 
 /**
  * Props for the NFS home page layout component.
@@ -35,6 +40,11 @@ import { applyDefaultWidgetsToNfsWidgets } from './applyDefaultWidgets';
 export interface HomePageProps extends HeaderProps {
   widgets: HomePageCardConfig[];
   customizable?: boolean;
+  /**
+   * Layout config from `home-page-layout` `widgetLayout`.
+   * On a read-only homepage, `props` are forwarded into each card.
+   */
+  widgetLayout?: WidgetLayoutConfig;
 }
 
 /**
@@ -46,16 +56,22 @@ export interface HomePageProps extends HeaderProps {
 export const HomePageLayout = ({
   widgets,
   customizable = true,
+  widgetLayout,
 }: HomePageProps) => {
   const { t } = useTranslation();
   const { defaultWidgets, loading } = useDefaultWidgets();
 
   const visibleWidgets = useMemo(() => {
-    if (!defaultWidgets) {
-      return widgets;
+    const filtered = defaultWidgets
+      ? applyDefaultWidgetsToNfsWidgets(widgets, defaultWidgets)
+      : widgets;
+
+    if (customizable) {
+      return applyWidgetLayoutBreakpoints(filtered, widgetLayout);
     }
-    return applyDefaultWidgetsToNfsWidgets(widgets, defaultWidgets);
-  }, [widgets, defaultWidgets]);
+
+    return applyReadOnlyWidgetLayout(filtered, widgetLayout);
+  }, [widgets, defaultWidgets, customizable, widgetLayout]);
 
   let content: React.ReactNode;
   if (loading) {
