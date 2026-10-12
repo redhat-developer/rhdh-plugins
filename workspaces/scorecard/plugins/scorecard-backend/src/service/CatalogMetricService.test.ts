@@ -2246,6 +2246,84 @@ describe('CatalogMetricService', () => {
         'component:default/enabled-beyond-cap',
       );
     });
+
+    it('should stop at the DB scan budget when eligible rows stay sparse', async () => {
+      const windowSize = 10_000;
+      const makeWindow = (windowIndex: number): DbMetricValue[] =>
+        Array.from({ length: windowSize }, (_, i) => {
+          const globalIndex = windowIndex * windowSize + i;
+          return {
+            id: globalIndex + 1,
+            catalogEntityRef: `component:default/unauthorized-${globalIndex}`,
+            metricId: 'github.importantMetric',
+            value: 1,
+            timestamp: new Date('2024-01-15T12:00:00.000Z'),
+            errorMessage: null,
+            status: 'success',
+            entityKind: 'Component',
+            entityOwner: 'team:default/platform',
+            entityNamespace: 'default',
+          };
+        });
+
+      // Three full windows = MAX_SCANNED_DB_ROWS (30_000). A fourth would be runaway.
+      mockedDatabase.readEntityMetricsWithFilters
+        .mockResolvedValueOnce(makeWindow(0))
+        .mockResolvedValueOnce(makeWindow(1))
+        .mockResolvedValueOnce(makeWindow(2))
+        .mockResolvedValueOnce(makeWindow(3));
+
+      // Catalog denies every entity (undefined) so eligible count stays well below 10k.
+      mockedCatalog.getEntitiesByRefs.mockResolvedValue({
+        items: Array.from({ length: 100 }, () => undefined),
+      });
+
+      const result = await service.getEntityMetricDetails(
+        'github.importantMetric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledTimes(
+        3,
+      );
+      expect(
+        mockedDatabase.readEntityMetricsWithFilters,
+      ).toHaveBeenNthCalledWith(1, 'github.importantMetric', {
+        pagination: { limit: 10_000, offset: 0 },
+      });
+      expect(
+        mockedDatabase.readEntityMetricsWithFilters,
+      ).toHaveBeenNthCalledWith(2, 'github.importantMetric', {
+        pagination: { limit: 10_000, offset: 10_000 },
+      });
+      expect(
+        mockedDatabase.readEntityMetricsWithFilters,
+      ).toHaveBeenNthCalledWith(3, 'github.importantMetric', {
+        pagination: { limit: 10_000, offset: 20_000 },
+      });
+      expect(result.entities).toEqual([]);
+      expect(result.pagination).toEqual({
+        page: 1,
+        pageSize: 10,
+        total: 0,
+        totalPages: 0,
+        isCapped: true,
+      });
+      expect(result.entityHealth.countsArePartial).toBe(true);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Drill-down DB scan budget reached; results may be partial',
+        expect.objectContaining({
+          metricId: 'github.importantMetric',
+          scannedDbRows: 30_000,
+          eligibleCount: 0,
+          dbOffset: 30_000,
+        }),
+      );
+    });
   });
 
   describe('getUserAndGroupOwnerRefs', () => {

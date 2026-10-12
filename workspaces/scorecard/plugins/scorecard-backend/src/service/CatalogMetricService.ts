@@ -96,6 +96,7 @@ export class CatalogMetricService {
   private readonly thresholdEvaluator = new ThresholdEvaluator();
 
   private static readonly MAX_FETCHABLE_ROWS = 10_000;
+  private static readonly MAX_SCANNED_DB_ROWS = 30_000;
   private static readonly BATCH_SIZE = 100;
 
   constructor(options: CatalogMetricServiceOptions) {
@@ -465,13 +466,16 @@ export class CatalogMetricService {
     }
 
     // Fetch successive DB windows in sort order, then apply catalog authorization and
-    // disabled-metric filtering until we have MAX_FETCHABLE_ROWS eligible rows or the
-    // database is exhausted. Cost is intentional to avoid leaking pre-auth counts;
-    // MAX_FETCHABLE_ROWS and BATCH_SIZE tune the performance tradeoff.
+    // disabled-metric filtering until we have MAX_FETCHABLE_ROWS eligible rows, the
+    // scan budget (MAX_SCANNED_DB_ROWS) is exhausted, or the database is exhausted.
+    // Cost is intentional to avoid leaking pre-auth counts; MAX_FETCHABLE_ROWS,
+    // MAX_SCANNED_DB_ROWS, and BATCH_SIZE tune the performance tradeoff.
     const entityMap = new Map<string, Entity>();
     const accessibleRows: DbMetricValue[] = [];
     let dbOffset = 0;
+    let scannedDbRows = 0;
     let moreDbRowsMayExist = false;
+    let stoppedAtScanCap = false;
 
     const dbFilterOptions = {
       status: options.status,
@@ -500,6 +504,8 @@ export class CatalogMetricService {
           moreDbRowsMayExist = false;
           break;
         }
+
+        scannedDbRows += rows.length;
 
         // Filter to authorized rows by batching through catalog.getEntitiesByRefs with
         // user credentials. The catalog enforces auth natively: null = unauthorized or
@@ -565,6 +571,22 @@ export class CatalogMetricService {
         if (accessibleRows.length >= CatalogMetricService.MAX_FETCHABLE_ROWS) {
           break;
         }
+
+        // Scan budget reached: stop before fetching another window so one request
+        // cannot walk an unbounded number of DB rows / catalog auth calls.
+        if (scannedDbRows >= CatalogMetricService.MAX_SCANNED_DB_ROWS) {
+          stoppedAtScanCap = true;
+          this.logger.warn(
+            'Drill-down DB scan budget reached; results may be partial',
+            {
+              metricId,
+              scannedDbRows,
+              eligibleCount: accessibleRows.length,
+              dbOffset,
+            },
+          );
+          break;
+        }
       }
     } catch (error) {
       // Fail secure: if the catalog is unavailable we cannot confirm authorization,
@@ -573,11 +595,12 @@ export class CatalogMetricService {
       return emptyResponse();
     }
 
-    // True when the eligible-result cap was reached while more DB rows may exist;
-    // pagination.total / entityHealth counts may undercount the full dataset.
+    // True when we stopped with more DB rows possibly remaining — either the
+    // eligible-result cap or the scan budget. Totals / entityHealth may undercount.
     const isCapped =
-      accessibleRows.length === CatalogMetricService.MAX_FETCHABLE_ROWS &&
-      moreDbRowsMayExist;
+      moreDbRowsMayExist &&
+      (accessibleRows.length === CatalogMetricService.MAX_FETCHABLE_ROWS ||
+        stoppedAtScanCap);
 
     // Apply pagination to filtered entities
     const totalFiltered = accessibleRows.length;
