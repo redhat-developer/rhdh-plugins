@@ -146,6 +146,7 @@ export type EntityMetricDetailResponse = {
     isCapped: boolean;
   };
   entityHealth: ScorecardEntityHealthSummary;
+  thresholds: ThresholdConfig;
 };
 
 // @public (undocumented)

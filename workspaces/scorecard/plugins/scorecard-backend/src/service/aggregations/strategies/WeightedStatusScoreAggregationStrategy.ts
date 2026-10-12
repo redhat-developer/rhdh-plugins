@@ -98,7 +98,7 @@ export class WeightedStatusScoreAggregationStrategy
         count: aggregatedMetric.values[rule.key] ?? 0,
         score: statusScores[rule.key] ?? 0,
       })),
-      thresholds,
+      thresholds: headlineThresholds,
       weightedStatusScore,
       weightedStatusSum: weightedSum,
       weightedStatusMaxPossible: maxPossibleScore,
