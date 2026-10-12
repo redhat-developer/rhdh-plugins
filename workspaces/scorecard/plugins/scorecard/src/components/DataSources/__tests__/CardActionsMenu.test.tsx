@@ -18,8 +18,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { MetricGroupCardMenu } from '../MetricGroupCardMenu';
-import type { MenuAction } from '../MetricGroupCardMenu';
+import { CardActionsMenu } from '../CardActionsMenu';
+import type { MenuAction } from '../CardActionsMenu';
 
 const theme = createTheme();
 
@@ -42,32 +42,32 @@ const mockActions: MenuAction[] = [
   },
 ];
 
-describe('MetricGroupCardMenu', () => {
+describe('CardActionsMenu', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should return null when actions array is empty', () => {
     const { container } = renderWithTheme(
-      <MetricGroupCardMenu ariaLabel="Menu" actions={[]} />,
+      <CardActionsMenu ariaLabel="Menu" actions={[]} />,
     );
     expect(container.firstChild).toBeNull();
   });
 
   it('should render IconButton with the provided aria-label', () => {
     renderWithTheme(
-      <MetricGroupCardMenu ariaLabel="Card options" actions={mockActions} />,
+      <CardActionsMenu ariaLabel="Card options" actions={mockActions} />,
     );
 
     const button = screen.getByLabelText('Card options');
     expect(button).toBeInTheDocument();
-    expect(button.tagName.toLowerCase()).toBe('button');
+    expect(button.tagName.toLocaleLowerCase('en-US')).toBe('button');
   });
 
   it('should open menu when IconButton clicked and show action labels', async () => {
     const user = userEvent.setup();
     renderWithTheme(
-      <MetricGroupCardMenu ariaLabel="Card options" actions={mockActions} />,
+      <CardActionsMenu ariaLabel="Card options" actions={mockActions} />,
     );
 
     expect(screen.queryByText('Edit scorecard')).not.toBeInTheDocument();
@@ -81,7 +81,7 @@ describe('MetricGroupCardMenu', () => {
   it('should call action onClick when menu item clicked', async () => {
     const user = userEvent.setup();
     renderWithTheme(
-      <MetricGroupCardMenu ariaLabel="Card options" actions={mockActions} />,
+      <CardActionsMenu ariaLabel="Card options" actions={mockActions} />,
     );
 
     await user.click(screen.getByLabelText('Card options'));
@@ -93,7 +93,7 @@ describe('MetricGroupCardMenu', () => {
   it('should close menu after action click', async () => {
     const user = userEvent.setup();
     renderWithTheme(
-      <MetricGroupCardMenu ariaLabel="Card options" actions={mockActions} />,
+      <CardActionsMenu ariaLabel="Card options" actions={mockActions} />,
     );
 
     await user.click(screen.getByLabelText('Card options'));

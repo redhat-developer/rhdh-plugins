@@ -20,9 +20,9 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
-import { getLastUpdatedLabel } from '../../../utils';
-import { useTranslation } from '../../../hooks/useTranslation';
-import { useLanguage } from '../../../hooks/useLanguage';
+import { getLastUpdatedLabel } from '../../utils';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export const CardInfoButton = ({
   timestamp,

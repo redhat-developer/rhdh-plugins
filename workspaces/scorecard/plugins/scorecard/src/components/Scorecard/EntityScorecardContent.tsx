@@ -19,6 +19,7 @@ import { ResponseErrorPanel } from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
 
+import { ScorecardQueryProvider } from '../../api';
 import NoScorecardsState from '../Common/NoScorecardsState';
 import { useScorecards } from '../../hooks/useScorecards';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
@@ -61,4 +62,8 @@ const EntityScorecardContentInner = () => {
   );
 };
 
-export const EntityScorecardContent = () => <EntityScorecardContentInner />;
+export const EntityScorecardContent = () => (
+  <ScorecardQueryProvider>
+    <EntityScorecardContentInner />
+  </ScorecardQueryProvider>
+);
