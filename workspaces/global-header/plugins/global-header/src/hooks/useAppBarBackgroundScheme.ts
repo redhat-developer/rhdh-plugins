@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { useTheme } from '@mui/material/styles';
-import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
+import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 /**
  * Get the app bar background scheme from the theme. Defaults to light if not set.

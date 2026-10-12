@@ -23,7 +23,7 @@ import {
   quickstartInitModule,
   quickstartTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-quickstart';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 import { navModule } from './modules/nav';
 
 export default createApp({

@@ -58,7 +58,7 @@ import { mockApis } from '@backstage/test-utils';
 
 import Typography from '@mui/material/Typography';
 
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import globalHeaderPlugin, {
   globalHeaderModule,

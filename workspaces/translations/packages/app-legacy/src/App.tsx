@@ -53,7 +53,7 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
 
-import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 import {
   TranslationsPage,

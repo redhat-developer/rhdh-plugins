@@ -52,7 +52,7 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { lightspeedTranslations } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant/alpha';
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import {
   LightspeedPage,

@@ -38,9 +38,9 @@ import {
   SidebarLanguageSwitcher,
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
-import ExtensionIcon from '@mui/icons-material/Extension';
-import ScienceIcon from '@mui/icons-material/Science';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import ExtensionIcon from '@mui/icons-material';
+import ScienceIcon from '@mui/icons-material';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 // eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import translationsPlugin, {

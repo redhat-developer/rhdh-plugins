@@ -17,7 +17,7 @@
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 
-import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 /**
  * @internal

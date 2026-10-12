@@ -9291,7 +9291,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-app-defaults": "npm:^1.8.1"
     "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^1.8.1"
     "@red-hat-developer-hub/backstage-plugin-extensions-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.2.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.4.1"
     "@tanstack/react-query": "npm:^5.60.5"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
@@ -9306,9 +9306,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:1.2.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:1.4.1"
   dependencies:
     "@backstage/frontend-plugin-api": "npm:^0.18.0"
     "@backstage/plugin-app-react": "npm:^0.2.6"
@@ -9320,7 +9320,7 @@ __metadata:
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/47d1a399b3cb38403d083a34a99a1b82be26b97958780d99be8506f02482936ef56e29432c04c40980dfac5ab81298b78c7551a642cd52a0dd71cf24fb7b4dd7
+  checksum: 10c0/1e5eff0cc01228cf87015dcaf78f43ab295680d8cc919f1dd45011185c91cf22ada5bd0dca03cee8293d478bb85c5fcf7dc27912b6371843b5ad86a3a2ec8a7f
   languageName: node
   linkType: hard
 
@@ -13796,7 +13796,7 @@ __metadata:
     "@material-ui/icons": "npm:^4.9.1"
     "@playwright/test": "npm:1.63.0"
     "@red-hat-developer-hub/backstage-plugin-extensions": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.2.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.4.1"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@types/react-dom": "npm:*"
@@ -13853,7 +13853,7 @@ __metadata:
     "@playwright/test": "npm:1.63.0"
     "@red-hat-developer-hub/backstage-plugin-app-defaults": "npm:^1.8.1"
     "@red-hat-developer-hub/backstage-plugin-extensions": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.2.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.4.1"
     "@types/react-dom": "npm:*"
     react: "npm:^18.0.2"
     react-dom: "npm:^18.0.2"
