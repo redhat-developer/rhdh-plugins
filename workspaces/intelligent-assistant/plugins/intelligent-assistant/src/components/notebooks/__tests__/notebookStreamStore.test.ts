@@ -45,6 +45,14 @@ function encodeSSE(event: string, data: Record<string, any>): Uint8Array {
   return new TextEncoder().encode(`data:${json}\n\n`);
 }
 
+function encodeSSEWithoutTrailingDelimiter(
+  event: string,
+  data: Record<string, any>,
+): Uint8Array {
+  const json = JSON.stringify({ event, data });
+  return new TextEncoder().encode(`data:${json}`);
+}
+
 function createMockReader(
   chunks: Uint8Array[],
 ): ReadableStreamDefaultReader<Uint8Array> {
@@ -206,6 +214,27 @@ describe('notebookStreamStore', () => {
       expect(snap.requestId).toBe('req-1');
       const lastMsg = snap.messages[snap.messages.length - 1];
       expect(lastMsg.content).toContain('Hello world');
+    });
+
+    it('applies referenced_documents from a final SSE chunk without trailing delimiter', async () => {
+      const reader = createMockReader([
+        encodeSSE('token', { token: 'Answer' }),
+        encodeSSEWithoutTrailingDelimiter('end', {
+          referenced_documents: [
+            {
+              doc_title: 'Notebook doc',
+              doc_url: 'https://example.com/doc',
+            },
+          ],
+        }),
+      ]);
+      const createMessage = jest.fn().mockResolvedValue(reader);
+      store.send('s1', makeParams({ createMessage }));
+      await flushMicrotasks();
+
+      const lastMsg = store.getSnapshot('s1').messages.at(-1);
+      expect(lastMsg?.sources?.sources).toHaveLength(1);
+      expect(lastMsg?.sources?.sources?.[0]?.title).toBe('Notebook doc');
     });
 
     it('passes abort signal to createMessage', async () => {

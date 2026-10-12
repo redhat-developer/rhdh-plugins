@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { useEffect, useState } from 'react';
+
 import { styled } from '@mui/material/styles';
 import {
   ChatbotModal,
@@ -28,6 +30,11 @@ import {
   LIGHTSPEED_OVERLAY_RIGHT,
   type ChatbotDisplayMode,
 } from '../const';
+import {
+  areChatPatternflyStylesLoaded,
+  loadChatPatternflyStyles,
+} from '../loadChatPatternflyStyles';
+import { ChatLoadingFallback } from './ChatLoadingFallback';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 
 const LIGHTSPEED_OVERLAY_CHAT_Z_INDEX = 300;
@@ -56,21 +63,51 @@ type Props = {
  * Overlay chat modal — lazy-loaded from LightspeedDrawerProvider when needed.
  * ChatContainer is imported statically so ChatbotModal and chat PatternFly CSS
  * share one chunk order (avoids css-extract-rspack-plugin CI failures).
+ * Wait for PatternFly CSS before mounting ChatbotModal (RHDHBUGS-3803).
  */
 export const LightspeedOverlayChat = ({
   displayMode,
   onEscapePress,
-}: Props) => (
-  <StyledChatbotModal
-    isOpen
-    className={LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS}
-    displayMode={displayMode as PfChatbotDisplayMode}
-    disableFocusTrap
-    onEscapePress={onEscapePress}
-    ouiaId="LightspeedChatbotModal"
-    aria-labelledby="lightspeed-chatpopup-modal"
-    data-screen-capture-exclude
-  >
-    <LightspeedChatContainer />
-  </StyledChatbotModal>
-);
+}: Props) => {
+  const [stylesReady, setStylesReady] = useState(areChatPatternflyStylesLoaded);
+
+  useEffect(() => {
+    if (stylesReady) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    loadChatPatternflyStyles()
+      .then(() => {
+        if (!cancelled) {
+          setStylesReady(true);
+        }
+      })
+      .catch(() => {
+        // Leave stylesReady false; retry on remount via cleared loadPromise.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [stylesReady]);
+
+  if (!stylesReady) {
+    return <ChatLoadingFallback variant="overlay" />;
+  }
+
+  return (
+    <StyledChatbotModal
+      isOpen
+      className={LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS}
+      displayMode={displayMode as PfChatbotDisplayMode}
+      disableFocusTrap
+      onEscapePress={onEscapePress}
+      ouiaId="LightspeedChatbotModal"
+      aria-labelledby="lightspeed-chatpopup-modal"
+      data-screen-capture-exclude
+    >
+      <LightspeedChatContainer />
+    </StyledChatbotModal>
+  );
+};

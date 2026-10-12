@@ -20,4 +20,5 @@
  * @packageDocumentation
  */
 
+/** @public */
 export { scorecardModuleCatalog as default } from './module';

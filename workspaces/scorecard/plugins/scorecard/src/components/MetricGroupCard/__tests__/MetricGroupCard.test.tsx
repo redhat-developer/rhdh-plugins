@@ -46,7 +46,7 @@ jest.mock('../../../hooks/useLanguage', () => ({
   useLanguage: () => 'en',
 }));
 
-jest.mock('../metricSourceRows', () => ({
+jest.mock('../../DataSources/metricSourceRows', () => ({
   toMetricSourceRows: () => [],
 }));
 
@@ -75,8 +75,8 @@ jest.mock('../ThresholdBucketTile', () => ({
   ),
 }));
 
-jest.mock('../MetricGroupCardMenu', () => ({
-  MetricGroupCardMenu: ({
+jest.mock('../../DataSources/CardActionsMenu', () => ({
+  CardActionsMenu: ({
     actions,
   }: {
     actions: Array<{ id: string; label: string; onClick: () => void }>;
@@ -95,7 +95,7 @@ jest.mock('../MetricGroupCardMenu', () => ({
   ),
 }));
 
-jest.mock('../DataSourcesDialog', () => ({
+jest.mock('../../DataSources/DataSourcesDialog', () => ({
   DataSourcesDialog: ({
     open,
     title,
