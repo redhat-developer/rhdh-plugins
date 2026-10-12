@@ -122,7 +122,13 @@ const RemovePersonalTokenButton = styled(Button)({
   boxShadow: 'none',
 });
 
-type McpConfigureServerModalProps = UseMcpConfigureModalResult;
+const SCOPED_BACKDROP_CLASS = 'ia-scoped-chat-modal-backdrop';
+
+type McpConfigureServerModalProps = UseMcpConfigureModalResult & {
+  isCompact?: boolean;
+  /** Compact mode host for PatternFly Modal portal (overlay/docked). */
+  appendTo?: () => HTMLElement;
+};
 
 export const McpConfigureServerModal = ({
   isOpen,
@@ -162,6 +168,8 @@ export const McpConfigureServerModal = ({
   canRemovePersonalToken,
   hasSavedTokenInModal,
   hasRemovedPersonalToken,
+  isCompact = false,
+  appendTo,
 }: McpConfigureServerModalProps) => {
   const { t } = useTranslation();
 
@@ -241,11 +249,17 @@ export const McpConfigureServerModal = ({
   return (
     <StyledModal
       variant="small"
-      width={608}
+      width={isCompact ? 'min(608px, calc(100% - 32px))' : 608}
       isOpen={isOpen}
       onClose={close}
       aria-labelledby="mcp-configure-modal"
       aria-describedby="mcp-configure-modal-body"
+      {...(isCompact
+        ? {
+            appendTo: () => appendTo?.() ?? document.body,
+            backdropClassName: SCOPED_BACKDROP_CLASS,
+          }
+        : {})}
     >
       <ModalHeader
         title={configureModalTitle}
