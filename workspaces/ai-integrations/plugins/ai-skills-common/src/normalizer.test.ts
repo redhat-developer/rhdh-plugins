@@ -819,6 +819,25 @@ describe('normalizeNpxMetadata', () => {
       expect(result.record!.extensions).toBeUndefined();
     });
 
+    it.each([42, true, false])(
+      'omits non-string entry type %j with a diagnostic',
+      type => {
+        const native: NpxNativeInput = {
+          entry: { name: 'test', type },
+        };
+        const result = normalizeNpxMetadata(native, npxTrustedInput);
+        expect(result.record).not.toBeNull();
+        expect(result.record!.extensions).toBeUndefined();
+        expect(result.diagnostics).toHaveLength(1);
+        expect(result.diagnostics[0]).toEqual(
+          expect.objectContaining({ field: 'extensions.npx.type' }),
+        );
+        expect(validateSnapshot(wrapNpxSnapshot(result.record)).valid).toBe(
+          true,
+        );
+      },
+    );
+
     it('omits unsupported entry type with diagnostic', () => {
       const native: NpxNativeInput = {
         entry: { name: 'test', type: 'unknown-format' },

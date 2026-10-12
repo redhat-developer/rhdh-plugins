@@ -160,8 +160,8 @@ Catalog side effects.
   pattern matches Backstage's default catalog validator: lowercase letters,
   digits, colons (`:`), plus signs (`+`), and hash characters (`#`), separated
   by single hyphens. Dots, underscores, and consecutive hyphens are invalid.
-  Parity tests use Backstage's validator to detect drift. Returns valid tags and diagnostics for
-  dropped entries.
+  Parity tests use Backstage's validator to detect drift. Returns valid tags
+  and diagnostics for dropped entries.
 - `resolveVersion(declaredVersion, digest)` — strips at most one leading
   `v`, validates as SemVer, and falls back to `0.0.0+<first 12 hex digits
 of digest>` when no valid SemVer is present.

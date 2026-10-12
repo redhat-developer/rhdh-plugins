@@ -15,6 +15,7 @@
  */
 
 import { makeValidator } from '@backstage/catalog-model';
+
 import { normalizeTags } from './catalog-helpers';
 import { normalizeNpxMetadata, normalizeOciMetadata } from './normalizer';
 import { npxTrustedInput, ociTrustedInput } from './fixtures';
