@@ -2,7 +2,7 @@
 
 The Scorecard plugin provides a configurable framework to visualize Key Performance Indicators (KPIs) in Backstage. This frontend plugin integrates with the Scorecard backend to deliver Scorecards.
 
-The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. NFS is the primary package entry point. OFS (legacy) exports are available only at `./legacy`. Translations remain available at `./alpha`.
+The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. NFS is the primary package entry point. OFS (legacy) exports are available only at `./legacy`. Translations are exported from the main entry point.
 
 For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModule`. The plugin itself contributes the Scorecard page, entity tab, layout, and homepage widgets (no separate catalog/home modules).
 
@@ -223,7 +223,7 @@ The default `scorecardPlugin` registers the Scorecard page, API, entity tab, lay
 
 ##### Migration notes (NFS graduation)
 
-If you previously imported Scorecard NFS APIs from `/alpha` and registered separate catalog/home modules, update as follows.
+The `./alpha` package export has been removed. Import the plugin, translations module, and translation symbols from the main package entry instead.
 
 **1. Features registration**
 
@@ -232,9 +232,13 @@ If you previously imported Scorecard NFS APIs from `/alpha` and registered separ
 -   scorecardCatalogModule,
 -   scorecardHomeModule,
 -   scorecardTranslationsModule,
+-   scorecardTranslationRef,
+-   scorecardTranslations,
 - } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 + import scorecardPlugin, {
 +   scorecardTranslationsModule,
++   scorecardTranslationRef,
++   scorecardTranslations,
 + } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
   features: [
@@ -245,7 +249,7 @@ If you previously imported Scorecard NFS APIs from `/alpha` and registered separ
   ]
 ```
 
-`scorecardCatalogModule` and `scorecardHomeModule` are removed. Entity tab and homepage widgets are provided by `scorecardPlugin` directly.
+`scorecardCatalogModule` and `scorecardHomeModule` are removed. Entity tab and homepage widgets are provided by `scorecardPlugin` directly. Translation symbols (`scorecardTranslationRef`, `scorecardTranslations`) are exported from the main entry point only.
 
 **2. `app.extensions` IDs**
 

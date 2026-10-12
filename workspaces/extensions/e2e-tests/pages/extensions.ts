@@ -156,6 +156,24 @@ export class Extensions {
     await this.page.keyboard.press('Escape');
   }
 
+  private get catalogSourceOptions() {
+    return ['Red Hat', 'Community'] as const;
+  }
+
+  async catalogSourceFilters() {
+    const listbox = this.page.getByRole('listbox');
+    for (const option of this.catalogSourceOptions) {
+      await expect(listbox).toContainText(option);
+    }
+    await this.page.keyboard.press('Escape');
+  }
+
+  async selectCatalogSourceFilter(catalogSource: string) {
+    await this.selectDropdown(this.translations.search.catalogSource);
+    await this.toggleOption(catalogSource);
+    await this.page.keyboard.press('Escape');
+  }
+
   async selectSupportTypeFilter(supportType: string) {
     await this.selectDropdown(this.translations.search.supportType);
     await this.toggleOption(supportType);

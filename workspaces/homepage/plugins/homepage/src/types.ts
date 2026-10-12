@@ -73,6 +73,8 @@ export interface HomePageCardMountPointConfig {
 
 export interface HomePageCardConfig extends HomePageWidgetData {
   breakpointLayouts?: Record<Breakpoint, Layout>;
+  /** Arbitrary props forwarded into the widget on a read-only homepage. */
+  props?: Record<string, unknown>;
 }
 
 /**
