@@ -42,14 +42,13 @@ export function getMetricCheckDescription(
 /**
  * Maps the aggregation chart color back to a threshold key.
  *
- * For scalar/sparkline aggregations, `result.thresholds` may still be
- * metric-scale rules (`>50` → error), so do not match the aggregated number
- * with `getMatchingThresholdKey`. The backend already classified the value
- * and sent `aggregationChartDisplayColor`; invert that color to the rule key.
+ * The backend already classified the value and sent
+ * `aggregationChartDisplayColor`. Invert that color against
+ * `result.thresholds` (aggregation KPI rules) to get the rule key.
  *
  * For weightedStatusScore, use {@link getWeightedStatusScoreEvaluation}
- * instead — those results carry 0–100 KPI thresholds, so matching the score
- * is the correct status.
+ * instead — matching the 0–100 score is more reliable when KPI colors are
+ * custom hex/rgb values.
  */
 export function getEvaluationKeyFromChartColor(
   displayColor: string | null | undefined,
@@ -68,10 +67,9 @@ export function getEvaluationKeyFromChartColor(
 /**
  * Resolves View data sources status for a weightedStatusScore card.
  *
- * `result.thresholds` are the 0–100 aggregation KPI rules, not per-metric
- * rules. Match the score against those rules so custom hex/rgb KPI colors
- * still map to Success/Warning/Error. Fall back to chart-color inversion.
- * Empty aggregations (`total === 0`) have no status.
+ * Match the 0–100 score against aggregation KPI thresholds so custom hex/rgb
+ * colors still map to Success/Warning/Error. Fall back to chart-color
+ * inversion. Empty aggregations (`total === 0`) have no status.
  */
 export function getWeightedStatusScoreEvaluation({
   weightedStatusScore,
