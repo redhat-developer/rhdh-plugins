@@ -217,7 +217,7 @@ export function EntityContextMenu(props: {
 
   const hasExtensionItems = Boolean(contextMenuItems?.length);
   const hasExtraItems = Boolean(UNSTABLE_extraContextMenuItems?.length);
-  const useDefaultItems = !hasExtensionItems && !hasExtraItems;
+  const useDefaultItems = !hasExtensionItems;
 
   return (
     <MenuTrigger>
@@ -236,7 +236,9 @@ export function EntityContextMenu(props: {
             {item.title}
           </MenuItem>
         ))}
-        {hasExtraItems && hasExtensionItems ? <MenuSeparator /> : null}
+        {hasExtraItems && (hasExtensionItems || useDefaultItems) ? (
+          <MenuSeparator />
+        ) : null}
         {contextMenuItems?.map(item => (
           <EntityContextMenuItem key={item.node.spec.id} item={item} />
         ))}

@@ -95,4 +95,42 @@ describe('EntityContextMenu', () => {
 
     expect(screen.queryByText('No results found.')).not.toBeInTheDocument();
   });
+
+  it('renders stock fallback actions together with UNSTABLE_extraContextMenuItems', async () => {
+    const ExtraIcon = () => null;
+    await renderInTestApp(
+      <EntityContextMenu
+        UNSTABLE_extraContextMenuItems={[
+          { title: 'Custom action', Icon: ExtraIcon, onClick: () => {} },
+        ]}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'entityContextMenu.moreButtonAriaLabel',
+      }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('menuitem', { name: 'Custom action' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', {
+          name: 'entityContextMenu.unregisterMenuTitle',
+        }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', {
+          name: 'entityContextMenu.inspectMenuTitle',
+        }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', {
+          name: 'entityContextMenu.copyURLMenuTitle',
+        }),
+      ).toBeInTheDocument();
+    });
+  });
 });
