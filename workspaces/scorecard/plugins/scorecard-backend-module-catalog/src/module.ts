@@ -20,6 +20,7 @@ import {
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { createCatalogRequiredAttributesMetricProvider } from './metricProviders/CatalogRequiredAttributesMetricProvider';
 
+/** @public */
 export const scorecardModuleCatalog = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'catalog',

@@ -20,6 +20,7 @@ import {
   MetricResult,
   aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS } from './thresholdData';
 
 export const mockScorecardSuccessData = [
   {
@@ -176,7 +177,7 @@ export const mockAggregatedScorecardData = {
       ],
       total: 8,
       timestamp: '2024-01-15T10:30:00Z',
-      thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS,
       weightedStatusScore: 75,
       weightedStatusSum: 18,
       weightedStatusMaxPossible: 24,

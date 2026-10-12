@@ -20,6 +20,7 @@ import {
   type MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
+import { CHANGE_FAILURE_RATE_THRESHOLDS } from '../../../../__fixtures__/thresholdData';
 import { EntitySparklineCard } from '../EntitySparklineCard';
 import { useMetricCollectors } from '../../../hooks/useMetricCollectors';
 import { useMetricTimeSeries } from '../../../hooks/useMetricTimeSeries';
@@ -36,8 +37,8 @@ jest.mock('../../../hooks/useLanguage', () => ({
   useLanguage: () => 'en',
 }));
 
-jest.mock('../../MetricGroupCard/MetricGroupCardMenu', () => ({
-  MetricGroupCardMenu: ({
+jest.mock('../../DataSources/CardActionsMenu', () => ({
+  CardActionsMenu: ({
     actions,
   }: {
     actions: Array<{ id: string; label: string; onClick: () => void }>;
@@ -56,7 +57,7 @@ jest.mock('../../MetricGroupCard/MetricGroupCardMenu', () => ({
   ),
 }));
 
-jest.mock('../../MetricGroupCard/DataSourcesDialog', () => ({
+jest.mock('../../DataSources/DataSourcesDialog', () => ({
   DataSourcesDialog: ({
     title,
     rows,
@@ -101,26 +102,6 @@ jest.mock('recharts', () => {
 
 const useMetricTimeSeriesMock = useMetricTimeSeries as jest.Mock;
 const useMetricCollectorsMock = useMetricCollectors as jest.Mock;
-
-const CHANGE_FAILURE_RATE_THRESHOLDS = {
-  rules: [
-    {
-      key: 'elite',
-      expression: '<5',
-      color: ScorecardThresholdRuleColors.SUCCESS,
-    },
-    {
-      key: 'medium',
-      expression: '5-15',
-      color: ScorecardThresholdRuleColors.WARNING,
-    },
-    {
-      key: 'low',
-      expression: '>15',
-      color: ScorecardThresholdRuleColors.ERROR,
-    },
-  ],
-};
 
 const metric: MetricResult = {
   id: 'dora.changeFailureRate',
@@ -490,11 +471,11 @@ describe('EntitySparklineCard', () => {
     expect(screen.getByTestId('dialog-collectors')).toHaveTextContent(
       'GitHub,Jira',
     );
-    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('false');
+    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('true');
     expect(useMetricCollectorsMock).toHaveBeenCalledWith(metric.id, true);
   });
 
-  it('should not fetch collectors when the metric has no collector ids', () => {
+  it('should not fetch collectors when the metric has no collector ids but still show metric data', () => {
     useMetricTimeSeriesMock.mockReturnValue(
       mockTimeSeries('dora.changeFailureRate'),
     );
@@ -518,6 +499,9 @@ describe('EntitySparklineCard', () => {
     fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
 
     expect(useMetricCollectorsMock).toHaveBeenCalledWith(metric.id, false);
-    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent('');
+    expect(screen.getByTestId('dialog-metric-id')).toHaveTextContent(
+      'dora.changeFailureRate',
+    );
+    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent('Dora');
   });
 });
