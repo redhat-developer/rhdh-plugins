@@ -53,6 +53,9 @@ type McpServer = McpConfigureServer;
 
 type McpServersSettingsProps = {
   backgroundColor?: string;
+  isCompact?: boolean;
+  /** Compact mode host for PatternFly Modal portal (overlay/docked). */
+  appendTo?: () => HTMLElement;
 };
 
 const mcpClasses = {
@@ -299,6 +302,8 @@ const toUiServer = (
 });
 export const McpServersSettings = ({
   backgroundColor,
+  isCompact = false,
+  appendTo,
 }: McpServersSettingsProps) => {
   const { t } = useTranslation();
   const configApi = useApi(configApiRef);
@@ -536,16 +541,18 @@ export const McpServersSettings = ({
 
   return (
     <StyledMcpRoot style={backgroundColor ? { backgroundColor } : undefined}>
-      <GlobalStyles
-        styles={{
-          '.pf-v6-c-backdrop': {
-            zIndex: '1400 !important',
-          },
-          '.pf-v5-c-backdrop': {
-            zIndex: '1400 !important',
-          },
-        }}
-      />
+      {!isCompact && (
+        <GlobalStyles
+          styles={{
+            '.pf-v6-c-backdrop': {
+              zIndex: '1400 !important',
+            },
+            '.pf-v5-c-backdrop': {
+              zIndex: '1400 !important',
+            },
+          }}
+        />
+      )}
       <div className={mcpClasses.headerRow}>
         <div>
           <Title headingLevel="h2" size="xl" className={mcpClasses.title}>
@@ -733,7 +740,11 @@ export const McpServersSettings = ({
           })}
         </Tbody>
       </Table>
-      <McpConfigureServerModal {...configureModal} />
+      <McpConfigureServerModal
+        {...configureModal}
+        isCompact={isCompact}
+        appendTo={appendTo}
+      />
     </StyledMcpRoot>
   );
 };

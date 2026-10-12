@@ -64,4 +64,24 @@ describe('DeleteSavedPromptModal', () => {
       screen.queryByText("Delete 'Performance Optimization'?"),
     ).not.toBeInTheDocument();
   });
+
+  it('should append to the provided host when isCompact', () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+
+    render(
+      <DeleteSavedPromptModal
+        {...defaultProps}
+        isCompact
+        appendTo={() => host}
+      />,
+    );
+
+    expect(
+      host.querySelector('.ia-scoped-chat-modal-backdrop'),
+    ).toBeInTheDocument();
+    expect(host.querySelector('[role="dialog"]')).toBeInTheDocument();
+
+    host.remove();
+  });
 });
