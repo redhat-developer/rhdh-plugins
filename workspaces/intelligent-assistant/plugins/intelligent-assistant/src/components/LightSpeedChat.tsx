@@ -179,6 +179,32 @@ const ChatModalScope = styled('div')({
     '--pf-v6-c-backdrop--ZIndex': '1400 !important',
     '--pf-v5-c-backdrop--ZIndex': '1400 !important',
   },
+  '& .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal': {
+    position: 'absolute !important',
+    inset: '0 !important',
+    width: '100% !important',
+    maxWidth: 'none !important',
+    height: '100% !important',
+    transform: 'none !important',
+    zIndex: 1401,
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+  },
+  '& .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-v6-c-modal-box__body, & .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-chatbot__code-modal-body, & .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-chatbot__code-modal-editor':
+    {
+      flex: 1,
+      minHeight: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+    },
+  '& .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-chatbot__code-modal-editor .pf-v6-c-code-editor':
+    {
+      flex: 1,
+      minHeight: 0,
+      height: '100%',
+    },
 });
 
 const StyledChatbot = styled(Chatbot, {
@@ -2588,12 +2614,14 @@ export const LightspeedChat = ({
           isCompact={!isFullscreenMode}
           appendTo={() => chatModalScopeRef.current ?? document.body}
         />
+        {currentFileContent ? (
+          <Suspense fallback={null}>
+            <Attachment
+              appendTo={() => chatModalScopeRef.current ?? document.body}
+            />
+          </Suspense>
+        ) : null}
       </ChatModalScope>
-      {currentFileContent ? (
-        <Suspense fallback={null}>
-          <Attachment />
-        </Suspense>
-      ) : null}
     </>
   );
 };
