@@ -32,7 +32,8 @@ import {
   skillImageConnectorPlugin,
 } from './plugin';
 import * as imageService from './services/SkillImageService';
-import type { ImageRef, OciManifest } from './services/types';
+import type { ImageRef } from './services/types';
+import { makeManifest, computeManifestDigest } from './testUtils';
 
 // Observe metadata passed to cleanup while retaining real acquisition and cleanup.
 jest.mock('./services/SkillImageService', () => {
@@ -343,24 +344,7 @@ describe('tag pinning through plugin acquisition', () => {
   });
 });
 
-function makeManifest(layers: OciManifest['layers'] = []): OciManifest {
-  return {
-    schemaVersion: 2,
-    config: {
-      mediaType: 'application/vnd.oci.image.config.v1+json',
-      digest: 'sha256:cfg',
-      size: 10,
-    },
-    layers,
-  };
-}
-
-function manifestDigest(manifest: OciManifest): string {
-  const buffer = Buffer.from(JSON.stringify(manifest));
-  return `sha256:${createHash('sha256').update(buffer).digest('hex')}`;
-}
-
-describe('Tag pinning: identity metadata', () => {
+describe('tag pinning: identity metadata', () => {
   it('produces a stable key with lowercase registry and exact tag', () => {
     const ref: ImageRef = {
       registry: 'Quay.IO',
@@ -387,7 +371,7 @@ describe('Tag pinning: identity metadata', () => {
 
   it('same-digest aliases produce distinct keys', () => {
     const manifest = makeManifest();
-    const digest = manifestDigest(manifest);
+    const digest = computeManifestDigest(manifest);
 
     const keyLatest = buildAcquisitionKey({
       registry: 'quay.io',
@@ -440,8 +424,8 @@ describe('Tag pinning: identity metadata', () => {
       },
     ]);
 
-    const digestA = manifestDigest(manifestA);
-    const digestB = manifestDigest(manifestB);
+    const digestA = computeManifestDigest(manifestA);
+    const digestB = computeManifestDigest(manifestB);
 
     // Different digests
     expect(digestA).not.toBe(digestB);

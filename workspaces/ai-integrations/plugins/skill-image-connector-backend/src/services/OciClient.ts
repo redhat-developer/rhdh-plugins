@@ -529,9 +529,12 @@ export async function fetchManifest(
         if (!digestInfo) {
           throw new Error(`Invalid manifest digest ${requestedDigest}`);
         }
-        const actualHex = createHash(digestInfo.algorithm)
-          .update(manifestBuffer)
-          .digest('hex');
+        const actualHex =
+          digestInfo.algorithm === 'sha256'
+            ? computedHex
+            : createHash(digestInfo.algorithm)
+                .update(manifestBuffer)
+                .digest('hex');
         if (actualHex !== digestInfo.hex) {
           throw new Error(
             `Manifest digest mismatch for ${requestedDigest}: got ${digestInfo.algorithm}:${actualHex}`,

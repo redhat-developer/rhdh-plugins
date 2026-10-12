@@ -24,6 +24,7 @@ import {
 } from './OciClient';
 import type { OciManifest } from './types';
 import { DEFAULT_SKILL_IMAGE_OPTIONS } from './types';
+import { makeManifest, computeManifestDigest } from '../testUtils';
 import { isPrivateAddress } from './HttpClient';
 
 // Mock DNS resolution so redirect tests don't fail with real DNS lookups.
@@ -528,23 +529,6 @@ describe('fetchManifest', () => {
   });
 });
 
-function makeManifest(layers: OciManifest['layers'] = []): OciManifest {
-  return {
-    schemaVersion: 2,
-    config: {
-      mediaType: 'application/vnd.oci.image.config.v1+json',
-      digest: 'sha256:cfg',
-      size: 10,
-    },
-    layers,
-  };
-}
-
-function computeManifestDigest(manifest: OciManifest): string {
-  const buffer = Buffer.from(JSON.stringify(manifest));
-  return `sha256:${createHash('sha256').update(buffer).digest('hex')}`;
-}
-
 function mockFetchOk(manifest: OciManifest): void {
   const buffer = Buffer.from(JSON.stringify(manifest));
   global.fetch = jest.fn().mockResolvedValue({
@@ -555,7 +539,7 @@ function mockFetchOk(manifest: OciManifest): void {
   });
 }
 
-describe('Tag pinning: manifest digest computation', () => {
+describe('fetchManifest: digest computation', () => {
   const pinningLogger = {
     info: jest.fn(),
     warn: jest.fn(),
@@ -661,7 +645,7 @@ describe('Tag pinning: manifest digest computation', () => {
   });
 });
 
-describe('Tag pinning: digest pinning across retries', () => {
+describe('fetchManifest: digest pinning across retries', () => {
   const pinningLogger = {
     info: jest.fn(),
     warn: jest.fn(),
