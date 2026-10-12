@@ -19,7 +19,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { DataSourcesDialog } from '../DataSourcesDialog';
 import type { SourceRow } from '../DataSourcesDialogColumns';
-import type { ThresholdBucket } from '../types';
+import type { ThresholdBucket } from '../../MetricGroupCard/types';
 
 const mockTableProps = {
   'aria-label': 'table',
@@ -115,7 +115,7 @@ jest.mock('../../../utils', () => ({
   ) => fallback ?? '',
 }));
 
-jest.mock('../thresholdBucketUtils', () => ({
+jest.mock('../../MetricGroupCard/thresholdBucketUtils', () => ({
   buildThresholdBuckets: () => [],
   MISSING_EVALUATION_BUCKET_KEY: 'noEvaluation',
   MISSING_EVALUATION_LABEL: '—',
