@@ -20,7 +20,11 @@ import { AttachmentEdit } from '@patternfly/chatbot/dist/dynamic/AttachmentEdit'
 import { PreviewAttachment } from '@patternfly/chatbot/dist/dynamic/PreviewAttachment';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { ensureMonacoEditorWorkerEnvironment } from '../monacoEditorWorkerEnvironment';
 import { useFileAttachmentContext } from './AttachmentContext';
+
+// Configure Monaco before CodeModal mounts (PreviewAttachment / AttachmentEdit).
+ensureMonacoEditorWorkerEnvironment();
 
 const MODAL_FOOTER_CLASS = 'ia-attachment-modal-footer';
 
