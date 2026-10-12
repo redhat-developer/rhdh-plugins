@@ -24,6 +24,7 @@ import {
 } from './OciClient';
 import type { OciManifest } from './types';
 import { DEFAULT_SKILL_IMAGE_OPTIONS } from './types';
+import { makeManifest, computeManifestDigest } from '../testUtils';
 import { isPrivateAddress } from './HttpClient';
 
 // Mock DNS resolution so redirect tests don't fail with real DNS lookups.
@@ -148,7 +149,7 @@ describe('fetchManifest', () => {
     jest.resetAllMocks();
   });
 
-  it('should fetch and return manifest', async () => {
+  it('should fetch and return manifest with computed digest', async () => {
     const mockManifest: OciManifest = {
       schemaVersion: 2,
       config: {
@@ -167,12 +168,16 @@ describe('fetchManifest', () => {
         },
       ],
     };
+    const manifestBuffer = Buffer.from(JSON.stringify(mockManifest));
+    const expectedDigest = `sha256:${createHash('sha256')
+      .update(manifestBuffer)
+      .digest('hex')}`;
 
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => mockManifest,
-      arrayBuffer: async () => Buffer.from(JSON.stringify(mockManifest)),
+      arrayBuffer: async () => manifestBuffer,
       headers: new Map(),
     });
 
@@ -180,7 +185,8 @@ describe('fetchManifest', () => {
       { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
       logger,
     );
-    expect(result).toEqual(mockManifest);
+    expect(result.manifest).toEqual(mockManifest);
+    expect(result.digest).toBe(expectedDigest);
     expect(global.fetch).toHaveBeenCalledWith(
       'https://quay.io/v2/org/repo/manifests/v1',
       expect.objectContaining({
@@ -276,7 +282,7 @@ describe('fetchManifest', () => {
       headers: new Map(),
     });
 
-    await fetchManifest(
+    const result = await fetchManifest(
       {
         registry: 'quay.io',
         repository: 'org/repo',
@@ -289,6 +295,7 @@ describe('fetchManifest', () => {
       `https://quay.io/v2/org/repo/manifests/${manifestDigest}`,
       expect.any(Object),
     );
+    expect(result.digest).toBe(manifestDigest);
   });
 
   it('should reject a digest reference when the manifest bytes do not match', async () => {
@@ -371,7 +378,7 @@ describe('fetchManifest', () => {
       logger,
       { tokenRealm: 'https://auth.example.com/token' },
     );
-    expect(result).toEqual(mockManifest);
+    expect(result.manifest).toEqual(mockManifest);
     expect(global.fetch).toHaveBeenCalledTimes(3);
     expect(cancelUnauthorizedBody).toHaveBeenCalled();
   });
@@ -519,6 +526,250 @@ describe('fetchManifest', () => {
       ),
     ).rejects.toThrow('configure credentials.tokenRealm explicitly');
     expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+function mockFetchOk(manifest: OciManifest): void {
+  const buffer = Buffer.from(JSON.stringify(manifest));
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    arrayBuffer: async () => buffer,
+    headers: new Map(),
+  });
+}
+
+describe('fetchManifest: digest computation', () => {
+  const pinningLogger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  } as unknown as LoggerService;
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('computes SHA-256 digest from raw manifest bytes on tag fetch', async () => {
+    const manifest = makeManifest();
+    const expected = computeManifestDigest(manifest);
+    mockFetchOk(manifest);
+
+    const result = await fetchManifest(
+      { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+      pinningLogger,
+    );
+
+    expect(result.digest).toBe(expected);
+    expect(result.manifest).toEqual(manifest);
+    // Should have fetched by tag
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://quay.io/v2/org/repo/manifests/v1',
+      expect.any(Object),
+    );
+  });
+
+  it('returns verified digest when fetched by explicit digest', async () => {
+    const manifest = makeManifest();
+    const buffer = Buffer.from(JSON.stringify(manifest));
+    const digest = `sha256:${createHash('sha256')
+      .update(buffer)
+      .digest('hex')}`;
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => buffer,
+      headers: new Map(),
+    });
+
+    const result = await fetchManifest(
+      {
+        registry: 'quay.io',
+        repository: 'org/repo',
+        tag: 'latest',
+        digest,
+      },
+      pinningLogger,
+    );
+
+    expect(result.digest).toBe(digest);
+    // Should have fetched by digest
+    expect(global.fetch).toHaveBeenCalledWith(
+      `https://quay.io/v2/org/repo/manifests/${digest}`,
+      expect.any(Object),
+    );
+  });
+
+  it('rejects manifest whose bytes do not match the requested digest', async () => {
+    const manifest = makeManifest();
+    const buffer = Buffer.from(JSON.stringify(manifest));
+    const wrongDigest = `sha256:${'0'.repeat(64)}`;
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => buffer,
+      headers: new Map(),
+    });
+
+    await expect(
+      fetchManifest(
+        {
+          registry: 'quay.io',
+          repository: 'org/repo',
+          tag: 'latest',
+          digest: wrongDigest,
+        },
+        pinningLogger,
+      ),
+    ).rejects.toThrow('Manifest digest mismatch');
+  });
+
+  it('rejects an invalid digest format', async () => {
+    const manifest = makeManifest();
+    mockFetchOk(manifest);
+
+    await expect(
+      fetchManifest(
+        {
+          registry: 'quay.io',
+          repository: 'org/repo',
+          tag: 'latest',
+          digest: 'md5:invalid',
+        },
+        pinningLogger,
+      ),
+    ).rejects.toThrow('Invalid manifest digest');
+  });
+});
+
+describe('fetchManifest: digest pinning across retries', () => {
+  const pinningLogger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  } as unknown as LoggerService;
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('fetches a resolved manifest by digest', async () => {
+    // Resolve a tag, then verify its digest-addressed manifest fetch.
+    const manifest = makeManifest();
+    const buffer = Buffer.from(JSON.stringify(manifest));
+    const digest = `sha256:${createHash('sha256')
+      .update(buffer)
+      .digest('hex')}`;
+
+    // First fetch (resolution by tag) succeeds
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => buffer,
+      headers: new Map(),
+    });
+
+    const resolution = await fetchManifest(
+      { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+      pinningLogger,
+    );
+    expect(resolution.digest).toBe(digest);
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://quay.io/v2/org/repo/manifests/v1',
+      expect.any(Object),
+    );
+
+    // Second fetch (pinned by digest) succeeds
+    jest.resetAllMocks();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => buffer,
+      headers: new Map(),
+    });
+
+    const pinned = await fetchManifest(
+      {
+        registry: 'quay.io',
+        repository: 'org/repo',
+        tag: 'v1',
+        digest,
+      },
+      pinningLogger,
+    );
+
+    // Should fetch by digest, not by tag
+    expect(global.fetch).toHaveBeenCalledWith(
+      `https://quay.io/v2/org/repo/manifests/${digest}`,
+      expect.any(Object),
+    );
+    expect(pinned.digest).toBe(digest);
+    expect(pinned.manifest).toEqual(manifest);
+  });
+
+  it('prevents a moved tag from redirecting to different content', async () => {
+    const manifestA = makeManifest([
+      {
+        mediaType: 'application/vnd.oci.image.layer.v1.tar',
+        digest: `sha256:${'a'.repeat(64)}`,
+        size: 100,
+      },
+    ]);
+    const manifestB = makeManifest([
+      {
+        mediaType: 'application/vnd.oci.image.layer.v1.tar',
+        digest: `sha256:${'b'.repeat(64)}`,
+        size: 200,
+      },
+    ]);
+
+    const bufferA = Buffer.from(JSON.stringify(manifestA));
+    const digestA = `sha256:${createHash('sha256')
+      .update(bufferA)
+      .digest('hex')}`;
+
+    // Resolution: fetch by tag returns manifestA
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => bufferA,
+      headers: new Map(),
+    });
+
+    const resolution = await fetchManifest(
+      { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+      pinningLogger,
+    );
+    expect(resolution.digest).toBe(digestA);
+
+    // Simulate: tag moves to manifestB, but we fetch by pinned digestA
+    // Registry returns manifestB content (different bytes) for the digest URL
+    // This would be a misbehaving registry — our verification catches it
+    jest.resetAllMocks();
+    const bufferB = Buffer.from(JSON.stringify(manifestB));
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => bufferB,
+      headers: new Map(),
+    });
+
+    // Fetch by pinned digest — bytes don't match → should reject
+    await expect(
+      fetchManifest(
+        {
+          registry: 'quay.io',
+          repository: 'org/repo',
+          tag: 'v1',
+          digest: digestA,
+        },
+        pinningLogger,
+      ),
+    ).rejects.toThrow('Manifest digest mismatch');
   });
 });
 

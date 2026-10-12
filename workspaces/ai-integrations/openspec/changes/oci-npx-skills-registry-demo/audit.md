@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-08T17:37:21Z
+**Last audited:** 2026-10-09T18:00:16Z
 
 This focused follow-up reviews the all-active-tag discovery pivot against the
 proposal, design, OCI/common/provider specifications, task status, implementation,
@@ -23,12 +23,13 @@ change. The shared string-key validator and identity helper already support this
 contract; regression tests cover same-digest tagged keys and distinct names.
 The npx identity and acquisition requirements are unchanged.
 
-Runtime work remains scoped to task 2.1. The current raw `/images` endpoint keeps
+At the time of the task 2.1 review, runtime work remained scoped to task 2.1. The current raw `/images` endpoint keeps
 its response shape and existing failure accounting. Discovery truncation is
 logged, and tag-list failures follow the existing discovery error path. Complete
 normalized snapshot status, non-skill classification, digest-pinned acquisition,
-periodic refresh, and actual catalog entity production remain in unchecked tasks
-2.2–2.5 and section 4. Raw explicit digest references remain supported without
+periodic refresh, and actual catalog entity production remained in unchecked tasks
+2.2–2.5 and section 4. The task 2.2 completion check below supersedes that
+historical acquisition status. Raw explicit digest references remain supported without
 inventing a tag. Shared tasks 1.1 and 1.3 remain complete, with the shared-library
 portion of 1.4 noted separately.
 
@@ -113,6 +114,45 @@ and formatting checks of the revised documentation passed. The workspace-wide
 formatting check reports only the maintainer's existing `app-config.yaml`
 formatting; that file was left untouched. The documentation changes remain
 uncommitted for maintainer review.
+
+### Task 2.2 completion check
+
+This focused consistency check covers PR #5152 against task 2.2 and the
+RHIDP-17781 acceptance criteria. It supplements the earlier audits; it is not
+an independent full-change audit or a claim that tasks 2.3–2.5 are complete.
+
+Tagged acquisitions resolve a SHA-256 manifest digest once per acquisition,
+after any resolution retries. Extraction retries reuse that digest. Raw manifest
+bytes are verified before parsing or layer retrieval. Both annotated-layer and
+tar extraction paths already use `OciClient.fetchBlob`, which verifies descriptor
+size and blob digest before extraction. The former partial-task note incorrectly
+identified blob digest verification as missing and has been removed.
+
+The connector now reuses `ai-skills-common`'s digest validator, OCI reference
+builder, and `OciSkillRecord` field types for internal acquisition metadata.
+Invalid or missing resolved digests fail before extraction. Metadata preserves
+a stable case-sensitive tagged key across tag movement, distinguishes aliases
+that share a digest, and records a verified digest-addressed source URI.
+Explicit digest references remain supported without an invented tag, and the
+raw `/images` API response remains unchanged.
+
+New integration tests exercise the real plugin, OCI client, and extraction
+service with mocked registry HTTP responses. They verify a transient blob
+failure after resolution, a tag moving between acquisitions, same-digest tag
+aliases, resolution retries, invalid resolution digests, explicit digest input,
+and rejection of manifest, blob digest, and blob size mismatches. Manifest
+mismatch tests verify that no layer is fetched.
+
+The complete connector suite passed (264 tests), as did the shared-library suite
+(166 tests), workspace `tsc:full`, `build:all`, API report validation, and
+connector lint, and strict OpenSpec validation. Dependency installation and
+deduplication completed with install scripts disabled. The workspace formatting
+check reports only the maintainer's existing `app-config.yaml` formatting; all
+other checked files pass. Task 2.2 is marked complete; normalization, connection-level
+DNS protection, snapshots, scheduling, and catalog production remain pending.
+The maintainer's `app-config.yaml` edits are untouched. The maintainer subsequently reported successful sanity testing and authorized
+a local commit. Signing, pushing, and the next Fullsend review remain
+maintainer-owned.
 
 ### Summary
 

@@ -137,7 +137,8 @@ non-string values and invalid OCI tag syntax SHALL fail validation.
 Quay discovery and OCI acquisition SHALL share redirect handling, unused-body
 cleanup, bounded response reading, and request-deadline handling. Discovery and
 image processing SHALL share transient-error classification and backoff, while
-preserving their separate retry units (one page and one image acquisition).
+preserving their separate retry units (one page, one tag-to-digest
+resolution, and one image acquisition/extraction using the pinned digest).
 
 #### Scenario: Optional limits and overrides
 
