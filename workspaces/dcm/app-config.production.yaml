@@ -31,6 +31,25 @@ auth:
       dangerouslyAllowOutsideDevelopment: true
       userEntityRef: user:default/guest
 
+# Standalone/compose deployments use guest auth and do not need RBAC.
+# Override with PERMISSION_ENABLED=true when configuring real OIDC + RBAC.
+permission:
+  enabled: ${PERMISSION_ENABLED:-false}
+  # When PERMISSION_ENABLED=true, configure RBAC admin users and the list of
+  # plugins with permission support. Example:
+  # rbac:
+  #   policyFileReload: true
+  #   pluginsWithPermission:
+  #     - catalog
+  #     - scaffolder
+  #     - permission
+  #     - dcm
+  #   admin:
+  #     users:
+  #       - name: group:default/admins
+  #     superUsers:
+  #       - name: group:default/admins
+
 catalog:
   locations: []
 
