@@ -18,6 +18,7 @@ let loadPromise: Promise<void> | undefined;
 
 /**
  * Loads PatternFly chat styles on demand so they are not part of the MF sync graph.
+ * Monaco workers are configured separately when attachment modals open.
  */
 export function loadChatPatternflyStyles(): Promise<void> {
   loadPromise ??= Promise.all([
