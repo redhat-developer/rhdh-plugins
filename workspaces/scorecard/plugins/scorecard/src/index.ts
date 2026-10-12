@@ -29,6 +29,7 @@ import { scorecardTranslations } from './translations';
 import { scorecardApi } from './extensions/api';
 import { scorecardEntityContent } from './extensions/entityTab';
 import { scorecardAggregatedCardWidget } from './extensions/homePageCards';
+import { scorecardIconBundle } from './extensions/icons';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
 
@@ -54,6 +55,7 @@ export default createFrontendPlugin({
   pluginId: 'scorecard',
   extensions: [
     scorecardApi,
+    scorecardIconBundle,
     scorecardPage,
     scorecardEntityContent,
     scorecardEntityLayoutGrid,
