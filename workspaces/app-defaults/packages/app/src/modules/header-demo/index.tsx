@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import type { ReactNode } from 'react';
+import {
+  createExtensionInput,
+  createFrontendModule,
+} from '@backstage/frontend-plugin-api';
+import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
 import { Box, Text } from '@backstage/ui';
 import { AppHeaderBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
@@ -24,10 +29,12 @@ import { AppHeaderBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-
  * above the sidebar, the content and the drawer, highest priority first.
  *
  * - `announcement` is a thin banner at priority 100, so it sits at the very
- *   top of the viewport.
- * - `environment` is a second, lower-priority banner that shows the ordering.
+ *   top of the viewport, above the global header.
+ * - `global-header` hosts the RHDH global header at priority 50 (see
+ *   {@link globalHeaderAppHeader}).
+ * - `environment` is a second banner at priority 0, below the global header.
  *
- * Both can be disabled or re-prioritized from `app-config.yaml`, e.g.
+ * All of them can be disabled or re-prioritized from `app-config.yaml`, e.g.
  * `app-header:app/announcement: false`.
  */
 const AnnouncementHeader = () => (
@@ -54,6 +61,51 @@ const announcementHeader = AppHeaderBlueprint.make({
   },
 });
 
+/**
+ * Hosts the global header as an app header so it is ordered with the other
+ * headers by priority instead of wrapping the whole app from outside the
+ * layout. The global-header plugin ships its header as the app root wrapper
+ * `app-root-wrapper:app/global-header`; `app-config.yaml` re-attaches that
+ * wrapper to the `wrapper` input of this extension, which renders it without
+ * children. Its toolbar components and menu items keep attaching to the
+ * wrapper as before. Without the config override the input stays empty and
+ * this header renders nothing, so the global header falls back to wrapping
+ * the app.
+ */
+const GlobalHeaderHost = ({
+  Wrapper,
+}: {
+  Wrapper: (props: { children: ReactNode }) => JSX.Element | null;
+}) => (
+  <>
+    {/* The global header reserves space for the docked drawer; the drawer
+        now sits below the headers, so keep the header at full width. */}
+    <style>{'#global-header { margin-right: 0 !important; }'}</style>
+    <Wrapper>{null}</Wrapper>
+  </>
+);
+
+const globalHeaderAppHeader = AppHeaderBlueprint.makeWithOverrides({
+  name: 'global-header',
+  inputs: {
+    wrapper: createExtensionInput(
+      [AppRootWrapperBlueprint.dataRefs.component],
+      { singleton: true, optional: true },
+    ),
+  },
+  factory(originalFactory, { inputs }) {
+    const Wrapper = inputs.wrapper?.get(
+      AppRootWrapperBlueprint.dataRefs.component,
+    );
+    return originalFactory({
+      component: Wrapper
+        ? () => <GlobalHeaderHost Wrapper={Wrapper} />
+        : () => null,
+      priority: 50,
+    });
+  },
+});
+
 const environmentHeader = AppHeaderBlueprint.make({
   name: 'environment',
   params: {
@@ -63,5 +115,5 @@ const environmentHeader = AppHeaderBlueprint.make({
 
 export const headerDemoModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [announcementHeader, environmentHeader],
+  extensions: [announcementHeader, globalHeaderAppHeader, environmentHeader],
 });

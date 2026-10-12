@@ -21,6 +21,14 @@ app:
     - sidebar-element:app/notifications: true
     # Demo element that throws on render; keep it disabled by default.
     - sidebar-element:app/crashing: false
+    # Host the global header inside the app layout as an app header (see
+    # packages/app/src/modules/header-demo) so the demo announcement header
+    # (priority 100) renders above it and the environment header (priority 0)
+    # below it.
+    - app-root-wrapper:app/global-header:
+        attachTo:
+          id: app-header:app/global-header
+          input: wrapper
 
   # Sidebar entries declared in config are merged with the contributed ones
   # (see plugins/app-defaults/README.md). `Community` is a top-level link,
