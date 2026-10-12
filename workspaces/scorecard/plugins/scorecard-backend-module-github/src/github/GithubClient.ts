@@ -35,6 +35,7 @@ import {
   DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT,
   GITHUB_BATCH_SIZE,
   GITHUB_DEPLOYMENT_STATUSES_PAGE_SIZE,
+  MAX_DEPLOYMENT_STATUS_PAGES,
 } from './constants';
 import { buildCommitsPullRequestsQuery } from './queries/buildCommitsPullRequestsQuery';
 import { mapCommitsPullRequests } from './mappers';
@@ -247,8 +248,11 @@ export class GithubClient {
   }
 
   /**
-   * Statuses are newest-first. Keep reading pages until the latest success
-   * appears. A single page is not enough when many later statuses follow it.
+   * The deployment result is the newest SUCCESS when one exists, including
+   * when a later status is `inactive`, `failure`, or `error`. GitHub appends
+   * `inactive` after a newer deployment in the same non-production environment.
+   * Status pages are newest-first, so paging stops at the first page that
+   * contains a success. With no success, the result is `latestStatus`.
    */
   private async resolveDeploymentStatus(
     octokit: Awaited<ReturnType<GithubClient['getOctokitClient']>>,
@@ -261,14 +265,17 @@ export class GithubClient {
     let connection = deployment?.statuses;
     let successfulStatus = latestSuccessfulStatus(connection?.nodes);
     const seenCursors = new Set<string>();
+    let pages = 0;
 
     while (
       !successfulStatus &&
+      pages < MAX_DEPLOYMENT_STATUS_PAGES &&
       connection?.pageInfo?.hasNextPage &&
       connection.pageInfo.endCursor &&
       deployment?.id &&
       !seenCursors.has(connection.pageInfo.endCursor)
     ) {
+      pages += 1;
       seenCursors.add(connection.pageInfo.endCursor);
       connection = await this.fetchDeploymentStatusPage(
         octokit,
@@ -498,8 +505,7 @@ function latestSuccessfulStatus(
   let latestSuccessful: { state: string; createdAt: number } | undefined;
 
   for (const status of statuses ?? []) {
-    const state = status?.state;
-    if (!state || state.toLowerCase() !== 'success') {
+    if (status?.state?.toLowerCase() !== 'success') {
       continue;
     }
 
@@ -508,7 +514,7 @@ function latestSuccessfulStatus(
       ? Number.NEGATIVE_INFINITY
       : createdAt;
     if (!latestSuccessful || createdAtTime >= latestSuccessful.createdAt) {
-      latestSuccessful = { state, createdAt: createdAtTime };
+      latestSuccessful = { state: status.state, createdAt: createdAtTime };
     }
   }
 

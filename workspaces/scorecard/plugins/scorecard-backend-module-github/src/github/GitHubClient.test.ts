@@ -454,6 +454,165 @@ describe('GithubClient', () => {
       ]);
     });
 
+    it('should stop paging status pages after MAX_DEPLOYMENT_STATUS_PAGES and fall back to latestStatus', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+
+      mockedGraphqlClient
+        .mockResolvedValueOnce({
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  id: 'deployment-node-205',
+                  databaseId: 205,
+                  commitOid: 'sha-failure-many-pages',
+                  createdAt: '2026-05-19T10:00:00.000Z',
+                  environment: 'staging',
+                  latestStatus: { state: 'FAILURE' },
+                  statuses: {
+                    nodes: [
+                      {
+                        state: 'FAILURE',
+                        createdAt: '2026-05-19T12:00:00.000Z',
+                      },
+                    ],
+                    pageInfo: {
+                      hasNextPage: true,
+                      endCursor: 'cursor-1',
+                    },
+                  },
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          node: {
+            statuses: {
+              nodes: [
+                { state: 'FAILURE', createdAt: '2026-05-19T11:50:00.000Z' },
+              ],
+              pageInfo: { hasNextPage: true, endCursor: 'cursor-2' },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          node: {
+            statuses: {
+              nodes: [
+                { state: 'FAILURE', createdAt: '2026-05-19T11:40:00.000Z' },
+              ],
+              pageInfo: { hasNextPage: true, endCursor: 'cursor-3' },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          node: {
+            statuses: {
+              nodes: [
+                { state: 'FAILURE', createdAt: '2026-05-19T11:30:00.000Z' },
+              ],
+              pageInfo: { hasNextPage: true, endCursor: 'cursor-4' },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          node: {
+            statuses: {
+              nodes: [
+                { state: 'FAILURE', createdAt: '2026-05-19T11:20:00.000Z' },
+              ],
+              pageInfo: { hasNextPage: true, endCursor: 'cursor-5' },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          node: {
+            statuses: {
+              nodes: [
+                { state: 'FAILURE', createdAt: '2026-05-19T11:10:00.000Z' },
+              ],
+              pageInfo: { hasNextPage: true, endCursor: 'cursor-6' },
+            },
+          },
+        });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 205,
+          sha: 'sha-failure-many-pages',
+          createdAt: '2026-05-19T10:00:00.000Z',
+          environment: 'staging',
+          status: 'FAILURE',
+        },
+      ]);
+      // 1 initial query + 5 follow-up status pages = 6 total queries
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(6);
+    });
+
+    it('should handle successful status with missing or invalid createdAt', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+      mockedGraphqlClient.mockResolvedValue({
+        repository: {
+          deployments: {
+            nodes: [
+              {
+                databaseId: 206,
+                commitOid: 'sha-success-no-date',
+                createdAt: '2026-05-20T10:00:00.000Z',
+                environment: 'staging',
+                latestStatus: { state: 'INACTIVE' },
+                statuses: {
+                  nodes: [
+                    {
+                      state: 'SUCCESS',
+                      createdAt: null,
+                    },
+                  ],
+                },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: null,
+            },
+          },
+        },
+      });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 206,
+          sha: 'sha-success-no-date',
+          createdAt: '2026-05-20T10:00:00.000Z',
+          environment: 'staging',
+          status: 'SUCCESS',
+        },
+      ]);
+    });
+
     it('should stop paging once fetchItemsLimit of in-window deployments is reached', async () => {
       const url = `https://github.com/owner/repo`;
       const from = new Date('2026-05-01T00:00:00.000Z');
