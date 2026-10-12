@@ -26,6 +26,11 @@ jest.mock('../../../utils', () => ({
   }),
   getLastUpdatedLabel: () => '1 hour ago',
   extractPluginName: () => 'Sonarqube',
+  formatWithMetricUnit: (value: string, unit?: string) => {
+    if (!unit) return value;
+    if (unit.startsWith('%') || unit.startsWith('/')) return `${value}${unit}`;
+    return `${value} ${unit}`;
+  },
   resolveMetricTranslation: (
     _t: unknown,
     _id: string,
@@ -34,7 +39,7 @@ jest.mock('../../../utils', () => ({
   ) => fallback ?? '',
 }));
 
-jest.mock('../thresholdBucketUtils', () => ({
+jest.mock('../../MetricGroupCard/thresholdBucketUtils', () => ({
   MISSING_EVALUATION_BUCKET_KEY: 'noEvaluation',
   MISSING_EVALUATION_LABEL: '—',
   getMetricBucketKey: (metric: {

@@ -18,6 +18,7 @@ import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-score
 import { ResponseErrorPanel } from '@backstage/core-components';
 import Masonry from '@mui/lab/Masonry';
 
+import { ScorecardQueryProvider } from '../../api';
 import { ScorecardLayoutProps } from '../../blueprints/ScorecardLayoutBlueprint';
 import { useScorecards } from '../../hooks/useScorecards';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -30,7 +31,7 @@ import { EntityScorecardContent } from './EntityScorecardContent';
 import { EntityMetricCard } from './EntityMetricCard';
 import { getTranslatedTextWithFallback } from '../../utils';
 
-export const ScorecardEntityContentGridView = ({
+const ScorecardEntityContentGridViewInner = ({
   groups,
 }: ScorecardLayoutProps) => {
   const { data: scorecards, isLoading, error } = useScorecards();
@@ -104,3 +105,9 @@ export const ScorecardEntityContentGridView = ({
     </Masonry>
   );
 };
+
+export const ScorecardEntityContentGridView = (props: ScorecardLayoutProps) => (
+  <ScorecardQueryProvider>
+    <ScorecardEntityContentGridViewInner {...props} />
+  </ScorecardQueryProvider>
+);
