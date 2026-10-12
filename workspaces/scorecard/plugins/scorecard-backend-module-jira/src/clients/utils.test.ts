@@ -56,6 +56,8 @@ describe('utils', () => {
       ['project in (A, B) AND cf[10001] = 5'],
       ['assignee in membersOf("jira-users")'],
       ['summary ~ "say \\"hi\\""'],
+      ['summary ~ "it\'s (ok)"'],
+      ['summary ~ "a \\\\ b"'],
     ])('accepts valid JQL expression %p', value => {
       expect(validateJqlExpression(value, 'jira/custom-filter')).toBe(value);
     });
@@ -72,6 +74,7 @@ describe('utils', () => {
       ['cf[10001 = 5', 'unbalanced brackets'],
       ['x = 1]', 'unbalanced brackets'],
       ['status = "Done', 'unterminated string literal'],
+      ['summary ~ "trailing \\', 'unterminated string literal'],
       ['a = 1\nb = 2', 'must not contain control characters'],
       ['   ', 'must not be empty'],
     ])('rejects %p (%s)', (value, reason) => {
