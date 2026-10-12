@@ -29,7 +29,7 @@ import {
   DirectConnectionStrategy,
   ProxyConnectionStrategy,
 } from '../strategies/ConnectionStrategy';
-import { validateJiraAuthToken } from './utils';
+import { Product } from './types';
 
 export class JiraClientFactory {
   static fromConfig(
@@ -53,10 +53,8 @@ export class JiraClientFactory {
     } else {
       connectionStrategy = new DirectConnectionStrategy(
         jiraConfig.getString('baseUrl'),
-        validateJiraAuthToken(
-          jiraConfig.getString('token'),
-          `${JIRA_CONFIG_PATH}.token`,
-        ),
+        jiraConfig.getString('token'),
+        jiraConfig.getString('product') as Product,
       );
     }
 

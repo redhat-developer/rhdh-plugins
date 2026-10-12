@@ -17,17 +17,10 @@ This module also requires a Jira integration to be configured in your `app-confi
 
 ### Authentication `token`
 
-For direct connections, `jira.token` must be the full HTTP
-Authorization header value: `Basic <base64>` or `Bearer <token>`. Bare
-credentials (base64 or PAT without a scheme prefix) are rejected at startup.
+- For the `cloud` product:
 
-The same `JIRA_TOKEN` shape works for Scorecard direct mode and for proxy
-`Authorization` headers (including Roadie Jira proxy setups).
-
-- For Jira Cloud with a classic user API token (Basic auth):
-
-  - Obtain your personal token from Jira: [API tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
-  - Create a Base64-encoded string from `your-atlassian-email:your-jira-api-token`:
+  - Obtain your personal token from Jira. Please use the following link to create token: [link](https://id.atlassian.com/manage-profile/security/api-tokens).
+  - Create a Base64-encoded string from the following plain text format: `your-atlassian-email:your-jira-api-token`:
 
   ```bash
   // Node
@@ -42,17 +35,9 @@ The same `JIRA_TOKEN` shape works for Scorecard direct mode and for proxy
   echo -n 'your-atlassian-email:your-jira-api-token' | base64
   ```
 
-  - Set the token with the `Basic ` prefix, for example:
-    `JIRA_TOKEN='Basic amlyYS1tYWlsQGV4YW1wbGUuY29tOmhUQmdxVmNyY3hSWXBUNVRDelRBOUMwRg=='`
-
-- For Jira Cloud with a service account / scoped API token (Bearer auth):
-
-  - Create a scoped API token for the service account: [Manage API tokens for service accounts](https://support.atlassian.com/user-management/docs/manage-api-tokens-for-service-accounts/).
-  - Set the token with the `Bearer ` prefix, for example: `JIRA_TOKEN='Bearer <api-token>'`
-
 - For the `datacenter` product:
-  - Obtain your personal access token: [Using personal access tokens](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)
-  - Set the token with the `Bearer ` prefix, for example: `JIRA_TOKEN='Bearer <pat>'`
+  - Obtain your personal token from Jira. Please use the following link to the Jira documentation for information on how to generate a token: [link](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)
+  - Use the Jira token without changing
 
 ### Configuration **Direct** Jira integration
 
@@ -68,10 +53,9 @@ jira:
   product: cloud
 ```
 
-### Configuration **Proxy** Jira integration
+### Configuration **Proxy** jira integration
 
-When `proxyPath` is set, `jira.token` is ignored. Put the same full Authorization
-value on the proxy endpoint headers:
+Provide the following config to `app-config.yaml` file:
 
 ```yaml
 jira:
