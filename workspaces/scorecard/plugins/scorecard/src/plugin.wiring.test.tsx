@@ -19,7 +19,7 @@ import { createExtensionTester } from '@backstage/frontend-test-utils';
 import scorecardPlugin, { scorecardTranslationsModule } from './index';
 import { scorecardApi } from './extensions/api';
 import { scorecardEntityContent } from './extensions/entityTab';
-import { aggregatedCardWithGithubOpenPrsWidget } from './extensions/homePageCards';
+import { scorecardAggregatedCardWidget } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardTranslation } from './extensions/translation';
 import { rootRouteRef, scorecardDrillDownRouteRef } from './routes';
@@ -74,17 +74,16 @@ describe('scorecard NFS plugin wiring', () => {
   it('installs a homepage widget blueprint', () => {
     expect(
       scorecardPlugin.getExtension(
-        'home-page-widget:scorecard/scorecard-github-open-prs',
+        'home-page-widget:scorecard/scorecard-aggregated-card',
       ),
     ).toMatchObject({
       kind: 'home-page-widget',
-      name: 'scorecard-github-open-prs',
+      name: 'scorecard-aggregated-card',
       namespace: 'scorecard',
     });
     expect(
-      createExtensionTester(aggregatedCardWithGithubOpenPrsWidget).snapshot()
-        .id,
-    ).toBe('home-page-widget:scorecard-github-open-prs');
+      createExtensionTester(scorecardAggregatedCardWidget).snapshot().id,
+    ).toBe('home-page-widget:scorecard-aggregated-card');
   });
 
   it('installs the translations module for NFS discovery', () => {
