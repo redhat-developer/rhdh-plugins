@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github
 
+## 4.5.1
+
+### Patch Changes
+
+- f4bf977: Use latest deployment success status in DORA deployments if it exists
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.1
+
 ## 4.5.0
 
 ### Patch Changes
