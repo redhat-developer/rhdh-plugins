@@ -197,6 +197,18 @@ jest.mock('@patternfly/chatbot', () => {
   };
 });
 
+const historyNavDisplayModes: ChatbotDisplayMode[] = [];
+jest.mock(
+  '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav',
+  () => ({
+    __esModule: true,
+    default: (props: { displayMode: ChatbotDisplayMode }) => {
+      historyNavDisplayModes.push(props.displayMode);
+      return <div data-testid="mock-history-nav" />;
+    },
+  }),
+);
+
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -973,6 +985,41 @@ describe('LightspeedChat', () => {
       expect(
         screen.getByRole('tab', { name: 'Notebooks' }),
       ).toBeInTheDocument();
+    });
+
+    it('passes docked displayMode to history nav (RHDHBUGS-3931)', async () => {
+      historyNavDisplayModes.length = 0;
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: true,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.docked,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+        draftFileContents: [],
+        setDraftFileContents: jest.fn(),
+        consumePendingOverlayThreadHandoff: jest.fn(() => false),
+        shellViewTab: 0,
+        setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
+      });
+
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(historyNavDisplayModes.length).toBeGreaterThan(0);
+      });
+      expect(historyNavDisplayModes.at(-1)).toBe(ChatbotDisplayMode.docked);
+      expect(historyNavDisplayModes.at(-1)).not.toBe(
+        ChatbotDisplayMode.embedded,
+      );
     });
 
     it('should show current display mode as selected in full-screen mode', async () => {

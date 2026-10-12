@@ -171,6 +171,10 @@ const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 /** Host for compact PatternFly chat modals (`appendTo` + absolute backdrop). */
 const ChatModalScope = styled('div')({
   position: 'relative',
+  // Trap history/docs panel z-index (1300) inside IA so it cannot cover the
+  // AppDrawer dock resize handle (z-index 1) on the paper edge (RHDHBUGS-3931).
+  zIndex: 0,
+  isolation: 'isolate',
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
@@ -304,6 +308,20 @@ const StyledChatbot = styled(Chatbot, {
           alignItems: 'center',
           paddingBlockEnd: 0,
         },
+        // PF drawer min-width overflows ~480px overlay/dock shells (RHDHBUGS-3931).
+        '& .pf-v6-c-drawer, & .pf-v5-c-drawer': {
+          minWidth: '0 !important',
+          '--pf-v6-c-drawer__panel--MinWidth': '0',
+          '--pf-v6-c-drawer__panel--xl--MinWidth': '0',
+        },
+        '& .pf-v6-c-drawer__content, & .pf-v5-c-drawer__content': {
+          flexShrink: 1,
+          minWidth: 0,
+        },
+        '& .pf-chatbot__history': {
+          overflow: 'hidden',
+          minWidth: 0,
+        },
       }
     : {
         // Page route only: PF embedded adds `box-shadow: --pf-t--global--
@@ -313,14 +331,27 @@ const StyledChatbot = styled(Chatbot, {
         boxShadow: 'none !important',
         border: 'none !important',
       }),
-  // Only expand the history panel when open; 100% while collapsed covers the tab bar.
+  // Absolute overlay when open so the panel does not flex-shove the chat column.
   ...(isCompact && compactDrawerOpen
     ? {
-        '& .pf-v6-c-drawer__panel': {
-          width: '100%',
-          minWidth: '100%',
-          maxWidth: '100%',
-          flexBasis: '100%',
+        '& .pf-chatbot__history > .pf-v6-c-drawer__main, & .pf-chatbot__history > .pf-v5-c-drawer__main':
+          {
+            position: 'relative',
+            overflow: 'hidden',
+          },
+        '& .pf-chatbot__history > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-chatbot__history > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
+          {
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            minWidth: 0,
+            maxWidth: '100%',
+            marginInlineEnd: 0,
+            transform: 'none',
+            '--pf-v6-c-drawer__panel--FlexBasis': '100%',
+          },
+        '& .pf-chatbot__drawer-backdrop': {
+          display: 'none',
         },
       }
     : {}),
@@ -2292,7 +2323,8 @@ export const LightspeedChat = ({
 
   let drawerPanelStyle: { [key: string]: string | number } | undefined;
   if (!isFullscreenMode) {
-    drawerPanelStyle = { zIndex: 1300 };
+    // Above PF drawer__content (100) / backdrop (~400); ChatMain overflow clips tabs.
+    drawerPanelStyle = { zIndex: 1300, minWidth: 0 };
   } else if (isSettingsOpen) {
     drawerPanelStyle = { width: 320, minWidth: 320, maxWidth: 320 };
   } else {
