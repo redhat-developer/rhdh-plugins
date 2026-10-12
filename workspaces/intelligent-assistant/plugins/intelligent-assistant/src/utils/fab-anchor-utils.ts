@@ -18,8 +18,16 @@ import type { Theme } from '@mui/material/styles';
 
 import { LIGHTSPEED_FAB_ANCHOR_VARS } from '../const';
 
-/** Viewport edge inset for the FAB anchor wrapper (theme spacing token). */
-export const getLightspeedFabEdgeInset = (theme: Theme) => theme.spacing(2);
+/**
+ * Viewport edge inset for the FAB anchor wrapper.
+ * Bottom is raised above typical table/list pagination (~48–56px) so Next stays clickable.
+ */
+export const getLightspeedFabEdgeInset = (theme: Theme) =>
+  `calc(${theme.spacing(2)} + 56px)`;
+
+/** Horizontal edge inset (viewport corner gutter only). */
+export const getLightspeedFabInlineEdgeInset = (theme: Theme) =>
+  theme.spacing(2);
 
 /** Gap between the FAB and overlay chatbot (theme spacing token). */
 export const getLightspeedOverlayGap = (theme: Theme) => theme.spacing(2);
