@@ -26,25 +26,22 @@ import { LightspeedChatContainer } from './LightspeedChatContainer';
 /**
  * Fill the RHDH SidebarPage well.
  *
- * Theme sizes `BackstageSidebarPage` with a viewport calc, but forces
+ * Theme sizes `BackstageSidebarPage` with a viewport calc and
  * `SidebarPage > main { height: auto }` so catalog pages can grow and scroll.
- * Percentage heights on Page/Chatbot therefore collapse to content (and PF's
- * base `height: 70vh` / empty space under the well — RHDHBUGS-3925).
+ * This route overrides that with `height: 100% !important` so Page/Chatbot
+ * fill the already-sized shell (avoids PF's base `height: 70vh` —
+ * RHDHBUGS-3925).
  *
- * Match the theme's shell calc so this route gets a definite height without
- * changing the theme rule for other plugins. Default page inset is 1.5rem
- * (same as theme `general.pageInset` fallback).
+ * Do not re-declare a `100vh` calc on this Page: Emotion mangles
+ * `:root:has(#global-header) &` into a never-matching selector, so a local
+ * no-header calc under the masthead overflowed the shell and clipped the AI
+ * footnote. Filling the parent well inherits the theme's correct inset/header
+ * math instead.
  *
- * Full-bleed fill also covers the shell's sticky ::before corner masks
- * (z-index 101) unless we stay under them and clip to the same radii as
- * BackstageSidebarPage (right edge / bottom-right with masthead).
+ * Stay under SidebarPage ::before corner masks (z-index 101) and match the
+ * masthead page-well radius (bottom-right).
  */
-const PAGE_INSET = '1.5rem';
-const shellHeightNoHeader = `calc(100vh - 2 * ${PAGE_INSET})`;
-const shellHeightWithHeader = `calc(100vh - var(--rhdh-global-header-height, 64px) - ${PAGE_INSET})`;
-
 const FullHeightPage = styled(Page)({
-  // Mobile: theme does not size the shell with a viewport calc.
   height: '100% !important',
   maxHeight: '100%',
   minHeight: 0,
@@ -60,17 +57,6 @@ const FullHeightPage = styled(Page)({
     flex: '1 1 auto',
     minHeight: 0,
   },
-  // Desktop page-inset shell (same breakpoint / calc as theme SidebarPage).
-  '@media (min-width: 600px)': {
-    height: `${shellHeightNoHeader} !important`,
-    maxHeight: shellHeightNoHeader,
-    minHeight: shellHeightNoHeader,
-    ':root:has(#global-header) &': {
-      height: `${shellHeightWithHeader} !important`,
-      maxHeight: shellHeightWithHeader,
-      minHeight: shellHeightWithHeader,
-    },
-  },
 });
 
 const FullHeightContent = styled(Content)({
@@ -80,13 +66,10 @@ const FullHeightContent = styled(Content)({
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-  // Match theme SidebarPage page-well rounding. Theme forces `main {
-  // borderRadius: 0 }`, so round the inner content instead.
+  // Match theme SidebarPage page-well rounding with masthead (bottom-right).
+  // Theme forces `main { borderRadius: 0 }`, so round the inner content.
   '@media (min-width: 600px)': {
-    borderRadius: '0 1rem 1rem 0',
-    ':root:has(#global-header) &': {
-      borderRadius: '0 0 1rem 0',
-    },
+    borderRadius: '0 0 1rem 0',
   },
 });
 

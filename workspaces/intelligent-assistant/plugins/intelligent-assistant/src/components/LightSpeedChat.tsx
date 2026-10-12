@@ -350,6 +350,7 @@ const FileDropZoneShell = styled('div')({
   minHeight: 0,
   display: 'flex',
   flexDirection: 'column',
+  overflow: 'hidden',
   '& > .pf-chatbot__dropzone': {
     gap: 0,
     rowGap: 0,
@@ -358,6 +359,10 @@ const FileDropZoneShell = styled('div')({
     '--pf-v5-c-multiple-file-upload--Gap': '0',
     flex: 1,
     minWidth: 0,
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
     backgroundColor: 'transparent',
   },
 });
@@ -397,6 +402,20 @@ const ChatMain = styled('div')({
     minHeight: 0,
     height: '100%',
   },
+  // PF sets drawer body `overflow-y: auto` + (default) `height: 70vh`. That
+  // scrolls content+footer together, so the AI footnote falls below the fold
+  // on the fullscreen route. Keep the drawer body a fixed flex well and let
+  // ContentScroll be the only scrollport (composer + footnote stay visible).
+  '& .pf-chatbot__history.pf-v6-c-drawer > .pf-v6-c-drawer__main': {
+    minHeight: 0,
+    height: '100%',
+  },
+  '& .pf-chatbot__history.pf-v6-c-drawer > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content > .pf-v6-c-drawer__body, & .pf-chatbot__history.pf-v6-c-drawer > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel .pf-v6-c-drawer__body':
+    {
+      overflow: 'hidden',
+      minHeight: 0,
+      height: '100%',
+    },
 });
 
 const NotebooksTabLabel = styled('span', {
@@ -464,6 +483,7 @@ const StyledChatbotFooter = styled(ChatbotFooter, {
 })<{ $overlay?: boolean }>(({ theme, $overlay }) => ({
   '&.pf-chatbot__footer': {
     alignItems: 'stretch',
+    flexShrink: 0,
   },
   // ChatbotFooter always injects an <hr>; MessageBar already has its own edge,
   // so the line reads as an extra divider above file chips / the input.
@@ -474,8 +494,10 @@ const StyledChatbotFooter = styled(ChatbotFooter, {
     width: '100% !important',
     maxWidth: 'unset !important',
     margin: 0,
+    // Match PF embedded/fullscreen footer padding (spacer--sm); the previous
+    // spacer--lg bottom inset pushed the AI footnote under the shell edge.
     padding:
-      'var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--lg) !important',
+      'var(--pf-t--global--spacer--sm) var(--pf-t--global--spacer--lg) var(--pf-t--global--spacer--sm) !important',
   },
   '.pf-chatbot.pf-m-compact & > .pf-chatbot__footer-container': {
     padding:
@@ -663,13 +685,17 @@ const FullscreenChatLayout = styled('div')({
   minHeight: 0,
   height: '100%',
   width: '100%',
+  overflow: 'hidden',
   '& .pf-v6-c-drawer, & .pf-v5-c-drawer': {
     flex: 1,
     minWidth: 0,
+    minHeight: 0,
   },
   '& .pf-v6-c-drawer__content, & .pf-v5-c-drawer__content': {
     flex: 1,
     minWidth: 0,
+    minHeight: 0,
+    overflow: 'hidden',
   },
   '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
     {
