@@ -22,6 +22,7 @@ import {
 } from '../../../../__fixtures__/mockAggregationConfig';
 import { mockWeightedStatusScoreAggregationResult } from '../../../../__fixtures__/mockAggregatedMetricResult';
 import { mockHigherIsBetterThresholds } from '../../../../__fixtures__/mockThresholds';
+import { DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS } from '../../../constants/aggregationKPIs';
 import { AggregatedMetricMapper } from '../../mappers';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import { WeightedStatusScoreAggregationStrategy } from './WeightedStatusScoreAggregationStrategy';
@@ -52,7 +53,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
       { name: 'success', count: 2, score: 100 },
       { name: 'error', count: 0, score: 0 },
     ],
-    thresholds: mockHigherIsBetterThresholds,
+    thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
     weightedStatusScore: 100,
     weightedStatusSum: 200,
     weightedStatusMaxPossible: 200,
@@ -174,6 +175,39 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
       metric,
       mappedWeightedResult,
       defaultAggregationConfig,
+    );
+  });
+
+  it('should use configured aggregation thresholds', async () => {
+    const stricterHigherIsBetterAggregationThresholds = {
+      rules: [
+        { key: 'success', expression: '>=90', color: 'success.main' },
+        { key: 'error', expression: '<90', color: 'error.main' },
+      ],
+    };
+    const customAggregationConfig = mockWeightedStatusScoreAggregationConfig({
+      id: 'weightedOpenPrs',
+      metricId: metric.id,
+      options: {
+        statusScores: { error: 0, success: 100 },
+        thresholds: stricterHigherIsBetterAggregationThresholds,
+      },
+    });
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig: customAggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      expect.objectContaining({
+        thresholds: stricterHigherIsBetterAggregationThresholds,
+        aggregationChartDisplayColor: 'success.main',
+      }),
+      customAggregationConfig,
     );
   });
 

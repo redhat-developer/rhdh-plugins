@@ -24,6 +24,7 @@ import {
   DEFAULT_NUMBER_THRESHOLDS,
   type AggregatedMetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS } from '../../../../__fixtures__/thresholdData';
 // --------------------
 // Mocks
 // --------------------
@@ -184,6 +185,7 @@ const mockWeightedStatusScoreScorecard: AggregatedMetricResult = {
   },
   result: {
     ...mockScorecard.result,
+    thresholds: DEFAULT_WEIGHTED_STATUS_SCORE_THRESHOLDS,
     weightedStatusScore: 75,
     weightedStatusSum: 18,
     weightedStatusMaxPossible: 24,

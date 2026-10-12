@@ -1281,6 +1281,10 @@ describe('CatalogMetricService', () => {
     });
 
     it('should fetch entity metrics with default options', async () => {
+      mockedThresholdResolver.resolveMetricThresholds.mockReturnValue({
+        rules: mockThresholdRules,
+      });
+
       const result = await service.getEntityMetricDetails(
         'github.importantMetric',
         mockCredentials,
@@ -1291,6 +1295,12 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result.metricId).toBe('github.importantMetric');
+      expect(result.thresholds).toEqual({ rules: mockThresholdRules });
+      expect(
+        mockedThresholdResolver.resolveMetricThresholds,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'github.importantMetric' }),
+      );
       expect(result.entities).toHaveLength(3);
       expect(result.pagination).toEqual({
         page: 1,

@@ -199,6 +199,24 @@ export const createBotMessage = (props: MessageProps) =>
     role: 'bot',
   });
 
+/**
+ * Returns the model used by a conversation from its messages.
+ * Bot message `name` stores the model id for that turn; the latest bot
+ * turn wins (model selector is locked once a chat has messages).
+ */
+export const getConversationModelFromMessages = (
+  messages: ReadonlyArray<{ role?: string; name?: string }>,
+): string | undefined => {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    const model = message.name?.trim();
+    if (message.role === 'bot' && model) {
+      return model;
+    }
+  }
+  return undefined;
+};
+
 export const getConversationsData = (
   conversation: LCSConversation,
 ): [BaseMessage, BaseMessage] => {

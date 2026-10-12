@@ -146,6 +146,7 @@ export type EntityMetricDetailResponse = {
     isCapped: boolean;
   };
   entityHealth: ScorecardEntityHealthSummary;
+  thresholds: ThresholdConfig;
 };
 
 // @public (undocumented)
@@ -301,7 +302,7 @@ export const ScorecardThresholdRuleColors: {
 export type ScorecardVisualizationType =
   (typeof ScorecardVisualizationTypes)[keyof typeof ScorecardVisualizationTypes];
 
-// @public (undocumented)
+// @public
 export const ScorecardVisualizationTypes: {
   readonly DONUT: 'donut';
   readonly SPARKLINE: 'sparkline';

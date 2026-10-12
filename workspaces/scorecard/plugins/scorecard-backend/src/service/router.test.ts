@@ -2317,6 +2317,9 @@ describe('createRouter', () => {
   describe('GET /metrics/:metricId/catalog/aggregations/entities', () => {
     const mockEntityMetricDetailResponse = {
       metricId: 'github.openPRs',
+      thresholds: {
+        rules: [{ key: 'success', expression: '<10', color: 'success.main' }],
+      },
       metricMetadata: {
         title: 'GitHub Open PRs',
         description: 'Mock number description.',

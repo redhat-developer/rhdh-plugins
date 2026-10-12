@@ -48,7 +48,15 @@ export class TestUtils {
     });
 
     await this.clickButton('Enter');
-    await this.verifyHeading('Welcome back');
+    // NFS cold start + guest catalog resolve can exceed the default expect timeout
+    await expect(this.page.getByText('Welcome back')).toBeVisible({
+      timeout: 60_000,
+    });
+    // Ensure we are on page:homepage (not community page:home)
+    await this.page.goto('/');
+    await expect(this.page.getByText('Welcome back')).toBeVisible({
+      timeout: 30_000,
+    });
   }
 
   async waitForLoad(timeout = 120000) {

@@ -123,6 +123,7 @@ import {
 import {
   ChatbotFootnoteWithIcon,
   getCategorizeMessages,
+  getConversationModelFromMessages,
   getFootnoteProps,
   SortOption,
 } from '../utils/lightspeed-chatbox-utils';
@@ -1338,6 +1339,28 @@ export const LightspeedChat = ({
     undefined,
     onRequestIdReady,
   );
+
+  // Restore MessageBar model from the active conversation's messages.
+  // selectedModel is global (lastSelectedModel); without this, switching chats
+  // leaves the last globally selected model in the selector.
+  useEffect(() => {
+    if (!viewConversationId || viewConversationId === TEMP_CONVERSATION_ID) {
+      return;
+    }
+
+    const conversationModel =
+      getConversationModelFromMessages(conversationMessages);
+    if (!conversationModel || conversationModel === selectedModel) {
+      return;
+    }
+
+    handleSelectedModel(conversationModel);
+  }, [
+    viewConversationId,
+    conversationMessages,
+    selectedModel,
+    handleSelectedModel,
+  ]);
 
   const streamingUiMatchesView =
     isSendButtonDisabled &&
