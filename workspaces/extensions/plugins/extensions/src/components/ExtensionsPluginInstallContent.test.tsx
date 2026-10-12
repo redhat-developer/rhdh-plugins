@@ -319,6 +319,28 @@ describe('ExtensionsPluginInstallContent', () => {
     expect(getByTestId('install-disabled')).toBeInTheDocument();
   });
 
+  it('should show an empty state when the plugin has no packages', async () => {
+    const { getByText, getByTestId, queryByText } = render(
+      <TestApiProvider
+        apis={[
+          [extensionsApiRef, mockExtensionsApi],
+          [alertApiRef, mockAlertApiRef],
+        ]}
+      >
+        <BrowserRouter>
+          <ExtensionsPluginInstallContent packages={[]} plugin={plugin} />
+        </BrowserRouter>
+      </TestApiProvider>,
+    );
+
+    expect(getByText('No package entities found')).toBeInTheDocument();
+    expect(queryByText('Code Editor Card Mock')).not.toBeInTheDocument();
+    expect(queryByText('Instructions')).not.toBeInTheDocument();
+    expect(getByTestId('install-disabled')).toBeInTheDocument();
+    expect(getByTestId('back-button')).toBeInTheDocument();
+    expect(queryByText('Reset')).not.toBeInTheDocument();
+  });
+
   it('should show an error when installation fails', async () => {
     useInstallPluginMock.mockReturnValue({
       mutateAsync: jest.fn().mockResolvedValue({
