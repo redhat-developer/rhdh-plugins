@@ -20,16 +20,8 @@ import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import { mockT } from '../../test-utils/mockTranslations';
 import { homepageTranslationRef } from '../../translations/ref';
-import {
-  Breakpoint,
-  type HomePageCardMountPoint,
-  type Layout,
-} from '../../types';
-import {
-  getCardDescription,
-  getCardTitle,
-  isCardADefaultConfiguration,
-} from '../customizable-cards';
+import type { HomePageCardMountPoint } from '../../types';
+import { getCardDescription, getCardTitle } from '../customizable-cards';
 
 const t = mockT as TranslationFunction<typeof homepageTranslationRef.T>;
 
@@ -47,31 +39,6 @@ function createCardMountPoint(
 }
 
 describe('customizable-cards', () => {
-  describe('isCardADefaultConfiguration', () => {
-    it('returns true when layouts are configured', () => {
-      const card = createCardMountPoint('MyCard', {
-        id: 'custom-card',
-        layouts: {
-          [Breakpoint.xs]: { x: 0, y: 0, w: 1, h: 1 },
-        } as Record<Breakpoint, Layout>,
-      });
-
-      expect(isCardADefaultConfiguration(card)).toBe(true);
-    });
-
-    it('returns true when no id is configured for backward compatibility', () => {
-      const card = createCardMountPoint('MyCard');
-
-      expect(isCardADefaultConfiguration(card)).toBe(true);
-    });
-
-    it('returns false when id is configured without layouts', () => {
-      const card = createCardMountPoint('MyCard', { id: 'custom-card' });
-
-      expect(isCardADefaultConfiguration(card)).toBe(false);
-    });
-  });
-
   describe('getCardTitle', () => {
     it('returns translated title from titleKey', () => {
       const card = createCardMountPoint('MyCard', {
