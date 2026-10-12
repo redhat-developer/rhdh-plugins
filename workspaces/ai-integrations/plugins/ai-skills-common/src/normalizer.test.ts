@@ -251,6 +251,41 @@ describe('normalizeOciMetadata', () => {
       expect(result.record!.extensions).toBeUndefined();
     });
 
+    it('emits diagnostic for non-string namespace with value omitted', () => {
+      const native: OciNativeInput = {
+        skillCard: {
+          metadata: { name: 'Test', namespace: 42 },
+        },
+      };
+      const result = normalizeOciMetadata(native, ociTrustedInput);
+      expect(result.record!.extensions).toBeUndefined();
+      expect(
+        result.diagnostics.some(
+          d =>
+            d.field === 'extensions.oci.namespace' &&
+            d.message.includes("unsupported type 'number'"),
+        ),
+      ).toBe(true);
+    });
+
+    it('emits diagnostic for non-string prompt with value omitted', () => {
+      const native: OciNativeInput = {
+        skillCard: {
+          metadata: { name: 'Test' },
+          spec: { prompt: ['not', 'a', 'string'] },
+        },
+      };
+      const result = normalizeOciMetadata(native, ociTrustedInput);
+      expect(result.record!.extensions).toBeUndefined();
+      expect(
+        result.diagnostics.some(
+          d =>
+            d.field === 'extensions.oci.prompt' &&
+            d.message.includes("unsupported type 'object'"),
+        ),
+      ).toBe(true);
+    });
+
     it('SkillCard namespace stays in extensions, never overrides catalog namespace', () => {
       const native: OciNativeInput = {
         skillCard: {
@@ -466,7 +501,7 @@ describe('normalizeOciMetadata', () => {
       expect(result.record!.tags).toEqual(['frontmatter-tag']);
     });
 
-    it('emits diagnostic for non-array tag candidate', () => {
+    it('emits diagnostic for non-array tag candidate with value omitted', () => {
       const native: OciNativeInput = {
         skillCard: {
           metadata: {
@@ -481,7 +516,8 @@ describe('normalizeOciMetadata', () => {
         result.diagnostics.some(
           d =>
             d.field === 'tags' &&
-            d.message.includes("unsupported type 'string'"),
+            d.message.includes("unsupported type 'string'") &&
+            d.message.includes('value omitted'),
         ),
       ).toBe(true);
     });

@@ -41,6 +41,15 @@ export function createFailedSnapshot(
 export function createLoadingSnapshot(source: SnapshotSource): SkillSnapshot;
 
 // @public
+export interface FrontmatterMetadata {
+  author?: unknown;
+  lifecycle?: unknown;
+  owner?: unknown;
+  tags?: unknown;
+  version?: unknown;
+}
+
+// @public
 export interface IdentityTuple {
   id: string;
   key: string;
@@ -112,13 +121,7 @@ export interface MarkdownFrontmatter {
   compatibility?: unknown;
   description?: unknown;
   license?: unknown;
-  metadata?: {
-    version?: unknown;
-    author?: unknown;
-    tags?: unknown;
-    owner?: unknown;
-    lifecycle?: unknown;
-  };
+  metadata?: FrontmatterMetadata;
   name?: unknown;
   version?: unknown;
 }

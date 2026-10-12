@@ -25,6 +25,7 @@
  * @packageDocumentation
  */
 
+import { CATALOG_TAG_PATTERN, MAX_TAG_LENGTH } from './tag-constants';
 import type {
   NpxSkillRecord,
   OciExtensions,
@@ -118,18 +119,29 @@ export interface MarkdownFrontmatter {
   /** Top-level compatibility. */
   compatibility?: unknown;
   /** Nested metadata block in frontmatter. */
-  metadata?: {
-    /** Frontmatter `metadata.version`. */
-    version?: unknown;
-    /** Frontmatter `metadata.author` (string or object). */
-    author?: unknown;
-    /** Frontmatter `metadata.tags`. */
-    tags?: unknown;
-    /** Frontmatter `metadata.owner`. */
-    owner?: unknown;
-    /** Frontmatter `metadata.lifecycle`. */
-    lifecycle?: unknown;
-  };
+  metadata?: FrontmatterMetadata;
+}
+
+/**
+ * Nested metadata block within parsed Markdown frontmatter.
+ *
+ * @remarks
+ * The `unknown` field types are deliberate and stable for the v1 contract.
+ * See {@link OciSkillCardMetadata} for the rationale.
+ *
+ * @public
+ */
+export interface FrontmatterMetadata {
+  /** Frontmatter `metadata.version`. */
+  version?: unknown;
+  /** Frontmatter `metadata.author` (string or object). */
+  author?: unknown;
+  /** Frontmatter `metadata.tags`. */
+  tags?: unknown;
+  /** Frontmatter `metadata.owner`. */
+  owner?: unknown;
+  /** Frontmatter `metadata.lifecycle`. */
+  lifecycle?: unknown;
 }
 
 /**
@@ -229,7 +241,14 @@ export interface TrustedSourceInput {
 export interface NormalizationDiagnostic {
   /** The normalized field that triggered the diagnostic. */
   field: string;
-  /** Human-readable description of the issue. */
+  /**
+   * Human-readable description of the issue.
+   *
+   * @remarks
+   * The `message` field is informational and not part of the stable API
+   * contract. Diagnostic wording may change between minor releases.
+   * Downstream consumers should not assert on exact message text.
+   */
   message: string;
 }
 
@@ -250,34 +269,8 @@ export interface NormalizationResult<T> {
   diagnostics: NormalizationDiagnostic[];
 }
 
-// ─── Constants ───────────────────────────────────────────────────────
-
-/**
- * Backstage catalog tag validation pattern.
- *
- * Tags must consist of lowercase alphanumeric characters plus `:`, `+`,
- * `#`, `.`, `_`, `-`. Must start and end with an alphanumeric character
- * or one of `:`, `+`, `#`.
- *
- * @remarks
- * This is a snapshot of the Backstage catalog tag validation rule at the
- * time of authoring (Backstage 1.36 / catalog-model 0.x). The pattern is
- * not imported from `@backstage/catalog-model` because that package is not
- * a dependency of this library. If Backstage changes its tag validation
- * pattern in a future release, this constant must be updated to match,
- * and such a change will be a semver-breaking update to downstream
- * consumers.
- *
- * @public
- */
-export const CATALOG_TAG_PATTERN = /^[a-z0-9:+#]([a-z0-9:+#._-]*[a-z0-9:+#])?$/;
-
-/**
- * Maximum tag length accepted by the Backstage catalog.
- *
- * @public
- */
-export const MAX_TAG_LENGTH = 63;
+// Re-export constants from tag-constants for backward compatibility
+export { CATALOG_TAG_PATTERN, MAX_TAG_LENGTH } from './tag-constants';
 
 /** Maximum length for user-controlled values interpolated into diagnostics. */
 const DIAGNOSTIC_VALUE_MAX_LENGTH = 80;
@@ -447,7 +440,7 @@ function normalizeTagCandidates(
     if (!Array.isArray(candidate)) {
       diagnostics.push({
         field: 'tags',
-        message: `tags: unsupported type '${typeof candidate}' — expected array`,
+        message: `tags: unsupported type '${typeof candidate}' — expected array; value omitted`,
       });
       continue;
     }
@@ -678,7 +671,17 @@ export function normalizeOciMetadata(
 
   // Allowlisted OCI extensions: namespace and prompt
   const namespace = asNonEmptyString(meta?.namespace);
+  diagnoseOptionalStringField(
+    'extensions.oci.namespace',
+    meta?.namespace,
+    diagnostics,
+  );
   const prompt = asNonEmptyString(spec?.prompt);
+  diagnoseOptionalStringField(
+    'extensions.oci.prompt',
+    spec?.prompt,
+    diagnostics,
+  );
 
   if (namespace || prompt) {
     const oci: OciExtensions = {};

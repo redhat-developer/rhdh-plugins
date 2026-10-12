@@ -81,6 +81,7 @@ export {
 export { MAX_RESPONSE_BYTES, SKILLS_ENDPOINT_BASE } from './rest-contract';
 
 export type {
+  FrontmatterMetadata,
   MarkdownFrontmatter,
   NormalizationDiagnostic,
   NormalizationResult,
@@ -95,12 +96,9 @@ export type {
   TrustedSourceInput,
 } from './normalizer';
 
-export {
-  CATALOG_TAG_PATTERN,
-  MAX_TAG_LENGTH,
-  normalizeNpxMetadata,
-  normalizeOciMetadata,
-} from './normalizer';
+export { normalizeNpxMetadata, normalizeOciMetadata } from './normalizer';
+
+export { CATALOG_TAG_PATTERN, MAX_TAG_LENGTH } from './tag-constants';
 
 export {
   invalidFailedWithSkills,

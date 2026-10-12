@@ -26,7 +26,7 @@
 
 import { createHash } from 'crypto';
 
-import { CATALOG_TAG_PATTERN, MAX_TAG_LENGTH } from './normalizer';
+import { CATALOG_TAG_PATTERN, MAX_TAG_LENGTH } from './tag-constants';
 import type { SkillSourceType } from './types';
 import { isValidDigest } from './validation';
 
@@ -103,18 +103,18 @@ export function normalizeTags(tags: string[]): NormalizeTagsResult {
     const trimmed = raw.trim().toLocaleLowerCase('en-US');
 
     if (trimmed.length === 0) {
-      diagnostics.push(`tag '${raw}': empty after trim, skipped`);
+      diagnostics.push(`tag '${raw}': empty after trim, omitted`);
       continue;
     }
 
     if (seen.has(trimmed)) {
-      diagnostics.push(`tag '${raw}': duplicate '${trimmed}', skipped`);
+      diagnostics.push(`tag '${raw}': duplicate '${trimmed}', omitted`);
       continue;
     }
 
     if (trimmed.length > MAX_TAG_LENGTH) {
       diagnostics.push(
-        `tag '${raw}': length ${trimmed.length} exceeds maximum ${MAX_TAG_LENGTH}, skipped`,
+        `tag '${raw}': length ${trimmed.length} exceeds maximum ${MAX_TAG_LENGTH}, omitted`,
       );
       seen.add(trimmed);
       continue;
@@ -122,7 +122,7 @@ export function normalizeTags(tags: string[]): NormalizeTagsResult {
 
     if (!CATALOG_TAG_PATTERN.test(trimmed)) {
       diagnostics.push(
-        `tag '${raw}': '${trimmed}' does not match catalog tag pattern, skipped`,
+        `tag '${raw}': '${trimmed}' does not match catalog tag pattern, omitted`,
       );
       seen.add(trimmed);
       continue;
