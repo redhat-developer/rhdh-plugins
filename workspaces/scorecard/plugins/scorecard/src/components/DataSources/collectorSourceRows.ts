@@ -17,13 +17,13 @@
 import type { CollectorMetadata } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { extractPluginName } from '../../utils';
-import { MISSING_EVALUATION_BUCKET_KEY } from './thresholdBucketUtils';
+import { MISSING_EVALUATION_BUCKET_KEY } from '../MetricGroupCard/thresholdBucketUtils';
 import type { SourceRow } from './DataSourcesDialogColumns';
 
 const GITHUB_PLUGIN_LABEL = 'GitHub';
 
 const pluginLabelFromCollectorId = (collectorId: string): string => {
-  const prefix = collectorId.split(/[.:]/)[0]?.toLowerCase();
+  const prefix = collectorId.split(/[.:]/)[0]?.toLocaleLowerCase('en-US');
   if (prefix === 'github') {
     return GITHUB_PLUGIN_LABEL;
   }

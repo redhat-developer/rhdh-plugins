@@ -18,7 +18,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { ThresholdLegend } from '../ThresholdLegend';
-import type { ThresholdBucket } from '../types';
+import type { ThresholdBucket } from '../../MetricGroupCard/types';
 
 jest.mock('../../../utils', () => ({
   resolveStatusColor: () => '#2e7d32',
