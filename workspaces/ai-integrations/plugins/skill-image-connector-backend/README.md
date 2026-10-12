@@ -172,7 +172,7 @@ To reproduce the pinning and integrity checks without a live registry, run from
 `plugins/skill-image-connector-backend`:
 
 ```sh
-yarn test --watchAll=false --runInBand src/plugin.pinning.test.ts src/plugin.integration.test.ts src/services/TagPinning.test.ts src/services/OciClient.test.ts
+yarn test --watchAll=false --runInBand src/plugin.pinning.test.ts src/plugin.integration.test.ts src/services/OciClient.test.ts src/services/SkillImageService.test.ts
 ```
 
 The deterministic registry fixtures exercise the actual plugin, OCI client, and
