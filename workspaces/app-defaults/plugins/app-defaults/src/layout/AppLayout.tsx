@@ -22,12 +22,12 @@ import {
   type RefObject,
 } from 'react';
 import { SidebarPage } from '@backstage/core-components';
+import { Box, Flex } from '@backstage/ui';
 import {
   ApplicationDrawer,
   type AppDrawerContent,
   type AppHeaderData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import Box from '@mui/material/Box';
 
 import { AppHeaders } from '../header/AppHeaders';
 
@@ -46,6 +46,19 @@ export interface AppLayoutProps {
   /** The routed page content rendered by `app/routes`. */
   content: ReactNode;
 }
+
+/**
+ * The RHDH theme sizes the Backstage sidebar page to the viewport; size it to
+ * the space left below the headers instead. A raw style tag is used, as in the
+ * global header, so the rule ships with the component without a CSS pipeline.
+ */
+const SIDEBAR_PAGE_SIZE_CSS = `
+#rhdh-app-layout-page > [class*="BackstageSidebarPage-root"] {
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
+}
+`;
 
 /**
  * Returns the vertical offset of the layout in the document, so the layout
@@ -108,22 +121,22 @@ export const AppLayout = ({
   const offsetTop = useDocumentOffsetTop(ref);
 
   return (
-    <Box
+    <Flex
       id="rhdh-app-layout"
       ref={ref}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
+      direction="column"
+      gap="0"
+      style={{
         height: offsetTop ? `calc(100vh - ${offsetTop}px)` : '100vh',
         overflow: 'hidden',
       }}
     >
       <AppHeaders headers={headers} />
       <Box
-        sx={{
+        position="relative"
+        minHeight="0"
+        style={{
           flex: '1 1 auto',
-          minHeight: 0,
-          position: 'relative',
           // Make this row the containing block of the fixed-position sidebar
           // and drawer panel so both are laid out side by side with the content
           // below the headers instead of relative to the viewport.
@@ -138,18 +151,11 @@ export const AppLayout = ({
       >
         <ApplicationDrawer contents={drawers}>
           <Box
-            sx={{
-              height: '100%',
-              overflow: 'auto',
-              // The RHDH theme sizes the sidebar page to the viewport; size it
-              // to the space left below the headers instead.
-              '& > [class*="BackstageSidebarPage-root"]': {
-                height: '100%',
-                minHeight: '100%',
-                maxHeight: '100%',
-              },
-            }}
+            id="rhdh-app-layout-page"
+            height="100%"
+            style={{ overflow: 'auto' }}
           >
+            <style>{SIDEBAR_PAGE_SIZE_CSS}</style>
             <SidebarPage>
               {nav}
               {content}
@@ -157,6 +163,6 @@ export const AppLayout = ({
           </Box>
         </ApplicationDrawer>
       </Box>
-    </Box>
+    </Flex>
   );
 };

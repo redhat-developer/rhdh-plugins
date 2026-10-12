@@ -15,9 +15,8 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { Box, Text } from '@backstage/ui';
 import { AppHeaderBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 
 /**
  * Demo contributions for the app headers rendered by the app layout of
@@ -32,34 +31,18 @@ import Typography from '@mui/material/Typography';
  * `app-header:app/announcement: false`.
  */
 const AnnouncementHeader = () => (
-  <Box
-    sx={{
-      px: 2,
-      py: 0.5,
-      bgcolor: 'primary.main',
-      color: 'primary.contrastText',
-      textAlign: 'center',
-    }}
-  >
-    <Typography variant="body2">
+  <Box bg="success" px="4" py="1" style={{ textAlign: 'center' }}>
+    <Text variant="body-small" weight="bold">
       Demo announcement header (app-header:app/announcement, priority 100)
-    </Typography>
+    </Text>
   </Box>
 );
 
 const EnvironmentHeader = () => (
-  <Box
-    sx={{
-      px: 2,
-      py: 0.5,
-      bgcolor: 'warning.main',
-      color: 'warning.contrastText',
-      textAlign: 'center',
-    }}
-  >
-    <Typography variant="body2">
+  <Box bg="warning" px="4" py="1" style={{ textAlign: 'center' }}>
+    <Text variant="body-small">
       Demo environment header (app-header:app/environment, priority 0)
-    </Typography>
+    </Text>
   </Box>
 );
 

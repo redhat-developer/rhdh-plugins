@@ -16,8 +16,8 @@
 
 import { useMemo } from 'react';
 import { ErrorBoundary } from '@backstage/core-components';
+import { Flex } from '@backstage/ui';
 import type { AppHeaderData } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import Box from '@mui/material/Box';
 
 /**
  * Props for {@link AppHeaders}.
@@ -55,17 +55,7 @@ export const AppHeaders = ({ headers }: AppHeadersProps) => {
   }
 
   return (
-    <Box
-      id="rhdh-app-headers"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        flex: 'none',
-        // Keep the headers above the fixed sidebar and the drawer panel.
-        position: 'relative',
-        zIndex: theme => theme.zIndex.appBar,
-      }}
-    >
+    <Flex id="rhdh-app-headers" direction="column" gap="0" shrink={false}>
       {sorted.map(header => {
         const Header = header.component;
         return (
@@ -74,6 +64,6 @@ export const AppHeaders = ({ headers }: AppHeadersProps) => {
           </ErrorBoundary>
         );
       })}
-    </Box>
+    </Flex>
   );
 };
