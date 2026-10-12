@@ -893,7 +893,9 @@ export const NotebookView = ({
                       />
                     );
                   })()}
-                  <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
+                  <ChatbotFootnoteWithIcon
+                    label={t('footer.accuracy.notebook.label')}
+                  />
                 </StyledChatbotFooter>
               </ContentColumn>
             </MainArea>
