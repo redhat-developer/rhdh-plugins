@@ -171,8 +171,12 @@ const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 /** Host for compact PatternFly chat modals (`appendTo` + absolute backdrop). */
 const ChatModalScope = styled('div')({
   position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
   height: '100%',
   minHeight: 0,
+  overflow: 'hidden',
   '& .ia-scoped-chat-modal-backdrop': {
     position: 'absolute !important',
     inset: 0,
@@ -180,28 +184,42 @@ const ChatModalScope = styled('div')({
     '--pf-v5-c-backdrop--ZIndex': '1400 !important',
   },
   '& .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal': {
+    // Override PF default (30rem × 70vh) so the modal fills the chat shell.
     position: 'absolute !important',
     inset: '0 !important',
     width: '100% !important',
     maxWidth: 'none !important',
     height: '100% !important',
+    maxHeight: '100% !important',
+    '--pf-v6-c-modal-box--MaxHeight': '100% !important',
+    '--pf-v6-c-modal-box--Width': '100% !important',
     transform: 'none !important',
+    borderRadius: '0 !important',
     zIndex: 1401,
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
   },
+  '& .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-v6-c-modal-box__header, & .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-v6-c-modal-box__footer':
+    {
+      flexShrink: 0,
+    },
   '& .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-v6-c-modal-box__body, & .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-chatbot__code-modal-body, & .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-chatbot__code-modal-editor':
     {
-      flex: 1,
+      flex: '1 1 auto',
       minHeight: 0,
+      height: '100%',
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
     },
-  '& .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-chatbot__code-modal-editor .pf-v6-c-code-editor':
+  '& .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-chatbot__code-modal-file-details':
     {
-      flex: 1,
+      flexShrink: 0,
+    },
+  '& .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-chatbot__code-modal-editor .pf-v6-c-code-editor, & .pf-chatbot__chatbot-modal.ia-scoped-attachment-code-modal .pf-v6-c-code-editor__main':
+    {
+      flex: '1 1 auto',
       minHeight: 0,
       height: '100%',
     },

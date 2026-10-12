@@ -185,8 +185,6 @@ export const SettingsPanel = ({
             savedPromptsError={savedPromptsError}
             onCreateSavedPrompt={onCreateSavedPrompt}
             onRequestDelete={onRequestSavedPromptDelete}
-            isCompact={isCompact}
-            appendTo={appendTo}
           />
         )}
       </div>

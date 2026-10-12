@@ -105,7 +105,7 @@ async function loadMonaco(): Promise<void> {
 
 /** CodeModal with `appendTo` (not supported on upstream @patternfly/chatbot CodeModal). */
 export function AttachmentScopedCodeModal(
-  props: AttachmentScopedCodeModalProps,
+  props: Readonly<AttachmentScopedCodeModalProps>,
 ) {
   const {
     appendTo,
