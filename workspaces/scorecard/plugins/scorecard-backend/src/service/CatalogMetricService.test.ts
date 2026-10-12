@@ -2314,7 +2314,7 @@ describe('CatalogMetricService', () => {
       ]);
     });
 
-    it('should return empty array without catalog lookup when metric is globally disabled', async () => {
+    it('should return empty array after catalog lookup when metric is globally disabled', async () => {
       service = new CatalogMetricService({
         catalog: mockedCatalog,
         auth: mockedAuth,
@@ -2338,7 +2338,9 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result).toEqual([]);
-      expect(mockedCatalog.getEntityByRef).not.toHaveBeenCalled();
+      expect(mockedCatalog.getEntityByRef).toHaveBeenCalledWith(userEntityRef, {
+        credentials: mockCredentials,
+      });
     });
   });
 
@@ -2572,7 +2574,7 @@ describe('CatalogMetricService', () => {
       );
     });
 
-    it('should return empty array without catalog walk when metric is globally disabled', async () => {
+    it('should return empty array without owned-entity walk when metric is globally disabled', async () => {
       service = new CatalogMetricService({
         catalog: mockedCatalog,
         auth: mockedAuth,
@@ -2596,7 +2598,9 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result).toEqual([]);
-      expect(mockedCatalog.getEntityByRef).not.toHaveBeenCalled();
+      expect(mockedCatalog.getEntityByRef).toHaveBeenCalledWith(userEntityRef, {
+        credentials: mockCredentials,
+      });
       expect(mockedCatalog.queryEntities).not.toHaveBeenCalled();
     });
 
