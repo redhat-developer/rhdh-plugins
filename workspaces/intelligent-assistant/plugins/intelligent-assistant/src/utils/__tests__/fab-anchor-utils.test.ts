@@ -21,6 +21,7 @@ import {
   clearLightspeedFabAnchorVars,
   getLightspeedDockedDrawerGutter,
   getLightspeedFabEdgeInset,
+  getLightspeedFabInlineEdgeInset,
   getLightspeedOverlayGap,
   publishLightspeedFabAnchorVars,
 } from '../fab-anchor-utils';
@@ -37,7 +38,10 @@ describe('fab-anchor-utils', () => {
   });
 
   it('uses theme spacing tokens for edge inset and gaps', () => {
-    expect(getLightspeedFabEdgeInset(theme)).toBe(theme.spacing(2));
+    expect(getLightspeedFabEdgeInset(theme)).toBe(
+      `calc(${theme.spacing(2)} + 56px)`,
+    );
+    expect(getLightspeedFabInlineEdgeInset(theme)).toBe(theme.spacing(2));
     expect(getLightspeedOverlayGap(theme)).toBe(theme.spacing(2));
     expect(getLightspeedDockedDrawerGutter(theme)).toBe(theme.spacing(3));
   });
