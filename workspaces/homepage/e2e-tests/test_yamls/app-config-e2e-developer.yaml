@@ -1,0 +1,20 @@
+# Developer persona — Frontend 3002, Backend 7009
+# Catalog: user:default/developer-user → group:default/developers
+# Excluded from visit cards by user-level unless in e2e defaultWidgets.
+app:
+  baseUrl: http://localhost:3002
+
+backend:
+  baseUrl: http://localhost:7009
+  listen:
+    port: 7009
+  cors:
+    origin: http://localhost:3002
+
+auth:
+  providers:
+    guest:
+      userEntityRef: user:default/developer-user
+      ownershipEntityRefs:
+        - user:default/developer-user
+        - group:default/developers

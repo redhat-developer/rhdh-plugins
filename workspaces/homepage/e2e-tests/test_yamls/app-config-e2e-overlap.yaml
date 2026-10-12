@@ -1,0 +1,20 @@
+# Overlap persona — Frontend 3003, Backend 7010
+# Catalog fixture: user:default/overlap-user → admins + developers
+app:
+  baseUrl: http://localhost:3003
+
+backend:
+  baseUrl: http://localhost:7010
+  listen:
+    port: 7010
+  cors:
+    origin: http://localhost:3003
+
+auth:
+  providers:
+    guest:
+      userEntityRef: user:default/overlap-user
+      ownershipEntityRefs:
+        - user:default/overlap-user
+        - group:default/admins
+        - group:default/developers

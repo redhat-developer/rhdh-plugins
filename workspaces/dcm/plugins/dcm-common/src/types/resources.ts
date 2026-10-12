@@ -27,23 +27,34 @@ export interface ServiceTypeInstanceSpec {
   [key: string]: unknown;
 }
 
+/** Deletion status for deferred deletions on a {@link ServiceTypeInstance}. */
+export type ServiceTypeInstanceDeletionStatus =
+  | 'SCHEDULED'
+  | 'FAILED'
+  | 'DELETED';
+
 /** A provisioned service type instance managed by DCM. */
 export interface ServiceTypeInstance {
   /** Unique identifier (readOnly). */
   id: string;
   /** Resource path (readOnly). */
   path?: string;
-  /** The provider that manages this instance. */
-  provider_name?: string;
+  /**
+   * Name of the agent managing this instance (readOnly).
+   * Absent or null when the instance was created without agent routing.
+   */
+  agent_name?: string | null;
   /** Instance spec containing service_type and other provider-specific fields. */
   spec?: ServiceTypeInstanceSpec;
   /** Current lifecycle status. */
   status?: string;
-  /** Whether this instance has been soft-deleted. */
-  deleted?: boolean;
+  /**
+   * Deletion status for deferred deletions (readOnly).
+   * Absent for active instances.
+   */
+  deletion_status?: ServiceTypeInstanceDeletionStatus;
   create_time?: string;
   update_time?: string;
-  delete_time?: string;
 }
 
 /** Paginated list of {@link ServiceTypeInstance} resources. */
@@ -54,8 +65,10 @@ export interface ServiceTypeInstanceList {
 
 /** Query parameters accepted by the list endpoint. */
 export interface ListServiceTypeInstancesParams {
-  /** Filter by service provider name. */
-  provider?: string;
+  /** Filter instances by service type. */
+  service_type?: string;
+  /** Filter instances by the agent managing them. */
+  agent_name?: string;
   /** When true, soft-deleted instances are included alongside active ones. */
   show_deleted?: boolean;
   /** Maximum number of results per page (1–100, default 100). */

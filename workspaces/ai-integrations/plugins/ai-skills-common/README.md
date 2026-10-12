@@ -24,6 +24,14 @@ consumes these snapshots to produce `AiResource` entities.
 | `SnapshotSource` | Source identity (`id` and `type`)                                 |
 | `SnapshotStatus` | `'loading' \| 'ready' \| 'partial' \| 'failed'`                   |
 
+OCI discovery records use `<registry>/<repository>:<tag>` as their stable key;
+the registry host is lowercase and the tag retains its exact case. Two tags may
+share the same manifest digest and `sourceUri` while retaining distinct keys and
+catalog identities. A tag moving to different content keeps the same identity.
+The connector constructs these keys; the shared helpers consume them as opaque
+strings and continue to reject duplicate snapshot keys. Digest-addressed OCI
+reference construction and declared-version mapping are unchanged.
+
 ## Constants
 
 | Constant                   | Value             | Description                                      |

@@ -42,9 +42,9 @@ describe('sortRecordsByKey', () => {
       validOciRecordMinimal,
     ]);
     // validOciRecordFull.key < validOciRecordMinimal.key
-    // 'quay.io/octo/hello-world-skill' < 'quay.io/octo/minimal-skill'
-    expect(sorted[0].key).toBe('quay.io/octo/hello-world-skill');
-    expect(sorted[1].key).toBe('quay.io/octo/minimal-skill');
+    // 'quay.io/octo/hello-world-skill:1.0.0-draft' < 'quay.io/octo/minimal-skill:latest'
+    expect(sorted[0].key).toBe('quay.io/octo/hello-world-skill:1.0.0-draft');
+    expect(sorted[1].key).toBe('quay.io/octo/minimal-skill:latest');
   });
 
   it('does not mutate the input array', () => {
@@ -79,8 +79,10 @@ describe('boundSnapshot', () => {
     expect(snapshot.skills).toHaveLength(2);
     expect(snapshot.failedSkillKeys).toEqual([]);
     // Records should be sorted by key
-    expect(snapshot.skills[0].key).toBe('quay.io/octo/hello-world-skill');
-    expect(snapshot.skills[1].key).toBe('quay.io/octo/minimal-skill');
+    expect(snapshot.skills[0].key).toBe(
+      'quay.io/octo/hello-world-skill:1.0.0-draft',
+    );
+    expect(snapshot.skills[1].key).toBe('quay.io/octo/minimal-skill:latest');
   });
 
   it('creates a partial snapshot when discovery is incomplete', () => {
@@ -98,7 +100,7 @@ describe('boundSnapshot', () => {
     const snapshot = boundSnapshot({
       source: ociSource,
       records: [validOciRecordMinimal],
-      failedSkillKeys: ['quay.io/octo/broken-skill'],
+      failedSkillKeys: ['quay.io/octo/broken-skill:v1'],
       discoveryComplete: true,
       observedAt: '2026-09-01T12:00:00Z',
     });

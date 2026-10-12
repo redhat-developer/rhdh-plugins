@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.12.0
+
+### Patch Changes
+
+- 10e954f: Restore Inspect / Unregister / Copy entity actions in the entity header kebab when a custom entity header layout is active (avoids empty Menu "No results found.")
+
+## 1.11.0
+
+### Patch Changes
+
+- edc7eae: Use the app-level BUI provider for catalog header navigation.
+
+## 1.10.1
+
+### Patch Changes
+
+- 216cda2: Register the custom catalog header as a dynamic frontend module and provide Backstage UI routing context for its entity tabs.
+
 ## 1.10.0
 
 ### Minor Changes

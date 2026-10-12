@@ -67,7 +67,7 @@ export const npxSource: SnapshotSource = {
  * @public
  */
 export const validOciRecordFull: OciSkillRecord = {
-  key: 'quay.io/octo/hello-world-skill',
+  key: 'quay.io/octo/hello-world-skill:1.0.0-draft',
   name: 'Hello World Skill',
   description: 'A demo OCI skill image',
   version: '1.0.0',
@@ -95,7 +95,7 @@ export const validOciRecordFull: OciSkillRecord = {
  * @public
  */
 export const validOciRecordMinimal: OciSkillRecord = {
-  key: 'quay.io/octo/minimal-skill',
+  key: 'quay.io/octo/minimal-skill:latest',
   name: 'Minimal Skill',
   sourceUri:
     'oci://quay.io/octo/minimal-skill@sha256:1111111111111111111111111111111111111111111111111111111111111111',
@@ -109,7 +109,7 @@ export const validOciRecordMinimal: OciSkillRecord = {
  * @public
  */
 export const validOciRecordEmptyExtensions: OciSkillRecord = {
-  key: 'quay.io/octo/no-ext-skill',
+  key: 'quay.io/octo/no-ext-skill:v1',
   name: 'No Extensions Skill',
   sourceUri:
     'oci://quay.io/octo/no-ext-skill@sha256:2222222222222222222222222222222222222222222222222222222222222222',
@@ -231,7 +231,7 @@ export const validPartialSnapshot: SkillSnapshot = {
   status: 'partial',
   observedAt: '2026-09-01T12:05:00Z',
   skills: [validOciRecordMinimal],
-  failedSkillKeys: ['quay.io/octo/broken-skill'],
+  failedSkillKeys: ['quay.io/octo/broken-skill:v1'],
 };
 
 /**

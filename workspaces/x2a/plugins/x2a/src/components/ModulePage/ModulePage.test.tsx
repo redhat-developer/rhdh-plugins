@@ -50,10 +50,6 @@ jest.mock('./ModulePageBreadcrumb', () => ({
   ModulePageBreadcrumb: () => <div data-testid="breadcrumb" />,
 }));
 
-jest.mock('./ArtifactsCard', () => ({
-  ArtifactsCard: () => <div data-testid="artifacts-card" />,
-}));
-
 jest.mock('./ModuleDetailsCard', () => ({
   ModuleDetailsCard: ({ module }: { module?: { name: string } }) => (
     <div data-testid="module-details">{module?.name}</div>

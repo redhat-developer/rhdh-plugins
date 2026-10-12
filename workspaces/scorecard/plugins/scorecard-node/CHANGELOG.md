@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 4.5.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.1
+
+## 4.5.0
+
+### Patch Changes
+
+- dfcbf0d: Add missing `@public` release tags to all scorecard backend module exports and common types, and re-enable `ae-missing-release-tag` api-extractor warning.
+- Updated dependencies [dfcbf0d]
+- Updated dependencies [b8d8662]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.0
+
+## 4.4.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.2
+
 ## 4.4.1
 
 ### Patch Changes

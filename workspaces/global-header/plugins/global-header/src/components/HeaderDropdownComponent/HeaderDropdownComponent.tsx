@@ -61,10 +61,21 @@ const menuListStyle = (theme: Theme) => ({
   minWidth: '160px',
   textDecoration: 'none',
   listStyle: 'none',
+  // Column flex so mixed <li> / <a> menuitems (drawer actions vs links)
+  // stretch to the paper width. `width: 100%` on a child of a shrink-wrapped
+  // menu does not resolve, which left NFS Quick start hover shorter than Support.
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'stretch',
   color:
     theme.palette.mode === 'dark'
       ? theme.palette.text.disabled
       : theme.palette.text.primary,
+  '& > [role="menuitem"]': {
+    alignSelf: 'stretch',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
 });
 
 export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({

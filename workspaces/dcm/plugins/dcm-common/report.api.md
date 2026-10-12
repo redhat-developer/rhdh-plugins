@@ -201,6 +201,8 @@ export interface CatalogItemInstance {
   display_name: string;
   // (undocumented)
   path?: string;
+  resource_ids?: string[];
+  run_id?: string;
   // (undocumented)
   spec: CatalogItemInstanceSpec;
   // (undocumented)
@@ -221,7 +223,6 @@ export interface CatalogItemInstanceList {
 export interface CatalogItemInstanceSpec {
   // (undocumented)
   catalog_item_id: string;
-  resource_ids?: string[];
   // (undocumented)
   user_values: UserValue[];
 }
@@ -379,9 +380,10 @@ export interface HeartbeatRequest {
 
 // @public
 export interface ListServiceTypeInstancesParams {
+  agent_name?: string;
   max_page_size?: number;
   page_token?: string;
-  provider?: string;
+  service_type?: string;
   show_deleted?: boolean;
 }
 
@@ -497,19 +499,23 @@ export interface ServiceType {
 
 // @public
 export interface ServiceTypeInstance {
+  agent_name?: string | null;
   // (undocumented)
   create_time?: string;
-  // (undocumented)
-  delete_time?: string;
-  deleted?: boolean;
+  deletion_status?: ServiceTypeInstanceDeletionStatus;
   id: string;
   path?: string;
-  provider_name?: string;
   spec?: ServiceTypeInstanceSpec;
   status?: string;
   // (undocumented)
   update_time?: string;
 }
+
+// @public
+export type ServiceTypeInstanceDeletionStatus =
+  | 'SCHEDULED'
+  | 'FAILED'
+  | 'DELETED';
 
 // @public
 export interface ServiceTypeInstanceList {

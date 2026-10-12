@@ -1,6 +1,6 @@
 # The stock triage harness has no CEL trigger. Jira polling needs an explicit
 # trigger so /fs-triage comments are routed to the triage agent.
-base: https://raw.githubusercontent.com/fullsend-ai/agents/7ab05564b3c9c0ab20197e0c8572b5905ffd75ca/harness/triage.yaml#sha256=3aa32e9f66ad6a9b60a75f50d3adc6ae39ebfb425c3928381e019436498bf2aa
+base: https://raw.githubusercontent.com/fullsend-ai/agents/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748/harness/triage.yaml#sha256=5ada8f85cee204e2fcb8ba6935b301345b3dc56ee3f306d6eafd35f7bc4312a7
 
 allowed_remote_resources:
   - https://raw.githubusercontent.com/fullsend-ai/agents/

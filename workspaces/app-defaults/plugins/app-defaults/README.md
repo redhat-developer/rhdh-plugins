@@ -4,12 +4,15 @@ RHDH app module for the **new frontend system**, registered against `pluginId: '
 
 The module provides:
 
-- Application drawer (`appDrawerExtension`)
+- App layout wrapper (`appLayoutExtension`) that provides BUI routing and analytics context around routed application content, and renders the extensible application drawer (`appDrawerExtension` remains as a compatibility alias)
 - Priority-ordered sidebar (`appSidebarExtension`, extension ID `nav-content:app/sidebar`) that renders `SidebarItemBlueprint`, `SidebarItemGroupBlueprint`, `SidebarElementBlueprint`, `SidebarSpacerBlueprint` and `SidebarDividerBlueprint` contributions from `@red-hat-developer-hub/backstage-plugin-app-react`
-- Default sidebar layout: company logo (`sidebar-element:app/logo`, full logo while the sidebar is open and icon logo while collapsed, from `app.branding.fullLogo`, `app.branding.iconLogo` and `app.branding.fullLogoWidth`, with the RHDH logos as fallback), a gap below it (`sidebar-spacer:app/logo`), search modal (`sidebar-element:app/search`), a spacer (`sidebar-spacer:app/bottom`) and divider (`sidebar-divider:app/bottom`) that push a bottom block down, the notifications item (`sidebar-element:app/notifications`), a divider above the settings area (`sidebar-divider:app/settings`), an Administration group (`sidebar-item-group:app/admin`, id `admin`) that only appears once a plugin contributes an item with `group: 'admin'`, and a Settings group (`sidebar-item-group:app/settings`, id `settings`) linking to `/settings` at the very bottom. Disable or move any of them from `app-config.yaml`:
+- Default sidebar layout: company logo (`sidebar-element:app/logo`, full logo while the sidebar is open and icon logo while collapsed, from `app.branding.fullLogo`, `app.branding.iconLogo` and `app.branding.fullLogoWidth`, with the RHDH logos as fallback), a gap below it (`sidebar-spacer:app/logo`), search modal (`sidebar-element:app/search`), then three menu sections — default built-in paths (top), optional plugin items (middle, with a divider only when non-empty), and a bottom block pushed down by `sidebar-spacer:app/bottom` (Administration, Settings, notifications) with a divider only when that block has visible entries. Administration (`sidebar-item-group:app/admin`, id `admin`) appears for users with admin permission once a plugin contributes an item with `group: 'admin'`. Settings and the company logo are hidden by default when the global header is present; force them with `app.sidebar.settings` / `app.sidebar.logo`. Disable or move any of them from `app-config.yaml`:
 
   ```yaml
   app:
+    sidebar:
+      settings: true
+      logo: true
     extensions:
       - sidebar-element:app/notifications: false
       - sidebar-spacer:app/bottom:
@@ -144,6 +147,8 @@ For advanced use cases — items that run an action instead of navigating (`onCl
 - **Dynamic loading**: default export is a `FrontendModule` suitable for `@backstage/frontend-dynamic-feature-loader`.
 - **Static**: import `appDefaultsModule` from `@red-hat-developer-hub/backstage-plugin-app-defaults`.
 
+For apps that need only the app layout and drawer wrapper, import `appLayoutModule` from `@red-hat-developer-hub/backstage-plugin-app-defaults/app-layout-module`. The previous `app-drawer-module` entry point remains available as a compatibility alias.
+
 Override entry points (for advanced installs):
 
 | Export                            | Role                                                                                             |
@@ -249,16 +254,16 @@ Reference: [Migrating entity pages to the new frontend system](https://github.co
 
 Use the app-defaults workspace dev app (`yarn start` in `workspaces/app-defaults`) and example catalog entities.
 
-| Check                  | Steps                                    | Expected                                                                 |
-| ---------------------- | ---------------------------------------- | ------------------------------------------------------------------------ |
-| RHIDP-16564 AC         | Open a **component** → **Overview**      | About (and Links) in the **left** column                                 |
-| Component overview     | **component** → Overview                 | No depends-on / subcomponent / consumed-provided API cards               |
-| Component Dependencies | **component** → **Dependencies**         | Graph on the left; dependency and API list cards on the right            |
-| API overview           | **api** → Overview                       | Relations graph on the right; no API **Definition** card                 |
-| API Definition         | **api** → Documentation → **Definition** | Definition content present                                               |
-| System overview        | **system** → Overview                    | Relations graph on the right                                             |
-| System Diagram         | **system** → **System Diagram**          | Diagram tab content loads                                                |
-| Group / User           | **group** or **user** → Overview         | About left; no duplicate org profile cards on overview (verify visually) |
+| Check                  | Steps                                    | Expected                                                                   |
+| ---------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| RHIDP-16564 AC         | Open a **component** → **Overview**      | About (and Links) in the **left** column                                   |
+| Component overview     | **component** → Overview                 | No depends-on / subcomponent / consumed-provided API cards                 |
+| Component Dependencies | **component** → **Dependencies**         | Graph and list cards side by side at lg+; stacked full width when narrower |
+| API overview           | **api** → Overview                       | Relations graph on the right; no API **Definition** card                   |
+| API Definition         | **api** → Documentation → **Definition** | Definition content present                                                 |
+| System overview        | **system** → Overview                    | Relations graph on the right                                               |
+| System Diagram         | **system** → **System Diagram**          | Diagram tab content loads                                                  |
+| Group / User           | **group** or **user** → Overview         | About left; no duplicate org profile cards on overview (verify visually)   |
 
 ## Links
 

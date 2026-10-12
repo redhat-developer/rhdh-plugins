@@ -37,7 +37,10 @@ export class ResourcesClient extends DcmBaseClient implements ResourcesApi {
     params: ListServiceTypeInstancesParams = {},
   ): Promise<ServiceTypeInstanceList> {
     const query = new URLSearchParams();
-    if (params.provider !== undefined) query.set('provider', params.provider);
+    if (params.service_type !== undefined)
+      query.set('service_type', params.service_type);
+    if (params.agent_name !== undefined)
+      query.set('agent_name', params.agent_name);
     if (params.show_deleted !== undefined)
       query.set('show_deleted', String(params.show_deleted));
     if (params.max_page_size !== undefined)

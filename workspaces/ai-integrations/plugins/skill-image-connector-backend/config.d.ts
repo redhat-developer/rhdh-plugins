@@ -16,6 +16,34 @@
 
 export interface Config {
   skillImageConnector?: {
+    /** Request deadline including redirects, authentication and body reading. Integer from 1 to 2147483647 ms; defaults to 30000 ms.
+     * @visibility backend
+     */
+    fetchTimeoutMs?: number;
+    /** Maximum bytes per downloaded blob and decompressed layer. Safe integer from 1 to 9007199254740991; defaults to 5242880.
+     * @visibility backend
+     */
+    maxBlobSizeBytes?: number;
+    /** Maximum combined retained skill YAML and Markdown bytes across images. Safe integer from 1 to 9007199254740991; defaults to 52428800.
+     * @visibility backend
+     */
+    maxAggregateContentSizeBytes?: number;
+    /** Maximum bytes per Quay discovery response. Safe integer from 1 to 9007199254740991; defaults to 5242880.
+     * @visibility backend
+     */
+    maxDiscoveryResponseSizeBytes?: number;
+    /** Maximum combined explicit images and discovered candidates to process. Safe integer from 1 to 9007199254740991; defaults to 25.
+     * @visibility backend
+     */
+    maxImages?: number;
+    /** Retries after the initial page/image attempt. Safe integer from 0 to 9007199254740991; defaults to 2; 0 disables retries.
+     * @visibility backend
+     */
+    maxRetries?: number;
+    /** Initial retry delay in milliseconds, doubled on subsequent retries. Integer from 1 to 2147483647 ms; defaults to 2000.
+     * @visibility backend
+     */
+    retryBaseDelayMs?: number;
     /** @visibility backend */
     allowedRegistries?: string[];
     /** @visibility backend */
@@ -32,5 +60,22 @@ export interface Config {
         tokenRealm?: string;
       };
     }>;
+    /** @visibility backend */
+    quayDiscovery?: {
+      /** @visibility backend */
+      registry?: string;
+      /**
+       * The Quay organization whose public repositories are discovered.
+       * Needed to enable discovery. If omitted or blank, discovery is skipped
+       * with a warning.
+       * @visibility backend
+       */
+      organization?: string;
+      /** Exact tag to try in each repository. Omit or leave blank to discover all active tags.
+       * Set latest explicitly to preserve the former default; wildcards and regex are not supported.
+       * @visibility backend
+       */
+      tag?: string;
+    };
   };
 }

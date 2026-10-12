@@ -14,7 +14,7 @@
     "verify:no-material-ui-v4": "node scripts/ci/verify-no-material-ui-v4.js"
   },
   "type": "module",
-  "packageManager": "yarn@4.17.1",
+  "packageManager": "yarn@4.18.1",
   "devDependencies": {
     "@backstage/cli": "^0.27.0",
     "@backstage/cli-node": "^0.2.2",

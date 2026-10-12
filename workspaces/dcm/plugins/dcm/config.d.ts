@@ -32,6 +32,9 @@ export interface Config {
      * @visibility frontend
      */
     auth?: {
+      /**
+       * @visibility frontend
+       */
       enabled?: boolean;
     };
   };

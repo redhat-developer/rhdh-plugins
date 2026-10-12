@@ -37,6 +37,8 @@ export {
   createBotMessage,
   createMessage,
   createUserMessage,
+  enrichMessagesWithPersistedSources,
+  getConversationModelFromMessages,
   getConversationsData,
   getTimestamp,
   getTimestampVariablesString,
@@ -73,7 +75,7 @@ export const getFootnoteProps = (
 ) => ({
   label:
     t?.('footer.accuracy.label') ||
-    'Always review AI generated content prior to use.',
+    'Red Hat Developer Hub Intelligent Assistant uses AI. Check for mistakes.',
 });
 
 export const ChatbotFootnoteWithIcon = ({ label }: { label: string }) => (

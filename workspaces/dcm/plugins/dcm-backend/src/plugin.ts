@@ -16,6 +16,7 @@
 import {
   coreServices,
   createBackendPlugin,
+  type BackendFeature,
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
 
@@ -24,7 +25,7 @@ import { createRouter } from './router';
  *
  * @public
  */
-export const dcmPlugin = createBackendPlugin({
+export const dcmPlugin: BackendFeature = createBackendPlugin({
   pluginId: 'dcm',
   register(env) {
     env.registerInit({

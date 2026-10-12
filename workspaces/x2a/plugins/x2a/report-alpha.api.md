@@ -218,6 +218,9 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.k8sJobName': string;
     readonly 'modulePage.phases.startedAt': string;
     readonly 'modulePage.phases.errorDetails': string;
+    readonly 'modulePage.phases.copyToClipboard': string;
+    readonly 'modulePage.phases.copyFailed': string;
+    readonly 'modulePage.phases.copyUnavailable': string;
     readonly 'modulePage.phases.statuses.error': string;
     readonly 'modulePage.phases.statuses.notStarted': string;
     readonly 'modulePage.phases.statuses.pending': string;
@@ -376,6 +379,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'scaffolder.rulesAcceptance.loadingRules': string;
     readonly 'scaffolder.rulesAcceptance.noRulesConfigured': string;
     readonly 'scaffolder.rulesAcceptance.fetchError': string;
+    readonly 'scaffolder.rulesAcceptance.readMore': string;
+    readonly 'scaffolder.rulesAcceptance.close': string;
     readonly 'rulesPage.dialog.cancel': string;
     readonly 'rulesPage.dialog.updateError': string;
     readonly 'rulesPage.dialog.createTitle': string;

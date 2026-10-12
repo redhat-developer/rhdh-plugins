@@ -125,6 +125,7 @@ export const scorecardPlugin = createBackendPlugin({
           database: dbMetricValues,
           logger: logger,
           thresholdResolver,
+          config,
         });
 
         const aggregationsService = new AggregationsService({
@@ -169,7 +170,6 @@ export const scorecardPlugin = createBackendPlugin({
           await createRouter({
             metricProvidersRegistry,
             service,
-            catalog,
             httpAuth,
             permissions,
             logger,

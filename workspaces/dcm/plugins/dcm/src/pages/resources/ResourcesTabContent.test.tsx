@@ -27,7 +27,7 @@ jest.mock('../../hooks/useTranslation', () => {
 
 const MOCK_INSTANCE: ServiceTypeInstance = {
   id: 'inst-1',
-  provider_name: 'my-provider',
+  agent_name: 'my-provider',
   status: 'active',
   spec: { service_type: 'vm' },
 };

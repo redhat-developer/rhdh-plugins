@@ -15,18 +15,28 @@
  */
 
 let loadPromise: Promise<void> | undefined;
+let stylesLoaded = false;
+
+/** True after {@link loadChatPatternflyStyles} has resolved successfully. */
+export function areChatPatternflyStylesLoaded(): boolean {
+  return stylesLoaded;
+}
 
 /**
  * Loads PatternFly chat styles on demand so they are not part of the MF sync graph.
+ * Monaco workers are configured separately when attachment modals open.
  */
 export function loadChatPatternflyStyles(): Promise<void> {
   loadPromise ??= Promise.all([
     import('@patternfly/react-core/dist/styles/base-no-reset.css'),
     import('@patternfly/chatbot/dist/css/main.css'),
   ])
-    .then(() => undefined)
+    .then(() => {
+      stylesLoaded = true;
+    })
     .catch(error => {
       loadPromise = undefined;
+      stylesLoaded = false;
       throw error;
     });
   return loadPromise;

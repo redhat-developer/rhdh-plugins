@@ -18,6 +18,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { LogViewer, Progress } from '@backstage/core-components';
 import {
+  Box,
   ButtonGroup,
   Button,
   Grid,
@@ -35,17 +36,10 @@ import {
 import { useTranslation } from '../hooks/useTranslation';
 import { useLogStream } from '../hooks/useLogStream';
 import { useClientService } from '../ClientService';
-import { ItemField } from './ItemField';
-import {
-  canCancelPhase,
-  downloadLogFile,
-  formatDuration,
-  getEffectiveDurationSeconds,
-  humanizeDate,
-  secondsBetween,
-} from './tools';
+import { canCancelPhase, downloadLogFile } from './tools';
 import { TelemetrySection } from './PhaseTelemetry';
 import { PhaseStatus } from './PhaseStatus';
+import { PhaseMetadata } from './PhaseMetadata';
 
 const useStyles = makeStyles(theme => ({
   buttonGroup: {
@@ -126,24 +120,33 @@ const PhaseRunAction = ({
     return '';
   };
 
+  const instructions = getInstructions();
+  const actionText = getActionText();
+
   return (
-    <>
+    <Box border={1} borderColor="divider" borderRadius={4} p={2}>
+      {instructions && (
+        <Typography variant="body2" gutterBottom>
+          {instructions}
+        </Typography>
+      )}
       <ButtonGroup
         orientation="horizontal"
         size="small"
         className={classes.buttonGroup}
       >
-        <Button
-          variant="outlined"
-          color="primary"
-          disabled={isDisabled}
-          onClick={() => {
-            onRunPhase(phaseName);
-          }}
-        >
-          {getActionText()}
-        </Button>
-
+        {actionText && (
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={isDisabled}
+            onClick={() => {
+              onRunPhase(phaseName);
+            }}
+          >
+            {actionText}
+          </Button>
+        )}
         {canCancelPhase(phase?.status) && onCancelPhase && (
           <Button
             variant="outlined"
@@ -155,9 +158,7 @@ const PhaseRunAction = ({
           </Button>
         )}
       </ButtonGroup>
-
-      <Typography>{getInstructions()}</Typography>
-    </>
+    </Box>
   );
 };
 
@@ -181,29 +182,10 @@ export const PhaseDetails = (
   const { t } = useTranslation();
   const classes = useStyles();
   const clientService = useClientService();
-  const empty = t('module.phases.none');
   const [showLog, setShowLog] = useState(false);
 
   const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
-
-  const durationSeconds = phase
-    ? getEffectiveDurationSeconds(phase)
-    : undefined;
-  const duration =
-    durationSeconds === undefined ? empty : formatDuration(t, durationSeconds);
-
-  const attemptCount = phase?.attemptCount ?? (phase ? 1 : undefined);
-  const totalDuration =
-    attemptCount &&
-    attemptCount > 1 &&
-    phase?.firstAttemptAt &&
-    phase?.finishedAt
-      ? formatDuration(
-          t,
-          secondsBetween(phase.firstAttemptAt, phase.finishedAt),
-        )
-      : undefined;
 
   const canRunPhase = phase?.status !== 'running';
 
@@ -255,61 +237,21 @@ export const PhaseDetails = (
         )}
       </Grid>
 
-      <Grid item xs={2}>
-        <ItemField
-          label={t('modulePage.phases.status')}
-          value={<PhaseStatus status={phase?.status} />}
+      <Grid item xs={12}>
+        <PhaseMetadata
+          phase={phase}
+          status={<PhaseStatus status={phase?.status} />}
         />
-      </Grid>
-      <Grid item xs={10}>
-        <ItemField
-          label={t('modulePage.phases.errorDetails')}
-          value={phase?.errorDetails || empty}
-        />
-      </Grid>
-
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.startedAt')}
-          value={phase?.startedAt ? humanizeDate(phase.startedAt) : empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField label={t('modulePage.phases.duration')} value={duration} />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.attempts')}
-          value={String(attemptCount ?? empty)}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.totalElapsed')}
-          value={totalDuration || empty}
-        />
-      </Grid>
-
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.k8sJobName')}
-          value={phase?.k8sJobName || empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.id')}
-          value={phase?.id || empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.commitId')}
-          value={phase?.commitId || empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        {/* space holder */}
+        {phase?.errorDetails && (
+          <Box mt={1}>
+            <Typography variant="caption" color="textSecondary">
+              {t('modulePage.phases.errorDetails')}
+            </Typography>
+            <Typography variant="body2" color="error">
+              {phase.errorDetails}
+            </Typography>
+          </Box>
+        )}
       </Grid>
 
       {phase && (

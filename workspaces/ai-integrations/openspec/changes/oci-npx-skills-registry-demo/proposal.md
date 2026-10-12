@@ -14,6 +14,9 @@ annotations, defaults, and synchronization need one consistent implementation.
 - Add an OCI connector that discovers public Quay repositories, verifies and
   extracts skill metadata, and exposes normalized records through its router.
   Build on the connector in PR #4747 rather than create a competing OCI client.
+  Discover all active tags when no exact tag is configured, and preserve one
+  record and catalog entry per tag that contains a valid OCI skill image.
+  Different tags remain distinct even when they point to the same manifest.
 - Add an npx connector that verifies `skill-md` artifacts from public Agent
   Skills v0.2 indexes, including RHESS, and exposes the same REST contract.
 - Add one common catalog entity provider implementation that consumes both
@@ -78,5 +81,9 @@ _(none)_
 - **Catalog backend**: A common provider maps snapshots to `AiResource` entities.
 - **Deployment**: Sources and catalog consumers are statically configured in
   `app-config.yaml`; both remain demo-only.
+  Omitting the OCI discovery tag now selects all active tags; operators wanting
+  the former behavior must explicitly set `tag: latest`. The normalized OCI key
+  includes the tag, so any experimental repository-only catalog identities must
+  be reconciled as old identities rather than silently reassigned to a tag.
 - **Dependencies**: Public HTTPS registries and Backstage discovery, auth,
   scheduler, and durable backend storage. This PR changes specifications only.
