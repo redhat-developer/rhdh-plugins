@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import { Fragment, Ref, useEffect, useMemo, useState } from 'react';
+import {
+  Fragment,
+  Ref,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -32,7 +40,9 @@ import {
   OutlinedImageIcon,
 } from '@patternfly/react-icons';
 
+import { useCloseOnOutsidePointerDown } from '../hooks/useCloseOnOutsidePointerDown';
 import { useTranslation } from '../hooks/useTranslation';
+import { ModelSelectorToggleText } from './ModelSelectorToggleText';
 
 type MessageBarModelSelectorProps = {
   selectedModel: string;
@@ -48,9 +58,12 @@ type MessageBarModelSelectorProps = {
 };
 
 const SelectorToggle = styled(MenuToggle)(({ theme }) => ({
+  // Fill the model grid cell; min-width 0 so long ids ellipsis in leftover width.
   display: 'flex',
-  alignItems: 'center',
-  gap: 4,
+  width: '100%',
+  minWidth: '0 !important',
+  maxWidth: '100%',
+  overflow: 'hidden',
   color: theme.palette.text.secondary,
   fontSize: 14,
   fontWeight: 500,
@@ -59,6 +72,15 @@ const SelectorToggle = styled(MenuToggle)(({ theme }) => ({
   borderRadius: 8,
   border: 'none',
   background: 'transparent',
+  // PF wraps custom children in __text (not a flex row). Make that wrapper a
+  // flex item so our inner ToggleContent can shrink and ellipsis.
+  '& .pf-v6-c-menu-toggle__text, & .pf-v5-c-menu-toggle__text': {
+    display: 'flex',
+    flex: '1 1 auto',
+    minWidth: 0,
+    maxWidth: '100%',
+    overflow: 'hidden',
+  },
   '&:hover': {
     backgroundColor: theme.palette.action.hover,
   },
@@ -67,6 +89,20 @@ const SelectorToggle = styled(MenuToggle)(({ theme }) => ({
     opacity: 0.5,
   },
 }));
+
+/** Keeps label + chevron on one row; label ellipsizes when the cell is capped. */
+const ToggleContent = styled('span')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  minWidth: 0,
+  width: '100%',
+  maxWidth: '100%',
+  overflow: 'hidden',
+  '& > svg': {
+    flexShrink: 0,
+  },
+});
 
 const VisionIndicatorIcon = styled(OutlinedImageIcon)(({ theme }) => ({
   width: 16,
@@ -119,6 +155,12 @@ const ModelItemContent = styled('span')({
 });
 
 const StyledDropdown = styled(Dropdown)({
+  // Fill the model grid cell so the toggle ellipsizes within leftover width.
+  display: 'flex',
+  width: '100%',
+  minWidth: 0,
+  maxWidth: '100%',
+  overflow: 'hidden',
   '& ul, & li': {
     padding: 0,
     margin: 0,
@@ -137,6 +179,15 @@ const StyledDropdown = styled(Dropdown)({
   },
 });
 
+/** Anchor for outside-pointer detection (menu itself is portaled). */
+const SelectorRoot = styled('div')({
+  display: 'flex',
+  width: '100%',
+  minWidth: 0,
+  maxWidth: '100%',
+  overflow: 'hidden',
+});
+
 export const MessageBarModelSelector = ({
   selectedModel,
   models,
@@ -145,7 +196,9 @@ export const MessageBarModelSelector = ({
   disabledTooltip,
 }: MessageBarModelSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+  const closeMenu = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
     if (disabled) {
@@ -153,9 +206,10 @@ export const MessageBarModelSelector = ({
     }
   }, [disabled]);
 
+  useCloseOnOutsidePointerDown(isOpen && !disabled, closeMenu, rootRef);
+
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
-
   const visionScreenshotTooltip = useMemo(
     () => (
       <Fragment>
@@ -176,8 +230,10 @@ export const MessageBarModelSelector = ({
       variant="plain"
       aria-label={t('aria.chatbotSelector')}
     >
-      {selectedModelLabel}
-      <AngleDownIcon />
+      <ToggleContent>
+        <ModelSelectorToggleText label={selectedModelLabel} />
+        <AngleDownIcon />
+      </ToggleContent>
     </SelectorToggle>
   );
 
@@ -244,11 +300,13 @@ export const MessageBarModelSelector = ({
 
   if (disabled && disabledTooltip) {
     return (
-      <Tooltip content={disabledTooltip}>
-        <Typography component="span">{dropdown}</Typography>
-      </Tooltip>
+      <SelectorRoot ref={rootRef}>
+        <Tooltip content={disabledTooltip}>
+          <Typography component="span">{dropdown}</Typography>
+        </Tooltip>
+      </SelectorRoot>
     );
   }
 
-  return dropdown;
+  return <SelectorRoot ref={rootRef}>{dropdown}</SelectorRoot>;
 };
