@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.4.1
+
+### Patch Changes
+
+- c7605a3: Adopt Backstage yarn plugin for Backstage package version management
+- f8d9ade: Offset the fixed sidebar root below a full-width global header (`height: 100vh − header`, drawer fills the root) and hide the sidebar company logo when the masthead is present (PatternFly header + nav).
+- f8d9ade: Drop the page-inset top margin when a full-width global header sits above the content well, size the well to `100vh − header − bottom inset` so the bottom margin stays visible, and paint shell chrome with the RHDH page-inset background unless overridden in app branding theme config.
+- f8d9ade: Sync BUI page-inset shell CSS variables from branding chrome tokens so customized dark themes keep the outer app background matched to the sidebar and global header.
+- f8d9ade: Reserve a stable scrollbar gutter in the sidebar menu scroller so menu items do not shift horizontally when the scrollbar appears or disappears.
+- f8d9ade: Keep SidebarPage border-box left corners square under the drawer spacer so the sidebar is not clipped, while sticky corner masks still round the main content well against the nav.
+
 ## 1.4.0
 
 ### Minor Changes
