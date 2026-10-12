@@ -318,6 +318,7 @@ export const extensionsMessages = {
     pluginInstalled: 'Plugin installed',
     instructions: 'Instructions',
     editInstructions: 'Edit instructions',
+    noPackagesTitle: 'No package entities found',
     back: 'Back',
     packageUpdated: 'Package updated',
     packageEnabled: 'Package enabled',

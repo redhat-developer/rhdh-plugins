@@ -251,6 +251,7 @@ const extensionsTranslationEs = createTranslationMessages({
     'install.pluginUpdated': 'Complemento actualizado',
     'install.pluginInstalled': 'Complemento instalado',
     'install.instructions': 'Instrucciones',
+    'install.noPackagesTitle': 'No se encontraron entidades de paquete',
     'install.editInstructions': 'Modificar instrucciones',
     'install.back': 'Atrás',
     'install.packageUpdated': 'Paquete actualizado',

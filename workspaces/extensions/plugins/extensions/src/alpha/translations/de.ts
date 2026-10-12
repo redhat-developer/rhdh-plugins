@@ -249,6 +249,7 @@ const extensionsTranslationDe = createTranslationMessages({
     'install.pluginUpdated': 'Plugin aktualisiert',
     'install.pluginInstalled': 'Plugin installiert',
     'install.instructions': 'Anweisungen',
+    'install.noPackagesTitle': 'Keine Paketentitäten gefunden',
     'install.editInstructions': 'Bearbeitungsanweisungen',
     'install.back': 'Zurück',
     'install.packageUpdated': 'Paket aktualisiert',
