@@ -50,7 +50,7 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 import { quickstartTranslations } from '@red-hat-developer-hub/backstage-plugin-quickstart/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { RbacPage } from '@backstage-community/plugin-rbac';

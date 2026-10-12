@@ -22,7 +22,7 @@ import {
 import { SignInPageBlueprint } from '@backstage/plugin-app-react';
 import { SignInPage } from '@backstage/core-components';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,

@@ -25,7 +25,7 @@ import {
   SignInPageBlueprint,
   type SignInPageProps,
 } from '@backstage/plugin-app-react';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import { navModule } from './modules/nav';
 

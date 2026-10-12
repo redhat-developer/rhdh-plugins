@@ -40,7 +40,7 @@ import {
 } from '@backstage/dev-utils';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import ScienceIcon from '@mui/icons-material/Science';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import translationsPlugin, { translationsApiModule } from '../src';
 // eslint-disable-next-line @backstage/no-relative-monorepo-imports

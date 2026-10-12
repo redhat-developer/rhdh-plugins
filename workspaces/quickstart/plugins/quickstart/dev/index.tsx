@@ -44,7 +44,7 @@ import WavingHandOutlinedIcon from '@mui/icons-material/WavingHandOutlined';
 
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import quickstartPlugin, {
   quickstartInitModule,

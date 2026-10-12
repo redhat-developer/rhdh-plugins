@@ -10707,7 +10707,7 @@ __metadata:
     "@mui/material": "npm:^5.12.2"
     "@playwright/test": "npm:1.63.0"
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.4.1"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^4.29.21"
     "@testing-library/dom": "npm:^10.0.0"
@@ -10923,21 +10923,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.15.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:1.4.1"
   dependencies:
-    "@backstage/frontend-plugin-api": "npm:^0.17.2"
-    "@backstage/plugin-app-react": "npm:^0.2.4"
+    "@backstage/frontend-plugin-api": "npm:^0.18.0"
+    "@backstage/plugin-app-react": "npm:^0.2.6"
     "@mui/icons-material": "npm:^5.17.1"
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.12.7
+    "@backstage/core-plugin-api": ^1.12.9
     "@backstage/theme": ^0.7.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/a5b8128344e37475fbf699ce6eb9854a0a5d1cbd6be39ce28e1ced08301eff643aabc28d9ee173a04a59976d2de850285e49ba3b66e9b3c130fa1e3889608cd6
+  checksum: 10c0/1e5eff0cc01228cf87015dcaf78f43ab295680d8cc919f1dd45011185c91cf22ada5bd0dca03cee8293d478bb85c5fcf7dc27912b6371843b5ad86a3a2ec8a7f
   languageName: node
   linkType: hard
 
@@ -16094,7 +16094,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.1"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:2.2.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.4.1"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^4.29.21"
     "@testing-library/dom": "npm:^10.0.0"
@@ -16185,7 +16185,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.2.1"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:2.2.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.4.1"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@tanstack/react-query": "npm:^4.29.21"
     "@testing-library/dom": "npm:^10.0.0"
