@@ -52,9 +52,19 @@ export const ChatLoadingFallback = ({ variant = 'default' }: Props) => {
               boxShadow: 3,
             }
           : {
+              // Page / drawer: fill the shell well so overlay→fullscreen does
+              // not flash a short strip at the top of the page inset.
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              flex: '1 1 auto',
+              alignSelf: 'stretch',
               width: '100%',
+              minHeight: '100%',
+              height: '100%',
               p: 2,
               boxSizing: 'border-box',
+              bgcolor: 'background.default',
             }
       }
     >

@@ -31,12 +31,13 @@ const GLOBAL_HEADER_HEIGHT_VAR = '--rhdh-global-header-height';
  * Global header / masthead. Reads toolbar items from GlobalHeaderContext
  * and renders them in a sticky AppBar.
  *
- * Spans the full viewport width (PatternFly masthead / OFS Root behavior).
- * Company logo is shown by default; app shells should not hide it in favor
- * of a sidebar mark. Injected layout CSS publishes
- * `--rhdh-global-header-height` and offsets the fixed Backstage sidebar
- * drawer (and BUI dialogs) below this bar. A ResizeObserver keeps the
- * CSS variable in sync with the real masthead height.
+ * Spans the viewport (PatternFly masthead / OFS Root behavior) and shrinks
+ * when an application drawer docks from the right via
+ * `--docked-drawer-width`. Company logo is shown by default; app shells
+ * should not hide it in favor of a sidebar mark. Injected layout CSS
+ * publishes `--rhdh-global-header-height` and offsets the fixed Backstage
+ * sidebar drawer (and BUI dialogs) below this bar. A ResizeObserver keeps
+ * the CSS variable in sync with the real masthead height.
  *
  * @public
  */
@@ -83,9 +84,11 @@ export const GlobalHeader = () => {
         component="nav"
         id="global-header"
         sx={{
-          // Full viewport width — do not inset beside the sidebar.
-          width: '100%',
-          // Application drawer (e.g. Lightspeed) can dock from the right.
+          // `auto` (not `100%`) so margin-right for a docked application
+          // drawer actually shrinks the bar instead of overflowing.
+          width: 'auto',
+          // Application drawer (e.g. Quickstart / Lightspeed) can dock
+          // from the right; ApplicationDrawer sets --docked-drawer-width.
           marginRight: 'var(--docked-drawer-width, 0px)',
           transition: 'margin-right 225ms cubic-bezier(0, 0, 0.2, 1)',
         }}

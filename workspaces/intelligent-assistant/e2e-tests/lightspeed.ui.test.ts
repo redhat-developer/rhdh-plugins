@@ -137,7 +137,8 @@ test.describe('Intelligent assistant UI', () => {
     await expect(dropdown).toHaveText(models[0].provider_resource_id);
 
     await dropdown.click();
-    await sharedPage.getByText(model).click();
+    // Prefer menuitem — getByText(model) can match a leftover toggle tooltip.
+    await sharedPage.getByRole('menuitem', { name: model }).click();
     await expect(dropdown).toHaveText(model);
   });
 
