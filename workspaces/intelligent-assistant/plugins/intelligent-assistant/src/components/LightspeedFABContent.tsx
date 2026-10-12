@@ -33,6 +33,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import {
   clearLightspeedFabAnchorVars,
   getLightspeedFabEdgeInset,
+  getLightspeedFabInlineEdgeInset,
   publishLightspeedFabAnchorVars,
 } from '../utils/fab-anchor-utils';
 import { LightspeedFABIcon, LightspeedFABOpenIcon } from './LightspeedIcon';
@@ -51,7 +52,8 @@ export const LightspeedFABContent = () => {
     chatPermissionLoading || notebooksPermissionLoading;
   const hasPluginAccess = hasChatAccess || hasNotebooksAccess;
   const fabRef = useRef<HTMLDivElement>(null);
-  const fabEdgeInset = getLightspeedFabEdgeInset(theme);
+  const fabBlockEndInset = getLightspeedFabEdgeInset(theme);
+  const fabInlineEndInset = getLightspeedFabInlineEdgeInset(theme);
 
   useLayoutEffect(() => {
     const fab = fabRef.current;
@@ -114,8 +116,8 @@ export const LightspeedFABContent = () => {
     <Box
       ref={fabRef}
       sx={{
-        bottom: fabEdgeInset,
-        right: fabEdgeInset,
+        bottom: fabBlockEndInset,
+        right: fabInlineEndInset,
         alignItems: 'end',
         zIndex: theme.zIndex.tooltip,
         display: 'flex',
