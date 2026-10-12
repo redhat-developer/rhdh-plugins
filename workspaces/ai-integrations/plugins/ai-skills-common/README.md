@@ -77,6 +77,11 @@ operations.
 | `NormalizationResult<T>`  | Contains the normalized record (or null) and diagnostics |
 | `NormalizationDiagnostic` | A single diagnostic with field name and message          |
 
+The metadata normalizers return diagnostics as `{ field, message }` objects
+because they process multiple metadata fields. The existing `normalizeTags`
+catalog helper returns diagnostic strings for its single tag input. Both shapes
+are intentional. Diagnostic message text is informational and may change.
+
 ### Constants
 
 | Constant              | Value | Description                                   |
