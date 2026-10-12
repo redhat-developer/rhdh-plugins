@@ -673,17 +673,17 @@ export class CatalogMetricService {
   ): Promise<string[]> {
     const { credentials } = options;
 
-    if (this.globalDisabledMetrics.includes(metricId)) {
-      this.logger.debug(`Disabled metric by app-config: ${metricId}`);
-      return [];
-    }
-
     const userEntity = await this.catalog.getEntityByRef(userEntityRef, {
       credentials,
     });
 
     if (!userEntity) {
       throw new NotFoundError('User entity not found in catalog');
+    }
+
+    if (this.globalDisabledMetrics.includes(metricId)) {
+      this.logger.debug(`Disabled metric by app-config: ${metricId}`);
+      return [];
     }
 
     const ownerRefs: string[] = [userEntityRef];
