@@ -1,7 +1,7 @@
 dcm:
   # Keep this aligned with the DCM control plane's auth.enabled setting.
   auth:
-    enabled: ${DCM_AUTH_ENABLED:-true}
+    enabled: ${DCM_AUTH_ENABLED:-false}
   # Base URL of the DCM control plane (required).
   apiUrl: ${DCM_API_URL}
   # Legacy env var; kept until deploy configs switch to DCM_API_URL.

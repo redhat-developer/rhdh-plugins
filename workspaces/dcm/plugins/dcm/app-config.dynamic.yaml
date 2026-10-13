@@ -1,7 +1,7 @@
 dcm:
   # Keep this aligned with the DCM control plane's auth.enabled setting.
   auth:
-    enabled: ${DCM_AUTH_ENABLED:-true}
+    enabled: ${DCM_AUTH_ENABLED:-false}
 
 dynamicPlugins:
   frontend:
