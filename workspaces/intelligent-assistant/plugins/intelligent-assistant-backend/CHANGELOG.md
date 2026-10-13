@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.3.9
+
+### Patch Changes
+
+- 102547a: Updated dependency `msw` to `2.15.0`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^1.4.1`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.9
+
 ## 5.3.8
 
 ### Patch Changes
