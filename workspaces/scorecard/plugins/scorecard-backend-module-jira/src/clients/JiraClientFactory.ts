@@ -29,6 +29,7 @@ import {
   DirectConnectionStrategy,
   ProxyConnectionStrategy,
 } from '../strategies/ConnectionStrategy';
+import { resolveJiraAuthType, validateJiraToken } from './utils';
 import { Product } from './types';
 
 export class JiraClientFactory {
@@ -42,6 +43,7 @@ export class JiraClientFactory {
   ): JiraClient {
     const jiraConfig = config.getConfig(JIRA_CONFIG_PATH);
     const proxyPath = jiraConfig.getOptionalString('proxyPath');
+    const product = jiraConfig.getString('product') as Product;
 
     let connectionStrategy: ConnectionStrategy;
     if (proxyPath) {
@@ -51,14 +53,22 @@ export class JiraClientFactory {
         options.discovery,
       );
     } else {
+      const authType = resolveJiraAuthType(
+        product,
+        jiraConfig.getOptionalString('authType'),
+      );
+
+      const token = validateJiraToken(
+        jiraConfig.getString('token'),
+        `${JIRA_CONFIG_PATH}.token`,
+      );
+
       connectionStrategy = new DirectConnectionStrategy(
         jiraConfig.getString('baseUrl'),
-        jiraConfig.getString('token'),
-        jiraConfig.getString('product') as Product,
+        token,
+        authType,
       );
     }
-
-    const product = jiraConfig.getString('product');
 
     switch (product) {
       case 'datacenter':

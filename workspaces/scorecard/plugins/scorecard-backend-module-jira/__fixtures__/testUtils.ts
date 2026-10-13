@@ -56,6 +56,7 @@ interface NewMockRootConfigProps {
     token?: string;
     product?: string;
     proxyPath?: string;
+    authType?: string;
   };
 }
 
