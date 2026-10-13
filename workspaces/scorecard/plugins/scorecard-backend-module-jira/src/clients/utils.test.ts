@@ -20,6 +20,7 @@ import {
   toJiraEpochMillis,
   validateIdentifier,
   validateJQLValue,
+  validateJqlExpression,
 } from './utils';
 
 describe('utils', () => {
@@ -44,6 +45,70 @@ describe('utils', () => {
 
     it('should return valid identifier', () => {
       expect(validateIdentifier('TEST', 'jira/project-key')).toBe('TEST');
+    });
+  });
+
+  describe('validateJqlExpression', () => {
+    it.each([
+      ['priority = High'],
+      ['assignee = 000000:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'],
+      ['summary ~ "fix (regression)"'],
+      ['project in (A, B) AND cf[10001] = 5'],
+      ['assignee in membersOf("jira-users")'],
+      ['summary ~ "say \\"hi\\""'],
+      ['summary ~ "it\'s (ok)"'],
+      ['summary ~ "a \\\\ b"'],
+      ['summary ~ "order by priority"'],
+      ['summary ~ "foo*"'],
+    ])('accepts valid JQL expression %p', value => {
+      expect(validateJqlExpression(value, 'jira/custom-filter')).toBe(value);
+    });
+
+    it('trims surrounding whitespace', () => {
+      expect(
+        validateJqlExpression('  priority = High  ', 'jira/custom-filter'),
+      ).toBe('priority = High');
+    });
+
+    it('accepts an expression at the maximum length', () => {
+      const value = 'a'.repeat(1000);
+
+      expect(validateJqlExpression(value, 'jira/custom-filter')).toBe(value);
+    });
+
+    it('rejects an expression over the maximum length', () => {
+      expect(() =>
+        validateJqlExpression('a'.repeat(1001), 'jira/custom-filter'),
+      ).toThrow(
+        'jira/custom-filter is not a valid JQL filter: must not be longer than 1000 characters.',
+      );
+    });
+
+    it.each([
+      ['x = 1) OR (1 = 1', 'unbalanced parentheses'],
+      ['(x = 1', 'unbalanced parentheses'],
+      ['cf[10001 = 5', 'unbalanced brackets'],
+      ['x = 1]', 'unbalanced brackets'],
+      ['status = "Done', 'unterminated string literal'],
+      ['summary ~ "trailing \\', 'unterminated string literal'],
+      ['a = 1\nb = 2', 'must not contain control characters'],
+      ['a = 1\u0000b = 2', 'must not contain control characters'],
+      [
+        'summary ~ \\" ) OR 1=1 ("',
+        'must not contain a backslash outside a string literal',
+      ],
+      ["a = 'x) OR (1=1'", 'unbalanced parentheses'],
+      [
+        'priority = High ORDER BY created',
+        'must not contain an ORDER BY clause',
+      ],
+      ['summary ~ "*foo"', 'must not use a leading wildcard'],
+      ['summary ~ " *foo"', 'must not use a leading wildcard'],
+      ['   ', 'must not be empty'],
+    ])('rejects %p (%s)', (value, reason) => {
+      expect(() => validateJqlExpression(value, 'jira/custom-filter')).toThrow(
+        `jira/custom-filter is not a valid JQL filter: ${reason}.`,
+      );
     });
   });
 
