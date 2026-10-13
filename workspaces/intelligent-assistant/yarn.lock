@@ -39,7 +39,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@adobe/react-spectrum@npm:^3.47.0":
+"@adobe/react-spectrum@npm:3.47.1, @adobe/react-spectrum@npm:^3.47.0":
   version: 3.47.1
   resolution: "@adobe/react-spectrum@npm:3.47.1"
   dependencies:
@@ -9539,6 +9539,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-intelligent-assistant@workspace:plugins/intelligent-assistant"
   dependencies:
+    "@adobe/react-spectrum": "npm:3.47.1"
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/core-components": "npm:^0.18.13"
     "@backstage/core-plugin-api": "npm:^1.12.9"
@@ -9571,9 +9572,11 @@ __metadata:
     monaco-editor: "npm:^0.56.0"
     prettier: "npm:3.9.9"
     react: "npm:^18.0.0"
+    react-aria: "npm:3.49.0"
     react-dom: "npm:^18.0.0"
     react-dropzone: "npm:^14.4.0"
     react-router-dom: "npm:^6.30.6"
+    react-stately: "npm:3.47.0"
     react-use: "npm:^17.2.4"
     tss-react: "npm:^4.9.18"
   peerDependencies:
