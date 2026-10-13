@@ -144,7 +144,10 @@ export const LightspeedChatBoxHeader = ({
       isDisabled={isModelSelectorDisabled}
       onClick={() => setIsOptionsMenuOpen(!isOptionsMenuOpen)}
     >
-      <ModelSelectorToggleText label={selectedModelLabel} />
+      <ModelSelectorToggleText
+        label={selectedModelLabel}
+        hideTooltip={isOptionsMenuOpen}
+      />
     </SelectorToggle>
   );
 

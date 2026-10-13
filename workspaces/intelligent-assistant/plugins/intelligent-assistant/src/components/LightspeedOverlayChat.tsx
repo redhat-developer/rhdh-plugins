@@ -23,7 +23,6 @@ import {
 } from '@patternfly/chatbot';
 
 import {
-  DOCKED_CONTENT_OFFSET,
   LIGHTSPEED_OVERLAY_BOTTOM,
   LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS,
   LIGHTSPEED_OVERLAY_MAX_WIDTH,
@@ -39,6 +38,20 @@ import { LightspeedChatContainer } from './LightspeedChatContainer';
 
 const LIGHTSPEED_OVERLAY_CHAT_Z_INDEX = 300;
 
+/**
+ * Overlay shell matches PF basic ChatBot chrome:
+ * floating-secondary fill + medium radius + subtle border.
+ * @see https://chatbot-pr-chatbot-902.surge.sh/extensions/chatbot/overview/demo/basic-chatbot/
+ *
+ * Inner Chatbot stays `embedded` for layout (static, 100%), so the modal —
+ * not the embedded chatbot — owns the visible border/radius. Children inherit
+ * radius + overflow clip so dark fills do not square-cut the corners.
+ *
+ * Horizontal position comes only from {@link LIGHTSPEED_OVERLAY_RIGHT} (measured
+ * FAB inset). Do not also apply `DOCKED_CONTENT_OFFSET` — the FAB already shifts
+ * for Quickstart/`docked-drawer-open`, and a second margin double-offsets the
+ * modal onto the left side of the viewport.
+ */
 const StyledChatbotModal = styled(ChatbotModal)(() => ({
   zIndex: LIGHTSPEED_OVERLAY_CHAT_Z_INDEX,
   boxShadow:
@@ -47,11 +60,28 @@ const StyledChatbotModal = styled(ChatbotModal)(() => ({
   right: `${LIGHTSPEED_OVERLAY_RIGHT} !important`,
   maxWidth: `${LIGHTSPEED_OVERLAY_MAX_WIDTH} !important`,
   overflow: 'hidden',
-  transition:
-    'margin-right 0.3s ease, bottom 0.3s ease, right 0.3s ease, inset-block-end 0.3s ease, inset-inline-end 0.3s ease',
-  'body.docked-drawer-open &': {
-    marginRight: DOCKED_CONTENT_OFFSET,
+  backgroundColor:
+    'var(--pf-t--global--background--color--floating--secondary--default) !important',
+  borderRadius: 'var(--pf-t--global--border--radius--medium) !important',
+  border:
+    'var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--subtle) !important',
+  // Embedded Chatbot zeros radius; restore PF default overlay chrome inside.
+  '& .pf-chatbot': {
+    backgroundColor: 'transparent !important',
+    border: 'none !important',
+    boxShadow: 'none !important',
+    borderRadius: 'inherit !important',
   },
+  '& .pf-chatbot-container': {
+    borderRadius: 'inherit !important',
+    overflow: 'hidden',
+  },
+  '& .pf-chatbot__header, & .pf-chatbot__content, & .pf-chatbot__footer': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--secondary--default) !important',
+  },
+  transition:
+    'bottom 0.3s ease, right 0.3s ease, inset-block-end 0.3s ease, inset-inline-end 0.3s ease',
 }));
 
 type Props = {

@@ -715,4 +715,146 @@ describe('ScorecardApiClient', () => {
       );
     });
   });
+
+  describe('getAggregatedScorecardEntities', () => {
+    const entitiesResponse = {
+      metricId: 'github.openPRs',
+      entities: [],
+      pagination: { page: 2, pageSize: 20, total: 0, totalPages: 0 },
+    };
+
+    it('should build the drill-down path and query string', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => entitiesResponse,
+      });
+
+      const result = await client.getAggregatedScorecardEntities({
+        metricId: 'github.openPRs',
+        page: 2,
+        pageSize: 20,
+        ownershipEntityRefs: ['group:default/team-a', 'user:default/alice'],
+        orderBy: 'metricValue',
+        order: 'desc',
+      });
+
+      expect(fetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?page=2&pageSize=20&owner=group%3Adefault%2Fteam-a&owner=user%3Adefault%2Falice&sortBy=metricValue&sortOrder=desc',
+      );
+      expect(result).toEqual(entitiesResponse);
+    });
+
+    it('should throw when metric id is empty', async () => {
+      await expect(
+        client.getAggregatedScorecardEntities({
+          metricId: '',
+          page: 1,
+          pageSize: 20,
+        }),
+      ).rejects.toThrow('Metric ID is required for aggregated scorecards');
+      expect(fetchApi.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should throw on non-OK response', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        text: async () => 'drill-down failed',
+      });
+
+      await expect(
+        client.getAggregatedScorecardEntities({
+          metricId: 'github.openPRs',
+          page: 1,
+          pageSize: 20,
+        }),
+      ).rejects.toThrow(
+        'Failed to fetch aggregated scorecards: 500 Internal Server Error. drill-down failed',
+      );
+    });
+
+    it('should throw when the response JSON is not an object', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => [],
+      });
+
+      await expect(
+        client.getAggregatedScorecardEntities({
+          metricId: 'github.openPRs',
+          page: 1,
+          pageSize: 20,
+        }),
+      ).rejects.toThrow(
+        'Invalid response format from aggregated scorecard API',
+      );
+    });
+  });
+
+  describe('getMetrics', () => {
+    const metricsResponse = {
+      metrics: [
+        {
+          id: 'github.openPRs',
+          title: 'GitHub Open PRs',
+          description: 'Count',
+          type: 'number',
+        },
+      ],
+    };
+
+    it('should request the metrics collection without filters', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => metricsResponse,
+      });
+
+      const result = await client.getMetrics();
+
+      expect(fetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/scorecard/metrics',
+      );
+      expect(result).toEqual(metricsResponse);
+    });
+
+    it('should append metricIds as a comma-separated query param', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => metricsResponse,
+      });
+
+      await client.getMetrics({
+        metricIds: ['github.openPRs', 'jira.openIssues'],
+      });
+
+      expect(fetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/scorecard/metrics?metricIds=github.openPRs%2Cjira.openIssues',
+      );
+    });
+
+    it('should throw on non-OK response', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 403,
+        statusText: 'Forbidden',
+        text: async () => 'not allowed',
+      });
+
+      await expect(client.getMetrics()).rejects.toThrow(
+        'Failed to fetch metric: 403 Forbidden. not allowed',
+      );
+    });
+
+    it('should throw when the response JSON is not a metrics object', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => [],
+      });
+
+      await expect(client.getMetrics()).rejects.toThrow(
+        'Invalid response format from metrics API',
+      );
+    });
+  });
 });

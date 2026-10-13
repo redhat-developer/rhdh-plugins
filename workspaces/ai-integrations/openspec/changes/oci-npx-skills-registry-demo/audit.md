@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-08T17:37:21Z
+**Last audited:** 2026-10-12T21:40:52Z
 
 This focused follow-up reviews the all-active-tag discovery pivot against the
 proposal, design, OCI/common/provider specifications, task status, implementation,
@@ -8,6 +8,14 @@ and regression tests. It supplements the earlier independent specification
 reviews, including the 2026-10-02 review; it is not a claim that the remaining
 connector and provider tasks have been implemented.
 
+Strict OpenSpec validation, relative links, workspace TypeScript, and workspace
+Prettier checks passed. This audit evaluates specification coherence, not runtime
+implementation; task 1.1 is checked (implemented in `ai-skills-common` PR #5061),
+task 1.2 is checked (implemented in `ai-skills-common` PR #5072, adding
+`normalizeOciMetadata` and `normalizeNpxMetadata` with D3 precedence, tag/author
+normalization, allowlisted extensions, diagnostics, and native metadata fixtures),
+task 1.3 is checked (implemented in `ai-skills-common` PR #5071), and task 1.4
+is annotated with shared-library completion status.
 An omitted or blank discovery tag now selects all active tags. Explicit tags
 remain exact filters, and `tag: latest` preserves the former default. Repository
 and tag pages share the existing request utilities and one 100-page budget.
@@ -23,12 +31,13 @@ change. The shared string-key validator and identity helper already support this
 contract; regression tests cover same-digest tagged keys and distinct names.
 The npx identity and acquisition requirements are unchanged.
 
-Runtime work remains scoped to task 2.1. The current raw `/images` endpoint keeps
+At the time of the task 2.1 review, runtime work remained scoped to task 2.1. The current raw `/images` endpoint keeps
 its response shape and existing failure accounting. Discovery truncation is
 logged, and tag-list failures follow the existing discovery error path. Complete
 normalized snapshot status, non-skill classification, digest-pinned acquisition,
-periodic refresh, and actual catalog entity production remain in unchecked tasks
-2.2–2.5 and section 4. Raw explicit digest references remain supported without
+periodic refresh, and actual catalog entity production remained in unchecked tasks
+2.2–2.5 and section 4. The task 2.2 completion check below supersedes that
+historical acquisition status. Raw explicit digest references remain supported without
 inventing a tag. Shared tasks 1.1 and 1.3 remain complete, with the shared-library
 portion of 1.4 noted separately.
 
@@ -113,6 +122,73 @@ and formatting checks of the revised documentation passed. The workspace-wide
 formatting check reports only the maintainer's existing `app-config.yaml`
 formatting; that file was left untouched. The documentation changes remain
 uncommitted for maintainer review.
+
+### Task 2.2 completion check
+
+This focused consistency check covers PR #5152 against task 2.2 and the
+RHIDP-17781 acceptance criteria. It supplements the earlier audits; it is not
+an independent full-change audit or a claim that tasks 2.3–2.5 are complete.
+
+Tagged acquisitions resolve a SHA-256 manifest digest once per acquisition,
+after any resolution retries. Extraction retries reuse that digest. Raw manifest
+bytes are verified before parsing or layer retrieval. Both annotated-layer and
+tar extraction paths already use `OciClient.fetchBlob`, which verifies descriptor
+size and blob digest before extraction. The former partial-task note incorrectly
+identified blob digest verification as missing and has been removed.
+
+The connector now reuses `ai-skills-common`'s digest validator, OCI reference
+builder, and `OciSkillRecord` field types for internal acquisition metadata.
+Invalid or missing resolved digests fail before extraction. Metadata preserves
+a stable case-sensitive tagged key across tag movement, distinguishes aliases
+that share a digest, and records a verified digest-addressed source URI.
+Explicit digest references remain supported without an invented tag, and the
+raw `/images` API response remains unchanged.
+
+New integration tests exercise the real plugin, OCI client, and extraction
+service with mocked registry HTTP responses. They verify a transient blob
+failure after resolution, a tag moving between acquisitions, same-digest tag
+aliases, resolution retries, invalid resolution digests, explicit digest input,
+and rejection of manifest, blob digest, and blob size mismatches. Manifest
+mismatch tests verify that no layer is fetched.
+
+The complete connector suite passed (264 tests), as did the shared-library suite
+(166 tests), workspace `tsc:full`, `build:all`, API report validation, and
+connector lint, and strict OpenSpec validation. Dependency installation and
+deduplication completed with install scripts disabled. The workspace formatting
+check reports only the maintainer's existing `app-config.yaml` formatting; all
+other checked files pass. Task 2.2 is marked complete; normalization, connection-level
+DNS protection, snapshots, scheduling, and catalog production remain pending.
+The maintainer's `app-config.yaml` edits are untouched. The maintainer subsequently reported successful sanity testing and authorized
+a local commit. Signing, pushing, and the next Fullsend review remain
+maintainer-owned.
+
+### Task 1.2 review follow-up
+
+This focused consistency check covers the latest PR #5072 review. Both D3
+normalizers and the D5 `normalizeTags` helper now use Backstage's default
+catalog tag pattern. Dots, underscores, and consecutive hyphens are omitted
+with diagnostics. Colons, plus signs, and hash characters remain supported.
+The earlier extended-pattern documentation contradicted D3's catalog-valid
+requirement and has been corrected in the JSDoc, README, and changeset.
+
+Development-only tests compare the shared pattern and 63-character limit
+with `makeValidator().isValidTag`, then check OCI, npx, and catalog-helper
+normalization against that validator. These regressions failed before the
+correction and now pass. Backstage remains absent from runtime dependencies.
+The redundant normalizer-module constants re-export is removed; package-root
+exports remain. Tag diagnostic wording is explicitly informational.
+
+The task narrative no longer duplicates task 1.4 or describes completed 2.1
+and 2.2 as future implementation. Task definitions and completion states are
+unchanged. Internal diagnostic assertions and the frontmatter type aliases
+remain intentional; neither requires a public API refactor. This focused
+check does not replace the earlier independent audits.
+
+All 239 shared-library tests passed with `--watchAll=false --runInBand`.
+Workspace type checking, API report validation, package build/lint, workspace
+formatting, strict OpenSpec validation, and dependency installation/deduplication
+passed. Review replies record fixes and retained behavior. Changes remain local
+until maintainer signing and pushing.
 
 ### Summary
 

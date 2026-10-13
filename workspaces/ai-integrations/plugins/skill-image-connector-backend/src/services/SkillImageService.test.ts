@@ -393,7 +393,10 @@ describe('fetchAndExtractSkillImage', () => {
       ],
     };
 
-    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchManifest.mockResolvedValue({
+      manifest,
+      digest: `sha256:${'a'.repeat(64)}`,
+    });
     mockedFetchBlob
       .mockResolvedValueOnce(Buffer.from(yamlContent))
       .mockResolvedValueOnce(Buffer.from(mdContent));
@@ -479,7 +482,10 @@ describe('fetchAndExtractSkillImage', () => {
       ],
     };
 
-    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchManifest.mockResolvedValue({
+      manifest,
+      digest: `sha256:${'a'.repeat(64)}`,
+    });
     mockedFetchBlob.mockResolvedValueOnce(gzippedTar);
 
     (fs.promises.mkdtemp as jest.Mock).mockResolvedValue('/tmp/skill-image-xx');
@@ -521,7 +527,10 @@ describe('fetchAndExtractSkillImage', () => {
       ],
     };
 
-    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchManifest.mockResolvedValue({
+      manifest,
+      digest: `sha256:${'a'.repeat(64)}`,
+    });
     mockedFetchBlob.mockResolvedValueOnce(gzippedTar);
 
     (fs.promises.mkdtemp as jest.Mock).mockResolvedValue('/tmp/skill-image-xx');
@@ -568,7 +577,10 @@ describe('fetchAndExtractSkillImage', () => {
       ],
     };
 
-    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchManifest.mockResolvedValue({
+      manifest,
+      digest: `sha256:${'a'.repeat(64)}`,
+    });
     mockedFetchBlob.mockResolvedValueOnce(tarArchive);
 
     (fs.promises.mkdtemp as jest.Mock).mockResolvedValue('/tmp/skill-image-xx');
@@ -606,7 +618,10 @@ describe('fetchAndExtractSkillImage', () => {
       ],
     };
 
-    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchManifest.mockResolvedValue({
+      manifest,
+      digest: `sha256:${'a'.repeat(64)}`,
+    });
     mockedFetchBlob.mockResolvedValueOnce(gzippedTar);
 
     await expect(
@@ -634,7 +649,10 @@ describe('fetchAndExtractSkillImage', () => {
       ],
     };
 
-    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchManifest.mockResolvedValue({
+      manifest,
+      digest: `sha256:${'a'.repeat(64)}`,
+    });
 
     await expect(
       fetchAndExtractSkillImage('quay.io/org/bad-image:v1', '/tmp', logger),
@@ -672,7 +690,10 @@ describe('fetchAndExtractSkillImage', () => {
       ],
     };
 
-    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchManifest.mockResolvedValue({
+      manifest,
+      digest: `sha256:${'a'.repeat(64)}`,
+    });
     mockedFetchBlob
       .mockResolvedValueOnce(Buffer.from(yamlContent))
       .mockResolvedValueOnce(Buffer.from(mdContent));
@@ -719,7 +740,10 @@ describe('fetchAndExtractSkillImage', () => {
       ],
     };
 
-    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchManifest.mockResolvedValue({
+      manifest,
+      digest: `sha256:${'a'.repeat(64)}`,
+    });
     mockedFetchBlob.mockResolvedValueOnce(compressed);
 
     await expect(

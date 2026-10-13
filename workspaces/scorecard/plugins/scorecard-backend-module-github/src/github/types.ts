@@ -16,6 +16,17 @@
 
 import { GraphQlQueryResponseData } from '@octokit/graphql';
 
+export type GithubDeploymentStatusConnection = {
+  nodes?: Array<{
+    state?: string | null;
+    createdAt?: string | null;
+  } | null> | null;
+  pageInfo?: {
+    hasNextPage: boolean;
+    endCursor: string | null;
+  } | null;
+};
+
 export type GithubRepository = {
   owner: string;
   repo: string;
@@ -46,6 +57,7 @@ export type GithubDeploymentsQueryResponse = GraphQlQueryResponseData & {
   repository: {
     deployments: {
       nodes: Array<{
+        id?: string | null;
         databaseId?: number | null;
         commitOid?: string | null;
         createdAt: string;
@@ -53,6 +65,7 @@ export type GithubDeploymentsQueryResponse = GraphQlQueryResponseData & {
         latestStatus?: {
           state?: string | null;
         } | null;
+        statuses?: GithubDeploymentStatusConnection | null;
       } | null> | null;
       pageInfo: {
         hasNextPage: boolean;

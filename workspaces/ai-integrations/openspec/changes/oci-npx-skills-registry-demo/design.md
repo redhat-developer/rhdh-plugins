@@ -323,8 +323,11 @@ budget per image. The task 2.1 defaults are acquisition defaults that operators
 may override; D2 normalized-response limits remain unchanged.
 
 Discovery retries one page with a new deadline per attempt. OCI authentication,
-redirects, and body reading share one request deadline; the image retry wraps
-acquisition/extraction without nested per-request retries. Parent cancellation
+redirects, and body reading share one request deadline; for tag-based references, the image retry uses two independent scopes:
+one for tag-to-digest resolution and one for acquisition/extraction using
+the pinned digest; explicit digest references retain a single retry scope
+wrapping the whole acquisition/extraction. Neither scope nests per-request
+retries. Parent cancellation
 stops work and backoff. Shared helpers enforce bounded streaming reads, clean up
 unused responses, and classify transient errors by HTTP status or network causes.
 Quay pagination and OCI authentication/extraction remain separate responsibilities.
