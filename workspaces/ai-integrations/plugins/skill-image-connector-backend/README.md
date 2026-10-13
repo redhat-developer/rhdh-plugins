@@ -135,9 +135,23 @@ On startup the plugin:
    - **Annotated layers**: Two individual layers annotated with `org.opencontainers.image.title` set to `skillimage.yaml`/`skill.yaml` and `SKILLS.md`/`SKILL.md`.
    - **Tar archives**: One or more `tar` or `tar+gzip` layers (as produced by `skillctl`) containing the skill files as tar entries.
 7. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
-8. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
+8. Parses the SkillCard YAML and optional Markdown frontmatter, then calls the shared `normalizeOciMetadata()` adapter with the verified tagged identity, digest, and source URI. Malformed frontmatter produces normalization diagnostics even when the SkillCard has sufficient metadata.
+9. Stores the raw extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint. Normalized records remain internal; this endpoint's payload does not change.
 
-Transient discovery and registry failures (network errors including wrapped fetch causes, HTTP 5xx, and request timeouts) are retried up to two times by default, with 2-second then 4-second backoff. Discovery retries one page with a fresh timeout each time; image processing retries the full acquisition/extraction. Validation failures, size violations, malformed JSON, and non-5xx HTTP failures are not retried. Shutdown cancels active requests and backoff promptly. OCI authentication challenges are handled separately within the same request deadline.
+Exactly one SkillCard and one Markdown document must occur across supported
+layers. A pair split between annotated raw files and an archive is supported.
+Duplicate files, including repeated archive entries or competing layouts, fail
+with an ambiguity error. Annotated raw files are never parsed as tar archives,
+even when their descriptor media type says tar. Manifest metadata annotations
+are optional for valid skillctl archives.
+
+Confirmed non-skill images are skipped with a debug message and do not enter
+`failedImages`. Ambiguous candidates fail with an error message. Malformed native
+metadata produces no normalized record and logs a warning; an otherwise successful
+raw extraction remains available through `/images`. Bare digest references also
+retain raw acquisition without inventing a tagged normalized identity.
+
+Transient discovery and registry failures (network errors including wrapped fetch causes, HTTP 5xx, and request timeouts) are retried up to two times by default, with 2-second then 4-second backoff. Discovery retries one page with a fresh timeout each time; tag resolution and pinned acquisition/extraction have independent retry scopes. Successful tag resolution is never repeated within an acquisition. Validation failures, size violations, malformed JSON, and non-5xx HTTP failures are not retried. Shutdown cancels active requests and backoff promptly. OCI authentication challenges are handled separately within the same request deadline.
 
 A discovered repository may not have an explicitly selected tag, and an enumerated tag can disappear before acquisition. HTTP 404 failures while
 acquiring discovered images are logged only at debug level; explicitly configured
@@ -166,13 +180,16 @@ after tag movement keeps the key and updates the digest and source URI. The
 shared `ai-skills-common` validator and reference builder govern these fields.
 Explicit digest references retain raw acquisition without inventing a tagged
 identity. This metadata is internal; the existing `/images` payload is unchanged.
-Normalization and the `/skills/:sourceId` endpoint remain tasks 2.3 and 2.5.
+Task 2.3 implements internal normalization. The authenticated `/skills/:sourceId`
+endpoint, atomic snapshots, source-instance configuration, and periodic refresh
+remain task 2.5. Normalization returns a typed record or diagnostics without
+retaining a separate unused snapshot map.
 
 To reproduce the pinning and integrity checks without a live registry, run from
 `plugins/skill-image-connector-backend`:
 
 ```sh
-yarn test --watchAll=false --runInBand src/plugin.pinning.test.ts src/plugin.integration.test.ts src/services/OciClient.test.ts src/services/SkillImageService.test.ts
+yarn test --watchAll=false --runInBand src/plugin.pinning.test.ts src/plugin.integration.test.ts src/services/OciClient.test.ts src/services/SkillImageService.test.ts src/plugin.normalization.test.ts src/services/normalizeExtraction.test.ts
 ```
 
 The deterministic registry fixtures exercise the actual plugin, OCI client, and

@@ -35,10 +35,13 @@ import {
 } from './services/OciClient';
 import { discoverQuayRepositories } from './services/QuayDiscovery';
 import {
+  AmbiguousSkillFilesError,
+  NonSkillImageError,
   cleanupSkillImageExtraction,
   cleanupStaleExtractionDirs,
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
+import { normalizeSkillImageExtraction } from './services/normalizeExtraction';
 import type {
   QuayDiscoveryConfig,
   RegistryCredentials,
@@ -662,19 +665,46 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                 } else {
                   aggregateContentSize += contentSize;
                   extractions.set(imgConfig.imageRef, result);
-                  pluginLogger.info(
-                    `Successfully extracted skill image ${imgConfig.imageRef}`,
-                  );
+
+                  // Normalize the extracted content
+                  const normalization = normalizeSkillImageExtraction(result);
+                  if (normalization.outcome === 'normalized') {
+                    pluginLogger.info(
+                      `Successfully extracted and normalized skill image ${imgConfig.imageRef}`,
+                    );
+                  } else {
+                    pluginLogger.warn(
+                      `Extracted skill image ${
+                        imgConfig.imageRef
+                      } but normalization ${
+                        normalization.outcome
+                      }: ${normalization.diagnostics
+                        .map(d => d.message)
+                        .join('; ')}`,
+                    );
+                  }
                 }
               } catch (error) {
                 if (!processingAbortController.signal.aborted) {
-                  failedImages.add(imgConfig.imageRef);
-                  logImageProcessingFailure(
-                    pluginLogger,
-                    imgConfig.imageRef,
-                    error,
-                    imgConfig.logNotFoundAsError ?? true,
-                  );
+                  // Non-skill images are silently skipped (not failures)
+                  if (error instanceof NonSkillImageError) {
+                    pluginLogger.debug(
+                      `Image ${imgConfig.imageRef} is not a skill image: ${error.message}`,
+                    );
+                  } else if (error instanceof AmbiguousSkillFilesError) {
+                    failedImages.add(imgConfig.imageRef);
+                    pluginLogger.error(
+                      `Ambiguous skill image ${imgConfig.imageRef}: ${error.message}`,
+                    );
+                  } else {
+                    failedImages.add(imgConfig.imageRef);
+                    logImageProcessingFailure(
+                      pluginLogger,
+                      imgConfig.imageRef,
+                      error,
+                      imgConfig.logNotFoundAsError ?? true,
+                    );
+                  }
                 }
               }
             }

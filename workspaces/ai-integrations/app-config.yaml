@@ -196,8 +196,9 @@ skillImageConnector:
   allowedRegistries:
     - quay.io
   #  images:
-  #    - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
-  #   # Optional automatic public Quay organization discovery (can use with our without specific images refs):
+  #      - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+  #      - imageRef: quay.io/gabemontero/hello-world-skill-annotated:1.0.0-draft
+  #      Optional automatic public Quay organization discovery (can use with our without specific images refs):
   quayDiscovery:
     organization: gabemontero # required
 #     registry: quay.io # optional, defaults to quay.io

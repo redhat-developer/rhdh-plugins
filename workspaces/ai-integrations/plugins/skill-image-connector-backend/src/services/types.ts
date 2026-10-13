@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { OciSkillRecord } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+import type {
+  NormalizationDiagnostic,
+  OciSkillRecord,
+} from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 /** Parsed OCI image reference. */
 export interface ImageRef {
@@ -155,6 +158,36 @@ export interface QuayDiscoveryConfig {
   organization: string;
   /** Exact tag to select for each repository. Omit to discover all active tags. */
   tag?: string;
+}
+
+/**
+ * Outcome of normalizing a skill image candidate.
+ *
+ * - `normalized` — successfully produced a schema-valid OciSkillRecord
+ * - `non-skill`  — image lacks the required SkillCard/Markdown pair
+ * - `ambiguous`  — multiple competing SkillCard or Markdown matches
+ * - `malformed`  — files found but could not be parsed or normalized
+ */
+export type NormalizationOutcome =
+  | 'normalized'
+  | 'non-skill'
+  | 'ambiguous'
+  | 'malformed';
+
+/**
+ * Result of normalizing a skill image extraction.
+ *
+ * When `outcome` is `'normalized'`, `record` is non-null and
+ * schema-valid. All other outcomes have a null record and
+ * explain the failure in `diagnostics`.
+ */
+export interface SkillImageNormalization {
+  /** Classification of the normalization result. */
+  outcome: NormalizationOutcome;
+  /** The normalized OCI skill record, or null when normalization failed. */
+  record: OciSkillRecord | null;
+  /** Diagnostics produced during normalization. */
+  diagnostics: NormalizationDiagnostic[];
 }
 
 /** Plugin configuration for a single skill image source. */
