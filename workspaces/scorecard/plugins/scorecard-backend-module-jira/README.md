@@ -97,6 +97,9 @@ scorecard:
           customFilter: priority in ("Critical", "Blocker")
 ```
 
+`options.mandatoryFilter` and `options.customFilter` are validated at config
+load time with the same rules as [JQL filter constraints](#jql-filter-constraints).
+
 ## Schedule Configuration
 
 The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers every hour by default. However, this configuration can be changed in the `app-config.yaml` file. Here is an example of how to do that:
@@ -177,10 +180,13 @@ spec:
   providesApis: [example-grpc-api]
 ```
 
-#### `jira/custom-filter` constraints
+#### JQL filter constraints
 
-The value is injected into a larger JQL query, so it is validated before use
-and rejected if it:
+Free-form JQL from the entity annotation `jira/custom-filter` and from
+app-config `openIssues.options.mandatoryFilter` /
+`openIssues.options.customFilter` is injected into a larger JQL query. Each
+value is validated before use (annotation at metric calculation time;
+app-config options at config load) and rejected if it:
 
 - is longer than 1000 characters
 - contains control characters
