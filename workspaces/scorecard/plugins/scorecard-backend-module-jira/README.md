@@ -177,6 +177,22 @@ spec:
   providesApis: [example-grpc-api]
 ```
 
+#### `jira/custom-filter` constraints
+
+The value is injected into a larger JQL query, so it is validated before use
+and rejected if it:
+
+- is longer than 1000 characters
+- contains control characters
+- has unbalanced `()` or `[]`, or an unterminated `"` string literal
+- contains a backslash outside a string literal
+- contains an `ORDER BY` clause (outside a string literal)
+- uses a leading wildcard, such as `summary ~ "*foo"` — these force a full
+  index scan in Jira. Trailing wildcards (`summary ~ "foo*"`) are allowed
+
+Only `"` is treated as a string delimiter. Single quotes are not, so a `(`
+or `)` inside `'...'` still counts toward bracket balancing.
+
 ## Available Metrics
 
 ### Jira Issues (`jira.openIssues`)
