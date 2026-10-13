@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies [fb4ecee]
+- Updated dependencies [a577327]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.12.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.11.1
+
 ## 2.2.1
 
 ### Patch Changes
