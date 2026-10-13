@@ -25,7 +25,7 @@
  * @packageDocumentation
  */
 
-import { parse as parseYaml } from 'yaml';
+import { parse as parseYaml, YAMLParseError } from 'yaml';
 import { normalizeOciMetadata } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import type {
   NormalizationDiagnostic,
@@ -135,14 +135,29 @@ export function normalizeSkillImageExtraction(
   let frontmatter: OciMarkdownFrontmatter | undefined;
   try {
     frontmatter = parseMarkdownFrontmatter(extraction.skillsMd);
-  } catch {
+  } catch (error) {
+    let reason = 'invalid YAML object';
+    if (error instanceof YAMLParseError) {
+      const position = error.linePos?.[0];
+      reason = `YAML ${error.code}${
+        position ? ` at line ${position.line}, column ${position.col}` : ''
+      }`;
+    } else if (
+      error instanceof TypeError &&
+      [
+        'Frontmatter has no closing delimiter',
+        'Frontmatter must be a YAML object',
+      ].includes(error.message)
+    ) {
+      reason = error.message;
+    }
     return {
       outcome: 'malformed',
       record: null,
       diagnostics: [
         {
           field: 'frontmatter',
-          message: 'frontmatter: invalid or unclosed YAML object',
+          message: `frontmatter: ${reason}`,
         },
       ],
     };
@@ -176,29 +191,5 @@ export function normalizeSkillImageExtraction(
     outcome: 'malformed',
     record: null,
     diagnostics: result.diagnostics,
-  };
-}
-
-/**
- * Constructs a normalization result for an ambiguous candidate.
- */
-export function ambiguousNormalization(
-  reason: string,
-): SkillImageNormalization {
-  return {
-    outcome: 'ambiguous',
-    record: null,
-    diagnostics: [{ field: 'extraction', message: reason }],
-  };
-}
-
-/**
- * Constructs a normalization result for a confirmed non-skill image.
- */
-export function nonSkillNormalization(reason: string): SkillImageNormalization {
-  return {
-    outcome: 'non-skill',
-    record: null,
-    diagnostics: [{ field: 'extraction', message: reason }],
   };
 }

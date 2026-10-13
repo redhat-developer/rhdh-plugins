@@ -18,3 +18,5 @@ competing matches across layouts, entries, and archive layers. Malformed or
 unclosed Markdown frontmatter is distinguished from absent optional frontmatter
 and produces normalization diagnostics. Preserve raw `/images` responses and
 explicit digest acquisition; no snapshot endpoint or scheduling is introduced.
+
+Frontmatter diagnostics retain validation reasons or YAML syntax codes and line/column positions without including raw source excerpts. Remove unused normalization-result constructors.

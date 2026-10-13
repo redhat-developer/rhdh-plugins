@@ -20,8 +20,6 @@ import {
   parseSkillCardYaml,
   parseMarkdownFrontmatter,
   normalizeSkillImageExtraction,
-  ambiguousNormalization,
-  nonSkillNormalization,
 } from './normalizeExtraction';
 
 // ─── Fixtures ──────────────────────────────────────────────────────
@@ -410,26 +408,6 @@ describe('normalizeSkillImageExtraction', () => {
   });
 });
 
-// ─── Helper constructors ────────────────────────────────────────────
-
-describe('ambiguousNormalization', () => {
-  it('returns an ambiguous result with the reason', () => {
-    const result = ambiguousNormalization('2 competing SkillCard files');
-    expect(result.outcome).toBe('ambiguous');
-    expect(result.record).toBeNull();
-    expect(result.diagnostics[0].message).toContain('2 competing');
-  });
-});
-
-describe('nonSkillNormalization', () => {
-  it('returns a non-skill result with the reason', () => {
-    const result = nonSkillNormalization('no skill files found');
-    expect(result.outcome).toBe('non-skill');
-    expect(result.record).toBeNull();
-    expect(result.diagnostics[0].message).toContain('no skill files');
-  });
-});
-
 // A usable SkillCard must not hide malformed Markdown frontmatter.
 describe('malformed frontmatter classification', () => {
   it.each([
@@ -463,5 +441,31 @@ describe('frontmatter delimiter boundaries', () => {
     expect(
       parseMarkdownFrontmatter('---example\nnot frontmatter'),
     ).toBeUndefined();
+  });
+});
+
+describe('frontmatter error details', () => {
+  it.each([
+    ['---\nname: Test', 'no closing delimiter'],
+    ['---\nscalar\n---', 'must be a YAML object'],
+    ['---\n- item\n---', 'must be a YAML object'],
+  ])('reports the validation reason for %p', (skillsMd, reason) => {
+    const result = normalizeSkillImageExtraction(makeExtraction({ skillsMd }));
+    expect(result.outcome).toBe('malformed');
+    expect(result.diagnostics[0].message).toContain(reason);
+  });
+  it('reports YAML syntax code and position without source content', () => {
+    const result = normalizeSkillImageExtraction(
+      makeExtraction({
+        skillsMd: '---\nname: [sensitive-source-marker\n---',
+      }),
+    );
+    expect(result.outcome).toBe('malformed');
+    expect(result.diagnostics[0].message).toMatch(
+      /YAML [A-Z_]+ at line \d+, column \d+/,
+    );
+    expect(result.diagnostics[0].message).not.toContain(
+      'sensitive-source-marker',
+    );
   });
 });
