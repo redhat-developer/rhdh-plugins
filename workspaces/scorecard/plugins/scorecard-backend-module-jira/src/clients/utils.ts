@@ -94,11 +94,11 @@ function containsControlCharacter(value: string): boolean {
 }
 
 /**
- * Scans a JQL expression for an unterminated string literal or unbalanced
- * brackets outside of string literals. Returns the failure reason, or
- * `null` if the expression is balanced.
+ * Scans a JQL expression for syntax that could break out of the parentheses
+ * {@link joinJqlClauses} wraps it in. Returns the failure reason, or `null`
+ * when the expression is well-formed.
  */
-function findBracketImbalance(value: string): string | null {
+function findStructuralError(value: string): string | null {
   const masked = maskStringLiterals(value);
   if (masked === null) {
     return 'unterminated string literal';
