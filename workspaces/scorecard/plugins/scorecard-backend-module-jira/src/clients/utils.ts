@@ -104,6 +104,12 @@ function findBracketImbalance(value: string): string | null {
     return 'unterminated string literal';
   }
 
+  // Masking blanks every string literal, escapes included, so a
+  // surviving backslash is by definition outside one -- which is not valid
+  if (masked.includes('\\')) {
+    return 'must not contain a backslash outside a string literal';
+  }
+
   if (ORDER_BY_PATTERN.test(masked)) {
     return 'must not contain an ORDER BY clause';
   }
