@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot
 
+## 1.1.7
+
+### Patch Changes
+
+- fc01181: Add local development harnesses and contributor guides for the Scorecard plugin, backend, and metric modules. Tests cover the drill-down namespace query, the collectors route, and New Frontend System plugin wiring. No runtime behavior change.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.2
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.2
+
 ## 1.1.6
 
 ### Patch Changes
