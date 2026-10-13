@@ -27,7 +27,7 @@ describe('QuickAccessApiClient', () => {
   let mockDiscoveryApi: jest.Mocked<DiscoveryApi>;
   let mockConfigApi: jest.Mocked<ConfigApi>;
   let mockIdentityApi: jest.Mocked<IdentityApi>;
-  let fetchMock: jest.Mock;
+  let fetchMock: jest.SpyInstance;
 
   const quickAccessData = [
     {
@@ -44,8 +44,7 @@ describe('QuickAccessApiClient', () => {
   ];
 
   beforeEach(() => {
-    fetchMock = jest.fn();
-    global.fetch = fetchMock;
+    fetchMock = jest.spyOn(global, 'fetch');
 
     mockDiscoveryApi = {
       getBaseUrl: jest
@@ -105,7 +104,12 @@ describe('QuickAccessApiClient', () => {
     );
     expect(fetchMock).toHaveBeenCalledWith(
       'http://localhost:7007/api/proxy/custom-proxy',
-      expect.any(Object),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
+        },
+      },
     );
   });
 
@@ -119,7 +123,12 @@ describe('QuickAccessApiClient', () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       'http://localhost:7007/api/proxy/developer-hub/quick-access',
-      expect.any(Object),
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
+        },
+      },
     );
   });
 

@@ -66,16 +66,6 @@ describe('SearchBar', () => {
     mockNavigate.mockClear();
   });
 
-  it('renders with translated placeholder', () => {
-    render(
-      <MemoryRouter>
-        <SearchBar />
-      </MemoryRouter>,
-    );
-
-    expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
-  });
-
   it('navigates to default search path on submit', () => {
     render(
       <MemoryRouter>
@@ -83,7 +73,7 @@ describe('SearchBar', () => {
       </MemoryRouter>,
     );
 
-    const input = screen.getByRole('textbox');
+    const input = screen.getByPlaceholderText('Search');
     fireEvent.change(input, { target: { value: 'backstage' } });
     fireEvent.submit(input.closest('form')!);
 

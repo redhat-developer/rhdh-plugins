@@ -38,6 +38,10 @@ describe('DefaultWidgetsApiClient', () => {
     });
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('fetches default widgets from the homepage backend', async () => {
     const widgets = {
       items: [{ id: 'headline', ref: 'homepage.headline' }],

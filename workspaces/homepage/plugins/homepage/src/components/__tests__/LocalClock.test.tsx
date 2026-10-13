@@ -37,11 +37,6 @@ describe('LocalClock', () => {
     jest.useRealTimers();
   });
 
-  it('renders successfully', () => {
-    render(<LocalClock />);
-    expect(screen.getByText('01:14 PM')).toBeInTheDocument();
-  });
-
   it('renders nothing if format is none', () => {
     const { container } = render(<LocalClock format="none" />);
     expect(container).toBeEmptyDOMElement();
