@@ -16,9 +16,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const generatedFile = path.resolve(
-  process.argv[2] || path.join(__dirname, '../src/generated/client/common.ts'),
-);
+if (process.argv.length > 2) {
+  throw new Error('patch-openapi-client.js does not accept arguments');
+}
+
+const generatedFile = path.join(__dirname, '../src/generated/client/common.ts');
 const source = fs.readFileSync(generatedFile, 'utf8');
 const unpatched = 'return axios.request<T, R>(axiosRequestArgs);';
 const patched = 'return axios.request<T, R>(axiosRequestArgs) as Promise<R>;';
