@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { AuthType, Product } from './types';
+
 const QUOTE_CHARS = new Set(['"']);
 const OPEN_BRACKETS: Record<string, string> = { '(': ')', '[': ']' };
 const CLOSE_BRACKETS: Record<string, string> = { ')': '(', ']': '[' };
@@ -25,6 +27,52 @@ const FIRST_PRINTABLE_ASCII = 0x20; // ' '
 const MAX_JQL_EXPRESSION_LENGTH = 1000;
 const ORDER_BY_PATTERN = /\bORDER\s+BY\b/i;
 const LEADING_WILDCARD_PATTERN = /~[\s"']*[*?]/;
+
+export function validateJiraToken(token: string, fieldName: string): string {
+  if (token.trim().length === 0) {
+    throw new Error(`${fieldName} must be a non-empty credential.`);
+  }
+  return token;
+}
+
+export function resolveJiraAuthType(
+  product: unknown,
+  authType: unknown | undefined,
+): AuthType {
+  if (!isJiraProduct(product)) {
+    throw new Error(
+      `Invalid Jira product: ${product}. Valid products for 'jira.product' are: datacenter, cloud`,
+    );
+  }
+
+  if (authType !== undefined) {
+    if (!isAuthType(authType)) {
+      throw new Error(
+        `Invalid jira.authType: ${authType}. Valid values are: Basic, Bearer`,
+      );
+    }
+    return authType;
+  }
+
+  if (product === 'cloud') return 'Basic' as AuthType;
+
+  // product is 'datacenter'
+  return 'Bearer' as AuthType;
+}
+
+export function isJiraProduct(product: unknown): product is Product {
+  return (
+    typeof product === 'string' &&
+    (product === 'cloud' || product === 'datacenter')
+  );
+}
+
+export function isAuthType(authType: unknown): authType is AuthType {
+  return (
+    typeof authType === 'string' &&
+    (authType === 'Basic' || authType === 'Bearer')
+  );
+}
 
 export function validateJQLValue(value: string, fieldName: string): string {
   if (!/^[a-zA-Z0-9 _-]+$/.test(value)) {
