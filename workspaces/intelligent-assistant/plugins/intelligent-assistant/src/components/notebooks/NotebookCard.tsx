@@ -34,7 +34,7 @@ import {
 import {
   CatalogIcon,
   EllipsisVIcon,
-  PenIcon,
+  PencilAltIcon,
   TrashIcon,
 } from '@patternfly/react-icons';
 
@@ -223,7 +223,7 @@ export const NotebookCard = ({
             >
               <StyledDropdownList>
                 <StyledDropdownItem
-                  icon={<PenIcon />}
+                  icon={<PencilAltIcon />}
                   onClick={event => {
                     event.stopPropagation();
                     startEditing();

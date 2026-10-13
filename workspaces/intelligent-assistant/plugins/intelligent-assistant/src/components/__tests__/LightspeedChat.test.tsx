@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// @ts-expect-error - React import required for JSX in release-2.1
-import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 
 import {
@@ -1370,7 +1368,7 @@ describe('LightspeedChat', () => {
       ).toBeInTheDocument();
     });
 
-    it('should show PenIcon in new chat button in fullscreen mode', async () => {
+    it('should show new chat button in fullscreen mode', async () => {
       mockUseConversations.mockReturnValue({
         data: [
           {
