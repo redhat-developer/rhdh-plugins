@@ -57,10 +57,6 @@ import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { DbAggregatedMetric } from '../database/types';
 import { mockStatusGroupedAggregationResult } from '../../__fixtures__/mockAggregatedMetricResult';
 
-jest.mock('../utils/getEntitiesOwnedByUser', () => ({
-  getEntitiesOwnedByUser: jest.fn(),
-}));
-
 jest.mock('../permissions/permissionUtils', () => {
   const originalModule = jest.requireActual('../permissions/permissionUtils');
   return {
@@ -69,7 +65,6 @@ jest.mock('../permissions/permissionUtils', () => {
   };
 });
 
-import * as getEntitiesOwnedByUserModule from '../utils/getEntitiesOwnedByUser';
 import * as permissionUtilsModule from '../permissions/permissionUtils';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import { AggregatedMetricMapper } from './mappers';
@@ -170,7 +165,6 @@ describe('createRouter', () => {
     const router = await createRouter({
       metricProvidersRegistry,
       service: { aggregationsService, catalogMetricService },
-      catalog,
       httpAuth: httpAuthMock,
       permissions: permissionsMock,
       logger: mockServices.logger.mock(),
@@ -912,7 +906,7 @@ describe('createRouter', () => {
       );
 
       getEntitiesOwnedByUserSpy = jest
-        .spyOn(getEntitiesOwnedByUserModule, 'getEntitiesOwnedByUser')
+        .spyOn(catalogMetricService, 'getEntitiesOwnedByUser')
         .mockResolvedValue([
           'component:default/my-service',
           'component:default/my-other-service',
@@ -929,7 +923,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsServiceLocal,
           catalogMetricService,
         },
-        catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -1032,8 +1025,8 @@ describe('createRouter', () => {
       expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledTimes(1);
       expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledWith(
         'user:default/test-user',
+        'github.openPRs',
         expect.objectContaining({
-          catalog: expect.any(Object),
           credentials: expect.any(Object),
         }),
       );
@@ -1157,7 +1150,6 @@ describe('createRouter', () => {
           aggregationsService: batchAggregationsService,
           catalogMetricService,
         },
-        catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -1276,6 +1268,7 @@ describe('createRouter', () => {
 
       mockCatalogMetricService = new CatalogMetricService({
         catalog: mockCatalog,
+        config: mockServices.rootConfig({ data: {} }),
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
             token: 'test-token',
@@ -1285,7 +1278,6 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
-        config: mockServices.rootConfig({ data: {} }),
       });
 
       readAggregatedMetricByEntityRefsSpyAgId = jest
@@ -1297,7 +1289,7 @@ describe('createRouter', () => {
         .mockReturnValue(mockAggregatedMetricResult);
 
       jest
-        .spyOn(getEntitiesOwnedByUserModule, 'getEntitiesOwnedByUser')
+        .spyOn(mockCatalogMetricService, 'getEntitiesOwnedByUser')
         .mockResolvedValue([
           'component:default/my-service',
           'component:default/my-other-service',
@@ -1321,7 +1313,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsServiceAgRoute,
           catalogMetricService: mockCatalogMetricService,
         },
-        catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -1425,7 +1416,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsServiceBatch,
           catalogMetricService: mockCatalogMetricService,
         },
-        catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -1472,6 +1462,7 @@ describe('createRouter', () => {
       });
       const kpiService = new CatalogMetricService({
         catalog: mockCatalog,
+        config: mockServices.rootConfig({ data: {} }),
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
             token: 'test-token',
@@ -1481,8 +1472,14 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
-        config: mockServices.rootConfig({ data: {} }),
       });
+
+      jest
+        .spyOn(kpiService, 'getEntitiesOwnedByUser')
+        .mockResolvedValue([
+          'component:default/my-service',
+          'component:default/my-other-service',
+        ]);
 
       const getSpy = jest
         .spyOn(mockDatabaseMetricValues, 'readAggregatedMetricByEntityRefs')
@@ -1499,7 +1496,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsServiceKpi,
           catalogMetricService: kpiService,
         },
-        catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -1542,6 +1538,7 @@ describe('createRouter', () => {
       });
       const kpiService = new CatalogMetricService({
         catalog: mockCatalog,
+        config: mockServices.rootConfig({ data: {} }),
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
             token: 'test-token',
@@ -1551,8 +1548,14 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
-        config: mockServices.rootConfig({ data: {} }),
       });
+
+      jest
+        .spyOn(kpiService, 'getEntitiesOwnedByUser')
+        .mockResolvedValue([
+          'component:default/my-service',
+          'component:default/my-other-service',
+        ]);
 
       const getSpy = jest
         .spyOn(mockDatabaseMetricValues, 'readAggregatedMetricByEntityRefs')
@@ -1569,7 +1572,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsServiceWeightedKpi,
           catalogMetricService: kpiService,
         },
-        catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -1605,6 +1607,7 @@ describe('createRouter', () => {
       });
       const kpiService = new CatalogMetricService({
         catalog: mockCatalog,
+        config: mockServices.rootConfig({ data: {} }),
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
             token: 'test-token',
@@ -1614,8 +1617,14 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
-        config: mockServices.rootConfig({ data: {} }),
       });
+
+      jest
+        .spyOn(kpiService, 'getEntitiesOwnedByUser')
+        .mockResolvedValue([
+          'component:default/my-service',
+          'component:default/my-other-service',
+        ]);
 
       const getSpy = jest
         .spyOn(
@@ -1646,7 +1655,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsServiceSum,
           catalogMetricService: kpiService,
         },
-        catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -1699,6 +1707,7 @@ describe('createRouter', () => {
 
       const kpiService = new CatalogMetricService({
         catalog: mockCatalog,
+        config: mockServices.rootConfig({ data: {} }),
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
             token: 'test-token',
@@ -1708,8 +1717,14 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
-        config: mockServices.rootConfig({ data: {} }),
       });
+
+      jest
+        .spyOn(kpiService, 'getEntitiesOwnedByUser')
+        .mockResolvedValue([
+          'component:default/my-service',
+          'component:default/my-other-service',
+        ]);
 
       const getSpy = jest
         .spyOn(
@@ -1740,7 +1755,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsServiceFiltered,
           catalogMetricService: kpiService,
         },
-        catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -1780,7 +1794,7 @@ describe('createRouter', () => {
         new MockNumberProvider('github.openPRs', 'github', 'GitHub Open PRs'),
       );
       jest
-        .spyOn(getEntitiesOwnedByUserModule, 'getEntitiesOwnedByUser')
+        .spyOn(catalogMetricService, 'getEntitiesOwnedByUser')
         .mockResolvedValue([
           'component:default/my-service',
           'component:default/my-other-service',
@@ -2079,6 +2093,7 @@ describe('createRouter', () => {
 
       metaCatalogMetricService = new CatalogMetricService({
         catalog: metaCatalog,
+        config: mockServices.rootConfig({ data: {} }),
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
             token: 'test-token',
@@ -2088,7 +2103,6 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
-        config: mockServices.rootConfig({ data: {} }),
       });
 
       const aggregationsMetaService = createTestAggregationsService(
@@ -2102,7 +2116,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsMetaService,
           catalogMetricService: metaCatalogMetricService,
         },
-        catalog: metaCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -2150,7 +2163,6 @@ describe('createRouter', () => {
           ),
           catalogMetricService: metaCatalogMetricService,
         },
-        catalog: metaCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -2172,6 +2184,7 @@ describe('createRouter', () => {
     it('returns metadata for metric id when no KPI row exists', async () => {
       const svc = new CatalogMetricService({
         catalog: metaCatalog,
+        config: mockServices.rootConfig({ data: {} }),
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
             token: 'test-token',
@@ -2181,7 +2194,6 @@ describe('createRouter', () => {
         database: mockDatabaseMetricValues,
         logger: mockServices.logger.mock(),
         thresholdResolver,
-        config: mockServices.rootConfig({ data: {} }),
       });
 
       const aggregationsSvcNoKpi = createTestAggregationsService(
@@ -2195,7 +2207,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsSvcNoKpi,
           catalogMetricService: svc,
         },
-        catalog: metaCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -2246,7 +2257,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsMetaServiceFiltered,
           catalogMetricService: metaCatalogMetricService,
         },
-        catalog: metaCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -2293,7 +2303,6 @@ describe('createRouter', () => {
           aggregationsService: aggregationsMetaServiceScalar,
           catalogMetricService: metaCatalogMetricService,
         },
-        catalog: metaCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
@@ -2382,11 +2391,9 @@ describe('createRouter', () => {
         .spyOn(catalogMetricService, 'getEntityMetricDetails')
         .mockResolvedValue(mockEntityMetricDetailResponse as any);
 
-      const mockCatalog = catalogServiceMock.mock();
       const router = await createRouter({
         metricProvidersRegistry,
         service: { aggregationsService, catalogMetricService },
-        catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),

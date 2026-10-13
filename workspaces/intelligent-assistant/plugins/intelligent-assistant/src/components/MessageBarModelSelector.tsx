@@ -231,7 +231,10 @@ export const MessageBarModelSelector = ({
       aria-label={t('aria.chatbotSelector')}
     >
       <ToggleContent>
-        <ModelSelectorToggleText label={selectedModelLabel} />
+        <ModelSelectorToggleText
+          label={selectedModelLabel}
+          hideTooltip={isOpen}
+        />
         <AngleDownIcon />
       </ToggleContent>
     </SelectorToggle>

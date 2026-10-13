@@ -64,6 +64,19 @@ describe('GlobalHeader', () => {
     expect(document.getElementById('global-header')).toBeInTheDocument();
   });
 
+  it('uses auto width so a docked drawer can shrink the bar', () => {
+    render(
+      <GlobalHeaderProvider components={[]} menuItems={[]}>
+        <GlobalHeader />
+      </GlobalHeaderProvider>,
+    );
+
+    expect(document.getElementById('global-header')).toHaveStyle({
+      width: 'auto',
+      marginRight: 'var(--docked-drawer-width, 0px)',
+    });
+  });
+
   it('injects BUI dialog overlay offset styles', () => {
     render(
       <GlobalHeaderProvider components={[]} menuItems={[]}>

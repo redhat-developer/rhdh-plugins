@@ -143,11 +143,17 @@ export const LightspeedFABContent = () => {
             isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')
           }
           sx={{
-            backgroundColor: theme.palette.background.default,
+            // Defend circle + opacity against leaked button CSS (MUI v4/v5 and
+            // PatternFly chat styles share the page). Rebrand keeps a surface
+            // fill; !important restores the solid circular FAB.
+            borderRadius: '50% !important',
+            opacity: '1 !important',
+            backgroundColor: `${theme.palette.background.paper} !important`,
             color: theme.palette.text.primary,
             border: `1px solid ${theme.palette.divider}`,
+            boxShadow: `${theme.shadows[6]} !important`,
             '&:hover': {
-              backgroundColor: theme.palette.background.paper,
+              backgroundColor: `${theme.palette.background.paper} !important`,
             },
           }}
         >

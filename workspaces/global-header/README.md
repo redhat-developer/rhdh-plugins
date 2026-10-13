@@ -100,7 +100,12 @@ red-hat-developer-hub.backstage-plugin-global-header:
 
 ### Fallback Configuration Example
 
-In addition to the Global Header, theme-specific logo support is also available in RHDH's **sidebar logo**. This configuration is **used as a fallback** for `CompanyLogo` if props are not provided to the component. The sidebar logo and the `CompanyLogo` fallback can be configured with the following `app-config` configuration:
+The masthead shows the company logo by default and spans the full viewport width
+(PatternFly / OFS). When `#global-header` is mounted, the theme hides the sidebar
+company logo so branding is not duplicated.
+
+Theme-specific logos from `app.branding` are still used as a **fallback** for
+`CompanyLogo` when props are not provided:
 
 ```yaml
 app:
