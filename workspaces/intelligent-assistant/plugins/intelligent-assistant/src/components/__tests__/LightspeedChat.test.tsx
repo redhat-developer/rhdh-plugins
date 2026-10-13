@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// @ts-expect-error - React import required for JSX in release-2.1
+import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 
 import {

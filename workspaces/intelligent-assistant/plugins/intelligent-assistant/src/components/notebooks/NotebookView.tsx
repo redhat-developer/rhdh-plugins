@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
@@ -86,11 +86,48 @@ const Root = styled('div')({
   overflow: 'hidden',
 });
 
-const StyledDrawer = styled(Drawer)({
+// Same absolute overlay as chat history when the documents panel is open in
+// overlay/dock (RHDHBUGS-3931). Drawer min-width is cleared on StyledChatbot.
+const StyledDrawer = styled(Drawer, {
+  shouldForwardProp: prop => prop !== '$compactOverlay',
+})<{ $compactOverlay?: boolean }>(({ $compactOverlay }) => ({
   flex: 1,
   minHeight: 0,
   minWidth: 0,
-});
+  // Match Chat history panel: floating-default (#383838 dark).
+  '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+  },
+  '& .pf-v6-c-drawer__content, & .pf-v5-c-drawer__content, & .pf-v6-c-drawer__body, & .pf-v5-c-drawer__body':
+    {
+      backgroundColor:
+        'var(--pf-t--global--background--color--primary--default)',
+    },
+  ...($compactOverlay
+    ? {
+        position: 'relative',
+        '& > .pf-v6-c-drawer__main, & > .pf-v5-c-drawer__main': {
+          position: 'relative',
+          overflow: 'hidden',
+        },
+        '& > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
+          {
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            minWidth: 0,
+            maxWidth: '100%',
+            zIndex: 1300,
+            marginInlineEnd: 0,
+            transform: 'none',
+            '--pf-v6-c-drawer__panel--FlexBasis': '100%',
+            '--pf-v6-c-drawer__panel--MinWidth': '0',
+            '--pf-v6-c-drawer__panel--xl--MinWidth': '0',
+          },
+      }
+    : {}),
+}));
 
 const StyledDrawerContent = styled(DrawerContent)({
   display: 'flex',
@@ -736,7 +773,12 @@ export const NotebookView = ({
         alerts={toastAlerts}
         onRemoveAlert={handleRemoveToastAlert}
       />
-      <StyledDrawer isExpanded={!sidebarCollapsed} isInline position="start">
+      <StyledDrawer
+        isExpanded={!sidebarCollapsed}
+        isInline
+        position="start"
+        $compactOverlay={isCompact && !sidebarCollapsed}
+      >
         <StyledDrawerContent
           panelContent={!sidebarCollapsed ? panelContent : undefined}
         >
