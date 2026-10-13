@@ -19,7 +19,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import semver from 'semver';
 import { listWorkspaces } from './list-workspaces.js';
-import { execFile } from 'node:child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

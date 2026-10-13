@@ -63,10 +63,6 @@ jobs:
             rm -rf "workspaces/$workspace"
           done
 
-      - name: Update lockfile after archival
-        if: steps.update_issue.outputs.ARCHIVED_WORKSPACES != ''
-        run: yarn install
-
       # archive.js appends rows and JSON entries that are not prettier-formatted,
       # which would fail the prettier:check CI job on the generated pull request.
       # Scoped to changed files so the PR does not pick up unrelated reformatting.
