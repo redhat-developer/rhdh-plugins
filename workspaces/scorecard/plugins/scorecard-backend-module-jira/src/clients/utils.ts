@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const QUOTE_CHARS = new Set(['"', "'"]);
+const QUOTE_CHARS = new Set(['"']);
 const OPEN_BRACKETS: Record<string, string> = { '(': ')', '[': ']' };
 const CLOSE_BRACKETS: Record<string, string> = { ')': '(', ']': '[' };
 const BRACKET_LABELS: Record<string, string> = {
