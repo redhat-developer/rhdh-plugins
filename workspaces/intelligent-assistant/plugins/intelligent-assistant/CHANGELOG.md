@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.9
+
+### Patch Changes
+
+- 8f47f98: Pin the frontend plugin dependencies `@adobe/react-spectrum` to `3.47.1`, `react-aria` to `3.49.0`, and `react-stately` to `3.47.0`.
+- 102547a: Updated dependency `msw` to `2.15.0`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^1.4.1`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.9
+
 ## 5.3.8
 
 ### Patch Changes
