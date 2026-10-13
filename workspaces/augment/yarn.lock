@@ -6226,7 +6226,7 @@ __metadata:
     "@backstage/e2e-test-utils": "npm:^0.1.1"
     "@backstage/repo-tools": "npm:^0.16.0"
     "@changesets/cli": "npm:^2.27.1"
-    "@playwright/test": "npm:1.62.1"
+    "@playwright/test": "npm:1.64.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
     prettier: "npm:^3.7.4"
@@ -8708,13 +8708,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openai/agents-core@npm:^0.17.0":
-  version: 0.17.0
-  resolution: "@openai/agents-core@npm:0.17.0"
+"@openai/agents-core@npm:^0.20.0":
+  version: 0.20.0
+  resolution: "@openai/agents-core@npm:0.20.0"
   dependencies:
     "@modelcontextprotocol/client": "npm:^2.0.0"
     "@standard-schema/spec": "npm:^1.1.0"
-    debug: "npm:^4.4.0"
+    debug: "npm:^4.4.3"
     openai: "npm:^7.2.0"
   peerDependencies:
     zod: ^4.0.0
@@ -8724,7 +8724,7 @@ __metadata:
   peerDependenciesMeta:
     zod:
       optional: true
-  checksum: 10c0/64db8ed9973a75fb1b7f376fc0cb90a2638bfd1ff12af7d944fcbcabdf93f5b2957144dda0d1c0cf56dee91544a6fa79e007754806bb0a413f8d9c5a8ed99a1d
+  checksum: 10c0/6f23edf41bec83de333a2218c5f9ada5d6b0d702b0e29e4042850854042db67bba146291495953dbe2524a65b84b3e6abe5305df3e851d597af1551512e66211
   languageName: node
   linkType: hard
 
@@ -8929,14 +8929,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.62.1":
-  version: 1.62.1
-  resolution: "@playwright/test@npm:1.62.1"
+"@playwright/test@npm:1.64.0":
+  version: 1.64.0
+  resolution: "@playwright/test@npm:1.64.0"
   dependencies:
-    playwright: "npm:1.62.1"
+    playwright: "npm:1.64.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/4b76f2f717723f84a73601f74fde97f5d92e4b5c869cf87c0f5628bf247fa1d18c9dc6c8e136463303233239e8ce58f902513d4281a9fabc3c426e911ded2c83
+  checksum: 10c0/96db203daa9e5aa5fcbec3f8bc92074346334980961dcc2ef6e660add5ad4647037f98f3a84ba1ec431bfb6e6368df0fd53e7dbdd427560627deef978c762f0c
   languageName: node
   linkType: hard
 
@@ -11352,7 +11352,7 @@ __metadata:
     "@backstage/plugin-permission-common": "npm:^0.9.2"
     "@kagenti/adk": "npm:^0.8.1"
     "@modelcontextprotocol/sdk": "npm:^1.25.2"
-    "@openai/agents-core": "npm:^0.17.0"
+    "@openai/agents-core": "npm:^0.20.0"
     "@red-hat-developer-hub/backstage-plugin-augment-common": "workspace:^"
     "@types/express": "npm:^4.17.6"
     "@types/express-session": "npm:^1.18.2"
@@ -11408,7 +11408,7 @@ __metadata:
     "@types/react-syntax-highlighter": "npm:^15.5.13"
     "@xyflow/react": "npm:^12.10.2"
     driver.js: "npm:^1.4.0"
-    katex: "npm:^0.18.0"
+    katex: "npm:^0.19.0"
     motion: "npm:^12.38.0"
     react: "npm:^17.0.0 || ^18.0.0"
     react-dom: "npm:^17.0.0 || ^18.0.0"
@@ -17877,6 +17877,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"commander@npm:^15.0.0":
+  version: 15.0.0
+  resolution: "commander@npm:15.0.0"
+  checksum: 10c0/539229c171914ea1ccd45ee5f10d924289a12a684ea3a7a44147abe54003c35ed6de9ae4ad198d88c29fdf403dca0428451a388234e6dc01b6faa978fb207206
+  languageName: node
+  linkType: hard
+
 "commander@npm:^2.19.0, commander@npm:^2.20.0":
   version: 2.20.3
   resolution: "commander@npm:2.20.3"
@@ -21599,31 +21606,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fsevents@npm:2.3.2":
-  version: 2.3.2
-  resolution: "fsevents@npm:2.3.2"
-  dependencies:
-    node-gyp: "npm:latest"
-  checksum: 10c0/be78a3efa3e181cda3cf7a4637cb527bcebb0bd0ea0440105a3bb45b86f9245b307dc10a2507e8f4498a7d4ec349d1910f4d73e4d4495b16103106e07eee735b
-  conditions: os=darwin
-  languageName: node
-  linkType: hard
-
 "fsevents@npm:^2.3.2, fsevents@npm:~2.3.2":
   version: 2.3.3
   resolution: "fsevents@npm:2.3.3"
   dependencies:
     node-gyp: "npm:latest"
   checksum: 10c0/a1f0c44595123ed717febbc478aa952e47adfc28e2092be66b8ab1635147254ca6cfe1df792a8997f22716d4cbafc73309899ff7bfac2ac3ad8cf2e4ecc3ec60
-  conditions: os=darwin
-  languageName: node
-  linkType: hard
-
-"fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>":
-  version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
-  dependencies:
-    node-gyp: "npm:latest"
   conditions: os=darwin
   languageName: node
   linkType: hard
@@ -25287,14 +25275,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"katex@npm:^0.18.0":
-  version: 0.18.1
-  resolution: "katex@npm:0.18.1"
+"katex@npm:^0.19.0":
+  version: 0.19.0
+  resolution: "katex@npm:0.19.0"
   dependencies:
-    commander: "npm:^8.3.0"
+    commander: "npm:^15.0.0"
   bin:
     katex: cli.js
-  checksum: 10c0/287994eef74096044127f0adde40b284c5dd914e7642212d957da5b62ed8312ace8c87701ddf0cf06ce484aa6ba72f4344376fa3f2d785e5ee65bfa1141f7fc2
+  checksum: 10c0/c418ae625c0d30ca2d96b3fa619d1ea8eca53729989804aa4ad1c75e19112249ee5fe887ba7bef10e472ff5601b9cca43357a525fd52c243128dd601f2b75e2a
   languageName: node
   linkType: hard
 
@@ -29715,27 +29703,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.62.1":
-  version: 1.62.1
-  resolution: "playwright-core@npm:1.62.1"
+"playwright-core@npm:1.64.0":
+  version: 1.64.0
+  resolution: "playwright-core@npm:1.64.0"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/a37d0f03bb73364cfd0eba704c4b3359b609c4779ae2649a88d8e2b3a29c7357dfcc58bdcf0cb68ddffdef7687abf78902c8356e89f189682c7e19be38e108f0
+  checksum: 10c0/fe3237282ada99d634e4d002efd3db6aa51218f7f4f3b1bc31515d30fa6eec5ec940d425e035db2af4e2856d9cae30b7a27bd167870b3285d40bdffd399ab286
   languageName: node
   linkType: hard
 
-"playwright@npm:1.62.1":
-  version: 1.62.1
-  resolution: "playwright@npm:1.62.1"
+"playwright@npm:1.64.0":
+  version: 1.64.0
+  resolution: "playwright@npm:1.64.0"
   dependencies:
-    fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.62.1"
-  dependenciesMeta:
-    fsevents:
-      optional: true
+    playwright-core: "npm:1.64.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/4d3522cd46325f50c46f8874d31f70d036f6983228a9f8b9d68fc249e4c17464edcd97cc4adfbb24e712d1829c1386d3bc24e17f58a1ced94e7c423300c21845
+  checksum: 10c0/f1ee856c280af2ac256225a1cc5e957847f0d2c56a039c89f02e31b0c9928c44e04311923a1b315bea16e3b26e5124e7c296644ad3c05e4c0a6aaa9584009933
   languageName: node
   linkType: hard
 
