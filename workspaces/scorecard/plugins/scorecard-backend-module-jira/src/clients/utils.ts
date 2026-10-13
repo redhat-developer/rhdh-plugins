@@ -23,6 +23,7 @@ const BRACKET_LABELS: Record<string, string> = {
 };
 const FIRST_PRINTABLE_ASCII = 0x20; // ' '
 const MAX_JQL_EXPRESSION_LENGTH = 1000;
+const ORDER_BY_PATTERN = /\bORDER\s+BY\b/i;
 
 export function validateJQLValue(value: string, fieldName: string): string {
   if (!/^[a-zA-Z0-9 _-]+$/.test(value)) {
@@ -96,6 +97,10 @@ function findBracketImbalance(value: string): string | null {
   const masked = maskStringLiterals(value);
   if (masked === null) {
     return 'unterminated string literal';
+  }
+
+  if (ORDER_BY_PATTERN.test(masked)) {
+    return 'must not contain an ORDER BY clause';
   }
 
   return findUnbalancedBracket(masked);
