@@ -37,7 +37,7 @@ export function validateJiraToken(token: string, fieldName: string): string {
 
 export function resolveJiraAuthType(
   product: unknown,
-  authType: unknown | undefined,
+  authType: unknown,
 ): AuthType {
   if (!isJiraProduct(product)) {
     throw new Error(
@@ -48,7 +48,9 @@ export function resolveJiraAuthType(
   if (authType !== undefined) {
     if (!isAuthType(authType)) {
       throw new Error(
-        `Invalid jira.authType: ${authType}. Valid values are: Basic, Bearer`,
+        `Invalid jira.authType: ${JSON.stringify(
+          authType,
+        )}. Valid values are: Basic, Bearer`,
       );
     }
     return authType;

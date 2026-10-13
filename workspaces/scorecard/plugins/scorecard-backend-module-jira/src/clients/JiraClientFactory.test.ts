@@ -237,7 +237,7 @@ describe('JiraClientFactory', () => {
       expect(() =>
         JiraClientFactory.fromConfig(config, factoryOptions),
       ).toThrow(
-        'Invalid jira.authType: Digest. Valid values are: Basic, Bearer',
+        'Invalid jira.authType: "Digest". Valid values are: Basic, Bearer',
       );
       expect(mockedDirectConnectionStrategy).not.toHaveBeenCalled();
     });

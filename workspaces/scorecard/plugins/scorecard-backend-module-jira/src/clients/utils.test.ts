@@ -85,7 +85,7 @@ describe('utils', () => {
 
     it('should throw for an invalid authType', () => {
       expect(() => resolveJiraAuthType('cloud', 'Digest')).toThrow(
-        'Invalid jira.authType: Digest. Valid values are: Basic, Bearer',
+        'Invalid jira.authType: "Digest". Valid values are: Basic, Bearer',
       );
     });
 
