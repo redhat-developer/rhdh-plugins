@@ -41,17 +41,12 @@ import {
   cleanupStaleExtractionDirs,
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
-import {
-  normalizeSkillImageExtraction,
-  ambiguousNormalization,
-  nonSkillNormalization,
-} from './services/normalizeExtraction';
+import { normalizeSkillImageExtraction } from './services/normalizeExtraction';
 import type {
   QuayDiscoveryConfig,
   RegistryCredentials,
   SkillImageConfig,
   SkillImageExtraction,
-  SkillImageNormalization,
   SkillImageOptions,
 } from './services/types';
 import { MAX_CONCURRENT_IMAGE_FETCHES } from './services/types';
@@ -559,8 +554,6 @@ export const skillImageConnectorPlugin = createBackendPlugin({
 
         // Store extraction results so they can be exposed via the API
         const extractions = new Map<string, SkillImageExtraction>();
-        // Normalization results keyed by imageRef for task 2.5 snapshot use
-        const normalizations = new Map<string, SkillImageNormalization>();
         const failedImages = new Set<string>();
         let processingStatus: SkillImageProcessingStatus = hasConfiguredSources
           ? 'loading'
@@ -675,7 +668,6 @@ export const skillImageConnectorPlugin = createBackendPlugin({
 
                   // Normalize the extracted content
                   const normalization = normalizeSkillImageExtraction(result);
-                  normalizations.set(imgConfig.imageRef, normalization);
                   if (normalization.outcome === 'normalized') {
                     pluginLogger.info(
                       `Successfully extracted and normalized skill image ${imgConfig.imageRef}`,
@@ -699,16 +691,8 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                     pluginLogger.debug(
                       `Image ${imgConfig.imageRef} is not a skill image: ${error.message}`,
                     );
-                    normalizations.set(
-                      imgConfig.imageRef,
-                      nonSkillNormalization(error.message),
-                    );
                   } else if (error instanceof AmbiguousSkillFilesError) {
                     failedImages.add(imgConfig.imageRef);
-                    normalizations.set(
-                      imgConfig.imageRef,
-                      ambiguousNormalization(error.message),
-                    );
                     pluginLogger.error(
                       `Ambiguous skill image ${imgConfig.imageRef}: ${error.message}`,
                     );

@@ -26,6 +26,8 @@ import { discoverQuayRepositories } from './services/QuayDiscovery';
 import {
   cleanupSkillImageExtraction,
   fetchAndExtractSkillImage,
+  NonSkillImageError,
+  AmbiguousSkillFilesError,
 } from './services/SkillImageService';
 import { HttpResponseError } from './services/HttpClient';
 import { fetchManifest, ManifestResponseError } from './services/OciClient';
@@ -499,4 +501,47 @@ describe('source-specific 404 logging', () => {
     );
     expect(fetchImage).not.toHaveBeenCalled();
   });
+});
+
+describe('typed extraction classification in the plugin', () => {
+  it.each([
+    ['non-skill', new NonSkillImageError('not a skill')],
+    ['ambiguous', new AmbiguousSkillFilesError('competing files')],
+  ] as const)(
+    'handles %s without retrying or preventing other candidates',
+    async (kind, error) => {
+      const bad = 'quay.io/org/bad:v1';
+      const good = 'quay.io/org/good:v1';
+      fetchImage.mockImplementation(async ref => {
+        if (ref === pinnedRef(bad)) throw error;
+        return { ...extracted };
+      });
+      const backend = await startConnector({
+        images: [{ imageRef: bad }, { imageRef: good }],
+        maxRetries: 2,
+        retryBaseDelayMs: 1,
+      });
+      const response = await request(backend.server)
+        .get('/api/skill-image-connector/images')
+        .set('Authorization', mockCredentials.user.header());
+      expect(response.body.status).toBe('ready');
+      expect(
+        response.body.images.map(
+          (image: { imageRef: string }) => image.imageRef,
+        ),
+      ).toEqual([good]);
+      expect(response.body.failedImages).toEqual(
+        kind === 'ambiguous' ? [bad] : [],
+      );
+      expect(
+        fetchImage.mock.calls.filter(([ref]) => ref === pinnedRef(bad)),
+      ).toHaveLength(1);
+      const log = kind === 'non-skill' ? logger.debug : logger.error;
+      const message =
+        kind === 'non-skill' ? 'not a skill image' : 'Ambiguous skill image';
+      expect(log).toHaveBeenCalledWith(expect.stringContaining(message));
+      await backend.stop();
+      expect(cleanupSkillImageExtraction).toHaveBeenCalledTimes(1);
+    },
+  );
 });

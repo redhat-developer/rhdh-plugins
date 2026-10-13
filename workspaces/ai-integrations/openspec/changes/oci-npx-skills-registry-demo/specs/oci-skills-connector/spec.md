@@ -81,6 +81,20 @@ address used by each upstream connection, including redirects.
 - **THEN** the connector normalizes those files according to design D3
 - **AND** the absence of manifest metadata annotations does not suppress the skill
 
+#### Scenario: Skill files split across supported layouts
+
+- **WHEN** a verified image contains one annotated raw SkillCard and one archived Markdown document, or the inverse
+- **THEN** the connector extracts and normalizes that pair according to design D3
+- **AND** annotated raw file descriptors are not parsed as tar archives merely because their media type says tar
+- **AND** additional matching files in any supported layer make the candidate ambiguous
+
+#### Scenario: Malformed Markdown frontmatter
+
+- **WHEN** an extracted Markdown document has unclosed, invalid, scalar, or array YAML frontmatter
+- **THEN** normalization reports a malformed candidate with frontmatter diagnostics and no normalized record
+- **AND** sufficient SkillCard metadata does not hide the parsing failure
+- **AND** absent or empty optional frontmatter remains valid when the SkillCard provides sufficient metadata
+
 #### Scenario: Ambiguous skill files
 
 - **WHEN** an image has multiple matching SkillCards or Markdown documents, including duplicate archive entries or competing supported layouts

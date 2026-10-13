@@ -180,7 +180,12 @@ export type ExtractionStrategy =
       /** Tar layers present alongside annotated layers. */
       tarLayers: OciDescriptor[];
     }
-  | { mode: 'tar'; layers: OciDescriptor[] }
+  | {
+      mode: 'tar';
+      layers: OciDescriptor[];
+      skillImageYamlLayer?: OciDescriptor;
+      skillsMdLayer?: OciDescriptor;
+    }
   | { mode: 'non-skill' }
   | { mode: 'ambiguous'; reason: string };
 
@@ -267,18 +272,13 @@ export function validateSkillImageManifest(
     };
   }
 
-  // Strategy 1: individually annotated layers
+  // An annotated descriptor identifies a raw file, even if its media type
+  // says tar. Exclude descriptors themselves, not unrelated same-digest layers.
+  const annotatedLayers = new Set([...allYamlAnnotated, ...allMdAnnotated]);
+  const nonAnnotatedTarLayers = tarLayers.filter(
+    layer => !annotatedLayers.has(layer),
+  );
   if (allYamlAnnotated.length === 1 && allMdAnnotated.length === 1) {
-    // Exclude the annotated layers themselves from the tar list:
-    // annotated layers are individual file blobs, not tar archives,
-    // even when they carry a tar media type.
-    const annotatedDigests = new Set([
-      allYamlAnnotated[0].digest,
-      allMdAnnotated[0].digest,
-    ]);
-    const nonAnnotatedTarLayers = tarLayers.filter(
-      l => !annotatedDigests.has(l.digest),
-    );
     return {
       mode: 'annotated',
       skillImageYamlLayer: allYamlAnnotated[0],
@@ -287,11 +287,14 @@ export function validateSkillImageManifest(
     };
   }
 
-  if (tarLayers.length > 0) {
-    // Pass along any partial annotated matches for cross-strategy counting
+  if (nonAnnotatedTarLayers.length > 0) {
     return {
       mode: 'tar',
-      layers: tarLayers,
+      layers: nonAnnotatedTarLayers,
+      ...(allYamlAnnotated[0]
+        ? { skillImageYamlLayer: allYamlAnnotated[0] }
+        : {}),
+      ...(allMdAnnotated[0] ? { skillsMdLayer: allMdAnnotated[0] } : {}),
     };
   }
 
@@ -404,7 +407,7 @@ export async function fetchAndExtractSkillImage(
   } else {
     contents = await fetchTarContents(
       imageRef,
-      strategy.layers,
+      strategy,
       logger,
       credentials,
       blobSignal,
@@ -579,20 +582,32 @@ function countTarFileMatches(entries: TarEntry[], names: string[]): number {
 
 async function fetchTarContents(
   imageRef: ImageRef,
-  layers: OciDescriptor[],
+  strategy: Extract<ExtractionStrategy, { mode: 'tar' }>,
   logger: LoggerService,
   credentials: RegistryCredentials | undefined,
   blobSignal: AbortSignal,
   options: SkillImageOptions,
-  extraYamlCount: number = 0,
-  extraMdCount: number = 0,
 ): Promise<ExtractedSkillContents> {
   let yamlBuf: Buffer | undefined;
   let mdBuf: Buffer | undefined;
-  let totalYamlCount = extraYamlCount;
-  let totalMdCount = extraMdCount;
+  const fetchAnnotated = (layer: OciDescriptor) =>
+    fetchBlob(
+      imageRef,
+      layer.digest,
+      layer.size,
+      logger,
+      credentials,
+      blobSignal,
+      options,
+    );
+  if (strategy.skillImageYamlLayer)
+    yamlBuf = await fetchAnnotated(strategy.skillImageYamlLayer);
+  if (strategy.skillsMdLayer)
+    mdBuf = await fetchAnnotated(strategy.skillsMdLayer);
+  let totalYamlCount = yamlBuf ? 1 : 0;
+  let totalMdCount = mdBuf ? 1 : 0;
 
-  for (const layer of layers) {
+  for (const layer of strategy.layers) {
     const blob = await fetchBlob(
       imageRef,
       layer.digest,

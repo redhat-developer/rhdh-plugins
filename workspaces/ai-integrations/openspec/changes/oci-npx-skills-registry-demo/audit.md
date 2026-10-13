@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-12T21:40:52Z
+**Last audited:** 2026-10-13T16:25:09Z
 
 This focused follow-up reviews the all-active-tag discovery pivot against the
 proposal, design, OCI/common/provider specifications, task status, implementation,
@@ -189,6 +189,53 @@ Workspace type checking, API report validation, package build/lint, workspace
 formatting, strict OpenSpec validation, and dependency installation/deduplication
 passed. Review replies record fixes and retained behavior. Changes remain local
 until maintainer signing and pushing.
+
+### Task 2.3 completion and review follow-up
+
+This focused consistency check covers PR #5230 and RHIDP-17842. It supplements
+the earlier audits and task 2.2 completion check; it does not claim that tasks
+2.4 or 2.5 are complete.
+
+Verified annotated raw files, tar files, gzip tar files, and valid file pairs
+split between supported layouts feed SkillCard YAML and optional Markdown
+frontmatter into the shared D3 normalizer. Both SkillCard and Markdown filename
+aliases are covered. Manifest metadata annotations are not mandatory for valid
+skillctl-style archives. Trusted tagged identity, digest, and source URI remain
+separate from native fields.
+
+Partial annotated matches retain their descriptors and content. Annotated raw
+file descriptors are excluded from tar parsing even when their media type says
+tar. Matching files are counted across supported layouts, duplicate archive
+entries, and archive layers. Competing matches raise the typed ambiguity error;
+a confirmed missing pair raises the typed non-skill error. Plugin integration
+tests verify debug-level non-skill skips, ambiguity failures, continued processing,
+cleanup, and no retries for these terminal classifications.
+
+Frontmatter parsing distinguishes absent/empty optional frontmatter from
+malformed content. Delimiters must occupy a line, including CRLF support.
+Unclosed, invalid, scalar, or array frontmatter produces a malformed result even
+when the SkillCard could otherwise supply sufficient metadata. The OCI spec now
+records this scenario and valid split-layout extraction explicitly.
+
+Real acquisition-to-normalization tests use registry HTTP fixtures with actual
+manifest/blob hashes and descriptor sizes. They validate resulting records with
+the shared snapshot validator and cover D3 precedence, annotation-free archives,
+case-sensitive same-digest aliases, stable identity after tag movement, and raw
+explicit digest acquisition. The raw `/images` payload remains compatible;
+malformed normalization has no normalized record while successful raw extraction
+remains available with diagnostics. No separate unused normalization map remains.
+
+The complete connector suite passed: 333 tests in 13 suites. Workspace
+`tsc:full`, `build:all`, API report checks, package lint, and workspace formatting
+passed. The targeted regressions reproduced nine failures before the fixes.
+Task 2.3 is checked; task definitions and completed prerequisites are preserved.
+Connection-level DNS protection and exhaustive hardening remain task 2.4.
+Authenticated snapshots, source configuration, failure publication, and periodic
+refresh remain task 2.5. The maintainer reported successful debugger and live
+registry testing with both the skillctl archive image and the ORAS annotated
+raw-layer image, then authorized a local commit including their current
+`app-config.yaml` examples. Signing, pushing, and the next Fullsend review
+remain maintainer-owned.
 
 ### Summary
 

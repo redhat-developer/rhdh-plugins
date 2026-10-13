@@ -26,13 +26,13 @@
  */
 
 import { parse as parseYaml } from 'yaml';
-import {
-  normalizeOciMetadata,
-  type NormalizationDiagnostic,
-  type OciMarkdownFrontmatter,
-  type OciNativeInput,
-  type OciSkillCard,
-  type TrustedSourceInput,
+import { normalizeOciMetadata } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+import type {
+  NormalizationDiagnostic,
+  OciMarkdownFrontmatter,
+  OciNativeInput,
+  OciSkillCard,
+  TrustedSourceInput,
 } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import type { SkillImageExtraction, SkillImageNormalization } from './types';
 
@@ -65,40 +65,26 @@ export function parseSkillCardYaml(raw: string): OciSkillCard | undefined {
  * document (SKILL.md or SKILLS.md).
  *
  * Frontmatter is delimited by `---` at the start of the file.
- * Returns the parsed frontmatter or undefined when none is present
- * or the YAML is malformed.
+ * Returns undefined when frontmatter is absent. Empty frontmatter is valid.
+ * Throws for malformed, unclosed, scalar, or array frontmatter.
  */
 export function parseMarkdownFrontmatter(
   raw: string,
 ): OciMarkdownFrontmatter | undefined {
-  const trimmed = raw.trimStart();
-  if (!trimmed.startsWith('---')) {
-    return undefined;
+  const lines = raw.trimStart().split(/\r?\n/);
+  if (!/^---[ \t]*$/.test(lines[0])) return undefined;
+  const closing = lines.findIndex(
+    (line, index) => index > 0 && /^---[ \t]*$/.test(line),
+  );
+  if (closing === -1)
+    throw new TypeError('Frontmatter has no closing delimiter');
+  const content = lines.slice(1, closing).join('\n');
+  if (!content.trim()) return {};
+  const doc: unknown = parseYaml(content);
+  if (!doc || typeof doc !== 'object' || Array.isArray(doc)) {
+    throw new TypeError('Frontmatter must be a YAML object');
   }
-
-  // Find the closing delimiter. The opening `---` may be followed by
-  // a newline or by content on the same line; we skip the first 3
-  // characters (the opening dashes) and search for the next occurrence.
-  const afterOpening = trimmed.indexOf('\n');
-  if (afterOpening === -1) {
-    return undefined;
-  }
-
-  const closingIdx = trimmed.indexOf('\n---', afterOpening);
-  if (closingIdx === -1) {
-    return undefined;
-  }
-
-  const frontmatterStr = trimmed.substring(afterOpening + 1, closingIdx);
-  try {
-    const doc = parseYaml(frontmatterStr);
-    if (doc === null || doc === undefined || typeof doc !== 'object') {
-      return undefined;
-    }
-    return doc as OciMarkdownFrontmatter;
-  } catch {
-    return undefined;
-  }
+  return doc as OciMarkdownFrontmatter;
 }
 
 /**
@@ -146,7 +132,21 @@ export function normalizeSkillImageExtraction(
 
   // Parse the Markdown frontmatter (optional — absent frontmatter
   // is valid when the SkillCard provides sufficient metadata)
-  const frontmatter = parseMarkdownFrontmatter(extraction.skillsMd);
+  let frontmatter: OciMarkdownFrontmatter | undefined;
+  try {
+    frontmatter = parseMarkdownFrontmatter(extraction.skillsMd);
+  } catch {
+    return {
+      outcome: 'malformed',
+      record: null,
+      diagnostics: [
+        {
+          field: 'frontmatter',
+          message: 'frontmatter: invalid or unclosed YAML object',
+        },
+      ],
+    };
+  }
 
   // Build the native input for the shared normalizer
   const native: OciNativeInput = {

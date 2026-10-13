@@ -146,19 +146,19 @@ Content here.`;
     expect(parseMarkdownFrontmatter(raw)).toBeUndefined();
   });
 
-  it('returns undefined when closing delimiter is missing', () => {
+  it('throws when closing delimiter is missing', () => {
     const raw = '---\nname: test\n# No closing delimiter';
-    expect(parseMarkdownFrontmatter(raw)).toBeUndefined();
+    expect(() => parseMarkdownFrontmatter(raw)).toThrow();
   });
 
-  it('returns undefined for invalid YAML within frontmatter', () => {
+  it('throws for invalid YAML within frontmatter', () => {
     const raw = '---\n:\n  - valid\n bad indent\n---\n\nContent.';
-    expect(parseMarkdownFrontmatter(raw)).toBeUndefined();
+    expect(() => parseMarkdownFrontmatter(raw)).toThrow();
   });
 
-  it('returns undefined for scalar YAML frontmatter', () => {
+  it('throws for scalar YAML frontmatter', () => {
     const raw = '---\njust a string\n---\n\nContent.';
-    expect(parseMarkdownFrontmatter(raw)).toBeUndefined();
+    expect(() => parseMarkdownFrontmatter(raw)).toThrow();
   });
 
   it('handles leading whitespace before frontmatter', () => {
@@ -170,7 +170,7 @@ Content here.`;
 
   it('handles empty frontmatter', () => {
     const raw = '---\n\n---\n\nContent.';
-    expect(parseMarkdownFrontmatter(raw)).toBeUndefined();
+    expect(parseMarkdownFrontmatter(raw)).toEqual({});
   });
 
   it('parses frontmatter with all supported fields', () => {
@@ -427,5 +427,41 @@ describe('nonSkillNormalization', () => {
     expect(result.outcome).toBe('non-skill');
     expect(result.record).toBeNull();
     expect(result.diagnostics[0].message).toContain('no skill files');
+  });
+});
+
+// A usable SkillCard must not hide malformed Markdown frontmatter.
+describe('malformed frontmatter classification', () => {
+  it.each([
+    '---\nname: test',
+    '---\nname: [unclosed\n---\nBody',
+    '---\nscalar\n---\nBody',
+    '---\n- item\n---\nBody',
+    '---\nname: test\n---not-a-delimiter\nBody',
+  ])('rejects malformed frontmatter %p despite a valid SkillCard', skillsMd => {
+    const result = normalizeSkillImageExtraction(makeExtraction({ skillsMd }));
+    expect(result.outcome).toBe('malformed');
+    expect(result.record).toBeNull();
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({ field: 'frontmatter' }),
+    ]);
+  });
+});
+
+describe('frontmatter delimiter boundaries', () => {
+  it('accepts CRLF delimiters and an empty frontmatter object', () => {
+    expect(parseMarkdownFrontmatter('---\r\nname: Windows\r\n---')).toEqual({
+      name: 'Windows',
+    });
+    expect(
+      normalizeSkillImageExtraction(
+        makeExtraction({ skillsMd: '---\n---\nBody' }),
+      ).outcome,
+    ).toBe('normalized');
+  });
+  it('does not treat a prose prefix as an opening delimiter', () => {
+    expect(
+      parseMarkdownFrontmatter('---example\nnot frontmatter'),
+    ).toBeUndefined();
   });
 });
