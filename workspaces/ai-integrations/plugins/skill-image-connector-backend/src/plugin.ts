@@ -35,15 +35,23 @@ import {
 } from './services/OciClient';
 import { discoverQuayRepositories } from './services/QuayDiscovery';
 import {
+  AmbiguousSkillFilesError,
+  NonSkillImageError,
   cleanupSkillImageExtraction,
   cleanupStaleExtractionDirs,
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
+import {
+  normalizeSkillImageExtraction,
+  ambiguousNormalization,
+  nonSkillNormalization,
+} from './services/normalizeExtraction';
 import type {
   QuayDiscoveryConfig,
   RegistryCredentials,
   SkillImageConfig,
   SkillImageExtraction,
+  SkillImageNormalization,
   SkillImageOptions,
 } from './services/types';
 import { MAX_CONCURRENT_IMAGE_FETCHES } from './services/types';
@@ -551,6 +559,8 @@ export const skillImageConnectorPlugin = createBackendPlugin({
 
         // Store extraction results so they can be exposed via the API
         const extractions = new Map<string, SkillImageExtraction>();
+        // Normalization results keyed by imageRef for task 2.5 snapshot use
+        const normalizations = new Map<string, SkillImageNormalization>();
         const failedImages = new Set<string>();
         let processingStatus: SkillImageProcessingStatus = hasConfiguredSources
           ? 'loading'
@@ -662,19 +672,55 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                 } else {
                   aggregateContentSize += contentSize;
                   extractions.set(imgConfig.imageRef, result);
-                  pluginLogger.info(
-                    `Successfully extracted skill image ${imgConfig.imageRef}`,
-                  );
+
+                  // Normalize the extracted content
+                  const normalization = normalizeSkillImageExtraction(result);
+                  normalizations.set(imgConfig.imageRef, normalization);
+                  if (normalization.outcome === 'normalized') {
+                    pluginLogger.info(
+                      `Successfully extracted and normalized skill image ${imgConfig.imageRef}`,
+                    );
+                  } else {
+                    pluginLogger.warn(
+                      `Extracted skill image ${
+                        imgConfig.imageRef
+                      } but normalization ${
+                        normalization.outcome
+                      }: ${normalization.diagnostics
+                        .map(d => d.message)
+                        .join('; ')}`,
+                    );
+                  }
                 }
               } catch (error) {
                 if (!processingAbortController.signal.aborted) {
-                  failedImages.add(imgConfig.imageRef);
-                  logImageProcessingFailure(
-                    pluginLogger,
-                    imgConfig.imageRef,
-                    error,
-                    imgConfig.logNotFoundAsError ?? true,
-                  );
+                  // Non-skill images are silently skipped (not failures)
+                  if (error instanceof NonSkillImageError) {
+                    pluginLogger.debug(
+                      `Image ${imgConfig.imageRef} is not a skill image: ${error.message}`,
+                    );
+                    normalizations.set(
+                      imgConfig.imageRef,
+                      nonSkillNormalization(error.message),
+                    );
+                  } else if (error instanceof AmbiguousSkillFilesError) {
+                    failedImages.add(imgConfig.imageRef);
+                    normalizations.set(
+                      imgConfig.imageRef,
+                      ambiguousNormalization(error.message),
+                    );
+                    pluginLogger.error(
+                      `Ambiguous skill image ${imgConfig.imageRef}: ${error.message}`,
+                    );
+                  } else {
+                    failedImages.add(imgConfig.imageRef);
+                    logImageProcessingFailure(
+                      pluginLogger,
+                      imgConfig.imageRef,
+                      error,
+                      imgConfig.logNotFoundAsError ?? true,
+                    );
+                  }
                 }
               }
             }

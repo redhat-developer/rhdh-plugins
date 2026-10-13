@@ -286,7 +286,7 @@ describe('validateSkillImageManifest', () => {
     expect(result.mode === 'tar' ? result.layers : []).toHaveLength(1);
   });
 
-  it('should throw when no annotated layers and no tar layers', () => {
+  it('should return non-skill when no annotated layers and no tar layers', () => {
     const manifest: OciManifest = {
       schemaVersion: 2,
       config: {
@@ -306,12 +306,12 @@ describe('validateSkillImageManifest', () => {
       ],
     };
 
-    expect(() => validateSkillImageManifest(manifest)).toThrow(
-      'does not conform to the skillimage format',
-    );
+    expect(validateSkillImageManifest(manifest)).toEqual({
+      mode: 'non-skill',
+    });
   });
 
-  it('should throw when layers have no annotations and are not tar type', () => {
+  it('should return non-skill when layers have no annotations and are not tar type', () => {
     const manifest: OciManifest = {
       schemaVersion: 2,
       config: {
@@ -328,9 +328,9 @@ describe('validateSkillImageManifest', () => {
       ],
     };
 
-    expect(() => validateSkillImageManifest(manifest)).toThrow(
-      'does not conform to the skillimage format',
-    );
+    expect(validateSkillImageManifest(manifest)).toEqual({
+      mode: 'non-skill',
+    });
   });
 
   it('should throw when manifest has no layers array', () => {

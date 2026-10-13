@@ -41,6 +41,9 @@ jest.mock('./services/QuayDiscovery', () => ({
   discoverQuayRepositories: jest.fn(),
 }));
 jest.mock('./services/SkillImageService', () => ({
+  ...jest.requireActual<typeof import('./services/SkillImageService')>(
+    './services/SkillImageService',
+  ),
   cleanupStaleExtractionDirs: jest.fn().mockResolvedValue(undefined),
   cleanupSkillImageExtraction: jest.fn().mockResolvedValue(undefined),
   fetchAndExtractSkillImage: jest.fn(),

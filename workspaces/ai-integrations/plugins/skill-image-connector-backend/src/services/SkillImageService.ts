@@ -31,6 +31,28 @@ import type {
 } from './types';
 
 /**
+ * Error thrown when an image contains multiple competing SkillCard or
+ * Markdown files across supported layers per design D4.
+ */
+export class AmbiguousSkillFilesError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AmbiguousSkillFilesError';
+  }
+}
+
+/**
+ * Error thrown when an image lacks the required SkillCard/Markdown pair,
+ * confirming it is not a skill image.
+ */
+export class NonSkillImageError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NonSkillImageError';
+  }
+}
+
+/**
  * The annotation key used by skillimage to identify the layer title.
  * See https://github.com/redhat-et/skillimage
  */
@@ -149,30 +171,30 @@ export function findLayerByTitle(
   return undefined;
 }
 
-/**
- * Finds a layer whose title annotation matches any of the given names.
- */
-function findLayerByTitles(
-  layers: OciDescriptor[],
-  titles: string[],
-): OciDescriptor | undefined {
-  for (const title of titles) {
-    const layer = findLayerByTitle(layers, title);
-    if (layer) {
-      return layer;
-    }
-  }
-  return undefined;
-}
-
 /** The strategy the extraction code should follow for a given manifest. */
 export type ExtractionStrategy =
   | {
       mode: 'annotated';
       skillImageYamlLayer: OciDescriptor;
       skillsMdLayer: OciDescriptor;
+      /** Tar layers present alongside annotated layers. */
+      tarLayers: OciDescriptor[];
     }
-  | { mode: 'tar'; layers: OciDescriptor[] };
+  | { mode: 'tar'; layers: OciDescriptor[] }
+  | { mode: 'non-skill' }
+  | { mode: 'ambiguous'; reason: string };
+
+/**
+ * Finds ALL layers whose title annotation matches any of the given names.
+ */
+function findAllLayersByTitles(
+  layers: OciDescriptor[],
+  titles: string[],
+): OciDescriptor[] {
+  return layers.filter(layer =>
+    titles.some(title => layer.annotations?.[TITLE_ANNOTATION] === title),
+  );
+}
 
 /**
  * Validates an OCI manifest and determines the extraction strategy.
@@ -187,7 +209,11 @@ export type ExtractionStrategy =
  *    that may contain the expected files as tar entries.  This matches
  *    the format produced by `skillctl`.
  *
- * Throws a descriptive error if neither strategy can be applied.
+ * Returns `non-skill` when no matching layout is found.
+ * Returns `ambiguous` when multiple matching files compete per D4.
+ *
+ * Throws only for structurally invalid manifests (missing layers array,
+ * malformed layer descriptors).
  */
 export function validateSkillImageManifest(
   manifest: OciManifest,
@@ -214,39 +240,63 @@ export function validateSkillImageManifest(
     );
   }
 
-  // Strategy 1: individually annotated layers
-  const skillImageYamlLayer = findLayerByTitles(manifest.layers, YAML_NAMES);
-  const skillsMdLayer = findLayerByTitles(manifest.layers, MD_NAMES);
+  // Count ALL annotated layers that match skill file names
+  const allYamlAnnotated = findAllLayersByTitles(manifest.layers, YAML_NAMES);
+  const allMdAnnotated = findAllLayersByTitles(manifest.layers, MD_NAMES);
 
-  if (skillImageYamlLayer && skillsMdLayer) {
-    return { mode: 'annotated', skillImageYamlLayer, skillsMdLayer };
-  }
-
-  // Strategy 2: tar (optionally gzip) layers — produced by skillctl
+  // Strategy 2 candidates: tar (optionally gzip) layers
   const tarLayers = manifest.layers.filter(l =>
     TAR_MEDIA_TYPES.has(l.mediaType),
   );
 
+  // Detect annotated-layer ambiguity
+  if (allYamlAnnotated.length > 1) {
+    return {
+      mode: 'ambiguous',
+      reason: `${
+        allYamlAnnotated.length
+      } competing SkillCard layers with annotations ${YAML_NAMES.join('/')}`,
+    };
+  }
+  if (allMdAnnotated.length > 1) {
+    return {
+      mode: 'ambiguous',
+      reason: `${
+        allMdAnnotated.length
+      } competing Markdown layers with annotations ${MD_NAMES.join('/')}`,
+    };
+  }
+
+  // Strategy 1: individually annotated layers
+  if (allYamlAnnotated.length === 1 && allMdAnnotated.length === 1) {
+    // Exclude the annotated layers themselves from the tar list:
+    // annotated layers are individual file blobs, not tar archives,
+    // even when they carry a tar media type.
+    const annotatedDigests = new Set([
+      allYamlAnnotated[0].digest,
+      allMdAnnotated[0].digest,
+    ]);
+    const nonAnnotatedTarLayers = tarLayers.filter(
+      l => !annotatedDigests.has(l.digest),
+    );
+    return {
+      mode: 'annotated',
+      skillImageYamlLayer: allYamlAnnotated[0],
+      skillsMdLayer: allMdAnnotated[0],
+      tarLayers: nonAnnotatedTarLayers,
+    };
+  }
+
   if (tarLayers.length > 0) {
-    return { mode: 'tar', layers: tarLayers };
+    // Pass along any partial annotated matches for cross-strategy counting
+    return {
+      mode: 'tar',
+      layers: tarLayers,
+    };
   }
 
-  // Neither strategy matched — report what is missing
-  const missing: string[] = [];
-  if (!skillImageYamlLayer) {
-    missing.push(YAML_NAMES.join(' or '));
-  }
-  if (!skillsMdLayer) {
-    missing.push(MD_NAMES.join(' or '));
-  }
-
-  throw new Error(
-    `Image does not conform to the skillimage format: ` +
-      `no individually annotated layers for ${missing.join(', ')} ` +
-      `and no tar/tar+gzip layers found. ` +
-      `Expected either per-layer "${TITLE_ANNOTATION}" annotations ` +
-      `or tar+gzip layers containing the skill files.`,
-  );
+  // Neither strategy matched — this is a non-skill
+  return { mode: 'non-skill' };
 }
 
 // ── Extraction ──────────────────────────────────────────────────────
@@ -305,6 +355,22 @@ export async function fetchAndExtractSkillImage(
   // 2. Determine extraction strategy
   const strategy = validateSkillImageManifest(manifest);
 
+  if (strategy.mode === 'non-skill') {
+    throw new NonSkillImageError(
+      `Image does not conform to the skillimage format: ` +
+        `no individually annotated layers for ${YAML_NAMES.join(
+          ' or ',
+        )}, ${MD_NAMES.join(' or ')} ` +
+        `and no tar/tar+gzip layers found. ` +
+        `Expected either per-layer "${TITLE_ANNOTATION}" annotations ` +
+        `or tar+gzip layers containing the skill files.`,
+    );
+  }
+
+  if (strategy.mode === 'ambiguous') {
+    throw new AmbiguousSkillFilesError(strategy.reason);
+  }
+
   // 3. Fetch and decode content, cancelling siblings on first failure
   // Shared abort controller so that if one blob fetch fails the sibling
   // is cancelled promptly instead of running to completion.
@@ -313,25 +379,38 @@ export async function fetchAndExtractSkillImage(
     ? AbortSignal.any([signal, blobController.signal])
     : blobController.signal;
 
-  const contents =
-    strategy.mode === 'annotated'
-      ? await fetchAnnotatedContents(
-          imageRef,
-          strategy,
-          logger,
-          credentials,
-          blobSignal,
-          blobController,
-          options,
-        )
-      : await fetchTarContents(
-          imageRef,
-          strategy.layers,
-          logger,
-          credentials,
-          blobSignal,
-          options,
-        );
+  let contents: ExtractedSkillContents;
+  if (strategy.mode === 'annotated') {
+    contents = await fetchAnnotatedContents(
+      imageRef,
+      strategy,
+      logger,
+      credentials,
+      blobSignal,
+      blobController,
+      options,
+    );
+    // Cross-strategy ambiguity: check tar layers for competing files
+    if (strategy.tarLayers.length > 0) {
+      await checkTarLayersForCompetingFiles(
+        imageRef,
+        strategy.tarLayers,
+        logger,
+        credentials,
+        blobSignal,
+        options,
+      );
+    }
+  } else {
+    contents = await fetchTarContents(
+      imageRef,
+      strategy.layers,
+      logger,
+      credentials,
+      blobSignal,
+      options,
+    );
+  }
 
   // 4. Write to local storage following the pattern from
   // catalog-techdoc-url-reader-backend (mkdtemp + writeFile)
@@ -386,6 +465,52 @@ export async function fetchAndExtractSkillImage(
   }
 }
 
+/**
+ * Checks tar layers for skill files that would compete with annotated
+ * layers. Called only when the annotated strategy was selected AND tar
+ * layers also exist in the manifest.
+ *
+ * Throws AmbiguousSkillFilesError if any tar layer contains a
+ * matching SkillCard or Markdown file, since the annotated layers
+ * already provide one of each.
+ */
+async function checkTarLayersForCompetingFiles(
+  imageRef: ImageRef,
+  tarLayers: OciDescriptor[],
+  logger: LoggerService,
+  credentials: RegistryCredentials | undefined,
+  blobSignal: AbortSignal,
+  options: SkillImageOptions,
+): Promise<void> {
+  for (const layer of tarLayers) {
+    const blob = await fetchBlob(
+      imageRef,
+      layer.digest,
+      layer.size,
+      logger,
+      credentials,
+      blobSignal,
+      options,
+    );
+    const entries = parseTarEntries(
+      maybeDecompress(blob, options.maxBlobSizeBytes),
+    );
+    const yamlCount = countTarFileMatches(entries, YAML_NAMES);
+    const mdCount = countTarFileMatches(entries, MD_NAMES);
+
+    if (yamlCount > 0) {
+      throw new AmbiguousSkillFilesError(
+        `Competing SkillCard: annotated layer and tar entry both provide a SkillCard`,
+      );
+    }
+    if (mdCount > 0) {
+      throw new AmbiguousSkillFilesError(
+        `Competing Markdown: annotated layer and tar entry both provide a Markdown document`,
+      );
+    }
+  }
+}
+
 interface ExtractedSkillContents {
   skillImageYamlContent: string;
   skillsMdContent: string;
@@ -436,6 +561,22 @@ async function fetchAnnotatedContents(
   };
 }
 
+/**
+ * Counts how many tar entries match the given names across all entries.
+ */
+function countTarFileMatches(entries: TarEntry[], names: string[]): number {
+  let count = 0;
+  for (const entry of entries) {
+    for (const name of names) {
+      if (entry.name === name || entry.name.endsWith(`/${name}`)) {
+        count++;
+        break; // Only count each entry once even if it matches multiple names
+      }
+    }
+  }
+  return count;
+}
+
 async function fetchTarContents(
   imageRef: ImageRef,
   layers: OciDescriptor[],
@@ -443,14 +584,15 @@ async function fetchTarContents(
   credentials: RegistryCredentials | undefined,
   blobSignal: AbortSignal,
   options: SkillImageOptions,
+  extraYamlCount: number = 0,
+  extraMdCount: number = 0,
 ): Promise<ExtractedSkillContents> {
   let yamlBuf: Buffer | undefined;
   let mdBuf: Buffer | undefined;
+  let totalYamlCount = extraYamlCount;
+  let totalMdCount = extraMdCount;
 
   for (const layer of layers) {
-    if (yamlBuf && mdBuf) {
-      break;
-    }
     const blob = await fetchBlob(
       imageRef,
       layer.digest,
@@ -463,8 +605,25 @@ async function fetchTarContents(
     const entries = parseTarEntries(
       maybeDecompress(blob, options.maxBlobSizeBytes),
     );
+
+    // Count all matches for ambiguity detection
+    totalYamlCount += countTarFileMatches(entries, YAML_NAMES);
+    totalMdCount += countTarFileMatches(entries, MD_NAMES);
+
     yamlBuf ??= findTarFile(entries, YAML_NAMES);
     mdBuf ??= findTarFile(entries, MD_NAMES);
+  }
+
+  // Check for ambiguous competing files per D4
+  if (totalYamlCount > 1) {
+    throw new AmbiguousSkillFilesError(
+      `${totalYamlCount} competing SkillCard files found across tar layers`,
+    );
+  }
+  if (totalMdCount > 1) {
+    throw new AmbiguousSkillFilesError(
+      `${totalMdCount} competing Markdown files found across tar layers`,
+    );
   }
 
   if (!yamlBuf || !mdBuf) {
@@ -472,7 +631,7 @@ async function fetchTarContents(
       yamlBuf ? undefined : YAML_NAMES.join('/'),
       mdBuf ? undefined : MD_NAMES.join('/'),
     ].filter((name): name is string => Boolean(name));
-    throw new Error(
+    throw new NonSkillImageError(
       `Tar layers did not contain the required skill files: ${missing.join(
         ', ',
       )}`,
