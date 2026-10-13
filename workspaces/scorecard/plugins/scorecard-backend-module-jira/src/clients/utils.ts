@@ -86,9 +86,9 @@ function containsControlCharacter(value: string): boolean {
   const characters = [...value];
 
   const containsControlChars = characters.some(char => {
-    const charCode = char.codePointAt(0);
+    const charCode = char.codePointAt(0) ?? 0;
 
-    return charCode ? charCode < FIRST_PRINTABLE_ASCII : false;
+    return charCode < FIRST_PRINTABLE_ASCII;
   });
   return containsControlChars;
 }
