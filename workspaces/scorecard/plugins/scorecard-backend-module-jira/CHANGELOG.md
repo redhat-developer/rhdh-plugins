@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira
 
+## 4.5.2
+
+### Patch Changes
+
+- 252ac74: Fixed the bug when using custom filter for jira could be unsafe
+- c807509: Add optional `jira.authType` (`Basic` or `Bearer`) for direct connections so Jira Cloud can use personal API tokens (default Basic) or service account tokens (set `authType: Bearer`). When omitted, auth defaults to Basic for `cloud` and Bearer for `datacenter`. `jira.token` remains a bare credential.
+- fc01181: Add local development harnesses and contributor guides for the Scorecard plugin, backend, and metric modules. Tests cover the drill-down namespace query, the collectors route, and New Frontend System plugin wiring. No runtime behavior change.
+- c74bea3: Validate app-config openIssues `mandatoryFilter` and `customFilter` with the same JQL rules as the `jira/custom-filter` entity annotation
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.2
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.2
+
 ## 4.5.1
 
 ### Patch Changes
