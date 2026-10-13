@@ -171,6 +171,10 @@ const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 /** Host for compact PatternFly chat modals (`appendTo` + absolute backdrop). */
 const ChatModalScope = styled('div')({
   position: 'relative',
+  // Trap history/docs panel z-index (1300) inside IA so it cannot cover the
+  // AppDrawer dock resize handle (z-index 1) on the paper edge (RHDHBUGS-3931).
+  zIndex: 0,
+  isolation: 'isolate',
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
