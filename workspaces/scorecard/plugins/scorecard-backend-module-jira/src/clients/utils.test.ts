@@ -103,6 +103,7 @@ describe('utils', () => {
         'must not contain an ORDER BY clause',
       ],
       ['summary ~ "*foo"', 'must not use a leading wildcard'],
+      ['summary ~ " *foo"', 'must not use a leading wildcard'],
       ['   ', 'must not be empty'],
     ])('rejects %p (%s)', (value, reason) => {
       expect(() => validateJqlExpression(value, 'jira/custom-filter')).toThrow(
