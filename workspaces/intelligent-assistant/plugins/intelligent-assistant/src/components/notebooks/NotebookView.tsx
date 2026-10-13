@@ -141,6 +141,7 @@ const StyledDrawerContentBody = styled(DrawerContentBody)({
   flex: 1,
   minHeight: 0,
   minWidth: 0,
+  backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
 });
 
 const MainArea = styled('div')({
@@ -158,6 +159,7 @@ const ContentColumn = styled('div')({
   minWidth: 0,
   minHeight: 0,
   overflow: 'hidden',
+  backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
 });
 
 const TopBar = styled('div')(({ theme }) => ({
@@ -196,16 +198,24 @@ const PromptSuggestions = styled('div')(({ theme }) => ({
   justifyContent: 'flex-start',
 }));
 
-// Empty-docs alert sits between content and footer; match MessageBox inset.
-const FooterAlignedDisclaimer = styled('div')(({ theme }) => ({
+// Empty-docs Important alert sits above MessageBar in the footer. PF inline
+// alerts use primary, which can diverge from MessageBar's control surface
+// (#292929 dark) — paint the same control token MessageBar uses.
+const messageBarSurface =
+  'var(--pf-t--global--background--color--control--default, var(--pf-t--global--background--color--primary--default))';
+
+const FooterDisclaimer = styled('div')(({ theme }) => ({
   width: '100%',
   boxSizing: 'border-box',
-  paddingInline: 'var(--pf-t--global--spacer--lg)',
   paddingBlockEnd: theme.spacing(1),
-  '.pf-chatbot.pf-m-compact &': {
-    paddingInline: 'var(--pf-t--global--spacer--md)',
-  },
 }));
+
+const DisclaimerAlert = styled(Alert)({
+  '--pf-v6-c-alert--BackgroundColor': messageBarSurface,
+  '--pf-v6-c-alert--m-inline--BackgroundColor': messageBarSurface,
+  backgroundColor: `${messageBarSurface} !important`,
+  backgroundImage: 'none !important',
+});
 
 const PromptPill = styled('button')(({ theme }) => ({
   appearance: 'none',
@@ -236,12 +246,14 @@ const StyledChatbotContent = styled(ChatbotContent)({
   },
 });
 
-const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
-
 // Align footer with MessageBox inset (override PF 90%/60rem full-page footer).
-const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
-  backgroundColor: `${floatingBg} !important`,
-  alignItems: 'stretch',
+// Same as Chat: no footer bg override so isPrimary matches MessageBar (#292929 dark).
+const StyledChatbotFooter = styled(ChatbotFooter, {
+  shouldForwardProp: prop => prop !== '$overlay',
+})<{ $overlay?: boolean }>(({ theme, $overlay }) => ({
+  '&.pf-chatbot__footer': {
+    alignItems: 'stretch',
+  },
   '&>.pf-chatbot__footer-container': {
     width: '100% !important',
     maxWidth: 'unset !important',
@@ -253,14 +265,18 @@ const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
     padding:
       '0 var(--pf-t--global--spacer--md) var(--pf-t--global--spacer--md) !important',
   },
-  '& .pf-chatbot__message-bar': {
-    backgroundColor:
-      theme.palette.mode === 'light'
-        ? theme.palette.grey[100]
-        : 'var(--pf-t--global--background--color--secondary--default)',
-  },
+  // Light page shell only — floating chrome keeps PF control-default pill.
+  ...($overlay
+    ? {}
+    : {
+        '& .pf-chatbot__message-bar': {
+          backgroundColor:
+            theme.palette.mode === 'light'
+              ? theme.palette.grey[100]
+              : undefined,
+        },
+      }),
 }));
-
 type NotebookViewProps = {
   sessionId: string;
   notebookName?: string;
@@ -676,15 +692,15 @@ export const NotebookView = ({
   );
 
   const renderNotebookDisclaimerAlert = () => (
-    <Alert isInline variant="info" title={t('aria.important')}>
+    <DisclaimerAlert isInline variant="info" title={t('aria.important')}>
       {t('disclaimer')}
-    </Alert>
+    </DisclaimerAlert>
   );
 
   const renderMainContent = () => {
     if (hasNoDocuments && messages.length === 0) {
       return (
-        <StyledChatbotContent isPrimary>
+        <StyledChatbotContent isPrimary={!isCompact}>
           <Typography
             component="span"
             sx={{
@@ -705,7 +721,7 @@ export const NotebookView = ({
     }
     if (messages.length > 0) {
       return (
-        <StyledChatbotContent isPrimary>
+        <StyledChatbotContent isPrimary={!isCompact}>
           <LightspeedChatBox
             userName={userName}
             messages={messages}
@@ -722,7 +738,7 @@ export const NotebookView = ({
       );
     }
     return (
-      <StyledChatbotContent isPrimary>
+      <StyledChatbotContent isPrimary={!isCompact}>
         <WelcomeMessageBox>
           {renderNotebookDisclaimerAlert()}
           <NotebookContentArea>
@@ -864,13 +880,15 @@ export const NotebookView = ({
 
                 <MainContent>{renderMainContent()}</MainContent>
 
-                {hasNoDocuments && messages.length === 0 && (
-                  <FooterAlignedDisclaimer>
-                    {renderNotebookDisclaimerAlert()}
-                  </FooterAlignedDisclaimer>
-                )}
-
-                <StyledChatbotFooter isPrimary>
+                <StyledChatbotFooter
+                  $overlay={isCompact}
+                  isPrimary={!isCompact}
+                >
+                  {hasNoDocuments && messages.length === 0 && (
+                    <FooterDisclaimer>
+                      {renderNotebookDisclaimerAlert()}
+                    </FooterDisclaimer>
+                  )}
                   {(() => {
                     const addResourceAction = (
                       <Button
@@ -889,7 +907,7 @@ export const NotebookView = ({
                       >
                         <div>
                           <MessageBar
-                            isPrimary
+                            isPrimary={!isCompact}
                             hasAttachButton={false}
                             hasMicrophoneButton={false}
                             hasStopButton={false}
@@ -909,7 +927,7 @@ export const NotebookView = ({
                       </Tooltip>
                     ) : (
                       <MessageBar
-                        isPrimary
+                        isPrimary={!isCompact}
                         hasAttachButton={false}
                         hasMicrophoneButton
                         hasStopButton={isStreaming}

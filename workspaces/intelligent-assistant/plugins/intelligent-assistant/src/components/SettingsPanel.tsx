@@ -123,7 +123,11 @@ export const SettingsPanel = ({
   const effectiveTab = showMcpTab ? activeTab : 'saved-prompts';
 
   return (
-    <div className={classes.root}>
+    <div
+      className={classes.root}
+      // Same shell paint as MCP servers (chat header / floating chrome).
+      style={backgroundColor ? { backgroundColor } : undefined}
+    >
       <div className={classes.headerRow}>
         <Title headingLevel="h2" size="xl">
           {t('settings.panel.title')}

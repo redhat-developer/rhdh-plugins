@@ -56,17 +56,25 @@ export const LightspeedFABIcon = () => {
 
 /**
  * @public
- * Chevron-down icon for FAB dismiss/close state
+ * Chevron-down icon for FAB dismiss/close state.
+ *
+ * viewBox must hug the path ink. The glyph spans roughly y 0.35–11.75; the
+ * old `0 0 22 14` box left ~2.25 units empty below vs ~0.35 above, so MUI Fab
+ * flex-centering centered the box — not the chevron — and the icon looked high.
  */
 export const LightspeedFABOpenIcon = () => (
   <svg
     data-testid="lightspeed-fab-open-icon"
     width="22"
-    height="14"
-    viewBox="0 0 22 14"
+    height="12"
+    // Include Bezier control points (~y -0.12) and stop at the tip (~y 11.75)
+    // so top/bottom padding stays balanced.
+    viewBox="0 -0.15 22 12"
     fill="currentColor"
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
+    // Avoid inline-SVG baseline gap under the icon inside the Fab.
+    style={{ display: 'block' }}
   >
     <path d="M21.2485 0.35154C20.7798 -0.11718 20.0204 -0.11718 19.5516 0.35154L10.8 9.10314L2.0485 0.35154C1.57978 -0.11718 0.820425 -0.11718 0.351585 0.35154C-0.117255 0.82026 -0.117135 1.57962 0.351585 2.04846L9.52738 11.2243C9.87778 11.5759 10.3395 11.7505 10.8 11.7505C11.2604 11.7505 11.7223 11.5759 12.0726 11.2243L21.2484 2.04846C21.7171 1.57974 21.7172 0.82038 21.2485 0.35154Z" />
   </svg>
