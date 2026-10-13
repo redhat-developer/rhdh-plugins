@@ -67,23 +67,19 @@ jest.mock('../OnboardingCard', () => ({
 
 const theme = createTheme();
 
-const renderWithProviders = (ui: ReactNode) =>
+const catalogUserEntity = {
+  apiVersion: 'backstage.io/v1alpha1',
+  kind: 'User',
+  metadata: { name: 'catalog-user', title: 'Catalog User' },
+  spec: { profile: { displayName: 'Catalog User' } },
+};
+
+const renderWithProviders = (
+  ui: ReactNode,
+  getEntityByRef: jest.Mock = jest.fn().mockResolvedValue(catalogUserEntity),
+) =>
   render(
-    <TestApiProvider
-      apis={[
-        [
-          catalogApiRef,
-          {
-            getEntityByRef: async () => ({
-              apiVersion: 'backstage.io/v1alpha1',
-              kind: 'User',
-              metadata: { name: 'catalog-user', title: 'Catalog User' },
-              spec: { profile: { displayName: 'Catalog User' } },
-            }),
-          },
-        ],
-      ]}
-    >
+    <TestApiProvider apis={[[catalogApiRef, { getEntityByRef }]]}>
       <ThemeProvider theme={theme}>{ui}</ThemeProvider>
     </TestApiProvider>,
   );
@@ -105,16 +101,15 @@ describe('OnboardingSectionContent', () => {
 
 describe('useOnboardingSection', () => {
   const HookHarness = () => {
-    const { greetingLine, body } = useOnboardingSection();
-    return (
-      <div>
-        <div data-testid="greeting">{greetingLine}</div>
-        <div data-testid="body">{body}</div>
-      </div>
-    );
+    const { greetingLine } = useOnboardingSection();
+    return <div data-testid="greeting">{greetingLine}</div>;
   };
 
-  it('formats entity ref display names', async () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('prefers catalog display name over entity-ref profile displayName', async () => {
     jest
       .spyOn(require('@backstage/plugin-user-settings'), 'useUserProfile')
       .mockReturnValue({
@@ -123,12 +118,17 @@ describe('useOnboardingSection', () => {
         loading: false,
       });
 
-    renderWithProviders(<HookHarness />);
+    const getEntityByRef = jest.fn().mockResolvedValue(catalogUserEntity);
+    renderWithProviders(<HookHarness />, getEntityByRef);
 
     await waitFor(() => {
       expect(screen.getByTestId('greeting')).toHaveTextContent(
-        /Good morning, Test-user!/,
+        'Good morning, Catalog User!',
       );
     });
+
+    // Entity-ref formatting would yield "Test-user" if catalog were ignored.
+    expect(screen.getByTestId('greeting')).not.toHaveTextContent('Test-user');
+    expect(getEntityByRef).toHaveBeenCalledWith('user:default/test-user');
   });
 });

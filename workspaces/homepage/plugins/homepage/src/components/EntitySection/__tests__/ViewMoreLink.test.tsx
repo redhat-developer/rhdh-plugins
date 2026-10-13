@@ -25,7 +25,7 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-describe('EntitySection ViewMoreLink', () => {
+describe('ViewMoreLink', () => {
   it('renders a link with children', () => {
     render(
       <MemoryRouter>

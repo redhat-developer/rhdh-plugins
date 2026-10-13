@@ -39,28 +39,30 @@ const renderTagList = (tags: string[], kind: string) =>
   );
 
 describe('TagList', () => {
-  it('renders kind chip and tags', () => {
+  it('renders kind chip and tags with catalog links', () => {
     renderTagList(['react', 'typescript'], 'component');
 
-    expect(screen.getByText('component')).toBeInTheDocument();
-    expect(screen.getByText('react')).toBeInTheDocument();
-    expect(screen.getByText('typescript')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'component' })).toHaveAttribute(
+      'href',
+      '/catalog?filters%5Bkind%5D=component&filters%5Buser%5D=all',
+    );
+    expect(screen.getByRole('link', { name: 'react' })).toHaveAttribute(
+      'href',
+      '/catalog?filters%5Bkind%5D=component&filters%5Btags%5D=react&filters%5Buser%5D=all',
+    );
+    expect(screen.getByRole('link', { name: 'typescript' })).toHaveAttribute(
+      'href',
+      '/catalog?filters%5Bkind%5D=component&filters%5Btags%5D=typescript&filters%5Buser%5D=all',
+    );
   });
 
   it('shows overflow count when more than 3 tags', () => {
     renderTagList(['tag1', 'tag2', 'tag3', 'tag4', 'tag5'], 'api');
 
+    expect(screen.getByText('tag1')).toBeInTheDocument();
+    expect(screen.getByText('tag2')).toBeInTheDocument();
+    expect(screen.getByText('tag3')).toBeInTheDocument();
+    expect(screen.queryByText('tag4')).not.toBeInTheDocument();
     expect(screen.getByText('2 more')).toBeInTheDocument();
-    expect(screen.queryByText('tag3')).not.toBeInTheDocument();
-  });
-
-  it('links kind chip to catalog with kind filter', () => {
-    renderTagList(['react'], 'component');
-
-    const kindLink = screen.getByRole('link', { name: 'component' });
-    expect(kindLink).toHaveAttribute(
-      'href',
-      '/catalog?filters%5Bkind%5D=component&filters%5Buser%5D=all',
-    );
   });
 });
