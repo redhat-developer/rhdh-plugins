@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-skill-image-connector-backend
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [e526768]
+  - @red-hat-developer-hub/backstage-plugin-ai-skills-common@0.4.0
+
 ## 0.4.0
 
 ### Minor Changes
