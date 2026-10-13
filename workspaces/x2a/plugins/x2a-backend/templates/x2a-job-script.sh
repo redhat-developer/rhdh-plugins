@@ -131,31 +131,22 @@ copy_changed_files() {
 
   pushd "${source_dir}" > /dev/null
 
-  # Collect new (untracked) and modified files into a single list
+  # Collect new (untracked) and modified files into a single list.
+  # NOTE: --exclude-standard is intentionally omitted so that x2a output matched
+  # by the source repo's .gitignore (e.g. generated-project-metadata.json under a
+  # "*.json" rule) is still detected and copied. In a fresh clone the only
+  # untracked files are the ones x2a created, and the source repo's .gitignore has
+  # no authority over the separate target (Ansible) repo we copy into.
   local changed_files=()
   while IFS= read -r file; do
     [[ -z "$file" ]] && continue
     changed_files+=("$file")
-  done < <(git ls-files --others --exclude-standard)
+  done < <(git ls-files --others)
 
   while IFS= read -r file; do
     [[ -z "$file" ]] && continue
     changed_files+=("$file")
   done < <(git diff --name-only)
-
-  # Check for gitignored files that x2a created
-  local ignored_files=()
-  while IFS= read -r file; do
-    [[ -z "$file" ]] && continue
-    ignored_files+=("$file")
-  done < <(git ls-files --others --ignored --exclude-standard)
-
-  if [[ ${#ignored_files[@]} -gt 0 ]]; then
-    echo "  WARNING: ${#ignored_files[@]} file(s) created by x2a but blocked by .gitignore:"
-    for file in "${ignored_files[@]}"; do
-      echo "    - $file"
-    done
-  fi
 
   if [[ ${#changed_files[@]} -eq 0 ]]; then
     echo "  No changed files detected"
