@@ -28,7 +28,6 @@ import {
   globalHeaderTranslationsModule,
   GlobalHeaderMenuItemBlueprint,
 } from '@red-hat-developer-hub/backstage-plugin-global-header';
-import { navModule } from './modules/nav';
 
 const signInModule = createFrontendModule({
   pluginId: 'app',
@@ -93,7 +92,6 @@ const headerExamplesPlugin = createFrontendPlugin({
 export default createApp({
   features: [
     rhdhThemeModule,
-    navModule,
     signInModule,
     globalHeaderModule,
     globalHeaderTranslationsModule,
