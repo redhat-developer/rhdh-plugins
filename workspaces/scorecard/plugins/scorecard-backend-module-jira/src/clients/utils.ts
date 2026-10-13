@@ -24,7 +24,7 @@ const BRACKET_LABELS: Record<string, string> = {
 const FIRST_PRINTABLE_ASCII = 0x20; // ' '
 const MAX_JQL_EXPRESSION_LENGTH = 1000;
 const ORDER_BY_PATTERN = /\bORDER\s+BY\b/i;
-const LEADING_WILDCARD_PATTERN = /~\s*["']?\s*[*?]/;
+const LEADING_WILDCARD_PATTERN = /~[\s"']*[*?]/;
 
 export function validateJQLValue(value: string, fieldName: string): string {
   if (!/^[a-zA-Z0-9 _-]+$/.test(value)) {
