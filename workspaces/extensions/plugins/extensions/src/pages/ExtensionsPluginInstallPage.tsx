@@ -34,6 +34,7 @@ import { useTranslation } from '../hooks/useTranslation';
 
 import { isPluginInstalled } from '../utils';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
+import { INSTALL_PAGE_CLASS, InstallPageFill } from './installPageFill';
 
 const PluginInstallHeader = () => {
   const { t } = useTranslation();
@@ -86,13 +87,15 @@ const PluginInstallHeader = () => {
 
 export const ExtensionsPluginInstallPage = () => (
   <ReactQueryProvider>
-    <Page themeId={themeId}>
-      <PluginInstallHeader />
-      <Content>
-        <ErrorBoundary>
-          <ExtensionsPluginInstallContentLoader />
-        </ErrorBoundary>
-      </Content>
-    </Page>
+    <InstallPageFill>
+      <Page themeId={themeId} className={INSTALL_PAGE_CLASS}>
+        <PluginInstallHeader />
+        <Content stretch>
+          <ErrorBoundary>
+            <ExtensionsPluginInstallContentLoader />
+          </ErrorBoundary>
+        </Content>
+      </Page>
+    </InstallPageFill>
   </ReactQueryProvider>
 );

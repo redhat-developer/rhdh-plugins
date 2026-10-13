@@ -250,6 +250,7 @@ const extensionsTranslationJa = createTranslationMessages({
     'install.pluginUpdated': 'プラグインが更新されました',
     'install.pluginInstalled': 'プラグインがインストールされました',
     'install.instructions': '手順',
+    'install.noPackagesTitle': 'パッケージエンティティーが見つかりません',
     'install.editInstructions': '編集手順',
     'install.back': '戻る',
     'install.packageUpdated': 'パッケージが更新されました',
