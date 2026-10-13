@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 4.5.1
+
 ## 4.5.0
 
 ### Patch Changes
