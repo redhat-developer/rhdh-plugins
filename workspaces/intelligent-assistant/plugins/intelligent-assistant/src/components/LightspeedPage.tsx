@@ -26,25 +26,28 @@ import { LightspeedChatContainer } from './LightspeedChatContainer';
 /**
  * Fill the RHDH SidebarPage well.
  *
- * Theme sizes `BackstageSidebarPage` with a viewport calc and
+ * Theme sizes `BackstageSidebarPage` with a viewport calc, but
  * `SidebarPage > main { height: auto }` so catalog pages can grow and scroll.
- * This route overrides that with `height: 100% !important` so Page/Chatbot
- * fill the already-sized shell (avoids PF's base `height: 70vh` —
- * RHDHBUGS-3925).
+ * Percentage `height: 100%` on this Page therefore collapses to content and
+ * leaves the page-inset chrome visible below the rounded well (notebooks list).
  *
- * Do not re-declare a `100vh` calc on this Page: Emotion mangles
- * `:root:has(#global-header) &` into a never-matching selector, so a local
- * no-header calc under the masthead overflowed the shell and clipped the AI
- * footnote. Filling the parent well inherits the theme's correct inset/header
- * math instead.
+ * Do not use `:root:has(#global-header) &` here — Emotion mangles that into a
+ * never-matching selector. Theme already publishes `--rhdh-global-header-height`
+ * when the masthead is present; use that token with the default page inset.
  *
  * Stay under SidebarPage ::before corner masks (z-index 101) and match the
  * masthead page-well radius (bottom-right).
  */
+// Masthead sets --rhdh-global-header-height (top inset dropped). Without it,
+// fallback 1.5rem matches the theme top page-inset so both gutters are covered.
+const SIDEBAR_PAGE_WELL_HEIGHT =
+  'calc(100vh - var(--rhdh-global-header-height, 1.5rem) - 1.5rem)';
+
 const FullHeightPage = styled(Page)({
-  height: '100% !important',
-  maxHeight: '100%',
-  minHeight: 0,
+  boxSizing: 'border-box',
+  height: `${SIDEBAR_PAGE_WELL_HEIGHT} !important`,
+  minHeight: `${SIDEBAR_PAGE_WELL_HEIGHT} !important`,
+  maxHeight: `${SIDEBAR_PAGE_WELL_HEIGHT} !important`,
   flex: '1 1 auto',
   display: 'flex',
   flexDirection: 'column',

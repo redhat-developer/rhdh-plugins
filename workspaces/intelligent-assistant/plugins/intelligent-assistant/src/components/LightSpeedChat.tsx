@@ -175,11 +175,16 @@ const ChatModalScope = styled('div')({
   // AppDrawer dock resize handle (z-index 1) on the paper edge (RHDHBUGS-3931).
   zIndex: 0,
   isolation: 'isolate',
+  // Stretch with the LightspeedPage fill well so fullscreen notebooks/chat do
+  // not leave an empty page-inset band below content (release-2.1 shell).
   display: 'flex',
   flexDirection: 'column',
-  flex: 1,
+  flex: '1 1 auto',
+  alignSelf: 'stretch',
+  width: '100%',
+  minWidth: 0,
   height: '100%',
-  minHeight: 0,
+  minHeight: '100%',
   overflow: 'hidden',
   '& .ia-scoped-chat-modal-backdrop': {
     position: 'absolute !important',
@@ -269,7 +274,11 @@ const StyledChatbot = styled(Chatbot, {
       opacity: 1,
     },
   '& .pf-chatbot-container': {
+    // Fill ChatModalScope / page well; PF only sets height 100% which collapses
+    // when the outer shell's percentage height is indefinite.
+    flex: '1 1 auto',
     minHeight: 0,
+    height: '100%',
     // PF `.pf-chatbot--embedded { border-radius: 0 }` squares the page fill;
     // inherit the shell-matching radius from FullHeightContent.
     borderRadius: 'inherit',
@@ -286,6 +295,8 @@ const StyledChatbot = styled(Chatbot, {
   // (RHDHBUGS-3925). Compact overlay/docked fill a sized parent (minHeight 0
   // for flex scroll); fullscreen must keep minHeight 100% so a loose parent
   // cannot collapse the page to content height.
+  alignSelf: 'stretch',
+  width: '100%',
   height: '100% !important',
   minHeight: isCompact ? '0 !important' : '100% !important',
   flex: isCompact ? undefined : '1 1 auto',
@@ -328,8 +339,12 @@ const StyledChatbot = styled(Chatbot, {
         // box-shadow--lg` (and glass border). Other RHDH main wells are
         // borderless; drop both so fullscreen matches Catalog/Settings.
         // Overlay keeps elevation via LightspeedOverlayChat's modal styles.
+        // Paint primary so flex leftover below notebooks/chat matches content
+        // (PF :has(.pf-m-primary) can miss when ChatModalScope owns the shell).
         boxShadow: 'none !important',
         border: 'none !important',
+        backgroundColor:
+          'var(--pf-t--global--background--color--primary--default) !important',
       }),
   // Absolute overlay when open so the panel does not flex-shove the chat column.
   ...(isCompact && compactDrawerOpen
@@ -2705,7 +2720,7 @@ export const LightspeedChat = ({
                   />
                 )}
                 {showNotebooksPanel && canShowNotebooks && !activeNotebook && (
-                  <StyledChatbotContent isPrimary>
+                  <StyledChatbotContent isPrimary={!useFloatingSecondaryChrome}>
                     <NotebooksTab
                       notebooks={notebooks}
                       hasNotebooks={hasNotebooks}
