@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.3.9
+
+### Patch Changes
+
+- b315aa4: Pin the frontend plugin dependencies `@adobe/react-spectrum` to `3.47.1`, `react-aria` to `3.49.0`, and `react-stately` to `3.47.0`.
+- d18f171: Updated dependency `@patternfly/chatbot` to `6.9.0-prerelease.7`.
+  Updated dependency `@patternfly/react-code-editor` to `6.6.1`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.9
+
 ## 5.3.8
 
 ### Patch Changes
