@@ -212,3 +212,7 @@ sonarqube:
       baseUrl: https://sonarcloud.io
       # apiKey optional for public SonarCloud projects (omit if not needed)
 ```
+
+## Development
+
+Local module harness and test commands are in [DEVELOPING.md](./DEVELOPING.md).
