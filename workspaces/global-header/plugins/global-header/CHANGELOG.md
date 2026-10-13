@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 3.2.1
+
+### Patch Changes
+
+- a6bbd85: Add the Red Hat Developer Hub icon as an inline React SVG component (`RedHatDeveloperHubLogo`) in the defaults directory for use as the default company icon.
+- 50ec702: Use `width: auto` on the masthead so `margin-right` for a docked application drawer (Quickstart / Lightspeed) actually shrinks the bar instead of overflowing past the drawer.
+
 ## 3.2.0
 
 ### Minor Changes
