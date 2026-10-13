@@ -26,6 +26,9 @@ export function buildOciRef(
 ): string;
 
 // @public
+export const CATALOG_TAG_PATTERN: RegExp;
+
+// @public
 export function computeCatalogName(tuple: IdentityTuple): string;
 
 // @public
@@ -36,6 +39,15 @@ export function createFailedSnapshot(
 
 // @public
 export function createLoadingSnapshot(source: SnapshotSource): SkillSnapshot;
+
+// @public
+export interface FrontmatterMetadata {
+  author?: unknown;
+  lifecycle?: unknown;
+  owner?: unknown;
+  tags?: unknown;
+  version?: unknown;
+}
 
 // @public
 export interface IdentityTuple {
@@ -105,6 +117,16 @@ export function isValidDigest(digest: string): boolean;
 export function isValidUtcTimestamp(value: string): boolean;
 
 // @public
+export interface MarkdownFrontmatter {
+  compatibility?: unknown;
+  description?: unknown;
+  license?: unknown;
+  metadata?: FrontmatterMetadata;
+  name?: unknown;
+  version?: unknown;
+}
+
+// @public
 export const MAX_RESPONSE_BYTES: number;
 
 // @public
@@ -112,6 +134,33 @@ export const MAX_SNAPSHOT_BYTES: number;
 
 // @public
 export const MAX_SNAPSHOT_RECORDS = 1000;
+
+// @public
+export const MAX_TAG_LENGTH = 63;
+
+// @public
+export interface NormalizationDiagnostic {
+  field: string;
+  message: string;
+}
+
+// @public
+export interface NormalizationResult<T> {
+  diagnostics: NormalizationDiagnostic[];
+  record: T | null;
+}
+
+// @public
+export function normalizeNpxMetadata(
+  native: NpxNativeInput,
+  trusted: TrustedSourceInput,
+): NormalizationResult<NpxSkillRecord>;
+
+// @public
+export function normalizeOciMetadata(
+  native: OciNativeInput,
+  trusted: TrustedSourceInput,
+): NormalizationResult<OciSkillRecord>;
 
 // @public
 export function normalizeTags(tags: string[]): NormalizeTagsResult;
@@ -123,9 +172,46 @@ export interface NormalizeTagsResult {
 }
 
 // @public
+export interface NpxDiscoveryEntry {
+  description?: unknown;
+  name?: unknown;
+  type?: unknown;
+}
+
+// @public
+export const npxDiscoveryEntryFull: NpxDiscoveryEntry;
+
+// @public
+export const npxDiscoveryEntryMinimal: NpxDiscoveryEntry;
+
+// @public
 export interface NpxExtensions {
   type?: 'skill-md';
 }
+
+// @public
+export type NpxFrontmatter = MarkdownFrontmatter;
+
+// @public
+export const npxFrontmatterConflictingVersion: NpxFrontmatter;
+
+// @public
+export const npxFrontmatterFull: NpxFrontmatter;
+
+// @public
+export interface NpxNativeInput {
+  entry?: NpxDiscoveryEntry;
+  frontmatter?: NpxFrontmatter;
+}
+
+// @public
+export const npxNativeInputConflictingVersion: NpxNativeInput;
+
+// @public
+export const npxNativeInputFull: NpxNativeInput;
+
+// @public
+export const npxNativeInputMinimal: NpxNativeInput;
 
 // @public
 export interface NpxRef {
@@ -145,10 +231,37 @@ export interface NpxSkillRecord extends SkillRecord {
 export const npxSource: SnapshotSource;
 
 // @public
+export const npxTrustedInput: TrustedSourceInput;
+
+// @public
 export interface OciExtensions {
   namespace?: string;
   prompt?: string;
 }
+
+// @public
+export type OciMarkdownFrontmatter = MarkdownFrontmatter;
+
+// @public
+export const ociMarkdownFrontmatterConflictingVersion: OciMarkdownFrontmatter;
+
+// @public
+export const ociMarkdownFrontmatterFull: OciMarkdownFrontmatter;
+
+// @public
+export interface OciNativeInput {
+  frontmatter?: OciMarkdownFrontmatter;
+  skillCard?: OciSkillCard;
+}
+
+// @public
+export const ociNativeInputConflictingVersion: OciNativeInput;
+
+// @public
+export const ociNativeInputFull: OciNativeInput;
+
+// @public
+export const ociNativeInputMinimal: OciNativeInput;
 
 // @public
 export interface OciRef {
@@ -156,6 +269,39 @@ export interface OciRef {
   registry: string;
   repository: string;
   uri: string;
+}
+
+// @public
+export interface OciSkillCard {
+  metadata?: OciSkillCardMetadata;
+  spec?: OciSkillCardSpec;
+}
+
+// @public
+export const ociSkillCardConflictingVersion: OciSkillCard;
+
+// @public
+export const ociSkillCardFull: OciSkillCard;
+
+// @public
+export interface OciSkillCardMetadata {
+  'display-name'?: unknown;
+  authors?: unknown;
+  compatibility?: unknown;
+  description?: unknown;
+  license?: unknown;
+  name?: unknown;
+  namespace?: unknown;
+  tags?: unknown;
+  version?: unknown;
+}
+
+// @public
+export const ociSkillCardMinimal: OciSkillCard;
+
+// @public
+export interface OciSkillCardSpec {
+  prompt?: unknown;
 }
 
 // @public
@@ -167,6 +313,9 @@ export interface OciSkillRecord extends SkillRecord {
 
 // @public
 export const ociSource: SnapshotSource;
+
+// @public
+export const ociTrustedInput: TrustedSourceInput;
 
 // @public
 export function parseNpxRef(ref: string): NpxRef;
@@ -237,6 +386,13 @@ export function sortRecordsByKey<T extends OciSkillRecord | NpxSkillRecord>(
 
 // @public
 export const SUPPORTED_SCHEMA_VERSION = '1';
+
+// @public
+export interface TrustedSourceInput {
+  digest: string;
+  key: string;
+  sourceUri: string;
+}
 
 // @public
 export function validateSnapshot(snapshot: unknown): ValidationResult;

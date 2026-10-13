@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-09T18:00:16Z
+**Last audited:** 2026-10-12T21:40:52Z
 
 This focused follow-up reviews the all-active-tag discovery pivot against the
 proposal, design, OCI/common/provider specifications, task status, implementation,
@@ -8,6 +8,14 @@ and regression tests. It supplements the earlier independent specification
 reviews, including the 2026-10-02 review; it is not a claim that the remaining
 connector and provider tasks have been implemented.
 
+Strict OpenSpec validation, relative links, workspace TypeScript, and workspace
+Prettier checks passed. This audit evaluates specification coherence, not runtime
+implementation; task 1.1 is checked (implemented in `ai-skills-common` PR #5061),
+task 1.2 is checked (implemented in `ai-skills-common` PR #5072, adding
+`normalizeOciMetadata` and `normalizeNpxMetadata` with D3 precedence, tag/author
+normalization, allowlisted extensions, diagnostics, and native metadata fixtures),
+task 1.3 is checked (implemented in `ai-skills-common` PR #5071), and task 1.4
+is annotated with shared-library completion status.
 An omitted or blank discovery tag now selects all active tags. Explicit tags
 remain exact filters, and `tag: latest` preserves the former default. Repository
 and tag pages share the existing request utilities and one 100-page budget.
@@ -153,6 +161,34 @@ DNS protection, snapshots, scheduling, and catalog production remain pending.
 The maintainer's `app-config.yaml` edits are untouched. The maintainer subsequently reported successful sanity testing and authorized
 a local commit. Signing, pushing, and the next Fullsend review remain
 maintainer-owned.
+
+### Task 1.2 review follow-up
+
+This focused consistency check covers the latest PR #5072 review. Both D3
+normalizers and the D5 `normalizeTags` helper now use Backstage's default
+catalog tag pattern. Dots, underscores, and consecutive hyphens are omitted
+with diagnostics. Colons, plus signs, and hash characters remain supported.
+The earlier extended-pattern documentation contradicted D3's catalog-valid
+requirement and has been corrected in the JSDoc, README, and changeset.
+
+Development-only tests compare the shared pattern and 63-character limit
+with `makeValidator().isValidTag`, then check OCI, npx, and catalog-helper
+normalization against that validator. These regressions failed before the
+correction and now pass. Backstage remains absent from runtime dependencies.
+The redundant normalizer-module constants re-export is removed; package-root
+exports remain. Tag diagnostic wording is explicitly informational.
+
+The task narrative no longer duplicates task 1.4 or describes completed 2.1
+and 2.2 as future implementation. Task definitions and completion states are
+unchanged. Internal diagnostic assertions and the frontmatter type aliases
+remain intentional; neither requires a public API refactor. This focused
+check does not replace the earlier independent audits.
+
+All 239 shared-library tests passed with `--watchAll=false --runInBand`.
+Workspace type checking, API report validation, package build/lint, workspace
+formatting, strict OpenSpec validation, and dependency installation/deduplication
+passed. Review replies record fixes and retained behavior. Changes remain local
+until maintainer signing and pushing.
 
 ### Summary
 

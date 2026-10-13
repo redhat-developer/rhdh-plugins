@@ -9821,6 +9821,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-ai-skills-common@workspace:plugins/ai-skills-common"
   dependencies:
+    "@backstage/catalog-model": "npm:^1.10.1"
     "@backstage/cli": "npm:^0.36.5"
   languageName: unknown
   linkType: soft
