@@ -22,6 +22,7 @@ const BRACKET_LABELS: Record<string, string> = {
   '[': 'brackets',
 };
 const FIRST_PRINTABLE_ASCII = 0x20; // ' '
+const MAX_JQL_EXPRESSION_LENGTH = 1000;
 
 export function validateJQLValue(value: string, fieldName: string): string {
   if (!/^[a-zA-Z0-9 _-]+$/.test(value)) {
@@ -53,6 +54,10 @@ export function validateJqlExpression(
   const fail = (reason: string): never => {
     throw new Error(`${fieldName} is not a valid JQL filter: ${reason}.`);
   };
+
+  if (value.length > MAX_JQL_EXPRESSION_LENGTH) {
+    fail(`must not be longer than ${MAX_JQL_EXPRESSION_LENGTH} characters`);
+  }
 
   if (containsControlCharacter(value)) {
     fail('must not contain control characters');
