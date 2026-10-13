@@ -32,7 +32,7 @@ describe('ConnectionStrategy', () => {
     const connectionStrategy = new DirectConnectionStrategy(
       'https://example.com/api',
       'dummyToken',
-      'cloud',
+      'Basic',
     );
 
     describe('constructor', () => {
@@ -49,18 +49,18 @@ describe('ConnectionStrategy', () => {
     });
 
     describe('getAuthHeaders', () => {
-      it('should return Basic auth headers when product is cloud', async () => {
+      it('should return Basic auth headers when authType is Basic', async () => {
         const authHeaders = await connectionStrategy.getAuthHeaders();
         expect(authHeaders).toEqual({ Authorization: 'Basic dummyToken' });
       });
 
-      it('should return Bearer auth headers when product is datacenter', async () => {
-        const dataCenterStrategy = new DirectConnectionStrategy(
+      it('should return Bearer auth headers when authType is Bearer', async () => {
+        const bearerStrategy = new DirectConnectionStrategy(
           'https://example.com/api',
           'dummyToken',
-          'datacenter',
+          'Bearer',
         );
-        const authHeaders = await dataCenterStrategy.getAuthHeaders();
+        const authHeaders = await bearerStrategy.getAuthHeaders();
         expect(authHeaders).toEqual({ Authorization: 'Bearer dummyToken' });
       });
     });

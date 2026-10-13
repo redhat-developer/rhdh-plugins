@@ -29,6 +29,7 @@ catalog:
 #   '/jira/api':
 #     target: ${JIRA_URL}
 #     headers:
+#       # Full Authorization value required for proxy (e.g. Basic <base64> or Bearer <token>)
 #       Authorization: ${JIRA_TOKEN}
 #       Accept: 'application/json'
 #       Content-Type: 'application/json'
@@ -46,7 +47,10 @@ jira:
 
   product: cloud
   baseUrl: ${JIRA_URL}
+  # Bare credential for direct mode (no Basic/Bearer prefix). Defaults: cloud=Basic, datacenter=Bearer.
   token: ${JIRA_TOKEN}
+  # Optional: override Authorization scheme (Basic | Bearer). Use Bearer for Cloud service account tokens.
+  # authType: Bearer
 
   # ToDo: uncomment this when Jira Data Center is needed
   # product: datacenter
