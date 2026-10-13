@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-augment-backend
 
+## 0.2.1
+
+### Patch Changes
+
+- 8addf37: Updated dependency `@openai/agents-core` to `^0.17.0`.
+
 ## 0.2.0
 
 ### Minor Changes

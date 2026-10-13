@@ -310,16 +310,19 @@ export const ExtensionsPackageEditContent = ({
         </Alert>
       )}
 
-      {/* "two sided content area" */}
-      <Flex direction="row" style={{ flexGrow: 1 }}>
-        <Flex style={{ flex: 65 }}>
+      {/* "two sided content area" — bounded height; cards scroll internally */}
+      <Flex
+        direction="row"
+        style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}
+      >
+        <Flex style={{ flex: 65, minHeight: 0, minWidth: 0 }}>
           <CodeEditorCard onLoad={onLoaded} />
         </Flex>
 
         {showRightCard && (
           <Flex style={{ flex: 55 }}>
-            <Card style={{ width: '100%' }}>
-              <div style={{ flex: '1 1 0', overflow: 'scroll' }}>
+            <Card sx={{ width: '100%' }}>
+              <div style={{ flex: '1 1 0', overflow: 'auto' }}>
                 <CardHeader
                   title={
                     <Typography variant="h3">

@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 1.0.2
+
+### Patch Changes
+
+- 637ef98: Fix edit configuration page to load the editor and instructions
+  Show an empty state when a plugin has no packages.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
