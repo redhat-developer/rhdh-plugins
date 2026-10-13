@@ -119,7 +119,6 @@
     "@red-hat-developer-hub/backstage-plugin-app-defaults": "^1.8.1",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-theme": "^1.2.2",
-    "@spotify/prettier-config": "^15.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^15.0.0",
     "@testing-library/user-event": "^14.0.0",

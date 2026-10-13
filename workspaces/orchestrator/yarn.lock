@@ -9624,7 +9624,6 @@ __metadata:
     "@modelcontextprotocol/sdk": "npm:^1.25.2"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^"
-    "@spotify/prettier-config": "npm:^15.0.0"
     "@types/express": "npm:4.17.25"
     "@types/express-serve-static-core": "npm:^4.17.5"
     "@types/fs-extra": "npm:11.0.4"
@@ -9659,7 +9658,6 @@ __metadata:
     "@backstage/types": "npm:^1.2.2"
     "@openapitools/openapi-generator-cli": "npm:2.30.2"
     "@serverlessworkflow/sdk-typescript": "npm:^0.8.4"
-    "@spotify/prettier-config": "npm:^15.0.0"
     "@types/js-yaml": "npm:^4.0.0"
     "@types/json-schema": "npm:7.0.15"
     axios: "npm:^1.15.0"
@@ -9679,7 +9677,6 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@rjsf/core": "npm:^5.21.2"
     "@rjsf/utils": "npm:^5.21.2"
-    "@spotify/prettier-config": "npm:^15.0.0"
     "@types/json-schema": "npm:7.0.15"
     "@types/react": "npm:^18.2.58"
     json-schema: "npm:^0.4.0"
@@ -9704,7 +9701,6 @@ __metadata:
     "@rjsf/material-ui": "npm:^5.21.2"
     "@rjsf/utils": "npm:^5.21.2"
     "@rjsf/validator-ajv8": "npm:^5.21.2"
-    "@spotify/prettier-config": "npm:^15.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
     "@types/json-schema": "npm:7.0.15"
@@ -9799,7 +9795,6 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.2.2"
-    "@spotify/prettier-config": "npm:^15.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^15.0.0"
     "@testing-library/user-event": "npm:^14.0.0"
@@ -9845,7 +9840,6 @@ __metadata:
     "@backstage/plugin-scaffolder-node-test-utils": "npm:^0.3.14"
     "@backstage/types": "npm:^1.2.2"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
-    "@spotify/prettier-config": "npm:^15.0.0"
     "@types/js-yaml": "npm:^4.0.0"
     axios: "npm:^1.15.0"
     js-yaml: "npm:^4.1.0"
@@ -11564,15 +11558,6 @@ __metadata:
     "@typescript-eslint/parser": ">=5"
     eslint: ">=8.x"
   checksum: 10c0/b6187252bd0bf2e55e023dcfff6d4cf6f8f3fdacd6baa2c597e94e843c725563552fc15fda7c17a4b1f0d10673792b1f90566763f14499e6b7854b1e3d3d459a
-  languageName: node
-  linkType: hard
-
-"@spotify/prettier-config@npm:^15.0.0":
-  version: 15.0.0
-  resolution: "@spotify/prettier-config@npm:15.0.0"
-  peerDependencies:
-    prettier: 2.x
-  checksum: 10c0/d7033f9f3ab255b490084f72928d4df086f6a51bb6f88b0d3678a5a63e46fc58ad025a0a709f96d8ae91b82093d991d54ea6a48b7d3f2c7f3f747c1853b76532
   languageName: node
   linkType: hard
 
