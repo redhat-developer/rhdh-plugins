@@ -23,10 +23,12 @@ describe('readSkillImageOptions', () => {
       fetchTimeoutMs: 30000,
       maxBlobSizeBytes: 5242880,
       maxAggregateContentSizeBytes: 52428800,
+      maxImageWorkBudgetBytes: 52428800,
       maxDiscoveryResponseSizeBytes: 5242880,
       maxImages: 25,
       maxRetries: 2,
       retryBaseDelayMs: 2000,
+      sourceOperationDeadlineMs: 300000,
     });
   });
   it('resolves overrides independently and preserves zero retries', () => {
@@ -34,10 +36,12 @@ describe('readSkillImageOptions', () => {
       fetchTimeoutMs: 60000,
       maxBlobSizeBytes: 100,
       maxAggregateContentSizeBytes: 500,
+      maxImageWorkBudgetBytes: 1000,
       maxDiscoveryResponseSizeBytes: 200,
       maxImages: 100,
       maxRetries: 0,
       retryBaseDelayMs: 10,
+      sourceOperationDeadlineMs: 120000,
     };
     expect(
       readSkillImageOptions(
@@ -70,7 +74,11 @@ describe('readSkillImageOptions', () => {
     ['maxBlobSizeBytes', -1],
     ['maxBlobSizeBytes', 1.5],
     ['maxAggregateContentSizeBytes', 0],
+    ['maxImageWorkBudgetBytes', 0],
+    ['maxImageWorkBudgetBytes', -1],
     ['maxDiscoveryResponseSizeBytes', 0],
+    ['sourceOperationDeadlineMs', 0],
+    ['sourceOperationDeadlineMs', 2147483648],
     ['maxImages', 0],
     ['maxImages', -1],
     ['maxImages', 1.5],

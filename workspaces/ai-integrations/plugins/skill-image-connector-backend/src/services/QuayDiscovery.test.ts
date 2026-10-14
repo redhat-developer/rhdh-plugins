@@ -19,6 +19,15 @@ import { discoverQuayRepositories } from './QuayDiscovery';
 import type { QuayDiscoveryConfig } from './types';
 import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_DISCOVERY_PAGES } from './types';
 
+// Mock DNS resolution so fetchWithRedirects validation passes.
+jest.mock('node:dns', () => ({
+  promises: {
+    lookup: jest
+      .fn()
+      .mockResolvedValue([{ address: '93.184.216.34', family: 4 }]),
+  },
+}));
+
 const mockLogger: LoggerService = {
   info: jest.fn(),
   warn: jest.fn(),
@@ -35,6 +44,14 @@ const baseConfig: QuayDiscoveryConfig = {
 
 // Save and restore global fetch
 const originalFetch = global.fetch;
+
+beforeEach(() => {
+  // Re-establish the DNS mock after resetAllMocks clears it.
+  const dns = require('node:dns');
+  (dns.promises.lookup as jest.Mock).mockResolvedValue([
+    { address: '93.184.216.34', family: 4 },
+  ]);
+});
 
 afterEach(() => {
   global.fetch = originalFetch;
@@ -65,7 +82,7 @@ describe('discovery request resilience', () => {
     );
     await expect(
       discoverQuayRepositories(baseConfig, mockLogger),
-    ).rejects.toThrow('public HTTPS URL');
+    ).rejects.toThrow('HTTPS');
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 

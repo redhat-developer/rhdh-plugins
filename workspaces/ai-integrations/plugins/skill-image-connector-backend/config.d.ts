@@ -28,6 +28,10 @@ export interface Config {
      * @visibility backend
      */
     maxAggregateContentSizeBytes?: number;
+    /** Maximum total downloaded and decompressed bytes per OCI image across all inspected layers. Distinct from maxAggregateContentSizeBytes (retained content). Safe integer from 1 to 9007199254740991; defaults to 52428800.
+     * @visibility backend
+     */
+    maxImageWorkBudgetBytes?: number;
     /** Maximum bytes per Quay discovery response. Safe integer from 1 to 9007199254740991; defaults to 5242880.
      * @visibility backend
      */
@@ -44,6 +48,10 @@ export interface Config {
      * @visibility backend
      */
     retryBaseDelayMs?: number;
+    /** Total wall-clock deadline for processing all images from one source, including discovery and retries. Integer from 1 to 2147483647 ms; defaults to 300000.
+     * @visibility backend
+     */
+    sourceOperationDeadlineMs?: number;
     /** @visibility backend */
     allowedRegistries?: string[];
     /** @visibility backend */

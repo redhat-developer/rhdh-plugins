@@ -31,7 +31,9 @@ export function readSkillImageOptions(config: Config): SkillImageOptions {
     const value = source?.getOptionalNumber(key) ?? options[key];
     const minimum = key === 'maxRetries' ? 0 : 1;
     const maximum =
-      key === 'fetchTimeoutMs' || key === 'retryBaseDelayMs'
+      key === 'fetchTimeoutMs' ||
+      key === 'retryBaseDelayMs' ||
+      key === 'sourceOperationDeadlineMs'
         ? MAX_TIMER_DELAY_MS
         : Number.MAX_SAFE_INTEGER;
     if (!Number.isSafeInteger(value) || value < minimum || value > maximum) {

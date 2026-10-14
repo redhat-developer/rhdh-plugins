@@ -36,6 +36,7 @@ import {
 import { discoverQuayRepositories } from './services/QuayDiscovery';
 import {
   AmbiguousSkillFilesError,
+  ExtractionBoundsError,
   NonSkillImageError,
   cleanupSkillImageExtraction,
   cleanupStaleExtractionDirs,
@@ -49,7 +50,7 @@ import type {
   SkillImageExtraction,
   SkillImageOptions,
 } from './services/types';
-import { MAX_CONCURRENT_IMAGE_FETCHES } from './services/types';
+import { MAX_CONCURRENT_IMAGE_FETCHES, MAX_CANDIDATES } from './services/types';
 import { withRetry } from './services/Retry';
 import { readSkillImageOptions } from './services/config';
 import type { SkillImageProcessingStatus } from './router';
@@ -577,8 +578,23 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         // per-blob memory ceiling into an avoidable startup spike.
         const processingAbortController = new AbortController();
 
+        // Source-operation deadline (D7): bounds the total wall-clock time
+        // for discovery + acquisition of all images from this source.
+        const sourceDeadlineTimer = setTimeout(() => {
+          if (!processingAbortController.signal.aborted) {
+            pluginLogger.warn(
+              `Source operation deadline reached (${options.sourceOperationDeadlineMs}ms); aborting remaining work`,
+            );
+            processingAbortController.abort(
+              new Error('Source operation deadline exceeded'),
+            );
+          }
+        }, options.sourceOperationDeadlineMs);
+
         // Track aggregate content size to bound total in-memory retention.
         let aggregateContentSize = 0;
+        // Track total candidates inspected (including non-skills and failures).
+        let candidatesInspected = 0;
 
         const processing = (async () => {
           // Build the full image list: explicit configs + discovered repos
@@ -632,6 +648,15 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               !processingAbortController.signal.aborted &&
               nextImageIndex < allImageConfigs.length
             ) {
+              // Enforce the MAX_CANDIDATES limit (D7)
+              if (candidatesInspected >= MAX_CANDIDATES) {
+                pluginLogger.warn(
+                  `Candidate inspection limit reached (${MAX_CANDIDATES}); stopping`,
+                );
+                break;
+              }
+              candidatesInspected++;
+
               const imageIndex = nextImageIndex++;
               const imgConfig = allImageConfigs[imageIndex];
               try {
@@ -696,6 +721,11 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                     pluginLogger.error(
                       `Ambiguous skill image ${imgConfig.imageRef}: ${error.message}`,
                     );
+                  } else if (error instanceof ExtractionBoundsError) {
+                    failedImages.add(imgConfig.imageRef);
+                    pluginLogger.error(
+                      `Extraction bounds exceeded for ${imgConfig.imageRef}: ${error.message}`,
+                    );
                   } else {
                     failedImages.add(imgConfig.imageRef);
                     logImageProcessingFailure(
@@ -729,9 +759,11 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               discoveryFailed)
               ? 'failed'
               : 'ready';
+          clearTimeout(sourceDeadlineTimer);
         })();
 
         lifecycle.addShutdownHook(async () => {
+          clearTimeout(sourceDeadlineTimer);
           processingAbortController.abort();
           await processing;
           await Promise.all(

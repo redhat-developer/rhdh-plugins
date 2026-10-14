@@ -53,6 +53,37 @@ export class NonSkillImageError extends Error {
 }
 
 /**
+ * Error thrown when extraction safety bounds are violated:
+ * tar entry limit, path traversal, unsafe entry types,
+ * decompression limits, or per-image work budget exhaustion.
+ */
+export class ExtractionBoundsError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ExtractionBoundsError';
+  }
+}
+
+/**
+ * Tracks downloaded and decompressed bytes for a single image
+ * acquisition. Enforces the per-image work budget (D7).
+ */
+class ImageWorkBudget {
+  private consumed = 0;
+  constructor(private readonly limit: number) {}
+  /** Charge bytes and throw if the budget is exceeded. */
+  charge(bytes: number): void {
+    this.consumed += bytes;
+    if (this.consumed > this.limit) {
+      throw new ExtractionBoundsError(
+        `Per-image work budget exceeded: ${this.consumed} bytes consumed, ` +
+          `limit is ${this.limit} bytes`,
+      );
+    }
+  }
+}
+
+/**
  * The annotation key used by skillimage to identify the layer title.
  * See https://github.com/redhat-et/skillimage
  */
@@ -91,31 +122,89 @@ interface TarEntry {
 
 /**
  * Decompresses a buffer if it starts with the gzip magic bytes (0x1f 0x8b),
- * otherwise returns it unchanged.
+ * otherwise returns it unchanged. Enforces maxOutputLength to prevent
+ * decompression bombs and charges the budget for decompressed bytes.
  */
-function maybeDecompress(buf: Buffer, maxBlobSizeBytes: number): Buffer {
+function maybeDecompress(
+  buf: Buffer,
+  maxBlobSizeBytes: number,
+  budget?: ImageWorkBudget,
+): Buffer {
   if (buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b) {
-    return gunzipSync(buf, { maxOutputLength: maxBlobSizeBytes });
+    const decompressed = gunzipSync(buf, {
+      maxOutputLength: maxBlobSizeBytes,
+    });
+    budget?.charge(decompressed.length);
+    return decompressed;
   }
   return buf;
 }
 
 /**
+ * Returns true if a tar entry path is unsafe — it escapes the
+ * extraction root via absolute paths or parent directory traversal.
+ */
+export function isUnsafeTarPath(name: string): boolean {
+  // Absolute paths
+  if (name.startsWith('/')) return true;
+  // Normalize by splitting on / and checking for ..
+  const parts = name.split('/');
+  let depth = 0;
+  for (const part of parts) {
+    if (part === '..') {
+      depth--;
+      if (depth < 0) return true;
+    } else if (part !== '' && part !== '.') {
+      depth++;
+    }
+  }
+  return false;
+}
+
+/** Tar type flag constants (UStar/POSIX). */
+const TAR_TYPE_REGULAR_FILE = 0x30; // '0'
+const TAR_TYPE_REGULAR_NULL = 0x00; // '\0'
+const TAR_TYPE_SYMLINK = 0x32; // '2'
+const TAR_TYPE_HARDLINK = 0x31; // '1'
+const TAR_TYPE_CHAR_DEVICE = 0x33; // '3'
+const TAR_TYPE_BLOCK_DEVICE = 0x34; // '4'
+// TAR_TYPE_DIRECTORY (0x35 / '5') is recognized but not stored;
+// the constant is implicit in the condition below (not a regular file).
+
+/**
  * Parses a UStar/POSIX tar archive and returns entries for regular files.
  *
- * Only inspects up to `MAX_TAR_ENTRIES` entries to bound CPU time on
- * maliciously crafted archives.
+ * Inspects up to `MAX_TAR_ENTRIES` headers (counting all types, including
+ * ignored entries). Reaching the limit is an explicit failure per D7,
+ * not silent truncation.
+ *
+ * Rejects:
+ * - Symlinks, hardlinks, and device entries that could redirect or escape
+ * - Absolute paths and parent directory traversal (../)
+ * - Malformed sizes and arithmetic overflow
+ * - Truncated or invalid archives
+ *
+ * Never executes file content or materializes unnecessary entries.
  */
 export function parseTarEntries(tarBuffer: Buffer): TarEntry[] {
   const entries: TarEntry[] = [];
   let offset = 0;
+  let headerCount = 0;
 
-  while (offset + 512 <= tarBuffer.length && entries.length < MAX_TAR_ENTRIES) {
+  while (offset + 512 <= tarBuffer.length) {
     const header = tarBuffer.subarray(offset, offset + 512);
 
     // End-of-archive: two consecutive 512-byte zero blocks
     if (header.every(b => b === 0)) {
       break;
+    }
+
+    // Count every inspected header against the entry limit
+    headerCount++;
+    if (headerCount > MAX_TAR_ENTRIES) {
+      throw new ExtractionBoundsError(
+        `Archive exceeds maximum inspected entry count (${MAX_TAR_ENTRIES})`,
+      );
     }
 
     // Filename: bytes 0–99, null-terminated
@@ -129,20 +218,65 @@ export function parseTarEntries(tarBuffer: Buffer): TarEntry[] {
     const sizeStr = header.subarray(124, 136).toString('utf-8').trim();
     const size = Number.parseInt(sizeStr, 8);
     if (Number.isNaN(size) || size < 0) {
-      break; // Malformed header — stop parsing
+      throw new ExtractionBoundsError(
+        'Archive contains an entry with a malformed size field',
+      );
     }
 
-    // Type flag: byte 156. '0' (0x30) or '\0' (0x00) = regular file.
+    // Guard against arithmetic overflow when computing the next offset
+    if (size > Number.MAX_SAFE_INTEGER - 512) {
+      throw new ExtractionBoundsError(
+        'Archive contains an entry with an overflowing size field',
+      );
+    }
+
+    // Type flag: byte 156
     const typeFlag = header[156];
+
+    // Reject symlinks, hardlinks, and device entries that could
+    // redirect selected content or escape extraction storage.
+    if (typeFlag === TAR_TYPE_SYMLINK) {
+      throw new ExtractionBoundsError(
+        'Archive contains a symlink entry which could redirect content',
+      );
+    }
+    if (typeFlag === TAR_TYPE_HARDLINK) {
+      throw new ExtractionBoundsError(
+        'Archive contains a hardlink entry which could redirect content',
+      );
+    }
+    if (
+      typeFlag === TAR_TYPE_CHAR_DEVICE ||
+      typeFlag === TAR_TYPE_BLOCK_DEVICE
+    ) {
+      throw new ExtractionBoundsError(
+        'Archive contains a device entry which is not permitted',
+      );
+    }
 
     offset += 512; // past header
 
-    if ((typeFlag === 0 || typeFlag === 0x30) && name.length > 0 && size > 0) {
+    if (
+      (typeFlag === TAR_TYPE_REGULAR_NULL ||
+        typeFlag === TAR_TYPE_REGULAR_FILE) &&
+      name.length > 0 &&
+      size > 0
+    ) {
+      // Validate the path before accepting the entry
+      const cleanName = name.replace(/^\.\//, '');
+      if (isUnsafeTarPath(cleanName)) {
+        throw new ExtractionBoundsError(
+          `Archive entry has an unsafe path: ${cleanName}`,
+        );
+      }
+
       if (offset + size > tarBuffer.length) {
-        break; // Truncated archive
+        throw new ExtractionBoundsError(
+          'Archive is truncated — entry extends past end of buffer',
+        );
       }
       entries.push({
-        name: name.replace(/^\.\//, ''), // strip leading ./
+        name: cleanName,
         data: tarBuffer.subarray(offset, offset + size),
       });
     }
@@ -382,6 +516,10 @@ export async function fetchAndExtractSkillImage(
     ? AbortSignal.any([signal, blobController.signal])
     : blobController.signal;
 
+  // Per-image work budget: tracks all downloaded and decompressed bytes
+  // across inspected layers, not just the retained file pair (D7).
+  const budget = new ImageWorkBudget(options.maxImageWorkBudgetBytes);
+
   let contents: ExtractedSkillContents;
   if (strategy.mode === 'annotated') {
     contents = await fetchAnnotatedContents(
@@ -392,6 +530,7 @@ export async function fetchAndExtractSkillImage(
       blobSignal,
       blobController,
       options,
+      budget,
     );
     // Cross-strategy ambiguity: check tar layers for competing files
     if (strategy.tarLayers.length > 0) {
@@ -402,6 +541,7 @@ export async function fetchAndExtractSkillImage(
         credentials,
         blobSignal,
         options,
+        budget,
       );
     }
   } else {
@@ -412,6 +552,7 @@ export async function fetchAndExtractSkillImage(
       credentials,
       blobSignal,
       options,
+      budget,
     );
   }
 
@@ -484,6 +625,7 @@ async function checkTarLayersForCompetingFiles(
   credentials: RegistryCredentials | undefined,
   blobSignal: AbortSignal,
   options: SkillImageOptions,
+  budget: ImageWorkBudget,
 ): Promise<void> {
   for (const layer of tarLayers) {
     const blob = await fetchBlob(
@@ -495,8 +637,9 @@ async function checkTarLayersForCompetingFiles(
       blobSignal,
       options,
     );
+    budget.charge(blob.length);
     const entries = parseTarEntries(
-      maybeDecompress(blob, options.maxBlobSizeBytes),
+      maybeDecompress(blob, options.maxBlobSizeBytes, budget),
     );
     const yamlCount = countTarFileMatches(entries, YAML_NAMES);
     const mdCount = countTarFileMatches(entries, MD_NAMES);
@@ -527,6 +670,7 @@ async function fetchAnnotatedContents(
   blobSignal: AbortSignal,
   blobController: AbortController,
   options: SkillImageOptions,
+  budget: ImageWorkBudget,
 ): Promise<ExtractedSkillContents> {
   const cancelSiblings = <T>(promise: Promise<T>): Promise<T> =>
     promise.catch(error => {
@@ -558,6 +702,9 @@ async function fetchAnnotatedContents(
     ),
   ]);
 
+  budget.charge(yamlBuf.length);
+  budget.charge(mdBuf.length);
+
   return {
     skillImageYamlContent: yamlBuf.toString('utf-8'),
     skillsMdContent: mdBuf.toString('utf-8'),
@@ -587,11 +734,12 @@ async function fetchTarContents(
   credentials: RegistryCredentials | undefined,
   blobSignal: AbortSignal,
   options: SkillImageOptions,
+  budget: ImageWorkBudget,
 ): Promise<ExtractedSkillContents> {
   let yamlBuf: Buffer | undefined;
   let mdBuf: Buffer | undefined;
-  const fetchAnnotated = (layer: OciDescriptor) =>
-    fetchBlob(
+  const fetchAnnotated = async (layer: OciDescriptor) => {
+    const buf = await fetchBlob(
       imageRef,
       layer.digest,
       layer.size,
@@ -600,6 +748,9 @@ async function fetchTarContents(
       blobSignal,
       options,
     );
+    budget.charge(buf.length);
+    return buf;
+  };
   if (strategy.skillImageYamlLayer)
     yamlBuf = await fetchAnnotated(strategy.skillImageYamlLayer);
   if (strategy.skillsMdLayer)
@@ -617,8 +768,9 @@ async function fetchTarContents(
       blobSignal,
       options,
     );
+    budget.charge(blob.length);
     const entries = parseTarEntries(
-      maybeDecompress(blob, options.maxBlobSizeBytes),
+      maybeDecompress(blob, options.maxBlobSizeBytes, budget),
     );
 
     // Count all matches for ambiguity detection
