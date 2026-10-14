@@ -95,3 +95,36 @@ describe('readSkillImageOptions', () => {
     ).toThrow(key);
   });
 });
+
+describe('trusted redirect origin configuration', () => {
+  it('normalizes and retains explicitly configured HTTPS origins', () => {
+    expect(
+      readSkillImageOptions(
+        new ConfigReader({
+          skillImageConnector: {
+            allowedOrigins: ['https://CDN.example.com:443/'],
+          },
+        }),
+      ).allowedOrigins,
+    ).toEqual(['https://cdn.example.com']);
+  });
+  it.each([
+    'http://cdn.example.com',
+    'https://cdn.example.com/path',
+    'https://user:secret@cdn.example.com',
+    'https://localhost',
+    'https://127.0.0.1',
+    'https://cdn.example.com?q=1',
+    'not-a-url',
+  ])('rejects unsafe origin %s at startup', origin => {
+    expect(() =>
+      readSkillImageOptions(
+        new ConfigReader({
+          skillImageConnector: {
+            allowedOrigins: [origin],
+          },
+        }),
+      ),
+    ).toThrow('allowedOrigins');
+  });
+});

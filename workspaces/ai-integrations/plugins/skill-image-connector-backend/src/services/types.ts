@@ -98,6 +98,7 @@ export const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
 
 /** Validated backend settings, resolved once at plugin initialization. */
 export interface SkillImageOptions {
+  readonly allowedOrigins?: readonly string[];
   readonly fetchTimeoutMs: number;
   readonly maxBlobSizeBytes: number;
   readonly maxAggregateContentSizeBytes: number;

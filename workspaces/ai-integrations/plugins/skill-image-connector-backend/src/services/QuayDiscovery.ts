@@ -118,6 +118,7 @@ export async function discoverQuayRepositories(
               url.toString(),
               { headers: { Accept: 'application/json' } },
               requestSignal,
+              { allowedOrigins: options.allowedOrigins },
             );
             if (!response.ok) {
               await cancelResponseBody(response);

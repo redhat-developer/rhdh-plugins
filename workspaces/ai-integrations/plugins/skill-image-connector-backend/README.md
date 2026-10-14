@@ -229,7 +229,21 @@ Example response:
 
 ### Security model
 
-**Egress / SSRF protection:** The plugin validates all DNS resolutions — for both initial requests and every redirect target — rejecting any hostname that resolves to private, loopback, link-local, or reserved IP ranges (including IPv4-mapped IPv6). DNS resolution is validated before each request is dispatched, covering the connection boundary rather than relying on a separate preflight check. All requests must use HTTPS; URL-embedded credentials and raw IP/localhost targets are rejected before any connection. Tar archives are inspected for path traversal, symlinks, hardlinks, and device entries; unsafe archives are rejected without extracting content. Per-image work budgets and tar entry limits bound resource consumption from malicious or oversized images. Production deployments should restrict backend egress at the network layer in addition to the registry allowlist and HTTPS checks.
+**Egress / SSRF protection:** Initial registry, Quay discovery, bearer-token, and redirect requests use a per-request Undici dispatcher. The connector validates every DNS answer and restricts the socket lookup to that validated public address set, preserving the original hostname for TLS SNI and certificate verification. Node can fall back from unreachable IPv6 to IPv4 within the validated set. Fetch does not independently resolve a different destination. Private, loopback, link-local, multicast, reserved, and IPv4-mapped non-public addresses are rejected. Requests must use HTTPS; URL-embedded credentials and raw IP/localhost targets are rejected.
+
+Redirects are limited to five. A source registry approved through `skillImageConnector.allowedRegistries` may redirect to HTTPS on its original hostname or a subdomain of that hostname, on the same port. For example, `example.com` may redirect to `cdn.example.com` without separate configuration. This rule applies equally to all registries; there is no registry-specific host list. The hostname match requires a dot boundary, so `example.com.evil.test` and `notexample.com` are not covered. The rule is anchored to the initial registry throughout the redirect chain; explicitly allowing an unrelated origin does not automatically trust its subdomains. Source registry checks remain exact matches at startup.
+
+Authorization is removed when crossing origins. Token realms still require the existing registry-host match or explicit `credentials.tokenRealm` configuration, and token requests never follow redirects. For unrelated CDN domains or different ports, configure the exact HTTPS origin in `skillImageConnector.allowedOrigins`; wildcard hosts are not supported:
+
+```yaml
+skillImageConnector:
+  allowedOrigins:
+    - https://cdn.example.com
+```
+
+This optional setting adds trusted redirect destinations; omission allows only the registry hostname and its subdomains on the same HTTPS port. Entries must be HTTPS origins without credentials, paths, queries, or fragments. DNS validation and pinning also apply to explicitly allowed origins. Dispatchers close gracefully after response-body consumption or cancellation; failed requests destroy their dispatcher.
+
+Tar archives are inspected for path traversal, symlinks, hardlinks, and device entries; unsafe archives are rejected without extracting content. Per-image work budgets and tar entry limits bound resource consumption from malicious or oversized images. Production deployments should restrict backend egress at the network layer in addition to the registry allowlist and HTTPS checks.
 
 **Authorization:** The `/images` endpoint is accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
 

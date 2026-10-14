@@ -15,7 +15,9 @@
  */
 
 import { promises as dnsPromises } from 'node:dns';
-import * as https from 'node:https';
+import type { LookupAddress } from 'node:dns';
+import { Agent } from 'undici';
+import * as ipaddr from 'ipaddr.js';
 import { isIP } from 'node:net';
 import { MAX_REDIRECTS } from './types';
 
@@ -80,70 +82,26 @@ function isIpAddress(hostname: string): boolean {
   return isIP(normalizedHostname) !== 0;
 }
 
-function isPrivateIpv4Address(address: string): boolean {
-  const parts = address.split('.').map(Number);
-  if (parts.length !== 4 || parts.some(p => Number.isNaN(p))) {
-    return true; // Treat unparseable as private (deny by default)
-  }
-  return (
-    parts[0] === 10 || // 10.0.0.0/8
-    parts[0] === 127 || // 127.0.0.0/8 (loopback)
-    parts[0] === 0 || // 0.0.0.0/8
-    (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) || // 172.16.0.0/12
-    (parts[0] === 192 && parts[1] === 168) || // 192.168.0.0/16
-    (parts[0] === 169 && parts[1] === 254) || // 169.254.0.0/16 link-local
-    (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) || // 100.64.0.0/10 CGNAT
-    (parts[0] === 198 && (parts[1] === 18 || parts[1] === 19)) || // 198.18.0.0/15
-    parts[0] >= 240 // 240.0.0.0/4 reserved
-  );
-}
-
-function isPrivateIpv6Address(address: string): boolean {
-  const normalized = address.toLowerCase();
-  if (normalized === '::1' || normalized === '::') {
-    return true; // loopback or unspecified
-  }
-  // fe80::/10 (link-local)
-  if (normalized.startsWith('fe80')) {
-    return true;
-  }
-  // fc00::/7 (unique local)
-  if (normalized.startsWith('fc') || normalized.startsWith('fd')) {
-    return true;
-  }
-  // ::ffff:a.b.c.d (IPv4-mapped IPv6) — check the embedded IPv4
-  const v4Mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(normalized);
-  return v4Mapped ? isPrivateIpv4Address(v4Mapped[1]) : false;
-}
-
-/**
- * Returns true if the address belongs to a private, loopback, link-local,
- * or otherwise non-globally-routable range.
- */
+/** Reject non-unicast destinations, including canonical IPv4-mapped IPv6. */
 export function isPrivateAddress(address: string, family: number): boolean {
-  if (family === 4) {
-    return isPrivateIpv4Address(address);
-  }
-
-  if (family === 6) {
-    return isPrivateIpv6Address(address);
-  }
-
-  return true; // Unknown family — deny by default
+  if (!ipaddr.isValid(address) || (family !== 4 && family !== 6)) return true;
+  const parsed = ipaddr.parse(address);
+  if ((parsed.kind() === 'ipv4' ? 4 : 6) !== family) return true;
+  return ipaddr.process(address).range() !== 'unicast';
 }
 
 /**
  * Resolves a hostname via DNS, validates all addresses are public,
- * and returns the first valid address for connection pinning.
+ * and returns the complete validated address set for connection pinning.
  *
- * This replaces the former preflight-only check: the returned address
- * is used by a pinned HTTPS agent so the connection cannot resolve to
- * a different (potentially private) address after validation.
+ * This replaces the former preflight-only check: the returned addresses
+ * are used by a pinned Undici dispatcher so the connection cannot resolve to
+ * an unvalidated (potentially private) address after validation.
  */
 export async function validateAndResolveHost(
   hostname: string,
-): Promise<{ address: string; family: number }> {
-  let addresses: Array<{ address: string; family: number }>;
+): Promise<LookupAddress[]> {
+  let addresses: LookupAddress[];
   try {
     addresses = await dnsPromises.lookup(hostname, { all: true });
   } catch {
@@ -162,32 +120,63 @@ export async function validateAndResolveHost(
     }
   }
 
-  return addresses[0];
+  return addresses;
 }
 
-/**
- * Creates an HTTPS agent that pins its connection to a specific resolved
- * IP address, preventing DNS rebinding between validation and connection.
- * The original hostname is preserved for TLS SNI verification.
- */
+/** Restricts all connection attempts to the validated DNS answer set. */
 function createPinnedAgent(
   hostname: string,
-  resolved: { address: string; family: number },
-): https.Agent {
-  return new https.Agent({
-    servername: hostname,
-    lookup: (
-      _hostname: string,
-      _options: unknown,
-      callback: (
-        err: NodeJS.ErrnoException | null,
-        address: string,
-        family: number,
-      ) => void,
-    ) => {
-      callback(null, resolved.address, resolved.family);
+  resolved: readonly LookupAddress[],
+): Agent {
+  return new Agent({
+    // Let Node try IPv4 when IPv6 is unreachable, using only our DNS snapshot.
+    autoSelectFamily: true,
+    connect: {
+      servername: hostname,
+      lookup: (requestedHost, options, callback) => {
+        if (requestedHost !== hostname) {
+          callback(new Error('Pinned connection hostname mismatch'), '', 0);
+          return;
+        }
+        if (typeof options === 'object' && options.all) {
+          callback(null, [...resolved]);
+        } else {
+          const family = typeof options === 'number' ? options : options.family;
+          const address = resolved.find(
+            candidate => !family || candidate.family === family,
+          );
+          if (!address) {
+            callback(
+              new Error('No validated address for the requested family'),
+              '',
+              0,
+            );
+            return;
+          }
+          callback(null, address.address, address.family);
+        }
+      },
     },
   });
+}
+
+/** Optional additional trusted redirect origins, beyond the configured request origin. */
+export interface RequestPolicy {
+  allowedOrigins?: readonly string[];
+  /** Token requests reject redirects rather than following them. */
+  maxRedirects?: number;
+}
+
+/** Validate operator-supplied origins without permitting paths or credentials. */
+export function validateAllowedOrigin(value: string): string {
+  const url = new URL(value);
+  validateRequestUrl(url);
+  if (url.pathname !== '/' || url.search || url.hash) {
+    throw new Error(
+      'Allowed origin must not contain a path, query, or fragment',
+    );
+  }
+  return url.origin;
 }
 
 /**
@@ -218,21 +207,29 @@ export async function fetchWithRedirects(
   url: string,
   init: RequestInit,
   signal: AbortSignal,
+  policy: RequestPolicy = {},
 ): Promise<Response> {
-  let currentUrl = new URL(url);
+  const registryUrl = new URL(url);
+  let currentUrl = registryUrl;
   const headers = new Headers(init.headers);
+  const allowedOrigins = new Set([
+    currentUrl.origin,
+    ...(policy.allowedOrigins ?? []).map(validateAllowedOrigin),
+  ]);
+  const maxRedirects = policy.maxRedirects ?? MAX_REDIRECTS;
 
   // Validate initial request URL
   validateRequestUrl(currentUrl);
 
-  for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
+  for (let redirectCount = 0; redirectCount <= maxRedirects; redirectCount++) {
     signal.throwIfAborted();
 
     // Resolve DNS and validate destination for every request, including
-    // the initial one. The resolved address is pinned to the connection
-    // via a custom HTTPS agent, preventing DNS rebinding between
+    // the initial one. The validated address set is pinned to the connection
+    // via a custom Undici dispatcher, preventing DNS rebinding between
     // validation and the actual TCP connection.
     const resolved = await validateAndResolveHost(currentUrl.hostname);
+    signal.throwIfAborted();
     const pinnedAgent = createPinnedAgent(currentUrl.hostname, resolved);
 
     try {
@@ -241,25 +238,14 @@ export async function fetchWithRedirects(
         headers: Object.fromEntries(headers),
         redirect: 'manual',
         signal,
-        // @ts-ignore -- Node.js fetch accepts dispatcher/agent options
-        dispatcher: undefined,
-        // Use the pinned agent for the underlying HTTPS connection
-      } as RequestInit);
-
-      // Node.js global fetch (undici) does not accept an https.Agent
-      // directly. We use a two-step approach: validate + resolve DNS
-      // ourselves, then let fetch connect. The validation ensures all
-      // resolved addresses are public before the connection is made.
-      // For full connection-level pinning in production, use undici's
-      // Agent with a custom connect.lookup. The current implementation
-      // validates all DNS answers before allowing the request to proceed.
-      void pinnedAgent; // Agent created for future undici dispatcher use
+        dispatcher: pinnedAgent,
+      } as RequestInit & { dispatcher: Agent });
 
       if (![301, 302, 303, 307, 308].includes(response.status)) {
         return response;
       }
       await cancelResponseBody(response);
-      if (redirectCount === MAX_REDIRECTS) {
+      if (redirectCount === maxRedirects) {
         throw new Error(
           'Registry response exceeded the maximum redirect count',
         );
@@ -273,6 +259,18 @@ export async function fetchWithRedirects(
       }
       const nextUrl = new URL(location, currentUrl);
       validateRequestUrl(nextUrl);
+      // The configured registry also trusts its subdomains for HTTPS redirects
+      // on the same port. Compare against the initial registry, not each hop,
+      // so an explicitly allowed external origin cannot expand trust further.
+      const withinRegistry =
+        nextUrl.port === registryUrl.port &&
+        (nextUrl.hostname === registryUrl.hostname ||
+          nextUrl.hostname.endsWith(`.${registryUrl.hostname}`));
+      if (!withinRegistry && !allowedOrigins.has(nextUrl.origin)) {
+        throw new Error(
+          `Registry redirect targets an unconfigured origin: ${nextUrl.origin}`,
+        );
+      }
 
       // Validate redirect target DNS resolution — the next iteration
       // of the loop will also validate before connecting.
@@ -280,8 +278,15 @@ export async function fetchWithRedirects(
         headers.delete('authorization');
       }
       currentUrl = nextUrl;
+    } catch (error) {
+      void pinnedAgent.destroy().catch(() => undefined);
+      throw error;
     } finally {
-      pinnedAgent.destroy();
+      // Graceful close waits for the caller to consume/cancel the response body.
+      // Awaiting here would deadlock streaming callers; destroy only on failure.
+      void pinnedAgent.close().catch(() => {
+        void pinnedAgent.destroy().catch(() => undefined);
+      });
     }
   }
 

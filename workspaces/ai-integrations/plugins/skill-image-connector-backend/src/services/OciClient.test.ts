@@ -707,8 +707,8 @@ describe('fetchManifest: digest pinning across retries', () => {
 
     // Second fetch (pinned by digest) succeeds
     jest.resetAllMocks();
-    const dns1 = require('node:dns');
-    (dns1.promises.lookup as jest.Mock).mockResolvedValue([
+    const dns = require('node:dns');
+    (dns.promises.lookup as jest.Mock).mockResolvedValue([
       { address: '93.184.216.34', family: 4 },
     ]);
     global.fetch = jest.fn().mockResolvedValue({
@@ -776,8 +776,8 @@ describe('fetchManifest: digest pinning across retries', () => {
     // Registry returns manifestB content (different bytes) for the digest URL
     // This would be a misbehaving registry — our verification catches it
     jest.resetAllMocks();
-    const dns2 = require('node:dns');
-    (dns2.promises.lookup as jest.Mock).mockResolvedValue([
+    const dns = require('node:dns');
+    (dns.promises.lookup as jest.Mock).mockResolvedValue([
       { address: '93.184.216.34', family: 4 },
     ]);
     const bufferB = Buffer.from(JSON.stringify(manifestB));
@@ -904,6 +904,11 @@ describe('fetchBlob', () => {
         content.length,
         logger,
         { username: 'user', password: 'secret' },
+        undefined,
+        {
+          ...DEFAULT_SKILL_IMAGE_OPTIONS,
+          allowedOrigins: ['https://cdn.example.com'],
+        },
       ),
     ).resolves.toEqual(content);
     expect(cancel).toHaveBeenCalled();
@@ -971,7 +976,7 @@ describe('fetchBlob', () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       status: 302,
-      headers: { get: () => 'https://evil.example.com/blob' },
+      headers: { get: () => 'https://quay.io/blob' },
       body: { cancel },
     });
 
@@ -992,7 +997,7 @@ describe('fetchBlob', () => {
     const responses = Array.from({ length: 6 }, (_, index) => ({
       ok: false,
       status: 307,
-      headers: { get: () => `https://cdn.example.com/blob-${index}` },
+      headers: { get: () => `https://quay.io/blob-${index}` },
       body: { cancel: jest.fn().mockResolvedValue(undefined) },
     }));
     global.fetch = jest.fn();
@@ -1200,7 +1205,6 @@ describe('isPrivateAddress', () => {
     ['100.128.0.0', 4],
     ['198.17.255.255', 4],
     ['198.20.0.0', 4],
-    ['239.255.255.255', 4],
   ])('should allow IPv4 public address %s', (address, family) => {
     expect(isPrivateAddress(address, family)).toBe(false);
   });
@@ -1215,12 +1219,12 @@ describe('isPrivateAddress', () => {
     expect(isPrivateAddress(address, family)).toBe(true);
   });
 
-  it.each([
-    ['2001:db8::1', 6],
-    ['2607:f8b0:4004:800::200e', 6],
-  ])('should allow IPv6 public address %s', (address, family) => {
-    expect(isPrivateAddress(address, family)).toBe(false);
-  });
+  it.each([['2607:f8b0:4004:800::200e', 6]])(
+    'should allow IPv6 public address %s',
+    (address, family) => {
+      expect(isPrivateAddress(address, family)).toBe(false);
+    },
+  );
 
   it('should detect private IPv4-mapped IPv6 address', () => {
     expect(isPrivateAddress('::ffff:10.0.0.1', 6)).toBe(true);
@@ -1233,5 +1237,82 @@ describe('isPrivateAddress', () => {
 
   it('should deny unknown address family', () => {
     expect(isPrivateAddress('something', 99)).toBe(true);
+  });
+});
+
+describe('public destination classification regressions', () => {
+  it.each([
+    ['239.255.255.255', 4],
+    ['2001:db8::1', 6],
+    ['fe90::1', 6],
+    ['febf::1', 6],
+    ['::ffff:7f00:1', 6],
+    ['::ffff:c0a8:101', 6],
+    ['ff02::1', 6],
+    ['224.0.0.1', 4],
+  ])('rejects non-public address %s', (address, family) => {
+    expect(isPrivateAddress(address, family)).toBe(true);
+  });
+});
+
+describe('token endpoint destination policy', () => {
+  const logger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+    child: jest.fn(),
+  } as unknown as LoggerService;
+  beforeEach(() => {
+    const dns = require('node:dns');
+    (dns.promises.lookup as jest.Mock)
+      .mockReset()
+      .mockResolvedValue([{ address: '93.184.216.34', family: 4 }]);
+  });
+  it('rejects a token realm that resolves to a private destination before sending credentials', async () => {
+    const dns = require('node:dns');
+    (dns.promises.lookup as jest.Mock)
+      .mockResolvedValueOnce([{ address: '93.184.216.34', family: 4 }])
+      .mockResolvedValueOnce([{ address: '127.0.0.1', family: 4 }]);
+    global.fetch = jest.fn().mockResolvedValue(
+      new Response(null, {
+        status: 401,
+        headers: {
+          'www-authenticate': 'Bearer realm="https://quay.io/token"',
+        },
+      }),
+    );
+    await expect(
+      fetchManifest(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        logger,
+      ),
+    ).rejects.toThrow('non-public address');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+  it('never follows token endpoint redirects, even to the same origin', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(null, {
+          status: 401,
+          headers: {
+            'www-authenticate': 'Bearer realm="https://quay.io/token"',
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(null, {
+          status: 307,
+          headers: { location: '/another-token' },
+        }),
+      );
+    await expect(
+      fetchManifest(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        logger,
+      ),
+    ).rejects.toThrow('maximum redirect count');
+    expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 });

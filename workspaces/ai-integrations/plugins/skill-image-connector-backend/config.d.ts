@@ -54,6 +54,10 @@ export interface Config {
     sourceOperationDeadlineMs?: number;
     /** @visibility backend */
     allowedRegistries?: string[];
+    /** Additional HTTPS origins permitted for registry/discovery redirects. The initial registry hostname and its subdomains are allowed on the same HTTPS port. Omitted means no unrelated origins are allowed. Token realm redirects are never allowed.
+     * @visibility backend
+     */
+    allowedOrigins?: string[];
     /** @visibility backend */
     images?: Array<{
       /** @visibility backend */

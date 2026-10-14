@@ -17,17 +17,22 @@
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
 import type { SkillImageOptions } from './types';
+import { validateAllowedOrigin } from './HttpClient';
 import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_TIMER_DELAY_MS } from './types';
 
 /**
- * Resolve numeric acquisition settings without importing network acquisition services
+ * Resolve acquisition settings
  * or mutating shared defaults. Image and discovery config parsing stays in plugin.ts
  * to reuse the OCI reference, tag, and token-realm validators from OciClient.
  */
 export function readSkillImageOptions(config: Config): SkillImageOptions {
   const source = config.getOptionalConfig('skillImageConnector');
-  const options = { ...DEFAULT_SKILL_IMAGE_OPTIONS };
-  for (const key of Object.keys(options) as Array<keyof SkillImageOptions>) {
+  const DEFAULT_NUMERIC_OPTIONS: Omit<SkillImageOptions, 'allowedOrigins'> =
+    DEFAULT_SKILL_IMAGE_OPTIONS;
+  const options = { ...DEFAULT_NUMERIC_OPTIONS };
+  for (const key of Object.keys(options) as Array<
+    keyof typeof DEFAULT_NUMERIC_OPTIONS
+  >) {
     const value = source?.getOptionalNumber(key) ?? options[key];
     const minimum = key === 'maxRetries' ? 0 : 1;
     const maximum =
@@ -42,6 +47,21 @@ export function readSkillImageOptions(config: Config): SkillImageOptions {
       );
     }
     options[key] = value;
+  }
+  const allowedOrigins = source?.getOptionalStringArray('allowedOrigins');
+  if (allowedOrigins) {
+    try {
+      return Object.freeze({
+        ...options,
+        allowedOrigins: Object.freeze(
+          allowedOrigins.map(validateAllowedOrigin),
+        ),
+      });
+    } catch {
+      throw new InputError(
+        'skillImageConnector.allowedOrigins must contain HTTPS origins without credentials, paths, queries, or fragments',
+      );
+    }
   }
   return Object.freeze(options);
 }

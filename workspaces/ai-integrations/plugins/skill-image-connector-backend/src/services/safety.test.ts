@@ -323,13 +323,12 @@ describe('DNS destination validation', () => {
     jest.resetAllMocks();
   });
 
-  it('resolves and returns the first public address', async () => {
+  it('resolves and returns the validated public address set', async () => {
     (dns.promises.lookup as jest.Mock).mockResolvedValue([
       { address: '93.184.216.34', family: 4 },
     ]);
     const result = await validateAndResolveHost('example.com');
-    expect(result.address).toBe('93.184.216.34');
-    expect(result.family).toBe(4);
+    expect(result).toEqual([{ address: '93.184.216.34', family: 4 }]);
   });
 
   it('rejects when hostname resolves to a private IPv4 address', async () => {
