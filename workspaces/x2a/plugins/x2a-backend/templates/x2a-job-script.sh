@@ -222,12 +222,21 @@ Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 EOF
 }
 
-# Normalize module names to the same identifier style used for generated
-# Ansible roles (e.g. "nginx multisite" and "nginx-multisite" become
-# "nginx_multisite"). Keep MODULE_NAME unchanged for source/module lookups.
+# Normalize module names using AnsibleModule._sanitize. Keep MODULE_NAME
+# unchanged for source/module lookups.
 normalize_ansible_role_name() {
-  printf '%s' "$1" | LC_ALL=C tr '[:upper:]' '[:lower:]' | \
-    sed -E 's/[^a-z0-9]+/_/g; s/^_+//; s/_+$//'
+  local LC_ALL=C normalized
+
+  normalized=$(printf '%s' "$1" | LC_ALL=C tr '[:upper:]' '[:lower:]' | \
+    LC_ALL=C sed -E 's/-/_/g; s/[^a-z0-9_]//g')
+
+  # AnsibleModule leaves an empty result empty; otherwise names must start
+  # with a letter.
+  if [ -n "$normalized" ] && [[ ! "$normalized" =~ ^[a-z] ]]; then
+    normalized="role_${normalized}"
+  fi
+
+  printf '%s' "$normalized"
 }
 
 # Commit and push changes to target repository.
@@ -273,7 +282,7 @@ git_commit_and_push() {
     fi
   else
     echo "Pushing to existing branch '${TARGET_REPO_BRANCH}'..."
-    if ! git_target_repo pull --rebase -X ours origin "${TARGET_REPO_BRANCH}"; then
+    if ! git_target_repo pull --rebase -X theirs origin "${TARGET_REPO_BRANCH}"; then
       echo "ERROR: Rebase conflict could not be auto-resolved. Aborting."
       git rebase --abort || true
 
@@ -287,7 +296,6 @@ git_commit_and_push() {
       fi
     fi
 
-    git_target_repo pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
     if ! git_target_repo push origin "${TARGET_REPO_BRANCH}"; then
       local error_msg="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
       echo "ERROR: ${error_msg}"
