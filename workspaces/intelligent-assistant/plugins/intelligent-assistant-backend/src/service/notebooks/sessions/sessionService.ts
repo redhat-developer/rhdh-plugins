@@ -91,14 +91,14 @@ export class SessionService {
   }
 
   /**
-   * Retrieve a session and verify ownership
+   * Retrieve session metadata and verify ownership
    * @param sessionId - Session ID to retrieve
    * @param userId - User ID requesting access
    * @returns Notebook session
    * @throws NotFoundError if session not found or has no metadata
    * @throws NotAllowedError if user does not own the session
    */
-  async readSession(
+  async fetchSession(
     sessionId: string,
     userId: string,
   ): Promise<NotebookSession> {
@@ -120,6 +120,23 @@ export class SessionService {
         `User ${userId} does not have access to session ${sessionId}`,
       );
     }
+
+    return session;
+  }
+
+  /**
+   * Retrieve a session with its document count and verify ownership
+   * @param sessionId - Session ID to retrieve
+   * @param userId - User ID requesting access
+   * @returns Notebook session including its document count
+   * @throws NotFoundError if session not found or has no metadata
+   * @throws NotAllowedError if user does not own the session
+   */
+  async readSession(
+    sessionId: string,
+    userId: string,
+  ): Promise<NotebookSession> {
+    const session = await this.fetchSession(sessionId, userId);
 
     // Fetch document count
     try {
