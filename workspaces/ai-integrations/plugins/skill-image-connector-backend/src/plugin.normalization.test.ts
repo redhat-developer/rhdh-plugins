@@ -32,6 +32,16 @@ import { createTarArchive } from './testUtils';
 import { normalizeSkillImageExtraction } from './services/normalizeExtraction';
 import type { OciDescriptor } from './services/types';
 
+// Mock DNS resolution so integration tests don't fail with real DNS lookups.
+// By default, resolve all hostnames to a public IP.
+jest.mock('node:dns', () => ({
+  promises: {
+    lookup: jest
+      .fn()
+      .mockResolvedValue([{ address: '93.184.216.34', family: 4 }]),
+  },
+}));
+
 // Observe the typed adapter result while exercising its real implementation.
 jest.mock('./services/normalizeExtraction', () => {
   const actual = jest.requireActual<

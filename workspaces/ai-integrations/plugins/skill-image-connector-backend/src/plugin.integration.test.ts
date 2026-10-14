@@ -173,9 +173,11 @@ describe('configured acquisition in the plugin', () => {
       maxBlobSizeBytes: 1000,
       maxAggregateContentSizeBytes: 10,
       maxDiscoveryResponseSizeBytes: 100,
+      maxImageWorkBudgetBytes: 52428800,
       maxImages: 100,
       maxRetries: 0,
       retryBaseDelayMs: 20,
+      sourceOperationDeadlineMs: 300000,
     };
     const { server } = await startConnector({
       ...limits,
