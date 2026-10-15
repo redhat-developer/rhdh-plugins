@@ -15,6 +15,7 @@
  */
 
 import type { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfigFormatError } from '../../../errors';
 import { validateThresholdNumberIntervals } from './validateThresholdNumberIntervals';
 
@@ -163,6 +164,17 @@ describe('validateThresholdNumberIntervals', () => {
       expect(() => validateThresholdNumberIntervals(rules, 'number')).toThrow(
         coverageError,
       );
+    });
+  });
+
+  describe('built-in threshold constants', () => {
+    it('DEFAULT_NUMBER_THRESHOLDS has valid number intervals', () => {
+      expect(() =>
+        validateThresholdNumberIntervals(
+          DEFAULT_NUMBER_THRESHOLDS.rules,
+          'number',
+        ),
+      ).not.toThrow();
     });
   });
 
