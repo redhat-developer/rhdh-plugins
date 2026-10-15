@@ -84,6 +84,10 @@ function parseComparisonOperator(
     );
   }
 
+  if (targetType === 'string') {
+    return { operator, value: valueStr };
+  }
+
   return undefined;
 }
 
