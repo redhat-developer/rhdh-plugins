@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 2.0.2
+
+### Patch Changes
+
+- 7e2889e: Use separate naming rules for converter-generated migration-plan filenames and Ansible role paths based on PR https://github.com/x2ansible/x2a-convertor/pull/311
+- 1f60858: Enforce rule content limits: max 50,000 characters per rule description, and max 50,000 total characters across all rules accepted by a project
+- Updated dependencies [1f60858]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.0.2
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@1.0.2
+
 ## 2.0.1
 
 ### Patch Changes
