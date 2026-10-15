@@ -35,10 +35,12 @@ skillImageConnector:
   # fetchTimeoutMs: 30000
   # maxBlobSizeBytes: 5242880
   # maxAggregateContentSizeBytes: 52428800
+  # maxImageWorkBudgetBytes: 52428800
   # maxDiscoveryResponseSizeBytes: 5242880
   # maxImages: 25
   # maxRetries: 2
   # retryBaseDelayMs: 2000
+  # sourceOperationDeadlineMs: 300000
   # Option 1 and Option 2 can be used together or individually
   # Option 1: Explicit image references
   images:
@@ -84,19 +86,20 @@ requires one entity per valid skill-image tag, keyed by
 
 ### Configuration fields
 
-| Field                                                 | Type     | Description                                                                                                                   |
-| ----------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `skillImageConnector.images`                          | `array`  | List of OCI skill image sources to process on startup.                                                                        |
-| `skillImageConnector.images[].imageRef`               | `string` | Full OCI image reference (e.g. `quay.io/org/repo:tag` or `quay.io/org/repo@sha256:...`).                                      |
-| `skillImageConnector.images[].credentials`            | `object` | Optional backend-only credentials or an explicit token realm for registry token exchange.                                     |
-| `skillImageConnector.images[].credentials.username`   | `string` | Registry username; required together with `password`.                                                                         |
-| `skillImageConnector.images[].credentials.password`   | `string` | Registry password; use environment variable substitution.                                                                     |
-| `skillImageConnector.images[].credentials.tokenRealm` | `string` | Optional HTTPS token endpoint; required for cross-host token exchange and must not contain URL credentials.                   |
-| `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images and discovery registries.                               |
-| `skillImageConnector.quayDiscovery`                   | `object` | Optional public Quay organization discovery configuration.                                                                    |
-| `skillImageConnector.quayDiscovery.registry`          | `string` | Quay registry host (defaults to `quay.io`).                                                                                   |
-| `skillImageConnector.quayDiscovery.organization`      | `string` | Public organization whose repositories will be discovered. Omission or a blank value skips discovery with a warning.          |
-| `skillImageConnector.quayDiscovery.tag`               | `string` | Optional exact tag filter. Omit or leave blank to enumerate all active tags; set `latest` explicitly for the former behavior. |
+| Field                                                 | Type     | Description                                                                                                                                         |
+| ----------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `skillImageConnector.images`                          | `array`  | List of OCI skill image sources to process on startup.                                                                                              |
+| `skillImageConnector.images[].imageRef`               | `string` | Full OCI image reference (e.g. `quay.io/org/repo:tag` or `quay.io/org/repo@sha256:...`).                                                            |
+| `skillImageConnector.images[].credentials`            | `object` | Optional backend-only credentials or an explicit token realm for registry token exchange.                                                           |
+| `skillImageConnector.images[].credentials.username`   | `string` | Registry username; required together with `password`.                                                                                               |
+| `skillImageConnector.images[].credentials.password`   | `string` | Registry password; use environment variable substitution.                                                                                           |
+| `skillImageConnector.images[].credentials.tokenRealm` | `string` | Optional HTTPS token endpoint; required for cross-host token exchange and must not contain URL credentials.                                         |
+| `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images and discovery registries.                                                     |
+| `skillImageConnector.allowedOrigins`                  | `array`  | Optional backend-only exact HTTPS redirect origins beyond the initial registry hostname/subdomains and port. See [Security model](#security-model). |
+| `skillImageConnector.quayDiscovery`                   | `object` | Optional public Quay organization discovery configuration.                                                                                          |
+| `skillImageConnector.quayDiscovery.registry`          | `string` | Quay registry host (defaults to `quay.io`).                                                                                                         |
+| `skillImageConnector.quayDiscovery.organization`      | `string` | Public organization whose repositories will be discovered. Omission or a blank value skips discovery with a warning.                                |
+| `skillImageConnector.quayDiscovery.tag`               | `string` | Optional exact tag filter. Omit or leave blank to enumerate all active tags; set `latest` explicitly for the former behavior.                       |
 
 By default, at most 25 image candidates are processed, including explicit images and discovered repository/tag candidates. Set `skillImageConnector.maxImages` to raise or lower this total (for example, `100` to attempt up to 100 distinct image references). A repository with many tags consumes multiple candidate slots; increasing this cap does not guarantee every tag fits. Explicit images take priority, and discovered references already present in the explicit list do not consume another slot. An explicit list exceeding the limit fails startup validation; excess discovered candidates are skipped with a warning. This bounds candidates attempted, not successful skill extractions: repositories without the selected tag still consume a slot. It does not change the concurrency limit of four image operations.
 

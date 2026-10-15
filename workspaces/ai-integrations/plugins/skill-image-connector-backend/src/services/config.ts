@@ -16,8 +16,8 @@
 
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
-import type { SkillImageOptions } from './types';
 import { validateAllowedOrigin } from './HttpClient';
+import type { SkillImageOptions } from './types';
 import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_TIMER_DELAY_MS } from './types';
 
 /**
