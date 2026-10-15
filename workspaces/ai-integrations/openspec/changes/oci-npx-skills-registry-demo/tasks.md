@@ -37,6 +37,14 @@
 - [ ] 5.3 Add integration coverage for OCI and npx endpoints feeding the same provider, including service authentication and failure isolation across sources.
 - [ ] 5.4 Document demo/public-source scope, metadata mappings, the #4747 integration, and the explicit connector-only OCI extraction decision; leave MLflow implementation to a future change.
 
+## 6. OCI skill TechDocs
+
+- [ ] 6.1 Add authenticated `GET /skilldocs/:sourceId/:digest` endpoint to the OCI connector, serving extracted Markdown with `Content-Type: text/markdown`, `ETag` derived from the manifest digest, and `If-None-Match` conditional request support. Return 404 for unknown source IDs, unknown digests, and unavailable content; return 304 for matching ETags. Preserve `/images` and `/skills/:sourceId` compatibility. _(Depends on 2.5 source/snapshot lifecycle for source ID validation.)_
+- [ ] 6.2 Implement bounded durable Markdown content storage per source, keyed by manifest digest. Retain content for digests referenced by last-known-good entities; clean up unreferenced digests after `ready` snapshots. Recover retained content from durable storage after restarts, consistent with D6 reconciliation recovery. _(Depends on 2.5 source/snapshot lifecycle and D6 durable storage.)_
+- [ ] 6.3 Extend the catalog provider to set `backstage.io/techdocs-ref` on OCI skill entities using `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>`, derived from Backstage discovery and trusted connector/source configuration. Preserve existing identity, integrity, and source-location annotations. Do not set `backstage.io/techdocs-ref` on npx skill entities. _(Depends on 4.2 entity construction.)_
+- [ ] 6.4 Extend the `catalog-techdoc-url-reader-backend` plugin to match OCI skill documentation URLs from trusted configured or discovered connector destinations with `/skilldocs/` paths. Authenticate with `auth.getPluginRequestToken` targeted to the receiving connector plugin. Propagate 404 as `NotFoundError`, 304 as `NotModifiedError`, and other errors. Produce a minimal MkDocs project with `mkdocs.yml` and `docs/index.md`. Pass through ETag for TechDocs caching. Preserve existing model-card URL-reader behavior.
+- [ ] 6.5 Test annotated-layer and tar/tar+gzip Markdown producing equivalent documentation; unauthorized access; unknown source/content; a moving tag updating the TechDocs annotation; same-digest aliases sharing documentation; partial refresh/restart content retention; size limits; and existing model-card integration remaining functional.
+
 Task 1.1 was implemented by the `ai-skills-common` package (PR #5061). The
 shared-library portions of task 1.4 were completed in the same PR. Task 1.2
 was implemented by PR #5072, adding `normalizeOciMetadata` and
@@ -54,3 +62,7 @@ archive, and mixed layouts feed parsed SkillCard/frontmatter into the shared
 normalizer, with malformed and ambiguous candidate diagnostics. Unchecked tasks
 describe remaining connector and provider implementation, including normalized
 snapshots and scheduled refresh in task 2.5. Task 2.4 acquisition safety is implemented.
+safety and snapshots in tasks 2.4–2.5. Section 6 tasks specify the OCI skill
+TechDocs feature added by this scope extension; they depend on task 2.5's
+source/snapshot lifecycle and task 4.2's entity construction, plus the relevant
+acquisition safety (task 2.4) and durable reconciliation (task 4.3–4.4) work.

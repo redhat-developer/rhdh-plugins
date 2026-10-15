@@ -310,6 +310,45 @@ raw-layer image, then authorized a local commit including their current
 `app-config.yaml` examples. Signing, pushing, and the next Fullsend review
 remain maintainer-owned.
 
+### OCI skill TechDocs scope extension
+
+This scope extension adds design D8 (OCI skill TechDocs), a new
+`specs/techdocs-integration/spec.md`, and updates to the proposal, design
+(D2/D5/D6/D7 cross-references), OCI connector spec (dedicated Markdown
+endpoint, content storage/lifecycle), provider spec (`backstage.io/techdocs-ref`
+annotation), and tasks (section 6). The extension reuses the HTTP-based
+model-card TechDocs integration pattern established in the
+`techdocs-modelcard-finalization` change.
+
+Cross-artifact consistency was reviewed for endpoint addressing
+(`/skilldocs/:sourceId/:digest`), authentication (service tokens targeted to
+the receiving connector plugin), digest identity (verified manifest digest binds
+documentation to the entity), content lifecycle (retention through partial
+refreshes and restarts, cleanup after `ready` snapshots), failure behavior
+(no successful empty documentation on failure), frontmatter handling (preserved
+as-is), scope (OCI only, single document, no bundled assets), and dependencies
+(tasks 2.5, 4.2, 2.4, 4.3–4.4).
+
+The following scenarios are specified across the connector, provider, and
+URL-reader specs: annotated-layer and tar/tar+gzip Markdown producing
+equivalent documentation; unauthorized access; unknown source/content; a moving
+tag updating the TechDocs annotation; same-digest aliases sharing
+documentation; partial refresh/restart content retention; size limits; and
+existing model-card integration remaining functional.
+
+No new raw-content fields are added to shared v1 records. No new core entity
+schema, runtime implementation, TypeScript, app-config.yaml, package files,
+lockfiles, workflow/agent configuration, or unrelated OpenSpec changes are
+included. No changeset is needed for this specification-only change. The
+TechDocs feature is not implemented or tested; all section 6 tasks are
+unchecked. Dependencies on tasks 2.5, 4.2, 2.4, and 4.3–4.4 are identified
+in the task descriptions.
+
+Existing task numbering, completed checkboxes, and task definitions are
+unchanged. Task 2.4 (connection safety, RHIDP-17933) is not enlarged; the
+TechDocs endpoint uses Backstage's default backend authentication, separate
+from D7's upstream egress restrictions.
+
 ##### Summary
 
 | Category                               | CRITICAL | WARNING | SUGGESTION |

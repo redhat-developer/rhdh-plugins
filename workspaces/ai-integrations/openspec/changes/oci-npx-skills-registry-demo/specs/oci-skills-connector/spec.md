@@ -176,7 +176,9 @@ shared v1 contract and design D3 metadata mappings, with source type `oci`.
 It SHALL publish snapshots atomically according to design D6, report known
 failed repository/tag keys, and retain the existing #4747 `/images` response format.
 It SHALL NOT emit `AiResource` entities or apply catalog defaults or mutations.
-Unknown source IDs SHALL return 404.
+Unknown source IDs SHALL return 404. Raw Markdown SHALL NOT be included in
+`/skills/:sourceId` normalized records; it is served through the dedicated
+Markdown endpoint defined below.
 
 #### Scenario: Normalized and raw endpoints coexist
 
@@ -184,12 +186,107 @@ Unknown source IDs SHALL return 404.
 - **THEN** `/skills/:sourceId` returns a normalized record with a digest-addressed OCI URI
 - **AND** the existing `/images` endpoint retains its raw-content response format
 - **AND** the normalized endpoint contains no raw YAML, Markdown, or local paths
+- **AND** the `/skilldocs/:sourceId/:digest` endpoint serves the extracted Markdown separately
 
 #### Scenario: Refresh fails for one tag
 
 - **WHEN** one repository/tag fails while other tags are successfully processed
 - **THEN** the connector publishes successful records with `status: partial` and the failed repository/tag key
 - **AND** it makes no catalog mutation itself
+
+### Requirement: Dedicated authenticated Markdown endpoint
+
+The connector SHALL expose authenticated `GET /skilldocs/:sourceId/:digest`
+relative to its Backstage plugin base URL, serving extracted skill Markdown for
+TechDocs consumption as specified in design D8. The `sourceId` is the configured
+source identity (one path segment). The `digest` is the verified manifest digest
+(`sha256:<64 lowercase hex digits>`). The endpoint SHALL use Backstage's default
+backend authentication, consistent with `/skills/:sourceId`. It SHALL return the
+extracted Markdown document with `Content-Type: text/markdown` when available.
+It SHALL preserve the existing `/images` endpoint compatibility and keep raw
+Markdown out of `/skills/:sourceId` normalized records.
+
+#### Scenario: Successful Markdown retrieval
+
+- **WHEN** a GET request is made to `/skilldocs/:sourceId/:digest` with a valid source ID and a known digest
+- **THEN** the connector returns 200 with `Content-Type: text/markdown` and the extracted Markdown content
+- **AND** the response includes an `ETag` header derived from the manifest digest
+
+#### Scenario: Unknown source ID
+
+- **WHEN** a GET request is made to `/skilldocs/:sourceId/:digest` with a source ID not configured for this connector
+- **THEN** the connector returns 404
+- **AND** it does not return successful empty documentation
+
+#### Scenario: Unknown digest for a known source
+
+- **WHEN** a GET request is made to `/skilldocs/:sourceId/:digest` with a valid source ID but an unrecognized digest
+- **THEN** the connector returns 404
+- **AND** it does not return successful empty documentation or a 200 with an empty body
+
+#### Scenario: Content not yet available
+
+- **WHEN** the connector is still loading or the Markdown for a known digest has not been extracted yet
+- **THEN** the connector returns 404 or 503
+- **AND** it does not return successful empty documentation
+
+#### Scenario: Conditional request with matching ETag
+
+- **WHEN** a GET request includes `If-None-Match` matching the current ETag for the digest
+- **THEN** the connector returns 304 Not Modified with no body
+- **AND** TechDocs caching avoids re-fetching and re-building unchanged documentation
+
+#### Scenario: Same-digest tag aliases share documentation
+
+- **WHEN** two tags in the same repository resolve to the same manifest digest
+- **THEN** requests to `/skilldocs/:sourceId/:digest` return the same Markdown content for both entities
+- **AND** each entity's `backstage.io/techdocs-ref` annotation uses the same digest-addressed URL
+
+#### Scenario: Moving tag updates documentation
+
+- **WHEN** a tag moves to a new manifest with different Markdown content
+- **THEN** requests using the new manifest digest return the new Markdown
+- **AND** the old digest's content remains available as long as any entity references it
+
+### Requirement: Bounded Markdown content storage and lifecycle
+
+The connector SHALL retain extracted Markdown content for skills with
+last-known-good entities using bounded durable storage, as specified in design
+D8. Content SHALL be stored per source, keyed by manifest digest. Total
+retained content per source SHALL be bounded consistently with design D7's
+aggregate extraction limits. The connector SHALL recover retained content from
+durable storage after restarts, consistent with design D6's durable
+reconciliation recovery.
+
+#### Scenario: Content retained through partial refresh
+
+- **WHEN** a `partial` refresh omits a previously known skill
+- **THEN** the Markdown content for that skill's digest remains available at `/skilldocs/:sourceId/:digest`
+- **AND** the retained entity's TechDocs documentation continues to render
+
+#### Scenario: Content retained after restart
+
+- **WHEN** the connector restarts with durable storage containing retained Markdown
+- **THEN** it recovers the content before serving documentation requests
+- **AND** `/skilldocs/:sourceId/:digest` returns the recovered content for entities that reference those digests
+
+#### Scenario: Content cleanup after ready snapshot
+
+- **WHEN** a valid `ready` snapshot no longer references a previously retained digest
+- **THEN** the connector may clean up content for that digest during subsequent refreshes
+- **AND** content for digests still referenced by entities in the source is not cleaned up
+
+#### Scenario: Content unavailable after failed recovery
+
+- **WHEN** durable storage is unavailable or content cannot be recovered after restart
+- **THEN** `/skilldocs/:sourceId/:digest` returns 404 for unrecovered content
+- **AND** the entity remains valid with stale TechDocs until the next successful extraction and re-fetch
+
+#### Scenario: Content storage bounded per source
+
+- **WHEN** retained Markdown content for a source approaches the aggregate extraction limit
+- **THEN** the connector enforces the storage bound without discarding content for active entities
+- **AND** excess content for unreferenced digests is eligible for cleanup
 
 ### Requirement: Configurable acquisition with shared request handling
 

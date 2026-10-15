@@ -31,6 +31,15 @@ a valid OCI skill image SHALL produce its own entity using its repository/tag
 key, even when another tag has identical content or declared version. Confirmed
 non-skills SHALL produce no entity.
 
+For OCI skill entities, the provider SHALL set `backstage.io/techdocs-ref` to
+`url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` as specified in
+design D5/D8. The `<discovered-connector-base>` SHALL be resolved through
+Backstage discovery using the configured `connectorPluginId`. The `<sourceId>`
+SHALL be the configured source ID and the `<digest>` SHALL be the verified
+manifest digest from the record. The provider SHALL NOT download or extract
+skill content to construct this annotation. npx skill entities SHALL NOT
+receive a `backstage.io/techdocs-ref` annotation in this increment.
+
 #### Scenario: Source metadata lacks owner and version
 
 - **WHEN** a valid record has no owner hint or declared version
@@ -48,6 +57,18 @@ non-skills SHALL produce no entity.
 - **WHEN** a record keeps its source identity and key but changes its display name
 - **THEN** the provider updates the existing entity's title without creating a new entity name
 
+#### Scenario: OCI entity has techdocs-ref annotation
+
+- **WHEN** an OCI skill record is mapped to an entity
+- **THEN** the entity has `backstage.io/techdocs-ref` set to `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>`
+- **AND** the annotation uses the discovery-resolved connector base URL, not a hardcoded address
+- **AND** the provider does not download or extract Markdown to construct the annotation
+
+#### Scenario: npx entity has no techdocs-ref annotation
+
+- **WHEN** an npx skill record is mapped to an entity
+- **THEN** the entity does not have a `backstage.io/techdocs-ref` annotation
+
 #### Scenario: Several valid skill-image tags in one repository
 
 - **WHEN** one repository has two tags containing valid skills and one tag containing a confirmed non-skill
@@ -55,11 +76,24 @@ non-skills SHALL produce no entity.
 - **AND** the non-skill tag produces no entity
 - **AND** identical manifest digests or declared skill versions do not collapse the two valid tagged records
 
+#### Scenario: Same-digest tag aliases share techdocs-ref URL
+
+- **WHEN** two OCI tags in the same repository resolve to the same manifest digest
+- **THEN** both entities have the same `backstage.io/techdocs-ref` URL because they share the same digest
+- **AND** each entity retains its own distinct identity-derived name and repository/tag key
+
 #### Scenario: A tag moves to new content
 
 - **WHEN** an existing repository/tag key resolves to new valid content
 - **THEN** the provider updates that tag's existing entity and integrity references
+- **AND** the entity's `backstage.io/techdocs-ref` updates to reflect the new manifest digest
 - **AND** it does not replace the entity identity or mutate a different tag's entry
+
+#### Scenario: Retained entity preserves techdocs-ref
+
+- **WHEN** a `partial` snapshot omits a previously known OCI skill
+- **THEN** the retained entity keeps its existing `backstage.io/techdocs-ref` annotation
+- **AND** TechDocs continues to render using the connector's retained Markdown content
 
 ### Requirement: Source validation and ownership isolation
 
