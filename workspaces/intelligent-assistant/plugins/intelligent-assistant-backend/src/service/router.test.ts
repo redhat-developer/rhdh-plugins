@@ -180,27 +180,79 @@ describe('intelligent-assistant router tests', () => {
   });
 
   describe('GET v1/models supportsVision enrichment', () => {
+    // Polls until the predicate is truthy; keeps the non-blocking background
+    // probe tests deterministic without a fixed sleep.
+    const waitFor = async (
+      predicate: () => boolean | Promise<boolean>,
+      { tries = 50, delayMs = 10 } = {},
+    ): Promise<void> => {
+      for (let i = 0; i < tries; i += 1) {
+        if (await predicate()) return;
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+      throw new Error('waitFor: condition not met in time');
+    };
+
     beforeEach(() => {
       ModelCapabilitiesCache.clear();
     });
 
-    it('enriches each model with supportsVision:true when the vision probe succeeds', async () => {
+    it('lazily probes a model absent from the warm cache (LCS list changed)', async () => {
       server.use(
         http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () =>
           HttpResponse.json({ id: 'resp-1', output: [] }),
         ),
       );
 
+      // Startup warm-up probes the default models; wait until it settles.
       const backendServer = await startBackendServer();
-      const response = await request(backendServer).get(
-        '/api/intelligent-assistant/v1/models',
+      await waitFor(
+        () =>
+          ModelCapabilitiesCache.get('openai/gpt-4-turbo') === true &&
+          ModelCapabilitiesCache.get('team-cluster/qwen25-7b-instruct') ===
+            true,
       );
 
-      expect(response.status).toBe(200);
-      expect(response.body.models).toHaveLength(2);
-      for (const model of response.body.models) {
-        expect(model.supportsVision).toBe(true);
-      }
+      // A new model appears in the LCS list that the warm-up never saw.
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/models`, () =>
+          HttpResponse.json({
+            models: [
+              {
+                identifier: 'openai/gpt-4-turbo',
+                api_model_type: 'llm',
+              },
+              {
+                identifier: 'openai/gpt-new-vision',
+                api_model_type: 'llm',
+              },
+            ],
+          }),
+        ),
+      );
+
+      // The un-warmed model is a cache miss: returned with the conservative
+      // default now, probed off the request path.
+      const first = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/models',
+      );
+      expect(first.status).toBe(200);
+      const firstNew = first.body.models.find(
+        (m: any) => m.identifier === 'openai/gpt-new-vision',
+      );
+      expect(firstNew.supportsVision).toBe(false);
+
+      // Background probe warms it, so a later call reports the real value.
+      await waitFor(
+        () => ModelCapabilitiesCache.get('openai/gpt-new-vision') === true,
+      );
+      const second = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/models',
+      );
+      const secondNew = second.body.models.find(
+        (m: any) => m.identifier === 'openai/gpt-new-vision',
+      );
+      expect(secondNew.supportsVision).toBe(true);
     });
 
     it('sets supportsVision:false when the vision probe returns a non-ok response', async () => {
@@ -211,18 +263,24 @@ describe('intelligent-assistant router tests', () => {
         ),
       );
 
+      // Warm-up probes both default models; a non-ok probe caches false.
       const backendServer = await startBackendServer();
+      await waitFor(
+        () =>
+          ModelCapabilitiesCache.has('openai/gpt-4-turbo') &&
+          ModelCapabilitiesCache.has('team-cluster/qwen25-7b-instruct'),
+      );
+
       const response = await request(backendServer).get(
         '/api/intelligent-assistant/v1/models',
       );
-
       expect(response.status).toBe(200);
       for (const model of response.body.models) {
         expect(model.supportsVision).toBe(false);
       }
     });
 
-    it('sets supportsVision:false when the vision probe errors (network/timeout)', async () => {
+    it('does not cache a probe that errors (network/timeout)', async () => {
       server.use(
         http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => HttpResponse.error()),
       );
@@ -262,15 +320,19 @@ describe('intelligent-assistant router tests', () => {
     });
 
     it('reuses the cache and does not re-probe an already-validated model', async () => {
-      // Cache key is the model identifier used directly.
+      // Pre-seed one model so the startup warm-up skips it.
       ModelCapabilitiesCache.set('openai/gpt-4-turbo', true);
 
-      let probeCount = 0;
+      const probedKeys: string[] = [];
       server.use(
-        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
-          probeCount += 1;
-          return HttpResponse.json({ id: 'resp-1', output: [] });
-        }),
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/responses`,
+          async ({ request: req }) => {
+            const body = (await req.json()) as { model: string };
+            probedKeys.push(body.model);
+            return HttpResponse.json({ id: 'resp-1', output: [] });
+          },
+        ),
       );
 
       const backendServer = await startBackendServer();
@@ -283,8 +345,11 @@ describe('intelligent-assistant router tests', () => {
         (m: any) => m.identifier === 'openai/gpt-4-turbo',
       );
       expect(cached.supportsVision).toBe(true);
-      // Only the second, uncached model should have triggered a probe.
-      expect(probeCount).toBe(1);
+      // Only the un-seeded model should ever be probed; gpt-4-turbo never is.
+      await waitFor(() =>
+        probedKeys.includes('team-cluster/qwen25-7b-instruct'),
+      );
+      expect(probedKeys).not.toContain('openai/gpt-4-turbo');
     });
 
     it('does not probe non-llm (e.g. embedding) models and marks them supportsVision:false', async () => {
@@ -333,9 +398,44 @@ describe('intelligent-assistant router tests', () => {
         (m: any) => m.api_model_type === 'llm',
       );
       expect(embedding.supportsVision).toBe(false);
-      expect(llm.supportsVision).toBe(true);
-      // Only the llm model should have been probed.
+      // The startup warm-up probes only the llm, so it is already enriched.
+      await waitFor(() => probeCount === 1);
+      const warmed = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/models',
+      );
+      const warmedLlm = warmed.body.models.find(
+        (m: any) => m.api_model_type === 'llm',
+      );
+      expect(warmedLlm.supportsVision).toBe(true);
+      // The embedding is never probed.
       expect(probeCount).toBe(1);
+      expect(llm.identifier).toBe('openai/gpt-4-turbo');
+    });
+
+    it('warms the vision cache at startup so the first request is already enriched', async () => {
+      server.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () =>
+          HttpResponse.json({ id: 'resp-1', output: [] }),
+        ),
+      );
+
+      // Creating the router kicks off the startup warm-up; the cache fills
+      // before any /v1/models request is made.
+      const backendServer = await startBackendServer();
+      await waitFor(
+        () =>
+          ModelCapabilitiesCache.get('openai/gpt-4-turbo') === true &&
+          ModelCapabilitiesCache.get('team-cluster/qwen25-7b-instruct') ===
+            true,
+      );
+
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/models',
+      );
+      expect(response.status).toBe(200);
+      for (const model of response.body.models) {
+        expect(model.supportsVision).toBe(true);
+      }
     });
   });
 
