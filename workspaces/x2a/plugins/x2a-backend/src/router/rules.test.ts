@@ -259,6 +259,43 @@ describe('createRouter – rules', () => {
     );
 
     it.each(supportedDatabaseIds)(
+      'should return 400 when description exceeds 50000 characters - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const response = await request(app)
+          .post('/rules')
+          .send({
+            title: 'Too long',
+            description: 'a'.repeat(50001),
+            required: false,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should create a rule with a description of exactly 50000 characters - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const description = 'a'.repeat(50000);
+        const response = await request(app)
+          .post('/rules')
+          .send({ title: 'At limit', description, required: false });
+
+        expect(response.status).toBe(201);
+        expect(response.body.description).toHaveLength(50000);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
       'should return 403 when user lacks admin write permission - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -361,6 +398,60 @@ describe('createRouter – rules', () => {
         expect(response.status).toBe(400);
         expect(response.body.error.name).toBe('InputError');
       },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 400 when description exceeds 50000 characters - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const app = await createApp(client);
+
+        const rule = await x2aDatabase.createRule({
+          title: 'Some Rule',
+          description: 'Original Description',
+          required: false,
+        });
+
+        const response = await request(app)
+          .put(`/rules/${rule.id}`)
+          .send({
+            title: 'Some Rule',
+            description: 'a'.repeat(50001),
+            required: false,
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should update a rule with a description of exactly 50000 characters - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const app = await createApp(client);
+
+        const rule = await x2aDatabase.createRule({
+          title: 'Some Rule',
+          description: 'Original Description',
+          required: false,
+        });
+
+        const response = await request(app)
+          .put(`/rules/${rule.id}`)
+          .send({
+            title: 'Some Rule',
+            description: 'a'.repeat(50000),
+            required: false,
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body.description).toHaveLength(50000);
+      },
+      LONG_TEST_TIMEOUT,
     );
 
     it.each(supportedDatabaseIds)(

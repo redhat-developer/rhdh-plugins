@@ -273,6 +273,9 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'rulesPage.dialog.save': '保存',
     'rulesPage.dialog.titleField': 'タイトル',
     'rulesPage.dialog.updateError': 'ルールの更新に失敗しました',
+    'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} 文字',
+    'rulesPage.dialog.descriptionTooLong':
+      '説明は{{max}}文字以内で入力してください（現在{{count}}文字）。',
     'scaffolder.rulesAcceptance.fetchError': 'ルールの取得に失敗しました',
     'scaffolder.rulesAcceptance.loadingRules': 'ルールの読み込み中...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
