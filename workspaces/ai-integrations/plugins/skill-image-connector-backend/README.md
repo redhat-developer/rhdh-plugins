@@ -35,10 +35,12 @@ skillImageConnector:
   # fetchTimeoutMs: 30000
   # maxBlobSizeBytes: 5242880
   # maxAggregateContentSizeBytes: 52428800
+  # maxImageWorkBudgetBytes: 52428800
   # maxDiscoveryResponseSizeBytes: 5242880
   # maxImages: 25
   # maxRetries: 2
   # retryBaseDelayMs: 2000
+  # sourceOperationDeadlineMs: 300000
   # Option 1 and Option 2 can be used together or individually
   # Option 1: Explicit image references
   images:
@@ -84,19 +86,20 @@ requires one entity per valid skill-image tag, keyed by
 
 ### Configuration fields
 
-| Field                                                 | Type     | Description                                                                                                                   |
-| ----------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `skillImageConnector.images`                          | `array`  | List of OCI skill image sources to process on startup.                                                                        |
-| `skillImageConnector.images[].imageRef`               | `string` | Full OCI image reference (e.g. `quay.io/org/repo:tag` or `quay.io/org/repo@sha256:...`).                                      |
-| `skillImageConnector.images[].credentials`            | `object` | Optional backend-only credentials or an explicit token realm for registry token exchange.                                     |
-| `skillImageConnector.images[].credentials.username`   | `string` | Registry username; required together with `password`.                                                                         |
-| `skillImageConnector.images[].credentials.password`   | `string` | Registry password; use environment variable substitution.                                                                     |
-| `skillImageConnector.images[].credentials.tokenRealm` | `string` | Optional HTTPS token endpoint; required for cross-host token exchange and must not contain URL credentials.                   |
-| `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images and discovery registries.                               |
-| `skillImageConnector.quayDiscovery`                   | `object` | Optional public Quay organization discovery configuration.                                                                    |
-| `skillImageConnector.quayDiscovery.registry`          | `string` | Quay registry host (defaults to `quay.io`).                                                                                   |
-| `skillImageConnector.quayDiscovery.organization`      | `string` | Public organization whose repositories will be discovered. Omission or a blank value skips discovery with a warning.          |
-| `skillImageConnector.quayDiscovery.tag`               | `string` | Optional exact tag filter. Omit or leave blank to enumerate all active tags; set `latest` explicitly for the former behavior. |
+| Field                                                 | Type     | Description                                                                                                                                         |
+| ----------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `skillImageConnector.images`                          | `array`  | List of OCI skill image sources to process on startup.                                                                                              |
+| `skillImageConnector.images[].imageRef`               | `string` | Full OCI image reference (e.g. `quay.io/org/repo:tag` or `quay.io/org/repo@sha256:...`).                                                            |
+| `skillImageConnector.images[].credentials`            | `object` | Optional backend-only credentials or an explicit token realm for registry token exchange.                                                           |
+| `skillImageConnector.images[].credentials.username`   | `string` | Registry username; required together with `password`.                                                                                               |
+| `skillImageConnector.images[].credentials.password`   | `string` | Registry password; use environment variable substitution.                                                                                           |
+| `skillImageConnector.images[].credentials.tokenRealm` | `string` | Optional HTTPS token endpoint; required for cross-host token exchange and must not contain URL credentials.                                         |
+| `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images and discovery registries.                                                     |
+| `skillImageConnector.allowedOrigins`                  | `array`  | Optional backend-only exact HTTPS redirect origins beyond the initial registry hostname/subdomains and port. See [Security model](#security-model). |
+| `skillImageConnector.quayDiscovery`                   | `object` | Optional public Quay organization discovery configuration.                                                                                          |
+| `skillImageConnector.quayDiscovery.registry`          | `string` | Quay registry host (defaults to `quay.io`).                                                                                                         |
+| `skillImageConnector.quayDiscovery.organization`      | `string` | Public organization whose repositories will be discovered. Omission or a blank value skips discovery with a warning.                                |
+| `skillImageConnector.quayDiscovery.tag`               | `string` | Optional exact tag filter. Omit or leave blank to enumerate all active tags; set `latest` explicitly for the former behavior.                       |
 
 By default, at most 25 image candidates are processed, including explicit images and discovered repository/tag candidates. Set `skillImageConnector.maxImages` to raise or lower this total (for example, `100` to attempt up to 100 distinct image references). A repository with many tags consumes multiple candidate slots; increasing this cap does not guarantee every tag fits. Explicit images take priority, and discovered references already present in the explicit list do not consume another slot. An explicit list exceeding the limit fails startup validation; excess discovered candidates are skipped with a warning. This bounds candidates attempted, not successful skill extractions: repositories without the selected tag still consume a slot. It does not change the concurrency limit of four image operations.
 
@@ -113,14 +116,18 @@ All of these backend-only settings are optional. Omitted settings use the shared
 | `fetchTimeoutMs`                  | `30000`    | One discovery attempt or OCI request, including redirects, authentication, and body reading. |
 | `maxBlobSizeBytes`                | `5242880`  | Both the compressed/downloaded blob and the decompressed layer, checked separately.          |
 | `maxAggregateContentSizeBytes`    | `52428800` | Combined retained skill YAML and Markdown across accepted images.                            |
+| `maxImageWorkBudgetBytes`         | `52428800` | Total downloaded and decompressed bytes per OCI image across all inspected layers.           |
 | `maxDiscoveryResponseSizeBytes`   | `5242880`  | One discovery response, enforced during streaming even without Content-Length.               |
 | `maxImages`                       | `25`       | Combined explicit images and discovered candidates attempted at startup.                     |
 | `maxRetries`                      | `2`        | Retries after the initial page or image acquisition attempt. Set `0` to disable.             |
 | `retryBaseDelayMs`                | `2000`     | Initial backoff; doubled for each further retry and capped at Node's timer limit.            |
+| `sourceOperationDeadlineMs`       | `300000`   | Total wall-clock deadline for processing all images from one source.                         |
 
-Manifest responses retain their separate 5 MiB limit; token responses retain their 1 MiB limit. Repository and tag pagination (100 pages combined), redirects (three), concurrent image operations (four), and tar entries (200) also have distinct shared defaults. For tag-based references, tag resolution and image acquisition/extraction each have independent retry scopes: transient failures during tag resolution are retried before the resolved digest is used for acquisition, and transient failures during acquisition are retried using the already-pinned digest. Explicit digest references use a single retry scope wrapping the whole acquisition/extraction. Individual OCI requests do not add another retry loop.
+The per-image work budget (`maxImageWorkBudgetBytes`) is distinct from the retained-content budget (`maxAggregateContentSizeBytes`). The work budget covers all downloaded compressed blobs and decompressed layer data inspected for a single image, including competing or irrelevant archive layers inspected for classification. The retained-content budget limits the combined decoded skill YAML and Markdown strings kept in memory across accepted images. Both are independently enforced.
 
-Discovery and OCI requests share HTTP redirect validation, response cleanup, and bounded body reading. Redirects must use HTTPS, reject URL credentials, localhost and literal IPs, and pass a DNS check for non-public destinations. Authorization headers are removed when following cross-origin redirects. These checks do not replace the future D7 configured-origin policy or implement normalized snapshots.
+Manifest responses retain their separate 5 MiB limit; token responses retain their 1 MiB limit. Repository and tag pagination (100 pages combined), redirects (five per D7), concurrent image operations (four), tar entries (200 per layer), and total candidates (1,000 including non-skills and failures) also have distinct shared defaults. For tag-based references, tag resolution and image acquisition/extraction each have independent retry scopes: transient failures during tag resolution are retried before the resolved digest is used for acquisition, and transient failures during acquisition are retried using the already-pinned digest. Explicit digest references use a single retry scope wrapping the whole acquisition/extraction. Individual OCI requests do not add another retry loop.
+
+Discovery and OCI requests share HTTP redirect validation, response cleanup, and bounded body reading. Initial requests and redirects are validated: must use HTTPS, reject URL credentials, localhost and literal IPs, and resolve DNS to public addresses before connecting. Authorization headers are removed when following cross-origin redirects. DNS resolution is validated for both initial requests and every redirect target to prevent DNS rebinding attacks.
 
 ## How it works
 
@@ -225,7 +232,21 @@ Example response:
 
 ### Security model
 
-**Egress / SSRF protection:** The plugin resolves redirect target hostnames via DNS and rejects any that resolve to private, loopback, link-local, or reserved IP ranges (including IPv4-mapped IPv6). Initial requests do not receive this DNS preflight check. Operators must ensure configured registry hosts and permitted token-realm hosts resolve only to public addresses. The redirect check is a preflight check: the subsequent fetch resolves DNS independently, so it does not prevent DNS rebinding between validation and connection. Connection-level destination validation covering both initial requests and redirects remains part of OpenSpec task 2.4. Production deployments should restrict backend egress at the network layer in addition to the registry allowlist and HTTPS checks.
+**Egress / SSRF protection:** Initial registry, Quay discovery, bearer-token, and redirect requests use a per-request Undici dispatcher. The connector validates every DNS answer and restricts the socket lookup to that validated public address set, preserving the original hostname for TLS SNI and certificate verification. Node can fall back from unreachable IPv6 to IPv4 within the validated set. Fetch does not independently resolve a different destination. Private, loopback, link-local, multicast, reserved, and IPv4-mapped non-public addresses are rejected. Requests must use HTTPS; URL-embedded credentials and raw IP/localhost targets are rejected.
+
+Redirects are limited to five. A source registry approved through `skillImageConnector.allowedRegistries` may redirect to HTTPS on its original hostname or a subdomain of that hostname, on the same port. For example, `example.com` may redirect to `cdn.example.com` without separate configuration. This rule applies equally to all registries; there is no registry-specific host list. The hostname match requires a dot boundary, so `example.com.evil.test` and `notexample.com` are not covered. The rule is anchored to the initial registry throughout the redirect chain; explicitly allowing an unrelated origin does not automatically trust its subdomains. Source registry checks remain exact matches at startup.
+
+Authorization is removed when crossing origins. Token realms still require the existing registry-host match or explicit `credentials.tokenRealm` configuration, and token requests never follow redirects. For unrelated CDN domains or different ports, configure the exact HTTPS origin in `skillImageConnector.allowedOrigins`; wildcard hosts are not supported:
+
+```yaml
+skillImageConnector:
+  allowedOrigins:
+    - https://cdn.example.com
+```
+
+This optional setting adds trusted redirect destinations; omission allows only the registry hostname and its subdomains on the same HTTPS port. Entries must be HTTPS origins without credentials, paths, queries, or fragments. DNS validation and pinning also apply to explicitly allowed origins. Dispatchers close gracefully after response-body consumption or cancellation; failed requests destroy their dispatcher.
+
+Tar archives are inspected for path traversal, symlinks, hardlinks, and device entries; unsafe archives are rejected without extracting content. Per-image work budgets and tar entry limits bound resource consumption from malicious or oversized images. Production deployments should restrict backend egress at the network layer in addition to the registry allowlist and HTTPS checks.
 
 **Authorization:** The `/images` endpoint is accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
 

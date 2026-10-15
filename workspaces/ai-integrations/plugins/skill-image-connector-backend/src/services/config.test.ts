@@ -23,10 +23,12 @@ describe('readSkillImageOptions', () => {
       fetchTimeoutMs: 30000,
       maxBlobSizeBytes: 5242880,
       maxAggregateContentSizeBytes: 52428800,
+      maxImageWorkBudgetBytes: 52428800,
       maxDiscoveryResponseSizeBytes: 5242880,
       maxImages: 25,
       maxRetries: 2,
       retryBaseDelayMs: 2000,
+      sourceOperationDeadlineMs: 300000,
     });
   });
   it('resolves overrides independently and preserves zero retries', () => {
@@ -34,10 +36,12 @@ describe('readSkillImageOptions', () => {
       fetchTimeoutMs: 60000,
       maxBlobSizeBytes: 100,
       maxAggregateContentSizeBytes: 500,
+      maxImageWorkBudgetBytes: 1000,
       maxDiscoveryResponseSizeBytes: 200,
       maxImages: 100,
       maxRetries: 0,
       retryBaseDelayMs: 10,
+      sourceOperationDeadlineMs: 120000,
     };
     expect(
       readSkillImageOptions(
@@ -70,7 +74,11 @@ describe('readSkillImageOptions', () => {
     ['maxBlobSizeBytes', -1],
     ['maxBlobSizeBytes', 1.5],
     ['maxAggregateContentSizeBytes', 0],
+    ['maxImageWorkBudgetBytes', 0],
+    ['maxImageWorkBudgetBytes', -1],
     ['maxDiscoveryResponseSizeBytes', 0],
+    ['sourceOperationDeadlineMs', 0],
+    ['sourceOperationDeadlineMs', 2147483648],
     ['maxImages', 0],
     ['maxImages', -1],
     ['maxImages', 1.5],
@@ -86,4 +94,68 @@ describe('readSkillImageOptions', () => {
       ),
     ).toThrow(key);
   });
+});
+
+describe('trusted redirect origin configuration', () => {
+  it('normalizes and retains explicitly configured HTTPS origins', () => {
+    expect(
+      readSkillImageOptions(
+        new ConfigReader({
+          skillImageConnector: {
+            allowedOrigins: ['https://CDN.example.com:443/'],
+          },
+        }),
+      ).allowedOrigins,
+    ).toEqual(['https://cdn.example.com']);
+  });
+  it.each([
+    'http://cdn.example.com',
+    'https://cdn.example.com/path',
+    'https://user:secret@cdn.example.com',
+    'https://localhost',
+    'https://127.0.0.1',
+    'https://cdn.example.com?q=1',
+    'not-a-url',
+  ])('rejects unsafe origin %s at startup', origin => {
+    expect(() =>
+      readSkillImageOptions(
+        new ConfigReader({
+          skillImageConnector: {
+            allowedOrigins: [origin],
+          },
+        }),
+      ),
+    ).toThrow('allowedOrigins');
+  });
+});
+
+describe('origin validation diagnostics', () => {
+  it.each([
+    ['http://cdn.example.com', 'Registry request must use HTTPS'],
+    [
+      'https://cdn.example.com/docs',
+      'Allowed origin must not contain a path, query, or fragment',
+    ],
+    [
+      'https://operator:secret@cdn.example.com',
+      'Registry request URL must not contain embedded credentials',
+    ],
+  ])(
+    'preserves the validation reason without exposing the origin: %s',
+    (origin, reason) => {
+      const options = new ConfigReader({
+        skillImageConnector: { allowedOrigins: [origin] },
+      });
+      let failure: unknown;
+      try {
+        readSkillImageOptions(options);
+      } catch (error) {
+        failure = error;
+      }
+      expect(failure).toBeInstanceOf(Error);
+      expect((failure as Error).message).toBe(
+        `skillImageConnector.allowedOrigins: ${reason}`,
+      );
+    },
+  );
 });

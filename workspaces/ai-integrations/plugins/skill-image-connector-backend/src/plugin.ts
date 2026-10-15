@@ -36,6 +36,7 @@ import {
 import { discoverQuayRepositories } from './services/QuayDiscovery';
 import {
   AmbiguousSkillFilesError,
+  ExtractionBoundsError,
   NonSkillImageError,
   cleanupSkillImageExtraction,
   cleanupStaleExtractionDirs,
@@ -49,7 +50,7 @@ import type {
   SkillImageExtraction,
   SkillImageOptions,
 } from './services/types';
-import { MAX_CONCURRENT_IMAGE_FETCHES } from './services/types';
+import { MAX_CONCURRENT_IMAGE_FETCHES, MAX_CANDIDATES } from './services/types';
 import { withRetry } from './services/Retry';
 import { readSkillImageOptions } from './services/config';
 import type { SkillImageProcessingStatus } from './router';
@@ -577,161 +578,195 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         // per-blob memory ceiling into an avoidable startup spike.
         const processingAbortController = new AbortController();
 
+        // Source-operation deadline (D7): bounds the total wall-clock time
+        // for discovery + acquisition of all images from this source.
+        const sourceDeadlineTimer = setTimeout(() => {
+          if (!processingAbortController.signal.aborted) {
+            pluginLogger.warn(
+              `Source operation deadline reached (${options.sourceOperationDeadlineMs}ms); aborting remaining work`,
+            );
+            processingAbortController.abort(
+              new Error('Source operation deadline exceeded'),
+            );
+          }
+        }, options.sourceOperationDeadlineMs);
+
         // Track aggregate content size to bound total in-memory retention.
         let aggregateContentSize = 0;
+        // Track total candidates inspected (including non-skills and failures).
+        let candidatesInspected = 0;
 
         const processing = (async () => {
-          // Build the full image list: explicit configs + discovered repos
-          let allImageConfigs: SkillImageConfig[] = [...imageConfigs];
-          let discoveryFailed = false;
+          try {
+            // Build the full image list: explicit configs + discovered repos
+            let allImageConfigs: SkillImageConfig[] = [...imageConfigs];
+            let discoveryFailed = false;
 
-          // Run Quay organization discovery if configured
-          if (quayDiscoveryConfig) {
-            try {
-              const discoveredRefs = await discoverQuayRepositories(
-                quayDiscoveryConfig,
-                pluginLogger,
-                processingAbortController.signal,
-                options,
-              );
-
-              // Merge discovered refs, skipping duplicates and enforcing cap
-              const mergeResult = mergeDiscoveredRefs(
-                imageConfigs,
-                discoveredRefs,
-                options.maxImages,
-                pluginLogger,
-              );
-              allImageConfigs = mergeResult.merged;
-
-              pluginLogger.info(
-                `Quay discovery added ${mergeResult.added} new image(s) to process`,
-              );
-
-              // Discovered images always use mutable tags
-              if (mergeResult.added > 0) {
-                pluginLogger.warn(
-                  `${mergeResult.added} discovered image(s) use mutable tags. ` +
-                    'Use digest references in production to prevent tag mutation attacks.',
-                );
-              }
-            } catch (error) {
-              discoveryFailed = true;
-              if (!processingAbortController.signal.aborted) {
-                pluginLogger.error(
-                  `Quay organization discovery failed for ${quayDiscoveryConfig.organization}`,
-                  error as Error,
-                );
-              }
-            }
-          }
-
-          let nextImageIndex = 0;
-          const processNextImage = async () => {
-            while (
-              !processingAbortController.signal.aborted &&
-              nextImageIndex < allImageConfigs.length
-            ) {
-              const imageIndex = nextImageIndex++;
-              const imgConfig = allImageConfigs[imageIndex];
+            // Run Quay organization discovery if configured
+            if (quayDiscoveryConfig) {
               try {
-                const result = await fetchWithRetry(
-                  imgConfig.imageRef,
-                  workDir,
+                const discoveredRefs = await discoverQuayRepositories(
+                  quayDiscoveryConfig,
                   pluginLogger,
-                  imgConfig.credentials,
                   processingAbortController.signal,
                   options,
                 );
 
-                // Keep the budget check, increment, and insertion synchronous:
-                // an await between them would let concurrent results exceed it.
-                const contentSize =
-                  Buffer.byteLength(result.skillImageYaml, 'utf-8') +
-                  Buffer.byteLength(result.skillsMd, 'utf-8');
-                if (
-                  aggregateContentSize + contentSize >
-                  options.maxAggregateContentSizeBytes
-                ) {
-                  pluginLogger.error(
-                    `Aggregate content budget exceeded after ${imgConfig.imageRef}; ` +
-                      `${
-                        aggregateContentSize + contentSize
-                      } bytes would exceed ` +
-                      `${options.maxAggregateContentSizeBytes} byte limit`,
-                  );
-                  await cleanupSkillImageExtraction(result, pluginLogger);
-                  failedImages.add(imgConfig.imageRef);
-                } else {
-                  aggregateContentSize += contentSize;
-                  extractions.set(imgConfig.imageRef, result);
+                // Merge discovered refs, skipping duplicates and enforcing cap
+                const mergeResult = mergeDiscoveredRefs(
+                  imageConfigs,
+                  discoveredRefs,
+                  options.maxImages,
+                  pluginLogger,
+                );
+                allImageConfigs = mergeResult.merged;
 
-                  // Normalize the extracted content
-                  const normalization = normalizeSkillImageExtraction(result);
-                  if (normalization.outcome === 'normalized') {
-                    pluginLogger.info(
-                      `Successfully extracted and normalized skill image ${imgConfig.imageRef}`,
-                    );
-                  } else {
-                    pluginLogger.warn(
-                      `Extracted skill image ${
-                        imgConfig.imageRef
-                      } but normalization ${
-                        normalization.outcome
-                      }: ${normalization.diagnostics
-                        .map(d => d.message)
-                        .join('; ')}`,
-                    );
-                  }
+                pluginLogger.info(
+                  `Quay discovery added ${mergeResult.added} new image(s) to process`,
+                );
+
+                // Discovered images always use mutable tags
+                if (mergeResult.added > 0) {
+                  pluginLogger.warn(
+                    `${mergeResult.added} discovered image(s) use mutable tags. ` +
+                      'Use digest references in production to prevent tag mutation attacks.',
+                  );
                 }
               } catch (error) {
+                discoveryFailed = true;
                 if (!processingAbortController.signal.aborted) {
-                  // Non-skill images are silently skipped (not failures)
-                  if (error instanceof NonSkillImageError) {
-                    pluginLogger.debug(
-                      `Image ${imgConfig.imageRef} is not a skill image: ${error.message}`,
-                    );
-                  } else if (error instanceof AmbiguousSkillFilesError) {
-                    failedImages.add(imgConfig.imageRef);
-                    pluginLogger.error(
-                      `Ambiguous skill image ${imgConfig.imageRef}: ${error.message}`,
-                    );
-                  } else {
-                    failedImages.add(imgConfig.imageRef);
-                    logImageProcessingFailure(
-                      pluginLogger,
-                      imgConfig.imageRef,
-                      error,
-                      imgConfig.logNotFoundAsError ?? true,
-                    );
-                  }
+                  pluginLogger.error(
+                    `Quay organization discovery failed for ${quayDiscoveryConfig.organization}`,
+                    error as Error,
+                  );
                 }
               }
             }
-          };
 
-          await Promise.all(
-            Array.from(
-              {
-                length: Math.min(
-                  MAX_CONCURRENT_IMAGE_FETCHES,
-                  allImageConfigs.length,
-                ),
-              },
-              processNextImage,
-            ),
-          );
-          processingStatus =
-            (allImageConfigs.length > 0 &&
-              failedImages.size === allImageConfigs.length) ||
-            (hasConfiguredSources &&
-              allImageConfigs.length === 0 &&
-              discoveryFailed)
-              ? 'failed'
-              : 'ready';
+            let nextImageIndex = 0;
+            const processNextImage = async () => {
+              while (
+                !processingAbortController.signal.aborted &&
+                nextImageIndex < allImageConfigs.length
+              ) {
+                // Enforce the MAX_CANDIDATES limit (D7)
+                if (candidatesInspected >= MAX_CANDIDATES) {
+                  pluginLogger.warn(
+                    `Candidate inspection limit reached (${MAX_CANDIDATES}); stopping`,
+                  );
+                  break;
+                }
+                candidatesInspected++;
+
+                const imageIndex = nextImageIndex++;
+                const imgConfig = allImageConfigs[imageIndex];
+                try {
+                  const result = await fetchWithRetry(
+                    imgConfig.imageRef,
+                    workDir,
+                    pluginLogger,
+                    imgConfig.credentials,
+                    processingAbortController.signal,
+                    options,
+                  );
+
+                  // Keep the budget check, increment, and insertion synchronous:
+                  // an await between them would let concurrent results exceed it.
+                  const contentSize =
+                    Buffer.byteLength(result.skillImageYaml, 'utf-8') +
+                    Buffer.byteLength(result.skillsMd, 'utf-8');
+                  if (
+                    aggregateContentSize + contentSize >
+                    options.maxAggregateContentSizeBytes
+                  ) {
+                    pluginLogger.error(
+                      `Aggregate content budget exceeded after ${imgConfig.imageRef}; ` +
+                        `${
+                          aggregateContentSize + contentSize
+                        } bytes would exceed ` +
+                        `${options.maxAggregateContentSizeBytes} byte limit`,
+                    );
+                    await cleanupSkillImageExtraction(result, pluginLogger);
+                    failedImages.add(imgConfig.imageRef);
+                  } else {
+                    aggregateContentSize += contentSize;
+                    extractions.set(imgConfig.imageRef, result);
+
+                    // Normalize the extracted content
+                    const normalization = normalizeSkillImageExtraction(result);
+                    if (normalization.outcome === 'normalized') {
+                      pluginLogger.info(
+                        `Successfully extracted and normalized skill image ${imgConfig.imageRef}`,
+                      );
+                    } else {
+                      pluginLogger.warn(
+                        `Extracted skill image ${
+                          imgConfig.imageRef
+                        } but normalization ${
+                          normalization.outcome
+                        }: ${normalization.diagnostics
+                          .map(d => d.message)
+                          .join('; ')}`,
+                      );
+                    }
+                  }
+                } catch (error) {
+                  if (!processingAbortController.signal.aborted) {
+                    // Non-skill images are silently skipped (not failures)
+                    if (error instanceof NonSkillImageError) {
+                      pluginLogger.debug(
+                        `Image ${imgConfig.imageRef} is not a skill image: ${error.message}`,
+                      );
+                    } else if (error instanceof AmbiguousSkillFilesError) {
+                      failedImages.add(imgConfig.imageRef);
+                      pluginLogger.error(
+                        `Ambiguous skill image ${imgConfig.imageRef}: ${error.message}`,
+                      );
+                    } else if (error instanceof ExtractionBoundsError) {
+                      failedImages.add(imgConfig.imageRef);
+                      pluginLogger.error(
+                        `Extraction bounds exceeded for ${imgConfig.imageRef}: ${error.message}`,
+                      );
+                    } else {
+                      failedImages.add(imgConfig.imageRef);
+                      logImageProcessingFailure(
+                        pluginLogger,
+                        imgConfig.imageRef,
+                        error,
+                        imgConfig.logNotFoundAsError ?? true,
+                      );
+                    }
+                  }
+                }
+              }
+            };
+
+            await Promise.all(
+              Array.from(
+                {
+                  length: Math.min(
+                    MAX_CONCURRENT_IMAGE_FETCHES,
+                    allImageConfigs.length,
+                  ),
+                },
+                processNextImage,
+              ),
+            );
+            processingStatus =
+              (allImageConfigs.length > 0 &&
+                failedImages.size === allImageConfigs.length) ||
+              (hasConfiguredSources &&
+                allImageConfigs.length === 0 &&
+                discoveryFailed)
+                ? 'failed'
+                : 'ready';
+          } finally {
+            clearTimeout(sourceDeadlineTimer);
+          }
         })();
 
         lifecycle.addShutdownHook(async () => {
+          clearTimeout(sourceDeadlineTimer);
           processingAbortController.abort();
           await processing;
           await Promise.all(

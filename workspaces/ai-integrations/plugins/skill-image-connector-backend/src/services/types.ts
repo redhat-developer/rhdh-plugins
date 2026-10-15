@@ -49,8 +49,23 @@ export const DEFAULT_MAX_BLOB_SIZE = 5 * 1024 * 1024;
  */
 export const DEFAULT_MAX_AGGREGATE_CONTENT_SIZE = 50 * 1024 * 1024;
 
+/**
+ * Default per-image work budget in bytes (50 MiB).
+ * Covers all downloaded compressed blobs and decompressed layer data
+ * inspected for a single OCI image, not just the retained file pair.
+ * Distinct from maxAggregateContentSizeBytes which limits retained content.
+ */
+export const DEFAULT_MAX_IMAGE_WORK_BUDGET = 50 * 1024 * 1024;
+
 /** Default fetch timeout in milliseconds (30 seconds). */
 export const DEFAULT_FETCH_TIMEOUT_MS = 30_000;
+
+/**
+ * Default source-operation deadline in milliseconds (5 minutes).
+ * Bounds the total wall-clock time for processing all images from one
+ * source, including discovery, acquisition, extraction, and retries.
+ */
+export const DEFAULT_SOURCE_OPERATION_DEADLINE_MS = 5 * 60 * 1000;
 
 /** Default maximum size of one Quay discovery response (5 MiB). */
 export const DEFAULT_MAX_DISCOVERY_RESPONSE_SIZE = 5 * 1024 * 1024;
@@ -64,13 +79,20 @@ export const DEFAULT_RETRY_BASE_DELAY_MS = 2_000;
 /** Fixed acquisition ceilings. Byte limits have distinct scopes. */
 export const MAX_MANIFEST_SIZE = 5 * 1024 * 1024;
 export const MAX_TOKEN_RESPONSE_SIZE = 1024 * 1024;
-export const MAX_REDIRECTS = 3;
+/** D7: at most five redirects are followed. */
+export const MAX_REDIRECTS = 5;
 /** Shared logical-page budget for Quay repository and tag enumeration. */
 export const MAX_DISCOVERY_PAGES = 100;
 /** Maximum page size accepted by the Quay tag-list API. */
 export const QUAY_TAG_PAGE_SIZE = 100;
 export const MAX_TAR_ENTRIES = 200;
 export const MAX_CONCURRENT_IMAGE_FETCHES = 4;
+/**
+ * Maximum candidates inspected across explicit images and discovery,
+ * including non-skills and failures. Distinct from maxImages which
+ * configures the subset attempted.
+ */
+export const MAX_CANDIDATES = 1_000;
 /** Largest delay supported by Node's timers without clamping to 1 ms. */
 export const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
 
@@ -79,20 +101,25 @@ export interface SkillImageOptions {
   readonly fetchTimeoutMs: number;
   readonly maxBlobSizeBytes: number;
   readonly maxAggregateContentSizeBytes: number;
+  readonly maxImageWorkBudgetBytes: number;
   readonly maxDiscoveryResponseSizeBytes: number;
   readonly maxImages: number;
   readonly maxRetries: number;
   readonly retryBaseDelayMs: number;
+  readonly sourceOperationDeadlineMs: number;
+  readonly allowedOrigins?: readonly string[];
 }
 
 export const DEFAULT_SKILL_IMAGE_OPTIONS: SkillImageOptions = Object.freeze({
   fetchTimeoutMs: DEFAULT_FETCH_TIMEOUT_MS,
   maxBlobSizeBytes: DEFAULT_MAX_BLOB_SIZE,
   maxAggregateContentSizeBytes: DEFAULT_MAX_AGGREGATE_CONTENT_SIZE,
+  maxImageWorkBudgetBytes: DEFAULT_MAX_IMAGE_WORK_BUDGET,
   maxDiscoveryResponseSizeBytes: DEFAULT_MAX_DISCOVERY_RESPONSE_SIZE,
   maxImages: DEFAULT_MAX_IMAGES,
   maxRetries: DEFAULT_MAX_RETRIES,
   retryBaseDelayMs: DEFAULT_RETRY_BASE_DELAY_MS,
+  sourceOperationDeadlineMs: DEFAULT_SOURCE_OPERATION_DEADLINE_MS,
 });
 
 /** Minimal OCI manifest descriptor (image manifest V2 schema 2). */

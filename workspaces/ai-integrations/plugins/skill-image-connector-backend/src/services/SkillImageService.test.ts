@@ -25,6 +25,7 @@ import {
   parseTarEntries,
   NonSkillImageError,
   AmbiguousSkillFilesError,
+  ExtractionBoundsError,
 } from './SkillImageService';
 import { fetchManifest, fetchBlob } from './OciClient';
 import { DEFAULT_SKILL_IMAGE_OPTIONS } from './types';
@@ -684,9 +685,35 @@ describe('fetchAndExtractSkillImage', () => {
     });
     mockedFetchBlob.mockResolvedValueOnce(compressed);
 
+    const result = fetchAndExtractSkillImage(
+      'quay.io/org/bomb:v1',
+      '/tmp',
+      logger,
+    );
+    await expect(result).rejects.toThrow(ExtractionBoundsError);
+    await expect(result).rejects.toThrow('5242880 bytes');
+  });
+
+  it('preserves corrupt gzip errors rather than misclassifying them as extraction limits', async () => {
+    const corrupt = Buffer.from([0x1f, 0x8b, 0, 0, 0, 0, 0, 0, 0, 0]);
+    mockedFetchManifest.mockResolvedValue({
+      manifest: {
+        schemaVersion: 2,
+        config: { mediaType: '', digest: 'sha256:cfg', size: 0 },
+        layers: [
+          {
+            mediaType: 'application/vnd.oci.image.layer.v1.tar+gzip',
+            digest: 'sha256:corrupt',
+            size: corrupt.length,
+          },
+        ],
+      },
+      digest: `sha256:${'a'.repeat(64)}`,
+    });
+    mockedFetchBlob.mockResolvedValueOnce(corrupt);
     await expect(
-      fetchAndExtractSkillImage('quay.io/org/bomb:v1', '/tmp', logger),
-    ).rejects.toThrow();
+      fetchAndExtractSkillImage('quay.io/org/corrupt:v1', '/tmp', logger),
+    ).rejects.toHaveProperty('code', 'Z_DATA_ERROR');
   });
 });
 

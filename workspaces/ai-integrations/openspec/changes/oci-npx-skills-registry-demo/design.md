@@ -273,8 +273,10 @@ the connector has already removed a newly added skill from its next snapshot.
 ### D7 — Public-source safety, bounds, and configuration
 
 v1 supports publicly readable registries only. Registry URLs and redirects must
-use HTTPS, stay within explicitly configured origins (npx defaults to its index
-origin), and reject credentials and private/loopback/link-local destinations,
+use HTTPS and stay within the source's configured destination policy. OCI source
+registry trust includes its hostname and subdomains on the same HTTPS port;
+additional unrelated origins require explicit configuration. npx defaults to its
+index origin. Requests reject embedded credentials and private/loopback/link-local destinations,
 including redirected destinations. Internal connector calls use Backstage
 discovery/auth and are separate from these upstream egress restrictions.
 Destination validation must govern the address used by the connection, including
@@ -293,12 +295,25 @@ and manifests to 5 MiB per response. A reached bound is an incomplete result,
 not evidence of absence. Logs include source/key context and counters without
 raw skill bodies, credentials, or tokens.
 
+Decompression enforces `maxBlobSizeBytes` as an output ceiling while inflating
+compressed layers, rather than checking only the final buffer size. Its default
+is 5 MiB (5,242,880 bytes). These bounds apply before inspection can establish
+whether an ordinary container image is a non-skill. A layer exceeding the ceiling
+is a candidate acquisition failure, not confirmed absence of skill files. Reject
+that candidate and continue independent candidates unless a shared source bound
+or cancellation stops the operation. The raw `/images` endpoint lists that image
+in `failedImages`; task 2.5 will represent known failed keys in normalized partial
+snapshots. Do not require a particular Node/zlib error message as the API contract.
+
 The task 2.1 `/images` acquisition path shares HTTP utilities between OCI fetching
 and Quay discovery and shares retry orchestration with image processing. Its
 backend-only `skillImageConnector` configuration accepts optional `fetchTimeoutMs`
 (default 30,000), `maxBlobSizeBytes` (5 MiB),
 `maxAggregateContentSizeBytes` (50 MiB), `maxDiscoveryResponseSizeBytes` (5 MiB),
-`maxImages` (25), `maxRetries` (2), and `retryBaseDelayMs` (2,000). Omission preserves defaults;
+`maxImages` (25), `maxRetries` (2), `retryBaseDelayMs` (2,000),
+`maxImageWorkBudgetBytes` (50 MiB downloaded/decompressed per image), and
+`sourceOperationDeadlineMs` (300,000 ms for discovery, acquisition, extraction,
+and retries across the source operation). Omission preserves defaults;
 invalid values fail configuration validation, and zero retries disables retries.
 The positive-integer `maxImages` limit applies to combined explicit images and
 discovered repository/tag candidates attempted at startup. Each tag consumes a
@@ -336,11 +351,39 @@ Image-error reporting takes an internal `logNotFoundAsError` boolean: true logs
 for discovered candidates. Explicit references take precedence during merging.
 Other failures, including organization-listing 404s, retain diagnostics.
 The `/images` failure list and status calculation are unchanged.
-The existing three-redirect cap and preflight destination checks are preserved;
-completing D7's configured-origin policy, connection-level destination validation,
-five-redirect bound and per-image/refresh budgets remains part of unchecked task
-2.4. The follow-up does not implement normalized snapshots, periodic refresh, or
-other unchecked tasks.
+The current acquisition path implements the five-redirect cap, per-image work
+budgets, and source-operation deadline. Initial registry, discovery, and token
+requests and redirect targets use a per-request Undici dispatcher whose socket
+lookup returns only the validated public address set. IPv6/IPv4 family selection
+is enabled so an unreachable IPv6 address can fall back to validated IPv4 without
+another DNS lookup. The original hostname remains
+the TLS SNI and certificate-verification identity. All DNS answers are checked;
+IPv4-mapped IPv6 addresses are normalized before classification. Non-public
+addresses, including multicast and the full IPv6 link-local range, are rejected.
+Dispatchers close gracefully after body consumption or cancellation and are
+destroyed on request failure.
+
+The configured initial registry/discovery origin is trusted after the plugin's
+exact `allowedRegistries` source check. HTTPS redirects may stay on its original
+hostname or use a subdomain of that hostname on the same port. This generic
+registry-domain rule uses a dot boundary and is anchored to the initial source
+throughout the redirect chain; it does not infer sibling domains, trust lookalike
+suffixes, or use registry-specific CDN lists. DNS validation and connection pinning
+still apply to every destination, and cross-origin redirects strip authorization.
+
+Optional backend-only `skillImageConnector.allowedOrigins` adds exact HTTPS
+origins beyond that domain/port scope, such as an unrelated CDN. Omission permits
+only the initial registry hostname and its subdomains on the same HTTPS port.
+Configured origins cannot contain credentials, paths, queries, or fragments, and
+trust in an explicitly configured external origin does not expand to its
+subdomains.
+Token realms retain the registry-host or explicitly configured
+`credentials.tokenRealm` restriction, use the same pinned transport, and reject
+all redirects. These task 2.4 corrections do not implement normalized snapshots,
+periodic refresh, or catalog entity production; those remain in task 2.5 and
+section 4. Task 2.4 is implemented and checked in the current working tree.
+The maintainer confirmed successful regression testing of these corrections;
+committing and publishing remain separate steps.
 
 Each refresh also has a five-minute total deadline, at most 100 discovery pages
 shared across repository and tag listings,

@@ -35,6 +35,16 @@ import * as imageService from './services/SkillImageService';
 import type { ImageRef } from './services/types';
 import { makeManifest, computeManifestDigest } from './testUtils';
 
+// Mock DNS resolution so integration tests don't fail with real DNS lookups.
+// By default, resolve all hostnames to a public IP.
+jest.mock('node:dns', () => ({
+  promises: {
+    lookup: jest
+      .fn()
+      .mockResolvedValue([{ address: '93.184.216.34', family: 4 }]),
+  },
+}));
+
 // Observe metadata passed to cleanup while retaining real acquisition and cleanup.
 jest.mock('./services/SkillImageService', () => {
   const actual = jest.requireActual<

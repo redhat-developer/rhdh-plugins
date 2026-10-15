@@ -1,6 +1,79 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-13T16:25:09Z
+**Last audited:** 2026-10-14T18:26:26Z
+
+### Summary
+
+Independent audit of proposal, design, all four capability specifications, tasks,
+and change metadata, grounded in repository/workspace conventions and ownership
+claims from nine sibling changes. All required artifacts are present and done;
+remaining unchecked implementation tasks are intentionally in progress.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 1          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **1**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- **G — Bare-digest snapshot completeness:** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:150` says “Explicit `images[].imageRef` parsing is unchanged.”. State the normalized-snapshot outcome for configured bare digest references. The existing README and plugin.ts preserve their raw acquisition without a tagged normalized identity, while D2/D4 require stable non-digest repository/tag keys. Specify whether those references remain raw-only and whether their deliberate omission affects normalized snapshot completeness; add a matching scenario and task if applicable. This is a task 2.5 contract decision, not an acquisition change for completed task 2.4. It remains unresolved; no snapshot policy was silently chosen.
+
+### Corrections and validation
+
+The first pass's capability-name mismatch and stale task footer are corrected:
+`skills-common` names the capability, `ai-skills-common` names its package, and
+the task footer identifies 2.5 as remaining snapshot/scheduling work. The second
+independent pass confirms those corrections.
+
+Task 2.4 is implemented and checked, and the maintainer reported successful
+regression testing. Proposal, D7, and OCI scenarios cover validated DNS answer
+sets with IPv4 fallback, generic same-port HTTPS registry-subdomain redirects,
+credential stripping, and bounded decompression before non-skill classification.
+The observed 5 MiB zlib rejection is a candidate failure, not evidence of absence;
+independent candidates continue unless a shared source bound stops the operation.
+Task 2.5 and the common provider remain pending.
+
+Validation passed: 414 connector tests in 15 suites, workspace `tsc:full` and
+`build:all`, connector lint, formatting, strict OpenSpec validation, and journal
+validation. Live probes verified discovery with one IPv6-first DNS lookup and an
+annotated image's manifest/blob through a registry-subdomain CDN redirect without
+additional origin configuration. No runtime code changed during this audit.
+Changes remain uncommitted; the maintainer's app-config.yaml is unchanged.
+
+**Audit clean (no CRITICAL)**; one SUGGESTION remains for task 2.5.
+
+Fixes to one file can introduce new drift elsewhere — re-run the audit after resolving remaining findings.
+
+### Historical audit record — through task 2.3
+
+**History restored:** 2026-10-15T17:05:29Z, from commit `827f5cf93987`.
+
+The following record restores the earlier audit narrative and results. Its task
+statuses, finding counts, test totals, and commit/push notes describe the state
+at the time and are superseded by the current assessment above. In particular,
+references to task 2.4 and connection-level DNS protection as pending are historical;
+task 2.4 is now checked. The historical summary table is separate from the current
+summary and does not replace its remaining task 2.5 suggestion. Only heading levels
+and the historical timestamp label have been adjusted; the prior narrative is retained.
+
+#### Audit Report: oci-npx-skills-registry-demo
+
+**Historical audit timestamp:** 2026-10-13T16:25:09Z
 
 This focused follow-up reviews the all-active-tag discovery pivot against the
 proposal, design, OCI/common/provider specifications, task status, implementation,
@@ -48,7 +121,7 @@ Verifier results and validation commands are recorded in the journal and handoff
 The maintainer subsequently reported successful testing and authorized a local
 commit; signing, pushing, and the next Fullsend review remain maintainer-owned.
 
-### Fullsend review follow-up
+##### Fullsend review follow-up
 
 The maintainer approved the review disposition against PR #5057 head
 `f01d89dfc11eb0f781ac86bef77d8bf4dd7af5d6`. This focused artifact check covers
@@ -74,7 +147,7 @@ The focused artifact check found no additional specification inconsistencies;
 summary counts below remain zero. The earlier independent verification remains
 recorded above and in the journal.
 
-### Latest Fullsend review clarification
+##### Latest Fullsend review clarification
 
 The maintainer accepted the review disposition for PR #5057 head
 `c5b6dd7268d59c69a74bfc6417caebe2c485ede4`. A global review comment and replies
@@ -97,7 +170,7 @@ The maintainer's app-config.yaml is unchanged. The maintainer subsequently
 reported successful testing and authorized a local commit. Signing, pushing,
 and the next Fullsend review remain maintainer-owned.
 
-### Task 2.1 documentation clarification
+##### Task 2.1 documentation clarification
 
 The maintainer approved the review disposition for PR #5057 head
 `190bcba8814ef747a5b476991a13f65d1c71dae0`. This focused consistency check
@@ -123,7 +196,7 @@ formatting check reports only the maintainer's existing `app-config.yaml`
 formatting; that file was left untouched. The documentation changes remain
 uncommitted for maintainer review.
 
-### Task 2.2 completion check
+##### Task 2.2 completion check
 
 This focused consistency check covers PR #5152 against task 2.2 and the
 RHIDP-17781 acceptance criteria. It supplements the earlier audits; it is not
@@ -162,7 +235,7 @@ The maintainer's `app-config.yaml` edits are untouched. The maintainer subsequen
 a local commit. Signing, pushing, and the next Fullsend review remain
 maintainer-owned.
 
-### Task 1.2 review follow-up
+##### Task 1.2 review follow-up
 
 This focused consistency check covers the latest PR #5072 review. Both D3
 normalizers and the D5 `normalizeTags` helper now use Backstage's default
@@ -190,7 +263,7 @@ formatting, strict OpenSpec validation, and dependency installation/deduplicatio
 passed. Review replies record fixes and retained behavior. Changes remain local
 until maintainer signing and pushing.
 
-### Task 2.3 completion and review follow-up
+##### Task 2.3 completion and review follow-up
 
 This focused consistency check covers PR #5230 and RHIDP-17842. It supplements
 the earlier audits and task 2.2 completion check; it does not claim that tasks
@@ -237,7 +310,7 @@ raw-layer image, then authorized a local commit including their current
 `app-config.yaml` examples. Signing, pushing, and the next Fullsend review
 remain maintainer-owned.
 
-### Summary
+##### Summary
 
 | Category                               | CRITICAL | WARNING | SUGGESTION |
 | -------------------------------------- | -------- | ------- | ---------- |
@@ -251,14 +324,14 @@ remain maintainer-owned.
 | H — Security lint                      | 0        | 0       | 0          |
 | **Total**                              | **0**    | **0**   | **0**      |
 
-### CRITICAL
+##### CRITICAL
 
 - None
 
-### WARNING
+##### WARNING
 
 - None
 
-### SUGGESTION
+##### SUGGESTION
 
 - None

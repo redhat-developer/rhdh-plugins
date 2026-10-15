@@ -17,6 +17,10 @@ annotations, defaults, and synchronization need one consistent implementation.
   Discover all active tags when no exact tag is configured, and preserve one
   record and catalog entry per tag that contains a valid OCI skill image.
   Different tags remain distinct even when they point to the same manifest.
+- Harden OCI acquisition with validated connection destinations and IPv6/IPv4
+  fallback, generic HTTPS registry-subdomain redirects, and bounded downloads,
+  decompression, concurrency, retries, and total source-operation time. Reject
+  oversized candidates without preventing independent candidates from processing.
 - Add an npx connector that verifies `skill-md` artifacts from public Agent
   Skills v0.2 indexes, including RHESS, and exposes the same REST contract.
 - Add one common catalog entity provider implementation that consumes both
@@ -45,15 +49,17 @@ This explicitly replaces the earlier manifest-only discovery restriction.
 
 ### New Capabilities
 
-- `ai-skills-common`: Shared record and snapshot schemas, metadata mapping
-  rules, validation, and pure identity/reference helpers.
+- `skills-common`: Shared record and snapshot schemas, metadata mapping
+  rules, validation, and pure identity/reference helpers, implemented by the
+  `ai-skills-common` package.
 - `oci-skills-connector`: Public Quay/OCTO connector and normalized REST API.
 - `npx-skills-connector`: Public npx-compatible connector and normalized REST API.
 - `skills-catalog-provider`: Common REST consumer, `AiResource` construction,
   and source-isolated catalog reconciliation.
 
 The two connectors feed `skills-catalog-provider`, the sole catalog entity
-provider capability. `ai-skills-common` supplies the library shared by all three.
+provider capability. The `skills-common` capability supplies the
+`ai-skills-common` library shared by all three.
 
 ### Modified Capabilities
 

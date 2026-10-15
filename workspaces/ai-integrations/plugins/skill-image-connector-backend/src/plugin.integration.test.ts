@@ -173,9 +173,11 @@ describe('configured acquisition in the plugin', () => {
       maxBlobSizeBytes: 1000,
       maxAggregateContentSizeBytes: 10,
       maxDiscoveryResponseSizeBytes: 100,
+      maxImageWorkBudgetBytes: 52428800,
       maxImages: 100,
       maxRetries: 0,
       retryBaseDelayMs: 20,
+      sourceOperationDeadlineMs: 300000,
     };
     const { server } = await startConnector({
       ...limits,
@@ -544,4 +546,58 @@ describe('typed extraction classification in the plugin', () => {
       expect(cleanupSkillImageExtraction).toHaveBeenCalledTimes(1);
     },
   );
+});
+
+describe('source-operation deadline', () => {
+  it('aborts active acquisitions and stops queued images when the source timer expires', async () => {
+    // Observe the real scheduled timer, then deliver its expiry deterministically.
+    // Keeping other timers real lets Backstage's HTTP server start normally.
+    const timers = jest.spyOn(global, 'setTimeout');
+    const signals: AbortSignal[] = [];
+    let allActive: () => void = () => undefined;
+    const started = new Promise<void>(resolve => {
+      allActive = resolve;
+    });
+    fetchImage.mockImplementation(
+      (_ref, _dir, _logger, _credentials, signal) =>
+        new Promise((_resolve, reject) => {
+          signals.push(signal!);
+          signal!.addEventListener('abort', () => reject(signal!.reason), {
+            once: true,
+          });
+          if (signals.length === 4) allActive();
+        }),
+    );
+    try {
+      const { server } = await startConnector({
+        sourceOperationDeadlineMs: 120000,
+        maxRetries: 0,
+        images: Array.from({ length: 5 }, (_, i) => ({
+          imageRef: `quay.io/org/skill-${i}:v1`,
+        })),
+      });
+      await started;
+      expect(signals).toHaveLength(4);
+      expect(signals.every(signal => !signal.aborted)).toBe(true);
+      const deadline = timers.mock.calls.find(([, delay]) => delay === 120000);
+      expect(deadline).toBeDefined();
+      (deadline![0] as () => void)();
+      expect(signals.every(signal => signal.aborted)).toBe(true);
+      expect(signals[0].reason.message).toBe(
+        'Source operation deadline exceeded',
+      );
+      const response = await request(server)
+        .get('/api/skill-image-connector/images')
+        .set('Authorization', mockCredentials.user.header());
+      expect(response.body.images).toEqual([]);
+      expect(fetchImage).toHaveBeenCalledTimes(4);
+      expect(
+        fetchImage.mock.calls.some(([ref]) =>
+          ref.startsWith('quay.io/org/skill-4:'),
+        ),
+      ).toBe(false);
+    } finally {
+      timers.mockRestore();
+    }
+  });
 });

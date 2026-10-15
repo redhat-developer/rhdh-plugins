@@ -16,22 +16,28 @@
 
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
+import { validateAllowedOrigin } from './HttpClient';
 import type { SkillImageOptions } from './types';
 import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_TIMER_DELAY_MS } from './types';
 
 /**
- * Resolve numeric acquisition settings without importing network acquisition services
- * or mutating shared defaults. Image and discovery config parsing stays in plugin.ts
+ * Resolve acquisition settings without mutating shared defaults. Image and discovery config parsing stays in plugin.ts
  * to reuse the OCI reference, tag, and token-realm validators from OciClient.
  */
 export function readSkillImageOptions(config: Config): SkillImageOptions {
   const source = config.getOptionalConfig('skillImageConnector');
-  const options = { ...DEFAULT_SKILL_IMAGE_OPTIONS };
-  for (const key of Object.keys(options) as Array<keyof SkillImageOptions>) {
+  const DEFAULT_NUMERIC_OPTIONS: Omit<SkillImageOptions, 'allowedOrigins'> =
+    DEFAULT_SKILL_IMAGE_OPTIONS;
+  const options = { ...DEFAULT_NUMERIC_OPTIONS };
+  for (const key of Object.keys(options) as Array<
+    keyof typeof DEFAULT_NUMERIC_OPTIONS
+  >) {
     const value = source?.getOptionalNumber(key) ?? options[key];
     const minimum = key === 'maxRetries' ? 0 : 1;
     const maximum =
-      key === 'fetchTimeoutMs' || key === 'retryBaseDelayMs'
+      key === 'fetchTimeoutMs' ||
+      key === 'retryBaseDelayMs' ||
+      key === 'sourceOperationDeadlineMs'
         ? MAX_TIMER_DELAY_MS
         : Number.MAX_SAFE_INTEGER;
     if (!Number.isSafeInteger(value) || value < minimum || value > maximum) {
@@ -40,6 +46,22 @@ export function readSkillImageOptions(config: Config): SkillImageOptions {
       );
     }
     options[key] = value;
+  }
+  const allowedOrigins = source?.getOptionalStringArray('allowedOrigins');
+  if (allowedOrigins) {
+    try {
+      return Object.freeze({
+        ...options,
+        allowedOrigins: Object.freeze(
+          allowedOrigins.map(validateAllowedOrigin),
+        ),
+      });
+    } catch (error) {
+      // Include the validator's reason, not the input URL or error object,
+      // which could contain embedded credentials.
+      const detail = error instanceof Error ? error.message : 'Invalid origin';
+      throw new InputError(`skillImageConnector.allowedOrigins: ${detail}`);
+    }
   }
   return Object.freeze(options);
 }

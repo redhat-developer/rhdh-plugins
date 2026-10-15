@@ -75,6 +75,51 @@ address used by each upstream connection, including redirects.
 - **THEN** the connector prevents the request from reaching that disallowed destination
 - **AND** an independent preflight DNS lookup alone does not satisfy the destination policy
 
+#### Scenario: Registry redirects to an unconfigured public origin
+
+- **WHEN** a registry or discovery response redirects to a different HTTPS origin outside the initial registry hostname/subdomain and port scope and not listed in `skillImageConnector.allowedOrigins`
+- **THEN** the connector rejects the redirect before resolving or connecting to that destination
+- **AND** omission of `allowedOrigins` permits only the initial registry hostname and its subdomains on the same HTTPS port
+
+#### Scenario: Registry uses a subdomain CDN
+
+- **WHEN** an allowed source registry redirects to its original hostname or a subdomain of that hostname on the same HTTPS port
+- **THEN** the connector permits that destination without a separate `allowedOrigins` entry
+- **AND** this generic rule uses a dot-delimited hostname boundary anchored to the initial registry across all redirects
+- **AND** public-address validation, pinned lookup, TLS verification, and cross-origin authorization stripping still apply
+- **AND** sibling domains, suffix lookalikes, and different ports require explicit origin configuration
+
+#### Scenario: External origin does not expand redirect trust
+
+- **WHEN** an explicitly configured external origin redirects to one of its subdomains
+- **THEN** that subdomain requires its own explicit origin configuration unless it independently matches the initial registry's domain/port scope
+
+#### Scenario: Configured CDN redirect
+
+- **WHEN** a registry redirects to an explicitly configured HTTPS CDN origin
+- **THEN** the connector validates all DNS answers and restricts connection attempts to the validated public address set
+- **AND** it preserves TLS hostname verification and strips authorization on the cross-origin redirect
+- **AND** it permits at most five redirects
+
+#### Scenario: Unreachable IPv6 destination with a validated IPv4 alternative
+
+- **WHEN** DNS returns public IPv6 addresses before public IPv4 addresses and IPv6 connectivity is unavailable
+- **THEN** the connector can connect using a validated IPv4 address from the same DNS response
+- **AND** fallback does not perform an independent DNS lookup or use an unvalidated destination
+
+#### Scenario: Token endpoint destination validation
+
+- **WHEN** a registry requests a bearer token exchange
+- **THEN** the token request uses the same public-address validation and pinned connection transport
+- **AND** the token realm must match the registry host or the explicitly configured token realm
+- **AND** token endpoint redirects are rejected, including same-origin redirects
+
+#### Scenario: Streaming pinned response
+
+- **WHEN** response headers arrive before the body finishes
+- **THEN** the pinned connection remains usable until body consumption or cancellation
+- **AND** the request deadline and parent cancellation continue to govern body reads
+
 #### Scenario: skillctl archive without manifest metadata annotations
 
 - **WHEN** an image contains valid SkillCard and Markdown files in a verified tar layer
@@ -114,6 +159,15 @@ address used by each upstream connection, including redirects.
 - **WHEN** a candidate exceeds an extraction limit or contains an unsafe extraction path
 - **THEN** the connector rejects the candidate without writing outside extraction storage
 - **AND** it reports the repository/tag key as failed in a `partial` snapshot
+
+#### Scenario: Decompressed layer exceeds its configured ceiling
+
+- **WHEN** a compressed layer expands beyond `maxBlobSizeBytes`, including during inspection of an image not yet classified as a skill
+- **THEN** the connector stops decompression using a bounded output allocation and rejects that candidate
+- **AND** it does not classify incomplete inspection as a confirmed non-skill
+- **AND** the raw `/images` response includes that image in `failedImages`
+- **AND** independent candidates continue unless a shared source bound or cancellation stops processing
+- **AND** normalized snapshots, when provided by task 2.5, report the known failed key as an incomplete result
 
 ### Requirement: Normalized OCI REST snapshots
 
