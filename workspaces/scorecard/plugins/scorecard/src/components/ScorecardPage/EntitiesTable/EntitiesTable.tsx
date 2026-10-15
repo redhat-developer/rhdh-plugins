@@ -102,7 +102,7 @@ export const EntitiesTable = ({
     enabled: entitiesQueryEnabled,
   });
 
-  const thresholdRules = aggregatedScorecard?.result?.thresholds?.rules ?? [];
+  const thresholdRules = aggregatedScorecardEntities?.thresholds?.rules ?? [];
 
   useEffect(() => {
     if (entitiesError?.message?.includes('NotFoundError')) {

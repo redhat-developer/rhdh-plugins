@@ -77,6 +77,7 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'install.pluginInstalled': string;
     readonly 'install.instructions': string;
     readonly 'install.editInstructions': string;
+    readonly 'install.noPackagesTitle': string;
     readonly 'install.back': string;
     readonly 'install.packageUpdated': string;
     readonly 'install.packageEnabled': string;

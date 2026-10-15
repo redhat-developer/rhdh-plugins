@@ -92,3 +92,7 @@ Higher scores are better (OpenSSF check scores are 0–10). To override one metr
 ## Troubleshooting
 
 - **Metric "not found"**: Scorecard URL unreachable, repo not yet analyzed, or score outside 0–10.
+
+## Development
+
+Local module harness and test commands are in [DEVELOPING.md](./DEVELOPING.md).

@@ -81,6 +81,20 @@ address used by each upstream connection, including redirects.
 - **THEN** the connector normalizes those files according to design D3
 - **AND** the absence of manifest metadata annotations does not suppress the skill
 
+#### Scenario: Skill files split across supported layouts
+
+- **WHEN** a verified image contains one annotated raw SkillCard and one archived Markdown document, or the inverse
+- **THEN** the connector extracts and normalizes that pair according to design D3
+- **AND** annotated raw file descriptors are not parsed as tar archives merely because their media type says tar
+- **AND** additional matching files in any supported layer make the candidate ambiguous
+
+#### Scenario: Malformed Markdown frontmatter
+
+- **WHEN** an extracted Markdown document has unclosed, invalid, scalar, or array YAML frontmatter
+- **THEN** normalization reports a malformed candidate with frontmatter diagnostics and no normalized record
+- **AND** sufficient SkillCard metadata does not hide the parsing failure
+- **AND** absent or empty optional frontmatter remains valid when the SkillCard provides sufficient metadata
+
 #### Scenario: Ambiguous skill files
 
 - **WHEN** an image has multiple matching SkillCards or Markdown documents, including duplicate archive entries or competing supported layouts
@@ -137,7 +151,8 @@ non-string values and invalid OCI tag syntax SHALL fail validation.
 Quay discovery and OCI acquisition SHALL share redirect handling, unused-body
 cleanup, bounded response reading, and request-deadline handling. Discovery and
 image processing SHALL share transient-error classification and backoff, while
-preserving their separate retry units (one page and one image acquisition).
+preserving their separate retry units (one page, one tag-to-digest
+resolution, and one image acquisition/extraction using the pinned digest).
 
 #### Scenario: Optional limits and overrides
 

@@ -390,6 +390,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'rulesPage.dialog.requiredField': string;
     readonly 'rulesPage.dialog.save': string;
     readonly 'rulesPage.dialog.createError': string;
+    readonly 'rulesPage.dialog.descriptionCharCount': string;
+    readonly 'rulesPage.dialog.descriptionTooLong': string;
     readonly 'rulesPage.table.title': string;
     readonly 'rulesPage.table.id': string;
     readonly 'rulesPage.table.required': string;

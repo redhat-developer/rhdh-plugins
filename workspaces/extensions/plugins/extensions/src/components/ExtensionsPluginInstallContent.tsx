@@ -17,6 +17,7 @@
 import { useEffect, useState, useCallback, type SyntheticEvent } from 'react';
 
 import {
+  EmptyState,
   ErrorPage,
   MarkdownContent,
   Progress,
@@ -202,7 +203,7 @@ export const ExtensionsPluginInstallContent = ({
     },
   ].filter(tab => tab) as TabItem[];
 
-  const showRightCard = examples || installationInstructions || aboutMarkdown;
+  const showRightCard = availableTabs.length > 0;
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (_event: SyntheticEvent, newValue: number) => {
@@ -316,65 +317,83 @@ export const ExtensionsPluginInstallContent = ({
         </Alert>
       )}
 
-      {/* "two sided content area" */}
-      <Flex direction="row" style={{ flexGrow: 1 }}>
-        <Flex style={{ flex: 65 }}>
-          {packages.length > 0 && <CodeEditorCard onLoad={onLoaded} />}
-        </Flex>
-
-        {showRightCard && (
-          <Flex style={{ flex: 55 }}>
-            <Card style={{ width: '100%' }}>
-              <div style={{ flex: '1 1 0', overflow: 'scroll' }}>
-                <CardHeader
-                  title={
-                    <Typography variant="h3">{getCardHeaderTitle()}</Typography>
-                  }
-                />
-                <CardContent
-                  sx={{
-                    px: 0 /* removes padding left and right of the tab underline */,
-                  }}
-                >
-                  {availableTabs.length > 1 && (
-                    <Tabs
-                      value={tabIndex}
-                      onChange={handleTabChange}
-                      aria-label={t('install.pluginTabs')}
-                      sx={{ px: 0 }}
-                    >
-                      {availableTabs.map((tab, index) => (
-                        <Tab
-                          key={tab.key}
-                          value={index}
-                          label={tab.label ?? ''}
-                        />
-                      ))}
-                    </Tabs>
-                  )}
-                  {availableTabs.map(
-                    (tab, index) =>
-                      tabIndex === index && (
-                        <TabPanel
-                          key={tab.key}
-                          value={tabIndex}
-                          index={index}
-                          markdownContent={tab.content ?? ''}
-                          others={tab.others}
-                          title={
-                            availableTabs.length === 1
-                              ? availableTabs[0].label
-                              : ''
-                          }
-                        />
-                      ),
-                  )}
-                </CardContent>
-              </div>
-            </Card>
+      {packages.length === 0 ? (
+        <Box
+          style={{
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <EmptyState title={t('install.noPackagesTitle')} missing="data" />
+        </Box>
+      ) : (
+        /* "two sided content area" — bounded height; cards scroll internally */
+        <Flex
+          direction="row"
+          style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}
+        >
+          <Flex style={{ flex: 65, minHeight: 0, minWidth: 0 }}>
+            <CodeEditorCard onLoad={onLoaded} />
           </Flex>
-        )}
-      </Flex>
+
+          {showRightCard && (
+            <Flex style={{ flex: 55 }}>
+              <Card sx={{ width: '100%' }}>
+                <div style={{ flex: '1 1 0', overflow: 'auto' }}>
+                  <CardHeader
+                    title={
+                      <Typography variant="h3">
+                        {getCardHeaderTitle()}
+                      </Typography>
+                    }
+                  />
+                  <CardContent
+                    sx={{
+                      px: 0 /* removes padding left and right of the tab underline */,
+                    }}
+                  >
+                    {availableTabs.length > 1 && (
+                      <Tabs
+                        value={tabIndex}
+                        onChange={handleTabChange}
+                        aria-label={t('install.pluginTabs')}
+                        sx={{ px: 0 }}
+                      >
+                        {availableTabs.map((tab, index) => (
+                          <Tab
+                            key={tab.key}
+                            value={index}
+                            label={tab.label ?? ''}
+                          />
+                        ))}
+                      </Tabs>
+                    )}
+                    {availableTabs.map(
+                      (tab, index) =>
+                        tabIndex === index && (
+                          <TabPanel
+                            key={tab.key}
+                            value={tabIndex}
+                            index={index}
+                            markdownContent={tab.content ?? ''}
+                            others={tab.others}
+                            title={
+                              availableTabs.length === 1
+                                ? availableTabs[0].label
+                                : ''
+                            }
+                          />
+                        ),
+                    )}
+                  </CardContent>
+                </div>
+              </Card>
+            </Flex>
+          )}
+        </Flex>
+      )}
 
       <Box
         sx={{
@@ -430,17 +449,18 @@ export const ExtensionsPluginInstallContent = ({
         >
           {isInstallDisabled ? t('install.back') : t('install.cancel')}
         </Button>
-        {(pluginConfigPermissions.data?.write === Permission.ALLOW ||
-          pluginConfigPermissions.data?.read === Permission.ALLOW) && (
-          <Button
-            variant="text"
-            color="primary"
-            onClick={onReset}
-            sx={{ ml: 2 }}
-          >
-            {t('install.reset')}
-          </Button>
-        )}
+        {packages.length > 0 &&
+          (pluginConfigPermissions.data?.write === Permission.ALLOW ||
+            pluginConfigPermissions.data?.read === Permission.ALLOW) && (
+            <Button
+              variant="text"
+              color="primary"
+              onClick={onReset}
+              sx={{ ml: 2 }}
+            >
+              {t('install.reset')}
+            </Button>
+          )}
       </Flex>
     </Flex>
   );

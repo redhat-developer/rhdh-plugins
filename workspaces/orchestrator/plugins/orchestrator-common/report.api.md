@@ -191,7 +191,7 @@ export class DefaultApi extends BaseAPI {
   abortWorkflow(
     instanceId: string,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<string, any, {}>>;
+  ): Promise<AxiosResponse<string, any, {}, any>>;
   // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -207,7 +207,7 @@ export class DefaultApi extends BaseAPI {
     workflowId: string,
     executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<ExecuteWorkflowResponseDTO, any, {}>>;
+  ): Promise<AxiosResponse<ExecuteWorkflowResponseDTO, any, {}, any>>;
   // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -220,7 +220,7 @@ export class DefaultApi extends BaseAPI {
   getInstanceById(
     instanceId: string,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<ProcessInstanceDTO, any, {}>>;
+  ): Promise<AxiosResponse<ProcessInstanceDTO, any, {}, any>>;
   // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
@@ -234,7 +234,7 @@ export class DefaultApi extends BaseAPI {
   getInstances(
     searchRequest?: SearchRequest,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<ProcessInstanceListResultDTO, any, {}>>;
+  ): Promise<AxiosResponse<ProcessInstanceListResultDTO, any, {}, any>>;
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
@@ -250,7 +250,7 @@ export class DefaultApi extends BaseAPI {
     workflowId: string,
     instanceId?: string,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<InputSchemaResponseDTO, any, {}>>;
+  ): Promise<AxiosResponse<InputSchemaResponseDTO, any, {}, any>>;
   // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -267,7 +267,7 @@ export class DefaultApi extends BaseAPI {
     workflowId: string,
     searchRequest?: SearchRequest,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<ProcessInstanceListResultDTO, any, {}>>;
+  ): Promise<AxiosResponse<ProcessInstanceListResultDTO, any, {}, any>>;
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
@@ -283,7 +283,7 @@ export class DefaultApi extends BaseAPI {
     instanceId: string,
     rawlog?: boolean,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<WorkflowLogsResponse, any, {}>>;
+  ): Promise<AxiosResponse<WorkflowLogsResponse, any, {}, any>>;
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
@@ -295,7 +295,7 @@ export class DefaultApi extends BaseAPI {
   getWorkflowOverviewById(
     workflowId: string,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<WorkflowOverviewDTO, any, {}>>;
+  ): Promise<AxiosResponse<WorkflowOverviewDTO, any, {}, any>>;
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
@@ -307,7 +307,7 @@ export class DefaultApi extends BaseAPI {
   getWorkflowSourceById(
     workflowId: string,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<string, any, {}>>;
+  ): Promise<AxiosResponse<string, any, {}, any>>;
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -320,7 +320,7 @@ export class DefaultApi extends BaseAPI {
   getWorkflowsOverview(
     searchRequest?: SearchRequest,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<WorkflowOverviewListResultDTO, any, {}>>;
+  ): Promise<AxiosResponse<WorkflowOverviewListResultDTO, any, {}, any>>;
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -333,7 +333,7 @@ export class DefaultApi extends BaseAPI {
   getWorkflowsOverviewForEntity(
     getWorkflowsOverviewForEntityRequest?: GetWorkflowsOverviewForEntityRequest,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<WorkflowOverviewListResultDTO, any, {}>>;
+  ): Promise<AxiosResponse<WorkflowOverviewListResultDTO, any, {}, any>>;
   // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
@@ -343,7 +343,7 @@ export class DefaultApi extends BaseAPI {
   // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
   getWorkflowStatuses(
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<WorkflowRunStatusDTO[], any, {}>>;
+  ): Promise<AxiosResponse<WorkflowRunStatusDTO[], any, {}, any>>;
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
@@ -355,7 +355,7 @@ export class DefaultApi extends BaseAPI {
   pingWorkflowServiceById(
     workflowId: string,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<boolean, any, {}>>;
+  ): Promise<AxiosResponse<boolean, any, {}, any>>;
   // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
   // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
   // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -374,7 +374,7 @@ export class DefaultApi extends BaseAPI {
     instanceId: string,
     retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO,
     options?: RawAxiosRequestConfig,
-  ): Promise<AxiosResponse<object, any, {}>>;
+  ): Promise<AxiosResponse<object, any, {}, any>>;
 }
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration

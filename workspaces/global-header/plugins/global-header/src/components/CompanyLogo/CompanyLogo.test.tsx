@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import type { ReactElement, ReactNode } from 'react';
 import { screen } from '@testing-library/react';
-import { configApiRef } from '@backstage/core-plugin-api';
+import { appThemeApiRef, configApiRef } from '@backstage/core-plugin-api';
 import {
   mockApis,
   renderInTestApp,
@@ -24,11 +25,26 @@ import {
 
 import { CompanyLogo } from './CompanyLogo';
 
-jest.mock('../../hooks/useAppBarBackgroundScheme', () => ({
-  useAppBarBackgroundScheme: () => 'light',
-}));
-
 const customLogo = 'data:image/png;base64,custom-logo';
+
+const createMockThemeApi = (
+  variant: 'light' | 'dark' = 'light',
+  themeId = variant,
+) => ({
+  getActiveThemeId: () => themeId,
+  getInstalledThemes: () => [
+    {
+      id: themeId,
+      title: themeId,
+      variant,
+      Provider: ({ children }: { children: ReactNode }) => children,
+    },
+  ],
+  activeThemeId$: () => ({
+    subscribe: () => ({ unsubscribe: () => undefined }),
+  }),
+  setActiveThemeId: () => undefined,
+});
 
 const configWithFullLogo = mockApis.config({
   data: {
@@ -40,31 +56,35 @@ const configWithFullLogo = mockApis.config({
   },
 });
 
+const renderCompanyLogo = (
+  ui: ReactElement,
+  apis: Parameters<typeof TestApiProvider>[0]['apis'],
+) => renderInTestApp(<TestApiProvider apis={apis}>{ui}</TestApiProvider>);
+
 describe('CompanyLogo', () => {
   it('renders the built-in default logo when no branding is configured', async () => {
-    await renderInTestApp(
-      <TestApiProvider apis={[[configApiRef, mockApis.config({})]]}>
-        <CompanyLogo />
-      </TestApiProvider>,
-    );
+    await renderCompanyLogo(<CompanyLogo />, [
+      [configApiRef, mockApis.config({})],
+      [appThemeApiRef, createMockThemeApi('light')],
+    ]);
 
-    const logo = screen.getByTestId('home-logo');
-    expect(logo).toHaveAttribute('alt', 'Home logo');
-    expect(logo.getAttribute('src')).toMatch(/^data:image\/svg\+xml,/);
+    expect(
+      screen.getByTestId('global-header-company-logo').querySelector('svg'),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('home-logo')).not.toBeInTheDocument();
   });
 
   it('renders app.branding.fullLogo when no logo prop is provided', async () => {
-    await renderInTestApp(
-      <TestApiProvider apis={[[configApiRef, configWithFullLogo]]}>
-        <CompanyLogo />
-      </TestApiProvider>,
-    );
+    await renderCompanyLogo(<CompanyLogo />, [
+      [configApiRef, configWithFullLogo],
+      [appThemeApiRef, createMockThemeApi('light')],
+    ]);
 
     const logo = screen.getByTestId('home-logo');
     expect(logo).toHaveAttribute('src', customLogo);
   });
 
-  it('renders themed app.branding.fullLogo object for the app bar scheme', async () => {
+  it('renders themed app.branding.fullLogo object for the active theme variant', async () => {
     const lightLogo = 'data:image/png;base64,light-logo';
     const darkLogo = 'data:image/png;base64,dark-logo';
     const configWithThemedFullLogo = mockApis.config({
@@ -77,11 +97,10 @@ describe('CompanyLogo', () => {
       },
     });
 
-    await renderInTestApp(
-      <TestApiProvider apis={[[configApiRef, configWithThemedFullLogo]]}>
-        <CompanyLogo />
-      </TestApiProvider>,
-    );
+    await renderCompanyLogo(<CompanyLogo />, [
+      [configApiRef, configWithThemedFullLogo],
+      [appThemeApiRef, createMockThemeApi('light')],
+    ]);
 
     expect(screen.getByTestId('home-logo')).toHaveAttribute('src', lightLogo);
   });
@@ -89,11 +108,10 @@ describe('CompanyLogo', () => {
   it('prefers the logo prop over app.branding.fullLogo', async () => {
     const propLogo = 'data:image/png;base64,prop-logo';
 
-    await renderInTestApp(
-      <TestApiProvider apis={[[configApiRef, configWithFullLogo]]}>
-        <CompanyLogo logo={propLogo} />
-      </TestApiProvider>,
-    );
+    await renderCompanyLogo(<CompanyLogo logo={propLogo} />, [
+      [configApiRef, configWithFullLogo],
+      [appThemeApiRef, createMockThemeApi('light')],
+    ]);
 
     const logo = screen.getByTestId('home-logo');
     expect(logo).toHaveAttribute('src', propLogo);

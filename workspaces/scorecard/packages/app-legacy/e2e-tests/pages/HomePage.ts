@@ -188,4 +188,17 @@ export class HomePage {
     );
     await card.getByRole('link', { name }).click();
   }
+
+  async openDataSourcesDialog(card: Locator): Promise<Locator> {
+    await card.getByLabel(this.translations.card.menuAriaLabel).click();
+    await this.page.getByText(this.translations.card.viewDataSources).click();
+    const dialog = this.page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+    return dialog;
+  }
+
+  async closeDataSourcesDialog(dialog: Locator) {
+    await dialog.getByText(this.translations.dataSourcesDialog.close).click();
+    await expect(dialog).not.toBeVisible();
+  }
 }

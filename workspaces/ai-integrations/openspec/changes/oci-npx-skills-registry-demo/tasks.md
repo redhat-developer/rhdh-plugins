@@ -3,15 +3,15 @@
 ## 1. Shared contract and metadata mapping
 
 - [x] 1.1 Implement and export the design D2 `SkillRecord` and `SkillSnapshot` schemas and runtime validators from `ai-skills-common` for both connectors and the common provider.
-- [ ] 1.2 Implement design D3's native-field mappings, precedence, optional metadata, and allowlisted extensions; add OCI SkillCard/Markdown and npx fixtures, including conflicting versions.
+- [x] 1.2 Implement design D3's native-field mappings, precedence, optional metadata, and allowlisted extensions; add OCI SkillCard/Markdown and npx fixtures, including conflicting versions.
 - [x] 1.3 Implement pure helpers for stable identity, catalog-valid tags, SemVer fallback, and OCI/npx reference serialization with round-trip tests; cover empty, invalid, and overlength tags using Backstage's validator, plus credential-bearing and signed query URLs.
 - [ ] 1.4 Test source-discriminated extension validation, deterministic limit ordering, snapshot status invariants, unknown versions, duplicate keys, source mismatch, response/count limits, total discovery budgets, and pagination cycles; document the shared REST contract. _(Shared-library portions complete in `ai-skills-common`: extension validation, ordering, status invariants, version/key/count/size checks, REST contract docs. Remaining: OCI/npx discovery budgets and pagination-cycle tests — connector scope.)_
 
 ## 2. OCI connector and REST API
 
 - [x] 2.1 Integrate with the #4747 connector, add paginated public Quay repository and active-tag discovery (all tags when the tag is omitted, otherwise an exact tag filter), preserve distinct tagged references including same-digest aliases, and retain `/images` compatibility. Include the shared HTTP/retry utilities and optional `fetchTimeoutMs`, `maxBlobSizeBytes`, `maxAggregateContentSizeBytes`, `maxDiscoveryResponseSizeBytes`, `maxImages`, `maxRetries`, and `retryBaseDelayMs` acquisition settings documented in design D7.
-- [ ] 2.2 Resolve each selected tag once, verify digest-addressed manifests and blobs, and expose the resolved manifest digest and stable `<registry>/<repository>:<tag>` key.
-- [ ] 2.3 Normalize annotated-layer and tar/tar+gzip SkillCard/Markdown layouts using the shared mapping; support valid skillctl images without mandatory manifest metadata annotations.
+- [x] 2.2 Resolve each selected tag once, verify digest-addressed manifests and blobs, and expose the resolved manifest digest and stable `<registry>/<repository>:<tag>` key.
+- [x] 2.3 Normalize annotated-layer and tar/tar+gzip SkillCard/Markdown layouts using the shared mapping; support valid skillctl images without mandatory manifest metadata annotations.
 - [ ] 2.4 Enforce design D7's origin, timeout, concurrency, extraction, and size bounds, including connection-level destination validation against DNS rebinding; test DNS changes between validation and connection, integrity failures, traversal, decompression limits, non-skills, malformed candidates, and ambiguous duplicate skill files.
 - [ ] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository/tag keys, and Backstage startup/periodic refresh scheduling; test unknown source IDs, loading, partial repository/tag discovery, and empty success.
 
@@ -38,9 +38,19 @@
 - [ ] 5.4 Document demo/public-source scope, metadata mappings, the #4747 integration, and the explicit connector-only OCI extraction decision; leave MLflow implementation to a future change.
 
 Task 1.1 was implemented by the `ai-skills-common` package (PR #5061). The
-shared-library portions of task 1.4 were completed in the same PR. Task 2.1 is
+shared-library portions of task 1.4 were completed in the same PR. Task 1.2
+was implemented by PR #5072, adding `normalizeOciMetadata` and
+`normalizeNpxMetadata` functions with D3 precedence, tag/author normalization,
+allowlisted extensions, diagnostics, and native metadata fixtures with
+conflicting-version scenarios. Task 2.1 is
 implemented by PR #5057, including its acquisition/configuration and all-active-tag
 discovery follow-ups. The normalized repository/tag key and per-tag catalog entity
 requirements are specified here for the remaining implementation tasks.
-Unchecked tasks describe remaining connector and provider implementation;
-the task 2.1 follow-up does not complete tasks 2.2–2.4.
+Task 2.2 is implemented by PR #5152: tagged acquisitions resolve once, verify
+pinned manifests and blobs, and retain internal acquisition metadata using the
+shared contract types and reference helpers. The existing raw `/images` response
+remains unchanged. Task 2.3 is implemented by PR #5230: supported annotated,
+archive, and mixed layouts feed parsed SkillCard/frontmatter into the shared
+normalizer, with malformed and ambiguous candidate diagnostics. Unchecked tasks
+describe remaining connector and provider implementation, including connection
+safety and snapshots in tasks 2.4–2.5.

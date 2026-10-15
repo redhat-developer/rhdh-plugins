@@ -2,7 +2,7 @@
 
 The Scorecard plugin provides a configurable framework to visualize Key Performance Indicators (KPIs) in Backstage. This frontend plugin integrates with the Scorecard backend to deliver Scorecards.
 
-The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. NFS is the primary package entry point. OFS (legacy) exports are available only at `./legacy`. Translations remain available at `./alpha`.
+The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. NFS is the primary package entry point. OFS (legacy) exports are available only at `./legacy`. Translations are exported from the main entry point.
 
 For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModule`. The plugin itself contributes the Scorecard page, entity tab, layout, and homepage widgets (no separate catalog/home modules).
 
@@ -11,15 +11,13 @@ For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModul
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
 - **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie), **`weightedStatusScore`** (weighted health donut), and scalar types (`sum`, `average`, `max`, `min`, `count`) configured under **`scorecard.aggregationKPIs`**.
 - **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
-- **Metric group cards (grid layout)** — Group related metrics into cards with threshold bucket tiles, a filterable/sortable data sources dialog, and a Masonry grid layout. Enabled via app-config.yaml.
+- **Metric group cards (grid layout)** — Group related metrics into cards with threshold bucket tiles, a filterable/sortable data sources dialog, and a Masonry layout whose column count follows the entity tab width. Enabled via app-config.yaml.
 
 ## Getting started
 
 Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/scorecard](http://localhost:3000/scorecard).
 
-You can also serve the plugin in isolation by running `yarn start` in the plugin directory.
-This method of serving the plugin provides quicker iteration speed and a faster startup and hot reloads.
-It is only meant for local development, and the setup for it can be found inside the [/dev](./dev) directory.
+Contributor setup, including the mock API limitation of the package dev app, is in [DEVELOPING.md](./DEVELOPING.md).
 
 ## For Administrators
 
@@ -162,7 +160,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - Metrics listed in `groups` are rendered as **MetricGroupCard** components. Each card shows threshold bucket tiles (e.g. Passing, Warning, Failing) with counts. Clicking a tile opens a **data sources dialog** pre-filtered to that status.
    - The data sources dialog displays a sortable, filterable table with columns: Plugin, Check, Value, Status, and Last Synced. A threshold legend allows toggling visibility by status.
    - Metrics **not** listed in any group are rendered as individual Scorecard cards below the group cards.
-   - All cards are arranged in a responsive **Masonry** grid (1 column on mobile, 2 on tablet, 3 on desktop).
+   - All cards are arranged in a responsive **Masonry** layout (1 / 2 / 3 columns based on the entity tab width via ResizeObserver, not the viewport), so cards densify without vertical gaps and reflow when a docked drawer such as Quickstart is open.
    - If `groups` is empty or omitted, the grid layout falls back to the default `EntityScorecardContent` view (individual cards for all metrics).
    - When multiple layout extensions are enabled, the Scorecard tab renders a toggle to switch between them.
 
@@ -223,7 +221,7 @@ The default `scorecardPlugin` registers the Scorecard page, API, entity tab, lay
 
 ##### Migration notes (NFS graduation)
 
-If you previously imported Scorecard NFS APIs from `/alpha` and registered separate catalog/home modules, update as follows.
+The `./alpha` package export has been removed. Import the plugin, translations module, and translation symbols from the main package entry instead.
 
 **1. Features registration**
 
@@ -232,9 +230,13 @@ If you previously imported Scorecard NFS APIs from `/alpha` and registered separ
 -   scorecardCatalogModule,
 -   scorecardHomeModule,
 -   scorecardTranslationsModule,
+-   scorecardTranslationRef,
+-   scorecardTranslations,
 - } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 + import scorecardPlugin, {
 +   scorecardTranslationsModule,
++   scorecardTranslationRef,
++   scorecardTranslations,
 + } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
   features: [
@@ -245,7 +247,7 @@ If you previously imported Scorecard NFS APIs from `/alpha` and registered separ
   ]
 ```
 
-`scorecardCatalogModule` and `scorecardHomeModule` are removed. Entity tab and homepage widgets are provided by `scorecardPlugin` directly.
+`scorecardCatalogModule` and `scorecardHomeModule` are removed. Entity tab and homepage widgets are provided by `scorecardPlugin` directly. Translation symbols (`scorecardTranslationRef`, `scorecardTranslations`) are exported from the main entry point only.
 
 **2. `app.extensions` IDs**
 

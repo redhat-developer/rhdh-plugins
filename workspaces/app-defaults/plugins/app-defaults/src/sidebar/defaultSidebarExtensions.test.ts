@@ -25,14 +25,12 @@ import {
 import {
   defaultSidebarExtensions,
   sidebarAdminGroup,
-  sidebarBottomDivider,
   sidebarBottomSpacer,
   sidebarLogoElement,
   sidebarLogoSpacer,
   sidebarNotificationsElement,
   sidebarSearchDivider,
   sidebarSearchElement,
-  sidebarSettingsDivider,
   sidebarSettingsGroup,
 } from './defaultSidebarExtensions';
 import { CompanyLogo } from './logo/CompanyLogo';
@@ -44,7 +42,7 @@ const priorityOf = (ext: ExtensionDefinition) =>
     .priority;
 
 describe('defaultSidebarExtensions', () => {
-  it('registers logo, gap, search, spacer, dividers, notifications and groups', () => {
+  it('registers logo, gap, search, spacer, notifications and groups', () => {
     const specs = defaultSidebarExtensions.map(ext =>
       JSON.parse(JSON.stringify(ext)),
     );
@@ -55,9 +53,7 @@ describe('defaultSidebarExtensions', () => {
       'sidebar-element/search',
       'sidebar-divider/search',
       'sidebar-spacer/bottom',
-      'sidebar-divider/bottom',
       'sidebar-element/notifications',
-      'sidebar-divider/settings',
       'sidebar-item-group/admin',
       'sidebar-item/rbac',
       'sidebar-item-group/settings',
@@ -75,7 +71,7 @@ describe('defaultSidebarExtensions', () => {
     );
   });
 
-  it('disables the search and notifications elements by default', () => {
+  it('disables the notifications element by default', () => {
     const disabledById = Object.fromEntries(
       defaultSidebarExtensions.map(ext => {
         const spec = JSON.parse(JSON.stringify(ext));
@@ -83,13 +79,13 @@ describe('defaultSidebarExtensions', () => {
       }),
     );
 
-    expect(disabledById['sidebar-element/search']).toBe(true);
+    expect(disabledById['sidebar-element/search']).toBeFalsy();
     expect(disabledById['sidebar-element/notifications']).toBe(true);
     // Other default entries stay enabled.
     expect(disabledById['sidebar-element/logo']).toBeFalsy();
   });
 
-  it('orders search first and the bottom block below the spacer', () => {
+  it('orders search first and the bottom spacer below chrome', () => {
     expect(priorityOf(sidebarLogoElement)).toBeGreaterThan(
       priorityOf(sidebarLogoSpacer)!,
     );
@@ -102,18 +98,12 @@ describe('defaultSidebarExtensions', () => {
     );
     expect(priorityOf(sidebarSearchDivider)).toBeGreaterThan(0);
     expect(priorityOf(sidebarBottomSpacer)).toBeLessThan(0);
-    expect(priorityOf(sidebarBottomDivider)).toBeLessThan(
-      priorityOf(sidebarBottomSpacer)!,
-    );
     expect(priorityOf(sidebarNotificationsElement)).toBeLessThan(
-      priorityOf(sidebarBottomDivider)!,
-    );
-    expect(priorityOf(sidebarSettingsDivider)).toBeLessThan(
-      priorityOf(sidebarNotificationsElement)!,
+      priorityOf(sidebarBottomSpacer)!,
     );
   });
 
-  it('places the admin group above settings, below the settings divider', () => {
+  it('places the admin group above settings', () => {
     const admin = createExtensionTester(sidebarAdminGroup).get(
       sidebarItemGroupDataRef,
     );
@@ -128,7 +118,6 @@ describe('defaultSidebarExtensions', () => {
       title: 'Settings',
       to: '/settings',
     });
-    expect(admin.priority!).toBeLessThan(priorityOf(sidebarSettingsDivider)!);
     expect(settings.priority!).toBeLessThan(admin.priority!);
   });
 

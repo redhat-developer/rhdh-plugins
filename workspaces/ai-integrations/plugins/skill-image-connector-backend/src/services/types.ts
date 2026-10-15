@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import type {
+  NormalizationDiagnostic,
+  OciSkillRecord,
+} from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+
 /** Parsed OCI image reference. */
 export interface ImageRef {
   /** Registry host (e.g. "quay.io"). */
@@ -106,6 +111,29 @@ export interface OciDescriptor {
   annotations?: Record<string, string>;
 }
 
+/** Result of fetching and verifying an OCI manifest. */
+export interface ManifestResult {
+  /** The parsed OCI manifest. */
+  manifest: OciManifest;
+  /** SHA-256 digest of the raw manifest bytes. */
+  digest: string;
+}
+
+/**
+ * Verified acquisition metadata for tagged OCI skill images.
+ *
+ * Present only for tag-based acquisitions. Explicit digest references
+ * do not establish a tag and therefore have no tagged identity.
+ */
+export interface AcquisitionMetadata {
+  /** Stable key: `<lowercase-registry>/<repository>:<exact-tag>`. */
+  key: OciSkillRecord['key'];
+  /** Verified manifest digest: `sha256:<64 lowercase hex digits>`. */
+  digest: OciSkillRecord['digest'];
+  /** Digest-addressed source URI: `oci://<registry>/<repository>@sha256:<hex>`. */
+  sourceUri: OciSkillRecord['sourceUri'];
+}
+
 /** Result of extracting a skill image. */
 export interface SkillImageExtraction {
   /** Path where skillimage.yaml was written. */
@@ -116,6 +144,8 @@ export interface SkillImageExtraction {
   skillImageYaml: string;
   /** Content of SKILLS.md as a string. */
   skillsMd: string;
+  /** Present for tagged acquisitions; absent for explicit digest references. */
+  acquisition?: AcquisitionMetadata;
 }
 
 /**
@@ -128,6 +158,36 @@ export interface QuayDiscoveryConfig {
   organization: string;
   /** Exact tag to select for each repository. Omit to discover all active tags. */
   tag?: string;
+}
+
+/**
+ * Outcome of normalizing a skill image candidate.
+ *
+ * - `normalized` — successfully produced a schema-valid OciSkillRecord
+ * - `non-skill`  — image lacks the required SkillCard/Markdown pair
+ * - `ambiguous`  — multiple competing SkillCard or Markdown matches
+ * - `malformed`  — files found but could not be parsed or normalized
+ */
+export type NormalizationOutcome =
+  | 'normalized'
+  | 'non-skill'
+  | 'ambiguous'
+  | 'malformed';
+
+/**
+ * Result of normalizing a skill image extraction.
+ *
+ * When `outcome` is `'normalized'`, `record` is non-null and
+ * schema-valid. All other outcomes have a null record and
+ * explain the failure in `diagnostics`.
+ */
+export interface SkillImageNormalization {
+  /** Classification of the normalization result. */
+  outcome: NormalizationOutcome;
+  /** The normalized OCI skill record, or null when normalization failed. */
+  record: OciSkillRecord | null;
+  /** Diagnostics produced during normalization. */
+  diagnostics: NormalizationDiagnostic[];
 }
 
 /** Plugin configuration for a single skill image source. */

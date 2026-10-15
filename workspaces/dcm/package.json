@@ -5,6 +5,7 @@
   "engines": {
     "node": "22 || 24"
   },
+  "packageManager": "yarn@4.18.1",
   "scripts": {
     "start": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start-app\" \"yarn start-backend\"",
     "start-app": "yarn workspace app start",

@@ -47,6 +47,9 @@ type SettingsPanelProps = {
   onRequestSavedPromptDelete?: (prompt: SavedPrompt) => void;
   /** When false, hides the MCP tab and shows saved prompts only. */
   showMcpSettings?: boolean;
+  isCompact?: boolean;
+  /** Compact mode host for PatternFly Modal portal (overlay/docked). */
+  appendTo?: () => HTMLElement;
 };
 
 const useStyles = makeStyles()(theme => ({
@@ -114,6 +117,8 @@ export const SettingsPanel = ({
   onCreateSavedPrompt,
   onRequestSavedPromptDelete,
   showMcpSettings = true,
+  isCompact = false,
+  appendTo,
 }: SettingsPanelProps) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
@@ -123,7 +128,11 @@ export const SettingsPanel = ({
   const effectiveTab = showMcpTab ? activeTab : 'saved-prompts';
 
   return (
-    <div className={classes.root}>
+    <div
+      className={classes.root}
+      // Same shell paint as MCP servers (chat header / floating chrome).
+      style={backgroundColor ? { backgroundColor } : undefined}
+    >
       <div className={classes.headerRow}>
         <Title headingLevel="h2" size="xl">
           {t('settings.panel.title')}
@@ -161,7 +170,11 @@ export const SettingsPanel = ({
 
       <div className={classes.tabContent}>
         {effectiveTab === 'mcp-servers' && showMcpTab && (
-          <McpServersSettings backgroundColor={backgroundColor} />
+          <McpServersSettings
+            backgroundColor={backgroundColor}
+            isCompact={isCompact}
+            appendTo={appendTo}
+          />
         )}
         {effectiveTab === 'saved-prompts' && (
           <SavedPromptsSettings

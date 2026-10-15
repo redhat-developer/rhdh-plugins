@@ -340,6 +340,9 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Annulla',
     'rulesPage.dialog.createError': 'Impossibile creare la regola',
     'rulesPage.dialog.updateError': 'Impossibile aggiornare la regola',
+    'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} caratteri',
+    'rulesPage.dialog.descriptionTooLong':
+      'La descrizione deve contenere al massimo {{max}} caratteri ({{count}} usati).',
     'modulePage.phases.runAdversarialReview': 'Esegui revisione adversarial',
     'modulePage.phases.adversarialReview': 'Revisione adversarial',
     'modulePage.phases.adversarialNoRuns': 'Nessuna esecuzione',

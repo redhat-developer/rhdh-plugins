@@ -17,13 +17,17 @@
 import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import { subDays } from 'date-fns';
 import {
-  ScorecardThresholdRuleColors,
   type MetricTimeSeriesPoint,
   type MetricTimeSeriesResponse,
   type ThresholdConfig,
-  type ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
+import {
+  CHANGE_FAILURE_RATE_THRESHOLDS,
+  DEPLOYMENT_FREQUENCY_THRESHOLDS,
+  LEAD_TIME_THRESHOLDS,
+  MTTR_THRESHOLDS,
+} from './thresholdData';
 import { getMatchingThresholdKey } from '../src/utils/matchThresholdRule';
 
 type SeriesProfile = {
@@ -40,53 +44,6 @@ const DORA_COLLECTORS = [
   'github:doraDeploymentWorkflowRuns',
   'jira:doraIncidents',
 ];
-
-const DORA_RULE_COLORS = {
-  elite: ScorecardThresholdRuleColors.SUCCESS,
-  medium: ScorecardThresholdRuleColors.WARNING,
-  low: ScorecardThresholdRuleColors.ERROR,
-} as const;
-
-const doraRule = (
-  key: keyof typeof DORA_RULE_COLORS,
-  expression: string,
-): ThresholdRule => ({
-  key,
-  expression,
-  color: DORA_RULE_COLORS[key],
-});
-
-const DEPLOYMENT_FREQUENCY_THRESHOLDS: ThresholdConfig = {
-  rules: [
-    doraRule('elite', '>=7'),
-    doraRule('medium', '1-7'),
-    doraRule('low', '<1'),
-  ],
-};
-
-const CHANGE_FAILURE_RATE_THRESHOLDS: ThresholdConfig = {
-  rules: [
-    doraRule('elite', '<5'),
-    doraRule('medium', '5-15'),
-    doraRule('low', '>15'),
-  ],
-};
-
-const LEAD_TIME_THRESHOLDS: ThresholdConfig = {
-  rules: [
-    doraRule('elite', '<24'),
-    doraRule('medium', '24-168'),
-    doraRule('low', '>168'),
-  ],
-};
-
-const MTTR_THRESHOLDS: ThresholdConfig = {
-  rules: [
-    doraRule('elite', '<1'),
-    doraRule('medium', '1-24'),
-    doraRule('low', '>24'),
-  ],
-};
 
 const SERIES_BY_METRIC_ID: Record<string, SeriesProfile> = {
   'dora.deploymentFrequency': {
