@@ -96,6 +96,13 @@ export const MAX_CANDIDATES = 1_000;
 /** Largest delay supported by Node's timers without clamping to 1 ms. */
 export const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
 
+/** Default refresh interval for Backstage scheduling (D6: ten minutes). */
+export const DEFAULT_REFRESH_INTERVAL_MINUTES = 10;
+/** Minimum allowed refresh interval in minutes. */
+export const MIN_REFRESH_INTERVAL_MINUTES = 1;
+/** Maximum allowed refresh interval in minutes (24 hours). */
+export const MAX_REFRESH_INTERVAL_MINUTES = 1440;
+
 /** Validated backend settings, resolved once at plugin initialization. */
 export interface SkillImageOptions {
   readonly fetchTimeoutMs: number;
@@ -215,6 +222,27 @@ export interface SkillImageNormalization {
   record: OciSkillRecord | null;
   /** Diagnostics produced during normalization. */
   diagnostics: NormalizationDiagnostic[];
+}
+
+/**
+ * Source configuration combining identity, images, discovery, and scheduling.
+ *
+ * Each source produces an independent `SkillSnapshot` served via
+ * `GET /skills/:sourceId`. Source IDs are unique within the connector.
+ */
+export interface SourceConfig {
+  /** Stable source identifier. */
+  readonly id: string;
+  /** Explicit image configurations for this source. */
+  readonly images: readonly SkillImageConfig[];
+  /** Quay organization discovery for this source. */
+  readonly quayDiscovery?: QuayDiscoveryConfig;
+  /** Registries allowed for this source. */
+  readonly allowedRegistries: readonly string[];
+  /** Additional HTTPS origins for this source's redirects. */
+  readonly allowedOrigins?: readonly string[];
+  /** Refresh interval in minutes (default: 10). */
+  readonly refreshIntervalMinutes: number;
 }
 
 /** Plugin configuration for a single skill image source. */

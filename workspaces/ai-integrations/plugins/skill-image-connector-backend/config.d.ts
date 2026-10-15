@@ -89,5 +89,52 @@ export interface Config {
        */
       tag?: string;
     };
+    /** Refresh interval in minutes for Backstage scheduling. Integer from 1 to 1440; defaults to 10.
+     * @visibility backend
+     */
+    refreshIntervalMinutes?: number;
+    /**
+     * Source-scoped configurations. Each source produces an independent
+     * SkillSnapshot served via GET /skills/:sourceId. When present,
+     * top-level images/quayDiscovery/allowedRegistries are ignored.
+     * @visibility backend
+     */
+    sources?: Array<{
+      /** Stable source identifier. Must be unique across all sources.
+       * @visibility backend
+       */
+      id?: string;
+      /** @visibility backend */
+      allowedRegistries?: string[];
+      /** @visibility backend */
+      allowedOrigins?: string[];
+      /** Refresh interval in minutes. Integer from 1 to 1440; defaults to 10.
+       * @visibility backend
+       */
+      refreshIntervalMinutes?: number;
+      /** @visibility backend */
+      images?: Array<{
+        /** @visibility backend */
+        imageRef?: string;
+        /** @visibility backend */
+        credentials?: {
+          /** @visibility backend */
+          username?: string;
+          /** @visibility secret */
+          password?: string;
+          /** @visibility backend */
+          tokenRealm?: string;
+        };
+      }>;
+      /** @visibility backend */
+      quayDiscovery?: {
+        /** @visibility backend */
+        registry?: string;
+        /** @visibility backend */
+        organization?: string;
+        /** @visibility backend */
+        tag?: string;
+      };
+    }>;
   };
 }

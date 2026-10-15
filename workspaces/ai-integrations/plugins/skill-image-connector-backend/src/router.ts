@@ -15,6 +15,7 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import express from 'express';
 import Router from 'express-promise-router';
 import type { SkillImageExtraction } from './services/types';
@@ -26,6 +27,7 @@ export async function createRouter(
   extractions: Map<string, SkillImageExtraction>,
   getProcessingStatus: () => SkillImageProcessingStatus = () => 'ready',
   getFailedImages: () => string[] = () => [],
+  snapshots?: ReadonlyMap<string, SkillSnapshot>,
 ): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -55,6 +57,20 @@ export async function createRouter(
       failedImages: getFailedImages(),
       images: results,
     });
+  });
+
+  // Authenticated GET /skills/:sourceId — serves the shared v1
+  // SkillSnapshot for the requested source. The URL-encoded sourceId
+  // is treated as one path segment per the design D2 REST contract.
+  // Unknown source IDs return 404.
+  router.get('/skills/:sourceId', async (req, res) => {
+    const sourceId = decodeURIComponent(req.params.sourceId);
+    const snapshot = snapshots?.get(sourceId);
+    if (!snapshot) {
+      res.status(404).json({ error: `Unknown source: ${sourceId}` });
+      return;
+    }
+    res.status(200).json(snapshot);
   });
 
   router.use(

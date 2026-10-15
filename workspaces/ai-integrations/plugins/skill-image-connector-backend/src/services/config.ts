@@ -17,8 +17,14 @@
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
 import { validateAllowedOrigin } from './HttpClient';
-import type { SkillImageOptions } from './types';
-import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_TIMER_DELAY_MS } from './types';
+import type { SkillImageOptions, SourceConfig } from './types';
+import {
+  DEFAULT_REFRESH_INTERVAL_MINUTES,
+  DEFAULT_SKILL_IMAGE_OPTIONS,
+  MAX_REFRESH_INTERVAL_MINUTES,
+  MAX_TIMER_DELAY_MS,
+  MIN_REFRESH_INTERVAL_MINUTES,
+} from './types';
 
 /**
  * Resolve acquisition settings without mutating shared defaults. Image and discovery config parsing stays in plugin.ts
@@ -64,4 +70,106 @@ export function readSkillImageOptions(config: Config): SkillImageOptions {
     }
   }
   return Object.freeze(options);
+}
+
+/**
+ * Reads and validates a refresh interval from config, returning the
+ * D6 default (ten minutes) when absent.
+ */
+export function readRefreshInterval(source?: Config): number {
+  const value =
+    source?.getOptionalNumber('refreshIntervalMinutes') ??
+    DEFAULT_REFRESH_INTERVAL_MINUTES;
+  if (
+    !Number.isSafeInteger(value) ||
+    value < MIN_REFRESH_INTERVAL_MINUTES ||
+    value > MAX_REFRESH_INTERVAL_MINUTES
+  ) {
+    throw new InputError(
+      `refreshIntervalMinutes must be an integer between ` +
+        `${MIN_REFRESH_INTERVAL_MINUTES} and ${MAX_REFRESH_INTERVAL_MINUTES}`,
+    );
+  }
+  return value;
+}
+
+/**
+ * Reads source configurations from app-config.
+ *
+ * When `skillImageConnector.sources` is present, each entry defines an
+ * independent source with its own ID, images, discovery, and scheduling.
+ *
+ * When absent, the flat `images`/`quayDiscovery`/`allowedRegistries`
+ * config is mapped to a single source with the deterministic ID
+ * `"default"`. This preserves backward compatibility without deriving
+ * identity from array positions.
+ *
+ * Source parsing and image/discovery validation are handled by the
+ * caller (plugin.ts) which has access to OCI reference validators.
+ * This function returns the raw structural config for each source.
+ */
+export function readSourceConfigs(config: Config): SourceConfig[] {
+  const pluginConfig = config.getOptionalConfig('skillImageConnector');
+  if (!pluginConfig) return [];
+
+  const sourcesConfig = pluginConfig.getOptionalConfigArray('sources');
+  if (sourcesConfig) {
+    const seenIds = new Set<string>();
+    return sourcesConfig.map((entry, index) => {
+      const id = entry.getOptionalString('id')?.trim();
+      if (!id) {
+        throw new InputError(
+          `skillImageConnector.sources[${index}].id is required`,
+        );
+      }
+      if (seenIds.has(id)) {
+        throw new InputError(
+          `Duplicate source ID '${id}' in skillImageConnector.sources`,
+        );
+      }
+      seenIds.add(id);
+
+      const allowedRegistries = (
+        entry.getOptionalStringArray('allowedRegistries') ?? []
+      )
+        .map(r => r.trim().toLowerCase())
+        .filter(Boolean);
+
+      const allowedOrigins = entry.getOptionalStringArray('allowedOrigins');
+
+      const refreshIntervalMinutes = readRefreshInterval(entry);
+
+      return {
+        id,
+        images: [], // Populated by caller via readSkillImageConfigs
+        allowedRegistries,
+        allowedOrigins,
+        refreshIntervalMinutes,
+      };
+    });
+  }
+
+  // Backward compatibility: derive a single "default" source from flat config
+  const hasImages = pluginConfig.has('images');
+  const hasDiscovery = pluginConfig.has('quayDiscovery');
+  if (!hasImages && !hasDiscovery) return [];
+
+  const allowedRegistries = (
+    pluginConfig.getOptionalStringArray('allowedRegistries') ?? []
+  )
+    .map(r => r.trim().toLowerCase())
+    .filter(Boolean);
+  const allowedOrigins =
+    pluginConfig.getOptionalStringArray('allowedOrigins') ?? undefined;
+  const refreshIntervalMinutes = readRefreshInterval(pluginConfig);
+
+  return [
+    {
+      id: 'default',
+      images: [], // Populated by caller
+      allowedRegistries,
+      allowedOrigins,
+      refreshIntervalMinutes,
+    },
+  ];
 }
