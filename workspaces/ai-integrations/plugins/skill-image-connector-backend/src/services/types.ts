@@ -98,7 +98,6 @@ export const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
 
 /** Validated backend settings, resolved once at plugin initialization. */
 export interface SkillImageOptions {
-  readonly allowedOrigins?: readonly string[];
   readonly fetchTimeoutMs: number;
   readonly maxBlobSizeBytes: number;
   readonly maxAggregateContentSizeBytes: number;
@@ -108,6 +107,7 @@ export interface SkillImageOptions {
   readonly maxRetries: number;
   readonly retryBaseDelayMs: number;
   readonly sourceOperationDeadlineMs: number;
+  readonly allowedOrigins?: readonly string[];
 }
 
 export const DEFAULT_SKILL_IMAGE_OPTIONS: SkillImageOptions = Object.freeze({

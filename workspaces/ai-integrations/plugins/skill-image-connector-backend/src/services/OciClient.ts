@@ -340,7 +340,6 @@ async function fetchBearerToken(
   const response = await fetchWithRedirects(
     url.toString(),
     {
-      signal,
       headers:
         credentials?.username && credentials.password
           ? {

@@ -131,9 +131,26 @@ function maybeDecompress(
   budget?: ImageWorkBudget,
 ): Buffer {
   if (buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b) {
-    const decompressed = gunzipSync(buf, {
-      maxOutputLength: maxBlobSizeBytes,
-    });
+    let decompressed: Buffer;
+    try {
+      decompressed = gunzipSync(buf, {
+        maxOutputLength: maxBlobSizeBytes,
+      });
+    } catch (error) {
+      // Classify only zlib's output ceiling, preserving corrupt-data and
+      // unrelated errors rather than treating every RangeError as a limit.
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        error.code === 'ERR_BUFFER_TOO_LARGE'
+      ) {
+        throw new ExtractionBoundsError(
+          `Decompressed layer exceeds maximum allowed size ${maxBlobSizeBytes} bytes`,
+        );
+      }
+      throw error;
+    }
     budget?.charge(decompressed.length);
     return decompressed;
   }

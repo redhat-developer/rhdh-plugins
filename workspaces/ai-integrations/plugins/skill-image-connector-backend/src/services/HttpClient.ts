@@ -16,9 +16,9 @@
 
 import { promises as dnsPromises } from 'node:dns';
 import type { LookupAddress } from 'node:dns';
+import { isIP } from 'node:net';
 import { Agent } from 'undici';
 import * as ipaddr from 'ipaddr.js';
-import { isIP } from 'node:net';
 import { MAX_REDIRECTS } from './types';
 
 function createRequestSignal(
