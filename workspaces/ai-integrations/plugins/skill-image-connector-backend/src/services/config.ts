@@ -21,8 +21,7 @@ import { validateAllowedOrigin } from './HttpClient';
 import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_TIMER_DELAY_MS } from './types';
 
 /**
- * Resolve acquisition settings
- * or mutating shared defaults. Image and discovery config parsing stays in plugin.ts
+ * Resolve acquisition settings without mutating shared defaults. Image and discovery config parsing stays in plugin.ts
  * to reuse the OCI reference, tag, and token-realm validators from OciClient.
  */
 export function readSkillImageOptions(config: Config): SkillImageOptions {
@@ -57,10 +56,11 @@ export function readSkillImageOptions(config: Config): SkillImageOptions {
           allowedOrigins.map(validateAllowedOrigin),
         ),
       });
-    } catch {
-      throw new InputError(
-        'skillImageConnector.allowedOrigins must contain HTTPS origins without credentials, paths, queries, or fragments',
-      );
+    } catch (error) {
+      // Include the validator's reason, not the input URL or error object,
+      // which could contain embedded credentials.
+      const detail = error instanceof Error ? error.message : 'Invalid origin';
+      throw new InputError(`skillImageConnector.allowedOrigins: ${detail}`);
     }
   }
   return Object.freeze(options);

@@ -19,6 +19,8 @@ import { PassThrough, Duplex } from 'node:stream';
 import { Agent } from 'undici';
 import { fetchWithRedirects } from './HttpClient';
 
+// SWC wraps namespace imports. Require the actual TLS module so the spy
+// replaces the function used by Undici, not a copy on an import wrapper.
 const tls = require('node:tls');
 
 const realFetch = global.fetch;

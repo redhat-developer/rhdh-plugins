@@ -128,3 +128,34 @@ describe('trusted redirect origin configuration', () => {
     ).toThrow('allowedOrigins');
   });
 });
+
+describe('origin validation diagnostics', () => {
+  it.each([
+    ['http://cdn.example.com', 'Registry request must use HTTPS'],
+    [
+      'https://cdn.example.com/docs',
+      'Allowed origin must not contain a path, query, or fragment',
+    ],
+    [
+      'https://operator:secret@cdn.example.com',
+      'Registry request URL must not contain embedded credentials',
+    ],
+  ])(
+    'preserves the validation reason without exposing the origin: %s',
+    (origin, reason) => {
+      const options = new ConfigReader({
+        skillImageConnector: { allowedOrigins: [origin] },
+      });
+      let failure: unknown;
+      try {
+        readSkillImageOptions(options);
+      } catch (error) {
+        failure = error;
+      }
+      expect(failure).toBeInstanceOf(Error);
+      expect((failure as Error).message).toBe(
+        `skillImageConnector.allowedOrigins: ${reason}`,
+      );
+    },
+  );
+});
