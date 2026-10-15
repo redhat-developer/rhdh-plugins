@@ -106,13 +106,22 @@ and `docs/index.md` for the TechDocs builder, as specified in design D8.
 ### Requirement: Digest-based cache and ETag semantics
 
 The URL reader SHALL pass through the connector's `ETag` response header for
-TechDocs digest-based caching, as specified in design D8.
+TechDocs digest-based caching, as specified in design D8. When the caller
+provides an etag, the URL reader SHALL forward it as an `If-None-Match`
+request header to the connector endpoint, completing the bidirectional
+conditional-request protocol.
 
 #### Scenario: ETag passthrough for caching
 
 - **WHEN** the connector returns an `ETag` header with the Markdown response
 - **THEN** the URL reader passes the ETag through to the TechDocs builder for cache management
 - **AND** subsequent requests with `If-None-Match` matching the ETag result in 304 from the connector
+
+#### Scenario: If-None-Match forwarding to connector
+
+- **WHEN** the caller provides an etag for a skill documentation request
+- **THEN** the URL reader forwards the etag as an `If-None-Match` request header to the connector endpoint
+- **AND** the connector evaluates the conditional request and returns 304 Not Modified if the ETag matches
 
 #### Scenario: Annotated-layer Markdown produces equivalent documentation
 
