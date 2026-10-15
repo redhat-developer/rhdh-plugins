@@ -24,7 +24,6 @@ import { InputError } from '@backstage/errors';
 import {
   boundSnapshot,
   buildOciRef,
-  createFailedSnapshot,
   createLoadingSnapshot,
   isValidDigest,
 } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
@@ -785,12 +784,20 @@ export function buildSnapshotFromRefresh(
     result.records.length === 0 &&
     !result.discoveryComplete;
 
-  if (
-    allFailed &&
-    result.failedKeys.length === 0 &&
-    result.extractions.size === 0
-  ) {
-    return createFailedSnapshot(snapshotSource, new Date().toISOString());
+  if (allFailed) {
+    const sortedFailedKeys = [...result.failedKeys].sort((a, b) => {
+      if (a < b) return -1;
+      if (a > b) return 1;
+      return 0;
+    });
+    return {
+      schemaVersion: '1' as const,
+      source: snapshotSource,
+      status: 'failed' as const,
+      observedAt: new Date().toISOString(),
+      skills: [],
+      failedSkillKeys: sortedFailedKeys,
+    };
   }
 
   return boundSnapshot({
