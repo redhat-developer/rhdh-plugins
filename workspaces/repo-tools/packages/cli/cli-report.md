@@ -11,8 +11,8 @@ Options:
   -h, --help
 
 Commands:
-  lint [command]
   help [command]
+  lint [command]
 ```
 
 ### `rhdh-repo-tools lint`
@@ -24,8 +24,8 @@ Options:
   -h, --help
 
 Commands:
-  legacy-backend-exports [workspace-path...]
   help [command]
+  legacy-backend-exports [workspace-path...]
 ```
 
 ### `rhdh-repo-tools lint legacy-backend-exports`

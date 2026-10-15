@@ -30,8 +30,9 @@ export const createWorkspace = async (opts: { name: string; cwd?: string }) => {
   const templatePath = join(__dirname, 'templates', 'workspace');
 
   execSync(
-    `npx @backstage/create-app --path ${workspacePath} --skip-install --template-path=${templatePath}`,
-    { input: opts.name },
+    // Create app 0.9.1 == Backstage 1.54.x
+    `npx @backstage/create-app@0.9.1 --path ${workspacePath} --skip-install --template-path=${templatePath}`,
+    { env: { ...process.env, BACKSTAGE_APP_NAME: opts.name } },
   );
 
   // experimental test
