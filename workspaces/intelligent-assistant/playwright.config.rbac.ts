@@ -16,8 +16,9 @@
 
 import { defineConfig } from '@playwright/test';
 
-const appMode = process.env.APP_MODE || 'legacy';
-const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+// NFS-only (packages/app with new frontend system); no app-legacy
+const appMode = process.env.APP_MODE || 'nfs';
+const startCommand = 'yarn start';
 const baseConfig = `${__dirname}/app-config.yaml`;
 const rbacE2eConfig = `${__dirname}/app-config.e2e-rbac.yaml`;
 /** Dedicated ports — must match app-config.e2e-rbac.yaml (avoid reusing :3000). */

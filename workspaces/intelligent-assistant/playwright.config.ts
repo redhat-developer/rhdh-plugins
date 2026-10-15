@@ -16,10 +16,10 @@
 
 import { defineConfig } from '@playwright/test';
 
-// APP_MODE: 'legacy' (app-legacy) or 'nfs' (packages/app with new frontend)
+// NFS-only (packages/app with new frontend system); no app-legacy
 const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
-const appMode = process.env.APP_MODE || 'legacy';
-const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+const appMode = process.env.APP_MODE || 'nfs';
+const startCommand = 'yarn start';
 
 // Config paths (absolute to work from any cwd)
 const baseConfig = `${__dirname}/app-config.yaml`;
