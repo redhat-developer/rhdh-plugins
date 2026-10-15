@@ -40,6 +40,9 @@ export type {
   TemplateCardBadgeData,
 } from './templateCard';
 
+export { NotFoundPage } from './not-found';
+export type { NotFoundPageProps } from './not-found';
+
 export { appReactTranslations, appReactTranslationRef } from './translations';
 
 export { SidebarDividerBlueprint } from './sidebar';
