@@ -411,7 +411,7 @@ Token realms retain the registry-host or explicitly configured
 `credentials.tokenRealm` restriction, use the same pinned transport, and reject
 all redirects. Task 2.4 acquisition safety is implemented. Task 2.5 adds normalized
 snapshots and periodic refresh; catalog entity production remains section 4.
-Task 2.5 stays unchecked until maintainer verification of the reviewed implementation.
+Task 2.5 is complete following maintainer testing and review, including verification of the standard Backstage scheduling configuration.
 
 Each refresh also has a five-minute total deadline, at most 100 discovery pages
 shared across repository and tag listings,

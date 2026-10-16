@@ -1,6 +1,6 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-16T17:07:04Z
+**Last audited:** 2026-10-16T17:19:33Z
 
 ### Summary
 
@@ -9,8 +9,8 @@ covering snapshots, standard Backstage schedule configuration, and digest-only
 identity policy. The current migration removes the unreleased custom
 `refreshIntervalMinutes` field in favor of `schedule` blocks.
 This supplements the retained historical audits; it is not a new independent
-full-change audit. Tasks 2.1–2.4 remain checked. Task 2.5 stays unchecked pending
-maintainer verification testing.
+full-change audit. Tasks 2.1–2.5 are checked. The maintainer confirmed successful testing and
+review, including the standard Backstage scheduling migration.
 
 | Category                   | CRITICAL | WARNING | SUGGESTION |
 | -------------------------- | -------- | ------- | ---------- |
@@ -54,15 +54,15 @@ Source IDs are required and decoded only once by routing. Redirect origins are
 isolated per source; flat origins apply only to legacy source `default`. Numeric
 acquisition limits stay top-level. Raw readiness is independent of normalization.
 
-The standard-schedule migration is implemented and awaiting maintainer testing. Documentation describes
+The standard-schedule migration is implemented and maintainer testing passed. Documentation describes
 Backstage-parsed frequency and timeout, optional initial delay, cron and manual
 frequency, enforced local scope, and the default timeout derived from the source
 deadline. Manual mode does not automatically acquire at startup; configured
 initial delays are honored. Automated verification passed: 492 connector tests
 across 16 suites with `--watchAll=false --runInBand`, workspace `yarn tsc:full`
 and `yarn build:all`, connector lint, and workspace Prettier. Independent review
-of the migration passed. Maintainer regression testing remains pending; task 2.5
-is still unchecked.
+of the migration passed. The maintainer confirmed successful regression testing
+and review; task 2.5 is complete.
 
 **Earlier verification before the standard-schedule migration:** The custom
 `refreshIntervalMinutes` implementation and review corrections previously passed: 467 connector tests across 16 suites with
