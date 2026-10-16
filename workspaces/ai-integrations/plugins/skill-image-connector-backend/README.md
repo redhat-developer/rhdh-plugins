@@ -103,7 +103,11 @@ skillImageConnector:
       # Optional unrelated redirect origins, scoped only to this source:
       # allowedOrigins:
       #   - https://cdn.example.com
-      refreshIntervalMinutes: 10
+      schedule:
+        frequency: { minutes: 10 }
+        timeout: { minutes: 10 }
+        initialDelay: { seconds: 0 }
+        scope: local
       quayDiscovery:
         organization: my-skills-org
         # tag: latest # omit for all active tags
@@ -115,22 +119,42 @@ Each `sources[].id` is required, nonblank after trimming, and unique. It is a
 stable identity, not an array position. URL-encode it once as a single path
 segment when requesting its snapshot. Renaming an ID creates a different source
 identity for consumers. Each source owns `images`, `quayDiscovery`,
-`allowedRegistries`, `allowedOrigins`, and `refreshIntervalMinutes`. When
+`allowedRegistries`, `allowedOrigins`, and `schedule`. When
 `sources` is present, the corresponding flat settings are ignored, including
-flat `allowedOrigins` and the flat refresh interval. Origins are validated as
+flat `allowedOrigins` and the flat `schedule`. Origins are validated as
 exact HTTPS origins without credentials, paths, queries, or fragments; one
 source's redirect permissions never grant another source access. Global
 `allowedOrigins` applies only to the legacy flat source. Numeric acquisition
 limits such as `fetchTimeoutMs`, `maxImages`, and `sourceOperationDeadlineMs`
 remain top-level settings shared by all sources.
 
-The Backstage scheduler starts each source immediately and refreshes it every
-`refreshIntervalMinutes` (default `10`, integer `1`–`1440`). Tasks use local
-scope because snapshot caches are local to each backend instance. A source's
+The optional `schedule` block uses Backstage's standard schedule parser, as do
+the model-catalog and MCP registry providers. Configure it per source or, for
+legacy flat configuration, as `skillImageConnector.schedule`. If the entire block
+is omitted, the source starts immediately (`initialDelay: { seconds: 0 }`) and
+refreshes every ten minutes. Its default task timeout is
+`max(2 * sourceOperationDeadlineMs, 60000)` milliseconds: ten minutes with the
+default five-minute source deadline. The scheduler timeout and source-operation
+deadline are separate bounds.
+
+When providing `schedule`, specify both `frequency` and `timeout`. Duration values
+accept ISO strings such as `PT10M` or human-duration objects such as
+`{ minutes: 10 }`. `frequency` also accepts `{ cron: '0 * * * *' }` and
+`{ trigger: manual }`. `initialDelay` is optional and is honored when supplied.
+A manual schedule runs only when triggered through the Backstage scheduler; it
+does not automatically acquire at startup, and its snapshot remains `loading`
+until the first triggered refresh completes. A configured initial delay likewise
+keeps the initial snapshot `loading` until that acquisition completes.
+
+Scope is always `local`, matching the per-backend-instance snapshot cache. Omit
+`scope` or set it to `local`; `scope: global` fails startup validation. A source's
 refreshes do not overlap, while different sources refresh independently. Every
 refresh receives a fresh source-operation deadline and work budgets. Shutdown
 cancels active work. GET requests only read the cache and never contact a registry.
 The previous completed snapshot remains available while its replacement is built.
+The unreleased custom `refreshIntervalMinutes` option has been removed: supplying
+it fails with a migration error. Replace it with, for example,
+`schedule.frequency: { minutes: 10 }` and `schedule.timeout: { minutes: 10 }`.
 
 Explicit digest-only references (`repo@sha256:...`) remain supported by `/images`.
 They have no repository/tag identity, so they deliberately produce neither a
@@ -176,7 +200,7 @@ All of these backend-only settings are optional. Omitted settings use the shared
 | `maxAggregateContentSizeBytes`    | `52428800` | Combined retained skill YAML and Markdown across accepted images.                            |
 | `maxImageWorkBudgetBytes`         | `52428800` | Total downloaded and decompressed bytes per OCI image across all inspected layers.           |
 | `maxDiscoveryResponseSizeBytes`   | `5242880`  | One discovery response, enforced during streaming even without Content-Length.               |
-| `maxImages`                       | `25`       | Combined explicit images and discovered candidates attempted at startup.                     |
+| `maxImages`                       | `25`       | Combined explicit images and discovered candidates attempted per source refresh.             |
 | `maxRetries`                      | `2`        | Retries after the initial page or image acquisition attempt. Set `0` to disable.             |
 | `retryBaseDelayMs`                | `2000`     | Initial backoff; doubled for each further retry and capped at Node's timer limit.            |
 | `sourceOperationDeadlineMs`       | `300000`   | Total wall-clock deadline for processing all images from one source.                         |
@@ -189,10 +213,12 @@ Discovery and OCI requests share HTTP redirect validation, response cleanup, and
 
 ## How it works
 
-On startup the plugin:
+At startup the plugin clears stale extraction directories, reads source
+configuration, initializes loading snapshots, and registers source scheduler
+tasks. Each scheduled refresh (immediate at startup by default) then:
 
-1. Cleans up stale extraction directories from any previous abnormal termination.
-2. Reads configured image references from `app-config.yaml`.
+1. Reads the source's configured image references.
+2. Starts a fresh source deadline and acquisition budgets.
 3. If `quayDiscovery` is configured, discovers public repositories using paginated API calls. With no tag filter, it then lists active tags for each repository; an exact tag filter skips tag listing. Distinct references are sorted before merging with the explicit image list and applying `maxImages`.
 4. For each tag-based image reference, resolves the mutable tag to a SHA-256 manifest digest using the Distribution Spec v2 HTTP API. All subsequent fetches (including retries) use the pinned digest, preventing a moved tag from redirecting to different content mid-acquisition. Explicit digest references skip this resolution step.
 5. Fetches the OCI manifest from the registry using the pinned digest (or the original digest reference) and verifies its raw bytes before parsing or fetching layers.
@@ -201,7 +227,7 @@ On startup the plugin:
    - **Tar archives**: One or more `tar` or `tar+gzip` layers (as produced by `skillctl`) containing the skill files as tar entries.
 7. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
 8. Parses the SkillCard YAML and optional Markdown frontmatter, then calls the shared `normalizeOciMetadata()` adapter with the verified tagged identity, digest, and source URI. Malformed frontmatter produces normalization diagnostics even when the SkillCard has sufficient metadata.
-9. Stores the raw extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint. Normalized records remain internal; this endpoint's payload does not change.
+9. Stores raw extraction results for `/api/skill-image-connector/images` and atomically publishes a bounded normalized snapshot at `/api/skill-image-connector/skills/:sourceId`. The raw endpoint's payload does not change.
 
 Exactly one SkillCard and one Markdown document must occur across supported
 layers. A pair split between annotated raw files and an archive is supported.

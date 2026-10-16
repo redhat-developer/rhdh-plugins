@@ -195,7 +195,11 @@ skillImageConnector:
   retryBaseDelayMs: 2000 # 2 seconds, doubled on subsequent retries
   sources:
     - id: gabemontero-skills
-      refreshIntervalMinutes: 1 # Testing: refresh every minute; default is 10 (range 1–1440).
+      schedule:
+        frequency: { minutes: 1 } # Testing; default is 10 minutes.
+        timeout: { minutes: 10 }
+        initialDelay: { seconds: 0 }
+        scope: local # Required: each backend instance maintains its own snapshots.
       allowedRegistries:
         - quay.io
 #      images:

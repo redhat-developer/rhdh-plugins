@@ -1023,23 +1023,16 @@ export const skillImageConnectorPlugin = createBackendPlugin({
             : '';
           pluginLogger.info(
             `Source '${source.id}': ${source.images.length} skill image ` +
-              `configuration(s)${discoveryNote}, refresh every ` +
-              `${source.refreshIntervalMinutes} minute(s)`,
+              `configuration(s)${discoveryNote}, schedule: ${JSON.stringify(
+                source.schedule,
+              )}`,
           );
 
           sourceExtractionKeys.set(source.id, new Set());
 
           await scheduler.scheduleTask({
             id: `skill-image-refresh-${source.id}`,
-            frequency: { minutes: source.refreshIntervalMinutes },
-            timeout: {
-              milliseconds: Math.max(
-                options.sourceOperationDeadlineMs * 2,
-                60_000,
-              ),
-            },
-            initialDelay: { seconds: 0 },
-            scope: 'local',
+            ...source.schedule,
             fn: async (abortSignal: AbortSignal) => {
               pluginLogger.info(`Starting refresh for source '${source.id}'`);
 

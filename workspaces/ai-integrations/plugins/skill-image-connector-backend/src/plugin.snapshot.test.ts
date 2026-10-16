@@ -22,7 +22,7 @@ import {
 } from '@backstage/backend-test-utils';
 import { validateSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import request from 'supertest';
-import type { Config } from '../config';
+import type { ConnectorTestConfig } from './testUtils';
 import { skillImageConnectorPlugin } from './plugin';
 import { discoverQuayRepositorySnapshot } from './services/QuayDiscovery';
 import {
@@ -82,9 +82,7 @@ beforeEach(() => {
   });
 });
 
-async function startConnector(
-  settings: NonNullable<Config['skillImageConnector']>,
-) {
+async function startConnector(settings: ConnectorTestConfig) {
   return startTestBackend({
     features: [
       skillImageConnectorPlugin,
@@ -491,43 +489,9 @@ describe('bare-digest policy', () => {
   });
 });
 
-describe('scheduling', () => {
-  it('uses Backstage scheduler with configurable refresh interval', async () => {
-    const { server } = await startConnector({
-      images: [{ imageRef: 'quay.io/org/skill:v1' }],
-      refreshIntervalMinutes: 15,
-    });
-    // Verify the plugin started and scheduled the refresh task
-    const response = await request(server)
-      .get('/api/skill-image-connector/skills/default')
-      .set('Authorization', mockCredentials.service.header());
-    expect(response.status).toBe(200);
-    // The plugin logs the refresh interval during init
-    expect(logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('refresh every 15 minute(s)'),
-    );
-  });
-
-  it('uses default 10-minute refresh interval when not configured', async () => {
-    const { server } = await startConnector({
-      images: [{ imageRef: 'quay.io/org/skill:v1' }],
-    });
-    const response = await request(server)
-      .get('/api/skill-image-connector/skills/default')
-      .set('Authorization', mockCredentials.service.header());
-    expect(response.status).toBe(200);
-    // Default interval is 10 minutes
-    expect(logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('refresh every 10 minute(s)'),
-    );
-  });
-});
-
 describe('controlled refresh lifecycle', () => {
   type Task = Parameters<SchedulerService['scheduleTask']>[0];
-  async function startScheduled(
-    settings: NonNullable<Config['skillImageConnector']>,
-  ) {
+  async function startScheduled(settings: ConnectorTestConfig) {
     const tasks: Task[] = [];
     const scheduler = mockServices.scheduler.mock({
       scheduleTask: async task => {
@@ -551,11 +515,59 @@ describe('controlled refresh lifecycle', () => {
     });
     return { server: backend.server, tasks, stop: () => backend.stop() };
   }
+  it('registers the default local startup and periodic schedule', async () => {
+    const { tasks, stop } = await startScheduled({
+      allowedRegistries: ['quay.io'],
+      images: [{ imageRef: 'quay.io/org/skill:v1' }],
+    });
+    try {
+      expect(tasks).toHaveLength(1);
+      expect(tasks[0]).toMatchObject({
+        frequency: { minutes: 10 },
+        timeout: { milliseconds: 600000 },
+        initialDelay: { seconds: 0 },
+        scope: 'local',
+      });
+    } finally {
+      await stop();
+    }
+  });
+
+  it('passes standard cron, timeout and initial delay settings to Backstage', async () => {
+    const { tasks, stop } = await startScheduled({
+      allowedRegistries: ['quay.io'],
+      images: [{ imageRef: 'quay.io/org/skill:v1' }],
+      schedule: {
+        frequency: { cron: '*/5 * * * *' },
+        timeout: { minutes: 3 },
+        initialDelay: { seconds: 20 },
+      },
+    });
+    try {
+      expect(tasks).toHaveLength(1);
+      expect(tasks[0]).toMatchObject({
+        frequency: { cron: '*/5 * * * *' },
+        timeout: { minutes: 3 },
+        initialDelay: { seconds: 20 },
+        scope: 'local',
+      });
+      expect(fetchImage).not.toHaveBeenCalled();
+      await tasks[0].fn(new AbortController().signal);
+      expect(fetchImage).toHaveBeenCalledTimes(1);
+    } finally {
+      await stop();
+    }
+  });
+
   it('serves loading, then atomically replaces the previous snapshot on a later refresh', async () => {
     const { server, tasks, stop } = await startScheduled({
       allowedRegistries: ['quay.io'],
       images: [{ imageRef: 'quay.io/org/skill:v1' }],
-      refreshIntervalMinutes: 15,
+      schedule: {
+        frequency: { minutes: 15 },
+        timeout: { minutes: 10 },
+        initialDelay: { seconds: 0 },
+      },
     });
     const get = () =>
       request(server)

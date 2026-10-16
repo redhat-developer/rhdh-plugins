@@ -13,7 +13,7 @@
 - [x] 2.2 Resolve each selected tag once, verify digest-addressed manifests and blobs, and expose the resolved manifest digest and stable `<registry>/<repository>:<tag>` key.
 - [x] 2.3 Normalize annotated-layer and tar/tar+gzip SkillCard/Markdown layouts using the shared mapping; support valid skillctl images without mandatory manifest metadata annotations.
 - [x] 2.4 Enforce design D7's origin, timeout, concurrency, extraction, and size bounds, including connection-level destination validation against DNS rebinding; test DNS changes between validation and connection, integrity failures, traversal, decompression limits, non-skills, malformed candidates, and ambiguous duplicate skill files.
-- [ ] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository/tag keys, and Backstage startup/periodic refresh scheduling; test unknown source IDs, loading, partial repository/tag discovery, and empty success. _(Implementation and review corrections are in progress in PR #5284; keep unchecked until maintainer verification testing succeeds.)_
+- [ ] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository/tag keys, and standard Backstage `schedule` configuration for startup/periodic refresh (including configured initial delays and manual trigger mode); test unknown source IDs, loading, partial repository/tag discovery, and empty success. _(Implementation and review corrections are in progress in PR #5284; keep unchecked until maintainer verification testing succeeds.)_
 
 ## 3. npx connector and REST API
 

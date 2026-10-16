@@ -238,12 +238,24 @@ removals. Operators requiring normalized catalog identity must retain tagged inp
 
 ### D6 — Snapshot completeness and durable reconciliation
 
-Connectors refresh at startup and on a configurable Backstage scheduler task
-(default ten minutes). Catalog provider instances poll on their own configurable
+Connectors refresh immediately at startup and every ten minutes by default,
+using configurable Backstage scheduler tasks. Explicit schedule initial delays
+and manual trigger mode override automatic startup behavior. Catalog provider
+instances poll on their own configurable
 Backstage schedules (also ten minutes by default); GET requests do not trigger
 registry retrieval. Source refreshes and per-source catalog runs do not overlap.
-The OCI implementation uses per-source Backstage tasks with zero initial delay
-and local scope, matching its per-backend-instance snapshot cache. Each refresh
+The OCI implementation uses standard Backstage `schedule` configuration per
+source (or in the legacy flat block), parsed with
+`readSchedulerServiceTaskScheduleDefinitionFromConfig`. An omitted schedule uses
+frequency ten minutes, initial delay zero, and timeout
+`max(2 * sourceOperationDeadlineMs, 60000)` milliseconds (ten minutes with defaults).
+A configured block requires `frequency` and `timeout`; durations accept ISO
+strings or human-duration objects, and frequency also accepts cron or
+`{ trigger: manual }`. Configured initial delays are honored. Manual schedules
+run only on a scheduler trigger, not automatically at startup; until their first
+completion the snapshot stays `loading`. Scope defaults to and is enforced as
+`local`, matching the per-backend-instance snapshot cache; explicit `global`
+scope is rejected. Each refresh
 gets a new operation deadline and budgets. Completed snapshots remain readable
 while a replacement is acquired; publication occurs once the replacement is built.
 `observedAt` records UTC completion, not the start of discovery. The normalized
@@ -416,11 +428,13 @@ owns `connectorPluginId`, `sourceId`, expected source type, catalog namespace,
 within each source type; plugin IDs are transport addresses, not identity keys.
 The OCI implementation declares backend-only `sources[]` entries with required,
 unique nonblank `id`, `allowedRegistries`, optional validated `allowedOrigins`,
-`images`, `quayDiscovery`, and `refreshIntervalMinutes` (integer 1–1440, default 10).
+`images`, `quayDiscovery`, and optional standard Backstage `schedule`. The
+unreleased `refreshIntervalMinutes` field is removed and rejected with a migration
+error directing operators to `schedule.frequency` and `schedule.timeout`.
 When the array is present these source fields do not inherit the corresponding
 flat settings. In particular, flat redirect origins never grant explicit sources
 additional trust. Without the array, configured flat `images`/`quayDiscovery` maps
-to source `default`, including the legacy flat origins and refresh interval.
+to source `default`, including the legacy flat origins and schedule.
 Top-level numeric acquisition limits remain shared settings applied per source.
 `GET /skills/:sourceId` requires normal backend authentication, returns 404 for an
 unknown source, and treats its once-decoded route parameter as the source identity.

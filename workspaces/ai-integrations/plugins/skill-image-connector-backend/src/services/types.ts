@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
 import type {
   NormalizationDiagnostic,
   OciSkillRecord,
@@ -98,10 +99,6 @@ export const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
 
 /** Default refresh interval for Backstage scheduling (D6: ten minutes). */
 export const DEFAULT_REFRESH_INTERVAL_MINUTES = 10;
-/** Minimum allowed refresh interval in minutes. */
-export const MIN_REFRESH_INTERVAL_MINUTES = 1;
-/** Maximum allowed refresh interval in minutes (24 hours). */
-export const MAX_REFRESH_INTERVAL_MINUTES = 1440;
 
 /** Validated backend settings, resolved once at plugin initialization. */
 export interface SkillImageOptions {
@@ -241,8 +238,8 @@ export interface SourceConfig {
   readonly allowedRegistries: readonly string[];
   /** Additional HTTPS origins for this source's redirects. */
   readonly allowedOrigins?: readonly string[];
-  /** Refresh interval in minutes (default: 10). */
-  readonly refreshIntervalMinutes: number;
+  /** Backstage refresh schedule, always local to the backend's in-memory cache. */
+  readonly schedule: SchedulerServiceTaskScheduleDefinition;
 }
 
 /** Plugin configuration for a single skill image source. */

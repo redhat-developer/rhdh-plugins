@@ -6,8 +6,11 @@ The OCI connector SHALL discover repositories in a configured public Quay
 organization using pagination. When `quayDiscovery.tag` is omitted or blank, it
 SHALL enumerate all active tags for each repository using paginated tag listing.
 When a tag is supplied, it SHALL select that exact tag, including `latest`;
-wildcard and regex matching SHALL NOT be supported. It SHALL refresh at startup and on a non-overlapping Backstage schedule,
-with a default interval of ten minutes. It SHALL resolve each selected tag once,
+wildcard and regex matching SHALL NOT be supported. It SHALL refresh immediately
+at startup and every ten minutes by default on a non-overlapping Backstage
+schedule; explicitly configured initial delays and manual trigger mode SHALL be
+honored instead of forcing immediate startup acquisition. It SHALL resolve each
+selected tag once,
 fetch its manifest by SHA-256 digest, and verify the returned bytes before using
 metadata or fetching layers. The stable record key SHALL be registry host plus
 repository and the exact case-sensitive tag (`<registry>/<repository>:<tag>`),
@@ -200,6 +203,18 @@ Unknown source IDs SHALL return 404.
 - **AND** the completed replacement is published atomically with its UTC completion time
 - **AND** source refreshes do not overlap and independent sources refresh independently
 
+#### Scenario: Standard Backstage schedule configuration
+
+- **WHEN** a source omits `schedule`
+- **THEN** frequency defaults to ten minutes, initial delay to zero, and timeout to `max(2 * sourceOperationDeadlineMs, 60000)` milliseconds
+- **WHEN** a source configures `schedule`
+- **THEN** Backstage's standard parser requires `frequency` and `timeout`, accepts ISO or human-duration values, and also accepts cron or manual frequency
+- **AND** supplied initial delays are honored, without a separate immediate acquisition
+- **AND** manual frequency runs only on a scheduler trigger and does not automatically run at startup
+- **AND** snapshots remain `loading` until their first completed refresh
+- **AND** omitted scope becomes `local`, explicit `local` is accepted, and explicit `global` is rejected because caches are local
+- **AND** the unreleased `refreshIntervalMinutes` field is rejected with a migration error directing configuration to `schedule`
+
 #### Scenario: Partial discovery with no normalized successes
 
 - **WHEN** discovery yields a usable result but a later page, candidate, or bound prevents completeness
@@ -226,12 +241,12 @@ Unknown source IDs SHALL return 404.
 #### Scenario: Source configuration isolates redirect trust
 
 - **WHEN** explicit `sources` entries are configured
-- **THEN** every entry requires a unique nonblank stable `id` and owns its registry allowlist, exact HTTPS redirect origins, image/discovery configuration, and refresh interval
+- **THEN** every entry requires a unique nonblank stable `id` and owns its registry allowlist, exact HTTPS redirect origins, image/discovery configuration, and optional standard Backstage `schedule`
 - **AND** another source's origins and the flat legacy origins do not grant it additional redirect trust
 - **AND** invalid origin entries fail startup validation
 - **AND** numeric acquisition limits remain top-level settings applied to each source
 - **WHEN** only flat image/discovery configuration is present
-- **THEN** it maps to source `default` with the legacy flat origin and refresh settings
+- **THEN** it maps to source `default` with the legacy flat origin and schedule settings
 
 #### Scenario: Authenticated source lookup preserves encoded identity
 

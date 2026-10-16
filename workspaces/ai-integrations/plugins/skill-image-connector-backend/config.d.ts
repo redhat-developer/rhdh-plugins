@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
+
 export interface Config {
   skillImageConnector?: {
     /** Request deadline including redirects, authentication and body reading. Integer from 1 to 2147483647 ms; defaults to 30000 ms.
@@ -89,14 +91,14 @@ export interface Config {
        */
       tag?: string;
     };
-    /** Refresh interval in minutes for Backstage scheduling. Integer from 1 to 1440; defaults to 10.
+    /** Standard Backstage schedule for the legacy default source. When omitted, runs immediately and every ten minutes, with a timeout of twice sourceOperationDeadlineMs (at least one minute). Only local scope is supported because snapshots are held per backend instance. Ignored when sources is configured.
      * @visibility backend
      */
-    refreshIntervalMinutes?: number;
+    schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
     /**
      * Source-scoped configurations. Each source produces an independent
      * SkillSnapshot served via GET /skills/:sourceId. When present,
-     * top-level images/quayDiscovery/allowedRegistries are ignored.
+     * top-level images/quayDiscovery/allowedRegistries/allowedOrigins/schedule are ignored.
      * @visibility backend
      */
     sources?: Array<{
@@ -108,10 +110,10 @@ export interface Config {
       allowedRegistries?: string[];
       /** @visibility backend */
       allowedOrigins?: string[];
-      /** Refresh interval in minutes. Integer from 1 to 1440; defaults to 10.
+      /** Standard Backstage schedule for this source. When omitted, runs immediately and every ten minutes, with a timeout of twice sourceOperationDeadlineMs (at least one minute). Set frequency and timeout when configuring a schedule. Scope must be local; global scope is rejected.
        * @visibility backend
        */
-      refreshIntervalMinutes?: number;
+      schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
       /** @visibility backend */
       images?: Array<{
         /** @visibility backend */

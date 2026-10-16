@@ -15,7 +15,11 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { readSkillImageOptions, readSourceConfigs } from './config';
+import {
+  readSkillImageOptions,
+  readSourceConfigs,
+  readSourceSchedule,
+} from './config';
 
 describe('readSkillImageOptions', () => {
   it('preserves defaults when configuration is absent', () => {
@@ -172,7 +176,7 @@ describe('source-specific settings', () => {
       ),
     ).toThrow('skillImageConnector.sources[0].allowedOrigins');
   });
-  it('reports the source path for invalid refresh intervals', () => {
+  it('reports the source path for obsolete refresh intervals', () => {
     expect(() =>
       readSourceConfigs(
         new ConfigReader({
@@ -182,5 +186,210 @@ describe('source-specific settings', () => {
         }),
       ),
     ).toThrow('skillImageConnector.sources[0].refreshIntervalMinutes');
+  });
+});
+
+describe('Backstage source schedules', () => {
+  it('defaults to a local ten-minute schedule with immediate first run', () => {
+    expect(readSourceSchedule()).toEqual({
+      frequency: { minutes: 10 },
+      timeout: { milliseconds: 600000 },
+      initialDelay: { seconds: 0 },
+      scope: 'local',
+    });
+  });
+
+  it.each([
+    [{ minutes: 2 }, { minutes: 2 }],
+    ['PT2M', { minutes: 2 }],
+    ['2 minutes', { minutes: 2 }],
+    [{ cron: '*/2 * * * *' }, { cron: '*/2 * * * *' }],
+    [{ trigger: 'manual' }, { trigger: 'manual' }],
+  ])('parses standard scheduler frequency %j', (frequency, expected) => {
+    const schedule = readSourceSchedule(
+      new ConfigReader({
+        schedule: {
+          frequency,
+          timeout: 'PT30S',
+          initialDelay: { seconds: 5 },
+        },
+      }),
+    );
+    expect(schedule).toEqual({
+      frequency: expected,
+      timeout: { seconds: 30 },
+      initialDelay: { seconds: 5 },
+      scope: 'local',
+    });
+  });
+
+  it('parses ISO initial delays and defaults omitted delay to zero', () => {
+    expect(
+      readSourceSchedule(
+        new ConfigReader({
+          schedule: {
+            frequency: { minutes: 1 },
+            timeout: { minutes: 2 },
+            initialDelay: 'PT5S',
+            scope: 'local',
+          },
+        }),
+      ).initialDelay,
+    ).toEqual({ seconds: 5 });
+    expect(
+      readSourceSchedule(
+        new ConfigReader({
+          schedule: {
+            frequency: { minutes: 1 },
+            timeout: { minutes: 2 },
+          },
+        }),
+      ).initialDelay,
+    ).toEqual({ seconds: 0 });
+  });
+
+  it.each([
+    {},
+    { frequency: { minutes: 1 } },
+    { timeout: { minutes: 1 } },
+    { frequency: 'bogus', timeout: { minutes: 1 } },
+    { frequency: { minutes: 1 }, timeout: 'bogus' },
+    {
+      frequency: { minutes: 1 },
+      timeout: { minutes: 1 },
+      initialDelay: 'bogus',
+    },
+  ])(
+    'rejects malformed provided schedules with the source path: %j',
+    schedule => {
+      expect(() =>
+        readSourceSchedule(
+          new ConfigReader({ schedule }),
+          'skillImageConnector.sources[2]',
+        ),
+      ).toThrow('skillImageConnector.sources[2].schedule');
+    },
+  );
+
+  it.each(['global', 'bogus', 123])(
+    'rejects unsupported scope %j with the source path',
+    scope => {
+      expect(() =>
+        readSourceSchedule(
+          new ConfigReader({
+            schedule: {
+              frequency: { minutes: 1 },
+              timeout: { minutes: 2 },
+              scope,
+            },
+          }),
+          'skillImageConnector.sources[2]',
+        ),
+      ).toThrow('skillImageConnector.sources[2].schedule');
+    },
+  );
+
+  it('omits untrusted schedule values from configuration diagnostics', () => {
+    const secret = 'https://user:secret@example.com';
+    let failure: unknown;
+    try {
+      readSourceSchedule(
+        new ConfigReader({
+          schedule: {
+            frequency: secret,
+            timeout: { minutes: 2 },
+          },
+        }),
+        'skillImageConnector.sources[2]',
+      );
+    } catch (error) {
+      failure = error;
+    }
+    expect(failure).toBeInstanceOf(Error);
+    expect((failure as Error).message).toContain(
+      'skillImageConnector.sources[2].schedule',
+    );
+    expect((failure as Error).message).not.toContain(secret);
+  });
+
+  it.each([0, 10, '5'])(
+    'rejects the obsolete refreshIntervalMinutes setting with migration guidance: %j',
+    value => {
+      expect(() =>
+        readSourceSchedule(new ConfigReader({ refreshIntervalMinutes: value })),
+      ).toThrow('refreshIntervalMinutes');
+      expect(() =>
+        readSourceSchedule(new ConfigReader({ refreshIntervalMinutes: value })),
+      ).toThrow('schedule');
+    },
+  );
+
+  it.each([
+    [5000, 60000],
+    [300000, 600000],
+    [900000, 1800000],
+  ])(
+    'derives the default timeout from a %i ms source deadline',
+    (deadline, expectedTimeout) => {
+      const sources = readSourceConfigs(
+        new ConfigReader({
+          skillImageConnector: {
+            images: [],
+            sourceOperationDeadlineMs: deadline,
+          },
+        }),
+      );
+      expect(sources[0].schedule.timeout).toEqual({
+        milliseconds: expectedTimeout,
+      });
+    },
+  );
+
+  it('reads a flat legacy source schedule', () => {
+    const sources = readSourceConfigs(
+      new ConfigReader({
+        skillImageConnector: {
+          images: [],
+          schedule: { frequency: 'PT3M', timeout: 'PT2M' },
+        },
+      }),
+    );
+    expect(sources[0]).toMatchObject({
+      id: 'default',
+      schedule: {
+        frequency: { minutes: 3 },
+        timeout: { minutes: 2 },
+        scope: 'local',
+      },
+    });
+  });
+
+  it('isolates explicit source schedules and ignores the top-level schedule', () => {
+    const sources = readSourceConfigs(
+      new ConfigReader({
+        skillImageConnector: {
+          schedule: {
+            frequency: 'invalid',
+            timeout: 'invalid',
+            scope: 'global',
+          },
+          sourceOperationDeadlineMs: 900000,
+          sources: [
+            {
+              id: 'one',
+              schedule: { frequency: { cron: '0 * * * *' }, timeout: 'PT1M' },
+            },
+            { id: 'two' },
+          ],
+        },
+      }),
+    );
+    expect(sources[0].schedule.frequency).toEqual({ cron: '0 * * * *' });
+    expect(sources[1].schedule).toEqual({
+      frequency: { minutes: 10 },
+      timeout: { milliseconds: 1800000 },
+      initialDelay: { seconds: 0 },
+      scope: 'local',
+    });
   });
 });

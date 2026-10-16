@@ -3,8 +3,10 @@
 ---
 
 Add authenticated `GET /skills/:sourceId` returning bounded v1 OCI snapshots,
-atomically published at startup and on configurable Backstage scheduled refreshes
-(default ten minutes). Preserve the raw `/images` API independently of metadata
+atomically published by standard Backstage scheduled refreshes (default immediate
+startup and ten-minute frequency). Honor configured initial delays and manual
+trigger mode, enforce local task scope, and replace the unreleased custom refresh
+interval option with `schedule` blocks. Preserve the raw `/images` API independently of metadata
 normalization. Support stable source IDs, isolated redirect-origin configuration,
 and the legacy flat configuration as source `default`. Preserve partial discovery
 results and report known failed repository/tag keys without treating incomplete

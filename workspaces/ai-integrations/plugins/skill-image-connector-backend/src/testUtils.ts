@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { Config } from '../config';
+
 import { createHash } from 'node:crypto';
 import type { OciManifest } from './services/types';
 
@@ -100,3 +102,12 @@ export function createTarArchive(
   blocks.push(Buffer.alloc(1024));
   return Buffer.concat(blocks);
 }
+
+// Expand imported config interfaces into structural JSON objects accepted by
+// Backstage's config test service while retaining schema checking at call sites.
+type JsonConfig<T> = T extends object
+  ? { [K in keyof T]: JsonConfig<T[K]> }
+  : T;
+export type ConnectorTestConfig = JsonConfig<
+  NonNullable<Config['skillImageConnector']>
+>;

@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import {
+  readSchedulerServiceTaskScheduleDefinitionFromConfig,
+  type SchedulerServiceTaskScheduleDefinition,
+} from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
 import { validateAllowedOrigin } from './HttpClient';
@@ -21,9 +25,7 @@ import type { SkillImageOptions, SourceConfig } from './types';
 import {
   DEFAULT_REFRESH_INTERVAL_MINUTES,
   DEFAULT_SKILL_IMAGE_OPTIONS,
-  MAX_REFRESH_INTERVAL_MINUTES,
   MAX_TIMER_DELAY_MS,
-  MIN_REFRESH_INTERVAL_MINUTES,
 } from './types';
 
 /**
@@ -74,28 +76,56 @@ function readAllowedOrigins(
   }
 }
 
-/**
- * Reads and validates a refresh interval from config, returning the
- * D6 default (ten minutes) when absent.
- */
-export function readRefreshInterval(
-  source?: Config,
-  context = 'skillImageConnector',
-): number {
-  const value =
-    source?.getOptionalNumber('refreshIntervalMinutes') ??
-    DEFAULT_REFRESH_INTERVAL_MINUTES;
-  if (
-    !Number.isSafeInteger(value) ||
-    value < MIN_REFRESH_INTERVAL_MINUTES ||
-    value > MAX_REFRESH_INTERVAL_MINUTES
-  ) {
+/** Reject the unreleased interval setting instead of silently ignoring it. */
+function rejectLegacyRefreshInterval(
+  source: Config | undefined,
+  context: string,
+): void {
+  if (source?.has('refreshIntervalMinutes')) {
     throw new InputError(
-      `${context}.refreshIntervalMinutes must be an integer between ` +
-        `${MIN_REFRESH_INTERVAL_MINUTES} and ${MAX_REFRESH_INTERVAL_MINUTES}`,
+      `${context}.refreshIntervalMinutes is no longer supported; use ${context}.schedule with frequency and timeout`,
     );
   }
-  return value;
+}
+
+/** Read the standard Backstage schedule, scoped to this backend's snapshot cache. */
+export function readSourceSchedule(
+  source?: Config,
+  context = 'skillImageConnector',
+  sourceOperationDeadlineMs = DEFAULT_SKILL_IMAGE_OPTIONS.sourceOperationDeadlineMs,
+): SchedulerServiceTaskScheduleDefinition {
+  rejectLegacyRefreshInterval(source, context);
+  if (!source?.has('schedule')) {
+    return {
+      frequency: { minutes: DEFAULT_REFRESH_INTERVAL_MINUTES },
+      timeout: { milliseconds: Math.max(2 * sourceOperationDeadlineMs, 60000) },
+      initialDelay: { seconds: 0 },
+      scope: 'local',
+    };
+  }
+
+  let schedule: SchedulerServiceTaskScheduleDefinition;
+  try {
+    schedule = readSchedulerServiceTaskScheduleDefinitionFromConfig(
+      source.getConfig('schedule'),
+    );
+  } catch {
+    // Backstage duration errors can echo raw values. Report the configuration
+    // path and expected shape without including potentially sensitive input.
+    throw new InputError(
+      `${context}.schedule must define a valid Backstage frequency and timeout, optional initialDelay, and local scope`,
+    );
+  }
+  if (schedule.scope === 'global') {
+    throw new InputError(
+      `${context}.schedule.scope must be local because snapshots are stored separately on each backend instance`,
+    );
+  }
+  return {
+    ...schedule,
+    initialDelay: schedule.initialDelay ?? { seconds: 0 },
+    scope: 'local',
+  };
 }
 
 /**
@@ -116,6 +146,10 @@ export function readRefreshInterval(
 export function readSourceConfigs(config: Config): SourceConfig[] {
   const pluginConfig = config.getOptionalConfig('skillImageConnector');
   if (!pluginConfig) return [];
+  rejectLegacyRefreshInterval(pluginConfig, 'skillImageConnector');
+  const sourceOperationDeadlineMs =
+    pluginConfig.getOptionalNumber('sourceOperationDeadlineMs') ??
+    DEFAULT_SKILL_IMAGE_OPTIONS.sourceOperationDeadlineMs;
 
   const sourcesConfig = pluginConfig.getOptionalConfigArray('sources');
   if (sourcesConfig) {
@@ -145,9 +179,10 @@ export function readSourceConfigs(config: Config): SourceConfig[] {
         `skillImageConnector.sources[${index}]`,
       );
 
-      const refreshIntervalMinutes = readRefreshInterval(
+      const schedule = readSourceSchedule(
         entry,
         `skillImageConnector.sources[${index}]`,
+        sourceOperationDeadlineMs,
       );
 
       return {
@@ -155,7 +190,7 @@ export function readSourceConfigs(config: Config): SourceConfig[] {
         images: [], // Populated by caller via readSkillImageConfigs
         allowedRegistries,
         allowedOrigins,
-        refreshIntervalMinutes,
+        schedule,
       };
     });
   }
@@ -174,7 +209,11 @@ export function readSourceConfigs(config: Config): SourceConfig[] {
     pluginConfig,
     'skillImageConnector',
   );
-  const refreshIntervalMinutes = readRefreshInterval(pluginConfig);
+  const schedule = readSourceSchedule(
+    pluginConfig,
+    'skillImageConnector',
+    sourceOperationDeadlineMs,
+  );
 
   return [
     {
@@ -182,7 +221,7 @@ export function readSourceConfigs(config: Config): SourceConfig[] {
       images: [], // Populated by caller
       allowedRegistries,
       allowedOrigins,
-      refreshIntervalMinutes,
+      schedule,
     },
   ];
 }

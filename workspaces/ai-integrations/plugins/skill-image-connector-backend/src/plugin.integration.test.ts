@@ -20,7 +20,7 @@ import {
   startTestBackend,
 } from '@backstage/backend-test-utils';
 import request from 'supertest';
-import type { Config } from '../config';
+import type { ConnectorTestConfig } from './testUtils';
 import { performSourceRefresh, skillImageConnectorPlugin } from './plugin';
 import { DEFAULT_SKILL_IMAGE_OPTIONS } from './services/types';
 import type { SkillImageConfig, SourceConfig } from './services/types';
@@ -84,9 +84,7 @@ beforeEach(() => {
   });
 });
 
-async function startConnector(
-  settings: NonNullable<Config['skillImageConnector']>,
-) {
+async function startConnector(settings: ConnectorTestConfig) {
   return startTestBackend({
     features: [
       skillImageConnectorPlugin,
@@ -253,7 +251,12 @@ describe('configured acquisition in the plugin', () => {
       id: 'default',
       images: [{ id: 'explicit', imageRef: explicitRef }],
       allowedRegistries: ['quay.io'],
-      refreshIntervalMinutes: 10,
+      schedule: {
+        frequency: { minutes: 10 },
+        timeout: { minutes: 10 },
+        initialDelay: { seconds: 0 },
+        scope: 'local',
+      },
       quayDiscovery: { registry: 'quay.io', organization: 'org', tag: 'v1' },
     };
     const running = performSourceRefresh(
@@ -587,7 +590,12 @@ describe('source-operation deadline', () => {
         id: 'test',
         images,
         allowedRegistries: ['quay.io'],
-        refreshIntervalMinutes: 10,
+        schedule: {
+          frequency: { minutes: 10 },
+          timeout: { minutes: 10 },
+          initialDelay: { seconds: 0 },
+          scope: 'local',
+        },
       };
       const options = {
         ...DEFAULT_SKILL_IMAGE_OPTIONS,
@@ -635,7 +643,12 @@ describe('refresh cancellation cleanup', () => {
     id: 'cancelled',
     images: [{ id: 'skill', imageRef: 'quay.io/org/skill:v1' }],
     allowedRegistries: ['quay.io'],
-    refreshIntervalMinutes: 10,
+    schedule: {
+      frequency: { minutes: 10 },
+      timeout: { minutes: 10 },
+      initialDelay: { seconds: 0 },
+      scope: 'local',
+    },
   };
   it('does not start acquisition when the parent was already cancelled', async () => {
     const controller = new AbortController();
