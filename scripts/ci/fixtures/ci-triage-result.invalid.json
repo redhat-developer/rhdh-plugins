@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "pr": { "number": 12, "head_sha": "not-a-sha" },
+  "run": { "id": 34, "attempt": 1, "url": "not-a-url" },
+  "failed_jobs": [],
+  "failed_tests": [],
+  "evidence": [],
+  "category": "flake",
+  "confidence": "low",
+  "recommendation": "repair",
+  "root_cause": "unknown",
+  "workspace_boundary": {
+    "kind": "multiple",
+    "workspace": null,
+    "allowed_prefix": null,
+    "reason": "multiple"
+  },
+  "verification_commands": [],
+  "summary": "invalid fixture"
+}
