@@ -19,7 +19,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Entity } from '@backstage/catalog-model';
 
-import EntityCard from './EntityCard';
+import EntityCard from '../EntityCard';
 
 jest.mock('@backstage/plugin-catalog-react', () => ({
   EntityRefLink: ({ children }: { children: ReactNode }) => (
@@ -27,7 +27,7 @@ jest.mock('@backstage/plugin-catalog-react', () => ({
   ),
 }));
 
-jest.mock('./TagList', () => ({
+jest.mock('../TagList', () => ({
   __esModule: true,
   default: ({ kind, tags }: { kind: string; tags: string[] }) => (
     <div data-testid="tag-list">{`Kind: ${kind}, Tags: ${tags.join(', ')}`}</div>

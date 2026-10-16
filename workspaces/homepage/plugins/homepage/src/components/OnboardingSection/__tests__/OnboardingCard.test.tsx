@@ -19,7 +19,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 
-import OnboardingCard from './OnboardingCard';
+import OnboardingCard from '../OnboardingCard';
 
 jest.mock('@backstage/core-components', () => ({
   Link: ({ to, children, ...props }: any) => (
