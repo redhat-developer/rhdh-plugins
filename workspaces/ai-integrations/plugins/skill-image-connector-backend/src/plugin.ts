@@ -952,6 +952,9 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           if (statuses.some(s => s === 'loading' || s === undefined)) {
             return 'loading';
           }
+          // Raw extraction can succeed even when its metadata cannot be
+          // normalized. Keep /images usable independently of /skills status.
+          if (globalExtractions.size > 0) return 'ready';
           if (statuses.every(s => s === 'failed')) return 'failed';
           return 'ready';
         };

@@ -188,6 +188,37 @@ describe('GET /skills/:sourceId — snapshot endpoint', () => {
     expect(response.body.images[0].skillImageYaml).toBeDefined();
     expect(response.body.images[0].skillsMd).toBeDefined();
   });
+
+  it.each(['not: [valid YAML', 'metadata: {}'])(
+    'keeps extracted raw content ready when normalization rejects %p',
+    async skillImageYaml => {
+      const imageRef = 'quay.io/org/skill:v1';
+      fetchImage.mockResolvedValue({ ...extracted, skillImageYaml });
+      const { server } = await startConnector({ images: [{ imageRef }] });
+
+      const raw = await request(server)
+        .get('/api/skill-image-connector/images')
+        .set('Authorization', mockCredentials.user.header());
+      expect(raw.status).toBe(200);
+      expect(raw.body).toEqual({
+        status: 'ready',
+        failedImages: [],
+        images: [{ imageRef, skillImageYaml, skillsMd: extracted.skillsMd }],
+      });
+
+      const snapshot = await request(server)
+        .get('/api/skill-image-connector/skills/default')
+        .set('Authorization', mockCredentials.service.header());
+      expect(snapshot.status).toBe(200);
+      expect(snapshot.body.status).toBe('failed');
+      expect(snapshot.body.skills).toEqual([]);
+      expect(snapshot.body.failedSkillKeys).toEqual([imageRef]);
+      expect(validateSnapshot(snapshot.body)).toEqual({
+        valid: true,
+        errors: [],
+      });
+    },
+  );
 });
 
 describe('snapshot status semantics', () => {
