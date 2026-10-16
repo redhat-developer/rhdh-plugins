@@ -15,6 +15,12 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+import {
+  createLoadingSnapshot,
+  validOciSnapshotReady,
+  ociSource,
+} from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import express from 'express';
 import request from 'supertest';
 import { createRouter } from './router';
@@ -90,5 +96,100 @@ describe('createRouter', () => {
         images: [],
       });
     });
+  });
+
+  describe('GET /skills/:sourceId', () => {
+    it('returns 404 for unknown source IDs', async () => {
+      const router = await createRouter(
+        mockLogger,
+        new Map(),
+        () => 'ready',
+        () => [],
+        new Map(),
+      );
+      const testApp = express();
+      testApp.use(router);
+
+      const res = await request(testApp).get('/skills/unknown-source');
+      expect(res.status).toBe(404);
+      expect(res.body).toEqual({ error: 'Unknown source: unknown-source' });
+    });
+
+    it('returns 404 when no snapshots map is provided', async () => {
+      const res = await request(app).get('/skills/any-source');
+      expect(res.status).toBe(404);
+    });
+
+    it('returns snapshot for known source ID', async () => {
+      const snapshots = new Map<string, SkillSnapshot>();
+      snapshots.set('quay-public', validOciSnapshotReady);
+
+      const router = await createRouter(
+        mockLogger,
+        new Map(),
+        () => 'ready',
+        () => [],
+        snapshots,
+      );
+      const testApp = express();
+      testApp.use(router);
+
+      const res = await request(testApp).get('/skills/quay-public');
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(validOciSnapshotReady);
+      expect(res.body.source.id).toBe('quay-public');
+      expect(res.body.source.type).toBe('oci');
+      expect(res.body.schemaVersion).toBe('1');
+    });
+
+    it('returns loading snapshot before first refresh', async () => {
+      const snapshots = new Map<string, SkillSnapshot>();
+      const loadingSnapshot = createLoadingSnapshot(ociSource);
+      snapshots.set(ociSource.id, loadingSnapshot);
+
+      const router = await createRouter(
+        mockLogger,
+        new Map(),
+        () => 'loading',
+        () => [],
+        snapshots,
+      );
+      const testApp = express();
+      testApp.use(router);
+
+      const res = await request(testApp).get(`/skills/${ociSource.id}`);
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe('loading');
+      expect(res.body.observedAt).toBeNull();
+      expect(res.body.skills).toEqual([]);
+      expect(res.body.failedSkillKeys).toEqual([]);
+    });
+
+    it.each(['source/with special chars', 'team%', 'team%2Fprod'])(
+      'handles URL-encoded source ID %p as one path segment',
+      async sourceId => {
+        const snapshot = createLoadingSnapshot({
+          id: sourceId,
+          type: 'oci',
+        });
+        const snapshots = new Map<string, SkillSnapshot>();
+        snapshots.set(sourceId, snapshot);
+
+        const router = await createRouter(
+          mockLogger,
+          new Map(),
+          () => 'loading',
+          () => [],
+          snapshots,
+        );
+        const testApp = express();
+        testApp.use(router);
+
+        const encodedId = encodeURIComponent(sourceId);
+        const res = await request(testApp).get(`/skills/${encodedId}`);
+        expect(res.status).toBe(200);
+        expect(res.body.source.id).toBe(sourceId);
+      },
+    );
   });
 });

@@ -149,6 +149,9 @@ describe('verified acquisition to normalization', () => {
         skillImageConnectorPlugin,
         mockServices.rootLogger.factory(),
         logger.factory,
+        mockServices.scheduler.factory({
+          includeInitialDelayedTasksOnStartup: true,
+        }),
         mockServices.rootConfig.factory({
           data: {
             app: { baseUrl: 'http://localhost:3000' },
