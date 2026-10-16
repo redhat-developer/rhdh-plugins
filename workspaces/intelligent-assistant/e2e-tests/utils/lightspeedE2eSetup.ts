@@ -52,8 +52,7 @@ export type BootstrapLightspeedE2eOptions = {
 
 async function waitForLoggedInShell(page: Page) {
   const enter = page.getByRole('button', { name: 'Enter' });
-  const legacyMain = page.locator('main[class*="BackstagePage-root"]').first();
-  const nfsCatalogTitle = page.locator('.bui-HeaderTitle').first();
+  const catalogTitle = page.locator('.bui-HeaderTitle').first();
   const settings = page.getByRole('link', { name: 'Settings' });
   const deadline = Date.now() + 15_000;
 
@@ -63,10 +62,7 @@ async function waitForLoggedInShell(page: Page) {
       await page.waitForTimeout(250);
       continue;
     }
-    if (await legacyMain.isVisible().catch(() => false)) {
-      return;
-    }
-    if (await nfsCatalogTitle.isVisible().catch(() => false)) {
+    if (await catalogTitle.isVisible().catch(() => false)) {
       return;
     }
     if (await settings.isVisible().catch(() => false)) {
@@ -134,8 +130,8 @@ async function setupLightspeedApiMocks(page: Page) {
 }
 
 /**
- * One logged-in Lightspeed session with the same dev-mode mocks as the legacy
- * monolithic suite. Each Playwright test file should call this from `beforeAll`.
+ * One logged-in Lightspeed session with shared dev-mode mocks.
+ * Each Playwright test file should call this from `beforeAll`.
  */
 export async function bootstrapLightspeedE2ePage(
   browser: Browser,
