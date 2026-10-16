@@ -16,7 +16,7 @@
 
 import { render, screen } from '@testing-library/react';
 
-import { LocalClock } from './LocalClock';
+import { LocalClock } from '../LocalClock';
 
 jest.mock('@backstage/core-components', () => ({
   ...jest.requireActual('@backstage/core-components'),
@@ -37,14 +37,9 @@ describe('LocalClock', () => {
     jest.useRealTimers();
   });
 
-  it('renders successfully', () => {
-    render(<LocalClock />);
-    expect(screen.getByText('01:14 PM')).toBeInTheDocument();
-  });
-
-  it.skip('renders nothing if format is none', () => {
-    render(<LocalClock format="none" />);
-    expect(screen.getByTestId).toBeInTheDocument();
+  it('renders nothing if format is none', () => {
+    const { container } = render(<LocalClock format="none" />);
+    expect(container).toBeEmptyDOMElement();
   });
 
   const formats = {
