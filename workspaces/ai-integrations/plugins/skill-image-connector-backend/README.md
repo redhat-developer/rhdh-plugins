@@ -121,7 +121,10 @@ segment when requesting its snapshot. Renaming an ID creates a different source
 identity for consumers. Each source owns `images`, `quayDiscovery`,
 `allowedRegistries`, `allowedOrigins`, and `schedule`. When
 `sources` is present, the corresponding flat settings are ignored, including
-flat `allowedOrigins` and the flat `schedule`. Origins are validated as
+flat `allowedOrigins` and the flat `schedule`. Mixing `sources` with flat
+`images`, `quayDiscovery`, `allowedRegistries`, `allowedOrigins`, or `schedule`
+emits a startup warning naming the ignored fields, without logging their values.
+The flat values remain ignored. Origins are validated as
 exact HTTPS origins without credentials, paths, queries, or fragments; one
 source's redirect permissions never grant another source access. Global
 `allowedOrigins` applies only to the legacy flat source. Numeric acquisition
@@ -295,7 +298,23 @@ Returns `{ "status": "ok" }` when the plugin is running.
 
 ### `GET /api/skill-image-connector/images`
 
-Returns the processing status, failed image references, and list of extracted skill images and their contents. Before the first refresh finishes, `status` is `loading`. Available raw extractions make it `ready` even if their metadata cannot be normalized; raw and normalized statuses are independent. With no raw extractions it is `failed` only when every source's raw acquisition has failed, otherwise `ready`. Failed images are omitted from `images` and listed in `failedImages`. Local filesystem paths are intentionally not returned.
+Returns raw extracted content and aggregate processing status across all sources.
+Status is `loading` while any source has not completed its first refresh. Once
+all sources have completed, available raw extractions make it `ready` even if
+metadata cannot be normalized; raw and normalized statuses are independent.
+With no raw extractions it is `failed` only when every source's raw acquisition
+has failed, otherwise `ready`. No configured sources yields empty `ready`.
+Local filesystem paths are intentionally not returned.
+
+Each source owns its retained extractions independently, even when multiple
+sources configure the same `imageRef`. Each completed source refresh atomically
+rebuilds the aggregate inventory from retained source results. Duplicate references
+appear once; the first configured source with a successful extraction supplies
+the raw content. A reference appears in `failedImages` only if it failed and no
+source retains a successful extraction for it. Refreshing one source neither
+deletes another source's files nor removes its successful inventory entry.
+Shutdown cleans all retained source extractions, including duplicate references
+hidden by aggregation.
 
 Example response:
 

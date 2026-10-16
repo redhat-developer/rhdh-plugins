@@ -203,6 +203,16 @@ Unknown source IDs SHALL return 404.
 - **AND** the completed replacement is published atomically with its UTC completion time
 - **AND** source refreshes do not overlap and independent sources refresh independently
 
+#### Scenario: Shared image references across independent sources
+
+- **WHEN** multiple sources retain raw extractions for the same `imageRef`
+- **THEN** each source owns and cleans up only its own files
+- **AND** each source publication atomically rebuilds the aggregate `/images` inventory, displaying the first configured successful source's content once
+- **AND** `failedImages` excludes a reference successfully retained by any source
+- **AND** a source refresh cannot remove another source's successful extraction or files
+- **AND** shutdown cleans all retained extractions, including duplicates hidden by aggregation
+- **AND** aggregate raw status is `loading` while any first refresh is incomplete, then `ready` when raw content exists; without content it is `failed` only if every source's raw acquisition failed
+
 #### Scenario: Standard Backstage schedule configuration
 
 - **WHEN** a source omits `schedule`
@@ -245,6 +255,7 @@ Unknown source IDs SHALL return 404.
 - **AND** another source's origins and the flat legacy origins do not grant it additional redirect trust
 - **AND** invalid origin entries fail startup validation
 - **AND** numeric acquisition limits remain top-level settings applied to each source
+- **AND** mixing explicit sources with flat `images`, `quayDiscovery`, `allowedRegistries`, `allowedOrigins`, or `schedule` produces a warning naming ignored fields without logging their values
 - **WHEN** only flat image/discovery configuration is present
 - **THEN** it maps to source `default` with the legacy flat origin and schedule settings
 

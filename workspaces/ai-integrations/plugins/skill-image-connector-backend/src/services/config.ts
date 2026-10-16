@@ -17,6 +17,7 @@
 import {
   readSchedulerServiceTaskScheduleDefinitionFromConfig,
   type SchedulerServiceTaskScheduleDefinition,
+  type LoggerService,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
@@ -55,7 +56,9 @@ export function readSkillImageOptions(config: Config): SkillImageOptions {
     }
     options[key] = value;
   }
-  const allowedOrigins = readAllowedOrigins(source, 'skillImageConnector');
+  const allowedOrigins = source?.has('sources')
+    ? undefined
+    : readAllowedOrigins(source, 'skillImageConnector');
   return Object.freeze({
     ...options,
     ...(allowedOrigins ? { allowedOrigins } : {}),
@@ -143,7 +146,10 @@ export function readSourceSchedule(
  * caller (plugin.ts) which has access to OCI reference validators.
  * This function returns the raw structural config for each source.
  */
-export function readSourceConfigs(config: Config): SourceConfig[] {
+export function readSourceConfigs(
+  config: Config,
+  logger?: LoggerService,
+): SourceConfig[] {
   const pluginConfig = config.getOptionalConfig('skillImageConnector');
   if (!pluginConfig) return [];
   rejectLegacyRefreshInterval(pluginConfig, 'skillImageConnector');
@@ -153,6 +159,20 @@ export function readSourceConfigs(config: Config): SourceConfig[] {
 
   const sourcesConfig = pluginConfig.getOptionalConfigArray('sources');
   if (sourcesConfig) {
+    const ignoredFields = [
+      'images',
+      'quayDiscovery',
+      'allowedRegistries',
+      'allowedOrigins',
+      'schedule',
+    ].filter(key => pluginConfig.has(key));
+    if (ignoredFields.length) {
+      logger?.warn(
+        `Ignoring flat skillImageConnector settings because sources is configured: ${ignoredFields.join(
+          ', ',
+        )}`,
+      );
+    }
     const seenIds = new Set<string>();
     return sourcesConfig.map((entry, index) => {
       const id = entry.getOptionalString('id')?.trim();
@@ -187,7 +207,7 @@ export function readSourceConfigs(config: Config): SourceConfig[] {
 
       return {
         id,
-        images: [], // Populated by caller via readSkillImageConfigs
+        images: [], // Populated by caller via readSourceImageConfigs
         allowedRegistries,
         allowedOrigins,
         schedule,

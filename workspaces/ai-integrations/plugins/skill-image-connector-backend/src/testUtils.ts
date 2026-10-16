@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import type { BackendFeature } from '@backstage/backend-plugin-api';
+// eslint-disable-next-line @backstage/no-undeclared-imports -- Shared fixtures are imported only by tests.
+import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import type { Config } from '../config';
 
 import { createHash } from 'node:crypto';
@@ -111,3 +114,40 @@ type JsonConfig<T> = T extends object
 export type ConnectorTestConfig = JsonConfig<
   NonNullable<Config['skillImageConnector']>
 >;
+
+/** Shared manifest resolution used by connector integration fixtures. */
+export const resolvedDigest = `sha256:${'a'.repeat(64)}`;
+
+/** Pin a fixture reference to its shared resolved manifest digest. */
+export const pinnedRef = (ref: string): string => `${ref}@${resolvedDigest}`;
+
+/** Start a connector backend without importing the plugin into low-level fixture users. */
+export function startConnector(
+  settings: ConnectorTestConfig,
+  logger: ReturnType<typeof mockServices.logger.mock>,
+  plugin: BackendFeature,
+  scheduler: BackendFeature = mockServices.scheduler.factory({
+    includeInitialDelayedTasksOnStartup: true,
+  }),
+) {
+  return startTestBackend({
+    features: [
+      plugin,
+      mockServices.rootLogger.factory(),
+      logger.factory,
+      scheduler,
+      mockServices.rootConfig.factory({
+        data: {
+          app: { baseUrl: 'http://localhost:3000' },
+          backend: { baseUrl: 'http://localhost:7007' },
+          skillImageConnector: {
+            ...(settings.sources === undefined
+              ? { allowedRegistries: ['quay.io'] }
+              : {}),
+            ...settings,
+          },
+        },
+      }),
+    ],
+  });
+}

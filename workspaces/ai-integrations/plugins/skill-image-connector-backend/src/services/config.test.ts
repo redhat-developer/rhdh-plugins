@@ -15,6 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
+import { mockServices } from '@backstage/backend-test-utils';
 import {
   readSkillImageOptions,
   readSourceConfigs,
@@ -101,6 +102,30 @@ describe('readSkillImageOptions', () => {
 });
 
 describe('trusted redirect origin configuration', () => {
+  it.each([
+    { allowedOrigins: ['http://localhost'] },
+    { allowedOrigins: ['https://operator:secret@example.com'] },
+    { allowedOrigins: ['https://cdn.example.com'] },
+    { allowedOrigins: 'invalid-array' },
+  ])(
+    'ignores flat origins when explicit sources own redirect trust: %j',
+    ({ allowedOrigins }) => {
+      const options = readSkillImageOptions(
+        new ConfigReader({
+          skillImageConnector: {
+            allowedOrigins,
+            maxImages: 100,
+            sources: [
+              { id: 'one', allowedOrigins: ['https://source.example.com'] },
+            ],
+          },
+        }),
+      );
+      expect(options.allowedOrigins).toBeUndefined();
+      expect(options.maxImages).toBe(100);
+    },
+  );
+
   it('normalizes and retains explicitly configured HTTPS origins', () => {
     expect(
       readSkillImageOptions(
@@ -392,4 +417,82 @@ describe('Backstage source schedules', () => {
       scope: 'local',
     });
   });
+});
+
+describe('mixed source configuration diagnostics', () => {
+  it('warns once with ignored field names without disclosing their values', () => {
+    const logger = mockServices.logger.mock();
+    const secret = 'private-token';
+    const sources = readSourceConfigs(
+      new ConfigReader({
+        skillImageConnector: {
+          sources: [{ id: 'one' }],
+          images: [
+            {
+              imageRef: 'quay.io/private/image:v1',
+              credentials: { password: secret },
+            },
+          ],
+          quayDiscovery: { organization: 'private-org' },
+          allowedRegistries: ['private.example.com'],
+          allowedOrigins: ['https://private.example.com'],
+          schedule: { frequency: 'PT3M', timeout: 'PT2M' },
+        },
+      }),
+      logger,
+    );
+    expect(sources).toHaveLength(1);
+    expect(logger.warn).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Ignoring flat skillImageConnector settings because sources is configured: images, quayDiscovery, allowedRegistries, allowedOrigins, schedule',
+    );
+    expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(secret);
+    expect(JSON.stringify(logger.warn.mock.calls)).not.toContain('private');
+  });
+
+  it.each([
+    'images',
+    'quayDiscovery',
+    'allowedRegistries',
+    'allowedOrigins',
+    'schedule',
+  ])('warns when %s alone coexists with sources', key => {
+    const logger = mockServices.logger.mock();
+    readSourceConfigs(
+      new ConfigReader({
+        skillImageConnector: {
+          sources: [{ id: 'one' }],
+          [key]: {},
+        },
+      }),
+      logger,
+    );
+    expect(logger.warn).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining(key));
+  });
+
+  it.each([
+    { sources: [{ id: 'one' }] },
+    {
+      sources: [{ id: 'one' }],
+      fetchTimeoutMs: 1000,
+      maxImages: 50,
+      sourceOperationDeadlineMs: 120000,
+    },
+    {
+      images: [],
+      allowedRegistries: ['quay.io'],
+      schedule: { frequency: 'PT3M', timeout: 'PT1M' },
+    },
+  ])(
+    'does not warn for source-only, shared acquisition, or legacy config: %j',
+    pluginConfig => {
+      const logger = mockServices.logger.mock();
+      readSourceConfigs(
+        new ConfigReader({ skillImageConnector: pluginConfig }),
+        logger,
+      );
+      expect(logger.warn).not.toHaveBeenCalled();
+    },
+  );
 });

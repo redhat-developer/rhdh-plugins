@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  mockCredentials,
-  mockServices,
-  startTestBackend,
-} from '@backstage/backend-test-utils';
+import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import request from 'supertest';
-import type { ConnectorTestConfig } from './testUtils';
+import {
+  type ConnectorTestConfig,
+  pinnedRef,
+  resolvedDigest,
+  startConnector as startConnectorBackend,
+} from './testUtils';
 import { performSourceRefresh, skillImageConnectorPlugin } from './plugin';
 import { DEFAULT_SKILL_IMAGE_OPTIONS } from './services/types';
 import type { SkillImageConfig, SourceConfig } from './services/types';
@@ -57,8 +58,6 @@ const logger = mockServices.logger.mock();
 const fetchImage = jest.mocked(fetchAndExtractSkillImage);
 const discover = jest.mocked(discoverQuayRepositorySnapshot);
 const resolveManifest = jest.mocked(fetchManifest);
-const resolvedDigest = `sha256:${'a'.repeat(64)}`;
-const pinnedRef = (ref: string) => `${ref}@${resolvedDigest}`;
 const extracted = {
   skillImageYaml: 'hé',
   skillsMd: 'abc',
@@ -84,24 +83,8 @@ beforeEach(() => {
   });
 });
 
-async function startConnector(settings: ConnectorTestConfig) {
-  return startTestBackend({
-    features: [
-      skillImageConnectorPlugin,
-      mockServices.rootLogger.factory(),
-      logger.factory,
-      mockServices.scheduler.factory({
-        includeInitialDelayedTasksOnStartup: true,
-      }),
-      mockServices.rootConfig.factory({
-        data: {
-          app: { baseUrl: 'http://localhost:3000' },
-          backend: { baseUrl: 'http://localhost:7007' },
-          skillImageConnector: { allowedRegistries: ['quay.io'], ...settings },
-        },
-      }),
-    ],
-  });
+function startConnector(settings: ConnectorTestConfig) {
+  return startConnectorBackend(settings, logger, skillImageConnectorPlugin);
 }
 
 describe('configured acquisition in the plugin', () => {

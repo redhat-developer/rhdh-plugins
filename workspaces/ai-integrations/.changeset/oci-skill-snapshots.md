@@ -12,3 +12,8 @@ and the legacy flat configuration as source `default`. Preserve partial discover
 results and report known failed repository/tag keys without treating incomplete
 inventories as complete empty success. Digest-only inputs remain raw-only and do
 not alone make normalized snapshots incomplete.
+
+Keep raw extraction ownership per source and atomically aggregate `/images`
+without duplicate references or cross-source cleanup. Successful references in
+any source are excluded from the aggregate failure list. Warn when explicit
+sources cause legacy flat source fields to be ignored, without logging values.

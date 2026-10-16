@@ -23,6 +23,11 @@ import {
 import { validateSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import request from 'supertest';
 import type { ConnectorTestConfig } from './testUtils';
+import {
+  resolvedDigest,
+  pinnedRef,
+  startConnector as startSharedConnector,
+} from './testUtils';
 import { skillImageConnectorPlugin } from './plugin';
 import { discoverQuayRepositorySnapshot } from './services/QuayDiscovery';
 import {
@@ -55,8 +60,6 @@ const logger = mockServices.logger.mock();
 const fetchImage = jest.mocked(fetchAndExtractSkillImage);
 const discover = jest.mocked(discoverQuayRepositorySnapshot);
 const resolveManifest = jest.mocked(fetchManifest);
-const resolvedDigest = `sha256:${'a'.repeat(64)}`;
-const pinnedRef = (ref: string) => `${ref}@${resolvedDigest}`;
 const extracted = {
   skillImageYaml: `metadata:\n  display-name: Test Skill\n  name: test-skill\n  description: A test\nspec:\n  prompt: Do things`,
   skillsMd: '# Test Skill',
@@ -82,25 +85,8 @@ beforeEach(() => {
   });
 });
 
-async function startConnector(settings: ConnectorTestConfig) {
-  return startTestBackend({
-    features: [
-      skillImageConnectorPlugin,
-      mockServices.rootLogger.factory(),
-      logger.factory,
-      mockServices.scheduler.factory({
-        includeInitialDelayedTasksOnStartup: true,
-      }),
-      mockServices.rootConfig.factory({
-        data: {
-          app: { baseUrl: 'http://localhost:3000' },
-          backend: { baseUrl: 'http://localhost:7007' },
-          skillImageConnector: { allowedRegistries: ['quay.io'], ...settings },
-        },
-      }),
-    ],
-  });
-}
+const startConnector = (settings: ConnectorTestConfig) =>
+  startSharedConnector(settings, logger, skillImageConnectorPlugin);
 
 describe('GET /skills/:sourceId — snapshot endpoint', () => {
   it('returns 404 for unknown source IDs', async () => {
@@ -498,23 +484,115 @@ describe('controlled refresh lifecycle', () => {
         tasks.push(task);
       },
     });
-    const backend = await startTestBackend({
-      features: [
-        skillImageConnectorPlugin,
-        mockServices.rootLogger.factory(),
-        logger.factory,
-        scheduler.factory,
-        mockServices.rootConfig.factory({
-          data: {
-            app: { baseUrl: 'http://localhost:3000' },
-            backend: { baseUrl: 'http://localhost:7007' },
-            skillImageConnector: settings,
-          },
-        }),
-      ],
-    });
+    const backend = await startSharedConnector(
+      settings,
+      logger,
+      skillImageConnectorPlugin,
+      scheduler.factory,
+    );
     return { server: backend.server, tasks, stop: () => backend.stop() };
   }
+  it('keeps overlapping source acquisitions independent during refresh and shutdown', async () => {
+    const imageRef = 'quay.io/org/shared:v1';
+    const a1 = {
+      ...extracted,
+      skillsMd: '# A first',
+      skillImageYamlPath: '/a1/skillimage.yaml',
+      skillsMdPath: '/a1/SKILL.md',
+    };
+    const b1 = {
+      ...extracted,
+      skillsMd: '# B first',
+      skillImageYamlPath: '/b1/skillimage.yaml',
+      skillsMdPath: '/b1/SKILL.md',
+    };
+    const a2 = {
+      ...extracted,
+      skillsMd: '# A second',
+      skillImageYamlPath: '/a2/skillimage.yaml',
+      skillsMdPath: '/a2/SKILL.md',
+    };
+    fetchImage
+      .mockResolvedValueOnce(a1)
+      .mockResolvedValueOnce(b1)
+      .mockResolvedValueOnce(a2)
+      .mockRejectedValueOnce(new Error('B unavailable'));
+    const { server, tasks, stop } = await startScheduled({
+      maxRetries: 0,
+      sources: [
+        { id: 'a', allowedRegistries: ['quay.io'], images: [{ imageRef }] },
+        { id: 'b', allowedRegistries: ['quay.io'], images: [{ imageRef }] },
+      ],
+    });
+    const raw = () =>
+      request(server)
+        .get('/api/skill-image-connector/images')
+        .set('Authorization', mockCredentials.user.header());
+    try {
+      await tasks[0].fn(new AbortController().signal);
+      await tasks[1].fn(new AbortController().signal);
+      await tasks[0].fn(new AbortController().signal);
+      const cleaned = jest
+        .mocked(cleanupSkillImageExtraction)
+        .mock.calls.map(([value]) => value.skillsMd);
+      expect(cleaned).toEqual(['# A first']);
+      const first = await raw();
+      expect(first.body.images).toEqual([
+        {
+          imageRef,
+          skillImageYaml: extracted.skillImageYaml,
+          skillsMd: '# A second',
+        },
+      ]);
+      await tasks[1].fn(new AbortController().signal);
+      const second = await raw();
+      expect(second.body.images).toEqual(first.body.images);
+      expect(second.body.failedImages).toEqual([]);
+      expect(
+        jest
+          .mocked(cleanupSkillImageExtraction)
+          .mock.calls.map(([value]) => value.skillsMd),
+      ).toEqual(['# A first', '# B first']);
+    } finally {
+      await stop();
+    }
+    expect(
+      jest
+        .mocked(cleanupSkillImageExtraction)
+        .mock.calls.map(([value]) => value.skillsMd),
+    ).toEqual(['# A first', '# B first', '# A second']);
+  });
+
+  it('cleans up each source extraction on shutdown even when its image ref is deduplicated', async () => {
+    const imageRef = 'quay.io/org/shared:v1';
+    fetchImage
+      .mockResolvedValueOnce({ ...extracted, skillsMd: '# A' })
+      .mockResolvedValueOnce({ ...extracted, skillsMd: '# B' });
+    const { server, tasks, stop } = await startScheduled({
+      sources: [
+        { id: 'a', allowedRegistries: ['quay.io'], images: [{ imageRef }] },
+        { id: 'b', allowedRegistries: ['quay.io'], images: [{ imageRef }] },
+      ],
+    });
+    try {
+      await tasks[0].fn(new AbortController().signal);
+      await tasks[1].fn(new AbortController().signal);
+      const response = await request(server)
+        .get('/api/skill-image-connector/images')
+        .set('Authorization', mockCredentials.user.header());
+      expect(response.body.images).toHaveLength(1);
+      expect(response.body.images[0].skillsMd).toBe('# A');
+    } finally {
+      await stop();
+    }
+    expect(
+      jest
+        .mocked(cleanupSkillImageExtraction)
+        .mock.calls.map(([value]) => value.skillsMd)
+        .sort(),
+    ).toEqual(['# A', '# B']);
+  });
+
   it('registers the default local startup and periodic schedule', async () => {
     const { tasks, stop } = await startScheduled({
       allowedRegistries: ['quay.io'],

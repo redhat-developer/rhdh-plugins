@@ -918,7 +918,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         let sources: SourceConfig[];
         if (hasSources) {
           // New source-scoped config
-          const rawSources = readSourceConfigs(config);
+          const rawSources = readSourceConfigs(config, pluginLogger);
           const sourcesConfig = pluginConfig!.getConfigArray('sources');
           sources = rawSources.map((raw, index) => {
             const sourceEntry = sourcesConfig[index];
@@ -932,7 +932,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           });
         } else {
           // Backward compatibility: derive single "default" source
-          const rawSources = readSourceConfigs(config);
+          const rawSources = readSourceConfigs(config, pluginLogger);
           if (rawSources.length > 0) {
             const imageConfigs = readSkillImageConfigs(config, pluginLogger);
             const quayDiscovery = readQuayDiscoveryConfig(config, pluginLogger);
@@ -1007,15 +1007,38 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           allow: 'unauthenticated',
         });
 
-        // Track source-specific extractions for cleanup between refreshes
-        const sourceExtractionKeys = new Map<string, Set<string>>();
+        // Retain every source's acquisitions, including entries hidden by the
+        // deduplicated /images view. Only the owner may release these files.
+        const sourceExtractions = new Map<
+          string,
+          Map<string, SkillImageExtraction>
+        >();
+        const sourceFailedImages = new Map<string, readonly string[]>();
+        const rebuildRawInventory = () => {
+          globalExtractions.clear();
+          globalFailedImages.clear();
+          for (const configuredSource of sources) {
+            for (const [ref, extraction] of sourceExtractions.get(
+              configuredSource.id,
+            ) ?? []) {
+              if (!globalExtractions.has(ref))
+                globalExtractions.set(ref, extraction);
+            }
+            for (const ref of sourceFailedImages.get(configuredSource.id) ??
+              []) {
+              globalFailedImages.add(ref);
+            }
+          }
+          for (const ref of globalExtractions.keys())
+            globalFailedImages.delete(ref);
+        };
 
         for (const source of sources) {
           const snapshotSource: SnapshotSource = {
             id: source.id,
             type: 'oci',
           };
-          const hasConfiguredContent =
+          const hasConfiguredSources =
             source.images.length > 0 || source.quayDiscovery !== undefined;
 
           const discoveryNote = source.quayDiscovery
@@ -1028,7 +1051,8 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               )}`,
           );
 
-          sourceExtractionKeys.set(source.id, new Set());
+          sourceExtractions.set(source.id, new Map());
+          sourceFailedImages.set(source.id, []);
 
           await scheduler.scheduleTask({
             id: `skill-image-refresh-${source.id}`,
@@ -1044,34 +1068,19 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                 abortSignal,
               );
 
-              // Clean up previous extractions for this source
-              const previousKeys = sourceExtractionKeys.get(source.id)!;
-              for (const key of previousKeys) {
-                const extraction = globalExtractions.get(key);
-                if (extraction) {
-                  await cleanupSkillImageExtraction(extraction, pluginLogger);
-                  globalExtractions.delete(key);
-                }
-                globalFailedImages.delete(key);
-              }
-              previousKeys.clear();
-
-              // Update global state for /images backward compat
-              for (const [ref, extraction] of result.extractions) {
-                globalExtractions.set(ref, extraction);
-                previousKeys.add(ref);
-              }
-              for (const ref of result.failedImageRefs) {
-                globalFailedImages.add(ref);
-                previousKeys.add(ref);
-              }
+              const previousExtractions = sourceExtractions.get(source.id)!;
 
               // Build and atomically publish the snapshot
               const snapshot = buildSnapshotFromRefresh(
                 snapshotSource,
                 result,
-                hasConfiguredContent,
+                hasConfiguredSources,
               );
+              // Publish synchronously before awaiting cleanup, so callers see
+              // a complete inventory and another source never loses ownership.
+              sourceExtractions.set(source.id, result.extractions);
+              sourceFailedImages.set(source.id, result.failedImageRefs);
+              rebuildRawInventory();
               snapshots.set(source.id, snapshot);
               rawStatuses.set(
                 source.id,
@@ -1080,6 +1089,12 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                     (!result.discoveryUsable && !result.discoveryComplete))
                   ? 'failed'
                   : 'ready',
+              );
+
+              await Promise.all(
+                Array.from(previousExtractions.values()).map(extraction =>
+                  cleanupSkillImageExtraction(extraction, pluginLogger),
+                ),
               );
 
               pluginLogger.info(
@@ -1095,8 +1110,10 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           // The scheduler handles task cancellation via its own lifecycle.
           // Clean up all retained extractions.
           await Promise.all(
-            Array.from(globalExtractions.values()).map(extraction =>
-              cleanupSkillImageExtraction(extraction, pluginLogger),
+            Array.from(sourceExtractions.values()).flatMap(extractions =>
+              Array.from(extractions.values()).map(extraction =>
+                cleanupSkillImageExtraction(extraction, pluginLogger),
+              ),
             ),
           );
         });

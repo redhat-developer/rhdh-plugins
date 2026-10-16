@@ -1,13 +1,13 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-16T17:19:33Z
+**Last audited:** 2026-10-16T18:09:53Z
 
 ### Summary
 
 Focused cross-artifact documentation review for task 2.5 corrections in PR #5284,
-covering snapshots, standard Backstage schedule configuration, and digest-only
-identity policy. The current migration removes the unreleased custom
-`refreshIntervalMinutes` field in favor of `schedule` blocks.
+covering source-owned raw extractions, aggregate raw inventory, mixed-configuration
+warnings, standard Backstage schedules, and digest-only identity policy. The
+unreleased custom interval was replaced with standard `schedule` blocks.
 This supplements the retained historical audits; it is not a new independent
 full-change audit. Tasks 2.1–2.5 are checked. The maintainer confirmed successful testing and
 review, including the standard Backstage scheduling migration.
@@ -34,8 +34,9 @@ review, including the standard Backstage scheduling migration.
 
 ### SUGGESTION
 
-- None outstanding in this focused documentation review. Runtime corrections
-  and maintainer testing are still required; these are not completed gates.
+- None outstanding in this focused documentation review. Maintainer verification of the
+  latest source-ownership corrections remains pending; earlier maintainer testing
+  supports the existing task 2.5 completion marker.
 
 ### Corrections and validation
 
@@ -54,7 +55,24 @@ Source IDs are required and decoded only once by routing. Redirect origins are
 isolated per source; flat origins apply only to legacy source `default`. Numeric
 acquisition limits stay top-level. Raw readiness is independent of normalization.
 
-The standard-schedule migration is implemented and maintainer testing passed. Documentation describes
+The latest review corrections retain raw extraction maps per source and rebuild
+`/images` atomically at source publication. Duplicate image references use the
+first configured successful source; aggregate failed references exclude any
+retained success. Source refresh cleanup must not delete another source's files,
+and shutdown includes duplicate extractions hidden from the aggregate inventory.
+The OCI specification and README now state these ownership and aggregation rules.
+Mixed explicit/flat configuration emits a field-name-only warning while preserving
+the documented ignore policy. Task 5.1 credits task 2.5 for its OCI schema and
+examples; npx and common-provider configuration remain unchecked scope, not merely
+integration verification. Automated verification passed for these corrections:
+507 connector tests across 16 suites with `--watchAll=false --runInBand`,
+workspace `yarn tsc:full` and `yarn build:all`, connector lint, and workspace
+Prettier. Independent code verification passed. The mixed-configuration path
+also skips validation of ignored flat origins. New maintainer regression testing
+for these corrections remains pending.
+Task 2.5 stays checked based on the prior maintainer verification below.
+
+**Previously verified implementation:** The standard-schedule migration is implemented and maintainer testing passed. Documentation describes
 Backstage-parsed frequency and timeout, optional initial delay, cron and manual
 frequency, enforced local scope, and the default timeout derived from the source
 deadline. Manual mode does not automatically acquire at startup; configured

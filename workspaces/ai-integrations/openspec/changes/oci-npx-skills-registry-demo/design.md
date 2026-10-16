@@ -260,7 +260,17 @@ gets a new operation deadline and budgets. Completed snapshots remain readable
 while a replacement is acquired; publication occurs once the replacement is built.
 `observedAt` records UTC completion, not the start of discovery. The normalized
 endpoint and raw `/images` readiness are independent: valid extracted raw content
-can be available even when its metadata fails normalization.
+can be available even when its metadata fails normalization. Each source owns
+its retained raw extractions, including references also configured by another
+source. Publication atomically rebuilds the legacy `/images` union from these
+source-owned maps. Identical `imageRef` values are deduplicated; the first
+configured source retaining a successful extraction supplies the content.
+`failedImages` excludes any reference successfully retained by another source.
+A source cleans up only its superseded files; shutdown cleans all retained
+extractions, including duplicate references hidden from the union. Raw status
+aggregates sources: `loading` while any first refresh is incomplete, then `ready`
+when any raw content is retained; without content it is `failed` only when all
+source raw acquisitions failed. With no sources it is empty `ready`.
 
 Publish a completed snapshot atomically. During a refresh, serve the previous
 completed snapshot until replacement; before the first completion return
@@ -432,7 +442,10 @@ unique nonblank `id`, `allowedRegistries`, optional validated `allowedOrigins`,
 unreleased `refreshIntervalMinutes` field is removed and rejected with a migration
 error directing operators to `schedule.frequency` and `schedule.timeout`.
 When the array is present these source fields do not inherit the corresponding
-flat settings. In particular, flat redirect origins never grant explicit sources
+flat settings. Mixing explicit sources with flat `images`, `quayDiscovery`,
+`allowedRegistries`, `allowedOrigins`, or `schedule` emits a warning naming only
+the ignored field names, without their values; those settings remain ignored.
+In particular, flat redirect origins never grant explicit sources
 additional trust. Without the array, configured flat `images`/`quayDiscovery` maps
 to source `default`, including the legacy flat origins and schedule.
 Top-level numeric acquisition limits remain shared settings applied per source.
