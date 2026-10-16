@@ -17,7 +17,9 @@
 export { AdversarialAgentEntity } from './AdversarialAgent';
 export type { AdversarialAgentConfig } from './AdversarialAgent';
 export { ArtifactKind } from './ArtifactKind';
+export { Codespace } from './Codespace';
 export { GitRepository } from './GitRepository';
+export { GitRepositoryRef } from './GitRepositoryRef';
 export { JobStatus } from './JobStatus';
 export { Phase } from './Phase';
 export { ProjectState } from './ProjectState';

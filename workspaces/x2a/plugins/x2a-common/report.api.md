@@ -245,6 +245,17 @@ export type CancellablePhase =
   | 'adversarial-analyze'
   | 'adversarial-migrate';
 
+// @public (undocumented)
+export class Codespace {
+  constructor(url: string);
+  // (undocumented)
+  equals(other: Codespace): boolean;
+  // (undocumented)
+  toString(): string;
+  // (undocumented)
+  readonly url: string;
+}
+
 // @public
 export const CREATE_PROJECT_TEMPLATE_PATH =
   '/create/templates/default/x2a-conversion-project-template';
@@ -392,6 +403,24 @@ export class GitRepository {
   equals(other: GitRepository): boolean;
   // (undocumented)
   readonly token: string;
+  // (undocumented)
+  toString(): string;
+  // (undocumented)
+  readonly url: string;
+}
+
+// @public (undocumented)
+export class GitRepositoryRef {
+  constructor(url: string, branch: string);
+  // (undocumented)
+  readonly branch: string;
+  // (undocumented)
+  equals(other: GitRepositoryRef): boolean;
+  // (undocumented)
+  static fromProject(project: {
+    targetRepoUrl: string;
+    targetRepoBranch: string;
+  }): GitRepositoryRef;
   // (undocumented)
   toString(): string;
   // (undocumented)
@@ -1069,6 +1098,10 @@ export interface ScmProvider {
     filePath: string,
   ): string;
   buildBranchUrl(origin: string, path: string, encodedBranch: string): string;
+  buildCodespace?(
+    repository: GitRepositoryRef,
+    devcontainerPath: string,
+  ): Codespace | undefined;
   getAuthTokenDescriptor(readOnly: boolean): AuthTokenDescriptor;
   matches(repoUrl: string): boolean;
   // (undocumented)

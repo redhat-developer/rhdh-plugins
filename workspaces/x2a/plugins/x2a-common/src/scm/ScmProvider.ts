@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { Codespace } from '../domain/Codespace';
+import { GitRepositoryRef } from '../domain/GitRepositoryRef';
 import { AuthTokenDescriptor } from '../utils/tokenDescriptorTypes';
 
 /**
@@ -55,4 +57,10 @@ export interface ScmProvider {
     encodedBranch: string,
     filePath: string,
   ): string;
+
+  /** Builds a Codespace value object for this repository, if the provider supports one. */
+  buildCodespace?(
+    repository: GitRepositoryRef,
+    devcontainerPath: string,
+  ): Codespace | undefined;
 }

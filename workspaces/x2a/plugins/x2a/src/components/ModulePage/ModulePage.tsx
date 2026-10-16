@@ -26,6 +26,7 @@ import { Box, Grid } from '@material-ui/core';
 import {
   resolveScmProvider,
   CancellablePhase,
+  GitRepositoryRef,
   MigrationPhase,
   ModulePhase,
   Module,
@@ -261,8 +262,11 @@ export const ModulePage = () => {
             <Grid item xs={12}>
               <ModuleDetailsCard
                 module={module}
-                targetRepoUrl={project?.targetRepoUrl || ''}
-                targetRepoBranch={project?.targetRepoBranch || ''}
+                targetRepository={
+                  project?.targetRepoUrl && project.targetRepoBranch
+                    ? GitRepositoryRef.fromProject(project)
+                    : undefined
+                }
                 migrationPlanArtifact={project?.migrationPlan}
               />
             </Grid>
