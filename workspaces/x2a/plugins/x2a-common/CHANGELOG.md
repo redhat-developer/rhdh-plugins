@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-common
 
+## 2.0.2
+
+### Patch Changes
+
+- 1f60858: Enforce rule content limits: max 50,000 characters per rule description, and max 50,000 total characters across all rules accepted by a project
+
 ## 2.0.1
 
 ### Patch Changes
