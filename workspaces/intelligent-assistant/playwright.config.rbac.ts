@@ -16,9 +16,6 @@
 
 import { defineConfig } from '@playwright/test';
 
-// NFS-only (packages/app with new frontend system); no app-legacy
-const appMode = process.env.APP_MODE || 'nfs';
-const startCommand = 'yarn start';
 const baseConfig = `${__dirname}/app-config.yaml`;
 const rbacE2eConfig = `${__dirname}/app-config.e2e-rbac.yaml`;
 /** Dedicated ports — must match app-config.e2e-rbac.yaml (avoid reusing :3000). */
@@ -41,7 +38,7 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_URL
     ? []
     : {
-        command: `${startCommand} --config ${baseConfig} --config ${rbacE2eConfig}`,
+        command: `yarn start --config ${baseConfig} --config ${rbacE2eConfig}`,
         url: `http://localhost:${rbacFrontendPort}`,
         // Never reuse main e2e / yarn start — those lack permission.enabled.
         reuseExistingServer: false,
@@ -56,15 +53,7 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [
-    [
-      'html',
-      {
-        open: 'never',
-        outputFolder: `e2e-test-report-rbac-${appMode}`,
-      },
-    ],
-  ],
+  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report-rbac' }]],
 
   use: {
     baseURL: rbacBaseURL,
@@ -75,7 +64,7 @@ export default defineConfig({
     locale: 'en-US',
   },
 
-  outputDir: `node_modules/.cache/e2e-test-results-rbac-${appMode}`,
+  outputDir: 'node_modules/.cache/e2e-test-results-rbac',
 
   testDir: 'e2e-tests',
   testMatch: '**/lightspeed.permissions.test.ts',

@@ -6,7 +6,7 @@
 - Build: `yarn build:all`
 - Test all: `yarn test:all`
 - Test single file: `yarn test -- path/to/test.ts`
-- E2E tests: `yarn test:e2e` (NFS / `packages/app` only)
+- E2E tests: `yarn test:e2e`
 - Lint: `yarn lint`
 - Lint single file: `yarn lint --fix path/to/file.ts`
 - Type check: `yarn tsc`
