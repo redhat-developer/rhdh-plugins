@@ -15,7 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { readSkillImageOptions } from './config';
+import { readSkillImageOptions, readSourceConfigs } from './config';
 
 describe('readSkillImageOptions', () => {
   it('preserves defaults when configuration is absent', () => {
@@ -158,4 +158,29 @@ describe('origin validation diagnostics', () => {
       );
     },
   );
+});
+
+describe('source-specific settings', () => {
+  it('validates redirect origins with the source path', () => {
+    expect(() =>
+      readSourceConfigs(
+        new ConfigReader({
+          skillImageConnector: {
+            sources: [{ id: 'bad', allowedOrigins: ['http://localhost'] }],
+          },
+        }),
+      ),
+    ).toThrow('skillImageConnector.sources[0].allowedOrigins');
+  });
+  it('reports the source path for invalid refresh intervals', () => {
+    expect(() =>
+      readSourceConfigs(
+        new ConfigReader({
+          skillImageConnector: {
+            sources: [{ id: 'bad', refreshIntervalMinutes: 0 }],
+          },
+        }),
+      ),
+    ).toThrow('skillImageConnector.sources[0].refreshIntervalMinutes');
+  });
 });

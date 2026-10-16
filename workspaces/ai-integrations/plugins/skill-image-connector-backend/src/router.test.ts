@@ -165,29 +165,31 @@ describe('createRouter', () => {
       expect(res.body.failedSkillKeys).toEqual([]);
     });
 
-    it('handles URL-encoded source IDs as one path segment', async () => {
-      const sourceId = 'source/with special chars';
-      const snapshot = createLoadingSnapshot({
-        id: sourceId,
-        type: 'oci',
-      });
-      const snapshots = new Map<string, SkillSnapshot>();
-      snapshots.set(sourceId, snapshot);
+    it.each(['source/with special chars', 'team%', 'team%2Fprod'])(
+      'handles URL-encoded source ID %p as one path segment',
+      async sourceId => {
+        const snapshot = createLoadingSnapshot({
+          id: sourceId,
+          type: 'oci',
+        });
+        const snapshots = new Map<string, SkillSnapshot>();
+        snapshots.set(sourceId, snapshot);
 
-      const router = await createRouter(
-        mockLogger,
-        new Map(),
-        () => 'loading',
-        () => [],
-        snapshots,
-      );
-      const testApp = express();
-      testApp.use(router);
+        const router = await createRouter(
+          mockLogger,
+          new Map(),
+          () => 'loading',
+          () => [],
+          snapshots,
+        );
+        const testApp = express();
+        testApp.use(router);
 
-      const encodedId = encodeURIComponent(sourceId);
-      const res = await request(testApp).get(`/skills/${encodedId}`);
-      expect(res.status).toBe(200);
-      expect(res.body.source.id).toBe(sourceId);
-    });
+        const encodedId = encodeURIComponent(sourceId);
+        const res = await request(testApp).get(`/skills/${encodedId}`);
+        expect(res.status).toBe(200);
+        expect(res.body.source.id).toBe(sourceId);
+      },
+    );
   });
 });

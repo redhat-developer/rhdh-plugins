@@ -228,12 +228,27 @@ version as SemVer, and otherwise emits
   This reference records verified content at that URL, not a guarantee that the
   server supports immutable retrieval. Consumers fetching it again must reverify.
 
+Configured digest-only references retain raw acquisition without inventing a tag.
+They are deliberately excluded from normalized `skills` and `failedSkillKeys`;
+that exclusion alone does not make a snapshot incomplete. An otherwise complete
+digest-only inventory may therefore publish an empty `ready` snapshot. Changing
+previously tagged configuration to digest-only input can remove those tagged
+records from the next complete inventory and permit downstream ready-result
+removals. Operators requiring normalized catalog identity must retain tagged input.
+
 ### D6 — Snapshot completeness and durable reconciliation
 
 Connectors refresh at startup and on a configurable Backstage scheduler task
 (default ten minutes). Catalog provider instances poll on their own configurable
 Backstage schedules (also ten minutes by default); GET requests do not trigger
 registry retrieval. Source refreshes and per-source catalog runs do not overlap.
+The OCI implementation uses per-source Backstage tasks with zero initial delay
+and local scope, matching its per-backend-instance snapshot cache. Each refresh
+gets a new operation deadline and budgets. Completed snapshots remain readable
+while a replacement is acquired; publication occurs once the replacement is built.
+`observedAt` records UTC completion, not the start of discovery. The normalized
+endpoint and raw `/images` readiness are independent: valid extracted raw content
+can be available even when its metadata fails normalization.
 
 Publish a completed snapshot atomically. During a refresh, serve the previous
 completed snapshot until replacement; before the first completion return
@@ -302,8 +317,7 @@ whether an ordinary container image is a non-skill. A layer exceeding the ceilin
 is a candidate acquisition failure, not confirmed absence of skill files. Reject
 that candidate and continue independent candidates unless a shared source bound
 or cancellation stops the operation. The raw `/images` endpoint lists that image
-in `failedImages`; task 2.5 will represent known failed keys in normalized partial
-snapshots. Do not require a particular Node/zlib error message as the API contract.
+in `failedImages`; normalized partial snapshots represent known failed keys. Do not require a particular Node/zlib error message as the API contract.
 
 The task 2.1 `/images` acquisition path shares HTTP utilities between OCI fetching
 and Quay discovery and shares retry orchestration with image processing. Its
@@ -316,22 +330,25 @@ backend-only `skillImageConnector` configuration accepts optional `fetchTimeoutM
 and retries across the source operation). Omission preserves defaults;
 invalid values fail configuration validation, and zero retries disables retries.
 The positive-integer `maxImages` limit applies to combined explicit images and
-discovered repository/tag candidates attempted at startup. Each tag consumes a
+discovered repository/tag candidates attempted in each refresh. Each tag consumes a
 slot, even if another tag has the same digest or extraction identifies a non-skill.
 Explicit images take priority;
 duplicate discovered references do not consume additional slots. An explicit
 list exceeding the configured limit fails startup validation; excess discovered
 candidates are skipped with a warning. Missing tags still consume candidate
 slots. Raising this limit does not change the concurrency limit of four.
-The startup discovery path uses one 100-page budget shared by repository and tag
+Each refresh discovery path uses one 100-page budget shared by repository and tag
 listing requests, with bounded retries for each logical page. It deduplicates
 repository listings, traverses repositories in Unicode code-point order, detects
 repeated repository tokens and tag pages that make no progress, and sorts full
 discovered references before applying the combined image cap. Exhausted budgets
 and incomplete pagination are logged; the existing raw `/images` response has no
-`partial` status. Structured completeness propagation remains task 2.5. Tag-list
-request or malformed-page failures follow the existing discovery failure path;
-they are not treated as successful empty discovery.
+`partial` status. Structured discovery outcomes preserve candidates from completed
+pages, indicate incompleteness, and distinguish a usable discovery result from
+complete discovery failure. A later listing error, a malformed page, a cycle, or
+budget exhaustion must not discard that prefix or publish `ready`. The normalized
+result can be `partial` with no successful records; zero normalized successes alone
+does not establish `failed`. Tag-list failures do not mean successful empty discovery.
 These byte sizes are independent: the aggregate setting bounds retained decoded
 skill content across accepted images, not D7's total downloaded/decompressed
 budget per image. The task 2.1 defaults are acquisition defaults that operators
@@ -371,7 +388,8 @@ throughout the redirect chain; it does not infer sibling domains, trust lookalik
 suffixes, or use registry-specific CDN lists. DNS validation and connection pinning
 still apply to every destination, and cross-origin redirects strip authorization.
 
-Optional backend-only `skillImageConnector.allowedOrigins` adds exact HTTPS
+Optional backend-only `sources[].allowedOrigins` (or flat
+`skillImageConnector.allowedOrigins` for the legacy source) adds exact HTTPS
 origins beyond that domain/port scope, such as an unrelated CDN. Omission permits
 only the initial registry hostname and its subdomains on the same HTTPS port.
 Configured origins cannot contain credentials, paths, queries, or fragments, and
@@ -379,11 +397,9 @@ trust in an explicitly configured external origin does not expand to its
 subdomains.
 Token realms retain the registry-host or explicitly configured
 `credentials.tokenRealm` restriction, use the same pinned transport, and reject
-all redirects. These task 2.4 corrections do not implement normalized snapshots,
-periodic refresh, or catalog entity production; those remain in task 2.5 and
-section 4. Task 2.4 is implemented and checked in the current working tree.
-The maintainer confirmed successful regression testing of these corrections;
-committing and publishing remain separate steps.
+all redirects. Task 2.4 acquisition safety is implemented. Task 2.5 adds normalized
+snapshots and periodic refresh; catalog entity production remains section 4.
+Task 2.5 stays unchecked until maintainer verification of the reviewed implementation.
 
 Each refresh also has a five-minute total deadline, at most 100 discovery pages
 shared across repository and tag listings,
@@ -398,13 +414,23 @@ refresh schedule. Catalog configuration
 owns `connectorPluginId`, `sourceId`, expected source type, catalog namespace,
 `defaultOwner`, `defaultLifecycle`, and polling schedule. Source IDs are unique
 within each source type; plugin IDs are transport addresses, not identity keys.
-Declare backend-only configuration in `config.d.ts` when implementing.
+The OCI implementation declares backend-only `sources[]` entries with required,
+unique nonblank `id`, `allowedRegistries`, optional validated `allowedOrigins`,
+`images`, `quayDiscovery`, and `refreshIntervalMinutes` (integer 1–1440, default 10).
+When the array is present these source fields do not inherit the corresponding
+flat settings. In particular, flat redirect origins never grant explicit sources
+additional trust. Without the array, configured flat `images`/`quayDiscovery` maps
+to source `default`, including the legacy flat origins and refresh interval.
+Top-level numeric acquisition limits remain shared settings applied per source.
+`GET /skills/:sourceId` requires normal backend authentication, returns 404 for an
+unknown source, and treats its once-decoded route parameter as the source identity.
+It does not re-decode percent sequences or perform upstream work.
 
 ## Risks and Verification
 
-- The #4747 `/images` payload alone lacks this normalized contract and resolved
-  digest for tag-configured images. Add `/skills/:sourceId` and scheduled Quay
-  discovery there; keep `/images` compatible and test both routes.
+- The raw `/images` payload and normalized `/skills/:sourceId` serve different
+  contracts. Preserve raw compatibility and test independent readiness, authenticated
+  normalized access, atomic publication, and scheduled refresh for both routes.
 - Extraction adds network and archive-processing cost. Exercise digest failures,
   malformed archives, decompression limits, and traversal attempts with fixtures.
 - Separate schedules permit eventual consistency. Test initial loading, refresh,

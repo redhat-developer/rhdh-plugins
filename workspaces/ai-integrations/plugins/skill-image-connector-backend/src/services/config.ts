@@ -53,30 +53,35 @@ export function readSkillImageOptions(config: Config): SkillImageOptions {
     }
     options[key] = value;
   }
-  const allowedOrigins = source?.getOptionalStringArray('allowedOrigins');
-  if (allowedOrigins) {
-    try {
-      return Object.freeze({
-        ...options,
-        allowedOrigins: Object.freeze(
-          allowedOrigins.map(validateAllowedOrigin),
-        ),
-      });
-    } catch (error) {
-      // Include the validator's reason, not the input URL or error object,
-      // which could contain embedded credentials.
-      const detail = error instanceof Error ? error.message : 'Invalid origin';
-      throw new InputError(`skillImageConnector.allowedOrigins: ${detail}`);
-    }
+  const allowedOrigins = readAllowedOrigins(source, 'skillImageConnector');
+  return Object.freeze({
+    ...options,
+    ...(allowedOrigins ? { allowedOrigins } : {}),
+  });
+}
+
+function readAllowedOrigins(
+  source: Config | undefined,
+  context: string,
+): readonly string[] | undefined {
+  const origins = source?.getOptionalStringArray('allowedOrigins');
+  if (!origins) return undefined;
+  try {
+    return Object.freeze(origins.map(validateAllowedOrigin));
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'Invalid origin';
+    throw new InputError(`${context}.allowedOrigins: ${detail}`);
   }
-  return Object.freeze(options);
 }
 
 /**
  * Reads and validates a refresh interval from config, returning the
  * D6 default (ten minutes) when absent.
  */
-export function readRefreshInterval(source?: Config): number {
+export function readRefreshInterval(
+  source?: Config,
+  context = 'skillImageConnector',
+): number {
   const value =
     source?.getOptionalNumber('refreshIntervalMinutes') ??
     DEFAULT_REFRESH_INTERVAL_MINUTES;
@@ -86,7 +91,7 @@ export function readRefreshInterval(source?: Config): number {
     value > MAX_REFRESH_INTERVAL_MINUTES
   ) {
     throw new InputError(
-      `refreshIntervalMinutes must be an integer between ` +
+      `${context}.refreshIntervalMinutes must be an integer between ` +
         `${MIN_REFRESH_INTERVAL_MINUTES} and ${MAX_REFRESH_INTERVAL_MINUTES}`,
     );
   }
@@ -135,9 +140,15 @@ export function readSourceConfigs(config: Config): SourceConfig[] {
         .map(r => r.trim().toLowerCase())
         .filter(Boolean);
 
-      const allowedOrigins = entry.getOptionalStringArray('allowedOrigins');
+      const allowedOrigins = readAllowedOrigins(
+        entry,
+        `skillImageConnector.sources[${index}]`,
+      );
 
-      const refreshIntervalMinutes = readRefreshInterval(entry);
+      const refreshIntervalMinutes = readRefreshInterval(
+        entry,
+        `skillImageConnector.sources[${index}]`,
+      );
 
       return {
         id,
@@ -159,8 +170,10 @@ export function readSourceConfigs(config: Config): SourceConfig[] {
   )
     .map(r => r.trim().toLowerCase())
     .filter(Boolean);
-  const allowedOrigins =
-    pluginConfig.getOptionalStringArray('allowedOrigins') ?? undefined;
+  const allowedOrigins = readAllowedOrigins(
+    pluginConfig,
+    'skillImageConnector',
+  );
   const refreshIntervalMinutes = readRefreshInterval(pluginConfig);
 
   return [

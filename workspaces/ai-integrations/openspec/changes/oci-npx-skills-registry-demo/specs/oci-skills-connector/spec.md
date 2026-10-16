@@ -77,7 +77,7 @@ address used by each upstream connection, including redirects.
 
 #### Scenario: Registry redirects to an unconfigured public origin
 
-- **WHEN** a registry or discovery response redirects to a different HTTPS origin outside the initial registry hostname/subdomain and port scope and not listed in `skillImageConnector.allowedOrigins`
+- **WHEN** a registry or discovery response redirects to a different HTTPS origin outside the initial registry hostname/subdomain and port scope and not listed in that source’s `allowedOrigins` (`skillImageConnector.allowedOrigins` for the legacy flat source)
 - **THEN** the connector rejects the redirect before resolving or connecting to that destination
 - **AND** omission of `allowedOrigins` permits only the initial registry hostname and its subdomains on the same HTTPS port
 
@@ -167,7 +167,7 @@ address used by each upstream connection, including redirects.
 - **AND** it does not classify incomplete inspection as a confirmed non-skill
 - **AND** the raw `/images` response includes that image in `failedImages`
 - **AND** independent candidates continue unless a shared source bound or cancellation stops processing
-- **AND** normalized snapshots, when provided by task 2.5, report the known failed key as an incomplete result
+- **AND** normalized snapshots report the known failed key as an incomplete result
 
 ### Requirement: Normalized OCI REST snapshots
 
@@ -190,6 +190,56 @@ Unknown source IDs SHALL return 404.
 - **WHEN** one repository/tag fails while other tags are successfully processed
 - **THEN** the connector publishes successful records with `status: partial` and the failed repository/tag key
 - **AND** it makes no catalog mutation itself
+
+#### Scenario: Initial loading and atomic periodic refresh
+
+- **WHEN** the first scheduled refresh has not completed
+- **THEN** the authenticated snapshot has status `loading`, empty arrays, and `observedAt: null`
+- **WHEN** a subsequent refresh runs on the default ten-minute or configured schedule
+- **THEN** GET continues to serve the preceding completed snapshot without triggering registry work
+- **AND** the completed replacement is published atomically with its UTC completion time
+- **AND** source refreshes do not overlap and independent sources refresh independently
+
+#### Scenario: Partial discovery with no normalized successes
+
+- **WHEN** discovery yields a usable result but a later page, candidate, or bound prevents completeness
+- **THEN** completed-page candidates are retained and the normalized snapshot is `partial`, even with zero records
+- **AND** known failed repository/tag keys are reported without inventing unknown tag keys
+- **AND** a result is `failed` only when no usable discovery result can be obtained
+- **AND** a genuinely complete empty inventory is `ready` with no failed keys
+
+#### Scenario: Raw extraction succeeds but normalization fails
+
+- **WHEN** extracted skill files are available but their metadata cannot be normalized
+- **THEN** `/images` retains that raw extraction and can report `ready`
+- **AND** `/skills/:sourceId` reports the known tagged failure without publishing an invalid record
+
+#### Scenario: Explicit digest-only input
+
+- **WHEN** a configured digest-only reference is successfully acquired
+- **THEN** `/images` retains its extracted raw content
+- **AND** normalized snapshots deliberately exclude it without inventing a tagged identity or failure key
+- **AND** this exclusion alone does not make the normalized snapshot incomplete
+- **AND** an otherwise complete digest-only inventory can be empty and `ready`
+- **AND** replacing tagged inputs with digest-only inputs can remove those tagged records from the next complete snapshot and allow downstream ready-result removals
+
+#### Scenario: Source configuration isolates redirect trust
+
+- **WHEN** explicit `sources` entries are configured
+- **THEN** every entry requires a unique nonblank stable `id` and owns its registry allowlist, exact HTTPS redirect origins, image/discovery configuration, and refresh interval
+- **AND** another source's origins and the flat legacy origins do not grant it additional redirect trust
+- **AND** invalid origin entries fail startup validation
+- **AND** numeric acquisition limits remain top-level settings applied to each source
+- **WHEN** only flat image/discovery configuration is present
+- **THEN** it maps to source `default` with the legacy flat origin and refresh settings
+
+#### Scenario: Authenticated source lookup preserves encoded identity
+
+- **WHEN** a client requests an existing source with a URL-encoded path segment
+- **THEN** routing decodes it once and literal percent sequences are not decoded again
+- **AND** unknown source IDs return 404
+- **AND** unauthenticated requests cannot read snapshots
+- **AND** a service caller targets plugin ID `skill-image-connector` for its request token
 
 ### Requirement: Configurable acquisition with shared request handling
 

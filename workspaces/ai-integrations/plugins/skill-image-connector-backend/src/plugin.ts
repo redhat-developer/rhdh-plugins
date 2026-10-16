@@ -41,7 +41,7 @@ import {
   parseImageRef,
   fetchManifest,
 } from './services/OciClient';
-import { discoverQuayRepositories } from './services/QuayDiscovery';
+import { discoverQuayRepositorySnapshot } from './services/QuayDiscovery';
 import {
   AmbiguousSkillFilesError,
   ExtractionBoundsError,
@@ -535,6 +535,8 @@ interface SourceRefreshResult {
   failedImageRefs: string[];
   /** Whether discovery completed without failures or budget exhaustion. */
   discoveryComplete: boolean;
+  /** Whether explicit candidates or a valid discovery page were available. */
+  discoveryUsable: boolean;
 }
 
 /**
@@ -548,7 +550,7 @@ interface SourceRefreshResult {
  */
 export async function performSourceRefresh(
   source: SourceConfig,
-  options: SkillImageOptions,
+  baseOptions: SkillImageOptions,
   logger: LoggerService,
   workDir: string | undefined,
   parentSignal: AbortSignal,
@@ -557,15 +559,19 @@ export async function performSourceRefresh(
   const records: OciSkillRecord[] = [];
   const failedKeys: string[] = [];
   const failedImageRefs: string[] = [];
+  const nonSkillRefs = new Set<string>();
   let discoveryComplete = true;
+  let discoveryUsable = source.images.length > 0;
+  const options = Object.freeze({
+    ...baseOptions,
+    allowedOrigins: source.allowedOrigins,
+  });
 
   // Source-operation deadline: bounds the total wall-clock time
   const refreshController = new AbortController();
-  parentSignal.addEventListener(
-    'abort',
-    () => refreshController.abort(parentSignal.reason),
-    { once: true },
-  );
+  const onAbort = () => refreshController.abort(parentSignal.reason);
+  if (parentSignal.aborted) onAbort();
+  else parentSignal.addEventListener('abort', onAbort, { once: true });
   const deadlineTimer = setTimeout(() => {
     if (!refreshController.signal.aborted) {
       logger.warn(
@@ -586,15 +592,17 @@ export async function performSourceRefresh(
     // Run Quay organization discovery if configured
     if (source.quayDiscovery) {
       try {
-        const discoveredRefs = await discoverQuayRepositories(
+        const discovery = await discoverQuayRepositorySnapshot(
           source.quayDiscovery,
           logger,
           signal,
           options,
         );
+        discoveryUsable ||= discovery.usable;
+        discoveryComplete = discovery.complete;
         const mergeResult = mergeDiscoveredRefs(
           source.images,
-          discoveredRefs,
+          discovery.imageRefs,
           options.maxImages,
           logger,
         );
@@ -707,6 +715,7 @@ export async function performSourceRefresh(
         } catch (error) {
           if (!signal.aborted) {
             if (error instanceof NonSkillImageError) {
+              nonSkillRefs.add(imgConfig.imageRef);
               // Confirmed non-skills: skipped, no failed key, no impact on completeness
               logger.debug(
                 `Image ${imgConfig.imageRef} is not a skill image: ${error.message}`,
@@ -754,11 +763,24 @@ export async function performSourceRefresh(
     );
 
     // If the signal was aborted (deadline or cancellation), discovery is incomplete
-    if (signal.aborted) {
+    if (signal.aborted || nextImageIndex < allImageConfigs.length) {
       discoveryComplete = false;
+      // The selected tag identities are known even when cancellation or a
+      // shared work bound prevents their acquisition from completing.
+      for (const image of allImageConfigs) {
+        if (
+          !extractions.has(image.imageRef) &&
+          !nonSkillRefs.has(image.imageRef) &&
+          !failedImageRefs.includes(image.imageRef)
+        ) {
+          failedImageRefs.push(image.imageRef);
+          tryAddFailedKey(image.imageRef, failedKeys);
+        }
+      }
     }
   } finally {
     clearTimeout(deadlineTimer);
+    parentSignal.removeEventListener('abort', onAbort);
   }
 
   return {
@@ -767,6 +789,7 @@ export async function performSourceRefresh(
     failedKeys,
     failedImageRefs,
     discoveryComplete,
+    discoveryUsable,
   };
 }
 
@@ -781,7 +804,7 @@ export function buildSnapshotFromRefresh(
 ): SkillSnapshot {
   const allFailed =
     hasConfiguredSources &&
-    result.records.length === 0 &&
+    !result.discoveryUsable &&
     !result.discoveryComplete;
 
   if (allFailed) {
@@ -944,11 +967,12 @@ export const skillImageConnectorPlugin = createBackendPlugin({
 
         // Per-source snapshot storage — atomic publication
         const snapshots = new Map<string, SkillSnapshot>();
+        const rawStatuses = new Map<string, SkillImageProcessingStatus>();
 
         // Derive aggregate processing status for /images backward compat
         const getProcessingStatus = (): SkillImageProcessingStatus => {
           if (sources.length === 0) return 'ready';
-          const statuses = sources.map(s => snapshots.get(s.id)?.status);
+          const statuses = sources.map(s => rawStatuses.get(s.id));
           if (statuses.some(s => s === 'loading' || s === undefined)) {
             return 'loading';
           }
@@ -966,6 +990,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
             type: 'oci',
           };
           snapshots.set(source.id, createLoadingSnapshot(snapshotSource));
+          rawStatuses.set(source.id, 'loading');
         }
 
         httpRouter.use(
@@ -1055,6 +1080,14 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                 hasConfiguredContent,
               );
               snapshots.set(source.id, snapshot);
+              rawStatuses.set(
+                source.id,
+                result.extractions.size === 0 &&
+                  (result.failedImageRefs.length > 0 ||
+                    (!result.discoveryUsable && !result.discoveryComplete))
+                  ? 'failed'
+                  : 'ready',
+              );
 
               pluginLogger.info(
                 `Refresh complete for source '${source.id}': ` +

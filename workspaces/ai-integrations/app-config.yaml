@@ -193,16 +193,19 @@ skillImageConnector:
   maxImages: 100 # 25 default, Total explicit and discovered repository:tag candidates; raise for larger inventories
   maxRetries: 2 # Retries after the initial attempt; 0 disables retries
   retryBaseDelayMs: 2000 # 2 seconds, doubled on subsequent retries
-  allowedRegistries:
-    - quay.io
-  #  images:
-  #      - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
-  #      - imageRef: quay.io/gabemontero/hello-world-skill-annotated:1.0.0-draft
-  #      Optional automatic public Quay organization discovery (can use with our without specific images refs):
-  quayDiscovery:
-    organization: gabemontero # required
-#     registry: quay.io # optional, defaults to quay.io
-#     tag: 1.0.0-draft # optional exact filter; omit for all active tags
+  sources:
+    - id: gabemontero-skills
+      refreshIntervalMinutes: 1 # Testing: refresh every minute; default is 10 (range 1–1440).
+      allowedRegistries:
+        - quay.io
+#      images:
+#         - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+#         - imageRef: quay.io/gabemontero/hello-world-skill-annotated:1.0.0-draft
+      # Optional public Quay discovery; can be combined with explicit images.
+      quayDiscovery:
+        organization: gabemontero # required
+        # registry: quay.io # optional, defaults to quay.io
+        # tag: 1.0.0-draft # optional exact filter; omit for all active tags
 # Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 #kubernetes:

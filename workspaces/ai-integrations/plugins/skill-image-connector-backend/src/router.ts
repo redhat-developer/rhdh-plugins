@@ -64,7 +64,7 @@ export async function createRouter(
   // is treated as one path segment per the design D2 REST contract.
   // Unknown source IDs return 404.
   router.get('/skills/:sourceId', async (req, res) => {
-    const sourceId = decodeURIComponent(req.params.sourceId);
+    const sourceId = req.params.sourceId;
     const snapshot = snapshots?.get(sourceId);
     if (!snapshot) {
       res.status(404).json({ error: `Unknown source: ${sourceId}` });

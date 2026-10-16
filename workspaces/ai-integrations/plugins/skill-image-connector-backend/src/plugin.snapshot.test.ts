@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { SchedulerService } from '@backstage/backend-plugin-api';
 import {
   mockCredentials,
   mockServices,
@@ -23,7 +24,7 @@ import { validateSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-ski
 import request from 'supertest';
 import type { Config } from '../config';
 import { skillImageConnectorPlugin } from './plugin';
-import { discoverQuayRepositories } from './services/QuayDiscovery';
+import { discoverQuayRepositorySnapshot } from './services/QuayDiscovery';
 import {
   cleanupSkillImageExtraction,
   fetchAndExtractSkillImage,
@@ -39,7 +40,7 @@ jest.mock('./services/OciClient', () => ({
 }));
 
 jest.mock('./services/QuayDiscovery', () => ({
-  discoverQuayRepositories: jest.fn(),
+  discoverQuayRepositorySnapshot: jest.fn(),
 }));
 jest.mock('./services/SkillImageService', () => ({
   ...jest.requireActual<typeof import('./services/SkillImageService')>(
@@ -52,7 +53,7 @@ jest.mock('./services/SkillImageService', () => ({
 
 const logger = mockServices.logger.mock();
 const fetchImage = jest.mocked(fetchAndExtractSkillImage);
-const discover = jest.mocked(discoverQuayRepositories);
+const discover = jest.mocked(discoverQuayRepositorySnapshot);
 const resolveManifest = jest.mocked(fetchManifest);
 const resolvedDigest = `sha256:${'a'.repeat(64)}`;
 const pinnedRef = (ref: string) => `${ref}@${resolvedDigest}`;
@@ -210,7 +211,7 @@ describe('GET /skills/:sourceId — snapshot endpoint', () => {
         .get('/api/skill-image-connector/skills/default')
         .set('Authorization', mockCredentials.service.header());
       expect(snapshot.status).toBe(200);
-      expect(snapshot.body.status).toBe('failed');
+      expect(snapshot.body.status).toBe('partial');
       expect(snapshot.body.skills).toEqual([]);
       expect(snapshot.body.failedSkillKeys).toEqual([imageRef]);
       expect(validateSnapshot(snapshot.body)).toEqual({
@@ -223,7 +224,7 @@ describe('GET /skills/:sourceId — snapshot endpoint', () => {
 
 describe('snapshot status semantics', () => {
   it('returns ready with empty arrays for successful empty discovery', async () => {
-    discover.mockResolvedValue([]);
+    discover.mockResolvedValue({ imageRefs: [], complete: true, usable: true });
     const { server } = await startConnector({
       quayDiscovery: { organization: 'empty-org', tag: 'v1' },
     });
@@ -238,7 +239,11 @@ describe('snapshot status semantics', () => {
   });
 
   it('returns ready when all discovered images are confirmed non-skills', async () => {
-    discover.mockResolvedValue(['quay.io/org/container:v1']);
+    discover.mockResolvedValue({
+      imageRefs: ['quay.io/org/container:v1'],
+      complete: true,
+      usable: true,
+    });
     fetchImage.mockRejectedValue(new NonSkillImageError('not a skill'));
     const { server } = await startConnector({
       quayDiscovery: { organization: 'org', tag: 'v1' },
@@ -270,7 +275,11 @@ describe('snapshot status semantics', () => {
   it('returns partial when one tag fails while others succeed', async () => {
     const goodRef = 'quay.io/org/good-skill:v1';
     const badRef = 'quay.io/org/bad-skill:v1';
-    discover.mockResolvedValue([goodRef, badRef]);
+    discover.mockResolvedValue({
+      imageRefs: [goodRef, badRef],
+      complete: true,
+      usable: true,
+    });
     fetchImage.mockImplementation(async ref => {
       if (ref === pinnedRef(badRef)) {
         throw new Error('Retrieval failed');
@@ -421,7 +430,11 @@ describe('same-digest tag aliases', () => {
   it('keeps separate records for tags resolving to the same digest', async () => {
     const ref1 = 'quay.io/org/skill:latest';
     const ref2 = 'quay.io/org/skill:v1';
-    discover.mockResolvedValue([ref1, ref2]);
+    discover.mockResolvedValue({
+      imageRefs: [ref1, ref2],
+      complete: true,
+      usable: true,
+    });
     // Both resolve to the same digest
     resolveManifest.mockResolvedValue({
       manifest: {
@@ -508,4 +521,187 @@ describe('scheduling', () => {
       expect.stringContaining('refresh every 10 minute(s)'),
     );
   });
+});
+
+describe('controlled refresh lifecycle', () => {
+  type Task = Parameters<SchedulerService['scheduleTask']>[0];
+  async function startScheduled(
+    settings: NonNullable<Config['skillImageConnector']>,
+  ) {
+    const tasks: Task[] = [];
+    const scheduler = mockServices.scheduler.mock({
+      scheduleTask: async task => {
+        tasks.push(task);
+      },
+    });
+    const backend = await startTestBackend({
+      features: [
+        skillImageConnectorPlugin,
+        mockServices.rootLogger.factory(),
+        logger.factory,
+        scheduler.factory,
+        mockServices.rootConfig.factory({
+          data: {
+            app: { baseUrl: 'http://localhost:3000' },
+            backend: { baseUrl: 'http://localhost:7007' },
+            skillImageConnector: settings,
+          },
+        }),
+      ],
+    });
+    return { server: backend.server, tasks, stop: () => backend.stop() };
+  }
+  it('serves loading, then atomically replaces the previous snapshot on a later refresh', async () => {
+    const { server, tasks, stop } = await startScheduled({
+      allowedRegistries: ['quay.io'],
+      images: [{ imageRef: 'quay.io/org/skill:v1' }],
+      refreshIntervalMinutes: 15,
+    });
+    const get = () =>
+      request(server)
+        .get('/api/skill-image-connector/skills/default')
+        .set('Authorization', mockCredentials.service.header());
+    let release: () => void = () => undefined;
+    try {
+      expect(tasks).toHaveLength(1);
+      expect(tasks[0]).toMatchObject({
+        frequency: { minutes: 15 },
+        initialDelay: { seconds: 0 },
+        scope: 'local',
+      });
+      const loading = await get();
+      expect(loading.body).toMatchObject({
+        status: 'loading',
+        observedAt: null,
+        skills: [],
+        failedSkillKeys: [],
+      });
+      await tasks[0].fn(new AbortController().signal);
+      const first = await get();
+      expect(first.body.status).toBe('ready');
+      expect(first.body.skills).toHaveLength(1);
+      let entered: () => void = () => undefined;
+      const started = new Promise<void>(resolve => {
+        entered = resolve;
+      });
+      const gate = new Promise<void>(resolve => {
+        release = resolve;
+      });
+      fetchImage.mockImplementation(async () => {
+        entered();
+        await gate;
+        return {
+          ...extracted,
+          skillImageYaml: extracted.skillImageYaml.replace(
+            'Test Skill',
+            'Updated Skill',
+          ),
+        };
+      });
+      const running = tasks[0].fn(new AbortController().signal);
+      await started;
+      try {
+        const during = await get();
+        expect(during.body).toEqual(first.body);
+        const raw = await request(server)
+          .get('/api/skill-image-connector/images')
+          .set('Authorization', mockCredentials.user.header());
+        expect(raw.body.status).toBe('ready');
+        expect(raw.body.images[0].skillImageYaml).toBe(
+          extracted.skillImageYaml,
+        );
+      } finally {
+        release();
+        await running;
+      }
+      const updated = await get();
+      expect(updated.body.status).toBe('ready');
+      expect(updated.body.skills[0].name).toBe('Updated Skill');
+      expect(validateSnapshot(updated.body)).toEqual({
+        valid: true,
+        errors: [],
+      });
+    } finally {
+      release();
+      await stop();
+    }
+  });
+  it('passes isolated source origin settings and lets a second source finish while the first is pending', async () => {
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    let entered: () => void = () => undefined;
+    const started = new Promise<void>(resolve => {
+      entered = resolve;
+    });
+    fetchImage.mockImplementation(async ref => {
+      if (ref.includes('/first:')) {
+        entered();
+        await gate;
+      }
+      return { ...extracted };
+    });
+    const { server, tasks, stop } = await startScheduled({
+      allowedOrigins: ['https://global.example.com'],
+      sources: [
+        {
+          id: 'first',
+          allowedRegistries: ['quay.io'],
+          allowedOrigins: ['https://first.example.com'],
+          images: [{ imageRef: 'quay.io/org/first:v1' }],
+        },
+        {
+          id: 'second',
+          allowedRegistries: ['quay.io'],
+          allowedOrigins: ['https://second.example.com'],
+          images: [{ imageRef: 'quay.io/org/second:v1' }],
+        },
+      ],
+    });
+    const running = tasks[0].fn(new AbortController().signal);
+    try {
+      await started;
+      await tasks[1].fn(new AbortController().signal);
+      const second = await request(server)
+        .get('/api/skill-image-connector/skills/second')
+        .set('Authorization', mockCredentials.service.header());
+      expect(second.body.status).toBe('ready');
+      const first = await request(server)
+        .get('/api/skill-image-connector/skills/first')
+        .set('Authorization', mockCredentials.service.header());
+      expect(first.body.status).toBe('loading');
+      const options = fetchImage.mock.calls.map(call => call[5]);
+      expect(options.map(option => option?.allowedOrigins)).toEqual([
+        ['https://first.example.com'],
+        ['https://second.example.com'],
+      ]);
+      expect(options.every(Object.isFrozen)).toBe(true);
+    } finally {
+      release();
+      await running;
+      await stop();
+    }
+  });
+});
+
+describe('incomplete discovery publication', () => {
+  it.each([{ imageRefs: [] }, { imageRefs: ['quay.io/org/skill:v1'] }])(
+    'publishes partial with retained candidates $imageRefs',
+    async ({ imageRefs }) => {
+      discover.mockResolvedValue({ imageRefs, complete: false, usable: true });
+      const { server } = await startConnector({
+        quayDiscovery: { organization: 'org' },
+      });
+      const response = await request(server)
+        .get('/api/skill-image-connector/skills/default')
+        .set('Authorization', mockCredentials.service.header());
+      expect(response.body.status).toBe('partial');
+      expect(response.body.skills).toHaveLength(imageRefs.length);
+      expect(validateSnapshot(response.body)).toEqual({
+        valid: true,
+        errors: [],
+      });
+    },
+  );
 });

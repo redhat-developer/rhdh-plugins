@@ -103,7 +103,7 @@ export interface Config {
       /** Stable source identifier. Must be unique across all sources.
        * @visibility backend
        */
-      id?: string;
+      id: string;
       /** @visibility backend */
       allowedRegistries?: string[];
       /** @visibility backend */

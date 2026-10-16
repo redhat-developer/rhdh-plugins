@@ -24,7 +24,7 @@ import type { Config } from '../config';
 import { performSourceRefresh, skillImageConnectorPlugin } from './plugin';
 import { DEFAULT_SKILL_IMAGE_OPTIONS } from './services/types';
 import type { SkillImageConfig, SourceConfig } from './services/types';
-import { discoverQuayRepositories } from './services/QuayDiscovery';
+import { discoverQuayRepositorySnapshot } from './services/QuayDiscovery';
 import {
   cleanupSkillImageExtraction,
   fetchAndExtractSkillImage,
@@ -42,7 +42,7 @@ jest.mock('./services/OciClient', () => ({
 }));
 
 jest.mock('./services/QuayDiscovery', () => ({
-  discoverQuayRepositories: jest.fn(),
+  discoverQuayRepositorySnapshot: jest.fn(),
 }));
 jest.mock('./services/SkillImageService', () => ({
   ...jest.requireActual<typeof import('./services/SkillImageService')>(
@@ -55,7 +55,7 @@ jest.mock('./services/SkillImageService', () => ({
 
 const logger = mockServices.logger.mock();
 const fetchImage = jest.mocked(fetchAndExtractSkillImage);
-const discover = jest.mocked(discoverQuayRepositories);
+const discover = jest.mocked(discoverQuayRepositorySnapshot);
 const resolveManifest = jest.mocked(fetchManifest);
 const resolvedDigest = `sha256:${'a'.repeat(64)}`;
 const pinnedRef = (ref: string) => `${ref}@${resolvedDigest}`;
@@ -143,7 +143,11 @@ describe('configured acquisition in the plugin', () => {
   it('keeps skill-image tags separate and excludes unsuccessful extraction', async () => {
     const aliases = ['quay.io/org/skill:latest', 'quay.io/org/skill:v1'];
     const nonSkill = 'quay.io/org/container:v1';
-    discover.mockResolvedValue([...aliases, nonSkill]);
+    discover.mockResolvedValue({
+      imageRefs: [...aliases, nonSkill],
+      complete: true,
+      usable: true,
+    });
     fetchImage.mockImplementation(async ref => {
       if (ref === pinnedRef(nonSkill)) {
         throw new Error('Image does not contain the required skill files');
@@ -172,7 +176,11 @@ describe('configured acquisition in the plugin', () => {
   });
 
   it('shares resolved overrides and enforces the retained UTF-8 byte budget across images', async () => {
-    discover.mockResolvedValue(['quay.io/org/discovered:v1']);
+    discover.mockResolvedValue({
+      imageRefs: ['quay.io/org/discovered:v1'],
+      complete: true,
+      usable: true,
+    });
     const limits = {
       fetchTimeoutMs: 60000,
       maxBlobSizeBytes: 1000,
@@ -217,46 +225,76 @@ describe('configured acquisition in the plugin', () => {
     expect(fetchImage.mock.calls[1][5]).toBe(discover.mock.calls[0][3]);
   });
 
-  it('enforces the retained byte budget across images', async () => {
+  it('enforces the retained byte budget when discovery finishes before an explicit image', async () => {
     const explicitRef = 'quay.io/org/explicit:v1';
     const discoveredRef = 'quay.io/org/discovered:v1';
-    const explicitExtraction = {
-      ...extracted,
-      skillImageYamlPath: '/explicit/skillimage.yaml',
-      skillsMdPath: '/explicit/SKILLS.md',
-    };
-    const discoveredExtraction = {
-      ...extracted,
-      skillImageYamlPath: '/discovered/skillimage.yaml',
-      skillsMdPath: '/discovered/SKILLS.md',
-    };
-    const maxAggregateContentSizeBytes = 10;
-    discover.mockResolvedValue([discoveredRef]);
-    fetchImage.mockImplementation(async ref =>
-      ref === pinnedRef(explicitRef)
-        ? explicitExtraction
-        : discoveredExtraction,
-    );
-
-    const { server } = await startConnector({
-      maxAggregateContentSizeBytes,
-      images: [{ imageRef: explicitRef }],
-      quayDiscovery: { organization: 'org', tag: 'v1' },
+    let finishExplicit: (result: typeof extracted) => void = () => undefined;
+    let finishDiscovered: (result: typeof extracted) => void = () => undefined;
+    const explicit = new Promise<typeof extracted>(resolve => {
+      finishExplicit = resolve;
     });
-
-    const response = await request(server)
-      .get('/api/skill-image-connector/images')
-      .set('Authorization', mockCredentials.user.header());
-    expect(response.status).toBe(200);
-    expect(response.body.status).toBe('ready');
-    // One image retained, one exceeded the budget
-    expect(response.body.images).toHaveLength(1);
-    const retainedBytes =
-      Buffer.byteLength(response.body.images[0].skillImageYaml, 'utf-8') +
-      Buffer.byteLength(response.body.images[0].skillsMd, 'utf-8');
-    expect(retainedBytes).toBe(6);
-    expect(retainedBytes).toBeLessThanOrEqual(maxAggregateContentSizeBytes);
+    const discovered = new Promise<typeof extracted>(resolve => {
+      finishDiscovered = resolve;
+    });
+    let entered: () => void = () => undefined;
+    const started = new Promise<void>(resolve => {
+      entered = resolve;
+    });
+    fetchImage.mockImplementation(ref => {
+      if (fetchImage.mock.calls.length === 2) entered();
+      return ref === pinnedRef(explicitRef) ? explicit : discovered;
+    });
+    discover.mockResolvedValue({
+      imageRefs: [discoveredRef],
+      complete: true,
+      usable: true,
+    });
+    const source: SourceConfig = {
+      id: 'default',
+      images: [{ id: 'explicit', imageRef: explicitRef }],
+      allowedRegistries: ['quay.io'],
+      refreshIntervalMinutes: 10,
+      quayDiscovery: { registry: 'quay.io', organization: 'org', tag: 'v1' },
+    };
+    const running = performSourceRefresh(
+      source,
+      { ...DEFAULT_SKILL_IMAGE_OPTIONS, maxAggregateContentSizeBytes: 10 },
+      logger,
+      undefined,
+      new AbortController().signal,
+    );
+    try {
+      await started;
+      finishDiscovered({ ...extracted });
+      // Flush the completed candidate through retention before releasing the other one.
+      await new Promise<void>(resolve => setImmediate(resolve));
+      expect(cleanupSkillImageExtraction).not.toHaveBeenCalled();
+    } finally {
+      finishExplicit({ ...extracted });
+      finishDiscovered({ ...extracted });
+    }
+    const result = await running;
+    expect([...result.extractions.keys()]).toEqual([discoveredRef]);
+    expect(result.failedImageRefs).toEqual([explicitRef]);
+    expect(result.failedKeys).toContain(explicitRef);
+    const retained = result.extractions.get(discoveredRef)!;
+    expect(
+      Buffer.byteLength(retained.skillImageYaml) +
+        Buffer.byteLength(retained.skillsMd),
+    ).toBe(6);
     expect(cleanupSkillImageExtraction).toHaveBeenCalledTimes(1);
+    expect(cleanupSkillImageExtraction).toHaveBeenCalledWith(
+      {
+        ...extracted,
+        acquisition: {
+          key: explicitRef,
+          digest: resolvedDigest,
+          sourceUri: `oci://quay.io/org/explicit@${resolvedDigest}`,
+        },
+      },
+      expect.anything(),
+    );
+    expect(extracted).not.toHaveProperty('acquisition');
   });
 
   it('honors zero retries in the image path and reports a failed image', async () => {
@@ -287,7 +325,11 @@ describe('configured total image limit', () => {
         { length: 75 },
         (_, i) => `quay.io/org/skill-${i}:v1`,
       );
-      discover.mockResolvedValue(refs);
+      discover.mockResolvedValue({
+        imageRefs: refs,
+        complete: true,
+        usable: true,
+      });
       // The explicit reference also appears in discovery and counts only once.
       const { server } = await startConnector({
         ...(maxImages === undefined ? {} : { maxImages }),
@@ -356,7 +398,11 @@ describe('source-specific 404 logging', () => {
         404,
       );
       fetchImage.mockRejectedValue(error);
-      discover.mockResolvedValue([imageRef]);
+      discover.mockResolvedValue({
+        imageRefs: [imageRef],
+        complete: true,
+        usable: true,
+      });
       const { server } = await startConnector({
         maxRetries: 0,
         ...(explicit
@@ -382,7 +428,11 @@ describe('source-specific 404 logging', () => {
     const imageRef = 'quay.io/org/skill:missing';
     const error = new HttpResponseError('404 Not Found', 404);
     fetchImage.mockRejectedValue(error);
-    discover.mockResolvedValue([imageRef]);
+    discover.mockResolvedValue({
+      imageRefs: [imageRef],
+      complete: true,
+      usable: true,
+    });
     const { server } = await startConnector({
       maxRetries: 0,
       images: [{ imageRef }],
@@ -401,7 +451,11 @@ describe('source-specific 404 logging', () => {
   it('still reports other HTTP errors for discovered images', async () => {
     const imageRef = 'quay.io/org/skill:v1';
     const error = new HttpResponseError('503 unavailable', 503);
-    discover.mockResolvedValue([imageRef]);
+    discover.mockResolvedValue({
+      imageRefs: [imageRef],
+      complete: true,
+      usable: true,
+    });
     fetchImage.mockRejectedValue(error);
     const { server } = await startConnector({
       maxRetries: 0,
@@ -422,7 +476,11 @@ describe('source-specific 404 logging', () => {
   ])('reports a %s 404 for discovered images', async (_, message) => {
     const imageRef = 'quay.io/org/skill:v1';
     const error = new HttpResponseError(message, 404);
-    discover.mockResolvedValue([imageRef]);
+    discover.mockResolvedValue({
+      imageRefs: [imageRef],
+      complete: true,
+      usable: true,
+    });
     fetchImage.mockRejectedValue(error);
     const { server } = await startConnector({
       maxRetries: 0,
@@ -557,6 +615,9 @@ describe('source-operation deadline', () => {
       const result = await resultPromise;
       expect(result.records).toHaveLength(0);
       expect(result.discoveryComplete).toBe(false);
+      expect(result.failedKeys.sort()).toEqual(
+        images.map(image => image.imageRef).sort(),
+      );
       expect(fetchImage).toHaveBeenCalledTimes(4);
       expect(
         fetchImage.mock.calls.some(([ref]) =>
@@ -565,6 +626,47 @@ describe('source-operation deadline', () => {
       ).toBe(false);
     } finally {
       timers.mockRestore();
+    }
+  });
+});
+
+describe('refresh cancellation cleanup', () => {
+  const source: SourceConfig = {
+    id: 'cancelled',
+    images: [{ id: 'skill', imageRef: 'quay.io/org/skill:v1' }],
+    allowedRegistries: ['quay.io'],
+    refreshIntervalMinutes: 10,
+  };
+  it('does not start acquisition when the parent was already cancelled', async () => {
+    const controller = new AbortController();
+    controller.abort(new Error('stopped'));
+    const result = await performSourceRefresh(
+      source,
+      DEFAULT_SKILL_IMAGE_OPTIONS,
+      logger,
+      undefined,
+      controller.signal,
+    );
+    expect(fetchImage).not.toHaveBeenCalled();
+    expect(resolveManifest).not.toHaveBeenCalled();
+    expect(result.discoveryComplete).toBe(false);
+  });
+  it('detaches the parent abort listener after a completed refresh', async () => {
+    const controller = new AbortController();
+    const add = jest.spyOn(controller.signal, 'addEventListener');
+    const remove = jest.spyOn(controller.signal, 'removeEventListener');
+    try {
+      await performSourceRefresh(
+        source,
+        DEFAULT_SKILL_IMAGE_OPTIONS,
+        logger,
+        undefined,
+        controller.signal,
+      );
+      expect(remove).toHaveBeenCalledWith('abort', add.mock.calls[0][1]);
+    } finally {
+      add.mockRestore();
+      remove.mockRestore();
     }
   });
 });
