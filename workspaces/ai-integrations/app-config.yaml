@@ -202,9 +202,9 @@ skillImageConnector:
         scope: local # Required: each backend instance maintains its own snapshots.
       allowedRegistries:
         - quay.io
-#      images:
-#         - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
-#         - imageRef: quay.io/gabemontero/hello-world-skill-annotated:1.0.0-draft
+      #      images:
+      #         - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+      #         - imageRef: quay.io/gabemontero/hello-world-skill-annotated:1.0.0-draft
       # Optional public Quay discovery; can be combined with explicit images.
       quayDiscovery:
         organization: gabemontero # required
