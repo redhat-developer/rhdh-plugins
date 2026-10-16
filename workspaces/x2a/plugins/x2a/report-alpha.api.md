@@ -209,6 +209,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.artifacts.migration_plan': string;
     readonly 'modulePage.artifacts.module_migration_plan': string;
     readonly 'modulePage.artifacts.migrated_sources': string;
+    readonly 'modulePage.artifacts.editInCodespaces': string;
     readonly 'modulePage.artifacts.ansible_project': string;
     readonly 'modulePage.phases.title': string;
     readonly 'modulePage.phases.id': string;

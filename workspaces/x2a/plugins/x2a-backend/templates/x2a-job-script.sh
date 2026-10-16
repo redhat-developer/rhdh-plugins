@@ -239,6 +239,9 @@ git_commit_and_push() {
   sanitize_secrets "${PROJECT_PATH:-/workspace/target}"
 
   git add "${PROJECT_DIR}" 2>/dev/null || git add -A || true
+  if [[ -f "${TARGET_BASE}/.devcontainer/ansible/devcontainer.json" ]]; then
+    git add .devcontainer/ansible/devcontainer.json
+  fi
 
   # Check if there are changes to commit
   if git diff --cached --quiet; then
@@ -585,6 +588,15 @@ case "${PHASE}" in
     # Exclude files we copied into source before running x2a
     copy_changed_files "${SOURCE_BASE}" "${OUTPUT_DIR}" \
       '^migration-plan\.md$' '^migration-dependencies/'
+
+    DEVCONTAINER_CONFIG="${OUTPUT_DIR}/ansible/.devcontainer/devcontainer.json"
+    if [[ -f "${DEVCONTAINER_CONFIG}" ]]; then
+      echo "Copying Ansible devcontainer configuration to the target repository."
+      mkdir -p "${TARGET_BASE}/.devcontainer/ansible"
+      cp -v "${DEVCONTAINER_CONFIG}" "${TARGET_BASE}/.devcontainer/ansible/devcontainer.json"
+    else
+      echo "No Ansible devcontainer configuration found at ${DEVCONTAINER_CONFIG}; skipping"
+    fi
 
     echo ""
     echo "=== Output directory contents ==="
