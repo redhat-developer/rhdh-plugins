@@ -15,7 +15,10 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { EntityHeaderLayoutBlueprint } from '@backstage/plugin-catalog-react/alpha';
+import {
+  EntityHeaderLayoutBlueprint,
+  CatalogFilterBlueprint,
+} from '@backstage/plugin-catalog-react/alpha';
 
 /**
  * Custom entity header layout. With no `filter` it matches every entity, so it
@@ -32,6 +35,14 @@ const localizedEntityHeaderLayout = EntityHeaderLayoutBlueprint.make({
   },
 });
 
+const tagFilter = CatalogFilterBlueprint.make({
+  name: 'tag',
+  params: {
+    loader: () =>
+      import('./CustomEntityTagPicker').then(m => <m.CustomEntityTagPicker />),
+  },
+});
+
 /**
  * Module for the Backstage catalog plugin that replaces the entity page header
  * layout with one that localizes the catalog tab titles through the
@@ -41,5 +52,5 @@ const localizedEntityHeaderLayout = EntityHeaderLayoutBlueprint.make({
  */
 export const catalogModule = createFrontendModule({
   pluginId: 'catalog',
-  extensions: [localizedEntityHeaderLayout],
+  extensions: [localizedEntityHeaderLayout, tagFilter],
 });
