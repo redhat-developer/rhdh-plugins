@@ -21,7 +21,7 @@ import {
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
-import { FormFieldBlueprint } from '@backstage/plugin-scaffolder-react';
+import { FormFieldBlueprint } from '@backstage/plugin-scaffolder-react/alpha';
 
 // import { RiAddCircleLine as CreateComponentIcon } from '@remixicon/react';
 

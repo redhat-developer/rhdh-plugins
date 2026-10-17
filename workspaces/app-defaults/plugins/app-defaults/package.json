@@ -110,6 +110,7 @@
     "@backstage/plugin-permission-common": "^0.9.10",
     "@backstage/plugin-permission-react": "^0.5.4",
     "@backstage/plugin-scaffolder": "^1.38.2",
+    "@backstage/plugin-scaffolder-react": "^2.0.3",
     "@backstage/plugin-search": "^1.7.7",
     "@backstage/plugin-search-react": "^1.11.7",
     "@backstage/plugin-techdocs": "^1.18.0",
