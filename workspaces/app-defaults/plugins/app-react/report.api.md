@@ -89,7 +89,7 @@ export interface ApplicationDrawerProps {
 export const appReactTranslationRef: TranslationRef<
   'plugin.app-react',
   {
-    readonly 'pages.Create': 'Self-Service';
+    readonly 'pages.Create': 'Self-service';
     readonly 'pages.Home': 'Home';
     readonly 'pages.Catalog': 'Catalog';
     readonly 'pages.APIs': 'APIs';

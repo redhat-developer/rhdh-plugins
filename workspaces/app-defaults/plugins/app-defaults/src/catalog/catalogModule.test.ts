@@ -33,14 +33,24 @@ describe('catalogModule', () => {
   });
 
   it('registers the localized entity header layout on the entity page', () => {
-    expect(config.extensions).toHaveLength(1);
+    expect(config.extensions).toHaveLength(2);
 
-    const spec = JSON.parse(JSON.stringify(config.extensions[0]));
-    expect(spec.kind).toBe('entity-header-layout');
-    expect(spec.name).toBe('localized');
-    expect(spec.attachTo).toEqual({
+    const headerSpec = JSON.parse(JSON.stringify(config.extensions[0]));
+    expect(headerSpec.kind).toBe('entity-header-layout');
+    expect(headerSpec.name).toBe('localized');
+    expect(headerSpec.attachTo).toEqual({
       id: 'page:catalog/entity',
       input: 'headerLayouts',
+    });
+  });
+
+  it('registers the custom entity tag filter on the catalog page', () => {
+    const tagSpec = JSON.parse(JSON.stringify(config.extensions[1]));
+    expect(tagSpec.kind).toBe('catalog-filter');
+    expect(tagSpec.name).toBe('tag');
+    expect(tagSpec.attachTo).toEqual({
+      id: 'page:catalog',
+      input: 'filters',
     });
   });
 });
