@@ -26,8 +26,8 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
+  type Entity,
 } from '@backstage/catalog-model';
-import type { Entity } from '@backstage/catalog-model';
 import type {
   IdentityTuple,
   SkillRecord,
@@ -49,18 +49,101 @@ import type { MappedSkillEntity, SourceConsumerConfig } from './types';
 
 /**
  * Result of consuming a snapshot from a connector source.
+ *
+ * Discriminated union on `ok`: success branches carry entities and
+ * snapshot metadata; failure branches carry an error message.
  */
-export interface ConsumeResult {
-  /** Whether a valid snapshot was obtained. */
-  ok: boolean;
-  /** Mapped entities when ok is true. */
-  entities: MappedSkillEntity[];
-  /** Snapshot status when ok is true. */
-  status?: SkillSnapshot['status'];
-  /** Observation timestamp when ok is true. */
-  observedAt?: string | null;
-  /** Error message when ok is false. */
-  error?: string;
+export type ConsumeResult =
+  | {
+      /** Snapshot was successfully obtained and validated. */
+      ok: true;
+      /** Mapped entities (empty for loading/failed status). */
+      entities: MappedSkillEntity[];
+      /** Snapshot status from the connector. */
+      status: SkillSnapshot['status'];
+      /** Observation timestamp from the connector. */
+      observedAt: string | null;
+      error?: never;
+    }
+  | {
+      /** Snapshot fetch or validation failed. */
+      ok: false;
+      /** Empty array (no entities on failure). */
+      entities: [];
+      /** Error description. */
+      error: string;
+      status?: never;
+      observedAt?: never;
+    };
+
+/**
+ * Sentinel error thrown when the response body exceeds the byte limit.
+ */
+class ResponseTooLargeError extends Error {
+  constructor(limit: number) {
+    super(`Response body exceeds ${limit} byte limit`);
+    this.name = 'ResponseTooLargeError';
+  }
+}
+
+/**
+ * Reads a response body as text with an explicit byte counter.
+ *
+ * If the response has a Content-Length header that exceeds `maxBytes`,
+ * rejects immediately without reading the body. Otherwise reads
+ * chunks from the body stream, aborting as soon as the accumulated
+ * byte count exceeds `maxBytes`. This prevents a misbehaving
+ * connector from exhausting memory when Content-Length is absent
+ * (chunked transfer).
+ *
+ * @throws ResponseTooLargeError when the body exceeds `maxBytes`.
+ */
+async function readBoundedBody(
+  response: Response,
+  maxBytes: number,
+): Promise<string> {
+  // Fast-reject via Content-Length when present
+  const contentLength = response.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > maxBytes) {
+    throw new ResponseTooLargeError(maxBytes);
+  }
+
+  // Stream the body with a byte counter
+  if (response.body) {
+    const reader = response.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        totalBytes += value.byteLength;
+        if (totalBytes > maxBytes) {
+          reader.cancel();
+          throw new ResponseTooLargeError(maxBytes);
+        }
+        chunks.push(value);
+      }
+    } catch (error) {
+      if (error instanceof ResponseTooLargeError) throw error;
+      // Re-throw read errors as-is
+      throw error;
+    }
+
+    const decoder = new TextDecoder();
+    return (
+      chunks.map(c => decoder.decode(c, { stream: true })).join('') +
+      decoder.decode()
+    );
+  }
+
+  // Fallback when response.body is not available (e.g., in tests)
+  const text = await response.text();
+  if (Buffer.byteLength(text, 'utf8') > maxBytes) {
+    throw new ResponseTooLargeError(maxBytes);
+  }
+  return text;
 }
 
 /**
@@ -112,29 +195,18 @@ export async function consumeSnapshot(
     return { ok: false, entities: [], error: msg };
   }
 
-  // Bound the response read per design D2
-  const contentLength = response.headers.get('content-length');
-  if (contentLength && parseInt(contentLength, 10) > MAX_RESPONSE_BYTES) {
-    const msg =
-      `Response for source ${source.sourceId} exceeds ` +
-      `${MAX_RESPONSE_BYTES} byte limit (content-length: ${contentLength})`;
-    logger.error(msg);
-    return { ok: false, entities: [], error: msg };
-  }
-
+  // Bound the response read per design D2.
+  // Use a streaming reader with an explicit byte counter so that
+  // oversized responses from a misbehaving connector are aborted
+  // before the entire body is buffered into memory.
   let bodyText: string;
   try {
-    bodyText = await response.text();
+    bodyText = await readBoundedBody(response, MAX_RESPONSE_BYTES);
   } catch (error) {
-    const msg = `Failed to read response body for source ${source.sourceId}: ${error}`;
-    logger.error(msg);
-    return { ok: false, entities: [], error: msg };
-  }
-
-  if (Buffer.byteLength(bodyText, 'utf8') > MAX_RESPONSE_BYTES) {
     const msg =
-      `Response body for source ${source.sourceId} exceeds ` +
-      `${MAX_RESPONSE_BYTES} byte limit`;
+      error instanceof ResponseTooLargeError
+        ? `Response for source ${source.sourceId} exceeds ${MAX_RESPONSE_BYTES} byte limit`
+        : `Failed to read response body for source ${source.sourceId}: ${error}`;
     logger.error(msg);
     return { ok: false, entities: [], error: msg };
   }

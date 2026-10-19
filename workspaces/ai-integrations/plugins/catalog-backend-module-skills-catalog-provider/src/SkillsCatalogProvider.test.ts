@@ -220,6 +220,139 @@ describe('SkillsCatalogProvider', () => {
     });
   });
 
+  it('does not call applyMutation when source returns loading status', async () => {
+    const snapshot = makeSnapshot({ status: 'loading', skills: [] });
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      text: () => Promise.resolve(JSON.stringify(snapshot)),
+    });
+
+    const taskFn: { fn?: () => Promise<void> } = {};
+    const mockTaskRunner = {
+      run: jest.fn().mockImplementation(({ fn }) => {
+        taskFn.fn = fn;
+      }),
+    };
+
+    const config = makeConfig();
+    const provider = new SkillsCatalogProvider(
+      config,
+      mockDiscovery,
+      mockAuth,
+      logger,
+      mockTaskRunner,
+    );
+
+    await provider.connect(mockConnection);
+    await taskFn.fn!();
+
+    expect(mockConnection.applyMutation).not.toHaveBeenCalled();
+  });
+
+  it('does not call applyMutation when source returns failed status', async () => {
+    const snapshot = makeSnapshot({ status: 'failed', skills: [] });
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      text: () => Promise.resolve(JSON.stringify(snapshot)),
+    });
+
+    const taskFn: { fn?: () => Promise<void> } = {};
+    const mockTaskRunner = {
+      run: jest.fn().mockImplementation(({ fn }) => {
+        taskFn.fn = fn;
+      }),
+    };
+
+    const config = makeConfig();
+    const provider = new SkillsCatalogProvider(
+      config,
+      mockDiscovery,
+      mockAuth,
+      logger,
+      mockTaskRunner,
+    );
+
+    await provider.connect(mockConnection);
+    await taskFn.fn!();
+
+    expect(mockConnection.applyMutation).not.toHaveBeenCalled();
+  });
+
+  it('applies mutation only for ready source when another returns loading', async () => {
+    const config = makeConfig({
+      sources: [
+        {
+          connectorPluginId: 'skill-image-connector',
+          sourceId: 'quay-public',
+          sourceType: 'oci',
+        },
+        {
+          connectorPluginId: 'npx-skill-connector',
+          sourceId: 'npx-source',
+          sourceType: 'npx',
+        },
+      ],
+    });
+
+    const readySnapshot = makeSnapshot({ skills: [validOciRecordFull] });
+    const loadingSnapshot = makeSnapshot({
+      source: { id: 'npx-source', type: 'npx' },
+      status: 'loading',
+      skills: [],
+    });
+
+    mockDiscovery.getBaseUrl
+      .mockResolvedValueOnce('http://localhost:7007/api/skill-image-connector')
+      .mockResolvedValueOnce('http://localhost:7007/api/npx-skill-connector');
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        text: () => Promise.resolve(JSON.stringify(readySnapshot)),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        text: () => Promise.resolve(JSON.stringify(loadingSnapshot)),
+      });
+
+    const taskFn: { fn?: () => Promise<void> } = {};
+    const mockTaskRunner = {
+      run: jest.fn().mockImplementation(({ fn }) => {
+        taskFn.fn = fn;
+      }),
+    };
+
+    const provider = new SkillsCatalogProvider(
+      config,
+      mockDiscovery,
+      mockAuth,
+      logger,
+      mockTaskRunner,
+    );
+
+    await provider.connect(mockConnection);
+    await taskFn.fn!();
+
+    // Only the ready source should have its mutation applied
+    expect(mockConnection.applyMutation).toHaveBeenCalledTimes(1);
+    expect(mockConnection.applyMutation).toHaveBeenCalledWith({
+      type: 'full',
+      entities: expect.arrayContaining([
+        expect.objectContaining({
+          locationKey: 'skills-catalog-provider:test:oci:quay-public',
+        }),
+      ]),
+    });
+  });
+
   it('continues processing other sources when one fails', async () => {
     const config = makeConfig({
       sources: [

@@ -2,7 +2,7 @@
 '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider': minor
 ---
 
-Add common skills catalog entity provider (OpenSpec task 4.1).
+Add common skills catalog entity provider (OpenSpec tasks 4.1 and 4.2).
 
 One provider consumes normalized v1 snapshots from OCI and npx connectors
 using the same implementation. Each source has independent configuration,

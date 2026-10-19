@@ -215,6 +215,9 @@ export class SkillsCatalogProvider implements EntityProvider {
 
     // For loading/failed status, signal the caller to preserve previous
     // catalog entities rather than applying an empty mutation.
+    // NOTE: `partial` snapshots currently fall through to the ready path
+    // and trigger a `type: 'full'` mutation. Comprehensive status handling
+    // (including partial-result retention) is deferred to task 4.4.
     if (result.status === 'loading' || result.status === 'failed') {
       return { skipped: true };
     }
