@@ -181,6 +181,8 @@ failed repository/tag keys, and retain the existing #4747 `/images` response for
 It SHALL NOT emit `AiResource` entities or apply catalog defaults or mutations.
 Unknown source IDs SHALL return 404. The JSON response SHALL contain an `error`
 string; exact diagnostic wording is not a stable identifier or error code.
+Raw Markdown SHALL NOT be included in `/skills/:sourceId` normalized records;
+it is served through the dedicated Markdown endpoint defined below.
 
 #### Scenario: Aggregate content rejection without a tagged key
 
@@ -204,6 +206,7 @@ string; exact diagnostic wording is not a stable identifier or error code.
 - **THEN** `/skills/:sourceId` returns a normalized record with a digest-addressed OCI URI
 - **AND** the existing `/images` endpoint retains its raw-content response format
 - **AND** the normalized endpoint contains no raw YAML, Markdown, or local paths
+- **AND** the `/skilldocs/:sourceId/:digest` endpoint serves the extracted Markdown separately
 
 #### Scenario: Refresh fails for one tag
 
@@ -283,6 +286,184 @@ string; exact diagnostic wording is not a stable identifier or error code.
 - **AND** unknown source IDs return 404
 - **AND** unauthenticated requests cannot read snapshots
 - **AND** a service caller targets plugin ID `skill-image-connector` for its request token
+
+### Requirement: Dedicated authenticated Markdown endpoint
+
+The connector SHALL expose authenticated `GET /skilldocs/:sourceId/:digest`
+relative to its Backstage plugin base URL, serving extracted skill Markdown for
+TechDocs consumption as specified in design D8. The `sourceId` is the configured
+source identity (one path segment). The `digest` is the verified manifest digest
+(`sha256:<64 lowercase hex digits>`). The endpoint SHALL use Backstage's default
+backend authentication, consistent with `/skills/:sourceId`, accepting valid
+user or service credentials. It SHALL return the
+extracted Markdown document with `Content-Type: text/markdown` when available.
+It SHALL preserve the existing `/images` endpoint compatibility and keep raw
+Markdown out of `/skills/:sourceId` normalized records.
+
+#### Scenario: Successful Markdown retrieval
+
+- **WHEN** a GET request is made to `/skilldocs/:sourceId/:digest` with a valid source ID and a known digest
+- **THEN** the connector returns 200 with `Content-Type: text/markdown` and the extracted Markdown content
+- **AND** the response includes an `ETag` header derived from the manifest digest
+
+#### Scenario: Unknown source ID
+
+- **WHEN** a GET request is made to `/skilldocs/:sourceId/:digest` with a source ID not configured for this connector
+- **THEN** the connector returns 404
+- **AND** it does not return successful empty documentation
+
+#### Scenario: Unknown digest for a known source
+
+- **WHEN** a GET request is made to `/skilldocs/:sourceId/:digest` with a valid source ID but an unrecognized digest
+- **THEN** the connector returns 404
+- **AND** it does not return successful empty documentation or a 200 with an empty body
+
+#### Scenario: Content not yet available
+
+- **WHEN** the connector is still loading or the Markdown for a known digest has not been extracted yet
+- **THEN** the connector returns 404
+- **AND** it does not return successful empty documentation
+
+#### Scenario: Conditional request with matching ETag
+
+- **WHEN** a GET request includes `If-None-Match` matching the current ETag for the digest
+- **THEN** the connector returns 304 Not Modified with no body
+- **AND** TechDocs caching avoids re-fetching and re-building unchanged documentation
+
+#### Scenario: Same-digest tag aliases share documentation
+
+- **WHEN** two tags in the same repository resolve to the same manifest digest
+- **THEN** requests to `/skilldocs/:sourceId/:digest` return the same Markdown content for both entities
+- **AND** each entity's `backstage.io/techdocs-ref` annotation uses the same digest-addressed URL
+
+#### Scenario: Moving tag updates documentation
+
+- **WHEN** a tag moves to a new manifest with different Markdown content
+- **THEN** requests using the new manifest digest return the new Markdown
+- **AND** the old digest's content remains available as long as any entity references it
+
+### Requirement: Bounded Markdown content storage and lifecycle
+
+The connector SHALL retain extracted Markdown content for skills with
+last-known-good entities using bounded durable storage, as specified in design
+D8. Content SHALL be stored per source, keyed by manifest digest. Total
+retained content per source SHALL be bounded by the optional backend-only
+`skillImageConnector.maxRetainedMarkdownSizeBytes` positive safe integer (default
+50 MiB = 52,428,800 bytes), independently of D7's extraction setting
+`maxAggregateContentSizeBytes`. Omission SHALL use that fixed retention default;
+invalid values and startup limits below existing retained bytes SHALL fail
+configuration validation. Retained unique digests SHALL be capped at 1,000 per
+source. The connector SHALL recover retained content from
+durable storage after restarts, consistent with design D6's durable
+reconciliation recovery.
+
+#### Scenario: Content retained through partial refresh
+
+- **WHEN** a `partial` refresh omits a previously known skill
+- **THEN** the Markdown content for that skill's digest remains available at `/skilldocs/:sourceId/:digest`
+- **AND** the retained entity's TechDocs documentation continues to render
+
+#### Scenario: Content retained after restart
+
+- **WHEN** the connector restarts with durable storage containing retained Markdown
+- **THEN** it recovers the content before serving documentation requests
+- **AND** `/skilldocs/:sourceId/:digest` returns the recovered content for entities that reference those digests
+
+#### Scenario: Content cleanup after acknowledged reconciliation
+
+- **WHEN** the configured provider successfully applies a `ready` snapshot and durably commits its next ownership state
+- **AND** the connector accepts that revision's acknowledgment according to D8
+- **THEN** only content absent from both the acknowledged retained-digest set and the current snapshot is eligible for cleanup
+- **AND** a ready connector snapshot alone never authorizes cleanup
+
+#### Scenario: Provider outage or mutation failure
+
+- **WHEN** the connector publishes newer snapshots while the provider is unavailable or a catalog mutation fails
+- **THEN** previous Markdown remains available because no successful reconciliation acknowledgment permits its removal
+- **AND** restart recovery preserves this retention state
+
+#### Scenario: Admission would exceed retained storage bounds
+
+- **WHEN** new Markdown would exceed `maxRetainedMarkdownSizeBytes` or the 1,000 retained-digest limit, or durable storage of that content fails
+- **THEN** the connector excludes that new normalized record, reports its repository/tag failure key, and publishes `partial`
+- **AND** existing retained content is not evicted and records using it remain eligible
+- **AND** repeated partial refreshes cannot grow the retained store beyond either bound
+
+#### Scenario: Content unavailable after failed recovery
+
+- **WHEN** durable storage is unavailable or content cannot be recovered after restart
+- **THEN** `/skilldocs/:sourceId/:digest` returns 404 for unrecovered content
+- **AND** the entity remains valid; previously built documentation is available only if a successful TechDocs build already exists
+- **AND** a first documentation request receives 404 until successful extraction and re-fetch restore the content
+
+#### Scenario: Content storage bounded per source
+
+- **WHEN** retained Markdown content for a source approaches its independent retained-Markdown byte or digest-count limit
+- **THEN** the connector enforces the storage bound without discarding content for active entities
+- **AND** only unreferenced digests released by the D8 acknowledgment protocol are eligible for cleanup
+
+#### Scenario: Extraction and retention settings are independent
+
+- **WHEN** either `maxAggregateContentSizeBytes` or `maxRetainedMarkdownSizeBytes` is changed
+- **THEN** only its extraction or durable Markdown pool's limit changes
+- **AND** omitting the retention setting always selects 50 MiB, regardless of the extraction setting
+- **AND** invalid retention values or startup limits below retained bytes are rejected without deleting content
+
+#### Scenario: Controlled recovery from the retained-digest ceiling
+
+- **WHEN** 1,000 retained unique digests prevent new admissions
+- **THEN** raising the retained-byte budget does not increase that fixed count ceiling
+- **AND** an operator can temporarily narrow the source's tagged inventory to retained content, or use D5's raw-only digest input to obtain a complete empty ready snapshot, under the same source ID
+- **AND** excluded catalog entities are deliberately removed or updated, catalog processing is confirmed, and the provider acknowledges before any old content is released
+- **AND** discovery is restored only after cleanup, within both retention bounds
+- **AND** retention database reset and source disablement are not cleanup mechanisms
+
+### Requirement: Authorized documentation retention acknowledgment
+
+OCI sources SHALL expose `X-Skilldocs-Revision` on normalized
+snapshot responses and authenticated `POST /skilldocs/:sourceId/reconcile`,
+following D8's revision, authorization, validation, serialization, and durable
+retention rules. Unlike the Markdown GET endpoint, the retention POST SHALL
+require the configured provider service principal; authenticated users and other
+service principals SHALL NOT modify retention state. The revision SHALL remain
+outside the v1 JSON envelope. The
+connector SHALL use its own database service for content and retention state.
+This demo SHALL run one connector backend instance and one active provider runner
+per source; source snapshot and acknowledgment requests SHALL reach that same
+connector instance, as required by D8. Replica coordination is outside this increment.
+
+#### Scenario: Documentation-safe source identifiers
+
+- **WHEN** a source ID is blank or exactly `.` or `..`
+- **THEN** startup configuration validation rejects it before constructing any snapshot or documentation URL
+- **AND** valid IDs use individually encoded path segments without repeated decoding
+
+#### Scenario: Authorized current-ready acknowledgment
+
+- **WHEN** the configured `catalogProviderPluginId` service principal sends a valid `{ revision, retainedDigests }` body for the current ready snapshot
+- **THEN** the connector atomically persists the retain set and cleanup eligibility before returning 204
+- **AND** current snapshot content and acknowledged retained digests remain protected
+
+#### Scenario: Unauthorized or malformed acknowledgment
+
+- **WHEN** an authenticated caller is not the configured catalog provider service principal
+- **THEN** the connector returns 403 without changing retention state
+- **WHEN** an authorized caller sends an invalid revision/digest set, more than 1,000 digests, or an oversized body
+- **THEN** invalid bodies return 400 and bodies larger than 5 MiB return 413 before parsing, without changing retention state
+- **AND** unknown sources return 404 and unauthenticated calls fail backend authentication
+
+#### Scenario: Superseded and repeated acknowledgments
+
+- **WHEN** a previously unacknowledged revision is no longer current or the current snapshot is not ready
+- **THEN** the connector returns 409 without deletion
+- **WHEN** the same successful revision and identical retain set are retried
+- **THEN** the connector returns 204 without further deletion, including after restart
+- **AND** a conflicting set for that acknowledged revision returns 409
+
+#### Scenario: Publication races cleanup
+
+- **WHEN** a new snapshot reuses retained content while cleanup is requested
+- **THEN** per-source serialization and a final current-reference check prevent deletion of newly published content
 
 ### Requirement: Configurable acquisition with shared request handling
 
