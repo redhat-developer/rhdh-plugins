@@ -6,8 +6,11 @@ The OCI connector SHALL discover repositories in a configured public Quay
 organization using pagination. When `quayDiscovery.tag` is omitted or blank, it
 SHALL enumerate all active tags for each repository using paginated tag listing.
 When a tag is supplied, it SHALL select that exact tag, including `latest`;
-wildcard and regex matching SHALL NOT be supported. It SHALL refresh at startup and on a non-overlapping Backstage schedule,
-with a default interval of ten minutes. It SHALL resolve each selected tag once,
+wildcard and regex matching SHALL NOT be supported. It SHALL refresh immediately
+at startup and every ten minutes by default on a non-overlapping Backstage
+schedule; explicitly configured initial delays and manual trigger mode SHALL be
+honored instead of forcing immediate startup acquisition. It SHALL resolve each
+selected tag once,
 fetch its manifest by SHA-256 digest, and verify the returned bytes before using
 metadata or fetching layers. The stable record key SHALL be registry host plus
 repository and the exact case-sensitive tag (`<registry>/<repository>:<tag>`),
@@ -77,7 +80,7 @@ address used by each upstream connection, including redirects.
 
 #### Scenario: Registry redirects to an unconfigured public origin
 
-- **WHEN** a registry or discovery response redirects to a different HTTPS origin outside the initial registry hostname/subdomain and port scope and not listed in `skillImageConnector.allowedOrigins`
+- **WHEN** a registry or discovery response redirects to a different HTTPS origin outside the initial registry hostname/subdomain and port scope and not listed in that source’s `allowedOrigins` (`skillImageConnector.allowedOrigins` for the legacy flat source)
 - **THEN** the connector rejects the redirect before resolving or connecting to that destination
 - **AND** omission of `allowedOrigins` permits only the initial registry hostname and its subdomains on the same HTTPS port
 
@@ -167,7 +170,7 @@ address used by each upstream connection, including redirects.
 - **AND** it does not classify incomplete inspection as a confirmed non-skill
 - **AND** the raw `/images` response includes that image in `failedImages`
 - **AND** independent candidates continue unless a shared source bound or cancellation stops processing
-- **AND** normalized snapshots, when provided by task 2.5, report the known failed key as an incomplete result
+- **AND** normalized snapshots report the known failed key as an incomplete result
 
 ### Requirement: Normalized OCI REST snapshots
 
@@ -179,6 +182,24 @@ It SHALL NOT emit `AiResource` entities or apply catalog defaults or mutations.
 Unknown source IDs SHALL return 404. Raw Markdown SHALL NOT be included in
 `/skills/:sourceId` normalized records; it is served through the dedicated
 Markdown endpoint defined below.
+Unknown source IDs SHALL return 404. The JSON response SHALL contain an `error`
+string; exact diagnostic wording is not a stable identifier or error code.
+
+#### Scenario: Aggregate content rejection without a tagged key
+
+- **WHEN** a successfully extracted bare-digest input exceeds the retained-content budget
+- **THEN** the connector releases that extraction and marks acquisition incomplete
+- **AND** the normalized snapshot is `partial`, even with no successful records or known tagged failure keys
+- **AND** the connector does not invent a tag or treat the rejection as a successful raw-only exclusion
+
+#### Scenario: Defensive normalization classification
+
+- **WHEN** normalization classifies an extracted candidate as ambiguous
+- **THEN** the connector releases its files and reports its known repository/tag key as failed in an incomplete snapshot
+- **WHEN** normalization confirms a non-skill
+- **THEN** the connector releases its files and skips it without marking acquisition incomplete
+- **WHEN** normalization returns a normalized outcome without a record or an unsupported outcome
+- **THEN** the connector releases its files and reports a candidate failure rather than silently publishing `ready`
 
 #### Scenario: Normalized and raw endpoints coexist
 
