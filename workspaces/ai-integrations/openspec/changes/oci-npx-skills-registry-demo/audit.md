@@ -1,6 +1,240 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-19T12:00:00Z
+**Last audited:** 2026-10-19T19:19:03Z
+
+### Summary
+
+Focused direct review of the two low-severity documentation findings against PR #5273 head 3cd7882042. This is a scenario-organization and authentication-prose correction, not another independent full-change audit. Historical audit reports and their verification scope are preserved below.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Corrections and verification scope
+
+- The unauthorized GET scenario now contains only its credential condition, authentication failure, and URL-reader outcome. Default GET authentication is stated in the dedicated Markdown endpoint requirement. The provider-service-only retention POST contract is stated in the connector retention acknowledgment requirement. Authentication behavior remains unchanged.
+- Extraction equivalence has its own requirement, with the existing scenario and per-image manifest identity preserved. The unauthorized GET scenario is grouped with authentication, the size scenario with MkDocs generation, and only conditional-request scenarios remain under ETag semantics.
+- Direct checks preserve all existing scenario headings and task completion markers. Strict OpenSpec validation, workspace Prettier, and diff whitespace checks verify this documentation-only correction.
+
+---
+
+## Historical audits before scenario organization corrections
+
+The following reports describe earlier states and retain their original verification scope.
+
+## Audit Report: oci-npx-skills-registry-demo
+
+**Last audited:** 2026-10-19T18:35:14Z
+
+### Summary
+
+Focused cross-artifact follow-up to the four low-severity findings in Fullsend review 5575766203 against PR #5273 head d04abad2b4. This records direct verification of these corrections, not another independent full-change audit. Historical independent audit reports and their scope are preserved below. No findings remain outstanding within this focused review.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Corrections and verification scope
+
+- D8, the OCI requirements/scenarios, and tasks 6.2/6.5 now define optional backend-only `skillImageConnector.maxRetainedMarkdownSizeBytes`: positive safe integer, default 50 MiB (52,428,800 bytes), independently applied per source. Extraction continues to use `maxAggregateContentSizeBytes`; omission does not couple either default to the other setting. Invalid values and startup limits below retained content are rejected without deletion.
+- The fixed 1,000-retained-digest limit remains aligned with the protocol/acknowledgment bounds. Raising bytes cannot fix count exhaustion. D8 specifies a controlled inventory drain under the same source ID: reconcile retained-only tagged inputs or a valid raw-only digest input, confirm catalog processing, acknowledge cleanup, then restore discovery within both bounds. Excluded catalog entities are deliberately removed; retention resets and source disablement are not shortcuts.
+- The TechDocs capability is described only under Modified Capabilities, preserving the existing model-card capability ownership. Inline prose uses “added requirements.”
+- Existing task completion states and incoming OCI scenarios are preserved. Section 6 remains pending implementation; this change adds no runtime configuration handling or TypeScript code.
+
+Validation: strict OpenSpec validation, workspace Prettier, direct cross-artifact checks of default/independence/recovery behavior, and `git diff --check`. See the append-only journal for the focused review result.
+
+---
+
+## Historical audits before this focused Fullsend follow-up
+
+The following reports describe earlier states and retain their original verification scope.
+
+## Audit Report: oci-npx-skills-registry-demo
+
+**Last audited:** 2026-10-19T17:45:07Z
+
+### Summary
+
+PR #5273 follow-up: applied the six approved audit recommendations across the
+proposal, design, three affected capability specs, and section 6 tasks. All
+required artifacts passed the apply-ready minimum. Three isolated auditor passes
+in this correction round evaluated categories A–H with convention documents,
+sibling ownership claims, and light code grounding. The table records findings
+from the final isolated pass, not outstanding findings: its two findings were
+subsequently corrected and directly checked as documented below. No fourth
+independent pass was run, respecting the three-pass limit. Historical reports
+are preserved in full below; their findings describe earlier states.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 1       | 1          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **1**   | **1**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- **G — Catalog processing can lag mutation acceptance. Addressed after the
+  final isolated pass; directly checked.**
+  `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:558`.
+  Recommendation: do not release old documentation solely because a provider
+  mutation and ownership commit succeeded. The design, provider scenarios, and
+  task 6.3 now require persisted expected entity references and documentation
+  URLs, catalog visibility confirmation before acknowledgment, and bounded
+  retries without cleanup on processing errors or timeouts. The new delayed
+  processing scenario covers the transition explicitly.
+
+### SUGGESTION
+
+- **G — Dot source IDs cannot round-trip through URL parsing. Addressed after
+  the final isolated pass; directly checked.**
+  `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:621`.
+  Recommendation: reject source IDs exactly equal to `.` or `..` in source
+  configuration validation. D8, the documentation-safe source identifier
+  scenario, and task 6.4 now require this restriction and validation coverage.
+
+### Approved recommendations resolved
+
+- Preserve the full discovery-resolved connector base pathname when constructing
+  and matching documentation URLs; encode and decode segments once and reject
+  off-base destinations and redirects without forwarding credentials.
+- Require durable provider acknowledgments after ready reconciliation and catalog
+  visibility confirmation before releasing old Markdown. Define revision matching,
+  authorization, idempotency, superseded requests, and restart recovery. State the
+  demo's single connector instance and single active provider runner per source.
+- Store content before publishing its record. Bound retained bytes and digest count;
+  preserve retained content and report failed new admissions as partial snapshots.
+- Trust the authenticated connector's manifest-to-Markdown binding; do not compare
+  a Markdown hash to a manifest digest.
+- Require equivalent rendered content across extraction layouts, with each image's
+  own verified manifest digest in its URL.
+- Restore the OCI capability bullet and classify TechDocs as an extension of the
+  existing model-card capability, preserving that capability during spec sync.
+
+Interim audit suggestions also clarified that default Markdown GET authentication
+accepts valid user or service credentials, while retention POST requires the
+configured provider service principal; a missing recovered document does not
+promise a cached TechDocs build already exists. Unavailable content is consistently 404. All task 2.1–2.5 completion states and incoming OCI scenario headings remain
+preserved; section 6 implementation tasks remain unchecked.
+
+### Validation
+
+Strict OpenSpec validation, workspace `yarn prettier:check`, `yarn tsc`, immutable
+workspace dependency installation, and `git diff --check` passed. Installation
+reported existing peer-dependency warnings. This PR changes documentation only;
+no runtime implementation or new unit tests were introduced. The final two
+corrections received direct cross-artifact checks rather than another isolated
+pass; Fullsend review provides the next independent review.
+
+**Audit clean (no CRITICAL)**. No findings remain unapplied; the scope and limits
+of independent versus direct verification are stated above.
+
+Fixes to one file can introduce new drift elsewhere — re-run the audit after resolving remaining findings.
+
+---
+
+## Historical audit before approved corrections
+
+The following material is historical and does not describe the current finding status.
+
+## Audit Report: oci-npx-skills-registry-demo
+
+**Last audited:** 2026-10-19T17:36:14Z
+
+### Summary
+
+Independent cross-artifact audit of PR #5273 after restoring incoming task 2.5 scenarios and completion notes lost in the main-branch merge. Proposal, design, tasks, and all five capability specs passed the apply-ready minimum. Categories A–H were evaluated against workspace conventions, condensed sibling ownership claims, and relevant existing plugin code. This is an artifact audit, not implementation verification. Historical audit material is preserved below.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 1       | 2          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 1          |
+| G — Extended coherence     | 0        | 2       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **3**   | **3**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- **C: Match URLs relative to the complete connector base.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/specs/techdocs-integration/spec.md:7`. Match the skilldocs route beneath the complete discovery-resolved connector base, including its pathname. Backstage normally produces /api/skill-image-connector/skilldocs/..., which does not start with /skilldocs/. Align D8 and the reader scenarios.
+- **G: Coordinate cleanup with successful catalog reconciliation.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:530`. A connector ready snapshot can advance before the independently scheduled provider updates the catalog. Define an acknowledgment or explicit retention protocol before deleting old digests; test provider outages and failed catalog mutations.
+- **G: Define storage admission when retained documentation fills the bound.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/specs/oci-skills-connector/spec.md:381`. Repeated partial refreshes can accumulate active documentation beyond a fixed bound. Specify rejection of new records whose documentation cannot be retained, preserve existing content, mark the snapshot partial, and align connector/provider tasks and tests.
+
+### SUGGESTION
+
+- **C: Clarify what digest validation means.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/proposal.md:30`. A manifest digest is not a hash of extracted Markdown. State that the reader validates the digest-addressed route and trusts authenticated connector storage, or define a separate Markdown digest/proof contract if independent byte verification is intended.
+- **C: Require equivalent Markdown rather than identical manifest digests across layouts.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/specs/techdocs-integration/spec.md:130`. Annotated and archive images normally have different manifests and digests. Require equivalent rendered documentation, with each URL containing its own image's verified manifest digest.
+- **F: Restore the missing OCI capability bullet.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/proposal.md:69`. Restore an oci-skills-connector capability bullet and attach the dedicated Markdown endpoint description to it. The fragment currently follows skills-common, incorrectly suggesting endpoint ownership by the pure shared library.
+
+**Audit clean (no CRITICAL)**. Recommendations remain unapplied for maintainer review.
+
+Fixes to one file can introduce new drift elsewhere — re-run the audit after resolving remaining findings.
+
+---
+
+## Historical audits preserved from the rebased branch
+
+The following reports describe earlier states and scopes; their timestamps, findings, and verification notes are historical.
+
+## Audit Report: oci-npx-skills-registry-demo
+
+**Last audited:** 2026-10-18T16:09:12Z
 
 ### Summary
 
@@ -424,6 +658,45 @@ registry testing with both the skillctl archive image and the ORAS annotated
 raw-layer image, then authorized a local commit including their current
 `app-config.yaml` examples. Signing, pushing, and the next Fullsend review
 remain maintainer-owned.
+
+### OCI skill TechDocs scope extension
+
+This scope extension adds design D8 (OCI skill TechDocs), a new
+`specs/techdocs-integration/spec.md`, and updates to the proposal, design
+(D2/D5/D6/D7 cross-references), OCI connector spec (dedicated Markdown
+endpoint, content storage/lifecycle), provider spec (`backstage.io/techdocs-ref`
+annotation), and tasks (section 6). The extension reuses the HTTP-based
+model-card TechDocs integration pattern established in the
+`techdocs-modelcard-finalization` change.
+
+Cross-artifact consistency was reviewed for endpoint addressing
+(`/skilldocs/:sourceId/:digest`), authentication (service tokens targeted to
+the receiving connector plugin), digest identity (verified manifest digest binds
+documentation to the entity), content lifecycle (retention through partial
+refreshes and restarts, cleanup after `ready` snapshots), failure behavior
+(no successful empty documentation on failure), frontmatter handling (preserved
+as-is), scope (OCI only, single document, no bundled assets), and dependencies
+(tasks 2.5, 4.2, 2.4, 4.3–4.4).
+
+The following scenarios are specified across the connector, provider, and
+URL-reader specs: annotated-layer and tar/tar+gzip Markdown producing
+equivalent documentation; unauthorized access; unknown source/content; a moving
+tag updating the TechDocs annotation; same-digest aliases sharing
+documentation; partial refresh/restart content retention; size limits; and
+existing model-card integration remaining functional.
+
+No new raw-content fields are added to shared v1 records. No new core entity
+schema, runtime implementation, TypeScript, app-config.yaml, package files,
+lockfiles, workflow/agent configuration, or unrelated OpenSpec changes are
+included. No changeset is needed for this specification-only change. The
+TechDocs feature is not implemented or tested; all section 6 tasks are
+unchecked. Dependencies on tasks 2.5, 4.2, 2.4, and 4.3–4.4 are identified
+in the task descriptions.
+
+Existing task numbering, completed checkboxes, and task definitions are
+unchanged. Task 2.4 (connection safety, RHIDP-17933) is not enlarged; the
+TechDocs endpoint uses Backstage's default backend authentication, separate
+from D7's upstream egress restrictions.
 
 ##### Summary
 

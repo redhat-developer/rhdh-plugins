@@ -39,6 +39,10 @@ and obtains a service token whose `targetPluginId` is that receiving plugin ID.
 The endpoint uses Backstage's default backend authentication; it is not public
 merely because its upstream registries are public. Unknown sources return 404.
 
+Raw Markdown is not included in normalized v1 records. Extracted skill Markdown
+is served through a separate dedicated endpoint (D8) and consumed via
+`backstage.io/techdocs-ref` annotations (D5, D8).
+
 The v1 JSON contract is:
 
 ```typescript
@@ -216,7 +220,18 @@ version as SemVer, and otherwise emits
 
 - OCI: `sourceUri` is `oci://<registry>/<repository>@sha256:<hex>` and must agree
   with `digest`. Set `backstage.io/source-location` to `url:<sourceUri>` and
-  `rhdh.io/oci-skill-ref` to `sourceUri`.
+  `rhdh.io/oci-skill-ref` to `sourceUri`. Set `backstage.io/techdocs-ref` to
+  `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` where
+  `<discovered-connector-base>` is resolved through Backstage discovery using the
+  configured `connectorPluginId`, `<sourceId>` is the configured source ID, and
+  `<digest>` is the verified manifest digest from the record (`sha256:<hex>`).
+  The provider constructs the annotation from trusted configuration and the
+  connector's discovery-resolved base URL; it does not download or extract skill
+  content. Same-digest tag aliases share the same documentation URL because they
+  share the same manifest digest. When a tag moves to a new manifest, the entity's
+  `backstage.io/techdocs-ref` updates to reflect the new digest, matching the
+  entity's updated integrity references. The annotation is OCI-only for this
+  increment; npx skill entities do not receive a `backstage.io/techdocs-ref`.
 - npx: `sourceUri` is the configured index entry's absolute HTTPS artifact URL,
   serialized with the URL API. URL credentials, fragments, query-string
   credentials, and signed access tokens are rejected before the value is
@@ -307,6 +322,12 @@ commit its state before consuming a newer connector snapshot. This closes the
 crash window between catalog mutation and ownership persistence, including when
 the connector has already removed a newly added skill from its next snapshot.
 
+The OCI connector retains extracted Markdown content for skills that have
+last-known-good entities. Content retention follows the same lifecycle as
+snapshot completeness: a `partial` refresh does not discard content for retained
+entities, and content is recovered from durable storage after restarts. See D8
+for the dedicated Markdown endpoint and content lifecycle.
+
 ### D7 — Public-source safety, bounds, and configuration
 
 v1 supports publicly readable registries only. Registry URLs and redirects must
@@ -330,7 +351,9 @@ extraction storage; do not execute or materialize unnecessary entries. Enforce
 D2 snapshot limits during discovery/normalization and bound discovery documents
 and manifests to 5 MiB per response. A reached bound is an incomplete result,
 not evidence of absence. Logs include source/key context and counters without
-raw skill bodies, credentials, or tokens.
+raw skill bodies, credentials, or tokens. The D8 Markdown endpoint enforces
+bounded content storage per source under its independent D8 retention budget; the
+per-image decompressed-layer limit (5 MiB) bounds individual Markdown documents.
 
 Decompression enforces `maxBlobSizeBytes` as an output ceiling while inflating
 compressed layers, rather than checking only the final buffer size. Its default
@@ -462,6 +485,194 @@ Top-level numeric acquisition limits remain shared settings applied per source.
 unknown source, and treats its once-decoded route parameter as the source identity.
 It does not re-decode percent sequences or perform upstream work.
 
+### D8 — OCI skill TechDocs
+
+OCI skill Markdown extracted during D4 acquisition is published as TechDocs
+documentation for `AiResource` entities with `spec.type: skill`. This extends
+the HTTP-based model-card TechDocs integration pattern established in the
+`techdocs-modelcard-finalization` change: connector-owned Markdown endpoint,
+discovery-resolved `backstage.io/techdocs-ref` annotation, and authenticated
+URL-reader retrieval producing a minimal MkDocs project. No direct OCI
+UrlReader is added; the existing URL reader retrieves extracted content over
+connector HTTP; the connector alone acquires and extracts OCI artifacts. This
+increment covers OCI skill documentation only; npx TechDocs is deferred.
+
+**Connector Markdown endpoint.** The OCI connector exposes
+`GET /skilldocs/:sourceId/:digest` relative to its Backstage plugin base URL.
+The `sourceId` is the configured source identity (one path segment). The
+`digest` is the verified manifest digest from the record
+(`sha256:<64 lowercase hex digits>`). This provides unambiguous content
+addressing: documentation matches the digest on the entity, even if its tag
+subsequently moves to a new manifest. Same-digest tag aliases share the same
+documentation content because they share the same manifest digest and therefore
+the same URL. The endpoint uses Backstage's default backend authentication,
+consistent with `/skills/:sourceId`; it is not public. Unknown source IDs or
+unknown digests return 404. The endpoint returns the extracted Markdown with
+`Content-Type: text/markdown` when available. It does not return successful
+empty documentation on failure: if the Markdown is not available (extraction
+failed, content was cleaned up, or the digest is unknown), it returns an
+appropriate error status. The endpoint supports `ETag` response headers
+derived from the manifest digest and `If-None-Match` conditional request
+headers. A matching ETag returns 304 Not Modified. The digest is itself the
+content identity; TechDocs caching uses this to avoid re-fetching and
+re-building documentation for unchanged content.
+
+**Content storage and lifecycle.** The connector uses its own Backstage database
+service for durable Markdown keyed by source and verified manifest digest;
+provider reconciliation state remains separately owned under D6. Store Markdown
+before publishing a normalized record that refers to it. Recover stored content
+and retention metadata before serving requests after restart. A failed recovery
+returns 404 for missing content; it does not invalidate the entity or promise a
+previous TechDocs build exists.
+
+Retained Markdown bytes per source, including newly admitted content, are bounded
+by optional backend-only `skillImageConnector.maxRetainedMarkdownSizeBytes`
+(default 50 MiB = 52,428,800 bytes). This top-level positive safe integer applies
+independently to each source's durable Markdown store. Omission uses the fixed
+50 MiB default, not the configured extraction budget; invalid values fail
+configuration validation. `maxAggregateContentSizeBytes` continues to govern
+extracted content only. Changing either setting does not change the other.
+A configured retention limit below already-retained bytes is rejected during
+startup rather than evicting existing content. Declare the setting in the backend
+config schema and reference documentation when implementing task 6.2.
+
+Retain at most 1,000 unique digests per source, a fixed demo retention ceiling
+aligned with D2's record cap and the acknowledgment body's digest-count bound.
+Same-digest aliases share storage.
+Existing retained content is never evicted to admit new content. If either bound
+would be exceeded, exclude the new record, report its repository/tag key in
+`failedSkillKeys`, and publish `partial`; existing records whose content is already
+retained remain eligible. Failure to durably store new content has the same
+publication behavior. Do not publish a record whose documentation is unavailable.
+Repeated partial refreshes therefore cannot grow retained storage without bound.
+Byte-budget exhaustion can be resolved by raising `maxRetainedMarkdownSizeBytes`
+or by completing a reconciliation that releases unreferenced digests. Increasing
+that byte budget cannot resolve the fixed 1,000-digest ceiling. For count exhaustion,
+or when a turnover of content prevents a complete snapshot at the byte bound,
+use a controlled inventory drain under the same source ID:
+
+1. Keep the connector, provider, and retention authorization enabled. Temporarily
+   narrow the source inputs to tagged records whose Markdown is already retained
+   and can be completely acquired. If no such tagged inventory can complete,
+   temporarily use a valid explicit digest-only input with discovery disabled;
+   D5 deliberately excludes digest-only inputs from normalized records, permitting
+   a complete empty `ready` snapshot while preserving raw acquisition.
+2. Wait for that `ready` snapshot to reconcile, affected catalog entities to update
+   or disappear, and the provider's acknowledgment to authorize cleanup. The drain
+   intentionally removes excluded catalog entities; it does not silently evict
+   documentation from entities that still reference it.
+3. Confirm unreferenced digests were released before restoring tagged discovery
+   in batches that fit both the retained-byte budget and the 1,000-digest ceiling.
+   More than 1,000 simultaneously referenced distinct digests is outside this demo.
+
+Do not delete or reset retention state or disable the source as a shortcut:
+source/provider outages preserve last-known-good entities and cannot authorize
+cleanup. Recovery still requires D8's catalog-visibility and acknowledgment checks.
+
+**Reconciliation acknowledgment.** For OCI sources, add an
+`X-Skilldocs-Revision` response header to `/skills/:sourceId`, leaving the v1 JSON
+contract unchanged. Its value is a per-source monotonically increasing decimal
+revision (serialized as a string in HTTP and JSON), durably allocated on each
+completed snapshot publication, never reused on restart. Initial loading may omit
+the header because it has no completed observation to acknowledge. Publication
+and acknowledgment/cleanup are serialized per source. This demo protocol requires
+one connector backend instance for each configured source and one active provider
+runner for that source. D6's local scheduling and in-memory snapshots do not
+coordinate replicas. Snapshot GET and reconciliation POST must reach the same
+connector instance; operators must not load-balance these sources across replicas.
+Multi-instance operation requires a future coordinated snapshot/publication and
+retention design, rather than relying on the durable counter alone.
+Retain all admitted content until a successful acknowledgment permits release;
+a connector `ready` result alone never permits cleanup.
+
+The provider persists the revision alongside its pending delta. After applying a
+valid `ready` delta, it atomically commits D6's next ownership state together with
+a durable acknowledgment to send to `POST /skilldocs/:sourceId/reconcile` with JSON
+`{ revision, retainedDigests }`. The set contains all unique manifest digests
+referenced by the source's committed last-known-good entities. The configured
+provider is the sole retention owner for that source. The connector requires
+Backstage service authentication and authorizes only the source's backend-only
+configured `catalogProviderPluginId` (the caller's registered plugin ID,
+`catalog` for a catalog backend module), rejecting other principals with 403;
+no public or user write access.
+The provider targets `skill-image-connector` for its request token. Unknown source
+IDs return 404; malformed bodies, invalid digests, or more than 1,000 digests
+return 400; bodies larger than 5 MiB return 413 before parsing.
+
+Only a revision matching the connector's current `ready` snapshot may authorize
+cleanup. Return 409 without deletion for an unacknowledged superseded or non-ready
+revision. A previously successful identical acknowledgment is handled first by
+the idempotency rule below. A successful acknowledgment atomically persists its retain set and marks only
+digests absent from both that set and the current snapshot eligible for cleanup,
+then returns 204. Keep only the most recent successful acknowledgment; its
+revision and canonical retain set suffice for retry idempotency. Repeating that
+acknowledged revision and identical set is idempotent (204 without further deletion); conflicting sets for the same revision
+return 409. Retention metadata and successful acknowledgments survive restarts.
+Cleanup rechecks current references under the publication lock, so a later refresh
+cannot race deletion of content it is reusing.
+
+After a crash, recover/replay the pending catalog delta and commit ownership
+before sending its acknowledgment. A successful provider mutation is only queued
+input to asynchronous catalog processing. Before sending any release acknowledgment,
+query the catalog until every affected entity exposes its committed expected
+TechDocs URL and every removed entity is absent. Persist those expected entity
+references and URLs with the pending acknowledgment. Poll using the provider's
+Backstage catalog service credentials on its bounded scheduled runs; a processing
+error, timeout, or unreadable catalog leaves the acknowledgment pending, preserves
+old content, and retries on the next run. Do not treat mutation acceptance alone
+as proof that processed entities have stopped referencing old digests. Retry a
+pending acknowledgment, including this visibility check, before polling
+new snapshots. On 409 discard only that superseded acknowledgment and poll again;
+on transport/auth/server errors retain it for retry, without undoing the committed
+catalog state. A provider outage or failed catalog mutation sends no acknowledgment
+and cannot cause cleanup. Partial snapshots may upsert but never acknowledge
+release. Duplicate provider assignments for a connector/source are rejected;
+multiple independent retention owners for one source are outside this increment.
+
+**Provider annotation.** The catalog provider constructs the
+`backstage.io/techdocs-ref` annotation for OCI skill entities using
+`url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` as specified
+in D5. The `<discovered-connector-base>` is resolved through Backstage
+discovery using the configured `connectorPluginId`. The provider does not
+download or extract skill content; it constructs the annotation from trusted
+configuration and the record's verified digest. The annotation is set alongside
+the existing identity, integrity, and source-location annotations. When a tag
+moves to a new manifest, the entity's `backstage.io/techdocs-ref` updates to
+reflect the new digest, consistent with D5's integrity reference update. npx
+skill entities do not receive a `backstage.io/techdocs-ref` in this increment.
+
+**URL-reader integration.** The existing `catalog-techdoc-url-reader-backend`
+plugin is extended to match OCI skill documentation URLs from trusted
+configured or Backstage-discovered connector destinations and paths. The reader
+matches the exact trusted connector origin and base pathname, followed by
+`/skilldocs/<sourceId>/<digest>`. For example, a discovered base of
+`https://rhdh.example/api/skill-image-connector` matches
+`/api/skill-image-connector/skilldocs/...`, not a root-level `/skilldocs/` route.
+Append to the base pathname rather than resolving a leading slash against the
+origin. Source configuration rejects IDs exactly equal to `.` or `..` in
+addition to blank IDs, because URL parsing normalizes literal and encoded dot
+segments. Encode source ID and digest as individual path segments and decode each
+once when validating the route; reject extra segments, query strings, fragments,
+URL credentials, and paths outside the exact connector base. Do not forward
+service tokens across redirects; treat redirects as errors. It does not infer
+arbitrary credential destinations from URL substrings. The reader authenticates
+using `auth.getPluginRequestToken` with `targetPluginId` set to the receiving
+connector plugin's registered `pluginId`, consistent with the model-card URL
+reader's service-token pattern. It propagates HTTP errors from the connector:
+404 raises `NotFoundError`, 304 raises `NotModifiedError`, and other failures
+propagate as errors. Successful responses produce a minimal MkDocs project
+containing `mkdocs.yml` with a suitable skill title and `docs/index.md` with
+the retrieved Markdown content. The reader passes the connector's `ETag`
+response header through for TechDocs digest-based cache semantics. Already
+validated Markdown frontmatter from the connector is included as-is in
+`docs/index.md`; the reader does not strip or re-parse it. For this increment,
+the reader renders the single extracted Markdown document only; bundled assets,
+relative-file resolution, and multi-page documentation are out of scope.
+The reader validates the manifest-digest route format and trusts the authenticated
+connector to bind it to extracted bytes verified during acquisition. It does not
+compare a Markdown hash to the manifest digest: these are different objects.
+Existing model-card URL-reader behavior is preserved.
+
 ## Risks and Verification
 
 - The raw `/images` payload and normalized `/skills/:sourceId` serve different
@@ -478,3 +689,9 @@ It does not re-decode percent sequences or perform upstream work.
 - Future sources may need additional fields. Version the shared schema and add
   explicit source mappings before integrating them; do not loosen validation
   based on hypothetical MLflow fields.
+- OCI skill TechDocs introduces a content lifecycle dependency between the
+  connector and the catalog provider. Test that retained content survives
+  partial refreshes and restarts, that moved tags update the TechDocs
+  annotation, that same-digest aliases share documentation, and that the
+  URL reader correctly authenticates and propagates errors. Verify that model-card
+  TechDocs integration remains functional after extending the URL reader.

@@ -31,6 +31,15 @@ a valid OCI skill image SHALL produce its own entity using its repository/tag
 key, even when another tag has identical content or declared version. Confirmed
 non-skills SHALL produce no entity.
 
+For OCI skill entities, the provider SHALL set `backstage.io/techdocs-ref` to
+`url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` as specified in
+design D5/D8. The `<discovered-connector-base>` SHALL be resolved through
+Backstage discovery using the configured `connectorPluginId`. The `<sourceId>`
+SHALL be the configured source ID and the `<digest>` SHALL be the verified
+manifest digest from the record. The provider SHALL NOT download or extract
+skill content to construct this annotation. npx skill entities SHALL NOT
+receive a `backstage.io/techdocs-ref` annotation in this increment.
+
 #### Scenario: Source metadata lacks owner and version
 
 - **WHEN** a valid record has no owner hint or declared version
@@ -48,6 +57,18 @@ non-skills SHALL produce no entity.
 - **WHEN** a record keeps its source identity and key but changes its display name
 - **THEN** the provider updates the existing entity's title without creating a new entity name
 
+#### Scenario: OCI entity has techdocs-ref annotation
+
+- **WHEN** an OCI skill record is mapped to an entity
+- **THEN** the entity has `backstage.io/techdocs-ref` set to `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>`
+- **AND** the annotation uses the discovery-resolved connector base URL, not a hardcoded address
+- **AND** the provider does not download or extract Markdown to construct the annotation
+
+#### Scenario: npx entity has no techdocs-ref annotation
+
+- **WHEN** an npx skill record is mapped to an entity
+- **THEN** the entity does not have a `backstage.io/techdocs-ref` annotation
+
 #### Scenario: Several valid skill-image tags in one repository
 
 - **WHEN** one repository has two tags containing valid skills and one tag containing a confirmed non-skill
@@ -55,11 +76,24 @@ non-skills SHALL produce no entity.
 - **AND** the non-skill tag produces no entity
 - **AND** identical manifest digests or declared skill versions do not collapse the two valid tagged records
 
+#### Scenario: Same-digest tag aliases share techdocs-ref URL
+
+- **WHEN** two OCI tags in the same repository resolve to the same manifest digest
+- **THEN** both entities have the same `backstage.io/techdocs-ref` URL because they share the same digest
+- **AND** each entity retains its own distinct identity-derived name and repository/tag key
+
 #### Scenario: A tag moves to new content
 
 - **WHEN** an existing repository/tag key resolves to new valid content
 - **THEN** the provider updates that tag's existing entity and integrity references
+- **AND** the entity's `backstage.io/techdocs-ref` updates to reflect the new manifest digest
 - **AND** it does not replace the entity identity or mutate a different tag's entry
+
+#### Scenario: Retained entity preserves techdocs-ref
+
+- **WHEN** a `partial` snapshot omits a previously known OCI skill
+- **THEN** the retained entity keeps its existing `backstage.io/techdocs-ref` annotation
+- **AND** TechDocs continues to render using the connector's retained Markdown content
 
 ### Requirement: Source validation and ownership isolation
 
@@ -91,6 +125,36 @@ ownership state/observation time separately from committed progress. After the
 mutation succeeds, it SHALL atomically commit that next state and clear the
 pending record. Pending deltas SHALL be replayed and committed before newer
 connector snapshots are consumed.
+
+For OCI sources, the provider SHALL follow D8's acknowledgment
+protocol after a ready mutation and ownership commit. Persist the response's
+`X-Skilldocs-Revision` in pending state and the resulting acknowledgment alongside
+committed state. Its retained-digest set SHALL describe the source's committed
+entities, not merely acquired records. Source configuration SHALL identify the
+sole provider assignment for retention; duplicates are rejected. npx sources do
+not participate in this protocol.
+
+#### Scenario: Documentation acknowledgment follows catalog commit
+
+- **WHEN** a ready OCI snapshot is successfully reconciled and ownership is durably committed
+- **AND** catalog queries confirm the affected processed entities expose their committed documentation URLs and removed entities are absent
+- **THEN** the provider sends its persisted revision and committed retained-digest set to the connector's reconcile endpoint using a service token targeted to `skill-image-connector`
+- **AND** failed mutations, invalid snapshots, partial snapshots, loading, and failed acquisition send no release acknowledgment
+
+#### Scenario: Catalog processing lags provider mutation
+
+- **WHEN** the provider mutation and ownership commit succeed but catalog processing still exposes an old TechDocs URL or an entity awaiting removal
+- **THEN** the provider retains the durable acknowledgment without sending it
+- **AND** it queries the catalog on bounded scheduled runs until all affected entities expose their expected committed TechDocs URLs and removed entities are absent
+- **AND** catalog errors, processing failures, and timeouts preserve old Markdown and retry on the next run
+- **AND** restart recovers the expected entity references and URLs with the pending acknowledgment before any release
+
+#### Scenario: Crash or error during acknowledgment
+
+- **WHEN** the provider crashes after catalog mutation but before committing ownership or sending its acknowledgment
+- **THEN** it first recovers pending mutations, commits ownership, and retries the durable acknowledgment before consuming newer snapshots
+- **AND** transport, auth, and server errors retain the acknowledgment for retry
+- **AND** 409 discards only the superseded acknowledgment and permits a new poll, without changing catalog state or authorizing cleanup
 
 #### Scenario: One skill fails during refresh
 
