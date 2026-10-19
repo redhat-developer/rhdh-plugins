@@ -59,10 +59,13 @@ pinned manifests and blobs, and retain internal acquisition metadata using the
 shared contract types and reference helpers. The existing raw `/images` response
 remains unchanged. Task 2.3 is implemented by PR #5230: supported annotated,
 archive, and mixed layouts feed parsed SkillCard/frontmatter into the shared
-normalizer, with malformed and ambiguous candidate diagnostics. Unchecked tasks
-describe remaining connector and provider implementation, including normalized
-snapshots and scheduled refresh in task 2.5. Task 2.4 acquisition safety is implemented.
-safety and snapshots in tasks 2.4–2.5. Section 6 tasks specify the OCI skill
-TechDocs feature added by this scope extension; they depend on task 2.5's
-source/snapshot lifecycle and task 4.2's entity construction, plus the relevant
-acquisition safety (task 2.4) and durable reconciliation (task 4.3–4.4) work.
+normalizer, with malformed and ambiguous candidate diagnostics. Task 2.4
+acquisition safety is implemented. Task 2.5 adds normalized snapshots
+and scheduled refresh in PR #5284. Maintainer testing and review confirmed
+the implementation and standard Backstage scheduling migration; task 2.5 is complete. Other unchecked tasks describe the remaining
+connector and provider implementation.
+
+Section 6 tasks specify the OCI skill TechDocs feature added by this scope
+extension; they depend on task 2.5's source/snapshot lifecycle and task 4.2's
+entity construction, plus the relevant acquisition safety (task 2.4) and
+durable reconciliation (tasks 4.3–4.4) work.
