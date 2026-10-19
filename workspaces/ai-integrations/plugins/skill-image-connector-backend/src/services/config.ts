@@ -182,6 +182,11 @@ export function readSourceConfigs(
           `skillImageConnector.sources[${index}].id is required`,
         );
       }
+      if (id === '.' || id === '..') {
+        throw new InputError(
+          `skillImageConnector.sources[${index}].id must not be '.' or '..'`,
+        );
+      }
       if (seenIds.has(id)) {
         throw new InputError(
           `Duplicate source ID '${id}' in skillImageConnector.sources`,
