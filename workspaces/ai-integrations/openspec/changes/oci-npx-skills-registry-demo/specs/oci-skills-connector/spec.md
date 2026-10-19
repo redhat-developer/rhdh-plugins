@@ -179,7 +179,24 @@ shared v1 contract and design D3 metadata mappings, with source type `oci`.
 It SHALL publish snapshots atomically according to design D6, report known
 failed repository/tag keys, and retain the existing #4747 `/images` response format.
 It SHALL NOT emit `AiResource` entities or apply catalog defaults or mutations.
-Unknown source IDs SHALL return 404.
+Unknown source IDs SHALL return 404. The JSON response SHALL contain an `error`
+string; exact diagnostic wording is not a stable identifier or error code.
+
+#### Scenario: Aggregate content rejection without a tagged key
+
+- **WHEN** a successfully extracted bare-digest input exceeds the retained-content budget
+- **THEN** the connector releases that extraction and marks acquisition incomplete
+- **AND** the normalized snapshot is `partial`, even with no successful records or known tagged failure keys
+- **AND** the connector does not invent a tag or treat the rejection as a successful raw-only exclusion
+
+#### Scenario: Defensive normalization classification
+
+- **WHEN** normalization classifies an extracted candidate as ambiguous
+- **THEN** the connector releases its files and reports its known repository/tag key as failed in an incomplete snapshot
+- **WHEN** normalization confirms a non-skill
+- **THEN** the connector releases its files and skips it without marking acquisition incomplete
+- **WHEN** normalization returns a normalized outcome without a record or an unsupported outcome
+- **THEN** the connector releases its files and reports a candidate failure rather than silently publishing `ready`
 
 #### Scenario: Normalized and raw endpoints coexist
 

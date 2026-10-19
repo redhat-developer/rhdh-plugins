@@ -17,3 +17,7 @@ Keep raw extraction ownership per source and atomically aggregate `/images`
 without duplicate references or cross-source cleanup. Successful references in
 any source are excluded from the aggregate failure list. Warn when explicit
 sources cause legacy flat source fields to be ignored, without logging values.
+
+Mark retained-content budget failures incomplete even for raw-only digest inputs,
+and explicitly handle ambiguous, non-skill, and inconsistent normalization results.
+Release rejected extraction files and document unknown-source 404 diagnostics.

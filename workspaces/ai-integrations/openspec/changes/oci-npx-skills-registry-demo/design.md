@@ -371,6 +371,15 @@ complete discovery failure. A later listing error, a malformed page, a cycle, or
 budget exhaustion must not discard that prefix or publish `ready`. The normalized
 result can be `partial` with no successful records; zero normalized successes alone
 does not establish `failed`. Tag-list failures do not mean successful empty discovery.
+Retained-content budget rejection always marks acquisition incomplete, including
+bare-digest inputs without a tagged failure key. It releases the rejected files;
+the deliberate raw-only exclusion policy applies only to otherwise successful
+bare-digest extraction. Normalization handles every declared classification:
+ambiguous candidates fail, confirmed non-skills are skipped, and an inconsistent
+normalized result or unsupported outcome fails instead of silently contributing
+to a complete snapshot. Skipped or rejected normalization results release their
+extraction files without consuming retained-content budget.
+
 These byte sizes are independent: the aggregate setting bounds retained decoded
 skill content across accepted images, not D7's total downloaded/decompressed
 budget per image. The task 2.1 defaults are acquisition defaults that operators

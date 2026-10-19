@@ -144,12 +144,13 @@ export function readSourceSchedule(
  *
  * Source parsing and image/discovery validation are handled by the
  * caller (plugin.ts) which has access to OCI reference validators.
- * This function returns the raw structural config for each source.
+ * This function returns only structural settings; the caller attaches parsed
+ * images and discovery configuration.
  */
 export function readSourceConfigs(
   config: Config,
   logger?: LoggerService,
-): SourceConfig[] {
+): Array<Omit<SourceConfig, 'images' | 'quayDiscovery'>> {
   const pluginConfig = config.getOptionalConfig('skillImageConnector');
   if (!pluginConfig) return [];
   rejectLegacyRefreshInterval(pluginConfig, 'skillImageConnector');
@@ -207,7 +208,6 @@ export function readSourceConfigs(
 
       return {
         id,
-        images: [], // Populated by caller via readSourceImageConfigs
         allowedRegistries,
         allowedOrigins,
         schedule,
@@ -238,7 +238,6 @@ export function readSourceConfigs(
   return [
     {
       id: 'default',
-      images: [], // Populated by caller
       allowedRegistries,
       allowedOrigins,
       schedule,

@@ -22,7 +22,13 @@ import {
   resolvedDigest,
   startConnector as startConnectorBackend,
 } from './testUtils';
-import { performSourceRefresh, skillImageConnectorPlugin } from './plugin';
+import {
+  buildSnapshotFromRefresh,
+  performSourceRefresh,
+  skillImageConnectorPlugin,
+} from './plugin';
+import * as normalizationAdapter from './services/normalizeExtraction';
+import type { SkillImageNormalization } from './services/types';
 import { DEFAULT_SKILL_IMAGE_OPTIONS } from './services/types';
 import type { SkillImageConfig, SourceConfig } from './services/types';
 import { discoverQuayRepositorySnapshot } from './services/QuayDiscovery';
@@ -41,6 +47,18 @@ jest.mock('./services/OciClient', () => ({
   ),
   fetchManifest: jest.fn(),
 }));
+
+jest.mock('./services/normalizeExtraction', () => {
+  const actual = jest.requireActual<
+    typeof import('./services/normalizeExtraction')
+  >('./services/normalizeExtraction');
+  return {
+    ...actual,
+    normalizeSkillImageExtraction: jest.fn(
+      actual.normalizeSkillImageExtraction,
+    ),
+  };
+});
 
 jest.mock('./services/QuayDiscovery', () => ({
   discoverQuayRepositorySnapshot: jest.fn(),
@@ -66,6 +84,13 @@ const extracted = {
 };
 beforeEach(() => {
   jest.resetAllMocks();
+  jest
+    .mocked(normalizationAdapter.normalizeSkillImageExtraction)
+    .mockImplementation(
+      jest.requireActual<typeof import('./services/normalizeExtraction')>(
+        './services/normalizeExtraction',
+      ).normalizeSkillImageExtraction,
+    );
   logger.child.mockReturnValue(logger);
   jest.mocked(cleanupSkillImageExtraction).mockResolvedValue(undefined);
   fetchImage.mockImplementation(async () => ({ ...extracted }));
@@ -665,4 +690,60 @@ describe('refresh cancellation cleanup', () => {
       remove.mockRestore();
     }
   });
+});
+
+describe('normalization outcome handling', () => {
+  it.each([
+    { outcome: 'ambiguous', status: 'partial', failed: true },
+    { outcome: 'non-skill', status: 'ready', failed: false },
+    { outcome: 'normalized', status: 'partial', failed: true },
+    { outcome: 'unsupported', status: 'partial', failed: true },
+  ])(
+    'handles $outcome without silently losing failures',
+    async ({ outcome, status, failed }) => {
+      // The invalid normalized/null and unknown cases exercise defensive handling
+      // of an inconsistent or extended adapter at its boundary.
+      const normalize = jest
+        .mocked(normalizationAdapter.normalizeSkillImageExtraction)
+        .mockReturnValueOnce({
+          outcome: outcome as SkillImageNormalization['outcome'],
+          record: null,
+          diagnostics: [],
+        });
+      const imageRef = 'quay.io/org/skill:v1';
+      const source: SourceConfig = {
+        id: 'test',
+        images: [{ id: 'skill', imageRef }],
+        allowedRegistries: ['quay.io'],
+        schedule: {
+          frequency: { minutes: 10 },
+          timeout: { minutes: 10 },
+          scope: 'local',
+        },
+      };
+      try {
+        const result = await performSourceRefresh(
+          source,
+          { ...DEFAULT_SKILL_IMAGE_OPTIONS, maxRetries: 0 },
+          logger,
+          undefined,
+          new AbortController().signal,
+        );
+        const snapshot = buildSnapshotFromRefresh(
+          { id: 'test', type: 'oci' },
+          result,
+          true,
+        );
+        expect(snapshot.status).toBe(status);
+        expect(snapshot.skills).toEqual([]);
+        expect(result.discoveryComplete).toBe(!failed);
+        expect(result.failedKeys).toEqual(failed ? [imageRef] : []);
+        expect(result.failedImageRefs).toEqual(failed ? [imageRef] : []);
+        expect(result.extractions.size).toBe(0);
+        expect(cleanupSkillImageExtraction).toHaveBeenCalledTimes(1);
+      } finally {
+        normalize.mockRestore();
+      }
+    },
+  );
 });

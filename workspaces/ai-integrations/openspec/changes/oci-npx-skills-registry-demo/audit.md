@@ -1,12 +1,12 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-16T18:09:53Z
+**Last audited:** 2026-10-18T16:09:12Z
 
 ### Summary
 
 Focused cross-artifact documentation review for task 2.5 corrections in PR #5284,
-covering source-owned raw extractions, aggregate raw inventory, mixed-configuration
-warnings, standard Backstage schedules, and digest-only identity policy. The
+covering normalization classification, retained-content completeness, source-owned
+raw extractions, aggregate inventory, source parsing, and REST error diagnostics. The
 unreleased custom interval was replaced with standard `schedule` blocks.
 This supplements the retained historical audits; it is not a new independent
 full-change audit. Tasks 2.1–2.5 are checked. The maintainer confirmed successful testing and
@@ -35,10 +35,23 @@ review, including the standard Backstage scheduling migration.
 ### SUGGESTION
 
 - None outstanding in this focused documentation review. Maintainer verification of the
-  latest source-ownership corrections remains pending; earlier maintainer testing
+  latest normalization/budget corrections remains pending; earlier maintainer testing
   supports the existing task 2.5 completion marker.
 
 ### Corrections and validation
+
+The latest focused review corrections always mark retained-content budget
+rejections incomplete, even for bare-digest inputs without tagged failure keys.
+Normalization explicitly handles ambiguous, non-skill, inconsistent normalized,
+and unsupported outcomes, releasing rejected/skipped files. The structural source
+parser omits placeholder acquisition fields, and the README documents 404 error
+objects without promising exact diagnostic wording.
+
+Automated verification passed: 513 connector tests across 16 suites with
+`--watchAll=false --runInBand`, workspace `yarn tsc:full` and `yarn build:all`,
+and connector lint. These are implementation checks, not a new independent
+full-change audit. Maintainer regression testing of these latest corrections is
+pending; the existing task 2.5 completion reflects the prior confirmed testing.
 
 The former bare-digest completeness suggestion is resolved explicitly: digest-only
 inputs remain raw-only without invented tagged identities or normalized failure
@@ -68,8 +81,8 @@ integration verification. Automated verification passed for these corrections:
 507 connector tests across 16 suites with `--watchAll=false --runInBand`,
 workspace `yarn tsc:full` and `yarn build:all`, connector lint, and workspace
 Prettier. Independent code verification passed. The mixed-configuration path
-also skips validation of ignored flat origins. New maintainer regression testing
-for these corrections remains pending.
+also skips validation of ignored flat origins. The maintainer subsequently
+confirmed successful regression testing of those source-ownership corrections.
 Task 2.5 stays checked based on the prior maintainer verification below.
 
 **Previously verified implementation:** The standard-schedule migration is implemented and maintainer testing passed. Documentation describes

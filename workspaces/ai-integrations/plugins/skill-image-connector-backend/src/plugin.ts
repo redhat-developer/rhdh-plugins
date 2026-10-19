@@ -669,47 +669,62 @@ export async function performSourceRefresh(
                 `${aggregateContentSize + contentSize} bytes would exceed ` +
                 `${options.maxAggregateContentSizeBytes} byte limit`,
             );
+            discoveryComplete = false;
             await cleanupSkillImageExtraction(result, logger);
             failedImageRefs.push(imgConfig.imageRef);
             if (result.acquisition) {
               failedKeys.push(result.acquisition.key);
             }
           } else {
-            aggregateContentSize += contentSize;
-            extractions.set(imgConfig.imageRef, result);
-
-            // Normalize the extracted content
-            const normalization = normalizeSkillImageExtraction(result);
-            if (
-              normalization.outcome === 'normalized' &&
-              normalization.record
-            ) {
-              records.push(normalization.record);
-              logger.info(
-                `Successfully extracted and normalized skill image ${imgConfig.imageRef}`,
-              );
-            } else if (normalization.outcome === 'malformed') {
-              // Bare-digest refs and malformed files produce malformed outcomes.
-              // Bare-digest exclusion is a deliberate policy (D4: keys require tags)
-              // and does not affect snapshot completeness. Malformed tagged refs
-              // do affect completeness.
-              if (result.acquisition) {
-                failedKeys.push(result.acquisition.key);
-                discoveryComplete = false;
+            // Retain raw content only after classification. Failed or skipped
+            // normalization must release its files without consuming the budget.
+            let retained = false;
+            try {
+              const normalization = normalizeSkillImageExtraction(result);
+              switch (normalization.outcome) {
+                case 'normalized':
+                  if (!normalization.record) {
+                    throw new Error('Normalized skill image has no record');
+                  }
+                  records.push(normalization.record);
+                  logger.info(
+                    `Successfully extracted and normalized skill image ${imgConfig.imageRef}`,
+                  );
+                  break;
+                case 'malformed':
+                  // Successful bare-digest extraction stays raw-only: it has no
+                  // tagged acquisition identity. Malformed tagged records fail.
+                  if (result.acquisition) {
+                    failedKeys.push(result.acquisition.key);
+                    discoveryComplete = false;
+                  }
+                  logger.warn(
+                    `Extracted skill image ${imgConfig.imageRef} but normalization ` +
+                      `${normalization.outcome}: ${normalization.diagnostics
+                        .map(d => d.message)
+                        .join('; ')}`,
+                  );
+                  break;
+                case 'ambiguous':
+                  throw new AmbiguousSkillFilesError(
+                    'Normalization found ambiguous skill files',
+                  );
+                case 'non-skill':
+                  throw new NonSkillImageError(
+                    'Normalization classified the image as a non-skill',
+                  );
+                default: {
+                  const unexpected: never = normalization.outcome;
+                  throw new Error(
+                    `Unexpected skill normalization outcome: ${unexpected}`,
+                  );
+                }
               }
-              logger.warn(
-                `Extracted skill image ${imgConfig.imageRef} but normalization ` +
-                  `${normalization.outcome}: ${normalization.diagnostics
-                    .map(d => d.message)
-                    .join('; ')}`,
-              );
-            } else {
-              logger.warn(
-                `Extracted skill image ${imgConfig.imageRef} but normalization ` +
-                  `${normalization.outcome}: ${normalization.diagnostics
-                    .map(d => d.message)
-                    .join('; ')}`,
-              );
+              aggregateContentSize += contentSize;
+              extractions.set(imgConfig.imageRef, result);
+              retained = true;
+            } finally {
+              if (!retained) await cleanupSkillImageExtraction(result, logger);
             }
           }
         } catch (error) {

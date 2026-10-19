@@ -340,6 +340,16 @@ upstream registries are public. A service caller obtains a token targeting the
 receiving plugin ID `skill-image-connector`. Unknown source IDs return HTTP 404.
 Source IDs are decoded once by routing; clients must URL-encode the path segment.
 
+An unknown source returns HTTP 404 with a JSON object containing an `error` string:
+
+```json
+{ "error": "Unknown source: unknown-source" }
+```
+
+Use the HTTP status and `error` field to handle the response. The string is a
+human-readable diagnostic; its exact wording and inclusion of the ID are not a
+stable machine-readable contract.
+
 Before the first refresh completes:
 
 ```json

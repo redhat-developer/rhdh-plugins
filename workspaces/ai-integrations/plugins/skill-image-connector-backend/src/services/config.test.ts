@@ -496,3 +496,13 @@ describe('mixed source configuration diagnostics', () => {
     },
   );
 });
+
+it('returns structural source settings without placeholder acquisition fields', () => {
+  const config = new ConfigReader({
+    skillImageConnector: { sources: [{ id: 'source' }] },
+  });
+  const source = readSourceConfigs(config)[0];
+  expect(source.id).toBe('source');
+  expect(source).not.toHaveProperty('images');
+  expect(source).not.toHaveProperty('quayDiscovery');
+});

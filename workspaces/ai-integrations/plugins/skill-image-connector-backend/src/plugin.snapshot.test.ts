@@ -449,6 +449,31 @@ describe('same-digest tag aliases', () => {
 });
 
 describe('bare-digest policy', () => {
+  it('reports partial when a bare-digest extraction exceeds the retained content budget', async () => {
+    const digestRef = `quay.io/org/skill@${resolvedDigest}`;
+    const { server } = await startConnector({
+      images: [{ imageRef: digestRef }],
+      maxAggregateContentSizeBytes: 1,
+    });
+    const response = await request(server)
+      .get('/api/skill-image-connector/skills/default')
+      .set('Authorization', mockCredentials.service.header());
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe('partial');
+    expect(response.body.skills).toEqual([]);
+    expect(response.body.failedSkillKeys).toEqual([]);
+    expect(validateSnapshot(response.body)).toEqual({
+      valid: true,
+      errors: [],
+    });
+    const raw = await request(server)
+      .get('/api/skill-image-connector/images')
+      .set('Authorization', mockCredentials.user.header());
+    expect(raw.body.images).toEqual([]);
+    expect(raw.body.failedImages).toEqual([digestRef]);
+    expect(cleanupSkillImageExtraction).toHaveBeenCalledTimes(1);
+  });
+
   it('excludes bare-digest references from normalized snapshots', async () => {
     // Bare-digest ref: no tag, so no acquisition metadata
     const digestRef = `quay.io/org/skill@${resolvedDigest}`;
