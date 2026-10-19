@@ -4,9 +4,14 @@
 
 The URL-reader plugin SHALL match OCI skill documentation URLs from trusted
 configured or Backstage-discovered connector destinations, extending the
-existing model-card URL-reader pattern. It SHALL match URLs whose path starts
-with `/skilldocs/` and whose origin matches a trusted connector destination
-derived from configuration. It SHALL NOT infer arbitrary credential destinations
+existing model-card URL-reader pattern. It SHALL match the exact trusted origin
+and connector base pathname followed by `/skilldocs/<sourceId>/<digest>`. It
+SHALL append the route to the full connector base, including any `/api/<pluginId>`
+prefix, encoding source ID and digest individually as path segments. Matching
+SHALL decode each segment once, validate the manifest digest, and reject extra
+segments, query strings, fragments, URL credentials, and paths outside the trusted
+base. Connector redirects SHALL be errors; service tokens SHALL NOT be forwarded
+to redirect destinations. It SHALL NOT infer arbitrary credential destinations
 from URL substrings. Existing model-card URL matching and behavior SHALL be
 preserved.
 
@@ -15,6 +20,13 @@ preserved.
 - **WHEN** a `backstage.io/techdocs-ref` annotation contains `url:<connector-base>/skilldocs/<sourceId>/<digest>`
 - **AND** the connector base URL matches a trusted configured destination
 - **THEN** the URL reader matches and handles the request
+
+#### Scenario: Discovered plugin base pathname is preserved
+
+- **WHEN** discovery returns `https://rhdh.example/api/skill-image-connector`
+- **THEN** the provider and reader use `/api/skill-image-connector/skilldocs/<sourceId>/<digest>`
+- **AND** a root-level `/skilldocs/` URL or another plugin path on the same origin is not matched
+- **AND** source IDs containing reserved characters round-trip as one encoded segment
 
 #### Scenario: Unknown connector origin is not matched
 
@@ -127,13 +139,15 @@ conditional-request protocol.
 
 - **WHEN** an OCI skill image uses an annotated raw Markdown layer
 - **THEN** the resulting TechDocs documentation is equivalent to a tar/tar+gzip layout containing the same Markdown
-- **AND** the documentation URL uses the same manifest digest regardless of extraction layout
+- **AND** each documentation URL contains its own image's verified manifest digest, which may differ between layouts
+- **AND** the reader trusts authenticated connector storage for the Markdown binding and does not compare a Markdown hash with the manifest digest
 
 #### Scenario: Unauthorized access to skill documentation
 
-- **WHEN** a request to `/skilldocs/:sourceId/:digest` lacks a valid service token
+- **WHEN** a request to `/skilldocs/:sourceId/:digest` lacks valid Backstage backend credentials
 - **THEN** the connector rejects the request with an authentication error
 - **AND** the URL reader does not return documentation content
+- **AND** Markdown GET uses default backend authentication, accepting valid user or service credentials; the retention POST separately requires the configured provider service principal
 
 #### Scenario: Size-limited Markdown content
 

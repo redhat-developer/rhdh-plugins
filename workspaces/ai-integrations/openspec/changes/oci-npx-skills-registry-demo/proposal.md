@@ -27,8 +27,10 @@ annotations, defaults, and synchronization need one consistent implementation.
   manifest digest. The catalog provider annotates OCI skill entities with
   `backstage.io/techdocs-ref` using Backstage discovery and trusted
   connector/source configuration. The existing URL-reader plugin retrieves
-  skill documentation using service tokens, validates content identity against
-  the digest, and produces a minimal MkDocs project for TechDocs rendering.
+  skill documentation using service tokens, validates the digest-addressed route,
+  trusts the authenticated connector's verified content binding, and produces a
+  minimal MkDocs project for TechDocs rendering. The manifest digest identifies
+  the OCI manifest; it is not a hash of the extracted Markdown bytes.
   The connector alone acquires and extracts OCI artifacts; no direct OCI
   UrlReader is added. This increment covers OCI skill documentation only;
   npx TechDocs is deferred to a future change.
@@ -66,14 +68,12 @@ This explicitly replaces the earlier manifest-only discovery restriction.
 - `skills-common`: Shared record and snapshot schemas, metadata mapping
   rules, validation, and pure identity/reference helpers, implemented by the
   `ai-skills-common` package.
+- `oci-skills-connector`: Public Quay/OCTO connector, normalized REST API, and
   dedicated authenticated Markdown endpoint for OCI skill TechDocs.
 - `npx-skills-connector`: Public npx-compatible connector and normalized REST API.
 - `skills-catalog-provider`: Common REST consumer, `AiResource` construction,
   OCI-only `backstage.io/techdocs-ref` annotation, and source-isolated catalog
   reconciliation.
-- `techdocs-integration`: Extended URL-reader capability for OCI skill
-  documentation, reusing the existing model-card URL reader's pattern
-  (service-token authentication, HTTP retrieval, minimal MkDocs project).
 
 The two connectors feed `skills-catalog-provider`, the sole catalog entity
 provider capability. The `skills-common` capability supplies the
@@ -83,7 +83,11 @@ match and retrieve OCI skill documentation from trusted connector destinations.
 
 ### Modified Capabilities
 
-_(none)_
+- `techdocs-integration`: Extended URL-reader capability for OCI skill
+  documentation, reusing the existing model-card URL reader's pattern
+  (service-token authentication, HTTP retrieval, minimal MkDocs project). These ADDED
+  requirements extend the capability owned by `techdocs-modelcard-finalization`;
+  preserve that change's model-card requirements when syncing both changes.
 
 ## Canonical Touchpoints
 
@@ -115,7 +119,10 @@ _(none)_
   normalized skill snapshots independently of the catalog. The OCI connector
   additionally serves extracted skill Markdown through a dedicated
   digest-addressed endpoint for TechDocs consumption; it retains content for
-  last-known-good entities through partial refreshes and restarts.
+  last-known-good entities through partial refreshes and restarts. Content
+  cleanup requires a post-commit acknowledgment from the configured catalog
+  provider; storage pressure rejects new admissions rather than evicting retained
+  documentation.
 - **Catalog backend**: A common provider maps snapshots to `AiResource` entities.
   For OCI skills, the provider sets a `backstage.io/techdocs-ref` annotation
   using Backstage discovery and trusted connector/source configuration, bound

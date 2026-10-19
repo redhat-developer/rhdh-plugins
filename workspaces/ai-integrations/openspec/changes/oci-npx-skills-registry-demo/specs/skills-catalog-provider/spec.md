@@ -126,6 +126,36 @@ mutation succeeds, it SHALL atomically commit that next state and clear the
 pending record. Pending deltas SHALL be replayed and committed before newer
 connector snapshots are consumed.
 
+For OCI sources, the provider SHALL follow D8's acknowledgment
+protocol after a ready mutation and ownership commit. Persist the response's
+`X-Skilldocs-Revision` in pending state and the resulting acknowledgment alongside
+committed state. Its retained-digest set SHALL describe the source's committed
+entities, not merely acquired records. Source configuration SHALL identify the
+sole provider assignment for retention; duplicates are rejected. npx sources do
+not participate in this protocol.
+
+#### Scenario: Documentation acknowledgment follows catalog commit
+
+- **WHEN** a ready OCI snapshot is successfully reconciled and ownership is durably committed
+- **AND** catalog queries confirm the affected processed entities expose their committed documentation URLs and removed entities are absent
+- **THEN** the provider sends its persisted revision and committed retained-digest set to the connector's reconcile endpoint using a service token targeted to `skill-image-connector`
+- **AND** failed mutations, invalid snapshots, partial snapshots, loading, and failed acquisition send no release acknowledgment
+
+#### Scenario: Catalog processing lags provider mutation
+
+- **WHEN** the provider mutation and ownership commit succeed but catalog processing still exposes an old TechDocs URL or an entity awaiting removal
+- **THEN** the provider retains the durable acknowledgment without sending it
+- **AND** it queries the catalog on bounded scheduled runs until all affected entities expose their expected committed TechDocs URLs and removed entities are absent
+- **AND** catalog errors, processing failures, and timeouts preserve old Markdown and retry on the next run
+- **AND** restart recovers the expected entity references and URLs with the pending acknowledgment before any release
+
+#### Scenario: Crash or error during acknowledgment
+
+- **WHEN** the provider crashes after catalog mutation but before committing ownership or sending its acknowledgment
+- **THEN** it first recovers pending mutations, commits ownership, and retries the durable acknowledgment before consuming newer snapshots
+- **AND** transport, auth, and server errors retain the acknowledgment for retry
+- **AND** 409 discards only the superseded acknowledgment and permits a new poll, without changing catalog state or authorizing cleanup
+
 #### Scenario: One skill fails during refresh
 
 - **WHEN** a `partial` snapshot contains an updated skill and omits a previously known failed skill

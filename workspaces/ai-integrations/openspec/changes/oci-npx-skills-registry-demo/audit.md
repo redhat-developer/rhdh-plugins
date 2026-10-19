@@ -1,5 +1,148 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
+**Last audited:** 2026-10-19T17:45:07Z
+
+### Summary
+
+PR #5273 follow-up: applied the six approved audit recommendations across the
+proposal, design, three affected capability specs, and section 6 tasks. All
+required artifacts passed the apply-ready minimum. Three isolated auditor passes
+in this correction round evaluated categories A–H with convention documents,
+sibling ownership claims, and light code grounding. The table records findings
+from the final isolated pass, not outstanding findings: its two findings were
+subsequently corrected and directly checked as documented below. No fourth
+independent pass was run, respecting the three-pass limit. Historical reports
+are preserved in full below; their findings describe earlier states.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 1       | 1          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **1**   | **1**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- **G — Catalog processing can lag mutation acceptance. Addressed after the
+  final isolated pass; directly checked.**
+  `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:558`.
+  Recommendation: do not release old documentation solely because a provider
+  mutation and ownership commit succeeded. The design, provider scenarios, and
+  task 6.3 now require persisted expected entity references and documentation
+  URLs, catalog visibility confirmation before acknowledgment, and bounded
+  retries without cleanup on processing errors or timeouts. The new delayed
+  processing scenario covers the transition explicitly.
+
+### SUGGESTION
+
+- **G — Dot source IDs cannot round-trip through URL parsing. Addressed after
+  the final isolated pass; directly checked.**
+  `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:621`.
+  Recommendation: reject source IDs exactly equal to `.` or `..` in source
+  configuration validation. D8, the documentation-safe source identifier
+  scenario, and task 6.4 now require this restriction and validation coverage.
+
+### Approved recommendations resolved
+
+- Preserve the full discovery-resolved connector base pathname when constructing
+  and matching documentation URLs; encode and decode segments once and reject
+  off-base destinations and redirects without forwarding credentials.
+- Require durable provider acknowledgments after ready reconciliation and catalog
+  visibility confirmation before releasing old Markdown. Define revision matching,
+  authorization, idempotency, superseded requests, and restart recovery. State the
+  demo's single connector instance and single active provider runner per source.
+- Store content before publishing its record. Bound retained bytes and digest count;
+  preserve retained content and report failed new admissions as partial snapshots.
+- Trust the authenticated connector's manifest-to-Markdown binding; do not compare
+  a Markdown hash to a manifest digest.
+- Require equivalent rendered content across extraction layouts, with each image's
+  own verified manifest digest in its URL.
+- Restore the OCI capability bullet and classify TechDocs as an extension of the
+  existing model-card capability, preserving that capability during spec sync.
+
+Interim audit suggestions also clarified that default Markdown GET authentication
+accepts valid user or service credentials, while retention POST requires the
+configured provider service principal; a missing recovered document does not
+promise a cached TechDocs build already exists. Unavailable content is consistently 404. All task 2.1–2.5 completion states and incoming OCI scenario headings remain
+preserved; section 6 implementation tasks remain unchecked.
+
+### Validation
+
+Strict OpenSpec validation, workspace `yarn prettier:check`, `yarn tsc`, immutable
+workspace dependency installation, and `git diff --check` passed. Installation
+reported existing peer-dependency warnings. This PR changes documentation only;
+no runtime implementation or new unit tests were introduced. The final two
+corrections received direct cross-artifact checks rather than another isolated
+pass; Fullsend review provides the next independent review.
+
+**Audit clean (no CRITICAL)**. No findings remain unapplied; the scope and limits
+of independent versus direct verification are stated above.
+
+Fixes to one file can introduce new drift elsewhere — re-run the audit after resolving remaining findings.
+
+---
+
+## Historical audit before approved corrections
+
+The following material is historical and does not describe the current finding status.
+
+## Audit Report: oci-npx-skills-registry-demo
+
+**Last audited:** 2026-10-19T17:36:14Z
+
+### Summary
+
+Independent cross-artifact audit of PR #5273 after restoring incoming task 2.5 scenarios and completion notes lost in the main-branch merge. Proposal, design, tasks, and all five capability specs passed the apply-ready minimum. Categories A–H were evaluated against workspace conventions, condensed sibling ownership claims, and relevant existing plugin code. This is an artifact audit, not implementation verification. Historical audit material is preserved below.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 1       | 2          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 1          |
+| G — Extended coherence     | 0        | 2       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **3**   | **3**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- **C: Match URLs relative to the complete connector base.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/specs/techdocs-integration/spec.md:7`. Match the skilldocs route beneath the complete discovery-resolved connector base, including its pathname. Backstage normally produces /api/skill-image-connector/skilldocs/..., which does not start with /skilldocs/. Align D8 and the reader scenarios.
+- **G: Coordinate cleanup with successful catalog reconciliation.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:530`. A connector ready snapshot can advance before the independently scheduled provider updates the catalog. Define an acknowledgment or explicit retention protocol before deleting old digests; test provider outages and failed catalog mutations.
+- **G: Define storage admission when retained documentation fills the bound.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/specs/oci-skills-connector/spec.md:381`. Repeated partial refreshes can accumulate active documentation beyond a fixed bound. Specify rejection of new records whose documentation cannot be retained, preserve existing content, mark the snapshot partial, and align connector/provider tasks and tests.
+
+### SUGGESTION
+
+- **C: Clarify what digest validation means.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/proposal.md:30`. A manifest digest is not a hash of extracted Markdown. State that the reader validates the digest-addressed route and trusts authenticated connector storage, or define a separate Markdown digest/proof contract if independent byte verification is intended.
+- **C: Require equivalent Markdown rather than identical manifest digests across layouts.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/specs/techdocs-integration/spec.md:130`. Annotated and archive images normally have different manifests and digests. Require equivalent rendered documentation, with each URL containing its own image's verified manifest digest.
+- **F: Restore the missing OCI capability bullet.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/proposal.md:69`. Restore an oci-skills-connector capability bullet and attach the dedicated Markdown endpoint description to it. The fragment currently follows skills-common, incorrectly suggesting endpoint ownership by the pure shared library.
+
+**Audit clean (no CRITICAL)**. Recommendations remain unapplied for maintainer review.
+
+Fixes to one file can introduce new drift elsewhere — re-run the audit after resolving remaining findings.
+
+---
+
+## Historical audits preserved from the rebased branch
+
+The following reports describe earlier states and scopes; their timestamps, findings, and verification notes are historical.
+
+## Audit Report: oci-npx-skills-registry-demo
+
 **Last audited:** 2026-10-18T16:09:12Z
 
 ### Summary
