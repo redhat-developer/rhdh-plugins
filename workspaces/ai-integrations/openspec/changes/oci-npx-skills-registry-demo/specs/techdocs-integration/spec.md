@@ -62,6 +62,12 @@ reader's service-token pattern. It SHALL send the token in the
 - **THEN** the `targetPluginId` is derived from the trusted connector configuration, not from parsing URL substrings
 - **AND** the connector's auth middleware accepts the token
 
+#### Scenario: Unauthorized access to skill documentation
+
+- **WHEN** a request to `/skilldocs/:sourceId/:digest` lacks valid Backstage backend credentials
+- **THEN** the connector rejects the request with an authentication error
+- **AND** the URL reader does not return documentation content
+
 ### Requirement: Error propagation from connector
 
 The URL reader SHALL propagate HTTP errors from the connector endpoint without
@@ -91,6 +97,20 @@ masking failures as successful empty documentation, as specified in design D8.
 - **THEN** it raises an error with the connection failure context
 - **AND** it does not return successful empty documentation
 
+### Requirement: Content equivalence across extraction layouts
+
+The URL reader SHALL produce equivalent documentation for the same Markdown
+content extracted from supported annotated-layer and tar/tar+gzip layouts. Each
+documentation URL SHALL identify its own image's verified manifest digest;
+equivalent Markdown does not require identical manifests or manifest digests.
+
+#### Scenario: Annotated-layer Markdown produces equivalent documentation
+
+- **WHEN** an OCI skill image uses an annotated raw Markdown layer
+- **THEN** the resulting TechDocs documentation is equivalent to a tar/tar+gzip layout containing the same Markdown
+- **AND** each documentation URL contains its own image's verified manifest digest, which may differ between layouts
+- **AND** the reader trusts authenticated connector storage for the Markdown binding and does not compare a Markdown hash with the manifest digest
+
 ### Requirement: Minimal MkDocs project generation
 
 The URL reader SHALL produce a minimal MkDocs project containing `mkdocs.yml`
@@ -115,6 +135,12 @@ and `docs/index.md` for the TechDocs builder, as specified in design D8.
 - **THEN** it renders only the single extracted Markdown document
 - **AND** bundled assets, relative-file resolution, and multi-page documentation are out of scope for this increment
 
+#### Scenario: Size-limited Markdown content
+
+- **WHEN** extracted Markdown content is within the design D7 per-layer decompressed size limit (5 MiB)
+- **THEN** the URL reader processes and renders the full document
+- **AND** the connector's extraction bounds prevent oversized content from reaching the endpoint
+
 ### Requirement: Digest-based cache and ETag semantics
 
 The URL reader SHALL pass through the connector's `ETag` response header for
@@ -134,23 +160,3 @@ conditional-request protocol.
 - **WHEN** the caller provides an etag for a skill documentation request
 - **THEN** the URL reader forwards the etag as an `If-None-Match` request header to the connector endpoint
 - **AND** the connector evaluates the conditional request and returns 304 Not Modified if the ETag matches
-
-#### Scenario: Annotated-layer Markdown produces equivalent documentation
-
-- **WHEN** an OCI skill image uses an annotated raw Markdown layer
-- **THEN** the resulting TechDocs documentation is equivalent to a tar/tar+gzip layout containing the same Markdown
-- **AND** each documentation URL contains its own image's verified manifest digest, which may differ between layouts
-- **AND** the reader trusts authenticated connector storage for the Markdown binding and does not compare a Markdown hash with the manifest digest
-
-#### Scenario: Unauthorized access to skill documentation
-
-- **WHEN** a request to `/skilldocs/:sourceId/:digest` lacks valid Backstage backend credentials
-- **THEN** the connector rejects the request with an authentication error
-- **AND** the URL reader does not return documentation content
-- **AND** Markdown GET uses default backend authentication, accepting valid user or service credentials; the retention POST separately requires the configured provider service principal
-
-#### Scenario: Size-limited Markdown content
-
-- **WHEN** extracted Markdown content is within the design D7 per-layer decompressed size limit (5 MiB)
-- **THEN** the URL reader processes and renders the full document
-- **AND** the connector's extraction bounds prevent oversized content from reaching the endpoint

@@ -1,5 +1,49 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
+**Last audited:** 2026-10-19T19:19:03Z
+
+### Summary
+
+Focused direct review of the two low-severity documentation findings against PR #5273 head 3cd7882042. This is a scenario-organization and authentication-prose correction, not another independent full-change audit. Historical audit reports and their verification scope are preserved below.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Corrections and verification scope
+
+- The unauthorized GET scenario now contains only its credential condition, authentication failure, and URL-reader outcome. Default GET authentication is stated in the dedicated Markdown endpoint requirement. The provider-service-only retention POST contract is stated in the connector retention acknowledgment requirement. Authentication behavior remains unchanged.
+- Extraction equivalence has its own requirement, with the existing scenario and per-image manifest identity preserved. The unauthorized GET scenario is grouped with authentication, the size scenario with MkDocs generation, and only conditional-request scenarios remain under ETag semantics.
+- Direct checks preserve all existing scenario headings and task completion markers. Strict OpenSpec validation, workspace Prettier, and diff whitespace checks verify this documentation-only correction.
+
+---
+
+## Historical audits before scenario organization corrections
+
+The following reports describe earlier states and retain their original verification scope.
+
+## Audit Report: oci-npx-skills-registry-demo
+
 **Last audited:** 2026-10-19T18:35:14Z
 
 ### Summary

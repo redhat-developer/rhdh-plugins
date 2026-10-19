@@ -294,7 +294,8 @@ relative to its Backstage plugin base URL, serving extracted skill Markdown for
 TechDocs consumption as specified in design D8. The `sourceId` is the configured
 source identity (one path segment). The `digest` is the verified manifest digest
 (`sha256:<64 lowercase hex digits>`). The endpoint SHALL use Backstage's default
-backend authentication, consistent with `/skills/:sourceId`. It SHALL return the
+backend authentication, consistent with `/skills/:sourceId`, accepting valid
+user or service credentials. It SHALL return the
 extracted Markdown document with `Content-Type: text/markdown` when available.
 It SHALL preserve the existing `/images` endpoint compatibility and keep raw
 Markdown out of `/skills/:sourceId` normalized records.
@@ -422,7 +423,10 @@ reconciliation recovery.
 OCI sources SHALL expose `X-Skilldocs-Revision` on normalized
 snapshot responses and authenticated `POST /skilldocs/:sourceId/reconcile`,
 following D8's revision, authorization, validation, serialization, and durable
-retention rules. The revision SHALL remain outside the v1 JSON envelope. The
+retention rules. Unlike the Markdown GET endpoint, the retention POST SHALL
+require the configured provider service principal; authenticated users and other
+service principals SHALL NOT modify retention state. The revision SHALL remain
+outside the v1 JSON envelope. The
 connector SHALL use its own database service for content and retention state.
 This demo SHALL run one connector backend instance and one active provider runner
 per source; source snapshot and acknowledgment requests SHALL reach that same
