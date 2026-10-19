@@ -13,7 +13,7 @@
 - [x] 2.2 Resolve each selected tag once, verify digest-addressed manifests and blobs, and expose the resolved manifest digest and stable `<registry>/<repository>:<tag>` key.
 - [x] 2.3 Normalize annotated-layer and tar/tar+gzip SkillCard/Markdown layouts using the shared mapping; support valid skillctl images without mandatory manifest metadata annotations.
 - [x] 2.4 Enforce design D7's origin, timeout, concurrency, extraction, and size bounds, including connection-level destination validation against DNS rebinding; test DNS changes between validation and connection, integrity failures, traversal, decompression limits, non-skills, malformed candidates, and ambiguous duplicate skill files.
-- [ ] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository/tag keys, and Backstage startup/periodic refresh scheduling; test unknown source IDs, loading, partial repository/tag discovery, and empty success.
+- [x] 2.5 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed repository/tag keys, and standard Backstage `schedule` configuration for startup/periodic refresh (including configured initial delays and manual trigger mode); test unknown source IDs, loading, partial repository/tag discovery, and empty success. _(Implemented in PR #5284; maintainer testing and review confirmed successful, including the standard Backstage scheduling migration.)_
 
 ## 3. npx connector and REST API
 
@@ -32,7 +32,7 @@
 
 ## 5. Configuration and integration verification
 
-- [ ] 5.1 Define backend-only schemas and examples for source configuration and common-provider configuration, including stable source IDs, plugin IDs, expected source types, defaults, namespace, allowed origins, and separate schedules.
+- [ ] 5.1 Define backend-only schemas and examples for source configuration and common-provider configuration, including stable source IDs, plugin IDs, expected source types, defaults, namespace, allowed origins, and separate schedules. _(OCI source schema and examples are implemented by task 2.5; npx source and common-provider configuration remain to be implemented.)_
 - [ ] 5.2 Add structured source-specific acquisition and reconciliation counters and contextual errors without logging raw content or credentials.
 - [ ] 5.3 Add integration coverage for OCI and npx endpoints feeding the same provider, including service authentication and failure isolation across sources.
 - [ ] 5.4 Document demo/public-source scope, metadata mappings, the #4747 integration, and the explicit connector-only OCI extraction decision; leave MLflow implementation to a future change.
@@ -51,6 +51,8 @@ pinned manifests and blobs, and retain internal acquisition metadata using the
 shared contract types and reference helpers. The existing raw `/images` response
 remains unchanged. Task 2.3 is implemented by PR #5230: supported annotated,
 archive, and mixed layouts feed parsed SkillCard/frontmatter into the shared
-normalizer, with malformed and ambiguous candidate diagnostics. Unchecked tasks
-describe remaining connector and provider implementation, including normalized
-snapshots and scheduled refresh in task 2.5. Task 2.4 acquisition safety is implemented.
+normalizer, with malformed and ambiguous candidate diagnostics. Task 2.4
+acquisition safety is implemented. Task 2.5 adds normalized snapshots
+and scheduled refresh in PR #5284. Maintainer testing and review confirmed
+the implementation and standard Backstage scheduling migration; task 2.5 is complete. Other unchecked tasks describe the remaining
+connector and provider implementation.

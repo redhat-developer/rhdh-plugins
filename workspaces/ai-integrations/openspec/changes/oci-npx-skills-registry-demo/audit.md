@@ -1,8 +1,123 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-14T18:26:26Z
+**Last audited:** 2026-10-18T16:09:12Z
 
 ### Summary
+
+Focused cross-artifact documentation review for task 2.5 corrections in PR #5284,
+covering normalization classification, retained-content completeness, source-owned
+raw extractions, aggregate inventory, source parsing, and REST error diagnostics. The
+unreleased custom interval was replaced with standard `schedule` blocks.
+This supplements the retained historical audits; it is not a new independent
+full-change audit. Tasks 2.1–2.5 are checked. The maintainer confirmed successful testing and
+review, including the standard Backstage scheduling migration.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None identified in this focused documentation review.
+
+### WARNING
+
+- None identified in this focused documentation review.
+
+### SUGGESTION
+
+- None outstanding in this focused documentation review. Maintainer verification of the
+  latest normalization/budget corrections remains pending; earlier maintainer testing
+  supports the existing task 2.5 completion marker.
+
+### Corrections and validation
+
+The latest focused review corrections always mark retained-content budget
+rejections incomplete, even for bare-digest inputs without tagged failure keys.
+Normalization explicitly handles ambiguous, non-skill, inconsistent normalized,
+and unsupported outcomes, releasing rejected/skipped files. The structural source
+parser omits placeholder acquisition fields, and the README documents 404 error
+objects without promising exact diagnostic wording.
+
+Automated verification passed: 513 connector tests across 16 suites with
+`--watchAll=false --runInBand`, workspace `yarn tsc:full` and `yarn build:all`,
+and connector lint. These are implementation checks, not a new independent
+full-change audit. Maintainer regression testing of these latest corrections is
+pending; the existing task 2.5 completion reflects the prior confirmed testing.
+
+The former bare-digest completeness suggestion is resolved explicitly: digest-only
+inputs remain raw-only without invented tagged identities or normalized failure
+keys. Their deliberate exclusion alone does not prevent `ready`; replacing tagged
+inputs with digest-only inputs may remove those tagged records and permit future
+catalog ready-result removals. Design D5, OCI scenarios, and README state this
+consequence consistently.
+
+D6 and OCI scenarios distinguish empty `partial` results from total discovery
+failure, preserve candidates from successful listing pages, and require incomplete
+pagination and limits to prevent `ready`. Snapshots are cached, authenticated,
+published atomically, and refreshed with local Backstage tasks per backend instance.
+Source IDs are required and decoded only once by routing. Redirect origins are
+isolated per source; flat origins apply only to legacy source `default`. Numeric
+acquisition limits stay top-level. Raw readiness is independent of normalization.
+
+The latest review corrections retain raw extraction maps per source and rebuild
+`/images` atomically at source publication. Duplicate image references use the
+first configured successful source; aggregate failed references exclude any
+retained success. Source refresh cleanup must not delete another source's files,
+and shutdown includes duplicate extractions hidden from the aggregate inventory.
+The OCI specification and README now state these ownership and aggregation rules.
+Mixed explicit/flat configuration emits a field-name-only warning while preserving
+the documented ignore policy. Task 5.1 credits task 2.5 for its OCI schema and
+examples; npx and common-provider configuration remain unchecked scope, not merely
+integration verification. Automated verification passed for these corrections:
+507 connector tests across 16 suites with `--watchAll=false --runInBand`,
+workspace `yarn tsc:full` and `yarn build:all`, connector lint, and workspace
+Prettier. Independent code verification passed. The mixed-configuration path
+also skips validation of ignored flat origins. The maintainer subsequently
+confirmed successful regression testing of those source-ownership corrections.
+Task 2.5 stays checked based on the prior maintainer verification below.
+
+**Previously verified implementation:** The standard-schedule migration is implemented and maintainer testing passed. Documentation describes
+Backstage-parsed frequency and timeout, optional initial delay, cron and manual
+frequency, enforced local scope, and the default timeout derived from the source
+deadline. Manual mode does not automatically acquire at startup; configured
+initial delays are honored. Automated verification passed: 492 connector tests
+across 16 suites with `--watchAll=false --runInBand`, workspace `yarn tsc:full`
+and `yarn build:all`, connector lint, and workspace Prettier. Independent review
+of the migration passed. The maintainer confirmed successful regression testing
+and review; task 2.5 is complete.
+
+**Earlier verification before the standard-schedule migration:** The custom
+`refreshIntervalMinutes` implementation and review corrections previously passed: 467 connector tests across 16 suites with
+`--watchAll=false --runInBand`, workspace `yarn tsc:full` and `yarn build:all`,
+and connector lint. Independent code verification passed after correcting
+cancellation following a usable discovery page. Tests cover retained discovery
+prefixes, empty partial results, once-decoded IDs, isolated source origins,
+startup loading, subsequent refresh publication, reverse-order budget retention,
+and abort-listener cleanup. This is not a new full-change artifact audit or live
+cluster verification. Task 2.5 stays unchecked until maintainer verification
+testing succeeds. Common catalog provider implementation remains outside this
+connector task.
+
+### Prior current report — task 2.4 acquisition safety
+
+The report below is retained apart from heading depth and its timestamp label.
+Its counts, results, and task 2.5 suggestion describe the state before PR #5284;
+the current assessment above supersedes those statements.
+
+#### Audit Report: oci-npx-skills-registry-demo
+
+**Historical audit timestamp:** 2026-10-14T18:26:26Z
+
+##### Summary
 
 Independent audit of proposal, design, all four capability specifications, tasks,
 and change metadata, grounded in repository/workspace conventions and ownership
@@ -21,19 +136,19 @@ remaining unchecked implementation tasks are intentionally in progress.
 | H — Security lint          | 0        | 0       | 0          |
 | **Total**                  | **0**    | **0**   | **1**      |
 
-### CRITICAL
+##### CRITICAL
 
 - None
 
-### WARNING
+##### WARNING
 
 - None
 
-### SUGGESTION
+##### SUGGESTION
 
 - **G — Bare-digest snapshot completeness:** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:150` says “Explicit `images[].imageRef` parsing is unchanged.”. State the normalized-snapshot outcome for configured bare digest references. The existing README and plugin.ts preserve their raw acquisition without a tagged normalized identity, while D2/D4 require stable non-digest repository/tag keys. Specify whether those references remain raw-only and whether their deliberate omission affects normalized snapshot completeness; add a matching scenario and task if applicable. This is a task 2.5 contract decision, not an acquisition change for completed task 2.4. It remains unresolved; no snapshot policy was silently chosen.
 
-### Corrections and validation
+##### Corrections and validation
 
 The first pass's capability-name mismatch and stale task footer are corrected:
 `skills-common` names the capability, `ai-skills-common` names its package, and
@@ -68,7 +183,7 @@ statuses, finding counts, test totals, and commit/push notes describe the state
 at the time and are superseded by the current assessment above. In particular,
 references to task 2.4 and connection-level DNS protection as pending are historical;
 task 2.4 is now checked. The historical summary table is separate from the current
-summary and does not replace its remaining task 2.5 suggestion. Only heading levels
+summary and does not replace the current task 2.5 verification status. Only heading levels
 and the historical timestamp label have been adjusted; the prior narrative is retained.
 
 #### Audit Report: oci-npx-skills-registry-demo

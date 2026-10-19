@@ -6,8 +6,11 @@ The OCI connector SHALL discover repositories in a configured public Quay
 organization using pagination. When `quayDiscovery.tag` is omitted or blank, it
 SHALL enumerate all active tags for each repository using paginated tag listing.
 When a tag is supplied, it SHALL select that exact tag, including `latest`;
-wildcard and regex matching SHALL NOT be supported. It SHALL refresh at startup and on a non-overlapping Backstage schedule,
-with a default interval of ten minutes. It SHALL resolve each selected tag once,
+wildcard and regex matching SHALL NOT be supported. It SHALL refresh immediately
+at startup and every ten minutes by default on a non-overlapping Backstage
+schedule; explicitly configured initial delays and manual trigger mode SHALL be
+honored instead of forcing immediate startup acquisition. It SHALL resolve each
+selected tag once,
 fetch its manifest by SHA-256 digest, and verify the returned bytes before using
 metadata or fetching layers. The stable record key SHALL be registry host plus
 repository and the exact case-sensitive tag (`<registry>/<repository>:<tag>`),
@@ -77,7 +80,7 @@ address used by each upstream connection, including redirects.
 
 #### Scenario: Registry redirects to an unconfigured public origin
 
-- **WHEN** a registry or discovery response redirects to a different HTTPS origin outside the initial registry hostname/subdomain and port scope and not listed in `skillImageConnector.allowedOrigins`
+- **WHEN** a registry or discovery response redirects to a different HTTPS origin outside the initial registry hostname/subdomain and port scope and not listed in that source’s `allowedOrigins` (`skillImageConnector.allowedOrigins` for the legacy flat source)
 - **THEN** the connector rejects the redirect before resolving or connecting to that destination
 - **AND** omission of `allowedOrigins` permits only the initial registry hostname and its subdomains on the same HTTPS port
 
@@ -167,7 +170,7 @@ address used by each upstream connection, including redirects.
 - **AND** it does not classify incomplete inspection as a confirmed non-skill
 - **AND** the raw `/images` response includes that image in `failedImages`
 - **AND** independent candidates continue unless a shared source bound or cancellation stops processing
-- **AND** normalized snapshots, when provided by task 2.5, report the known failed key as an incomplete result
+- **AND** normalized snapshots report the known failed key as an incomplete result
 
 ### Requirement: Normalized OCI REST snapshots
 
@@ -176,7 +179,24 @@ shared v1 contract and design D3 metadata mappings, with source type `oci`.
 It SHALL publish snapshots atomically according to design D6, report known
 failed repository/tag keys, and retain the existing #4747 `/images` response format.
 It SHALL NOT emit `AiResource` entities or apply catalog defaults or mutations.
-Unknown source IDs SHALL return 404.
+Unknown source IDs SHALL return 404. The JSON response SHALL contain an `error`
+string; exact diagnostic wording is not a stable identifier or error code.
+
+#### Scenario: Aggregate content rejection without a tagged key
+
+- **WHEN** a successfully extracted bare-digest input exceeds the retained-content budget
+- **THEN** the connector releases that extraction and marks acquisition incomplete
+- **AND** the normalized snapshot is `partial`, even with no successful records or known tagged failure keys
+- **AND** the connector does not invent a tag or treat the rejection as a successful raw-only exclusion
+
+#### Scenario: Defensive normalization classification
+
+- **WHEN** normalization classifies an extracted candidate as ambiguous
+- **THEN** the connector releases its files and reports its known repository/tag key as failed in an incomplete snapshot
+- **WHEN** normalization confirms a non-skill
+- **THEN** the connector releases its files and skips it without marking acquisition incomplete
+- **WHEN** normalization returns a normalized outcome without a record or an unsupported outcome
+- **THEN** the connector releases its files and reports a candidate failure rather than silently publishing `ready`
 
 #### Scenario: Normalized and raw endpoints coexist
 
@@ -190,6 +210,79 @@ Unknown source IDs SHALL return 404.
 - **WHEN** one repository/tag fails while other tags are successfully processed
 - **THEN** the connector publishes successful records with `status: partial` and the failed repository/tag key
 - **AND** it makes no catalog mutation itself
+
+#### Scenario: Initial loading and atomic periodic refresh
+
+- **WHEN** the first scheduled refresh has not completed
+- **THEN** the authenticated snapshot has status `loading`, empty arrays, and `observedAt: null`
+- **WHEN** a subsequent refresh runs on the default ten-minute or configured schedule
+- **THEN** GET continues to serve the preceding completed snapshot without triggering registry work
+- **AND** the completed replacement is published atomically with its UTC completion time
+- **AND** source refreshes do not overlap and independent sources refresh independently
+
+#### Scenario: Shared image references across independent sources
+
+- **WHEN** multiple sources retain raw extractions for the same `imageRef`
+- **THEN** each source owns and cleans up only its own files
+- **AND** each source publication atomically rebuilds the aggregate `/images` inventory, displaying the first configured successful source's content once
+- **AND** `failedImages` excludes a reference successfully retained by any source
+- **AND** a source refresh cannot remove another source's successful extraction or files
+- **AND** shutdown cleans all retained extractions, including duplicates hidden by aggregation
+- **AND** aggregate raw status is `loading` while any first refresh is incomplete, then `ready` when raw content exists; without content it is `failed` only if every source's raw acquisition failed
+
+#### Scenario: Standard Backstage schedule configuration
+
+- **WHEN** a source omits `schedule`
+- **THEN** frequency defaults to ten minutes, initial delay to zero, and timeout to `max(2 * sourceOperationDeadlineMs, 60000)` milliseconds
+- **WHEN** a source configures `schedule`
+- **THEN** Backstage's standard parser requires `frequency` and `timeout`, accepts ISO or human-duration values, and also accepts cron or manual frequency
+- **AND** supplied initial delays are honored, without a separate immediate acquisition
+- **AND** manual frequency runs only on a scheduler trigger and does not automatically run at startup
+- **AND** snapshots remain `loading` until their first completed refresh
+- **AND** omitted scope becomes `local`, explicit `local` is accepted, and explicit `global` is rejected because caches are local
+- **AND** the unreleased `refreshIntervalMinutes` field is rejected with a migration error directing configuration to `schedule`
+
+#### Scenario: Partial discovery with no normalized successes
+
+- **WHEN** discovery yields a usable result but a later page, candidate, or bound prevents completeness
+- **THEN** completed-page candidates are retained and the normalized snapshot is `partial`, even with zero records
+- **AND** known failed repository/tag keys are reported without inventing unknown tag keys
+- **AND** a result is `failed` only when no usable discovery result can be obtained
+- **AND** a genuinely complete empty inventory is `ready` with no failed keys
+
+#### Scenario: Raw extraction succeeds but normalization fails
+
+- **WHEN** extracted skill files are available but their metadata cannot be normalized
+- **THEN** `/images` retains that raw extraction and can report `ready`
+- **AND** `/skills/:sourceId` reports the known tagged failure without publishing an invalid record
+
+#### Scenario: Explicit digest-only input
+
+- **WHEN** a configured digest-only reference is successfully acquired
+- **THEN** `/images` retains its extracted raw content
+- **AND** normalized snapshots deliberately exclude it without inventing a tagged identity or failure key
+- **AND** this exclusion alone does not make the normalized snapshot incomplete
+- **AND** an otherwise complete digest-only inventory can be empty and `ready`
+- **AND** replacing tagged inputs with digest-only inputs can remove those tagged records from the next complete snapshot and allow downstream ready-result removals
+
+#### Scenario: Source configuration isolates redirect trust
+
+- **WHEN** explicit `sources` entries are configured
+- **THEN** every entry requires a unique nonblank stable `id` and owns its registry allowlist, exact HTTPS redirect origins, image/discovery configuration, and optional standard Backstage `schedule`
+- **AND** another source's origins and the flat legacy origins do not grant it additional redirect trust
+- **AND** invalid origin entries fail startup validation
+- **AND** numeric acquisition limits remain top-level settings applied to each source
+- **AND** mixing explicit sources with flat `images`, `quayDiscovery`, `allowedRegistries`, `allowedOrigins`, or `schedule` produces a warning naming ignored fields without logging their values
+- **WHEN** only flat image/discovery configuration is present
+- **THEN** it maps to source `default` with the legacy flat origin and schedule settings
+
+#### Scenario: Authenticated source lookup preserves encoded identity
+
+- **WHEN** a client requests an existing source with a URL-encoded path segment
+- **THEN** routing decodes it once and literal percent sequences are not decoded again
+- **AND** unknown source IDs return 404
+- **AND** unauthenticated requests cannot read snapshots
+- **AND** a service caller targets plugin ID `skill-image-connector` for its request token
 
 ### Requirement: Configurable acquisition with shared request handling
 
