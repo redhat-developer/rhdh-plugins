@@ -20,8 +20,6 @@
  * Validates a connector response against the v1 contract, checks
  * source identity agreement with configuration, and maps accepted
  * records to catalog entities.
- *
- * @packageDocumentation
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
@@ -40,6 +38,7 @@ import {
   MAX_RESPONSE_BYTES,
   computeCatalogName,
   normalizeTags,
+  parseNpxRef,
   parseOciRef,
   resolveVersion,
   validateSnapshot,
@@ -316,9 +315,9 @@ function buildEntity(
     annotations['rhdh.io/oci-skill-ref'] = record.sourceUri;
   } else if (sourceType === 'npx') {
     // npx reference: <sourceUri>#<digest>
-    annotations[
-      'rhdh.io/npx-skill-ref'
-    ] = `${record.sourceUri}#${record.digest}`;
+    const npxRef = `${record.sourceUri}#${record.digest}`;
+    parseNpxRef(npxRef);
+    annotations['rhdh.io/npx-skill-ref'] = npxRef;
   }
 
   // Build tags

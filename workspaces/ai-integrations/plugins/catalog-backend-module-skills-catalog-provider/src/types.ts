@@ -78,38 +78,3 @@ export interface MappedSkillEntity {
   /** The fully constructed catalog entity. */
   entity: Entity;
 }
-
-// ─── Planner handoff (RHIDP-17330) ──────────────────────────────────
-
-/**
- * Source-scoped location key for catalog mutations.
- *
- * @public
- */
-export type SourceLocationKey = string;
-
-/**
- * An entity delta describing the exact additions, updates, and
- * removals for a single source within one reconciliation cycle.
- *
- * @public
- */
-export interface SourceDelta {
-  /** Entities to add or update (upsert). */
-  upserts: MappedSkillEntity[];
-  /** Catalog names to remove. */
-  removals: string[];
-}
-
-/**
- * The planner's output: a source-scoped delta and the intended
- * next ownership state after the delta is applied.
- *
- * @public
- */
-export interface ReconciliationPlan {
-  /** The exact delta to apply to the catalog. */
-  delta: SourceDelta;
-  /** The intended next ownership state (all entity names). */
-  nextOwnedNames: Set<string>;
-}

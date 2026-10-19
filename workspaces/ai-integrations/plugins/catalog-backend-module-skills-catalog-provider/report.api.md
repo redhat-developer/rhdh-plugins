@@ -17,7 +17,8 @@ import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-
 import type { SkillSourceType } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 // @public
-export const catalogModuleSkillsCatalogProvider: BackendFeature;
+const catalogModuleSkillsCatalogProvider: BackendFeature;
+export default catalogModuleSkillsCatalogProvider;
 
 // @public
 export interface MappedSkillEntity {
@@ -31,12 +32,6 @@ export interface MappedSkillEntity {
 export function readSkillsCatalogProviderConfigs(
   config: Config,
 ): SkillsCatalogProviderConfig[];
-
-// @public
-export interface ReconciliationPlan {
-  delta: SourceDelta;
-  nextOwnedNames: Set<string>;
-}
 
 // @public
 export class SkillsCatalogProvider implements EntityProvider {
@@ -69,13 +64,4 @@ export interface SourceConsumerConfig {
   sourceId: string;
   sourceType: SkillSourceType;
 }
-
-// @public
-export interface SourceDelta {
-  removals: string[];
-  upserts: MappedSkillEntity[];
-}
-
-// @public
-export type SourceLocationKey = string;
 ```

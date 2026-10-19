@@ -25,7 +25,7 @@
 ## 4. Common skill catalog entity provider
 
 - [x] 4.1 Implement one provider with independently configured source instances; resolve connector URLs with Backstage discovery and use service tokens targeted to the receiving plugin ID.
-- [ ] 4.2 Validate snapshots and construct upstream-compatible `AiResource` entities using design D3/D5 mappings, configured defaults, stable names, and integrity annotations; emit one entity per valid OCI skill-image tag, including aliases of the same digest, and none for confirmed non-skills.
+- [x] 4.2 Validate snapshots and construct upstream-compatible `AiResource` entities using design D3/D5 mappings, configured defaults, stable names, and integrity annotations; emit one entity per valid OCI skill-image tag, including aliases of the same digest, and none for confirmed non-skills.
 - [ ] 4.3 Persist last-known-good entities, tuples, digests, observation times, and pending deltas/next ownership state with Backstage's database service; recover pending mutations before consuming new snapshots.
 - [ ] 4.4 Implement ready/partial/loading/failed handling, stale/repeated snapshot handling, and safe replay after catalog mutation failure or a crash before ownership commit.
 - [ ] 4.5 Test partial-result retention, ready-result removal, successful empty discovery, restart during outage, interrupted additions followed by disappearance, invalid responses, duplicate configuration, identity collisions, same-digest OCI tags producing distinct entities, and a tag moving without changing entity identity.

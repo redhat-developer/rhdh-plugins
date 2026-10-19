@@ -269,7 +269,20 @@ describe('SkillsCatalogProvider', () => {
     await provider.connect(mockConnection);
     await taskFn.fn!();
 
-    // Should still apply mutations (one source failed, one succeeded)
-    expect(mockConnection.applyMutation).toHaveBeenCalled();
+    // Only the successful source should have its mutation applied.
+    // The failed source must NOT get an empty full mutation (which
+    // would wipe its previously-existing entities).
+    expect(mockConnection.applyMutation).toHaveBeenCalledTimes(1);
+    expect(mockConnection.applyMutation).toHaveBeenCalledWith({
+      type: 'full',
+      entities: expect.arrayContaining([
+        expect.objectContaining({
+          locationKey: 'skills-catalog-provider:test:oci:quay-public',
+          entity: expect.objectContaining({
+            kind: 'AiResource',
+          }),
+        }),
+      ]),
+    });
   });
 });

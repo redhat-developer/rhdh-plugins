@@ -1,16 +1,16 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-18T16:09:12Z
+**Last audited:** 2026-10-19T12:00:00Z
 
 ### Summary
 
-Focused cross-artifact documentation review for task 2.5 corrections in PR #5284,
-covering normalization classification, retained-content completeness, source-owned
-raw extractions, aggregate inventory, source parsing, and REST error diagnostics. The
-unreleased custom interval was replaced with standard `schedule` blocks.
-This supplements the retained historical audits; it is not a new independent
-full-change audit. Tasks 2.1–2.5 are checked. The maintainer confirmed successful testing and
-review, including the standard Backstage scheduling migration.
+Updated for task 4.1 and 4.2 completion in PR #5291, covering the common skills
+catalog entity provider implementation. Tasks 4.1 (provider scaffolding with
+independently configured source instances, Backstage discovery, and service
+tokens) and 4.2 (snapshot validation and AiResource entity construction using
+D3/D5 mappings) are now checked. This supplements the retained historical audits;
+it is not a new independent full-change audit. Tasks 2.1–2.5 and 4.1–4.2 are
+checked. The maintainer confirmed successful testing and review.
 
 | Category                   | CRITICAL | WARNING | SUGGESTION |
 | -------------------------- | -------- | ------- | ---------- |

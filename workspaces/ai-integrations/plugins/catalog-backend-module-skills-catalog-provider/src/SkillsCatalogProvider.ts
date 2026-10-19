@@ -91,7 +91,9 @@ export class SkillsCatalogProvider implements EntityProvider {
    * Polls all configured sources and applies entity mutations.
    *
    * Each source is polled independently. An HTTP, authentication, or
-   * validation failure for one source does not stop others.
+   * validation failure for one source does not stop others. Sources
+   * that fail or return a non-ready status are skipped during mutation
+   * so their previously-emitted entities remain in the catalog.
    */
   private async refresh(): Promise<void> {
     if (!this.connection) {
@@ -104,34 +106,57 @@ export class SkillsCatalogProvider implements EntityProvider {
       `Starting refresh with ${this.config.sources.length} source(s)`,
     );
 
-    // Collect entities from all sources, each polled independently
+    // Collect entities from all sources, each polled independently.
+    // Track which sources succeeded so we can skip mutations for
+    // failed or non-ready sources, preserving their previous state.
     const allEntities: Entity[] = [];
+    const succeededSourceIds = new Set<string>();
     let sourcesFailed = 0;
 
     for (const source of this.config.sources) {
       try {
-        const entities = await this.pollSource(source);
-        allEntities.push(...entities);
+        const result = await this.pollSource(source);
+        if (result.skipped) {
+          // Source returned loading/failed status — preserve previous state
+          this.logger.info(
+            `Source ${source.sourceId}: non-ready status, preserving previous entities`,
+          );
+        } else {
+          allEntities.push(...result.entities);
+          succeededSourceIds.add(`${source.sourceType}/${source.sourceId}`);
+        }
       } catch (error) {
         sourcesFailed++;
         this.logger.error(`Source ${source.sourceId} failed: ${error}`);
       }
     }
 
-    const successCount = this.config.sources.length - sourcesFailed;
+    const successCount = succeededSourceIds.size;
+    const skippedCount =
+      this.config.sources.length - successCount - sourcesFailed;
     const failMsg =
       sourcesFailed > 0 ? `, ${sourcesFailed} source(s) failed` : '';
+    const skipMsg =
+      skippedCount > 0
+        ? `, ${skippedCount} source(s) non-ready (preserved)`
+        : '';
     this.logger.info(
-      `Refresh complete: ${allEntities.length} entities from ${successCount} successful source(s)${failMsg}`,
+      `Refresh complete: ${allEntities.length} entities from ${successCount} successful source(s)${failMsg}${skipMsg}`,
     );
 
-    // Apply full mutation per source-scoped location key
-    // Each source gets its own locationKey for independent ownership
+    // Apply full mutation only for sources that returned a ready snapshot.
+    // Failed or non-ready sources are skipped so their previously-emitted
+    // entities remain in the catalog.
     for (const source of this.config.sources) {
+      const sourceKey = `${source.sourceType}/${source.sourceId}`;
+      if (!succeededSourceIds.has(sourceKey)) {
+        continue;
+      }
+
       const locationKey = this.buildLocationKey(source);
       const sourceEntities = allEntities.filter(e => {
         const assetSource = e.metadata.annotations?.['rhdh.io/ai-asset-source'];
-        return assetSource === `${source.sourceType}/${source.sourceId}`;
+        return assetSource === sourceKey;
       });
 
       await this.connection.applyMutation({
@@ -146,8 +171,18 @@ export class SkillsCatalogProvider implements EntityProvider {
 
   /**
    * Polls a single connector source and returns mapped entities.
+   *
+   * Returns `{ skipped: true }` when the snapshot status is not ready
+   * (loading or failed), signalling that the source's previous catalog
+   * entities should be preserved. Throws on HTTP, auth, or validation
+   * failures so the caller can distinguish transient errors from
+   * intentional non-ready states.
    */
-  private async pollSource(source: SourceConsumerConfig): Promise<Entity[]> {
+  private async pollSource(
+    source: SourceConsumerConfig,
+  ): Promise<
+    { skipped: false; entities: Entity[] } | { skipped: true; entities?: never }
+  > {
     // Resolve connector URL through Backstage discovery
     let baseUrl: string;
     try {
@@ -178,12 +213,16 @@ export class SkillsCatalogProvider implements EntityProvider {
       throw new Error(result.error ?? 'Unknown error consuming snapshot');
     }
 
-    // For loading/failed status, return empty — preserve previous state
+    // For loading/failed status, signal the caller to preserve previous
+    // catalog entities rather than applying an empty mutation.
     if (result.status === 'loading' || result.status === 'failed') {
-      return [];
+      return { skipped: true };
     }
 
-    return result.entities.map((m: MappedSkillEntity) => m.entity);
+    return {
+      skipped: false,
+      entities: result.entities.map((m: MappedSkillEntity) => m.entity),
+    };
   }
 
   /**

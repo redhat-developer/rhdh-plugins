@@ -23,14 +23,11 @@
  * @packageDocumentation
  */
 
-export { catalogModuleSkillsCatalogProvider } from './module';
+export { catalogModuleSkillsCatalogProvider as default } from './module';
 export { SkillsCatalogProvider } from './SkillsCatalogProvider';
 export { readSkillsCatalogProviderConfigs } from './config';
 export type {
   MappedSkillEntity,
-  ReconciliationPlan,
   SkillsCatalogProviderConfig,
   SourceConsumerConfig,
-  SourceDelta,
-  SourceLocationKey,
 } from './types';
