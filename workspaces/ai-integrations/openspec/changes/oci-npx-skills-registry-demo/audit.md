@@ -1,5 +1,52 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
+**Last audited:** 2026-10-19T18:35:14Z
+
+### Summary
+
+Focused cross-artifact follow-up to the four low-severity findings in Fullsend review 5575766203 against PR #5273 head d04abad2b4. This records direct verification of these corrections, not another independent full-change audit. Historical independent audit reports and their scope are preserved below. No findings remain outstanding within this focused review.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Corrections and verification scope
+
+- D8, the OCI requirements/scenarios, and tasks 6.2/6.5 now define optional backend-only `skillImageConnector.maxRetainedMarkdownSizeBytes`: positive safe integer, default 50 MiB (52,428,800 bytes), independently applied per source. Extraction continues to use `maxAggregateContentSizeBytes`; omission does not couple either default to the other setting. Invalid values and startup limits below retained content are rejected without deletion.
+- The fixed 1,000-retained-digest limit remains aligned with the protocol/acknowledgment bounds. Raising bytes cannot fix count exhaustion. D8 specifies a controlled inventory drain under the same source ID: reconcile retained-only tagged inputs or a valid raw-only digest input, confirm catalog processing, acknowledge cleanup, then restore discovery within both bounds. Excluded catalog entities are deliberately removed; retention resets and source disablement are not shortcuts.
+- The TechDocs capability is described only under Modified Capabilities, preserving the existing model-card capability ownership. Inline prose uses “added requirements.”
+- Existing task completion states and incoming OCI scenarios are preserved. Section 6 remains pending implementation; this change adds no runtime configuration handling or TypeScript code.
+
+Validation: strict OpenSpec validation, workspace Prettier, direct cross-artifact checks of default/independence/recovery behavior, and `git diff --check`. See the append-only journal for the focused review result.
+
+---
+
+## Historical audits before this focused Fullsend follow-up
+
+The following reports describe earlier states and retain their original verification scope.
+
+## Audit Report: oci-npx-skills-registry-demo
+
 **Last audited:** 2026-10-19T17:45:07Z
 
 ### Summary

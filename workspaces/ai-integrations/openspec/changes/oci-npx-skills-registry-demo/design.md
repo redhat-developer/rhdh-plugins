@@ -352,7 +352,7 @@ D2 snapshot limits during discovery/normalization and bound discovery documents
 and manifests to 5 MiB per response. A reached bound is an incomplete result,
 not evidence of absence. Logs include source/key context and counters without
 raw skill bodies, credentials, or tokens. The D8 Markdown endpoint enforces
-bounded content storage per source consistent with these extraction limits; the
+bounded content storage per source under its independent D8 retention budget; the
 per-image decompressed-layer limit (5 MiB) bounds individual Markdown documents.
 
 Decompression enforces `maxBlobSizeBytes` as an output ceiling while inflating
@@ -526,17 +526,48 @@ returns 404 for missing content; it does not invalidate the entity or promise a
 previous TechDocs build exists.
 
 Retained Markdown bytes per source, including newly admitted content, are bounded
-by `maxAggregateContentSizeBytes` (default 50 MiB), with at most 1,000 retained
-unique digests per source (D2's record ceiling). Same-digest aliases share storage.
+by optional backend-only `skillImageConnector.maxRetainedMarkdownSizeBytes`
+(default 50 MiB = 52,428,800 bytes). This top-level positive safe integer applies
+independently to each source's durable Markdown store. Omission uses the fixed
+50 MiB default, not the configured extraction budget; invalid values fail
+configuration validation. `maxAggregateContentSizeBytes` continues to govern
+extracted content only. Changing either setting does not change the other.
+A configured retention limit below already-retained bytes is rejected during
+startup rather than evicting existing content. Declare the setting in the backend
+config schema and reference documentation when implementing task 6.2.
+
+Retain at most 1,000 unique digests per source, a fixed demo retention ceiling
+aligned with D2's record cap and the acknowledgment body's digest-count bound.
+Same-digest aliases share storage.
 Existing retained content is never evicted to admit new content. If either bound
 would be exceeded, exclude the new record, report its repository/tag key in
 `failedSkillKeys`, and publish `partial`; existing records whose content is already
 retained remain eligible. Failure to durably store new content has the same
 publication behavior. Do not publish a record whose documentation is unavailable.
 Repeated partial refreshes therefore cannot grow retained storage without bound.
-If retained content fills capacity, progress may require raising the configured
-byte limit or a subsequent complete reconciliation that releases old digests;
-there is no automatic eviction of documentation still potentially in use.
+Byte-budget exhaustion can be resolved by raising `maxRetainedMarkdownSizeBytes`
+or by completing a reconciliation that releases unreferenced digests. Increasing
+that byte budget cannot resolve the fixed 1,000-digest ceiling. For count exhaustion,
+or when a turnover of content prevents a complete snapshot at the byte bound,
+use a controlled inventory drain under the same source ID:
+
+1. Keep the connector, provider, and retention authorization enabled. Temporarily
+   narrow the source inputs to tagged records whose Markdown is already retained
+   and can be completely acquired. If no such tagged inventory can complete,
+   temporarily use a valid explicit digest-only input with discovery disabled;
+   D5 deliberately excludes digest-only inputs from normalized records, permitting
+   a complete empty `ready` snapshot while preserving raw acquisition.
+2. Wait for that `ready` snapshot to reconcile, affected catalog entities to update
+   or disappear, and the provider's acknowledgment to authorize cleanup. The drain
+   intentionally removes excluded catalog entities; it does not silently evict
+   documentation from entities that still reference it.
+3. Confirm unreferenced digests were released before restoring tagged discovery
+   in batches that fit both the retained-byte budget and the 1,000-digest ceiling.
+   More than 1,000 simultaneously referenced distinct digests is outside this demo.
+
+Do not delete or reset retention state or disable the source as a shortcut:
+source/provider outages preserve last-known-good entities and cannot authorize
+cleanup. Recovery still requires D8's catalog-visibility and acknowledgment checks.
 
 **Reconciliation acknowledgment.** For OCI sources, add an
 `X-Skilldocs-Revision` response header to `/skills/:sourceId`, leaving the v1 JSON

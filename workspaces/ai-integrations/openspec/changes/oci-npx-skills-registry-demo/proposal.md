@@ -78,14 +78,12 @@ This explicitly replaces the earlier manifest-only discovery restriction.
 The two connectors feed `skills-catalog-provider`, the sole catalog entity
 provider capability. The `skills-common` capability supplies the
 `ai-skills-common` library shared by all three.
-The `techdocs-integration` capability extends the existing URL-reader plugin to
-match and retrieve OCI skill documentation from trusted connector destinations.
 
 ### Modified Capabilities
 
 - `techdocs-integration`: Extended URL-reader capability for OCI skill
   documentation, reusing the existing model-card URL reader's pattern
-  (service-token authentication, HTTP retrieval, minimal MkDocs project). These ADDED
+  (service-token authentication, HTTP retrieval, minimal MkDocs project). These added
   requirements extend the capability owned by `techdocs-modelcard-finalization`;
   preserve that change's model-card requirements when syncing both changes.
 

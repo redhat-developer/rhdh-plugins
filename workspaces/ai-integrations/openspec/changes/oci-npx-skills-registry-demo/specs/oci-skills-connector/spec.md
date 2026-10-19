@@ -346,8 +346,13 @@ Markdown out of `/skills/:sourceId` normalized records.
 The connector SHALL retain extracted Markdown content for skills with
 last-known-good entities using bounded durable storage, as specified in design
 D8. Content SHALL be stored per source, keyed by manifest digest. Total
-retained content per source SHALL be bounded consistently with design D7's
-aggregate extraction limits. The connector SHALL recover retained content from
+retained content per source SHALL be bounded by the optional backend-only
+`skillImageConnector.maxRetainedMarkdownSizeBytes` positive safe integer (default
+50 MiB = 52,428,800 bytes), independently of D7's extraction setting
+`maxAggregateContentSizeBytes`. Omission SHALL use that fixed retention default;
+invalid values and startup limits below existing retained bytes SHALL fail
+configuration validation. Retained unique digests SHALL be capped at 1,000 per
+source. The connector SHALL recover retained content from
 durable storage after restarts, consistent with design D6's durable
 reconciliation recovery.
 
@@ -378,7 +383,7 @@ reconciliation recovery.
 
 #### Scenario: Admission would exceed retained storage bounds
 
-- **WHEN** new Markdown would exceed `maxAggregateContentSizeBytes` or the 1,000 retained-digest limit, or durable storage of that content fails
+- **WHEN** new Markdown would exceed `maxRetainedMarkdownSizeBytes` or the 1,000 retained-digest limit, or durable storage of that content fails
 - **THEN** the connector excludes that new normalized record, reports its repository/tag failure key, and publishes `partial`
 - **AND** existing retained content is not evicted and records using it remain eligible
 - **AND** repeated partial refreshes cannot grow the retained store beyond either bound
@@ -392,9 +397,25 @@ reconciliation recovery.
 
 #### Scenario: Content storage bounded per source
 
-- **WHEN** retained Markdown content for a source approaches the aggregate extraction limit
+- **WHEN** retained Markdown content for a source approaches its independent retained-Markdown byte or digest-count limit
 - **THEN** the connector enforces the storage bound without discarding content for active entities
 - **AND** only unreferenced digests released by the D8 acknowledgment protocol are eligible for cleanup
+
+#### Scenario: Extraction and retention settings are independent
+
+- **WHEN** either `maxAggregateContentSizeBytes` or `maxRetainedMarkdownSizeBytes` is changed
+- **THEN** only its extraction or durable Markdown pool's limit changes
+- **AND** omitting the retention setting always selects 50 MiB, regardless of the extraction setting
+- **AND** invalid retention values or startup limits below retained bytes are rejected without deleting content
+
+#### Scenario: Controlled recovery from the retained-digest ceiling
+
+- **WHEN** 1,000 retained unique digests prevent new admissions
+- **THEN** raising the retained-byte budget does not increase that fixed count ceiling
+- **AND** an operator can temporarily narrow the source's tagged inventory to retained content, or use D5's raw-only digest input to obtain a complete empty ready snapshot, under the same source ID
+- **AND** excluded catalog entities are deliberately removed or updated, catalog processing is confirmed, and the provider acknowledges before any old content is released
+- **AND** discovery is restored only after cleanup, within both retention bounds
+- **AND** retention database reset and source disablement are not cleanup mechanisms
 
 ### Requirement: Authorized documentation retention acknowledgment
 
