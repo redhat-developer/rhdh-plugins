@@ -115,6 +115,11 @@ async function buildMcpHeaders(
     logger?: LoggerService;
   },
 ): Promise<string> {
+  // No need to run the steps below if there are no servers configured.
+  if (servers.length === 0) {
+    return '';
+  }
+
   const headers: Record<string, { Authorization: string }> = {};
   const userSettings = await store.listByUser(userEntityRef);
   const settingsMap = new Map(userSettings.map(s => [s.server_name, s]));
