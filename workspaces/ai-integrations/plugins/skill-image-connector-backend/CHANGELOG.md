@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-skill-image-connector-backend
 
+## 0.8.0
+
+### Minor Changes
+
+- fb9703f: Add authenticated `GET /skilldocs/:sourceId/:digest` endpoint serving extracted OCI skill Markdown with `Content-Type: text/markdown`, digest-derived `ETag`, and `If-None-Match` conditional request support (304). Returns 404 for unknown sources, unknown digests, and unavailable content. Rejects blank and dot/dot-dot source IDs during configuration validation.
+
 ## 0.7.0
 
 ### Minor Changes
