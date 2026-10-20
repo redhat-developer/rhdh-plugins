@@ -52,16 +52,26 @@ jobs:
             });
 
       - name: Archive outdated workspaces
+        id: archive
         if: steps.update_issue.outputs.ARCHIVED_WORKSPACES != ''
         env:
           ARCHIVED_WORKSPACES: ${{ steps.update_issue.outputs.ARCHIVED_WORKSPACES }}
         run: |
           set -euo pipefail
           IFS=',' read -ra workspaces <<< "$ARCHIVED_WORKSPACES"
+          owners_file=$(mktemp)
           for workspace in "${workspaces[@]}"; do
+            # Capture CODEOWNERS before archive.js removes the workspace's entry,
+            # so the archival PR can still request review from its former owners.
+            escaped=$(printf '%s' "$workspace" | sed 's/[.[\^$*+?(){}|]/\\&/g')
+            grep -E "^/workspaces/${escaped}([[:space:]]|$)" .github/CODEOWNERS \
+              | grep -oE '@[A-Za-z0-9_./-]+' >> "$owners_file" || true
+
             node scripts/archive.js "$workspace"
             rm -rf "workspaces/$workspace"
           done
+          reviewers=$(sort -u "$owners_file" | tr -d '@' | paste -sd ',' -)
+          echo "CODEOWNERS_REVIEWERS=$reviewers" >> "$GITHUB_OUTPUT"
 
       # archive.js appends rows and JSON entries that are not prettier-formatted,
       # which would fail the prettier:check CI job on the generated pull request.
@@ -78,6 +88,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
           ARCHIVED_WORKSPACES: ${{ steps.update_issue.outputs.ARCHIVED_WORKSPACES }}
+          CODEOWNERS_REVIEWERS: ${{ steps.archive.outputs.CODEOWNERS_REVIEWERS }}
         run: |
           set -euo pipefail
 
@@ -105,9 +116,16 @@ jobs:
             "$ARCHIVED_WORKSPACES" \
             "$GITHUB_REPOSITORY" > "$body_file"
 
-          gh pr create \
+          pr_url=$(gh pr create \
             --repo "$GITHUB_REPOSITORY" \
             --base main \
             --head "$branch" \
             --title "chore: archive outdated workspaces" \
-            --body-file "$body_file"
+            --body-file "$body_file")
+
+          echo "Opened $pr_url"
+
+          if [[ -n "$CODEOWNERS_REVIEWERS" ]]; then
+            gh pr edit "$pr_url" --add-reviewer "$CODEOWNERS_REVIEWERS" \
+              || echo "::warning::Could not request review from: $CODEOWNERS_REVIEWERS"
+          fi

@@ -87,14 +87,13 @@ function getVersionDifference(currentVersion, latestVersion) {
 
 // categorize workspaces by how outdated they are
 function categorizeWorkspaces(workspaces, latestVersion) {
-  const tiers = { tier1: [], tier2: [], tier3: [], tierArchived: [] };
+  const tiers = { tier1: [], tierUpToDate: [], tierArchived: [] };
 
   workspaces.forEach(workspace => {
     const versionDiff = getVersionDifference(workspace.version, latestVersion);
     if (versionDiff >= 8) tiers.tierArchived.push(workspace);
-    else if (versionDiff >= 3) tiers.tier1.push(workspace);
-    else if (versionDiff === 2) tiers.tier2.push(workspace);
-    else if (versionDiff === 1) tiers.tier3.push(workspace);
+    else if (versionDiff >= 4) tiers.tier1.push(workspace);
+    else if (versionDiff <= 3) tiers.tierUpToDate.push(workspace);
   });
 
   // sort each tier by workspace name
@@ -138,11 +137,7 @@ function generateDashboard(workspaces, tiers, latestVersion) {
   output += `**Latest Version:** ${latestVersion}\n\n`;
   output += '---\n\n';
 
-  const totalOutdated =
-    tiers.tier1.length +
-    tiers.tier2.length +
-    tiers.tier3.length +
-    tiers.tierArchived.length;
+  const totalOutdated = tiers.tier1.length + tiers.tierArchived.length;
   if (totalOutdated === 0) {
     output += '## Summary: All workspaces are up to date! 🎉\n\n';
   } else {
@@ -152,35 +147,24 @@ function generateDashboard(workspaces, tiers, latestVersion) {
 
   output += generateTierSummary(
     tiers.tierArchived.length,
-    '⚠️',
-    'archived: >= 8 minor versions behind',
+    '🔴',
+    'Archival candidates: >= 8 minor versions behind',
   );
   output += generateTierSummary(
     tiers.tier1.length,
-    '🔴',
-    '3-7 minor versions behind',
-  );
-  output += generateTierSummary(
-    tiers.tier2.length,
     '🟠',
-    '2 minor versions behind',
-  );
-  output += generateTierSummary(
-    tiers.tier3.length,
-    '🟡',
-    '1 minor version behind',
+    '4-7 minor versions behind',
   );
   output += generateTierSummary(totalUpToDate, '🟢', 'up to date');
   output += '\n';
 
   output += generateTierTable(
     tiers.tierArchived,
-    '⚠️',
-    'archived: ≥ 8 minor versions behind',
+    '🔴',
+    'Archival candidates: ≥ 8 minor versions behind',
   );
-  output += generateTierTable(tiers.tier1, '🔴', '3-7 minor versions behind');
-  output += generateTierTable(tiers.tier2, '🟠', '2 minor versions behind');
-  output += generateTierTable(tiers.tier3, '🟡', '1 minor version behind');
+  output += generateTierTable(tiers.tier1, '🟠', '4-7 minor versions behind');
+  output += generateTierTable(tiers.tierUpToDate, '🟢', 'up to date');
 
   output += `*Dashboard generated on ${
     new Date().toISOString().split('T')[0]
