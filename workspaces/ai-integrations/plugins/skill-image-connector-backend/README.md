@@ -115,7 +115,8 @@ skillImageConnector:
         - imageRef: quay.io/my-skills-org/example:v1
 ```
 
-Each `sources[].id` is required, nonblank after trimming, and unique. It is a
+Each `sources[].id` is required, nonblank after trimming, and unique. The
+values `'.'` and `'..'` are rejected at startup validation. It is a
 stable identity, not an array position. URL-encode it once as a single path
 segment when requesting its snapshot. Renaming an ID creates a different source
 identity for consumers. Each source owns `images`, `quayDiscovery`,
@@ -408,6 +409,55 @@ serialized JSON, with truncation represented as incomplete rather than `ready`.
 The plugin publishes each completed snapshot atomically; concurrent requests see
 either the old complete snapshot or its complete replacement.
 
+### `GET /api/skill-image-connector/skilldocs/:sourceId/:digest`
+
+Returns the extracted Markdown documentation for a single OCI skill image,
+addressed by source ID and verified manifest digest. Backstage's default
+backend authentication applies; this endpoint is not public.
+
+**Path parameters:**
+
+| Parameter   | Description                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------- |
+| `:sourceId` | Configured source ID (URL-encoded as a single path segment). Blank, `'.'`, and `'..'` return 404. |
+| `:digest`   | OCI manifest digest in the format `sha256:<64 lowercase hex digits>`.                             |
+
+**Responses:**
+
+| Status | Condition                                                                                                                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `200`  | Content found. Body is the extracted Markdown with `Content-Type: text/markdown`. An `ETag` header derived from the manifest digest is included.                                                           |
+| `304`  | Conditional request: the `If-None-Match` header matches the current `ETag` (supports both strong and weak comparison, comma-separated lists, and the wildcard `*` per RFC 7232 §3.2). No body is returned. |
+| `404`  | Unknown source ID, invalid digest format, unknown digest within the source, or content not yet available (source still loading). Returns a JSON object with an `error` string.                             |
+
+Example successful response:
+
+```http
+HTTP/1.1 200 OK
+Content-Type: text/markdown
+ETag: "sha256:abcdef0123456789..."
+
+# Hello World Skill
+
+This is a skill document.
+```
+
+Example conditional request:
+
+```http
+GET /api/skill-image-connector/skilldocs/public-skills/sha256:abcdef... HTTP/1.1
+If-None-Match: "sha256:abcdef..."
+```
+
+```http
+HTTP/1.1 304 Not Modified
+ETag: "sha256:abcdef..."
+```
+
+GET does not trigger registry acquisition — it serves the current verified
+extraction content only. Same-digest tag aliases share content and ETag
+naturally because the digest is the content identity.
+
 ### Security model
 
 **Egress / SSRF protection:** Initial registry, Quay discovery, bearer-token, and redirect requests use a per-request Undici dispatcher. The connector validates every DNS answer and restricts the socket lookup to that validated public address set, preserving the original hostname for TLS SNI and certificate verification. Node can fall back from unreachable IPv6 to IPv4 within the validated set. Fetch does not independently resolve a different destination. Private, loopback, link-local, multicast, reserved, and IPv4-mapped non-public addresses are rejected. Requests must use HTTPS; URL-embedded credentials and raw IP/localhost targets are rejected.
@@ -427,6 +477,6 @@ This optional setting adds trusted redirect destinations; omission allows only t
 
 Tar archives are inspected for path traversal, symlinks, hardlinks, and device entries; unsafe archives are rejected without extracting content. Per-image work budgets and tar entry limits bound resource consumption from malicious or oversized images. Production deployments should restrict backend egress at the network layer in addition to the registry allowlist and HTTPS checks.
 
-**Authorization:** The `/images` and `/skills/:sourceId` endpoints are accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
+**Authorization:** The `/images`, `/skills/:sourceId`, and `/skilldocs/:sourceId/:digest` endpoints are accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
 
 **Provenance:** When using mutable tag references, the plugin cannot guarantee that the content has not been replaced by the registry. Use digest-pinned references (`@sha256:...`) for production deployments. Manifest signature/provenance verification (e.g. cosign/sigstore) is not currently implemented; operators requiring supply-chain provenance should verify images externally before adding them to the configuration.

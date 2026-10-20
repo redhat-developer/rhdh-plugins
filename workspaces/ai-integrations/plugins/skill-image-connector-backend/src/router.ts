@@ -15,8 +15,8 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import { isValidDigest } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+import { isValidDigest } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import express from 'express';
 import Router from 'express-promise-router';
 import type { SkillImageExtraction } from './services/types';
@@ -113,15 +113,16 @@ export async function createRouter(
     // ETag derived from the manifest digest (the digest is the content
     // identity per D8)
     const etag = `"${digest}"`;
+    res.setHeader('ETag', etag);
 
-    // Conditional request: If-None-Match
-    const ifNoneMatch = req.headers['if-none-match'];
-    if (ifNoneMatch === etag || ifNoneMatch === `W/${etag}`) {
+    // Conditional request: If-None-Match (RFC 7232 §3.2).
+    // Express's req.fresh uses the `fresh` module which handles
+    // comma-separated entity-tag lists and the wildcard `*`.
+    if (req.fresh) {
       res.status(304).end();
       return;
     }
 
-    res.setHeader('ETag', etag);
     res.setHeader('Content-Type', 'text/markdown');
     res.status(200).send(content);
   });

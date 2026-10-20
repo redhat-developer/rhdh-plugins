@@ -471,7 +471,7 @@ describe('createRouter', () => {
       expect(res.text).toBe(markdownContent);
     });
 
-    it('does not return getSkillDocContent when no function provided', async () => {
+    it('returns 404 when no content lookup function is configured', async () => {
       const testApp = await buildSkillDocsApp();
 
       const res = await request(testApp).get(
