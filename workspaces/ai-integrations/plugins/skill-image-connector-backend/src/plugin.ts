@@ -929,7 +929,6 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         config: coreServices.rootConfig,
         scheduler: coreServices.scheduler,
         httpAuth: coreServices.httpAuth,
-        auth: coreServices.auth,
         database: coreServices.database,
       },
       async init({
@@ -939,7 +938,6 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         config,
         scheduler,
         httpAuth,
-        auth,
         database,
       }) {
         const pluginLogger = logger.child({
@@ -1080,12 +1078,12 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         };
 
         // Content lookup for GET /skilldocs/:sourceId/:digest (D8).
-        // First checks durable store (recovered content), then falls
-        // back to in-memory extractions for the current refresh cycle.
-        const getSkillDocContent = (
+        // Checks in-memory extractions first (current refresh cycle),
+        // then falls back to durable content store for recovered content.
+        const getSkillDocContent = async (
           sourceId: string,
           digest: string,
-        ): string | undefined => {
+        ): Promise<string | undefined> => {
           // Check in-memory extractions first (current cycle)
           const srcExtractions = sourceExtractions.get(sourceId);
           if (srcExtractions) {
@@ -1095,7 +1093,9 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               }
             }
           }
-          return undefined;
+          // Fall back to durable content store (recovered content
+          // from database after restart)
+          return contentStore.get(sourceId, digest);
         };
 
         // D8: Inner reconcile logic — called within per-source lock
@@ -1208,17 +1208,6 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           }
         };
 
-        // Wrap getSkillDocContent to also check durable store
-        const getSkillDocContentWithFallback = (
-          sourceId: string,
-          digest: string,
-        ): string | undefined => {
-          // Synchronous: check in-memory extractions only
-          // The router's GET handler is synchronous; the async fallback
-          // is used by the integration tests that await content store.
-          return getSkillDocContent(sourceId, digest);
-        };
-
         httpRouter.use(
           await createRouter(
             pluginLogger,
@@ -1226,11 +1215,10 @@ export const skillImageConnectorPlugin = createBackendPlugin({
             getProcessingStatus,
             () => Array.from(globalFailedImages),
             snapshots,
-            getSkillDocContentWithFallback,
+            getSkillDocContent,
             snapshotMetas,
             reconcileHandler,
             httpAuth,
-            auth,
             catalogProviderPluginId,
           ),
         );
@@ -1274,65 +1262,9 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                 abortSignal,
               );
 
-              // D8: Store Markdown content durably before publishing records.
-              // Records whose content cannot be admitted are excluded.
-              const admittedRecords = [];
-              const rejectedKeys: string[] = [];
-              let anyRejected = false;
-
-              for (const record of result.records) {
-                const extraction = Array.from(result.extractions.values()).find(
-                  e => e.acquisition?.digest === record.digest,
-                );
-                if (!extraction) {
-                  admittedRecords.push(record);
-                  continue;
-                }
-
-                const sizeBytes = Buffer.byteLength(
-                  extraction.skillsMd,
-                  'utf-8',
-                );
-                const admission = await contentStore.checkAdmission(
-                  source.id,
-                  sizeBytes,
-                );
-                if (admission.admitted) {
-                  try {
-                    await contentStore.store(
-                      source.id,
-                      record.digest,
-                      extraction.skillsMd,
-                    );
-                    admittedRecords.push(record);
-                  } catch (storeError) {
-                    pluginLogger.error(
-                      `Failed to store content for digest ${record.digest} ` +
-                        `in source '${source.id}'`,
-                      storeError as Error,
-                    );
-                    rejectedKeys.push(record.key);
-                    anyRejected = true;
-                  }
-                } else {
-                  pluginLogger.warn(
-                    `Content admission rejected for digest ${record.digest} ` +
-                      `in source '${source.id}': ${admission.reason}`,
-                  );
-                  rejectedKeys.push(record.key);
-                  anyRejected = true;
-                }
-              }
-
-              // Rebuild result with admitted records and rejected keys
-              const adjustedResult = {
-                ...result,
-                records: admittedRecords,
-                failedKeys: [...result.failedKeys, ...rejectedKeys],
-                discoveryComplete: result.discoveryComplete && !anyRejected,
-              };
-
-              // Serialize publication under the source lock
+              // Serialize admission, storage, revision allocation, and
+              // publication under the source lock so concurrent reconcile
+              // cleanup sees consistent state.
               const prevLock = sourceLocks.get(source.id) ?? Promise.resolve();
               let resolveLock: () => void;
               const newLock = new Promise<void>(resolve => {
@@ -1342,6 +1274,75 @@ export const skillImageConnectorPlugin = createBackendPlugin({
 
               try {
                 await prevLock;
+
+                // D8: Store Markdown content durably before publishing records.
+                // Records whose content cannot be admitted are excluded.
+                const admittedRecords = [];
+                const rejectedKeys: string[] = [];
+                let anyRejected = false;
+
+                for (const record of result.records) {
+                  const extraction = Array.from(
+                    result.extractions.values(),
+                  ).find(e => e.acquisition?.digest === record.digest);
+                  if (!extraction) {
+                    admittedRecords.push(record);
+                    continue;
+                  }
+
+                  // Skip admission if the content store already holds
+                  // this digest for the source (idempotent re-encounter).
+                  const existing = await contentStore.get(
+                    source.id,
+                    record.digest,
+                  );
+                  if (existing !== undefined) {
+                    admittedRecords.push(record);
+                    continue;
+                  }
+
+                  const sizeBytes = Buffer.byteLength(
+                    extraction.skillsMd,
+                    'utf-8',
+                  );
+                  const admission = await contentStore.checkAdmission(
+                    source.id,
+                    sizeBytes,
+                  );
+                  if (admission.admitted) {
+                    try {
+                      await contentStore.store(
+                        source.id,
+                        record.digest,
+                        extraction.skillsMd,
+                      );
+                      admittedRecords.push(record);
+                    } catch (storeError) {
+                      pluginLogger.error(
+                        `Failed to store content for digest ${record.digest} ` +
+                          `in source '${source.id}'`,
+                        storeError as Error,
+                      );
+                      rejectedKeys.push(record.key);
+                      anyRejected = true;
+                    }
+                  } else {
+                    pluginLogger.warn(
+                      `Content admission rejected for digest ${record.digest} ` +
+                        `in source '${source.id}': ${admission.reason}`,
+                    );
+                    rejectedKeys.push(record.key);
+                    anyRejected = true;
+                  }
+                }
+
+                // Rebuild result with admitted records and rejected keys
+                const adjustedResult = {
+                  ...result,
+                  records: admittedRecords,
+                  failedKeys: [...result.failedKeys, ...rejectedKeys],
+                  discoveryComplete: result.discoveryComplete && !anyRejected,
+                };
 
                 const previousExtractions = sourceExtractions.get(source.id)!;
 
@@ -1353,7 +1354,8 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                 );
 
                 // D8: Allocate a durable monotonic revision for completed
-                // (non-loading) snapshots
+                // (non-loading) snapshots. Failure prevents publication so
+                // unpersisted revisions are never served.
                 let revision: string | undefined;
                 if (
                   snapshot.status === 'ready' ||

@@ -172,47 +172,54 @@ identity is required; their acquisition still uses a verified, pinned digest.
 
 ### Configuration fields
 
-| Field                                                      | Type            | Description                                                                                                                                                         |
-| ---------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `skillImageConnector.sources`                              | `array`         | Optional independent OCI sources. When present, overrides the corresponding flat source fields with a startup warning.                                              |
-| `skillImageConnector.sources[].id`                         | `string`        | Required stable, nonblank source ID, unique within this connector; used by GET /skills/:sourceId.                                                                   |
-| `skillImageConnector.sources[].allowedRegistries`          | `array`         | Exact registry host and port allowlist; required when images or Quay discovery are configured.                                                                      |
-| `skillImageConnector.sources[].allowedOrigins`             | `array`         | Optional exact HTTPS redirect origins for this source only. Does not inherit flat allowedOrigins.                                                                   |
-| `skillImageConnector.sources[].schedule`                   | `object`        | Optional standard Backstage schedule. Omission defaults to ten-minute frequency, immediate startup, and local scope; see scheduling guidance above.                 |
-| `skillImageConnector.sources[].schedule.frequency`         | `string/object` | Required when schedule is supplied. Duration, cron object, or manual-trigger object parsed by Backstage.                                                            |
-| `skillImageConnector.sources[].schedule.timeout`           | `string/object` | Required when schedule is supplied. Backstage task timeout, separate from sourceOperationDeadlineMs.                                                                |
-| `skillImageConnector.sources[].schedule.initialDelay`      | `string/object` | Optional delay before the first invocation; defaults to zero. Manual schedules require an explicit scheduler trigger.                                               |
-| `skillImageConnector.sources[].schedule.scope`             | `string`        | Omit or set to local. Global scope is rejected because snapshots are cached per backend instance.                                                                   |
-| `skillImageConnector.sources[].images`                     | `array`         | Optional explicit OCI image references; may be combined with this source’s Quay discovery.                                                                          |
-| `skillImageConnector.sources[].images[].imageRef`          | `string`        | Full OCI image reference, tagged or digest-addressed. Digest-only inputs remain raw-only.                                                                           |
-| `skillImageConnector.sources[].images[].credentials`       | `object`        | Optional username/password and explicit tokenRealm fields, as described for legacy images credentials below; scoped to this image.                                  |
-| `skillImageConnector.sources[].quayDiscovery`              | `object`        | Optional public Quay organization discovery for this source.                                                                                                        |
-| `skillImageConnector.sources[].quayDiscovery.registry`     | `string`        | Quay registry host; defaults to quay.io. Must be in this source’s allowedRegistries.                                                                                |
-| `skillImageConnector.sources[].quayDiscovery.organization` | `string`        | Public organization to discover. Omission or a blank value skips discovery with a warning.                                                                          |
-| `skillImageConnector.sources[].quayDiscovery.tag`          | `string`        | Optional exact tag filter. Omit or leave blank for all active tags; set latest explicitly to select it.                                                             |
-| `skillImageConnector.images`                               | `array`         | Legacy; ignored when sources[] is configured. Explicit images for the default source.                                                                               |
-| `skillImageConnector.images[].imageRef`                    | `string`        | Legacy; ignored when sources[] is configured. Full OCI image reference (tagged or digest-addressed).                                                                |
-| `skillImageConnector.images[].credentials`                 | `object`        | Legacy; ignored when sources[] is configured. Optional image credentials or explicit registry token realm.                                                          |
-| `skillImageConnector.images[].credentials.username`        | `string`        | Legacy; ignored when sources[] is configured. Registry username; required together with password.                                                                   |
-| `skillImageConnector.images[].credentials.password`        | `string`        | Legacy; ignored when sources[] is configured. Registry password; use environment variable substitution.                                                             |
-| `skillImageConnector.images[].credentials.tokenRealm`      | `string`        | Legacy; ignored when sources[] is configured. Optional HTTPS token endpoint without URL credentials; required for cross-host token exchange.                        |
-| `skillImageConnector.allowedRegistries`                    | `array`         | Legacy; ignored when sources[] is configured. Exact registry host and port allowlist for the default source.                                                        |
-| `skillImageConnector.allowedOrigins`                       | `array`         | Legacy; ignored when sources[] is configured. Optional exact HTTPS redirect origins for the default source. See [Security model](#security-model).                  |
-| `skillImageConnector.quayDiscovery`                        | `object`        | Legacy; ignored when sources[] is configured. Optional public Quay discovery for the default source.                                                                |
-| `skillImageConnector.quayDiscovery.registry`               | `string`        | Legacy; ignored when sources[] is configured. Quay registry host; defaults to quay.io.                                                                              |
-| `skillImageConnector.quayDiscovery.organization`           | `string`        | Legacy; ignored when sources[] is configured. Public organization; omission or a blank value skips discovery with a warning.                                        |
-| `skillImageConnector.quayDiscovery.tag`                    | `string`        | Legacy; ignored when sources[] is configured. Optional exact tag filter; omit or leave blank for all active tags.                                                   |
-| `skillImageConnector.schedule`                             | `object`        | Legacy; ignored when sources[] is configured. Optional standard Backstage schedule for the default source, with the same fields and defaults as sources[].schedule. |
-| `skillImageConnector.schedule.frequency`                   | `string/object` | Legacy; ignored when sources[] is configured. Required in a supplied schedule: duration, cron, or manual trigger.                                                   |
-| `skillImageConnector.schedule.timeout`                     | `string/object` | Legacy; ignored when sources[] is configured. Required Backstage task timeout in a supplied schedule.                                                               |
-| `skillImageConnector.schedule.initialDelay`                | `string/object` | Legacy; ignored when sources[] is configured. Optional first-run delay; defaults to zero.                                                                           |
-| `skillImageConnector.schedule.scope`                       | `string`        | Legacy; ignored when sources[] is configured. Omit or set local; global scope is rejected.                                                                          |
+| Field                                                      | Type            | Description                                                                                                                                                                                                                                    |
+| ---------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `skillImageConnector.sources`                              | `array`         | Optional independent OCI sources. When present, overrides the corresponding flat source fields with a startup warning.                                                                                                                         |
+| `skillImageConnector.sources[].id`                         | `string`        | Required stable, nonblank source ID, unique within this connector; used by GET /skills/:sourceId.                                                                                                                                              |
+| `skillImageConnector.sources[].allowedRegistries`          | `array`         | Exact registry host and port allowlist; required when images or Quay discovery are configured.                                                                                                                                                 |
+| `skillImageConnector.sources[].allowedOrigins`             | `array`         | Optional exact HTTPS redirect origins for this source only. Does not inherit flat allowedOrigins.                                                                                                                                              |
+| `skillImageConnector.sources[].schedule`                   | `object`        | Optional standard Backstage schedule. Omission defaults to ten-minute frequency, immediate startup, and local scope; see scheduling guidance above.                                                                                            |
+| `skillImageConnector.sources[].schedule.frequency`         | `string/object` | Required when schedule is supplied. Duration, cron object, or manual-trigger object parsed by Backstage.                                                                                                                                       |
+| `skillImageConnector.sources[].schedule.timeout`           | `string/object` | Required when schedule is supplied. Backstage task timeout, separate from sourceOperationDeadlineMs.                                                                                                                                           |
+| `skillImageConnector.sources[].schedule.initialDelay`      | `string/object` | Optional delay before the first invocation; defaults to zero. Manual schedules require an explicit scheduler trigger.                                                                                                                          |
+| `skillImageConnector.sources[].schedule.scope`             | `string`        | Omit or set to local. Global scope is rejected because snapshots are cached per backend instance.                                                                                                                                              |
+| `skillImageConnector.sources[].images`                     | `array`         | Optional explicit OCI image references; may be combined with this source’s Quay discovery.                                                                                                                                                     |
+| `skillImageConnector.sources[].images[].imageRef`          | `string`        | Full OCI image reference, tagged or digest-addressed. Digest-only inputs remain raw-only.                                                                                                                                                      |
+| `skillImageConnector.sources[].images[].credentials`       | `object`        | Optional username/password and explicit tokenRealm fields, as described for legacy images credentials below; scoped to this image.                                                                                                             |
+| `skillImageConnector.sources[].quayDiscovery`              | `object`        | Optional public Quay organization discovery for this source.                                                                                                                                                                                   |
+| `skillImageConnector.sources[].quayDiscovery.registry`     | `string`        | Quay registry host; defaults to quay.io. Must be in this source’s allowedRegistries.                                                                                                                                                           |
+| `skillImageConnector.sources[].quayDiscovery.organization` | `string`        | Public organization to discover. Omission or a blank value skips discovery with a warning.                                                                                                                                                     |
+| `skillImageConnector.sources[].quayDiscovery.tag`          | `string`        | Optional exact tag filter. Omit or leave blank for all active tags; set latest explicitly to select it.                                                                                                                                        |
+| `skillImageConnector.images`                               | `array`         | Legacy; ignored when sources[] is configured. Explicit images for the default source.                                                                                                                                                          |
+| `skillImageConnector.images[].imageRef`                    | `string`        | Legacy; ignored when sources[] is configured. Full OCI image reference (tagged or digest-addressed).                                                                                                                                           |
+| `skillImageConnector.images[].credentials`                 | `object`        | Legacy; ignored when sources[] is configured. Optional image credentials or explicit registry token realm.                                                                                                                                     |
+| `skillImageConnector.images[].credentials.username`        | `string`        | Legacy; ignored when sources[] is configured. Registry username; required together with password.                                                                                                                                              |
+| `skillImageConnector.images[].credentials.password`        | `string`        | Legacy; ignored when sources[] is configured. Registry password; use environment variable substitution.                                                                                                                                        |
+| `skillImageConnector.images[].credentials.tokenRealm`      | `string`        | Legacy; ignored when sources[] is configured. Optional HTTPS token endpoint without URL credentials; required for cross-host token exchange.                                                                                                   |
+| `skillImageConnector.allowedRegistries`                    | `array`         | Legacy; ignored when sources[] is configured. Exact registry host and port allowlist for the default source.                                                                                                                                   |
+| `skillImageConnector.allowedOrigins`                       | `array`         | Legacy; ignored when sources[] is configured. Optional exact HTTPS redirect origins for the default source. See [Security model](#security-model).                                                                                             |
+| `skillImageConnector.quayDiscovery`                        | `object`        | Legacy; ignored when sources[] is configured. Optional public Quay discovery for the default source.                                                                                                                                           |
+| `skillImageConnector.quayDiscovery.registry`               | `string`        | Legacy; ignored when sources[] is configured. Quay registry host; defaults to quay.io.                                                                                                                                                         |
+| `skillImageConnector.quayDiscovery.organization`           | `string`        | Legacy; ignored when sources[] is configured. Public organization; omission or a blank value skips discovery with a warning.                                                                                                                   |
+| `skillImageConnector.quayDiscovery.tag`                    | `string`        | Legacy; ignored when sources[] is configured. Optional exact tag filter; omit or leave blank for all active tags.                                                                                                                              |
+| `skillImageConnector.schedule`                             | `object`        | Legacy; ignored when sources[] is configured. Optional standard Backstage schedule for the default source, with the same fields and defaults as sources[].schedule.                                                                            |
+| `skillImageConnector.schedule.frequency`                   | `string/object` | Legacy; ignored when sources[] is configured. Required in a supplied schedule: duration, cron, or manual trigger.                                                                                                                              |
+| `skillImageConnector.schedule.timeout`                     | `string/object` | Legacy; ignored when sources[] is configured. Required Backstage task timeout in a supplied schedule.                                                                                                                                          |
+| `skillImageConnector.schedule.initialDelay`                | `string/object` | Legacy; ignored when sources[] is configured. Optional first-run delay; defaults to zero.                                                                                                                                                      |
+| `skillImageConnector.schedule.scope`                       | `string`        | Legacy; ignored when sources[] is configured. Omit or set local; global scope is rejected.                                                                                                                                                     |
+| `skillImageConnector.maxRetainedMarkdownSizeBytes`         | `number`        | Maximum retained Markdown bytes per source for durable storage. Positive safe integer; defaults to 52,428,800 (50 MiB). Independent of `maxAggregateContentSizeBytes`. A configured value below already-retained bytes is rejected at startup. |
+| `skillImageConnector.catalogProviderPluginId`              | `string`        | Plugin ID of the authorized catalog provider for reconciliation. Defaults to `'catalog'`. Only this principal may call `POST /skilldocs/:sourceId/reconcile`.                                                                                  |
 
 By default, at most 25 image candidates are processed, including explicit images and discovered repository/tag candidates. Set `skillImageConnector.maxImages` to raise or lower this total (for example, `100` to attempt up to 100 distinct image references). A repository with many tags consumes multiple candidate slots; increasing this cap does not guarantee every tag fits. Explicit images take priority, and discovered references already present in the explicit list do not consume another slot. An explicit list exceeding the limit fails startup validation; excess discovered candidates are skipped with a warning. This bounds candidates attempted, not successful skill extractions: repositories without the selected tag still consume a slot. It does not change the concurrency limit of four image operations.
 
 **Use immutable digest references (`@sha256:...`) in production.** Mutable tags can be moved or replaced by the registry; the plugin warns at startup when a tag reference is used. Digest-pinned references are verified against the manifest content, preventing tag mutation attacks.
 
-By default, each downloaded blob and decompressed layer is limited to 5 MiB. The combined retained UTF-8 `skillimage.yaml` and `SKILLS.md` content across accepted images in each source refresh is capped at 50 MiB. This retained-content budget does not measure total downloads or peak process memory. All configuration fields use `@visibility backend` or `@visibility secret` and are not exposed to the frontend.
+By default, each downloaded blob and decompressed layer is limited to 5 MiB. Two independent byte budgets apply per source:
+
+- **`maxAggregateContentSizeBytes`** (default 50 MiB): limits the combined retained `skillimage.yaml` and `SKILLS.md` content across accepted images within a single refresh cycle. This is an extraction-time budget that does not measure total downloads or peak process memory.
+- **`maxRetainedMarkdownSizeBytes`** (default 50 MiB): limits the total durable Markdown bytes retained per source across refresh cycles for reconciliation and restart recovery. This budget is enforced independently during content admission and is persisted to the database when available.
+
+These limits are independent: one controls extraction-time content, the other controls durable retention. Each has its own default, and configuring one does not affect the other. All configuration fields use `@visibility backend` or `@visibility secret` and are not exposed to the frontend.
 
 ### Optional acquisition limits
 
@@ -235,6 +242,38 @@ The per-image work budget (`maxImageWorkBudgetBytes`) is distinct from the retai
 Manifest responses retain their separate 5 MiB limit; token responses retain their 1 MiB limit. Repository and tag pagination (100 pages combined), redirects (five per D7), concurrent image operations (four), tar entries (200 per layer), and total candidates (1,000 including non-skills and failures) also have distinct shared defaults. For tag-based references, tag resolution and image acquisition/extraction each have independent retry scopes: transient failures during tag resolution are retried before the resolved digest is used for acquisition, and transient failures during acquisition are retried using the already-pinned digest. Explicit digest references use a single retry scope wrapping the whole acquisition/extraction. Individual OCI requests do not add another retry loop.
 
 Discovery and OCI requests share HTTP redirect validation, response cleanup, and bounded body reading. Initial requests and redirects are validated: must use HTTPS, reject URL credentials, localhost and literal IPs, and resolve DNS to public addresses before connecting. Authorization headers are removed when following cross-origin redirects. DNS resolution is validated for both initial requests and every redirect target to prevent DNS rebinding attacks.
+
+### Database / Durable storage
+
+The plugin uses Backstage's database service for durable Markdown retention
+when available. When a database is configured, extracted skill Markdown content,
+revision counters, and reconciliation acknowledgment state are persisted to three
+tables (`retained_markdown`, `source_revision`, `reconcile_state`) and survive
+backend restarts. After a restart, the content store recovers persisted state
+and completes any cleanup interrupted by the previous shutdown.
+
+When no database is available (or database initialization fails), the plugin
+falls back to in-memory storage with a startup warning. In-memory mode provides
+all the same runtime behavior — content storage, admission checks, revision
+tracking, and reconciliation — but state does not survive restarts.
+
+Database write failures propagate to callers: content whose storage cannot be
+persisted is not published, revision allocations that cannot be persisted
+prevent snapshot publication, and acknowledgments that cannot be persisted
+cause the reconcile request to fail. This ensures the system never serves
+content, revisions, or acknowledgments that are not durably committed.
+
+**Single-instance restriction:** Snapshot caches and in-memory content are
+local to each backend instance. The scheduler scope is always `local`, and
+there is no cross-instance synchronization. Running multiple backend instances
+against the same database produces independent, potentially divergent snapshots.
+
+**Controlled inventory drain:** To reduce retained content below the configured
+`maxRetainedMarkdownSizeBytes`, use the `POST /skilldocs/:sourceId/reconcile`
+endpoint with a reduced `retainedDigests` set, then wait for the next refresh
+cycle to complete. The retention limit is validated at startup; a configured
+value below already-retained bytes is rejected. Increase the limit first, drain
+via reconciliation, then lower the limit.
 
 ## How it works
 
@@ -409,6 +448,12 @@ serialized JSON, with truncation represented as incomplete rather than `ready`.
 The plugin publishes each completed snapshot atomically; concurrent requests see
 either the old complete snapshot or its complete replacement.
 
+**Response headers:**
+
+| Header                 | Condition                                                                                                                                                                                                                                                                               |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `X-Skilldocs-Revision` | Present on completed (ready/partial/failed) snapshots. A monotonically increasing decimal string identifying the content revision. Consumers use it to detect content freshness and as the `revision` parameter for `POST /skilldocs/:sourceId/reconcile`. Absent on loading snapshots. |
+
 ### `GET /api/skill-image-connector/skilldocs/:sourceId/:digest`
 
 Returns the extracted Markdown documentation for a single OCI skill image,
@@ -458,6 +503,46 @@ GET does not trigger registry acquisition — it serves the current verified
 extraction content only. Same-digest tag aliases share content and ETag
 naturally because the digest is the content identity.
 
+### `POST /api/skill-image-connector/skilldocs/:sourceId/reconcile`
+
+Provider-authorized reconciliation acknowledgment endpoint. Allows the
+configured catalog provider to acknowledge which skill digests it has
+successfully consumed, enabling safe cleanup of unreferenced content from
+durable storage.
+
+**Authentication:** Requires Backstage service-to-service authentication.
+The caller's principal must match `plugin:<catalogProviderPluginId>` (defaults
+to `plugin:catalog`). Requests from other principals receive HTTP 403.
+
+**Request body:**
+
+```json
+{
+  "revision": "5",
+  "retainedDigests": ["sha256:aaaa..."]
+}
+```
+
+| Field             | Type       | Description                                                                                                            |
+| ----------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `revision`        | `string`   | Required. Decimal string matching the `X-Skilldocs-Revision` header from the snapshot the caller consumed.             |
+| `retainedDigests` | `string[]` | Required. Digests the caller has successfully ingested and wants retained. Max 1,000 unique `sha256:<64 hex>` entries. |
+
+**Responses:**
+
+| Status | Condition                                                                                                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `204`  | Acknowledgment accepted. Unreferenced digests (not in `retainedDigests` and not in the current snapshot) are cleaned up.        |
+| `400`  | Invalid request body: missing or non-decimal `revision`, missing or invalid `retainedDigests`, duplicates, or too many entries. |
+| `403`  | Unauthorized: caller is not the configured catalog provider or authentication failed.                                           |
+| `404`  | Unknown source ID.                                                                                                              |
+| `409`  | Revision mismatch (the source has moved to a newer revision) or conflicting retain set for an already-acknowledged revision.    |
+| `413`  | Request body exceeds 5 MiB.                                                                                                     |
+
+**Idempotency:** Retrying the same `revision` and `retainedDigests` combination
+returns 204 without additional side effects. The same `revision` with a
+different `retainedDigests` set returns 409.
+
 ### Security model
 
 **Egress / SSRF protection:** Initial registry, Quay discovery, bearer-token, and redirect requests use a per-request Undici dispatcher. The connector validates every DNS answer and restricts the socket lookup to that validated public address set, preserving the original hostname for TLS SNI and certificate verification. Node can fall back from unreachable IPv6 to IPv4 within the validated set. Fetch does not independently resolve a different destination. Private, loopback, link-local, multicast, reserved, and IPv4-mapped non-public addresses are rejected. Requests must use HTTPS; URL-embedded credentials and raw IP/localhost targets are rejected.
@@ -477,6 +562,6 @@ This optional setting adds trusted redirect destinations; omission allows only t
 
 Tar archives are inspected for path traversal, symlinks, hardlinks, and device entries; unsafe archives are rejected without extracting content. Per-image work budgets and tar entry limits bound resource consumption from malicious or oversized images. Production deployments should restrict backend egress at the network layer in addition to the registry allowlist and HTTPS checks.
 
-**Authorization:** The `/images`, `/skills/:sourceId`, and `/skilldocs/:sourceId/:digest` endpoints are accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
+**Authorization:** The `/images`, `/skills/:sourceId`, and `/skilldocs/:sourceId/:digest` endpoints are accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. The `/skilldocs/:sourceId/reconcile` endpoint requires the caller's principal to match `plugin:<catalogProviderPluginId>` (configurable, defaults to `catalog`); requests from other principals are rejected with HTTP 403. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
 
 **Provenance:** When using mutable tag references, the plugin cannot guarantee that the content has not been replaced by the registry. Use digest-pinned references (`@sha256:...`) for production deployments. Manifest signature/provenance verification (e.g. cosign/sigstore) is not currently implemented; operators requiring supply-chain provenance should verify images externally before adding them to the configuration.

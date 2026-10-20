@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { DatabaseService } from '@backstage/backend-plugin-api';
+import type {
+  DatabaseService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import {
   DEFAULT_MAX_RETAINED_MARKDOWN_SIZE,
   MAX_RETAINED_DIGESTS,
@@ -94,6 +96,7 @@ export class ContentStore {
         }
         this.durable = true;
         await this.recoverFromDatabase();
+        await this.recoverInterruptedCleanup();
         this.logger.info('ContentStore initialized with durable storage');
       } catch (error) {
         this.logger.warn(
@@ -133,9 +136,19 @@ export class ContentStore {
     // Recover acknowledgments
     const ackRows = await this.knex('reconcile_state').select('*');
     for (const row of ackRows) {
+      const parsed: unknown = JSON.parse(row.ack_retained_digests);
+      if (
+        !Array.isArray(parsed) ||
+        !parsed.every((d: unknown) => typeof d === 'string')
+      ) {
+        this.logger.warn(
+          `ContentStore: invalid ack_retained_digests for source ${row.source_id}, skipping`,
+        );
+        continue;
+      }
       this.acknowledgments.set(row.source_id, {
         revision: row.ack_revision,
-        retainedDigests: JSON.parse(row.ack_retained_digests),
+        retainedDigests: parsed as string[],
         acknowledgedAt: row.ack_at,
       });
     }
@@ -144,6 +157,27 @@ export class ContentStore {
       `ContentStore recovered: ${rows.length} content entries, ` +
         `${revRows.length} revision counters, ${ackRows.length} acknowledgments`,
     );
+  }
+
+  /**
+   * Complete any cleanup interrupted by a crash or restart.
+   *
+   * For each source with a persisted acknowledgment, deletes retained
+   * digests not in the acknowledged retain set. The current snapshot's
+   * digests are unavailable during recovery; the acknowledged set is the
+   * minimum protected set for safe cleanup.
+   */
+  private async recoverInterruptedCleanup(): Promise<void> {
+    for (const [sourceId, ack] of this.acknowledgments) {
+      const protectedDigests = new Set(ack.retainedDigests);
+      const deleted = await this.cleanup(sourceId, protectedDigests);
+      if (deleted > 0) {
+        this.logger.info(
+          `Recovered interrupted cleanup for source '${sourceId}': ` +
+            `deleted ${deleted} digest(s)`,
+        );
+      }
+    }
   }
 
   // ── Content storage ────────────────────────────────────────────────
@@ -193,31 +227,25 @@ export class ContentStore {
 
     const sizeBytes = Buffer.byteLength(content, 'utf-8');
     const storedAt = new Date().toISOString();
-    this.content.set(key, { content, sizeBytes, storedAt });
 
-    // Persist to database if available
+    // Persist to database first when durable — failure prevents
+    // in-memory update so unpersisted content is never published.
     if (this.durable && this.knex) {
-      try {
-        const existing = await this.knex('retained_markdown')
-          .where({ source_id: sourceId, digest })
-          .first();
-        if (!existing) {
-          await this.knex('retained_markdown').insert({
-            source_id: sourceId,
-            digest,
-            content,
-            size_bytes: sizeBytes,
-            stored_at: storedAt,
-          });
-        }
-      } catch (error) {
-        this.logger.error(
-          `ContentStore: failed to persist content for ${sourceId}/${digest}`,
-          error as Error,
-        );
+      const existing = await this.knex('retained_markdown')
+        .where({ source_id: sourceId, digest })
+        .first();
+      if (!existing) {
+        await this.knex('retained_markdown').insert({
+          source_id: sourceId,
+          digest,
+          content,
+          size_bytes: sizeBytes,
+          stored_at: storedAt,
+        });
       }
     }
 
+    this.content.set(key, { content, sizeBytes, storedAt });
     return true;
   }
 
@@ -274,19 +302,13 @@ export class ContentStore {
       }
     }
 
-    // Persist to database if available
+    // Persist deletion to database when durable — failure propagates
+    // so callers know the deletion was not committed.
     if (this.durable && this.knex && deleted > 0) {
-      try {
-        await this.knex('retained_markdown')
-          .where({ source_id: sourceId })
-          .whereIn('digest', digests)
-          .delete();
-      } catch (error) {
-        this.logger.error(
-          `ContentStore: failed to persist deletion for ${sourceId}`,
-          error as Error,
-        );
-      }
+      await this.knex('retained_markdown')
+        .where({ source_id: sourceId })
+        .whereIn('digest', digests)
+        .delete();
     }
 
     return deleted;
@@ -302,33 +324,27 @@ export class ContentStore {
   async allocateRevision(sourceId: string): Promise<string> {
     const prev = this.revisions.get(sourceId) ?? BigInt(0);
     const next = prev + BigInt(1);
-    this.revisions.set(sourceId, next);
     const nextStr = next.toString();
 
-    // Persist to database if available
+    // Persist to database first when durable — failure prevents
+    // in-memory update so unpersisted revisions are never published.
     if (this.durable && this.knex) {
-      try {
-        const existing = await this.knex('source_revision')
+      const existing = await this.knex('source_revision')
+        .where({ source_id: sourceId })
+        .first();
+      if (existing) {
+        await this.knex('source_revision')
           .where({ source_id: sourceId })
-          .first();
-        if (existing) {
-          await this.knex('source_revision')
-            .where({ source_id: sourceId })
-            .update({ current_revision: nextStr });
-        } else {
-          await this.knex('source_revision').insert({
-            source_id: sourceId,
-            current_revision: nextStr,
-          });
-        }
-      } catch (error) {
-        this.logger.error(
-          `ContentStore: failed to persist revision for ${sourceId}`,
-          error as Error,
-        );
+          .update({ current_revision: nextStr });
+      } else {
+        await this.knex('source_revision').insert({
+          source_id: sourceId,
+          current_revision: nextStr,
+        });
       }
     }
 
+    this.revisions.set(sourceId, next);
     return nextStr;
   }
 
@@ -353,43 +369,38 @@ export class ContentStore {
   ): Promise<void> {
     const now = new Date().toISOString();
     const sorted = [...retainedDigests].sort();
+
+    // Persist to database first when durable — failure prevents
+    // in-memory update so unpersisted acknowledgments are never visible.
+    if (this.durable && this.knex) {
+      const serialized = JSON.stringify(sorted);
+      const existing = await this.knex('reconcile_state')
+        .where({ source_id: sourceId })
+        .first();
+      if (existing) {
+        await this.knex('reconcile_state')
+          .where({ source_id: sourceId })
+          .update({
+            ack_revision: revision,
+            ack_retained_digests: serialized,
+            ack_at: now,
+          });
+      } else {
+        await this.knex('reconcile_state').insert({
+          source_id: sourceId,
+          ack_revision: revision,
+          ack_retained_digests: serialized,
+          ack_at: now,
+        });
+      }
+    }
+
     const state: AcknowledgmentState = {
       revision,
       retainedDigests: sorted,
       acknowledgedAt: now,
     };
     this.acknowledgments.set(sourceId, state);
-
-    // Persist to database if available
-    if (this.durable && this.knex) {
-      try {
-        const serialized = JSON.stringify(sorted);
-        const existing = await this.knex('reconcile_state')
-          .where({ source_id: sourceId })
-          .first();
-        if (existing) {
-          await this.knex('reconcile_state')
-            .where({ source_id: sourceId })
-            .update({
-              ack_revision: revision,
-              ack_retained_digests: serialized,
-              ack_at: now,
-            });
-        } else {
-          await this.knex('reconcile_state').insert({
-            source_id: sourceId,
-            ack_revision: revision,
-            ack_retained_digests: serialized,
-            ack_at: now,
-          });
-        }
-      } catch (error) {
-        this.logger.error(
-          `ContentStore: failed to persist acknowledgment for ${sourceId}`,
-          error as Error,
-        );
-      }
-    }
   }
 
   /**
@@ -403,12 +414,13 @@ export class ContentStore {
 
   /**
    * Perform cleanup: delete digests not in the protected set.
+   * When `protectedDigests` is empty, all retained digests are eligible
+   * for deletion — nothing is protected.
    */
   async cleanup(
     sourceId: string,
     protectedDigests: Set<string>,
   ): Promise<number> {
-    if (protectedDigests.size === 0) return 0;
     const allDigests = await this.getRetainedDigests(sourceId);
     const toDelete = allDigests.filter(d => !protectedDigests.has(d));
     if (toDelete.length === 0) return 0;

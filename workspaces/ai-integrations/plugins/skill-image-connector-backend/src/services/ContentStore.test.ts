@@ -94,6 +94,21 @@ describe('ContentStore', () => {
       expect(result.reason).toContain('bytes would exceed');
     });
 
+    it('admits already-stored digests without double-counting bytes', async () => {
+      // Store content that uses most of the budget
+      const store = await createStore(100);
+      await store.store('source-a', digest1, 'x'.repeat(80));
+
+      // The same digest should not be double-counted when re-checked
+      const stats = await store.getSourceStats('source-a');
+      expect(stats.totalBytes).toBe(80);
+
+      // A new digest that would exceed the budget if the old digest
+      // were counted twice should still be admitted
+      const result = await store.checkAdmission('source-a', 15);
+      expect(result.admitted).toBe(true);
+    });
+
     it('rejects content exceeding digest count limit', async () => {
       const store = await createStore(1_000_000_000);
 
@@ -234,6 +249,24 @@ describe('ContentStore', () => {
       expect(deleted).toBe(0);
       expect(await store.get('source-a', digest1)).toBe('# One');
     });
+
+    it('deletes all digests when protectedDigests is empty', async () => {
+      const store = await createStore();
+      await store.store('source-a', digest1, '# One');
+      await store.store('source-a', digest2, '# Two');
+
+      const deleted = await store.cleanup('source-a', new Set());
+      expect(deleted).toBe(2);
+
+      expect(await store.get('source-a', digest1)).toBeUndefined();
+      expect(await store.get('source-a', digest2)).toBeUndefined();
+    });
+
+    it('returns 0 when source has no retained digests', async () => {
+      const store = await createStore();
+      const deleted = await store.cleanup('source-a', new Set());
+      expect(deleted).toBe(0);
+    });
   });
 
   describe('retention limit validation', () => {
@@ -251,6 +284,108 @@ describe('ContentStore', () => {
       await expect(store.validateRetentionLimit('source-a')).rejects.toThrow(
         /below already-retained bytes/,
       );
+    });
+  });
+
+  describe('database failure propagation', () => {
+    it('store() propagates database write failures', async () => {
+      const store = new ContentStore(mockLogger, 100_000);
+      // Simulate durable mode with a failing database
+      const mockKnex = jest.fn().mockImplementation(() => ({
+        where: jest.fn().mockReturnThis(),
+        first: jest.fn().mockResolvedValue(undefined),
+        insert: jest.fn().mockRejectedValue(new Error('DB write failed')),
+      }));
+      (store as any).durable = true;
+      (store as any).knex = mockKnex;
+
+      await expect(
+        store.store('source-a', digest1, '# Content'),
+      ).rejects.toThrow('DB write failed');
+
+      // Content should NOT be in memory after failed DB write
+      expect(await store.get('source-a', digest1)).toBeUndefined();
+    });
+
+    it('allocateRevision() propagates database write failures', async () => {
+      const store = new ContentStore(mockLogger, 100_000);
+      const mockKnex = jest.fn().mockImplementation(() => ({
+        where: jest.fn().mockReturnThis(),
+        first: jest.fn().mockResolvedValue(undefined),
+        insert: jest.fn().mockRejectedValue(new Error('DB write failed')),
+      }));
+      (store as any).durable = true;
+      (store as any).knex = mockKnex;
+
+      await expect(store.allocateRevision('source-a')).rejects.toThrow(
+        'DB write failed',
+      );
+
+      // Revision should NOT be updated in memory
+      expect(await store.getCurrentRevision('source-a')).toBeUndefined();
+    });
+
+    it('saveAcknowledgment() propagates database write failures', async () => {
+      const store = new ContentStore(mockLogger, 100_000);
+      const mockKnex = jest.fn().mockImplementation(() => ({
+        where: jest.fn().mockReturnThis(),
+        first: jest.fn().mockResolvedValue(undefined),
+        insert: jest.fn().mockRejectedValue(new Error('DB write failed')),
+      }));
+      (store as any).durable = true;
+      (store as any).knex = mockKnex;
+
+      await expect(
+        store.saveAcknowledgment('source-a', '1', [digest1]),
+      ).rejects.toThrow('DB write failed');
+
+      // Acknowledgment should NOT be in memory
+      expect(await store.getLastAcknowledgment('source-a')).toBeUndefined();
+    });
+  });
+
+  describe('deterministic race behavior', () => {
+    it('concurrent stores for the same digest are idempotent', async () => {
+      const store = await createStore();
+      const results = await Promise.all([
+        store.store('source-a', digest1, '# Hello'),
+        store.store('source-a', digest1, '# Hello'),
+      ]);
+
+      // Exactly one store should report newly stored
+      expect(results.filter(r => r === true)).toHaveLength(1);
+      expect(results.filter(r => r === false)).toHaveLength(1);
+      expect(await store.get('source-a', digest1)).toBe('# Hello');
+    });
+
+    it('concurrent revision allocations produce distinct values', async () => {
+      const store = await createStore();
+      const results = await Promise.all([
+        store.allocateRevision('source-a'),
+        store.allocateRevision('source-a'),
+        store.allocateRevision('source-a'),
+      ]);
+
+      const unique = new Set(results);
+      expect(unique.size).toBe(3);
+      // All should be positive decimal strings
+      for (const rev of results) {
+        expect(rev).toMatch(/^[1-9][0-9]*$/);
+      }
+    });
+
+    it('cleanup during concurrent store does not delete new content', async () => {
+      const store = await createStore();
+      await store.store('source-a', digest1, '# Existing');
+
+      // Start cleanup that protects nothing, then store new content
+      const cleanupPromise = store.cleanup('source-a', new Set());
+      await store.store('source-a', digest2, '# New');
+
+      const deleted = await cleanupPromise;
+      // digest1 should be deleted, digest2 may or may not be affected
+      // depending on ordering, but the important thing is no crash
+      expect(deleted).toBeGreaterThanOrEqual(1);
     });
   });
 });

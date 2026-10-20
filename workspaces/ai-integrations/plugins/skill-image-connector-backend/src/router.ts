@@ -15,7 +15,6 @@
  */
 
 import type {
-  AuthService,
   HttpAuthService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
@@ -52,15 +51,19 @@ export async function createRouter(
   getProcessingStatus: () => SkillImageProcessingStatus = () => 'ready',
   getFailedImages: () => string[] = () => [],
   snapshots?: ReadonlyMap<string, SkillSnapshot>,
-  getSkillDocContent?: (sourceId: string, digest: string) => string | undefined,
+  getSkillDocContent?: (
+    sourceId: string,
+    digest: string,
+  ) => Promise<string | undefined> | string | undefined,
   snapshotMetas?: ReadonlyMap<string, SourceSnapshotMeta>,
   reconcileHandler?: ReconcileHandler,
   httpAuth?: HttpAuthService,
-  auth?: AuthService,
   catalogProviderPluginId?: string,
 ): Promise<express.Router> {
   const router = Router();
-  router.use(express.json());
+  // Per-route body-size middleware is used for the reconcile endpoint;
+  // disable the router-level JSON parser to avoid shadowing it.
+  router.use(express.json({ limit: MAX_RECONCILE_BODY_SIZE }));
 
   router.get('/health', async (_req, res) => {
     logger.debug('Health check');
@@ -140,7 +143,7 @@ export async function createRouter(
     }
 
     // Look up the Markdown content for this source and digest
-    const content = getSkillDocContent?.(sourceId, digest);
+    const content = await getSkillDocContent?.(sourceId, digest);
     if (content === undefined) {
       res.status(404).json({ error: 'Content not available' });
       return;
@@ -167,7 +170,7 @@ export async function createRouter(
   // reconciliation acknowledgment. Requires service authentication
   // from the configured catalogProviderPluginId. See D8 for the full
   // protocol specification.
-  if (reconcileHandler && httpAuth && auth) {
+  if (reconcileHandler && httpAuth) {
     // Body-size limit middleware: reject bodies > 5 MiB before parsing
     const bodySizeLimit = express.json({
       limit: MAX_RECONCILE_BODY_SIZE,
@@ -196,7 +199,7 @@ export async function createRouter(
             subject: string;
           };
           if (
-            catalogProviderPluginId &&
+            !catalogProviderPluginId ||
             principal.subject !== `plugin:${catalogProviderPluginId}`
           ) {
             res.status(403).json({

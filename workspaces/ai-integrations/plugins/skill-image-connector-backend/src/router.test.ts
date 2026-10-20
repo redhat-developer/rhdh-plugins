@@ -253,7 +253,7 @@ describe('createRouter', () => {
       getSkillDocContent?: (
         sourceId: string,
         digest: string,
-      ) => string | undefined;
+      ) => Promise<string | undefined> | string | undefined;
     }) {
       const snaps =
         opts?.snapshots ??
@@ -546,13 +546,12 @@ describe('createRouter', () => {
           return m;
         })();
 
-      // Mock httpAuth and auth for test isolation
+      // Mock httpAuth for test isolation
       const mockHttpAuth = {
         credentials: jest.fn().mockResolvedValue({
           principal: { subject: 'plugin:catalog' },
         }),
       };
-      const mockAuth = {};
 
       return createRouter(
         mockLogger,
@@ -564,7 +563,6 @@ describe('createRouter', () => {
         undefined,
         opts.handler,
         mockHttpAuth as any,
-        mockAuth as any,
         'catalog',
       ).then(router => {
         const testApp = express();
@@ -658,7 +656,6 @@ describe('createRouter', () => {
         undefined,
         handler,
         mockHttpAuth as any,
-        {} as any,
         'catalog',
       );
       const testApp = express();
