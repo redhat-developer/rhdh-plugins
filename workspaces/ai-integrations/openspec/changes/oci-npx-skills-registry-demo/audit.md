@@ -1,5 +1,73 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
+**Last audited:** 2026-10-20T19:37:00Z
+
+### Summary
+
+Focused status correction reopening task 4.2, which was prematurely marked
+complete during task 4.1 implementation in PR #5291. This is a documentation-only
+correction — no TypeScript, tests, or runtime changes. Targeted probes reproduced
+two remaining gaps: `consumeSnapshot` silently skips records with source-reference
+construction/validation errors while still returning success, allowing an
+incomplete full mutation that can remove previously cataloged entities; and
+nonblank invalid owner hints are emitted unchanged instead of falling back to the
+configured default. Task 4.2 is reopened in tasks.md with a progress note
+acknowledging the substantial mapping already implemented (OCI/npx entity
+construction, separate tag aliases, stable identities). The 2026-10-18 historical
+audit summary claiming 4.2 completion is annotated with a dated correction
+preserving the original report. The design.md simplification note is clarified to
+describe initial 4.1 implementation and partial 4.2 progress, not completion or
+waiver. No unrelated completed tasks are reopened. RHIDP-17329 requires re-triage;
+RHIDP-17331 is the integration/completion gate. Historical audit reports and their
+verification scope are preserved below.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Scope and validation
+
+- tasks.md: task 4.2 unchecked with progress note; task 4.1 and all other
+  completed tasks remain checked.
+- audit.md: dated correction on the 2026-10-18 historical summary; original
+  report preserved below the correction block.
+- design.md: simplification note clarified for initial implementation and
+  partial 4.2 progress; consumer validation failure rejection requirement added.
+- proposal.md and specs/: no additional explicit 4.2 completion claims found;
+  no changes needed.
+- journal.jsonl: correction event appended; historical events preserved.
+- No new independent full-change audit was performed. Remaining gaps and the
+  RHIDP-17331 completion gate are explicit for RHIDP-17329 re-triage.
+
+---
+
+## Historical audits before task 4.2 status correction
+
+The following reports describe earlier states and retain their original
+verification scope.
+
+## Audit Report: oci-npx-skills-registry-demo
+
 **Last audited:** 2026-10-19T19:19:03Z
 
 ### Summary
@@ -235,6 +303,23 @@ The following reports describe earlier states and scopes; their timestamps, find
 ## Audit Report: oci-npx-skills-registry-demo
 
 **Last audited:** 2026-10-18T16:09:12Z
+
+> **Correction (2026-10-20):** The summary below declared task 4.2 complete
+> alongside 4.1; that declaration was premature. PR #5291 introduced substantial
+> snapshot validation and AiResource entity construction (OCI/npx entity
+> construction, separate tag aliases sharing a digest, stable identities across
+> title/content changes), but the complete 4.2 contract was not verified.
+> Remaining gaps reproduced in targeted probes: `consumeSnapshot` returns
+> success when a source-reference validation error causes a record to be
+> skipped, allowing an incomplete full mutation that can remove previously
+> cataloged entities; and nonblank invalid owner hints (e.g., `group:default/`)
+> are emitted unchanged instead of falling back to the configured default.
+> Task 4.2 is reopened in tasks.md. RHIDP-17329 requires re-triage; the
+> integration/completion gate (RHIDP-17331) must wire the mapper to the
+> validation path and verify complete provider behavior before 4.2 can be
+> rechecked. Task 4.1 and all previously completed tasks (1.1–1.3, 2.1–2.5)
+> remain checked. This correction does not erase the genuine testing that
+> confirmed 4.1 and the partial 4.2 mapping implementation.
 
 ### Summary
 

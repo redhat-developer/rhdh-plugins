@@ -328,13 +328,21 @@ snapshot completeness: a `partial` refresh does not discard content for retained
 entities, and content is recovered from durable storage after restarts. See D8
 for the dedicated Markdown endpoint and content lifecycle.
 
-> **Tasks 4.1/4.2 simplification:** The initial provider implementation uses
-> `type: 'full'` mutations scoped per source instead of the delta mutations
-> and database persistence described above. `loading` and `failed` statuses
-> skip mutation (preserving previous entities); `partial` snapshots are
-> currently handled as full replacements. Delta reconciliation, durable
-> persistence, crash-safe pending records, and comprehensive status handling
-> are deferred to tasks 4.3 and 4.4.
+> **Tasks 4.1/4.2 simplification:** This note describes the initial
+> implementation introduced with task 4.1 (PR #5291) and partial progress
+> toward task 4.2, not a completion or waiver of 4.2 requirements. The
+> current provider implementation uses `type: 'full'` mutations scoped per
+> source instead of the delta mutations and database persistence described
+> above. `loading` and `failed` statuses skip mutation (preserving previous
+> entities); `partial` snapshots are currently handled as full replacements.
+> Consumer validation failures (source-reference construction errors,
+> malformed snapshots) must reject the invalid source snapshot and preserve
+> existing entities without additions, updates, or removals; silently
+> skipping invalid records while returning success is not an approved
+> contract simplification. Delta reconciliation, durable persistence,
+> crash-safe pending records, and comprehensive status handling are deferred
+> to tasks 4.3 and 4.4. Remaining 4.2 validation and defaulting fixes are
+> tracked by RHIDP-17329; the integration/completion gate is RHIDP-17331.
 
 ### D7 — Public-source safety, bounds, and configuration
 
