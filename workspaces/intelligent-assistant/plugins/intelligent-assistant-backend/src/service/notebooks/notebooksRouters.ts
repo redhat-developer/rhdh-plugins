@@ -390,11 +390,7 @@ export async function createNotebooksRouter(
         return;
       }
 
-      const { session } = await sessionService.fetchSession(sessionId, userId);
-      if (!session) {
-        handleError(logger, res, 'Session not found');
-        return;
-      }
+      await sessionService.fetchSession(sessionId, userId);
 
       if (!req.file) {
         handleError(logger, res, 'No file uploaded');
