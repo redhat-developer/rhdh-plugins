@@ -256,7 +256,7 @@ describe('createRouter', () => {
         `/skilldocs/unknown-source/${validDigest}`,
       );
       expect(res.status).toBe(404);
-      expect(res.body.error).toContain('Unknown source');
+      expect(res.body.error).toBe('Not found');
     });
 
     it('returns 404 for unknown digest in a known source', async () => {

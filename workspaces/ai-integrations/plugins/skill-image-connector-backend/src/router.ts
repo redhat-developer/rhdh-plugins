@@ -99,7 +99,7 @@ export async function createRouter(
 
     // Unknown source returns 404
     if (!snapshots?.has(sourceId)) {
-      res.status(404).json({ error: `Unknown source: ${sourceId}` });
+      res.status(404).json({ error: 'Not found' });
       return;
     }
 
