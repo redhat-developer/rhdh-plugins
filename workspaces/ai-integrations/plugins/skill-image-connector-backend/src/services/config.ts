@@ -258,9 +258,18 @@ export function readSourceConfigs(
  */
 export function readMaxRetainedMarkdownSizeBytes(config: Config): number {
   const source = config.getOptionalConfig('skillImageConnector');
-  const value =
-    source?.getOptionalNumber('maxRetainedMarkdownSizeBytes') ??
-    DEFAULT_MAX_RETAINED_MARKDOWN_SIZE;
+  let value: number;
+  try {
+    value =
+      source?.getOptionalNumber('maxRetainedMarkdownSizeBytes') ??
+      DEFAULT_MAX_RETAINED_MARKDOWN_SIZE;
+  } catch {
+    // ConfigReader throws when the value cannot be converted to a number
+    // (e.g. string values like 'abc'). Surface our own validation error.
+    throw new InputError(
+      'skillImageConnector.maxRetainedMarkdownSizeBytes must be a positive safe integer',
+    );
+  }
   if (!Number.isSafeInteger(value) || value < 1) {
     throw new InputError(
       'skillImageConnector.maxRetainedMarkdownSizeBytes must be a positive safe integer',
