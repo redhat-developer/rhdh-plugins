@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Codespace, GitRepositoryRef } from '../../domain';
 import { ScmProvider } from '../ScmProvider';
 import { extractHost } from '../extractHost';
 
@@ -44,4 +45,30 @@ export const githubProvider: ScmProvider = {
 
   buildArtifactUrl: (origin, path, encodedBranch, filePath) =>
     `${origin}${path}/blob/${encodedBranch}/${filePath}`,
+
+  buildCodespace: (repository: GitRepositoryRef, devcontainerPath: string) => {
+    const repositoryUrl = repository.url.endsWith('.git')
+      ? repository.url.slice(0, -4)
+      : repository.url;
+
+    try {
+      const pathSegments = new URL(repositoryUrl).pathname
+        .split('/')
+        .filter(Boolean);
+      if (pathSegments.length < 2) {
+        return undefined;
+      }
+      const path = `/${pathSegments.join('/')}`;
+
+      const params = new URLSearchParams({
+        ref: repository.branch,
+        devcontainer_path: devcontainerPath,
+      });
+      return new Codespace(
+        `https://codespaces.new${path}?${params.toString()}`,
+      );
+    } catch {
+      return undefined;
+    }
+  },
 };

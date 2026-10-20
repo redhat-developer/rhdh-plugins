@@ -154,6 +154,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.artifacts.module_migration_plan':
       'Piano del modulo per analisi',
     'modulePage.artifacts.migrated_sources': 'Sorgenti migrate',
+    'modulePage.artifacts.editInCodespaces': 'Modifica in Codespaces',
     'modulePage.artifacts.ansible_project': 'Progetto AAP',
     'modulePage.artifacts.description':
       'Questi artefatti sono generati dal processo di conversione e sono disponibili per la revisione.',
