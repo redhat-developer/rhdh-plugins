@@ -55,7 +55,7 @@ export const githubProvider: ScmProvider = {
       const pathSegments = new URL(repositoryUrl).pathname
         .split('/')
         .filter(Boolean);
-      if (pathSegments.length === 0) {
+      if (pathSegments.length < 2) {
         return undefined;
       }
       const path = `/${pathSegments.join('/')}`;
