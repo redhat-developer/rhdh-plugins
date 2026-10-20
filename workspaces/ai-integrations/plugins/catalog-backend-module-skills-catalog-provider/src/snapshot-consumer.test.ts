@@ -446,6 +446,83 @@ describe('consumeSnapshot', () => {
     }
   });
 
+  it('reads streaming response body via readBoundedBody', async () => {
+    const snapshot = makeSnapshot({ skills: [validOciRecordFull] });
+    const bodyStr = JSON.stringify(snapshot);
+    const encoder = new TextEncoder();
+    const chunks = [encoder.encode(bodyStr)];
+
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (const chunk of chunks) {
+          controller.enqueue(chunk);
+        }
+        controller.close();
+      },
+    });
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      body: stream,
+      text: () => Promise.reject(new Error('should not call text()')),
+    });
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.entities).toHaveLength(1);
+    expect(result.status).toBe('ready');
+  });
+
+  it('rejects oversized streaming response via readBoundedBody', async () => {
+    // Create a stream that produces more bytes than MAX_RESPONSE_BYTES
+    const chunkSize = 1024 * 1024; // 1 MiB chunks
+    const totalChunks = 6; // 6 MiB > 5 MiB limit
+    let enqueued = 0;
+
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (enqueued < totalChunks) {
+          controller.enqueue(new Uint8Array(chunkSize));
+          enqueued++;
+        } else {
+          controller.close();
+        }
+      },
+    });
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      body: stream,
+      text: () => Promise.reject(new Error('should not call text()')),
+    });
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toMatch(/exceeds.*byte limit/);
+  });
+
   it('encodes sourceId as a single path segment in the request URL', async () => {
     const snapshot = makeSnapshot();
     mockFetchResponse(snapshot);

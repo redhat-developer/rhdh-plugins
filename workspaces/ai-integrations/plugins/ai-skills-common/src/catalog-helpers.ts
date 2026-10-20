@@ -30,6 +30,43 @@ import { CATALOG_TAG_PATTERN, MAX_TAG_LENGTH } from './tag-constants';
 import type { SkillSourceType } from './types';
 import { isValidDigest } from './validation';
 
+// ─── Annotation key constants ───────────────────────────────────────
+
+/**
+ * Annotation key for the AI asset category (e.g., `skill`).
+ *
+ * @public
+ */
+export const ANNOTATION_AI_ASSET_CATEGORY = 'rhdh.io/ai-asset-category';
+
+/**
+ * Annotation key for the resolved AI asset version.
+ *
+ * @public
+ */
+export const ANNOTATION_AI_ASSET_VERSION = 'rhdh.io/ai-asset-version';
+
+/**
+ * Annotation key for the AI asset source (`<sourceType>/<sourceId>`).
+ *
+ * @public
+ */
+export const ANNOTATION_AI_ASSET_SOURCE = 'rhdh.io/ai-asset-source';
+
+/**
+ * Annotation key for the OCI skill image reference.
+ *
+ * @public
+ */
+export const ANNOTATION_OCI_SKILL_REF = 'rhdh.io/oci-skill-ref';
+
+/**
+ * Annotation key for the npx skill package reference with digest.
+ *
+ * @public
+ */
+export const ANNOTATION_NPX_SKILL_REF = 'rhdh.io/npx-skill-ref';
+
 // ─── Identity ────────────────────────────────────────────────────────
 
 /**

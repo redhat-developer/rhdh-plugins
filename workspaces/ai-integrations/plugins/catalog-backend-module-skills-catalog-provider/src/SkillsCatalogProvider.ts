@@ -45,6 +45,12 @@ import type {
  * This provider does not retrieve registry artifacts or parse native
  * skill files — that responsibility belongs to the connectors.
  *
+ * @remarks
+ * Partial snapshots are currently handled as full replacements: a
+ * `partial` status triggers a `type: 'full'` mutation identical to a
+ * `ready` snapshot. Comprehensive partial-result retention is deferred
+ * to task 4.4.
+ *
  * @public
  */
 export class SkillsCatalogProvider implements EntityProvider {
@@ -71,12 +77,10 @@ export class SkillsCatalogProvider implements EntityProvider {
     this.taskRunner = taskRunner;
   }
 
-  /** @override */
   getProviderName(): string {
     return `SkillsCatalogProvider:${this.config.id}`;
   }
 
-  /** @override */
   async connect(connection: EntityProviderConnection): Promise<void> {
     this.connection = connection;
     await this.taskRunner.run({

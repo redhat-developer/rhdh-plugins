@@ -42,9 +42,9 @@ export class SkillsCatalogProvider implements EntityProvider {
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
   );
-  // @override (undocumented)
+  // (undocumented)
   connect(connection: EntityProviderConnection): Promise<void>;
-  // @override (undocumented)
+  // (undocumented)
   getProviderName(): string;
 }
 

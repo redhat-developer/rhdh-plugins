@@ -282,6 +282,53 @@ describe('SkillsCatalogProvider', () => {
     expect(mockConnection.applyMutation).not.toHaveBeenCalled();
   });
 
+  it('applies full mutation when source returns partial status', async () => {
+    const snapshot = makeSnapshot({
+      status: 'partial',
+      skills: [validOciRecordFull],
+      failedSkillKeys: ['quay.io/some/failed:latest'],
+    });
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      text: () => Promise.resolve(JSON.stringify(snapshot)),
+    });
+
+    const taskFn: { fn?: () => Promise<void> } = {};
+    const mockTaskRunner = {
+      run: jest.fn().mockImplementation(({ fn }) => {
+        taskFn.fn = fn;
+      }),
+    };
+
+    const config = makeConfig();
+    const provider = new SkillsCatalogProvider(
+      config,
+      mockDiscovery,
+      mockAuth,
+      logger,
+      mockTaskRunner,
+    );
+
+    await provider.connect(mockConnection);
+    await taskFn.fn!();
+
+    // Partial status triggers a full mutation (same as ready)
+    expect(mockConnection.applyMutation).toHaveBeenCalledTimes(1);
+    expect(mockConnection.applyMutation).toHaveBeenCalledWith({
+      type: 'full',
+      entities: expect.arrayContaining([
+        expect.objectContaining({
+          locationKey: 'skills-catalog-provider:test:oci:quay-public',
+          entity: expect.objectContaining({
+            kind: 'AiResource',
+          }),
+        }),
+      ]),
+    });
+  });
+
   it('applies mutation only for ready source when another returns loading', async () => {
     const config = makeConfig({
       sources: [

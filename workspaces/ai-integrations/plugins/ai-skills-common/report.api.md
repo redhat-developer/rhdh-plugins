@@ -4,6 +4,21 @@
 
 ```ts
 // @public
+export const ANNOTATION_AI_ASSET_CATEGORY = 'rhdh.io/ai-asset-category';
+
+// @public
+export const ANNOTATION_AI_ASSET_SOURCE = 'rhdh.io/ai-asset-source';
+
+// @public
+export const ANNOTATION_AI_ASSET_VERSION = 'rhdh.io/ai-asset-version';
+
+// @public
+export const ANNOTATION_NPX_SKILL_REF = 'rhdh.io/npx-skill-ref';
+
+// @public
+export const ANNOTATION_OCI_SKILL_REF = 'rhdh.io/oci-skill-ref';
+
+// @public
 export function boundSnapshot(options: BoundSnapshotOptions): SkillSnapshot;
 
 // @public

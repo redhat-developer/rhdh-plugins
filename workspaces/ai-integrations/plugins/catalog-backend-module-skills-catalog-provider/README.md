@@ -96,4 +96,5 @@ When a source returns a ready snapshot, the provider applies a `type: 'full'` mu
 
 - **Per-source failures**: HTTP, authentication, or validation failures for one source are logged and do not stop other sources.
 - **Non-ready snapshots**: Sources returning `loading` or `failed` status are skipped; their previous entities are preserved.
+- **Partial snapshots**: Sources returning `partial` status are currently handled identically to `ready` snapshots — a `type: 'full'` mutation replaces all entities for that source. Comprehensive partial-result retention is deferred to task 4.4.
 - **Source identity mismatch**: Snapshots whose `source.id` or `source.type` do not match configuration are rejected.

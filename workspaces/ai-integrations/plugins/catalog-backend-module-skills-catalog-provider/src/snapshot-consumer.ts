@@ -35,6 +35,11 @@ import type {
   SkillSourceType,
 } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import {
+  ANNOTATION_AI_ASSET_CATEGORY,
+  ANNOTATION_AI_ASSET_SOURCE,
+  ANNOTATION_AI_ASSET_VERSION,
+  ANNOTATION_NPX_SKILL_REF,
+  ANNOTATION_OCI_SKILL_REF,
   MAX_RESPONSE_BYTES,
   computeCatalogName,
   normalizeTags,
@@ -120,14 +125,12 @@ async function readBoundedBody(
         if (done) break;
         totalBytes += value.byteLength;
         if (totalBytes > maxBytes) {
-          reader.cancel();
+          await reader.cancel();
           throw new ResponseTooLargeError(maxBytes);
         }
         chunks.push(value);
       }
     } catch (error) {
-      if (error instanceof ResponseTooLargeError) throw error;
-      // Re-throw read errors as-is
       throw error;
     }
 
@@ -376,20 +379,20 @@ function buildEntity(
   annotations[ANNOTATION_ORIGIN_LOCATION] = sourceLocationUri;
 
   // Required RHDH AI asset annotations
-  annotations['rhdh.io/ai-asset-category'] = 'skill';
-  annotations['rhdh.io/ai-asset-version'] = version;
-  annotations['rhdh.io/ai-asset-source'] = `${sourceType}/${sourceId}`;
+  annotations[ANNOTATION_AI_ASSET_CATEGORY] = 'skill';
+  annotations[ANNOTATION_AI_ASSET_VERSION] = version;
+  annotations[ANNOTATION_AI_ASSET_SOURCE] = `${sourceType}/${sourceId}`;
 
   // Source-type-specific reference annotations per design D5
   if (sourceType === 'oci') {
     // Validate OCI URI/digest agreement
     parseOciRef(record.sourceUri, record.digest);
-    annotations['rhdh.io/oci-skill-ref'] = record.sourceUri;
+    annotations[ANNOTATION_OCI_SKILL_REF] = record.sourceUri;
   } else if (sourceType === 'npx') {
     // npx reference: <sourceUri>#<digest>
     const npxRef = `${record.sourceUri}#${record.digest}`;
     parseNpxRef(npxRef);
-    annotations['rhdh.io/npx-skill-ref'] = npxRef;
+    annotations[ANNOTATION_NPX_SKILL_REF] = npxRef;
   }
 
   // Build tags
