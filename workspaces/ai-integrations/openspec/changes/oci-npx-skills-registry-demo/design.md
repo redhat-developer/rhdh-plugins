@@ -328,6 +328,14 @@ snapshot completeness: a `partial` refresh does not discard content for retained
 entities, and content is recovered from durable storage after restarts. See D8
 for the dedicated Markdown endpoint and content lifecycle.
 
+> **Tasks 4.1/4.2 simplification:** The initial provider implementation uses
+> `type: 'full'` mutations scoped per source instead of the delta mutations
+> and database persistence described above. `loading` and `failed` statuses
+> skip mutation (preserving previous entities); `partial` snapshots are
+> currently handled as full replacements. Delta reconciliation, durable
+> persistence, crash-safe pending records, and comprehensive status handling
+> are deferred to tasks 4.3 and 4.4.
+
 ### D7 — Public-source safety, bounds, and configuration
 
 v1 supports publicly readable registries only. Registry URLs and redirects must

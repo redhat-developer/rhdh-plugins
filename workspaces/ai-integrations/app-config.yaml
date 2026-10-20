@@ -184,6 +184,19 @@ catalog:
         #   timeout: { minutes: 3 }
         #   # Optional: defer the first sync
         #   # initialDelay: { seconds: 15 }
+    skillsCatalogProvider:
+      experimental:
+        sources:
+          - connectorPluginId: skill-image-connector # Registered connector plugin ID, not its config key.
+            sourceId: gabemontero-skills # Must match skillImageConnector.sources[].id.
+            sourceType: oci
+        defaultOwner: team-skills
+        defaultLifecycle: experimental
+        namespace: default
+        schedule:
+          frequency: { minutes: 1 } # Testing; default is 10 minutes.
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 0 }
 # Uncomment to enable skill image acquisition; optional tuning defaults are shown.
 skillImageConnector:
   fetchTimeoutMs: 30000 # 30 seconds per request, including body reading
