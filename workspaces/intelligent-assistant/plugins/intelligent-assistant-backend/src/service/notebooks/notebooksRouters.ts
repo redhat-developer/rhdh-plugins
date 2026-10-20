@@ -129,7 +129,7 @@ export async function createNotebooksRouter(
       try {
         const { userEntityRef } = getIdentity(req);
         const { sessionId } = req.params;
-        await sessionService.readSession(sessionId, userEntityRef);
+        await sessionService.fetchSession(sessionId, userEntityRef);
         next();
       } catch (error) {
         handleError(

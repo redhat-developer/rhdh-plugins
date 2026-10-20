@@ -24,6 +24,7 @@ import request from 'supertest';
 import { iaNotebooksPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import {
+  LIGHTSPEED_CORE_ADDR,
   lightspeedCoreHandlers,
   resetMockStorage,
 } from '../../../__fixtures__/lightspeedCoreHandlers';
@@ -249,6 +250,111 @@ describe('Notebooks Router', () => {
         .post('/notebooks/v1/sessions')
         .send({ name: 'Test Session' });
       sessionId = response.body.session.session_id;
+    });
+
+    describe('Document read request counts', () => {
+      const documentTitle = 'Counted Document';
+      let upstreamReads: string[];
+
+      const recordUpstreamRead = ({
+        request: upstreamRequest,
+      }: {
+        request: Request;
+      }) => {
+        const url = new URL(upstreamRequest.url);
+        if (
+          upstreamRequest.method === 'GET' &&
+          url.origin === LIGHTSPEED_CORE_ADDR &&
+          url.pathname.startsWith(`/v1/vector-stores/${sessionId}`)
+        ) {
+          upstreamReads.push(url.pathname);
+        }
+      };
+
+      beforeEach(async () => {
+        const operator = VectorStoresOperator.getInstance(
+          LIGHTSPEED_CORE_ADDR,
+          mockServices.logger.mock(),
+        );
+        const file = await operator.files.create({
+          file: { name: 'counted.md', buffer: Buffer.from('Test content') },
+          purpose: 'assistants',
+        });
+        // Finish fixture setup before counting reads; upload attachment is asynchronous.
+        await operator.vectorStores.files.create(sessionId, {
+          file_id: file.id,
+          attributes: { title: documentTitle, source_type: 'text' },
+        });
+
+        upstreamReads = [];
+        server.events.on('request:match', recordUpstreamRead);
+      });
+
+      afterEach(() => {
+        server.events.removeListener('request:match', recordUpstreamRead);
+      });
+
+      it('should check ownership and list documents without a redundant count lookup', async () => {
+        const response = await request(app).get(
+          `/notebooks/v1/sessions/${sessionId}/documents`,
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.documents).toEqual([
+          expect.objectContaining({ document_id: documentTitle }),
+        ]);
+        expect(upstreamReads).toEqual([
+          `/v1/vector-stores/${sessionId}`,
+          `/v1/vector-stores/${sessionId}/files`,
+        ]);
+      });
+
+      it('should check ownership and read document status without a redundant count lookup', async () => {
+        const response = await request(app).get(
+          `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent(documentTitle)}/status`,
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+          status: 'completed',
+          document_id: documentTitle,
+          session_id: sessionId,
+        });
+        expect(upstreamReads).toEqual([
+          `/v1/vector-stores/${sessionId}`,
+          `/v1/vector-stores/${sessionId}/files`,
+        ]);
+      });
+
+      it('should still populate the document count when reading session details', async () => {
+        const response = await request(app).get(
+          `/notebooks/v1/sessions/${sessionId}`,
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body.session.document_count).toBe(1);
+        expect(upstreamReads).toEqual([
+          `/v1/vector-stores/${sessionId}`,
+          `/v1/vector-stores/${sessionId}/files`,
+        ]);
+      });
+
+      it('should reject another owner before listing any documents', async () => {
+        const operator = VectorStoresOperator.getInstance(
+          LIGHTSPEED_CORE_ADDR,
+          mockServices.logger.mock(),
+        );
+        await operator.vectorStores.update(sessionId, {
+          metadata: { user_id: 'user:default/other' },
+        });
+
+        const response = await request(app).get(
+          `/notebooks/v1/sessions/${sessionId}/documents/${encodeURIComponent(documentTitle)}/status`,
+        );
+
+        expect(response.status).toBe(403);
+        expect(upstreamReads).toEqual([`/v1/vector-stores/${sessionId}`]);
+      });
     });
 
     describe('PUT /v1/sessions/:sessionId/documents', () => {
