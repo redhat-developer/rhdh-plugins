@@ -202,6 +202,8 @@ skillImageConnector:
   fetchTimeoutMs: 30000 # 30 seconds per request, including body reading
   maxBlobSizeBytes: 5242880 # 5 MiB per downloaded blob and decompressed layer
   maxAggregateContentSizeBytes: 52428800 # 50 MiB retained skill content across images
+  maxRetainedMarkdownSizeBytes: 52428800 # 50 MiB durable Markdown per source; independent of extraction limits
+  catalogProviderPluginId: catalog # Authorized backend plugin for retention acknowledgments
   maxDiscoveryResponseSizeBytes: 5242880 # 5 MiB per Quay discovery response
   maxImages: 100 # 25 default, Total explicit and discovered repository:tag candidates; raise for larger inventories
   maxRetries: 2 # Retries after the initial attempt; 0 disables retries
