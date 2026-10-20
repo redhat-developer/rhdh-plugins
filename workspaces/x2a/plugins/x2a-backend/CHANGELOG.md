@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 2.0.2
+
+### Patch Changes
+
+- c1ea707: Add an Edit in Codespaces action beside GitHub migrated sources, using the target branch and Ansible devcontainer configuration. Copy the generated Ansible devcontainer configuration into the target repository and include it in the migration commit. Also match Ansible role-name sanitization in migration jobs and prefer rebased job output when resolving repository conflicts.
+- 7e2889e: Use separate naming rules for converter-generated migration-plan filenames and Ansible role paths based on PR https://github.com/x2ansible/x2a-convertor/pull/311
+- 1f60858: Enforce rule content limits: max 50,000 characters per rule description, and max 50,000 total characters across all rules accepted by a project
+- Updated dependencies [c1ea707]
+- Updated dependencies [1f60858]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.0.2
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@1.0.2
+
 ## 2.0.1
 
 ### Patch Changes

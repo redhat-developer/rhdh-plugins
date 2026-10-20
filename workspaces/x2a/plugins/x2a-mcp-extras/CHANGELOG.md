@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-mcp-extras
 
+## 1.0.2
+
+### Patch Changes
+
+- 1f60858: Enforce rule content limits: max 50,000 characters per rule description, and max 50,000 total characters across all rules accepted by a project
+- Updated dependencies [c1ea707]
+- Updated dependencies [1f60858]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.0.2
+  - @red-hat-developer-hub/backstage-plugin-x2a-node@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
