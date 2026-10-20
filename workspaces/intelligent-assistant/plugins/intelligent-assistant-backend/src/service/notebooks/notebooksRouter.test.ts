@@ -18,6 +18,7 @@ import { mockServices } from '@backstage/backend-test-utils';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import express from 'express';
+import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import request from 'supertest';
 
@@ -29,6 +30,7 @@ import {
   resetMockStorage,
 } from '../../../__fixtures__/lightspeedCoreHandlers';
 import { createNotebooksRouter } from './notebooksRouters';
+import { SessionService } from './sessions/sessionService';
 import { VectorStoresOperator } from './VectorStoresOperator';
 
 const mockUserId = 'user:default/guest';
@@ -105,6 +107,8 @@ describe('Notebooks Router', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
+    server.resetHandlers();
   });
 
   describe('GET /health', () => {
@@ -339,6 +343,37 @@ describe('Notebooks Router', () => {
         ]);
       });
 
+      it('should list files only once when deleting a session', async () => {
+        const response = await request(app).delete(
+          `/notebooks/v1/sessions/${sessionId}`,
+        );
+
+        expect(response.status).toBe(200);
+        expect(upstreamReads).toEqual([
+          `/v1/vector-stores/${sessionId}`,
+          `/v1/vector-stores/${sessionId}/files`,
+        ]);
+      });
+
+      it('should query without a document-count lookup', async () => {
+        server.use(
+          http.post(
+            `${LIGHTSPEED_CORE_ADDR}/v1/responses`,
+            () =>
+              new HttpResponse('data: [DONE]\n\n', {
+                headers: { 'Content-Type': 'text/event-stream' },
+              }),
+          ),
+        );
+
+        const response = await request(app)
+          .post(`/notebooks/v1/sessions/${sessionId}/query`)
+          .send({ query: 'What is in this notebook?' });
+
+        expect(response.status).toBe(200);
+        expect(upstreamReads).toEqual([`/v1/vector-stores/${sessionId}`]);
+      });
+
       it('should reject another owner before listing any documents', async () => {
         const operator = VectorStoresOperator.getInstance(
           LIGHTSPEED_CORE_ADDR,
@@ -359,6 +394,8 @@ describe('Notebooks Router', () => {
 
     describe('PUT /v1/sessions/:sessionId/documents', () => {
       it('should create a document', async () => {
+        // Upload validation must not load an unused document count.
+        const readSession = jest.spyOn(SessionService.prototype, 'readSession');
         const response = await request(app)
           .put(`/notebooks/v1/sessions/${sessionId}/documents`)
           .field('title', 'Test Document')
@@ -369,6 +406,7 @@ describe('Notebooks Router', () => {
         expect(response.body.status).toBe('processing');
         expect(response.body.document_id).toBe('Test Document');
         expect(response.body.session_id).toBe(sessionId);
+        expect(readSession).not.toHaveBeenCalled();
       });
 
       it('should return 400 if title missing', async () => {

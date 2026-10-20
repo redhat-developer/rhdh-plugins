@@ -390,7 +390,7 @@ export async function createNotebooksRouter(
         return;
       }
 
-      const session = await sessionService.readSession(sessionId, userId);
+      const session = await sessionService.fetchSession(sessionId, userId);
       if (!session) {
         handleError(logger, res, 'Session not found');
         return;
@@ -524,7 +524,7 @@ export async function createNotebooksRouter(
         return;
       }
 
-      const session = await sessionService.readSession(sessionId, userId);
+      const session = await sessionService.fetchSession(sessionId, userId);
       let conversationId = session.metadata?.conversation_id;
 
       const lcsRequest: any = {

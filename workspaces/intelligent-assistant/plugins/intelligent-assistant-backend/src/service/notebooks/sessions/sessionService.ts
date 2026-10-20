@@ -202,7 +202,7 @@ export class SessionService {
    */
   async deleteSession(sessionId: string, userId: string): Promise<void> {
     // Verify ownership before deletion and get session details
-    const session = await this.readSession(sessionId, userId);
+    const session = await this.fetchSession(sessionId, userId);
     const conversationId = session.metadata?.conversation_id;
 
     // Delete associated conversation if it exists
