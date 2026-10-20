@@ -119,19 +119,15 @@ async function readBoundedBody(
     const chunks: Uint8Array[] = [];
     let totalBytes = 0;
 
-    try {
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        totalBytes += value.byteLength;
-        if (totalBytes > maxBytes) {
-          await reader.cancel();
-          throw new ResponseTooLargeError(maxBytes);
-        }
-        chunks.push(value);
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > maxBytes) {
+        await reader.cancel();
+        throw new ResponseTooLargeError(maxBytes);
       }
-    } catch (error) {
-      throw error;
+      chunks.push(value);
     }
 
     const decoder = new TextDecoder();

@@ -26,6 +26,8 @@ import type {
   EntityProviderConnection,
 } from '@backstage/plugin-catalog-node';
 
+import { ANNOTATION_AI_ASSET_SOURCE } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+
 import { consumeSnapshot } from './snapshot-consumer';
 import type {
   MappedSkillEntity,
@@ -159,7 +161,8 @@ export class SkillsCatalogProvider implements EntityProvider {
 
       const locationKey = this.buildLocationKey(source);
       const sourceEntities = allEntities.filter(e => {
-        const assetSource = e.metadata.annotations?.['rhdh.io/ai-asset-source'];
+        const assetSource =
+          e.metadata.annotations?.[ANNOTATION_AI_ASSET_SOURCE];
         return assetSource === sourceKey;
       });
 

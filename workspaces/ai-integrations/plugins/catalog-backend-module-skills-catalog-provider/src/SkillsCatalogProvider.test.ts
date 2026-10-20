@@ -221,7 +221,11 @@ describe('SkillsCatalogProvider', () => {
   });
 
   it('does not call applyMutation when source returns loading status', async () => {
-    const snapshot = makeSnapshot({ status: 'loading', skills: [] });
+    const snapshot = makeSnapshot({
+      status: 'loading',
+      skills: [],
+      observedAt: null,
+    });
     mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
@@ -350,6 +354,7 @@ describe('SkillsCatalogProvider', () => {
       source: { id: 'npx-source', type: 'npx' },
       status: 'loading',
       skills: [],
+      observedAt: null,
     });
 
     mockDiscovery.getBaseUrl
