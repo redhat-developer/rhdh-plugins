@@ -603,4 +603,207 @@ describe('consumeSnapshot', () => {
     expect(result.entities).toHaveLength(1);
     expect(result.status).toBe('partial');
   });
+
+  it('uses configured default owner when record owner is nonblank but invalid', async () => {
+    const invalidOwnerRecord = {
+      ...validOciRecordFull,
+      owner: 'not a valid entity ref!!',
+    };
+    const snapshot = makeSnapshot({ skills: [invalidOwnerRecord] });
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.entities).toHaveLength(1);
+    expect(result.entities[0].entity.spec).toEqual(
+      expect.objectContaining({ owner: defaultOwner }),
+    );
+  });
+
+  it('uses configured default lifecycle when record lifecycle is nonblank but invalid', async () => {
+    const invalidLifecycleRecord = {
+      ...validOciRecordFull,
+      lifecycle: 'has spaces and !!',
+    };
+    const snapshot = makeSnapshot({ skills: [invalidLifecycleRecord] });
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.entities).toHaveLength(1);
+    expect(result.entities[0].entity.spec).toEqual(
+      expect.objectContaining({ lifecycle: defaultLifecycle }),
+    );
+  });
+
+  it('accepts valid entity ref owner hints', async () => {
+    const validOwnerRecord = {
+      ...validOciRecordFull,
+      owner: 'group:default/platform-team',
+    };
+    const snapshot = makeSnapshot({ skills: [validOwnerRecord] });
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.entities[0].entity.spec).toEqual(
+      expect.objectContaining({ owner: 'group:default/platform-team' }),
+    );
+  });
+
+  it('rejects snapshot with invalid OCI source reference without mapping any records', async () => {
+    const badRecord = {
+      ...validOciRecordFull,
+      sourceUri: 'not-an-oci-uri',
+    };
+    const snapshot = makeSnapshot({
+      skills: [validOciRecordMinimal, badRecord],
+    });
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.entities).toEqual([]);
+    expect(result.error).toMatch(/Invalid source reference/);
+  });
+
+  it('rejects snapshot when OCI URI digest disagrees with record digest', async () => {
+    const mismatchRecord = {
+      ...validOciRecordFull,
+      digest:
+        'sha256:0000000000000000000000000000000000000000000000000000000000000000',
+    };
+    const snapshot = makeSnapshot({ skills: [mismatchRecord] });
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.entities).toEqual([]);
+    expect(result.error).toMatch(/Invalid source reference/);
+    expect(result.error).toMatch(/does not match/);
+  });
+
+  it('rejects snapshot with invalid npx source reference without mapping any records', async () => {
+    const badNpxRecord = {
+      ...validNpxRecordFull,
+      sourceUri: 'http://insecure.example.com/skill.md',
+    };
+    const snapshot: SkillSnapshot = {
+      schemaVersion: '1',
+      source: npxSource,
+      status: 'ready',
+      observedAt: '2025-01-15T10:00:00Z',
+      skills: [badNpxRecord],
+      failedSkillKeys: [],
+    };
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      'http://localhost:7007/api/npx-skill-connector',
+      token,
+      npxConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.entities).toEqual([]);
+    expect(result.error).toMatch(/Invalid source reference/);
+  });
+
+  it('does not produce entities when source reference validation fails on one of many records', async () => {
+    const goodRecord = validOciRecordMinimal;
+    const badRecord = {
+      ...validOciRecordFull,
+      sourceUri: 'invalid://not-oci',
+    };
+    const snapshot = makeSnapshot({
+      skills: [goodRecord, badRecord],
+    });
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    // Entire snapshot rejected — no entities mapped
+    expect(result.ok).toBe(false);
+    expect(result.entities).toEqual([]);
+  });
+
+  it('does not validate source references for loading/failed snapshots', async () => {
+    const snapshot = makeSnapshot({
+      status: 'loading',
+      observedAt: null,
+      skills: [],
+    });
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.entities).toHaveLength(0);
+    expect(result.status).toBe('loading');
+  });
 });

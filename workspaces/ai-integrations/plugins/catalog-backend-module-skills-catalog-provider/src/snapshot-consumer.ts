@@ -26,7 +26,9 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
+  CommonValidatorFunctions,
   type Entity,
+  parseEntityRef,
 } from '@backstage/catalog-model';
 import type {
   IdentityTuple,
@@ -269,6 +271,19 @@ export async function consumeSnapshot(
     };
   }
 
+  // Validate source references for ALL records before mapping.
+  // An invalid source reference rejects the entire snapshot without
+  // additions, updates, or removals (spec requirement).
+  const refError = validateSourceReferences(
+    snapshot.skills,
+    snapshot.source.type,
+  );
+  if (refError) {
+    const msg = `Invalid source reference in snapshot from ${source.sourceId}: ${refError}`;
+    logger.error(msg);
+    return { ok: false, entities: [], error: msg };
+  }
+
   // Map accepted records to entities
   const entities = mapRecordsToEntities(
     snapshot.skills,
@@ -292,6 +307,56 @@ export async function consumeSnapshot(
     status: snapshot.status,
     observedAt: snapshot.observedAt,
   };
+}
+
+/**
+ * Validates source references for all records in a snapshot.
+ *
+ * OCI records must have a valid `sourceUri` that agrees with `digest`
+ * per design D5. npx records must have a valid `sourceUri#digest`
+ * reference. If any record fails validation, the entire snapshot
+ * must be rejected without additions, updates, or removals.
+ *
+ * @returns An error message if any record fails, or `undefined` if all pass.
+ */
+function validateSourceReferences(
+  records: SkillRecord[],
+  sourceType: SkillSourceType,
+): string | undefined {
+  for (const record of records) {
+    try {
+      if (sourceType === 'oci') {
+        parseOciRef(record.sourceUri, record.digest);
+      } else if (sourceType === 'npx') {
+        const npxRef = `${record.sourceUri}#${record.digest}`;
+        parseNpxRef(npxRef);
+      }
+    } catch (error) {
+      return `record key '${record.key}': ${error}`;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Checks whether a string is a usable Backstage entity reference
+ * for `spec.owner` or `spec.lifecycle`.
+ *
+ * Accepts full refs (`group:default/team-octo`), partial refs
+ * (`group:team-octo`), and bare names (`team-octo`). Rejects
+ * strings with characters that are invalid in a DNS subdomain
+ * name component (spaces, punctuation, etc.).
+ */
+function isValidEntityHint(value: string): boolean {
+  try {
+    const ref = parseEntityRef(value, {
+      defaultKind: 'group',
+      defaultNamespace: 'default',
+    });
+    return CommonValidatorFunctions.isValidDnsSubdomain(ref.name);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -362,8 +427,18 @@ function buildEntity(
   defaultLifecycle: string,
 ): Entity {
   const version = resolveVersion(record.version, record.digest);
-  const owner = record.owner?.trim() || defaultOwner;
-  const lifecycle = record.lifecycle?.trim() || defaultLifecycle;
+
+  // Use configured defaults when owner/lifecycle hints are absent,
+  // blank, or invalid per design D5.
+  const ownerHint = record.owner?.trim();
+  const owner =
+    ownerHint && isValidEntityHint(ownerHint) ? ownerHint : defaultOwner;
+
+  const lifecycleHint = record.lifecycle?.trim();
+  const lifecycle =
+    lifecycleHint && isValidEntityHint(lifecycleHint)
+      ? lifecycleHint
+      : defaultLifecycle;
 
   // Build annotations
   const annotations: Record<string, string> = {};
