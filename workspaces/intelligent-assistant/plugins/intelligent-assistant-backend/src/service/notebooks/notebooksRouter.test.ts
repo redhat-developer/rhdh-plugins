@@ -343,6 +343,54 @@ describe('Notebooks Router', () => {
         ]);
       });
 
+      it('should update a session with one metadata read while retaining its count and embedding settings', async () => {
+        const operator = VectorStoresOperator.getInstance(
+          LIGHTSPEED_CORE_ADDR,
+          mockServices.logger.mock(),
+        );
+        const vectorStore = await operator.vectorStores.retrieve(sessionId);
+        let updateBody: unknown;
+        server.use(
+          http.get(
+            `${LIGHTSPEED_CORE_ADDR}/v1/vector-stores/${sessionId}`,
+            () =>
+              HttpResponse.json({
+                ...vectorStore,
+                embedding_model: 'preserved-embedding-model',
+                embedding_dimension: 384,
+              }),
+          ),
+          http.put(
+            `${LIGHTSPEED_CORE_ADDR}/v1/vector-stores/${sessionId}`,
+            async ({ request: upstreamRequest }) => {
+              updateBody = await upstreamRequest.json();
+              return HttpResponse.json({ id: sessionId });
+            },
+          ),
+        );
+        upstreamReads = [];
+
+        const response = await request(app)
+          .put(`/notebooks/v1/sessions/${sessionId}`)
+          .send({ name: 'Renamed Notebook' });
+
+        expect(response.status).toBe(200);
+        expect(response.body.session).toMatchObject({
+          name: 'Renamed Notebook',
+          user_id: mockUserId,
+          document_count: 1,
+        });
+        expect(updateBody).toMatchObject({
+          embedding_model: 'preserved-embedding-model',
+          embedding_dimension: 384,
+          metadata: { name: 'Renamed Notebook', user_id: mockUserId },
+        });
+        expect(upstreamReads).toEqual([
+          `/v1/vector-stores/${sessionId}`,
+          `/v1/vector-stores/${sessionId}/files`,
+        ]);
+      });
+
       it('should list files only once when deleting a session', async () => {
         const response = await request(app).delete(
           `/notebooks/v1/sessions/${sessionId}`,

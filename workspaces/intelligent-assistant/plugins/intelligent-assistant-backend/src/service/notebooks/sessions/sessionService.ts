@@ -94,14 +94,14 @@ export class SessionService {
    * Retrieve session metadata and verify ownership
    * @param sessionId - Session ID to retrieve
    * @param userId - User ID requesting access
-   * @returns Notebook session
+   * @returns Notebook session and its vector store
    * @throws NotFoundError if session not found or has no metadata
    * @throws NotAllowedError if user does not own the session
    */
   async fetchSession(
     sessionId: string,
     userId: string,
-  ): Promise<NotebookSession> {
+  ): Promise<{ session: NotebookSession; vectorStore: any }> {
     // Retrieve vector store to get metadata
     const vectorStore = await this.client.vectorStores.retrieve(sessionId);
 
@@ -121,7 +121,7 @@ export class SessionService {
       );
     }
 
-    return session;
+    return { session, vectorStore };
   }
 
   /**
@@ -136,21 +136,22 @@ export class SessionService {
     sessionId: string,
     userId: string,
   ): Promise<NotebookSession> {
-    const session = await this.fetchSession(sessionId, userId);
+    const { session } = await this.fetchSession(sessionId, userId);
+    session.document_count = await this.getDocumentCount(sessionId);
+    return session;
+  }
 
-    // Fetch document count
+  private async getDocumentCount(sessionId: string): Promise<number> {
     try {
       const filesResponse =
         await this.client.vectorStores.files.list(sessionId);
-      session.document_count = filesResponse.data?.length || 0;
+      return filesResponse.data?.length || 0;
     } catch (error) {
       this.logger.warn(
         `Failed to fetch document count for session ${sessionId}: ${error}`,
       );
-      session.document_count = 0;
+      return 0;
     }
-
-    return session;
   }
 
   /**
@@ -170,7 +171,11 @@ export class SessionService {
     description?: string,
     metadata?: SessionMetadata,
   ): Promise<NotebookSession> {
-    const existing = await this.readSession(sessionId, userId);
+    const { session: existing, vectorStore } = await this.fetchSession(
+      sessionId,
+      userId,
+    );
+    existing.document_count = await this.getDocumentCount(sessionId);
 
     const updated: NotebookSession = {
       ...existing,
@@ -180,9 +185,6 @@ export class SessionService {
       metadata: metadata !== undefined ? metadata : existing.metadata,
       updated_at: new Date().toISOString(),
     };
-
-    // Retrieve vector store to preserve embedding configuration
-    const vectorStore = await this.client.vectorStores.retrieve(sessionId);
 
     // Update vector store metadata while preserving embedding fields
     await this.client.vectorStores.update(sessionId, {
@@ -202,7 +204,7 @@ export class SessionService {
    */
   async deleteSession(sessionId: string, userId: string): Promise<void> {
     // Verify ownership before deletion and get session details
-    const session = await this.fetchSession(sessionId, userId);
+    const { session } = await this.fetchSession(sessionId, userId);
     const conversationId = session.metadata?.conversation_id;
 
     // Delete associated conversation if it exists
