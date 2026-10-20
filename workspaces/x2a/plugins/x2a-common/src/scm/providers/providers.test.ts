@@ -14,11 +14,23 @@
  * limitations under the License.
  */
 
+import { GitRepositoryRef } from '../../domain';
 import { githubProvider } from './github';
 import { gitlabProvider } from './gitlab';
 import { bitbucketProvider } from './bitbucket';
 
 describe('githubProvider', () => {
+  describe('buildCodespace', () => {
+    it('rejects a repository URL with no repository name', () => {
+      expect(
+        githubProvider.buildCodespace?.(
+          new GitRepositoryRef('https://github.com/owner', 'main'),
+          '.devcontainer/devcontainer.json',
+        ),
+      ).toBeUndefined();
+    });
+  });
+
   describe('getAuthTokenDescriptor', () => {
     it('returns repo scope regardless of readOnly', () => {
       expect(githubProvider.getAuthTokenDescriptor(false)).toEqual({

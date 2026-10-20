@@ -209,6 +209,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.artifacts.migration_plan': string;
     readonly 'modulePage.artifacts.module_migration_plan': string;
     readonly 'modulePage.artifacts.migrated_sources': string;
+    readonly 'modulePage.artifacts.editInCodespaces': string;
     readonly 'modulePage.artifacts.ansible_project': string;
     readonly 'modulePage.phases.title': string;
     readonly 'modulePage.phases.id': string;
@@ -390,6 +391,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'rulesPage.dialog.requiredField': string;
     readonly 'rulesPage.dialog.save': string;
     readonly 'rulesPage.dialog.createError': string;
+    readonly 'rulesPage.dialog.descriptionCharCount': string;
+    readonly 'rulesPage.dialog.descriptionTooLong': string;
     readonly 'rulesPage.table.title': string;
     readonly 'rulesPage.table.id': string;
     readonly 'rulesPage.table.required': string;

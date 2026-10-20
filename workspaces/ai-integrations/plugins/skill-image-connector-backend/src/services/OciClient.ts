@@ -308,7 +308,7 @@ async function fetchBearerToken(
   logger: LoggerService,
   credentials?: RegistryCredentials,
   registryHost?: string,
-  signal?: AbortSignal,
+  signal: AbortSignal = new AbortController().signal,
 ): Promise<string | undefined> {
   const url = new URL(challenge.realm);
   if (url.protocol !== 'https:' || url.username || url.password) {
@@ -337,18 +337,21 @@ async function fetchBearerToken(
 
   logger.debug('Requesting bearer token');
 
-  const response = await fetch(url.toString(), {
+  const response = await fetchWithRedirects(
+    url.toString(),
+    {
+      headers:
+        credentials?.username && credentials.password
+          ? {
+              Authorization: `Basic ${Buffer.from(
+                `${credentials.username}:${credentials.password}`,
+              ).toString('base64')}`,
+            }
+          : undefined,
+    },
     signal,
-    redirect: 'error',
-    headers:
-      credentials?.username && credentials.password
-        ? {
-            Authorization: `Basic ${Buffer.from(
-              `${credentials.username}:${credentials.password}`,
-            ).toString('base64')}`,
-          }
-        : undefined,
-  });
+    { maxRedirects: 0 },
+  );
 
   if (!response.ok) {
     await cancelResponseBody(response);
@@ -396,6 +399,7 @@ async function registryFetch(
   logger: LoggerService,
   credentials: RegistryCredentials | undefined,
   signal: AbortSignal,
+  options: SkillImageOptions,
 ): Promise<Response> {
   const requestSignal = signal;
   const headers = {
@@ -415,6 +419,7 @@ async function registryFetch(
       headers,
     },
     requestSignal,
+    { allowedOrigins: options.allowedOrigins },
   );
 
   if (response.status !== 401) {
@@ -456,6 +461,7 @@ async function registryFetch(
       },
     },
     requestSignal,
+    { allowedOrigins: options.allowedOrigins },
   );
 }
 
@@ -496,6 +502,7 @@ export async function fetchManifest(
         logger,
         credentials,
         requestSignal,
+        options,
       );
 
       if (!response.ok) {
@@ -624,6 +631,7 @@ export async function fetchBlob(
         logger,
         credentials,
         requestSignal,
+        options,
       );
 
       if (!response.ok) {

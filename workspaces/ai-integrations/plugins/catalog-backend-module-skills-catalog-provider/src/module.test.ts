@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-export { Root } from './Root';
+import { catalogModuleSkillsCatalogProvider } from './module';
+
+describe('catalog-backend-module-skills-catalog-provider', () => {
+  it('should export the module', () => {
+    expect(catalogModuleSkillsCatalogProvider).toBeDefined();
+  });
+});

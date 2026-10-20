@@ -9913,6 +9913,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider@workspace:plugins/catalog-backend-module-skills-catalog-provider":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider@workspace:plugins/catalog-backend-module-skills-catalog-provider"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.10.0"
+    "@backstage/backend-test-utils": "npm:^1.11.6"
+    "@backstage/catalog-model": "npm:^1.10.0"
+    "@backstage/cli": "npm:^0.36.5"
+    "@backstage/config": "npm:^1.3.8"
+    "@backstage/errors": "npm:^1.3.1"
+    "@backstage/plugin-catalog-node": "npm:^2.2.4"
+    "@red-hat-developer-hub/backstage-plugin-ai-skills-common": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping@workspace:plugins/catalog-mcp-registry-server-mapping":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping@workspace:plugins/catalog-mcp-registry-server-mapping"
@@ -10035,7 +10050,9 @@ __metadata:
     "@types/supertest": "npm:^2.0.12"
     express: "npm:^4.17.1"
     express-promise-router: "npm:^4.1.0"
+    ipaddr.js: "npm:^2.3.0"
     supertest: "npm:^6.2.4"
+    undici: "npm:^7.28.0"
     yaml: "npm:^2.7.0"
   languageName: unknown
   linkType: soft
@@ -15130,6 +15147,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend": "workspace:^"
@@ -31938,10 +31956,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:7.28.0, undici@npm:^7.24.0, undici@npm:^7.24.5":
+"undici@npm:7.28.0":
   version: 7.28.0
   resolution: "undici@npm:7.28.0"
   checksum: 10c0/fe781983a26098795e99bb1f64906cbb7d0bcaa029a26baade007b53ea67f2631d189b8f9671a31f4c8d0cb3773b7559608628ba54452fef51fec90e7c78bb0d
+  languageName: node
+  linkType: hard
+
+"undici@npm:^7.24.0, undici@npm:^7.24.5, undici@npm:^7.28.0":
+  version: 7.30.0
+  resolution: "undici@npm:7.30.0"
+  checksum: 10c0/011a321a9198532b0f0504740faa43b9ab8fcc0e4f60104e5c9cb808a61faeb03e4be4aec4f0c65f47913d7c7d9d91591793a6cb9ab843f98ca2c3d711c4a34c
   languageName: node
   linkType: hard
 

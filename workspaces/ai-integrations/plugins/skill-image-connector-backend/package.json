@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend",
-  "version": "0.5.0",
+  "version": "0.7.0",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -38,6 +38,8 @@
     "@red-hat-developer-hub/backstage-plugin-ai-skills-common": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
+    "ipaddr.js": "^2.3.0",
+    "undici": "^7.28.0",
     "yaml": "^2.7.0"
   },
   "devDependencies": {

@@ -60,6 +60,11 @@ export type {
 } from './catalog-helpers';
 
 export {
+  ANNOTATION_AI_ASSET_CATEGORY,
+  ANNOTATION_AI_ASSET_SOURCE,
+  ANNOTATION_AI_ASSET_VERSION,
+  ANNOTATION_NPX_SKILL_REF,
+  ANNOTATION_OCI_SKILL_REF,
   buildNpxRef,
   buildOciRef,
   computeCatalogName,

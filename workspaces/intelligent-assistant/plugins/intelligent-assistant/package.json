@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-intelligent-assistant",
-  "version": "5.3.9",
+  "version": "5.3.10",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
   "license": "Apache-2.0",
@@ -102,6 +102,9 @@
     "@backstage/frontend-test-utils": "^0.6.3",
     "@backstage/test-utils": "^1.7.21",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
+    "@react-stately/layout": "4.7.1",
+    "@react-stately/overlays": "3.7.1",
+    "@react-types/table": "3.14.0",
     "@spotify/prettier-config": "^15.0.0",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.0.0",
@@ -111,6 +114,18 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.30.6"
+  },
+  "resolutions": {
+    "@yarnpkg/core": "4.9.1",
+    "@adobe/react-spectrum": "3.47.1",
+    "react-aria": "3.49.0",
+    "react-stately": "3.47.0",
+    "@react-stately/layout": "4.7.1",
+    "@react-stately/overlays": "3.7.1",
+    "@react-stately/table": "3.16.1",
+    "@react-types/table": "3.14.0",
+    "@react-types/shared": "3.35.0",
+    "react-aria-components": "1.18.0"
   },
   "files": [
     "dist",

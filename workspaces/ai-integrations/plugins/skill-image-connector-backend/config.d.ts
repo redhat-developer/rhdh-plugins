@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
+
 export interface Config {
   skillImageConnector?: {
     /** Request deadline including redirects, authentication and body reading. Integer from 1 to 2147483647 ms; defaults to 30000 ms.
@@ -28,6 +30,10 @@ export interface Config {
      * @visibility backend
      */
     maxAggregateContentSizeBytes?: number;
+    /** Maximum total downloaded and decompressed bytes per OCI image across all inspected layers. Distinct from maxAggregateContentSizeBytes (retained content). Safe integer from 1 to 9007199254740991; defaults to 52428800.
+     * @visibility backend
+     */
+    maxImageWorkBudgetBytes?: number;
     /** Maximum bytes per Quay discovery response. Safe integer from 1 to 9007199254740991; defaults to 5242880.
      * @visibility backend
      */
@@ -44,8 +50,16 @@ export interface Config {
      * @visibility backend
      */
     retryBaseDelayMs?: number;
+    /** Total wall-clock deadline for processing all images from one source, including discovery and retries. Integer from 1 to 2147483647 ms; defaults to 300000.
+     * @visibility backend
+     */
+    sourceOperationDeadlineMs?: number;
     /** @visibility backend */
     allowedRegistries?: string[];
+    /** Additional HTTPS origins permitted for registry/discovery redirects. The initial registry hostname and its subdomains are allowed on the same HTTPS port. Omitted means no unrelated origins are allowed. Token realm redirects are never allowed.
+     * @visibility backend
+     */
+    allowedOrigins?: string[];
     /** @visibility backend */
     images?: Array<{
       /** @visibility backend */
@@ -77,5 +91,52 @@ export interface Config {
        */
       tag?: string;
     };
+    /** Standard Backstage schedule for the legacy default source. When omitted, runs immediately and every ten minutes, with a timeout of twice sourceOperationDeadlineMs (at least one minute). Only local scope is supported because snapshots are held per backend instance. Ignored when sources is configured.
+     * @visibility backend
+     */
+    schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+    /**
+     * Source-scoped configurations. Each source produces an independent
+     * SkillSnapshot served via GET /skills/:sourceId. When present,
+     * top-level images/quayDiscovery/allowedRegistries/allowedOrigins/schedule are ignored.
+     * @visibility backend
+     */
+    sources?: Array<{
+      /** Stable source identifier. Must be unique across all sources.
+       * @visibility backend
+       */
+      id: string;
+      /** @visibility backend */
+      allowedRegistries?: string[];
+      /** @visibility backend */
+      allowedOrigins?: string[];
+      /** Standard Backstage schedule for this source. When omitted, runs immediately and every ten minutes, with a timeout of twice sourceOperationDeadlineMs (at least one minute). Set frequency and timeout when configuring a schedule. Scope must be local; global scope is rejected.
+       * @visibility backend
+       */
+      schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+      /** @visibility backend */
+      images?: Array<{
+        /** @visibility backend */
+        imageRef?: string;
+        /** @visibility backend */
+        credentials?: {
+          /** @visibility backend */
+          username?: string;
+          /** @visibility secret */
+          password?: string;
+          /** @visibility backend */
+          tokenRealm?: string;
+        };
+      }>;
+      /** @visibility backend */
+      quayDiscovery?: {
+        /** @visibility backend */
+        registry?: string;
+        /** @visibility backend */
+        organization?: string;
+        /** @visibility backend */
+        tag?: string;
+      };
+    }>;
   };
 }

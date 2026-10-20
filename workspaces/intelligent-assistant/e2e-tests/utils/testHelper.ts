@@ -57,10 +57,10 @@ async function ensureGuestSession(page: Page) {
   await enter.click();
   await enter.waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {});
   const settings = page.getByRole('link', { name: 'Settings' });
-  const legacyMain = page.locator('main[class*="BackstagePage-root"]').first();
+  const catalogTitle = page.locator('.bui-HeaderTitle').first();
   await Promise.race([
     settings.waitFor({ state: 'visible', timeout: 15_000 }),
-    legacyMain.waitFor({ state: 'visible', timeout: 15_000 }),
+    catalogTitle.waitFor({ state: 'visible', timeout: 15_000 }),
   ]).catch(() => {});
 }
 

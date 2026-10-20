@@ -70,6 +70,25 @@ function repositoryName(
   return repo.name;
 }
 
+/** Discovery completeness accompanies candidates so an incomplete list cannot prune skills. */
+export interface QuayRepositorySnapshot {
+  imageRefs: string[];
+  complete: boolean;
+  /** At least one valid repository listing was received, including an empty one. */
+  usable: boolean;
+}
+
+/** Compatibility wrapper for callers that only need discovered references. */
+export async function discoverQuayRepositories(
+  config: QuayDiscoveryConfig,
+  logger: LoggerService,
+  signal?: AbortSignal,
+  options: SkillImageOptions = DEFAULT_SKILL_IMAGE_OPTIONS,
+): Promise<string[]> {
+  return (await discoverQuayRepositorySnapshot(config, logger, signal, options))
+    .imageRefs;
+}
+
 /**
  * Discovers public Quay repositories and returns distinct repository:tag
  * candidates. An explicit tag avoids tag-list requests; otherwise every active
@@ -78,18 +97,20 @@ function repositoryName(
  * Results are sorted before the caller applies its candidate limit. Digests do
  * not determine identity: aliases remain separate candidates for inspection.
  */
-export async function discoverQuayRepositories(
+export async function discoverQuayRepositorySnapshot(
   config: QuayDiscoveryConfig,
   logger: LoggerService,
   signal?: AbortSignal,
   options: SkillImageOptions = DEFAULT_SKILL_IMAGE_OPTIONS,
-): Promise<string[]> {
+): Promise<QuayRepositorySnapshot> {
   const repositories = new Set<string>();
   const imageRefs = new Set<string>();
   let nextPage: string | undefined;
   const seenNextPages = new Set<string>();
   let pageCount = 0;
   let pageLimitReached = false;
+  let complete = true;
+  let usable = false;
 
   logger.info(
     `Starting Quay organization discovery for ${config.organization} on ${config.registry}`,
@@ -106,6 +127,7 @@ export async function discoverQuayRepositories(
         );
       }
       pageLimitReached = true;
+      complete = false;
       return undefined;
     }
     pageCount++;
@@ -118,6 +140,7 @@ export async function discoverQuayRepositories(
               url.toString(),
               { headers: { Accept: 'application/json' } },
               requestSignal,
+              { allowedOrigins: options.allowedOrigins },
             );
             if (!response.ok) {
               await cancelResponseBody(response);
@@ -148,22 +171,40 @@ export async function discoverQuayRepositories(
     if (nextPage) {
       url.searchParams.set('next_page', nextPage);
     }
-    const body = await fetchPage(
-      url,
-      `Quay repository list request failed for organization ${config.organization}`,
-    );
-    if (body === undefined) {
-      break;
-    }
-    if (!isObject(body) || !Array.isArray(body.repositories)) {
-      throw new Error(
-        `Quay repository list response for ${config.organization} did not contain a repositories array`,
+    let body: Record<string, unknown> & { repositories: unknown[] };
+    try {
+      const response = await fetchPage(
+        url,
+        `Quay repository list request failed for organization ${config.organization}`,
       );
+      if (response === undefined) {
+        break;
+      }
+      if (!isObject(response) || !Array.isArray(response.repositories)) {
+        throw new Error(
+          `Quay repository list response for ${config.organization} did not contain a repositories array`,
+        );
+      }
+      body = { ...response, repositories: response.repositories };
+      usable = true;
+    } catch (error) {
+      // A deadline after a usable listing must not erase its discovery prefix.
+      if (!usable) {
+        throw error;
+      }
+      complete = false;
+      logger.warn(
+        `Quay repository discovery for ${config.organization} failed after a usable listing; retaining partial results`,
+        error instanceof Error ? error : new Error(String(error)),
+      );
+      break;
     }
     for (const repo of body.repositories) {
       const name = repositoryName(repo, config.organization, logger);
       if (name) {
         repositories.add(name);
+      } else {
+        complete = false;
       }
     }
     if (
@@ -171,13 +212,16 @@ export async function discoverQuayRepositories(
       body.next_page !== null &&
       typeof body.next_page !== 'string'
     ) {
-      throw new Error(
-        `Invalid Quay repository pagination token for ${config.organization}`,
+      complete = false;
+      logger.warn(
+        `Invalid Quay repository pagination token for ${config.organization}; retaining partial results`,
       );
+      break;
     }
     nextPage = body.next_page || undefined;
     if (nextPage) {
       if (seenNextPages.has(nextPage)) {
+        complete = false;
         logger.warn(
           `Quay discovery for ${config.organization} detected a pagination cycle; stopping`,
         );
@@ -188,14 +232,14 @@ export async function discoverQuayRepositories(
   } while (nextPage);
 
   for (const name of [...repositories].sort()) {
-    signal?.throwIfAborted();
     const repository = `${config.organization}/${name}`;
     const imagePrefix = `${config.registry}/${repository}`;
     if (config.tag !== undefined) {
       imageRefs.add(`${imagePrefix}:${config.tag}`);
       continue;
     }
-    if (pageLimitReached) {
+    if (pageLimitReached || signal?.aborted) {
+      complete = false;
       break;
     }
     const tags = new Set<string>();
@@ -210,19 +254,37 @@ export async function discoverQuayRepositories(
       url.searchParams.set('onlyActiveTags', 'true');
       url.searchParams.set('page', String(tagPage));
       url.searchParams.set('limit', String(QUAY_TAG_PAGE_SIZE));
-      const body = await fetchPage(
-        url,
-        `Quay tag list request failed for repository ${repository}`,
-      );
-      if (body === undefined) {
+      let body: Record<string, unknown> & {
+        tags: unknown[];
+        has_additional: boolean;
+      };
+      try {
+        const response = await fetchPage(
+          url,
+          `Quay tag list request failed for repository ${repository}`,
+        );
+        if (response === undefined) {
+          break;
+        }
+        if (
+          !isObject(response) ||
+          !Array.isArray(response.tags) ||
+          typeof response.has_additional !== 'boolean'
+        ) {
+          throw new Error(`Invalid Quay tag list response for ${repository}`);
+        }
+        body = {
+          ...response,
+          tags: response.tags,
+          has_additional: response.has_additional,
+        };
+      } catch (error) {
+        complete = false;
+        logger.warn(
+          `Quay tag discovery failed for ${repository}; retaining partial results and continuing other repositories`,
+          error instanceof Error ? error : new Error(String(error)),
+        );
         break;
-      }
-      if (
-        !isObject(body) ||
-        !Array.isArray(body.tags) ||
-        typeof body.has_additional !== 'boolean'
-      ) {
-        throw new Error(`Invalid Quay tag list response for ${repository}`);
       }
       const previousSize = tags.size;
       for (const tag of body.tags) {
@@ -234,6 +296,7 @@ export async function discoverQuayRepositories(
           tags.add(tag.name);
           imageRefs.add(`${imagePrefix}:${tag.name}`);
         } catch {
+          complete = false;
           logger.warn(
             `Skipping invalid tag in ${repository} discovery results`,
           );
@@ -241,6 +304,7 @@ export async function discoverQuayRepositories(
       }
       hasAdditional = body.has_additional;
       if (hasAdditional && tags.size === previousSize) {
+        complete = false;
         logger.warn(
           `Quay discovery tag pagination made no progress for ${repository}; stopping with partial results`,
         );
@@ -256,5 +320,9 @@ export async function discoverQuayRepositories(
 
   // Validated repository and tag characters are ASCII, so default sorting also
   // supplies Unicode code-point ordering without locale-dependent collation.
-  return [...imageRefs].sort();
+  return {
+    imageRefs: [...imageRefs].sort(),
+    complete: complete && !signal?.aborted,
+    usable,
+  };
 }

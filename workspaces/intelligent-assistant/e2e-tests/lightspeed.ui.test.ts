@@ -22,8 +22,6 @@ import {
   selectDisplayMode,
   openChatHistoryDrawer,
   closeChatHistoryDrawer,
-  expectBackstagePageVisible,
-  waitForBackstageCatalogReady,
   expectChatbotControlsVisible,
   verifyDisplayModeMenuOptions,
   expectChatInputAreaVisible,
@@ -63,16 +61,13 @@ test.describe('Intelligent assistant UI', () => {
   test.describe('Chatbot Display Modes', () => {
     test.beforeEach(async () => {
       await sharedPage.goto('/catalog');
-      await waitForBackstageCatalogReady(sharedPage);
     });
 
     test('should display chatbot in overlay mode with backstage page visible', async () => {
-      await expectBackstagePageVisible(sharedPage);
       await openChatbot(sharedPage, translations);
 
       await expectConversationArea(sharedPage, translations, 'Overlay');
       await expectChatInputAreaVisible(sharedPage, translations);
-      await expectBackstagePageVisible(sharedPage);
       await expectChatbotControlsVisible(sharedPage, translations);
 
       await openChatHistoryDrawer(sharedPage, translations);
@@ -87,7 +82,6 @@ test.describe('Intelligent assistant UI', () => {
       await selectDisplayMode(sharedPage, translations, 'Dock to window');
 
       await expectConversationArea(sharedPage, translations, 'Dock to window');
-      await expectBackstagePageVisible(sharedPage);
       await expectChatInputAreaVisible(sharedPage, translations);
       await expectChatbotControlsVisible(sharedPage, translations);
 
@@ -102,7 +96,6 @@ test.describe('Intelligent assistant UI', () => {
 
       await expectConversationArea(sharedPage, translations, 'Fullscreen');
       await expectEmptyChatHistory(sharedPage, translations);
-      await expectBackstagePageVisible(sharedPage, false);
     });
   });
 

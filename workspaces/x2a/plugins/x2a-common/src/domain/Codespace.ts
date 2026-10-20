@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-import {
-  ScmIntegrationsApi,
-  scmIntegrationsApiRef,
-  ScmAuth,
-} from '@backstage/integration-react';
-import {
-  AnyApiFactory,
-  configApiRef,
-  createApiFactory,
-} from '@backstage/core-plugin-api';
+/** @public */
+export class Codespace {
+  constructor(readonly url: string) {
+    if (!url) {
+      throw new Error('Codespace url must be a non-empty string');
+    }
+  }
 
-export const apis: AnyApiFactory[] = [
-  createApiFactory({
-    api: scmIntegrationsApiRef,
-    deps: { configApi: configApiRef },
-    factory: ({ configApi }) => ScmIntegrationsApi.fromConfig(configApi),
-  }),
-  ScmAuth.createDefaultApiFactory(),
-];
+  equals(other: Codespace): boolean {
+    return this.url === other.url;
+  }
+
+  toString(): string {
+    return this.url;
+  }
+}

@@ -14,5 +14,23 @@
  * limitations under the License.
  */
 
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports -- workspace ESLint shared config
-module.exports = require('../../eslint.frontend-shared.cjs')(__dirname);
+import {
+  Codespace,
+  GitRepositoryRef,
+  resolveScmProvider,
+  ScmProviderName,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+const DEVCONTAINER_PATH = '.devcontainer/ansible/devcontainer.json';
+
+/**
+ * Asks the repository's SCM provider to create its Codespace value object, if supported.
+ */
+export const buildCodespace = (
+  repository: GitRepositoryRef,
+  hostProviderMap?: Map<string, ScmProviderName>,
+): Codespace | undefined =>
+  resolveScmProvider(repository.url, hostProviderMap).buildCodespace?.(
+    repository,
+    DEVCONTAINER_PATH,
+  );

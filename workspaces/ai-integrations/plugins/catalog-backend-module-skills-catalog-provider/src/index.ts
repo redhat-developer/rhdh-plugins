@@ -14,4 +14,20 @@
  * limitations under the License.
  */
 
-import '@testing-library/jest-dom';
+/**
+ * Common skills catalog entity provider module.
+ *
+ * Consumes normalized v1 snapshots from OCI and npx connectors and
+ * produces `AiResource` entities with `spec.type: skill`.
+ *
+ * @packageDocumentation
+ */
+
+export { catalogModuleSkillsCatalogProvider as default } from './module';
+export { SkillsCatalogProvider } from './SkillsCatalogProvider';
+export { readSkillsCatalogProviderConfigs } from './config';
+export type {
+  MappedSkillEntity,
+  SkillsCatalogProviderConfig,
+  SourceConsumerConfig,
+} from './types';

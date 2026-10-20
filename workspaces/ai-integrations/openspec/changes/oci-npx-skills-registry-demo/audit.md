@@ -1,6 +1,428 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
-**Last audited:** 2026-10-13T16:25:09Z
+**Last audited:** 2026-10-19T19:19:03Z
+
+### Summary
+
+Focused direct review of the two low-severity documentation findings against PR #5273 head 3cd7882042. This is a scenario-organization and authentication-prose correction, not another independent full-change audit. Historical audit reports and their verification scope are preserved below.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Corrections and verification scope
+
+- The unauthorized GET scenario now contains only its credential condition, authentication failure, and URL-reader outcome. Default GET authentication is stated in the dedicated Markdown endpoint requirement. The provider-service-only retention POST contract is stated in the connector retention acknowledgment requirement. Authentication behavior remains unchanged.
+- Extraction equivalence has its own requirement, with the existing scenario and per-image manifest identity preserved. The unauthorized GET scenario is grouped with authentication, the size scenario with MkDocs generation, and only conditional-request scenarios remain under ETag semantics.
+- Direct checks preserve all existing scenario headings and task completion markers. Strict OpenSpec validation, workspace Prettier, and diff whitespace checks verify this documentation-only correction.
+
+---
+
+## Historical audits before scenario organization corrections
+
+The following reports describe earlier states and retain their original verification scope.
+
+## Audit Report: oci-npx-skills-registry-demo
+
+**Last audited:** 2026-10-19T18:35:14Z
+
+### Summary
+
+Focused cross-artifact follow-up to the four low-severity findings in Fullsend review 5575766203 against PR #5273 head d04abad2b4. This records direct verification of these corrections, not another independent full-change audit. Historical independent audit reports and their scope are preserved below. No findings remain outstanding within this focused review.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Corrections and verification scope
+
+- D8, the OCI requirements/scenarios, and tasks 6.2/6.5 now define optional backend-only `skillImageConnector.maxRetainedMarkdownSizeBytes`: positive safe integer, default 50 MiB (52,428,800 bytes), independently applied per source. Extraction continues to use `maxAggregateContentSizeBytes`; omission does not couple either default to the other setting. Invalid values and startup limits below retained content are rejected without deletion.
+- The fixed 1,000-retained-digest limit remains aligned with the protocol/acknowledgment bounds. Raising bytes cannot fix count exhaustion. D8 specifies a controlled inventory drain under the same source ID: reconcile retained-only tagged inputs or a valid raw-only digest input, confirm catalog processing, acknowledge cleanup, then restore discovery within both bounds. Excluded catalog entities are deliberately removed; retention resets and source disablement are not shortcuts.
+- The TechDocs capability is described only under Modified Capabilities, preserving the existing model-card capability ownership. Inline prose uses “added requirements.”
+- Existing task completion states and incoming OCI scenarios are preserved. Section 6 remains pending implementation; this change adds no runtime configuration handling or TypeScript code.
+
+Validation: strict OpenSpec validation, workspace Prettier, direct cross-artifact checks of default/independence/recovery behavior, and `git diff --check`. See the append-only journal for the focused review result.
+
+---
+
+## Historical audits before this focused Fullsend follow-up
+
+The following reports describe earlier states and retain their original verification scope.
+
+## Audit Report: oci-npx-skills-registry-demo
+
+**Last audited:** 2026-10-19T17:45:07Z
+
+### Summary
+
+PR #5273 follow-up: applied the six approved audit recommendations across the
+proposal, design, three affected capability specs, and section 6 tasks. All
+required artifacts passed the apply-ready minimum. Three isolated auditor passes
+in this correction round evaluated categories A–H with convention documents,
+sibling ownership claims, and light code grounding. The table records findings
+from the final isolated pass, not outstanding findings: its two findings were
+subsequently corrected and directly checked as documented below. No fourth
+independent pass was run, respecting the three-pass limit. Historical reports
+are preserved in full below; their findings describe earlier states.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 1       | 1          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **1**   | **1**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- **G — Catalog processing can lag mutation acceptance. Addressed after the
+  final isolated pass; directly checked.**
+  `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:558`.
+  Recommendation: do not release old documentation solely because a provider
+  mutation and ownership commit succeeded. The design, provider scenarios, and
+  task 6.3 now require persisted expected entity references and documentation
+  URLs, catalog visibility confirmation before acknowledgment, and bounded
+  retries without cleanup on processing errors or timeouts. The new delayed
+  processing scenario covers the transition explicitly.
+
+### SUGGESTION
+
+- **G — Dot source IDs cannot round-trip through URL parsing. Addressed after
+  the final isolated pass; directly checked.**
+  `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:621`.
+  Recommendation: reject source IDs exactly equal to `.` or `..` in source
+  configuration validation. D8, the documentation-safe source identifier
+  scenario, and task 6.4 now require this restriction and validation coverage.
+
+### Approved recommendations resolved
+
+- Preserve the full discovery-resolved connector base pathname when constructing
+  and matching documentation URLs; encode and decode segments once and reject
+  off-base destinations and redirects without forwarding credentials.
+- Require durable provider acknowledgments after ready reconciliation and catalog
+  visibility confirmation before releasing old Markdown. Define revision matching,
+  authorization, idempotency, superseded requests, and restart recovery. State the
+  demo's single connector instance and single active provider runner per source.
+- Store content before publishing its record. Bound retained bytes and digest count;
+  preserve retained content and report failed new admissions as partial snapshots.
+- Trust the authenticated connector's manifest-to-Markdown binding; do not compare
+  a Markdown hash to a manifest digest.
+- Require equivalent rendered content across extraction layouts, with each image's
+  own verified manifest digest in its URL.
+- Restore the OCI capability bullet and classify TechDocs as an extension of the
+  existing model-card capability, preserving that capability during spec sync.
+
+Interim audit suggestions also clarified that default Markdown GET authentication
+accepts valid user or service credentials, while retention POST requires the
+configured provider service principal; a missing recovered document does not
+promise a cached TechDocs build already exists. Unavailable content is consistently 404. All task 2.1–2.5 completion states and incoming OCI scenario headings remain
+preserved; section 6 implementation tasks remain unchecked.
+
+### Validation
+
+Strict OpenSpec validation, workspace `yarn prettier:check`, `yarn tsc`, immutable
+workspace dependency installation, and `git diff --check` passed. Installation
+reported existing peer-dependency warnings. This PR changes documentation only;
+no runtime implementation or new unit tests were introduced. The final two
+corrections received direct cross-artifact checks rather than another isolated
+pass; Fullsend review provides the next independent review.
+
+**Audit clean (no CRITICAL)**. No findings remain unapplied; the scope and limits
+of independent versus direct verification are stated above.
+
+Fixes to one file can introduce new drift elsewhere — re-run the audit after resolving remaining findings.
+
+---
+
+## Historical audit before approved corrections
+
+The following material is historical and does not describe the current finding status.
+
+## Audit Report: oci-npx-skills-registry-demo
+
+**Last audited:** 2026-10-19T17:36:14Z
+
+### Summary
+
+Independent cross-artifact audit of PR #5273 after restoring incoming task 2.5 scenarios and completion notes lost in the main-branch merge. Proposal, design, tasks, and all five capability specs passed the apply-ready minimum. Categories A–H were evaluated against workspace conventions, condensed sibling ownership claims, and relevant existing plugin code. This is an artifact audit, not implementation verification. Historical audit material is preserved below.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 1       | 2          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 1          |
+| G — Extended coherence     | 0        | 2       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **3**   | **3**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- **C: Match URLs relative to the complete connector base.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/specs/techdocs-integration/spec.md:7`. Match the skilldocs route beneath the complete discovery-resolved connector base, including its pathname. Backstage normally produces /api/skill-image-connector/skilldocs/..., which does not start with /skilldocs/. Align D8 and the reader scenarios.
+- **G: Coordinate cleanup with successful catalog reconciliation.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:530`. A connector ready snapshot can advance before the independently scheduled provider updates the catalog. Define an acknowledgment or explicit retention protocol before deleting old digests; test provider outages and failed catalog mutations.
+- **G: Define storage admission when retained documentation fills the bound.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/specs/oci-skills-connector/spec.md:381`. Repeated partial refreshes can accumulate active documentation beyond a fixed bound. Specify rejection of new records whose documentation cannot be retained, preserve existing content, mark the snapshot partial, and align connector/provider tasks and tests.
+
+### SUGGESTION
+
+- **C: Clarify what digest validation means.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/proposal.md:30`. A manifest digest is not a hash of extracted Markdown. State that the reader validates the digest-addressed route and trusts authenticated connector storage, or define a separate Markdown digest/proof contract if independent byte verification is intended.
+- **C: Require equivalent Markdown rather than identical manifest digests across layouts.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/specs/techdocs-integration/spec.md:130`. Annotated and archive images normally have different manifests and digests. Require equivalent rendered documentation, with each URL containing its own image's verified manifest digest.
+- **F: Restore the missing OCI capability bullet.** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/proposal.md:69`. Restore an oci-skills-connector capability bullet and attach the dedicated Markdown endpoint description to it. The fragment currently follows skills-common, incorrectly suggesting endpoint ownership by the pure shared library.
+
+**Audit clean (no CRITICAL)**. Recommendations remain unapplied for maintainer review.
+
+Fixes to one file can introduce new drift elsewhere — re-run the audit after resolving remaining findings.
+
+---
+
+## Historical audits preserved from the rebased branch
+
+The following reports describe earlier states and scopes; their timestamps, findings, and verification notes are historical.
+
+## Audit Report: oci-npx-skills-registry-demo
+
+**Last audited:** 2026-10-18T16:09:12Z
+
+### Summary
+
+Updated for task 4.1 and 4.2 completion in PR #5291, covering the common skills
+catalog entity provider implementation. Tasks 4.1 (provider scaffolding with
+independently configured source instances, Backstage discovery, and service
+tokens) and 4.2 (snapshot validation and AiResource entity construction using
+D3/D5 mappings) are now checked. This supplements the retained historical audits;
+it is not a new independent full-change audit. Tasks 2.1–2.5 and 4.1–4.2 are
+checked. The maintainer confirmed successful testing and review.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None identified in this focused documentation review.
+
+### WARNING
+
+- None identified in this focused documentation review.
+
+### SUGGESTION
+
+- None outstanding in this focused documentation review. Maintainer verification of the
+  latest normalization/budget corrections remains pending; earlier maintainer testing
+  supports the existing task 2.5 completion marker.
+
+### Corrections and validation
+
+The latest focused review corrections always mark retained-content budget
+rejections incomplete, even for bare-digest inputs without tagged failure keys.
+Normalization explicitly handles ambiguous, non-skill, inconsistent normalized,
+and unsupported outcomes, releasing rejected/skipped files. The structural source
+parser omits placeholder acquisition fields, and the README documents 404 error
+objects without promising exact diagnostic wording.
+
+Automated verification passed: 513 connector tests across 16 suites with
+`--watchAll=false --runInBand`, workspace `yarn tsc:full` and `yarn build:all`,
+and connector lint. These are implementation checks, not a new independent
+full-change audit. Maintainer regression testing of these latest corrections is
+pending; the existing task 2.5 completion reflects the prior confirmed testing.
+
+The former bare-digest completeness suggestion is resolved explicitly: digest-only
+inputs remain raw-only without invented tagged identities or normalized failure
+keys. Their deliberate exclusion alone does not prevent `ready`; replacing tagged
+inputs with digest-only inputs may remove those tagged records and permit future
+catalog ready-result removals. Design D5, OCI scenarios, and README state this
+consequence consistently.
+
+D6 and OCI scenarios distinguish empty `partial` results from total discovery
+failure, preserve candidates from successful listing pages, and require incomplete
+pagination and limits to prevent `ready`. Snapshots are cached, authenticated,
+published atomically, and refreshed with local Backstage tasks per backend instance.
+Source IDs are required and decoded only once by routing. Redirect origins are
+isolated per source; flat origins apply only to legacy source `default`. Numeric
+acquisition limits stay top-level. Raw readiness is independent of normalization.
+
+The latest review corrections retain raw extraction maps per source and rebuild
+`/images` atomically at source publication. Duplicate image references use the
+first configured successful source; aggregate failed references exclude any
+retained success. Source refresh cleanup must not delete another source's files,
+and shutdown includes duplicate extractions hidden from the aggregate inventory.
+The OCI specification and README now state these ownership and aggregation rules.
+Mixed explicit/flat configuration emits a field-name-only warning while preserving
+the documented ignore policy. Task 5.1 credits task 2.5 for its OCI schema and
+examples; npx and common-provider configuration remain unchecked scope, not merely
+integration verification. Automated verification passed for these corrections:
+507 connector tests across 16 suites with `--watchAll=false --runInBand`,
+workspace `yarn tsc:full` and `yarn build:all`, connector lint, and workspace
+Prettier. Independent code verification passed. The mixed-configuration path
+also skips validation of ignored flat origins. The maintainer subsequently
+confirmed successful regression testing of those source-ownership corrections.
+Task 2.5 stays checked based on the prior maintainer verification below.
+
+**Previously verified implementation:** The standard-schedule migration is implemented and maintainer testing passed. Documentation describes
+Backstage-parsed frequency and timeout, optional initial delay, cron and manual
+frequency, enforced local scope, and the default timeout derived from the source
+deadline. Manual mode does not automatically acquire at startup; configured
+initial delays are honored. Automated verification passed: 492 connector tests
+across 16 suites with `--watchAll=false --runInBand`, workspace `yarn tsc:full`
+and `yarn build:all`, connector lint, and workspace Prettier. Independent review
+of the migration passed. The maintainer confirmed successful regression testing
+and review; task 2.5 is complete.
+
+**Earlier verification before the standard-schedule migration:** The custom
+`refreshIntervalMinutes` implementation and review corrections previously passed: 467 connector tests across 16 suites with
+`--watchAll=false --runInBand`, workspace `yarn tsc:full` and `yarn build:all`,
+and connector lint. Independent code verification passed after correcting
+cancellation following a usable discovery page. Tests cover retained discovery
+prefixes, empty partial results, once-decoded IDs, isolated source origins,
+startup loading, subsequent refresh publication, reverse-order budget retention,
+and abort-listener cleanup. This is not a new full-change artifact audit or live
+cluster verification. Task 2.5 stays unchecked until maintainer verification
+testing succeeds. Common catalog provider implementation remains outside this
+connector task.
+
+### Prior current report — task 2.4 acquisition safety
+
+The report below is retained apart from heading depth and its timestamp label.
+Its counts, results, and task 2.5 suggestion describe the state before PR #5284;
+the current assessment above supersedes those statements.
+
+#### Audit Report: oci-npx-skills-registry-demo
+
+**Historical audit timestamp:** 2026-10-14T18:26:26Z
+
+##### Summary
+
+Independent audit of proposal, design, all four capability specifications, tasks,
+and change metadata, grounded in repository/workspace conventions and ownership
+claims from nine sibling changes. All required artifacts are present and done;
+remaining unchecked implementation tasks are intentionally in progress.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 1          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **1**      |
+
+##### CRITICAL
+
+- None
+
+##### WARNING
+
+- None
+
+##### SUGGESTION
+
+- **G — Bare-digest snapshot completeness:** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:150` says “Explicit `images[].imageRef` parsing is unchanged.”. State the normalized-snapshot outcome for configured bare digest references. The existing README and plugin.ts preserve their raw acquisition without a tagged normalized identity, while D2/D4 require stable non-digest repository/tag keys. Specify whether those references remain raw-only and whether their deliberate omission affects normalized snapshot completeness; add a matching scenario and task if applicable. This is a task 2.5 contract decision, not an acquisition change for completed task 2.4. It remains unresolved; no snapshot policy was silently chosen.
+
+##### Corrections and validation
+
+The first pass's capability-name mismatch and stale task footer are corrected:
+`skills-common` names the capability, `ai-skills-common` names its package, and
+the task footer identifies 2.5 as remaining snapshot/scheduling work. The second
+independent pass confirms those corrections.
+
+Task 2.4 is implemented and checked, and the maintainer reported successful
+regression testing. Proposal, D7, and OCI scenarios cover validated DNS answer
+sets with IPv4 fallback, generic same-port HTTPS registry-subdomain redirects,
+credential stripping, and bounded decompression before non-skill classification.
+The observed 5 MiB zlib rejection is a candidate failure, not evidence of absence;
+independent candidates continue unless a shared source bound stops the operation.
+Task 2.5 and the common provider remain pending.
+
+Validation passed: 414 connector tests in 15 suites, workspace `tsc:full` and
+`build:all`, connector lint, formatting, strict OpenSpec validation, and journal
+validation. Live probes verified discovery with one IPv6-first DNS lookup and an
+annotated image's manifest/blob through a registry-subdomain CDN redirect without
+additional origin configuration. No runtime code changed during this audit.
+Changes remain uncommitted; the maintainer's app-config.yaml is unchanged.
+
+**Audit clean (no CRITICAL)**; one SUGGESTION remains for task 2.5.
+
+Fixes to one file can introduce new drift elsewhere — re-run the audit after resolving remaining findings.
+
+### Historical audit record — through task 2.3
+
+**History restored:** 2026-10-15T17:05:29Z, from commit `827f5cf93987`.
+
+The following record restores the earlier audit narrative and results. Its task
+statuses, finding counts, test totals, and commit/push notes describe the state
+at the time and are superseded by the current assessment above. In particular,
+references to task 2.4 and connection-level DNS protection as pending are historical;
+task 2.4 is now checked. The historical summary table is separate from the current
+summary and does not replace the current task 2.5 verification status. Only heading levels
+and the historical timestamp label have been adjusted; the prior narrative is retained.
+
+#### Audit Report: oci-npx-skills-registry-demo
+
+**Historical audit timestamp:** 2026-10-13T16:25:09Z
 
 This focused follow-up reviews the all-active-tag discovery pivot against the
 proposal, design, OCI/common/provider specifications, task status, implementation,
@@ -48,7 +470,7 @@ Verifier results and validation commands are recorded in the journal and handoff
 The maintainer subsequently reported successful testing and authorized a local
 commit; signing, pushing, and the next Fullsend review remain maintainer-owned.
 
-### Fullsend review follow-up
+##### Fullsend review follow-up
 
 The maintainer approved the review disposition against PR #5057 head
 `f01d89dfc11eb0f781ac86bef77d8bf4dd7af5d6`. This focused artifact check covers
@@ -74,7 +496,7 @@ The focused artifact check found no additional specification inconsistencies;
 summary counts below remain zero. The earlier independent verification remains
 recorded above and in the journal.
 
-### Latest Fullsend review clarification
+##### Latest Fullsend review clarification
 
 The maintainer accepted the review disposition for PR #5057 head
 `c5b6dd7268d59c69a74bfc6417caebe2c485ede4`. A global review comment and replies
@@ -97,7 +519,7 @@ The maintainer's app-config.yaml is unchanged. The maintainer subsequently
 reported successful testing and authorized a local commit. Signing, pushing,
 and the next Fullsend review remain maintainer-owned.
 
-### Task 2.1 documentation clarification
+##### Task 2.1 documentation clarification
 
 The maintainer approved the review disposition for PR #5057 head
 `190bcba8814ef747a5b476991a13f65d1c71dae0`. This focused consistency check
@@ -123,7 +545,7 @@ formatting check reports only the maintainer's existing `app-config.yaml`
 formatting; that file was left untouched. The documentation changes remain
 uncommitted for maintainer review.
 
-### Task 2.2 completion check
+##### Task 2.2 completion check
 
 This focused consistency check covers PR #5152 against task 2.2 and the
 RHIDP-17781 acceptance criteria. It supplements the earlier audits; it is not
@@ -162,7 +584,7 @@ The maintainer's `app-config.yaml` edits are untouched. The maintainer subsequen
 a local commit. Signing, pushing, and the next Fullsend review remain
 maintainer-owned.
 
-### Task 1.2 review follow-up
+##### Task 1.2 review follow-up
 
 This focused consistency check covers the latest PR #5072 review. Both D3
 normalizers and the D5 `normalizeTags` helper now use Backstage's default
@@ -190,7 +612,7 @@ formatting, strict OpenSpec validation, and dependency installation/deduplicatio
 passed. Review replies record fixes and retained behavior. Changes remain local
 until maintainer signing and pushing.
 
-### Task 2.3 completion and review follow-up
+##### Task 2.3 completion and review follow-up
 
 This focused consistency check covers PR #5230 and RHIDP-17842. It supplements
 the earlier audits and task 2.2 completion check; it does not claim that tasks
@@ -237,7 +659,46 @@ raw-layer image, then authorized a local commit including their current
 `app-config.yaml` examples. Signing, pushing, and the next Fullsend review
 remain maintainer-owned.
 
-### Summary
+### OCI skill TechDocs scope extension
+
+This scope extension adds design D8 (OCI skill TechDocs), a new
+`specs/techdocs-integration/spec.md`, and updates to the proposal, design
+(D2/D5/D6/D7 cross-references), OCI connector spec (dedicated Markdown
+endpoint, content storage/lifecycle), provider spec (`backstage.io/techdocs-ref`
+annotation), and tasks (section 6). The extension reuses the HTTP-based
+model-card TechDocs integration pattern established in the
+`techdocs-modelcard-finalization` change.
+
+Cross-artifact consistency was reviewed for endpoint addressing
+(`/skilldocs/:sourceId/:digest`), authentication (service tokens targeted to
+the receiving connector plugin), digest identity (verified manifest digest binds
+documentation to the entity), content lifecycle (retention through partial
+refreshes and restarts, cleanup after `ready` snapshots), failure behavior
+(no successful empty documentation on failure), frontmatter handling (preserved
+as-is), scope (OCI only, single document, no bundled assets), and dependencies
+(tasks 2.5, 4.2, 2.4, 4.3–4.4).
+
+The following scenarios are specified across the connector, provider, and
+URL-reader specs: annotated-layer and tar/tar+gzip Markdown producing
+equivalent documentation; unauthorized access; unknown source/content; a moving
+tag updating the TechDocs annotation; same-digest aliases sharing
+documentation; partial refresh/restart content retention; size limits; and
+existing model-card integration remaining functional.
+
+No new raw-content fields are added to shared v1 records. No new core entity
+schema, runtime implementation, TypeScript, app-config.yaml, package files,
+lockfiles, workflow/agent configuration, or unrelated OpenSpec changes are
+included. No changeset is needed for this specification-only change. The
+TechDocs feature is not implemented or tested; all section 6 tasks are
+unchecked. Dependencies on tasks 2.5, 4.2, 2.4, and 4.3–4.4 are identified
+in the task descriptions.
+
+Existing task numbering, completed checkboxes, and task definitions are
+unchanged. Task 2.4 (connection safety, RHIDP-17933) is not enlarged; the
+TechDocs endpoint uses Backstage's default backend authentication, separate
+from D7's upstream egress restrictions.
+
+##### Summary
 
 | Category                               | CRITICAL | WARNING | SUGGESTION |
 | -------------------------------------- | -------- | ------- | ---------- |
@@ -251,14 +712,14 @@ remain maintainer-owned.
 | H — Security lint                      | 0        | 0       | 0          |
 | **Total**                              | **0**    | **0**   | **0**      |
 
-### CRITICAL
+##### CRITICAL
 
 - None
 
-### WARNING
+##### WARNING
 
 - None
 
-### SUGGESTION
+##### SUGGESTION
 
 - None
