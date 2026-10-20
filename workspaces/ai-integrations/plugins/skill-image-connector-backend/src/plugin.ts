@@ -1008,20 +1008,6 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           rawStatuses.set(source.id, 'loading');
         }
 
-        httpRouter.use(
-          await createRouter(
-            pluginLogger,
-            globalExtractions,
-            getProcessingStatus,
-            () => Array.from(globalFailedImages),
-            snapshots,
-          ),
-        );
-        httpRouter.addAuthPolicy({
-          path: '/health',
-          allow: 'unauthenticated',
-        });
-
         // Retain every source's acquisitions, including entries hidden by the
         // deduplicated /images view. Only the owner may release these files.
         const sourceExtractions = new Map<
@@ -1047,6 +1033,40 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           for (const ref of globalExtractions.keys())
             globalFailedImages.delete(ref);
         };
+
+        // Content lookup for GET /skilldocs/:sourceId/:digest (D8).
+        // Searches the source's current extractions for a tagged
+        // acquisition matching the requested manifest digest and
+        // returns its extracted Markdown, or undefined when the
+        // source ID is unknown or the digest is not retained.
+        const getSkillDocContent = (
+          sourceId: string,
+          digest: string,
+        ): string | undefined => {
+          const srcExtractions = sourceExtractions.get(sourceId);
+          if (!srcExtractions) return undefined;
+          for (const extraction of srcExtractions.values()) {
+            if (extraction.acquisition?.digest === digest) {
+              return extraction.skillsMd;
+            }
+          }
+          return undefined;
+        };
+
+        httpRouter.use(
+          await createRouter(
+            pluginLogger,
+            globalExtractions,
+            getProcessingStatus,
+            () => Array.from(globalFailedImages),
+            snapshots,
+            getSkillDocContent,
+          ),
+        );
+        httpRouter.addAuthPolicy({
+          path: '/health',
+          allow: 'unauthenticated',
+        });
 
         for (const source of sources) {
           const snapshotSource: SnapshotSource = {

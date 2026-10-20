@@ -506,3 +506,10 @@ it('returns structural source settings without placeholder acquisition fields', 
   expect(source).not.toHaveProperty('images');
   expect(source).not.toHaveProperty('quayDiscovery');
 });
+
+it.each(['.', '..'])('rejects dot/dot-dot source ID %p (D8)', dotId => {
+  const config = new ConfigReader({
+    skillImageConnector: { sources: [{ id: dotId }] },
+  });
+  expect(() => readSourceConfigs(config)).toThrow(/must not be '\.' or '\.\.'/);
+});

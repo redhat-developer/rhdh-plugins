@@ -16,6 +16,7 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+import { isValidDigest } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import express from 'express';
 import Router from 'express-promise-router';
 import type { SkillImageExtraction } from './services/types';
@@ -28,6 +29,7 @@ export async function createRouter(
   getProcessingStatus: () => SkillImageProcessingStatus = () => 'ready',
   getFailedImages: () => string[] = () => [],
   snapshots?: ReadonlyMap<string, SkillSnapshot>,
+  getSkillDocContent?: (sourceId: string, digest: string) => string | undefined,
 ): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -71,6 +73,58 @@ export async function createRouter(
       return;
     }
     res.status(200).json(snapshot);
+  });
+
+  // Authenticated GET /skilldocs/:sourceId/:digest — serves extracted
+  // skill Markdown addressed by source ID and verified manifest digest
+  // (D8). Returns Content-Type: text/markdown with an ETag derived from
+  // the digest, and supports If-None-Match conditional requests (304).
+  // Unknown source IDs, unknown digests, and unavailable content return
+  // 404. Blank, '.', and '..' source IDs are rejected.
+  router.get('/skilldocs/:sourceId/:digest', async (req, res) => {
+    const sourceId = req.params.sourceId;
+    const digest = req.params.digest;
+
+    // Reject blank, '.', and '..' source IDs (D8)
+    if (!sourceId || sourceId === '.' || sourceId === '..') {
+      res.status(404).json({ error: 'Invalid source ID' });
+      return;
+    }
+
+    // Validate digest format: sha256:<64 lowercase hex digits>
+    if (!isValidDigest(digest)) {
+      res.status(404).json({ error: 'Invalid digest format' });
+      return;
+    }
+
+    // Unknown source returns 404
+    if (!snapshots?.has(sourceId)) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
+
+    // Look up the Markdown content for this source and digest
+    const content = getSkillDocContent?.(sourceId, digest);
+    if (content === undefined) {
+      res.status(404).json({ error: 'Content not available' });
+      return;
+    }
+
+    // ETag derived from the manifest digest (the digest is the content
+    // identity per D8)
+    const etag = `"${digest}"`;
+    res.setHeader('ETag', etag);
+
+    // Conditional request: If-None-Match (RFC 7232 §3.2).
+    // Express's req.fresh uses the `fresh` module which handles
+    // comma-separated entity-tag lists and the wildcard `*`.
+    if (req.fresh) {
+      res.status(304).end();
+      return;
+    }
+
+    res.setHeader('Content-Type', 'text/markdown');
+    res.status(200).send(content);
   });
 
   router.use(
