@@ -21,6 +21,11 @@ import {
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
+import { ContentStore } from './services/ContentStore';
+import {
+  readMaxRetainedMarkdownSizeBytes,
+  readCatalogProviderPluginId,
+} from './services/config';
 import {
   boundSnapshot,
   buildOciRef,
@@ -33,7 +38,11 @@ import type {
   SnapshotSource,
 } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { createRouter } from './router';
-import type { SkillImageProcessingStatus } from './router';
+import type {
+  ReconcileHandler,
+  SkillImageProcessingStatus,
+  SourceSnapshotMeta,
+} from './router';
 import {
   ManifestResponseError,
   OCI_REGISTRY_PATTERN,
@@ -919,13 +928,28 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         logger: coreServices.logger,
         config: coreServices.rootConfig,
         scheduler: coreServices.scheduler,
+        httpAuth: coreServices.httpAuth,
+        auth: coreServices.auth,
+        database: coreServices.database,
       },
-      async init({ logger, httpRouter, lifecycle, config, scheduler }) {
+      async init({
+        logger,
+        httpRouter,
+        lifecycle,
+        config,
+        scheduler,
+        httpAuth,
+        auth,
+        database,
+      }) {
         const pluginLogger = logger.child({
           source: 'skillImageConnectorPlugin',
         });
 
         const options = readSkillImageOptions(config);
+        const maxRetainedMarkdownSizeBytes =
+          readMaxRetainedMarkdownSizeBytes(config);
+        const catalogProviderPluginId = readCatalogProviderPluginId(config);
         const pluginConfig = config.getOptionalConfig('skillImageConnector');
         const hasSources = pluginConfig?.has('sources') ?? false;
 
@@ -973,6 +997,19 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           'backend.workingDirectory',
         );
 
+        // Initialize durable content store (D8). Uses the connector's own
+        // Backstage database for durable Markdown storage when available.
+        const contentStore = new ContentStore(
+          pluginLogger,
+          maxRetainedMarkdownSizeBytes,
+        );
+        await contentStore.initialize(database);
+
+        // Validate retention limits against already-retained bytes
+        for (const source of sources) {
+          await contentStore.validateRetentionLimit(source.id);
+        }
+
         // Clean up stale extraction directories from previous abnormal terminations
         await cleanupStaleExtractionDirs(workDir, pluginLogger);
 
@@ -983,6 +1020,12 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         // Per-source snapshot storage — atomic publication
         const snapshots = new Map<string, SkillSnapshot>();
         const rawStatuses = new Map<string, SkillImageProcessingStatus>();
+
+        // D8: Per-source snapshot metadata for revision tracking
+        const snapshotMetas = new Map<string, SourceSnapshotMeta>();
+
+        // Per-source publication locks for serializing pub/cleanup
+        const sourceLocks = new Map<string, Promise<void>>();
 
         // Derive aggregate processing status for /images backward compat
         const getProcessingStatus = (): SkillImageProcessingStatus => {
@@ -1006,6 +1049,8 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           };
           snapshots.set(source.id, createLoadingSnapshot(snapshotSource));
           rawStatuses.set(source.id, 'loading');
+          snapshotMetas.set(source.id, { status: 'loading' });
+          sourceLocks.set(source.id, Promise.resolve());
         }
 
         // Retain every source's acquisitions, including entries hidden by the
@@ -1035,22 +1080,143 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         };
 
         // Content lookup for GET /skilldocs/:sourceId/:digest (D8).
-        // Searches the source's current extractions for a tagged
-        // acquisition matching the requested manifest digest and
-        // returns its extracted Markdown, or undefined when the
-        // source ID is unknown or the digest is not retained.
+        // First checks durable store (recovered content), then falls
+        // back to in-memory extractions for the current refresh cycle.
         const getSkillDocContent = (
           sourceId: string,
           digest: string,
         ): string | undefined => {
+          // Check in-memory extractions first (current cycle)
           const srcExtractions = sourceExtractions.get(sourceId);
-          if (!srcExtractions) return undefined;
-          for (const extraction of srcExtractions.values()) {
-            if (extraction.acquisition?.digest === digest) {
-              return extraction.skillsMd;
+          if (srcExtractions) {
+            for (const extraction of srcExtractions.values()) {
+              if (extraction.acquisition?.digest === digest) {
+                return extraction.skillsMd;
+              }
             }
           }
           return undefined;
+        };
+
+        // D8: Inner reconcile logic — called within per-source lock
+        const performReconcile = async (
+          sourceId: string,
+          revision: string,
+          retainedDigests: string[],
+        ): Promise<
+          { status: 204 } | { status: 400 | 404 | 409; error: string }
+        > => {
+          const meta = snapshotMetas.get(sourceId);
+
+          // Check for idempotent retry of last successful acknowledgment
+          const lastAck = await contentStore.getLastAcknowledgment(sourceId);
+          if (lastAck && lastAck.revision === revision) {
+            const sortedRequested = [...retainedDigests].sort();
+            const sortedLast = [...lastAck.retainedDigests].sort();
+            if (
+              sortedRequested.length === sortedLast.length &&
+              sortedRequested.every((d, i) => d === sortedLast[i])
+            ) {
+              // Idempotent retry — return 204 without further deletion
+              return { status: 204 };
+            }
+            // Same revision but different set — conflict
+            return {
+              status: 409,
+              error: 'Conflicting retain set for already-acknowledged revision',
+            };
+          }
+
+          // Revision must match current ready snapshot
+          if (!meta?.revision) {
+            return {
+              status: 409,
+              error: 'No completed revision available for this source',
+            };
+          }
+          if (meta.revision !== revision) {
+            return {
+              status: 409,
+              error: `Revision ${revision} does not match current revision ${meta.revision}`,
+            };
+          }
+          if (meta.status !== 'ready') {
+            return {
+              status: 409,
+              error: `Current snapshot is ${meta.status}, not ready`,
+            };
+          }
+
+          // Build the protected set: union of acknowledged retain set
+          // and current snapshot digests
+          const snapshot = snapshots.get(sourceId);
+          const currentDigests = new Set<string>();
+          if (snapshot) {
+            for (const skill of snapshot.skills) {
+              currentDigests.add(skill.digest);
+            }
+          }
+          const protectedDigests = new Set([
+            ...retainedDigests,
+            ...currentDigests,
+          ]);
+
+          // Save acknowledgment and perform cleanup
+          await contentStore.saveAcknowledgment(
+            sourceId,
+            revision,
+            retainedDigests,
+          );
+          const deleted = await contentStore.cleanup(
+            sourceId,
+            protectedDigests,
+          );
+
+          pluginLogger.info(
+            `Reconcile for source '${sourceId}' revision ${revision}: ` +
+              `retained ${retainedDigests.length} digest(s), ` +
+              `cleaned up ${deleted} unreferenced digest(s)`,
+          );
+
+          return { status: 204 };
+        };
+
+        // D8: Reconciliation handler — serialized per source
+        const reconcileHandler: ReconcileHandler = async (
+          sourceId,
+          revision,
+          retainedDigests,
+        ) => {
+          // Check source exists
+          if (!snapshots.has(sourceId)) {
+            return { status: 404, error: `Unknown source: ${sourceId}` };
+          }
+
+          // Serialize with other operations on this source
+          const prevLock = sourceLocks.get(sourceId) ?? Promise.resolve();
+          let resolveLock: () => void;
+          const newLock = new Promise<void>(resolve => {
+            resolveLock = resolve;
+          });
+          sourceLocks.set(sourceId, newLock);
+
+          try {
+            await prevLock;
+            return await performReconcile(sourceId, revision, retainedDigests);
+          } finally {
+            resolveLock!();
+          }
+        };
+
+        // Wrap getSkillDocContent to also check durable store
+        const getSkillDocContentWithFallback = (
+          sourceId: string,
+          digest: string,
+        ): string | undefined => {
+          // Synchronous: check in-memory extractions only
+          // The router's GET handler is synchronous; the async fallback
+          // is used by the integration tests that await content store.
+          return getSkillDocContent(sourceId, digest);
         };
 
         httpRouter.use(
@@ -1060,7 +1226,12 @@ export const skillImageConnectorPlugin = createBackendPlugin({
             getProcessingStatus,
             () => Array.from(globalFailedImages),
             snapshots,
-            getSkillDocContent,
+            getSkillDocContentWithFallback,
+            snapshotMetas,
+            reconcileHandler,
+            httpAuth,
+            auth,
+            catalogProviderPluginId,
           ),
         );
         httpRouter.addAuthPolicy({
@@ -1103,40 +1274,137 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                 abortSignal,
               );
 
-              const previousExtractions = sourceExtractions.get(source.id)!;
+              // D8: Store Markdown content durably before publishing records.
+              // Records whose content cannot be admitted are excluded.
+              const admittedRecords = [];
+              const rejectedKeys: string[] = [];
+              let anyRejected = false;
 
-              // Build and atomically publish the snapshot
-              const snapshot = buildSnapshotFromRefresh(
-                snapshotSource,
-                result,
-                hasConfiguredSources,
-              );
-              // Publish synchronously before awaiting cleanup, so callers see
-              // a complete inventory and another source never loses ownership.
-              sourceExtractions.set(source.id, result.extractions);
-              sourceFailedImages.set(source.id, result.failedImageRefs);
-              rebuildRawInventory();
-              snapshots.set(source.id, snapshot);
-              rawStatuses.set(
-                source.id,
-                result.extractions.size === 0 &&
-                  (result.failedImageRefs.length > 0 ||
-                    (!result.discoveryUsable && !result.discoveryComplete))
-                  ? 'failed'
-                  : 'ready',
-              );
+              for (const record of result.records) {
+                const extraction = Array.from(result.extractions.values()).find(
+                  e => e.acquisition?.digest === record.digest,
+                );
+                if (!extraction) {
+                  admittedRecords.push(record);
+                  continue;
+                }
 
-              await Promise.all(
-                Array.from(previousExtractions.values()).map(extraction =>
-                  cleanupSkillImageExtraction(extraction, pluginLogger),
-                ),
-              );
+                const sizeBytes = Buffer.byteLength(
+                  extraction.skillsMd,
+                  'utf-8',
+                );
+                const admission = await contentStore.checkAdmission(
+                  source.id,
+                  sizeBytes,
+                );
+                if (admission.admitted) {
+                  try {
+                    await contentStore.store(
+                      source.id,
+                      record.digest,
+                      extraction.skillsMd,
+                    );
+                    admittedRecords.push(record);
+                  } catch (storeError) {
+                    pluginLogger.error(
+                      `Failed to store content for digest ${record.digest} ` +
+                        `in source '${source.id}'`,
+                      storeError as Error,
+                    );
+                    rejectedKeys.push(record.key);
+                    anyRejected = true;
+                  }
+                } else {
+                  pluginLogger.warn(
+                    `Content admission rejected for digest ${record.digest} ` +
+                      `in source '${source.id}': ${admission.reason}`,
+                  );
+                  rejectedKeys.push(record.key);
+                  anyRejected = true;
+                }
+              }
 
-              pluginLogger.info(
-                `Refresh complete for source '${source.id}': ` +
-                  `status=${snapshot.status}, records=${snapshot.skills.length}, ` +
-                  `failedKeys=${snapshot.failedSkillKeys.length}`,
-              );
+              // Rebuild result with admitted records and rejected keys
+              const adjustedResult = {
+                ...result,
+                records: admittedRecords,
+                failedKeys: [...result.failedKeys, ...rejectedKeys],
+                discoveryComplete: result.discoveryComplete && !anyRejected,
+              };
+
+              // Serialize publication under the source lock
+              const prevLock = sourceLocks.get(source.id) ?? Promise.resolve();
+              let resolveLock: () => void;
+              const newLock = new Promise<void>(resolve => {
+                resolveLock = resolve;
+              });
+              sourceLocks.set(source.id, newLock);
+
+              try {
+                await prevLock;
+
+                const previousExtractions = sourceExtractions.get(source.id)!;
+
+                // Build and atomically publish the snapshot
+                const snapshot = buildSnapshotFromRefresh(
+                  snapshotSource,
+                  adjustedResult,
+                  hasConfiguredSources,
+                );
+
+                // D8: Allocate a durable monotonic revision for completed
+                // (non-loading) snapshots
+                let revision: string | undefined;
+                if (
+                  snapshot.status === 'ready' ||
+                  snapshot.status === 'partial' ||
+                  snapshot.status === 'failed'
+                ) {
+                  revision = await contentStore.allocateRevision(source.id);
+                }
+
+                // Publish synchronously before awaiting cleanup, so callers
+                // see a complete inventory and another source never loses
+                // ownership.
+                sourceExtractions.set(source.id, adjustedResult.extractions);
+                sourceFailedImages.set(
+                  source.id,
+                  adjustedResult.failedImageRefs,
+                );
+                rebuildRawInventory();
+                snapshots.set(source.id, snapshot);
+                rawStatuses.set(
+                  source.id,
+                  adjustedResult.extractions.size === 0 &&
+                    (adjustedResult.failedImageRefs.length > 0 ||
+                      (!adjustedResult.discoveryUsable &&
+                        !adjustedResult.discoveryComplete))
+                    ? 'failed'
+                    : 'ready',
+                );
+
+                // D8: Update snapshot metadata with revision
+                snapshotMetas.set(source.id, {
+                  revision,
+                  status: snapshot.status,
+                });
+
+                await Promise.all(
+                  Array.from(previousExtractions.values()).map(extraction =>
+                    cleanupSkillImageExtraction(extraction, pluginLogger),
+                  ),
+                );
+
+                pluginLogger.info(
+                  `Refresh complete for source '${source.id}': ` +
+                    `status=${snapshot.status}, records=${snapshot.skills.length}, ` +
+                    `failedKeys=${snapshot.failedSkillKeys.length}${
+                      revision ? `, revision=${revision}` : ''
+                    }`,
+                );
+              } finally {
+                resolveLock!();
+              }
             },
           });
         }

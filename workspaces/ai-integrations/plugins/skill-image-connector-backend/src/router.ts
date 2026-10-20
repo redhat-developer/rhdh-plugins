@@ -14,14 +14,37 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  AuthService,
+  HttpAuthService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { isValidDigest } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import express from 'express';
 import Router from 'express-promise-router';
 import type { SkillImageExtraction } from './services/types';
+import {
+  MAX_RECONCILE_BODY_SIZE,
+  MAX_RETAINED_DIGESTS,
+} from './services/types';
 
 export type SkillImageProcessingStatus = 'loading' | 'ready' | 'failed';
+
+/** Per-source snapshot metadata for revision tracking. */
+export interface SourceSnapshotMeta {
+  /** Durable monotonic revision string, or undefined before first publication. */
+  revision?: string;
+  /** Status of the current snapshot. */
+  status: SkillSnapshot['status'];
+}
+
+/** Reconciliation handler that owns the per-source lock. */
+export type ReconcileHandler = (
+  sourceId: string,
+  revision: string,
+  retainedDigests: string[],
+) => Promise<{ status: 204 } | { status: 400 | 404 | 409; error: string }>;
 
 export async function createRouter(
   logger: LoggerService,
@@ -30,6 +53,11 @@ export async function createRouter(
   getFailedImages: () => string[] = () => [],
   snapshots?: ReadonlyMap<string, SkillSnapshot>,
   getSkillDocContent?: (sourceId: string, digest: string) => string | undefined,
+  snapshotMetas?: ReadonlyMap<string, SourceSnapshotMeta>,
+  reconcileHandler?: ReconcileHandler,
+  httpAuth?: HttpAuthService,
+  auth?: AuthService,
+  catalogProviderPluginId?: string,
 ): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -65,6 +93,7 @@ export async function createRouter(
   // SkillSnapshot for the requested source. The URL-encoded sourceId
   // is treated as one path segment per the design D2 REST contract.
   // Unknown source IDs return 404.
+  // D8: Adds X-Skilldocs-Revision header on completed snapshots.
   router.get('/skills/:sourceId', async (req, res) => {
     const sourceId = req.params.sourceId;
     const snapshot = snapshots?.get(sourceId);
@@ -72,6 +101,13 @@ export async function createRouter(
       res.status(404).json({ error: `Unknown source: ${sourceId}` });
       return;
     }
+
+    // D8: Add durable revision header on completed (non-loading) snapshots
+    const meta = snapshotMetas?.get(sourceId);
+    if (meta?.revision) {
+      res.setHeader('X-Skilldocs-Revision', meta.revision);
+    }
+
     res.status(200).json(snapshot);
   });
 
@@ -127,6 +163,119 @@ export async function createRouter(
     res.status(200).send(content);
   });
 
+  // D8: POST /skilldocs/:sourceId/reconcile — provider-authorized
+  // reconciliation acknowledgment. Requires service authentication
+  // from the configured catalogProviderPluginId. See D8 for the full
+  // protocol specification.
+  if (reconcileHandler && httpAuth && auth) {
+    // Body-size limit middleware: reject bodies > 5 MiB before parsing
+    const bodySizeLimit = express.json({
+      limit: MAX_RECONCILE_BODY_SIZE,
+    });
+
+    router.post(
+      '/skilldocs/:sourceId/reconcile',
+      bodySizeLimit,
+      async (req, res) => {
+        const sourceId = req.params.sourceId;
+
+        // Reject blank, '.', and '..' source IDs
+        if (!sourceId || sourceId === '.' || sourceId === '..') {
+          res.status(404).json({ error: 'Unknown source' });
+          return;
+        }
+
+        // Authentication and authorization
+        try {
+          const credentials = await httpAuth.credentials(req, {
+            allow: ['service'],
+          });
+
+          // Authorize: only the configured catalogProviderPluginId may call
+          const principal = credentials.principal as {
+            subject: string;
+          };
+          if (
+            catalogProviderPluginId &&
+            principal.subject !== `plugin:${catalogProviderPluginId}`
+          ) {
+            res.status(403).json({
+              error: `Unauthorized: only ${catalogProviderPluginId} may reconcile`,
+            });
+            return;
+          }
+        } catch {
+          res.status(403).json({ error: 'Unauthorized' });
+          return;
+        }
+
+        // Validate body structure
+        const body = req.body;
+        if (!body || typeof body !== 'object') {
+          res.status(400).json({ error: 'Request body must be a JSON object' });
+          return;
+        }
+
+        const { revision, retainedDigests } = body;
+
+        // Validate revision
+        if (typeof revision !== 'string' || !/^[0-9]+$/.test(revision)) {
+          res.status(400).json({
+            error: 'revision must be a decimal string',
+          });
+          return;
+        }
+
+        // Validate retainedDigests
+        if (!Array.isArray(retainedDigests)) {
+          res.status(400).json({
+            error: 'retainedDigests must be an array',
+          });
+          return;
+        }
+
+        if (retainedDigests.length > MAX_RETAINED_DIGESTS) {
+          res.status(400).json({
+            error: `retainedDigests may contain at most ${MAX_RETAINED_DIGESTS} entries`,
+          });
+          return;
+        }
+
+        // Validate each digest is a canonical sha256 digest
+        for (const d of retainedDigests) {
+          if (typeof d !== 'string' || !isValidDigest(d)) {
+            res.status(400).json({
+              error: `Invalid digest in retainedDigests: ${String(d)}`,
+            });
+            return;
+          }
+        }
+
+        // Check for duplicates in retainedDigests
+        const uniqueDigests = new Set(retainedDigests);
+        if (uniqueDigests.size !== retainedDigests.length) {
+          res.status(400).json({
+            error: 'retainedDigests contains duplicate entries',
+          });
+          return;
+        }
+
+        // Delegate to the handler
+        const result = await reconcileHandler(
+          sourceId,
+          revision,
+          retainedDigests,
+        );
+
+        if (result.status === 204) {
+          res.status(204).end();
+        } else {
+          res.status(result.status).json({ error: result.error });
+        }
+      },
+    );
+  }
+
   router.use(
     (
       error: Error,
@@ -134,6 +283,11 @@ export async function createRouter(
       res: express.Response,
       next: express.NextFunction,
     ) => {
+      // Handle body-parser PayloadTooLargeError for reconcile endpoint
+      if ('type' in error && (error as any).type === 'entity.too.large') {
+        res.status(413).json({ error: 'Request body too large' });
+        return;
+      }
       logger.error('Skill image connector request failed', error);
       if (res.headersSent) {
         next(error);

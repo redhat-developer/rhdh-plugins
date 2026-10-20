@@ -39,6 +39,7 @@
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "ipaddr.js": "^2.3.0",
+    "knex": "^3.0.0",
     "undici": "^7.28.0",
     "yaml": "^2.7.0"
   },
@@ -51,6 +52,7 @@
   },
   "files": [
     "dist",
-    "config.d.ts"
+    "config.d.ts",
+    "migrations"
   ]
 }

@@ -24,6 +24,7 @@ import { InputError } from '@backstage/errors';
 import { validateAllowedOrigin } from './HttpClient';
 import type { SkillImageOptions, SourceConfig } from './types';
 import {
+  DEFAULT_MAX_RETAINED_MARKDOWN_SIZE,
   DEFAULT_REFRESH_INTERVAL_MINUTES,
   DEFAULT_SKILL_IMAGE_OPTIONS,
   MAX_TIMER_DELAY_MS,
@@ -248,4 +249,38 @@ export function readSourceConfigs(
       schedule,
     },
   ];
+}
+
+/**
+ * Reads the optional `maxRetainedMarkdownSizeBytes` setting from config.
+ * Returns the configured value or the D8 default (50 MiB = 52,428,800 bytes).
+ * Rejects invalid values (non-integer, zero, negative, or above MAX_SAFE_INTEGER).
+ */
+export function readMaxRetainedMarkdownSizeBytes(config: Config): number {
+  const source = config.getOptionalConfig('skillImageConnector');
+  const value =
+    source?.getOptionalNumber('maxRetainedMarkdownSizeBytes') ??
+    DEFAULT_MAX_RETAINED_MARKDOWN_SIZE;
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new InputError(
+      'skillImageConnector.maxRetainedMarkdownSizeBytes must be a positive safe integer',
+    );
+  }
+  return value;
+}
+
+/**
+ * Reads the backend-only `catalogProviderPluginId` setting from config.
+ * Defaults to 'catalog' per D8.
+ */
+export function readCatalogProviderPluginId(config: Config): string {
+  const source = config.getOptionalConfig('skillImageConnector');
+  const value =
+    source?.getOptionalString('catalogProviderPluginId') ?? 'catalog';
+  if (!value.trim()) {
+    throw new InputError(
+      'skillImageConnector.catalogProviderPluginId must be a non-empty string',
+    );
+  }
+  return value.trim();
 }

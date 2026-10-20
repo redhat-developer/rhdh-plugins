@@ -17,6 +17,8 @@
 import { ConfigReader } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
 import {
+  readCatalogProviderPluginId,
+  readMaxRetainedMarkdownSizeBytes,
   readSkillImageOptions,
   readSourceConfigs,
   readSourceSchedule,
@@ -512,4 +514,48 @@ it.each(['.', '..'])('rejects dot/dot-dot source ID %p (D8)', dotId => {
     skillImageConnector: { sources: [{ id: dotId }] },
   });
   expect(() => readSourceConfigs(config)).toThrow(/must not be '\.' or '\.\.'/);
+});
+
+describe('readMaxRetainedMarkdownSizeBytes', () => {
+  it('returns the default 50 MiB when not configured', () => {
+    expect(readMaxRetainedMarkdownSizeBytes(new ConfigReader({}))).toBe(
+      52428800,
+    );
+  });
+
+  it('returns the configured value', () => {
+    expect(
+      readMaxRetainedMarkdownSizeBytes(
+        new ConfigReader({
+          skillImageConnector: { maxRetainedMarkdownSizeBytes: 1000000 },
+        }),
+      ),
+    ).toBe(1000000);
+  });
+
+  it.each([0, -1, 1.5, 'abc'])('rejects invalid value %p', value => {
+    expect(() =>
+      readMaxRetainedMarkdownSizeBytes(
+        new ConfigReader({
+          skillImageConnector: { maxRetainedMarkdownSizeBytes: value },
+        }),
+      ),
+    ).toThrow('positive safe integer');
+  });
+});
+
+describe('readCatalogProviderPluginId', () => {
+  it('defaults to catalog', () => {
+    expect(readCatalogProviderPluginId(new ConfigReader({}))).toBe('catalog');
+  });
+
+  it('returns configured value', () => {
+    expect(
+      readCatalogProviderPluginId(
+        new ConfigReader({
+          skillImageConnector: { catalogProviderPluginId: 'my-catalog' },
+        }),
+      ),
+    ).toBe('my-catalog');
+  });
 });

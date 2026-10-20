@@ -148,6 +148,17 @@ export function startConnector(
           },
         },
       }),
+      // Provide a lightweight database mock so the plugin's database dep
+      // is satisfied without requiring better-sqlite3 at test time.
+      // ContentStore.initialize() handles the getClient() rejection and
+      // falls back to in-memory storage.
+      mockServices.database.mock({
+        getClient: jest
+          .fn()
+          .mockRejectedValue(
+            new Error('No database available in test environment'),
+          ),
+      }).factory,
     ],
   });
 }
