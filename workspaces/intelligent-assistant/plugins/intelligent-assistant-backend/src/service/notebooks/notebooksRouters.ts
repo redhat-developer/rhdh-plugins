@@ -277,9 +277,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.post(
     '/v1/sessions',
-    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (req, res, userId) => {
       const { name, description, metadata } = req.body;
       if (!name) {
@@ -298,9 +298,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions',
-    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (_req, res, userId) => {
       const sessions = await sessionService.listSessions(userId);
       res.json(createSessionListResponse(sessions));
@@ -309,9 +309,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId',
-    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const session = await sessionService.readSession(sessionId, userId);
@@ -323,9 +323,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.put(
     '/v1/sessions/:sessionId',
-    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { name, description, metadata } = req.body;
@@ -342,9 +342,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.delete(
     '/v1/sessions/:sessionId',
-    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       await sessionService.deleteSession(sessionId, userId);
@@ -359,9 +359,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents',
-    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId } = req.params;
@@ -376,9 +376,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.put(
     '/v1/sessions/:sessionId/documents',
-    express.json(),
     expensiveRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     upload.single('file') as any,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
@@ -432,9 +432,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents/:documentId/status',
-    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -453,9 +453,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.patch(
     '/v1/sessions/:sessionId/documents/:documentId',
-    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -491,9 +491,9 @@ export async function createNotebooksRouter(
 
   notebooksRouter.delete(
     '/v1/sessions/:sessionId/documents/:documentId',
-    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;

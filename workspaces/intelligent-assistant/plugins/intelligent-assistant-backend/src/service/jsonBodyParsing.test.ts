@@ -56,6 +56,7 @@ describe('JSON body parsing', () => {
   let backendServer: Server;
   let operator: VectorStoresOperator;
   let sessionId: string;
+  let denyPermission: boolean;
 
   beforeAll(() => {
     server.listen({
@@ -69,6 +70,7 @@ describe('JSON body parsing', () => {
   afterAll(() => server.close());
 
   beforeEach(async () => {
+    denyPermission = false;
     resetMockStorage();
     VectorStoresOperator.resetInstance();
     ModelCapabilitiesCache.clear();
@@ -84,6 +86,9 @@ describe('JSON body parsing', () => {
                 { id: 'test-server', url: LIGHTSPEED_CORE_ADDR, token: 'test' },
               ],
               mcpServers: [{ name: 'static-mcp' }],
+              rateLimit: {
+                expensive: { max: 1 },
+              },
               notebooks: {
                 enabled: true,
                 queryDefaults: {
@@ -104,7 +109,13 @@ describe('JSON body parsing', () => {
           }),
         }).factory,
         mockServices.permissions.mock({
-          authorize: async () => [{ result: AuthorizeResult.ALLOW }],
+          authorize: async () => [
+            {
+              result: denyPermission
+                ? AuthorizeResult.DENY
+                : AuthorizeResult.ALLOW,
+            },
+          ],
         }).factory,
       ],
     });
@@ -122,6 +133,28 @@ describe('JSON body parsing', () => {
   afterEach(() => {
     server.resetHandlers();
     ModelCapabilitiesCache.clear();
+  });
+
+  it('checks query permission before parsing JSON', async () => {
+    denyPermission = true;
+    const response = await request(backendServer)
+      .post('/api/intelligent-assistant/v1/query')
+      .set('Content-Type', 'application/json')
+      .send('{');
+
+    // Parsing first would reject this malformed JSON with 400.
+    expect(response.status).toBe(403);
+  });
+
+  it('checks the query rate limit before parsing JSON', async () => {
+    const sendMalformedQuery = () =>
+      request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .set('Content-Type', 'application/json')
+        .send('{');
+
+    expect((await sendMalformedQuery()).status).toBe(400);
+    expect((await sendMalformedQuery()).status).toBe(429);
   });
 
   it.each([
