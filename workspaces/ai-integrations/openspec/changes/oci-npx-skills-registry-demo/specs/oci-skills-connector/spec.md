@@ -376,6 +376,24 @@ reconciliation recovery.
 - **THEN** only content absent from both the acknowledged retained-digest set and the current snapshot is eligible for cleanup
 - **AND** a ready connector snapshot alone never authorizes cleanup
 
+#### Scenario: Recovery preserves newer unacknowledged content
+
+- **WHEN** an acknowledgment has committed and a later publication stores a new digest before a restart
+- **THEN** recovery preserves the new digest because the earlier acknowledgment did not authorize its deletion
+- **AND** content protected by the snapshot at acknowledgment time also remains available
+
+#### Scenario: Acknowledgment cleanup transaction fails
+
+- **WHEN** acknowledgment persistence or an eligible content deletion fails before the transaction commits
+- **THEN** neither the acknowledgment nor its content deletions are committed
+- **AND** the same request can be retried after recovery without deleting protected content
+
+#### Scenario: Database initialization fails
+
+- **WHEN** the configured database cannot initialize, migrate, or recover revision and content state
+- **THEN** connector startup fails instead of silently using volatile storage
+- **AND** it does not publish unpersisted observations or reuse a revision after resetting its counter
+
 #### Scenario: Provider outage or mutation failure
 
 - **WHEN** the connector publishes newer snapshots while the provider is unavailable or a catalog mutation fails
@@ -389,9 +407,9 @@ reconciliation recovery.
 - **AND** existing retained content is not evicted and records using it remain eligible
 - **AND** repeated partial refreshes cannot grow the retained store beyond either bound
 
-#### Scenario: Content unavailable after failed recovery
+#### Scenario: Content missing after successful database recovery
 
-- **WHEN** durable storage is unavailable or content cannot be recovered after restart
+- **WHEN** database recovery completes after restart but the requested digest's Markdown is missing
 - **THEN** `/skilldocs/:sourceId/:digest` returns 404 for unrecovered content
 - **AND** the entity remains valid; previously built documentation is available only if a successful TechDocs build already exists
 - **AND** a first documentation request receives 404 until successful extraction and re-fetch restore the content
@@ -437,6 +455,12 @@ connector instance, as required by D8. Replica coordination is outside this incr
 - **WHEN** a source ID is blank or exactly `.` or `..`
 - **THEN** startup configuration validation rejects it before constructing any snapshot or documentation URL
 - **AND** valid IDs use individually encoded path segments without repeated decoding
+
+#### Scenario: Completed observations expose revisions without authorizing release
+
+- **WHEN** a source publishes a completed ready, partial, or failed snapshot
+- **THEN** its response includes a newly allocated durable X-Skilldocs-Revision header
+- **AND** only the current ready revision can authorize a new cleanup acknowledgment
 
 #### Scenario: Authorized current-ready acknowledgment
 

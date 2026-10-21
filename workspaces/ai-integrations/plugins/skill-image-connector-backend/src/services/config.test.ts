@@ -15,6 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
+import { InputError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
 import {
   readCatalogProviderPluginId,
@@ -545,6 +546,35 @@ describe('readMaxRetainedMarkdownSizeBytes', () => {
 });
 
 describe('readCatalogProviderPluginId', () => {
+  it.each(['', '   '])('defaults blank value %p to catalog', value => {
+    expect(
+      readCatalogProviderPluginId(
+        new ConfigReader({
+          skillImageConnector: { catalogProviderPluginId: value },
+        }),
+      ),
+    ).toBe('catalog');
+  });
+
+  it('trims a configured plugin ID', () => {
+    expect(
+      readCatalogProviderPluginId(
+        new ConfigReader({
+          skillImageConnector: { catalogProviderPluginId: ' catalog-custom ' },
+        }),
+      ),
+    ).toBe('catalog-custom');
+  });
+
+  it.each([42, false, {}])('rejects wrong type %p with InputError', value => {
+    expect(() =>
+      readCatalogProviderPluginId(
+        new ConfigReader({
+          skillImageConnector: { catalogProviderPluginId: value },
+        }),
+      ),
+    ).toThrow(InputError);
+  });
   it('defaults to catalog', () => {
     expect(readCatalogProviderPluginId(new ConfigReader({}))).toBe('catalog');
   });

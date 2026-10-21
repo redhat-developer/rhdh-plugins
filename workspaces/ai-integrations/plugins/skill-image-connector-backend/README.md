@@ -210,7 +210,7 @@ identity is required; their acquisition still uses a verified, pinned digest.
 | `skillImageConnector.schedule.initialDelay`                | `string/object` | Legacy; ignored when sources[] is configured. Optional first-run delay; defaults to zero.                                                                                                                                                      |
 | `skillImageConnector.schedule.scope`                       | `string`        | Legacy; ignored when sources[] is configured. Omit or set local; global scope is rejected.                                                                                                                                                     |
 | `skillImageConnector.maxRetainedMarkdownSizeBytes`         | `number`        | Maximum retained Markdown bytes per source for durable storage. Positive safe integer; defaults to 52,428,800 (50 MiB). Independent of `maxAggregateContentSizeBytes`. A configured value below already-retained bytes is rejected at startup. |
-| `skillImageConnector.catalogProviderPluginId`              | `string`        | Plugin ID of the authorized catalog provider for reconciliation. Defaults to `'catalog'`. Only this principal may call `POST /skilldocs/:sourceId/reconcile`.                                                                                  |
+| `skillImageConnector.catalogProviderPluginId`              | `string`        | Plugin ID of the authorized catalog provider for reconciliation. Omitted or blank values default to `'catalog'`; wrong types are rejected. Only this principal may call `POST /skilldocs/:sourceId/reconcile`.                                 |
 
 By default, at most 25 image candidates are processed, including explicit images and discovered repository/tag candidates. Set `skillImageConnector.maxImages` to raise or lower this total (for example, `100` to attempt up to 100 distinct image references). A repository with many tags consumes multiple candidate slots; increasing this cap does not guarantee every tag fits. Explicit images take priority, and discovered references already present in the explicit list do not consume another slot. An explicit list exceeding the limit fails startup validation; excess discovered candidates are skipped with a warning. This bounds candidates attempted, not successful skill extractions: repositories without the selected tag still consume a slot. It does not change the concurrency limit of four image operations.
 
@@ -247,35 +247,45 @@ Discovery and OCI requests share HTTP redirect validation, response cleanup, and
 
 ### Database / Durable storage
 
-The plugin uses Backstage's database service for durable Markdown retention
-when available. When a database is configured, extracted skill Markdown content,
-revision counters, and reconciliation acknowledgment state are persisted to three
-tables (`retained_markdown`, `source_revision`, `reconcile_state`) and survive
-backend restarts. After a restart, the content store recovers persisted state
-and completes any cleanup interrupted by the previous shutdown.
+The plugin requires Backstage's database service for durable Markdown retention.
+Extracted skill Markdown, revision counters, and the last successful
+reconciliation acknowledgment are persisted in three tables
+(`retained_markdown`, `source_revision`, `reconcile_state`). Use persistent
+SQLite files or PostgreSQL to retain those rows across backend restarts;
+SQLite `:memory:` storage does not survive a process restart.
 
-When no database is available (or database initialization fails), the plugin
-falls back to in-memory storage with a startup warning. In-memory mode provides
-all the same runtime behavior — content storage, admission checks, revision
-tracking, and reconciliation — but state does not survive restarts.
+Acknowledgment and its exact eligible content deletions commit in one database
+transaction. A crash or failed deletion rolls back both, leaving the same
+acknowledgment safe to retry. In-memory state changes only after the transaction
+commits. Recovery preserves all remaining content, including newer unacknowledged
+publications and content protected by the acknowledged snapshot; it never uses
+an old retain set to infer permission for additional deletions.
 
-Database write failures propagate to callers: content whose storage cannot be
-persisted is not published, revision allocations that cannot be persisted
-prevent snapshot publication, and acknowledgments that cannot be persisted
-cause the reconcile request to fail. This ensures the system never serves
-content, revisions, or acknowledgments that are not durably committed.
+Database initialization, migration, or recovery failures stop plugin startup.
+There is no silent fallback to volatile publication. Content write failures
+exclude affected new records and produce a partial snapshot; revision write
+failures prevent publication. Failed acknowledgment/deletion transactions return
+an error without committing retention changes. The standalone store supports an
+explicit in-memory mode for unit tests; the plugin always supplies its database
+service.
 
 **Single-instance restriction:** Snapshot caches and in-memory content are
 local to each backend instance. The scheduler scope is always `local`, and
 there is no cross-instance synchronization. Running multiple backend instances
 against the same database produces independent, potentially divergent snapshots.
 
-**Controlled inventory drain:** To reduce retained content below the configured
-`maxRetainedMarkdownSizeBytes`, use the `POST /skilldocs/:sourceId/reconcile`
-endpoint with a reduced `retainedDigests` set, then wait for the next refresh
-cycle to complete. The retention limit is validated at startup; a configured
-value below already-retained bytes is rejected. Increase the limit first, drain
-via reconciliation, then lower the limit.
+**Controlled inventory drain:** When the byte budget or fixed 1,000-digest ceiling
+prevents new admissions, keep the same source, provider, and retention
+authorization enabled. Narrow source inputs to tagged skills whose Markdown is
+already retained. If necessary, disable discovery and use a valid explicit
+digest-only input to obtain an empty normalized ready snapshot (digest-only
+inputs remain raw-only). Wait for ready reconciliation, confirm affected catalog
+entities have updated or disappeared, and let the provider send its acknowledgment.
+Only then can the connector release unreferenced content. Restore tagged discovery
+in batches within both limits; do not manually shorten the retain set, reset the
+retention database, or disable the source as a cleanup shortcut. Raising the byte
+budget does not raise the fixed digest ceiling. A retention limit below stored
+bytes is rejected at startup, so drain before lowering that limit.
 
 ## How it works
 
@@ -452,9 +462,9 @@ either the old complete snapshot or its complete replacement.
 
 **Response headers:**
 
-| Header                 | Condition                                                                                                                                                                                                                                                                                      |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `X-Skilldocs-Revision` | Present on `ready` snapshots only. A monotonically increasing decimal string identifying the content revision. Consumers use it to detect content freshness and as the `revision` parameter for `POST /skilldocs/:sourceId/reconcile`. Absent on `loading`, `partial`, and `failed` snapshots. |
+| Header                 | Condition                                                                                                                                                                                                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `X-Skilldocs-Revision` | Present on every completed `ready`, `partial`, or `failed` snapshot; absent on initial `loading`. A durable, monotonically increasing decimal string identifying the observation. Only the current `ready` revision may authorize cleanup; a revision on a `partial` or `failed` response does not permit release. |
 
 ### `GET /api/skill-image-connector/skilldocs/:sourceId/:digest`
 
@@ -501,8 +511,8 @@ HTTP/1.1 304 Not Modified
 ETag: "sha256:abcdef..."
 ```
 
-GET does not trigger registry acquisition — it serves the current verified
-extraction content only. Same-digest tag aliases share content and ETag
+GET does not trigger registry acquisition. It serves current verified extraction
+content or retained Markdown recovered from the database. Same-digest tag aliases share content and ETag
 naturally because the digest is the content identity.
 
 ### `POST /api/skill-image-connector/skilldocs/:sourceId/reconcile`
@@ -538,7 +548,7 @@ to `plugin:catalog`). Requests from other principals receive HTTP 403.
 | `400`  | Invalid request body: missing or non-decimal `revision`, missing or invalid `retainedDigests`, duplicates, or too many entries. |
 | `403`  | Unauthorized: caller is not the configured catalog provider or authentication failed.                                           |
 | `404`  | Unknown source ID.                                                                                                              |
-| `409`  | Revision mismatch (the source has moved to a newer revision) or conflicting retain set for an already-acknowledged revision.    |
+| `409`  | Revision mismatch, a current snapshot that is not ready, or a conflicting retain set for an already-acknowledged revision.      |
 | `413`  | Request body exceeds 5 MiB.                                                                                                     |
 
 **Idempotency:** Retrying the same `revision` and `retainedDigests` combination

@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import type {
-  DatabaseService,
-  LoggerService,
+import {
+  resolvePackagePath,
+  type DatabaseService,
+  type LoggerService,
 } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
+import type { Knex } from 'knex';
 import {
   DEFAULT_MAX_RETAINED_MARKDOWN_SIZE,
   MAX_RETAINED_DIGESTS,
@@ -53,6 +55,9 @@ interface ContentEntry {
  *
  * Uses an in-memory store. When a DatabaseService is available, content
  * and state are persisted durably and recovered after restarts.
+ * Callers must serialize mutations for each source, including admission,
+ * storage, revision allocation, acknowledgment, and cleanup. The connector
+ * owns that lock; this store does not provide internal concurrency control.
  */
 export class ContentStore {
   // In-memory content indexed by `${sourceId}\0${digest}`
@@ -84,9 +89,6 @@ export class ContentStore {
   async initialize(database?: DatabaseService): Promise<void> {
     if (database) {
       try {
-        const { resolvePackagePath } = await import(
-          '@backstage/backend-plugin-api'
-        );
         const migrationsDir = resolvePackagePath(
           '@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend',
           'migrations',
@@ -97,15 +99,13 @@ export class ContentStore {
         }
         this.durable = true;
         await this.recoverFromDatabase();
-        await this.recoverInterruptedCleanup();
         this.logger.info('ContentStore initialized with durable storage');
       } catch (error) {
-        this.logger.warn(
-          'ContentStore: database initialization failed, using in-memory storage. ' +
-            'Content will not survive restarts.',
+        this.logger.error(
+          'ContentStore: durable storage initialization failed; refusing startup.',
           error as Error,
         );
-        this.durable = false;
+        throw error;
       }
     } else {
       this.logger.info(
@@ -166,27 +166,6 @@ export class ContentStore {
       `ContentStore recovered: ${rows.length} content entries, ` +
         `${revRows.length} revision counters, ${ackRows.length} acknowledgments`,
     );
-  }
-
-  /**
-   * Complete any cleanup interrupted by a crash or restart.
-   *
-   * For each source with a persisted acknowledgment, deletes retained
-   * digests not in the acknowledged retain set. The current snapshot's
-   * digests are unavailable during recovery; the acknowledged set is the
-   * minimum protected set for safe cleanup.
-   */
-  private async recoverInterruptedCleanup(): Promise<void> {
-    for (const [sourceId, ack] of this.acknowledgments) {
-      const protectedDigests = new Set(ack.retainedDigests);
-      const deleted = await this.cleanup(sourceId, protectedDigests);
-      if (deleted > 0) {
-        this.logger.info(
-          `Recovered interrupted cleanup for source '${sourceId}': ` +
-            `deleted ${deleted} digest(s)`,
-        );
-      }
-    }
   }
 
   // ── Content storage ────────────────────────────────────────────────
@@ -384,29 +363,14 @@ export class ContentStore {
     const now = new Date().toISOString();
     const sorted = [...retainedDigests].sort();
 
-    // Persist to database first when durable — failure prevents
-    // in-memory update so unpersisted acknowledgments are never visible.
     if (this.durable && this.knex) {
-      const serialized = JSON.stringify(sorted);
-      const existing = await this.knex('reconcile_state')
-        .where({ source_id: sourceId })
-        .first();
-      if (existing) {
-        await this.knex('reconcile_state')
-          .where({ source_id: sourceId })
-          .update({
-            ack_revision: revision,
-            ack_retained_digests: serialized,
-            ack_at: now,
-          });
-      } else {
-        await this.knex('reconcile_state').insert({
-          source_id: sourceId,
-          ack_revision: revision,
-          ack_retained_digests: serialized,
-          ack_at: now,
-        });
-      }
+      await this.persistAcknowledgment(
+        this.knex,
+        sourceId,
+        revision,
+        sorted,
+        now,
+      );
     }
 
     const state: AcknowledgmentState = {
@@ -415,6 +379,82 @@ export class ContentStore {
       acknowledgedAt: now,
     };
     this.acknowledgments.set(sourceId, state);
+  }
+
+  /**
+   * Atomically acknowledge retention and delete only content absent from both
+   * the acknowledged retain set and the current snapshot. A crash rolls back
+   * both writes or preserves both, so startup must never infer new deletions
+   * from a historical acknowledgment. Call under the source publication lock.
+   */
+  async acknowledgeAndCleanup(
+    sourceId: string,
+    revision: string,
+    retainedDigests: string[],
+    currentSnapshotDigests: ReadonlySet<string>,
+  ): Promise<number> {
+    const retained = [...retainedDigests].sort();
+    const protectedDigests = new Set([...retained, ...currentSnapshotDigests]);
+    const toDelete = (await this.getRetainedDigests(sourceId)).filter(
+      digest => !protectedDigests.has(digest),
+    );
+    const acknowledgedAt = new Date().toISOString();
+
+    if (this.durable && this.knex) {
+      await this.knex.transaction(async transaction => {
+        await this.persistAcknowledgment(
+          transaction,
+          sourceId,
+          revision,
+          retained,
+          acknowledgedAt,
+        );
+        if (toDelete.length > 0) {
+          await transaction('retained_markdown')
+            .where({ source_id: sourceId })
+            .whereIn('digest', toDelete)
+            .delete();
+        }
+      });
+    }
+
+    // No awaits between updating the cache entries after the durable commit.
+    this.acknowledgments.set(sourceId, {
+      revision,
+      retainedDigests: retained,
+      acknowledgedAt,
+    });
+    for (const digest of toDelete) {
+      this.content.delete(this.contentKey(sourceId, digest));
+    }
+    return toDelete.length;
+  }
+
+  private async persistAcknowledgment(
+    client: Knex,
+    sourceId: string,
+    revision: string,
+    retainedDigests: string[],
+    acknowledgedAt: string,
+  ): Promise<void> {
+    const values = {
+      ack_revision: revision,
+      ack_retained_digests: JSON.stringify(retainedDigests),
+      ack_at: acknowledgedAt,
+    };
+    const existing = await client('reconcile_state')
+      .where({ source_id: sourceId })
+      .first();
+    if (existing) {
+      await client('reconcile_state')
+        .where({ source_id: sourceId })
+        .update(values);
+    } else {
+      await client('reconcile_state').insert({
+        source_id: sourceId,
+        ...values,
+      });
+    }
   }
 
   /**

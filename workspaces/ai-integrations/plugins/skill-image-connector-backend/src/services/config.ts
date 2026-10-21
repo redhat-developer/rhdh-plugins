@@ -284,12 +284,21 @@ export function readMaxRetainedMarkdownSizeBytes(config: Config): number {
  */
 export function readCatalogProviderPluginId(config: Config): string {
   const source = config.getOptionalConfig('skillImageConnector');
-  const value =
-    source?.getOptionalString('catalogProviderPluginId') ?? 'catalog';
-  if (!value.trim()) {
+  let value: unknown;
+  try {
+    // Read the raw optional value to distinguish empty strings from wrong
+    // types without ConfigReader's getOptionalString empty-string TypeError.
+    value = source?.getOptional('catalogProviderPluginId');
+  } catch {
     throw new InputError(
-      'skillImageConnector.catalogProviderPluginId must be a non-empty string',
+      'skillImageConnector.catalogProviderPluginId must be a string',
     );
   }
-  return value.trim();
+  if (value === undefined) return 'catalog';
+  if (typeof value !== 'string') {
+    throw new InputError(
+      'skillImageConnector.catalogProviderPluginId must be a string',
+    );
+  }
+  return value.trim() || 'catalog';
 }

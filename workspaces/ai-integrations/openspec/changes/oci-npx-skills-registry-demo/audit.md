@@ -1,5 +1,63 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
+**Last audited:** 2026-10-21T19:03:14Z
+
+### Summary
+
+Focused implementation/specification consistency update for PR #5297's retention
+review corrections. This is not a new independent full-change audit. The connector
+now commits an acknowledgment and its exact eligible deletions in one database
+transaction, updating memory only after commit. Startup recovers remaining rows
+without inferring deletions from historical retain sets. Configured database,
+migration, and recovery errors prevent startup instead of enabling volatile
+publication. Every completed ready/partial/failed snapshot receives a durable
+revision; only the current ready revision may authorize new cleanup.
+
+README and D8 now describe the transaction, restart protection, failure behavior,
+completed-observation revisions, and controlled inventory drain. Optional blank
+catalogProviderPluginId values use catalog; wrong types are rejected. ContentStore
+requires external per-source serialization, provided by the connector's lock.
+Task 6.1 is checked based on merged PR #5292 and the maintainer's earlier endpoint
+verification. Task 4.2 completion remains intact. Tasks 4.3–4.5 and 6.3–6.5 are not
+completed by these changes. The maintainer reported successful regression testing of these retention
+corrections before authorizing the commit; earlier historical verification is
+not reinterpreted as that sign-off.
+
+| Focused artifact consistency            | CRITICAL | WARNING | SUGGESTION |
+| --------------------------------------- | -------- | ------- | ---------- |
+| Remaining findings in this focused pass | 0        | 1       | 0          |
+
+### Findings
+
+- CRITICAL: None in this focused pass.
+- WARNING: The current journal helper does not recognize two pre-existing
+  historical event names, `status.correction` and `status.completion`, introduced
+  by the earlier status-tracking PRs. Those entries are preserved unchanged;
+  the new `artifact.revised` entries were accepted by the helper. This is a
+  historical journal/helper compatibility issue, not a retention code failure.
+- SUGGESTION: None in this focused pass.
+
+### Verification scope
+
+Regression coverage uses real SQLite through initialize(database), including
+migration/recovery reads, protection of newer unacknowledged content and current
+snapshot content, transaction rollback on an actual SQL DELETE failure, retry
+after recovery, and database startup failures. HTTP coverage verifies revisions
+on partial/failed observations, rejection of partial cleanup requests, retained
+Markdown, and idempotent retry of a prior successful acknowledgment. These tests
+reconstruct the store over the database; they do not claim abrupt-process crash
+or PostgreSQL verification. Connector tests pass (598 tests across 18 suites),
+including migration failures and SQL-trigger rollback. Workspace type checking,
+build, formatting, strict OpenSpec validation, and changed-package lint pass.
+Workspace-wide lint exits with a worker out-of-memory error, including a host
+retry with an increased heap; it is not reported as passing.
+
+---
+
+## Historical reports before PR #5297 retention corrections
+
+## Audit Report: oci-npx-skills-registry-demo
+
 **Last audited:** 2026-10-21T15:30:00Z
 
 ### Summary

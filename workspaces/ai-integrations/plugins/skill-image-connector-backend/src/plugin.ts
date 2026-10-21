@@ -1175,20 +1175,12 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               currentDigests.add(skill.digest);
             }
           }
-          const protectedDigests = new Set([
-            ...retainedDigests,
-            ...currentDigests,
-          ]);
-
-          // Save acknowledgment and perform cleanup
-          await contentStore.saveAcknowledgment(
+          // Persist the acknowledgment and authorized deletions together.
+          const deleted = await contentStore.acknowledgeAndCleanup(
             sourceId,
             revision,
             retainedDigests,
-          );
-          const deleted = await contentStore.cleanup(
-            sourceId,
-            protectedDigests,
+            currentDigests,
           );
 
           pluginLogger.info(
@@ -1352,15 +1344,9 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                   hasConfiguredSources,
                 );
 
-                // D8: Allocate a durable monotonic revision for ready
-                // snapshots only. Partial/failed snapshots do not receive
-                // revisions, so X-Skilldocs-Revision is not emitted and
-                // reconciliation cannot reference them — aligning the API
-                // contract between header emission and reconcile acceptance.
-                let revision: string | undefined;
-                if (snapshot.status === 'ready') {
-                  revision = await contentStore.allocateRevision(source.id);
-                }
+                // Every completed observation receives a durable revision.
+                // Only a current ready observation can authorize cleanup.
+                const revision = await contentStore.allocateRevision(source.id);
 
                 // Publish synchronously before awaiting cleanup, so callers
                 // see a complete inventory and another source never loses

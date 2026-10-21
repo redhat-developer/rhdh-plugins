@@ -58,7 +58,7 @@ export interface Config {
      * @visibility backend
      */
     maxRetainedMarkdownSizeBytes?: number;
-    /** Plugin ID of the authorized catalog provider for reconciliation acknowledgments. Defaults to 'catalog'. Only this principal may call POST /skilldocs/:sourceId/reconcile.
+    /** Plugin ID of the authorized catalog provider for reconciliation acknowledgments. Omitted or blank values default to 'catalog'; non-string values are rejected. Only this principal may call POST /skilldocs/:sourceId/reconcile.
      * @visibility backend
      */
     catalogProviderPluginId?: string;

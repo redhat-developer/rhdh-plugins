@@ -368,34 +368,6 @@ describe('ContentStore', () => {
     });
   });
 
-  describe('recoverInterruptedCleanup', () => {
-    it('deletes unreferenced digests for sources with persisted acknowledgments', async () => {
-      const store = await createStore();
-      // Store content and save an acknowledgment that only retains digest1
-      await store.store('source-a', digest1, '# Retained');
-      await store.store('source-a', digest2, '# Orphaned');
-      await store.saveAcknowledgment('source-a', '1', [digest1]);
-
-      // Manually invoke recoverInterruptedCleanup
-      await (store as any).recoverInterruptedCleanup();
-
-      // digest2 should be cleaned up, digest1 should remain
-      expect(await store.get('source-a', digest1)).toBe('# Retained');
-      expect(await store.get('source-a', digest2)).toBeUndefined();
-    });
-
-    it('does nothing when no acknowledgments exist', async () => {
-      const store = await createStore();
-      await store.store('source-a', digest1, '# Content');
-
-      // No acknowledgments — nothing to recover
-      await (store as any).recoverInterruptedCleanup();
-
-      // Content should remain
-      expect(await store.get('source-a', digest1)).toBe('# Content');
-    });
-  });
-
   describe('deterministic race behavior', () => {
     it('concurrent stores for the same digest are idempotent', async () => {
       const store = await createStore();
