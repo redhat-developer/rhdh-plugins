@@ -328,21 +328,31 @@ snapshot completeness: a `partial` refresh does not discard content for retained
 entities, and content is recovered from durable storage after restarts. See D8
 for the dedicated Markdown endpoint and content lifecycle.
 
-> **Tasks 4.1/4.2 simplification:** This note describes the initial
-> implementation introduced with task 4.1 (PR #5291) and partial progress
-> toward task 4.2, not a completion or waiver of 4.2 requirements. The
-> current provider implementation uses `type: 'full'` mutations scoped per
-> source instead of the delta mutations and database persistence described
-> above. `loading` and `failed` statuses skip mutation (preserving previous
-> entities); `partial` snapshots are currently handled as full replacements.
-> Consumer validation failures (source-reference construction errors,
-> malformed snapshots) must reject the invalid source snapshot and preserve
-> existing entities without additions, updates, or removals; silently
-> skipping invalid records while returning success is not an approved
-> contract simplification. Delta reconciliation, durable persistence,
-> crash-safe pending records, and comprehensive status handling are deferred
-> to tasks 4.3 and 4.4. Remaining 4.2 validation and defaulting fixes are
-> tracked by RHIDP-17329; the integration/completion gate is RHIDP-17331.
+> **Tasks 4.1/4.2 simplification:** Task 4.1 (PR #5291) introduced the
+> initial provider implementation with independently configured source
+> instances, Backstage discovery, service tokens, and substantial entity
+> construction including OCI/npx mapping, separate tag aliases, and stable
+> identities. PR #5304 completed the remaining task 4.2 scope: upfront
+> source-reference validation rejecting invalid snapshots without additions,
+> updates, or removals; nonblank invalid owner/lifecycle hint defaulting to
+> configured values; consumer regression tests; and updated spec scenarios.
+> The snapshot-validation and entity-construction scope of 4.2 is complete.
+> The current provider implementation uses `type: 'full'` mutations scoped
+> per source instead of the delta mutations and database persistence
+> described above. `loading` and `failed` statuses skip mutation (preserving
+> previous entities); `partial` snapshots are currently handled as full
+> replacements. Consumer validation failures (source-reference construction
+> errors, malformed snapshots) reject the invalid source snapshot and
+> preserve existing entities without additions, updates, or removals. Delta
+> reconciliation, durable persistence, crash-safe pending records, and
+> comprehensive status handling are deferred to tasks 4.3 and 4.4.
+> RHIDP-17331's broader runtime/reconciliation work is tracked separately
+> under those tasks; task 4.2's completion covers its snapshot-validation
+> and entity-construction scope, while RHIDP-17331 gates the remaining
+> provider infrastructure in 4.3–4.5. Marking 4.2 complete was previously
+> deferred pending RHIDP-17331 (#5301); that gate applied to the broader
+> integration/reconciliation scope, not to the validation/construction work
+> that #5291 and #5304 together address.
 
 ### D7 — Public-source safety, bounds, and configuration
 

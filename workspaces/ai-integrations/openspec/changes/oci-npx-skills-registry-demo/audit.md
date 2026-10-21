@@ -1,5 +1,101 @@
 ## Audit Report: oci-npx-skills-registry-demo
 
+**Last audited:** 2026-10-21T15:30:00Z
+
+### Summary
+
+Focused documentation update restoring task 4.2 completion after PR #5304
+merged the remaining source-reference validation and owner/lifecycle
+defaulting work (RHIDP-17329). PR #5304 adds upfront source-reference
+validation before mapping entities (rejecting malformed OCI references,
+OCI URI/digest disagreement, and invalid npx references without mutations),
+applies configured owner/lifecycle defaults to invalid nonblank hints, adds
+eight consumer regression tests, updates the provider README behavior, and
+adds three scenarios and npx-reference validation wording to
+`specs/skills-catalog-provider/spec.md`. PR #5304 reports 45 passing
+package tests and successful lint, TypeScript, formatting, and API-report
+checks. This evidence is attributed to #5304; no new independent audit or
+additional manual verification was performed.
+
+Task 4.2 is checked in tasks.md with a completion note crediting the initial
+mapping in PR #5291 and the validation/defaulting completion in PR #5304.
+The design.md simplification note is updated to describe the complete
+implementation timeline. The 2026-10-20 status correction (which reopened
+4.2) and the 2026-10-18 historical report are preserved below with their
+original verification scope. The scope clarification reconciling the
+earlier RHIDP-17331 completion gate is explicit: task 4.2's
+snapshot-validation and entity-construction scope is complete through
+#5291 + #5304, while RHIDP-17331's broader runtime/reconciliation work
+remains tracked separately under tasks 4.3–4.5. This does not imply
+RHIDP-17331 has merged or its acceptance criteria have passed. Tasks
+4.3–4.5, 6.3, and all other unchecked tasks remain pending. This is a
+documentation-only change — no TypeScript, tests, or runtime modifications.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Scope and validation
+
+- tasks.md: task 4.2 checked with completion note crediting #5291 + #5304;
+  task 4.1 and all other completed tasks remain checked; tasks 4.3–4.5, 6.3,
+  and other unchecked tasks remain pending.
+- design.md: simplification note updated to describe the complete 4.2
+  implementation timeline (#5291 initial mapping, #5304 validation/defaulting);
+  consumer validation failure rejection requirement preserved; scope
+  clarification reconciling the earlier RHIDP-17331 completion gate is
+  explicit.
+- audit.md: new dated status update supersedes the 2026-10-20 reopening
+  report's current status; the reopening report and the 2026-10-18 historical
+  report are preserved below with their original scope. Cross-reference note
+  added adjacent to the historical correction so the "reopened" statement
+  cannot be mistaken for current state.
+- proposal.md and specs/: inspected for stale current claims that
+  validation/defaulting work is outstanding; no stale claims found. The #5304
+  scenarios and stronger whole-snapshot validation requirement are preserved.
+  Legitimate downstream dependencies on completed 4.2 (including task 6.3)
+  are preserved.
+- journal.jsonl: completion event appended referencing #5304; #5301 correction
+  event and all earlier history preserved.
+- No new independent full-change audit was performed. Verification evidence
+  is attributed to #5304's reported results.
+
+---
+
+## Historical audits before task 4.2 completion restoration
+
+The following reports describe earlier states and retain their original
+verification scope.
+
+## Audit Report: oci-npx-skills-registry-demo (2026-10-20 status correction)
+
+> **Status update (2026-10-21):** The two code gaps identified below
+> (source-reference validation and owner hint defaulting) were addressed by
+> PR #5304, which merged on 2026-10-21. Task 4.2 is now checked; see the
+> current report above for the complete timeline. This reopening report
+> remains valid historical evidence that the earlier completion claim in
+> the 2026-10-18 audit was premature.
+
 **Last audited:** 2026-10-20T19:37:00Z
 
 ### Summary
@@ -146,7 +242,7 @@ Focused cross-artifact follow-up to the four low-severity findings in Fullsend r
 
 - D8, the OCI requirements/scenarios, and tasks 6.2/6.5 now define optional backend-only `skillImageConnector.maxRetainedMarkdownSizeBytes`: positive safe integer, default 50 MiB (52,428,800 bytes), independently applied per source. Extraction continues to use `maxAggregateContentSizeBytes`; omission does not couple either default to the other setting. Invalid values and startup limits below retained content are rejected without deletion.
 - The fixed 1,000-retained-digest limit remains aligned with the protocol/acknowledgment bounds. Raising bytes cannot fix count exhaustion. D8 specifies a controlled inventory drain under the same source ID: reconcile retained-only tagged inputs or a valid raw-only digest input, confirm catalog processing, acknowledge cleanup, then restore discovery within both bounds. Excluded catalog entities are deliberately removed; retention resets and source disablement are not shortcuts.
-- The TechDocs capability is described only under Modified Capabilities, preserving the existing model-card capability ownership. Inline prose uses “added requirements.”
+- The TechDocs capability is described only under Modified Capabilities, preserving the existing model-card capability ownership. Inline prose uses "added requirements."
 - Existing task completion states and incoming OCI scenarios are preserved. Section 6 remains pending implementation; this change adds no runtime configuration handling or TypeScript code.
 
 Validation: strict OpenSpec validation, workspace Prettier, direct cross-artifact checks of default/independence/recovery behavior, and `git diff --check`. See the append-only journal for the focused review result.
@@ -321,6 +417,11 @@ The following reports describe earlier states and scopes; their timestamps, find
 > remain checked. This correction does not erase the genuine testing that
 > confirmed 4.1 and the partial 4.2 mapping implementation.
 
+> **Status update (2026-10-21):** The two gaps identified above were
+> subsequently addressed by PR #5304 (merged 2026-10-21): upfront
+> source-reference validation and owner/lifecycle hint defaulting. Task 4.2
+> is now checked; see the current report at the top of this file.
+
 ### Summary
 
 Updated for task 4.1 and 4.2 completion in PR #5291, covering the common skills
@@ -465,7 +566,7 @@ remaining unchecked implementation tasks are intentionally in progress.
 
 ##### SUGGESTION
 
-- **G — Bare-digest snapshot completeness:** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:150` says “Explicit `images[].imageRef` parsing is unchanged.”. State the normalized-snapshot outcome for configured bare digest references. The existing README and plugin.ts preserve their raw acquisition without a tagged normalized identity, while D2/D4 require stable non-digest repository/tag keys. Specify whether those references remain raw-only and whether their deliberate omission affects normalized snapshot completeness; add a matching scenario and task if applicable. This is a task 2.5 contract decision, not an acquisition change for completed task 2.4. It remains unresolved; no snapshot policy was silently chosen.
+- **G — Bare-digest snapshot completeness:** `workspaces/ai-integrations/openspec/changes/oci-npx-skills-registry-demo/design.md:150` says "Explicit `images[].imageRef` parsing is unchanged.". State the normalized-snapshot outcome for configured bare digest references. The existing README and plugin.ts preserve their raw acquisition without a tagged normalized identity, while D2/D4 require stable non-digest repository/tag keys. Specify whether those references remain raw-only and whether their deliberate omission affects normalized snapshot completeness; add a matching scenario and task if applicable. This is a task 2.5 contract decision, not an acquisition change for completed task 2.4. It remains unresolved; no snapshot policy was silently chosen.
 
 ##### Corrections and validation
 
