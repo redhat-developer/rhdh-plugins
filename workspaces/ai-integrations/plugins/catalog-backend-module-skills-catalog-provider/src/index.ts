@@ -26,8 +26,17 @@
 export { catalogModuleSkillsCatalogProvider as default } from './module';
 export { SkillsCatalogProvider } from './SkillsCatalogProvider';
 export { readSkillsCatalogProviderConfigs } from './config';
+export { calculateReconciliationPlan } from './reconciliation-planner';
 export type {
+  CommittedSourceState,
+  ExternalOwnership,
+  IdentityCollision,
   MappedSkillEntity,
+  OwnedEntity,
+  PlannedRemoval,
+  PlannedUpsert,
+  ReconciliationPlan,
+  ReconciliationPlanInput,
   SkillsCatalogProviderConfig,
   SourceConsumerConfig,
 } from './types';
