@@ -1,11 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
-## 3.1.1
+## 3.2.1
 
 ### Patch Changes
 
 - 323350d: Add the Red Hat Developer Hub icon as an inline React SVG component (`RedHatDeveloperHubLogo`) in the defaults directory for use as the default company icon.
 - dfdd543: Use `width: auto` on the masthead so `margin-right` for a docked application drawer (Quickstart / Lightspeed) actually shrinks the bar instead of overflowing past the drawer.
+
+## 3.2.0
+
+### Minor Changes
+
+- 2ec9351: Remove the `/legacy` subpath export and the legacy frontend system plugin implementation.
+
+### Patch Changes
+
+- 2ffd1cf: Make the masthead span the full viewport width and show the company logo by default, matching PatternFly / OFS header layout. Publish `--rhdh-global-header-height` and offset the fixed Backstage sidebar root below the masthead (`height: 100vh − header`, drawer fills the root) so the header can take the full viewport width.
 
 ## 3.1.0
 
