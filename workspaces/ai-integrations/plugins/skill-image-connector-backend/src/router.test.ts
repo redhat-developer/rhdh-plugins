@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import {
@@ -26,7 +27,10 @@ import request from 'supertest';
 import { createRouter } from './router';
 import type { ReconcileHandler, SourceSnapshotMeta } from './router';
 import type { SkillImageExtraction } from './services/types';
-import { MAX_RETAINED_DIGESTS } from './services/types';
+import {
+  MAX_RECONCILE_BODY_SIZE,
+  MAX_RETAINED_DIGESTS,
+} from './services/types';
 
 const mockLogger: LoggerService = {
   info: jest.fn(),
@@ -548,11 +552,11 @@ describe('createRouter', () => {
         })();
 
       // Mock httpAuth for test isolation
-      const mockHttpAuth = {
-        credentials: jest.fn().mockResolvedValue({
-          principal: { subject: 'plugin:catalog' },
-        }),
-      };
+      const mockHttpAuth = mockServices.httpAuth.mock({
+        credentials: jest
+          .fn()
+          .mockResolvedValue(mockCredentials.service('plugin:catalog')),
+      });
 
       return createRouter(
         mockLogger,
@@ -563,7 +567,7 @@ describe('createRouter', () => {
         undefined,
         undefined,
         opts.handler,
-        mockHttpAuth as any,
+        mockHttpAuth,
         'catalog',
       ).then(router => {
         const testApp = express();
@@ -585,6 +589,55 @@ describe('createRouter', () => {
 
       expect(res.status).toBe(204);
       expect(handler).toHaveBeenCalledWith('quay-public', '5', [validDigest]);
+    });
+
+    it('accepts JSON larger than the default parser limit on reconcile', async () => {
+      const handler: ReconcileHandler = jest
+        .fn()
+        .mockResolvedValue({ status: 204 });
+      const { testApp } = await buildReconcileApp({ handler });
+
+      const res = await request(testApp)
+        .post('/skilldocs/quay-public/reconcile')
+        .send({
+          revision: '1',
+          retainedDigests: [],
+          padding: 'x'.repeat(128 * 1024),
+        });
+
+      expect(res.status).toBe(204);
+      expect(handler).toHaveBeenCalledWith('quay-public', '1', []);
+    });
+
+    it('rejects reconcile JSON larger than the configured body limit', async () => {
+      const handler: ReconcileHandler = jest.fn();
+      const { testApp } = await buildReconcileApp({ handler });
+
+      const res = await request(testApp)
+        .post('/skilldocs/quay-public/reconcile')
+        .send({
+          revision: '1',
+          retainedDigests: [],
+          padding: 'x'.repeat(MAX_RECONCILE_BODY_SIZE),
+        });
+
+      expect(res.status).toBe(413);
+      expect(res.body).toEqual({ error: 'Request body too large' });
+      expect(handler).not.toHaveBeenCalled();
+    });
+
+    it('does not parse JSON request bodies on GET routes', async () => {
+      const handler: ReconcileHandler = jest.fn();
+      const { testApp } = await buildReconcileApp({ handler });
+
+      const res = await request(testApp)
+        .get('/skills/quay-public')
+        .set('Content-Type', 'application/json')
+        .send('{invalid-json');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(validOciSnapshotReady);
+      expect(handler).not.toHaveBeenCalled();
     });
 
     it('returns 400 for missing revision', async () => {
@@ -641,11 +694,11 @@ describe('createRouter', () => {
 
     it('returns 403 for unauthorized principal', async () => {
       const handler: ReconcileHandler = jest.fn();
-      const mockHttpAuth = {
-        credentials: jest.fn().mockResolvedValue({
-          principal: { subject: 'plugin:other-plugin' },
-        }),
-      };
+      const mockHttpAuth = mockServices.httpAuth.mock({
+        credentials: jest
+          .fn()
+          .mockResolvedValue(mockCredentials.service('plugin:other-plugin')),
+      });
 
       const router = await createRouter(
         mockLogger,
@@ -656,7 +709,7 @@ describe('createRouter', () => {
         undefined,
         undefined,
         handler,
-        mockHttpAuth as any,
+        mockHttpAuth,
         'catalog',
       );
       const testApp = express();
