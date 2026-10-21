@@ -292,23 +292,28 @@ export class ContentStore {
   /**
    * Delete content for specific digests within a source.
    */
-  async deleteDigests(sourceId: string, digests: string[]): Promise<number> {
+  private async deleteDigests(
+    sourceId: string,
+    digests: string[],
+  ): Promise<number> {
     if (digests.length === 0) return 0;
+
+    // Persist deletion to database first when durable — failure
+    // prevents in-memory update, matching store/allocateRevision/
+    // saveAcknowledgment's DB-first pattern.
+    if (this.durable && this.knex) {
+      await this.knex('retained_markdown')
+        .where({ source_id: sourceId })
+        .whereIn('digest', digests)
+        .delete();
+    }
+
     let deleted = 0;
     for (const digest of digests) {
       const key = this.contentKey(sourceId, digest);
       if (this.content.delete(key)) {
         deleted++;
       }
-    }
-
-    // Persist deletion to database when durable — failure propagates
-    // so callers know the deletion was not committed.
-    if (this.durable && this.knex && deleted > 0) {
-      await this.knex('retained_markdown')
-        .where({ source_id: sourceId })
-        .whereIn('digest', digests)
-        .delete();
     }
 
     return deleted;

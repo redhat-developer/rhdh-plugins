@@ -325,6 +325,30 @@ describe('ContentStore', () => {
       expect(await store.getCurrentRevision('source-a')).toBeUndefined();
     });
 
+    it('deleteDigests() propagates database delete failures without modifying memory', async () => {
+      const store = new ContentStore(mockLogger, 100_000);
+      await store.initialize();
+      // Store content in memory first
+      await store.store('source-a', digest1, '# Content');
+
+      // Enable durable mode with a failing database
+      const mockKnex = jest.fn().mockImplementation(() => ({
+        where: jest.fn().mockReturnThis(),
+        whereIn: jest.fn().mockReturnThis(),
+        delete: jest.fn().mockRejectedValue(new Error('DB delete failed')),
+      }));
+      (store as any).durable = true;
+      (store as any).knex = mockKnex;
+
+      // cleanup calls deleteDigests internally — should propagate the error
+      await expect(store.cleanup('source-a', new Set())).rejects.toThrow(
+        'DB delete failed',
+      );
+
+      // Content should still be in memory after failed DB delete
+      expect(await store.get('source-a', digest1)).toBe('# Content');
+    });
+
     it('saveAcknowledgment() propagates database write failures', async () => {
       const store = new ContentStore(mockLogger, 100_000);
       const mockKnex = jest.fn().mockImplementation(() => ({
@@ -341,6 +365,34 @@ describe('ContentStore', () => {
 
       // Acknowledgment should NOT be in memory
       expect(await store.getLastAcknowledgment('source-a')).toBeUndefined();
+    });
+  });
+
+  describe('recoverInterruptedCleanup', () => {
+    it('deletes unreferenced digests for sources with persisted acknowledgments', async () => {
+      const store = await createStore();
+      // Store content and save an acknowledgment that only retains digest1
+      await store.store('source-a', digest1, '# Retained');
+      await store.store('source-a', digest2, '# Orphaned');
+      await store.saveAcknowledgment('source-a', '1', [digest1]);
+
+      // Manually invoke recoverInterruptedCleanup
+      await (store as any).recoverInterruptedCleanup();
+
+      // digest2 should be cleaned up, digest1 should remain
+      expect(await store.get('source-a', digest1)).toBe('# Retained');
+      expect(await store.get('source-a', digest2)).toBeUndefined();
+    });
+
+    it('does nothing when no acknowledgments exist', async () => {
+      const store = await createStore();
+      await store.store('source-a', digest1, '# Content');
+
+      // No acknowledgments — nothing to recover
+      await (store as any).recoverInterruptedCleanup();
+
+      // Content should remain
+      expect(await store.get('source-a', digest1)).toBe('# Content');
     });
   });
 

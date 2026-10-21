@@ -26,6 +26,7 @@ import request from 'supertest';
 import { createRouter } from './router';
 import type { ReconcileHandler, SourceSnapshotMeta } from './router';
 import type { SkillImageExtraction } from './services/types';
+import { MAX_RETAINED_DIGESTS } from './services/types';
 
 const mockLogger: LoggerService = {
   info: jest.fn(),
@@ -698,6 +699,24 @@ describe('createRouter', () => {
         .send({ revision: '1', retainedDigests: [] });
 
       expect(res.status).toBe(404);
+    });
+
+    it('returns 400 when retainedDigests exceeds MAX_RETAINED_DIGESTS', async () => {
+      const handler: ReconcileHandler = jest.fn();
+      const { testApp } = await buildReconcileApp({ handler });
+
+      const tooManyDigests = Array.from(
+        { length: MAX_RETAINED_DIGESTS + 1 },
+        (_, i) => `sha256:${i.toString(16).padStart(64, '0')}`,
+      );
+
+      const res = await request(testApp)
+        .post('/skilldocs/quay-public/reconcile')
+        .send({ revision: '1', retainedDigests: tooManyDigests });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain(`at most ${MAX_RETAINED_DIGESTS}`);
+      expect(handler).not.toHaveBeenCalled();
     });
 
     it('returns 400 for missing retainedDigests', async () => {

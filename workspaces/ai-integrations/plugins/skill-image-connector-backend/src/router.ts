@@ -61,8 +61,8 @@ export async function createRouter(
   catalogProviderPluginId?: string,
 ): Promise<express.Router> {
   const router = Router();
-  // Per-route body-size middleware is used for the reconcile endpoint;
-  // disable the router-level JSON parser to avoid shadowing it.
+  // Router-level JSON parser with elevated 5 MiB limit to support the
+  // reconcile endpoint's body size requirement.
   router.use(express.json({ limit: MAX_RECONCILE_BODY_SIZE }));
 
   router.get('/health', async (_req, res) => {
@@ -171,112 +171,103 @@ export async function createRouter(
   // from the configured catalogProviderPluginId. See D8 for the full
   // protocol specification.
   if (reconcileHandler && httpAuth) {
-    // Body-size limit middleware: reject bodies > 5 MiB before parsing
-    const bodySizeLimit = express.json({
-      limit: MAX_RECONCILE_BODY_SIZE,
+    router.post('/skilldocs/:sourceId/reconcile', async (req, res) => {
+      const sourceId = req.params.sourceId;
+
+      // Reject blank, '.', and '..' source IDs
+      if (!sourceId || sourceId === '.' || sourceId === '..') {
+        res.status(404).json({ error: 'Unknown source' });
+        return;
+      }
+
+      // Authentication and authorization
+      try {
+        const credentials = await httpAuth.credentials(req, {
+          allow: ['service'],
+        });
+
+        // Authorize: only the configured catalogProviderPluginId may call
+        const principal = credentials.principal as {
+          subject: string;
+        };
+        if (
+          !catalogProviderPluginId ||
+          principal.subject !== `plugin:${catalogProviderPluginId}`
+        ) {
+          res.status(403).json({
+            error: `Unauthorized: only ${catalogProviderPluginId} may reconcile`,
+          });
+          return;
+        }
+      } catch {
+        res.status(403).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      // Validate body structure
+      const body = req.body;
+      if (!body || typeof body !== 'object') {
+        res.status(400).json({ error: 'Request body must be a JSON object' });
+        return;
+      }
+
+      const { revision, retainedDigests } = body;
+
+      // Validate revision
+      if (typeof revision !== 'string' || !/^[0-9]+$/.test(revision)) {
+        res.status(400).json({
+          error: 'revision must be a decimal string',
+        });
+        return;
+      }
+
+      // Validate retainedDigests
+      if (!Array.isArray(retainedDigests)) {
+        res.status(400).json({
+          error: 'retainedDigests must be an array',
+        });
+        return;
+      }
+
+      if (retainedDigests.length > MAX_RETAINED_DIGESTS) {
+        res.status(400).json({
+          error: `retainedDigests may contain at most ${MAX_RETAINED_DIGESTS} entries`,
+        });
+        return;
+      }
+
+      // Validate each digest is a canonical sha256 digest
+      for (const d of retainedDigests) {
+        if (typeof d !== 'string' || !isValidDigest(d)) {
+          res.status(400).json({
+            error: `Invalid digest in retainedDigests: ${String(d)}`,
+          });
+          return;
+        }
+      }
+
+      // Check for duplicates in retainedDigests
+      const uniqueDigests = new Set(retainedDigests);
+      if (uniqueDigests.size !== retainedDigests.length) {
+        res.status(400).json({
+          error: 'retainedDigests contains duplicate entries',
+        });
+        return;
+      }
+
+      // Delegate to the handler
+      const result = await reconcileHandler(
+        sourceId,
+        revision,
+        retainedDigests,
+      );
+
+      if (result.status === 204) {
+        res.status(204).end();
+      } else {
+        res.status(result.status).json({ error: result.error });
+      }
     });
-
-    router.post(
-      '/skilldocs/:sourceId/reconcile',
-      bodySizeLimit,
-      async (req, res) => {
-        const sourceId = req.params.sourceId;
-
-        // Reject blank, '.', and '..' source IDs
-        if (!sourceId || sourceId === '.' || sourceId === '..') {
-          res.status(404).json({ error: 'Unknown source' });
-          return;
-        }
-
-        // Authentication and authorization
-        try {
-          const credentials = await httpAuth.credentials(req, {
-            allow: ['service'],
-          });
-
-          // Authorize: only the configured catalogProviderPluginId may call
-          const principal = credentials.principal as {
-            subject: string;
-          };
-          if (
-            !catalogProviderPluginId ||
-            principal.subject !== `plugin:${catalogProviderPluginId}`
-          ) {
-            res.status(403).json({
-              error: `Unauthorized: only ${catalogProviderPluginId} may reconcile`,
-            });
-            return;
-          }
-        } catch {
-          res.status(403).json({ error: 'Unauthorized' });
-          return;
-        }
-
-        // Validate body structure
-        const body = req.body;
-        if (!body || typeof body !== 'object') {
-          res.status(400).json({ error: 'Request body must be a JSON object' });
-          return;
-        }
-
-        const { revision, retainedDigests } = body;
-
-        // Validate revision
-        if (typeof revision !== 'string' || !/^[0-9]+$/.test(revision)) {
-          res.status(400).json({
-            error: 'revision must be a decimal string',
-          });
-          return;
-        }
-
-        // Validate retainedDigests
-        if (!Array.isArray(retainedDigests)) {
-          res.status(400).json({
-            error: 'retainedDigests must be an array',
-          });
-          return;
-        }
-
-        if (retainedDigests.length > MAX_RETAINED_DIGESTS) {
-          res.status(400).json({
-            error: `retainedDigests may contain at most ${MAX_RETAINED_DIGESTS} entries`,
-          });
-          return;
-        }
-
-        // Validate each digest is a canonical sha256 digest
-        for (const d of retainedDigests) {
-          if (typeof d !== 'string' || !isValidDigest(d)) {
-            res.status(400).json({
-              error: `Invalid digest in retainedDigests: ${String(d)}`,
-            });
-            return;
-          }
-        }
-
-        // Check for duplicates in retainedDigests
-        const uniqueDigests = new Set(retainedDigests);
-        if (uniqueDigests.size !== retainedDigests.length) {
-          res.status(400).json({
-            error: 'retainedDigests contains duplicate entries',
-          });
-          return;
-        }
-
-        // Delegate to the handler
-        const result = await reconcileHandler(
-          sourceId,
-          revision,
-          retainedDigests,
-        );
-
-        if (result.status === 204) {
-          res.status(204).end();
-        } else {
-          res.status(result.status).json({ error: result.error });
-        }
-      },
-    );
   }
 
   router.use(

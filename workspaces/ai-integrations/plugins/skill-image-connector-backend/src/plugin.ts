@@ -1353,15 +1353,13 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                   hasConfiguredSources,
                 );
 
-                // D8: Allocate a durable monotonic revision for completed
-                // (non-loading) snapshots. Failure prevents publication so
-                // unpersisted revisions are never served.
+                // D8: Allocate a durable monotonic revision for ready
+                // snapshots only. Partial/failed snapshots do not receive
+                // revisions, so X-Skilldocs-Revision is not emitted and
+                // reconciliation cannot reference them — aligning the API
+                // contract between header emission and reconcile acceptance.
                 let revision: string | undefined;
-                if (
-                  snapshot.status === 'ready' ||
-                  snapshot.status === 'partial' ||
-                  snapshot.status === 'failed'
-                ) {
+                if (snapshot.status === 'ready') {
                   revision = await contentStore.allocateRevision(source.id);
                 }
 

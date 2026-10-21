@@ -54,7 +54,7 @@ export interface Config {
      * @visibility backend
      */
     sourceOperationDeadlineMs?: number;
-    /** Maximum retained Markdown bytes per source for durable TechDocs storage. Positive safe integer; defaults to 52428800 (50 MiB). Independent of extraction's maxAggregateContentSizeBytes. A configured value below already-retained bytes is rejected at startup.
+    /** Maximum retained Markdown bytes per source for durable skill Markdown storage. Safe integer from 1 to 9007199254740991; defaults to 52428800 (50 MiB). Independent of extraction's maxAggregateContentSizeBytes. A configured value below already-retained bytes is rejected at startup.
      * @visibility backend
      */
     maxRetainedMarkdownSizeBytes?: number;
