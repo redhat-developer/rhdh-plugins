@@ -55,6 +55,81 @@ retry with an increased heap; it is not reported as passing.
 ---
 
 ## Historical reports before PR #5297 retention corrections
+**Last audited:** 2026-10-21T19:00:00Z
+
+### Summary
+
+Covers PR #5315 (RHIDP-17330): source-scoped reconciliation planner for
+skill entity deltas. Adds `calculateReconciliationPlan`, a pure function
+computing deterministic upsert/removal deltas from committed ownership
+state and a validated connector snapshot. Implements design D6's status
+table (ready/partial/loading/failed), stale/repeated observation
+detection, and cross-source identity collision diagnosis. Includes 29
+unit tests covering partial-result retention, ready-result removal,
+successful empty discovery, source isolation, digest/content changes,
+stale/repeated observations, collision detection (internal, external,
+partial-snapshot retention), and edge cases. design.md updated with a
+task 4.4 partial-completion progress note in the D6 blockquote. tasks.md
+updated with a progress note on task 4.4 crediting the pure decision
+logic and noting remaining durable persistence and runtime integration
+work gated by RHIDP-17331. This is a focused audit of the new source
+files and documentation annotations; no new independent full-change
+audit of previous specifications was performed.
+
+| Category                   | CRITICAL | WARNING | SUGGESTION |
+| -------------------------- | -------- | ------- | ---------- |
+| A — Entity propagation     | 0        | 0       | 0          |
+| B — Enum / vocabulary      | 0        | 0       | 0          |
+| C — Semantic contradiction | 0        | 0       | 0          |
+| D — Codebase / conventions | 0        | 0       | 0          |
+| E — Ownership              | 0        | 0       | 0          |
+| F — Template residue       | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 0       | 0          |
+| H — Security lint          | 0        | 0       | 0          |
+| **Total**                  | **0**    | **0**   | **0**      |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Scope and validation
+
+- reconciliation-planner.ts: pure function with no database/network side
+  effects; handles loading/failed short-circuit, stale/repeated observation
+  detection, internal and external collision diagnosis, ready-snapshot
+  removals, and partial-snapshot retention.
+- types.ts: nine new public types exported (`OwnedEntity`,
+  `CommittedSourceState`, `ExternalOwnership`, `ReconciliationPlanInput`,
+  `PlannedUpsert`, `PlannedRemoval`, `IdentityCollision`,
+  `ReconciliationPlan`, `MappedSkillEntity` was pre-existing).
+  `ReconciliationPlan` is a discriminated union on `noOp` with typed
+  `reason` values for short-circuit and computed-empty plans.
+- reconciliation-planner.test.ts: 29 tests across loading/failed statuses,
+  stale/repeated observations, ready upserts/removals, partial retention,
+  identity collision detection (internal, external, ready + previously-owned,
+  partial + previously-owned, same-tuple dedup), source isolation,
+  digest/content changes, and edge cases (empty input, null observedAt,
+  observation-time-only advancement).
+- design.md: D6 blockquote extended with task 4.4 partial-completion note.
+- tasks.md: task 4.4 annotated with progress note.
+- README.md: behavior section updated to note `calculateReconciliationPlan`
+  export.
+- No new independent full-change audit was performed. Verification evidence
+  is from this PR's test results.
+
+---
+
+## Previous audit reports
+
+The following report covers the state before PR #5315.
 
 ## Audit Report: oci-npx-skills-registry-demo
 

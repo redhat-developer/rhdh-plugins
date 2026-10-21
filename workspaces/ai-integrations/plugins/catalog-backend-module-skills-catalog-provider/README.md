@@ -96,6 +96,10 @@ When a source returns a ready snapshot, the provider applies a `type: 'full'` mu
 
 - **Per-source failures**: HTTP, authentication, or validation failures for one source are logged and do not stop other sources.
 - **Non-ready snapshots**: Sources returning `loading` or `failed` status are skipped; their previous entities are preserved.
-- **Partial snapshots**: Sources returning `partial` status are currently handled identically to `ready` snapshots — a `type: 'full'` mutation replaces all entities for that source. Comprehensive partial-result retention is deferred to task 4.4.
+- **Partial snapshots**: Sources returning `partial` status are currently handled identically to `ready` snapshots — a `type: 'full'` mutation replaces all entities for that source. The pure reconciliation logic (`calculateReconciliationPlan`) supports partial-result retention, but runtime integration is deferred to task 4.4.
 - **Source identity mismatch**: Snapshots whose `source.id` or `source.type` do not match configuration are rejected.
 - **Source-reference validation**: All records' OCI URIs and npx references are validated before mapping. A single malformed OCI URI, URI/digest mismatch, or invalid npx reference rejects the entire snapshot without additions, updates, or removals, preserving the source's previous catalog state.
+
+### Reconciliation planner
+
+`calculateReconciliationPlan` is exported as a standalone pure function for computing deterministic upsert/removal deltas from a source's committed ownership state and a validated connector snapshot. It implements design D6's status table (ready, partial, loading, failed), stale/repeated observation detection, and cross-source identity collision diagnosis. Runtime integration with the provider's mutation pipeline is deferred to tasks 4.3–4.5.
