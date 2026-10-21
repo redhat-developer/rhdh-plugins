@@ -96,7 +96,8 @@ export type ReconciliationPlan = {
         | 'loading'
         | 'failed'
         | 'stale-observation'
-        | 'repeated-observation';
+        | 'repeated-observation'
+        | 'no-changes';
     }
   | {
       noOp: false;

@@ -204,6 +204,7 @@ export function calculateReconciliationPlan(
 
   return {
     noOp: true,
+    reason: 'no-changes',
     upserts,
     removals,
     collisions,

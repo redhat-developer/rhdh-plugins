@@ -204,11 +204,12 @@ export interface IdentityCollision {
  * read a database or call the Catalog — the caller applies
  * the plan.
  *
- * Discriminated on `noOp`: when `true`, `reason` may indicate why
- * the plan was short-circuited; when `false`, catalog mutations are
- * present. Callers must always persist `nextState` regardless of
- * `noOp`, because `nextState.observedAt` may advance even when no
- * catalog mutations occur.
+ * Discriminated on `noOp`: when `true`, `reason` indicates why
+ * no caller-visible changes were produced; when `false`, the plan
+ * contains changes requiring caller attention (upserts, removals,
+ * or collision diagnostics). Callers must always persist `nextState`
+ * regardless of `noOp`, because `nextState.observedAt` may advance
+ * even when no catalog mutations occur.
  *
  * @public
  */
@@ -233,18 +234,22 @@ export type ReconciliationPlan = {
       /**
        * Reason for a no-op plan.
        *
-       * Set when the plan was short-circuited before computing mutations.
+       * Short-circuit reasons (`loading`, `failed`, `stale-observation`,
+       * `repeated-observation`) indicate the snapshot was not processed.
+       * `no-changes` indicates a fully computed plan with no actionable
+       * deltas.
        */
       reason?:
         | 'loading'
         | 'failed'
         | 'stale-observation'
-        | 'repeated-observation';
+        | 'repeated-observation'
+        | 'no-changes';
     }
   | {
       /**
-       * `false` when the plan contains catalog mutations
-       * (upserts, removals, or collisions).
+       * `false` when the plan contains changes requiring caller
+       * attention (upserts, removals, or collision diagnostics).
        */
       noOp: false;
     }

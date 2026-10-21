@@ -542,6 +542,45 @@ describe('calculateReconciliationPlan', () => {
       expect(plan.nextState.entities).toHaveLength(0);
     });
 
+    it('retains previously-owned entity on partial snapshot with external collision', () => {
+      const key = 'contested-key';
+      const ownedEntity = makeOwned(key, digestA, 'oci', 'source-1');
+
+      // Another source now owns this catalogName
+      const externalTuple = makeTuple(key, 'npx', 'source-2');
+      const external: ExternalOwnership[] = [
+        {
+          catalogName: ownedEntity.catalogName,
+          tuple: externalTuple,
+        },
+      ];
+
+      const plan = calculateReconciliationPlan({
+        previousState: {
+          sourceType: 'oci',
+          sourceId: 'source-1',
+          observedAt: t1,
+          entities: [ownedEntity],
+        },
+        snapshotStatus: 'partial',
+        snapshotObservedAt: t2,
+        mappedEntities: [makeMapped(key, digestB, 'oci', 'source-1')],
+        externalOwnership: external,
+      });
+
+      // Collision diagnosed
+      expect(plan.collisions).toHaveLength(1);
+      expect(plan.collisions[0].scope).toBe('external');
+      // Colliding entity is not upserted
+      expect(plan.upserts).toHaveLength(0);
+      // Unlike ready, partial retains the previously-owned entity
+      expect(plan.removals).toHaveLength(0);
+      expect(plan.nextState.entities).toHaveLength(1);
+      expect(plan.nextState.entities[0].catalogName).toBe(
+        ownedEntity.catalogName,
+      );
+    });
+
     it('does not flag a collision when tuples match', () => {
       const key = 'shared-key';
       const tuple = makeTuple(key);
@@ -744,6 +783,7 @@ describe('calculateReconciliationPlan', () => {
       });
 
       expect(plan.noOp).toBe(true);
+      expect((plan as NoOpPlan).reason).toBe('no-changes');
       expect(plan.upserts).toHaveLength(0);
       expect(plan.removals).toHaveLength(0);
       expect(plan.nextState.entities).toHaveLength(0);
@@ -802,6 +842,7 @@ describe('calculateReconciliationPlan', () => {
 
       // Same entities, same digests — no actual data changes
       expect(plan.noOp).toBe(true);
+      expect((plan as NoOpPlan).reason).toBe('no-changes');
       // But the observation time does advance in the next state
       expect(plan.nextState.observedAt).toBe(t2);
     });
