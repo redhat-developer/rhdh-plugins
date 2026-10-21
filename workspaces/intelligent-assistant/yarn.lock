@@ -39,26 +39,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@adobe/react-spectrum@npm:3.47.1":
-  version: 3.47.1
-  resolution: "@adobe/react-spectrum@npm:3.47.1"
+"@adobe/react-spectrum@npm:3.47.7":
+  version: 3.47.7
+  resolution: "@adobe/react-spectrum@npm:3.47.7"
   dependencies:
-    "@internationalized/date": "npm:^3.12.2"
-    "@react-types/shared": "npm:^3.35.0"
-    "@spectrum-icons/ui": "npm:^3.7.1"
-    "@spectrum-icons/workflow": "npm:^4.3.1"
+    "@internationalized/date": "npm:^3.12.4"
+    "@react-types/shared": "npm:^3.37.0"
+    "@spectrum-icons/ui": "npm:^3.7.2"
+    "@spectrum-icons/workflow": "npm:^4.3.2"
     "@swc/helpers": "npm:^0.5.0"
     client-only: "npm:^0.0.1"
     clsx: "npm:^2.0.0"
-    react-aria: "npm:3.49.0"
-    react-aria-components: "npm:1.18.0"
-    react-stately: "npm:3.47.0"
+    react-aria: "npm:3.53.1"
+    react-aria-components: "npm:1.22.1"
+    react-stately: "npm:3.51.0"
     react-transition-group: "npm:^4.4.5"
     use-sync-external-store: "npm:^1.6.0"
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
     react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: 10c0/1812e0fc6a9108e4ebce3601326581adb0473aecf3d573cadf98f16f0da7939ed5a115750b83778f99d0f6dcdd2d7ec64ddad09bb270dd1b1a6ff73afd4028b1
+  checksum: 10c0/49c47e60c424a1601ef1e9f3042722e2135a28f2179771d602fe6098e2654d0919244527882983bd56de12de938c98eeb3b6a69dd1bf84f104986e9335967f98
   languageName: node
   linkType: hard
 
@@ -5427,12 +5427,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internationalized/date@npm:^3.12.0, @internationalized/date@npm:^3.12.2":
-  version: 3.12.2
-  resolution: "@internationalized/date@npm:3.12.2"
+"@internationalized/date@npm:^3.12.0, @internationalized/date@npm:^3.12.2, @internationalized/date@npm:^3.12.4":
+  version: 3.12.4
+  resolution: "@internationalized/date@npm:3.12.4"
   dependencies:
     "@swc/helpers": "npm:^0.5.0"
-  checksum: 10c0/1640dbec517b07a820b754c128ecd85930cc2f50b753b406611e59bff5aae8cac3a7ede575a66e462778ff007720af601779da08f0a2e5cdcac496c8b9593172
+  checksum: 10c0/150ea8543cf8ac215a076138aaf86e845c26469ea49734e11cdae19d21a8e03f3824a622f9422211540c281feda5ccf6edfd30d98e89cd15c1c305aa1101e9c8
   languageName: node
   linkType: hard
 
@@ -7787,9 +7787,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.9.0-prerelease.8":
-  version: 6.9.0-prerelease.8
-  resolution: "@patternfly/chatbot@npm:6.9.0-prerelease.8"
+"@patternfly/chatbot@npm:6.9.0":
+  version: 6.9.0
+  resolution: "@patternfly/chatbot@npm:6.9.0"
   dependencies:
     "@patternfly/react-code-editor": "npm:^6.7.0-prerelease.6"
     "@patternfly/react-core": "npm:^6.7.0-prerelease.6"
@@ -7817,7 +7817,7 @@ __metadata:
       optional: false
     monaco-editor:
       optional: false
-  checksum: 10c0/1b5857cabae7266c4e176f4365e2c2fc409eb3ab95733eb815af2f64f6930049595b6f704bb0f1b07ccfbd2bfa9be7a0ee1299d7e8c60e41d64efc4b4a0e6326
+  checksum: 10c0/2c0b4dc71252e2dd91c0d12334177bc3cea2484b713f4ce34273f5e4cc9ad90cb6c61010f777e721f36078c04e94f2cbd35ef59b06e99ba391bb9c569ebf826f
   languageName: node
   linkType: hard
 
@@ -8445,7 +8445,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-intelligent-assistant@workspace:plugins/intelligent-assistant"
   dependencies:
-    "@adobe/react-spectrum": "npm:3.47.1"
+    "@adobe/react-spectrum": "npm:3.47.7"
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/core-components": "npm:^0.18.13"
     "@backstage/core-plugin-api": "npm:^1.12.9"
@@ -8460,7 +8460,7 @@ __metadata:
     "@monaco-editor/react": "npm:^4.7.0"
     "@mui/icons-material": "npm:^6.1.8"
     "@mui/material": "npm:^5.12.2"
-    "@patternfly/chatbot": "npm:6.9.0-prerelease.8"
+    "@patternfly/chatbot": "npm:6.9.0"
     "@patternfly/react-code-editor": "npm:6.6.1"
     "@patternfly/react-core": "npm:6.6.1"
     "@patternfly/react-icons": "npm:^6.5.0"
@@ -10078,9 +10078,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@spectrum-icons/ui@npm:^3.7.1":
-  version: 3.7.1
-  resolution: "@spectrum-icons/ui@npm:3.7.1"
+"@spectrum-icons/ui@npm:^3.7.2":
+  version: 3.7.2
+  resolution: "@spectrum-icons/ui@npm:3.7.2"
   dependencies:
     "@adobe/react-spectrum-ui": "npm:1.2.1"
     "@babel/runtime": "npm:^7.24.4"
@@ -10089,13 +10089,13 @@ __metadata:
     "@adobe/react-spectrum": ^3.47.0
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
     react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: 10c0/271397cdcd4c16637e2e9383b646ba016678795b5f96644aec7bd234e6a0fc9a84f1156cb4fbb2ce52eb51efff9fa3bd31fec763c4f70dbf90c43274cde1e670
+  checksum: 10c0/84239ac6729e8d228b861e97bf22802fc8b4f537d93cafcbc55604f4156f2d7dd2855ff0ff6a557c390afb26124b86cd5e5ade50802e53cbd0a326627fcb3f73
   languageName: node
   linkType: hard
 
-"@spectrum-icons/workflow@npm:^4.3.1":
-  version: 4.3.1
-  resolution: "@spectrum-icons/workflow@npm:4.3.1"
+"@spectrum-icons/workflow@npm:^4.3.2":
+  version: 4.3.2
+  resolution: "@spectrum-icons/workflow@npm:4.3.2"
   dependencies:
     "@adobe/react-spectrum-workflow": "npm:2.3.5"
     "@swc/helpers": "npm:^0.5.0"
@@ -10103,7 +10103,7 @@ __metadata:
     "@adobe/react-spectrum": ^3.47.0
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
     react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: 10c0/cb52803b9fdd368e7566c2714215576534d7d538fa922cd83082b4971a8a881be1d35dc3d51bb129f12a47269216ce4ac6b1c70390d4583f644dda01d472e54e
+  checksum: 10c0/47acde0b75305a659333a4fcef8263b5ee96fb6dc31aeff6cc06a3d0abdf063a83e242ecbecce8c68921a16443003cb21a93f5aa06f60dcb95ab0ce92f97f606
   languageName: node
   linkType: hard
 
