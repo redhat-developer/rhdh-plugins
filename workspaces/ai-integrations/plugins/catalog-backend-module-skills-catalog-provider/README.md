@@ -61,8 +61,8 @@ catalog:
 | `sources[].sourceId`          | Yes      | —                     | Source identifier passed to `GET /skills/:sourceId`. Must be unique within this provider instance for the same `(sourceType, sourceId)` tuple.   |
 | `sources[].sourceType`        | Yes      | —                     | Expected source type: `oci` or `npx`. The provider rejects snapshots whose `source.type` does not match.                                         |
 | `namespace`                   | No       | `default`             | Catalog namespace for all entities produced by this provider instance.                                                                           |
-| `defaultOwner`                | Yes      | —                     | Default catalog owner applied when the skill record lacks an `owner` hint.                                                                       |
-| `defaultLifecycle`            | Yes      | —                     | Default catalog lifecycle applied when the skill record lacks a `lifecycle` hint.                                                                |
+| `defaultOwner`                | Yes      | —                     | Default catalog owner applied when the skill record lacks an `owner` hint or the hint is not a valid Backstage entity reference.                 |
+| `defaultLifecycle`            | Yes      | —                     | Default catalog lifecycle applied when the skill record lacks a `lifecycle` hint or the hint is not a valid catalog string.                      |
 | `schedule`                    | No       | 10m frequency/timeout | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. Defaults to ten-minute frequency, zero initial delay, and ten-minute timeout. |
 
 ## Entity kind and type
@@ -98,3 +98,4 @@ When a source returns a ready snapshot, the provider applies a `type: 'full'` mu
 - **Non-ready snapshots**: Sources returning `loading` or `failed` status are skipped; their previous entities are preserved.
 - **Partial snapshots**: Sources returning `partial` status are currently handled identically to `ready` snapshots — a `type: 'full'` mutation replaces all entities for that source. Comprehensive partial-result retention is deferred to task 4.4.
 - **Source identity mismatch**: Snapshots whose `source.id` or `source.type` do not match configuration are rejected.
+- **Source-reference validation**: All records' OCI URIs and npx references are validated before mapping. A single malformed OCI URI, URI/digest mismatch, or invalid npx reference rejects the entire snapshot without additions, updates, or removals, preserving the source's previous catalog state.
