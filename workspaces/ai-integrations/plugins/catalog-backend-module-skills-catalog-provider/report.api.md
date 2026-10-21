@@ -92,7 +92,7 @@ export type ReconciliationPlan = {
 } & (
   | {
       noOp: true;
-      reason?:
+      reason:
         | 'loading'
         | 'failed'
         | 'stale-observation'

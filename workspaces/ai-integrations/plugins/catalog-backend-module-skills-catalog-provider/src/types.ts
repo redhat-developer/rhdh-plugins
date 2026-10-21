@@ -239,7 +239,7 @@ export type ReconciliationPlan = {
        * `no-changes` indicates a fully computed plan with no actionable
        * deltas.
        */
-      reason?:
+      reason:
         | 'loading'
         | 'failed'
         | 'stale-observation'

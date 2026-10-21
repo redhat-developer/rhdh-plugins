@@ -26,7 +26,6 @@
  * This module has no database, Catalog API, or network side effects.
  * It implements the pure decision portion of OpenSpec task 4.4 per
  * design D6's status table.
- *
  */
 
 import type { IdentityTuple } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
@@ -236,6 +235,14 @@ function noOpPlan(
  * Both values must be non-null ISO 8601 UTC strings for a meaningful
  * comparison. A null committed observation means no previous commit
  * exists, so nothing is stale.
+ *
+ * Uses lexicographic string comparison, which is correct for ISO 8601
+ * timestamps only when both values use the same sub-second precision
+ * and suffix format (e.g., both `Z`-terminated, same decimal places).
+ * When the persistence layer (task 4.3) is implemented, either
+ * normalize all `observedAt` strings to a canonical format before
+ * passing to the planner, or switch to `new Date(str).getTime()`
+ * comparison.
  */
 function isStaleObservation(
   committedAt: string | null,
@@ -254,6 +261,11 @@ function isStaleObservation(
  * Both values must be non-null and equal for this to be true.
  * A null committed observation means no previous commit exists,
  * so nothing is repeated.
+ *
+ * Uses strict string equality, so the same instant expressed with
+ * different sub-second precision (e.g., `'…T10:00:00Z'` vs
+ * `'…T10:00:00.000Z'`) is not detected as a repeat. See the
+ * format consistency note on {@link isStaleObservation}.
  */
 function isRepeatedObservation(
   committedAt: string | null,

@@ -9,7 +9,7 @@ skill entity deltas. Adds `calculateReconciliationPlan`, a pure function
 computing deterministic upsert/removal deltas from committed ownership
 state and a validated connector snapshot. Implements design D6's status
 table (ready/partial/loading/failed), stale/repeated observation
-detection, and cross-source identity collision diagnosis. Includes 25
+detection, and cross-source identity collision diagnosis. Includes 29
 unit tests covering partial-result retention, ready-result removal,
 successful empty discovery, source isolation, digest/content changes,
 stale/repeated observations, collision detection (internal, external,
@@ -57,7 +57,7 @@ audit of previous specifications was performed.
   `ReconciliationPlan`, `MappedSkillEntity` was pre-existing).
   `ReconciliationPlan` is a discriminated union on `noOp` with typed
   `reason` values for short-circuit and computed-empty plans.
-- reconciliation-planner.test.ts: 25 tests across loading/failed statuses,
+- reconciliation-planner.test.ts: 29 tests across loading/failed statuses,
   stale/repeated observations, ready upserts/removals, partial retention,
   identity collision detection (internal, external, ready + previously-owned,
   partial + previously-owned, same-tuple dedup), source isolation,
