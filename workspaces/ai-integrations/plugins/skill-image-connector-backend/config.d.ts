@@ -54,6 +54,14 @@ export interface Config {
      * @visibility backend
      */
     sourceOperationDeadlineMs?: number;
+    /** Maximum retained Markdown bytes per source for durable skill Markdown storage. Safe integer from 1 to 9007199254740991; defaults to 52428800 (50 MiB). Independent of extraction's maxAggregateContentSizeBytes. A configured value below already-retained bytes is rejected at startup.
+     * @visibility backend
+     */
+    maxRetainedMarkdownSizeBytes?: number;
+    /** Plugin ID of the authorized catalog provider for reconciliation acknowledgments. Omitted or blank values default to 'catalog'; non-string values are rejected. Only this principal may call POST /skilldocs/:sourceId/reconcile.
+     * @visibility backend
+     */
+    catalogProviderPluginId?: string;
     /** @visibility backend */
     allowedRegistries?: string[];
     /** Additional HTTPS origins permitted for registry/discovery redirects. The initial registry hostname and its subdomains are allowed on the same HTTPS port. Omitted means no unrelated origins are allowed. Token realm redirects are never allowed.

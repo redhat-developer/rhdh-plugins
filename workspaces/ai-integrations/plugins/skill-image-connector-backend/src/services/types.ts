@@ -100,6 +100,24 @@ export const MAX_TIMER_DELAY_MS = 2 ** 31 - 1;
 /** Default refresh interval for Backstage scheduling (D6: ten minutes). */
 export const DEFAULT_REFRESH_INTERVAL_MINUTES = 10;
 
+/**
+ * Default maximum retained Markdown bytes per source (50 MiB).
+ * D8: independent of extraction's maxAggregateContentSizeBytes.
+ */
+export const DEFAULT_MAX_RETAINED_MARKDOWN_SIZE = 50 * 1024 * 1024;
+
+/**
+ * Fixed maximum retained unique digests per source (D8).
+ * Aligned with D2's record cap and the acknowledgment body's digest-count bound.
+ */
+export const MAX_RETAINED_DIGESTS = 1000;
+
+/**
+ * Maximum body size for POST /skilldocs/:sourceId/reconcile (5 MiB).
+ * Bodies larger than this are rejected with 413 before parsing.
+ */
+export const MAX_RECONCILE_BODY_SIZE = 5 * 1024 * 1024;
+
 /** Validated backend settings, resolved once at plugin initialization. */
 export interface SkillImageOptions {
   readonly fetchTimeoutMs: number;

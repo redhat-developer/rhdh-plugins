@@ -556,9 +556,10 @@ re-building documentation for unchanged content.
 service for durable Markdown keyed by source and verified manifest digest;
 provider reconciliation state remains separately owned under D6. Store Markdown
 before publishing a normalized record that refers to it. Recover stored content
-and retention metadata before serving requests after restart. A failed recovery
-returns 404 for missing content; it does not invalidate the entity or promise a
-previous TechDocs build exists.
+and retention metadata before serving requests after restart. Database
+initialization or recovery errors prevent connector startup. After successful
+recovery, a request for missing content returns 404; it does not invalidate the
+entity or promise a previous TechDocs build exists.
 
 Retained Markdown bytes per source, including newly admitted content, are bounded
 by optional backend-only `skillImageConnector.maxRetainedMarkdownSizeBytes`
@@ -645,6 +646,14 @@ acknowledged revision and identical set is idempotent (204 without further delet
 return 409. Retention metadata and successful acknowledgments survive restarts.
 Cleanup rechecks current references under the publication lock, so a later refresh
 cannot race deletion of content it is reusing.
+The connector implements the acknowledgment and exact eligible deletions in one
+database transaction before updating its in-memory state. Failure or interruption
+rolls back both writes; a retry can execute the same acknowledgment safely. After
+restart, recover all remaining rows without deriving new deletion candidates from
+a historical retain set. In particular, preserve newer unacknowledged content and
+content protected by the snapshot at acknowledgment time. A configured database
+initialization, migration, or recovery failure prevents plugin startup rather than
+silently permitting volatile publication or resetting revision counters.
 
 After a crash, recover/replay the pending catalog delta and commit ownership
 before sending its acknowledgment. A successful provider mutation is only queued

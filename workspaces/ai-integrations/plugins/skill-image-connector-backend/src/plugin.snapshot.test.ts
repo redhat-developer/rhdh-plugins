@@ -252,6 +252,7 @@ describe('snapshot status semantics', () => {
       .set('Authorization', mockCredentials.service.header());
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('failed');
+    expect(response.headers['x-skilldocs-revision']).toMatch(/^[1-9][0-9]*$/);
     expect(response.body.skills).toEqual([]);
     expect(response.body.observedAt).not.toBeNull();
   });
@@ -280,6 +281,7 @@ describe('snapshot status semantics', () => {
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('partial');
     // Has successful records
+    expect(response.headers['x-skilldocs-revision']).toMatch(/^[1-9][0-9]*$/);
     expect(response.body.skills.length).toBeGreaterThanOrEqual(1);
     // Has failed key in stable format
     expect(response.body.failedSkillKeys).toContain('quay.io/org/bad-skill:v1');
@@ -517,6 +519,54 @@ describe('controlled refresh lifecycle', () => {
     );
     return { server: backend.server, tasks, stop: () => backend.stop() };
   }
+
+  it('revisions partial observations without allowing cleanup and preserves identical acknowledgment retries', async () => {
+    const { server, tasks, stop } = await startScheduled({
+      maxRetries: 0,
+      images: [{ imageRef: 'quay.io/org/skill:v1' }],
+    });
+    const authorization = mockCredentials.service.header({
+      onBehalfOf: mockCredentials.service('plugin:catalog'),
+      targetPluginId: 'skill-image-connector',
+    });
+    const get = () =>
+      request(server)
+        .get('/api/skill-image-connector/skills/default')
+        .set('Authorization', authorization);
+    const acknowledge = (revision: string) =>
+      request(server)
+        .post('/api/skill-image-connector/skilldocs/default/reconcile')
+        .set('Authorization', authorization)
+        .send({ revision, retainedDigests: [] });
+    try {
+      await tasks[0].fn(new AbortController().signal);
+      const ready = await get();
+      expect(ready.body.status).toBe('ready');
+      const readyRevision = ready.headers['x-skilldocs-revision'];
+      expect((await acknowledge(readyRevision)).status).toBe(204);
+
+      fetchImage.mockRejectedValueOnce(
+        new Error('temporary acquisition failure'),
+      );
+      await tasks[0].fn(new AbortController().signal);
+      const partial = await get();
+      expect(partial.body.status).toBe('partial');
+      const partialRevision = partial.headers['x-skilldocs-revision'];
+      expect(BigInt(partialRevision)).toBeGreaterThan(BigInt(readyRevision));
+      expect((await acknowledge(partialRevision)).status).toBe(409);
+      expect((await acknowledge(readyRevision)).status).toBe(204);
+
+      const documentation = await request(server)
+        .get(
+          `/api/skill-image-connector/skilldocs/default/${ready.body.skills[0].digest}`,
+        )
+        .set('Authorization', authorization);
+      expect(documentation.status).toBe(200);
+      expect(documentation.text).toBe(extracted.skillsMd);
+    } finally {
+      await stop();
+    }
+  });
   it('keeps overlapping source acquisitions independent during refresh and shutdown', async () => {
     const imageRef = 'quay.io/org/shared:v1';
     const a1 = {

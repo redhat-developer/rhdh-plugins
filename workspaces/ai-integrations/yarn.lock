@@ -10051,6 +10051,7 @@ __metadata:
     express: "npm:^4.17.1"
     express-promise-router: "npm:^4.1.0"
     ipaddr.js: "npm:^2.3.0"
+    knex: "npm:^3.0.0"
     supertest: "npm:^6.2.4"
     undici: "npm:^7.28.0"
     yaml: "npm:^2.7.0"
