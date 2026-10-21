@@ -346,6 +346,8 @@ function validateSourceReferences(
  * (`group:team-octo`), and bare names (`team-octo`). Rejects
  * strings with characters that are invalid in a DNS subdomain
  * name component (spaces, punctuation, etc.).
+ * 
+ * @returns boolean indicating hint string validity
  */
 function isValidHintString(value: string): boolean {
   try {
