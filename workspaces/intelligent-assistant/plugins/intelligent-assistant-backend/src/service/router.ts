@@ -225,7 +225,6 @@ export async function createRouter(
     options;
 
   const router = Router();
-  router.use(express.json());
 
   const port =
     config.getOptionalNumber('intelligent-assistant.servicePort') ??
@@ -327,7 +326,7 @@ export async function createRouter(
   // Best-effort URL cache on startup (non-blocking)
   refreshLcsUrlCache().catch(() => {});
 
-  router.get('/health', (_, response) => {
+  router.get('/health', express.json(), (_, response) => {
     response.json({ status: 'ok' });
   });
 
@@ -373,6 +372,7 @@ export async function createRouter(
 
   router.get(
     '/mcp-servers',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaMcpToolsPermission),
     async (req, res) => {
@@ -414,6 +414,7 @@ export async function createRouter(
 
   router.post(
     '/mcp-servers/validate',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaMcpToolsPermission),
     async (req, res) => {
@@ -449,6 +450,7 @@ export async function createRouter(
 
   router.post(
     '/mcp-servers/:name/validate',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaMcpToolsPermission),
     async (req, res) => {
@@ -534,6 +536,7 @@ export async function createRouter(
 
   router.patch(
     '/mcp-servers/:name',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaMcpToolsPermission),
     async (req, res) => {
@@ -621,6 +624,7 @@ export async function createRouter(
   // Returns conversation IDs associated with notebook sessions for filtering
   router.get(
     '/notebook-conversation-ids',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
     async (req, res) => {
@@ -667,6 +671,7 @@ export async function createRouter(
   // is forwarded to LCS.
   router.get(
     '/v1/models',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     async (_request, response) => {
@@ -729,30 +734,35 @@ export async function createRouter(
   );
   router.get(
     '/v1/shields',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     apiProxy,
   );
   router.delete(
     '/v2/conversations/:conversation_id',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     apiProxy,
   );
   router.get(
     '/v1/feedback/status',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     apiProxy,
@@ -760,18 +770,21 @@ export async function createRouter(
 
   router.get(
     '/v1/saved-prompts/config',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     apiProxy, // SKIP_USER_ID_ENDPOINTS prevents user_id injection for this endpoint
   );
   router.get(
     '/v1/saved-prompts',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     apiProxy,
   );
   router.delete(
     '/v1/saved-prompts/:prompt_id',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     apiProxy,
@@ -779,6 +792,7 @@ export async function createRouter(
 
   router.get(
     '/v1/skills',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaSkillsPermission),
     apiProxy,
@@ -786,6 +800,7 @@ export async function createRouter(
 
   router.post(
     '/v1/feedback',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     async (request, response) => {
@@ -829,6 +844,7 @@ export async function createRouter(
 
   router.post(
     '/v1/saved-prompts',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     async (request, response) => {
@@ -874,6 +890,7 @@ export async function createRouter(
 
   router.post(
     '/v1/query/interrupt',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     async (request, response) => {
@@ -1007,6 +1024,7 @@ export async function createRouter(
 
   router.put(
     '/v2/conversations/:conversation_id',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     async (request, response) => {
@@ -1048,6 +1066,7 @@ export async function createRouter(
 
   router.post(
     '/v1/validate-model-vision',
+    express.json(),
     generalRateLimiter,
     requirePermission(iaChatPermission),
     async (request, response) => {

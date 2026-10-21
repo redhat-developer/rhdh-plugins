@@ -200,6 +200,62 @@ describe('JSON body parsing', () => {
     },
   );
 
+  it('accepts a query attachment larger than the default JSON body limit', async () => {
+    const content = 'x'.repeat(110 * 1024);
+    let queryBody: unknown;
+    server.use(
+      http.post(
+        `${LIGHTSPEED_CORE_ADDR}/v1/streaming_query`,
+        async ({ request: upstreamRequest }) => {
+          queryBody = await upstreamRequest.json();
+          return new HttpResponse('data: [DONE]\n\n', {
+            headers: { 'Content-Type': 'text/event-stream' },
+          });
+        },
+      ),
+    );
+
+    const response = await request(backendServer)
+      .post('/api/intelligent-assistant/v1/query')
+      .send({
+        model: 'test-model',
+        provider: 'test-server',
+        query: 'Summarize this file',
+        attachments: [
+          {
+            attachment_type: 'configuration',
+            content_type: 'text/plain',
+            content,
+          },
+        ],
+      });
+
+    expect(response.status).toBe(200);
+    expect(queryBody).toMatchObject({ attachments: [{ content }] });
+  });
+
+  it('keeps the default JSON body limit for saved prompts', async () => {
+    const response = await request(backendServer)
+      .post('/api/intelligent-assistant/v1/saved-prompts')
+      .send({ name: 'Large prompt', content: 'x'.repeat(110 * 1024) });
+
+    expect(response.status).toBe(413);
+  });
+
+  it.each([
+    { method: 'get', path: '/v1/shields' },
+    { method: 'delete', path: '/v2/conversations/json-body-conversation' },
+  ] as const)(
+    'rejects oversized JSON on proxied $method $path',
+    async ({ method, path }) => {
+      const response = await request(backendServer)
+        [method](`/api/intelligent-assistant${path}`)
+        .send({ content: 'x'.repeat(110 * 1024) });
+
+      expect(response.status).toBe(413);
+    },
+  );
+
   it('parses JSON for POST /v1/validate-model-vision', async () => {
     let probeBody: unknown;
     server.use(
