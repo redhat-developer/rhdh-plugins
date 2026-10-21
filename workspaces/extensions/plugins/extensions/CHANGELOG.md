@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 1.0.3
+
+### Patch Changes
+
+- 8cf3ab1: Updated dependency `monaco-editor` to `^0.57.0`.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes
