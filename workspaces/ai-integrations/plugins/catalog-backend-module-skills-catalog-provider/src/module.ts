@@ -22,6 +22,7 @@ import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node'
 
 import { SkillsCatalogProvider } from './SkillsCatalogProvider';
 import { readSkillsCatalogProviderConfigs } from './config';
+import { DatabaseReconciliationStore } from './reconciliation-store';
 
 /** Default polling frequency: 10 minutes. */
 const DEFAULT_FREQUENCY_SECONDS = 600;
@@ -34,6 +35,8 @@ const DEFAULT_TIMEOUT_SECONDS = 600;
  *
  * The module reads `catalog.providers.skillsCatalogProvider` from the
  * root config and creates one `SkillsCatalogProvider` per keyed entry.
+ * Each provider instance uses Backstage's database service for durable
+ * reconciliation state per design D6 tasks 4.3–4.4.
  *
  * @public
  */
@@ -49,9 +52,23 @@ export const catalogModuleSkillsCatalogProvider = createBackendModule({
         auth: coreServices.auth,
         logger: coreServices.logger,
         scheduler: coreServices.scheduler,
+        database: coreServices.database,
       },
-      async init({ catalog, config, discovery, auth, logger, scheduler }) {
+      async init({
+        catalog,
+        config,
+        discovery,
+        auth,
+        logger,
+        scheduler,
+        database,
+      }) {
         const providerConfigs = readSkillsCatalogProviderConfigs(config);
+
+        // Create and initialize the database-backed store
+        const knex = await database.getClient();
+        const store = new DatabaseReconciliationStore(knex);
+        await store.initialize();
 
         for (const providerConfig of providerConfigs) {
           const taskRunner = providerConfig.schedule
@@ -68,6 +85,7 @@ export const catalogModuleSkillsCatalogProvider = createBackendModule({
             auth,
             logger,
             taskRunner,
+            store,
           );
 
           catalog.addEntityProvider(provider);

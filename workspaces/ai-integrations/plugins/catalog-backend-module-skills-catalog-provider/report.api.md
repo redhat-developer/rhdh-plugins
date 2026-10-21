@@ -11,6 +11,7 @@ import type { Entity } from '@backstage/catalog-model';
 import type { EntityProvider } from '@backstage/plugin-catalog-node';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import type { IdentityTuple } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+import type { Knex } from 'knex';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
@@ -32,6 +33,35 @@ export interface CommittedSourceState {
   observedAt: string | null;
   sourceId: string;
   sourceType: SkillSourceType;
+}
+
+// @public
+export class DatabaseReconciliationStore implements ReconciliationStore {
+  constructor(knex: Knex);
+  // (undocumented)
+  commitStateAndClearPending(
+    sourceType: string,
+    sourceId: string,
+    nextState: CommittedSourceState,
+  ): Promise<void>;
+  // (undocumented)
+  getAllCommittedStates(): Promise<CommittedSourceState[]>;
+  // (undocumented)
+  getAllPendingDeltas(): Promise<PendingDelta[]>;
+  // (undocumented)
+  getCommittedState(
+    sourceType: string,
+    sourceId: string,
+  ): Promise<CommittedSourceState>;
+  // (undocumented)
+  getPendingDelta(
+    sourceType: string,
+    sourceId: string,
+  ): Promise<PendingDelta | undefined>;
+  // (undocumented)
+  initialize(): Promise<void>;
+  // (undocumented)
+  savePendingDelta(delta: PendingDelta): Promise<void>;
 }
 
 // @public
@@ -62,6 +92,15 @@ export interface OwnedEntity {
   digest: string;
   entity: Entity;
   tuple: IdentityTuple;
+}
+
+// @public
+export interface PendingDelta {
+  nextState: CommittedSourceState;
+  removals: PlannedRemoval[];
+  sourceId: string;
+  sourceType: string;
+  upserts: PlannedUpsert[];
 }
 
 // @public
@@ -114,6 +153,27 @@ export interface ReconciliationPlanInput {
 }
 
 // @public
+export interface ReconciliationStore {
+  commitStateAndClearPending(
+    sourceType: string,
+    sourceId: string,
+    nextState: CommittedSourceState,
+  ): Promise<void>;
+  getAllCommittedStates(): Promise<CommittedSourceState[]>;
+  getAllPendingDeltas(): Promise<PendingDelta[]>;
+  getCommittedState(
+    sourceType: string,
+    sourceId: string,
+  ): Promise<CommittedSourceState>;
+  getPendingDelta(
+    sourceType: string,
+    sourceId: string,
+  ): Promise<PendingDelta | undefined>;
+  initialize(): Promise<void>;
+  savePendingDelta(delta: PendingDelta): Promise<void>;
+}
+
+// @public
 export class SkillsCatalogProvider implements EntityProvider {
   constructor(
     config: SkillsCatalogProviderConfig,
@@ -121,6 +181,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     auth: AuthService,
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
+    store: ReconciliationStore,
   );
   // (undocumented)
   connect(connection: EntityProviderConnection): Promise<void>;
