@@ -87,6 +87,16 @@ documentation-only change — no TypeScript, tests, or runtime modifications.
 The following reports describe earlier states and retain their original
 verification scope.
 
+## Audit Report: oci-npx-skills-registry-demo (task 6.2 implementation)
+
+**Last audited:** 2026-10-21T12:00:00Z
+
+### Summary
+
+Updated for task 6.2 implementation in PR #5297. Task 6.2 (bounded durable Markdown content storage per source with revision tracking, provider-authorized reconciliation, and restart recovery) is now checked. This supplements the retained historical audits; it is not a new independent full-change audit. Historical audit reports and their verification scope are preserved below.
+
+---
+
 ## Audit Report: oci-npx-skills-registry-demo (2026-10-20 status correction)
 
 > **Status update (2026-10-21):** The two code gaps identified below

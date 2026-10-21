@@ -1025,6 +1025,25 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         // Per-source publication locks for serializing pub/cleanup
         const sourceLocks = new Map<string, Promise<void>>();
 
+        /** Acquire the per-source lock, execute fn, then release. */
+        async function withSourceLock<T>(
+          sourceId: string,
+          fn: () => Promise<T>,
+        ): Promise<T> {
+          const prevLock = sourceLocks.get(sourceId) ?? Promise.resolve();
+          let resolveLock: () => void;
+          const newLock = new Promise<void>(resolve => {
+            resolveLock = resolve;
+          });
+          sourceLocks.set(sourceId, newLock);
+          try {
+            await prevLock;
+            return await fn();
+          } finally {
+            resolveLock!();
+          }
+        }
+
         // Derive aggregate processing status for /images backward compat
         const getProcessingStatus = (): SkillImageProcessingStatus => {
           if (sources.length === 0) return 'ready';
@@ -1192,20 +1211,9 @@ export const skillImageConnectorPlugin = createBackendPlugin({
             return { status: 404, error: `Unknown source: ${sourceId}` };
           }
 
-          // Serialize with other operations on this source
-          const prevLock = sourceLocks.get(sourceId) ?? Promise.resolve();
-          let resolveLock: () => void;
-          const newLock = new Promise<void>(resolve => {
-            resolveLock = resolve;
-          });
-          sourceLocks.set(sourceId, newLock);
-
-          try {
-            await prevLock;
-            return await performReconcile(sourceId, revision, retainedDigests);
-          } finally {
-            resolveLock!();
-          }
+          return withSourceLock(sourceId, () =>
+            performReconcile(sourceId, revision, retainedDigests),
+          );
         };
 
         httpRouter.use(
@@ -1265,19 +1273,10 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               // Serialize admission, storage, revision allocation, and
               // publication under the source lock so concurrent reconcile
               // cleanup sees consistent state.
-              const prevLock = sourceLocks.get(source.id) ?? Promise.resolve();
-              let resolveLock: () => void;
-              const newLock = new Promise<void>(resolve => {
-                resolveLock = resolve;
-              });
-              sourceLocks.set(source.id, newLock);
-
-              try {
-                await prevLock;
-
+              await withSourceLock(source.id, async () => {
                 // D8: Store Markdown content durably before publishing records.
                 // Records whose content cannot be admitted are excluded.
-                const admittedRecords = [];
+                const admittedRecords: OciSkillRecord[] = [];
                 const rejectedKeys: string[] = [];
                 let anyRejected = false;
 
@@ -1402,9 +1401,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                       revision ? `, revision=${revision}` : ''
                     }`,
                 );
-              } finally {
-                resolveLock!();
-              }
+              });
             },
           });
         }

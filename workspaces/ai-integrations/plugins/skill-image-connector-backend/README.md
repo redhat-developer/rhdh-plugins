@@ -41,6 +41,8 @@ skillImageConnector:
   # maxRetries: 2
   # retryBaseDelayMs: 2000
   # sourceOperationDeadlineMs: 300000
+  # maxRetainedMarkdownSizeBytes: 52428800
+  # catalogProviderPluginId: catalog
   # Option 1 and Option 2 can be used together or individually
   # Option 1: Explicit image references
   images:
@@ -450,9 +452,9 @@ either the old complete snapshot or its complete replacement.
 
 **Response headers:**
 
-| Header                 | Condition                                                                                                                                                                                                                                                                               |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `X-Skilldocs-Revision` | Present on completed (ready/partial/failed) snapshots. A monotonically increasing decimal string identifying the content revision. Consumers use it to detect content freshness and as the `revision` parameter for `POST /skilldocs/:sourceId/reconcile`. Absent on loading snapshots. |
+| Header                 | Condition                                                                                                                                                                                                                                                                                      |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `X-Skilldocs-Revision` | Present on `ready` snapshots only. A monotonically increasing decimal string identifying the content revision. Consumers use it to detect content freshness and as the `revision` parameter for `POST /skilldocs/:sourceId/reconcile`. Absent on `loading`, `partial`, and `failed` snapshots. |
 
 ### `GET /api/skill-image-connector/skilldocs/:sourceId/:digest`
 

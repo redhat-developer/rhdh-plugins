@@ -195,7 +195,8 @@ export async function createRouter(
           principal.subject !== `plugin:${catalogProviderPluginId}`
         ) {
           res.status(403).json({
-            error: `Unauthorized: only ${catalogProviderPluginId} may reconcile`,
+            error:
+              'Unauthorized: caller is not the configured catalog provider',
           });
           return;
         }

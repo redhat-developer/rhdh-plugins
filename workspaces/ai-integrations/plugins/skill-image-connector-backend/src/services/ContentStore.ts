@@ -18,6 +18,7 @@ import type {
   DatabaseService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
+import { InputError } from '@backstage/errors';
 import {
   DEFAULT_MAX_RETAINED_MARKDOWN_SIZE,
   MAX_RETAINED_DIGESTS,
@@ -136,7 +137,15 @@ export class ContentStore {
     // Recover acknowledgments
     const ackRows = await this.knex('reconcile_state').select('*');
     for (const row of ackRows) {
-      const parsed: unknown = JSON.parse(row.ack_retained_digests);
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(row.ack_retained_digests);
+      } catch {
+        this.logger.warn(
+          `ContentStore: malformed ack_retained_digests JSON for source ${row.source_id}, skipping`,
+        );
+        continue;
+      }
       if (
         !Array.isArray(parsed) ||
         !parsed.every((d: unknown) => typeof d === 'string')
@@ -441,7 +450,7 @@ export class ContentStore {
   async validateRetentionLimit(sourceId: string): Promise<void> {
     const stats = await this.getSourceStats(sourceId);
     if (stats.totalBytes > this.maxRetainedBytes) {
-      throw new Error(
+      throw new InputError(
         `skillImageConnector.maxRetainedMarkdownSizeBytes (${this.maxRetainedBytes}) ` +
           `is below already-retained bytes for source '${sourceId}' (${stats.totalBytes}). ` +
           `Raise the limit or use a controlled inventory drain to reduce retained content.`,
