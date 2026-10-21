@@ -15,10 +15,38 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
 import type { SkillSourceType } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+import type { SnapshotStatus } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+
+// @public
+export function calculateReconciliationPlan(
+  input: ReconciliationPlanInput,
+): ReconciliationPlan;
 
 // @public
 const catalogModuleSkillsCatalogProvider: BackendFeature;
 export default catalogModuleSkillsCatalogProvider;
+
+// @public
+export interface CommittedSourceState {
+  entities: OwnedEntity[];
+  observedAt: string | null;
+  sourceId: string;
+  sourceType: SkillSourceType;
+}
+
+// @public
+export interface ExternalOwnership {
+  catalogName: string;
+  tuple: IdentityTuple;
+}
+
+// @public
+export interface IdentityCollision {
+  catalogName: string;
+  existingTuple: IdentityTuple;
+  incomingTuple: IdentityTuple;
+  scope: 'internal' | 'external';
+}
 
 // @public
 export interface MappedSkillEntity {
@@ -29,9 +57,61 @@ export interface MappedSkillEntity {
 }
 
 // @public
+export interface OwnedEntity {
+  catalogName: string;
+  digest: string;
+  entity: Entity;
+  tuple: IdentityTuple;
+}
+
+// @public
+export interface PlannedRemoval {
+  catalogName: string;
+  tuple: IdentityTuple;
+}
+
+// @public
+export interface PlannedUpsert {
+  catalogName: string;
+  digest: string;
+  entity: Entity;
+  tuple: IdentityTuple;
+}
+
+// @public
 export function readSkillsCatalogProviderConfigs(
   config: Config,
 ): SkillsCatalogProviderConfig[];
+
+// @public
+export type ReconciliationPlan = {
+  upserts: PlannedUpsert[];
+  removals: PlannedRemoval[];
+  collisions: IdentityCollision[];
+  nextState: CommittedSourceState;
+} & (
+  | {
+      noOp: true;
+      reason:
+        | 'loading'
+        | 'failed'
+        | 'stale-observation'
+        | 'repeated-observation'
+        | 'no-changes';
+    }
+  | {
+      noOp: false;
+    }
+);
+
+// @public
+export interface ReconciliationPlanInput {
+  externalOwnership: ExternalOwnership[];
+  mappedEntities: MappedSkillEntity[];
+  previousState: CommittedSourceState;
+  snapshotObservedAt: string | null;
+  snapshotStatus: SnapshotStatus;
+}
 
 // @public
 export class SkillsCatalogProvider implements EntityProvider {
