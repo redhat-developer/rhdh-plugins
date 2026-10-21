@@ -84,14 +84,24 @@ export function readSkillsCatalogProviderConfigs(
 ): SkillsCatalogProviderConfig[];
 
 // @public
-export interface ReconciliationPlan {
+export type ReconciliationPlan = {
+  upserts: PlannedUpsert[];
+  removals: PlannedRemoval[];
   collisions: IdentityCollision[];
   nextState: CommittedSourceState;
-  noOp: boolean;
-  reason?: 'loading' | 'failed' | 'stale-observation' | 'repeated-observation';
-  removals: PlannedRemoval[];
-  upserts: PlannedUpsert[];
-}
+} & (
+  | {
+      noOp: true;
+      reason?:
+        | 'loading'
+        | 'failed'
+        | 'stale-observation'
+        | 'repeated-observation';
+    }
+  | {
+      noOp: false;
+    }
+);
 
 // @public
 export interface ReconciliationPlanInput {

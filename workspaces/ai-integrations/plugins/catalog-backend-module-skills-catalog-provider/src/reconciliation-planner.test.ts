@@ -26,7 +26,11 @@ import type {
   ExternalOwnership,
   MappedSkillEntity,
   OwnedEntity,
+  ReconciliationPlan,
 } from './types';
+
+// Narrow the discriminated union for type-safe reason access
+type NoOpPlan = Extract<ReconciliationPlan, { noOp: true }>;
 
 // ─── Test helpers ────────────────────────────────────────────────────
 
@@ -132,7 +136,7 @@ describe('calculateReconciliationPlan', () => {
       });
 
       expect(plan.noOp).toBe(true);
-      expect(plan.reason).toBe('loading');
+      expect((plan as NoOpPlan).reason).toBe('loading');
       expect(plan.upserts).toHaveLength(0);
       expect(plan.removals).toHaveLength(0);
       // Previous state is preserved unchanged
@@ -154,7 +158,7 @@ describe('calculateReconciliationPlan', () => {
       });
 
       expect(plan.noOp).toBe(true);
-      expect(plan.reason).toBe('failed');
+      expect((plan as NoOpPlan).reason).toBe('failed');
       expect(plan.upserts).toHaveLength(0);
       expect(plan.removals).toHaveLength(0);
       expect(plan.nextState.entities).toHaveLength(1);
@@ -177,7 +181,7 @@ describe('calculateReconciliationPlan', () => {
       });
 
       expect(plan.noOp).toBe(true);
-      expect(plan.reason).toBe('stale-observation');
+      expect((plan as NoOpPlan).reason).toBe('stale-observation');
       expect(plan.upserts).toHaveLength(0);
       expect(plan.removals).toHaveLength(0);
       // State not advanced
@@ -198,7 +202,7 @@ describe('calculateReconciliationPlan', () => {
       });
 
       expect(plan.noOp).toBe(true);
-      expect(plan.reason).toBe('repeated-observation');
+      expect((plan as NoOpPlan).reason).toBe('repeated-observation');
       expect(plan.upserts).toHaveLength(0);
       expect(plan.removals).toHaveLength(0);
     });
@@ -444,6 +448,100 @@ describe('calculateReconciliationPlan', () => {
       expect(plan.upserts).toHaveLength(0);
     });
 
+    it('diagnoses an internal collision when two snapshot entries share a catalogName', () => {
+      // Two different tuples that produce the same catalogName
+      const key = 'collision-key';
+      const mapped1 = makeMapped(key, digestA, 'oci', 'source-1');
+      // Manually create a second mapped entity with a different tuple but same catalogName
+      const tuple2 = makeTuple(key, 'npx', 'source-2');
+      const mapped2: MappedSkillEntity = {
+        tuple: tuple2,
+        catalogName: mapped1.catalogName, // same catalogName, different tuple
+        digest: digestB,
+        entity: makeEntity(mapped1.catalogName),
+      };
+
+      const plan = calculateReconciliationPlan({
+        previousState: emptyState('oci', 'source-1'),
+        snapshotStatus: 'ready',
+        snapshotObservedAt: t1,
+        mappedEntities: [mapped1, mapped2],
+        externalOwnership: [],
+      });
+
+      expect(plan.collisions).toHaveLength(1);
+      expect(plan.collisions[0].scope).toBe('internal');
+      expect(plan.collisions[0].catalogName).toBe(mapped1.catalogName);
+      expect(plan.collisions[0].existingTuple).toEqual(mapped1.tuple);
+      expect(plan.collisions[0].incomingTuple).toEqual(tuple2);
+      // First one wins — only the first entry is upserted
+      expect(plan.upserts).toHaveLength(1);
+      expect(plan.upserts[0].digest).toBe(digestA);
+    });
+
+    it('deduplicates same-tuple entries without flagging a collision', () => {
+      const key = 'dup-key';
+      const mapped1 = makeMapped(key, digestA);
+      // Same tuple, same catalogName — duplicate, not a collision
+      const mapped2: MappedSkillEntity = {
+        ...mapped1,
+        digest: digestB, // different digest, but same tuple
+      };
+
+      const plan = calculateReconciliationPlan({
+        previousState: emptyState(),
+        snapshotStatus: 'ready',
+        snapshotObservedAt: t1,
+        mappedEntities: [mapped1, mapped2],
+        externalOwnership: [],
+      });
+
+      // No collision diagnosed — tuples match
+      expect(plan.collisions).toHaveLength(0);
+      // First one wins — only first entry's digest is used
+      expect(plan.upserts).toHaveLength(1);
+      expect(plan.upserts[0].digest).toBe(digestA);
+      expect(plan.nextState.entities).toHaveLength(1);
+    });
+
+    it('diagnoses external collision and removes previously-owned entity in ready snapshot', () => {
+      const key = 'contested-key';
+      const ownedEntity = makeOwned(key, digestA, 'oci', 'source-1');
+
+      // Another source now owns this catalogName
+      const externalTuple = makeTuple(key, 'npx', 'source-2');
+      const external: ExternalOwnership[] = [
+        {
+          catalogName: ownedEntity.catalogName,
+          tuple: externalTuple,
+        },
+      ];
+
+      const plan = calculateReconciliationPlan({
+        previousState: {
+          sourceType: 'oci',
+          sourceId: 'source-1',
+          observedAt: t1,
+          entities: [ownedEntity],
+        },
+        snapshotStatus: 'ready',
+        snapshotObservedAt: t2,
+        mappedEntities: [makeMapped(key, digestB, 'oci', 'source-1')],
+        externalOwnership: external,
+      });
+
+      // Collision diagnosed
+      expect(plan.collisions).toHaveLength(1);
+      expect(plan.collisions[0].scope).toBe('external');
+      // Colliding entity is not upserted
+      expect(plan.upserts).toHaveLength(0);
+      // Previously-owned entity is removed since it's not in processedNames
+      expect(plan.removals).toHaveLength(1);
+      expect(plan.removals[0].catalogName).toBe(ownedEntity.catalogName);
+      // Entity is absent from nextState
+      expect(plan.nextState.entities).toHaveLength(0);
+    });
+
     it('does not flag a collision when tuples match', () => {
       const key = 'shared-key';
       const tuple = makeTuple(key);
@@ -650,6 +748,41 @@ describe('calculateReconciliationPlan', () => {
       expect(plan.removals).toHaveLength(0);
       expect(plan.nextState.entities).toHaveLength(0);
       expect(plan.nextState.observedAt).toBe(t1);
+    });
+
+    it('null snapshotObservedAt on a ready snapshot resets observedAt and disables stale detection', () => {
+      const owned = makeOwned('key-a', digestA);
+
+      // A ready snapshot with null observedAt — observedAt resets to null
+      const plan = calculateReconciliationPlan({
+        previousState: {
+          ...emptyState(),
+          observedAt: t1,
+          entities: [owned],
+        },
+        snapshotStatus: 'ready',
+        snapshotObservedAt: null,
+        mappedEntities: [makeMapped('key-a', digestA)],
+        externalOwnership: [],
+      });
+
+      // observedAt resets to null
+      expect(plan.nextState.observedAt).toBeNull();
+
+      // A subsequent snapshot is never considered stale when
+      // committedAt is null — stale detection is disabled
+      const plan2 = calculateReconciliationPlan({
+        previousState: plan.nextState,
+        snapshotStatus: 'ready',
+        snapshotObservedAt: t1,
+        mappedEntities: [makeMapped('key-a', digestB)],
+        externalOwnership: [],
+      });
+
+      // Not treated as stale — the snapshot is processed normally
+      expect(plan2.noOp).toBe(false);
+      expect(plan2.upserts).toHaveLength(1);
+      expect(plan2.nextState.observedAt).toBe(t1);
     });
 
     it('a ready plan that only updates the observation time is a no-op', () => {

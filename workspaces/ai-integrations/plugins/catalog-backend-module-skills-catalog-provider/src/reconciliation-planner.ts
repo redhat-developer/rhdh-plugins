@@ -27,7 +27,6 @@
  * It implements the pure decision portion of OpenSpec task 4.4 per
  * design D6's status table.
  *
- * @packageDocumentation
  */
 
 import type { IdentityTuple } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
@@ -193,8 +192,18 @@ export function calculateReconciliationPlan(
   const hasChanges =
     upserts.length > 0 || removals.length > 0 || collisions.length > 0;
 
+  if (hasChanges) {
+    return {
+      noOp: false,
+      upserts,
+      removals,
+      collisions,
+      nextState,
+    };
+  }
+
   return {
-    noOp: !hasChanges,
+    noOp: true,
     upserts,
     removals,
     collisions,
@@ -207,7 +216,7 @@ export function calculateReconciliationPlan(
  */
 function noOpPlan(
   previousState: CommittedSourceState,
-  reason: ReconciliationPlan['reason'],
+  reason: 'loading' | 'failed' | 'stale-observation' | 'repeated-observation',
 ): ReconciliationPlan {
   return {
     noOp: true,
@@ -258,9 +267,6 @@ function isRepeatedObservation(
 /**
  * Compares two identity tuples for equality.
  */
-function tuplesEqual(
-  a: { type: string; id: string; key: string },
-  b: { type: string; id: string; key: string },
-): boolean {
+function tuplesEqual(a: IdentityTuple, b: IdentityTuple): boolean {
   return a.type === b.type && a.id === b.id && a.key === b.key;
 }

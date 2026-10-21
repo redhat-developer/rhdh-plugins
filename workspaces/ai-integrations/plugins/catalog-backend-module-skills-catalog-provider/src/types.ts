@@ -204,17 +204,15 @@ export interface IdentityCollision {
  * read a database or call the Catalog — the caller applies
  * the plan.
  *
+ * Discriminated on `noOp`: when `true`, `reason` may indicate why
+ * the plan was short-circuited; when `false`, catalog mutations are
+ * present. Callers must always persist `nextState` regardless of
+ * `noOp`, because `nextState.observedAt` may advance even when no
+ * catalog mutations occur.
+ *
  * @public
  */
-export interface ReconciliationPlan {
-  /** Whether the plan contains any mutations. */
-  noOp: boolean;
-  /**
-   * Reason for a no-op plan.
-   *
-   * Only set when `noOp` is `true`.
-   */
-  reason?: 'loading' | 'failed' | 'stale-observation' | 'repeated-observation';
+export type ReconciliationPlan = {
   /** Entities to add or update. */
   upserts: PlannedUpsert[];
   /** Entities to remove (only for ready snapshots). */
@@ -223,4 +221,31 @@ export interface ReconciliationPlan {
   collisions: IdentityCollision[];
   /** Intended next ownership state after this plan is applied. */
   nextState: CommittedSourceState;
-}
+} & (
+  | {
+      /**
+       * `true` when the plan contains no catalog mutations.
+       *
+       * Callers must always persist `nextState` regardless of this flag,
+       * because `nextState.observedAt` may advance even on a no-op.
+       */
+      noOp: true;
+      /**
+       * Reason for a no-op plan.
+       *
+       * Set when the plan was short-circuited before computing mutations.
+       */
+      reason?:
+        | 'loading'
+        | 'failed'
+        | 'stale-observation'
+        | 'repeated-observation';
+    }
+  | {
+      /**
+       * `false` when the plan contains catalog mutations
+       * (upserts, removals, or collisions).
+       */
+      noOp: false;
+    }
+);

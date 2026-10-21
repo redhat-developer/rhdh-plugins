@@ -353,6 +353,15 @@ for the dedicated Markdown endpoint and content lifecycle.
 > deferred pending RHIDP-17331 (#5301); that gate applied to the broader
 > integration/reconciliation scope, not to the validation/construction work
 > that #5291 and #5304 together address.
+>
+> **Task 4.4 partial completion (PR #5315):** The pure decision portion of
+> delta reconciliation is implemented as `calculateReconciliationPlan`, a
+> standalone function that computes deterministic upsert/removal deltas
+> from committed ownership state and a validated snapshot. Covers
+> ready/partial/loading/failed status handling, stale/repeated observation
+> detection, and cross-source identity collision diagnosis. Durable
+> persistence, crash-safe replay, and runtime integration remain in
+> tasks 4.3–4.5, gated by RHIDP-17331.
 
 ### D7 — Public-source safety, bounds, and configuration
 
