@@ -279,7 +279,7 @@ export async function consumeSnapshot(
     snapshot.source.type,
   );
   if (refError) {
-    const msg = `Invalid source reference in snapshot from ${source.sourceId}: ${refError}`;
+    const msg = `Invalid source reference from source ${source.sourceId}: ${refError}`;
     logger.error(msg);
     return { ok: false, entities: [], error: msg };
   }
@@ -339,15 +339,15 @@ function validateSourceReferences(
 }
 
 /**
- * Checks whether a string is a usable Backstage entity reference
- * for `spec.owner` or `spec.lifecycle`.
+ * Checks whether a string is usable as a Backstage catalog hint
+ * value (e.g. `spec.owner` or `spec.lifecycle`).
  *
- * Accepts full refs (`group:default/team-octo`), partial refs
+ * Accepts full entity refs (`group:default/team-octo`), partial refs
  * (`group:team-octo`), and bare names (`team-octo`). Rejects
  * strings with characters that are invalid in a DNS subdomain
  * name component (spaces, punctuation, etc.).
  */
-function isValidEntityHint(value: string): boolean {
+function isValidHintString(value: string): boolean {
   try {
     const ref = parseEntityRef(value, {
       defaultKind: 'group',
@@ -432,11 +432,11 @@ function buildEntity(
   // blank, or invalid per design D5.
   const ownerHint = record.owner?.trim();
   const owner =
-    ownerHint && isValidEntityHint(ownerHint) ? ownerHint : defaultOwner;
+    ownerHint && isValidHintString(ownerHint) ? ownerHint : defaultOwner;
 
   const lifecycleHint = record.lifecycle?.trim();
   const lifecycle =
-    lifecycleHint && isValidEntityHint(lifecycleHint)
+    lifecycleHint && isValidHintString(lifecycleHint)
       ? lifecycleHint
       : defaultLifecycle;
 
@@ -454,15 +454,13 @@ function buildEntity(
   annotations[ANNOTATION_AI_ASSET_VERSION] = version;
   annotations[ANNOTATION_AI_ASSET_SOURCE] = `${sourceType}/${sourceId}`;
 
-  // Source-type-specific reference annotations per design D5
+  // Source-type-specific reference annotations per design D5.
+  // Source references are validated upfront by validateSourceReferences
+  // before any records are mapped, so no per-entity validation is needed.
   if (sourceType === 'oci') {
-    // Validate OCI URI/digest agreement
-    parseOciRef(record.sourceUri, record.digest);
     annotations[ANNOTATION_OCI_SKILL_REF] = record.sourceUri;
   } else if (sourceType === 'npx') {
-    // npx reference: <sourceUri>#<digest>
     const npxRef = `${record.sourceUri}#${record.digest}`;
-    parseNpxRef(npxRef);
     annotations[ANNOTATION_NPX_SKILL_REF] = npxRef;
   }
 

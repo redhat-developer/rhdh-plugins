@@ -46,6 +46,24 @@ receive a `backstage.io/techdocs-ref` annotation in this increment.
 - **THEN** the entity uses configured `defaultOwner` and the digest-derived version fallback
 - **AND** author metadata does not override the configured owner
 
+#### Scenario: Nonblank but invalid owner hint falls back to default
+
+- **WHEN** a valid record has an owner hint that is not a valid Backstage entity reference (e.g., contains spaces or special characters)
+- **THEN** the entity uses the configured `defaultOwner` instead of the invalid hint
+- **AND** the invalid hint is silently replaced without rejecting the record
+
+#### Scenario: Nonblank but invalid lifecycle hint falls back to default
+
+- **WHEN** a valid record has a lifecycle hint that is not a valid catalog string (e.g., contains spaces or special characters)
+- **THEN** the entity uses the configured `defaultLifecycle` instead of the invalid hint
+- **AND** the invalid hint is silently replaced without rejecting the record
+
+#### Scenario: OCI URI digest mismatch rejects entire snapshot
+
+- **WHEN** a ready snapshot contains a record whose OCI URI digest does not match the record's declared digest
+- **THEN** the provider rejects the entire snapshot without additions, updates, or removals
+- **AND** previously emitted entities from that source are preserved
+
 #### Scenario: Correct location-reference prefixes
 
 - **WHEN** OCI and npx records are mapped to entities
@@ -99,7 +117,7 @@ receive a `backstage.io/techdocs-ref` annotation in this increment.
 
 The provider SHALL validate the complete snapshot before mutating its source's
 entities, including schema, configured source ID/type, unique keys, bounds,
-status consistency, and OCI URI/digest agreement. A consumer-side validation
+status consistency, OCI URI/digest agreement, and npx source-reference validity. A consumer-side validation
 failure SHALL preserve that source's previous state. Duplicate configured source
 assignments SHALL fail configuration validation. An identity hash collision
 SHALL be diagnosed without overwriting another source tuple's entity.

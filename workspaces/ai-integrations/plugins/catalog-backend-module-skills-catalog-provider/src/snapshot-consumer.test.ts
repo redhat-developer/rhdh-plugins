@@ -785,6 +785,11 @@ describe('consumeSnapshot', () => {
   });
 
   it('does not validate source references for loading/failed snapshots', async () => {
+    // skills: [] is intentional here — the v1 schema invariant requires
+    // loading/failed snapshots to have an empty skills array, so there
+    // are no records for validateSourceReferences to check. The test
+    // verifies the loading status early-return path produces ok:true
+    // with no entities.
     const snapshot = makeSnapshot({
       status: 'loading',
       observedAt: null,
