@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "license": "Apache-2.0",
   "description": "Common skills catalog entity provider that consumes OCI and npx connector snapshots.",
   "main": "src/index.ts",
