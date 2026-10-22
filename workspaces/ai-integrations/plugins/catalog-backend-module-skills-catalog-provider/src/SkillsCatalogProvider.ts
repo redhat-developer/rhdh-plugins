@@ -133,6 +133,15 @@ export class SkillsCatalogProvider implements EntityProvider {
   private readonly store: ReconciliationStore;
   private connection?: EntityProviderConnection;
 
+  /**
+   * Creates a provider using an optional caller-owned reconciliation store.
+   *
+   * @remarks
+   * When supplying a store, its owner must await `store.initialize()` before
+   * calling `connect()`. The backend module performs this initialization;
+   * the provider does not initialize externally supplied stores. Omitting the
+   * store uses process-local in-memory state without restart persistence.
+   */
   constructor(
     config: SkillsCatalogProviderConfig,
     discovery: DiscoveryService,

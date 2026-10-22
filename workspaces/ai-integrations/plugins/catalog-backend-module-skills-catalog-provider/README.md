@@ -114,7 +114,24 @@ affected source until recovery succeeds. Other sources continue independently.
 A loading or empty response cannot clear unresolved pending work.
 
 The database implementation is internal; consumers can implement the public
-`ReconciliationStore` interface when constructing a provider directly.
+`ReconciliationStore` interface when constructing a provider directly. The owner
+supplying that store must await `store.initialize()` before calling
+`provider.connect(connection)`. The backend module already performs this step;
+the provider does not initialize an externally supplied store. Omitting the store
+uses process-local in-memory state that does not survive restarts.
+
+```ts
+await store.initialize();
+const provider = new SkillsCatalogProvider(
+  config,
+  discovery,
+  auth,
+  logger,
+  taskRunner,
+  store,
+);
+await provider.connect(connection);
+```
 
 ### Recovery verification
 

@@ -1,3 +1,27 @@
+## Focused review follow-up: PR #5319 test precision and initialization docs
+
+**Last audited:** 2026-10-22T20:17:54Z
+
+The partial-retention test now aligns its previously owned A tuple with the
+incoming fixture, verifies exactly two resulting identities, verifies A's updated
+digest, and compares absent B against its unchanged saved entity. The stronger
+assertion reproduced the old three-entity fixture mismatch before correction.
+Constructor documentation and README now explicitly assign custom-store
+initialization to the supplying caller before provider connection. The module
+already performs that step; production behavior and public signatures are unchanged.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This is a focused consistency update, not a new independent full-change audit.
+Earlier successful runtime verification remains below. No production behavior
+change, new configuration, or task-status change is introduced by this follow-up.
+
+---
+
 ## Focused review follow-up: PR #5319 namespace and migrations
 
 **Last audited:** 2026-10-22T17:53:23Z

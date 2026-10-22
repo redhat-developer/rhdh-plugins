@@ -806,7 +806,7 @@ describe('SkillsCatalogProvider', () => {
       const tupleA = {
         type: 'oci' as const,
         id: 'quay-public',
-        key: 'quay.io/org/skill-a:v1',
+        key: validOciRecordFull.key,
       };
       const tupleB = {
         type: 'oci' as const,
@@ -860,7 +860,11 @@ describe('SkillsCatalogProvider', () => {
         ],
       });
 
-      // Partial snapshot with only one skill (skill-b is absent)
+      const absentBefore = structuredClone(
+        store.committedStates.get('oci:quay-public')!.entities[1],
+      );
+
+      // Partial snapshot updates A while B is absent.
       const snapshot = makeSnapshot({
         status: 'partial',
         skills: [validOciRecordFull],
@@ -902,7 +906,18 @@ describe('SkillsCatalogProvider', () => {
 
       // Committed state should still have both entities
       const committedState = store.committedStates.get('oci:quay-public');
-      expect(committedState!.entities.length).toBeGreaterThanOrEqual(2);
+      expect(mockConnection.applyMutation).toHaveBeenCalledTimes(1);
+      expect(committedState!.entities).toHaveLength(2);
+      expect(
+        committedState!.entities.map(entity => entity.catalogName).sort(),
+      ).toEqual([nameA, nameB].sort());
+      expect(
+        committedState!.entities.find(entity => entity.catalogName === nameA)
+          ?.digest,
+      ).toBe(validOciRecordFull.digest);
+      expect(
+        committedState!.entities.find(entity => entity.catalogName === nameB),
+      ).toEqual(absentBefore);
     });
 
     it('replays pending delta on startup recovery', async () => {
