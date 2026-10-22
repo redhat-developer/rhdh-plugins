@@ -318,9 +318,24 @@ persist a pending record containing that exact delta and its intended next
 ownership state/observation time. This is separate from committed reconciliation
 progress. After the catalog mutation succeeds, atomically commit the next state
 and clear the pending record. On restart or retry, replay any pending delta and
-commit its state before consuming a newer connector snapshot. This closes the
+commit its state before consuming a newer connector snapshot. If replay or its
+ownership commit fails, preserve the exact pending work and skip polling that
+source until recovery succeeds; independent sources may continue. This closes the
 crash window between catalog mutation and ownership persistence, including when
 the connector has already removed a newly added skill from its next snapshot.
+
+Provider removals persist the full original catalog entity reference, including
+namespace, rather than reconstructing it from current configuration. A namespace
+configuration change is reconciled even for a repeated connector observation:
+ready results add the new identity and remove the old one; partial results retain
+old identities until ready cleanup is authorized. Pre-upgrade pending removals
+recover their original references from committed ownership; missing or ambiguous
+ownership blocks that source's replay rather than guessing a namespace.
+
+The provider database uses packaged Knex migrations with independent
+`skills_catalog_provider_migrations` tracking and locking in the shared Catalog
+database. The initial migration adopts compatible pre-existing development tables
+without deleting their rows; incompatible missing-column schemas fail initialization.
 
 The OCI connector retains extracted Markdown content for skills that have
 last-known-good entities. Content retention follows the same lifecycle as
@@ -337,31 +352,29 @@ for the dedicated Markdown endpoint and content lifecycle.
 > updates, or removals; nonblank invalid owner/lifecycle hint defaulting to
 > configured values; consumer regression tests; and updated spec scenarios.
 > The snapshot-validation and entity-construction scope of 4.2 is complete.
-> The current provider implementation uses `type: 'full'` mutations scoped
-> per source instead of the delta mutations and database persistence
-> described above. `loading` and `failed` statuses skip mutation (preserving
-> previous entities); `partial` snapshots are currently handled as full
-> replacements. Consumer validation failures (source-reference construction
-> errors, malformed snapshots) reject the invalid source snapshot and
-> preserve existing entities without additions, updates, or removals. Delta
-> reconciliation, durable persistence, crash-safe pending records, and
-> comprehensive status handling are deferred to tasks 4.3 and 4.4.
-> RHIDP-17331's broader runtime/reconciliation work is tracked separately
-> under those tasks; task 4.2's completion covers its snapshot-validation
-> and entity-construction scope, while RHIDP-17331 gates the remaining
-> provider infrastructure in 4.3–4.5. Marking 4.2 complete was previously
-> deferred pending RHIDP-17331 (#5301); that gate applied to the broader
-> integration/reconciliation scope, not to the validation/construction work
-> that #5291 and #5304 together address.
+> The provider now uses `type: 'delta'` mutations scoped per source with
+> durable database persistence (tasks 4.3–4.4, PR #5319).
+> `DatabaseReconciliationStore` persists per-source committed ownership
+> state and crash-safe pending deltas using provider-scoped composite keys.
+> `loading` and `failed` statuses skip mutation (preserving previously
+> committed entities); `partial` snapshots apply upserts only with no
+> removals, retaining absent entities. Consumer validation failures
+> (source-reference construction errors, malformed snapshots) reject the
+> invalid source snapshot and preserve existing entities without additions,
+> updates, or removals. Task 4.2's completion covers its snapshot-validation
+> and entity-construction scope (#5291, #5304). Task 4.5 (comprehensive
+> integration tests) now has file-backed SQLite restart, rollback, replay, and
+> tag-identity coverage in PR #5319; maintainer basic regression verification passed.
 >
 > **Task 4.4 partial completion (PR #5315):** The pure decision portion of
 > delta reconciliation is implemented as `calculateReconciliationPlan`, a
 > standalone function that computes deterministic upsert/removal deltas
 > from committed ownership state and a validated snapshot. Covers
 > ready/partial/loading/failed status handling, stale/repeated observation
-> detection, and cross-source identity collision diagnosis. Durable
-> persistence, crash-safe replay, and runtime integration remain in
-> tasks 4.3–4.5, gated by RHIDP-17331.
+> detection, and cross-source identity collision diagnosis. PR #5319
+> integrates that planner with durable persistence and replay, blocks newer
+> observations for sources whose recovery fails, and adds database-backed
+> verification. Task 4.5 is marked implemented following automated and maintainer basic regression verification.
 
 ### D7 — Public-source safety, bounds, and configuration
 

@@ -37,6 +37,7 @@ export interface CommittedSourceState {
 // @public
 export interface ExternalOwnership {
   catalogName: string;
+  entityRef?: string;
   tuple: IdentityTuple;
 }
 
@@ -65,8 +66,18 @@ export interface OwnedEntity {
 }
 
 // @public
+export interface PendingDelta {
+  nextState: CommittedSourceState;
+  removals: PlannedRemoval[];
+  sourceId: string;
+  sourceType: SkillSourceType;
+  upserts: PlannedUpsert[];
+}
+
+// @public
 export interface PlannedRemoval {
   catalogName: string;
+  entityRef?: string;
   tuple: IdentityTuple;
 }
 
@@ -114,6 +125,27 @@ export interface ReconciliationPlanInput {
 }
 
 // @public
+export interface ReconciliationStore {
+  commitStateAndClearPending(
+    sourceType: SkillSourceType,
+    sourceId: string,
+    nextState: CommittedSourceState,
+  ): Promise<void>;
+  getAllCommittedStates(): Promise<CommittedSourceState[]>;
+  getAllPendingDeltas(): Promise<PendingDelta[]>;
+  getCommittedState(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<CommittedSourceState>;
+  getPendingDelta(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<PendingDelta | undefined>;
+  initialize(): Promise<void>;
+  savePendingDelta(delta: PendingDelta): Promise<void>;
+}
+
+// @public
 export class SkillsCatalogProvider implements EntityProvider {
   constructor(
     config: SkillsCatalogProviderConfig,
@@ -121,6 +153,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     auth: AuthService,
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
+    store?: ReconciliationStore,
   );
   // (undocumented)
   connect(connection: EntityProviderConnection): Promise<void>;

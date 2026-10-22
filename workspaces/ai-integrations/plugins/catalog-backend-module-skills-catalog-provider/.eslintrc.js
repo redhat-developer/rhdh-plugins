@@ -13,4 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-module.exports = require('@backstage/cli/config/eslint-factory')(__dirname);
+const config = require('@backstage/cli/config/eslint-factory')(__dirname);
+// Backstage recognizes __testUtils__ by default; this workspace uses flat helpers.
+config.overrides.push({
+  files: ['src/testUtils.ts'],
+  rules: { '@backstage/no-undeclared-imports': 'off' },
+});
+module.exports = config;

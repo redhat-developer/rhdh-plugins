@@ -152,6 +152,30 @@ entities, not merely acquired records. Source configuration SHALL identify the
 sole provider assignment for retention; duplicates are rejected. npx sources do
 not participate in this protocol.
 
+#### Scenario: Provider namespace changes with unchanged skill content
+
+- **WHEN** configured namespace changes while a skill's digest and connector observation timestamp remain unchanged
+- **THEN** a ready reconciliation upserts the configured identity and removes the old identity using its persisted full reference
+- **AND** replay after restart uses the original persisted removal target
+
+#### Scenario: Partial observation during namespace migration
+
+- **WHEN** a partial snapshot is reconciled after changing the provider namespace
+- **THEN** successful records may be upserted in the new namespace
+- **AND** old identities remain owned and retained until a ready reconciliation authorizes their removal
+
+#### Scenario: Legacy pending removal has no original identity
+
+- **WHEN** a pending removal without a full entity reference cannot be matched unambiguously to committed ownership
+- **THEN** the provider preserves the pending delta and blocks newer observations for that source
+- **AND** it does not construct a removal target from the current namespace
+
+#### Scenario: Existing development tables are adopted by migrations
+
+- **WHEN** the provider starts with compatible reconciliation tables created before migration tracking was introduced
+- **THEN** its module-scoped migration records the baseline without deleting committed or pending rows
+- **AND** it does not change the Catalog plugin's migration history
+
 #### Scenario: Documentation acknowledgment follows catalog commit
 
 - **WHEN** a ready OCI snapshot is successfully reconciled and ownership is durably committed
@@ -195,6 +219,13 @@ not participate in this protocol.
 - **WHEN** a catalog mutation fails or the process stops before saving progress
 - **THEN** that snapshot is retried without advancing the durable observation time
 - **AND** replaying a previously applied delta does not duplicate entities or remove another source's entities
+
+#### Scenario: Pending recovery fails while another source is available
+
+- **WHEN** replaying a source's pending delta or committing its recovered ownership fails
+- **THEN** the exact pending delta and previous committed observation remain recoverable
+- **AND** the provider does not consume a newer snapshot for that source until recovery succeeds
+- **AND** independently configured sources may continue reconciling
 
 #### Scenario: Connector advances after an interrupted addition
 

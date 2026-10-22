@@ -1,3 +1,98 @@
+## Focused review follow-up: PR #5319 test precision and initialization docs
+
+**Last audited:** 2026-10-22T20:17:54Z
+
+The partial-retention test now aligns its previously owned A tuple with the
+incoming fixture, verifies exactly two resulting identities, verifies A's updated
+digest, and compares absent B against its unchanged saved entity. The stronger
+assertion reproduced the old three-entity fixture mismatch before correction.
+Constructor documentation and README now explicitly assign custom-store
+initialization to the supplying caller before provider connection. The module
+already performs that step; production behavior and public signatures are unchanged.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This is a focused consistency update, not a new independent full-change audit.
+Earlier successful runtime verification remains below. No production behavior
+change, new configuration, or task-status change is introduced by this follow-up.
+
+---
+
+## Focused review follow-up: PR #5319 namespace and migrations
+
+**Last audited:** 2026-10-22T17:53:23Z
+
+This focused update covers the namespace and schema-management corrections after
+the prior maintainer regression verification. It is not a new full-change audit;
+previous reports and their verification evidence remain below.
+
+Removal plans now carry original catalog entity references. Repeated observations
+do not suppress namespace migration. Partial observations preserve both old and
+new identities until ready cleanup. Legacy pending removals resolve against
+persisted ownership and block safely if it cannot be recovered unambiguously.
+Production schema setup uses a packaged module-scoped Knex migration and lock,
+adopts compatible existing tables without deleting rows, rejects missing-column
+schemas, and honors Backstage migration skipping. The shared helper follows the
+flat testUtils.ts convention with a development-only dependency lint exception.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+Design, provider scenarios, task annotations, README, and changeset now cover these
+behaviors. Task 4.5 remains implemented. Maintainer regression testing of these newest
+corrections passed. Inspection of /tmp/ggm-dev.log and read-only SQLite queries
+confirmed recovery of two previously stored Markdown entries, preservation of two
+catalog ownership records during loading, and successful refresh of both configured
+images without duplicate catalog mutations. Namespace and migration failure cases
+are covered by automated tests; they are not claimed as separate manual exercises. Public store methods remain
+required and the internal implementation remains absent from the package entry
+point. API and automated check results are recorded in the implementation handoff.
+
+---
+
+## Focused implementation verification: PR #5319 (RHIDP-17331)
+
+**Last audited:** 2026-10-22T16:41:01Z
+
+This entry supersedes earlier pending-work descriptions only for the provider
+implementation addressed by PR #5319. Historical reports below are preserved.
+This is a focused consistency check, not a new audit of the entire change.
+
+The provider blocks newer observations for a source whose pending mutation
+replay or ownership commit fails. Other sources continue independently. Real
+file-backed SQLite tests replace the in-memory stand-in previously used for
+store tests, verify state through a new connection, and exercise atomic rollback.
+Provider lifecycle tests cover outages, interrupted additions followed by removal,
+replay failure, repeated replay, partial retention, invalid responses, both source
+types, same-digest tag aliases, and stable identity when a tag moves. Existing
+config/consumer/planner tests supply duplicate-config, validation, and collision
+coverage. The internal database class is removed from package exports and the
+API report is regenerated.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No new cross-artifact contradiction was identified in this focused update.
+Task 4.5 is marked implemented; maintainer basic regression testing passed.
+File-backed SQLite restart and rollback verification is automated; the local
+app-config.yaml still uses in-memory storage on this branch. Automated verification passed (96 provider tests, type check,
+build, package lint, API report validation, formatting, and strict OpenSpec validation);
+automated coverage does not claim live demo acceptance or completion of future
+TechDocs acknowledgment tasks. Automated command results are reported in the
+implementation handoff.
+
+---
+
 ## Audit Report: oci-npx-skills-registry-demo
 
 **Last audited:** 2026-10-21T19:03:14Z

@@ -27,6 +27,7 @@ export { catalogModuleSkillsCatalogProvider as default } from './module';
 export { SkillsCatalogProvider } from './SkillsCatalogProvider';
 export { readSkillsCatalogProviderConfigs } from './config';
 export { calculateReconciliationPlan } from './reconciliation-planner';
+export type { PendingDelta, ReconciliationStore } from './reconciliation-store';
 export type {
   CommittedSourceState,
   ExternalOwnership,
