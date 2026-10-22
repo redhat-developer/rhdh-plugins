@@ -324,6 +324,19 @@ source until recovery succeeds; independent sources may continue. This closes th
 crash window between catalog mutation and ownership persistence, including when
 the connector has already removed a newly added skill from its next snapshot.
 
+Provider removals persist the full original catalog entity reference, including
+namespace, rather than reconstructing it from current configuration. A namespace
+configuration change is reconciled even for a repeated connector observation:
+ready results add the new identity and remove the old one; partial results retain
+old identities until ready cleanup is authorized. Pre-upgrade pending removals
+recover their original references from committed ownership; missing or ambiguous
+ownership blocks that source's replay rather than guessing a namespace.
+
+The provider database uses packaged Knex migrations with independent
+`skills_catalog_provider_migrations` tracking and locking in the shared Catalog
+database. The initial migration adopts compatible pre-existing development tables
+without deleting their rows; incompatible missing-column schemas fail initialization.
+
 The OCI connector retains extracted Markdown content for skills that have
 last-known-good entities. Content retention follows the same lifecycle as
 snapshot completeness: a `partial` refresh does not discard content for retained

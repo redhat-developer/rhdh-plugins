@@ -71,6 +71,7 @@ export const catalogModuleSkillsCatalogProvider = createBackendModule({
           const store = new DatabaseReconciliationStore(
             knex,
             providerConfig.id,
+            database.migrations?.skip ?? false,
           );
           await store.initialize();
 

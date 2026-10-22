@@ -18,7 +18,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import knex, { type Knex } from 'knex';
-import { DatabaseReconciliationStore } from '../reconciliation-store';
+import { DatabaseReconciliationStore } from './reconciliation-store';
 
 /** Real file-backed SQLite, reopened with a fresh connection for recovery tests. */
 export async function createDurableTestDatabase() {

@@ -27,6 +27,7 @@
  * before consuming newer snapshots.
  */
 
+import { resolvePackagePath } from '@backstage/backend-plugin-api';
 import type { Knex } from 'knex';
 
 import type { SkillSourceType } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
@@ -151,33 +152,18 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
   constructor(
     private readonly knex: Knex,
     private readonly providerId: string,
+    private readonly skipMigrations = false,
   ) {}
 
   async initialize(): Promise<void> {
-    const hasCommitted = await this.knex.schema.hasTable(COMMITTED_STATE_TABLE);
-    if (!hasCommitted) {
-      await this.knex.schema.createTable(COMMITTED_STATE_TABLE, table => {
-        table.string('provider_id').notNullable();
-        table.string('source_type').notNullable();
-        table.string('source_id').notNullable();
-        table.string('observed_at').nullable();
-        table.text('entities_json').notNullable().defaultTo('[]');
-        table.primary(['provider_id', 'source_type', 'source_id']);
-      });
-    }
-
-    const hasPending = await this.knex.schema.hasTable(PENDING_DELTA_TABLE);
-    if (!hasPending) {
-      await this.knex.schema.createTable(PENDING_DELTA_TABLE, table => {
-        table.string('provider_id').notNullable();
-        table.string('source_type').notNullable();
-        table.string('source_id').notNullable();
-        table.text('upserts_json').notNullable().defaultTo('[]');
-        table.text('removals_json').notNullable().defaultTo('[]');
-        table.text('next_state_json').notNullable();
-        table.primary(['provider_id', 'source_type', 'source_id']);
-      });
-    }
+    if (this.skipMigrations) return;
+    await this.knex.migrate.latest({
+      directory: resolvePackagePath(
+        '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider',
+        'migrations',
+      ),
+      tableName: 'skills_catalog_provider_migrations',
+    });
   }
 
   async getCommittedState(

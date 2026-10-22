@@ -260,7 +260,7 @@ export class SkillsCatalogProvider implements EntityProvider {
           this.connection!,
           locationKey,
           delta.upserts,
-          delta.removals,
+          await this.resolvePendingRemovals(delta),
         );
 
         // Commit the next state and clear the pending delta
@@ -434,14 +434,42 @@ export class SkillsCatalogProvider implements EntityProvider {
         locationKey,
         entity: u.entity,
       })),
-      removed: removals.map(r => ({
-        entityRef: stringifyEntityRef({
-          kind: 'AiResource',
-          namespace: this.config.namespace,
-          name: r.catalogName,
-        }),
-        locationKey,
-      })),
+      removed: removals.map(r => {
+        if (!r.entityRef) {
+          throw new Error(
+            `Removal has no persisted entity reference: ${r.catalogName}`,
+          );
+        }
+        return { entityRef: r.entityRef, locationKey };
+      }),
+    });
+  }
+
+  /** Recover original removal targets from pre-upgrade pending plans. */
+  private async resolvePendingRemovals(
+    delta: PendingDelta,
+  ): Promise<PlannedRemoval[]> {
+    if (delta.removals.every(removal => removal.entityRef))
+      return delta.removals;
+    const committed = await this.store.getCommittedState(
+      delta.sourceType,
+      delta.sourceId,
+    );
+    return delta.removals.map(removal => {
+      if (removal.entityRef) return removal;
+      const owned = committed.entities.filter(
+        entity =>
+          entity.catalogName === removal.catalogName &&
+          entity.tuple.type === removal.tuple.type &&
+          entity.tuple.id === removal.tuple.id &&
+          entity.tuple.key === removal.tuple.key,
+      );
+      if (owned.length !== 1) {
+        throw new Error(
+          `Cannot recover original identity for pending removal: ${removal.catalogName}`,
+        );
+      }
+      return { ...removal, entityRef: stringifyEntityRef(owned[0].entity) };
     });
   }
 
@@ -466,6 +494,7 @@ export class SkillsCatalogProvider implements EntityProvider {
 
       for (const entity of state.entities) {
         external.push({
+          entityRef: stringifyEntityRef(entity.entity),
           catalogName: entity.catalogName,
           tuple: entity.tuple,
         });
@@ -491,7 +520,7 @@ export class SkillsCatalogProvider implements EntityProvider {
    * not be available.
    */
   private buildLocationKeyFromParts(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): string {
     return `skills-catalog-provider:${this.config.id}:${sourceType}:${sourceId}`;

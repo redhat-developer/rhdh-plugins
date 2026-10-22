@@ -1,3 +1,38 @@
+## Focused review follow-up: PR #5319 namespace and migrations
+
+**Last audited:** 2026-10-22T17:53:23Z
+
+This focused update covers the namespace and schema-management corrections after
+the prior maintainer regression verification. It is not a new full-change audit;
+previous reports and their verification evidence remain below.
+
+Removal plans now carry original catalog entity references. Repeated observations
+do not suppress namespace migration. Partial observations preserve both old and
+new identities until ready cleanup. Legacy pending removals resolve against
+persisted ownership and block safely if it cannot be recovered unambiguously.
+Production schema setup uses a packaged module-scoped Knex migration and lock,
+adopts compatible existing tables without deleting rows, rejects missing-column
+schemas, and honors Backstage migration skipping. The shared helper follows the
+flat testUtils.ts convention with a development-only dependency lint exception.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+Design, provider scenarios, task annotations, README, and changeset now cover these
+behaviors. Task 4.5 remains implemented. Maintainer regression testing of these newest
+corrections passed. Inspection of /tmp/ggm-dev.log and read-only SQLite queries
+confirmed recovery of two previously stored Markdown entries, preservation of two
+catalog ownership records during loading, and successful refresh of both configured
+images without duplicate catalog mutations. Namespace and migration failure cases
+are covered by automated tests; they are not claimed as separate manual exercises. Public store methods remain
+required and the internal implementation remains absent from the package entry
+point. API and automated check results are recorded in the implementation handoff.
+
+---
+
 ## Focused implementation verification: PR #5319 (RHIDP-17331)
 
 **Last audited:** 2026-10-22T16:41:01Z

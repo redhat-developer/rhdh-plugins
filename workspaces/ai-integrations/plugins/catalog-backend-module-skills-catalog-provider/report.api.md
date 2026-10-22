@@ -37,6 +37,7 @@ export interface CommittedSourceState {
 // @public
 export interface ExternalOwnership {
   catalogName: string;
+  entityRef?: string;
   tuple: IdentityTuple;
 }
 
@@ -76,6 +77,7 @@ export interface PendingDelta {
 // @public
 export interface PlannedRemoval {
   catalogName: string;
+  entityRef?: string;
   tuple: IdentityTuple;
 }
 

@@ -28,6 +28,7 @@
  * design D6's status table.
  */
 
+import { stringifyEntityRef } from '@backstage/catalog-model';
 import type { IdentityTuple } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 import type {
@@ -87,27 +88,40 @@ export function calculateReconciliationPlan(
   }
 
   // ─── Repeated observation: same observedAt → idempotent ──────────
-  if (isRepeatedObservation(previousState.observedAt, snapshotObservedAt)) {
+  // A configuration namespace change is independent of connector freshness.
+  // Do not suppress that identity change just because content/timestamp repeats.
+  const namespaceChanged = mappedEntities.some(mapped =>
+    previousState.entities.some(
+      previous =>
+        tuplesEqual(previous.tuple, mapped.tuple) &&
+        stringifyEntityRef(previous.entity) !==
+          stringifyEntityRef(mapped.entity),
+    ),
+  );
+  if (
+    !namespaceChanged &&
+    isRepeatedObservation(previousState.observedAt, snapshotObservedAt)
+  ) {
     return noOpPlan(previousState, 'repeated-observation');
   }
 
   // ─── Build lookup maps ───────────────────────────────────────────
-  // Previous entities indexed by catalogName for O(1) lookup
-  const previousByName = new Map<string, OwnedEntity>();
+  // Previous entities indexed by full catalog identity for O(1) lookup
+  const previousByRef = new Map<string, OwnedEntity>();
   for (const owned of previousState.entities) {
-    previousByName.set(owned.catalogName, owned);
+    previousByRef.set(stringifyEntityRef(owned.entity), owned);
   }
 
-  // External ownership indexed by catalogName for collision detection
-  const externalByName = new Map<string, ExternalOwnership>();
+  // External ownership indexed by full catalog identity for collision detection
+  const externalByRef = new Map<string, ExternalOwnership>();
   for (const ext of externalOwnership) {
-    externalByName.set(ext.catalogName, ext);
+    externalByRef.set(ext.entityRef ?? ext.catalogName, ext);
   }
 
   // ─── Process mapped entities from the snapshot ───────────────────
   const upserts: PlannedUpsert[] = [];
   const collisions: IdentityCollision[] = [];
-  const processedNames = new Set<string>();
+  const processedRefs = new Set<string>();
   const nextEntities: OwnedEntity[] = [];
 
   // Track names seen in this snapshot for internal collision detection
@@ -115,9 +129,10 @@ export function calculateReconciliationPlan(
 
   for (const mapped of mappedEntities) {
     const { tuple, catalogName, digest, entity } = mapped;
+    const entityRef = stringifyEntityRef(entity);
 
     // ── Internal collision: two entities in the same snapshot ──
-    const alreadySeen = seenInSnapshot.get(catalogName);
+    const alreadySeen = seenInSnapshot.get(entityRef);
     if (alreadySeen) {
       if (!tuplesEqual(alreadySeen.tuple, tuple)) {
         collisions.push({
@@ -130,10 +145,11 @@ export function calculateReconciliationPlan(
       // Skip duplicate — first one wins
       continue;
     }
-    seenInSnapshot.set(catalogName, { tuple });
+    seenInSnapshot.set(entityRef, { tuple });
 
     // ── External collision: another source owns this name ──────
-    const external = externalByName.get(catalogName);
+    const external =
+      externalByRef.get(entityRef) ?? externalByRef.get(catalogName);
     if (external && !tuplesEqual(external.tuple, tuple)) {
       collisions.push({
         catalogName,
@@ -145,10 +161,10 @@ export function calculateReconciliationPlan(
       continue;
     }
 
-    processedNames.add(catalogName);
+    processedRefs.add(entityRef);
 
     // Determine if this is an actual change (new or updated)
-    const previous = previousByName.get(catalogName);
+    const previous = previousByRef.get(entityRef);
     if (!previous || previous.digest !== digest) {
       // New entity or content changed — plan upsert
       upserts.push({ tuple, catalogName, digest, entity });
@@ -164,8 +180,9 @@ export function calculateReconciliationPlan(
   if (snapshotStatus === 'ready') {
     // Ready: remove previously owned keys absent from this snapshot
     for (const owned of previousState.entities) {
-      if (!processedNames.has(owned.catalogName)) {
+      if (!processedRefs.has(stringifyEntityRef(owned.entity))) {
         removals.push({
+          entityRef: stringifyEntityRef(owned.entity),
           tuple: owned.tuple,
           catalogName: owned.catalogName,
         });
@@ -174,7 +191,7 @@ export function calculateReconciliationPlan(
   } else if (snapshotStatus === 'partial') {
     // Partial: retain all absent entities — no removals
     for (const owned of previousState.entities) {
-      if (!processedNames.has(owned.catalogName)) {
+      if (!processedRefs.has(stringifyEntityRef(owned.entity))) {
         nextEntities.push(owned);
       }
     }

@@ -132,3 +132,25 @@ idempotent retries, independent OCI/npx sources, partial retention, invalid
 responses, same-digest tag aliases, and tag movement without identity changes.
 Catalog mutation and connector HTTP boundaries use fixtures; SQLite persistence
 and provider mapping/reconciliation execute their production implementations.
+
+### Namespace changes and schema upgrades
+
+Removal plans persist the original full catalog entity reference, including its
+namespace. Changing the configured namespace therefore removes the old identity
+and upserts the new identity after a complete ready snapshot, even when the
+connector digest and observation timestamp have not changed. Partial snapshots
+may add the new identity but retain the old one until a ready snapshot authorizes
+cleanup. Loading, failed, and invalid responses retain previous ownership.
+
+Pending removals written before full entity references were recorded recover their
+original targets from committed ownership. If that identity cannot be recovered
+unambiguously, recovery preserves the pending work and blocks newer snapshots for
+that source instead of guessing the current namespace.
+
+Database initialization uses packaged Knex migrations with the dedicated
+`skills_catalog_provider_migrations` tracking table and its lock table; it does not
+use the Catalog plugin's migration history. The initial migration adopts existing
+compatible development tables without deleting committed or pending rows and
+rejects tables missing required columns. Backstage's database migrations skip
+setting is honored; externally managed deployments must apply this module's
+migrations before starting the provider. Shared test helpers live in `src/testUtils.ts`.

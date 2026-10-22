@@ -128,6 +128,8 @@ export interface CommittedSourceState {
  * @public
  */
 export interface ExternalOwnership {
+  /** Full catalog identity; absent legacy callers are treated as name-only ownership. */
+  entityRef?: string;
   /** Catalog entity name owned by the external source. */
   catalogName: string;
   /** Identity tuple from the external source. */
@@ -174,6 +176,8 @@ export interface PlannedUpsert {
  * @public
  */
 export interface PlannedRemoval {
+  /** Original catalog entity reference; optional only for pre-upgrade pending plans. */
+  entityRef?: string;
   /** Source identity tuple that was previously committed. */
   tuple: IdentityTuple;
   /** Deterministic catalog entity name to remove. */

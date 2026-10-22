@@ -26,7 +26,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { SkillsCatalogProvider } from './SkillsCatalogProvider';
-import { createDurableTestDatabase } from './__testUtils__/database';
+import { createDurableTestDatabase } from './testUtils';
 import type { ReconciliationStore } from './reconciliation-store';
 import type { SkillsCatalogProviderConfig } from './types';
 
@@ -104,6 +104,7 @@ describe('SkillsCatalogProvider durable lifecycle', () => {
   async function start(
     store: ReconciliationStore,
     sources = [ociConfig] as SkillsCatalogProviderConfig['sources'],
+    namespace = 'default',
   ) {
     let run: (() => Promise<void>) | undefined;
     const auth = mockServices.auth.mock({
@@ -119,7 +120,7 @@ describe('SkillsCatalogProvider durable lifecycle', () => {
       {
         id: 'test',
         sources,
-        namespace: 'default',
+        namespace,
         defaultOwner: 'team-skills',
         defaultLifecycle: 'production',
       },
@@ -359,6 +360,108 @@ describe('SkillsCatalogProvider durable lifecycle', () => {
       (await store.getCommittedState('oci', ociSource.id)).entities[0]
         .catalogName,
     ).toBe(initial.entities.find(e => e.tuple.key === moved.key)?.catalogName);
+  });
+
+  it('removes a disappeared entity from its persisted namespace after a restart with new configuration', async () => {
+    const first = await database.open();
+    await (await start(first.store)).run();
+    await first.client.destroy();
+    const second = await database.open();
+    current = snapshot({ observedAt: t2, skills: [] });
+    await (await start(second.store, [ociConfig], 'new-namespace')).run();
+    expect(catalog.size).toBe(0);
+    expect(
+      (await second.store.getCommittedState('oci', ociSource.id)).entities,
+    ).toEqual([]);
+  });
+
+  it('moves an unchanged skill to a new namespace even when the connector observation repeats', async () => {
+    const { store } = await database.open();
+    await (await start(store)).run();
+    const oldRef = [...catalog.keys()][0];
+    await (await start(store, [ociConfig], 'new-namespace')).run();
+    expect(catalog.size).toBe(1);
+    expect(catalog.has(oldRef)).toBe(false);
+    expect([...catalog.keys()][0]).toContain('airesource:new-namespace/');
+    expect(
+      (await store.getCommittedState('oci', ociSource.id)).entities[0].entity
+        .metadata.namespace,
+    ).toBe('new-namespace');
+  });
+
+  it('retains both namespace identities on partial migration until a ready observation authorizes cleanup', async () => {
+    const { store } = await database.open();
+    await (await start(store)).run();
+    current = snapshot({ status: 'partial', observedAt: t2 });
+    const provider = await start(store, [ociConfig], 'new-namespace');
+    await provider.run();
+    expect(catalog.size).toBe(2);
+    expect(
+      (await store.getCommittedState('oci', ociSource.id)).entities,
+    ).toHaveLength(2);
+    current = snapshot({ observedAt: t2 });
+    await provider.run();
+    expect(catalog.size).toBe(1);
+    expect([...catalog.keys()][0]).toContain('airesource:new-namespace/');
+  });
+
+  it.each([false, true])(
+    'replays pending removals against their original namespace (legacy=%s)',
+    async legacy => {
+      const first = await database.open();
+      const provider = await start(first.store);
+      await provider.run();
+      current = snapshot({ observedAt: t2, skills: [] });
+      (connection.applyMutation as jest.Mock).mockRejectedValueOnce(
+        new Error('catalog unavailable'),
+      );
+      await provider.run();
+      const pending = (await first.store.getPendingDelta('oci', ociSource.id))!;
+      expect(pending.removals).toHaveLength(1);
+      if (legacy) {
+        // Pre-upgrade pending rows did not carry the namespace/ref.
+        await first.store.savePendingDelta({
+          ...pending,
+          removals: pending.removals.map(({ tuple, catalogName }) => ({
+            tuple,
+            catalogName,
+          })),
+        });
+      }
+      await first.client.destroy();
+      const second = await database.open();
+      await (await start(second.store, [ociConfig], 'new-namespace')).run();
+      expect(catalog.size).toBe(0);
+      expect(
+        await second.store.getPendingDelta('oci', ociSource.id),
+      ).toBeUndefined();
+    },
+  );
+
+  it('preserves an unresolved legacy removal when its original committed identity cannot be recovered', async () => {
+    const { store } = await database.open();
+    const tuple = {
+      type: 'oci' as const,
+      id: ociSource.id,
+      key: validOciRecordFull.key,
+    };
+    const pending = {
+      sourceType: 'oci' as const,
+      sourceId: ociSource.id,
+      upserts: [],
+      removals: [{ tuple, catalogName: 'missing-original-entity' }],
+      nextState: {
+        sourceType: 'oci' as const,
+        sourceId: ociSource.id,
+        observedAt: t1,
+        entities: [],
+      },
+    };
+    await store.savePendingDelta(pending);
+    await (await start(store, [ociConfig], 'new-namespace')).run();
+    expect(connection.applyMutation).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await store.getPendingDelta('oci', ociSource.id)).toEqual(pending);
   });
 
   it('retains durable state on invalid connector responses', async () => {

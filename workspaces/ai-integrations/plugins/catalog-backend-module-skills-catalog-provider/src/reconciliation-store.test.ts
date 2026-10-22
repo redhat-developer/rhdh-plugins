@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createDurableTestDatabase } from './__testUtils__/database';
+import { createDurableTestDatabase } from './testUtils';
 import type { PendingDelta } from './reconciliation-store';
 import type { CommittedSourceState } from './types';
 
@@ -82,6 +82,46 @@ describe('DatabaseReconciliationStore with file-backed SQLite', () => {
     expect((await a.store.getCommittedState('oci', 'other')).entities).toEqual(
       [],
     );
+  });
+
+  it('uses isolated migration tracking and adopts existing compatible tables without losing rows', async () => {
+    const { client, store } = await database.open();
+    await store.commitStateAndClearPending('oci', 'quay-public', state);
+    await store.savePendingDelta(delta);
+    const migrationTable = 'skills_catalog_provider_migrations';
+    expect(await client.schema.hasTable(migrationTable)).toBe(true);
+    expect(await client(migrationTable).select('*')).toHaveLength(1);
+    await client.schema.dropTable(migrationTable);
+    await client.schema.dropTable(`${migrationTable}_lock`);
+    // A shared Catalog migration table must not be consulted or changed.
+    await client.schema.createTable('knex_migrations', table => {
+      table.string('name');
+    });
+    await client('knex_migrations').insert({ name: 'catalog-migration' });
+    await store.initialize();
+    expect(await store.getCommittedState('oci', 'quay-public')).toEqual(state);
+    expect(await store.getPendingDelta('oci', 'quay-public')).toEqual(delta);
+    expect(await client('knex_migrations').select('*')).toEqual([
+      { name: 'catalog-migration' },
+    ]);
+    await store.initialize();
+    expect(await client(migrationTable).select('*')).toHaveLength(1);
+  });
+
+  it('refuses incompatible pre-migration tables without deleting their rows', async () => {
+    const { client, store } = await database.open();
+    await store.commitStateAndClearPending('oci', 'quay-public', state);
+    await client.schema.dropTable('skills_catalog_provider_migrations');
+    await client.schema.dropTable('skills_catalog_provider_migrations_lock');
+    await client.schema.alterTable('skills_provider_committed_state', table => {
+      table.dropColumn('observed_at');
+    });
+    await expect(store.initialize()).rejects.toThrow(
+      'missing columns observed_at',
+    );
+    const rows = await client('skills_provider_committed_state').select('*');
+    expect(rows).toHaveLength(1);
+    expect(JSON.parse(rows[0].entities_json)).toEqual(state.entities);
   });
 
   it('atomically commits next state and clears pending work', async () => {
