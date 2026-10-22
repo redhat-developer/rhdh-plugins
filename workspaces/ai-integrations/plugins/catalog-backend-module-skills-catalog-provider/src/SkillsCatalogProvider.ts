@@ -26,16 +26,80 @@ import type {
   EntityProviderConnection,
 } from '@backstage/plugin-catalog-node';
 
+import type { SkillSourceType } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+
 import { calculateReconciliationPlan } from './reconciliation-planner';
-import type { ReconciliationStore } from './reconciliation-store';
+import type { PendingDelta, ReconciliationStore } from './reconciliation-store';
 import { consumeSnapshot } from './snapshot-consumer';
 import type {
+  CommittedSourceState,
   ExternalOwnership,
   PlannedRemoval,
   PlannedUpsert,
   SkillsCatalogProviderConfig,
   SourceConsumerConfig,
 } from './types';
+
+// ─── Default in-memory store ──────────────────────────────────────────
+
+/**
+ * In-memory reconciliation store used as the default when no persistent
+ * store is provided. State is retained for the lifetime of the process
+ * but not across restarts.
+ */
+class InMemoryReconciliationStore implements ReconciliationStore {
+  private committed = new Map<string, CommittedSourceState>();
+  private pending = new Map<string, PendingDelta>();
+
+  private key(sourceType: SkillSourceType, sourceId: string): string {
+    return `${sourceType}:${sourceId}`;
+  }
+
+  async initialize(): Promise<void> {}
+
+  async getCommittedState(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<CommittedSourceState> {
+    return (
+      this.committed.get(this.key(sourceType, sourceId)) ?? {
+        sourceType,
+        sourceId,
+        observedAt: null,
+        entities: [],
+      }
+    );
+  }
+
+  async getAllCommittedStates(): Promise<CommittedSourceState[]> {
+    return Array.from(this.committed.values());
+  }
+
+  async getPendingDelta(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<PendingDelta | undefined> {
+    return this.pending.get(this.key(sourceType, sourceId));
+  }
+
+  async getAllPendingDeltas(): Promise<PendingDelta[]> {
+    return Array.from(this.pending.values());
+  }
+
+  async savePendingDelta(delta: PendingDelta): Promise<void> {
+    this.pending.set(this.key(delta.sourceType, delta.sourceId), delta);
+  }
+
+  async commitStateAndClearPending(
+    sourceType: SkillSourceType,
+    sourceId: string,
+    nextState: CommittedSourceState,
+  ): Promise<void> {
+    const k = this.key(sourceType, sourceId);
+    this.committed.set(k, nextState);
+    this.pending.delete(k);
+  }
+}
 
 /**
  * Common skills catalog entity provider.
@@ -75,7 +139,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     auth: AuthService,
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
-    store: ReconciliationStore,
+    store?: ReconciliationStore,
   ) {
     this.config = config;
     this.discovery = discovery;
@@ -84,7 +148,7 @@ export class SkillsCatalogProvider implements EntityProvider {
       source: `SkillsCatalogProvider:${config.id}`,
     });
     this.taskRunner = taskRunner;
-    this.store = store;
+    this.store = store ?? new InMemoryReconciliationStore();
   }
 
   getProviderName(): string {
@@ -407,7 +471,7 @@ export class SkillsCatalogProvider implements EntityProvider {
    * that delta mutations are scoped per source.
    */
   private buildLocationKey(source: SourceConsumerConfig): string {
-    return `skills-catalog-provider:${this.config.id}:${source.sourceType}:${source.sourceId}`;
+    return this.buildLocationKeyFromParts(source.sourceType, source.sourceId);
   }
 
   /**

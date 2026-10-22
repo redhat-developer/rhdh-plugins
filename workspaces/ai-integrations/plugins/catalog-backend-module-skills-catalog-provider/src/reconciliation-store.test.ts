@@ -26,6 +26,7 @@
 import {
   computeCatalogName,
   type IdentityTuple,
+  type SkillSourceType,
 } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 import {
@@ -97,7 +98,7 @@ class InMemoryReconciliationStore implements ReconciliationStore {
   private committed = new Map<string, CommittedSourceState>();
   private pending = new Map<string, PendingDelta>();
 
-  private key(sourceType: string, sourceId: string): string {
+  private key(sourceType: SkillSourceType, sourceId: string): string {
     return `${sourceType}:${sourceId}`;
   }
 
@@ -106,7 +107,7 @@ class InMemoryReconciliationStore implements ReconciliationStore {
   }
 
   async getCommittedState(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<CommittedSourceState> {
     const existing = this.committed.get(this.key(sourceType, sourceId));
@@ -129,7 +130,7 @@ class InMemoryReconciliationStore implements ReconciliationStore {
   }
 
   async getPendingDelta(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<PendingDelta | undefined> {
     const existing = this.pending.get(this.key(sourceType, sourceId));
@@ -151,7 +152,7 @@ class InMemoryReconciliationStore implements ReconciliationStore {
   }
 
   async commitStateAndClearPending(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
     nextState: CommittedSourceState,
   ): Promise<void> {

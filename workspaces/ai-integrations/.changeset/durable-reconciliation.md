@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider': patch
+'@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider': minor
 ---
 
 Add durable database-backed persistence for skills catalog reconciliation

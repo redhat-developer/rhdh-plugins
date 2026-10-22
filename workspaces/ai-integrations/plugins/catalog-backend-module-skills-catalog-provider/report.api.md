@@ -35,12 +35,12 @@ export interface CommittedSourceState {
   sourceType: SkillSourceType;
 }
 
-// @public
+// @internal
 export class DatabaseReconciliationStore implements ReconciliationStore {
-  constructor(knex: Knex);
+  constructor(knex: Knex, providerId: string);
   // (undocumented)
   commitStateAndClearPending(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
     nextState: CommittedSourceState,
   ): Promise<void>;
@@ -50,12 +50,12 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
   getAllPendingDeltas(): Promise<PendingDelta[]>;
   // (undocumented)
   getCommittedState(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<CommittedSourceState>;
   // (undocumented)
   getPendingDelta(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<PendingDelta | undefined>;
   // (undocumented)
@@ -99,7 +99,7 @@ export interface PendingDelta {
   nextState: CommittedSourceState;
   removals: PlannedRemoval[];
   sourceId: string;
-  sourceType: string;
+  sourceType: SkillSourceType;
   upserts: PlannedUpsert[];
 }
 
@@ -155,18 +155,18 @@ export interface ReconciliationPlanInput {
 // @public
 export interface ReconciliationStore {
   commitStateAndClearPending(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
     nextState: CommittedSourceState,
   ): Promise<void>;
   getAllCommittedStates(): Promise<CommittedSourceState[]>;
   getAllPendingDeltas(): Promise<PendingDelta[]>;
   getCommittedState(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<CommittedSourceState>;
   getPendingDelta(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<PendingDelta | undefined>;
   initialize(): Promise<void>;
@@ -181,7 +181,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     auth: AuthService,
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
-    store: ReconciliationStore,
+    store?: ReconciliationStore,
   );
   // (undocumented)
   connect(connection: EntityProviderConnection): Promise<void>;

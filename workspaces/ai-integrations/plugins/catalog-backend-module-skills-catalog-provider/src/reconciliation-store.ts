@@ -29,6 +29,8 @@
 
 import type { Knex } from 'knex';
 
+import type { SkillSourceType } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+
 import type {
   CommittedSourceState,
   OwnedEntity,
@@ -55,7 +57,7 @@ const PENDING_DELTA_TABLE = 'skills_provider_pending_delta';
  */
 export interface PendingDelta {
   /** Source type. */
-  sourceType: string;
+  sourceType: SkillSourceType;
   /** Source identifier. */
   sourceId: string;
   /** Planned upserts from the reconciliation plan. */
@@ -86,7 +88,7 @@ export interface ReconciliationStore {
    * Returns an empty state if no committed state exists for this source.
    */
   getCommittedState(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<CommittedSourceState>;
 
@@ -102,7 +104,7 @@ export interface ReconciliationStore {
    * but the process may have crashed before committing the result.
    */
   getPendingDelta(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<PendingDelta | undefined>;
 
@@ -123,7 +125,7 @@ export interface ReconciliationStore {
    * after a successful catalog mutation.
    */
   commitStateAndClearPending(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
     nextState: CommittedSourceState,
   ): Promise<void>;
@@ -139,47 +141,60 @@ export interface ReconciliationStore {
  * - `skills_provider_committed_state`: committed ownership state per source
  * - `skills_provider_pending_delta`: pending deltas before catalog mutation
  *
- * @public
+ * Each instance is scoped to a single provider config ID. The provider
+ * ID is included in both tables' composite primary keys to ensure data
+ * isolation when multiple provider configs coexist.
+ *
+ * @internal
  */
 export class DatabaseReconciliationStore implements ReconciliationStore {
-  constructor(private readonly knex: Knex) {}
+  constructor(
+    private readonly knex: Knex,
+    private readonly providerId: string,
+  ) {}
 
   async initialize(): Promise<void> {
     const hasCommitted = await this.knex.schema.hasTable(COMMITTED_STATE_TABLE);
     if (!hasCommitted) {
       await this.knex.schema.createTable(COMMITTED_STATE_TABLE, table => {
+        table.string('provider_id').notNullable();
         table.string('source_type').notNullable();
         table.string('source_id').notNullable();
         table.string('observed_at').nullable();
         table.text('entities_json').notNullable().defaultTo('[]');
-        table.primary(['source_type', 'source_id']);
+        table.primary(['provider_id', 'source_type', 'source_id']);
       });
     }
 
     const hasPending = await this.knex.schema.hasTable(PENDING_DELTA_TABLE);
     if (!hasPending) {
       await this.knex.schema.createTable(PENDING_DELTA_TABLE, table => {
+        table.string('provider_id').notNullable();
         table.string('source_type').notNullable();
         table.string('source_id').notNullable();
         table.text('upserts_json').notNullable().defaultTo('[]');
         table.text('removals_json').notNullable().defaultTo('[]');
         table.text('next_state_json').notNullable();
-        table.primary(['source_type', 'source_id']);
+        table.primary(['provider_id', 'source_type', 'source_id']);
       });
     }
   }
 
   async getCommittedState(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<CommittedSourceState> {
     const row = await this.knex(COMMITTED_STATE_TABLE)
-      .where({ source_type: sourceType, source_id: sourceId })
+      .where({
+        provider_id: this.providerId,
+        source_type: sourceType,
+        source_id: sourceId,
+      })
       .first();
 
     if (!row) {
       return {
-        sourceType: sourceType as CommittedSourceState['sourceType'],
+        sourceType,
         sourceId,
         observedAt: null,
         entities: [],
@@ -195,7 +210,9 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
   }
 
   async getAllCommittedStates(): Promise<CommittedSourceState[]> {
-    const rows = await this.knex(COMMITTED_STATE_TABLE).select('*');
+    const rows = await this.knex(COMMITTED_STATE_TABLE)
+      .where({ provider_id: this.providerId })
+      .select('*');
     return rows.map(row => ({
       sourceType: row.source_type,
       sourceId: row.source_id,
@@ -205,11 +222,15 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
   }
 
   async getPendingDelta(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<PendingDelta | undefined> {
     const row = await this.knex(PENDING_DELTA_TABLE)
-      .where({ source_type: sourceType, source_id: sourceId })
+      .where({
+        provider_id: this.providerId,
+        source_type: sourceType,
+        source_id: sourceId,
+      })
       .first();
 
     if (!row) {
@@ -226,7 +247,9 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
   }
 
   async getAllPendingDeltas(): Promise<PendingDelta[]> {
-    const rows = await this.knex(PENDING_DELTA_TABLE).select('*');
+    const rows = await this.knex(PENDING_DELTA_TABLE)
+      .where({ provider_id: this.providerId })
+      .select('*');
     return rows.map(row => ({
       sourceType: row.source_type,
       sourceId: row.source_id,
@@ -238,6 +261,7 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
 
   async savePendingDelta(delta: PendingDelta): Promise<void> {
     const data = {
+      provider_id: this.providerId,
       source_type: delta.sourceType,
       source_id: delta.sourceId,
       upserts_json: JSON.stringify(delta.upserts),
@@ -245,38 +269,47 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
       next_state_json: JSON.stringify(delta.nextState),
     };
 
-    // Upsert: insert or replace the pending delta for this source
-    const existing = await this.knex(PENDING_DELTA_TABLE)
-      .where({
-        source_type: delta.sourceType,
-        source_id: delta.sourceId,
-      })
-      .first();
-
-    if (existing) {
-      await this.knex(PENDING_DELTA_TABLE)
+    // Upsert in a transaction to prevent race conditions
+    await this.knex.transaction(async trx => {
+      const existing = await trx(PENDING_DELTA_TABLE)
         .where({
+          provider_id: this.providerId,
           source_type: delta.sourceType,
           source_id: delta.sourceId,
         })
-        .update(data);
-    } else {
-      await this.knex(PENDING_DELTA_TABLE).insert(data);
-    }
+        .first();
+
+      if (existing) {
+        await trx(PENDING_DELTA_TABLE)
+          .where({
+            provider_id: this.providerId,
+            source_type: delta.sourceType,
+            source_id: delta.sourceId,
+          })
+          .update(data);
+      } else {
+        await trx(PENDING_DELTA_TABLE).insert(data);
+      }
+    });
   }
 
   async commitStateAndClearPending(
-    sourceType: string,
+    sourceType: SkillSourceType,
     sourceId: string,
     nextState: CommittedSourceState,
   ): Promise<void> {
     await this.knex.transaction(async trx => {
       // Upsert committed state
       const existing = await trx(COMMITTED_STATE_TABLE)
-        .where({ source_type: sourceType, source_id: sourceId })
+        .where({
+          provider_id: this.providerId,
+          source_type: sourceType,
+          source_id: sourceId,
+        })
         .first();
 
       const stateData = {
+        provider_id: this.providerId,
         source_type: sourceType,
         source_id: sourceId,
         observed_at: nextState.observedAt,
@@ -285,7 +318,11 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
 
       if (existing) {
         await trx(COMMITTED_STATE_TABLE)
-          .where({ source_type: sourceType, source_id: sourceId })
+          .where({
+            provider_id: this.providerId,
+            source_type: sourceType,
+            source_id: sourceId,
+          })
           .update(stateData);
       } else {
         await trx(COMMITTED_STATE_TABLE).insert(stateData);
@@ -293,7 +330,11 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
 
       // Clear pending delta
       await trx(PENDING_DELTA_TABLE)
-        .where({ source_type: sourceType, source_id: sourceId })
+        .where({
+          provider_id: this.providerId,
+          source_type: sourceType,
+          source_id: sourceId,
+        })
         .delete();
     });
   }

@@ -64,13 +64,16 @@ export const catalogModuleSkillsCatalogProvider = createBackendModule({
         database,
       }) {
         const providerConfigs = readSkillsCatalogProviderConfigs(config);
-
-        // Create and initialize the database-backed store
         const knex = await database.getClient();
-        const store = new DatabaseReconciliationStore(knex);
-        await store.initialize();
 
         for (const providerConfig of providerConfigs) {
+          // Create a provider-scoped store for data isolation
+          const store = new DatabaseReconciliationStore(
+            knex,
+            providerConfig.id,
+          );
+          await store.initialize();
+
           const taskRunner = providerConfig.schedule
             ? scheduler.createScheduledTaskRunner(providerConfig.schedule)
             : scheduler.createScheduledTaskRunner({

@@ -337,22 +337,18 @@ for the dedicated Markdown endpoint and content lifecycle.
 > updates, or removals; nonblank invalid owner/lifecycle hint defaulting to
 > configured values; consumer regression tests; and updated spec scenarios.
 > The snapshot-validation and entity-construction scope of 4.2 is complete.
-> The current provider implementation uses `type: 'full'` mutations scoped
-> per source instead of the delta mutations and database persistence
-> described above. `loading` and `failed` statuses skip mutation (preserving
-> previous entities); `partial` snapshots are currently handled as full
-> replacements. Consumer validation failures (source-reference construction
-> errors, malformed snapshots) reject the invalid source snapshot and
-> preserve existing entities without additions, updates, or removals. Delta
-> reconciliation, durable persistence, crash-safe pending records, and
-> comprehensive status handling are deferred to tasks 4.3 and 4.4.
-> RHIDP-17331's broader runtime/reconciliation work is tracked separately
-> under those tasks; task 4.2's completion covers its snapshot-validation
-> and entity-construction scope, while RHIDP-17331 gates the remaining
-> provider infrastructure in 4.3–4.5. Marking 4.2 complete was previously
-> deferred pending RHIDP-17331 (#5301); that gate applied to the broader
-> integration/reconciliation scope, not to the validation/construction work
-> that #5291 and #5304 together address.
+> The provider now uses `type: 'delta'` mutations scoped per source with
+> durable database persistence (tasks 4.3–4.4, PR #5319).
+> `DatabaseReconciliationStore` persists per-source committed ownership
+> state and crash-safe pending deltas using provider-scoped composite keys.
+> `loading` and `failed` statuses skip mutation (preserving previously
+> committed entities); `partial` snapshots apply upserts only with no
+> removals, retaining absent entities. Consumer validation failures
+> (source-reference construction errors, malformed snapshots) reject the
+> invalid source snapshot and preserve existing entities without additions,
+> updates, or removals. Task 4.2's completion covers its snapshot-validation
+> and entity-construction scope (#5291, #5304). Task 4.5 (comprehensive
+> integration tests) remains.
 >
 > **Task 4.4 partial completion (PR #5315):** The pure decision portion of
 > delta reconciliation is implemented as `calculateReconciliationPlan`, a

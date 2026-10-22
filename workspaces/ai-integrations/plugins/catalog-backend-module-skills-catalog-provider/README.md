@@ -88,18 +88,22 @@ Each entity carries:
 
 Each configured source has its own location key for catalog mutations. A failure in one source does not affect others, and does not remove entities from sources that did not participate in the current sync.
 
-### Full mutation
+### Delta mutation
 
-When a source returns a ready snapshot, the provider applies a `type: 'full'` mutation scoped to that source's location key. Entities absent from the next successful sync are pruned. Sources that return loading or failed status, or that encounter errors during polling, are skipped — their previously-emitted entities remain in the catalog.
+When a source returns a ready snapshot, the provider computes a reconciliation plan against committed ownership state and applies a `type: 'delta'` mutation scoped to that source's location key. Only changed entities are upserted and only entities absent from the new snapshot are removed. Sources that return loading or failed status, or that encounter errors during polling, are skipped — their previously-committed entities remain in the catalog.
 
 ### Error handling
 
 - **Per-source failures**: HTTP, authentication, or validation failures for one source are logged and do not stop other sources.
 - **Non-ready snapshots**: Sources returning `loading` or `failed` status are skipped; their previous entities are preserved.
-- **Partial snapshots**: Sources returning `partial` status are currently handled identically to `ready` snapshots — a `type: 'full'` mutation replaces all entities for that source. The pure reconciliation logic (`calculateReconciliationPlan`) supports partial-result retention, but runtime integration is deferred to task 4.4.
+- **Partial snapshots**: Sources returning `partial` status trigger a `type: 'delta'` mutation with upserts only — no removals are emitted, so previously committed entities absent from the partial snapshot are retained.
 - **Source identity mismatch**: Snapshots whose `source.id` or `source.type` do not match configuration are rejected.
 - **Source-reference validation**: All records' OCI URIs and npx references are validated before mapping. A single malformed OCI URI, URI/digest mismatch, or invalid npx reference rejects the entire snapshot without additions, updates, or removals, preserving the source's previous catalog state.
 
 ### Reconciliation planner
 
-`calculateReconciliationPlan` is exported as a standalone pure function for computing deterministic upsert/removal deltas from a source's committed ownership state and a validated connector snapshot. It implements design D6's status table (ready, partial, loading, failed), stale/repeated observation detection, and cross-source identity collision diagnosis. Runtime integration with the provider's mutation pipeline is deferred to tasks 4.3–4.5.
+`calculateReconciliationPlan` is exported as a standalone pure function for computing deterministic upsert/removal deltas from a source's committed ownership state and a validated connector snapshot. It implements design D6's status table (ready, partial, loading, failed), stale/repeated observation detection, and cross-source identity collision diagnosis. Tasks 4.3 (durable persistence) and 4.4 (runtime integration) are now implemented; task 4.5 (comprehensive integration tests) remains.
+
+### Durable reconciliation state
+
+The provider uses a `DatabaseReconciliationStore` backed by Backstage's database service to persist per-source committed ownership state and pending deltas. `ReconciliationStore` is the public interface; `PendingDelta` describes the pending delta record. `DatabaseReconciliationStore` is the internal database-backed implementation scoped per provider config ID.

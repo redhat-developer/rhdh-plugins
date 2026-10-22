@@ -25,7 +25,7 @@ import {
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 import { SkillsCatalogProvider } from './SkillsCatalogProvider';
-import type { ReconciliationStore } from './reconciliation-store';
+import type { PendingDelta, ReconciliationStore } from './reconciliation-store';
 import type {
   CommittedSourceState,
   SkillsCatalogProviderConfig,
@@ -84,7 +84,7 @@ function createMockStore(): ReconciliationStore & {
   committedStates: Map<string, CommittedSourceState>;
 } {
   const committedStates = new Map<string, CommittedSourceState>();
-  const pendingDeltas = new Map<string, any>();
+  const pendingDeltas = new Map<string, PendingDelta>();
 
   return {
     committedStates,
