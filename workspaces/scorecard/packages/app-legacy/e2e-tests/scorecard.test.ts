@@ -60,6 +60,7 @@ import {
   gitHubPartiallyAggregatedResponse,
   gitHubWeightedPartiallyAggregatedResponse,
   licenseFileExistsAggregatedResponse,
+  licenseFileExistsEntitiesDrillDownResponse,
   githubEntitiesDrillDownWithCalculationErrorsResponse,
   weightedKpiEntitiesDrillDownResponse,
 } from './utils/scorecardResponseUtils';
@@ -480,16 +481,19 @@ test.describe('Scorecard Plugin Tests', () => {
       await mockAllDefaultHomepageAggregationsSuccess(page);
 
       await homePage.navigateToHome();
-      await homePage.enterEditMode();
-      await homePage.clearAllCards();
-      await homePage.addCard('Onboarding section');
-      await homePage.saveChanges();
 
-      for (const instanceId of Object.values(AGGREGATED_CARDS_METRIC_IDS)) {
-        await homePage.expectCardNotVisible(instanceId);
+      if (process.env.APP_MODE === 'nfs') {
+        await homePage.enterEditMode();
+        await homePage.clearAllCards();
+        await homePage.addCard('Onboarding section');
+        await homePage.saveChanges();
+
+        for (const instanceId of Object.values(AGGREGATED_CARDS_METRIC_IDS)) {
+          await homePage.expectCardNotVisible(instanceId);
+        }
+
+        await addAggregatedScorecardWidgets(homePage);
       }
-
-      await addAggregatedScorecardWidgets(homePage);
 
       for (const instanceId of Object.values(AGGREGATED_CARDS_METRIC_IDS)) {
         await homePage.expectCardVisible(instanceId);
@@ -508,6 +512,11 @@ test.describe('Scorecard Plugin Tests', () => {
           route: ScorecardRoutes.LICENSE_FILE_EXISTS_KPI_AGGREGATION_ROUTE,
           response: aggregatedResponse,
         });
+        await mockScorecardEntitiesDrillDown(
+          page,
+          licenseFileExistsEntitiesDrillDownResponse,
+          'filecheck.license',
+        );
         card = homePage.getCard(aggregationMetadata.id);
       });
 
@@ -617,6 +626,7 @@ test.describe('Scorecard Plugin Tests', () => {
         },
         partialResponse: gitHubPartiallyAggregatedResponse,
         runAccessibility: true,
+        verifyDataSources: true,
       },
       getHomepageAggregationKpiTestContext,
     );
@@ -631,6 +641,11 @@ test.describe('Scorecard Plugin Tests', () => {
           route: ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
           response: openPrsWeightedAggregatedResponse,
         });
+        await mockScorecardEntitiesDrillDown(
+          page,
+          weightedKpiEntitiesDrillDownResponse,
+          'github.openPRs',
+        );
       });
 
       test.describe('Validate "weightedStatusScore" type card content', () => {
@@ -658,6 +673,33 @@ test.describe('Scorecard Plugin Tests', () => {
           );
           await expect(card).toBeVisible();
           await homePage.verifyLastUpdatedTooltip(card, lastUpdatedFormatted);
+        });
+
+        test('Verify view data sources shows metric check, percent value, and aggregation status', async () => {
+          const metricCheck =
+            translations.metric[aggregationMetadata.metricId].description;
+          const dialog = await homePage.openDataSourcesDialog(card);
+          const formattedScore =
+            openPrsWeightedAggregatedResponse.result.weightedStatusScore.toLocaleString(
+              currentLocale,
+              { maximumFractionDigits: 2 },
+            );
+
+          await expect(dialog).toContainText(metricCheck);
+          await expect(dialog).not.toContainText(
+            openPrsWeightedKpiMetadataResponse.description,
+          );
+          await expect(dialog).toContainText(formattedScore);
+          const tableRows = dialog.locator('tbody [role="row"]');
+          await expect(tableRows).toHaveCount(1);
+          await expect(tableRows.first()).toContainText(
+            translations.thresholds.warning,
+          );
+          await expect(tableRows.first()).not.toContainText(
+            translations.dataSourcesDialog.collectorUnavailableStatus,
+          );
+
+          await homePage.closeDataSourcesDialog(dialog);
         });
 
         test('Verify center score percentage', async () => {
@@ -764,6 +806,7 @@ test.describe('Scorecard Plugin Tests', () => {
         aggregatedResponse: totalOpenBugsAggregatedResponse,
         partialResponse: totalOpenBugsPartiallyAggregatedResponse,
         runAccessibility: true,
+        verifyDataSources: true,
       },
       getHomepageAggregationKpiTestContext,
     );

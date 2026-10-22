@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-augment
 
+## 0.2.1
+
+### Patch Changes
+
+- 44358a3: Updated dependency `@openai/agents-core` to `^0.20.0`.
+  Updated dependency `katex` to `^0.19.0`.
+
 ## 0.2.0
 
 ### Minor Changes

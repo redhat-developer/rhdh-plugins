@@ -48,6 +48,25 @@ describe('MessageBarModelSelector', () => {
     expect(screen.getByText('Granite 3.3')).toBeInTheDocument();
   });
 
+  it('should keep the full model label in the DOM for CSS ellipsis truncation', () => {
+    const longValue = 'meta-llama/Meta-Llama-3.1-70b:latest';
+    render(
+      <MessageBarModelSelector
+        selectedModel={longValue}
+        models={[
+          {
+            label: longValue,
+            value: longValue,
+            provider: 'meta',
+          },
+        ]}
+        onSelect={mockOnSelect}
+      />,
+    );
+
+    expect(screen.getByText(longValue)).toBeInTheDocument();
+  });
+
   it('should show model value when model is not in the list', () => {
     render(
       <MessageBarModelSelector
@@ -77,6 +96,27 @@ describe('MessageBarModelSelector', () => {
     await waitFor(() => {
       expect(screen.getByRole('menu')).toBeInTheDocument();
     });
+  });
+
+  it('should hide the toggle full-name tooltip while the menu is open', async () => {
+    render(
+      <MessageBarModelSelector
+        selectedModel="granite-3.3"
+        models={mockModels}
+        onSelect={mockOnSelect}
+      />,
+    );
+
+    const toggleButton = screen.getByRole('button', {
+      name: 'Chatbot selector',
+    });
+    await userEvent.click(toggleButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+    // Tip must not cover menu items (e2e "Models are available" failure mode).
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
   it('should display all models in the dropdown', async () => {
@@ -146,6 +186,38 @@ describe('MessageBarModelSelector', () => {
 
     const gpt4Option = screen.getByRole('menuitem', { name: 'GPT-4' });
     await userEvent.click(gpt4Option);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should close dropdown when pointerdown is outside in the chat container', async () => {
+    render(
+      <div>
+        <button type="button">chat body</button>
+        <MessageBarModelSelector
+          selectedModel="granite-3.3"
+          models={mockModels}
+          onSelect={mockOnSelect}
+        />
+      </div>,
+    );
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Chatbot selector' }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+
+    // Capture-phase pointerdown (not bubble click) — matches chat-modal behavior.
+    screen
+      .getByRole('button', { name: 'chat body' })
+      .dispatchEvent(
+        new PointerEvent('pointerdown', { bubbles: true, cancelable: true }),
+      );
 
     await waitFor(() => {
       expect(screen.queryByRole('menu')).not.toBeInTheDocument();

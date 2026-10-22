@@ -16,6 +16,7 @@ import { FilterPredicate } from '@backstage/filter-predicates';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { HomePageWidgetBlueprintParams } from '@backstage/plugin-home-react/alpha';
 import { HomePageWidgetData } from '@backstage/plugin-home-react/alpha';
+import { IconComponent } from '@backstage/frontend-plugin-api';
 import { IconElement } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { JSXElementConstructor } from 'react';
@@ -158,167 +159,31 @@ const _default: OverridableFrontendPlugin<
         filter?: string | FilterPredicate | ((entity: Entity) => boolean);
       };
     }>;
-    'home-page-widget:scorecard/scorecard-avg-open-prs': OverridableExtensionDefinition<{
+    'home-page-widget:scorecard/scorecard-aggregated-card': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
-      name: 'scorecard-avg-open-prs';
+      name: 'scorecard-aggregated-card';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
       inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
-    'home-page-widget:scorecard/scorecard-default-aggregation': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-default-aggregation';
+    'icon-bundle:scorecard': OverridableExtensionDefinition<{
+      kind: 'icon-bundle';
+      name: undefined;
       config: {};
       configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      output: ExtensionDataRef<
+        {
+          [x: string]: IconComponent | IconElement;
+        },
+        'core.icons',
+        {}
+      >;
       inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-deprecated-dora-change-failure-rate': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-deprecated-dora-change-failure-rate';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-deprecated-metric-id': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-deprecated-metric-id';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-dora-change-failure-rate': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-dora-change-failure-rate';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-dora-deployment-frequency': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-dora-deployment-frequency';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-dora-median-lead-time-for-changes': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-dora-median-lead-time-for-changes';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-dora-median-time-to-restore': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-dora-median-time-to-restore';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-entities-with-open-prs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-entities-with-open-prs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-filecheck-codeowners': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-filecheck-codeowners';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-filecheck-license': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-filecheck-license';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-filecheck-readme': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-filecheck-readme';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-open-prs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-open-prs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-github-open-prs-weighted': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-github-open-prs-weighted';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-jira-open-issues': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-jira-open-issues';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-max-open-prs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-max-open-prs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-min-open-prs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-min-open-prs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
-    }>;
-    'home-page-widget:scorecard/scorecard-total-open-bugs': OverridableExtensionDefinition<{
-      kind: 'home-page-widget';
-      name: 'scorecard-total-open-bugs';
-      config: {};
-      configInput: {};
-      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
-      inputs: {};
-      params: HomePageWidgetBlueprintParams;
+      params: {
+        icons: { [key in string]: IconComponent | IconElement };
+      };
     }>;
     'page:scorecard': OverridableExtensionDefinition<{
       kind: 'page';
@@ -456,6 +321,20 @@ export interface ScorecardLayoutProps {
 export const scorecardTranslationRef: TranslationRef<
   'plugin.scorecard',
   {
+    readonly 'errors.entityMissingProperties': string;
+    readonly 'errors.missingAggregationId': string;
+    readonly 'errors.invalidApiResponse': string;
+    readonly 'errors.fetchError': string;
+    readonly 'errors.metricDataUnavailable': string;
+    readonly 'errors.invalidThresholds': string;
+    readonly 'errors.missingPermission': string;
+    readonly 'errors.noDataFound': string;
+    readonly 'errors.authenticationError': string;
+    readonly 'errors.missingPermissionMessage': string;
+    readonly 'errors.userNotFoundInCatalogMessage': string;
+    readonly 'errors.noDataFoundMessage': string;
+    readonly 'errors.unsupportedAggregationType': string;
+    readonly 'errors.authenticationErrorMessage': string;
     readonly 'emptyState.title': string;
     readonly 'emptyState.description': string;
     readonly 'emptyState.button': string;
@@ -472,20 +351,6 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'permissionRequired.altText': string;
     readonly 'common.current': string;
     readonly 'common.loading': string;
-    readonly 'errors.entityMissingProperties': string;
-    readonly 'errors.missingAggregationId': string;
-    readonly 'errors.invalidApiResponse': string;
-    readonly 'errors.fetchError': string;
-    readonly 'errors.metricDataUnavailable': string;
-    readonly 'errors.invalidThresholds': string;
-    readonly 'errors.missingPermission': string;
-    readonly 'errors.noDataFound': string;
-    readonly 'errors.authenticationError': string;
-    readonly 'errors.missingPermissionMessage': string;
-    readonly 'errors.userNotFoundInCatalogMessage': string;
-    readonly 'errors.noDataFoundMessage': string;
-    readonly 'errors.unsupportedAggregationType': string;
-    readonly 'errors.authenticationErrorMessage': string;
     readonly 'metric.dora.deploymentFrequency.title': string;
     readonly 'metric.dora.deploymentFrequency.description': string;
     readonly 'metric.dora.medianLeadTimeForChanges.title': string;
@@ -537,14 +402,14 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.drillDownCalculationFailures': string;
     readonly 'metric.homepageEntityHealthRatio': string;
     readonly 'metric.homepageEntityCalculationHealth': string;
-    readonly 'aggregation.min': string;
-    readonly 'aggregation.max': string;
     readonly 'aggregation.sum': string;
-    readonly 'aggregation.count': string;
     readonly 'aggregation.average': string;
+    readonly 'aggregation.max': string;
+    readonly 'aggregation.min': string;
+    readonly 'aggregation.count': string;
     readonly 'thresholds.success': string;
-    readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;
+    readonly 'thresholds.warning': string;
     readonly 'thresholds.elite': string;
     readonly 'thresholds.medium': string;
     readonly 'thresholds.low': string;
@@ -560,13 +425,13 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'dataSourcesDialog.collectorStatusTooltip': string;
     readonly 'dataSourcesDialog.collectorEmptyValue': string;
     readonly 'dataSourcesDialog.collectorUnavailableStatus': string;
+    readonly 'dataSourcesDialog.columns.status': string;
+    readonly 'dataSourcesDialog.columns.value': string;
     readonly 'dataSourcesDialog.columns.plugin': string;
     readonly 'dataSourcesDialog.columns.check': string;
-    readonly 'dataSourcesDialog.columns.value': string;
-    readonly 'dataSourcesDialog.columns.status': string;
     readonly 'dataSourcesDialog.columns.lastSynced': string;
-    readonly 'metricGroupCard.menuAriaLabel': string;
-    readonly 'metricGroupCard.viewDataSources': string;
+    readonly 'card.menuAriaLabel': string;
+    readonly 'card.viewDataSources': string;
     readonly 'entitiesPage.missingPermission': string;
     readonly 'entitiesPage.noDataFound': string;
     readonly 'entitiesPage.unknownMetric': string;
@@ -574,11 +439,11 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'entitiesPage.entitiesTable.title': string;
     readonly 'entitiesPage.entitiesTable.unavailable': string;
     readonly 'entitiesPage.entitiesTable.titleWithCount': string;
-    readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
-    readonly 'entitiesPage.entitiesTable.header.value': string;
-    readonly 'entitiesPage.entitiesTable.header.status': string;
     readonly 'entitiesPage.entitiesTable.header.entity': string;
+    readonly 'entitiesPage.entitiesTable.header.status': string;
     readonly 'entitiesPage.entitiesTable.header.owner': string;
+    readonly 'entitiesPage.entitiesTable.header.value': string;
+    readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
     readonly 'entitiesPage.entitiesTable.header.kind': string;
     readonly 'entitiesPage.entitiesTable.footer.of': string;
     readonly 'entitiesPage.entitiesTable.footer.allRows': string;

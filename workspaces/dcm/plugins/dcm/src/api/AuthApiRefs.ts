@@ -73,7 +73,7 @@ export const dcmAuthApiFactory: ApiFactory<
   deps: { configApi: configApiRef },
   factory: ({ configApi }) => {
     const authEnabled =
-      configApi.getOptionalBoolean('dcm.auth.enabled') ?? true;
+      configApi.getOptionalBoolean('dcm.auth.enabled') ?? false;
     if (!authEnabled) {
       return {};
     }

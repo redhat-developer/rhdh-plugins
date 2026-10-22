@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import GlobalStyles from '@mui/material/GlobalStyles';
 import {
   Alert,
   Button,
@@ -26,18 +27,32 @@ import {
 import { useDeleteConversation } from '../hooks';
 import { useTranslation } from '../hooks/useTranslation';
 
+const SCOPED_BACKDROP_CLASS = 'ia-scoped-chat-modal-backdrop';
+
+const deleteConversationModalBackdropStyles = {
+  '.delete-conversation-modal-backdrop': {
+    '--pf-v6-c-backdrop--ZIndex': '2000 !important',
+    '--pf-v5-c-backdrop--ZIndex': '2000 !important',
+  },
+} as const;
+
 export const DeleteModal = ({
   isOpen,
   conversationId,
   chatName,
   onClose,
   onConfirm,
+  isCompact = false,
+  appendTo,
 }: {
   isOpen: boolean;
   conversationId: string;
   chatName?: string;
   onClose: () => void;
   onConfirm: () => void;
+  isCompact?: boolean;
+  /** Compact mode host for PatternFly Modal portal (overlay/docked). */
+  appendTo?: () => HTMLElement;
 }) => {
   const { t } = useTranslation();
   const {
@@ -61,43 +76,56 @@ export const DeleteModal = ({
   };
 
   return (
-    <Modal
-      variant="small"
-      isOpen={isOpen}
-      onClose={onClose}
-      aria-labelledby="delete-modal"
-      aria-describedby="delete-modal-confirmation"
-    >
-      <ModalHeader
-        title={t('conversation.delete.confirm.title' as any, {
-          chatName: chatName || '',
-        })}
-        labelId="delete-modal"
-        descriptorId="delete-modal-confirmation"
-      />
-      <ModalBody id="delete-modal-confirmation">
-        {t('conversation.delete.confirm.message')}
-        {isError && (
-          <Alert
+    <>
+      {!isCompact && (
+        <GlobalStyles styles={deleteConversationModalBackdropStyles} />
+      )}
+      <Modal
+        variant="small"
+        isOpen={isOpen}
+        onClose={onClose}
+        aria-labelledby="delete-modal"
+        aria-describedby="delete-modal-confirmation"
+        {...(isCompact
+          ? {
+              appendTo: () => appendTo?.() ?? document.body,
+              backdropClassName: SCOPED_BACKDROP_CLASS,
+            }
+          : {
+              backdropClassName: 'delete-conversation-modal-backdrop',
+            })}
+      >
+        <ModalHeader
+          title={t('conversation.delete.confirm.title' as any, {
+            chatName: chatName || '',
+          })}
+          labelId="delete-modal"
+          descriptorId="delete-modal-confirmation"
+        />
+        <ModalBody id="delete-modal-confirmation">
+          {t('conversation.delete.confirm.message')}
+          {isError && (
+            <Alert
+              variant="danger"
+              isInline
+              title={String(error)}
+              className="pf-v6-u-mt-md"
+            />
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button
             variant="danger"
-            isInline
-            title={String(error)}
-            className="pf-v6-u-mt-md"
-          />
-        )}
-      </ModalBody>
-      <ModalFooter>
-        <Button
-          variant="danger"
-          onClick={handleDeleteConversation}
-          isDisabled={isPending}
-        >
-          {t('conversation.delete.confirm.action')}
-        </Button>
-        <Button variant="link" onClick={onClose}>
-          {t('common.cancel')}
-        </Button>
-      </ModalFooter>
-    </Modal>
+            onClick={handleDeleteConversation}
+            isDisabled={isPending}
+          >
+            {t('conversation.delete.confirm.action')}
+          </Button>
+          <Button variant="link" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
+        </ModalFooter>
+      </Modal>
+    </>
   );
 };

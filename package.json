@@ -15,7 +15,7 @@
     "test:ci-agent": "node --test scripts/ci/fullsend-ci-*.test.cjs"
   },
   "type": "module",
-  "packageManager": "yarn@4.17.1",
+  "packageManager": "yarn@4.18.1",
   "devDependencies": {
     "@backstage/cli": "^0.27.0",
     "@backstage/cli-node": "^0.2.2",

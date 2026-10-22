@@ -4,7 +4,7 @@ description: >-
   Fix specialist for open PRs. Handles trusted review feedback and CI repair
   diagnoses on the existing PR branch, runs verification, and commits the
   result. Use for review fixes or CI repair mode.
-model: opus
+model: claude-opus-4-6
 skills:
   - fix-review
 ---

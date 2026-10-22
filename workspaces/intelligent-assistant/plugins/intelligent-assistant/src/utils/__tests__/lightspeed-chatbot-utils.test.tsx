@@ -23,7 +23,9 @@ import {
   createBotMessage,
   createMessage,
   createUserMessage,
+  enrichMessagesWithPersistedSources,
   getCategorizeMessages,
+  getConversationModelFromMessages,
   getTimestamp,
   getTimestampVariablesString,
   normalizeChatUserInput,
@@ -284,6 +286,29 @@ describe('createUserMessage', () => {
   });
 });
 
+describe('getConversationModelFromMessages', () => {
+  it('returns the latest bot message model name', () => {
+    expect(
+      getConversationModelFromMessages([
+        { role: 'user', name: 'alice' },
+        { role: 'bot', name: 'granite-3.3' },
+        { role: 'user', name: 'alice' },
+        { role: 'bot', name: 'llama-3.1' },
+      ]),
+    ).toBe('llama-3.1');
+  });
+
+  it('returns undefined when there is no bot model', () => {
+    expect(getConversationModelFromMessages([])).toBeUndefined();
+    expect(
+      getConversationModelFromMessages([{ role: 'user', name: 'alice' }]),
+    ).toBeUndefined();
+    expect(
+      getConversationModelFromMessages([{ role: 'bot', name: '  ' }]),
+    ).toBeUndefined();
+  });
+});
+
 describe('createBotMessage', () => {
   it('should create a bot message with provided properties', () => {
     const message = createBotMessage({
@@ -410,7 +435,78 @@ describe('transformDocumentsToSources', () => {
       }),
     );
   });
+
+  it('should map OKP offline mode portal URLs to external sources', () => {
+    const okpOfflineDocs: ReferencedDocuments = [
+      {
+        doc_title: 'Configuring authentication in Red Hat Developer Hub',
+        doc_description: 'OKP offline product documentation chunk',
+        doc_url:
+          'http://rhdh-lightspeed-okp.apps.example.com/documentation/red_hat_developer_hub/1.8/html-single/authentication/index',
+        source: 'rhdh-product-docs',
+      },
+    ];
+
+    const sources = transformDocumentsToSources(okpOfflineDocs);
+    expect(sources?.sources).toHaveLength(1);
+    expect(sources?.sources[0]).toEqual(
+      expect.objectContaining({
+        title: 'Configuring authentication in Red Hat Developer Hub',
+        body: 'OKP offline product documentation chunk',
+        link: 'http://rhdh-lightspeed-okp.apps.example.com/documentation/red_hat_developer_hub/1.8/html-single/authentication/index',
+        isExternal: true,
+        ragSource: 'rhdh-product-docs',
+        headerContent: expect.anything(),
+      }),
+    );
+  });
 });
+
+describe('enrichMessagesWithPersistedSources', () => {
+  it('copies sources from persisted bot messages when live messages lack them', () => {
+    const persistedSources = transformDocumentsToSources(referenced_documents);
+    const live = [
+      createUserMessage({ content: 'question', timestamp: '1' }),
+      createBotMessage({ content: 'answer', timestamp: '2' }),
+    ];
+    const persisted = [
+      createUserMessage({ content: 'question', timestamp: '1' }),
+      createBotMessage({
+        content: 'answer',
+        timestamp: '2',
+        sources: persistedSources,
+      }),
+    ];
+
+    const enriched = enrichMessagesWithPersistedSources(live, persisted);
+    expect(enriched[1].sources).toEqual(persistedSources);
+  });
+
+  it('does not overwrite sources already present on live messages', () => {
+    const liveSources = transformDocumentsToSources([
+      { doc_title: 'live.md', doc_url: 'https://example.com/live' },
+    ]);
+    const persistedSources = transformDocumentsToSources(referenced_documents);
+    const live = [
+      createBotMessage({
+        content: 'answer',
+        timestamp: '1',
+        sources: liveSources,
+      }),
+    ];
+    const persisted = [
+      createBotMessage({
+        content: 'answer',
+        timestamp: '1',
+        sources: persistedSources,
+      }),
+    ];
+
+    const enriched = enrichMessagesWithPersistedSources(live, persisted);
+    expect(enriched[0].sources).toEqual(liveSources);
+  });
+});
+
 describe('getCategorizeMessages', () => {
   const addProps = (c: ConversationSummary) => ({
     customProp: `prop-${c.conversation_id}`,

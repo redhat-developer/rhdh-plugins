@@ -41,6 +41,7 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'modulePage.artifacts.migration_plan': 'プロジェクト全体の移行計画',
     'modulePage.artifacts.module_migration_plan': '分析に基づくモジュール計画',
     'modulePage.artifacts.migrated_sources': '移行済みソース',
+    'modulePage.artifacts.editInCodespaces': 'Codespaces で編集',
     'modulePage.artifacts.ansible_project': 'AAP プロジェクト',
     'modulePage.artifacts.description':
       'これらのアーティファクトは変換プロセスによって生成されたものであり、レビューに使用できます。',
@@ -51,6 +52,9 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'modulePage.phases.startedAt': '開始日時',
     'modulePage.phases.status': 'ステータス',
     'modulePage.phases.errorDetails': 'エラーの詳細',
+    'modulePage.phases.copyToClipboard': 'クリップボードにコピー',
+    'modulePage.phases.copyFailed': 'コピーに失敗しました',
+    'modulePage.phases.copyUnavailable': 'コピーは利用できません',
     'modulePage.phases.statuses.notStarted': '開始前',
     'modulePage.phases.statuses.pending': '保留中',
     'modulePage.phases.statuses.running': '実行中',
@@ -270,11 +274,16 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'rulesPage.dialog.save': '保存',
     'rulesPage.dialog.titleField': 'タイトル',
     'rulesPage.dialog.updateError': 'ルールの更新に失敗しました',
+    'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} 文字',
+    'rulesPage.dialog.descriptionTooLong':
+      '説明は{{max}}文字以内で入力してください（現在{{count}}文字）。',
     'scaffolder.rulesAcceptance.fetchError': 'ルールの取得に失敗しました',
     'scaffolder.rulesAcceptance.loadingRules': 'ルールの読み込み中...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'ルールは設定されていません。',
     'scaffolder.rulesAcceptance.required': '必須',
+    'scaffolder.rulesAcceptance.readMore': '続きを読む',
+    'scaffolder.rulesAcceptance.close': '閉じる',
   },
 });
 

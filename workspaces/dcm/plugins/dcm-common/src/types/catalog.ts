@@ -93,6 +93,10 @@ export interface CatalogItemInstance {
   display_name: string;
   spec: CatalogItemInstanceSpec;
   path?: string;
+  /** Placement run id (readOnly). */
+  run_id?: string;
+  /** Service type instance IDs created by the placement run (readOnly). */
+  resource_ids?: string[];
   create_time?: string;
   update_time?: string;
 }
@@ -101,8 +105,6 @@ export interface CatalogItemInstance {
 export interface CatalogItemInstanceSpec {
   catalog_item_id: string;
   user_values: UserValue[];
-  /** External resource identifiers assigned by the Placement Manager (readOnly). */
-  resource_ids?: string[];
 }
 
 /** A user-supplied value for a field in a {@link CatalogItemInstanceSpec}. */

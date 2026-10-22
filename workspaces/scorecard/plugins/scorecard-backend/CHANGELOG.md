@@ -1,5 +1,46 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 4.5.2
+
+### Patch Changes
+
+- fc01181: Add local development harnesses and contributor guides for the Scorecard plugin, backend, and metric modules. Tests cover the drill-down namespace query, the collectors route, and New Frontend System plugin wiring. No runtime behavior change.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.2
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.2
+
+## 4.5.1
+
+### Patch Changes
+
+- 7bf7e10: Fetch successive database windows when building drill-down results so catalog authorization and disabled-metric filtering can reach the eligible-result cap instead of stopping after the first 10,000 database rows.
+- 7bf7e10: Exclude metrics disabled via `scorecard.disabledMetrics` or the `scorecard.io/disabled-metrics` entity annotation from homepage aggregations, aggregation time series, drill-down tables, and entity metric time series, so stale stored values are no longer shown after a metric is disabled.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.1
+
+## 4.5.0
+
+### Patch Changes
+
+- b8d8662: Correct weighted status score aggregation responses to return the thresholds used to classify
+  the aggregate score. Drill-down `/metrics/:metricId/catalog/aggregations/entities` responses
+  now include the underlying metric thresholds used to classify entity statuses. The entity rows
+  are now consistent with statuses shown on entity scorecard page, while the aggregate card uses
+  aggregation thresholds for its own scope. Entity-specific threshold annotation overrides can
+  still affect an individual entity's status, but are not represented by the drill-down response's
+  shared threshold set.
+- Updated dependencies [dfcbf0d]
+- Updated dependencies [b8d8662]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.0
+
+## 4.4.2
+
+### Patch Changes
+
+- 25bdad6: Exclude metrics disabled via `scorecard.disabledMetrics` or the `scorecard.io/disabled-metrics` entity annotation from `getLatestEntityMetrics`, so stale stored values are no longer shown as scorecard cards after a metric is disabled.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.4.2
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.4.2
+
 ## 4.4.1
 
 ### Patch Changes

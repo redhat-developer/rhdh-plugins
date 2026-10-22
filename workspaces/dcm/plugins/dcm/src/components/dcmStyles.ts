@@ -127,7 +127,9 @@ export const useDcmStyles = makeStyles(theme => ({
 
   toolbarRow: {
     display: 'flex',
+    alignItems: 'center',
     justifyContent: 'flex-end',
+    gap: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
 

@@ -23,43 +23,14 @@ import {
   createFrontendModule,
   createFrontendPlugin,
 } from '@backstage/frontend-plugin-api';
-import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { rootRouteRef, scorecardDrillDownRouteRef } from './routes';
-import { scorecardTranslations } from './translations';
 import { scorecardApi } from './extensions/api';
+import { scorecardTranslation } from './extensions/translation';
 import { scorecardEntityContent } from './extensions/entityTab';
-import {
-  aggregatedCardWithDeprecatedMetricIdWidget,
-  aggregatedCardWithDefaultAggregationWidget,
-  aggregatedCardWithGithubOpenPrsWidget,
-  aggregatedCardWithJiraOpenIssuesWidget,
-  aggregatedCardWithGithubFilecheckLicenseWidget,
-  aggregatedCardWithGithubFilecheckCodeownersWidget,
-  aggregatedCardWithGithubFilecheckReadmeWidget,
-  aggregatedCardWithGithubOpenPrsWeightedWidget,
-  aggregatedCardWithMaxOpenPrsWidget,
-  aggregatedCardWithMinOpenPrsWidget,
-  aggregatedCardWithTotalOpenBugsWidget,
-  aggregatedCardWithEntitiesWithOpenPrsWidget,
-  aggregatedCardWithAvgOpenPrsWidget,
-  aggregatedCardWithDoraDeploymentFrequencyWidget,
-  aggregatedCardWithDoraChangeFailureRateWidget,
-  aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
-  aggregatedCardWithDoraMedianTimeToRestoreWidget,
-  aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
-} from './extensions/homePageCards';
+import { scorecardAggregatedCardWidget } from './extensions/homePageCards';
+import { scorecardIconBundle } from './extensions/icons';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
-
-/**
- * Extension for Scorecard translations.
- */
-const scorecardTranslation = TranslationBlueprint.make({
-  name: 'scorecard-translations',
-  params: {
-    resource: scorecardTranslations,
-  },
-});
 
 /**
  * The primary Scorecard frontend plugin for the new Backstage frontend system.
@@ -73,27 +44,11 @@ export default createFrontendPlugin({
   pluginId: 'scorecard',
   extensions: [
     scorecardApi,
+    scorecardIconBundle,
     scorecardPage,
     scorecardEntityContent,
     scorecardEntityLayoutGrid,
-    aggregatedCardWithDeprecatedMetricIdWidget,
-    aggregatedCardWithDefaultAggregationWidget,
-    aggregatedCardWithJiraOpenIssuesWidget,
-    aggregatedCardWithGithubOpenPrsWidget,
-    aggregatedCardWithGithubFilecheckLicenseWidget,
-    aggregatedCardWithGithubFilecheckCodeownersWidget,
-    aggregatedCardWithGithubFilecheckReadmeWidget,
-    aggregatedCardWithGithubOpenPrsWeightedWidget,
-    aggregatedCardWithMaxOpenPrsWidget,
-    aggregatedCardWithMinOpenPrsWidget,
-    aggregatedCardWithTotalOpenBugsWidget,
-    aggregatedCardWithEntitiesWithOpenPrsWidget,
-    aggregatedCardWithAvgOpenPrsWidget,
-    aggregatedCardWithDoraDeploymentFrequencyWidget,
-    aggregatedCardWithDoraChangeFailureRateWidget,
-    aggregatedCardWithDoraMedianLeadTimeForChangesWidget,
-    aggregatedCardWithDoraMedianTimeToRestoreWidget,
-    aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
+    scorecardAggregatedCardWidget,
   ],
   routes: {
     root: rootRouteRef,

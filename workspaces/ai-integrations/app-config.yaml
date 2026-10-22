@@ -32,7 +32,8 @@ backend:
   # The production database configuration is stored in app-config.production.yaml
   database:
     client: better-sqlite3
-    connection: ':memory:'
+    connection:
+      directory: /tmp/rhdh-ai-integrations-db # Per-plugin SQLite files survive backend restarts for recovery testing
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
   reading:
     allow:
@@ -184,11 +185,47 @@ catalog:
         #   timeout: { minutes: 3 }
         #   # Optional: defer the first sync
         #   # initialDelay: { seconds: 15 }
+    skillsCatalogProvider:
+      experimental:
+        sources:
+          - connectorPluginId: skill-image-connector # Registered connector plugin ID, not its config key.
+            sourceId: gabemontero-skills # Must match skillImageConnector.sources[].id.
+            sourceType: oci
+        defaultOwner: team-skills
+        defaultLifecycle: experimental
+        namespace: default
+        schedule:
+          frequency: { minutes: 1 } # Testing; default is 10 minutes.
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 0 }
+# Uncomment to enable skill image acquisition; optional tuning defaults are shown.
 skillImageConnector:
-  allowedRegistries:
-    - quay.io
-  images:
-    - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+  fetchTimeoutMs: 30000 # 30 seconds per request, including body reading
+  maxBlobSizeBytes: 5242880 # 5 MiB per downloaded blob and decompressed layer
+  maxAggregateContentSizeBytes: 52428800 # 50 MiB retained skill content across images
+  maxRetainedMarkdownSizeBytes: 52428800 # 50 MiB durable Markdown per source; independent of extraction limits
+  catalogProviderPluginId: catalog # Authorized backend plugin for retention acknowledgments
+  maxDiscoveryResponseSizeBytes: 5242880 # 5 MiB per Quay discovery response
+  maxImages: 100 # 25 default, Total explicit and discovered repository:tag candidates; raise for larger inventories
+  maxRetries: 2 # Retries after the initial attempt; 0 disables retries
+  retryBaseDelayMs: 2000 # 2 seconds, doubled on subsequent retries
+  sources:
+    - id: gabemontero-skills
+      schedule:
+        frequency: { minutes: 1 } # Testing; default is 10 minutes.
+        timeout: { minutes: 10 }
+        initialDelay: { seconds: 0 }
+        scope: local # Required: each backend instance maintains its own snapshots.
+      allowedRegistries:
+        - quay.io
+      #      images:
+      #         - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+      #         - imageRef: quay.io/gabemontero/hello-world-skill-annotated:1.0.0-draft
+      # Optional public Quay discovery; can be combined with explicit images.
+      quayDiscovery:
+        organization: gabemontero # required
+        # registry: quay.io # optional, defaults to quay.io
+        # tag: 1.0.0-draft # optional exact filter; omit for all active tags
 # Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 #kubernetes:

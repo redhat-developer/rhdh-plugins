@@ -155,6 +155,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.artifacts.module_migration_plan':
       'Plan del módulo por análisis',
     'modulePage.artifacts.migrated_sources': 'Fuentes migradas',
+    'modulePage.artifacts.editInCodespaces': 'Editar en Codespaces',
     'modulePage.artifacts.ansible_project': 'Proyecto AAP',
     'modulePage.artifacts.description':
       'Estos artefactos son generados por el proceso de conversión y están disponibles para revisión.',
@@ -165,6 +166,9 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.startedAt': 'Iniciado el',
     'modulePage.phases.status': 'Estado',
     'modulePage.phases.errorDetails': 'Detalles del error',
+    'modulePage.phases.copyToClipboard': 'Copiar al portapapeles',
+    'modulePage.phases.copyFailed': 'No se pudo copiar',
+    'modulePage.phases.copyUnavailable': 'Copia no disponible',
     'modulePage.phases.statuses.notStarted': 'No iniciado',
     'modulePage.phases.statuses.pending': 'Pendiente',
     'modulePage.phases.statuses.running': 'En ejecución',
@@ -174,7 +178,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.statuses.stale': 'Obsoleto',
     'modulePage.phases.reanalyzeInstructions':
       'El plan de migración del módulo ya existe. Si el plan de migración general del proyecto se ha actualizado, vuelva a ejecutar el análisis para reflejar los cambios.',
-    'modulePage.phases.rerunAnalyze': 'Recrear el plan de migración del módulo',
+    'modulePage.phases.rerunAnalyze': 'Volver a ejecutar el análisis',
     'modulePage.phases.analyzeInstructions':
       'Antes de ejecutar el análisis, revise primero el plan de migración general del proyecto; su contenido guiará el análisis del módulo.',
     'modulePage.phases.runAnalyze': 'Crear plan de migración del módulo',
@@ -304,6 +308,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'scaffolder.rulesAcceptance.required': 'requerido',
     'scaffolder.rulesAcceptance.fetchError':
       'No se pudieron extraer las reglas',
+    'scaffolder.rulesAcceptance.readMore': 'Leer más',
+    'scaffolder.rulesAcceptance.close': 'Cerrar',
     'rulesPage.title': 'Reglas de conversión',
     'rulesPage.subtitle':
       'Gestione las reglas que los proyectos deben aceptar en el momento de su creación.',
@@ -334,6 +340,9 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Cancelar',
     'rulesPage.dialog.createError': 'No se pudo crear la regla',
     'rulesPage.dialog.updateError': 'No se pudo actualizar la regla',
+    'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} caracteres',
+    'rulesPage.dialog.descriptionTooLong':
+      'La descripción debe tener {{max}} caracteres o menos ({{count}} usados).',
     'modulePage.phases.runAdversarialReview': 'Ejecutar revisión adversaria',
     'modulePage.phases.adversarialReview': 'Revisión adversaria',
     'modulePage.phases.adversarialNoRuns': 'Aún no hay ejecuciones',

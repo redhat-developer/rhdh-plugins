@@ -122,13 +122,20 @@ export const compareMcpServers = (
 
 export const isEnabledToggleUnavailable = (
   displayStatus: ServerStatus,
-): boolean => displayStatus === 'failed' || displayStatus === 'tokenRequired';
+  hasStatusError = false,
+): boolean =>
+  displayStatus === 'failed' ||
+  displayStatus === 'tokenRequired' ||
+  hasStatusError;
 
 export const getEnabledToggleChecked = (
   server: McpServerDisplayInput,
   displayStatus: ServerStatus,
+  hasStatusError = false,
 ): boolean =>
-  isEnabledToggleUnavailable(displayStatus) ? false : server.enabled;
+  isEnabledToggleUnavailable(displayStatus, hasStatusError)
+    ? false
+    : server.enabled;
 
 export const getInitialCredentialMode = (server: {
   hasUserToken: boolean;
@@ -311,11 +318,15 @@ export const getModalEnabledDescriptionKey = (
 export const isModalEnabledChecked = ({
   displayStatus,
   modalEnabled,
+  hasStatusError = false,
 }: {
   displayStatus: ServerStatus;
   modalEnabled: boolean;
+  hasStatusError?: boolean;
 }): boolean =>
-  isEnabledToggleUnavailable(displayStatus) ? false : modalEnabled;
+  isEnabledToggleUnavailable(displayStatus, hasStatusError)
+    ? false
+    : modalEnabled;
 
 /** Translation function shape accepted by {@link getDisplayDetail}. */
 type TranslateFn = (key: any, options?: any) => string;

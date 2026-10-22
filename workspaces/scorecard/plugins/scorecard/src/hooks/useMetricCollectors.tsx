@@ -23,7 +23,8 @@ import { UseResponseData } from './types';
 
 /**
  * Fetches collector metadata for a metric. Pass `enabled` so the request runs
- * only when the data-sources dialog is open and the metric has collector IDs.
+ * only when the data-sources dialog is open (homepage aggregated cards always
+ * opt in; entity cards pass this when the metric has collector IDs).
  */
 export const useMetricCollectors = (
   metricId: string,

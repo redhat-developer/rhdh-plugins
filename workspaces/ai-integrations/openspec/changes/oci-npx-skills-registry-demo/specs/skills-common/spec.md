@@ -2,7 +2,7 @@
 
 ### Requirement: Shared normalized skill contract
 
-The `skills-common` library SHALL define and validate the `SkillRecord` and `SkillSnapshot` v1
+The `ai-skills-common` library SHALL define and validate the `SkillRecord` and `SkillSnapshot` v1
 schemas in design D2 for both connectors and the common catalog provider. It
 SHALL provide pure normalization, identity, and reference helpers without owning
 catalog mutations, runtime storage, or scheduled tasks. Connectors SHALL emit
@@ -34,6 +34,36 @@ SkillCard namespaces SHALL NOT override catalog namespaces.
 
 - **WHEN** an OCI SkillCard declares `metadata.version: 1.0.0` and its Markdown frontmatter declares `metadata.version: "1.0"`
 - **THEN** the normalized record contains `version: "1.0.0"`
+
+#### Scenario: Tag validation and deduplication
+
+- **WHEN** a normalized record contains tags with mixed case, duplicates, or invalid characters
+- **THEN** valid tags are trimmed, lowercased, and deduplicated
+- **AND** invalid or overlength tags (exceeding 63 characters) are omitted with diagnostics
+- **AND** non-array tag candidates emit a diagnostic
+
+#### Scenario: Author string shorthand
+
+- **WHEN** frontmatter `metadata.author` is a non-empty string
+- **THEN** the normalizer converts it to `[{ name: value }]` in the output record
+- **AND** invalid author entries in arrays are omitted with diagnostics
+
+#### Scenario: Authors never imply catalog ownership
+
+- **WHEN** a record has authors but no explicit `owner` field
+- **THEN** the `owner` field remains absent — author data is informational only
+
+#### Scenario: Diagnostic emission for incorrectly typed optional fields
+
+- **WHEN** a higher-priority candidate for an optional scalar field has a non-string type
+- **THEN** the normalizer emits a diagnostic for the type mismatch
+- **AND** selects the next valid string candidate at a lower priority (if any)
+
+#### Scenario: Normalizer function exports
+
+- **WHEN** the shared library is imported by a connector
+- **THEN** it provides `normalizeOciMetadata` and `normalizeNpxMetadata` functions
+- **AND** each returns a `NormalizationResult` containing the record and diagnostics
 
 #### Scenario: Source-specific metadata
 
@@ -77,7 +107,9 @@ even if no failed keys are known. `failed` SHALL have no skill records.
 ### Requirement: Stable identity and serialized references
 
 The shared library SHALL implement design D5's identity tuple and deterministic catalog name,
-SemVer fallback, and source-reference construction/parsing. OCI URI digests SHALL
+SemVer fallback, and source-reference construction/parsing. OCI discovery keys
+SHALL include the exact tag as `<registry>/<repository>:<tag>`; metadata tags and
+content digests SHALL NOT replace that identity. OCI URI digests SHALL
 match the record digest. HTTPS artifact URLs SHALL contain neither credentials
 nor fragments, query-string credentials, or signed access tokens; npx
 references SHALL serialize as `<sourceUri>#<digest>` with a lowercase SHA-256
@@ -87,6 +119,13 @@ digest and round-trip without losing non-sensitive URL query parameters.
 
 - **WHEN** a record's name or digest changes but its source type, source ID, and key do not
 - **THEN** its computed catalog entity name remains identical
+
+#### Scenario: OCI tag aliases remain distinct
+
+- **WHEN** two OCI records have different repository/tag keys but the same manifest digest and source URI
+- **THEN** the shared snapshot validator accepts both distinct keys
+- **AND** the identity helper computes a different catalog entity name for each tag
+- **AND** a repeated identical repository/tag key is still rejected as a duplicate
 
 #### Scenario: Missing declared semantic version
 

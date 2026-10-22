@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 3.1.0
+
+### Minor Changes
+
+- d471129: Allow a read-only NFS homepage to forward widget props from `widgetLayout`, including several copies of the same widget with different props.
+
+### Patch Changes
+
+- a669321: Updated dependency `@testing-library/user-event` to `14.6.7`.
+
 ## 3.0.0
 
 ### Major Changes

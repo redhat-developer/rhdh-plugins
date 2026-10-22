@@ -46,7 +46,7 @@ import {
 } from '@backstage/dev-utils';
 
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import scorecardPlugin, { scorecardTranslationsModule } from '../src';
 import { scorecardApiRef } from '../src/api';

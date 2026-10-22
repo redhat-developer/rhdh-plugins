@@ -150,6 +150,7 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   getRule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   listRules: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   deleteRule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  validateAcceptedRules: jest.fn().mockResolvedValue(undefined),
   attachRulesToProject: jest
     .fn()
     .mockRejectedValue(new NotAllowedError('mock error')),

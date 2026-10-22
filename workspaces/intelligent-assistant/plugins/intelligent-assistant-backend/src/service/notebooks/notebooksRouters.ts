@@ -129,7 +129,7 @@ export async function createNotebooksRouter(
       try {
         const { userEntityRef } = getIdentity(req);
         const { sessionId } = req.params;
-        await sessionService.readSession(sessionId, userEntityRef);
+        await sessionService.fetchSession(sessionId, userEntityRef);
         next();
       } catch (error) {
         handleError(
@@ -390,11 +390,7 @@ export async function createNotebooksRouter(
         return;
       }
 
-      const session = await sessionService.readSession(sessionId, userId);
-      if (!session) {
-        handleError(logger, res, 'Session not found');
-        return;
-      }
+      await sessionService.fetchSession(sessionId, userId);
 
       if (!req.file) {
         handleError(logger, res, 'No file uploaded');
@@ -524,7 +520,7 @@ export async function createNotebooksRouter(
         return;
       }
 
-      const session = await sessionService.readSession(sessionId, userId);
+      const { session } = await sessionService.fetchSession(sessionId, userId);
       let conversationId = session.metadata?.conversation_id;
 
       const lcsRequest: any = {

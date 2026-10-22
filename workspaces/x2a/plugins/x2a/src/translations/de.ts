@@ -152,6 +152,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.artifacts.migration_plan': 'Gesamter Projektmigrationsplan',
     'modulePage.artifacts.module_migration_plan': 'Modulplan nach Analyse',
     'modulePage.artifacts.migrated_sources': 'Migrierte Quellen',
+    'modulePage.artifacts.editInCodespaces': 'In Codespaces bearbeiten',
     'modulePage.artifacts.ansible_project': 'AAP-Projekt',
     'modulePage.artifacts.description':
       'Diese Artefakte werden durch den Konvertierungsprozess generiert und stehen zur Überprüfung bereit.',
@@ -162,6 +163,9 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.startedAt': 'Gestartet am',
     'modulePage.phases.status': 'Status',
     'modulePage.phases.errorDetails': 'Fehlerdetails',
+    'modulePage.phases.copyToClipboard': 'In Zwischenablage kopieren',
+    'modulePage.phases.copyFailed': 'Kopieren fehlgeschlagen',
+    'modulePage.phases.copyUnavailable': 'Kopieren nicht verfügbar',
     'modulePage.phases.statuses.notStarted': 'Nicht gestartet',
     'modulePage.phases.statuses.pending': 'Ausstehend',
     'modulePage.phases.statuses.running': 'Läuft',
@@ -171,7 +175,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.statuses.stale': 'Veraltet',
     'modulePage.phases.reanalyzeInstructions':
       'Der Modulmigrationsplan ist bereits vorhanden. Falls der gesamte Projektmigrationsplan aktualisiert wurde, lösen Sie die Analyse erneut aus, um die Änderungen widerzuspiegeln.',
-    'modulePage.phases.rerunAnalyze': 'Modulmigrationsplan neu erstellen',
+    'modulePage.phases.rerunAnalyze': 'Analyse erneut ausführen',
     'modulePage.phases.analyzeInstructions':
       'Überprüfen Sie vor der Analyse zunächst den gesamten Projektmigrationsplan. Sein Inhalt bestimmt die Analyse des Moduls.',
     'modulePage.phases.runAnalyze': 'Modulmigrationsplan erstellen',
@@ -300,6 +304,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'scaffolder.rulesAcceptance.required': 'erforderlich',
     'scaffolder.rulesAcceptance.fetchError':
       'Regeln konnten nicht abgerufen werden',
+    'scaffolder.rulesAcceptance.readMore': 'Mehr anzeigen',
+    'scaffolder.rulesAcceptance.close': 'Schließen',
     'rulesPage.title': 'Konvertierungsregeln',
     'rulesPage.subtitle':
       'Verwalten Sie Regeln, die Projekte bei ihrer Erstellung akzeptieren müssen.',
@@ -331,6 +337,9 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Abbrechen',
     'rulesPage.dialog.createError': 'Regel konnte nicht erstellt werden',
     'rulesPage.dialog.updateError': 'Regel konnte nicht aktualisiert werden',
+    'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} Zeichen',
+    'rulesPage.dialog.descriptionTooLong':
+      'Die Beschreibung darf höchstens {{max}} Zeichen enthalten ({{count}} verwendet).',
     'modulePage.phases.runAdversarialReview':
       'Gegnerische Überprüfung ausführen',
     'modulePage.phases.adversarialReview': 'Gegnerische Überprüfung',

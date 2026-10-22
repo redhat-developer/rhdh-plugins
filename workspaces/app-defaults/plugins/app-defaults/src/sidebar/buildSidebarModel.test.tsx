@@ -118,22 +118,47 @@ describe('buildSidebarModel', () => {
     ]);
   });
 
-  it('merges auto-discovered nav items at the default priority', () => {
+  it('merges auto-discovered nav items with OFS default-path priorities', () => {
     const entries = buildSidebarModel({
       items: [{ id: 'chat', title: 'Chat', priority: 10 }],
       groups: [],
-      navItems: [navItem('page:catalog', 'Catalog', '/catalog')],
+      navItems: [
+        navItem('page:catalog', 'Catalog', '/catalog'),
+        navItem('page:home', 'Home', '/'),
+        navItem('page:create', 'Create', '/create'),
+      ],
     });
 
     expect(entries.map(payloadOf)).toEqual([
-      expect.objectContaining({ id: 'chat' }),
+      expect.objectContaining({
+        id: 'page:home',
+        to: '/',
+        priority: 100,
+      }),
       expect.objectContaining({
         id: 'page:catalog',
         title: 'Catalog',
         to: '/catalog',
-        priority: 0,
+        priority: 80,
       }),
+      expect.objectContaining({
+        id: 'page:create',
+        to: '/create',
+        priority: 50,
+      }),
+      expect.objectContaining({ id: 'chat', priority: 10 }),
     ]);
+  });
+
+  it('keeps an explicit priority over the OFS default-path priority', () => {
+    const entries = buildSidebarModel({
+      items: [{ id: 'home', title: 'Home', to: '/', priority: 5 }],
+      groups: [],
+    });
+
+    expect(payloadOf(entries[0]!)).toEqual(
+      expect.objectContaining({ id: 'home', priority: 5 }),
+    );
   });
 
   it('drops auto-discovered nav items that a contributed item already links to', () => {
@@ -210,8 +235,8 @@ describe('buildSidebarModel', () => {
     });
 
     expect(entries.map(idOf)).toEqual([
+      'page:docs', // OFS/NFS default-path priority 65
       'search-modal',
-      'page:docs',
       'g',
       'other',
     ]);
@@ -229,7 +254,7 @@ describe('buildSidebarModel', () => {
       navItems: [navItem('page:catalog', 'Catalog', '/catalog')],
     });
 
-    // 'rbac' is dropped (no matching nav route); the rest sort by title.
+    // 'rbac' is dropped (no matching nav route); catalog inherits OFS priority.
     expect(entries.map(idOf)).toEqual(['page:catalog', 'home']);
   });
 

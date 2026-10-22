@@ -222,6 +222,23 @@ Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 EOF
 }
 
+# Normalize module names using AnsibleModule._sanitize. Keep MODULE_NAME
+# unchanged for source/module lookups.
+normalize_ansible_role_name() {
+  local LC_ALL=C normalized
+
+  normalized=$(printf '%s' "$1" | LC_ALL=C tr '[:upper:]' '[:lower:]' | \
+    LC_ALL=C sed -E 's/-/_/g; s/[^a-z0-9_]//g')
+
+  # AnsibleModule leaves an empty result empty; otherwise names must start
+  # with a letter.
+  if [ -n "$normalized" ] && [[ ! "$normalized" =~ ^[a-z] ]]; then
+    normalized="role_${normalized}"
+  fi
+
+  printf '%s' "$normalized"
+}
+
 # Commit and push changes to target repository.
 # Returns: Sets COMMIT_ID to the pushed commit SHA, or exits on push failure.
 git_commit_and_push() {
@@ -239,6 +256,9 @@ git_commit_and_push() {
   sanitize_secrets "${PROJECT_PATH:-/workspace/target}"
 
   git add "${PROJECT_DIR}" 2>/dev/null || git add -A || true
+  if [[ -f "${TARGET_BASE}/.devcontainer/ansible/devcontainer.json" ]]; then
+    git add .devcontainer/ansible/devcontainer.json
+  fi
 
   # Check if there are changes to commit
   if git diff --cached --quiet; then
@@ -265,7 +285,20 @@ git_commit_and_push() {
     fi
   else
     echo "Pushing to existing branch '${TARGET_REPO_BRANCH}'..."
-    git_target_repo pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
+    if ! git_target_repo pull --rebase -X theirs origin "${TARGET_REPO_BRANCH}"; then
+      echo "ERROR: Rebase conflict could not be auto-resolved. Aborting."
+      git rebase --abort || true
+
+      local error_msg="Failed to pull/rebase from ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
+      if [ "${fail_on_error}" = "true" ]; then
+        ERROR_MESSAGE="${error_msg}"
+        exit 1
+      else
+        PUSH_FAILED="${error_msg}"
+        return 1
+      fi
+    fi
+
     if ! git_target_repo push origin "${TARGET_REPO_BRANCH}"; then
       local error_msg="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
       echo "ERROR: ${error_msg}"
@@ -471,13 +504,15 @@ case "${PHASE}" in
 
   analyze)
     echo "=== Running x2a analyze phase ==="
-    MODULE_NAME_SANITIZED=$(echo "${MODULE_NAME}" | tr ' ' '_')
+    # The converter preserves hyphens in migration-plan filenames; only spaces
+    # are converted to underscores there. This differs from Ansible role naming.
+    MODULE_NAME_PLAN=$(echo "${MODULE_NAME}" | tr ' ' '_')
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
     mkdir -p "${OUTPUT_DIR}"
 
     echo ""
     echo "Will read from:  ${SOURCE_BASE}"
-    echo "Will write to:   ${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md"
+    echo "Will write to:   ${OUTPUT_DIR}/migration-plan-${MODULE_NAME_PLAN}.md"
     echo ""
 
     # Copy migration-plan.md from target repo to source dir
@@ -517,23 +552,24 @@ case "${PHASE}" in
     echo "=== Output directory contents ==="
     ls -la "${OUTPUT_DIR}/"
 
-    if [ ! -f "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md" ]; then
-      ERROR_MESSAGE="migration-plan-${MODULE_NAME_SANITIZED}.md not created by analyze phase"
+    if [ ! -f "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_PLAN}.md" ]; then
+      ERROR_MESSAGE="migration-plan-${MODULE_NAME_PLAN}.md not created by analyze phase"
       exit 1
     fi
 
-    ARTIFACTS+=("module_migration_plan:${PROJECT_DIR}/modules/${MODULE_NAME}/migration-plan-${MODULE_NAME_SANITIZED}.md")
+    ARTIFACTS+=("module_migration_plan:${PROJECT_DIR}/modules/${MODULE_NAME}/migration-plan-${MODULE_NAME_PLAN}.md")
     ;;
 
   migrate)
     echo "=== Running x2a migrate phase ==="
-    MODULE_NAME_SANITIZED=$(echo "${MODULE_NAME}" | tr ' ' '_')
+    MODULE_NAME_PLAN=$(echo "${MODULE_NAME}" | tr ' ' '_')
+    ANSIBLE_ROLE_NAME=$(normalize_ansible_role_name "${MODULE_NAME}")
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
+    ANSIBLE_DIR="${PROJECT_PATH}"
     mkdir -p "${OUTPUT_DIR}"
-
     echo ""
     echo "Will read from:  ${SOURCE_BASE}"
-    echo "Will write to:   ${OUTPUT_DIR}/ansible/"
+    echo "Will write to:   ${ANSIBLE_DIR}"
     echo ""
 
     # Copy migration-plan.md from target repo to source dir
@@ -578,36 +614,45 @@ case "${PHASE}" in
       --source-dir "${SOURCE_BASE}" \
       --source-technology "${SOURCE_TECHNOLOGY}" \
       --high-level-migration-plan "${PROJECT_PATH}/migration-plan.md" \
-      --module-migration-plan "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md" \
+      --module-migration-plan "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_PLAN}.md" \
       "${USER_REQ}"
 
     # Copy all files the x2a tool created/modified to the module output directory
     # Exclude files we copied into source before running x2a
-    copy_changed_files "${SOURCE_BASE}" "${OUTPUT_DIR}" \
+    copy_changed_files "${SOURCE_BASE}" "${ANSIBLE_DIR}" \
       '^migration-plan\.md$' '^migration-dependencies/'
+
+    DEVCONTAINER_CONFIG="${OUTPUT_DIR}/ansible/.devcontainer/devcontainer.json"
+    if [[ -f "${DEVCONTAINER_CONFIG}" ]]; then
+      echo "Copying Ansible devcontainer configuration to the target repository."
+      mkdir -p "${TARGET_BASE}/.devcontainer/ansible"
+      cp -v "${DEVCONTAINER_CONFIG}" "${TARGET_BASE}/.devcontainer/ansible/devcontainer.json"
+    else
+      echo "No Ansible devcontainer configuration found at ${DEVCONTAINER_CONFIG}; skipping"
+    fi
 
     echo ""
     echo "=== Output directory contents ==="
-    ls -la "${OUTPUT_DIR}/"
-    ls -la "${OUTPUT_DIR}/ansible/roles/" 2>/dev/null || true
+    ls -la "${ANSIBLE_DIR}/"
+    ls -la "${ANSIBLE_DIR}/ansible/roles/" 2>/dev/null || true
 
-    if [ ! -d "${OUTPUT_DIR}/ansible" ]; then
+    if [ ! -d "${ANSIBLE_DIR}/ansible" ]; then
       ERROR_MESSAGE="ansible output directory not created by migrate phase"
       exit 1
     fi
 
-    ARTIFACTS+=("migrated_sources:${PROJECT_DIR}/modules/${MODULE_NAME}/ansible")
+    ARTIFACTS+=("migrated_sources:${PROJECT_DIR}/ansible/collections/ansible_collections/x2a/project/roles/${ANSIBLE_ROLE_NAME}")
     ;;
 
   publish)
     echo "=== Running x2a publish phase ==="
-    MODULE_NAME_SANITIZED=$(echo "${MODULE_NAME}" | tr ' ' '_')
-    ROLE_NAME=$(echo "${MODULE_NAME}" | tr ' -' '__')
-    OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
+    ANSIBLE_DIR="${PROJECT_PATH}/ansible"
 
-    # Verify migrate phase output exists
-    if [ ! -d "${OUTPUT_DIR}/ansible/roles/${ROLE_NAME}" ]; then
-      ERROR_MESSAGE="Migrated role not found at ${OUTPUT_DIR}/ansible/roles/${ROLE_NAME} - migrate phase must complete first"
+    # Migrate writes generated Ansible files directly under the project
+    # directory. publish-aap syncs the target repository, so no separate
+    # publish-project assembly step is needed.
+    if [ ! -d "${ANSIBLE_DIR}" ]; then
+      ERROR_MESSAGE="Ansible output not found at ${ANSIBLE_DIR} - migrate phase must complete first"
       exit 1
     fi
 
@@ -617,36 +662,14 @@ case "${PHASE}" in
       exit 1
     fi
 
-    # Step 1: publish-project — assemble Ansible project from migrated role
-    echo "=== Step 1: Assembling Ansible project ==="
-    # publish-project reads from {project_id}/modules/{module_name}/ansible/roles/{module_name}/
-    # and writes to {project_id}/ansible-project/
-    # It operates relative to CWD, so we run from TARGET_BASE
-    pushd "${TARGET_BASE}"
-    run_x2a uv run --project /app /app/app.py publish-project "${PROJECT_DIR}" "${MODULE_NAME}"
-    popd
-
-    # Verify ansible-project was created
-    ANSIBLE_PROJECT_DIR="${PROJECT_PATH}/ansible-project"
-    if [ ! -d "${ANSIBLE_PROJECT_DIR}" ]; then
-      ERROR_MESSAGE="ansible-project directory not created by publish-project"
-      exit 1
-    fi
-
     echo ""
     echo "=== Ansible project contents ==="
-    find "${ANSIBLE_PROJECT_DIR}" -type f | head -50
+    find "${ANSIBLE_DIR}" -type f | sed -n '1,50p'
 
-    # Commit and push the Ansible project to git BEFORE calling publish-aap
-    # This ensures AAP syncs the latest commit with the new playbooks
+    # publish-aap creates/updates an AAP Project for this repository and branch,
+    # then triggers a sync without waiting for it to finish.
     echo ""
-    echo "=== Committing and pushing Ansible project to git ==="
-    commit_msg=$(build_commit_message)
-    git_commit_and_push "${commit_msg}"
-
-    # Step 2: publish-aap — register with AAP and sync
-    echo ""
-    echo "=== Step 2: Publishing to AAP ==="
+    echo "=== Publishing to AAP ==="
     cd /app
     run_x2a uv run app.py publish-aap \
       --target-repo "${TARGET_REPO_URL}" \
@@ -665,13 +688,15 @@ case "${PHASE}" in
 
   adversarial-analyze | adversarial-migrate)
     ACTUAL_PHASE="${PHASE#adversarial-}"
+    ANSIBLE_ROLE_NAME=$(normalize_ansible_role_name "${MODULE_NAME}")
     echo "=== Running adversarial review (${ACTUAL_PHASE} phase) ==="
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
 
     if [[ "${ACTUAL_PHASE}" = "analyze" ]]; then
       SOURCE_DIR="${OUTPUT_DIR}"
     else
-      SOURCE_DIR="${OUTPUT_DIR}/ansible"
+      # Migrate writes the generated Ansible collection under the project
+      SOURCE_DIR="${PROJECT_PATH}/ansible/collections/ansible_collections/x2a/project/roles/${ANSIBLE_ROLE_NAME}"
     fi
 
     if [[ ! -d "${SOURCE_DIR}" ]]; then

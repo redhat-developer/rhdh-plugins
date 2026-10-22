@@ -304,7 +304,9 @@ body[data-theme-name='light-customized'][data-theme-mode='light'] {
   /* Floating background — PF background-color-floating-default (menus, popovers) */
   --bui-redhat-theme-bg-floating: #ffffff; /* PF white */
 
-  /* Page inset — the shell background behind the rounded content well */
+  /* Page inset — default shell behind the rounded content well.
+   * createComponents syncs this to branding pageInsetBackgroundColor /
+   * appBar / sidebar when those are set in app-config. */
   --bui-redhat-theme-page-inset: 1.5rem;
   --bui-redhat-theme-page-inset-bg: #f2f2f2;
 
@@ -473,7 +475,8 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   /* Floating background — PF dark: gray-70 */
   --bui-redhat-theme-bg-floating: #383838;
 
-  /* Page inset — dark shell background */
+  /* Page inset — default dark shell. Overridden at runtime from branding
+   * chrome tokens (see createComponents MuiCssBaseline). */
   --bui-redhat-theme-page-inset: 1.5rem;
   --bui-redhat-theme-page-inset-bg: #151515;
 

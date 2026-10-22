@@ -60,12 +60,7 @@ jest.mock('./PhaseStatus', () => ({
 }));
 
 jest.mock('./ItemField', () => ({
-  ItemField: ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div data-testid={`item-field-${label}`}>
-      <span>{label}</span>
-      <span>{value}</span>
-    </div>
-  ),
+  ItemField: () => <div />,
 }));
 
 import { render, screen, act, waitFor } from '@testing-library/react';
@@ -83,6 +78,15 @@ const baseJob: Job = {
   status: 'running',
   k8sJobName: 'k8s-job-1',
   startedAt: new Date('2024-01-01T12:00:00Z'),
+};
+
+const getPhaseField = (label: string) => {
+  const labelElement = screen.getByText(label);
+  const field = labelElement.parentElement?.parentElement;
+  if (!field) {
+    throw new Error(`Could not find the ${label} phase field`);
+  }
+  return field;
 };
 
 describe('PhaseDetails', () => {
@@ -113,7 +117,7 @@ describe('PhaseDetails', () => {
         );
       });
 
-      const durationField = screen.getByTestId('item-field-Duration');
+      const durationField = getPhaseField('Duration');
       expect(durationField.textContent).toContain('2m 30s');
     });
 
@@ -138,7 +142,7 @@ describe('PhaseDetails', () => {
         );
       });
 
-      const durationField = screen.getByTestId('item-field-Duration');
+      const durationField = getPhaseField('Duration');
       expect(durationField.textContent).toContain('-');
       expect(durationField.textContent).not.toMatch(/\d+[smhd]/);
     });
@@ -155,7 +159,7 @@ describe('PhaseDetails', () => {
         );
       });
 
-      const durationField = screen.getByTestId('item-field-Duration');
+      const durationField = getPhaseField('Duration');
       expect(durationField.textContent).toContain('-');
       expect(durationField.textContent).not.toMatch(/\d+[smhd]/);
     });
@@ -190,7 +194,7 @@ describe('PhaseDetails', () => {
         );
       });
 
-      const durationField = screen.getByTestId('item-field-Duration');
+      const durationField = getPhaseField('Duration');
       expect(durationField.textContent).toContain('7m 0s');
       expect(durationField.textContent).not.toContain('29m');
     });
@@ -220,7 +224,7 @@ describe('PhaseDetails', () => {
         );
       });
 
-      const attemptsField = screen.getByTestId('item-field-Attempts');
+      const attemptsField = getPhaseField('Attempts');
       expect(attemptsField.textContent).toContain('3');
     });
 
@@ -246,11 +250,11 @@ describe('PhaseDetails', () => {
         );
       });
 
-      const attemptsField = screen.getByTestId('item-field-Attempts');
+      const attemptsField = getPhaseField('Attempts');
       expect(attemptsField.textContent).toContain('1');
     });
 
-    it('shows total elapsed as separate field when attemptCount > 1 and firstAttemptAt is set', async () => {
+    it('shows total elapsed as a separate field when attemptCount > 1', async () => {
       const phase: Job = {
         id: 'job-1',
         projectId: 'proj-1',
@@ -274,14 +278,14 @@ describe('PhaseDetails', () => {
         );
       });
 
-      const attemptsField = screen.getByTestId('item-field-Attempts');
+      const attemptsField = getPhaseField('Attempts');
       expect(attemptsField.textContent).toContain('3');
 
-      const totalElapsedField = screen.getByTestId('item-field-Total Elapsed');
+      const totalElapsedField = getPhaseField('Total Elapsed');
       expect(totalElapsedField.textContent).toContain('30m 0s');
     });
 
-    it('shows "-" for total elapsed when attemptCount is 1', async () => {
+    it('omits total elapsed when attemptCount is 1', async () => {
       const phase: Job = {
         id: 'job-1',
         projectId: 'proj-1',
@@ -305,9 +309,9 @@ describe('PhaseDetails', () => {
         );
       });
 
-      const totalElapsedField = screen.getByTestId('item-field-Total Elapsed');
-      expect(totalElapsedField.textContent).toContain('-');
-      expect(totalElapsedField.textContent).not.toMatch(/\d+[smhd]/);
+      const attemptsField = getPhaseField('Attempts');
+      expect(attemptsField.textContent).toBe('Attempts1');
+      expect(screen.queryByText('Total Elapsed')).not.toBeInTheDocument();
     });
   });
 

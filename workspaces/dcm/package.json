@@ -5,6 +5,7 @@
   "engines": {
     "node": "22 || 24"
   },
+  "packageManager": "yarn@4.18.1",
   "scripts": {
     "start": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start-app\" \"yarn start-backend\"",
     "start-app": "yarn workspace app start",
@@ -42,11 +43,10 @@
     "url": "https://github.com/redhat-developer/rhdh-plugins",
     "directory": "workspaces/dcm"
   },
-  "packageManager": "yarn@4.15.0",
   "devDependencies": {
-    "@backstage/cli": "^0.35.2",
-    "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.16.2",
+    "@backstage/cli": "^0.36.5",
+    "@backstage/e2e-test-utils": "^0.1.2",
+    "@backstage/repo-tools": "^0.19.0",
     "@changesets/cli": "^2.27.1",
     "@playwright/test": "1.60.0",
     "@types/jest": "^29.5.12",
@@ -56,7 +56,7 @@
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",
-    "typescript": "~5.3.0"
+    "typescript": "~5.8.0"
   },
   "dependenciesMeta": {
     "better-sqlite3": {
@@ -69,8 +69,6 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "fsevents": "~2.3.2",
-    "@backstage/backend-app-api": "1.4.1",
-    "@backstage/backend-plugin-api": "1.6.2",
     "basic-ftp": "^5.3.1",
     "js-cookie": "^3.0.7"
   },

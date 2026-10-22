@@ -19,7 +19,7 @@
     "lint": "backstage-cli package lint"
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac": "2.3.4",
+    "@backstage-community/plugin-rbac": "2.3.6",
     "@backstage/cli": "^0.36.5",
     "@backstage/core-compat-api": "^0.5.14",
     "@backstage/core-components": "^0.18.13",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
     "@backstage/test-utils": "^1.7.21",
-    "@playwright/test": "1.60.0",
+    "@playwright/test": "1.64.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",

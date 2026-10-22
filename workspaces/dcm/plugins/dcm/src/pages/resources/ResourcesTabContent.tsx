@@ -65,7 +65,7 @@ export function ResourcesTabContent() {
       inst =>
         (inst.id ?? '').toLowerCase().includes(q) ||
         (inst.spec?.service_type ?? '').toLowerCase().includes(q) ||
-        (inst.provider_name ?? '').toLowerCase().includes(q) ||
+        (inst.agent_name ?? '').toLowerCase().includes(q) ||
         (inst.status ?? '').toLowerCase().includes(q),
     );
   }, [data, search]);
@@ -100,14 +100,12 @@ export function ResourcesTabContent() {
           ),
       },
       {
-        // TODO(FLPATH-4773): Rename column to "Environment" once the Resources
-        // API replaces provider_name with an agent/environment reference, and
-        // mark resources as degraded when the associated agent is unavailable.
+        // as degraded when the associated agent is unavailable.
         title: t('resources.columns.provider'),
-        field: 'provider_name',
+        field: 'agent_name',
         render: inst => (
           <TruncatedText
-            text={inst.provider_name}
+            text={inst.agent_name}
             variant="body2"
             bold={false}
             maxWidth={200}

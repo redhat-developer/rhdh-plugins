@@ -175,19 +175,8 @@ export function registerProjectRoutes(
       }
     }
 
-    // Pre-validate rule IDs to avoid orphan projects on invalid input
-    if (requestBody.acceptedRuleIds?.length) {
-      const ruleChecks = await Promise.all(
-        requestBody.acceptedRuleIds.map(async id => ({
-          id,
-          exists: !!(await x2aDatabase.getRule({ id })),
-        })),
-      );
-      const missingRules = ruleChecks.filter(r => !r.exists).map(r => r.id);
-      if (missingRules.length) {
-        throw new InputError(`Rules not found: ${missingRules.join(', ')}`);
-      }
-    }
+    // Pre-validate rule IDs and total size before inserting the project
+    await x2aDatabase.validateAcceptedRules(requestBody.acceptedRuleIds ?? []);
 
     // create project
     const newProject = await x2aDatabase.createProject(requestBody, {

@@ -113,7 +113,7 @@ export function CatalogItemInstancesTabContent() {
       inst.display_name,
       inst.spec?.catalog_item_id,
       inst.uid,
-      ...(inst.spec?.resource_ids ?? []),
+      ...(inst.resource_ids ?? []),
     ],
     emptyForm: emptyInstanceForm,
     isValid: isInstanceFormValid,
@@ -182,10 +182,10 @@ export function CatalogItemInstancesTabContent() {
       },
       {
         title: t('instances.columns.resourceIds'),
-        field: 'spec.resource_ids',
+        field: 'resource_ids',
         sorting: false,
         render: inst => {
-          const ids = inst.spec?.resource_ids ?? [];
+          const ids = inst.resource_ids ?? [];
           if (ids.length === 0) return <DcmEmptyCell />;
           return (
             <TruncatedText

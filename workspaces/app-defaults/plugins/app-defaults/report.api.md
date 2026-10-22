@@ -57,7 +57,7 @@ export const appDefaultsTranslations: TranslationResource<'plugin.app-defaults'>
 // @public
 export const appDefaultsTranslationsModule: FrontendModule;
 
-// @public
+// @public @deprecated
 export const appDrawerExtension: OverridableExtensionDefinition<{
   config: {};
   configInput: {};
@@ -84,8 +84,38 @@ export const appDrawerExtension: OverridableExtensionDefinition<{
   };
 }>;
 
-// @public
+// @public @deprecated
 export const appDrawerModule: FrontendModule;
+
+// @public
+export const appLayoutExtension: OverridableExtensionDefinition<{
+  config: {};
+  configInput: {};
+  output: ExtensionDataRef<
+    (props: { children: ReactNode }) => JSX.Element | null,
+    'app.root.wrapper',
+    {}
+  >;
+  inputs: {
+    drawers: ExtensionInput<
+      ConfigurableExtensionDataRef<AppDrawerContent, 'app.drawer.content', {}>,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+  };
+  kind: 'app-root-wrapper';
+  name: 'drawer';
+  params: {
+    Component?: [error: 'Use the `component` parameter instead'];
+    component: (props: { children: ReactNode }) => JSX.Element | null;
+  };
+}>;
+
+// @public
+export const appLayoutModule: FrontendModule;
 
 // @public
 export const AppSidebar: (input: AppSidebarProps) => JSX_3.Element;

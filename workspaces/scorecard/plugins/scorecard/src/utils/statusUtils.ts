@@ -20,7 +20,7 @@ import type {
   MetricResult,
   ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
+import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 import { scorecardTranslationRef } from '../translations';
 import { SCORECARD_ERROR_STATE_COLOR } from './constants';

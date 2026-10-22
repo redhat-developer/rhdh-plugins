@@ -33,8 +33,6 @@ import {
 
 export type ScreenContextChipState = 'recording' | 'paused' | 'unavailable';
 
-/** Prototype max width; shorter labels shrink to content. */
-const CHIP_MAX_WIDTH_PX = 150;
 const CHIP_HEIGHT_PX = 24;
 
 const pulse = keyframes`
@@ -43,22 +41,25 @@ const pulse = keyframes`
   100% { opacity: 0.45; transform: scale(0.92); }
 `;
 
+/** Content-sized when space allows; ellipsis when the parent flex slot is tight. */
 const ChipWrap = styled('div')({
   display: 'inline-flex',
   height: CHIP_HEIGHT_PX,
-  maxWidth: CHIP_MAX_WIDTH_PX,
+  width: 'max-content',
+  maxWidth: '100%',
   minWidth: 0,
-  flexShrink: 0,
+  overflow: 'hidden',
 });
 
-const FixedSizeChipLabel = styled(Label)({
+const FlexChipLabel = styled(Label)({
   height: CHIP_HEIGHT_PX,
-  maxWidth: CHIP_MAX_WIDTH_PX,
   width: 'max-content',
+  maxWidth: '100%',
+  minWidth: 0,
   boxSizing: 'border-box',
   display: 'inline-flex',
   alignItems: 'center',
-  flexShrink: 0,
+  overflow: 'hidden',
   '--pf-v6-c-label--PaddingBlockStart': '0',
   '--pf-v6-c-label--PaddingBlockEnd': '0',
   '--pf-v6-c-label--MinWidth': 'auto',
@@ -67,6 +68,7 @@ const FixedSizeChipLabel = styled(Label)({
     height: '100%',
     minWidth: 0,
     boxSizing: 'border-box',
+    overflow: 'hidden',
   },
   '& .pf-v6-c-label__text': {
     overflow: 'hidden',
@@ -179,14 +181,14 @@ export const ScreenContextChip = ({
     return (
       <ChipWrap className="lightspeed-page-context-label lightspeed-page-context-label-unavailable">
         <Tooltip content={tooltipContent}>
-          <FixedSizeChipLabel
+          <FlexChipLabel
             color="grey"
             variant="outline"
             isCompact
             className="lightspeed-context-chip-unavailable-label"
           >
             <ChipText>{t('contextChip.label.unavailable')}</ChipText>
-          </FixedSizeChipLabel>
+          </FlexChipLabel>
         </Tooltip>
       </ChipWrap>
     );
@@ -196,7 +198,7 @@ export const ScreenContextChip = ({
     return (
       <ChipWrap className="lightspeed-page-context-label lightspeed-page-context-label-paused">
         <Tooltip content={tooltipContent}>
-          <FixedSizeChipLabel
+          <FlexChipLabel
             color="grey"
             variant="outline"
             isCompact
@@ -207,7 +209,7 @@ export const ScreenContextChip = ({
             aria-label={t('contextChip.aria.resume')}
           >
             <ChipText>{t('contextChip.label.paused')}</ChipText>
-          </FixedSizeChipLabel>
+          </FlexChipLabel>
         </Tooltip>
       </ChipWrap>
     );
@@ -216,7 +218,7 @@ export const ScreenContextChip = ({
   return (
     <ChipWrap className="lightspeed-page-context-label lightspeed-page-context-label-recording lightspeed-page-context-chip-clickable">
       <Tooltip content={tooltipContent}>
-        <FixedSizeChipLabel
+        <FlexChipLabel
           color="red"
           variant="outline"
           isCompact
@@ -229,7 +231,7 @@ export const ScreenContextChip = ({
           })}
         >
           <ChipText>{displayLabel}</ChipText>
-        </FixedSizeChipLabel>
+        </FlexChipLabel>
       </Tooltip>
     </ChipWrap>
   );
