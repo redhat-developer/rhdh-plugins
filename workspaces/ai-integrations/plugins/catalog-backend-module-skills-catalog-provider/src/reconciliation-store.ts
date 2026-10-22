@@ -35,6 +35,7 @@ import type { SkillSourceType } from '@red-hat-developer-hub/backstage-plugin-ai
 import type {
   CommittedSourceState,
   OwnedEntity,
+  PendingAcknowledgment,
   PlannedRemoval,
   PlannedUpsert,
 } from './types';
@@ -43,6 +44,7 @@ import type {
 
 const COMMITTED_STATE_TABLE = 'skills_provider_committed_state';
 const PENDING_DELTA_TABLE = 'skills_provider_pending_delta';
+const PENDING_ACK_TABLE = 'skills_provider_pending_ack';
 
 // ─── Pending delta record ───────────────────────────────────────────
 
@@ -129,6 +131,39 @@ export interface ReconciliationStore {
     sourceType: SkillSourceType,
     sourceId: string,
     nextState: CommittedSourceState,
+  ): Promise<void>;
+
+  /**
+   * Atomically commits ownership state, clears the pending delta,
+   * and persists a pending acknowledgment after a successful `ready`
+   * catalog mutation per design D8.
+   */
+  commitStateAndSaveAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+    nextState: CommittedSourceState,
+    ack: PendingAcknowledgment,
+  ): Promise<void>;
+
+  /**
+   * Retrieves a pending acknowledgment for a source, if one exists.
+   */
+  getPendingAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<PendingAcknowledgment | undefined>;
+
+  /**
+   * Retrieves all pending acknowledgments for retry on startup.
+   */
+  getAllPendingAcknowledgments(): Promise<PendingAcknowledgment[]>;
+
+  /**
+   * Clears a pending acknowledgment after successful delivery.
+   */
+  clearPendingAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
   ): Promise<void>;
 }
 
@@ -285,34 +320,7 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
     nextState: CommittedSourceState,
   ): Promise<void> {
     await this.knex.transaction(async trx => {
-      // Upsert committed state
-      const existing = await trx(COMMITTED_STATE_TABLE)
-        .where({
-          provider_id: this.providerId,
-          source_type: sourceType,
-          source_id: sourceId,
-        })
-        .first();
-
-      const stateData = {
-        provider_id: this.providerId,
-        source_type: sourceType,
-        source_id: sourceId,
-        observed_at: nextState.observedAt,
-        entities_json: JSON.stringify(nextState.entities),
-      };
-
-      if (existing) {
-        await trx(COMMITTED_STATE_TABLE)
-          .where({
-            provider_id: this.providerId,
-            source_type: sourceType,
-            source_id: sourceId,
-          })
-          .update(stateData);
-      } else {
-        await trx(COMMITTED_STATE_TABLE).insert(stateData);
-      }
+      await this.upsertCommittedState(trx, sourceType, sourceId, nextState);
 
       // Clear pending delta
       await trx(PENDING_DELTA_TABLE)
@@ -323,5 +331,148 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
         })
         .delete();
     });
+  }
+
+  async commitStateAndSaveAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+    nextState: CommittedSourceState,
+    ack: PendingAcknowledgment,
+  ): Promise<void> {
+    await this.knex.transaction(async trx => {
+      await this.upsertCommittedState(trx, sourceType, sourceId, nextState);
+
+      // Clear pending delta
+      await trx(PENDING_DELTA_TABLE)
+        .where({
+          provider_id: this.providerId,
+          source_type: sourceType,
+          source_id: sourceId,
+        })
+        .delete();
+
+      // Upsert pending acknowledgment
+      const ackData = {
+        provider_id: this.providerId,
+        source_type: ack.sourceType,
+        source_id: ack.sourceId,
+        connector_plugin_id: ack.connectorPluginId,
+        revision: ack.revision,
+        retained_digests_json: JSON.stringify(ack.retainedDigests),
+        expected_entity_urls_json: JSON.stringify(ack.expectedEntityUrls),
+        expected_removals_json: JSON.stringify(ack.expectedRemovals),
+      };
+      const existingAck = await trx(PENDING_ACK_TABLE)
+        .where({
+          provider_id: this.providerId,
+          source_type: ack.sourceType,
+          source_id: ack.sourceId,
+        })
+        .first();
+      if (existingAck) {
+        await trx(PENDING_ACK_TABLE)
+          .where({
+            provider_id: this.providerId,
+            source_type: ack.sourceType,
+            source_id: ack.sourceId,
+          })
+          .update(ackData);
+      } else {
+        await trx(PENDING_ACK_TABLE).insert(ackData);
+      }
+    });
+  }
+
+  async getPendingAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<PendingAcknowledgment | undefined> {
+    const row = await this.knex(PENDING_ACK_TABLE)
+      .where({
+        provider_id: this.providerId,
+        source_type: sourceType,
+        source_id: sourceId,
+      })
+      .first();
+
+    if (!row) return undefined;
+    return this.rowToAcknowledgment(row);
+  }
+
+  async getAllPendingAcknowledgments(): Promise<PendingAcknowledgment[]> {
+    const rows = await this.knex(PENDING_ACK_TABLE)
+      .where({ provider_id: this.providerId })
+      .select('*');
+    return rows.map(row => this.rowToAcknowledgment(row));
+  }
+
+  async clearPendingAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<void> {
+    await this.knex(PENDING_ACK_TABLE)
+      .where({
+        provider_id: this.providerId,
+        source_type: sourceType,
+        source_id: sourceId,
+      })
+      .delete();
+  }
+
+  // ─── Private helpers ──────────────────────────────────────────────
+
+  private async upsertCommittedState(
+    trx: Knex.Transaction,
+    sourceType: SkillSourceType,
+    sourceId: string,
+    nextState: CommittedSourceState,
+  ): Promise<void> {
+    const existing = await trx(COMMITTED_STATE_TABLE)
+      .where({
+        provider_id: this.providerId,
+        source_type: sourceType,
+        source_id: sourceId,
+      })
+      .first();
+
+    const stateData = {
+      provider_id: this.providerId,
+      source_type: sourceType,
+      source_id: sourceId,
+      observed_at: nextState.observedAt,
+      entities_json: JSON.stringify(nextState.entities),
+    };
+
+    if (existing) {
+      await trx(COMMITTED_STATE_TABLE)
+        .where({
+          provider_id: this.providerId,
+          source_type: sourceType,
+          source_id: sourceId,
+        })
+        .update(stateData);
+    } else {
+      await trx(COMMITTED_STATE_TABLE).insert(stateData);
+    }
+  }
+
+  private rowToAcknowledgment(
+    row: Record<string, unknown>,
+  ): PendingAcknowledgment {
+    return {
+      sourceType: row.source_type as SkillSourceType,
+      sourceId: row.source_id as string,
+      connectorPluginId: row.connector_plugin_id as string,
+      revision: row.revision as string,
+      retainedDigests: JSON.parse(
+        row.retained_digests_json as string,
+      ) as string[],
+      expectedEntityUrls: JSON.parse(
+        row.expected_entity_urls_json as string,
+      ) as Record<string, string>,
+      expectedRemovals: JSON.parse(
+        row.expected_removals_json as string,
+      ) as string[],
+    };
   }
 }

@@ -20,6 +20,7 @@ import type {
   LoggerService,
   SchedulerServiceTaskRunner,
 } from '@backstage/backend-plugin-api';
+import type { CatalogApi } from '@backstage/catalog-client';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import type {
   EntityProvider,
@@ -34,11 +35,25 @@ import { consumeSnapshot } from './snapshot-consumer';
 import type {
   CommittedSourceState,
   ExternalOwnership,
+  PendingAcknowledgment,
   PlannedRemoval,
   PlannedUpsert,
   SkillsCatalogProviderConfig,
   SourceConsumerConfig,
 } from './types';
+
+// ─── Error types ─────────────────────────────────────────────────────
+
+/**
+ * Error thrown when a reconcile request returns 409 indicating the
+ * revision has been superseded.
+ */
+class SupersededRevisionError extends Error {
+  constructor(revision: string) {
+    super(`Revision ${revision} has been superseded`);
+    this.name = 'SupersededRevisionError';
+  }
+}
 
 // ─── Default in-memory store ──────────────────────────────────────────
 
@@ -50,6 +65,7 @@ import type {
 class InMemoryReconciliationStore implements ReconciliationStore {
   private committed = new Map<string, CommittedSourceState>();
   private pending = new Map<string, PendingDelta>();
+  private pendingAcks = new Map<string, PendingAcknowledgment>();
 
   private key(sourceType: SkillSourceType, sourceId: string): string {
     return `${sourceType}:${sourceId}`;
@@ -99,6 +115,36 @@ class InMemoryReconciliationStore implements ReconciliationStore {
     this.committed.set(k, nextState);
     this.pending.delete(k);
   }
+
+  async commitStateAndSaveAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+    nextState: CommittedSourceState,
+    ack: PendingAcknowledgment,
+  ): Promise<void> {
+    const k = this.key(sourceType, sourceId);
+    this.committed.set(k, nextState);
+    this.pending.delete(k);
+    this.pendingAcks.set(k, ack);
+  }
+
+  async getPendingAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<PendingAcknowledgment | undefined> {
+    return this.pendingAcks.get(this.key(sourceType, sourceId));
+  }
+
+  async getAllPendingAcknowledgments(): Promise<PendingAcknowledgment[]> {
+    return Array.from(this.pendingAcks.values());
+  }
+
+  async clearPendingAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<void> {
+    this.pendingAcks.delete(this.key(sourceType, sourceId));
+  }
 }
 
 /**
@@ -131,6 +177,7 @@ export class SkillsCatalogProvider implements EntityProvider {
   private readonly logger: LoggerService;
   private readonly taskRunner: SchedulerServiceTaskRunner;
   private readonly store: ReconciliationStore;
+  private readonly catalogApi?: CatalogApi;
   private connection?: EntityProviderConnection;
 
   /**
@@ -141,6 +188,11 @@ export class SkillsCatalogProvider implements EntityProvider {
    * calling `connect()`. The backend module performs this initialization;
    * the provider does not initialize externally supplied stores. Omitting the
    * store uses process-local in-memory state without restart persistence.
+   *
+   * When a `catalogApi` is provided, the provider verifies catalog
+   * processing visibility before sending D8 reconciliation
+   * acknowledgments. Without it, acknowledgments are sent immediately
+   * after ownership commit (suitable for testing).
    */
   constructor(
     config: SkillsCatalogProviderConfig,
@@ -149,6 +201,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
     store?: ReconciliationStore,
+    catalogApi?: CatalogApi,
   ) {
     this.config = config;
     this.discovery = discovery;
@@ -158,6 +211,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     });
     this.taskRunner = taskRunner;
     this.store = store ?? new InMemoryReconciliationStore();
+    this.catalogApi = catalogApi;
   }
 
   getProviderName(): string {
@@ -193,6 +247,9 @@ export class SkillsCatalogProvider implements EntityProvider {
         `${this.getProviderName()}: not connected to catalog yet`,
       );
     }
+
+    // ── Step 0: Retry pending acknowledgments before polling (D8) ──
+    await this.retryPendingAcknowledgments();
 
     // ── Step 1: Replay pending deltas from previous interrupted runs ──
     const blockedSources = await this.replayPendingDeltas();
@@ -303,9 +360,11 @@ export class SkillsCatalogProvider implements EntityProvider {
     source: SourceConsumerConfig,
   ): Promise<{ skipped: boolean; entityCount: number }> {
     // ── Poll the connector ──────────────────────────────────────────
-    let baseUrl: string;
+    let connectorBaseUrl: string;
     try {
-      baseUrl = await this.discovery.getBaseUrl(source.connectorPluginId);
+      connectorBaseUrl = await this.discovery.getBaseUrl(
+        source.connectorPluginId,
+      );
     } catch (error) {
       throw new Error(
         `Failed to resolve connector plugin '${source.connectorPluginId}': ${error}`,
@@ -318,7 +377,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     });
 
     const result = await consumeSnapshot(
-      baseUrl,
+      connectorBaseUrl,
       token,
       source,
       this.config.namespace,
@@ -405,12 +464,41 @@ export class SkillsCatalogProvider implements EntityProvider {
       plan.removals,
     );
 
-    // Step 3: Commit the next state and clear the pending delta
-    await this.store.commitStateAndClearPending(
-      source.sourceType,
-      source.sourceId,
-      plan.nextState,
-    );
+    // Step 3: Commit next state. For ready OCI sources with a revision,
+    // atomically persist the acknowledgment per design D8.
+    const isReadyOci =
+      result.status === 'ready' &&
+      source.sourceType === 'oci' &&
+      result.revision;
+
+    if (isReadyOci) {
+      const ack = this.buildAcknowledgment(
+        source,
+        result.revision!,
+        plan.nextState,
+        plan.removals,
+      );
+      await this.store.commitStateAndSaveAcknowledgment(
+        source.sourceType,
+        source.sourceId,
+        plan.nextState,
+        ack,
+      );
+      this.logger.info(
+        `Source ${source.sourceId}: persisted acknowledgment ` +
+          `revision=${result.revision}, ` +
+          `retainedDigests=${ack.retainedDigests.length}`,
+      );
+
+      // Attempt immediate delivery (best-effort; retried on next run)
+      await this.tryDeliverAcknowledgment(ack);
+    } else {
+      await this.store.commitStateAndClearPending(
+        source.sourceType,
+        source.sourceId,
+        plan.nextState,
+      );
+    }
 
     this.logger.info(
       `Source ${source.sourceId}: reconciled ` +
@@ -533,5 +621,244 @@ export class SkillsCatalogProvider implements EntityProvider {
     sourceId: string,
   ): string {
     return `skills-catalog-provider:${this.config.id}:${sourceType}:${sourceId}`;
+  }
+
+  // ─── D8 acknowledgment lifecycle ──────────────────────────────────
+
+  /**
+   * Builds a pending acknowledgment from committed state and planned
+   * removals per design D8.
+   */
+  private buildAcknowledgment(
+    source: SourceConsumerConfig,
+    revision: string,
+    nextState: CommittedSourceState,
+    removals: PlannedRemoval[],
+  ): PendingAcknowledgment {
+    // Unique digests from committed last-known-good entities
+    const retainedDigests = [...new Set(nextState.entities.map(e => e.digest))];
+
+    // Expected entity refs → TechDocs URLs for visibility verification
+    const expectedEntityUrls: Record<string, string> = {};
+    for (const owned of nextState.entities) {
+      const ref = stringifyEntityRef(owned.entity);
+      const techdocsRef =
+        owned.entity.metadata?.annotations?.['backstage.io/techdocs-ref'];
+      if (techdocsRef) {
+        expectedEntityUrls[ref] = techdocsRef;
+      }
+    }
+
+    // Entity refs expected to be absent (removed)
+    const expectedRemovals = removals
+      .filter(r => r.entityRef)
+      .map(r => r.entityRef!);
+
+    return {
+      sourceType: source.sourceType,
+      sourceId: source.sourceId,
+      connectorPluginId: source.connectorPluginId,
+      revision,
+      retainedDigests,
+      expectedEntityUrls,
+      expectedRemovals,
+    };
+  }
+
+  /**
+   * Retries all pending acknowledgments before polling new snapshots.
+   *
+   * Per design D8: retry pending acknowledgments, including catalog
+   * visibility checks, before consuming newer snapshots.
+   */
+  private async retryPendingAcknowledgments(): Promise<void> {
+    const pendingAcks = await this.store.getAllPendingAcknowledgments();
+    if (pendingAcks.length === 0) return;
+
+    this.logger.info(
+      `Retrying ${pendingAcks.length} pending acknowledgment(s)`,
+    );
+
+    for (const ack of pendingAcks) {
+      await this.tryDeliverAcknowledgment(ack);
+    }
+  }
+
+  /**
+   * Attempts to deliver a pending acknowledgment.
+   *
+   * Verifies catalog processing visibility (when a catalog API is
+   * available), then sends the reconcile request to the connector.
+   * On success, clears the pending acknowledgment. On failure,
+   * retains it for retry on the next scheduled run.
+   */
+  private async tryDeliverAcknowledgment(
+    ack: PendingAcknowledgment,
+  ): Promise<void> {
+    try {
+      // Verify catalog processing visibility before sending
+      if (this.catalogApi) {
+        const visible = await this.verifyCatalogVisibility(ack);
+        if (!visible) {
+          this.logger.info(
+            `Source ${ack.sourceId}: catalog processing not yet visible, ` +
+              `deferring acknowledgment revision=${ack.revision}`,
+          );
+          return;
+        }
+      }
+
+      // Send the reconcile request to the connector
+      await this.sendReconcileRequest(ack);
+
+      // Clear the pending acknowledgment on success
+      await this.store.clearPendingAcknowledgment(ack.sourceType, ack.sourceId);
+
+      this.logger.info(
+        `Source ${ack.sourceId}: acknowledgment delivered ` +
+          `revision=${ack.revision}`,
+      );
+    } catch (error) {
+      if (error instanceof SupersededRevisionError) {
+        // 409: discard superseded acknowledgment and permit new poll
+        this.logger.warn(
+          `Source ${ack.sourceId}: acknowledgment revision=${ack.revision} ` +
+            `superseded (409), discarding`,
+        );
+        await this.store.clearPendingAcknowledgment(
+          ack.sourceType,
+          ack.sourceId,
+        );
+      } else {
+        // Transport/auth/server errors: retain for retry
+        this.logger.error(
+          `Source ${ack.sourceId}: acknowledgment delivery failed ` +
+            `(revision=${ack.revision}): ${error}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Verifies that the catalog has processed entities with the expected
+   * TechDocs URLs and that removed entities are absent.
+   *
+   * @returns `true` if all visibility checks pass.
+   */
+  private async verifyCatalogVisibility(
+    ack: PendingAcknowledgment,
+  ): Promise<boolean> {
+    if (!this.catalogApi) return true;
+
+    const { token } = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: 'catalog',
+    });
+
+    // Check expected entity URLs
+    const entityRefs = Object.keys(ack.expectedEntityUrls);
+    if (entityRefs.length > 0) {
+      try {
+        const response = await this.catalogApi.getEntitiesByRefs(
+          { entityRefs },
+          { token },
+        );
+
+        for (let i = 0; i < entityRefs.length; i++) {
+          const entity = response.items[i];
+          if (!entity) {
+            this.logger.debug(
+              `Visibility check: ${entityRefs[i]} not yet in catalog`,
+            );
+            return false;
+          }
+          const actualUrl =
+            entity.metadata?.annotations?.['backstage.io/techdocs-ref'];
+          const expectedUrl = ack.expectedEntityUrls[entityRefs[i]];
+          if (actualUrl !== expectedUrl) {
+            this.logger.debug(
+              `Visibility check: ${entityRefs[i]} has stale techdocs-ref ` +
+                `(expected=${expectedUrl}, actual=${actualUrl})`,
+            );
+            return false;
+          }
+        }
+      } catch (error) {
+        this.logger.warn(`Visibility check: catalog query failed: ${error}`);
+        return false;
+      }
+    }
+
+    // Check expected removals
+    if (ack.expectedRemovals.length > 0) {
+      try {
+        const response = await this.catalogApi.getEntitiesByRefs(
+          { entityRefs: ack.expectedRemovals },
+          { token },
+        );
+
+        for (let i = 0; i < ack.expectedRemovals.length; i++) {
+          if (response.items[i]) {
+            this.logger.debug(
+              `Visibility check: ${ack.expectedRemovals[i]} not yet removed`,
+            );
+            return false;
+          }
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Visibility check: catalog removal query failed: ${error}`,
+        );
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Sends the reconcile request to the connector's
+   * `POST /skilldocs/:sourceId/reconcile` endpoint.
+   *
+   * @throws SupersededRevisionError on 409 (superseded revision)
+   * @throws Error on other failures
+   */
+  private async sendReconcileRequest(
+    ack: PendingAcknowledgment,
+  ): Promise<void> {
+    const baseUrl = await this.discovery.getBaseUrl(ack.connectorPluginId);
+    const url = `${baseUrl}/skilldocs/${encodeURIComponent(
+      ack.sourceId,
+    )}/reconcile`;
+
+    const { token } = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: ack.connectorPluginId,
+    });
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        revision: ack.revision,
+        retainedDigests: ack.retainedDigests,
+      }),
+    });
+
+    if (response.status === 204) {
+      return; // Success
+    }
+
+    if (response.status === 409) {
+      throw new SupersededRevisionError(ack.revision);
+    }
+
+    const errorBody = await response.text().catch(() => '');
+    throw new Error(
+      `Reconcile request failed with ${response.status}: ${errorBody}`,
+    );
   }
 }

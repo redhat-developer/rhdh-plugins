@@ -5,6 +5,7 @@
 ```ts
 import type { AuthService } from '@backstage/backend-plugin-api';
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 import type { DiscoveryService } from '@backstage/backend-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
@@ -63,6 +64,17 @@ export interface OwnedEntity {
   digest: string;
   entity: Entity;
   tuple: IdentityTuple;
+}
+
+// @public
+export interface PendingAcknowledgment {
+  connectorPluginId: string;
+  expectedEntityUrls: Record<string, string>;
+  expectedRemovals: string[];
+  retainedDigests: string[];
+  revision: string;
+  sourceId: string;
+  sourceType: SkillSourceType;
 }
 
 // @public
@@ -126,17 +138,32 @@ export interface ReconciliationPlanInput {
 
 // @public
 export interface ReconciliationStore {
+  clearPendingAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<void>;
   commitStateAndClearPending(
     sourceType: SkillSourceType,
     sourceId: string,
     nextState: CommittedSourceState,
   ): Promise<void>;
+  commitStateAndSaveAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+    nextState: CommittedSourceState,
+    ack: PendingAcknowledgment,
+  ): Promise<void>;
   getAllCommittedStates(): Promise<CommittedSourceState[]>;
+  getAllPendingAcknowledgments(): Promise<PendingAcknowledgment[]>;
   getAllPendingDeltas(): Promise<PendingDelta[]>;
   getCommittedState(
     sourceType: SkillSourceType,
     sourceId: string,
   ): Promise<CommittedSourceState>;
+  getPendingAcknowledgment(
+    sourceType: SkillSourceType,
+    sourceId: string,
+  ): Promise<PendingAcknowledgment | undefined>;
   getPendingDelta(
     sourceType: SkillSourceType,
     sourceId: string,
@@ -154,6 +181,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
     store?: ReconciliationStore,
+    catalogApi?: CatalogApi,
   );
   // (undocumented)
   connect(connection: EntityProviderConnection): Promise<void>;

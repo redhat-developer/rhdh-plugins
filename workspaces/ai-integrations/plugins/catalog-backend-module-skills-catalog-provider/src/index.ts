@@ -34,6 +34,7 @@ export type {
   IdentityCollision,
   MappedSkillEntity,
   OwnedEntity,
+  PendingAcknowledgment,
   PlannedRemoval,
   PlannedUpsert,
   ReconciliationPlan,
