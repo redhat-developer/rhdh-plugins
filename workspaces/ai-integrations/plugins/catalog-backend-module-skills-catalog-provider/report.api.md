@@ -11,7 +11,6 @@ import type { Entity } from '@backstage/catalog-model';
 import type { EntityProvider } from '@backstage/plugin-catalog-node';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import type { IdentityTuple } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
-import type { Knex } from 'knex';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
@@ -33,35 +32,6 @@ export interface CommittedSourceState {
   observedAt: string | null;
   sourceId: string;
   sourceType: SkillSourceType;
-}
-
-// @internal
-export class DatabaseReconciliationStore implements ReconciliationStore {
-  constructor(knex: Knex, providerId: string);
-  // (undocumented)
-  commitStateAndClearPending(
-    sourceType: SkillSourceType,
-    sourceId: string,
-    nextState: CommittedSourceState,
-  ): Promise<void>;
-  // (undocumented)
-  getAllCommittedStates(): Promise<CommittedSourceState[]>;
-  // (undocumented)
-  getAllPendingDeltas(): Promise<PendingDelta[]>;
-  // (undocumented)
-  getCommittedState(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<CommittedSourceState>;
-  // (undocumented)
-  getPendingDelta(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<PendingDelta | undefined>;
-  // (undocumented)
-  initialize(): Promise<void>;
-  // (undocumented)
-  savePendingDelta(delta: PendingDelta): Promise<void>;
 }
 
 // @public
