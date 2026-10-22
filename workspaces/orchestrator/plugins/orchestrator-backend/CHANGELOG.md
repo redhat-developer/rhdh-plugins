@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.13.4
+
+### Patch Changes
+
+- a0b1bb1: Fix the Orchestrator runs list failing with `Invalid unit value NaN` when a workflow run has a missing or invalid `start` timestamp. The duration is now omitted instead of throwing.
+
 ## 8.13.3
 
 ### Patch Changes
