@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.3.11
+
+### Patch Changes
+
+- 1f2b786: Reduce upstream requests for notebook document listing and status polling by separating ownership checks from document-count loading.
+- 7a92e3a: Avoid unused document-count lookups during notebook queries, uploads, and deletion. Reuse vector-store metadata during session updates while preserving document counts and embedding settings.
+- fc71da4: Skip the per-user MCP settings lookup during chat requests when no MCP servers are configured.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.11
+
 ## 5.3.10
 
 ### Patch Changes
