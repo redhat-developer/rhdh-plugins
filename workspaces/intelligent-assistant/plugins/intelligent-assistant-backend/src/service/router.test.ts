@@ -30,6 +30,7 @@ import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
 import { lcsHandlers, LOCAL_LCS_ADDR } from '../../__fixtures__/lcsHandlers';
 import { intelligentAssistantPlugin } from '../plugin';
 import { ModelCapabilitiesCache } from './attachment-validation';
+import { McpUserSettingsStore } from './mcp-server-store';
 import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 
 const mockUserId = `user: default/user1`;
@@ -1213,51 +1214,76 @@ describe('intelligent-assistant router tests', () => {
       });
     });
 
-    it('should send empty MCP headers when no MCP servers configured', async () => {
-      let capturedMcpHeaders: string | null = null;
+    it.each([
+      { name: 'omitted', mcpServers: undefined },
+      { name: 'empty', mcpServers: [] },
+    ])(
+      'should send empty MCP headers when no MCP servers configured ($name)',
+      async ({ mcpServers }) => {
+        let capturedMcpHeaders: string | null = null;
 
-      server.use(
-        http.post(
-          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
-          ({ request: req }) => {
-            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
-            const textEncoder = new TextEncoder();
-            const mockData = [
-              {
-                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
-              },
-              { choices: [{ delta: {}, finish_reason: 'stop' }] },
-            ];
-            const stream = new ReadableStream({
-              start(controller) {
-                mockData.forEach((chunk: any) => {
-                  controller.enqueue(
-                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
-                  );
-                });
-                controller.close();
-              },
-            });
-            return new HttpResponse(stream, {
-              headers: { 'Content-Type': 'text/plain' },
-            });
+        server.use(
+          http.post(
+            `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+            ({ request: req }) => {
+              capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+              const textEncoder = new TextEncoder();
+              const mockData = [
+                {
+                  choices: [
+                    { delta: { content: 'Test' }, finish_reason: null },
+                  ],
+                },
+                { choices: [{ delta: {}, finish_reason: 'stop' }] },
+              ];
+              const stream = new ReadableStream({
+                start(controller) {
+                  mockData.forEach((chunk: any) => {
+                    controller.enqueue(
+                      textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                    );
+                  });
+                  controller.close();
+                },
+              });
+              return new HttpResponse(stream, {
+                headers: { 'Content-Type': 'text/plain' },
+              });
+            },
+          ),
+        );
+
+        const backendServer = await startBackendServer({
+          'intelligent-assistant': {
+            // Use this case's MCP server config and keep the other test defaults.
+            ...BASE_CONFIG['intelligent-assistant'],
+            mcpServers,
           },
-        ),
-      );
-
-      const backendServer = await startBackendServer();
-
-      const response = await request(backendServer)
-        .post('/api/intelligent-assistant/v1/query')
-        .send({
-          model: mockModel,
-          query: 'Hello',
-          provider: 'test-server',
         });
+        // Catch regressions that read settings when no MCP servers are configured.
+        // The header would still be empty even if the lookup ran.
+        const listByUser = jest.spyOn(
+          McpUserSettingsStore.prototype,
+          'listByUser',
+        );
 
-      expect(response.statusCode).toEqual(200);
-      expect(capturedMcpHeaders).toBe('');
-    });
+        try {
+          const response = await request(backendServer)
+            .post('/api/intelligent-assistant/v1/query')
+            .send({
+              model: mockModel,
+              query: 'Hello',
+              provider: 'test-server',
+            });
+
+          expect(response.statusCode).toEqual(200);
+          expect(capturedMcpHeaders).toBe('');
+          expect(listByUser).not.toHaveBeenCalled();
+        } finally {
+          listByUser.mockRestore();
+        }
+      },
+    );
 
     it('should send MCP headers for single MCP server', async () => {
       let capturedMcpHeaders: string | null = null;
