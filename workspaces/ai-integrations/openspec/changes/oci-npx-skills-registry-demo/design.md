@@ -318,7 +318,9 @@ persist a pending record containing that exact delta and its intended next
 ownership state/observation time. This is separate from committed reconciliation
 progress. After the catalog mutation succeeds, atomically commit the next state
 and clear the pending record. On restart or retry, replay any pending delta and
-commit its state before consuming a newer connector snapshot. This closes the
+commit its state before consuming a newer connector snapshot. If replay or its
+ownership commit fails, preserve the exact pending work and skip polling that
+source until recovery succeeds; independent sources may continue. This closes the
 crash window between catalog mutation and ownership persistence, including when
 the connector has already removed a newly added skill from its next snapshot.
 
@@ -348,16 +350,18 @@ for the dedicated Markdown endpoint and content lifecycle.
 > invalid source snapshot and preserve existing entities without additions,
 > updates, or removals. Task 4.2's completion covers its snapshot-validation
 > and entity-construction scope (#5291, #5304). Task 4.5 (comprehensive
-> integration tests) remains.
+> integration tests) now has file-backed SQLite restart, rollback, replay, and
+> tag-identity coverage in PR #5319; maintainer basic regression verification passed.
 >
 > **Task 4.4 partial completion (PR #5315):** The pure decision portion of
 > delta reconciliation is implemented as `calculateReconciliationPlan`, a
 > standalone function that computes deterministic upsert/removal deltas
 > from committed ownership state and a validated snapshot. Covers
 > ready/partial/loading/failed status handling, stale/repeated observation
-> detection, and cross-source identity collision diagnosis. Durable
-> persistence, crash-safe replay, and runtime integration remain in
-> tasks 4.3–4.5, gated by RHIDP-17331.
+> detection, and cross-source identity collision diagnosis. PR #5319
+> integrates that planner with durable persistence and replay, blocks newer
+> observations for sources whose recovery fails, and adds database-backed
+> verification. Task 4.5 is marked implemented following automated and maintainer basic regression verification.
 
 ### D7 — Public-source safety, bounds, and configuration
 

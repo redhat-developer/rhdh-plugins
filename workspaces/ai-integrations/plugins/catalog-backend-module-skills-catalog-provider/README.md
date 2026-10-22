@@ -102,8 +102,33 @@ When a source returns a ready snapshot, the provider computes a reconciliation p
 
 ### Reconciliation planner
 
-`calculateReconciliationPlan` is exported as a standalone pure function for computing deterministic upsert/removal deltas from a source's committed ownership state and a validated connector snapshot. It implements design D6's status table (ready, partial, loading, failed), stale/repeated observation detection, and cross-source identity collision diagnosis. Tasks 4.3 (durable persistence) and 4.4 (runtime integration) are now implemented; task 4.5 (comprehensive integration tests) remains.
+`calculateReconciliationPlan` is exported as a standalone pure function for computing deterministic upsert/removal deltas from a source's committed ownership state and a validated connector snapshot. It implements design D6's status table (ready, partial, loading, failed), stale/repeated observation detection, and cross-source identity collision diagnosis. Tasks 4.3 (durable persistence) and 4.4 (runtime integration) are now implemented; task 4.5 is marked implemented with passing automated lifecycle coverage and maintainer basic regression verification.
 
 ### Durable reconciliation state
 
 The provider uses a `DatabaseReconciliationStore` backed by Backstage's database service to persist per-source committed ownership state and pending deltas. `ReconciliationStore` is the public interface; `PendingDelta` describes the pending delta record. `DatabaseReconciliationStore` is the internal database-backed implementation scoped per provider config ID.
+
+If replaying a pending delta or committing its recovered ownership fails, the
+provider retains that pending delta and skips fetching new snapshots for the
+affected source until recovery succeeds. Other sources continue independently.
+A loading or empty response cannot clear unresolved pending work.
+
+The database implementation is internal; consumers can implement the public
+`ReconciliationStore` interface when constructing a provider directly.
+
+### Recovery verification
+
+Run from this package directory:
+
+```sh
+yarn test --watchAll=false --runInBand
+```
+
+`reconciliation-store.test.ts` uses real file-backed SQLite to check connection
+reopening, provider/source isolation, and transaction rollback. The durable
+provider suite exercises restart during outage, failure after Catalog application,
+recovery before a newer empty snapshot, failed replay and ownership commit,
+idempotent retries, independent OCI/npx sources, partial retention, invalid
+responses, same-digest tag aliases, and tag movement without identity changes.
+Catalog mutation and connector HTTP boundaries use fixtures; SQLite persistence
+and provider mapping/reconciliation execute their production implementations.

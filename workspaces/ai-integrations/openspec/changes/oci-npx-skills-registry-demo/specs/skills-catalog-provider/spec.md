@@ -196,6 +196,13 @@ not participate in this protocol.
 - **THEN** that snapshot is retried without advancing the durable observation time
 - **AND** replaying a previously applied delta does not duplicate entities or remove another source's entities
 
+#### Scenario: Pending recovery fails while another source is available
+
+- **WHEN** replaying a source's pending delta or committing its recovered ownership fails
+- **THEN** the exact pending delta and previous committed observation remain recoverable
+- **AND** the provider does not consume a newer snapshot for that source until recovery succeeds
+- **AND** independently configured sources may continue reconciling
+
 #### Scenario: Connector advances after an interrupted addition
 
 - **WHEN** an entity is added to the catalog but the process stops before committing its ownership state

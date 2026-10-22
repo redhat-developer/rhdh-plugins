@@ -14,489 +14,106 @@
  * limitations under the License.
  */
 
-/**
- * Unit tests for `DatabaseReconciliationStore` using a mock Knex layer.
- *
- * These tests verify the store's data-flow logic — row upserts,
- * transaction semantics, and JSON serialization round-trips — by
- * simulating Knex operations in memory. The underlying Knex/SQLite
- * native binding is not required.
- */
+import { createDurableTestDatabase } from './__testUtils__/database';
+import type { PendingDelta } from './reconciliation-store';
+import type { CommittedSourceState } from './types';
 
-import {
-  computeCatalogName,
-  type IdentityTuple,
-  type SkillSourceType,
-} from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
-
-import {
-  DatabaseReconciliationStore,
-  type PendingDelta,
-  type ReconciliationStore,
-} from './reconciliation-store';
-import type {
-  CommittedSourceState,
-  OwnedEntity,
-  PlannedRemoval,
-  PlannedUpsert,
-} from './types';
-
-// ─── Test helpers ────────────────────────────────────────────────────
-
-function makeTuple(
-  key: string,
-  sourceType: 'oci' | 'npx' = 'oci',
-  sourceId = 'quay-public',
-): IdentityTuple {
-  return { type: sourceType, id: sourceId, key };
-}
-
-function makeOwnedEntity(
-  key: string,
-  digest: string,
-  sourceType: 'oci' | 'npx' = 'oci',
-  sourceId = 'quay-public',
-): OwnedEntity {
-  const tuple = makeTuple(key, sourceType, sourceId);
-  const catalogName = computeCatalogName(tuple);
-  return {
-    tuple,
-    catalogName,
-    digest,
-    entity: {
-      apiVersion: 'backstage.io/v1alpha1',
-      kind: 'AiResource',
-      metadata: {
-        name: catalogName,
-        namespace: 'default',
-        title: `Skill ${key}`,
-      },
-      spec: {
-        type: 'skill',
-        owner: 'team-skills',
-        lifecycle: 'production',
+const state: CommittedSourceState = {
+  sourceType: 'oci',
+  sourceId: 'quay-public',
+  observedAt: '2026-01-15T10:00:00Z',
+  entities: [
+    {
+      tuple: { type: 'oci', id: 'quay-public', key: 'quay.io/org/skill:v1' },
+      catalogName: 'skill-test',
+      digest: `sha256:${'a'.repeat(64)}`,
+      entity: {
+        apiVersion: 'backstage.io/v1alpha1',
+        kind: 'AiResource',
+        metadata: { name: 'skill-test' },
+        spec: { type: 'skill' },
       },
     },
-  };
-}
+  ],
+};
+const delta: PendingDelta = {
+  sourceType: state.sourceType,
+  sourceId: state.sourceId,
+  upserts: state.entities,
+  removals: [],
+  nextState: state,
+};
 
-const digestA =
-  'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-const digestB =
-  'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
-const t1 = '2026-01-15T10:00:00Z';
-const t2 = '2026-01-15T11:00:00Z';
+describe('DatabaseReconciliationStore with file-backed SQLite', () => {
+  let database: Awaited<ReturnType<typeof createDurableTestDatabase>>;
+  beforeEach(async () => {
+    database = await createDurableTestDatabase();
+  });
+  afterEach(async () => {
+    await database.close();
+  });
 
-// ─── In-memory ReconciliationStore for testing ──────────────────────
-
-/**
- * An in-memory store that implements the same interface as
- * DatabaseReconciliationStore, for unit testing without a real
- * database.
- */
-class InMemoryReconciliationStore implements ReconciliationStore {
-  private committed = new Map<string, CommittedSourceState>();
-  private pending = new Map<string, PendingDelta>();
-
-  private key(sourceType: SkillSourceType, sourceId: string): string {
-    return `${sourceType}:${sourceId}`;
-  }
-
-  async initialize(): Promise<void> {
-    // No-op for in-memory
-  }
-
-  async getCommittedState(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<CommittedSourceState> {
-    const existing = this.committed.get(this.key(sourceType, sourceId));
-    if (!existing) {
-      return {
-        sourceType: sourceType as CommittedSourceState['sourceType'],
-        sourceId,
-        observedAt: null,
-        entities: [],
-      };
-    }
-    // Deep clone to simulate database round-trip
-    return JSON.parse(JSON.stringify(existing));
-  }
-
-  async getAllCommittedStates(): Promise<CommittedSourceState[]> {
-    return Array.from(this.committed.values()).map(s =>
-      JSON.parse(JSON.stringify(s)),
+  it('recovers full committed entities and pending work through a new connection', async () => {
+    const first = await database.open();
+    await first.store.commitStateAndClearPending('oci', 'quay-public', state);
+    await first.store.savePendingDelta(delta);
+    await first.client.destroy();
+    const second = await database.open();
+    expect(await second.store.getCommittedState('oci', 'quay-public')).toEqual(
+      state,
     );
-  }
-
-  async getPendingDelta(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<PendingDelta | undefined> {
-    const existing = this.pending.get(this.key(sourceType, sourceId));
-    if (!existing) return undefined;
-    return JSON.parse(JSON.stringify(existing));
-  }
-
-  async getAllPendingDeltas(): Promise<PendingDelta[]> {
-    return Array.from(this.pending.values()).map(d =>
-      JSON.parse(JSON.stringify(d)),
+    expect(await second.store.getPendingDelta('oci', 'quay-public')).toEqual(
+      delta,
     );
-  }
+    expect(await second.store.getAllCommittedStates()).toEqual([state]);
+    expect(await second.store.getAllPendingDeltas()).toEqual([delta]);
+  });
 
-  async savePendingDelta(delta: PendingDelta): Promise<void> {
-    this.pending.set(
-      this.key(delta.sourceType, delta.sourceId),
-      JSON.parse(JSON.stringify(delta)),
+  it('isolates provider IDs and source identities across both tables', async () => {
+    const a = await database.open('a');
+    const b = await database.open('b');
+    await a.store.commitStateAndClearPending('oci', 'quay-public', state);
+    await a.store.savePendingDelta(delta);
+    expect(
+      (await b.store.getCommittedState('oci', 'quay-public')).entities,
+    ).toEqual([]);
+    expect(await b.store.getAllPendingDeltas()).toEqual([]);
+    expect(await a.store.getPendingDelta('npx', 'quay-public')).toBeUndefined();
+    expect((await a.store.getCommittedState('oci', 'other')).entities).toEqual(
+      [],
     );
-  }
-
-  async commitStateAndClearPending(
-    sourceType: SkillSourceType,
-    sourceId: string,
-    nextState: CommittedSourceState,
-  ): Promise<void> {
-    const k = this.key(sourceType, sourceId);
-    this.committed.set(k, JSON.parse(JSON.stringify(nextState)));
-    this.pending.delete(k);
-  }
-}
-
-// ─── Tests ──────────────────────────────────────────────────────────
-
-describe('ReconciliationStore (in-memory)', () => {
-  let store: ReconciliationStore;
-
-  beforeEach(() => {
-    store = new InMemoryReconciliationStore();
   });
 
-  describe('getCommittedState', () => {
-    it('returns empty state for an unknown source', async () => {
-      const state = await store.getCommittedState('oci', 'unknown');
-      expect(state).toEqual({
-        sourceType: 'oci',
-        sourceId: 'unknown',
-        observedAt: null,
-        entities: [],
-      });
-    });
+  it('atomically commits next state and clears pending work', async () => {
+    const { store } = await database.open();
+    await store.savePendingDelta(delta);
+    await store.commitStateAndClearPending('oci', 'quay-public', state);
+    expect(await store.getCommittedState('oci', 'quay-public')).toEqual(state);
+    expect(await store.getPendingDelta('oci', 'quay-public')).toBeUndefined();
+    // Retrying commit is idempotent.
+    await store.commitStateAndClearPending('oci', 'quay-public', state);
+    expect(await store.getAllCommittedStates()).toEqual([state]);
   });
 
-  describe('commitStateAndClearPending', () => {
-    it('persists and retrieves committed state', async () => {
-      const entity = makeOwnedEntity('key-a', digestA);
-
-      const nextState: CommittedSourceState = {
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        observedAt: t1,
-        entities: [entity],
-      };
-
-      await store.commitStateAndClearPending('oci', 'quay-public', nextState);
-
-      const retrieved = await store.getCommittedState('oci', 'quay-public');
-      expect(retrieved.sourceType).toBe('oci');
-      expect(retrieved.sourceId).toBe('quay-public');
-      expect(retrieved.observedAt).toBe(t1);
-      expect(retrieved.entities).toHaveLength(1);
-      expect(retrieved.entities[0].tuple).toEqual(entity.tuple);
-      expect(retrieved.entities[0].digest).toBe(digestA);
+  it('rolls back ownership changes when clearing pending work fails', async () => {
+    const { client, store } = await database.open();
+    const previous = { ...state, observedAt: null, entities: [] };
+    await store.commitStateAndClearPending('oci', 'quay-public', previous);
+    await store.savePendingDelta(delta);
+    await client.raw(
+      `CREATE TRIGGER fail_clear BEFORE DELETE ON skills_provider_pending_delta BEGIN SELECT RAISE(ABORT, 'injected clear failure'); END`,
+    );
+    await expect(
+      store.commitStateAndClearPending('oci', 'quay-public', state),
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('injected clear failure'),
     });
-
-    it('updates existing committed state', async () => {
-      const entityA = makeOwnedEntity('key-a', digestA);
-      const entityB = makeOwnedEntity('key-b', digestB);
-
-      await store.commitStateAndClearPending('oci', 'quay-public', {
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        observedAt: t1,
-        entities: [entityA],
-      });
-
-      await store.commitStateAndClearPending('oci', 'quay-public', {
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        observedAt: t2,
-        entities: [entityA, entityB],
-      });
-
-      const state = await store.getCommittedState('oci', 'quay-public');
-      expect(state.observedAt).toBe(t2);
-      expect(state.entities).toHaveLength(2);
-    });
-
-    it('clears pending delta on commit', async () => {
-      const entity = makeOwnedEntity('key-a', digestA);
-
-      await store.savePendingDelta({
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        upserts: [
-          {
-            tuple: entity.tuple,
-            catalogName: entity.catalogName,
-            digest: digestA,
-            entity: entity.entity,
-          },
-        ],
-        removals: [],
-        nextState: {
-          sourceType: 'oci',
-          sourceId: 'quay-public',
-          observedAt: t1,
-          entities: [entity],
-        },
-      });
-
-      let pending = await store.getPendingDelta('oci', 'quay-public');
-      expect(pending).toBeDefined();
-
-      await store.commitStateAndClearPending('oci', 'quay-public', {
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        observedAt: t1,
-        entities: [entity],
-      });
-
-      pending = await store.getPendingDelta('oci', 'quay-public');
-      expect(pending).toBeUndefined();
-    });
-  });
-
-  describe('pending deltas', () => {
-    it('saves and retrieves a pending delta', async () => {
-      const entity = makeOwnedEntity('key-a', digestA);
-      const upsert: PlannedUpsert = {
-        tuple: entity.tuple,
-        catalogName: entity.catalogName,
-        digest: digestA,
-        entity: entity.entity,
-      };
-
-      await store.savePendingDelta({
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        upserts: [upsert],
-        removals: [],
-        nextState: {
-          sourceType: 'oci',
-          sourceId: 'quay-public',
-          observedAt: t1,
-          entities: [entity],
-        },
-      });
-
-      const pending = await store.getPendingDelta('oci', 'quay-public');
-      expect(pending).toBeDefined();
-      expect(pending!.upserts).toHaveLength(1);
-      expect(pending!.removals).toHaveLength(0);
-      expect(pending!.nextState.observedAt).toBe(t1);
-    });
-
-    it('returns undefined for missing pending delta', async () => {
-      const pending = await store.getPendingDelta('oci', 'unknown');
-      expect(pending).toBeUndefined();
-    });
-
-    it('overwrites existing pending delta', async () => {
-      const entityA = makeOwnedEntity('key-a', digestA);
-      const entityB = makeOwnedEntity('key-b', digestB);
-
-      await store.savePendingDelta({
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        upserts: [
-          {
-            tuple: entityA.tuple,
-            catalogName: entityA.catalogName,
-            digest: digestA,
-            entity: entityA.entity,
-          },
-        ],
-        removals: [],
-        nextState: {
-          sourceType: 'oci',
-          sourceId: 'quay-public',
-          observedAt: t1,
-          entities: [entityA],
-        },
-      });
-
-      await store.savePendingDelta({
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        upserts: [
-          {
-            tuple: entityB.tuple,
-            catalogName: entityB.catalogName,
-            digest: digestB,
-            entity: entityB.entity,
-          },
-        ],
-        removals: [],
-        nextState: {
-          sourceType: 'oci',
-          sourceId: 'quay-public',
-          observedAt: t2,
-          entities: [entityA, entityB],
-        },
-      });
-
-      const pending = await store.getPendingDelta('oci', 'quay-public');
-      expect(pending).toBeDefined();
-      expect(pending!.upserts).toHaveLength(1);
-      expect(pending!.upserts[0].catalogName).toBe(entityB.catalogName);
-      expect(pending!.nextState.observedAt).toBe(t2);
-    });
-
-    it('retrieves all pending deltas across sources', async () => {
-      const entityA = makeOwnedEntity('key-a', digestA, 'oci', 'source-1');
-      const entityB = makeOwnedEntity('key-b', digestB, 'npx', 'source-2');
-
-      await store.savePendingDelta({
-        sourceType: 'oci',
-        sourceId: 'source-1',
-        upserts: [
-          {
-            tuple: entityA.tuple,
-            catalogName: entityA.catalogName,
-            digest: digestA,
-            entity: entityA.entity,
-          },
-        ],
-        removals: [],
-        nextState: {
-          sourceType: 'oci',
-          sourceId: 'source-1',
-          observedAt: t1,
-          entities: [entityA],
-        },
-      });
-
-      await store.savePendingDelta({
-        sourceType: 'npx',
-        sourceId: 'source-2',
-        upserts: [
-          {
-            tuple: entityB.tuple,
-            catalogName: entityB.catalogName,
-            digest: digestB,
-            entity: entityB.entity,
-          },
-        ],
-        removals: [],
-        nextState: {
-          sourceType: 'npx',
-          sourceId: 'source-2',
-          observedAt: t1,
-          entities: [entityB],
-        },
-      });
-
-      const allPending = await store.getAllPendingDeltas();
-      expect(allPending).toHaveLength(2);
-    });
-
-    it('persists removals in pending delta', async () => {
-      const entity = makeOwnedEntity('key-removed', digestA);
-      const removal: PlannedRemoval = {
-        tuple: entity.tuple,
-        catalogName: entity.catalogName,
-      };
-
-      await store.savePendingDelta({
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        upserts: [],
-        removals: [removal],
-        nextState: {
-          sourceType: 'oci',
-          sourceId: 'quay-public',
-          observedAt: t2,
-          entities: [],
-        },
-      });
-
-      const pending = await store.getPendingDelta('oci', 'quay-public');
-      expect(pending!.removals).toHaveLength(1);
-      expect(pending!.removals[0].catalogName).toBe(entity.catalogName);
-    });
-  });
-
-  describe('getAllCommittedStates', () => {
-    it('returns all committed states for collision detection', async () => {
-      const entityA = makeOwnedEntity('key-a', digestA, 'oci', 'source-1');
-      const entityB = makeOwnedEntity('key-b', digestB, 'npx', 'source-2');
-
-      await store.commitStateAndClearPending('oci', 'source-1', {
-        sourceType: 'oci',
-        sourceId: 'source-1',
-        observedAt: t1,
-        entities: [entityA],
-      });
-
-      await store.commitStateAndClearPending('npx', 'source-2', {
-        sourceType: 'npx',
-        sourceId: 'source-2',
-        observedAt: t1,
-        entities: [entityB],
-      });
-
-      const allStates = await store.getAllCommittedStates();
-      expect(allStates).toHaveLength(2);
-
-      const types = allStates.map(s => s.sourceType);
-      expect(types).toContain('oci');
-      expect(types).toContain('npx');
-    });
-  });
-
-  describe('null observedAt', () => {
-    it('handles null observedAt correctly', async () => {
-      await store.commitStateAndClearPending('oci', 'quay-public', {
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        observedAt: null,
-        entities: [],
-      });
-
-      const state = await store.getCommittedState('oci', 'quay-public');
-      expect(state.observedAt).toBeNull();
-    });
-  });
-
-  describe('entity serialization round-trip', () => {
-    it('preserves full entity data through serialization', async () => {
-      const entity = makeOwnedEntity('key-a', digestA);
-
-      await store.commitStateAndClearPending('oci', 'quay-public', {
-        sourceType: 'oci',
-        sourceId: 'quay-public',
-        observedAt: t1,
-        entities: [entity],
-      });
-
-      const state = await store.getCommittedState('oci', 'quay-public');
-      const restored = state.entities[0];
-
-      expect(restored.entity.apiVersion).toBe('backstage.io/v1alpha1');
-      expect(restored.entity.kind).toBe('AiResource');
-      expect(restored.entity.metadata.name).toBe(entity.catalogName);
-      expect(restored.entity.metadata.namespace).toBe('default');
-      expect(restored.entity.spec).toEqual({
-        type: 'skill',
-        owner: 'team-skills',
-        lifecycle: 'production',
-      });
-    });
-  });
-
-  describe('DatabaseReconciliationStore class', () => {
-    it('exports the DatabaseReconciliationStore class', () => {
-      expect(DatabaseReconciliationStore).toBeDefined();
-    });
+    expect(await store.getCommittedState('oci', 'quay-public')).toEqual(
+      previous,
+    );
+    expect(await store.getPendingDelta('oci', 'quay-public')).toEqual(delta);
+    await client.raw('DROP TRIGGER fail_clear');
+    await store.commitStateAndClearPending('oci', 'quay-public', state);
+    expect(await store.getCommittedState('oci', 'quay-public')).toEqual(state);
   });
 });

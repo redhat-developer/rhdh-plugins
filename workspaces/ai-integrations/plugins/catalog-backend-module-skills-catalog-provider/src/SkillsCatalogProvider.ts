@@ -186,7 +186,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     }
 
     // ── Step 1: Replay pending deltas from previous interrupted runs ──
-    await this.replayPendingDeltas();
+    const blockedSources = await this.replayPendingDeltas();
 
     this.logger.info(
       `Starting refresh with ${this.config.sources.length} source(s)`,
@@ -198,6 +198,13 @@ export class SkillsCatalogProvider implements EntityProvider {
     let totalEntities = 0;
 
     for (const source of this.config.sources) {
+      if (blockedSources.has(`${source.sourceType}:${source.sourceId}`)) {
+        sourcesFailed++;
+        this.logger.warn(
+          `Source ${source.sourceId}: skipping snapshot consumption until pending recovery succeeds`,
+        );
+        continue;
+      }
       try {
         const result = await this.reconcileSource(source);
         if (result.skipped) {
@@ -230,10 +237,11 @@ export class SkillsCatalogProvider implements EntityProvider {
    * commit its state before consuming a newer connector snapshot.
    * Replays must be idempotent and scoped to the original source.
    */
-  private async replayPendingDeltas(): Promise<void> {
+  private async replayPendingDeltas(): Promise<Set<string>> {
+    const blockedSources = new Set<string>();
     const pendingDeltas = await this.store.getAllPendingDeltas();
     if (pendingDeltas.length === 0) {
-      return;
+      return blockedSources;
     }
 
     this.logger.info(
@@ -267,12 +275,15 @@ export class SkillsCatalogProvider implements EntityProvider {
             `${delta.upserts.length} upsert(s), ${delta.removals.length} removal(s)`,
         );
       } catch (error) {
-        // Recovery failure — log and leave the pending delta for next run
+        // Preserve unresolved work and block newer observations for this source.
+        // Other sources can still refresh independently.
+        blockedSources.add(`${delta.sourceType}:${delta.sourceId}`);
         this.logger.error(
           `Failed to recover pending delta for ${delta.sourceType}/${delta.sourceId}: ${error}`,
         );
       }
     }
+    return blockedSources;
   }
 
   /**
