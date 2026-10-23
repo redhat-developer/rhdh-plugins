@@ -511,6 +511,12 @@ const newSkillReader = (config: any) => {
   return new ModeCatalogBridgeTechdocUrlReader(
     new ConfigReader(config),
     mockServices.logger.mock(),
+    new Map([
+      [
+        'skill-image-connector',
+        'http://localhost:7007/api/skill-image-connector',
+      ],
+    ]),
   );
 };
 
@@ -832,7 +838,11 @@ describe('Skill docs readUrl', () => {
 
   it('should authenticate with the connector plugin ID', async () => {
     const reader = newSkillReader(skillConfig);
-    const mockResponse = { ok: true, status: 200 };
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      headers: new Headers({ etag: 'response-etag' }),
+    };
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
     jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
       buffer: async () => Buffer.from('# Skill Docs'),
@@ -862,7 +872,11 @@ describe('Skill docs readUrl', () => {
 
   it('should forward If-None-Match header when etag is provided', async () => {
     const reader = newSkillReader(skillConfig);
-    const mockResponse = { ok: true, status: 200 };
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      headers: new Headers({ etag: 'response-etag' }),
+    };
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
     jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
       buffer: async () => Buffer.from('content'),
@@ -884,7 +898,11 @@ describe('Skill docs readUrl', () => {
 
   it('should not send If-None-Match when no etag provided', async () => {
     const reader = newSkillReader(skillConfig);
-    const mockResponse = { ok: true, status: 200 };
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      headers: new Headers({ etag: 'response-etag' }),
+    };
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
     jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
       buffer: async () => Buffer.from('content'),

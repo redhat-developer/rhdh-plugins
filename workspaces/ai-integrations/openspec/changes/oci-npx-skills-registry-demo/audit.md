@@ -39,6 +39,55 @@ No unresolved inconsistencies were identified within this focused scope.
 
 ---
 
+## Focused task 6.4 review follow-up: trusted destinations and ETags
+
+**Last audited:** 2026-10-23T19:06:42Z
+
+This entry records PR #5330's OCI skill documentation reader implementation and
+its review corrections. It supersedes earlier no-task-status-change wording only
+for this follow-up; historical entries below retain their original scope.
+
+The URL-reader service factory now resolves configured OCI connector bases through
+Backstage discovery before publishing the synchronous reader factory. Both reader
+selection and direct reads require the exact trusted origin and complete base
+pathname, preserving deployment prefixes and decoding each route segment once.
+Malformed percent escapes produce no match. Skill-documentation paths cannot
+fall through to the legacy model-card substring matcher. Untrusted skill URLs are
+rejected before requesting or sending a service token.
+
+Successful skill-docs responses must supply a nonblank ETag, validated before the
+response body is adapted or locked. Missing validators produce a protocol error
+rather than an empty cache key. Valid ETags pass through unchanged; conditional
+requests, 404/304 propagation, and minimal MkDocs generation remain covered.
+Model-card requests now reject redirects while retaining their cache behavior.
+Delivery-plan wording was removed from source comments. The optional routing
+metadata refactor was deferred because the current priority is consistent.
+
+D8, the TechDocs scenarios, README, changeset and task note describe the same
+behavior. Task 6.4 is unchecked pending maintainer rendering/regression testing;
+this entry does not claim task 6.3 or 6.5 completion. No app-config.yaml changes
+were made.
+
+Automated verification: 70 tests across two reader suites passed, including
+red/green reproductions of off-origin matching, missing discovery prefixes,
+malformed encoding, absent ETags, redirect policy and service-factory discovery
+wiring. A real Response/body adapter test covers authenticated prefixed reads
+and ETag passthrough; a missing-ETag case verifies rejection before body locking.
+Full workspace type checking/build, package lint and API report CI checks passed.
+Reader HTTP/auth/discovery boundaries are fixtures; live TechDocs rendering remains
+the maintainer's next verification step.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No unresolved artifact inconsistencies were found in this focused scope. This is
+not a new full-change audit or an end-to-end rendering result.
+
+---
+
 ## Focused task 6.3 completion follow-up: release context and visibility
 
 **Last audited:** 2026-10-23T18:13:03Z

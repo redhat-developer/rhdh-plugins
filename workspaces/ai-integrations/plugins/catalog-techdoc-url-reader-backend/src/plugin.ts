@@ -172,7 +172,7 @@ export type SkillSourceConfig = {
  * Read OCI skill source configurations from
  * `catalog.providers.skillsCatalogProvider.*.sources[]`.
  *
- * Only `oci` source types receive TechDocs in this increment;
+ * Only `oci` source types are supported;
  * `npx` sources are skipped.
  *
  * Source IDs that are blank, `.`, or `..` are rejected because URL
@@ -200,7 +200,7 @@ export function readSkillSourceConfigs(config: Config): SkillSourceConfig[] {
     for (const sourceConfig of sourcesConfig) {
       const sourceType = safeGetOptionalString(sourceConfig, 'sourceType');
       if (sourceType !== 'oci') {
-        continue; // Only OCI sources get TechDocs in this increment
+        continue; // npx and other source types are not supported
       }
 
       const connectorPluginId = safeGetOptionalString(
@@ -212,7 +212,11 @@ export function readSkillSourceConfigs(config: Config): SkillSourceConfig[] {
       }
 
       const sourceId = safeGetOptionalString(sourceConfig, 'sourceId');
-      if (!sourceId || sourceId === '.' || sourceId === '..') {
+      if (
+        !sourceId.trim() ||
+        sourceId.trim() === '.' ||
+        sourceId.trim() === '..'
+      ) {
         continue; // Reject blank, dot, and dot-dot source IDs
       }
 
@@ -234,7 +238,9 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   private readonly workDir: string;
   private readonly logger: LoggerService;
   private readonly bridgeConfigs: BridgeConfig[];
-  private readonly skillSourceConfigs: SkillSourceConfig[];
+  private readonly skillSourceConfigs: Array<
+    SkillSourceConfig & { connectorBase: URL }
+  >;
 
   // TODO we are limited in which core services can be passed into the ReaderFactory, so as a work around we
   // define these globals that are set in the plugin init method; if we merge this plugin with the
@@ -247,12 +253,33 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     return [{ reader, predicate: reader.bridgePredicate }];
   };
 
-  constructor(config: Config, logger: LoggerService) {
+  constructor(
+    config: Config,
+    logger: LoggerService,
+    trustedConnectorBases: ReadonlyMap<string, string> = new Map(),
+  ) {
     this.logger = logger.child({
       source: 'ModeCatalogBridgeTechdocUrlReader"',
     });
     this.bridgeConfigs = readBridgeConfigs(config);
-    this.skillSourceConfigs = readSkillSourceConfigs(config);
+    // Bases come only from service discovery during factory initialization.
+    // Direct construction without them fails closed for skill documentation.
+    this.skillSourceConfigs = readSkillSourceConfigs(config).flatMap(source => {
+      const base = trustedConnectorBases.get(source.connectorPluginId);
+      if (!base) return [];
+      const connectorBase = new URL(base);
+      if (
+        !['http:', 'https:'].includes(connectorBase.protocol) ||
+        connectorBase.username ||
+        connectorBase.password ||
+        connectorBase.search ||
+        connectorBase.hash
+      )
+        throw new Error(
+          `Invalid discovered connector base for ${source.connectorPluginId}`,
+        );
+      return [{ ...source, connectorBase }];
+    });
     this.workDir = os.tmpdir();
 
     const bkend = config.getOptionalString('backend.workingDirectory');
@@ -262,6 +289,8 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   }
 
   private matchingBridgeConfig(url: URL): BridgeConfig | undefined {
+    // Skill documentation must never fall through to the legacy substring matcher.
+    if (url.pathname.includes('/skilldocs/')) return undefined;
     for (let index = 0; index < this.bridgeConfigs.length; index++) {
       const bc = this.bridgeConfigs[index];
       if (url.pathname.includes('modelcard') && url.pathname.includes(bc.id)) {
@@ -274,8 +303,8 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   /**
    * Match a URL against configured OCI skill source destinations.
    *
-   * Matches the exact path pattern:
-   *   /api/<connectorPluginId>/skilldocs/<sourceId>/<digest>
+   * Requires the discovered origin and complete base pathname, followed by
+   *   /skilldocs/<sourceId>/<digest>
    *
    * Rejects URLs with query strings, fragments, URL credentials,
    * extra path segments, or invalid digest format.
@@ -289,8 +318,11 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     const pathname = url.pathname;
 
     for (const source of this.skillSourceConfigs) {
-      // Build the expected base path: /api/<connectorPluginId>/skilldocs/
-      const basePath = `/api/${source.connectorPluginId}/skilldocs/`;
+      if (url.origin !== source.connectorBase.origin) continue;
+      const basePath = `${source.connectorBase.pathname.replace(
+        /\/+$/,
+        '',
+      )}/skilldocs/`;
       if (!pathname.startsWith(basePath)) continue;
 
       const remainder = pathname.substring(basePath.length);
@@ -298,8 +330,15 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
       const parts = remainder.split('/');
       if (parts.length !== 2 || parts[0] === '' || parts[1] === '') continue;
 
-      const sourceId = decodeURIComponent(parts[0]);
-      const digest = decodeURIComponent(parts[1]);
+      let sourceId: string;
+      let digest: string;
+      try {
+        sourceId = decodeURIComponent(parts[0]);
+        digest = decodeURIComponent(parts[1]);
+      } catch {
+        // Reader predicates reject malformed input rather than breaking selection.
+        continue;
+      }
 
       // Validate source ID matches configuration
       if (sourceId !== source.sourceId) continue;
@@ -358,6 +397,7 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
       this.logger.info(`Using service-to-service token for ${url}`);
       response = await fetch(url, {
         method: 'GET',
+        redirect: 'error',
         headers: {
           Authorization: `Bearer ${tok}`,
         },
@@ -426,6 +466,12 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     }
 
     if (response.ok) {
+      if (!response.headers.get('etag')?.trim()) {
+        await response.body?.cancel();
+        throw new Error(
+          'Skill documentation response is missing a nonblank ETag',
+        );
+      }
       return ReadUrlResponseFactory.fromResponse(response);
     }
 
@@ -498,10 +544,15 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
       this.matchingSkillSourceConfig(parsedUrl) !== undefined;
 
     if (isSkillDocs) {
-      // Use the connector's response ETag for TechDocs caching (D8)
+      // Use the connector's response ETag for TechDocs caching (D8).
+      if (!data.etag?.trim()) {
+        throw new Error(
+          'Skill documentation response is missing a nonblank ETag',
+        );
+      }
       return new ModelCatalogBridgeUrlReaderServiceReadTreeResponse(
         this.workDir,
-        data.etag || '',
+        data.etag,
         data.buffer(),
         this.logger,
         'Skill Documentation',
@@ -537,14 +588,35 @@ export const catalogTechdocUrlReaderPlugin = createServiceFactory({
   deps: {
     logger: coreServices.logger,
     auth: coreServices.auth,
+    discovery: coreServices.discovery,
+    config: coreServices.rootConfig,
   },
-  async factory({ logger, auth }) {
+  async factory({ logger, auth, discovery, config }) {
     logger
       .child({ source: 'catalogTechdocUrlReaderPlugin"' })
       .info('Registering the model catalog bridge URL reader ');
 
     ModeCatalogBridgeTechdocUrlReader.auth = auth;
 
-    return ModeCatalogBridgeTechdocUrlReader.factory;
+    // Reader predicates are synchronous, so resolve trusted destinations before
+    // publishing the factory. Do not infer a destination from annotation text.
+    const trustedConnectorBases = new Map<string, string>();
+    const connectorIds = new Set(
+      readSkillSourceConfigs(config).map(source => source.connectorPluginId),
+    );
+    for (const connectorId of connectorIds) {
+      trustedConnectorBases.set(
+        connectorId,
+        await discovery.getBaseUrl(connectorId),
+      );
+    }
+    return ({ config: readerConfig, logger: readerLogger }) => {
+      const reader = new ModeCatalogBridgeTechdocUrlReader(
+        readerConfig,
+        readerLogger,
+        trustedConnectorBases,
+      );
+      return [{ reader, predicate: reader.bridgePredicate }];
+    };
   },
 });

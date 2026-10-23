@@ -735,6 +735,9 @@ skill entities do not receive a `backstage.io/techdocs-ref` in this increment.
 **URL-reader integration.** The existing `catalog-techdoc-url-reader-backend`
 plugin is extended to match OCI skill documentation URLs from trusted
 configured or Backstage-discovered connector destinations and paths. The reader
+resolves configured OCI connector bases through Backstage discovery during service
+initialization, before publishing its synchronous reader factory. Both predicate
+selection and direct reads enforce those trusted destinations. The reader
 matches the exact trusted connector origin and base pathname, followed by
 `/skilldocs/<sourceId>/<digest>`. For example, a discovered base of
 `https://rhdh.example/api/skill-image-connector` matches
@@ -743,7 +746,9 @@ Append to the base pathname rather than resolving a leading slash against the
 origin. Source configuration rejects IDs exactly equal to `.` or `..` in
 addition to blank IDs, because URL parsing normalizes literal and encoded dot
 segments. Encode source ID and digest as individual path segments and decode each
-once when validating the route; reject extra segments, query strings, fragments,
+once when validating the route; malformed encoding returns no match rather than
+throwing from the predicate. Skill-documentation routes cannot fall through to
+legacy model-card substring routing. Reject extra segments, query strings, fragments,
 URL credentials, and paths outside the exact connector base. Do not forward
 service tokens across redirects; treat redirects as errors. It does not infer
 arbitrary credential destinations from URL substrings. The reader authenticates
@@ -754,7 +759,10 @@ reader's service-token pattern. It propagates HTTP errors from the connector:
 propagate as errors. Successful responses produce a minimal MkDocs project
 containing `mkdocs.yml` with a suitable skill title and `docs/index.md` with
 the retrieved Markdown content. The reader passes the connector's `ETag`
-response header through for TechDocs digest-based cache semantics. Already
+response header through for TechDocs digest-based cache semantics. A successful
+skill-docs response missing a nonblank ETag is a protocol error; no empty or
+fabricated validator is substituted. Model-card HTTP requests also reject redirects,
+while preserving their existing cache behavior. Already
 validated Markdown frontmatter from the connector is included as-is in
 `docs/index.md`; the reader does not strip or re-parse it. For this increment,
 the reader renders the single extracted Markdown document only; bundled assets,
