@@ -25,7 +25,11 @@ import {
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 import { SkillsCatalogProvider } from './SkillsCatalogProvider';
-import type { PendingDelta, ReconciliationStore } from './reconciliation-store';
+import type {
+  PendingAcknowledgment,
+  PendingDelta,
+  ReconciliationStore,
+} from './reconciliation-store';
 import type {
   CommittedSourceState,
   SkillsCatalogProviderConfig,
@@ -85,7 +89,7 @@ function createMockStore(): ReconciliationStore & {
 } {
   const committedStates = new Map<string, CommittedSourceState>();
   const pendingDeltas = new Map<string, PendingDelta>();
-  const pendingAcks = new Map<string, unknown>();
+  const pendingAcks = new Map<string, PendingAcknowledgment>();
 
   return {
     committedStates,
@@ -1386,12 +1390,17 @@ describe('SkillsCatalogProvider', () => {
       await provider.connect(mockConnection);
       await taskFn.fn!();
 
-      // The source's snapshot poll should not be attempted because
-      // the ack retry failure blocks it. The snapshot poll would call
-      // discovery.getBaseUrl; check that it was only called for the
-      // ack retry's sendReconcileRequest, not for snapshot consumption.
       // clearPendingAcknowledgment should NOT have been called (preserved)
       expect(store.clearPendingAcknowledgment).not.toHaveBeenCalled();
+
+      // Verify the source was actually blocked from polling:
+      // reconcileSource calls store.getCommittedState; if blocked,
+      // it should NOT have been called for this source.
+      expect(store.getCommittedState).not.toHaveBeenCalled();
+
+      // Snapshot polling would make a second fetch call (GET /skills/:sourceId);
+      // only one fetch call should have happened (the failed reconcile POST).
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
   });
 });

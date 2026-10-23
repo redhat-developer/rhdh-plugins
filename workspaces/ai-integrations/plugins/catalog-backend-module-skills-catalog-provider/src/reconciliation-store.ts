@@ -35,7 +35,6 @@ import type { SkillSourceType } from '@red-hat-developer-hub/backstage-plugin-ai
 import type {
   CommittedSourceState,
   OwnedEntity,
-  PendingAcknowledgment,
   PlannedRemoval,
   PlannedUpsert,
 } from './types';
@@ -77,6 +76,50 @@ export interface PendingDelta {
    * `commitStateAndSaveAcknowledgment`.
    */
   revision?: string;
+}
+
+// ─── Pending acknowledgment record ─────────────────────────────────
+
+/**
+ * A pending documentation reconciliation acknowledgment.
+ *
+ * Persisted after a successful `ready` ownership commit. The provider
+ * verifies catalog processing visibility before sending the
+ * acknowledgment to the connector's `POST /skilldocs/:sourceId/reconcile`
+ * endpoint.
+ *
+ * @public
+ */
+export interface PendingAcknowledgment {
+  /** Source type (only `oci` sources produce acknowledgments). */
+  sourceType: SkillSourceType;
+  /** Source identifier. */
+  sourceId: string;
+  /** Connector plugin ID for discovery and token targeting. */
+  connectorPluginId: string;
+  /**
+   * Skilldocs revision from the connector's `X-Skilldocs-Revision`
+   * response header, to be sent back in the reconcile request.
+   */
+  revision: string;
+  /**
+   * All unique manifest digests referenced by the source's committed
+   * last-known-good entities. Sent as `retainedDigests` in the
+   * reconcile request.
+   */
+  retainedDigests: string[];
+  /**
+   * Expected entity references and their committed TechDocs URLs.
+   * Used to verify catalog processing visibility before sending
+   * the acknowledgment.
+   */
+  expectedEntityUrls: Record<string, string>;
+  /**
+   * Entity references expected to be absent (removed) from the
+   * catalog. The acknowledgment is not sent until all removals are
+   * confirmed absent.
+   */
+  expectedRemovals: string[];
 }
 
 // ─── ReconciliationStore interface ──────────────────────────────────

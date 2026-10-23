@@ -147,6 +147,10 @@ provider suite exercises restart during outage, failure after Catalog applicatio
 recovery before a newer empty snapshot, failed replay and ownership commit,
 idempotent retries, independent OCI/npx sources, partial retention, invalid
 responses, same-digest tag aliases, and tag movement without identity changes.
+The D8 acknowledgment lifecycle tests cover pending acknowledgment persistence
+after ready OCI reconciliation, successful retry delivery and cleanup,
+superseded revision (409) discard, acknowledgment retry failure with per-source
+polling isolation, and error propagation from transport and auth failures.
 Catalog mutation and connector HTTP boundaries use fixtures; SQLite persistence
 and provider mapping/reconciliation execute their production implementations.
 

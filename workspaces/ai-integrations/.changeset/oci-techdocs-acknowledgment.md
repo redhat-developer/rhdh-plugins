@@ -13,3 +13,9 @@ atomically persists acknowledgments with ready-state ownership commits, verifies
 catalog processing visibility before delivery, retries pending acknowledgments
 before polling, handles superseded revisions and transport failures, and rejects
 duplicate retention-owner assignments at startup.
+
+### Breaking changes
+
+- Four new required methods on `ReconciliationStore`: `commitStateAndSaveAcknowledgment`, `getPendingAcknowledgment`, `getAllPendingAcknowledgments`, and `clearPendingAcknowledgment`.
+- The `store` constructor parameter on `SkillsCatalogProvider` is now required (previously optional).
+- `InMemoryReconciliationStore` has been removed; consumers must supply a durable `ReconciliationStore` implementation.

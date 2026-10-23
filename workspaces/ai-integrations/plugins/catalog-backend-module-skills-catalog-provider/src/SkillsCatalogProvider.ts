@@ -30,12 +30,15 @@ import type {
 import type { SkillSourceType } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 import { calculateReconciliationPlan } from './reconciliation-planner';
-import type { PendingDelta, ReconciliationStore } from './reconciliation-store';
+import type {
+  PendingAcknowledgment,
+  PendingDelta,
+  ReconciliationStore,
+} from './reconciliation-store';
 import { consumeSnapshot } from './snapshot-consumer';
 import type {
   CommittedSourceState,
   ExternalOwnership,
-  PendingAcknowledgment,
   PlannedRemoval,
   PlannedUpsert,
   SkillsCatalogProviderConfig,
@@ -742,11 +745,14 @@ export class SkillsCatalogProvider implements EntityProvider {
           ack.sourceId,
         );
       } else {
-        // Transport/auth/server errors: retain for retry
+        // Transport/auth/server errors: retain for retry.
+        // Re-throw so retryPendingAcknowledgments can catch the error
+        // and block this source's polling until the next scheduled run.
         this.logger.error(
           `Source ${ack.sourceId}: acknowledgment delivery failed ` +
             `(revision=${ack.revision}): ${error}`,
         );
+        throw error;
       }
     }
   }
