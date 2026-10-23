@@ -150,10 +150,25 @@ sources continue. Partial or stale snapshots never authorize release. Existing
 entities missing the TechDocs annotation are updated even when their digest and
 observation timestamp are unchanged.
 
-External discovery, authentication, snapshot retrieval (including body reading),
-catalog visibility queries, and acknowledgment delivery each have a 30-second
-deadline. Scheduler cancellation also bounds these operations. Authenticated HTTP
-requests reject redirects rather than forwarding service credentials.
+Snapshot acquisition gives discovery, authentication, and fetch/body consumption
+separate 30-second deadlines. Catalog visibility verification instead has one
+shared 30-second deadline covering authentication and its catalog queries.
+Acknowledgment delivery has a separate shared 30-second deadline covering
+discovery, authentication, and the POST. These shared phase budgets are intentional;
+individual steps do not each receive another 30 seconds. Scheduler cancellation
+also bounds these operations. Authenticated HTTP requests reject redirects rather
+than forwarding service credentials.
+
+Eligible ready OCI snapshots with revisions create acknowledgments even when
+entities are unchanged or the observation repeats. After catalog visibility is
+confirmed, the connector accepts repeated identical acknowledgments idempotently
+with 204. This intentionally permits steady-state acknowledgment traffic; it does
+not require another durable last-acknowledged-revision record. Recovery blocks,
+stale observations, deferred visibility, and failures can prevent new delivery.
+A successful catalog reconciliation summary describes the committed catalog work;
+an acknowledgment may remain pending, with a separate deferral log and durable
+retry state. Initial delivery and retry errors are logged by their respective
+callers once, without suppressing error propagation or source blocking.
 
 A nullable pending-delta acknowledgment column is added without deleting existing
 rows. Pending deltas from pre-release builds that contain a revision but lack the

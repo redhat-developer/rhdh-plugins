@@ -1,3 +1,44 @@
+## Focused PR #5324 final review follow-up: logging and documentation
+
+**Last audited:** 2026-10-23T19:34:52Z
+
+The provider no longer logs delivery errors immediately before rethrowing them;
+the initial-delivery or retry caller logs each failure once. Error propagation,
+pending acknowledgment persistence, and retry source blocking are unchanged.
+Blocked-source key reuse, import ordering, and migration JSDoc were tidied without
+changing reconciliation or migration behavior.
+
+README, D8 and the provider scenarios now distinguish snapshot acquisition's
+individual step deadlines from the shared 30-second visibility phase (auth and
+catalog queries) and shared 30-second delivery phase (discovery, auth and POST).
+The code retains these stricter phase bounds. Eligible ready OCI snapshots with
+revisions may acknowledge unchanged/repeated observations; idempotent connector
+handling is intentional. Recovery blocks, stale observations, deferrals, and
+failures prevent unconditional delivery on every scheduled run. A successful
+catalog reconciliation can have a separately logged, durable pending acknowledgment.
+
+The major changeset retains the required store/client/method contracts and now
+explains removal of the implicit in-memory fallback without presenting removal of
+a private class as an independent API break. Additive types and dependencies need
+no compatibility remediation. No task status or app-config.yaml changes were made.
+
+Regression verification: 141 provider tests across ten suites pass. Two new real
+SQLite cases reproduced duplicate logs before the fix and now verify exactly one
+error entry for initial and retry delivery failures, retained pending work, and
+blocked polling on retry. This focused consistency update preserves all historical
+audit entries and does not claim a new full-change audit or maintainer approval
+of these uncommitted follow-up changes.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No unresolved inconsistencies were identified within this focused scope.
+
+---
+
 ## Focused task 6.3 completion follow-up: release context and visibility
 
 **Last audited:** 2026-10-23T18:13:03Z

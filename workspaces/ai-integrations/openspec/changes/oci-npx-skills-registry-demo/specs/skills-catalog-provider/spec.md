@@ -183,6 +183,12 @@ not participate in this protocol.
 - **THEN** the provider sends its persisted revision and committed retained-digest set to the connector's reconcile endpoint using a service token targeted to `skill-image-connector`
 - **AND** failed mutations, invalid snapshots, partial snapshots, loading, and failed acquisition send no release acknowledgment
 
+#### Scenario: Unchanged ready observation still acknowledges
+
+- **WHEN** an eligible ready OCI snapshot carries a revision but produces unchanged entities or repeats an observation
+- **THEN** the provider persists an acknowledgment and verifies catalog visibility before delivery
+- **AND** the connector handles repeated identical acknowledgments idempotently
+
 #### Scenario: Catalog processing lags provider mutation
 
 - **WHEN** the provider mutation and ownership commit succeed but catalog processing still exposes an old TechDocs URL or an entity awaiting removal
@@ -228,7 +234,7 @@ not participate in this protocol.
 
 #### Scenario: External provider operation stalls
 
-- **WHEN** discovery, authentication, snapshot retrieval or body reading, catalog visibility queries, or acknowledgment delivery does not complete within 30 seconds or the scheduler cancels the run
+- **WHEN** a snapshot acquisition step (discovery, authentication, or fetch/body consumption), the complete visibility verification phase (authentication and catalog queries), or the complete acknowledgment delivery phase (discovery, authentication, and POST) exceeds its respective 30-second deadline or the scheduler cancels the run
 - **THEN** the provider bounds that operation and preserves unresolved release obligations
 
 #### Scenario: Authenticated connector request redirects

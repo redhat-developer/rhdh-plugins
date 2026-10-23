@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-/** @param {import('knex').Knex} knex */
+/**
+ * Persist complete acknowledgment context with pending deltas for crash recovery.
+ * @param {import('knex').Knex} knex
+ */
 exports.up = async function up(knex) {
   if (
     !(await knex.schema.hasColumn(
@@ -27,7 +30,11 @@ exports.up = async function up(knex) {
     });
   }
 };
-/** @param {import('knex').Knex} knex */
+
+/**
+ * Remove the pending-delta acknowledgment context column.
+ * @param {import('knex').Knex} knex
+ */
 exports.down = async function down(knex) {
   await knex.schema.alterTable('skills_provider_pending_delta', table => {
     table.dropColumn('acknowledgment_json');

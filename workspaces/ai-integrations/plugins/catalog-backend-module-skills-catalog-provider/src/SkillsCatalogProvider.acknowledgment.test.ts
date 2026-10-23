@@ -52,11 +52,14 @@ describe('D8 provider acknowledgment safety with real SQLite', () => {
   let processed: Map<string, Entity>;
   let fetchMock: jest.Mock;
   let responseStatus: number;
+  let logger: ReturnType<typeof mockServices.logger.mock>;
   let connection: EntityProviderConnection;
   let catalogApi: { getEntitiesByRefs: jest.Mock };
 
   beforeEach(async () => {
     database = await createDurableTestDatabase();
+    logger = mockServices.logger.mock();
+    logger.child.mockReturnValue(logger);
     current = {
       schemaVersion: '1',
       source: ociSource,
@@ -139,7 +142,7 @@ describe('D8 provider acknowledgment safety with real SQLite', () => {
           .fn()
           .mockResolvedValue({ token: 'test-service-token' }),
       }),
-      mockServices.logger.mock(),
+      logger,
       {
         run: async options => {
           run = async () => {
@@ -420,6 +423,35 @@ describe('D8 provider acknowledgment safety with real SQLite', () => {
       expect(
         await store.getPendingAcknowledgment('oci', ociSource.id),
       ).toBeUndefined();
+    },
+  );
+
+  it.each(['initial', 'retry'])(
+    'logs %s delivery failures once and preserves pending work',
+    async phase => {
+      const { store } = await database.open();
+      autoProcess = phase === 'initial';
+      const provider = await start(store);
+      if (phase === 'retry') {
+        await provider.run();
+        processed = new Map(submitted);
+      }
+      const respond = fetchMock.getMockImplementation()!;
+      fetchMock.mockImplementation(async (url, options) => {
+        if (options?.method === 'POST') throw new Error('connector offline');
+        return respond(url, options);
+      });
+      fetchMock.mockClear();
+      logger.error.mockClear();
+      await provider.run();
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('connector offline'),
+      );
+      expect(
+        await store.getPendingAcknowledgment('oci', ociSource.id),
+      ).toBeDefined();
+      expect(polls(fetchMock)).toHaveLength(phase === 'retry' ? 0 : 1);
     },
   );
 

@@ -21,8 +21,8 @@ import type {
   SchedulerServiceTaskRunner,
 } from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
-import { InputError } from '@backstage/errors';
 import { stringifyEntityRef } from '@backstage/catalog-model';
+import { InputError } from '@backstage/errors';
 import type {
   EntityProvider,
   EntityProviderConnection,
@@ -665,7 +665,7 @@ export class SkillsCatalogProvider implements EntityProvider {
       } catch (error) {
         // Preserve pending state and block this source's polling
         // until the next scheduled run.
-        blockedSources.add(`${ack.sourceType}:${ack.sourceId}`);
+        blockedSources.add(key);
         this.logger.error(
           `Source ${ack.sourceId}: acknowledgment retry failed ` +
             `(revision=${ack.revision}), blocking source polling: ${error}`,
@@ -730,10 +730,6 @@ export class SkillsCatalogProvider implements EntityProvider {
       // Transport/auth/server errors: retain for retry.
       // Re-throw so retryPendingAcknowledgments can catch the error
       // and block this source's polling until the next scheduled run.
-      this.logger.error(
-        `Source ${ack.sourceId}: acknowledgment delivery failed ` +
-          `(revision=${ack.revision}): ${error}`,
-      );
       throw error;
     }
   }

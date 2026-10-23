@@ -697,9 +697,22 @@ source, just as a delivery error does, so a later snapshot cannot overwrite its
 release obligations. Incomplete catalog responses do not prove removals.
 Partial and stale observations never create release acknowledgments.
 
-Discovery, authentication, snapshot fetch/body consumption, catalog visibility
-queries, and acknowledgment delivery each have a 30-second deadline and honor
-scheduler cancellation. Authenticated provider HTTP requests reject redirects.
+Snapshot acquisition gives discovery, authentication, and fetch/body consumption
+separate 30-second deadlines. Catalog visibility verification has one shared
+30-second deadline including authentication and catalog queries; acknowledgment
+delivery has another shared 30-second deadline including discovery, authentication,
+and POST. Individual steps within either phase do not reset that phase's deadline.
+These operations honor scheduler cancellation. Authenticated provider HTTP requests
+reject redirects.
+
+Eligible ready OCI snapshots with revisions may create acknowledgments even when
+entities are unchanged or observations repeat; the connector handles repetitions
+idempotently. This steady-state traffic is intentional and requires no additional
+last-acknowledged-revision persistence. Recovery blocks, stale observations, deferred
+visibility, and failures can prevent new delivery. Reconciliation success describes
+the committed catalog work, not completion of its asynchronous acknowledgment.
+Deferral is persisted and logged separately. Delivery errors propagate to their
+caller, which logs the failure once and preserves pending work/source blocking.
 An additive pending-delta migration preserves existing state. Legacy pre-release
 OCI deltas with a revision but no complete acknowledgment context remain pending
 and block that source for operator investigation; recovery cannot safely infer
