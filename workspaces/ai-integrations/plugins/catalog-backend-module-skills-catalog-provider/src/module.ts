@@ -19,9 +19,8 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { CatalogClient } from '@backstage/catalog-client';
-import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
-
 import { InputError } from '@backstage/errors';
+import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
 
 import { SkillsCatalogProvider } from './SkillsCatalogProvider';
 import { readSkillsCatalogProviderConfigs } from './config';

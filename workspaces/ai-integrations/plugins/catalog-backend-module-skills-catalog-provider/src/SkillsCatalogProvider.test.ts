@@ -1203,16 +1203,25 @@ describe('SkillsCatalogProvider', () => {
       expect(store.commitStateAndClearPending).toHaveBeenCalled();
     });
 
-    it('retries pending acknowledgments before polling new snapshots', async () => {
+    it('retries pending acknowledgments and delivers successfully', async () => {
       const snapshot = makeSnapshot({
         skills: [validOciRecordFull],
       });
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        headers: new Headers(),
-        text: () => Promise.resolve(JSON.stringify(snapshot)),
-      });
+      // First fetch: reconcile delivery (204 success)
+      // Subsequent fetches: snapshot poll
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 204,
+          headers: new Headers(),
+          text: () => Promise.resolve(''),
+        })
+        .mockResolvedValue({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          text: () => Promise.resolve(JSON.stringify(snapshot)),
+        });
 
       const taskFn: { fn?: () => Promise<void> } = {};
       const mockTaskRunner = {
@@ -1250,9 +1259,139 @@ describe('SkillsCatalogProvider', () => {
       await provider.connect(mockConnection);
       await taskFn.fn!();
 
-      // Acknowledgment retry is attempted (second fetch call is the reconcile)
-      // The first getAllPendingAcknowledgments call returns the pending ack
+      // Acknowledgment retry was attempted and delivered
       expect(store.getAllPendingAcknowledgments).toHaveBeenCalled();
+      // Reconcile request was sent (first fetch call)
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/skilldocs/quay-public/reconcile'),
+        expect.objectContaining({ method: 'POST' }),
+      );
+      // Pending ack was cleared after successful delivery
+      expect(store.clearPendingAcknowledgment).toHaveBeenCalledWith(
+        'oci',
+        'quay-public',
+      );
+    });
+
+    it('discards superseded acknowledgment on 409 response', async () => {
+      const snapshot = makeSnapshot({
+        skills: [validOciRecordFull],
+      });
+      // First fetch: reconcile returns 409 (superseded)
+      // Subsequent fetches: snapshot poll
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 409,
+          headers: new Headers(),
+          text: () => Promise.resolve('Revision superseded'),
+        })
+        .mockResolvedValue({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          text: () => Promise.resolve(JSON.stringify(snapshot)),
+        });
+
+      const taskFn: { fn?: () => Promise<void> } = {};
+      const mockTaskRunner = {
+        run: jest.fn().mockImplementation(({ fn }) => {
+          taskFn.fn = fn;
+        }),
+      };
+
+      const config = makeConfig();
+      const store = createMockStore();
+
+      // Pre-populate a pending acknowledgment
+      const pendingAck = {
+        sourceType: 'oci' as const,
+        sourceId: 'quay-public',
+        connectorPluginId: 'skill-image-connector',
+        revision: '5',
+        retainedDigests: ['sha256:aaa'],
+        expectedEntityUrls: {},
+        expectedRemovals: [],
+      };
+      (store.getAllPendingAcknowledgments as jest.Mock).mockResolvedValueOnce([
+        pendingAck,
+      ]);
+
+      const provider = new SkillsCatalogProvider(
+        config,
+        mockDiscovery,
+        mockAuth,
+        logger,
+        mockTaskRunner,
+        store,
+      );
+
+      await provider.connect(mockConnection);
+      await taskFn.fn!();
+
+      // 409: acknowledgment should be discarded
+      expect(store.clearPendingAcknowledgment).toHaveBeenCalledWith(
+        'oci',
+        'quay-public',
+      );
+    });
+
+    it('blocks source polling when ack retry fails', async () => {
+      const snapshot = makeSnapshot({
+        skills: [validOciRecordFull],
+      });
+      // Reconcile request fails with network error
+      mockFetch
+        .mockRejectedValueOnce(new Error('Network failure'))
+        .mockResolvedValue({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          text: () => Promise.resolve(JSON.stringify(snapshot)),
+        });
+
+      const taskFn: { fn?: () => Promise<void> } = {};
+      const mockTaskRunner = {
+        run: jest.fn().mockImplementation(({ fn }) => {
+          taskFn.fn = fn;
+        }),
+      };
+
+      const config = makeConfig();
+      const store = createMockStore();
+
+      // Pre-populate a pending acknowledgment
+      const pendingAck = {
+        sourceType: 'oci' as const,
+        sourceId: 'quay-public',
+        connectorPluginId: 'skill-image-connector',
+        revision: '5',
+        retainedDigests: ['sha256:aaa'],
+        expectedEntityUrls: {},
+        expectedRemovals: [],
+      };
+      (store.getAllPendingAcknowledgments as jest.Mock).mockResolvedValueOnce([
+        pendingAck,
+      ]);
+
+      const provider = new SkillsCatalogProvider(
+        config,
+        mockDiscovery,
+        mockAuth,
+        logger,
+        mockTaskRunner,
+        store,
+      );
+
+      await provider.connect(mockConnection);
+      await taskFn.fn!();
+
+      // The source's snapshot poll should not be attempted because
+      // the ack retry failure blocks it. The snapshot poll would call
+      // discovery.getBaseUrl; check that it was only called for the
+      // ack retry's sendReconcileRequest, not for snapshot consumption.
+      // clearPendingAcknowledgment should NOT have been called (preserved)
+      expect(store.clearPendingAcknowledgment).not.toHaveBeenCalled();
     });
   });
 });

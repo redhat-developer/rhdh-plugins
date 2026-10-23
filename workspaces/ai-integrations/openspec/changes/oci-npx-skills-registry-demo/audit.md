@@ -1,3 +1,27 @@
+## Task 6.3 implementation: PR #5324 OCI TechDocs acknowledgment
+
+**Last audited:** 2026-10-23T12:00:00Z
+
+Task 6.3 is now implemented. The catalog provider sets
+`backstage.io/techdocs-ref` on OCI skill entities, captures
+`X-Skilldocs-Revision`, persists durable acknowledgments with catalog
+visibility verification, retries pending acknowledgments before polling,
+handles superseded revisions (409), persists revision in pending deltas
+for crash-safe replay, acknowledges no-op ready OCI plans, isolates
+per-ack errors in the retry loop, and rejects duplicate retention-owner
+assignments at startup. The `ReconciliationStore` interface now requires
+four acknowledgment lifecycle methods (breaking change, `major` bump).
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This is a focused task-completion update, not a new full-change audit.
+
+---
+
 ## Focused review follow-up: PR #5319 test precision and initialization docs
 
 **Last audited:** 2026-10-22T20:17:54Z

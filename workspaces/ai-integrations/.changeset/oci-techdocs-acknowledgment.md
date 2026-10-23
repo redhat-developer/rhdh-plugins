@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider': minor
+'@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider': major
 ---
 
 Add OCI skill TechDocs URL annotation and reconciliation acknowledgment

@@ -90,7 +90,7 @@ describe('DatabaseReconciliationStore with file-backed SQLite', () => {
     await store.savePendingDelta(delta);
     const migrationTable = 'skills_catalog_provider_migrations';
     expect(await client.schema.hasTable(migrationTable)).toBe(true);
-    expect(await client(migrationTable).select('*')).toHaveLength(2);
+    expect(await client(migrationTable).select('*')).toHaveLength(3);
     await client.schema.dropTable(migrationTable);
     await client.schema.dropTable(`${migrationTable}_lock`);
     // A shared Catalog migration table must not be consulted or changed.
@@ -105,7 +105,7 @@ describe('DatabaseReconciliationStore with file-backed SQLite', () => {
       { name: 'catalog-migration' },
     ]);
     await store.initialize();
-    expect(await client(migrationTable).select('*')).toHaveLength(2);
+    expect(await client(migrationTable).select('*')).toHaveLength(3);
   });
 
   it('refuses incompatible pre-migration tables without deleting their rows', async () => {

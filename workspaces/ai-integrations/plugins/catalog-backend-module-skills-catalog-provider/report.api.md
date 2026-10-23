@@ -81,6 +81,7 @@ export interface PendingAcknowledgment {
 export interface PendingDelta {
   nextState: CommittedSourceState;
   removals: PlannedRemoval[];
+  revision?: string;
   sourceId: string;
   sourceType: SkillSourceType;
   upserts: PlannedUpsert[];
@@ -180,7 +181,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     auth: AuthService,
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
-    store?: ReconciliationStore,
+    store: ReconciliationStore,
     catalogApi?: CatalogApi,
   );
   // (undocumented)

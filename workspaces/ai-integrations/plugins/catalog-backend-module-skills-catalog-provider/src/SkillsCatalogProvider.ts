@@ -55,98 +55,6 @@ class SupersededRevisionError extends Error {
   }
 }
 
-// ─── Default in-memory store ──────────────────────────────────────────
-
-/**
- * In-memory reconciliation store used as the default when no persistent
- * store is provided. State is retained for the lifetime of the process
- * but not across restarts.
- */
-class InMemoryReconciliationStore implements ReconciliationStore {
-  private committed = new Map<string, CommittedSourceState>();
-  private pending = new Map<string, PendingDelta>();
-  private pendingAcks = new Map<string, PendingAcknowledgment>();
-
-  private key(sourceType: SkillSourceType, sourceId: string): string {
-    return `${sourceType}:${sourceId}`;
-  }
-
-  async initialize(): Promise<void> {}
-
-  async getCommittedState(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<CommittedSourceState> {
-    return (
-      this.committed.get(this.key(sourceType, sourceId)) ?? {
-        sourceType,
-        sourceId,
-        observedAt: null,
-        entities: [],
-      }
-    );
-  }
-
-  async getAllCommittedStates(): Promise<CommittedSourceState[]> {
-    return Array.from(this.committed.values());
-  }
-
-  async getPendingDelta(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<PendingDelta | undefined> {
-    return this.pending.get(this.key(sourceType, sourceId));
-  }
-
-  async getAllPendingDeltas(): Promise<PendingDelta[]> {
-    return Array.from(this.pending.values());
-  }
-
-  async savePendingDelta(delta: PendingDelta): Promise<void> {
-    this.pending.set(this.key(delta.sourceType, delta.sourceId), delta);
-  }
-
-  async commitStateAndClearPending(
-    sourceType: SkillSourceType,
-    sourceId: string,
-    nextState: CommittedSourceState,
-  ): Promise<void> {
-    const k = this.key(sourceType, sourceId);
-    this.committed.set(k, nextState);
-    this.pending.delete(k);
-  }
-
-  async commitStateAndSaveAcknowledgment(
-    sourceType: SkillSourceType,
-    sourceId: string,
-    nextState: CommittedSourceState,
-    ack: PendingAcknowledgment,
-  ): Promise<void> {
-    const k = this.key(sourceType, sourceId);
-    this.committed.set(k, nextState);
-    this.pending.delete(k);
-    this.pendingAcks.set(k, ack);
-  }
-
-  async getPendingAcknowledgment(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<PendingAcknowledgment | undefined> {
-    return this.pendingAcks.get(this.key(sourceType, sourceId));
-  }
-
-  async getAllPendingAcknowledgments(): Promise<PendingAcknowledgment[]> {
-    return Array.from(this.pendingAcks.values());
-  }
-
-  async clearPendingAcknowledgment(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<void> {
-    this.pendingAcks.delete(this.key(sourceType, sourceId));
-  }
-}
-
 /**
  * Common skills catalog entity provider.
  *
@@ -181,13 +89,12 @@ export class SkillsCatalogProvider implements EntityProvider {
   private connection?: EntityProviderConnection;
 
   /**
-   * Creates a provider using an optional caller-owned reconciliation store.
+   * Creates a provider using a caller-owned reconciliation store.
    *
    * @remarks
-   * When supplying a store, its owner must await `store.initialize()` before
-   * calling `connect()`. The backend module performs this initialization;
-   * the provider does not initialize externally supplied stores. Omitting the
-   * store uses process-local in-memory state without restart persistence.
+   * The store owner must await `store.initialize()` before calling
+   * `connect()`. The backend module performs this initialization;
+   * the provider does not initialize externally supplied stores.
    *
    * When a `catalogApi` is provided, the provider verifies catalog
    * processing visibility before sending D8 reconciliation
@@ -200,7 +107,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     auth: AuthService,
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
-    store?: ReconciliationStore,
+    store: ReconciliationStore,
     catalogApi?: CatalogApi,
   ) {
     this.config = config;
@@ -210,7 +117,7 @@ export class SkillsCatalogProvider implements EntityProvider {
       source: `SkillsCatalogProvider:${config.id}`,
     });
     this.taskRunner = taskRunner;
-    this.store = store ?? new InMemoryReconciliationStore();
+    this.store = store;
     this.catalogApi = catalogApi;
   }
 
@@ -249,10 +156,16 @@ export class SkillsCatalogProvider implements EntityProvider {
     }
 
     // ── Step 0: Retry pending acknowledgments before polling (D8) ──
-    await this.retryPendingAcknowledgments();
+    const ackBlockedSources = await this.retryPendingAcknowledgments();
 
     // ── Step 1: Replay pending deltas from previous interrupted runs ──
-    const blockedSources = await this.replayPendingDeltas();
+    const replayBlockedSources = await this.replayPendingDeltas();
+
+    // Merge blocked sources from both ack retry and pending delta replay
+    const blockedSources = new Set([
+      ...ackBlockedSources,
+      ...replayBlockedSources,
+    ]);
 
     this.logger.info(
       `Starting refresh with ${this.config.sources.length} source(s)`,
@@ -329,17 +242,57 @@ export class SkillsCatalogProvider implements EntityProvider {
           await this.resolvePendingRemovals(delta),
         );
 
-        // Commit the next state and clear the pending delta
-        await this.store.commitStateAndClearPending(
-          delta.sourceType,
-          delta.sourceId,
-          delta.nextState,
-        );
-
-        this.logger.info(
-          `Recovered pending delta for ${delta.sourceType}/${delta.sourceId}: ` +
-            `${delta.upserts.length} upsert(s), ${delta.removals.length} removal(s)`,
-        );
+        // Commit the next state and clear the pending delta.
+        // When the delta carried a revision, create an acknowledgment
+        // so the revision is not irrecoverably lost (D8).
+        if (delta.revision && delta.sourceType === 'oci') {
+          const sourceConfig = this.config.sources.find(
+            s =>
+              s.sourceType === delta.sourceType &&
+              s.sourceId === delta.sourceId,
+          );
+          if (sourceConfig) {
+            const ack = this.buildAcknowledgment(
+              sourceConfig,
+              delta.revision,
+              delta.nextState,
+              delta.removals,
+            );
+            await this.store.commitStateAndSaveAcknowledgment(
+              delta.sourceType,
+              delta.sourceId,
+              delta.nextState,
+              ack,
+            );
+            this.logger.info(
+              `Recovered pending delta for ${delta.sourceType}/${delta.sourceId}: ` +
+                `${delta.upserts.length} upsert(s), ${delta.removals.length} removal(s), ` +
+                `persisted acknowledgment revision=${delta.revision}`,
+            );
+          } else {
+            // Source config no longer present; commit without ack
+            await this.store.commitStateAndClearPending(
+              delta.sourceType,
+              delta.sourceId,
+              delta.nextState,
+            );
+            this.logger.warn(
+              `Recovered pending delta for ${delta.sourceType}/${delta.sourceId}: ` +
+                `revision=${delta.revision} but source config not found, ` +
+                `skipping acknowledgment`,
+            );
+          }
+        } else {
+          await this.store.commitStateAndClearPending(
+            delta.sourceType,
+            delta.sourceId,
+            delta.nextState,
+          );
+          this.logger.info(
+            `Recovered pending delta for ${delta.sourceType}/${delta.sourceId}: ` +
+              `${delta.upserts.length} upsert(s), ${delta.removals.length} removal(s)`,
+          );
+        }
       } catch (error) {
         // Preserve unresolved work and block newer observations for this source.
         // Other sources can still refresh independently.
@@ -424,12 +377,44 @@ export class SkillsCatalogProvider implements EntityProvider {
           `preserving ${plan.nextState.entities.length} entity/entities`,
       );
 
-      // Always persist nextState — observedAt may have advanced
-      await this.store.commitStateAndClearPending(
-        source.sourceType,
-        source.sourceId,
-        plan.nextState,
-      );
+      // For ready OCI sources with a revision, persist the acknowledgment
+      // even on no-op plans (e.g., 'no-changes') so the connector
+      // receives the reconcile signal. Without this, a revision that
+      // produces no entity changes would go unacknowledged.
+      const isNoOpReadyOci =
+        result.status === 'ready' &&
+        source.sourceType === 'oci' &&
+        result.revision;
+
+      if (isNoOpReadyOci) {
+        const ack = this.buildAcknowledgment(
+          source,
+          result.revision!,
+          plan.nextState,
+          plan.removals,
+        );
+        await this.store.commitStateAndSaveAcknowledgment(
+          source.sourceType,
+          source.sourceId,
+          plan.nextState,
+          ack,
+        );
+        this.logger.info(
+          `Source ${source.sourceId}: persisted acknowledgment (no-op) ` +
+            `revision=${result.revision}, ` +
+            `retainedDigests=${ack.retainedDigests.length}`,
+        );
+
+        // Attempt immediate delivery (best-effort; retried on next run)
+        await this.tryDeliverAcknowledgment(ack);
+      } else {
+        // Always persist nextState — observedAt may have advanced
+        await this.store.commitStateAndClearPending(
+          source.sourceType,
+          source.sourceId,
+          plan.nextState,
+        );
+      }
 
       if (
         plan.reason === 'loading' ||
@@ -447,13 +432,15 @@ export class SkillsCatalogProvider implements EntityProvider {
     // ── Apply the plan with crash-safe persistence ───────────────────
     const locationKey = this.buildLocationKey(source);
 
-    // Step 1: Persist the pending delta before applying the mutation
+    // Step 1: Persist the pending delta before applying the mutation.
+    // Include the revision so it survives crashes per design D8.
     await this.store.savePendingDelta({
       sourceType: source.sourceType,
       sourceId: source.sourceId,
       upserts: plan.upserts,
       removals: plan.removals,
       nextState: plan.nextState,
+      revision: result.revision,
     });
 
     // Step 2: Apply the delta mutation to the catalog
@@ -669,19 +656,42 @@ export class SkillsCatalogProvider implements EntityProvider {
    * Retries all pending acknowledgments before polling new snapshots.
    *
    * Per design D8: retry pending acknowledgments, including catalog
-   * visibility checks, before consuming newer snapshots.
+   * visibility checks, before consuming newer snapshots. Each
+   * acknowledgment is isolated: a failure for one source does not
+   * prevent retrying or polling other sources. Failures reading the
+   * pending list itself propagate to the caller.
+   *
+   * @returns Set of `sourceType:sourceId` keys whose acknowledgment
+   *   delivery or cleanup failed, blocking new snapshot polling for
+   *   those sources until the next scheduled run.
    */
-  private async retryPendingAcknowledgments(): Promise<void> {
+  private async retryPendingAcknowledgments(): Promise<Set<string>> {
+    const blockedSources = new Set<string>();
+
+    // Let getAllPendingAcknowledgments errors propagate — the caller
+    // must know when the pending list itself cannot be read.
     const pendingAcks = await this.store.getAllPendingAcknowledgments();
-    if (pendingAcks.length === 0) return;
+    if (pendingAcks.length === 0) return blockedSources;
 
     this.logger.info(
       `Retrying ${pendingAcks.length} pending acknowledgment(s)`,
     );
 
     for (const ack of pendingAcks) {
-      await this.tryDeliverAcknowledgment(ack);
+      try {
+        await this.tryDeliverAcknowledgment(ack);
+      } catch (error) {
+        // Preserve pending state and block this source's polling
+        // until the next scheduled run.
+        blockedSources.add(`${ack.sourceType}:${ack.sourceId}`);
+        this.logger.error(
+          `Source ${ack.sourceId}: acknowledgment retry failed ` +
+            `(revision=${ack.revision}), blocking source polling: ${error}`,
+        );
+      }
     }
+
+    return blockedSources;
   }
 
   /**
@@ -725,6 +735,8 @@ export class SkillsCatalogProvider implements EntityProvider {
           `Source ${ack.sourceId}: acknowledgment revision=${ack.revision} ` +
             `superseded (409), discarding`,
         );
+        // If clearing fails, rethrow so retryPendingAcknowledgments
+        // blocks this source's polling until the next run.
         await this.store.clearPendingAcknowledgment(
           ack.sourceType,
           ack.sourceId,
@@ -826,8 +838,10 @@ export class SkillsCatalogProvider implements EntityProvider {
   private async sendReconcileRequest(
     ack: PendingAcknowledgment,
   ): Promise<void> {
-    const baseUrl = await this.discovery.getBaseUrl(ack.connectorPluginId);
-    const url = `${baseUrl}/skilldocs/${encodeURIComponent(
+    const connectorBaseUrl = await this.discovery.getBaseUrl(
+      ack.connectorPluginId,
+    );
+    const url = `${connectorBaseUrl}/skilldocs/${encodeURIComponent(
       ack.sourceId,
     )}/reconcile`;
 

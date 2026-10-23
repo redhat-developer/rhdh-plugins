@@ -69,6 +69,14 @@ export interface PendingDelta {
   removals: PlannedRemoval[];
   /** The intended next committed state after this delta is applied. */
   nextState: CommittedSourceState;
+  /**
+   * Skilldocs revision from the connector's `X-Skilldocs-Revision`
+   * header. When present, `replayPendingDeltas` creates a pending
+   * acknowledgment after replaying the delta so the revision is not
+   * irrecoverably lost on crash between `savePendingDelta` and
+   * `commitStateAndSaveAcknowledgment`.
+   */
+  revision?: string;
 }
 
 // ─── ReconciliationStore interface ──────────────────────────────────
@@ -173,9 +181,10 @@ export interface ReconciliationStore {
  * Database-backed reconciliation store using Backstage's Knex database
  * service.
  *
- * Uses two tables:
+ * Uses three tables:
  * - `skills_provider_committed_state`: committed ownership state per source
  * - `skills_provider_pending_delta`: pending deltas before catalog mutation
+ * - `skills_provider_pending_ack`: pending acknowledgments for D8 reconciliation
  *
  * Each instance is scoped to a single provider config ID. The provider
  * ID is included in both tables' composite primary keys to ensure data
@@ -264,6 +273,7 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
       upserts: JSON.parse(row.upserts_json) as PlannedUpsert[],
       removals: JSON.parse(row.removals_json) as PlannedRemoval[],
       nextState: JSON.parse(row.next_state_json) as CommittedSourceState,
+      revision: row.revision ?? undefined,
     };
   }
 
@@ -277,17 +287,19 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
       upserts: JSON.parse(row.upserts_json) as PlannedUpsert[],
       removals: JSON.parse(row.removals_json) as PlannedRemoval[],
       nextState: JSON.parse(row.next_state_json) as CommittedSourceState,
+      revision: row.revision ?? undefined,
     }));
   }
 
   async savePendingDelta(delta: PendingDelta): Promise<void> {
-    const data = {
+    const data: Record<string, unknown> = {
       provider_id: this.providerId,
       source_type: delta.sourceType,
       source_id: delta.sourceId,
       upserts_json: JSON.stringify(delta.upserts),
       removals_json: JSON.stringify(delta.removals),
       next_state_json: JSON.stringify(delta.nextState),
+      revision: delta.revision ?? null,
     };
 
     // Upsert in a transaction to prevent race conditions
