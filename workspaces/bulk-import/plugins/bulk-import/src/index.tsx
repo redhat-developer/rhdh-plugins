@@ -27,6 +27,8 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
 import {
@@ -35,6 +37,13 @@ import {
 } from './api/BulkImportBackendClient';
 import BulkImportIcon from './components/BulkImportIcon';
 import { bulkImportTranslations } from './translations';
+
+// Avoid MUI v5 class collisions when loaded as an NFS dynamic plugin (RHDHBUGS-4028 / RHDHBUGS-986).
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('v5-')
+    ? componentName
+    : `v5-${componentName}`;
+});
 
 const bulkImportAccess = {
   permissions: {

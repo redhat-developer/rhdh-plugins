@@ -20,7 +20,7 @@ import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { TestApiProvider } from '@backstage/test-utils';
 
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 import { BulkImportIcon } from '../src/components/BulkImportSidebarItem';
 import { BulkImportPage, bulkImportPlugin } from '../src/plugin';
