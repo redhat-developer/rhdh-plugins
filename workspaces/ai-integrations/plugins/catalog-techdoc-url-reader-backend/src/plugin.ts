@@ -248,6 +248,11 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   // bypass the need for the auth service.
   static auth: AuthService;
 
+  /**
+   * Legacy factory for model-card URLs only; skill documentation fails closed
+   * without discovery-resolved connector bases. Register
+   * `catalogTechdocUrlReaderPlugin` for OCI skill documentation support.
+   */
   static factory: ReaderFactory = ({ config, logger }) => {
     const reader = new ModeCatalogBridgeTechdocUrlReader(config, logger);
     return [{ reader, predicate: reader.bridgePredicate }];
@@ -393,13 +398,12 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
             await ModeCatalogBridgeTechdocUrlReader.auth.getOwnServiceCredentials(),
           targetPluginId: bc.id,
         });
-      const tok = token.token;
       this.logger.info(`Using service-to-service token for ${url}`);
       response = await fetch(url, {
         method: 'GET',
         redirect: 'error',
         headers: {
-          Authorization: `Bearer ${tok}`,
+          Authorization: `Bearer ${token.token}`,
         },
         signal: options?.signal as any,
       });

@@ -309,6 +309,7 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
         testUrl,
         expect.objectContaining({
           method: 'GET',
+          redirect: 'error',
           headers: { Authorization: 'Bearer test-token' },
         }),
       );
