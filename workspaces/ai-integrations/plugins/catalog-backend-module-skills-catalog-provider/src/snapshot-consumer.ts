@@ -70,6 +70,12 @@ export type ConsumeResult =
       status: SkillSnapshot['status'];
       /** Observation timestamp from the connector. */
       observedAt: string | null;
+      /**
+       * Skilldocs revision from the connector's `X-Skilldocs-Revision`
+       * response header. Present only for completed OCI snapshots per
+       * design D8.
+       */
+      revision: string | undefined;
       error?: never;
     }
   | {
@@ -81,6 +87,7 @@ export type ConsumeResult =
       error: string;
       status?: never;
       observedAt?: never;
+      revision?: never;
     };
 
 /**
@@ -157,7 +164,7 @@ async function readBoundedBody(
  * - Rejects oversized, malformed, unsupported-version, or
  *   source-mismatched snapshots
  *
- * @param baseUrl - Connector base URL from Backstage discovery.
+ * @param connectorBaseUrl - Connector base URL from Backstage discovery.
  * @param token - Service token for the connector.
  * @param source - Source consumer configuration.
  * @param namespace - Catalog namespace for produced entities.
@@ -167,18 +174,24 @@ async function readBoundedBody(
  * @returns The consume result.
  */
 export async function consumeSnapshot(
-  baseUrl: string,
+  connectorBaseUrl: string,
   token: string,
   source: SourceConsumerConfig,
   namespace: string,
   defaultOwner: string,
   defaultLifecycle: string,
   logger: LoggerService,
+  signal?: AbortSignal,
 ): Promise<ConsumeResult> {
-  const url = `${baseUrl}/skills/${encodeURIComponent(source.sourceId)}`;
+  const normalizedBaseUrl = connectorBaseUrl.replace(/\/+$/, '');
+  const url = `${normalizedBaseUrl}/skills/${encodeURIComponent(
+    source.sourceId,
+  )}`;
   let response: Response;
   try {
     response = await fetch(url, {
+      redirect: 'error',
+      signal,
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
@@ -191,10 +204,15 @@ export async function consumeSnapshot(
   }
 
   if (!response.ok) {
+    await response.body?.cancel();
     const msg = `Connector returned ${response.status} for source ${source.sourceId}`;
     logger.error(msg);
     return { ok: false, entities: [], error: msg };
   }
+
+  // Capture the skilldocs revision header (D8). Present only for
+  // completed OCI snapshots; initial loading may omit it.
+  const revision = response.headers.get('X-Skilldocs-Revision') ?? undefined;
 
   // Bound the response read per design D2.
   // Use a streaming reader with an explicit byte counter so that
@@ -268,6 +286,7 @@ export async function consumeSnapshot(
       entities: [],
       status: snapshot.status,
       observedAt: snapshot.observedAt,
+      revision,
     };
   }
 
@@ -289,6 +308,7 @@ export async function consumeSnapshot(
     snapshot.skills,
     snapshot.source.type,
     source.sourceId,
+    normalizedBaseUrl,
     namespace,
     defaultOwner,
     defaultLifecycle,
@@ -306,6 +326,7 @@ export async function consumeSnapshot(
     entities,
     status: snapshot.status,
     observedAt: snapshot.observedAt,
+    revision,
   };
 }
 
@@ -368,6 +389,7 @@ function mapRecordsToEntities(
   records: SkillRecord[],
   sourceType: SkillSourceType,
   sourceId: string,
+  connectorBaseUrl: string,
   namespace: string,
   defaultOwner: string,
   defaultLifecycle: string,
@@ -402,6 +424,7 @@ function mapRecordsToEntities(
         record,
         sourceType,
         sourceId,
+        connectorBaseUrl,
         catalogName,
         namespace,
         defaultOwner,
@@ -423,6 +446,7 @@ function buildEntity(
   record: SkillRecord,
   sourceType: SkillSourceType,
   sourceId: string,
+  connectorBaseUrl: string,
   catalogName: string,
   namespace: string,
   defaultOwner: string,
@@ -461,6 +485,16 @@ function buildEntity(
   // before any records are mapped, so no per-entity validation is needed.
   if (sourceType === 'oci') {
     annotations[ANNOTATION_OCI_SKILL_REF] = record.sourceUri;
+
+    // TechDocs annotation for OCI entities per design D5/D8.
+    // Constructed from trusted connector/source configuration and the
+    // record's verified digest. The provider does not download or
+    // extract Markdown. npx entities do not receive this annotation.
+    annotations[
+      'backstage.io/techdocs-ref'
+    ] = `url:${connectorBaseUrl}/skilldocs/${encodeURIComponent(
+      sourceId,
+    )}/${encodeURIComponent(record.digest)}`;
   } else if (sourceType === 'npx') {
     const npxRef = `${record.sourceUri}#${record.digest}`;
     annotations[ANNOTATION_NPX_SKILL_REF] = npxRef;

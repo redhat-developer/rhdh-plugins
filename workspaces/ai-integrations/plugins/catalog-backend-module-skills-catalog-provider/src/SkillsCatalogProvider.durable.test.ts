@@ -116,6 +116,13 @@ describe('SkillsCatalogProvider durable lifecycle', () => {
         .mockResolvedValue({ token: 'test-token' }),
     });
     const testLogger = mockServices.logger.mock();
+    const catalogApi = {
+      getEntitiesByRefs: jest.fn(
+        async ({ entityRefs }: { entityRefs: string[] }) => ({
+          items: entityRefs.map(ref => catalog.get(ref)),
+        }),
+      ),
+    };
     const provider = new SkillsCatalogProvider(
       {
         id: 'test',
@@ -137,6 +144,7 @@ describe('SkillsCatalogProvider durable lifecycle', () => {
         },
       },
       store,
+      catalogApi,
     );
     await provider.connect(connection);
     return { run: () => run!(), auth };

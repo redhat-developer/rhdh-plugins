@@ -19,6 +19,34 @@ import { ConfigReader } from '@backstage/config';
 import { readSkillsCatalogProviderConfigs } from './config';
 
 describe('readSkillsCatalogProviderConfigs', () => {
+  it.each(['.', '..', ' '])(
+    'rejects documentation-unsafe source ID %s',
+    sourceId => {
+      const config = new ConfigReader({
+        catalog: {
+          providers: {
+            skillsCatalogProvider: {
+              test: {
+                sources: [
+                  {
+                    connectorPluginId: 'skill-image-connector',
+                    sourceId,
+                    sourceType: 'oci',
+                  },
+                ],
+                defaultOwner: 'team',
+                defaultLifecycle: 'production',
+              },
+            },
+          },
+        },
+      });
+      expect(() => readSkillsCatalogProviderConfigs(config)).toThrow(
+        'sourceId must be nonblank',
+      );
+    },
+  );
+
   it('returns empty array when no config is present', () => {
     const config = new ConfigReader({});
     expect(readSkillsCatalogProviderConfigs(config)).toEqual([]);

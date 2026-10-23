@@ -811,4 +811,160 @@ describe('consumeSnapshot', () => {
     expect(result.entities).toHaveLength(0);
     expect(result.status).toBe('loading');
   });
+
+  // ─── Task 6.3: TechDocs annotation and revision ─────────────────
+
+  it('sets backstage.io/techdocs-ref on OCI entities using discovery-based URL', async () => {
+    const snapshot = makeSnapshot();
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    const entity = result.entities[0].entity;
+    const techdocsRef =
+      entity.metadata.annotations?.['backstage.io/techdocs-ref'];
+    expect(techdocsRef).toBe(
+      `url:${baseUrl}/skilldocs/${encodeURIComponent(
+        ociConsumer.sourceId,
+      )}/${encodeURIComponent(validOciRecordFull.digest)}`,
+    );
+  });
+
+  it('does not set backstage.io/techdocs-ref on npx entities', async () => {
+    const snapshot = makeSnapshot({
+      source: npxSource,
+      skills: [validNpxRecordFull],
+    });
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      npxConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    const entity = result.entities[0].entity;
+    expect(
+      entity.metadata.annotations?.['backstage.io/techdocs-ref'],
+    ).toBeUndefined();
+  });
+
+  it('same-digest tag aliases share the same techdocs-ref URL', async () => {
+    const alias = {
+      ...validOciRecordFull,
+      key: 'quay.io/octo/hello-world-skill:alias',
+    };
+    const snapshot = makeSnapshot({
+      skills: [validOciRecordFull, alias],
+    });
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.entities).toHaveLength(2);
+    const url0 =
+      result.entities[0].entity.metadata.annotations?.[
+        'backstage.io/techdocs-ref'
+      ];
+    const url1 =
+      result.entities[1].entity.metadata.annotations?.[
+        'backstage.io/techdocs-ref'
+      ];
+    // Same digest → same URL
+    expect(url0).toBe(url1);
+    // Distinct entity identities
+    expect(result.entities[0].catalogName).not.toBe(
+      result.entities[1].catalogName,
+    );
+  });
+
+  it('captures X-Skilldocs-Revision header from response', async () => {
+    const snapshot = makeSnapshot();
+    mockFetchResponse(snapshot, 200, {
+      'X-Skilldocs-Revision': '42',
+    });
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.revision).toBe('42');
+  });
+
+  it('returns undefined revision when header is absent', async () => {
+    const snapshot = makeSnapshot();
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.revision).toBeUndefined();
+  });
+
+  it('preserves identity and integrity annotations alongside techdocs-ref', async () => {
+    const snapshot = makeSnapshot();
+    mockFetchResponse(snapshot);
+
+    const result = await consumeSnapshot(
+      baseUrl,
+      token,
+      ociConsumer,
+      namespace,
+      defaultOwner,
+      defaultLifecycle,
+      logger,
+    );
+
+    expect(result.ok).toBe(true);
+    const annotations = result.entities[0].entity.metadata.annotations!;
+    // techdocs-ref is present
+    expect(annotations['backstage.io/techdocs-ref']).toBeDefined();
+    // Existing annotations are preserved
+    expect(annotations['rhdh.io/oci-skill-ref']).toBe(
+      validOciRecordFull.sourceUri,
+    );
+    expect(annotations['rhdh.io/ai-asset-category']).toBe('skill');
+    expect(annotations['rhdh.io/ai-asset-version']).toBe(
+      resolveVersion(validOciRecordFull.version, validOciRecordFull.digest),
+    );
+    expect(annotations['backstage.io/source-location']).toBeDefined();
+  });
 });

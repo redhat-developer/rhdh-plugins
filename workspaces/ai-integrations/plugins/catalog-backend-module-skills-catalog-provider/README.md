@@ -54,16 +54,16 @@ catalog:
 
 ### Configuration options
 
-| Option                        | Required | Default               | Description                                                                                                                                      |
-| ----------------------------- | -------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `sources`                     | Yes      | —                     | Array of connector sources to poll. Each source is polled independently; a failure in one does not affect others.                                |
-| `sources[].connectorPluginId` | Yes      | —                     | Backstage plugin ID of the connector (e.g., `skill-image-connector`). Resolved through Backstage discovery to obtain the connector's base URL.   |
-| `sources[].sourceId`          | Yes      | —                     | Source identifier passed to `GET /skills/:sourceId`. Must be unique within this provider instance for the same `(sourceType, sourceId)` tuple.   |
-| `sources[].sourceType`        | Yes      | —                     | Expected source type: `oci` or `npx`. The provider rejects snapshots whose `source.type` does not match.                                         |
-| `namespace`                   | No       | `default`             | Catalog namespace for all entities produced by this provider instance.                                                                           |
-| `defaultOwner`                | Yes      | —                     | Default catalog owner applied when the skill record lacks an `owner` hint or the hint is not a valid Backstage entity reference.                 |
-| `defaultLifecycle`            | Yes      | —                     | Default catalog lifecycle applied when the skill record lacks a `lifecycle` hint or the hint is not a valid catalog string.                      |
-| `schedule`                    | No       | 10m frequency/timeout | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. Defaults to ten-minute frequency, zero initial delay, and ten-minute timeout. |
+| Option                        | Required | Default               | Description                                                                                                                                                                                            |
+| ----------------------------- | -------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `sources`                     | Yes      | —                     | Array of connector sources to poll. Each source is polled independently; a failure in one does not affect others.                                                                                      |
+| `sources[].connectorPluginId` | Yes      | —                     | Backstage plugin ID of the connector (e.g., `skill-image-connector`). Resolved through Backstage discovery to obtain the connector's base URL.                                                         |
+| `sources[].sourceId`          | Yes      | —                     | Source identifier passed to `GET /skills/:sourceId`. The `(sourceType, sourceId)` tuple must be globally unique across all provider instances; duplicate assignments cause an `InputError` at startup. |
+| `sources[].sourceType`        | Yes      | —                     | Expected source type: `oci` or `npx`. The provider rejects snapshots whose `source.type` does not match.                                                                                               |
+| `namespace`                   | No       | `default`             | Catalog namespace for all entities produced by this provider instance.                                                                                                                                 |
+| `defaultOwner`                | Yes      | —                     | Default catalog owner applied when the skill record lacks an `owner` hint or the hint is not a valid Backstage entity reference.                                                                       |
+| `defaultLifecycle`            | Yes      | —                     | Default catalog lifecycle applied when the skill record lacks a `lifecycle` hint or the hint is not a valid catalog string.                                                                            |
+| `schedule`                    | No       | 10m frequency/timeout | `SchedulerServiceTaskScheduleDefinition` controlling sync cadence. Defaults to ten-minute frequency, zero initial delay, and ten-minute timeout.                                                       |
 
 ## Entity kind and type
 
@@ -76,6 +76,7 @@ Each entity carries:
 - `backstage.io/source-location` — connector source URI
 - `backstage.io/managed-by-location` — connector source URI
 - `backstage.io/managed-by-origin-location` — connector source URI
+- `backstage.io/techdocs-ref` — TechDocs documentation URL for OCI skill entities, constructed from the connector's discovery-resolved base URL and the record's verified digest (`url:<connectorBaseUrl>/skilldocs/<sourceId>/<digest>`). Not set on npx entities. (OCI sources only)
 - `rhdh.io/ai-asset-category` — always `skill`
 - `rhdh.io/ai-asset-version` — resolved skill version
 - `rhdh.io/ai-asset-source` — `<sourceType>/<sourceId>`
@@ -106,19 +107,23 @@ When a source returns a ready snapshot, the provider computes a reconciliation p
 
 ### Durable reconciliation state
 
-The provider uses a `DatabaseReconciliationStore` backed by Backstage's database service to persist per-source committed ownership state and pending deltas. `ReconciliationStore` is the public interface; `PendingDelta` describes the pending delta record. `DatabaseReconciliationStore` is the internal database-backed implementation scoped per provider config ID.
+The provider uses a `DatabaseReconciliationStore` backed by Backstage's database service to persist per-source committed ownership state, pending deltas, and pending acknowledgments. `ReconciliationStore` is the public interface; `PendingDelta` describes the pending delta record and `PendingAcknowledgment` describes the D8 reconciliation acknowledgment lifecycle. `DatabaseReconciliationStore` is the internal database-backed implementation scoped per provider config ID. The store provides four acknowledgment lifecycle methods: `commitStateAndSaveAcknowledgment`, `getPendingAcknowledgment`, `getAllPendingAcknowledgments`, and `clearPendingAcknowledgment`.
 
 If replaying a pending delta or committing its recovered ownership fails, the
 provider retains that pending delta and skips fetching new snapshots for the
 affected source until recovery succeeds. Other sources continue independently.
 A loading or empty response cannot clear unresolved pending work.
 
-The database implementation is internal; consumers can implement the public
+Catalog visibility verification is required, including for directly constructed
+providers. Supply a catalog client implementing `getEntitiesByRefs`; the backend
+module wires an authenticated `CatalogClient` automatically. There is no option
+to bypass processed entity checks.
+
+The database implementation is internal; consumers must implement the public
 `ReconciliationStore` interface when constructing a provider directly. The owner
-supplying that store must await `store.initialize()` before calling
+supplying the store must await `store.initialize()` before calling
 `provider.connect(connection)`. The backend module already performs this step;
-the provider does not initialize an externally supplied store. Omitting the store
-uses process-local in-memory state that does not survive restarts.
+the provider does not initialize the supplied store.
 
 ```ts
 await store.initialize();
@@ -129,9 +134,48 @@ const provider = new SkillsCatalogProvider(
   logger,
   taskRunner,
   store,
+  catalogApi, // implements CatalogApi.getEntitiesByRefs
 );
 await provider.connect(connection);
 ```
+
+Before a ready OCI mutation, the pending delta stores the complete acknowledgment
+context: revision, connector plugin ID, committed retained digests, expected
+processed entity references and documentation URLs, and removal references.
+Ownership and that acknowledgment are then committed atomically. Recovery replays
+the exact persisted context before retrying acknowledgments and polling newer
+snapshots. Delayed catalog processing, stale documentation URLs, incomplete catalog
+responses, and delivery failures block newer polling for that source while other
+sources continue. Partial or stale snapshots never authorize release. Existing
+entities missing the TechDocs annotation are updated even when their digest and
+observation timestamp are unchanged.
+
+Snapshot acquisition gives discovery, authentication, and fetch/body consumption
+separate 30-second deadlines. Catalog visibility verification instead has one
+shared 30-second deadline covering authentication and its catalog queries.
+Acknowledgment delivery has a separate shared 30-second deadline covering
+discovery, authentication, and the POST. These shared phase budgets are intentional;
+individual steps do not each receive another 30 seconds. Scheduler cancellation
+also bounds these operations. Authenticated HTTP requests reject redirects rather
+than forwarding service credentials.
+
+Eligible ready OCI snapshots with revisions create acknowledgments even when
+entities are unchanged or the observation repeats. After catalog visibility is
+confirmed, the connector accepts repeated identical acknowledgments idempotently
+with 204. This intentionally permits steady-state acknowledgment traffic; it does
+not require another durable last-acknowledged-revision record. Recovery blocks,
+stale observations, deferred visibility, and failures can prevent new delivery.
+A successful catalog reconciliation summary describes the committed catalog work;
+an acknowledgment may remain pending, with a separate deferral log and durable
+retry state. Initial delivery and retry errors are logged by their respective
+callers once, without suppressing error propagation or source blocking.
+
+A nullable pending-delta acknowledgment column is added without deleting existing
+rows. Pending deltas from pre-release builds that contain a revision but lack the
+complete release/visibility context are preserved and block that source with a
+diagnostic for operator investigation. The provider cannot safely infer whether
+those observations were ready or partial; do not clear the database to bypass the
+check. Older deltas without revisions still recover without authorizing release.
 
 ### Recovery verification
 
@@ -147,6 +191,14 @@ provider suite exercises restart during outage, failure after Catalog applicatio
 recovery before a newer empty snapshot, failed replay and ownership commit,
 idempotent retries, independent OCI/npx sources, partial retention, invalid
 responses, same-digest tag aliases, and tag movement without identity changes.
+The D8 acknowledgment lifecycle tests cover pending acknowledgment persistence
+after ready OCI reconciliation, successful retry delivery and cleanup,
+superseded revision (409) discard, acknowledgment retry failure with per-source
+polling isolation, and error propagation from transport and auth failures.
+Additional tests cover delayed processing while connector revisions advance,
+ready and partial crash replay, stale URLs, incomplete catalog responses,
+annotation upgrades, encoded source IDs, acknowledgment transaction rollback,
+request deadlines, and scheduler cancellation.
 Catalog mutation and connector HTTP boundaries use fixtures; SQLite persistence
 and provider mapping/reconciliation execute their production implementations.
 
