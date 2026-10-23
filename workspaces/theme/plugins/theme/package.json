@@ -21,7 +21,9 @@
     ]
   },
   "sideEffects": [
-    "*.css"
+    "*.css",
+    "*.css.esm.js",
+    "**/*.css.esm.js"
   ],
   "exports": {
     ".": "./src/index.ts",
