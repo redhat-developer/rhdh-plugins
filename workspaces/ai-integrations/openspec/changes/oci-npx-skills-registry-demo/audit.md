@@ -1,3 +1,31 @@
+## Task 6.4 completion: maintainer end-to-end TechDocs verification
+
+**Last audited:** 2026-10-23T19:59:56Z
+
+After rebasing PR #5330 onto merged task 6.3 (PR #5324), the maintainer
+confirmed that SKILLS.md rendered as TechDocs from both imported OCI skill
+entities. This verifies the provider annotation and URL-reader integration through
+the running TechDocs path. The result is maintainer-reported manual verification;
+it does not imply additional manual security, failure, or retention test coverage.
+
+Task 6.4 is now checked in tasks.md. This entry supersedes the pending rendering
+verification status in the historical 6.4 follow-up below. Prior automated evidence
+remains valid: the rebased branch passed 70 reader tests and 141 provider tests,
+full type checking, Prettier, and strict OpenSpec validation. Task 6.5 remains
+unchecked; this completion does not claim its broader integration matrix is done.
+No runtime code, configuration, or API contract changed in this documentation update.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This is a focused completion/evidence update, not a new full-change audit.
+All earlier audit entries are preserved below.
+
+---
+
 ## Focused PR #5324 final review follow-up: logging and documentation
 
 **Last audited:** 2026-10-23T19:34:52Z
@@ -36,6 +64,55 @@ of these uncommitted follow-up changes.
 | SUGGESTION | 0     |
 
 No unresolved inconsistencies were identified within this focused scope.
+
+---
+
+## Focused task 6.4 review follow-up: trusted destinations and ETags
+
+**Last audited:** 2026-10-23T19:06:42Z
+
+This entry records PR #5330's OCI skill documentation reader implementation and
+its review corrections. It supersedes earlier no-task-status-change wording only
+for this follow-up; historical entries below retain their original scope.
+
+The URL-reader service factory now resolves configured OCI connector bases through
+Backstage discovery before publishing the synchronous reader factory. Both reader
+selection and direct reads require the exact trusted origin and complete base
+pathname, preserving deployment prefixes and decoding each route segment once.
+Malformed percent escapes produce no match. Skill-documentation paths cannot
+fall through to the legacy model-card substring matcher. Untrusted skill URLs are
+rejected before requesting or sending a service token.
+
+Successful skill-docs responses must supply a nonblank ETag, validated before the
+response body is adapted or locked. Missing validators produce a protocol error
+rather than an empty cache key. Valid ETags pass through unchanged; conditional
+requests, 404/304 propagation, and minimal MkDocs generation remain covered.
+Model-card requests now reject redirects while retaining their cache behavior.
+Delivery-plan wording was removed from source comments. The optional routing
+metadata refactor was deferred because the current priority is consistent.
+
+D8, the TechDocs scenarios, README, changeset and task note describe the same
+behavior. Task 6.4 is unchecked pending maintainer rendering/regression testing;
+this entry does not claim task 6.3 or 6.5 completion. No app-config.yaml changes
+were made.
+
+Automated verification: 70 tests across two reader suites passed, including
+red/green reproductions of off-origin matching, missing discovery prefixes,
+malformed encoding, absent ETags, redirect policy and service-factory discovery
+wiring. A real Response/body adapter test covers authenticated prefixed reads
+and ETag passthrough; a missing-ETag case verifies rejection before body locking.
+Full workspace type checking/build, package lint and API report CI checks passed.
+Reader HTTP/auth/discovery boundaries are fixtures; live TechDocs rendering remains
+the maintainer's next verification step.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No unresolved artifact inconsistencies were found in this focused scope. This is
+not a new full-change audit or an end-to-end rendering result.
 
 ---
 
