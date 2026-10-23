@@ -1,0 +1,60 @@
+base: https://raw.githubusercontent.com/fullsend-ai/agents/4bbe4f50ed8e33c60539eaa30ddc320edf8bcda0/harness/fix.yaml#sha256=f966f0b8cd9b58289f19b446cfc4fd343c9079d9c9acee0260824b57e896e068
+agent: rhdh/agents/fix.md
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+policy: rhdh/policies/ci-fix.yaml
+role: coder
+slug: fullsend-ai-ci-repair
+
+providers:
+  - github-artifacts
+openshell:
+  profiles:
+    - profiles/fullsend-github-artifacts.yaml
+
+skills:
+  - https://github.com/redhat-developer/rhdh-skill/tree/e84109919ae6085e3dcfe568c695e6dda54874ce/skills/rhdh-coding#sha256=5a4bc35476108a215091ccf1180cee68547c7668c6b193de4402674bc7b6cded
+  - skills/ci-repair
+  - skills/ci-failure-analysis
+  - skills/playwright-trace
+allowed_remote_resources:
+  - https://github.com/redhat-developer/rhdh-skill/
+
+host_files:
+  - src: rhdh/env/gcp-vertex.env
+    dest: /sandbox/workspace/.env.d/gcp-vertex.env
+    expand: true
+  - src: ${GOOGLE_APPLICATION_CREDENTIALS}
+    dest: /tmp/.gcp-credentials.json
+  - src: ${GCP_OIDC_TOKEN_FILE}
+    dest: /tmp/.gcp-oidc-token
+    optional: true
+  - src: rhdh/bin/yarn
+    dest: /sandbox/workspace/bin/yarn
+  - src: rhdh/env/yarn-proxy.env
+    dest: /sandbox/workspace/.env.d/yarn-proxy.env
+  - src: dispatch/event-payload.json
+    dest: /sandbox/workspace/ci-event.json
+    optional: true
+
+pre_script: rhdh/scripts/pre-ci-fix.sh
+post_script: rhdh/scripts/post-ci-fix.sh
+validation_loop:
+  script: rhdh/scripts/validate-output-schema.sh
+  schema: rhdh/schemas/ci-fix-result.schema.json
+  max_iterations: 2
+
+env:
+  runner:
+    GH_TOKEN: ${GH_TOKEN}
+    REPO_FULL_NAME: ${REPO_FULL_NAME}
+    GITHUB_ISSUE_URL: ${GITHUB_ISSUE_URL}
+    CI_CONTEXT_FILE: ${GITHUB_WORKSPACE}/.fullsend/dispatch/event-payload.json
+  sandbox:
+    GH_TOKEN: ${GH_TOKEN}
+    REPO_FULL_NAME: ${REPO_FULL_NAME}
+    GITHUB_ISSUE_URL: ${GITHUB_ISSUE_URL}
+    CI_EVENT_FILE: /sandbox/workspace/ci-event.json
+    CI_REPAIR_MODE: 'true'
+    PLAYWRIGHT_BROWSERS_PATH: /tmp/playwright-browsers
+
+timeout_minutes: 60
