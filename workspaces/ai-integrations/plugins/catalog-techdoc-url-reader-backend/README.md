@@ -28,6 +28,46 @@ backend.add(
 );
 ```
 
+## OCI Skill Documentation URL Reader
+
+In addition to model-card TechDocs, this plugin reads OCI skill documentation
+from configured connector destinations.
+
+### Configuration
+
+Skill documentation sources are read from the
+`catalog.providers.skillsCatalogProvider` config section. Only sources with
+`sourceType: 'oci'` are matched:
+
+```yaml
+catalog:
+  providers:
+    skillsCatalogProvider:
+      production:
+        sources:
+          - connectorPluginId: skill-image-connector
+            sourceId: quay-public
+            sourceType: oci
+```
+
+### URL pattern
+
+The reader matches URLs of the form:
+
+```
+/api/<connectorPluginId>/skilldocs/<sourceId>/<digest>
+```
+
+where `<digest>` is a `sha256:<64 hex chars>` OCI manifest digest. URLs
+with query strings, fragments, URL credentials, extra path segments, or
+invalid digest formats are rejected.
+
+The reader authenticates with the connector plugin via
+`auth.getPluginRequestToken`, rejects redirects without forwarding service
+tokens, and propagates `404` as `NotFoundError` and `304` as
+`NotModifiedError`. The connector's response `ETag` is passed through for
+TechDocs caching.
+
 ## Development
 
 This plugin backend can be started in a standalone mode from directly in this

@@ -81,7 +81,8 @@ export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
     // Write a minimal mkdocs.yml that the TechDocs builder (mkdocs)
     // requires at the project root.
     const mkdocsPath = platformPath.join(dir, 'mkdocs.yml');
-    const mkdocsContent = `site_name: ${this.siteName}\nnav:\n  - Home: index.md\n`;
+    const escapedSiteName = this.siteName.replace(/'/g, "''");
+    const mkdocsContent = `site_name: '${escapedSiteName}'\nnav:\n  - Home: index.md\n`;
     try {
       await fs.promises.writeFile(mkdocsPath, mkdocsContent);
     } catch (error) {
@@ -196,8 +197,7 @@ export function readSkillSourceConfigs(config: Config): SkillSourceConfig[] {
       continue;
     }
 
-    for (let i = 0; i < sourcesConfig.length; i++) {
-      const sourceConfig = sourcesConfig[i];
+    for (const sourceConfig of sourcesConfig) {
       const sourceType = safeGetOptionalString(sourceConfig, 'sourceType');
       if (sourceType !== 'oci') {
         continue; // Only OCI sources get TechDocs in this increment
@@ -291,10 +291,9 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     for (const source of this.skillSourceConfigs) {
       // Build the expected base path: /api/<connectorPluginId>/skilldocs/
       const basePath = `/api/${source.connectorPluginId}/skilldocs/`;
-      const idx = pathname.indexOf(basePath);
-      if (idx < 0) continue;
+      if (!pathname.startsWith(basePath)) continue;
 
-      const remainder = pathname.substring(idx + basePath.length);
+      const remainder = pathname.substring(basePath.length);
       // remainder must be exactly <encodedSourceId>/<encodedDigest>
       const parts = remainder.split('/');
       if (parts.length !== 2 || parts[0] === '' || parts[1] === '') continue;
@@ -490,9 +489,13 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   ): Promise<UrlReaderServiceReadTreeResponse> {
     this.logger.info(`ModelCatalogBridgeTechdocUrlReader.readTree of ${url}`);
     const parsedUrl = new URL(url);
-    const isSkillDocs = this.matchingSkillSourceConfig(parsedUrl) !== undefined;
 
     const data = await this.readUrl(url, options);
+
+    // Mirror readUrl's priority: bridge config first, then skill docs
+    const isSkillDocs =
+      this.matchingBridgeConfig(parsedUrl) === undefined &&
+      this.matchingSkillSourceConfig(parsedUrl) !== undefined;
 
     if (isSkillDocs) {
       // Use the connector's response ETag for TechDocs caching (D8)

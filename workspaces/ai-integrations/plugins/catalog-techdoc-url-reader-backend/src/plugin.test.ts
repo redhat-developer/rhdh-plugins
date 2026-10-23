@@ -426,7 +426,7 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
       // mkdocs.yml should be written at the root
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
         path.join(tmpobj.name, 'mkdocs.yml'),
-        'site_name: Model Card\nnav:\n  - Home: index.md\n',
+        "site_name: 'Model Card'\nnav:\n  - Home: index.md\n",
       );
       // docs/index.md should be written
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
@@ -452,7 +452,7 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
       // mkdocs.yml at targetDir root
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
         path.join(targetDir, 'mkdocs.yml'),
-        'site_name: Model Card\nnav:\n  - Home: index.md\n',
+        "site_name: 'Model Card'\nnav:\n  - Home: index.md\n",
       );
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
         path.join(targetDir, 'docs', 'index.md'),
@@ -476,7 +476,7 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
 
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
         path.join(targetDir, 'mkdocs.yml'),
-        'site_name: Skill Documentation\nnav:\n  - Home: index.md\n',
+        "site_name: 'Skill Documentation'\nnav:\n  - Home: index.md\n",
       );
     });
   });
@@ -486,6 +486,33 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
 
 const validDigest =
   'sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789';
+
+const skillConfig = {
+  catalog: {
+    providers: {
+      skillsCatalogProvider: {
+        production: {
+          sources: [
+            {
+              connectorPluginId: 'skill-image-connector',
+              sourceId: 'quay-public',
+              sourceType: 'oci',
+            },
+          ],
+          defaultOwner: 'team-skills',
+          defaultLifecycle: 'production',
+        },
+      },
+    },
+  },
+};
+
+const newSkillReader = (config: any) => {
+  return new ModeCatalogBridgeTechdocUrlReader(
+    new ConfigReader(config),
+    mockServices.logger.mock(),
+  );
+};
 
 describe('readSkillSourceConfigs', () => {
   it('should return empty array if no provider config', () => {
@@ -643,35 +670,8 @@ describe('readSkillSourceConfigs', () => {
 });
 
 describe('Skill docs URL matching', () => {
-  const skillConfig = {
-    catalog: {
-      providers: {
-        skillsCatalogProvider: {
-          production: {
-            sources: [
-              {
-                connectorPluginId: 'skill-image-connector',
-                sourceId: 'quay-public',
-                sourceType: 'oci',
-              },
-            ],
-            defaultOwner: 'team-skills',
-            defaultLifecycle: 'production',
-          },
-        },
-      },
-    },
-  };
-
-  const newReader = (config: any) => {
-    return new ModeCatalogBridgeTechdocUrlReader(
-      new ConfigReader(config),
-      mockServices.logger.mock(),
-    );
-  };
-
   it('should match skill docs URL with correct pattern', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`,
     );
@@ -679,7 +679,7 @@ describe('Skill docs URL matching', () => {
   });
 
   it('should not match root-level /skilldocs/ without /api/<pluginId>', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       `http://localhost:7007/skilldocs/quay-public/${validDigest}`,
     );
@@ -687,7 +687,7 @@ describe('Skill docs URL matching', () => {
   });
 
   it('should not match another plugin path', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       `http://localhost:7007/api/other-plugin/skilldocs/quay-public/${validDigest}`,
     );
@@ -695,7 +695,7 @@ describe('Skill docs URL matching', () => {
   });
 
   it('should not match untrusted source ID', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       `http://localhost:7007/api/skill-image-connector/skilldocs/unknown-source/${validDigest}`,
     );
@@ -703,7 +703,7 @@ describe('Skill docs URL matching', () => {
   });
 
   it('should not match invalid digest format', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       'http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/sha256:tooshort',
     );
@@ -711,7 +711,7 @@ describe('Skill docs URL matching', () => {
   });
 
   it('should not match URL with query string', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}?foo=bar`,
     );
@@ -719,7 +719,7 @@ describe('Skill docs URL matching', () => {
   });
 
   it('should not match URL with fragment', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}#section`,
     );
@@ -727,7 +727,7 @@ describe('Skill docs URL matching', () => {
   });
 
   it('should not match URL with credentials', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       `http://user:pass@localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`,
     );
@@ -735,7 +735,7 @@ describe('Skill docs URL matching', () => {
   });
 
   it('should not match URL with extra path segments', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}/extra`,
     );
@@ -743,7 +743,7 @@ describe('Skill docs URL matching', () => {
   });
 
   it('should not match URL with trailing slash', () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const url = new URL(
       `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}/`,
     );
@@ -770,7 +770,7 @@ describe('Skill docs URL matching', () => {
         },
       },
     };
-    const reader = newReader(encodedConfig);
+    const reader = newSkillReader(encodedConfig);
     const url = new URL(
       `http://localhost:7007/api/skill-image-connector/skilldocs/${encodeURIComponent(
         'quay/public',
@@ -799,14 +799,14 @@ describe('Skill docs URL matching', () => {
         },
       },
     };
-    const reader = newReader(combinedConfig);
+    const reader = newSkillReader(combinedConfig);
     expect(
       reader.bridgePredicate(new URL('https://localhost:9090/modelcard/test')),
     ).toBe(true);
   });
 
   it('should not match with no skill source config', () => {
-    const reader = newReader({});
+    const reader = newSkillReader({});
     const url = new URL(
       `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`,
     );
@@ -819,34 +819,7 @@ describe('Skill docs readUrl', () => {
     jest.resetAllMocks();
   });
 
-  const skillConfig = {
-    catalog: {
-      providers: {
-        skillsCatalogProvider: {
-          production: {
-            sources: [
-              {
-                connectorPluginId: 'skill-image-connector',
-                sourceId: 'quay-public',
-                sourceType: 'oci',
-              },
-            ],
-            defaultOwner: 'team-skills',
-            defaultLifecycle: 'production',
-          },
-        },
-      },
-    },
-  };
-
   const testUrl = `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`;
-
-  const newReader = (config: any) => {
-    return new ModeCatalogBridgeTechdocUrlReader(
-      new ConfigReader(config),
-      mockServices.logger.mock(),
-    );
-  };
 
   beforeEach(() => {
     ModeCatalogBridgeTechdocUrlReader.auth = {
@@ -858,7 +831,7 @@ describe('Skill docs readUrl', () => {
   });
 
   it('should authenticate with the connector plugin ID', async () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const mockResponse = { ok: true, status: 200 };
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
     jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
@@ -888,7 +861,7 @@ describe('Skill docs readUrl', () => {
   });
 
   it('should forward If-None-Match header when etag is provided', async () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const mockResponse = { ok: true, status: 200 };
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
     jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
@@ -910,7 +883,7 @@ describe('Skill docs readUrl', () => {
   });
 
   it('should not send If-None-Match when no etag provided', async () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const mockResponse = { ok: true, status: 200 };
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
     jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
@@ -925,7 +898,7 @@ describe('Skill docs readUrl', () => {
   });
 
   it('should throw NotFoundError on 404', async () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       status: 404,
@@ -936,7 +909,7 @@ describe('Skill docs readUrl', () => {
   });
 
   it('should throw NotModifiedError on 304', async () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       status: 304,
@@ -947,7 +920,7 @@ describe('Skill docs readUrl', () => {
   });
 
   it('should propagate server errors', async () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       status: 500,
@@ -958,14 +931,14 @@ describe('Skill docs readUrl', () => {
   });
 
   it('should throw on fetch failure (e.g. redirect rejection)', async () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     global.fetch = jest.fn().mockRejectedValue(new TypeError('redirect error'));
 
     await expect(reader.readUrl(testUrl)).rejects.toThrow('Unable to read');
   });
 
   it('should throw when no config matches', async () => {
-    const reader = newReader({});
+    const reader = newSkillReader({});
     await expect(reader.readUrl(testUrl)).rejects.toThrow('No matching config');
   });
 });
@@ -975,34 +948,7 @@ describe('Skill docs readTree', () => {
     jest.resetAllMocks();
   });
 
-  const skillConfig = {
-    catalog: {
-      providers: {
-        skillsCatalogProvider: {
-          production: {
-            sources: [
-              {
-                connectorPluginId: 'skill-image-connector',
-                sourceId: 'quay-public',
-                sourceType: 'oci',
-              },
-            ],
-            defaultOwner: 'team-skills',
-            defaultLifecycle: 'production',
-          },
-        },
-      },
-    },
-  };
-
   const testUrl = `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`;
-
-  const newReader = (config: any) => {
-    return new ModeCatalogBridgeTechdocUrlReader(
-      new ConfigReader(config),
-      mockServices.logger.mock(),
-    );
-  };
 
   beforeEach(() => {
     ModeCatalogBridgeTechdocUrlReader.auth = {
@@ -1014,7 +960,7 @@ describe('Skill docs readTree', () => {
   });
 
   it('should return response with ETag from connector response', async () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const responseBuffer = Buffer.from('# Skill Documentation');
 
     jest.spyOn(reader, 'readUrl').mockResolvedValue({
@@ -1037,7 +983,7 @@ describe('Skill docs readTree', () => {
   });
 
   it('should use Skill Documentation as site name', async () => {
-    const reader = newReader(skillConfig);
+    const reader = newSkillReader(skillConfig);
     const responseBuffer = Buffer.from('# Skill Documentation');
 
     jest.spyOn(reader, 'readUrl').mockResolvedValue({
@@ -1053,7 +999,7 @@ describe('Skill docs readTree', () => {
 
     expect(fs.promises.writeFile).toHaveBeenCalledWith(
       path.join(targetDir, 'mkdocs.yml'),
-      'site_name: Skill Documentation\nnav:\n  - Home: index.md\n',
+      "site_name: 'Skill Documentation'\nnav:\n  - Home: index.md\n",
     );
     expect(fs.promises.writeFile).toHaveBeenCalledWith(
       path.join(targetDir, 'docs', 'index.md'),
@@ -1078,7 +1024,7 @@ describe('Skill docs readTree', () => {
         },
       },
     };
-    const reader = newReader(modelCardConfig);
+    const reader = newSkillReader(modelCardConfig);
     const responseBuffer = Buffer.from('model card content');
 
     jest.spyOn(reader, 'readUrl').mockResolvedValue({
@@ -1103,7 +1049,7 @@ describe('Skill docs readTree', () => {
     await response.dir({ targetDir });
     expect(fs.promises.writeFile).toHaveBeenCalledWith(
       path.join(targetDir, 'mkdocs.yml'),
-      'site_name: Model Card\nnav:\n  - Home: index.md\n',
+      "site_name: 'Model Card'\nnav:\n  - Home: index.md\n",
     );
   });
 });
