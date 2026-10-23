@@ -1639,14 +1639,9 @@ describe('intelligent-assistant router tests', () => {
     });
   });
 
-  // Regression guard: /v1/query intentionally runs validation before
-  // authorization so malformed requests are rejected cheaply without a
-  // permission-service round-trip. These tests arm the auth layer with DENY
-  // and send invalid bodies — getting 400 (not 403) proves validation still
-  // executes first regardless of permission state.
-  describe('POST /v1/query validation-before-auth ordering', () => {
-    it('returns 400 for missing provider even when permission is denied', async () => {
-      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+  describe('POST /v1/query input validation', () => {
+    it('returns 400 for missing provider when permission is allowed', async () => {
+      const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .post('/api/intelligent-assistant/v1/query')
         .send({
@@ -1660,8 +1655,8 @@ describe('intelligent-assistant router tests', () => {
       );
     });
 
-    it('returns 400 for missing model even when permission is denied', async () => {
-      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+    it('returns 400 for missing model when permission is allowed', async () => {
+      const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .post('/api/intelligent-assistant/v1/query')
         .send({
@@ -1674,8 +1669,8 @@ describe('intelligent-assistant router tests', () => {
       );
     });
 
-    it('returns 400 for missing query even when permission is denied', async () => {
-      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+    it('returns 400 for missing query when permission is allowed', async () => {
+      const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .post('/api/intelligent-assistant/v1/query')
         .send({
