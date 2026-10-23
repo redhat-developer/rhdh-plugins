@@ -76,6 +76,8 @@ export interface PendingDelta {
    * `commitStateAndSaveAcknowledgment`.
    */
   revision?: string;
+  /** Complete ready-OCI release context persisted before catalog mutation. */
+  acknowledgment?: PendingAcknowledgment;
 }
 
 // ─── Pending acknowledgment record ─────────────────────────────────
@@ -230,7 +232,7 @@ export interface ReconciliationStore {
  * - `skills_provider_pending_ack`: pending acknowledgments for D8 reconciliation
  *
  * Each instance is scoped to a single provider config ID. The provider
- * ID is included in both tables' composite primary keys to ensure data
+ * ID is included in all tables' composite primary keys to ensure data
  * isolation when multiple provider configs coexist.
  *
  * @internal
@@ -317,6 +319,9 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
       removals: JSON.parse(row.removals_json) as PlannedRemoval[],
       nextState: JSON.parse(row.next_state_json) as CommittedSourceState,
       revision: row.revision ?? undefined,
+      acknowledgment: row.acknowledgment_json
+        ? (JSON.parse(row.acknowledgment_json) as PendingAcknowledgment)
+        : undefined,
     };
   }
 
@@ -331,6 +336,9 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
       removals: JSON.parse(row.removals_json) as PlannedRemoval[],
       nextState: JSON.parse(row.next_state_json) as CommittedSourceState,
       revision: row.revision ?? undefined,
+      acknowledgment: row.acknowledgment_json
+        ? (JSON.parse(row.acknowledgment_json) as PendingAcknowledgment)
+        : undefined,
     }));
   }
 
@@ -343,6 +351,9 @@ export class DatabaseReconciliationStore implements ReconciliationStore {
       removals_json: JSON.stringify(delta.removals),
       next_state_json: JSON.stringify(delta.nextState),
       revision: delta.revision ?? null,
+      acknowledgment_json: delta.acknowledgment
+        ? JSON.stringify(delta.acknowledgment)
+        : null,
     };
 
     // Upsert in a transaction to prevent race conditions

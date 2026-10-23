@@ -79,6 +79,7 @@ export interface PendingAcknowledgment {
 
 // @public
 export interface PendingDelta {
+  acknowledgment?: PendingAcknowledgment;
   nextState: CommittedSourceState;
   removals: PlannedRemoval[];
   revision?: string;
@@ -182,7 +183,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
     store: ReconciliationStore,
-    catalogApi?: CatalogApi,
+    catalogApi: Pick<CatalogApi, 'getEntitiesByRefs'>,
   );
   // (undocumented)
   connect(connection: EntityProviderConnection): Promise<void>;

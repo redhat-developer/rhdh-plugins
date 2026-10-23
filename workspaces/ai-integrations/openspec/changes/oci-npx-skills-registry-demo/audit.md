@@ -1,3 +1,42 @@
+## Focused task 6.3 completion follow-up: release context and visibility
+
+**Last audited:** 2026-10-23T18:13:03Z
+
+This focused consistency check covers the provider implementation, D8, provider
+scenarios, task 6.3, README, and major changeset. It does not re-audit unrelated
+pending tasks. Historical entries below retain their original scope and dates.
+
+The provider now requires processed catalog visibility verification and persists
+complete release context before a ready OCI mutation. Recovery uses that context
+before retrying acknowledgments or polling newer snapshots. Deferred visibility
+blocks only its source; incomplete query responses cannot prove removal. Partial
+and stale observations cannot authorize release. An unchanged digest/timestamp
+still permits the annotation upgrade required by 6.3. External provider operations
+have deadlines and authenticated HTTP requests reject redirects.
+
+The additive migration preserves existing state. Revision-only pending OCI deltas
+from pre-release builds fail closed for operator investigation; their ready versus
+partial provenance cannot be reconstructed safely. This limitation is documented
+in D8 and the README rather than silently dropping pending obligations.
+
+Automated provider coverage passes: 139 tests across 10 suites, including real
+SQLite crash/reopen and transaction rollback, delayed catalog processing while
+connector revisions advance, partial replay, stale URLs, annotation upgrades,
+encoded source IDs, duplicate retention owners, deadlines, and cancellation.
+Maintainer regression verification passed: the OCI TechDocs annotation is present.
+End-to-end rendering awaits the separate task 6.4 reader.
+Task 6.3 remains checked; this check makes no completion claim for 6.4 or 6.5.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No unresolved inconsistencies were identified within this focused scope.
+
+---
+
 ## Task 6.3 implementation: PR #5324 OCI TechDocs acknowledgment
 
 **Last audited:** 2026-10-23T12:00:00Z

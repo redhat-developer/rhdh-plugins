@@ -22,6 +22,7 @@ import { CatalogClient } from '@backstage/catalog-client';
 import { InputError } from '@backstage/errors';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
 
+import { REQUEST_TIMEOUT_MS } from './request-timeout';
 import { SkillsCatalogProvider } from './SkillsCatalogProvider';
 import { readSkillsCatalogProviderConfigs } from './config';
 import { DatabaseReconciliationStore } from './reconciliation-store';
@@ -72,7 +73,21 @@ export const catalogModuleSkillsCatalogProvider = createBackendModule({
         // CatalogClient for D8 catalog visibility verification.
         // Uses the provider's own discovery and fetch to query the
         // catalog REST API for processed entity state.
-        const catalogApi = new CatalogClient({ discoveryApi: discovery });
+        const catalogApi = new CatalogClient({
+          discoveryApi: discovery,
+          fetchApi: {
+            fetch: (input, init) =>
+              fetch(input, {
+                ...init,
+                redirect: 'error',
+                // Keep the abort deadline active through response JSON consumption.
+                signal: AbortSignal.any([
+                  AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+                  ...(init?.signal ? [init.signal] : []),
+                ]),
+              }),
+          },
+        });
 
         // Validate no duplicate (sourceType, sourceId) retention-owner
         // assignments across all provider instances per D8.
@@ -119,8 +134,9 @@ export const catalogModuleSkillsCatalogProvider = createBackendModule({
  * Each source may have at most one active provider runner.
  * Duplicate assignments are configuration errors that could cause
  * conflicting acknowledgments.
+ * @internal
  */
-function validateNoDuplicateRetentionOwners(
+export function validateNoDuplicateRetentionOwners(
   configs: SkillsCatalogProviderConfig[],
 ): void {
   const seen = new Map<string, string>();

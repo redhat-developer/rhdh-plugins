@@ -686,6 +686,27 @@ and cannot cause cleanup. Partial snapshots may upsert but never acknowledge
 release. Duplicate provider assignments for a connector/source are rejected;
 multiple independent retention owners for one source are outside this increment.
 
+The provider requires a durable reconciliation store and a catalog client capable
+of querying processed entity references; visibility verification cannot be bypassed.
+Before applying a ready OCI delta, persist its full acknowledgment context with
+that delta: revision, connector plugin ID, retained digests, expected processed
+entity references/URLs, and removal references. Replay uses this immutable context,
+not current source configuration. Recover pending deltas first, then retry their
+acknowledgments. An unresolved visibility check blocks newer polling for that
+source, just as a delivery error does, so a later snapshot cannot overwrite its
+release obligations. Incomplete catalog responses do not prove removals.
+Partial and stale observations never create release acknowledgments.
+
+Discovery, authentication, snapshot fetch/body consumption, catalog visibility
+queries, and acknowledgment delivery each have a 30-second deadline and honor
+scheduler cancellation. Authenticated provider HTTP requests reject redirects.
+An additive pending-delta migration preserves existing state. Legacy pre-release
+OCI deltas with a revision but no complete acknowledgment context remain pending
+and block that source for operator investigation; recovery cannot safely infer
+ready versus partial status. Older deltas without revisions can replay without
+release. Existing entities missing or changing their TechDocs annotation receive
+an upsert even when digest and observation timestamp are unchanged.
+
 **Provider annotation.** The catalog provider constructs the
 `backstage.io/techdocs-ref` annotation for OCI skill entities using
 `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` as specified

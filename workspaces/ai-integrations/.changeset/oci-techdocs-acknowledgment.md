@@ -19,3 +19,12 @@ duplicate retention-owner assignments at startup.
 - Four new required methods on `ReconciliationStore`: `commitStateAndSaveAcknowledgment`, `getPendingAcknowledgment`, `getAllPendingAcknowledgments`, and `clearPendingAcknowledgment`.
 - The `store` constructor parameter on `SkillsCatalogProvider` is now required (previously optional).
 - `InMemoryReconciliationStore` has been removed; consumers must supply a durable `ReconciliationStore` implementation.
+
+- The `catalogApi` constructor parameter is now required and must implement `CatalogApi.getEntitiesByRefs`; visibility verification cannot be bypassed.
+
+Pending deltas persist the complete acknowledgment context before catalog mutation
+and recover it before polling newer snapshots. Deferred visibility checks block
+newer polls for that source. Existing entities receive missing or changed TechDocs
+annotations even without a digest change. Provider HTTP operations reject redirects
+and use bounded deadlines. An additive migration preserves existing rows; legacy
+revision-only pending deltas fail closed for operator investigation.

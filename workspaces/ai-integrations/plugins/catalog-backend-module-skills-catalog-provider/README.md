@@ -114,6 +114,11 @@ provider retains that pending delta and skips fetching new snapshots for the
 affected source until recovery succeeds. Other sources continue independently.
 A loading or empty response cannot clear unresolved pending work.
 
+Catalog visibility verification is required, including for directly constructed
+providers. Supply a catalog client implementing `getEntitiesByRefs`; the backend
+module wires an authenticated `CatalogClient` automatically. There is no option
+to bypass processed entity checks.
+
 The database implementation is internal; consumers must implement the public
 `ReconciliationStore` interface when constructing a provider directly. The owner
 supplying the store must await `store.initialize()` before calling
@@ -129,9 +134,33 @@ const provider = new SkillsCatalogProvider(
   logger,
   taskRunner,
   store,
+  catalogApi, // implements CatalogApi.getEntitiesByRefs
 );
 await provider.connect(connection);
 ```
+
+Before a ready OCI mutation, the pending delta stores the complete acknowledgment
+context: revision, connector plugin ID, committed retained digests, expected
+processed entity references and documentation URLs, and removal references.
+Ownership and that acknowledgment are then committed atomically. Recovery replays
+the exact persisted context before retrying acknowledgments and polling newer
+snapshots. Delayed catalog processing, stale documentation URLs, incomplete catalog
+responses, and delivery failures block newer polling for that source while other
+sources continue. Partial or stale snapshots never authorize release. Existing
+entities missing the TechDocs annotation are updated even when their digest and
+observation timestamp are unchanged.
+
+External discovery, authentication, snapshot retrieval (including body reading),
+catalog visibility queries, and acknowledgment delivery each have a 30-second
+deadline. Scheduler cancellation also bounds these operations. Authenticated HTTP
+requests reject redirects rather than forwarding service credentials.
+
+A nullable pending-delta acknowledgment column is added without deleting existing
+rows. Pending deltas from pre-release builds that contain a revision but lack the
+complete release/visibility context are preserved and block that source with a
+diagnostic for operator investigation. The provider cannot safely infer whether
+those observations were ready or partial; do not clear the database to bypass the
+check. Older deltas without revisions still recover without authorizing release.
 
 ### Recovery verification
 
@@ -151,6 +180,10 @@ The D8 acknowledgment lifecycle tests cover pending acknowledgment persistence
 after ready OCI reconciliation, successful retry delivery and cleanup,
 superseded revision (409) discard, acknowledgment retry failure with per-source
 polling isolation, and error propagation from transport and auth failures.
+Additional tests cover delayed processing while connector revisions advance,
+ready and partial crash replay, stale URLs, incomplete catalog responses,
+annotation upgrades, encoded source IDs, acknowledgment transaction rollback,
+request deadlines, and scheduler cancellation.
 Catalog mutation and connector HTTP boundaries use fixtures; SQLite persistence
 and provider mapping/reconciliation execute their production implementations.
 

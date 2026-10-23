@@ -181,13 +181,17 @@ export async function consumeSnapshot(
   defaultOwner: string,
   defaultLifecycle: string,
   logger: LoggerService,
+  signal?: AbortSignal,
 ): Promise<ConsumeResult> {
-  const url = `${connectorBaseUrl}/skills/${encodeURIComponent(
+  const normalizedBaseUrl = connectorBaseUrl.replace(/\/+$/, '');
+  const url = `${normalizedBaseUrl}/skills/${encodeURIComponent(
     source.sourceId,
   )}`;
   let response: Response;
   try {
     response = await fetch(url, {
+      redirect: 'error',
+      signal,
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
@@ -200,6 +204,7 @@ export async function consumeSnapshot(
   }
 
   if (!response.ok) {
+    await response.body?.cancel();
     const msg = `Connector returned ${response.status} for source ${source.sourceId}`;
     logger.error(msg);
     return { ok: false, entities: [], error: msg };
@@ -303,7 +308,7 @@ export async function consumeSnapshot(
     snapshot.skills,
     snapshot.source.type,
     source.sourceId,
-    connectorBaseUrl,
+    normalizedBaseUrl,
     namespace,
     defaultOwner,
     defaultLifecycle,

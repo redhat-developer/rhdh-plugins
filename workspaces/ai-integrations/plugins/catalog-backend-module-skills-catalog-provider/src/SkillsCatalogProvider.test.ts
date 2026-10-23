@@ -15,6 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import {
   validOciRecordFull,
@@ -183,6 +184,23 @@ describe('SkillsCatalogProvider', () => {
     refresh: jest.fn(),
   };
 
+  const catalogApi = {
+    getEntitiesByRefs: jest.fn(
+      async ({ entityRefs }: { entityRefs: string[] }) => {
+        const entities = new Map<string, Entity>();
+        for (const [mutation] of (mockConnection.applyMutation as jest.Mock)
+          .mock.calls) {
+          for (const entry of mutation.added ?? [])
+            entities.set(stringifyEntityRef(entry.entity), entry.entity);
+          for (const entry of mutation.removed ?? [])
+            entities.delete(
+              entry.entityRef ?? stringifyEntityRef(entry.entity),
+            );
+        }
+        return { items: entityRefs.map(ref => entities.get(ref)) };
+      },
+    ),
+  };
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -197,6 +215,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       { run: jest.fn() },
       store,
+      catalogApi,
     );
     expect(provider.getProviderName()).toBe('SkillsCatalogProvider:test');
   });
@@ -226,6 +245,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -261,6 +281,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -299,6 +320,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -347,6 +369,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -380,6 +403,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -417,6 +441,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -495,6 +520,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -559,6 +585,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -608,6 +635,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -662,6 +690,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -738,6 +767,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -813,6 +843,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -923,6 +954,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -1033,6 +1065,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -1108,6 +1141,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -1160,6 +1194,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -1197,6 +1232,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -1258,6 +1294,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -1328,6 +1365,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -1385,6 +1423,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
