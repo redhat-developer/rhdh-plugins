@@ -1,3 +1,31 @@
+## Task 6.4 completion: maintainer end-to-end TechDocs verification
+
+**Last audited:** 2026-10-23T19:59:56Z
+
+After rebasing PR #5330 onto merged task 6.3 (PR #5324), the maintainer
+confirmed that SKILLS.md rendered as TechDocs from both imported OCI skill
+entities. This verifies the provider annotation and URL-reader integration through
+the running TechDocs path. The result is maintainer-reported manual verification;
+it does not imply additional manual security, failure, or retention test coverage.
+
+Task 6.4 is now checked in tasks.md. This entry supersedes the pending rendering
+verification status in the historical 6.4 follow-up below. Prior automated evidence
+remains valid: the rebased branch passed 70 reader tests and 141 provider tests,
+full type checking, Prettier, and strict OpenSpec validation. Task 6.5 remains
+unchecked; this completion does not claim its broader integration matrix is done.
+No runtime code, configuration, or API contract changed in this documentation update.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This is a focused completion/evidence update, not a new full-change audit.
+All earlier audit entries are preserved below.
+
+---
+
 ## Focused PR #5324 final review follow-up: logging and documentation
 
 **Last audited:** 2026-10-23T19:34:52Z
