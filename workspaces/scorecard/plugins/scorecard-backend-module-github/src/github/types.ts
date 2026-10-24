@@ -95,3 +95,25 @@ export type GithubCommitsPullRequestsQueryResponse =
       } | null
     > | null;
   };
+
+export type PullRequestWithReviews = {
+  createdAt: string;
+  mergedAt: string | null;
+  reviews: {
+    nodes: Array<{
+      createdAt: string;
+      state: string;
+    }>;
+  };
+};
+
+export type WorkflowRun = {
+  status: string;
+  conclusion: string | null;
+  created_at: string;
+};
+
+export type PullRequestCommitStatus = {
+  createdAt: string;
+  firstPushLastCommitState: string | null;
+};
