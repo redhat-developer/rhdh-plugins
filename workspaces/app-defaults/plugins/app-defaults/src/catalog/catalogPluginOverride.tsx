@@ -14,13 +14,37 @@
  * limitations under the License.
  */
 
-import { coreExtensionData } from '@backstage/frontend-plugin-api';
+import {
+  coreExtensionData,
+  createExtensionInput,
+  createRouteRef,
+  PageBlueprint,
+} from '@backstage/frontend-plugin-api';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
-import { CustomCatalogPage } from './CustomCatalogPage';
+
 import { entityDependenciesCatalogCardAttachments } from './entityDependenciesCardAttachments';
 import { entityOverviewCatalogCardDefaults } from './entityOverviewCatalogCardDefaults';
 import { entityPageLayoutExtensions } from './entityPageLayoutExtensions';
 import { entityPageTabExtensions } from './entityPageTabExtensions';
+
+const catalogPage = PageBlueprint.makeWithOverrides({
+  inputs: {
+    filters: createExtensionInput([coreExtensionData.reactElement]),
+  },
+  factory(originalFactory, { inputs }) {
+    return originalFactory({
+      path: '/catalog',
+      routeRef: createRouteRef({ aliasFor: 'catalog.catalogIndex' }),
+      loader: async () => {
+        const { CustomCatalogPage } = await import('./CustomCatalogPage');
+        const filters = inputs.filters.map(f =>
+          f.get(coreExtensionData.reactElement),
+        );
+        return <CustomCatalogPage filters={filters} />;
+      },
+    });
+  },
+});
 
 /**
  * Override of the Backstage catalog plugin that adds an empty state
@@ -31,21 +55,10 @@ import { entityPageTabExtensions } from './entityPageTabExtensions';
  */
 export const catalogPluginOverride = catalogPlugin.withOverrides({
   extensions: [
+    catalogPage,
     ...entityOverviewCatalogCardDefaults,
     ...entityDependenciesCatalogCardAttachments,
     ...entityPageLayoutExtensions,
     ...entityPageTabExtensions,
-    catalogPlugin.getExtension('page:catalog').override({
-      factory(originalFactory) {
-        const original = originalFactory();
-        const originalElement = original.get(coreExtensionData.reactElement);
-        return [
-          ...original,
-          coreExtensionData.reactElement(
-            <CustomCatalogPage>{originalElement}</CustomCatalogPage>,
-          ),
-        ];
-      },
-    }),
   ],
 });

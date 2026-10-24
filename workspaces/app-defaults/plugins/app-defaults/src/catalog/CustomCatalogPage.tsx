@@ -15,15 +15,19 @@
  */
 
 import { useTranslationRef } from '@backstage/frontend-plugin-api';
+import {
+  CatalogIndexPage,
+  type CatalogIndexPageProps,
+} from '@backstage/plugin-catalog/alpha';
+
 import { appDefaultsTranslationRef } from '../translations/ref';
+import { createCatalogTableColumnsFunc } from './createCatalogTableColumnsFunc';
 import { EmptyCatalogGate } from './EmptyCatalogGate';
 
 /**
  * @internal
  */
-export function CustomCatalogPage(
-  props: Readonly<{ children: React.ReactNode }>,
-) {
+export function CustomCatalogPage(props: CatalogIndexPageProps) {
   const { t } = useTranslationRef(appDefaultsTranslationRef);
   return (
     <EmptyCatalogGate
@@ -33,7 +37,11 @@ export function CustomCatalogPage(
         importButtonTitle: t('catalog.emptyState.importButtonTitle'),
       }}
     >
-      {props.children}
+      <CatalogIndexPage
+        pagination
+        columns={createCatalogTableColumnsFunc}
+        {...props}
+      />
     </EmptyCatalogGate>
   );
 }

@@ -14,9 +14,43 @@
  * limitations under the License.
  */
 
-import { coreExtensionData } from '@backstage/frontend-plugin-api';
+import {
+  coreExtensionData,
+  createExtensionInput,
+  createRouteRef,
+  PageBlueprint,
+} from '@backstage/frontend-plugin-api';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
+import { FormFieldBlueprint } from '@backstage/plugin-scaffolder-react/alpha';
+
+// import { RiAddCircleLine as CreateComponentIcon } from '@remixicon/react';
+
 import { CustomScaffolderPage } from './CustomScaffolderPage';
+
+/** RHDH product title for the scaffolder page (RHDHBUGS-3676). */
+const SELF_SERVICE_TITLE = 'Self-service';
+
+/**
+ * Replaces upstream `page:scaffolder`, which hardcodes title "Create".
+ * Keeps the same formFields input and /create route as upstream.
+ *
+ * @internal
+ */
+const scaffolderPage = PageBlueprint.makeWithOverrides({
+  inputs: {
+    formFields: createExtensionInput([
+      FormFieldBlueprint.dataRefs.formFieldLoader,
+    ]),
+  },
+  factory(originalFactory) {
+    return originalFactory({
+      path: '/create',
+      title: SELF_SERVICE_TITLE,
+      routeRef: createRouteRef({ aliasFor: 'scaffolder.root' }),
+      // icon: <CreateComponentIcon />,
+    });
+  },
+});
 
 /**
  * Override of the Backstage scaffolder plugin that adds an empty state
@@ -24,27 +58,26 @@ import { CustomScaffolderPage } from './CustomScaffolderPage';
  *
  * @public
  */
-export const scaffolderPluginOverride: typeof scaffolderPlugin =
-  scaffolderPlugin.withOverrides({
-    extensions: [
-      scaffolderPlugin.getExtension('sub-page:scaffolder/templates').override({
-        factory(originalFactory) {
-          const original = originalFactory();
-          const originalElement = original.get(coreExtensionData.reactElement);
-          return [
-            ...original,
-            coreExtensionData.reactElement(
-              <CustomScaffolderPage>{originalElement}</CustomScaffolderPage>,
-            ),
-          ];
-        },
-      }),
-      // add the other extensions to keep the origin order (/templates sub-page first)
-      scaffolderPlugin.getExtension('sub-page:scaffolder/actions'),
-      scaffolderPlugin.getExtension('sub-page:scaffolder/editor'),
-      scaffolderPlugin.getExtension('sub-page:scaffolder/tasks'),
-      scaffolderPlugin.getExtension(
-        'sub-page:scaffolder/templating-extensions',
-      ),
-    ],
-  });
+export const scaffolderPluginOverride = scaffolderPlugin.withOverrides({
+  title: SELF_SERVICE_TITLE,
+  extensions: [
+    scaffolderPage,
+    scaffolderPlugin.getExtension('sub-page:scaffolder/templates').override({
+      factory(originalFactory) {
+        const original = originalFactory();
+        const originalElement = original.get(coreExtensionData.reactElement);
+        return [
+          ...original,
+          coreExtensionData.reactElement(
+            <CustomScaffolderPage>{originalElement}</CustomScaffolderPage>,
+          ),
+        ];
+      },
+    }),
+    // add the other extensions to keep the origin order (/templates sub-page first)
+    scaffolderPlugin.getExtension('sub-page:scaffolder/actions'),
+    scaffolderPlugin.getExtension('sub-page:scaffolder/editor'),
+    scaffolderPlugin.getExtension('sub-page:scaffolder/tasks'),
+    scaffolderPlugin.getExtension('sub-page:scaffolder/templating-extensions'),
+  ],
+});
