@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module
 
+## 2.0.2
+
+### Patch Changes
+
+- Updated dependencies [c1ea707]
+- Updated dependencies [1f60858]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.0.2
+
 ## 2.0.1
 
 ### Patch Changes

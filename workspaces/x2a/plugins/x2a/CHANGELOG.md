@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-x2a
 
+## 2.0.3
+
+### Patch Changes
+
+- c1ea707: Add an Edit in Codespaces action beside GitHub migrated sources, using the target branch and Ansible devcontainer configuration. Copy the generated Ansible devcontainer configuration into the target repository and include it in the migration commit. Also match Ansible role-name sanitization in migration jobs and prefer rebased job output when resolving repository conflicts.
+- 1f60858: Enforce rule content limits: max 50,000 characters per rule description, and max 50,000 total characters across all rules accepted by a project
+- 1ceabb4: Show the full rule description in the create-project rules field. Long descriptions were truncated to 100 characters with no way to read the rest; a "Read more" link now opens a dialog with the complete text.
+- d8a5f82: Improve the module page details layout
+- 59efc1a: Added default prompt template when creating adversarial agent
+- Updated dependencies [c1ea707]
+- Updated dependencies [1f60858]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.0.2
+
 ## 2.0.2
 
 ### Patch Changes
