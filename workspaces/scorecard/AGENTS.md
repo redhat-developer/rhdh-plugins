@@ -214,3 +214,277 @@ When reviewing changes to `ThresholdResolver`, the `Metric` type,
 | `OpenSSFConfig.ts`                  | `scorecard-backend-module-openssf`    | OpenSSF provider metric and threshold definitions                 |
 | `FilecheckConfig.ts`                | `scorecard-backend-module-filecheck`  | Filecheck provider metric and threshold definitions               |
 | `DoraConfig.ts`                     | `scorecard-backend-module-dora`       | DORA provider config, collector wiring, and threshold definitions |
+
+## DORA Collector Pipeline
+
+### Data flow overview
+
+DORA metrics are computed via a three-stage pipeline: **collect →
+store → calculate**. Each metric provider drives all three stages
+when `calculateMetrics(entity)` is called.
+
+```
+MetricProvider.calculateMetrics(entity)
+  │
+  ├─ Compute 30-day window (from = now − 30 d, to = now)
+  │
+  ├─ DoraSyncService.syncDeployments / syncIncidents
+  │    ├─ Skip if lastSync < staleAfterMs (default 60 s)
+  │    ├─ Compute data boundary via collectorDataBoundary()
+  │    ├─ ScorecardCollectorsService.collect()
+  │    │    ├─ Validate input against contract + collector schemas
+  │    │    ├─ Collector.collect()  →  external API calls
+  │    │    └─ Validate output against collector + contract schemas
+  │    ├─ Upsert rows into DB (deployments: success-only; incidents: all)
+  │    └─ Update sync watermark
+  │
+  ├─ [Lead-time only] syncPullRequestsForDeployment per adjacent pair
+  │    └─ getCommitShasBetween + getCommitsPullRequests → store PRs
+  │
+  ├─ DoraDataService.readDeployments / readIncidents / readPullRequests
+  │    └─ DB reads filtered to [windowFrom, windowTo]
+  │
+  ├─ Filter deployments by production environment
+  │
+  └─ Calculate metric value → Map<metricId, number>
+```
+
+#### Collector contracts
+
+Each collector type has a **contract schema** defined in
+`scorecard-backend-module-dora` (under `src/metricProviders/schemas/`)
+and an implementation-side schema in the collector package. The
+`DefaultScorecardCollectorsService.collect()` validates input and
+output against both schemas, so any schema mismatch is caught at
+runtime.
+
+| Collector type           | Contract input fields              | Contract output fields                                                             | Default collector ID                  |
+| ------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------- |
+| Deployments              | `from`, `to` (ISO datetime)       | `deployments[]` with `id`, `commitSha`, `environment?`, `createdAt`, `result`      | `github:doraDeployments`              |
+| Incidents                | `from`, `to`, `updatedSince`       | `incidents[]` with `id`, `createdAt`, `updatedAt`, `resolutionAt` (nullable)       | `jira:doraIncidents`                  |
+| Deployment pull requests | `baseCommitSha`, `headCommitSha`   | `pullRequests[]` with `id`, `firstCommitAt`                                        | `github:doraDeploymentPullRequests`   |
+
+Contract input schemas use `.passthrough()` so collector
+implementations can accept extra fields (e.g., `workflowName` for
+`github:doraDeploymentWorkflowRuns`, `issueType` for
+`jira:doraIncidents`). Contract output schemas use `.strict()` so
+unexpected fields in output are rejected.
+
+Deployments output has a `.superRefine` validator that enforces
+ascending `createdAt` order. Change Failure Rate and Median Lead
+Time for Changes iterate adjacent deployment pairs chronologically,
+so out-of-order rows produce wrong results.
+
+#### Metric calculations
+
+| Metric                        | Inputs                       | Minimum data          | Formula                                                                                                  |
+| ----------------------------- | ---------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------- |
+| Deployment Frequency (`/week`)| deployments                  | ≥ 0 deployments       | `(productionDeployments.length / 30) × 7`                                                                |
+| Median Lead Time (`h`)        | deployments + pull requests  | ≥ 2 deployments       | Median of `(deployment.createdAt − PR.firstCommitAt)` across all PRs in each deployment interval         |
+| Change Failure Rate (`%`)     | deployments + incidents      | ≥ 2 deployments       | `(intervalsWithIncidents / evaluatedIntervals) × 100`                                                    |
+| Median Time to Restore (`h`)  | incidents                    | ≥ 1 resolved incident | Median of `(incident.resolutionAt − incident.createdAt)` for resolved incidents                          |
+
+### Time-window invariants
+
+DORA metrics operate over a **30-day sliding window**
+(`DORA_TIME_WINDOW_DAYS = 30` in `constants.ts`). Every
+`calculateMetrics` call computes `windowFrom = now − 30 d` and
+`windowTo = now`.
+
+**Key invariants to verify in reviews:**
+
+1. **Every collector call must bound both `from` and `to`.** The sync
+   service passes `from` (or `updatedSince`) computed via
+   `collectorDataBoundary()` and `to = windowTo`. An unbounded
+   `from` (e.g., epoch) causes the collector to page through the
+   entire project history — wasting API quota and potentially hitting
+   pagination limits before reaching relevant data.
+
+2. **`collectorDataBoundary()` must never produce a future date.**
+   The function clamps a watermark ahead of `now` to `now`, then
+   subtracts `lookbackMs`. This prevents the boundary from landing
+   in the future, which would cause the collector to fetch nothing.
+
+3. **Deployment lookback (default 48 h) re-fetches recent rows to
+   catch late status transitions.** A deployment may be created as
+   `failure` and later flip to `success`. The `syncFrom` boundary is
+   `max(windowFrom, lastSync − 48 h)`, so the collector re-queries
+   the recent overlap. However, `DatabaseDoraDeployments.upsert`
+   uses insert-ignore (immutable facts) — stored rows are not
+   updated. Only newly-appearing `success` deployments are added.
+
+4. **Incident lookback (default 5 min) re-fetches recently updated
+   items via `updatedSince`.** This covers clock skew between the
+   DORA backend and the incident source. The incident `from`/`to`
+   always span the full 30-day window — `updatedSince` only controls
+   which incidents are returned on incremental sync.
+
+5. **DB reads are bounded to `[windowFrom, windowTo]`.** The data
+   service queries `created_at >= from AND created_at <= to`, so
+   rows outside the 30-day window never enter metric calculations
+   even if they exist in the database. Any change that merges
+   additional rows (e.g., pre-window deployments for lead-time
+   baseline) must ensure the merged array is filtered to the
+   expected range before calculation.
+
+6. **Staleness check (`isWithinStaleWindow`) can skip sync
+   entirely.** If `lastSyncedAt` is within `staleAfterMs` (default
+   60 s), the sync service returns without calling the collector.
+   A change that reduces `staleAfterMs` increases API load; a
+   change that increases it widens the data-freshness gap.
+
+### Pagination boundaries
+
+Collector implementations enforce client-side item limits to prevent
+runaway API usage. The limits control **total rows returned**, not
+total API requests — a single fetch may make many paginated requests
+before reaching the limit.
+
+#### GitHub pagination
+
+Defined in `scorecard-backend-module-github`. Default limit:
+`DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT = 1000`, page size:
+`GITHUB_BATCH_SIZE = 100`.
+
+**`getDeployments()` (GraphQL, cursor-based):**
+
+- Queries deployments `ORDER BY CREATED_AT DESC` (newest first)
+- **Stops when any of:**
+  1. `deployments.length >= fetchItemsLimit` — client-side cap
+     reached; logs a warning
+  2. `reachedOlderThanWindow` — a deployment's `createdAt < from`;
+     since results are DESC, all subsequent are older, so early exit
+  3. `!githubHasNextPage` — GitHub reports no more pages
+- Deployments outside `[from, to]` are filtered out during iteration
+  (rows newer than `to` are skipped without incrementing
+  `deployments.length`)
+- Results are reversed to ascending `createdAt` order before return
+
+**`getWorkflowRuns()` (REST, Octokit paginate):**
+
+- Uses GitHub's `created` query filter bounded to `[from, to]`
+- Stops at `fetchItemsLimit`; calls `done()` in paginate callback
+- Results reversed to ascending order
+
+**`getCommitShasBetween()` (REST):**
+
+- Fetches commit range via `compareCommitsWithBasehead`
+- Applies `fetchItemsLimit` via `appendCommits()` which slices at
+  remaining capacity
+- Deduplicates via `Set`
+
+**`getCommitsPullRequests()` (GraphQL, batched):**
+
+- Batches commit SHAs in groups of `GITHUB_BATCH_SIZE` (100)
+- Each commit gets `associatedPullRequests(first: 10)`
+- Deduplicates PRs by PR number
+
+#### Jira pagination
+
+Defined in `scorecard-backend-module-jira`. Default limit:
+`DEFAULT_PAGINATED_FETCH_ITEMS_LIMIT = 1000`.
+
+**Cloud (`JiraCloudClientStrategy`):** Token-based pagination using
+`nextPageToken` and `isLast`. Stops at `fetchItemsLimit`, at
+`isLast === true`, or when no `nextPageToken` is returned. Logs a
+warning when the limit is reached with more pages available.
+
+**Data Center (`JiraDataCenterClientStrategy`):** Offset-based
+pagination (`startAt + maxResults`). Same `fetchItemsLimit` cap.
+Stops when `nextStartAt >= total` or `maxResults === 0`.
+
+**JQL construction (`buildIncidentJql`):**
+
+- Uses epoch-millis comparisons: `created >= <from>`,
+  `created <= <to>`, `updated >= <updatedSince>`
+- Orders `DESC` by `created` so the newest incidents survive when
+  `fetchItemsLimit` truncates results
+- Entity annotations can override `issueType` (default `Incident`)
+
+**High-risk patterns:** Any query that sets `from` to epoch (or
+omits it) risks paging through the entire project history. With
+`fetchItemsLimit = 1000` and `ORDER BY created DESC`, truncation
+silently drops the oldest incidents — the caller receives a full
+page of results with no indication that data was lost. This can
+cause CFR to under-count incidents for the early part of the window.
+
+### Sync watermark and data identity
+
+Each collector invocation is associated with a **data identity**:
+`(collectorId, collectorInputHash)` where `collectorInputHash` is
+the SHA-256 of the canonicalized collector input JSON. Changing any
+input field (e.g., `workflowName`, `issueType`) produces a new hash,
+which:
+
+- Starts a new watermark (no prior `lastSyncedAt`), triggering a
+  full 30-day window fetch
+- Creates new DB rows under the new identity (old rows remain until
+  cleanup)
+
+The sync watermark (`DatabaseDoraLastSync`) tracks when each
+`(entityRef, collectorId, collectorInputHash)` was last synced.
+`DoraSyncService` updates this to `windowTo` after a successful
+collect. Reviews should verify that watermark updates happen only
+after successful upserts — updating the watermark before storing
+data would cause the next sync to skip the un-stored range.
+
+### Review checklist for DORA collector and provider changes
+
+When reviewing changes to DORA providers, collectors, or sync
+logic, verify:
+
+- [ ] **Bounded time ranges.** Every collector call passes both
+  `from`/`to` (or `updatedSince` for incidents) derived from the
+  30-day window. Flag any query where `from` is epoch, unbounded,
+  or not derived from `collectorDataBoundary()`.
+- [ ] **Pagination limits match intended scope.** If the change
+  modifies `fetchItemsLimit` or adds a new paginated query, confirm
+  the limit is appropriate for the data volume. A limit too low
+  silently truncates; too high wastes API quota.
+- [ ] **Filtered data before calculation.** If the change merges
+  deployment arrays (e.g., in-window + pre-window for lead-time
+  baseline), verify the merged array is filtered to the expected
+  time range before metric calculation. Unfiltered merges can
+  introduce out-of-range rows that skew results.
+- [ ] **Ascending `createdAt` order preserved.** Deployments must
+  be in ascending `createdAt` order for adjacent-pair iteration
+  (CFR, lead time). The contract schema enforces this via
+  `.superRefine`, but custom collectors or data merges could break
+  the invariant after validation.
+- [ ] **Error handling distinguishes collection failures from
+  data-insufficiency.** A collector that returns zero rows is not
+  the same as a collector that fails. Providers return `undefined`
+  (no value) when minimum data thresholds are not met (e.g., fewer
+  than 2 deployments for CFR); collection failures should propagate
+  as errors.
+- [ ] **Watermark updated only after successful upsert.** If the
+  change modifies sync logic, confirm `setLastSyncedAt` is called
+  only after `deploymentsDb.upsert` / `incidentsDb.upsert`
+  succeeds.
+- [ ] **Production environment filter applied.** Deployment
+  Frequency, Lead Time, and CFR filter deployments by production
+  environment (`isProductionEnvironment`). Verify the filter is not
+  bypassed and handles `null`/empty environment correctly (treated
+  as production by default).
+- [ ] **Metric documentation matches calculation window.** If the
+  change alters `DORA_TIME_WINDOW_DAYS`, default thresholds, or
+  unit labels, verify that user-facing documentation, translation
+  keys, and config schema are updated to match.
+
+### Key files
+
+| File                          | Package                             | Role                                                                     |
+| ----------------------------- | ----------------------------------- | ------------------------------------------------------------------------ |
+| `constants.ts`                | `scorecard-backend-module-dora`     | `DORA_TIME_WINDOW_DAYS`, default collector IDs, lookback/stale defaults  |
+| `DoraSyncService.ts`          | `scorecard-backend-module-dora`     | Write-side orchestrator: sync, upsert, watermark updates                 |
+| `DoraDataService.ts`          | `scorecard-backend-module-dora`     | Read-side: DB queries bounded to `[windowFrom, windowTo]`                |
+| `syncUtils.ts`                | `scorecard-backend-module-dora`     | `collectorDataBoundary`, `isWithinStaleWindow`, `coalesceInFlight`       |
+| `deploymentSchemas.ts`        | `scorecard-backend-module-dora`     | Deployment contract schemas (input `.passthrough()`, output `.strict()`) |
+| `incidentSchemas.ts`          | `scorecard-backend-module-dora`     | Incident contract schemas                                                |
+| `pullRequestSchemas.ts`       | `scorecard-backend-module-dora`     | Pull request contract schemas                                            |
+| `deploymentFilterUtils.ts`    | `scorecard-backend-module-dora`     | `isProductionEnvironment` — production environment matching              |
+| `GithubClient.ts`             | `scorecard-backend-module-github`   | GitHub GraphQL/REST calls with pagination and `fetchItemsLimit`          |
+| `incidentJql.ts`              | `scorecard-backend-module-jira`     | JQL builder for incident queries with epoch-millis time bounds           |
+| `JiraCloudClientStrategy.ts`  | `scorecard-backend-module-jira`     | Jira Cloud token-based pagination with `fetchItemsLimit`                 |
+| `JiraDataCenterClientStrategy.ts` | `scorecard-backend-module-jira` | Jira Data Center offset-based pagination with `fetchItemsLimit`          |
+| `DefaultScorecardCollectorsService.ts` | `scorecard-node`             | Double-validates input/output against contract + collector schemas       |
