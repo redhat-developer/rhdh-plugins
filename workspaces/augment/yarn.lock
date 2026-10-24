@@ -8708,9 +8708,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openai/agents-core@npm:^0.20.0":
-  version: 0.20.0
-  resolution: "@openai/agents-core@npm:0.20.0"
+"@openai/agents-core@npm:^0.21.0":
+  version: 0.21.0
+  resolution: "@openai/agents-core@npm:0.21.0"
   dependencies:
     "@modelcontextprotocol/client": "npm:^2.0.0"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -8724,7 +8724,7 @@ __metadata:
   peerDependenciesMeta:
     zod:
       optional: true
-  checksum: 10c0/6f23edf41bec83de333a2218c5f9ada5d6b0d702b0e29e4042850854042db67bba146291495953dbe2524a65b84b3e6abe5305df3e851d597af1551512e66211
+  checksum: 10c0/3f0f8ab199ce14ae2dc7d54f21a6ca307d799956b5fc878d43fc155727ddc52fa288c94046cbba6db07273b640fe16e4f13b0c50320bccaa552cdfa68ad1dfb0
   languageName: node
   linkType: hard
 
@@ -11352,7 +11352,7 @@ __metadata:
     "@backstage/plugin-permission-common": "npm:^0.9.2"
     "@kagenti/adk": "npm:^0.8.1"
     "@modelcontextprotocol/sdk": "npm:^1.25.2"
-    "@openai/agents-core": "npm:^0.20.0"
+    "@openai/agents-core": "npm:^0.21.0"
     "@red-hat-developer-hub/backstage-plugin-augment-common": "workspace:^"
     "@types/express": "npm:^4.17.6"
     "@types/express-session": "npm:^1.18.2"
