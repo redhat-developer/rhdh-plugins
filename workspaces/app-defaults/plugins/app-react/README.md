@@ -2,8 +2,9 @@
 
 Shared UI components and extension APIs for the RHDH app shell. Provides the
 application drawer system that lets plugins contribute persistent side panels
-with host-owned state, the extensible scaffolder template card, and the
-blueprints for contributing entries to the priority-ordered app sidebar.
+with host-owned state, the blueprint for contributing header bars above the
+app, the extensible scaffolder template card, and the blueprints for
+contributing entries to the priority-ordered app sidebar.
 
 ## Installation
 
@@ -15,31 +16,81 @@ yarn add @red-hat-developer-hub/backstage-plugin-app-react
 
 ## App Integration
 
-Register the drawer module in your app's `createApp` call:
+The headers and the drawer are rendered by the RHDH app layout from
+`@red-hat-developer-hub/backstage-plugin-app-defaults`. Register that module
+(or the full app defaults feature loader) in your app's `createApp` call:
 
 ```typescript
 import { createApp } from '@backstage/frontend-defaults';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { appLayoutModule } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 
 export default createApp({
   features: [
-    appDrawerModule,
+    appLayoutModule,
     // ...other plugins and modules
   ],
 });
 ```
 
-This registers a single wrapper extension (`app-root-wrapper:app/drawer`) that
-renders the `ApplicationDrawer` around the app content and accepts drawer
-content contributions via inputs. Drawer state is managed by a global singleton
-store, so `useAppDrawer()` works from anywhere in the React tree without a
-wrapping provider.
+This overrides the Backstage `app/layout` extension with a layout that stacks
+all contributed headers at the top and renders the sidebar, the page content
+and the `ApplicationDrawer` side by side below them. The layout accepts header
+contributions via its `headers` input and drawer content contributions via its
+`drawers` input. Drawer state is managed by a global singleton store, so
+`useAppDrawer()` works from anywhere in the React tree without a wrapping
+provider.
 
 ## Plugin Author Guide
 
+### Contributing an App Header
+
+Use `AppHeaderBlueprint` to render a header bar above the whole app. Headers
+attach to the `headers` input of the `app/layout` extension and are stacked
+from the highest to the lowest `priority`, above the sidebar, the content and
+the drawer. Each header renders in its own error boundary.
+
+```typescript
+import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
+import { AppHeaderBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+
+const announcementHeader = AppHeaderBlueprint.make({
+  name: 'announcement',
+  params: {
+    component: AnnouncementBanner,
+    priority: 100,
+  },
+});
+
+export default createFrontendPlugin({
+  pluginId: 'my-plugin',
+  extensions: [announcementHeader],
+});
+```
+
+Parameters:
+
+| Param       | Type                | Required | Description                                                      |
+| ----------- | ------------------- | -------- | ---------------------------------------------------------------- |
+| `component` | `ComponentType<{}>` | Yes      | Component rendered as the header bar                             |
+| `priority`  | `number`            | No       | Ordering, higher renders first (closer to the top, default: `0`) |
+
+`priority` can be overridden, and the header disabled, from `app-config.yaml`
+(`app-header:<plugin>/<name>`):
+
+```yaml
+app:
+  extensions:
+    - app-header:my-plugin/announcement:
+        config:
+          priority: -10
+    - app-header:other-plugin/banner: false
+```
+
 ### Contributing a Drawer
 
-Use `AppDrawerContentBlueprint` to declare drawer content in your plugin:
+Use `AppDrawerContentBlueprint` to declare drawer content in your plugin.
+Drawers attach to the `drawers` input of the `app/layout` extension and the
+active one renders next to the page content, below the headers:
 
 ```typescript
 import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
@@ -291,10 +342,9 @@ app:
 
 ### Main entry (`@red-hat-developer-hub/backstage-plugin-app-react`)
 
+- `AppHeaderBlueprint` / `appHeaderDataRef` -- blueprint and data ref for app headers
 - `AppDrawerContentBlueprint` -- blueprint for contributing drawers
 - `appDrawerContentDataRef` -- extension data ref
-- `appDrawerExtension` -- drawer wrapper extension
-- `appDrawerModule` -- frontend module (registers the drawer wrapper extension)
 - `SidebarItemBlueprint` / `sidebarItemDataRef` -- blueprint and data ref for sidebar entries
 - `SidebarItemGroupBlueprint` / `sidebarItemGroupDataRef` -- blueprint and data ref for sidebar groups
 - `SidebarElementBlueprint` / `sidebarElementDataRef` -- blueprint and data ref for custom sidebar components
@@ -304,6 +354,7 @@ app:
 - `templateCardExtension` -- extensible scaffolder template card component
 - `templateCardModule` -- frontend module (registers the template card)
 - `useAppDrawer` -- hook to control drawers
+- `AppHeaderData` type
 - `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
 - `TemplateCardActionData` / `TemplateCardActionProps` / `TemplateCardBadgeData` types
 - `SidebarIcon` / `SidebarItemData` / `SidebarItemGroupData` / `SidebarElementData` types
@@ -317,6 +368,9 @@ Direct-use OFS components for backward compatibility:
 - `useAppDrawer` -- hook to control drawers
 - Associated types
 
-### Module entry (`@red-hat-developer-hub/backstage-plugin-app-react/app-drawer-module`)
+### Layout module
 
-- Default-exports `appDrawerModule` for Scalprum / module-federation dynamic loading.
+The `app/layout` override that renders the headers and the drawer lives in
+`@red-hat-developer-hub/backstage-plugin-app-defaults` (`appLayoutModule`,
+also default-exported from its `./app-layout-module` entry for Scalprum /
+module-federation dynamic loading).

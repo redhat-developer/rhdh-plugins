@@ -4,7 +4,7 @@ RHDH app module for the **new frontend system**, registered against `pluginId: '
 
 The module provides:
 
-- App layout wrapper (`appLayoutExtension`) that provides BUI routing and analytics context around routed application content, and renders the extensible application drawer (`appDrawerExtension` remains as a compatibility alias)
+- App layout (`appLayoutExtension`, overrides the Backstage `app/layout` extension): all headers contributed via `AppHeaderBlueprint` from `@red-hat-developer-hub/backstage-plugin-app-react` stacked at the top, ordered by priority (higher first), and the sidebar, the page content and the application drawer (`AppDrawerContentBlueprint`) side by side below them. The `AppHeaders` and `AppLayout` components are exported for custom layouts. `appDrawerExtension` / `appDrawerModule` are deprecated aliases of the layout extension and module.
 - Priority-ordered sidebar (`appSidebarExtension`, extension ID `nav-content:app/sidebar`) that renders `SidebarItemBlueprint`, `SidebarItemGroupBlueprint`, `SidebarElementBlueprint`, `SidebarSpacerBlueprint` and `SidebarDividerBlueprint` contributions from `@red-hat-developer-hub/backstage-plugin-app-react`
 - Default sidebar layout: company logo (`sidebar-element:app/logo`, full logo while the sidebar is open and icon logo while collapsed, from `app.branding.fullLogo`, `app.branding.iconLogo` and `app.branding.fullLogoWidth`, with the RHDH logos as fallback), a gap below it (`sidebar-spacer:app/logo`), search modal (`sidebar-element:app/search`), then three menu sections — default built-in paths (top), optional plugin items (middle, with a divider only when non-empty), and a bottom block pushed down by `sidebar-spacer:app/bottom` (Administration, Settings, notifications) with a divider only when that block has visible entries. Administration (`sidebar-item-group:app/admin`, id `admin`) appears for users with admin permission once a plugin contributes an item with `group: 'admin'`. Settings and the company logo are hidden by default when the global header is present; force them with `app.sidebar.settings` / `app.sidebar.logo`. Disable or move any of them from `app-config.yaml`:
 
@@ -153,6 +153,10 @@ Override entry points (for advanced installs):
 
 | Export                            | Role                                                                                             |
 | --------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `./app-defaults-module`           | Full app defaults module (layout, sidebar, template card, icons, auto logout)                    |
+| `./app-layout-module`             | App layout only: headers on top, sidebar, content and drawer side by side                        |
+| `./app-sidebar-module`            | Priority-ordered sidebar only                                                                    |
+| `./app-drawer-module`             | Deprecated alias of `./app-layout-module`                                                        |
 | `./catalog-plugin-override`       | Catalog index empty state, overview layout, Dependencies / System Diagram tabs, card attachments |
 | `./catalog-graph-plugin-override` | Graph empty state, RHDH relations graph cards                                                    |
 | `./api-docs-plugin-override`      | API docs empty state, definition card hidden on Overview, API cards on Dependencies              |
