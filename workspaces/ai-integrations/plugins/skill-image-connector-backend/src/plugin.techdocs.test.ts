@@ -18,10 +18,12 @@
  * OCI skill TechDocs lifecycle tests — task 6.5.
  *
  * Covers content equivalence across layouts, moving tag documentation
- * updates, same-digest alias documentation sharing, partial refresh and
- * restart content retention, admission exhaustion, independent retention
- * settings, inventory-drain recovery, publication/cleanup races, and
- * model-card integration regression.
+ * updates, same-digest alias documentation sharing, partial refresh
+ * content retention, admission exhaustion, independent retention
+ * settings, inventory-drain recovery, publication/cleanup races,
+ * ETag and conditional requests, source isolation, provider outage
+ * content retention, reconcile body validation, and revision header
+ * presence.
  */
 
 import type {
@@ -32,14 +34,13 @@ import {
   coreServices,
   createServiceFactory,
 } from '@backstage/backend-plugin-api';
-import {
-  mockCredentials,
-  mockServices,
-  startTestBackend,
-} from '@backstage/backend-test-utils';
+import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import request from 'supertest';
 import type { ConnectorTestConfig } from './testUtils';
-import { resolvedDigest } from './testUtils';
+import {
+  resolvedDigest,
+  startConnector as sharedStartConnector,
+} from './testUtils';
 import { skillImageConnectorPlugin } from './plugin';
 import { discoverQuayRepositorySnapshot } from './services/QuayDiscovery';
 import {
@@ -89,14 +90,7 @@ const fetchImage = jest.mocked(fetchAndExtractSkillImage);
 const discover = jest.mocked(discoverQuayRepositorySnapshot);
 const resolveManifest = jest.mocked(fetchManifest);
 
-const skillYaml = [
-  'metadata:',
-  '  display-name: Test Skill',
-  '  name: test-skill',
-  '  description: A test',
-  'spec:',
-  '  prompt: Do things',
-].join('\n');
+const skillYaml = `metadata:\n  display-name: Test Skill\n  name: test-skill\n  description: A test\nspec:\n  prompt: Do things`;
 const extracted = {
   skillImageYaml: skillYaml,
   skillsMd: '# Test Skill\nDocumentation content',
@@ -144,6 +138,8 @@ const noOpDatabaseFactory = createServiceFactory({
 
 /**
  * Start a connector test backend with the ContentStore mock active.
+ * Delegates to the shared startConnector, injecting noOpDatabaseFactory
+ * via the extraFeatures parameter.
  */
 function startConnector(
   settings: ConnectorTestConfig,
@@ -151,27 +147,13 @@ function startConnector(
     includeInitialDelayedTasksOnStartup: true,
   }),
 ) {
-  return startTestBackend({
-    features: [
-      skillImageConnectorPlugin,
-      noOpDatabaseFactory,
-      mockServices.rootLogger.factory(),
-      logger.factory,
-      scheduler,
-      mockServices.rootConfig.factory({
-        data: {
-          app: { baseUrl: 'http://localhost:3000' },
-          backend: { baseUrl: 'http://localhost:7007' },
-          skillImageConnector: {
-            ...(settings.sources === undefined
-              ? { allowedRegistries: ['quay.io'] }
-              : {}),
-            ...settings,
-          },
-        },
-      }),
-    ],
-  });
+  return sharedStartConnector(
+    settings,
+    logger,
+    skillImageConnectorPlugin,
+    scheduler,
+    [noOpDatabaseFactory],
+  );
 }
 
 type Task = Parameters<SchedulerService['scheduleTask']>[0];
@@ -206,8 +188,8 @@ function serviceAuth() {
 
 // ── Content equivalence ─────────────────────────────────────────────
 
-describe('annotated-layer and tar layout content equivalence', () => {
-  it('produces equivalent documentation regardless of OCI layer layout', async () => {
+describe('multi-image documentation storage and retrieval', () => {
+  it('stores and serves documentation independently for images with different digests', async () => {
     const annotatedMd = '# Annotated Skill\nContent from annotated layer';
     const tarMd = '# Annotated Skill\nContent from annotated layer';
     let callCount = 0;
