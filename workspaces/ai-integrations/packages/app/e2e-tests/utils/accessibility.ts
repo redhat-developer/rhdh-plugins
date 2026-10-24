@@ -36,7 +36,7 @@ export async function runAccessibilityTests(
   if (!skipFailures) {
     expect(
       accessibilityScanResults.violations,
-      'Accessibility violations found',
+      `Accessibility check (${accessibilityScanResults.violations.length} violations)`,
     ).toEqual([]);
   }
 }
