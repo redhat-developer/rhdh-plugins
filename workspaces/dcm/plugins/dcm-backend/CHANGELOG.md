@@ -1,5 +1,55 @@
 # @red-hat-developer-hub/backstage-plugin-dcm-backend
 
+## 2.1.0
+
+### Minor Changes
+
+- bcc1e28: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- d02b7d7: Default `dcm.auth.enabled` to false when unset.
+
+  Dynamic plugin configs now use `${DCM_AUTH_ENABLED:-false}`, and frontend/
+  backend fallbacks treat a missing setting as auth disabled. Set
+  `DCM_AUTH_ENABLED=true` (or `dcm.auth.enabled: true`) when the control plane
+  requires OIDC.
+
+- 6439015: Expose `dcm.auth.enabled` to the frontend config schema.
+
+  The frontend previously received `dcm.auth.enabled` as undefined when it was
+  set to false, so auth-disabled deployments incorrectly required an OIDC auth
+  API factory. Both plugin schemas now declare the setting with frontend
+  visibility so the bundled UI can honor auth-disabled mode.
+
+- 8a20f54: Disable Backstage permissions by default in the standalone DCM UI image.
+
+  Standalone/compose deployments now set `permission.enabled` to false via
+  `PERMISSION_ENABLED` (default false) in `app-config.production.yaml`, so
+  catalog entity-type loading no longer depends on `/api/permission/authorize`
+  when the RBAC backend has not finished initializing. Set
+  `PERMISSION_ENABLED=true` when configuring real OIDC and RBAC.
+
+- fbab9df: Support DCM authentication-disabled deployments without a host OIDC provider.
+
+  The DCM frontend now avoids OIDC API resolution and token forwarding when
+  `dcm.auth.enabled` is false, while preserving host-provided client overrides
+  and OIDC token forwarding for authentication-enabled deployments. The backend proxy continues to require
+  normal RHDH authentication and omits the DCM upstream Authorization header
+  when DCM authentication is disabled.
+
+- a9b743d: Split image generation into dedicated OCI and Docker scripts with an interactive entrypoint.
+
+  `generate-image.sh` now prompts for image type and version (or accepts `oci|docker <version>`). OCI builds always push `:VERSION` and tag `:latest` via skopeo; Docker builds always push `:VERSION` and `:main`.
+
+- Updated dependencies [66c1975]
+- Updated dependencies [8a20f54]
+- Updated dependencies [fbab9df]
+- Updated dependencies [1a8807f]
+- Updated dependencies [a9b743d]
+- Updated dependencies [bcc1e28]
+  - @red-hat-developer-hub/backstage-plugin-dcm-common@2.1.0
+
 ## 2.0.0
 
 ### Major Changes
