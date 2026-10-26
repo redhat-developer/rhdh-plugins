@@ -45,6 +45,8 @@
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.11.6",
     "@backstage/cli": "^0.36.5",
+    "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend": "workspace:^",
     "knex": "^3.0.0"
   },
   "files": [

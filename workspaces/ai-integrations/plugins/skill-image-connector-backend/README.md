@@ -577,3 +577,11 @@ Tar archives are inspected for path traversal, symlinks, hardlinks, and device e
 **Authorization:** The `/images`, `/skills/:sourceId`, and `/skilldocs/:sourceId/:digest` endpoints are accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. The `/skilldocs/:sourceId/reconcile` endpoint requires the caller's principal to match `plugin:<catalogProviderPluginId>` (configurable, defaults to `catalog`); requests from other principals are rejected with HTTP 403. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
 
 **Provenance:** When using mutable tag references, the plugin cannot guarantee that the content has not been replaced by the registry. Use digest-pinned references (`@sha256:...`) for production deployments. Manifest signature/provenance verification (e.g. cosign/sigstore) is not currently implemented; operators requiring supply-chain provenance should verify images externally before adding them to the configuration.
+
+## OCI skill TechDocs verification
+
+See the [task 6.5 verification matrix and maintainer instructions](../../openspec/changes/oci-npx-skills-registry-demo/verification.md)
+for extraction-layout equivalence, connector/provider/reader integration, durable
+retention/recovery, count/byte limits, acknowledgment races, and model-card
+regression coverage. The combined fixture test runs without an external registry;
+manual examples use the source IDs and authentication from your own configuration.

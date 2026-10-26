@@ -759,7 +759,7 @@ reader's service-token pattern. It propagates HTTP errors from the connector:
 propagate as errors. Successful responses produce a minimal MkDocs project
 containing `mkdocs.yml` with a suitable skill title and `docs/index.md` with
 the retrieved Markdown content. The reader passes the connector's `ETag`
-response header through for TechDocs digest-based cache semantics. A successful
+response header through for TechDocs digest-based cache semantics. Conditional OCI reads use explicit fetch revalidation cache mode so a matching ETag can produce the connector's 304 response rather than being overridden by Node fetch's automatic request cache-control policy. A successful
 skill-docs response missing a nonblank ETag is a protocol error; no empty or
 fabricated validator is substituted. Model-card HTTP requests also reject redirects,
 while preserving their existing cache behavior. Already

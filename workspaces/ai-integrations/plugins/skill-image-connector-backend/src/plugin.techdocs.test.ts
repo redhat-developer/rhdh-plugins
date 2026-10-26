@@ -17,7 +17,7 @@
 /**
  * OCI skill TechDocs lifecycle tests — task 6.5.
  *
- * Covers content equivalence across layouts, moving tag documentation
+ * Covers independent multi-image storage, moving tag documentation
  * updates, same-digest alias documentation sharing, partial refresh
  * content retention, admission exhaustion, independent retention
  * settings, inventory-drain recovery, publication/cleanup races,
@@ -48,6 +48,13 @@ import {
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
 import { fetchManifest } from './services/OciClient';
+import { MAX_RETAINED_DIGESTS } from './services/types';
+
+const mockContentStores: Array<import('./services/ContentStore').ContentStore> =
+  [];
+function getContentStore() {
+  return mockContentStores[mockContentStores.length - 1];
+}
 
 // Mock the ContentStore so that initialize() always operates in-memory,
 // bypassing the better-sqlite3 native dependency required by durable mode.
@@ -60,6 +67,7 @@ jest.mock('./services/ContentStore', () => {
     ContentStore: class extends actual.ContentStore {
       // Override initialize to always run in-memory mode
       async initialize(): Promise<void> {
+        mockContentStores.push(this);
         return super.initialize();
       }
     },
@@ -99,6 +107,7 @@ const extracted = {
 };
 
 beforeEach(() => {
+  mockContentStores.length = 0;
   jest.resetAllMocks();
   logger.child.mockReturnValue(logger);
   jest.mocked(cleanupSkillImageExtraction).mockResolvedValue(undefined);
@@ -186,20 +195,14 @@ function serviceAuth() {
   });
 }
 
-// ── Content equivalence ─────────────────────────────────────────────
-
 describe('multi-image documentation storage and retrieval', () => {
   it('stores and serves documentation independently for images with different digests', async () => {
-    const annotatedMd = '# Annotated Skill\nContent from annotated layer';
-    const tarMd = '# Annotated Skill\nContent from annotated layer';
-    let callCount = 0;
-    fetchImage.mockImplementation(async () => {
-      callCount++;
-      return {
-        ...extracted,
-        skillsMd: callCount === 1 ? annotatedMd : tarMd,
-      };
-    });
+    const annotatedMd = '# First skill\nFirst image documentation';
+    const tarMd = '# Second skill\nSecond image documentation';
+    fetchImage.mockImplementation(async imageRef => ({
+      ...extracted,
+      skillsMd: imageRef.includes('/annotated-skill:') ? annotatedMd : tarMd,
+    }));
 
     const digest2 = `sha256:${'b'.repeat(64)}`;
     resolveManifest
@@ -257,15 +260,12 @@ describe('multi-image documentation storage and retrieval', () => {
       expect(doc2.status).toBe(200);
       expect(doc2.text).toBe(tarMd);
 
-      // Both documents are identical, confirming layout equivalence
-      expect(doc1.text).toBe(doc2.text);
+      expect(doc1.text).not.toBe(doc2.text);
     } finally {
       await stop();
     }
   });
 });
-
-// ── Moving tag TechDocs update ──────────────────────────────────────
 
 describe('moving tag updating TechDocs documentation', () => {
   it('serves updated documentation when a tag moves to a new digest', async () => {
@@ -353,8 +353,6 @@ describe('moving tag updating TechDocs documentation', () => {
   });
 });
 
-// ── Same-digest aliases sharing documentation ───────────────────────
-
 describe('same-digest aliases sharing documentation', () => {
   it('serves the same Markdown for multiple tags sharing a digest', async () => {
     discover.mockResolvedValue({
@@ -394,8 +392,6 @@ describe('same-digest aliases sharing documentation', () => {
     }
   });
 });
-
-// ── Partial refresh content retention ───────────────────────────────
 
 describe('partial refresh content retention', () => {
   it('retains content from previous refresh when some images fail', async () => {
@@ -439,36 +435,21 @@ describe('partial refresh content retention', () => {
   });
 });
 
-// ── Admission exhaustion ────────────────────────────────────────────
-
 describe('admission exhaustion across repeated partial refreshes', () => {
   it('rejects new content when retained bytes exhaust the budget', async () => {
     const digest2 = `sha256:${'d'.repeat(64)}`;
-    resolveManifest
-      .mockResolvedValueOnce({
-        manifest: {
-          schemaVersion: 2,
-          config: {
-            mediaType: 'application/vnd.oci.image.config.v1+json',
-            digest: resolvedDigest,
-            size: 0,
-          },
-          layers: [],
+    resolveManifest.mockImplementation(async imageRef => ({
+      manifest: {
+        schemaVersion: 2,
+        config: {
+          mediaType: 'application/vnd.oci.image.config.v1+json',
+          digest: resolvedDigest,
+          size: 0,
         },
-        digest: resolvedDigest,
-      })
-      .mockResolvedValueOnce({
-        manifest: {
-          schemaVersion: 2,
-          config: {
-            mediaType: 'application/vnd.oci.image.config.v1+json',
-            digest: digest2,
-            size: 0,
-          },
-          layers: [],
-        },
-        digest: digest2,
-      });
+        layers: [],
+      },
+      digest: imageRef.repository.endsWith('/first') ? resolvedDigest : digest2,
+    }));
 
     const longContent = 'x'.repeat(40);
     fetchImage.mockImplementation(async () => ({
@@ -487,20 +468,31 @@ describe('admission exhaustion across repeated partial refreshes', () => {
     const authorization = serviceAuth();
 
     try {
-      await tasks[0].fn(new AbortController().signal);
+      for (let attempt = 0; attempt < 3; attempt++) {
+        await tasks[0].fn(new AbortController().signal);
 
-      const snapshot = await request(baseUrl)
-        .get('/api/skill-image-connector/skills/default')
-        .set('Authorization', authorization);
-      expect(snapshot.body.status).toBe('partial');
-      expect(snapshot.body.skills).toHaveLength(1);
+        const snapshot = await request(baseUrl)
+          .get('/api/skill-image-connector/skills/default')
+          .set('Authorization', authorization);
+        expect(snapshot.body.status).toBe('partial');
+        expect(snapshot.body.skills).toHaveLength(1);
 
-      const admitted = snapshot.body.skills[0];
-      const doc = await request(baseUrl)
-        .get(`/api/skill-image-connector/skilldocs/default/${admitted.digest}`)
-        .set('Authorization', authorization);
-      expect(doc.status).toBe(200);
-      expect(doc.text).toBe(longContent);
+        const admitted = snapshot.body.skills[0];
+        const doc = await request(baseUrl)
+          .get(
+            `/api/skill-image-connector/skilldocs/default/${admitted.digest}`,
+          )
+          .set('Authorization', authorization);
+        expect(doc.status).toBe(200);
+        expect(doc.text).toBe(longContent);
+
+        expect(await getContentStore().getSourceStats('default')).toMatchObject(
+          {
+            digestCount: 1,
+            totalBytes: 40,
+          },
+        );
+      }
 
       expect(logger.warn).toHaveBeenCalledWith(
         expect.stringContaining('Content admission rejected'),
@@ -510,8 +502,6 @@ describe('admission exhaustion across repeated partial refreshes', () => {
     }
   });
 });
-
-// ── Independent extraction/retention settings ───────────────────────
 
 describe('independent extraction and retention settings', () => {
   it('uses separate byte budgets for extraction and retention', async () => {
@@ -553,8 +543,6 @@ describe('independent extraction and retention settings', () => {
     }
   });
 });
-
-// ── Default and invalid retention values ────────────────────────────
 
 describe('default and invalid retention values', () => {
   it('uses the default when maxRetainedMarkdownSizeBytes is not set', async () => {
@@ -603,105 +591,103 @@ describe('default and invalid retention values', () => {
   });
 });
 
-// ── Controlled inventory-drain recovery ─────────────────────────────
-
-describe('controlled inventory-drain from digest ceiling', () => {
-  it('allows new content after acknowledgment releases old digests', async () => {
+describe('controlled inventory-drain from the actual digest ceiling', () => {
+  it('rejects repeated new admissions at 1000 digests and recovers after a retained-only drain', async () => {
     const { baseUrl, tasks, stop } = await startScheduled({
       maxRetries: 0,
-      maxRetainedMarkdownSizeBytes: 200,
       images: [{ imageRef: 'quay.io/org/skill:v1' }],
     });
     const authorization = serviceAuth();
-
+    const docUrl = (digest: string) =>
+      `/api/skill-image-connector/skilldocs/default/${digest}`;
+    const manifest = (digest: string) => ({
+      manifest: {
+        schemaVersion: 2 as const,
+        config: {
+          mediaType: 'application/vnd.oci.image.config.v1+json',
+          digest,
+          size: 0,
+        },
+        layers: [],
+      },
+      digest,
+    });
     try {
       await tasks[0].fn(new AbortController().signal);
-
-      const snapshot1 = await request(baseUrl)
-        .get('/api/skill-image-connector/skills/default')
-        .set('Authorization', authorization);
-      expect(snapshot1.body.status).toBe('ready');
-      const rev1 = snapshot1.headers['x-skilldocs-revision'];
-      const digest1 = snapshot1.body.skills[0].digest;
-
-      await request(baseUrl)
-        .post('/api/skill-image-connector/skilldocs/default/reconcile')
-        .set('Authorization', authorization)
-        .send({ revision: rev1, retainedDigests: [digest1] });
-
-      // Tag moves to a new digest
-      const newDigest = `sha256:${'e'.repeat(64)}`;
-      resolveManifest.mockResolvedValue({
-        manifest: {
-          schemaVersion: 2,
-          config: {
-            mediaType: 'application/vnd.oci.image.config.v1+json',
-            digest: newDigest,
-            size: 0,
-          },
-          layers: [],
-        },
-        digest: newDigest,
-      });
-      fetchImage.mockImplementation(async () => ({
-        ...extracted,
-        skillsMd: '# Updated content',
-      }));
-
+      // Seed real retained entries representing earlier refreshes, without mocking statistics or the ceiling.
+      for (let i = 1; i < MAX_RETAINED_DIGESTS; i++) {
+        await getContentStore().store(
+          'default',
+          `sha256:${i.toString(16).padStart(64, '0')}`,
+          '# retained',
+        );
+      }
+      expect(
+        (await getContentStore().getSourceStats('default')).digestCount,
+      ).toBe(1000);
+      const replacement = `sha256:${'e'.repeat(64)}`;
+      resolveManifest.mockResolvedValue(manifest(replacement));
+      for (let i = 0; i < 3; i++) {
+        await tasks[0].fn(new AbortController().signal);
+        const snapshot = await request(baseUrl)
+          .get('/api/skill-image-connector/skills/default')
+          .set('Authorization', authorization);
+        expect(snapshot.body.status).toBe('partial');
+        expect(snapshot.body.skills).toEqual([]);
+        expect(
+          (await getContentStore().getSourceStats('default')).digestCount,
+        ).toBe(1000);
+        expect(
+          await getContentStore().get('default', replacement),
+        ).toBeUndefined();
+        expect(
+          (
+            await request(baseUrl)
+              .get(docUrl(resolvedDigest))
+              .set('Authorization', authorization)
+          ).status,
+        ).toBe(200);
+      }
+      // Keep the same source enabled, return to retained-only input, then acknowledge that ready inventory.
+      resolveManifest.mockResolvedValue(manifest(resolvedDigest));
       await tasks[0].fn(new AbortController().signal);
-
-      const snapshot2 = await request(baseUrl)
+      const drained = await request(baseUrl)
         .get('/api/skill-image-connector/skills/default')
         .set('Authorization', authorization);
-      expect(snapshot2.body.status).toBe('ready');
-      const rev2 = snapshot2.headers['x-skilldocs-revision'];
-
-      // Both digests accessible
-      expect(
-        (
-          await request(baseUrl)
-            .get(`/api/skill-image-connector/skilldocs/default/${digest1}`)
-            .set('Authorization', authorization)
-        ).status,
-      ).toBe(200);
-      expect(
-        (
-          await request(baseUrl)
-            .get(`/api/skill-image-connector/skilldocs/default/${newDigest}`)
-            .set('Authorization', authorization)
-        ).status,
-      ).toBe(200);
-
-      // Drain: acknowledge retaining only new digest
-      await request(baseUrl)
+      expect(drained.body.status).toBe('ready');
+      const ack = await request(baseUrl)
         .post('/api/skill-image-connector/skilldocs/default/reconcile')
         .set('Authorization', authorization)
-        .send({ revision: rev2, retainedDigests: [newDigest] });
-
-      // Old digest cleaned up
+        .send({
+          revision: drained.headers['x-skilldocs-revision'],
+          retainedDigests: [resolvedDigest],
+        });
+      expect(ack.status).toBe(204);
+      expect(
+        (await getContentStore().getSourceStats('default')).digestCount,
+      ).toBe(1);
       expect(
         (
           await request(baseUrl)
-            .get(`/api/skill-image-connector/skilldocs/default/${digest1}`)
-            .set('Authorization', authorization)
-        ).status,
-      ).toBe(404);
-
-      // New digest remains
-      expect(
-        (
-          await request(baseUrl)
-            .get(`/api/skill-image-connector/skilldocs/default/${newDigest}`)
+            .get(docUrl(resolvedDigest))
             .set('Authorization', authorization)
         ).status,
       ).toBe(200);
+      resolveManifest.mockResolvedValue(manifest(replacement));
+      await tasks[0].fn(new AbortController().signal);
+      const recovered = await request(baseUrl)
+        .get('/api/skill-image-connector/skills/default')
+        .set('Authorization', authorization);
+      expect(recovered.body.status).toBe('ready');
+      expect(recovered.body.skills[0].digest).toBe(replacement);
+      expect(
+        (await getContentStore().getSourceStats('default')).digestCount,
+      ).toBe(2);
     } finally {
       await stop();
     }
   });
 });
-
-// ── Acknowledgment lifecycle ────────────────────────────────────────
 
 describe('acknowledgment authorization, superseded revisions, and idempotency', () => {
   it('rejects unauthorized callers', async () => {
@@ -849,53 +835,97 @@ describe('acknowledgment authorization, superseded revisions, and idempotency', 
   });
 });
 
-// ── Publication/cleanup races ───────────────────────────────────────
-
 describe('publication and cleanup race safety', () => {
-  it('serves content through overlapping refresh and reconcile cycles', async () => {
+  it('serializes a new publication behind an in-flight acknowledgment cleanup', async () => {
     const { baseUrl, tasks, stop } = await startScheduled({
       maxRetries: 0,
       images: [{ imageRef: 'quay.io/org/skill:v1' }],
     });
-    const authorization = serviceAuth();
-
+    let release!: () => void;
+    const held = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    let entered!: () => void;
+    const cleanupEntered = new Promise<void>(resolve => {
+      entered = resolve;
+    });
+    let acquired!: () => void;
+    const extractionComplete = new Promise<void>(resolve => {
+      acquired = resolve;
+    });
+    let refresh: Promise<void> | undefined;
+    let ack: Promise<request.Response> | undefined;
+    const newDigest = `sha256:${'f'.repeat(64)}`;
     try {
       await tasks[0].fn(new AbortController().signal);
-      const snap1 = await request(baseUrl)
+      const snapshot = await request(baseUrl)
         .get('/api/skill-image-connector/skills/default')
-        .set('Authorization', authorization);
-      const rev1 = snap1.headers['x-skilldocs-revision'];
-
-      await tasks[0].fn(new AbortController().signal);
-      const snap2 = await request(baseUrl)
-        .get('/api/skill-image-connector/skills/default')
-        .set('Authorization', authorization);
-      const rev2 = snap2.headers['x-skilldocs-revision'];
-      expect(BigInt(rev2)).toBeGreaterThan(BigInt(rev1));
-
-      const ack1 = await request(baseUrl)
+        .set('Authorization', serviceAuth());
+      const original = getContentStore().acknowledgeAndCleanup.bind(
+        getContentStore(),
+      );
+      jest
+        .spyOn(getContentStore(), 'acknowledgeAndCleanup')
+        .mockImplementationOnce(async (...args) => {
+          entered();
+          await held;
+          return original(...args);
+        });
+      ack = request(baseUrl)
         .post('/api/skill-image-connector/skilldocs/default/reconcile')
-        .set('Authorization', authorization)
-        .send({ revision: rev1, retainedDigests: [resolvedDigest] });
-      expect(ack1.status).toBe(409);
-
-      const ack2 = await request(baseUrl)
-        .post('/api/skill-image-connector/skilldocs/default/reconcile')
-        .set('Authorization', authorization)
-        .send({ revision: rev2, retainedDigests: [resolvedDigest] });
-      expect(ack2.status).toBe(204);
-
+        .set('Authorization', serviceAuth())
+        .send({
+          revision: snapshot.headers['x-skilldocs-revision'],
+          retainedDigests: [resolvedDigest],
+        })
+        .then(response => response);
+      await cleanupEntered;
+      resolveManifest.mockResolvedValue({
+        manifest: {
+          schemaVersion: 2,
+          config: {
+            mediaType: 'application/vnd.oci.image.config.v1+json',
+            digest: newDigest,
+            size: 0,
+          },
+          layers: [],
+        },
+        digest: newDigest,
+      });
+      fetchImage.mockImplementation(async () => {
+        acquired();
+        return { ...extracted, skillsMd: '# New documentation' };
+      });
+      let published = false;
+      refresh = Promise.resolve(tasks[0].fn(new AbortController().signal)).then(
+        () => {
+          published = true;
+        },
+      );
+      await extractionComplete;
+      // Allow the acquisition/normalization microtasks to reach the held publication lock.
+      await new Promise<void>(resolve => setImmediate(resolve));
+      expect(published).toBe(false);
+      expect(await getContentStore().get('default', newDigest)).toBeUndefined();
+      release();
+      expect((await ack).status).toBe(204);
+      await refresh;
+      expect(await getContentStore().get('default', newDigest)).toBe(
+        '# New documentation',
+      );
       const doc = await request(baseUrl)
-        .get(`/api/skill-image-connector/skilldocs/default/${resolvedDigest}`)
-        .set('Authorization', authorization);
+        .get(`/api/skill-image-connector/skilldocs/default/${newDigest}`)
+        .set('Authorization', serviceAuth());
       expect(doc.status).toBe(200);
+      expect(doc.text).toBe('# New documentation');
     } finally {
+      release();
+      await ack;
+      await refresh;
       await stop();
     }
   });
 });
-
-// ── ETag and conditional requests ───────────────────────────────────
 
 describe('ETag and conditional requests on skill documentation', () => {
   it('returns 304 when If-None-Match matches the content ETag', async () => {
@@ -924,8 +954,6 @@ describe('ETag and conditional requests on skill documentation', () => {
     }
   });
 });
-
-// ── Source isolation ────────────────────────────────────────────────
 
 describe('source isolation in TechDocs', () => {
   it('isolates documentation between sources', async () => {
@@ -1016,8 +1044,6 @@ describe('source isolation in TechDocs', () => {
   });
 });
 
-// ── Provider outage content retention ───────────────────────────────
-
 describe('provider outage with connector advancing', () => {
   it('retains all content when no acknowledgment arrives', async () => {
     const digest2 = `sha256:${'b'.repeat(64)}`;
@@ -1082,8 +1108,6 @@ describe('provider outage with connector advancing', () => {
     }
   });
 });
-
-// ── Reconcile body validation ───────────────────────────────────────
 
 describe('reconcile body bounds', () => {
   it('rejects missing revision', async () => {
@@ -1162,8 +1186,6 @@ describe('reconcile body bounds', () => {
     }
   });
 });
-
-// ── Revision header presence ────────────────────────────────────────
 
 describe('X-Skilldocs-Revision header', () => {
   it('includes revision header on ready snapshots', async () => {

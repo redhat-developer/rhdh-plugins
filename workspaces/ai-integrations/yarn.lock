@@ -9926,6 +9926,8 @@ __metadata:
     "@backstage/errors": "npm:^1.3.1"
     "@backstage/plugin-catalog-node": "npm:^2.2.4"
     "@red-hat-developer-hub/backstage-plugin-ai-skills-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend": "workspace:^"
     knex: "npm:^3.0.0"
   languageName: unknown
   linkType: soft

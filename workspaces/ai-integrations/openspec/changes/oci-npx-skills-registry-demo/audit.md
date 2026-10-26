@@ -1,3 +1,61 @@
+## Task 6.5 completion: integrated verification and conditional-reader correction
+
+**Last audited:** 2026-10-26T15:45:44Z
+
+PR #5339 now maps the whole task 6.5 matrix to focused new coverage and existing
+6.1–6.4 regression suites. See [verification.md](verification.md) for test paths,
+mock boundaries, commands, and reproducible maintainer instructions. Historical
+audit entries below remain unchanged.
+
+The new combined test uses actual annotated, tar and tar+gzip extraction and
+normalization, a running authenticated connector HTTP backend with SQLite content
+storage, a file-backed provider store, native fetch, provider annotations and
+acknowledgments, and actual reader MkDocs files. Registry manifest/blob I/O and
+processed Catalog API visibility are fixtures. Four distinct catalog entities
+include same-digest aliases sharing documents; tag movement changes one document
+URL without changing its entity reference. This is not a live catalog processing
+worker or a full mkdocs build. Prior 6.4 maintainer rendering evidence remains
+separate from this automated verification.
+
+The native path exposed a real conditional-request interaction: default Node
+fetch cache policy suppresses the connector's matching 304 via request cache
+control. Explicit revalidation cache mode fixes this for conditional OCI skill
+reads. The combined test failed before the fix and passed after it; a unit fetch
+assertion guards the option. The maintainer approved this production correction
+and requested a patch changeset. Model-card behavior and public APIs are unchanged;
+the API report requires no content changes. Two provider development dependencies
+and their lockfile references are test composition only, not production dependencies.
+
+Other strengthened tests verify different content per digest, three byte-limited
+partial refreshes, the real 1,000-retained-digest ceiling with repeated rejected
+admissions followed by a retained-only inventory drain and successful re-admission,
+a promise-held cleanup overlapping another refresh, and persisted content surviving
+a recovered store's reduced-budget rejection. Existing durable acknowledgment,
+visibility-delay, authorization/body-boundary, extraction-limit, redirect and
+model-card suites are referenced instead of falsely claiming those all run in the
+connector lifecycle fixture's in-memory store.
+
+Automated suites pass: 630 connector tests, 142 provider tests and 70 reader tests
+(842 total across 32 suites). Task 6.5 is checked at the maintainer's explicit
+request. The maintainer waived another broad manual regression for test-only work,
+then requested a quick manual regression of the approved reader correction; that
+quick manual regression was subsequently confirmed successful by the maintainer.
+This records the reported result without inventing specific manual cases or HTTP
+observations. No app-config.yaml or other task statuses were changed.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This focused artifact/evidence update is not a fresh independent full-change audit.
+There are no unresolved artifact inconsistencies in this scope. The maintainer
+confirmed successful regression testing and authorized this local commit; another
+Fullsend review will follow signing and pushing.
+
+---
+
 ## Task 6.4 completion: maintainer end-to-end TechDocs verification
 
 **Last audited:** 2026-10-23T19:59:56Z
