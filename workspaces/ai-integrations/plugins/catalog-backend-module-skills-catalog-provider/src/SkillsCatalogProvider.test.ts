@@ -15,6 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import {
   validOciRecordFull,
@@ -25,7 +26,11 @@ import {
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 import { SkillsCatalogProvider } from './SkillsCatalogProvider';
-import type { PendingDelta, ReconciliationStore } from './reconciliation-store';
+import type {
+  PendingAcknowledgment,
+  PendingDelta,
+  ReconciliationStore,
+} from './reconciliation-store';
 import type {
   CommittedSourceState,
   SkillsCatalogProviderConfig,
@@ -85,6 +90,7 @@ function createMockStore(): ReconciliationStore & {
 } {
   const committedStates = new Map<string, CommittedSourceState>();
   const pendingDeltas = new Map<string, PendingDelta>();
+  const pendingAcks = new Map<string, PendingAcknowledgment>();
 
   return {
     committedStates,
@@ -127,6 +133,32 @@ function createMockStore(): ReconciliationStore & {
         pendingDeltas.delete(stateKey);
         return Promise.resolve();
       }),
+    commitStateAndSaveAcknowledgment: jest
+      .fn()
+      .mockImplementation((sourceType, sourceId, nextState, ack) => {
+        const stateKey = `${sourceType}:${sourceId}`;
+        committedStates.set(stateKey, nextState);
+        pendingDeltas.delete(stateKey);
+        pendingAcks.set(stateKey, ack);
+        return Promise.resolve();
+      }),
+    getPendingAcknowledgment: jest
+      .fn()
+      .mockImplementation((sourceType, sourceId) => {
+        const key = `${sourceType}:${sourceId}`;
+        return Promise.resolve(pendingAcks.get(key));
+      }),
+    getAllPendingAcknowledgments: jest
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve(Array.from(pendingAcks.values())),
+      ),
+    clearPendingAcknowledgment: jest
+      .fn()
+      .mockImplementation((sourceType, sourceId) => {
+        pendingAcks.delete(`${sourceType}:${sourceId}`);
+        return Promise.resolve();
+      }),
   };
 }
 
@@ -152,6 +184,23 @@ describe('SkillsCatalogProvider', () => {
     refresh: jest.fn(),
   };
 
+  const catalogApi = {
+    getEntitiesByRefs: jest.fn(
+      async ({ entityRefs }: { entityRefs: string[] }) => {
+        const entities = new Map<string, Entity>();
+        for (const [mutation] of (mockConnection.applyMutation as jest.Mock)
+          .mock.calls) {
+          for (const entry of mutation.added ?? [])
+            entities.set(stringifyEntityRef(entry.entity), entry.entity);
+          for (const entry of mutation.removed ?? [])
+            entities.delete(
+              entry.entityRef ?? stringifyEntityRef(entry.entity),
+            );
+        }
+        return { items: entityRefs.map(ref => entities.get(ref)) };
+      },
+    ),
+  };
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -166,6 +215,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       { run: jest.fn() },
       store,
+      catalogApi,
     );
     expect(provider.getProviderName()).toBe('SkillsCatalogProvider:test');
   });
@@ -195,6 +245,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -230,6 +281,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -268,6 +320,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -316,6 +369,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -349,6 +403,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -386,6 +441,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -464,6 +520,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -528,6 +585,7 @@ describe('SkillsCatalogProvider', () => {
       logger,
       mockTaskRunner,
       store,
+      catalogApi,
     );
 
     await provider.connect(mockConnection);
@@ -577,6 +635,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -631,6 +690,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -707,6 +767,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -782,6 +843,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -892,6 +954,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -1002,6 +1065,7 @@ describe('SkillsCatalogProvider', () => {
         logger,
         mockTaskRunner,
         store,
+        catalogApi,
       );
 
       await provider.connect(mockConnection);
@@ -1031,6 +1095,351 @@ describe('SkillsCatalogProvider', () => {
           observedAt: '2025-01-15T10:00:00Z',
         }),
       );
+    });
+  });
+
+  describe('TechDocs acknowledgment (D8)', () => {
+    it('persists acknowledgment after ready OCI reconciliation with revision', async () => {
+      const snapshot = makeSnapshot({
+        skills: [validOciRecordFull],
+      });
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'X-Skilldocs-Revision': '7' }),
+        text: () => Promise.resolve(JSON.stringify(snapshot)),
+      });
+
+      // Mock the reconcile endpoint for immediate delivery attempt
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'X-Skilldocs-Revision': '7' }),
+          text: () => Promise.resolve(JSON.stringify(snapshot)),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 204,
+          headers: new Headers(),
+          text: () => Promise.resolve(''),
+        });
+
+      const taskFn: { fn?: () => Promise<void> } = {};
+      const mockTaskRunner = {
+        run: jest.fn().mockImplementation(({ fn }) => {
+          taskFn.fn = fn;
+        }),
+      };
+
+      const config = makeConfig();
+      const store = createMockStore();
+      const provider = new SkillsCatalogProvider(
+        config,
+        mockDiscovery,
+        mockAuth,
+        logger,
+        mockTaskRunner,
+        store,
+        catalogApi,
+      );
+
+      await provider.connect(mockConnection);
+      await taskFn.fn!();
+
+      // Acknowledgment should have been persisted atomically
+      expect(store.commitStateAndSaveAcknowledgment).toHaveBeenCalledWith(
+        'oci',
+        'quay-public',
+        expect.objectContaining({
+          sourceType: 'oci',
+          sourceId: 'quay-public',
+        }),
+        expect.objectContaining({
+          sourceType: 'oci',
+          sourceId: 'quay-public',
+          connectorPluginId: 'skill-image-connector',
+          revision: '7',
+          retainedDigests: expect.arrayContaining([validOciRecordFull.digest]),
+        }),
+      );
+    });
+
+    it('does not persist acknowledgment for partial OCI snapshot', async () => {
+      const snapshot = makeSnapshot({
+        status: 'partial',
+        skills: [validOciRecordFull],
+        failedSkillKeys: ['some-key'],
+      });
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'X-Skilldocs-Revision': '7' }),
+        text: () => Promise.resolve(JSON.stringify(snapshot)),
+      });
+
+      const taskFn: { fn?: () => Promise<void> } = {};
+      const mockTaskRunner = {
+        run: jest.fn().mockImplementation(({ fn }) => {
+          taskFn.fn = fn;
+        }),
+      };
+
+      const config = makeConfig();
+      const store = createMockStore();
+      const provider = new SkillsCatalogProvider(
+        config,
+        mockDiscovery,
+        mockAuth,
+        logger,
+        mockTaskRunner,
+        store,
+        catalogApi,
+      );
+
+      await provider.connect(mockConnection);
+      await taskFn.fn!();
+
+      // Partial snapshot: no acknowledgment, uses regular commit
+      expect(store.commitStateAndSaveAcknowledgment).not.toHaveBeenCalled();
+      expect(store.commitStateAndClearPending).toHaveBeenCalled();
+    });
+
+    it('does not persist acknowledgment when revision header is absent', async () => {
+      const snapshot = makeSnapshot({
+        skills: [validOciRecordFull],
+      });
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        text: () => Promise.resolve(JSON.stringify(snapshot)),
+      });
+
+      const taskFn: { fn?: () => Promise<void> } = {};
+      const mockTaskRunner = {
+        run: jest.fn().mockImplementation(({ fn }) => {
+          taskFn.fn = fn;
+        }),
+      };
+
+      const config = makeConfig();
+      const store = createMockStore();
+      const provider = new SkillsCatalogProvider(
+        config,
+        mockDiscovery,
+        mockAuth,
+        logger,
+        mockTaskRunner,
+        store,
+        catalogApi,
+      );
+
+      await provider.connect(mockConnection);
+      await taskFn.fn!();
+
+      // No revision → no acknowledgment
+      expect(store.commitStateAndSaveAcknowledgment).not.toHaveBeenCalled();
+      expect(store.commitStateAndClearPending).toHaveBeenCalled();
+    });
+
+    it('retries pending acknowledgments and delivers successfully', async () => {
+      const snapshot = makeSnapshot({
+        skills: [validOciRecordFull],
+      });
+      // First fetch: reconcile delivery (204 success)
+      // Subsequent fetches: snapshot poll
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 204,
+          headers: new Headers(),
+          text: () => Promise.resolve(''),
+        })
+        .mockResolvedValue({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          text: () => Promise.resolve(JSON.stringify(snapshot)),
+        });
+
+      const taskFn: { fn?: () => Promise<void> } = {};
+      const mockTaskRunner = {
+        run: jest.fn().mockImplementation(({ fn }) => {
+          taskFn.fn = fn;
+        }),
+      };
+
+      const config = makeConfig();
+      const store = createMockStore();
+
+      // Pre-populate a pending acknowledgment
+      const pendingAck = {
+        sourceType: 'oci' as const,
+        sourceId: 'quay-public',
+        connectorPluginId: 'skill-image-connector',
+        revision: '5',
+        retainedDigests: ['sha256:aaa'],
+        expectedEntityUrls: {},
+        expectedRemovals: [],
+      };
+      (store.getAllPendingAcknowledgments as jest.Mock).mockResolvedValueOnce([
+        pendingAck,
+      ]);
+
+      const provider = new SkillsCatalogProvider(
+        config,
+        mockDiscovery,
+        mockAuth,
+        logger,
+        mockTaskRunner,
+        store,
+        catalogApi,
+      );
+
+      await provider.connect(mockConnection);
+      await taskFn.fn!();
+
+      // Acknowledgment retry was attempted and delivered
+      expect(store.getAllPendingAcknowledgments).toHaveBeenCalled();
+      // Reconcile request was sent (first fetch call)
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/skilldocs/quay-public/reconcile'),
+        expect.objectContaining({ method: 'POST' }),
+      );
+      // Pending ack was cleared after successful delivery
+      expect(store.clearPendingAcknowledgment).toHaveBeenCalledWith(
+        'oci',
+        'quay-public',
+      );
+    });
+
+    it('discards superseded acknowledgment on 409 response', async () => {
+      const snapshot = makeSnapshot({
+        skills: [validOciRecordFull],
+      });
+      // First fetch: reconcile returns 409 (superseded)
+      // Subsequent fetches: snapshot poll
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 409,
+          headers: new Headers(),
+          text: () => Promise.resolve('Revision superseded'),
+        })
+        .mockResolvedValue({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          text: () => Promise.resolve(JSON.stringify(snapshot)),
+        });
+
+      const taskFn: { fn?: () => Promise<void> } = {};
+      const mockTaskRunner = {
+        run: jest.fn().mockImplementation(({ fn }) => {
+          taskFn.fn = fn;
+        }),
+      };
+
+      const config = makeConfig();
+      const store = createMockStore();
+
+      // Pre-populate a pending acknowledgment
+      const pendingAck = {
+        sourceType: 'oci' as const,
+        sourceId: 'quay-public',
+        connectorPluginId: 'skill-image-connector',
+        revision: '5',
+        retainedDigests: ['sha256:aaa'],
+        expectedEntityUrls: {},
+        expectedRemovals: [],
+      };
+      (store.getAllPendingAcknowledgments as jest.Mock).mockResolvedValueOnce([
+        pendingAck,
+      ]);
+
+      const provider = new SkillsCatalogProvider(
+        config,
+        mockDiscovery,
+        mockAuth,
+        logger,
+        mockTaskRunner,
+        store,
+        catalogApi,
+      );
+
+      await provider.connect(mockConnection);
+      await taskFn.fn!();
+
+      // 409: acknowledgment should be discarded
+      expect(store.clearPendingAcknowledgment).toHaveBeenCalledWith(
+        'oci',
+        'quay-public',
+      );
+    });
+
+    it('blocks source polling when ack retry fails', async () => {
+      const snapshot = makeSnapshot({
+        skills: [validOciRecordFull],
+      });
+      // Reconcile request fails with network error
+      mockFetch
+        .mockRejectedValueOnce(new Error('Network failure'))
+        .mockResolvedValue({
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          text: () => Promise.resolve(JSON.stringify(snapshot)),
+        });
+
+      const taskFn: { fn?: () => Promise<void> } = {};
+      const mockTaskRunner = {
+        run: jest.fn().mockImplementation(({ fn }) => {
+          taskFn.fn = fn;
+        }),
+      };
+
+      const config = makeConfig();
+      const store = createMockStore();
+
+      // Pre-populate a pending acknowledgment
+      const pendingAck = {
+        sourceType: 'oci' as const,
+        sourceId: 'quay-public',
+        connectorPluginId: 'skill-image-connector',
+        revision: '5',
+        retainedDigests: ['sha256:aaa'],
+        expectedEntityUrls: {},
+        expectedRemovals: [],
+      };
+      (store.getAllPendingAcknowledgments as jest.Mock).mockResolvedValueOnce([
+        pendingAck,
+      ]);
+
+      const provider = new SkillsCatalogProvider(
+        config,
+        mockDiscovery,
+        mockAuth,
+        logger,
+        mockTaskRunner,
+        store,
+        catalogApi,
+      );
+
+      await provider.connect(mockConnection);
+      await taskFn.fn!();
+
+      // clearPendingAcknowledgment should NOT have been called (preserved)
+      expect(store.clearPendingAcknowledgment).not.toHaveBeenCalled();
+
+      // Verify the source was actually blocked from polling:
+      // reconcileSource calls store.getCommittedState; if blocked,
+      // it should NOT have been called for this source.
+      expect(store.getCommittedState).not.toHaveBeenCalled();
+
+      // Snapshot polling would make a second fetch call (GET /skills/:sourceId);
+      // only one fetch call should have happened (the failed reconcile POST).
+      expect(mockFetch).toHaveBeenCalledTimes(1);
     });
   });
 });

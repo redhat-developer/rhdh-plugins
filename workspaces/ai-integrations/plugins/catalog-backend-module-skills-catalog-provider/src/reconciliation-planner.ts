@@ -90,16 +90,20 @@ export function calculateReconciliationPlan(
   // ─── Repeated observation: same observedAt → idempotent ──────────
   // A configuration namespace change is independent of connector freshness.
   // Do not suppress that identity change just because content/timestamp repeats.
-  const namespaceChanged = mappedEntities.some(mapped =>
+  const configurationChanged = mappedEntities.some(mapped =>
     previousState.entities.some(
       previous =>
         tuplesEqual(previous.tuple, mapped.tuple) &&
-        stringifyEntityRef(previous.entity) !==
-          stringifyEntityRef(mapped.entity),
+        (stringifyEntityRef(previous.entity) !==
+          stringifyEntityRef(mapped.entity) ||
+          previous.entity.metadata.annotations?.[
+            'backstage.io/techdocs-ref'
+          ] !==
+            mapped.entity.metadata.annotations?.['backstage.io/techdocs-ref']),
     ),
   );
   if (
-    !namespaceChanged &&
+    !configurationChanged &&
     isRepeatedObservation(previousState.observedAt, snapshotObservedAt)
   ) {
     return noOpPlan(previousState, 'repeated-observation');
@@ -165,7 +169,12 @@ export function calculateReconciliationPlan(
 
     // Determine if this is an actual change (new or updated)
     const previous = previousByRef.get(entityRef);
-    if (!previous || previous.digest !== digest) {
+    if (
+      !previous ||
+      previous.digest !== digest ||
+      previous.entity.metadata.annotations?.['backstage.io/techdocs-ref'] !==
+        entity.metadata.annotations?.['backstage.io/techdocs-ref']
+    ) {
       // New entity or content changed — plan upsert
       upserts.push({ tuple, catalogName, digest, entity });
     }

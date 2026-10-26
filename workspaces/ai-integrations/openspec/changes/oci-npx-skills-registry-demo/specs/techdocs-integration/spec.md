@@ -34,6 +34,23 @@ preserved.
 - **THEN** the URL reader does not match the request
 - **AND** it does not attempt to fetch from an untrusted destination
 
+#### Scenario: Malformed encoded route segment
+
+- **WHEN** a skill documentation URL contains invalid percent encoding in its source ID or digest segment
+- **THEN** the reader predicate returns no match without throwing
+- **AND** no connector token is requested or sent
+
+#### Scenario: Direct reads enforce trusted destinations
+
+- **WHEN** a caller invokes `readUrl` directly with an off-origin or off-base skill documentation URL
+- **THEN** the reader rejects the URL before requesting or sending a service token
+
+#### Scenario: Skill route resembles a model-card URL
+
+- **WHEN** a skill documentation route also contains substrings matching legacy model-card configuration
+- **THEN** it must satisfy skill documentation destination and route validation
+- **AND** it cannot fall through to model-card credential handling
+
 #### Scenario: Model-card URLs continue to match
 
 - **WHEN** a `backstage.io/techdocs-ref` annotation contains a model-card URL (`/modelcard/` path)
@@ -147,7 +164,9 @@ The URL reader SHALL pass through the connector's `ETag` response header for
 TechDocs digest-based caching, as specified in design D8. When the caller
 provides an etag, the URL reader SHALL forward it as an `If-None-Match`
 request header to the connector endpoint, completing the bidirectional
-conditional-request protocol.
+conditional-request protocol. A successful skill documentation response without
+a nonblank ETag SHALL be rejected as a connector protocol error; the reader SHALL
+NOT replace the missing validator with an empty or fabricated value.
 
 #### Scenario: ETag passthrough for caching
 
@@ -160,3 +179,9 @@ conditional-request protocol.
 - **WHEN** the caller provides an etag for a skill documentation request
 - **THEN** the URL reader forwards the etag as an `If-None-Match` request header to the connector endpoint
 - **AND** the connector evaluates the conditional request and returns 304 Not Modified if the ETag matches
+
+#### Scenario: Successful Markdown response lacks its ETag
+
+- **WHEN** a successful skill documentation response omits its ETag or supplies only whitespace
+- **THEN** the reader raises a protocol error
+- **AND** it does not return a successful MkDocs project with an empty validator

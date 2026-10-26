@@ -15,7 +15,10 @@
  */
 
 import { createDurableTestDatabase } from './testUtils';
-import type { PendingDelta } from './reconciliation-store';
+import type {
+  PendingDelta,
+  PendingAcknowledgment,
+} from './reconciliation-store';
 import type { CommittedSourceState } from './types';
 
 const state: CommittedSourceState = {
@@ -69,6 +72,96 @@ describe('DatabaseReconciliationStore with file-backed SQLite', () => {
     expect(await second.store.getAllPendingDeltas()).toEqual([delta]);
   });
 
+  it('persists exact release context through reopening and atomically rolls back failed acknowledgment writes', async () => {
+    const first = await database.open();
+    const ack: PendingAcknowledgment = {
+      sourceType: 'oci',
+      sourceId: 'quay-public',
+      connectorPluginId: 'skill-image-connector',
+      revision: '7',
+      retainedDigests: [state.entities[0].digest],
+      expectedEntityUrls: {
+        'airesource:default/skill-test':
+          'url:https://example/api/skill-image-connector/skilldocs/quay-public/digest',
+      },
+      expectedRemovals: ['airesource:old/removed'],
+    };
+    const pending = { ...delta, revision: '7', acknowledgment: ack };
+    const previous = { ...state, observedAt: null, entities: [] };
+    await first.store.commitStateAndClearPending(
+      'oci',
+      'quay-public',
+      previous,
+    );
+    await first.store.savePendingDelta(pending);
+    await first.client.destroy();
+    const second = await database.open();
+    expect(await second.store.getPendingDelta('oci', 'quay-public')).toEqual(
+      pending,
+    );
+    await second.client.raw(
+      `CREATE TRIGGER fail_ack BEFORE INSERT ON skills_provider_pending_ack BEGIN SELECT RAISE(ABORT, 'injected ack failure'); END`,
+    );
+    await expect(
+      second.store.commitStateAndSaveAcknowledgment(
+        'oci',
+        'quay-public',
+        state,
+        ack,
+      ),
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('injected ack failure'),
+    });
+    expect(await second.store.getCommittedState('oci', 'quay-public')).toEqual(
+      previous,
+    );
+    expect(await second.store.getPendingDelta('oci', 'quay-public')).toEqual(
+      pending,
+    );
+    expect(
+      await second.store.getPendingAcknowledgment('oci', 'quay-public'),
+    ).toBeUndefined();
+    await second.client.raw('DROP TRIGGER fail_ack');
+    await second.store.commitStateAndSaveAcknowledgment(
+      'oci',
+      'quay-public',
+      state,
+      ack,
+    );
+    expect(
+      await second.store.getPendingDelta('oci', 'quay-public'),
+    ).toBeUndefined();
+    const otherProvider = await database.open('other');
+    expect(await otherProvider.store.getAllPendingAcknowledgments()).toEqual(
+      [],
+    );
+    await second.client.destroy();
+    const third = await database.open();
+    expect(
+      await third.store.getPendingAcknowledgment('oci', 'quay-public'),
+    ).toEqual(ack);
+    const nextAck = { ...ack, revision: '8' };
+    await third.client.raw(
+      `CREATE TRIGGER fail_ack_update BEFORE UPDATE ON skills_provider_pending_ack BEGIN SELECT RAISE(ABORT, 'injected ack update failure'); END`,
+    );
+    await expect(
+      third.store.commitStateAndSaveAcknowledgment(
+        'oci',
+        'quay-public',
+        { ...state, observedAt: 'new' },
+        nextAck,
+      ),
+    ).rejects.toMatchObject({
+      message: expect.stringContaining('injected ack update failure'),
+    });
+    expect(
+      await third.store.getPendingAcknowledgment('oci', 'quay-public'),
+    ).toEqual(ack);
+    expect(await third.store.getCommittedState('oci', 'quay-public')).toEqual(
+      state,
+    );
+  });
+
   it('isolates provider IDs and source identities across both tables', async () => {
     const a = await database.open('a');
     const b = await database.open('b');
@@ -90,7 +183,7 @@ describe('DatabaseReconciliationStore with file-backed SQLite', () => {
     await store.savePendingDelta(delta);
     const migrationTable = 'skills_catalog_provider_migrations';
     expect(await client.schema.hasTable(migrationTable)).toBe(true);
-    expect(await client(migrationTable).select('*')).toHaveLength(1);
+    expect(await client(migrationTable).select('*')).toHaveLength(4);
     await client.schema.dropTable(migrationTable);
     await client.schema.dropTable(`${migrationTable}_lock`);
     // A shared Catalog migration table must not be consulted or changed.
@@ -105,7 +198,7 @@ describe('DatabaseReconciliationStore with file-backed SQLite', () => {
       { name: 'catalog-migration' },
     ]);
     await store.initialize();
-    expect(await client(migrationTable).select('*')).toHaveLength(1);
+    expect(await client(migrationTable).select('*')).toHaveLength(4);
   });
 
   it('refuses incompatible pre-migration tables without deleting their rows', async () => {

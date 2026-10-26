@@ -686,6 +686,40 @@ and cannot cause cleanup. Partial snapshots may upsert but never acknowledge
 release. Duplicate provider assignments for a connector/source are rejected;
 multiple independent retention owners for one source are outside this increment.
 
+The provider requires a durable reconciliation store and a catalog client capable
+of querying processed entity references; visibility verification cannot be bypassed.
+Before applying a ready OCI delta, persist its full acknowledgment context with
+that delta: revision, connector plugin ID, retained digests, expected processed
+entity references/URLs, and removal references. Replay uses this immutable context,
+not current source configuration. Recover pending deltas first, then retry their
+acknowledgments. An unresolved visibility check blocks newer polling for that
+source, just as a delivery error does, so a later snapshot cannot overwrite its
+release obligations. Incomplete catalog responses do not prove removals.
+Partial and stale observations never create release acknowledgments.
+
+Snapshot acquisition gives discovery, authentication, and fetch/body consumption
+separate 30-second deadlines. Catalog visibility verification has one shared
+30-second deadline including authentication and catalog queries; acknowledgment
+delivery has another shared 30-second deadline including discovery, authentication,
+and POST. Individual steps within either phase do not reset that phase's deadline.
+These operations honor scheduler cancellation. Authenticated provider HTTP requests
+reject redirects.
+
+Eligible ready OCI snapshots with revisions may create acknowledgments even when
+entities are unchanged or observations repeat; the connector handles repetitions
+idempotently. This steady-state traffic is intentional and requires no additional
+last-acknowledged-revision persistence. Recovery blocks, stale observations, deferred
+visibility, and failures can prevent new delivery. Reconciliation success describes
+the committed catalog work, not completion of its asynchronous acknowledgment.
+Deferral is persisted and logged separately. Delivery errors propagate to their
+caller, which logs the failure once and preserves pending work/source blocking.
+An additive pending-delta migration preserves existing state. Legacy pre-release
+OCI deltas with a revision but no complete acknowledgment context remain pending
+and block that source for operator investigation; recovery cannot safely infer
+ready versus partial status. Older deltas without revisions can replay without
+release. Existing entities missing or changing their TechDocs annotation receive
+an upsert even when digest and observation timestamp are unchanged.
+
 **Provider annotation.** The catalog provider constructs the
 `backstage.io/techdocs-ref` annotation for OCI skill entities using
 `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` as specified
@@ -701,6 +735,9 @@ skill entities do not receive a `backstage.io/techdocs-ref` in this increment.
 **URL-reader integration.** The existing `catalog-techdoc-url-reader-backend`
 plugin is extended to match OCI skill documentation URLs from trusted
 configured or Backstage-discovered connector destinations and paths. The reader
+resolves configured OCI connector bases through Backstage discovery during service
+initialization, before publishing its synchronous reader factory. Both predicate
+selection and direct reads enforce those trusted destinations. The reader
 matches the exact trusted connector origin and base pathname, followed by
 `/skilldocs/<sourceId>/<digest>`. For example, a discovered base of
 `https://rhdh.example/api/skill-image-connector` matches
@@ -709,7 +746,9 @@ Append to the base pathname rather than resolving a leading slash against the
 origin. Source configuration rejects IDs exactly equal to `.` or `..` in
 addition to blank IDs, because URL parsing normalizes literal and encoded dot
 segments. Encode source ID and digest as individual path segments and decode each
-once when validating the route; reject extra segments, query strings, fragments,
+once when validating the route; malformed encoding returns no match rather than
+throwing from the predicate. Skill-documentation routes cannot fall through to
+legacy model-card substring routing. Reject extra segments, query strings, fragments,
 URL credentials, and paths outside the exact connector base. Do not forward
 service tokens across redirects; treat redirects as errors. It does not infer
 arbitrary credential destinations from URL substrings. The reader authenticates
@@ -720,7 +759,10 @@ reader's service-token pattern. It propagates HTTP errors from the connector:
 propagate as errors. Successful responses produce a minimal MkDocs project
 containing `mkdocs.yml` with a suitable skill title and `docs/index.md` with
 the retrieved Markdown content. The reader passes the connector's `ETag`
-response header through for TechDocs digest-based cache semantics. Already
+response header through for TechDocs digest-based cache semantics. A successful
+skill-docs response missing a nonblank ETag is a protocol error; no empty or
+fabricated validator is substituted. Model-card HTTP requests also reject redirects,
+while preserving their existing cache behavior. Already
 validated Markdown frontmatter from the connector is included as-is in
 `docs/index.md`; the reader does not strip or re-parse it. For this increment,
 the reader renders the single extracted Markdown document only; bundled assets,

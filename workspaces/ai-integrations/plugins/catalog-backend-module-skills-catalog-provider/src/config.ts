@@ -153,10 +153,10 @@ function readSourceConsumerConfig(
   }
 
   const sourceId = config.getString('sourceId').trim();
-  if (!sourceId) {
+  if (!sourceId || sourceId === '.' || sourceId === '..') {
     throw new InputError(
       `skillsCatalogProvider.${providerId}.sources[${index}]: ` +
-        'sourceId must be a non-empty string',
+        'sourceId must be nonblank and must not be . or ..',
     );
   }
 
