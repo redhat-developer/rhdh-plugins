@@ -889,6 +889,7 @@ describe('Skill docs readUrl', () => {
     expect(global.fetch).toHaveBeenCalledWith(
       testUrl,
       expect.objectContaining({
+        cache: 'no-cache',
         headers: expect.objectContaining({
           'If-None-Match': 'cached-etag',
           Authorization: 'Bearer test-token',

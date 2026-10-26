@@ -463,6 +463,9 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
         method: 'GET',
         headers,
         redirect: 'error',
+        // Node fetch otherwise adds Cache-Control: no-cache for conditional
+        // headers, preventing Express req.fresh from returning 304.
+        cache: options?.etag ? 'no-cache' : undefined,
         signal: options?.signal as any,
       });
     } catch (e) {
