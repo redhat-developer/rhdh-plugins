@@ -123,6 +123,9 @@ function toModelItem(item: SidebarItemData): SidebarModelItem {
  * - Items flagged with `requiresRoute` are dropped unless an auto-discovered
  *   nav item links to the same path, so an entry that points at an optional
  *   plugin's page disappears when that plugin is not installed.
+ * - Items with an empty `title` are never rendered, but their `to` still
+ *   claims the page, so a title-less item hides the auto-discovered nav item
+ *   for that path without replacing it.
  * - Nav items auto-discovered from page extensions inherit OFS/NFS default-path
  *   priorities when their href matches a built-in path; otherwise priority 0.
  *   A contributed item or group that already links to the same path takes over
@@ -163,6 +166,9 @@ export function buildSidebarModel({
       continue;
     }
     if (item.to && elementPaths.has(item.to)) {
+      continue;
+    }
+    if (!item.title) {
       continue;
     }
     const group = item.group ? groupById.get(item.group) : undefined;

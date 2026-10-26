@@ -18,6 +18,7 @@ import type { ExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { createExtensionTester } from '@backstage/frontend-test-utils';
 import {
   sidebarElementDataRef,
+  sidebarItemDataRef,
   sidebarItemGroupDataRef,
   type SidebarElementData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
@@ -26,11 +27,13 @@ import {
   defaultSidebarExtensions,
   sidebarAdminGroup,
   sidebarBottomSpacer,
+  sidebarCreateItem,
   sidebarLogoElement,
   sidebarLogoSpacer,
   sidebarNotificationsElement,
   sidebarSearchDivider,
   sidebarSearchElement,
+  sidebarSearchItem,
   sidebarSettingsGroup,
 } from './defaultSidebarExtensions';
 import { CompanyLogo } from './logo/CompanyLogo';
@@ -50,6 +53,8 @@ describe('defaultSidebarExtensions', () => {
     expect(specs.map(s => `${s.kind}/${s.name}`)).toEqual([
       'sidebar-element/logo',
       'sidebar-spacer/logo',
+      'sidebar-item/search',
+      'sidebar-item/create',
       'sidebar-element/search',
       'sidebar-divider/search',
       'sidebar-spacer/bottom',
@@ -71,7 +76,7 @@ describe('defaultSidebarExtensions', () => {
     );
   });
 
-  it('disables the notifications element by default', () => {
+  it('disables the search modal, its divider and notifications by default', () => {
     const disabledById = Object.fromEntries(
       defaultSidebarExtensions.map(ext => {
         const spec = JSON.parse(JSON.stringify(ext));
@@ -79,10 +84,22 @@ describe('defaultSidebarExtensions', () => {
       }),
     );
 
-    expect(disabledById['sidebar-element/search']).toBeFalsy();
+    expect(disabledById['sidebar-element/search']).toBe(true);
+    expect(disabledById['sidebar-divider/search']).toBe(true);
     expect(disabledById['sidebar-element/notifications']).toBe(true);
     // Other default entries stay enabled.
+    expect(disabledById['sidebar-item/search']).toBeFalsy();
+    expect(disabledById['sidebar-item/create']).toBeFalsy();
     expect(disabledById['sidebar-element/logo']).toBeFalsy();
+  });
+
+  it('claims the search and create pages with title-less items so they are not listed', () => {
+    expect(
+      createExtensionTester(sidebarSearchItem).get(sidebarItemDataRef),
+    ).toMatchObject({ title: '', to: '/search' });
+    expect(
+      createExtensionTester(sidebarCreateItem).get(sidebarItemDataRef),
+    ).toMatchObject({ title: '', to: '/create' });
   });
 
   it('orders search first and the bottom spacer below chrome', () => {

@@ -34,7 +34,11 @@ export type SidebarIcon = IconComponent | string;
 export interface SidebarItemData {
   /** Extension ID of the contributing extension, used as a stable key. */
   id: string;
-  /** Text shown next to the icon. */
+  /**
+   * Text shown next to the icon. An item with an empty title is not rendered,
+   * but its `to` still claims that page, so the auto-discovered nav entry for
+   * the path is hidden.
+   */
   title: string;
   /** Icon shown in the sidebar. Falls back to a generic icon when unset or unknown. */
   icon?: SidebarIcon;
