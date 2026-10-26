@@ -34,12 +34,28 @@ EOF
 }
 
 _pocker="$(command -v podman || command -v docker)"
+rhdh_cli="$workspace_dir/node_modules/.bin/rhdh-cli"
+_rhdh_cli_announced=0
+
+function _require_rhdh_cli {
+  if [[ ! -x "$rhdh_cli" ]]; then
+    echo "Error: RHDH CLI not found at $rhdh_cli. Run yarn install in $workspace_dir." >&2
+    exit 1
+  fi
+  if [[ "$_rhdh_cli_announced" -eq 0 ]]; then
+    local cli_version
+    cli_version="$(node -p "require('$workspace_dir/node_modules/@red-hat-developer-hub/cli/package.json').version")"
+    echo "Using @red-hat-developer-hub/cli@${cli_version}"
+    _rhdh_cli_announced=1
+  fi
+}
 
 function _export_plugin {
   local plugin_dir="$1"
   echo "Exporting plugin: $plugin_dir"
+  _require_rhdh_cli
   cd "$workspace_dir/$plugin_dir"
-  npx @red-hat-developer-hub/cli@latest plugin export \
+  "$rhdh_cli" plugin export \
     --embed-package @red-hat-developer-hub/plugin-cost-management-common
   cd "$workspace_dir"
 }
@@ -49,7 +65,8 @@ function _package_dynamic_plugins {
   if [[ "$_pocker" =~ docker$ ]]; then
     args+=( --container-tool docker )
   fi
-  npx @red-hat-developer-hub/cli@latest plugin package "${args[@]}" "$@"
+  _require_rhdh_cli
+  "$rhdh_cli" plugin package "${args[@]}" "$@"
 }
 
 function clean {
