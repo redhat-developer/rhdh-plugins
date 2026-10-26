@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-skill-image-connector-backend
 
+## 0.10.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [0a42ebd]
+  - @red-hat-developer-hub/backstage-plugin-ai-skills-common@0.5.0
+
 ## 0.9.0
 
 ### Minor Changes

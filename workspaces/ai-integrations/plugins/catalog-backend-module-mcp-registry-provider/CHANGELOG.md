@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider
 
+## 0.3.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [0a42ebd]
+  - @red-hat-developer-hub/backstage-plugin-catalog-mcp-registry-server-mapping@0.5.0
+
 ## 0.2.1
 
 ### Patch Changes
