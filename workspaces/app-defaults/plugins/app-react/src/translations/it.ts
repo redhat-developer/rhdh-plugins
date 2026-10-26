@@ -27,7 +27,7 @@ export default createTranslationMessages({
     'pages.Home': 'Home',
     'pages.Catalog': 'Catalogo',
     'pages.APIs': 'API',
-    'pages.Create': 'Self-Service',
+    'pages.Create': 'Self-service',
     'pages.Docs': 'Documentazione',
     'pages.Learning Paths': 'Learning Path',
     'pages.Settings': 'Impostazioni',
