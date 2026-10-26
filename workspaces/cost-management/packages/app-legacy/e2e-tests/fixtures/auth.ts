@@ -49,12 +49,17 @@ export async function performOIDCLogin(
   const user = username ?? process.env.OIDC_USERNAME ?? 'ro-read-no-workflow';
   const pass = password ?? process.env.OIDC_PASSWORD ?? 'test';
 
-  // Navigate to root (login page)
+  // Navigate to root (login page) and wait for it to render
   await page.goto('/');
+  await page.waitForLoadState('domcontentloaded');
+
+  // Wait for the Sign in button to appear before interacting
+  const signInButton = page.locator('button:has-text("Sign in")');
+  await signInButton.waitFor({ state: 'visible', timeout: 30000 });
 
   // Click the OIDC Sign In button and handle the Keycloak popup
   const popupPromise = page.waitForEvent('popup');
-  await page.locator('button:has-text("Sign in")').click();
+  await signInButton.click();
   const popup = await popupPromise;
 
   // Fill in Keycloak credentials
@@ -104,8 +109,11 @@ export async function performLogin(
     const user = username ?? process.env.OIDC_USERNAME ?? 'ro-read-no-workflow';
     const pass = password ?? process.env.OIDC_PASSWORD ?? 'test';
 
+    const signInButton = page.locator('button:has-text("Sign in")');
+    await signInButton.waitFor({ state: 'visible', timeout: 30000 });
+
     const popupPromise = page.waitForEvent('popup');
-    await page.locator('button:has-text("Sign in")').click();
+    await signInButton.click();
     const popup = await popupPromise;
 
     await popup.getByLabel('Username or email').fill(user);
