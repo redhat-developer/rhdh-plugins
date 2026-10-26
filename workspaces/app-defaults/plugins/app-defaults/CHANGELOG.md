@@ -4,8 +4,9 @@
 
 ### Patch Changes
 
-- fd39296: Remove the redundant Search entry from the sidebar menu. Title-less sidebar items are no longer rendered but still claim their page path, and the default sidebar now ships such placeholder items for `/search` and `/create`. The search modal is disabled by default.
-- Updated dependencies [fd39296]
+- 5405510: Remove the redundant Search entry from the sidebar menu. Title-less sidebar items are no longer rendered but still claim their page path, and the default sidebar now ships such placeholder items for `/search` and `/create`. The search modal is disabled by default.
+- 479e8c5: Fix sidebar Search crashing with `No path for routeRef{type=absolute,id=search}` when the search routeRef is unbound under module federation. Fall back to a plain `/search` sidebar link when the route is missing.
+- Updated dependencies [5405510]
   - @red-hat-developer-hub/backstage-plugin-app-react@1.12.2
 
 ## 1.12.1

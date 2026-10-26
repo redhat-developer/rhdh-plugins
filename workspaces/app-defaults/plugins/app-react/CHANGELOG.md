@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- fd39296: Remove the redundant Search entry from the sidebar menu. Title-less sidebar items are no longer rendered but still claim their page path, and the default sidebar now ships such placeholder items for `/search` and `/create`. The search modal is disabled by default.
+- 5405510: Remove the redundant Search entry from the sidebar menu. Title-less sidebar items are no longer rendered but still claim their page path, and the default sidebar now ships such placeholder items for `/search` and `/create`. The search modal is disabled by default.
 
 ## 1.12.1
 
