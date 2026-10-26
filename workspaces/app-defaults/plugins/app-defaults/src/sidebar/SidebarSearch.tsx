@@ -14,21 +14,35 @@
  * limitations under the License.
  */
 
-import { useApiHolder } from '@backstage/frontend-plugin-api';
+import { SidebarItem } from '@backstage/core-components';
+import { useApiHolder, useRouteRef } from '@backstage/frontend-plugin-api';
 import { SidebarSearchModal } from '@backstage/plugin-search';
+import searchPlugin from '@backstage/plugin-search/alpha';
 import { searchApiRef } from '@backstage/plugin-search-react';
+import SearchIcon from '@mui/icons-material/Search';
 
 /**
  * Renders the search modal sidebar entry, but only when the search API is
  * available. Without the search plugin installed the entry is skipped instead
  * of crashing.
  *
+ * `SidebarSearchModal` resolves the search page via this package's
+ * `routeRef{id=search}`. Under module federation the remote often bundles its
+ * own `@backstage/plugin-search`, so that routeRef is unbound even when the
+ * host app registered `page:search` — clicking then throws
+ * "No path for routeRef". When the route is missing, fall back to a plain
+ * sidebar link to the canonical `/search` path.
+ *
  * @internal
  */
 export function SidebarSearch() {
   const apis = useApiHolder();
+  const searchRoute = useRouteRef(searchPlugin.routes.root);
   if (!apis.get(searchApiRef)) {
     return null;
+  }
+  if (!searchRoute) {
+    return <SidebarItem icon={SearchIcon} to="/search" text="Search" />;
   }
   return <SidebarSearchModal />;
 }
