@@ -40,6 +40,10 @@ import { createDurableTestDatabase } from './testUtils';
 
 // Only registry I/O is replaced: extraction, normalization, durable storage,
 // authenticated connector HTTP, provider mapping/acknowledgment and MkDocs generation are real.
+// The internal cross-package path intentionally replaces only registry I/O.
+// If OciClient moves, update jest.mock, requireActual and requireMock together;
+// Jest fails module resolution if the target is missing. This is a test boundary,
+// not a public connector API or a promise that the internal path is stable.
 jest.mock('../../skill-image-connector-backend/src/services/OciClient', () => ({
   ...jest.requireActual(
     '../../skill-image-connector-backend/src/services/OciClient',

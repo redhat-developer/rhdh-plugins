@@ -80,7 +80,8 @@ The reader authenticates with the connector plugin via
 tokens, and propagates `404` as `NotFoundError` and `304` as
 `NotModifiedError`. The connector's response `ETag` is passed through for
 TechDocs caching. Conditional reads use explicit revalidation cache mode so Node
-fetch does not force a full 200 response instead of the connector's matching 304. A successful skill-docs response without a nonblank ETag is a
+fetch does not force a full 200 response instead of the connector's matching 304.
+A successful skill-docs response without a nonblank ETag is a
 protocol error; the reader does not invent a validator or silently use an empty
 one. Model-card requests also reject redirects; their existing ETag behavior is
 preserved.

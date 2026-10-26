@@ -1,3 +1,30 @@
+## Focused PR #5339 follow-up: test-boundary comment and prose wrapping
+
+**Last audited:** 2026-10-26T17:03:01Z
+
+The combined TechDocs test now documents why it replaces registry I/O through
+an internal sibling-package OciClient path. The comment requires its Jest mock,
+requireActual and requireMock references to move together if that module is
+relocated, and states that missing targets fail Jest resolution. No public test
+injection API or stability promise was added to production code.
+
+The conditional-fetch prose in D8 and the reader README was soft-wrapped to match
+surrounding paragraphs. Word-level comparisons confirm those edits preserve the
+text exactly. Runtime behavior, configuration, public APIs, changesets and all task
+statuses are unchanged. The prior 6.5 verification and maintainer regression
+evidence remains below; this is not a new full-change audit.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No unresolved artifact inconsistencies were identified in this focused scope.
+Historical audit entries are preserved in full.
+
+---
+
 ## Task 6.5 completion: integrated verification and conditional-reader correction
 
 **Last audited:** 2026-10-26T15:45:44Z
