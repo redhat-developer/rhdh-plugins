@@ -20,7 +20,9 @@ import type {
   LoggerService,
   SchedulerServiceTaskRunner,
 } from '@backstage/backend-plugin-api';
+import type { CatalogApi } from '@backstage/catalog-client';
 import { stringifyEntityRef } from '@backstage/catalog-model';
+import { InputError } from '@backstage/errors';
 import type {
   EntityProvider,
   EntityProviderConnection,
@@ -29,8 +31,13 @@ import type {
 import type { SkillSourceType } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
 import { calculateReconciliationPlan } from './reconciliation-planner';
-import type { PendingDelta, ReconciliationStore } from './reconciliation-store';
+import type {
+  PendingAcknowledgment,
+  PendingDelta,
+  ReconciliationStore,
+} from './reconciliation-store';
 import { consumeSnapshot } from './snapshot-consumer';
+import { withRequestTimeout } from './request-timeout';
 import type {
   CommittedSourceState,
   ExternalOwnership,
@@ -40,64 +47,16 @@ import type {
   SourceConsumerConfig,
 } from './types';
 
-// ─── Default in-memory store ──────────────────────────────────────────
+// ─── Error types ─────────────────────────────────────────────────────
 
 /**
- * In-memory reconciliation store used as the default when no persistent
- * store is provided. State is retained for the lifetime of the process
- * but not across restarts.
+ * Error thrown when a reconcile request returns 409 indicating the
+ * revision has been superseded.
  */
-class InMemoryReconciliationStore implements ReconciliationStore {
-  private committed = new Map<string, CommittedSourceState>();
-  private pending = new Map<string, PendingDelta>();
-
-  private key(sourceType: SkillSourceType, sourceId: string): string {
-    return `${sourceType}:${sourceId}`;
-  }
-
-  async initialize(): Promise<void> {}
-
-  async getCommittedState(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<CommittedSourceState> {
-    return (
-      this.committed.get(this.key(sourceType, sourceId)) ?? {
-        sourceType,
-        sourceId,
-        observedAt: null,
-        entities: [],
-      }
-    );
-  }
-
-  async getAllCommittedStates(): Promise<CommittedSourceState[]> {
-    return Array.from(this.committed.values());
-  }
-
-  async getPendingDelta(
-    sourceType: SkillSourceType,
-    sourceId: string,
-  ): Promise<PendingDelta | undefined> {
-    return this.pending.get(this.key(sourceType, sourceId));
-  }
-
-  async getAllPendingDeltas(): Promise<PendingDelta[]> {
-    return Array.from(this.pending.values());
-  }
-
-  async savePendingDelta(delta: PendingDelta): Promise<void> {
-    this.pending.set(this.key(delta.sourceType, delta.sourceId), delta);
-  }
-
-  async commitStateAndClearPending(
-    sourceType: SkillSourceType,
-    sourceId: string,
-    nextState: CommittedSourceState,
-  ): Promise<void> {
-    const k = this.key(sourceType, sourceId);
-    this.committed.set(k, nextState);
-    this.pending.delete(k);
+class SupersededRevisionError extends Error {
+  constructor(revision: string) {
+    super(`Revision ${revision} has been superseded`);
+    this.name = 'SupersededRevisionError';
   }
 }
 
@@ -131,16 +90,19 @@ export class SkillsCatalogProvider implements EntityProvider {
   private readonly logger: LoggerService;
   private readonly taskRunner: SchedulerServiceTaskRunner;
   private readonly store: ReconciliationStore;
+  private readonly catalogApi: Pick<CatalogApi, 'getEntitiesByRefs'>;
   private connection?: EntityProviderConnection;
 
   /**
-   * Creates a provider using an optional caller-owned reconciliation store.
+   * Creates a provider using a caller-owned reconciliation store.
    *
    * @remarks
-   * When supplying a store, its owner must await `store.initialize()` before
-   * calling `connect()`. The backend module performs this initialization;
-   * the provider does not initialize externally supplied stores. Omitting the
-   * store uses process-local in-memory state without restart persistence.
+   * The store owner must await `store.initialize()` before calling
+   * `connect()`. The backend module performs this initialization;
+   * the provider does not initialize externally supplied stores.
+   *
+   * The required catalog client verifies processed entity URLs and removals
+   * before any D8 release acknowledgment. There is no visibility bypass.
    */
   constructor(
     config: SkillsCatalogProviderConfig,
@@ -148,8 +110,14 @@ export class SkillsCatalogProvider implements EntityProvider {
     auth: AuthService,
     logger: LoggerService,
     taskRunner: SchedulerServiceTaskRunner,
-    store?: ReconciliationStore,
+    store: ReconciliationStore,
+    catalogApi: Pick<CatalogApi, 'getEntitiesByRefs'>,
   ) {
+    if (!catalogApi || typeof catalogApi.getEntitiesByRefs !== 'function') {
+      throw new InputError(
+        'SkillsCatalogProvider requires catalog visibility verification',
+      );
+    }
     this.config = config;
     this.discovery = discovery;
     this.auth = auth;
@@ -157,7 +125,8 @@ export class SkillsCatalogProvider implements EntityProvider {
       source: `SkillsCatalogProvider:${config.id}`,
     });
     this.taskRunner = taskRunner;
-    this.store = store ?? new InMemoryReconciliationStore();
+    this.store = store;
+    this.catalogApi = catalogApi;
   }
 
   getProviderName(): string {
@@ -168,8 +137,8 @@ export class SkillsCatalogProvider implements EntityProvider {
     this.connection = connection;
     await this.taskRunner.run({
       id: `skills-catalog-provider-${this.config.id}`,
-      fn: async () => {
-        await this.refresh();
+      fn: async signal => {
+        await this.refresh(signal);
       },
     });
   }
@@ -187,15 +156,26 @@ export class SkillsCatalogProvider implements EntityProvider {
    * that fail or return a non-ready status preserve their previously
    * committed entities.
    */
-  private async refresh(): Promise<void> {
+  private async refresh(signal?: AbortSignal): Promise<void> {
     if (!this.connection) {
       throw new Error(
         `${this.getProviderName()}: not connected to catalog yet`,
       );
     }
 
-    // ── Step 1: Replay pending deltas from previous interrupted runs ──
-    const blockedSources = await this.replayPendingDeltas();
+    // Recover catalog ownership first, then deliver recovered acknowledgments
+    // before consuming any newer snapshot. Do not release an unresolved source.
+    const replayBlockedSources = await this.replayPendingDeltas();
+    const ackBlockedSources = await this.retryPendingAcknowledgments(
+      replayBlockedSources,
+      signal,
+    );
+
+    // Merge blocked sources from both ack retry and pending delta replay
+    const blockedSources = new Set([
+      ...ackBlockedSources,
+      ...replayBlockedSources,
+    ]);
 
     this.logger.info(
       `Starting refresh with ${this.config.sources.length} source(s)`,
@@ -207,6 +187,7 @@ export class SkillsCatalogProvider implements EntityProvider {
     let totalEntities = 0;
 
     for (const source of this.config.sources) {
+      if (signal?.aborted) break;
       if (blockedSources.has(`${source.sourceType}:${source.sourceId}`)) {
         sourcesFailed++;
         this.logger.warn(
@@ -215,7 +196,7 @@ export class SkillsCatalogProvider implements EntityProvider {
         continue;
       }
       try {
-        const result = await this.reconcileSource(source);
+        const result = await this.reconcileSource(source, signal);
         if (result.skipped) {
           sourcesSkipped++;
         } else {
@@ -259,6 +240,15 @@ export class SkillsCatalogProvider implements EntityProvider {
 
     for (const delta of pendingDeltas) {
       try {
+        if (
+          delta.sourceType === 'oci' &&
+          delta.revision &&
+          !delta.acknowledgment
+        ) {
+          throw new Error(
+            'Legacy pending OCI revision lacks release/visibility context; preserve it for operator investigation before polling',
+          );
+        }
         const locationKey = this.buildLocationKeyFromParts(
           delta.sourceType,
           delta.sourceId,
@@ -272,16 +262,24 @@ export class SkillsCatalogProvider implements EntityProvider {
           await this.resolvePendingRemovals(delta),
         );
 
-        // Commit the next state and clear the pending delta
-        await this.store.commitStateAndClearPending(
-          delta.sourceType,
-          delta.sourceId,
-          delta.nextState,
-        );
-
+        // Only full ready-OCI context can authorize release after replay.
+        // Legacy revision-only deltas may be partial; never guess their status.
+        if (delta.acknowledgment) {
+          await this.store.commitStateAndSaveAcknowledgment(
+            delta.sourceType,
+            delta.sourceId,
+            delta.nextState,
+            delta.acknowledgment,
+          );
+        } else {
+          await this.store.commitStateAndClearPending(
+            delta.sourceType,
+            delta.sourceId,
+            delta.nextState,
+          );
+        }
         this.logger.info(
-          `Recovered pending delta for ${delta.sourceType}/${delta.sourceId}: ` +
-            `${delta.upserts.length} upsert(s), ${delta.removals.length} removal(s)`,
+          `Recovered pending delta for ${delta.sourceType}/${delta.sourceId}`,
         );
       } catch (error) {
         // Preserve unresolved work and block newer observations for this source.
@@ -301,30 +299,43 @@ export class SkillsCatalogProvider implements EntityProvider {
    */
   private async reconcileSource(
     source: SourceConsumerConfig,
+    signal?: AbortSignal,
   ): Promise<{ skipped: boolean; entityCount: number }> {
     // ── Poll the connector ──────────────────────────────────────────
-    let baseUrl: string;
+    let connectorBaseUrl: string;
     try {
-      baseUrl = await this.discovery.getBaseUrl(source.connectorPluginId);
+      connectorBaseUrl = await withRequestTimeout(
+        () => this.discovery.getBaseUrl(source.connectorPluginId),
+        signal,
+      );
     } catch (error) {
       throw new Error(
         `Failed to resolve connector plugin '${source.connectorPluginId}': ${error}`,
       );
     }
 
-    const { token } = await this.auth.getPluginRequestToken({
-      onBehalfOf: await this.auth.getOwnServiceCredentials(),
-      targetPluginId: source.connectorPluginId,
-    });
+    const { token } = await withRequestTimeout(
+      async () =>
+        this.auth.getPluginRequestToken({
+          onBehalfOf: await this.auth.getOwnServiceCredentials(),
+          targetPluginId: source.connectorPluginId,
+        }),
+      signal,
+    );
 
-    const result = await consumeSnapshot(
-      baseUrl,
-      token,
-      source,
-      this.config.namespace,
-      this.config.defaultOwner,
-      this.config.defaultLifecycle,
-      this.logger,
+    const result = await withRequestTimeout(
+      requestSignal =>
+        consumeSnapshot(
+          connectorBaseUrl,
+          token,
+          source,
+          this.config.namespace,
+          this.config.defaultOwner,
+          this.config.defaultLifecycle,
+          this.logger,
+          requestSignal,
+        ),
+      signal,
     );
 
     if (!result.ok) {
@@ -358,6 +369,20 @@ export class SkillsCatalogProvider implements EntityProvider {
       );
     }
 
+    const canAcknowledge =
+      result.status === 'ready' &&
+      source.sourceType === 'oci' &&
+      result.revision &&
+      !(plan.noOp && plan.reason === 'stale-observation');
+    const acknowledgment = canAcknowledge
+      ? this.buildAcknowledgment(
+          source,
+          result.revision!,
+          plan.nextState,
+          plan.removals,
+        )
+      : undefined;
+
     // ── No-op plans: persist observedAt advancement but skip mutation ─
     if (plan.noOp) {
       this.logger.info(
@@ -365,12 +390,21 @@ export class SkillsCatalogProvider implements EntityProvider {
           `preserving ${plan.nextState.entities.length} entity/entities`,
       );
 
-      // Always persist nextState — observedAt may have advanced
-      await this.store.commitStateAndClearPending(
-        source.sourceType,
-        source.sourceId,
-        plan.nextState,
-      );
+      if (acknowledgment) {
+        await this.store.commitStateAndSaveAcknowledgment(
+          source.sourceType,
+          source.sourceId,
+          plan.nextState,
+          acknowledgment,
+        );
+        await this.tryDeliverAcknowledgment(acknowledgment, signal);
+      } else {
+        await this.store.commitStateAndClearPending(
+          source.sourceType,
+          source.sourceId,
+          plan.nextState,
+        );
+      }
 
       if (
         plan.reason === 'loading' ||
@@ -388,13 +422,16 @@ export class SkillsCatalogProvider implements EntityProvider {
     // ── Apply the plan with crash-safe persistence ───────────────────
     const locationKey = this.buildLocationKey(source);
 
-    // Step 1: Persist the pending delta before applying the mutation
+    // Step 1: Persist the pending delta before applying the mutation.
+    // Include the revision so it survives crashes per design D8.
     await this.store.savePendingDelta({
       sourceType: source.sourceType,
       sourceId: source.sourceId,
       upserts: plan.upserts,
       removals: plan.removals,
       nextState: plan.nextState,
+      revision: acknowledgment?.revision,
+      acknowledgment,
     });
 
     // Step 2: Apply the delta mutation to the catalog
@@ -405,12 +442,21 @@ export class SkillsCatalogProvider implements EntityProvider {
       plan.removals,
     );
 
-    // Step 3: Commit the next state and clear the pending delta
-    await this.store.commitStateAndClearPending(
-      source.sourceType,
-      source.sourceId,
-      plan.nextState,
-    );
+    if (acknowledgment) {
+      await this.store.commitStateAndSaveAcknowledgment(
+        source.sourceType,
+        source.sourceId,
+        plan.nextState,
+        acknowledgment,
+      );
+      await this.tryDeliverAcknowledgment(acknowledgment, signal);
+    } else {
+      await this.store.commitStateAndClearPending(
+        source.sourceType,
+        source.sourceId,
+        plan.nextState,
+      );
+    }
 
     this.logger.info(
       `Source ${source.sourceId}: reconciled ` +
@@ -533,5 +579,290 @@ export class SkillsCatalogProvider implements EntityProvider {
     sourceId: string,
   ): string {
     return `skills-catalog-provider:${this.config.id}:${sourceType}:${sourceId}`;
+  }
+
+  // ─── D8 acknowledgment lifecycle ──────────────────────────────────
+
+  /**
+   * Builds a pending acknowledgment from committed state and planned
+   * removals per design D8.
+   */
+  private buildAcknowledgment(
+    source: SourceConsumerConfig,
+    revision: string,
+    nextState: CommittedSourceState,
+    removals: PlannedRemoval[],
+  ): PendingAcknowledgment {
+    // Unique digests from committed last-known-good entities
+    const retainedDigests = [...new Set(nextState.entities.map(e => e.digest))];
+
+    // Expected entity refs → TechDocs URLs for visibility verification
+    const expectedEntityUrls: Record<string, string> = {};
+    for (const owned of nextState.entities) {
+      const ref = stringifyEntityRef(owned.entity);
+      const techdocsRef =
+        owned.entity.metadata?.annotations?.['backstage.io/techdocs-ref'];
+      if (!techdocsRef)
+        throw new Error(`Missing committed TechDocs reference: ${ref}`);
+      expectedEntityUrls[ref] = techdocsRef;
+    }
+
+    // Entity refs expected to be absent (removed)
+    const expectedRemovals = removals.map(removal => {
+      if (!removal.entityRef)
+        throw new Error('Missing persisted removal reference');
+      return removal.entityRef;
+    });
+
+    return {
+      sourceType: source.sourceType,
+      sourceId: source.sourceId,
+      connectorPluginId: source.connectorPluginId,
+      revision,
+      retainedDigests,
+      expectedEntityUrls,
+      expectedRemovals,
+    };
+  }
+
+  /**
+   * Retries all pending acknowledgments before polling new snapshots.
+   *
+   * Per design D8: retry pending acknowledgments, including catalog
+   * visibility checks, before consuming newer snapshots. Each
+   * acknowledgment is isolated: a failure for one source does not
+   * prevent retrying or polling other sources. Failures reading the
+   * pending list itself propagate to the caller.
+   *
+   * @returns Set of `sourceType:sourceId` keys whose acknowledgment
+   *   delivery or cleanup failed, blocking new snapshot polling for
+   *   those sources until the next scheduled run.
+   */
+  private async retryPendingAcknowledgments(
+    recoveryBlocked: ReadonlySet<string>,
+    signal?: AbortSignal,
+  ): Promise<Set<string>> {
+    const blockedSources = new Set<string>();
+
+    // Let getAllPendingAcknowledgments errors propagate — the caller
+    // must know when the pending list itself cannot be read.
+    const pendingAcks = await this.store.getAllPendingAcknowledgments();
+    if (pendingAcks.length === 0) return blockedSources;
+
+    this.logger.info(
+      `Retrying ${pendingAcks.length} pending acknowledgment(s)`,
+    );
+
+    for (const ack of pendingAcks) {
+      const key = `${ack.sourceType}:${ack.sourceId}`;
+      if (recoveryBlocked.has(key)) {
+        blockedSources.add(key);
+        continue;
+      }
+      try {
+        if (!(await this.tryDeliverAcknowledgment(ack, signal)))
+          blockedSources.add(key);
+      } catch (error) {
+        // Preserve pending state and block this source's polling
+        // until the next scheduled run.
+        blockedSources.add(key);
+        this.logger.error(
+          `Source ${ack.sourceId}: acknowledgment retry failed ` +
+            `(revision=${ack.revision}), blocking source polling: ${error}`,
+        );
+      }
+    }
+
+    return blockedSources;
+  }
+
+  /**
+   * Attempts to deliver a pending acknowledgment.
+   *
+   * Verifies catalog processing visibility before sending the reconcile request.
+   * A deferred visibility check blocks newer polling, just like a request error.
+   * On success, clears the pending acknowledgment. On failure,
+   * retains it for retry on the next scheduled run.
+   */
+  private async tryDeliverAcknowledgment(
+    ack: PendingAcknowledgment,
+    signal?: AbortSignal,
+  ): Promise<boolean> {
+    try {
+      const visible = await withRequestTimeout(
+        () => this.verifyCatalogVisibility(ack),
+        signal,
+      );
+      if (!visible) {
+        this.logger.info(
+          `Source ${ack.sourceId}: catalog processing not yet visible, deferring acknowledgment revision=${ack.revision}`,
+        );
+        return false;
+      }
+      await withRequestTimeout(
+        requestSignal => this.sendReconcileRequest(ack, requestSignal),
+        signal,
+      );
+
+      // Clear the pending acknowledgment on success
+      await this.store.clearPendingAcknowledgment(ack.sourceType, ack.sourceId);
+
+      this.logger.info(
+        `Source ${ack.sourceId}: acknowledgment delivered ` +
+          `revision=${ack.revision}`,
+      );
+      return true;
+    } catch (error) {
+      if (error instanceof SupersededRevisionError) {
+        // 409: discard superseded acknowledgment and permit new poll
+        this.logger.warn(
+          `Source ${ack.sourceId}: acknowledgment revision=${ack.revision} ` +
+            `superseded (409), discarding`,
+        );
+        // If clearing fails, rethrow so retryPendingAcknowledgments
+        // blocks this source's polling until the next run.
+        await this.store.clearPendingAcknowledgment(
+          ack.sourceType,
+          ack.sourceId,
+        );
+        return true;
+      }
+      // Transport/auth/server errors: retain for retry.
+      // Re-throw so retryPendingAcknowledgments can catch the error
+      // and block this source's polling until the next scheduled run.
+      throw error;
+    }
+  }
+
+  /**
+   * Verifies that the catalog has processed entities with the expected
+   * TechDocs URLs and that removed entities are absent.
+   *
+   * @returns `true` if all visibility checks pass.
+   */
+  private async verifyCatalogVisibility(
+    ack: PendingAcknowledgment,
+  ): Promise<boolean> {
+    const { token } = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: 'catalog',
+    });
+
+    // Check expected entity URLs
+    const entityRefs = Object.keys(ack.expectedEntityUrls);
+    if (entityRefs.length > 0) {
+      try {
+        const response = await this.catalogApi.getEntitiesByRefs(
+          { entityRefs },
+          { token },
+        );
+
+        for (let i = 0; i < entityRefs.length; i++) {
+          const entity = response.items[i];
+          if (
+            response.items.length !== entityRefs.length ||
+            !entity ||
+            stringifyEntityRef(entity) !== entityRefs[i]
+          ) {
+            this.logger.debug(
+              `Visibility check: ${entityRefs[i]} not yet in catalog`,
+            );
+            return false;
+          }
+          const actualUrl =
+            entity.metadata?.annotations?.['backstage.io/techdocs-ref'];
+          const expectedUrl = ack.expectedEntityUrls[entityRefs[i]];
+          if (actualUrl !== expectedUrl) {
+            this.logger.debug(
+              `Visibility check: ${entityRefs[i]} has stale techdocs-ref ` +
+                `(expected=${expectedUrl}, actual=${actualUrl})`,
+            );
+            return false;
+          }
+        }
+      } catch (error) {
+        this.logger.warn(`Visibility check: catalog query failed: ${error}`);
+        return false;
+      }
+    }
+
+    // Check expected removals
+    if (ack.expectedRemovals.length > 0) {
+      try {
+        const response = await this.catalogApi.getEntitiesByRefs(
+          { entityRefs: ack.expectedRemovals },
+          { token },
+        );
+
+        for (let i = 0; i < ack.expectedRemovals.length; i++) {
+          if (
+            response.items.length !== ack.expectedRemovals.length ||
+            response.items[i]
+          ) {
+            this.logger.debug(
+              `Visibility check: ${ack.expectedRemovals[i]} not yet removed`,
+            );
+            return false;
+          }
+        }
+      } catch (error) {
+        this.logger.warn(
+          `Visibility check: catalog removal query failed: ${error}`,
+        );
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Sends the reconcile request to the connector's
+   * `POST /skilldocs/:sourceId/reconcile` endpoint.
+   *
+   * @throws SupersededRevisionError on 409 (superseded revision)
+   * @throws Error on other failures
+   */
+  private async sendReconcileRequest(
+    ack: PendingAcknowledgment,
+    signal: AbortSignal,
+  ): Promise<void> {
+    const connectorBaseUrl = await this.discovery.getBaseUrl(
+      ack.connectorPluginId,
+    );
+    const url = `${connectorBaseUrl.replace(
+      /\/+$/,
+      '',
+    )}/skilldocs/${encodeURIComponent(ack.sourceId)}/reconcile`;
+
+    const { token } = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: ack.connectorPluginId,
+    });
+
+    const response = await fetch(url, {
+      method: 'POST',
+      redirect: 'error',
+      signal,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        revision: ack.revision,
+        retainedDigests: ack.retainedDigests,
+      }),
+    });
+
+    await response.body?.cancel();
+    if (response.status === 204) {
+      return; // Success
+    }
+
+    if (response.status === 409) {
+      throw new SupersededRevisionError(ack.revision);
+    }
+
+    throw new Error(`Reconcile request failed with ${response.status}`);
   }
 }

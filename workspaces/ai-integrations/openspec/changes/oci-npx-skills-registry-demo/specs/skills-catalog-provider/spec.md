@@ -183,6 +183,12 @@ not participate in this protocol.
 - **THEN** the provider sends its persisted revision and committed retained-digest set to the connector's reconcile endpoint using a service token targeted to `skill-image-connector`
 - **AND** failed mutations, invalid snapshots, partial snapshots, loading, and failed acquisition send no release acknowledgment
 
+#### Scenario: Unchanged ready observation still acknowledges
+
+- **WHEN** an eligible ready OCI snapshot carries a revision but produces unchanged entities or repeats an observation
+- **THEN** the provider persists an acknowledgment and verifies catalog visibility before delivery
+- **AND** the connector handles repeated identical acknowledgments idempotently
+
 #### Scenario: Catalog processing lags provider mutation
 
 - **WHEN** the provider mutation and ownership commit succeed but catalog processing still exposes an old TechDocs URL or an entity awaiting removal
@@ -197,6 +203,44 @@ not participate in this protocol.
 - **THEN** it first recovers pending mutations, commits ownership, and retries the durable acknowledgment before consuming newer snapshots
 - **AND** transport, auth, and server errors retain the acknowledgment for retry
 - **AND** 409 discards only the superseded acknowledgment and permits a new poll, without changing catalog state or authorizing cleanup
+
+#### Scenario: Deferred acknowledgment prevents release context replacement
+
+- **WHEN** catalog processing has not satisfied an existing acknowledgment's expected URLs or removals and the connector advances its snapshot
+- **THEN** the provider preserves the existing acknowledgment and skips newer polling for that source
+- **AND** other sources continue independently
+
+#### Scenario: Crash replay preserves the original release obligations
+
+- **WHEN** a ready OCI mutation is interrupted before ownership and acknowledgment commit
+- **THEN** replay uses the complete release and visibility context persisted before that mutation
+- **AND** source configuration changes do not reconstruct or weaken those obligations
+
+#### Scenario: Partial crash recovery cannot release documentation
+
+- **WHEN** an interrupted partial OCI delta is replayed
+- **THEN** ownership can recover without creating a release acknowledgment from a response revision header
+
+#### Scenario: Legacy pending revision lacks release context
+
+- **WHEN** a pre-release OCI pending delta has a revision but lacks complete acknowledgment context
+- **THEN** the provider preserves that delta and blocks newer polling for its source with an investigation diagnostic
+- **AND** it does not infer whether that delta came from a ready or partial observation
+
+#### Scenario: Existing entities need the TechDocs annotation
+
+- **WHEN** an OCI entity lacks its expected TechDocs annotation and the next ready observation has unchanged digest and timestamp
+- **THEN** the provider upserts the expected annotation before allowing release acknowledgment
+
+#### Scenario: External provider operation stalls
+
+- **WHEN** a snapshot acquisition step (discovery, authentication, or fetch/body consumption), the complete visibility verification phase (authentication and catalog queries), or the complete acknowledgment delivery phase (discovery, authentication, and POST) exceeds its respective 30-second deadline or the scheduler cancels the run
+- **THEN** the provider bounds that operation and preserves unresolved release obligations
+
+#### Scenario: Authenticated connector request redirects
+
+- **WHEN** a snapshot or acknowledgment request returns a redirect
+- **THEN** the provider rejects the redirect without forwarding its service token
 
 #### Scenario: One skill fails during refresh
 
