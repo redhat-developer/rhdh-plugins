@@ -93,7 +93,7 @@ export default defineConfig({
           {
             name: 'live',
             testDir: 'packages/app-legacy/e2e-tests',
-            testMatch: /^(?!app\.test\.ts$).*\.test\.ts$/,
+            testIgnore: /app\.test\.ts$/,
             use: {
               channel: 'chrome' as const,
             },
