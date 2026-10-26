@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-augment-backend
 
+## 0.3.0
+
+### Minor Changes
+
+- aa44c81: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- f6f46c0: Updated dependency `@openai/agents-core` to `^0.21.0`.
+- Updated dependencies [aa44c81]
+  - @red-hat-developer-hub/backstage-plugin-augment-common@0.3.0
+
 ## 0.2.2
 
 ### Patch Changes
