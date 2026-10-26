@@ -244,6 +244,26 @@ describe('buildSidebarModel', () => {
     expect(group?.kind === 'group' ? group.group.items : undefined).toEqual([]);
   });
 
+  it('hides a title-less item but lets it claim its auto-discovered page', () => {
+    const entries = buildSidebarModel({
+      items: [
+        { id: 'hidden-search', title: '', to: '/search' },
+        { id: 'hidden-grouped', title: '', to: '/grouped', group: 'g' },
+        { id: 'other', title: 'Other', to: '/other' },
+      ],
+      groups: [{ id: 'g', title: 'Group' }],
+      navItems: [
+        navItem('page:search', 'Search', '/search'),
+        navItem('page:grouped', 'Grouped', '/grouped'),
+        navItem('page:docs', 'Docs', '/docs'),
+      ],
+    });
+
+    expect(entries.map(idOf)).toEqual(['page:docs', 'g', 'other']);
+    const group = entries.find(e => e.kind === 'group');
+    expect(group?.kind === 'group' ? group.group.items : undefined).toEqual([]);
+  });
+
   it('drops a requiresRoute item when no nav route matches its path', () => {
     const entries = buildSidebarModel({
       items: [
