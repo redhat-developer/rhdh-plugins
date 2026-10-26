@@ -40,8 +40,11 @@ import { SidebarSearch } from './SidebarSearch';
  *    only when the bottom block has visible entries).
  *
  * The search modal and the notifications item declare their page paths, so
- * the plain auto-discovered entries for those pages are hidden. Search is
- * enabled by default; notifications stay disabled until opted in.
+ * the plain auto-discovered entries for those pages are hidden. The search
+ * modal and notifications stay disabled until opted in; while the search
+ * modal is disabled, a title-less placeholder item claims `/search` so the
+ * Search page is not listed either. Another title-less item claims `/create`
+ * to keep the scaffolder page out of the menu.
  *
  * The Administration group has no link of its own; it ships with the RBAC
  * item and collects any further items plugins contribute with
@@ -84,12 +87,44 @@ export const sidebarLogoSpacer = SidebarSpacerBlueprint.make({
 });
 
 /**
+ * Placeholder item that claims `/search` with an empty title. Items without a
+ * title are never rendered, but they still take over placement of the page
+ * they link to, so the auto-discovered Search page does not appear as a
+ * regular middle-section item while the search modal below is disabled.
+ * Extension ID: `sidebar-item:app/search`. Disable it (or give it a title)
+ * via `app-config.yaml` to show the plain Search entry again.
+ */
+export const sidebarSearchItem = SidebarItemBlueprint.make({
+  name: 'search',
+  params: {
+    title: '',
+    to: '/search',
+  },
+});
+
+/**
+ * Placeholder item that claims `/create` with an empty title, so the
+ * auto-discovered scaffolder (Self-Service) page does not appear in the menu.
+ * Extension ID: `sidebar-item:app/create`. Disable it (or give it a title)
+ * via `app-config.yaml` to show the Create entry again.
+ */
+export const sidebarCreateItem = SidebarItemBlueprint.make({
+  name: 'create',
+  params: {
+    title: '',
+    to: '/create',
+  },
+});
+
+/**
  * Search modal pinned to the top. Extension ID: `sidebar-element:app/search`.
+ * Disabled by default; enable via `app-config.yaml`.
  * Claims `/search` so the auto-discovered Search page does not appear as a
  * regular middle-section item.
  */
 export const sidebarSearchElement = SidebarElementBlueprint.make({
   name: 'search',
+  disabled: true,
   params: {
     component: SidebarSearch,
     to: '/search',
@@ -97,9 +132,14 @@ export const sidebarSearchElement = SidebarElementBlueprint.make({
   },
 });
 
-/** Divider below the search. Extension ID: `sidebar-divider:app/search`. */
+/**
+ * Divider below the search. Extension ID: `sidebar-divider:app/search`.
+ * Disabled by default; enable via `app-config.yaml` if you enable the
+ * search modal with extension ID: `sidebar-element:app/search`.
+ */
 export const sidebarSearchDivider = SidebarDividerBlueprint.make({
   name: 'search',
+  disabled: true,
   params: { priority: 900 },
 });
 
@@ -177,6 +217,8 @@ export const sidebarSettingsGroup = SidebarItemGroupBlueprint.make({
 export const defaultSidebarExtensions = [
   sidebarLogoElement,
   sidebarLogoSpacer,
+  sidebarSearchItem,
+  sidebarCreateItem,
   sidebarSearchElement,
   sidebarSearchDivider,
   sidebarBottomSpacer,
