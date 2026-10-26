@@ -166,6 +166,7 @@ export class KubeService implements KubeServiceApi {
   async createProjectSecret(
     projectId: string,
     aapCredentials?: AAPCredentials,
+    requireAapCredentials = true,
   ): Promise<void> {
     this.#logger.info(`Creating project secret for project: ${projectId}`);
 
@@ -173,6 +174,7 @@ export class KubeService implements KubeServiceApi {
       projectId,
       aapCredentials,
       this.#config,
+      requireAapCredentials,
     );
 
     try {
@@ -250,6 +252,7 @@ export class KubeService implements KubeServiceApi {
     gitCredentials: {
       sourceRepo: GitRepo;
       targetRepo: GitRepo;
+      aapConfigRepo?: GitRepo;
     },
     ownerReference: V1OwnerReference,
   ): Promise<void> {
@@ -287,8 +290,26 @@ export class KubeService implements KubeServiceApi {
       `Creating job for project ${params.projectId}, phase: ${params.phase}`,
     );
 
+    if (
+      (params.aapConfigAsCode || params.aapConfigRepo) &&
+      params.phase !== 'publish'
+    ) {
+      throw new Error(
+        'AAP Config-as-Code settings are only valid for the publish phase',
+      );
+    }
+    if (!!params.aapConfigAsCode !== !!params.aapConfigRepo) {
+      throw new Error(
+        'AAP Config-as-Code settings and repository credentials must be provided together',
+      );
+    }
+
     // Step 1: Create/update project secret (LLM + AAP)
-    await this.createProjectSecret(params.projectId, params.aapCredentials);
+    await this.createProjectSecret(
+      params.projectId,
+      params.aapCredentials,
+      params.phase === 'publish' && !params.aapConfigAsCode,
+    );
 
     // Step 2: Create the Kubernetes job
     // The adversarial agents ConfigMap is only relevant for adversarial phases
@@ -339,6 +360,7 @@ export class KubeService implements KubeServiceApi {
         {
           sourceRepo: params.sourceRepo,
           targetRepo: params.targetRepo,
+          aapConfigRepo: params.aapConfigRepo,
         },
         ownerReference,
       );
@@ -356,6 +378,20 @@ export class KubeService implements KubeServiceApi {
         await this.#coreV1Api.createNamespacedConfigMap({
           namespace: this.#namespace,
           body: rulesConfigMap,
+        });
+      }
+
+      const aapConfigMap = JobResourceBuilder.buildAapConfigMap(
+        params,
+        ownerReference,
+      );
+      if (aapConfigMap) {
+        this.#logger.info(
+          `Creating AAP Config-as-Code ConfigMap for job: ${params.jobId}`,
+        );
+        await this.#coreV1Api.createNamespacedConfigMap({
+          namespace: this.#namespace,
+          body: aapConfigMap,
         });
       }
 

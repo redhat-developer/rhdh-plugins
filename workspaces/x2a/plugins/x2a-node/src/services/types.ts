@@ -21,7 +21,10 @@ import type {
   SourceTechnology,
   RuleSnapshot,
   AdversarialAgentConfig,
+  AAPConfigAsCodeRequest,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+export type { AAPConfigAsCodeRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
  * X2A configuration structure.
@@ -120,6 +123,8 @@ export interface JobCreateParams {
   sourceRepo: GitRepo;
   targetRepo: GitRepo;
   aapCredentials?: AAPCredentials;
+  aapConfigAsCode?: AAPConfigAsCodeRequest;
+  aapConfigRepo?: GitRepo;
   acceptedRules?: RuleSnapshot[];
   adversarialAgents?: AdversarialAgentConfig[];
   refresh?: boolean;

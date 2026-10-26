@@ -51,11 +51,12 @@ describe('useScmHostMap', () => {
     expect(result.current).toBe(first);
   });
 
-  it('returns empty map when no integrations are configured', () => {
+  it('includes the built-in Bitbucket Cloud host without integrations', () => {
     const { useApi } = jest.requireMock('@backstage/core-plugin-api');
     useApi.mockReturnValueOnce(new ConfigReader({}));
 
     const { result } = renderHook(() => useScmHostMap());
-    expect(result.current.size).toBe(0);
+    expect(result.current.size).toBe(1);
+    expect(result.current.get('bitbucket.org')).toBe('bitbucket');
   });
 });

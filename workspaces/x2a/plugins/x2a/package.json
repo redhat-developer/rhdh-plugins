@@ -52,6 +52,7 @@
     "@backstage/core-components": "^0.18.8",
     "@backstage/core-plugin-api": "^1.12.4",
     "@backstage/frontend-plugin-api": "^0.15.1",
+    "@backstage/integration-react": "^1.2.16",
     "@backstage/plugin-app-react": "^0.2.1",
     "@backstage/plugin-catalog": "^2.0.1",
     "@backstage/plugin-permission-react": "^0.5.1",

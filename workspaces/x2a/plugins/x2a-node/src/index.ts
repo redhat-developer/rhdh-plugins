@@ -23,6 +23,7 @@ export type {
   CreateJobInput,
   JobCreateParams,
   AAPCredentials,
+  AAPConfigAsCodeRequest,
   GitRepo,
 } from './services';
 

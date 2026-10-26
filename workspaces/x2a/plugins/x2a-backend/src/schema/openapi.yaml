@@ -8,6 +8,16 @@ servers:
   - url: /
 
 paths:
+  /aap/configuration:
+    get:
+      summary: Returns non-secret configured AAP publishing information.
+      responses:
+        '200':
+          description: AAP configuration availability and organization.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AAPConfiguration'
   /projects:
     get:
       summary: Returns a list of projects.
@@ -601,6 +611,10 @@ paths:
                   $ref: '#/components/schemas/GitRepoAuth'
                 aapCredentials:
                   $ref: '#/components/schemas/AAPCredentials'
+                aapConfig:
+                  $ref: '#/components/schemas/AAPConfigAsCodeRequest'
+                aapConfigRepoAuth:
+                  $ref: '#/components/schemas/GitRepoAuth'
               required:
                 - phase
       responses:
@@ -1183,6 +1197,48 @@ components:
           description: Authentication token for the git repository
       required:
         - token
+
+    AAPConfigAsCodeRequest:
+      type: object
+      description: Module settings for writing AAP configuration to Git
+      properties:
+        organization:
+          type: string
+          description: AAP organization to use for the generated configuration
+        repositoryUrl:
+          type: string
+        repositoryBranch:
+          type: string
+        configurationDirectory:
+          type: string
+          description: Relative directory containing the AAP configuration files
+        inventory:
+          type: string
+        scmCredentialName:
+          type: string
+        jobCredentialNames:
+          type: array
+          items:
+            type: string
+        executionEnvironmentName:
+          type: string
+      required:
+        - organization
+        - repositoryUrl
+        - repositoryBranch
+        - configurationDirectory
+        - inventory
+        - jobCredentialNames
+
+    AAPConfiguration:
+      type: object
+      properties:
+        configured:
+          type: boolean
+        organization:
+          type: string
+      required:
+        - configured
 
     AAPCredentials:
       type: object

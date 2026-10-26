@@ -26,7 +26,6 @@ const integrationKeyToProvider: ReadonlyArray<
 > = [
   ['github', 'github'],
   ['gitlab', 'gitlab'],
-  ['bitbucketCloud', 'bitbucket'],
   ['bitbucket', 'bitbucket'],
 ];
 
@@ -65,6 +64,11 @@ export function buildScmHostMap(config: Config): Map<string, ScmProviderName> {
       }
     }
   }
+
+  // Bitbucket Cloud always uses the public bitbucket.org host. Unlike the
+  // GitHub and GitLab integration schemas, its configuration does not expose
+  // a host property, so it cannot be discovered by reading integration entries.
+  map.set('bitbucket.org', 'bitbucket');
 
   return map;
 }

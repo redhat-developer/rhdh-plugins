@@ -207,6 +207,13 @@ git_target_repo() {
   git -c "credential.helper=!f() { test \"\$1\" = get && printf 'username=${username}\\npassword=${password}\\n'; }; f" "$@"
 }
 
+git_config_repo() {
+  local username="${AAP_CONFIG_REPO_TOKEN%%:*}"
+  local password="${AAP_CONFIG_REPO_TOKEN#*:}"
+
+  git -c "credential.helper=!f() { test \"\$1\" = get && printf 'username=${username}\\npassword=${password}\\n'; }; f" "$@"
+}
+
 # Build standardized commit message for x2a job phases.
 # Returns: Echoes the commit message to stdout
 build_commit_message() {
@@ -323,7 +330,7 @@ cleanup() {
   set +e
 
   # Always try to commit and push whatever is in the working directory
-  if [ -d /workspace/target/.git ]; then
+  if [ -d /workspace/target/.git ] && [ -z "${AAP_CONFIG_REPO_URL:-}" ]; then
     local commit_msg=$(build_commit_message)
     git_commit_and_push "${commit_msg}" false  # Don't exit on error in cleanup
   fi
@@ -337,6 +344,87 @@ cleanup() {
   else
     report_result "success" ""
   fi
+}
+
+publish_aap_config() {
+  local request_path="/config/publish/request.json"
+  local role_name
+  role_name=$(normalize_ansible_role_name "${MODULE_NAME}")
+  local playbook_path="${PROJECT_PATH}/ansible/run_${role_name}.yml"
+
+  if [ ! -f "${request_path}" ]; then
+    ERROR_MESSAGE="AAP Config-as-Code request not found at ${request_path}"
+    exit 1
+  fi
+  if [ ! -f "${playbook_path}" ]; then
+    ERROR_MESSAGE="Generated playbook not found at ${playbook_path}"
+    exit 1
+  fi
+
+  for attempt in 1 2 3; do
+    echo "=== AAP Config-as-Code push attempt ${attempt}/3 ==="
+    rm -rf /workspace/aap-config
+    ERROR_MESSAGE="Failed to clone AAP config repository from ${AAP_CONFIG_REPO_URL}"
+    if git_config_repo clone --depth=1 --single-branch \
+      --branch="${AAP_CONFIG_REPO_BRANCH}" \
+      "${AAP_CONFIG_REPO_URL}" /workspace/aap-config; then
+      :
+    elif git_config_repo clone --depth=1 \
+      "${AAP_CONFIG_REPO_URL}" /workspace/aap-config; then
+      cd /workspace/aap-config
+      default_branch=$(git symbolic-ref --short HEAD)
+      if [ "${default_branch}" != "${AAP_CONFIG_REPO_BRANCH}" ]; then
+        git checkout -b "${AAP_CONFIG_REPO_BRANCH}"
+      fi
+    else
+      ERROR_MESSAGE="Failed to clone AAP config repository from ${AAP_CONFIG_REPO_URL}"
+      exit 1
+    fi
+
+    cd /app
+    run_x2a uv run app.py generate-aap-config --request "${request_path}"
+
+    mapfile -t config_files < <(
+      uv run --project /app python -c \
+        'import json, sys; request=json.load(open(sys.argv[1])); directory=request["configuration_directory"]; print(f"{directory}/controller_projects.yml"); print(f"{directory}/controller_job_templates.yml")' \
+        "${request_path}"
+    )
+
+    cd /workspace/aap-config
+    git add -- "${config_files[@]}"
+    if git diff --cached --quiet; then
+      echo "AAP configuration is already up to date"
+      COMMIT_ID=$(git rev-parse HEAD)
+      ERROR_MESSAGE=""
+      return 0
+    fi
+
+    git commit -m "$(build_commit_message)"
+    local push_output
+    push_output=$(mktemp)
+    set +e
+    git_config_repo push origin "HEAD:${AAP_CONFIG_REPO_BRANCH}" 2>&1 | tee "${push_output}"
+    local push_rc=${PIPESTATUS[0]}
+    set -e
+    if [ ${push_rc} -eq 0 ]; then
+      rm -f "${push_output}"
+      COMMIT_ID=$(git rev-parse HEAD)
+      ERROR_MESSAGE=""
+      echo "Successfully pushed AAP configuration commit: ${COMMIT_ID}"
+      return 0
+    fi
+
+    if ! grep -qiE 'non-fast-forward|fetch first' "${push_output}"; then
+      rm -f "${push_output}"
+      ERROR_MESSAGE="Failed to push AAP configuration to ${AAP_CONFIG_REPO_URL} branch ${AAP_CONFIG_REPO_BRANCH}"
+      exit 1
+    fi
+    rm -f "${push_output}"
+    echo "Push was rejected; regenerating against the latest branch"
+  done
+
+  ERROR_MESSAGE="Failed to push AAP configuration after 3 attempts because the branch kept changing"
+  exit 1
 }
 
 git_clone_repos() {
@@ -666,23 +754,29 @@ case "${PHASE}" in
     echo "=== Ansible project contents ==="
     find "${ANSIBLE_DIR}" -type f | sed -n '1,50p'
 
-    # publish-aap creates/updates an AAP Project for this repository and branch,
-    # then triggers a sync without waiting for it to finish.
-    echo ""
-    echo "=== Publishing to AAP ==="
-    cd /app
-    run_x2a uv run app.py publish-aap \
-      --target-repo "${TARGET_REPO_URL}" \
-      --target-branch "${TARGET_REPO_BRANCH}" \
-      --project-id "${PROJECT_DIR}"
-
-    # Parse AAP project ID from captured output
-    AAP_PROJECT_ID=$(echo "${X2A_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
-    if [ -n "${AAP_PROJECT_ID}" ]; then
-      ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects/${AAP_PROJECT_ID}/details")
+    if [ -n "${AAP_CONFIG_REPO_URL:-}" ]; then
+      echo ""
+      echo "=== Publishing AAP configuration to Git ==="
+      publish_aap_config
     else
-      echo "WARNING: Could not parse AAP project ID from publish-aap output"
-      ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects")
+      # publish-aap creates/updates an AAP Project for this repository and branch,
+      # then triggers a sync without waiting for it to finish.
+      echo ""
+      echo "=== Publishing to AAP ==="
+      cd /app
+      run_x2a uv run app.py publish-aap \
+        --target-repo "${TARGET_REPO_URL}" \
+        --target-branch "${TARGET_REPO_BRANCH}" \
+        --project-id "${PROJECT_DIR}"
+
+      # Parse AAP project ID from captured output
+      AAP_PROJECT_ID=$(echo "${X2A_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
+      if [ -n "${AAP_PROJECT_ID}" ]; then
+        ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects/${AAP_PROJECT_ID}/details")
+      else
+        echo "WARNING: Could not parse AAP project ID from publish-aap output"
+        ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects")
+      fi
     fi
     ;;
 

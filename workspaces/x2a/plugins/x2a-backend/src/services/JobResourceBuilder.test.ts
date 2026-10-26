@@ -921,4 +921,101 @@ describe('JobResourceBuilder', () => {
       });
     });
   });
+
+  describe('buildAapConfigMap', () => {
+    const sourceRepo = {
+      url: 'https://github.com/org/source',
+      token: 'source-token', // NOSONAR
+      branch: 'main',
+    };
+    const targetRepo = {
+      url: 'https://github.com/org/target',
+      token: 'target-token', // NOSONAR
+      branch: 'main',
+    };
+    const ownerReference = {
+      apiVersion: 'batch/v1',
+      kind: 'Job',
+      name: 'job-x2a-publish-abc123',
+      uid: 'test-uid-123',
+    };
+
+    it('should build the stable Config-as-Code request and owner it by the job', () => {
+      const configMap = JobResourceBuilder.buildAapConfigMap(
+        {
+          jobId: 'job-123',
+          projectId: 'proj-123',
+          projectName: 'Test Project',
+          projectDirName: 'test-project-proj-1',
+          moduleName: 'Nginx-Web',
+          phase: 'publish',
+          user: 'user:default/test',
+          callbackToken: 'callback-token-123', // NOSONAR
+          callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
+          sourceRepo,
+          targetRepo,
+          aapConfigAsCode: {
+            organization: 'Platform',
+            repositoryUrl: 'https://github.com/example/config.git',
+            repositoryBranch: 'main',
+            configurationDirectory: 'config/test',
+            inventory: 'Production',
+            jobCredentialNames: ['Machine Credential'],
+            executionEnvironmentName: 'Default execution environment',
+            scmCredentialName: 'Git Credential',
+          },
+        },
+        ownerReference,
+      );
+
+      expect(configMap?.metadata?.ownerReferences).toEqual([ownerReference]);
+      expect(JSON.parse(configMap?.data?.['request.json'] ?? '{}')).toEqual({
+        schema_version: 1,
+        repository_path: '/workspace/aap-config',
+        configuration_directory: 'config/test',
+        project: {
+          organization: 'Platform',
+          repository_url: 'https://github.com/org/target',
+          repository_branch: 'main',
+          scm_credential: 'Git Credential',
+        },
+        job_template: {
+          module_name: 'Nginx-Web',
+          playbook: 'test-project-proj-1/ansible/run_nginx_web.yml',
+          inventory: 'Production',
+          credentials: ['Machine Credential'],
+          execution_environment: 'Default execution environment',
+        },
+      });
+    });
+
+    it('should reject a module request without project Config-as-Code settings', () => {
+      expect(() =>
+        JobResourceBuilder.buildAapConfigMap(
+          {
+            jobId: 'job-123',
+            projectId: 'proj-123',
+            projectName: 'Test Project',
+            projectDirName: 'test-project-proj-1',
+            phase: 'publish',
+            user: 'user:default/test',
+            callbackToken: 'callback-token-123', // NOSONAR
+            callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
+            sourceRepo,
+            targetRepo,
+            moduleName: 'nginx',
+            aapConfigAsCode: {
+              organization: '',
+              repositoryUrl: 'https://github.com/example/config.git',
+              repositoryBranch: 'main',
+              configurationDirectory: 'config/test',
+              inventory: 'Production',
+              jobCredentialNames: [],
+            },
+          },
+          ownerReference,
+        ),
+      ).toThrow('AAP organization is required');
+    });
+  });
 });

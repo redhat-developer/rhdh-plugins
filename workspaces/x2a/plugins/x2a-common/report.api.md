@@ -6,6 +6,35 @@
 import { BasicPermission } from '@backstage/plugin-permission-common';
 import { Config } from '@backstage/config';
 
+// @public
+export interface AAPConfigAsCodeRequest {
+  configurationDirectory: string;
+  // (undocumented)
+  executionEnvironmentName?: string;
+  // (undocumented)
+  inventory: string;
+  // (undocumented)
+  jobCredentialNames: Array<string>;
+  organization: string;
+  // (undocumented)
+  repositoryBranch: string;
+  // (undocumented)
+  repositoryUrl: string;
+  // (undocumented)
+  scmCredentialName?: string;
+}
+
+// @public (undocumented)
+export interface AAPConfiguration {
+  // (undocumented)
+  configured: boolean;
+  // (undocumented)
+  organization?: string;
+}
+
+// @public (undocumented)
+export type AapConfigurationGet = {};
+
 // @public (undocumented)
 export interface AAPCredentials {
   oauthToken?: string;
@@ -282,6 +311,10 @@ export class DefaultApiClient {
       fetch: typeof fetch;
     };
   });
+  aapConfigurationGet(
+    request: AapConfigurationGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AAPConfiguration>>;
   adversarialAgentsGet(
     request: AdversarialAgentsGet,
     options?: RequestOptions,
@@ -843,6 +876,10 @@ export type ProjectsProjectIdModulesModuleIdRunPost = {
 
 // @public (undocumented)
 export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
+  // (undocumented)
+  aapConfig?: AAPConfigAsCodeRequest;
+  // (undocumented)
+  aapConfigRepoAuth?: GitRepoAuth;
   // (undocumented)
   aapCredentials?: AAPCredentials;
   // (undocumented)

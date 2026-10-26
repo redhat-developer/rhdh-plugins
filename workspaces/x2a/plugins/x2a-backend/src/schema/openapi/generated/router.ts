@@ -34,6 +34,23 @@ export const spec = {
     }
   ],
   "paths": {
+    "/aap/configuration": {
+      "get": {
+        "summary": "Returns non-secret configured AAP publishing information.",
+        "responses": {
+          "200": {
+            "description": "AAP configuration availability and organization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AAPConfiguration"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/projects": {
       "get": {
         "summary": "Returns a list of projects.",
@@ -924,6 +941,12 @@ export const spec = {
                   },
                   "aapCredentials": {
                     "$ref": "#/components/schemas/AAPCredentials"
+                  },
+                  "aapConfig": {
+                    "$ref": "#/components/schemas/AAPConfigAsCodeRequest"
+                  },
+                  "aapConfigRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
                   }
                 },
                 "required": [
@@ -1691,6 +1714,63 @@ export const spec = {
         },
         "required": [
           "token"
+        ]
+      },
+      "AAPConfigAsCodeRequest": {
+        "type": "object",
+        "description": "Module settings for writing AAP configuration to Git",
+        "properties": {
+          "organization": {
+            "type": "string",
+            "description": "AAP organization to use for the generated configuration"
+          },
+          "repositoryUrl": {
+            "type": "string"
+          },
+          "repositoryBranch": {
+            "type": "string"
+          },
+          "configurationDirectory": {
+            "type": "string",
+            "description": "Relative directory containing the AAP configuration files"
+          },
+          "inventory": {
+            "type": "string"
+          },
+          "scmCredentialName": {
+            "type": "string"
+          },
+          "jobCredentialNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "executionEnvironmentName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "organization",
+          "repositoryUrl",
+          "repositoryBranch",
+          "configurationDirectory",
+          "inventory",
+          "jobCredentialNames"
+        ]
+      },
+      "AAPConfiguration": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "organization": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "configured"
         ]
       },
       "AAPCredentials": {

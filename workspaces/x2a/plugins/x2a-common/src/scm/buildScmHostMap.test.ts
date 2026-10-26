@@ -20,7 +20,8 @@ import { buildScmHostMap } from './buildScmHostMap';
 describe('buildScmHostMap', () => {
   it('returns empty map when no integrations are configured', () => {
     const config = new ConfigReader({});
-    expect(buildScmHostMap(config).size).toBe(0);
+    expect(buildScmHostMap(config).size).toBe(1);
+    expect(buildScmHostMap(config).get('bitbucket.org')).toBe('bitbucket');
   });
 
   it('maps github hosts', () => {
@@ -45,7 +46,7 @@ describe('buildScmHostMap', () => {
     expect(map.get('gitlab.internal.io')).toBe('gitlab');
   });
 
-  it('maps bitbucketCloud hosts', () => {
+  it('maps the built-in Bitbucket Cloud host', () => {
     const config = new ConfigReader({
       integrations: {
         bitbucketCloud: [{ host: 'bitbucket.org' }],
@@ -75,6 +76,12 @@ describe('buildScmHostMap', () => {
     });
     const map = buildScmHostMap(config);
     expect(map.size).toBe(4);
+    expect(Array.from(map.keys())).toEqual([
+      'github.com',
+      'ghe.corp.com',
+      'gitlab.com',
+      'bitbucket.org',
+    ]);
     expect(map.get('github.com')).toBe('github');
     expect(map.get('ghe.corp.com')).toBe('github');
     expect(map.get('gitlab.com')).toBe('gitlab');
@@ -154,7 +161,7 @@ describe('buildScmHostMap', () => {
       },
     });
     const map = buildScmHostMap(config);
-    expect(map.size).toBe(1);
+    expect(map.size).toBe(2);
     expect(map.get('github.com')).toBe('github');
   });
 });

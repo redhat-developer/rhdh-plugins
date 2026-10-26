@@ -23,6 +23,7 @@ import { FetchApi } from '../types/fetch';
 import crossFetch from 'cross-fetch';
 import { pluginId } from '../pluginId';
 import * as parser from 'uri-template';
+import { AAPConfiguration } from '../models/AAPConfiguration.model';
 import { AdversarialAgent } from '../models/AdversarialAgent.model';
 import { AdversarialAgentsGet200Response } from '../models/AdversarialAgentsGet200Response.model';
 import { AdversarialAgentsPostRequest } from '../models/AdversarialAgentsPostRequest.model';
@@ -64,6 +65,10 @@ export type TypedResponse<T> = Omit<Response, 'json'> & {
 export interface RequestOptions {
   token?: string;
 }
+/**
+ * @public
+ */
+export type AapConfigurationGet = {};
 /**
  * @public
  */
@@ -289,6 +294,29 @@ export class DefaultApiClient {
   }) {
     this.discoveryApi = options.discoveryApi;
     this.fetchApi = options.fetchApi || { fetch: crossFetch };
+  }
+
+  /**
+   * Returns non-secret configured AAP publishing information.
+   */
+  public async aapConfigurationGet(
+    // @ts-ignore
+    request: AapConfigurationGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AAPConfiguration>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/aap/configuration`;
+
+    const uri = parser.parse(uriTemplate).expand({});
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
   }
 
   /**

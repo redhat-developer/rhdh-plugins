@@ -100,4 +100,36 @@ export class GitRepositoryResolver {
       targetToken,
     );
   }
+
+  resolveConfiguredRepository(
+    url: string,
+    branch: string,
+    auth: { token: string },
+  ): GitRepository {
+    const parsed = new URL(url);
+    if (parsed.username || parsed.password) {
+      throw new InputError(
+        'Repository URL must not contain embedded credentials.',
+      );
+    }
+    if (parsed.search || parsed.hash) {
+      throw new InputError(
+        'Repository URL must not contain a query string or fragment.',
+      );
+    }
+    const configuredHosts = ['github', 'gitlab', 'bitbucket']
+      .flatMap(
+        key => this.config.getOptionalConfigArray(`integrations.${key}`) ?? [],
+      )
+      .some(
+        integration =>
+          integration.getOptionalString('host') === parsed.hostname,
+      );
+    if (!configuredHosts && parsed.hostname !== 'bitbucket.org') {
+      throw new InputError(
+        'Configuration repository host is not a supported configured SCM host.',
+      );
+    }
+    return new GitRepository(url, branch, auth.token);
+  }
 }

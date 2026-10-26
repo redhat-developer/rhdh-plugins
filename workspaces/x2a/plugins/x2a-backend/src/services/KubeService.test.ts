@@ -28,6 +28,7 @@ const mockCoreV1Api = {
   createNamespacedSecret: jest.fn(),
   readNamespacedSecret: jest.fn(),
   deleteNamespacedSecret: jest.fn(),
+  createNamespacedConfigMap: jest.fn(),
   listNamespacedPod: jest.fn(),
   readNamespacedPodLog: jest.fn(),
 };
@@ -371,6 +372,112 @@ describe('KubeService', () => {
         name: expect.stringMatching(/^job-x2a-init-/),
         uid: 'uid-456',
       });
+    });
+
+    it('should create the Config-as-Code ConfigMap and mount its repository credentials', async () => {
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-publish-abc123', uid: 'uid-789' },
+      });
+
+      const configParams = {
+        ...params,
+        phase: 'publish' as const,
+        moduleName: 'Nginx-Web',
+        aapConfigAsCode: {
+          organization: 'Platform',
+          repositoryUrl: 'https://github.com/org/aap-config.git',
+          repositoryBranch: 'main',
+          configurationDirectory: 'config/dev',
+          inventory: 'production',
+          jobCredentialNames: ['Machine Credential'],
+        },
+        aapConfigRepo: {
+          url: 'https://github.com/org/aap-config',
+          branch: 'main',
+          token: 'git:config-token', // NOSONAR
+        },
+      };
+
+      await kubeService.createJob(configParams);
+
+      const configMapCall =
+        mockCoreV1Api.createNamespacedConfigMap.mock.calls.find(
+          (call: any[]) =>
+            call[0].body.metadata?.name === 'x2a-publish-config-job-123',
+        );
+      expect(configMapCall).toBeDefined();
+      expect(configMapCall![0]).toEqual({
+        namespace: 'test-namespace',
+        body: expect.objectContaining({
+          metadata: expect.objectContaining({
+            ownerReferences: [
+              expect.objectContaining({
+                kind: 'Job',
+                uid: 'uid-789',
+              }),
+            ],
+          }),
+          data: {
+            'request.json': expect.stringContaining(
+              '"configuration_directory": "config/dev"',
+            ),
+          },
+        }),
+      });
+
+      const job = mockBatchV1Api.createNamespacedJob.mock.calls[0][0].body;
+      expect(job.spec.template.spec.containers[0].volumeMounts).toEqual(
+        expect.arrayContaining([
+          {
+            name: 'publish-config',
+            mountPath: '/config/publish',
+            readOnly: true,
+          },
+        ]),
+      );
+      expect(job.spec.template.spec.volumes).toEqual(
+        expect.arrayContaining([
+          {
+            name: 'publish-config',
+            configMap: { name: 'x2a-publish-config-job-123' },
+          },
+        ]),
+      );
+
+      const jobSecretCall =
+        mockCoreV1Api.createNamespacedSecret.mock.calls.find(
+          (call: any[]) =>
+            call[0].body.metadata?.name === 'x2a-job-secret-publish-job-123',
+        );
+      expect(jobSecretCall![0].body.stringData).toMatchObject({
+        AAP_CONFIG_REPO_URL: 'https://github.com/org/aap-config',
+        AAP_CONFIG_REPO_TOKEN: 'git:config-token', // NOSONAR
+        AAP_CONFIG_REPO_BRANCH: 'main',
+      });
+    });
+
+    it('should reject Config-as-Code settings outside the publish phase', async () => {
+      const configParams = {
+        ...params,
+        aapConfigAsCode: {
+          organization: 'Platform',
+          repositoryUrl: 'https://github.com/org/aap-config.git',
+          repositoryBranch: 'main',
+          configurationDirectory: 'config/dev',
+          inventory: 'production',
+          jobCredentialNames: [],
+        },
+        aapConfigRepo: {
+          url: 'https://github.com/org/aap-config',
+          branch: 'main',
+          token: 'git:config-token', // NOSONAR
+        },
+      };
+
+      await expect(kubeService.createJob(configParams)).rejects.toThrow(
+        'AAP Config-as-Code settings are only valid for the publish phase',
+      );
+      expect(mockBatchV1Api.createNamespacedJob).not.toHaveBeenCalled();
     });
 
     it('should delete job and throw if job secret creation fails', async () => {

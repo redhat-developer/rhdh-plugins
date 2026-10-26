@@ -133,10 +133,10 @@ export const x2aPluginMessages = {
         'The migrated sources are already present. Retrigger the migration to recreate the converted Ansible code.',
       rerunMigrate: 'Recreate migrated sources',
       publishInstructions:
-        'Before publishing, review the migrated sources. The publish process will commit the converted code to the target repository.',
+        'Review the migrated sources, then choose how to publish them: publish the converted code directly to AAP, or publish AAP configuration to a Git repository without applying it to AAP.',
       runPublish: 'Publish to target repository',
       republishInstructions:
-        'The module has already been published. Retrigger the publish to update the target repository.',
+        'The module has already been published. Choose direct AAP publishing to update the target, or publish updated AAP configuration to Git without applying it to AAP.',
       rerunPublish: 'Republish to target repository',
       cancel: 'Cancel',
       runAdversarialReview: 'Run Adversarial Review',

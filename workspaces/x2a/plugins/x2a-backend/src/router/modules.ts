@@ -23,6 +23,7 @@ import {
   type ModulePhase,
   JobStatus,
   Phase,
+  GitRepository,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import {
   CallbackToken,
@@ -38,6 +39,12 @@ import {
   useEnforceProjectPermissions,
 } from './common';
 import { GitRepositoryResolver } from './GitRepositoryResolver';
+
+const credentialNamesSchema = z
+  .array(z.string().trim().min(1))
+  .refine(values => new Set(values).size === values.length, {
+    message: 'Credential names must not contain duplicates',
+  });
 
 export function registerModuleRoutes(
   router: express.Router,
@@ -162,6 +169,46 @@ export function registerModuleRoutes(
             password: z.string().optional(),
           })
           .optional(),
+        aapConfig: z
+          .object({
+            organization: z.string().trim().min(1),
+            repositoryUrl: z
+              .string()
+              .trim()
+              .url()
+              .refine(
+                value => value.startsWith('https://'),
+                'Repository URL must use HTTPS.',
+              )
+              .refine(value => {
+                const parsed = new URL(value);
+                return !parsed.username && !parsed.password;
+              }, 'Repository URL must not contain embedded credentials.')
+              .refine(value => {
+                const parsed = new URL(value);
+                return !parsed.search && !parsed.hash;
+              }, 'Repository URL must not contain a query string or fragment.'),
+            repositoryBranch: z.string().trim().min(1),
+            configurationDirectory: z
+              .string()
+              .trim()
+              .min(1)
+              .refine(
+                value =>
+                  !value.startsWith('/') && !value.split('/').includes('..'),
+                'Configuration directory must be relative and cannot contain parent traversal.',
+              ),
+            inventory: z.string().trim().min(1),
+            scmCredentialName: z.string().trim().min(1).optional(),
+            jobCredentialNames: credentialNamesSchema,
+            executionEnvironmentName: z.string().trim().min(1).optional(),
+          })
+          .optional(),
+        aapConfigRepoAuth: z
+          .object({
+            token: z.string().min(1),
+          })
+          .optional(),
       });
 
       const parsedBody = runModuleRequestSchema
@@ -170,8 +217,30 @@ export function registerModuleRoutes(
       if (!parsedBody.success) {
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
-      const { phase, sourceRepoAuth, targetRepoAuth, aapCredentials } =
-        parsedBody.data;
+      const {
+        phase,
+        sourceRepoAuth,
+        targetRepoAuth,
+        aapCredentials,
+        aapConfig,
+        aapConfigRepoAuth,
+      } = parsedBody.data;
+
+      if ((aapConfig || aapConfigRepoAuth) && phase !== 'publish') {
+        throw new InputError(
+          'AAP Config-as-Code settings are only valid for the publish phase.',
+        );
+      }
+      if (aapConfigRepoAuth && !aapConfig) {
+        throw new InputError(
+          'Config repository authentication cannot be provided without AAP Config-as-Code settings.',
+        );
+      }
+      if (aapConfig && !aapConfigRepoAuth) {
+        throw new InputError(
+          'Config repository authentication is required for an AAP Config-as-Code publish.',
+        );
+      }
 
       const { project, userRef } = await useEnforceProjectPermissions({
         req,
@@ -184,6 +253,22 @@ export function registerModuleRoutes(
       });
 
       assertProjectHasDirName(project);
+
+      if (aapConfig && !aapConfig.organization.trim()) {
+        throw new InputError(
+          'AAP organization is required for Config-as-Code publishing.',
+        );
+      }
+
+      let aapConfigRepo: GitRepository | undefined;
+      if (aapConfig && aapConfigRepoAuth) {
+        const configProvider = gitRepoResolver.resolveConfiguredRepository(
+          aapConfig.repositoryUrl,
+          aapConfig.repositoryBranch,
+          aapConfigRepoAuth,
+        );
+        aapConfigRepo = configProvider;
+      }
 
       // Resolve git repositories with config-based token fallback
       const { sourceRepo, targetRepo } = gitRepoResolver.resolve({
@@ -265,6 +350,8 @@ export function registerModuleRoutes(
         sourceRepo,
         targetRepo,
         aapCredentials,
+        aapConfigAsCode: aapConfig,
+        aapConfigRepo,
         acceptedRules,
       });
 

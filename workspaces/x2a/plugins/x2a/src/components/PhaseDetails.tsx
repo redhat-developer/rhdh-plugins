@@ -58,12 +58,14 @@ const PhaseRunAction = ({
   phaseName,
   isDisabled,
   onRunPhase,
+  onRunPublishConfig,
   onCancelPhase,
 }: {
   phase?: Job;
   phaseName: MigrationPhase;
   isDisabled: boolean;
   onRunPhase?: (phase: MigrationPhase) => void;
+  onRunPublishConfig?: () => void;
   onCancelPhase?: (phase: MigrationPhase) => void;
 }) => {
   const { t } = useTranslation();
@@ -147,6 +149,16 @@ const PhaseRunAction = ({
             {actionText}
           </Button>
         )}
+        {phaseName === 'publish' && onRunPublishConfig && (
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={isDisabled}
+            onClick={onRunPublishConfig}
+          >
+            Publish configuration to Git
+          </Button>
+        )}
         {canCancelPhase(phase?.status) && onCancelPhase && (
           <Button
             variant="outlined"
@@ -176,6 +188,7 @@ export const PhaseDetails = (
     phase?: Job;
     projectId: string;
     onRunPhase?: (phase: MigrationPhase) => void;
+    onRunPublishConfig?: () => void;
     onCancelPhase?: (phase: MigrationPhase) => void;
   } & OptionalModuleId,
 ) => {
@@ -184,7 +197,14 @@ export const PhaseDetails = (
   const clientService = useClientService();
   const [showLog, setShowLog] = useState(false);
 
-  const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
+  const {
+    phase,
+    projectId,
+    phaseName,
+    onRunPhase,
+    onRunPublishConfig,
+    onCancelPhase,
+  } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
   const canRunPhase = phase?.status !== 'running';
@@ -232,6 +252,7 @@ export const PhaseDetails = (
             phase={phase}
             phaseName={phaseName}
             onRunPhase={onRunPhase}
+            onRunPublishConfig={onRunPublishConfig}
             onCancelPhase={onCancelPhase}
           />
         )}

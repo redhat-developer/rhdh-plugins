@@ -25,6 +25,7 @@ import { registerModuleRoutes } from './modules';
 import { registerJobRoutes } from './jobs';
 import { registerRuleRoutes } from './rules';
 import { registerCollectArtifactsRoutes } from './collectArtifacts';
+import { registerAapConfigurationRoutes } from './aapConfiguration';
 
 const publicDir = resolvePackagePath(
   '@red-hat-developer-hub/backstage-plugin-x2a-backend',
@@ -49,6 +50,7 @@ export async function createRouter(deps: RouterDeps): Promise<express.Router> {
   registerJobRoutes(apiRouter, deps);
   registerRuleRoutes(apiRouter, deps);
   registerAdversarialAgentRoutes(apiRouter, deps);
+  registerAapConfigurationRoutes(apiRouter, deps);
 
   // Mount API router under main router
   mainRouter.use(apiRouter);

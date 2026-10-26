@@ -18,6 +18,7 @@
 export type {
   X2AConfig,
   AAPCredentials,
+  AAPConfigAsCodeRequest,
   GitRepo,
   JobCreateParams,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';

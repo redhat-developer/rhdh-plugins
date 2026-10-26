@@ -20,6 +20,7 @@ export type {
   CreateJobInput,
   GitRepo,
   AAPCredentials,
+  AAPConfigAsCodeRequest,
   JobCreateParams,
 } from './types';
 

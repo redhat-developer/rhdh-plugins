@@ -43,6 +43,7 @@ export class JobResourceBuilder {
     projectId: string,
     aapCredentials: AAPCredentials | undefined,
     config: X2AConfig,
+    requireAapCredentials = true,
   ): V1Secret {
     const secretName = `x2a-project-secret-${projectId}`;
 
@@ -57,15 +58,45 @@ export class JobResourceBuilder {
       const configAap = config.credentials.aap;
       // Only use config as fallback if it has at least url and orgName defined
       // (not undefined from missing env vars)
-      if (configAap.url && configAap.orgName) {
+      const hasOAuthToken = Boolean(configAap.oauthToken);
+      const hasUserPass = Boolean(configAap.username && configAap.password);
+      if (
+        configAap.url &&
+        configAap.orgName &&
+        (requireAapCredentials || hasOAuthToken || hasUserPass)
+      ) {
         aapSource = configAap;
       }
     }
 
-    if (!aapSource) {
+    if (!aapSource && requireAapCredentials) {
       throw new Error(
         'AAP credentials must be provided either in app-config.yaml or by the user at project creation',
       );
+    }
+
+    if (!aapSource) {
+      return {
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: {
+          name: secretName,
+          labels: {
+            'app.kubernetes.io/name': 'x2a-project-secret',
+            'app.kubernetes.io/component': 'credentials',
+            'app.kubernetes.io/managed-by': 'x2a-backend-plugin',
+            'x2a.redhat.com/project-id': projectId,
+            'x2a.redhat.com/secret-type': 'project',
+          },
+          annotations: {
+            'x2a.redhat.com/created-by': 'x2a-backend-plugin',
+            'x2a.redhat.com/description':
+              'Long-lived credentials for X2A migration project (LLM)',
+          },
+        },
+        type: 'Opaque',
+        stringData: llmCredentials,
+      };
     }
 
     // Validate AAP credentials - must have either oauthToken OR username+password
@@ -159,6 +190,7 @@ export class JobResourceBuilder {
     gitCredentials: {
       sourceRepo: GitRepo;
       targetRepo: GitRepo;
+      aapConfigRepo?: GitRepo;
     },
     ownerReference: V1OwnerReference,
   ): V1Secret {
@@ -195,6 +227,12 @@ export class JobResourceBuilder {
         TARGET_REPO_URL: gitCredentials.targetRepo.url,
         TARGET_REPO_TOKEN: gitCredentials.targetRepo.token,
         TARGET_REPO_BRANCH: gitCredentials.targetRepo.branch,
+
+        ...(gitCredentials.aapConfigRepo && {
+          AAP_CONFIG_REPO_URL: gitCredentials.aapConfigRepo.url,
+          AAP_CONFIG_REPO_TOKEN: gitCredentials.aapConfigRepo.token,
+          AAP_CONFIG_REPO_BRANCH: gitCredentials.aapConfigRepo.branch,
+        }),
       },
     };
   }
@@ -221,6 +259,8 @@ export class JobResourceBuilder {
       Phase.from(params.phase).isProjectPhase() &&
       !!params.acceptedRules &&
       params.acceptedRules.length > 0;
+    const hasAapConfig = !!params.aapConfigAsCode;
+    const aapConfigMapName = `x2a-publish-config-${params.jobId}`;
 
     return {
       apiVersion: 'batch/v1',
@@ -420,6 +460,15 @@ export class JobResourceBuilder {
                         },
                       ]
                     : []),
+                  ...(hasAapConfig
+                    ? [
+                        {
+                          name: 'publish-config',
+                          mountPath: '/config/publish',
+                          readOnly: true,
+                        },
+                      ]
+                    : []),
                 ],
                 resources: {
                   requests: {
@@ -455,6 +504,16 @@ export class JobResourceBuilder {
                       name: 'adversarial-agents-config',
                       configMap: {
                         name: adversarialAgentsConfigMap,
+                      },
+                    },
+                  ]
+                : []),
+              ...(hasAapConfig
+                ? [
+                    {
+                      name: 'publish-config',
+                      configMap: {
+                        name: aapConfigMapName,
                       },
                     },
                   ]
@@ -565,6 +624,76 @@ export class JobResourceBuilder {
       },
       data,
     };
+  }
+
+  static buildAapConfigMap(
+    params: JobCreateParams,
+    ownerReference: V1OwnerReference,
+  ): V1ConfigMap | undefined {
+    const settings = params.aapConfigAsCode;
+    if (!settings) {
+      return undefined;
+    }
+    if (!params.moduleName) {
+      throw new Error(
+        'Module name is required to build an AAP Config-as-Code request',
+      );
+    }
+    if (!settings.organization) {
+      throw new Error(
+        'AAP organization is required to build an AAP Config-as-Code request',
+      );
+    }
+
+    const roleName = this.normalizeAnsibleRoleName(params.moduleName);
+    const request = {
+      schema_version: 1,
+      repository_path: '/workspace/aap-config',
+      configuration_directory: settings.configurationDirectory,
+      project: {
+        organization: settings.organization,
+        repository_url: params.targetRepo.url,
+        repository_branch: params.targetRepo.branch,
+        scm_credential: settings.scmCredentialName,
+      },
+      job_template: {
+        module_name: params.moduleName,
+        playbook: `${params.projectDirName}/ansible/run_${roleName}.yml`,
+        inventory: settings.inventory,
+        credentials: settings.jobCredentialNames,
+        execution_environment: settings.executionEnvironmentName,
+      },
+    };
+
+    return {
+      apiVersion: 'v1',
+      kind: 'ConfigMap',
+      metadata: {
+        name: `x2a-publish-config-${params.jobId}`,
+        labels: {
+          'app.kubernetes.io/name': 'x2a-publish-config',
+          'app.kubernetes.io/component': 'configuration',
+          'app.kubernetes.io/managed-by': 'x2a-backend-plugin',
+          'x2a.redhat.com/job-id': params.jobId,
+          'x2a.redhat.com/project-id': params.projectId,
+        },
+        ownerReferences: [ownerReference],
+      },
+      data: {
+        'request.json': JSON.stringify(request, null, 2),
+      },
+    };
+  }
+
+  private static normalizeAnsibleRoleName(value: string): string {
+    const normalized = value
+      .toLocaleLowerCase('en-US')
+      .replace(/-/g, '_')
+      .replace(/[^a-z0-9_]/g, '');
+    if (!normalized || /^[a-z]/.test(normalized)) {
+      return normalized;
+    }
+    return `role_${normalized}`;
   }
 
   /**

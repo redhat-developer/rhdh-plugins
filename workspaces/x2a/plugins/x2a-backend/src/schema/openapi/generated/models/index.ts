@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+export * from '../models/AAPConfigAsCodeRequest.model';
+export * from '../models/AAPConfiguration.model';
 export * from '../models/AAPCredentials.model';
 export * from '../models/AdversarialAgent.model';
 export * from '../models/AdversarialAgentsGet200Response.model';
