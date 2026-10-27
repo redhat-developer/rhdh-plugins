@@ -44,7 +44,9 @@
       "@red-hat-developer-hub/backstage-plugin-adoption-insights-common"
     ]
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/configureMuiClassName.ts"
+  ],
   "scripts": {
     "start": "backstage-cli package start",
     "start:legacy": "backstage-cli package start --entrypoint dev/legacy.tsx",
