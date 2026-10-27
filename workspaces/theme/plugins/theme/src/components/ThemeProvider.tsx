@@ -28,12 +28,14 @@ import {
   ThemeProvider as Mui5Provider,
   Theme as Mui5Theme,
 } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import GlobalStyles from '@mui/material/GlobalStyles';
 
 import { useTheme } from '../hooks/useTheme';
 import { useThemeConfig } from '../hooks/useThemeConfig';
 import { useBranding } from '../hooks/useBranding';
 import { buiTokensToCSS } from '../utils/buiTokensToCSS';
+import { contrastTextForBackground } from '../utils/contrastTextForBackground';
 import { ThemeConfig } from '../types';
 
 /**
@@ -57,18 +59,25 @@ const ThemeProvider = ({
   const branding = useBranding();
   const mui5Theme = theme.getTheme('v5') as Mui5Theme;
   const secondary = mui5Theme.palette.text.secondary;
+  const primaryMain = mui5Theme.palette.primary.main;
+  const primaryDark = mui5Theme.palette.primary.dark;
+  // Derive from fill so app-config `primary.main` overrides don't keep a
+  // stale merged contrastText (dark default #151515 on customized blues).
+  const primaryContrast = contrastTextForBackground(primaryMain);
+  const primaryDarkContrast = contrastTextForBackground(primaryDark);
 
   const buiTokenStyles = useMemo(() => {
     const themes = branding?.theme;
     if (!themes) return null;
     const styles: Record<string, Record<string, string>> = {};
-    for (const [themeName, themeConfig] of Object.entries(themes)) {
+    for (const [brandingThemeName, themeConfig] of Object.entries(themes)) {
       const tokens = themeConfig?.bui?.tokens;
       if (!tokens) continue;
       const cssMap = buiTokensToCSS(tokens);
       if (Object.keys(cssMap).length === 0) continue;
       const mode =
-        themeConfig.mode ?? (themeName.includes('dark') ? 'dark' : 'light');
+        themeConfig.mode ??
+        (brandingThemeName.includes('dark') ? 'dark' : 'light');
       styles[`[data-theme-mode='${mode}']`] = {
         ...styles[`[data-theme-mode='${mode}']`],
         ...cssMap,
@@ -84,12 +93,52 @@ const ThemeProvider = ({
       <StyledEngineProvider injectFirst>
         <Mui5Provider theme={mui5Theme}>
           {/*
+            NFS does not mount CssBaseline elsewhere. Without it,
+            MuiCssBaseline.styleOverrides (shell chrome, CreateButton, …)
+            never reach the DOM. Backstage UnifiedThemeProvider also omits it.
+          */}
+          <CssBaseline />
+          {/*
             Native style tag (not Emotion) so the declaration is unlayered and
             reliably overrides @backstage/ui @layer tokens for --bui-fg-secondary.
           */}
           <style>{`
             :root, [data-theme-mode='light'], [data-theme-mode='dark'] {
               --bui-fg-secondary: ${secondary} !important;
+            }
+            /*
+              RHDHBUGS-4042: CreateButton → <a class="MuiButton-containedPrimary">
+              inside BUI HeaderPage. MuiButtonBase (transparent/padding:0) +
+              injectFirst beat containedPrimary; unlayered !important restores
+              the OFS contained look even if Emotion CssBaseline loses cascade.
+            */
+            a.MuiButton-containedPrimary,
+            a[class*="MuiButton-containedPrimary"] {
+              color: ${primaryContrast} !important;
+              background-color: ${primaryMain} !important;
+              background-image: none !important;
+              border: 0 !important;
+              border-radius: 99em !important;
+              box-shadow: none !important;
+              padding: 6px 16px !important;
+              min-height: 36px !important;
+              min-width: 64px;
+              line-height: 1.75;
+              text-decoration: none !important;
+              text-transform: none;
+            }
+            a.MuiButton-containedPrimary:hover,
+            a.MuiButton-containedPrimary:focus-visible,
+            a[class*="MuiButton-containedPrimary"]:hover,
+            a[class*="MuiButton-containedPrimary"]:focus-visible,
+            a.MuiButton-containedPrimary:active,
+            a[class*="MuiButton-containedPrimary"]:active {
+              color: ${primaryDarkContrast} !important;
+              background-color: ${primaryDark} !important;
+              background-image: none !important;
+              border: 0 !important;
+              box-shadow: none !important;
+              text-decoration: none !important;
             }
           `}</style>
           {buiTokenStyles && <GlobalStyles styles={buiTokenStyles} />}
