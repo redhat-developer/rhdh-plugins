@@ -17,6 +17,8 @@
 import { ScmProvider } from '../ScmProvider';
 import { extractHost } from '../extractHost';
 
+const BITBUCKET_TOKEN_PREFIX = 'x-token-auth:';
+
 /**
  * Bitbucket Cloud SCM provider.
  *
@@ -36,7 +38,16 @@ export const bitbucketProvider: ScmProvider = {
     scope: readOnly ? 'repository' : 'repository:write',
   }),
 
-  augmentToken: (token: string) => `x-token-auth:${token}`,
+  augmentToken: (token: string) => `${BITBUCKET_TOKEN_PREFIX}${token}`,
+
+  extractToken: (token: string) =>
+    token.startsWith(BITBUCKET_TOKEN_PREFIX)
+      ? token.slice(BITBUCKET_TOKEN_PREFIX.length)
+      : token,
+
+  // Writing through the REST API is not supported for Bitbucket (yet).
+  getContentWriteAuthTokenDescriptor: () =>
+    bitbucketProvider.getAuthTokenDescriptor(false),
 
   // Heads-up when adding the Bitbucket server in the future: it probably uses ".../branches/..." instead of "../branch/..."
   buildBranchUrl: (origin, path, encodedBranch) =>

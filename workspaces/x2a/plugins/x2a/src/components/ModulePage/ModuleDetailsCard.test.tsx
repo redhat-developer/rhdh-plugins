@@ -20,6 +20,7 @@ import { renderInTestApp } from '@backstage/test-utils';
 import {
   GitRepositoryRef,
   Module,
+  Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
@@ -31,6 +32,21 @@ jest.mock('../../hooks/useTranslation', () => ({
 
 jest.mock('../ArtifactLink', () => ({ ArtifactLink: () => <div /> }));
 jest.mock('../ModuleStatusCell', () => ({ ModuleStatusCell: () => <div /> }));
+jest.mock('../EditMigrationPlan', () => ({
+  EditMigrationPlanButton: ({
+    artifact,
+    moduleId,
+  }: {
+    artifact?: { value: string };
+    moduleId?: string;
+  }) => (
+    <div
+      data-testid="edit-plan"
+      data-artifact={artifact?.value}
+      data-module-id={moduleId ?? ''}
+    />
+  ),
+}));
 
 describe('ModuleDetailsCard', () => {
   it('provides a keyboard-accessible artifact description', async () => {
@@ -115,5 +131,63 @@ describe('ModuleDetailsCard', () => {
     expect(
       screen.queryByRole('link', { name: 'Edit in Codespaces' }),
     ).not.toBeInTheDocument();
+  });
+
+  describe('editing the migration plans', () => {
+    const project = { id: 'project-id', name: 'p' } as Project;
+    const module = {
+      id: 'module-id',
+      name: 'module',
+      projectId: 'project-id',
+      sourcePath: 'src',
+      analyze: {
+        artifacts: [
+          {
+            id: 'a2',
+            type: 'module_migration_plan',
+            value: 'p/modules/module/migration-plan-module.md',
+          },
+        ],
+      },
+    } as Module;
+    const projectPlan = {
+      id: 'a1',
+      type: 'migration_plan',
+      value: 'p/migration-plan.md',
+    } as const;
+    const repo = new GitRepositoryRef('https://github.com/org/repo', 'main');
+
+    it('offers editing of both documents', async () => {
+      await renderInTestApp(
+        <ModuleDetailsCard
+          module={module}
+          project={project}
+          targetRepository={repo}
+          migrationPlanArtifact={projectPlan}
+        />,
+      );
+
+      const buttons = screen.getAllByTestId('edit-plan');
+      expect(buttons).toHaveLength(2);
+      expect(buttons[0]).toHaveAttribute('data-artifact', projectPlan.value);
+      expect(buttons[0]).toHaveAttribute('data-module-id', '');
+      expect(buttons[1]).toHaveAttribute(
+        'data-artifact',
+        'p/modules/module/migration-plan-module.md',
+      );
+      expect(buttons[1]).toHaveAttribute('data-module-id', 'module-id');
+    });
+
+    it('offers nothing without the project', async () => {
+      await renderInTestApp(
+        <ModuleDetailsCard
+          module={module}
+          targetRepository={repo}
+          migrationPlanArtifact={projectPlan}
+        />,
+      );
+
+      expect(screen.queryByTestId('edit-plan')).not.toBeInTheDocument();
+    });
   });
 });

@@ -15,6 +15,7 @@
  */
 
 import {
+  parseRepoUrl,
   resolveScmProvider,
   ScmProviderName,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -33,12 +34,11 @@ export const buildArtifactUrl = (
     : targetRepoUrl;
 
   try {
-    const parsed = new URL(baseUrl);
+    const { origin, path } = parseRepoUrl(baseUrl);
     const provider = resolveScmProvider(baseUrl, hostProviderMap);
-    const path = parsed.pathname.replace(/\/$/, '');
     const encodedBranch = encodeURIComponent(targetRepoBranch);
 
-    return provider.buildArtifactUrl(parsed.origin, path, encodedBranch, value);
+    return provider.buildArtifactUrl(origin, path, encodedBranch, value);
   } catch {
     return `${baseUrl}/blob/${targetRepoBranch}/${value}`;
   }

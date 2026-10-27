@@ -305,6 +305,51 @@ const x2aPluginTranslationFr = createTranslationMessages({
       'Échec de la resynchronisation du plan de migration pour le projet « {{name}} »',
     'resyncMigrationPlan.errorStart':
       'Échec de la resynchronisation du plan de migration',
+    'editMigrationPlan.button.edit': 'Modifier ce document',
+    'editMigrationPlan.button.bitbucketUnsupported':
+      "La modification directe n'est pas encore disponible pour les dépôts Bitbucket. Utilisez le lien voisin pour ouvrir le document dans Bitbucket et le modifier là-bas.",
+    'editMigrationPlan.title': 'Modifier : {{document}}',
+    'editMigrationPlan.breadcrumb': 'Modifier le plan de migration',
+    'editMigrationPlan.actions.cancel': 'Annuler',
+    'editMigrationPlan.actions.reload': 'Recharger',
+    'editMigrationPlan.actions.save': 'Enregistrer',
+    'editMigrationPlan.tabs.edit': 'Modifier',
+    'editMigrationPlan.tabs.preview': 'Aperçu',
+    'editMigrationPlan.editorLabel': 'Source Markdown',
+    'editMigrationPlan.loading': 'Chargement du document depuis le dépôt…',
+    'editMigrationPlan.unsavedChanges':
+      'Vous avez des modifications non enregistrées.',
+    'editMigrationPlan.authorize.message':
+      "L'accès à {{provider}} est nécessaire pour lire et valider le document. Autorisez-le pour continuer.",
+    'editMigrationPlan.authorize.button': 'Autoriser {{provider}}',
+    'editMigrationPlan.authorize.error':
+      "Impossible d'obtenir un jeton d'accès pour {{provider}} : {{message}}",
+    'editMigrationPlan.notAllowed':
+      "Vous n'êtes pas autorisé à modifier ce projet. Demandez l'accès au propriétaire du projet ou à un administrateur.",
+    'editMigrationPlan.loadError':
+      'Échec du chargement du document. Réessayez avec le bouton Recharger.',
+    'editMigrationPlan.saveError':
+      "Échec de l'enregistrement du document. Vos modifications sont conservées dans l'éditeur.",
+    'editMigrationPlan.saved':
+      'Enregistré. Un nouveau commit a été créé dans le dépôt.',
+    'editMigrationPlan.resyncNote':
+      'La modification du document ne met pas à jour la liste des modules. Utilisez ensuite « Resynchroniser le plan de migration » sur la page du projet pour appliquer les changements tels que des modules ajoutés ou supprimés.',
+    'editMigrationPlan.tooLarge':
+      "Le document est trop volumineux pour être enregistré d'ici (la limite est de {{limit}} ko). Modifiez-le directement dans le dépôt.",
+    'editMigrationPlan.dialogs.keepEditing': 'Continuer la modification',
+    'editMigrationPlan.dialogs.cancel.title': 'Abandonner vos modifications ?',
+    'editMigrationPlan.dialogs.cancel.message':
+      'Toutes les modifications non enregistrées seront perdues et vous reviendrez à la page précédente.',
+    'editMigrationPlan.dialogs.cancel.confirm': 'Abandonner les modifications',
+    'editMigrationPlan.dialogs.reload.title': 'Recharger depuis le dépôt ?',
+    'editMigrationPlan.dialogs.reload.message':
+      'Toutes les modifications non enregistrées seront perdues et la dernière version du document sera chargée depuis le dépôt.',
+    'editMigrationPlan.dialogs.reload.confirm': 'Recharger',
+    'editMigrationPlan.dialogs.save.title': 'Enregistrer vos modifications ?',
+    'editMigrationPlan.dialogs.save.message':
+      'Un nouveau commit contenant vos modifications sera créé sur la branche « {{branch}} » du dépôt cible.',
+    'editMigrationPlan.dialogs.save.commitMessageLabel': 'Message de commit',
+    'editMigrationPlan.dialogs.save.confirm': 'Enregistrer',
     'scaffolder.rulesAcceptance.loadingRules': 'Chargement des règles...',
     'scaffolder.rulesAcceptance.noRulesConfigured': 'Aucune règle configurée.',
     'scaffolder.rulesAcceptance.required': 'requis',

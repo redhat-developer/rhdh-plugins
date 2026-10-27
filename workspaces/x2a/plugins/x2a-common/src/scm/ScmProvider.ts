@@ -47,6 +47,22 @@ export interface ScmProvider {
    */
   augmentToken(token: string): string;
 
+  /**
+   * Inverse of {@link ScmProvider.augmentToken}: returns the bare OAuth token.
+   * A token without the provider-specific prefix is returned unchanged
+   * (e.g. a token configured in app-config is not augmented).
+   */
+  extractToken(token: string): string;
+
+  /**
+   * OAuth token descriptor for writing repository content (commits) through
+   * the provider's REST API, as opposed to git-over-HTTPS.
+   *
+   * It differs from `getAuthTokenDescriptor(false)` where the provider's
+   * git-only write scope does not authorize REST API calls.
+   */
+  getContentWriteAuthTokenDescriptor(): AuthTokenDescriptor;
+
   /** URL to view a branch in the SCM web UI. */
   buildBranchUrl(origin: string, path: string, encodedBranch: string): string;
 
