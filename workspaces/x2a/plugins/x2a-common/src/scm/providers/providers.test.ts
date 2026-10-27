@@ -52,6 +52,22 @@ describe('githubProvider', () => {
     });
   });
 
+  describe('extractToken', () => {
+    it('returns token unchanged', () => {
+      expect(githubProvider.extractToken('my-token')).toBe('my-token');
+    });
+  });
+
+  describe('getContentWriteAuthTokenDescriptor', () => {
+    it('requests the repo scope', () => {
+      expect(githubProvider.getContentWriteAuthTokenDescriptor()).toEqual({
+        provider: 'github',
+        tokenType: 'oauth',
+        scope: 'repo',
+      });
+    });
+  });
+
   describe('matches', () => {
     it('matches github.com URLs', () => {
       expect(githubProvider.matches('https://github.com/owner/repo')).toBe(
@@ -100,6 +116,32 @@ describe('gitlabProvider', () => {
       expect(gitlabProvider.augmentToken('my-token')).toBe('oauth2:my-token');
     });
   });
+
+  describe('extractToken', () => {
+    it('strips the oauth2: prefix', () => {
+      expect(gitlabProvider.extractToken('oauth2:my-token')).toBe('my-token');
+    });
+
+    it('is a no-op for an unprefixed token', () => {
+      expect(gitlabProvider.extractToken('my-token')).toBe('my-token');
+    });
+
+    it('round-trips with augmentToken', () => {
+      expect(
+        gitlabProvider.extractToken(gitlabProvider.augmentToken('my-token')),
+      ).toBe('my-token');
+    });
+  });
+
+  describe('getContentWriteAuthTokenDescriptor', () => {
+    it('requests the api scope, as write_repository does not authorize REST calls', () => {
+      expect(gitlabProvider.getContentWriteAuthTokenDescriptor()).toEqual({
+        provider: 'gitlab',
+        tokenType: 'oauth',
+        scope: 'api',
+      });
+    });
+  });
 });
 
 describe('bitbucketProvider', () => {
@@ -126,6 +168,18 @@ describe('bitbucketProvider', () => {
       expect(bitbucketProvider.augmentToken('my-token')).toBe(
         'x-token-auth:my-token',
       );
+    });
+  });
+
+  describe('extractToken', () => {
+    it('strips the x-token-auth: prefix', () => {
+      expect(bitbucketProvider.extractToken('x-token-auth:my-token')).toBe(
+        'my-token',
+      );
+    });
+
+    it('is a no-op for an unprefixed token', () => {
+      expect(bitbucketProvider.extractToken('my-token')).toBe('my-token');
     });
   });
 

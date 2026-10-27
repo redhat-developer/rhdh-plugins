@@ -330,6 +330,14 @@ export class DefaultApiClient {
     request: ProjectsProjectIdLogGet,
     options?: RequestOptions,
   ): Promise<TypedResponse<string>>;
+  projectsProjectIdMigrationPlanPut(
+    request: ProjectsProjectIdMigrationPlanPut,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<MigrationPlanSaveResult>>;
+  projectsProjectIdMigrationPlanReadPost(
+    request: ProjectsProjectIdMigrationPlanReadPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<MigrationPlanDocument>>;
   projectsProjectIdModulesGet(
     request: ProjectsProjectIdModulesGet,
     options?: RequestOptions,
@@ -346,6 +354,14 @@ export class DefaultApiClient {
     request: ProjectsProjectIdModulesModuleIdLogGet,
     options?: RequestOptions,
   ): Promise<TypedResponse<string>>;
+  projectsProjectIdModulesModuleIdMigrationPlanPut(
+    request: ProjectsProjectIdModulesModuleIdMigrationPlanPut,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<MigrationPlanSaveResult>>;
+  projectsProjectIdModulesModuleIdMigrationPlanReadPost(
+    request: ProjectsProjectIdModulesModuleIdMigrationPlanReadPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<MigrationPlanDocument>>;
   projectsProjectIdModulesModuleIdRunPost(
     request: ProjectsProjectIdModulesModuleIdRunPost,
     options?: RequestOptions,
@@ -382,6 +398,16 @@ export class DefaultApiClient {
 
 // @public
 export const ENTITY_REF_RE: RegExp;
+
+// @public
+export function findMigrationPlanArtifact(project: {
+  migrationPlan?: Artifact;
+}): Artifact | undefined;
+
+// @public
+export function findModuleMigrationPlanArtifact(module: {
+  analyze?: Pick<Job, 'artifacts'>;
+}): Artifact | undefined;
 
 // @public
 export const githubProvider: ScmProvider;
@@ -520,6 +546,9 @@ export const MAX_CONCURRENT_BULK_RUN = 3;
 // @public
 export const MAX_RULE_DESCRIPTION_CHARS = 50000;
 
+// @public
+export const MIGRATION_PLAN_MAX_CONTENT_BYTES: number;
+
 // @public (undocumented)
 export type MigrationPhase =
   | 'init'
@@ -528,6 +557,32 @@ export type MigrationPhase =
   | 'publish'
   | 'adversarial-analyze'
   | 'adversarial-migrate';
+
+// @public (undocumented)
+export interface MigrationPlanDocument {
+  content: string;
+  version: string;
+}
+
+// @public (undocumented)
+export interface MigrationPlanReadRequest {
+  // (undocumented)
+  targetRepoAuth?: GitRepoAuth;
+}
+
+// @public (undocumented)
+export interface MigrationPlanSaveRequest {
+  content: string;
+  message: string;
+  // (undocumented)
+  targetRepoAuth?: GitRepoAuth;
+  version: string;
+}
+
+// @public (undocumented)
+export interface MigrationPlanSaveResult {
+  version: string;
+}
 
 // @public (undocumented)
 export interface Module {
@@ -588,6 +643,15 @@ export function normalizeSourceTechnology(
 
 // @public
 export function parseCsvContent(dataUrl: string): CsvProjectRow[];
+
+// @public
+export type ParsedRepoUrl = {
+  origin: string;
+  path: string;
+};
+
+// @public
+export function parseRepoUrl(repoUrl: string): ParsedRepoUrl;
 
 // @public (undocumented)
 export class Phase {
@@ -791,6 +855,22 @@ export type ProjectsProjectIdLogGet = {
 };
 
 // @public (undocumented)
+export type ProjectsProjectIdMigrationPlanPut = {
+  path: {
+    projectId: string;
+  };
+  body: MigrationPlanSaveRequest;
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdMigrationPlanReadPost = {
+  path: {
+    projectId: string;
+  };
+  body: MigrationPlanReadRequest;
+};
+
+// @public (undocumented)
 export type ProjectsProjectIdModulesGet = {
   path: {
     projectId: string;
@@ -830,6 +910,24 @@ export type ProjectsProjectIdModulesModuleIdLogGet = {
     streaming?: boolean;
     phase: MigrationPhase;
   };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdMigrationPlanPut = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  body: MigrationPlanSaveRequest;
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdMigrationPlanReadPost = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  body: MigrationPlanReadRequest;
 };
 
 // @public (undocumented)
@@ -1102,7 +1200,9 @@ export interface ScmProvider {
     repository: GitRepositoryRef,
     devcontainerPath: string,
   ): Codespace | undefined;
+  extractToken(token: string): string;
   getAuthTokenDescriptor(readOnly: boolean): AuthTokenDescriptor;
+  getContentWriteAuthTokenDescriptor(): AuthTokenDescriptor;
   matches(repoUrl: string): boolean;
   // (undocumented)
   readonly name: ScmProviderName;

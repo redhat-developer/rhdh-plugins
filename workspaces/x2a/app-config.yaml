@@ -119,6 +119,11 @@ auth:
     gitlab:
       development:
         # Create an OAuth app on https://gitlab.com/-/user_settings/applications
+        # The app must allow the `api` scope (besides `read_repository` and `write_repository`).
+        # Why: editing a migration plan in the UI commits through the GitLab REST API (Repository
+        # Files API), and GitLab documents `write_repository` as the scope for Git-over-HTTP only,
+        # without API authentication. The `api` scope is requested only when a user edits a
+        # document; users are asked to re-consent then.
         clientId: ${AUTH_GITLAB_CLIENT_ID}
         clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
         audience: https://gitlab.com
