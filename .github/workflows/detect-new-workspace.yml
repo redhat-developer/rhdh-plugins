@@ -16,7 +16,7 @@ concurrency:
 jobs:
   prepare:
     name: Detect uncovered workspaces
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       workspaces: ${{ steps.detect.outputs.workspaces }}
     steps:
@@ -46,7 +46,7 @@ jobs:
 
   propose:
     name: Propose preset for workspace
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: prepare
     if: needs.prepare.outputs.workspaces != '[]' && needs.prepare.outputs.workspaces != ''
     strategy:
