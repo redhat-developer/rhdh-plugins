@@ -19,6 +19,7 @@ import {
   Ref,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -42,6 +43,11 @@ import {
 
 import { useCloseOnOutsidePointerDown } from '../hooks/useCloseOnOutsidePointerDown';
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  getMenuAppendTo,
+  getMenuMaxWidthPx,
+  setTitleIfClipped,
+} from '../utils/model-menu-utils';
 import { ModelSelectorToggleText } from './ModelSelectorToggleText';
 
 type MessageBarModelSelectorProps = {
@@ -152,15 +158,25 @@ const ModelItemContent = styled('span')({
   gap: 8,
   width: '100%',
   minWidth: 0,
+  maxWidth: '100%',
 });
 
-const StyledDropdown = styled(Dropdown)({
-  // Fill the model grid cell so the toggle ellipsizes within leftover width.
-  display: 'flex',
-  width: '100%',
-  minWidth: 0,
-  maxWidth: '100%',
+/**
+ * PF Dropdown applies `className` to the portaled Menu (not the toggle).
+ * `$maxWidthPx` enforces the panel right margin (RHDHBUGS-4005).
+ */
+const StyledDropdown = styled(Dropdown, {
+  shouldForwardProp: prop => prop !== '$maxWidthPx',
+})<{ $maxWidthPx?: number }>(({ $maxWidthPx }) => ({
   overflow: 'hidden',
+  // Clear PF menu/item start padding that reads as a left gutter.
+  '--pf-v6-c-menu--PaddingInlineStart': '0',
+  '--pf-v5-c-menu--PaddingInlineStart': '0',
+  '--pf-v6-c-menu__item--PaddingInlineStart': '0',
+  '--pf-v5-c-menu__item--PaddingInlineStart': '0',
+  ...($maxWidthPx !== undefined
+    ? { maxWidth: `${$maxWidthPx}px !important` }
+    : {}),
   '& ul, & li': {
     padding: 0,
     margin: 0,
@@ -177,7 +193,7 @@ const StyledDropdown = styled(Dropdown)({
   '& .pf-v6-c-menu__item-select-icon': {
     display: 'none',
   },
-});
+}));
 
 /** Anchor for outside-pointer detection (menu itself is portaled). */
 const SelectorRoot = styled('div')({
@@ -196,15 +212,35 @@ export const MessageBarModelSelector = ({
   disabledTooltip,
 }: MessageBarModelSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [menuMaxWidthPx, setMenuMaxWidthPx] = useState<number>();
   const rootRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
   const closeMenu = useCallback(() => setIsOpen(false), []);
+
+  const setOpen = useCallback((open: boolean) => {
+    if (open) {
+      // Measure before paint so the first open frame already has maxWidth.
+      setMenuMaxWidthPx(getMenuMaxWidthPx(rootRef.current));
+    }
+    setIsOpen(open);
+  }, []);
 
   useEffect(() => {
     if (disabled) {
       setIsOpen(false);
     }
   }, [disabled]);
+
+  // Open path already measures in setOpen; only re-measure on resize while open.
+  useLayoutEffect(() => {
+    if (!isOpen || disabled) {
+      return undefined;
+    }
+    const onResize = () =>
+      setMenuMaxWidthPx(getMenuMaxWidthPx(rootRef.current));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [isOpen, disabled]);
 
   useCloseOnOutsidePointerDown(isOpen && !disabled, closeMenu, rootRef);
 
@@ -224,7 +260,7 @@ export const MessageBarModelSelector = ({
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <SelectorToggle
       ref={toggleRef}
-      onClick={() => setIsOpen(!isOpen)}
+      onClick={() => setOpen(!isOpen)}
       isExpanded={isOpen}
       isDisabled={disabled}
       variant="plain"
@@ -242,14 +278,20 @@ export const MessageBarModelSelector = ({
 
   const dropdown = (
     <StyledDropdown
+      $maxWidthPx={menuMaxWidthPx}
       isOpen={isOpen && !disabled}
       onSelect={(_e, value) => {
         if (disabled) return;
         onSelect(value as string);
         setIsOpen(false);
       }}
-      onOpenChange={open => setIsOpen(open)}
-      popperProps={{ position: 'left' }}
+      onOpenChange={setOpen}
+      // RHDHBUGS-4005: stay in the chat panel with a right margin.
+      popperProps={{
+        position: 'left',
+        preventOverflow: false,
+        appendTo: () => getMenuAppendTo(rootRef.current),
+      }}
       shouldFocusToggleOnSelect
       shouldFocusFirstItemOnOpen={false}
       toggle={toggle}
@@ -266,7 +308,9 @@ export const MessageBarModelSelector = ({
               isSelected={isSelected}
             >
               <ModelItemContent>
-                <ModelLabel title={model.label}>{model.label}</ModelLabel>
+                <ModelLabel onMouseEnter={setTitleIfClipped}>
+                  {model.label}
+                </ModelLabel>
                 {model.supportsVision ? (
                   <VisionSlot className="lightspeed-model-vision-slot">
                     <Tooltip content={visionScreenshotTooltip}>
