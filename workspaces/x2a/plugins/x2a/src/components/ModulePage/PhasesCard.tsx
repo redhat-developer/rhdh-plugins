@@ -79,6 +79,7 @@ export const PhasesCard = ({
   activeTab,
   handleTabChange,
   onRunPhase,
+  onRunPublishConfig,
   onCancelPhase,
   onRunAdversarial,
 }: {
@@ -89,6 +90,7 @@ export const PhasesCard = ({
   activeTab: number;
   handleTabChange: (event: React.ChangeEvent<{}>, newValue: number) => void;
   onRunPhase?: (phase: MigrationPhase) => void;
+  onRunPublishConfig?: () => void;
   onCancelPhase?: (phase: MigrationPhase) => void;
   onRunAdversarial?: (phase: 'analyze' | 'migrate', agentIds: string[]) => void;
 }) => {
@@ -157,6 +159,7 @@ export const PhasesCard = ({
           projectId={projectId}
           moduleId={moduleId}
           onRunPhase={onRunPhase}
+          onRunPublishConfig={onRunPublishConfig}
           onCancelPhase={onCancelPhase}
         />
         {onRunAdversarial && (
@@ -190,6 +193,7 @@ export const PhasesCard = ({
           projectId={projectId}
           moduleId={moduleId}
           onRunPhase={onRunPhase}
+          onRunPublishConfig={onRunPublishConfig}
           onCancelPhase={onCancelPhase}
         />
         {onRunAdversarial && (
@@ -223,6 +227,7 @@ export const PhasesCard = ({
           projectId={projectId}
           moduleId={moduleId}
           onRunPhase={onRunPhase}
+          onRunPublishConfig={onRunPublishConfig}
           onCancelPhase={onCancelPhase}
         />
       </Box>

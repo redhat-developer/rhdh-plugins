@@ -24,6 +24,9 @@ const mockModuleGet = jest.fn();
 const clientServiceMock = {
   projectsProjectIdGet: mockProjectGet,
   projectsProjectIdModulesModuleIdGet: mockModuleGet,
+  aapConfigurationGet: jest.fn().mockResolvedValue({
+    json: async () => ({ configured: false }),
+  }),
   projectsProjectIdModulesModuleIdRunPost: jest.fn(),
   projectsProjectIdModulesModuleIdCancelPost: jest.fn(),
 };

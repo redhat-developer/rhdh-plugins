@@ -31,6 +31,7 @@ import {
   ModulePhase,
   Module,
   Project,
+  AAPConfigAsCodeRequest,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
@@ -44,6 +45,7 @@ import { useRepoAuthentication } from '../../repoAuth';
 import { ModuleDetailsCard } from './ModuleDetailsCard';
 import { PhasesCard } from './PhasesCard';
 import { ModulePageBreadcrumb } from './ModulePageBreadcrumb';
+import { AAPConfigPublishDialog } from './AAPConfigPublishDialog';
 
 export const ModulePage = () => {
   const { t } = useTranslation();
@@ -54,6 +56,7 @@ export const ModulePage = () => {
   const hostMap = useScmHostMap();
   const [error, setError] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState(0);
+  const [publishDialogOpen, setPublishDialogOpen] = useState(false);
 
   const handleTabChange = useCallback(
     (_event: React.ChangeEvent<{}>, newValue: number) => {
@@ -68,23 +71,32 @@ export const ModulePage = () => {
     error: fetchError,
     refetch,
   } = usePolledFetch(async () => {
-    const [projectResponse, moduleResponse] = await Promise.all([
+    const [projectResponse, moduleResponse, aapResponse] = await Promise.all([
       clientService.projectsProjectIdGet({ path: { projectId } }),
       clientService.projectsProjectIdModulesModuleIdGet({
         path: { projectId, moduleId },
       }),
+      clientService.aapConfigurationGet({}),
     ]);
     return {
       project: (await projectResponse.json()) as Project,
       module: (await moduleResponse.json()) as Module,
+      aap: (await aapResponse.json()) as {
+        configured: boolean;
+        organization?: string;
+      },
     };
   }, [projectId, moduleId, clientService]);
 
   const project = data?.project;
   const module = data?.module;
 
-  const handleRunPhase = useCallback(
-    async (phase: MigrationPhase) => {
+  const runPhase = useCallback(
+    async (
+      phase: MigrationPhase,
+      aapConfig?: AAPConfigAsCodeRequest,
+      aapConfigRepoAuthToken?: string,
+    ) => {
       if (!project) {
         return;
       }
@@ -99,12 +111,13 @@ export const ModulePage = () => {
             ).getAuthTokenDescriptor(true),
           ])
         )[0].token;
+        const targetProvider = resolveScmProvider(
+          project.targetRepoUrl,
+          hostMap,
+        );
         const targetRepoAuthToken = (
           await repoAuthentication.authenticate([
-            resolveScmProvider(
-              project.targetRepoUrl,
-              hostMap,
-            ).getAuthTokenDescriptor(false),
+            targetProvider.getAuthTokenDescriptor(false),
           ])
         )[0].token;
 
@@ -115,6 +128,10 @@ export const ModulePage = () => {
               phase: phase as ModulePhase,
               sourceRepoAuth: { token: sourceRepoAuthToken },
               targetRepoAuth: { token: targetRepoAuthToken },
+              ...(aapConfig && {
+                aapConfig,
+                aapConfigRepoAuth: { token: aapConfigRepoAuthToken! },
+              }),
             },
           });
 
@@ -142,6 +159,23 @@ export const ModulePage = () => {
       project,
       refetch,
     ],
+  );
+
+  const handleRunPhase = useCallback(
+    async (phase: MigrationPhase) => runPhase(phase),
+    [runPhase],
+  );
+
+  const handleRunPublishConfig = useCallback(() => {
+    setPublishDialogOpen(true);
+  }, []);
+
+  const handlePublish = useCallback(
+    (aapConfig: AAPConfigAsCodeRequest, token: string) => {
+      setPublishDialogOpen(false);
+      void runPhase('publish', aapConfig, token);
+    },
+    [runPhase],
   );
 
   const handleRunAdversarial = useCallback(
@@ -245,6 +279,17 @@ export const ModulePage = () => {
       <Header title={t('modulePage.title')} />
 
       <Content>
+        <AAPConfigPublishDialog
+          open={publishDialogOpen}
+          organization={data?.aap.organization ?? ''}
+          hostProviderMap={hostMap}
+          onClose={() => setPublishDialogOpen(false)}
+          onPublish={handlePublish}
+          onDirectPublish={() => {
+            setPublishDialogOpen(false);
+            void runPhase('publish');
+          }}
+        />
         <Box mb={2}>
           <ModulePageBreadcrumb
             projectId={projectId}
@@ -277,6 +322,7 @@ export const ModulePage = () => {
                 projectId={projectId}
                 moduleId={moduleId}
                 onRunPhase={handleRunPhase}
+                onRunPublishConfig={handleRunPublishConfig}
                 onCancelPhase={handleCancelPhase}
                 onRunAdversarial={handleRunAdversarial}
                 activeTab={activeTab}
