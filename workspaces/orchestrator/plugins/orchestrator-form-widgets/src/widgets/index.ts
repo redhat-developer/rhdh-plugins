@@ -19,3 +19,8 @@ export * from './ActiveText';
 export * from './ActiveDropdown';
 export * from './ActiveMultiSelect';
 export * from './ActiveBoolean';
+export {
+  FieldHelp,
+  FieldLabelWithHelp,
+  FieldWithHelpLayout,
+} from '../components/FieldHelp';

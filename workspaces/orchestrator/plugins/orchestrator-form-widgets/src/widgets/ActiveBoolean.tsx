@@ -33,7 +33,9 @@ import {
   useProcessingState,
   useClearOnRetrigger,
   evaluateFetchResponseSelectorTemplate,
+  useResolvedFieldHelp,
 } from '../utils';
+import { FieldLabelWithHelp } from '../components/FieldHelp';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
 
@@ -63,10 +65,11 @@ export const ActiveBoolean: Widget<
 > = props => {
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const { id, label, value, onChange, formContext } = props;
+  const { id, label, value, onChange, formContext, required } = props;
   const formData = formContext?.formData;
   const isChangedByUser = !!formContext?.getIsChangedByUser(id);
   const setIsChangedByUser = formContext?.setIsChangedByUser;
+  const fieldHelp = useResolvedFieldHelp(props.options?.fieldHelp);
 
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
@@ -185,7 +188,13 @@ export const ActiveBoolean: Widget<
             data-testid={`${id}-checkbox`}
           />
         }
-        label={label}
+        label={
+          <FieldLabelWithHelp
+            label={label}
+            help={fieldHelp}
+            required={required}
+          />
+        }
       />
     </FormControl>
   );
