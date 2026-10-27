@@ -14,7 +14,7 @@ concurrency:
 jobs:
   check-merged-pr:
     name: Check if PR is a Version Packages PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
         is_version_pr: ${{ steps.check_pr.outputs.is_version_pr }}
         workspace_name: ${{ steps.extract_workspace.outputs.workspace_name }}
@@ -57,7 +57,7 @@ jobs:
 
   changesets-pr:
     name: Update Version Packages PR for ${{ needs.check-merged-pr.outputs.workspace_name }} on branch ${{ github.ref }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: check-merged-pr
     if: needs.check-merged-pr.outputs.is_version_pr == 'false'
     defaults:
@@ -139,7 +139,7 @@ jobs:
 
   release:
     name: Prior Version Release workspace ${{ needs.check-merged-pr.outputs.workspace_name }} on branch ${{ github.ref }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: check-merged-pr
     if: needs.check-merged-pr.outputs.is_version_pr == 'true'
     defaults:
