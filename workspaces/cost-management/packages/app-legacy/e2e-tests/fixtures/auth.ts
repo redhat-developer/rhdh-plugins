@@ -53,9 +53,16 @@ export async function performOIDCLogin(
   await page.goto('/');
   await page.waitForLoadState('domcontentloaded');
 
-  // Wait for the Sign in button to appear before interacting
+  // Wait for the Sign in button — reload once if it doesn't appear
   const signInButton = page.locator('button:has-text("Sign in")');
-  await signInButton.waitFor({ state: 'visible', timeout: 30000 });
+  const visible = await signInButton
+    .waitFor({ state: 'visible', timeout: 30000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!visible) {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await signInButton.waitFor({ state: 'visible', timeout: 30000 });
+  }
 
   // Click the OIDC Sign In button and handle the Keycloak popup
   const popupPromise = page.waitForEvent('popup');
@@ -110,7 +117,14 @@ export async function performLogin(
     const pass = password ?? process.env.OIDC_PASSWORD ?? 'test';
 
     const signInButton = page.locator('button:has-text("Sign in")');
-    await signInButton.waitFor({ state: 'visible', timeout: 30000 });
+    const signInVisible = await signInButton
+      .waitFor({ state: 'visible', timeout: 30000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!signInVisible) {
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await signInButton.waitFor({ state: 'visible', timeout: 30000 });
+    }
 
     const popupPromise = page.waitForEvent('popup');
     await signInButton.click();
