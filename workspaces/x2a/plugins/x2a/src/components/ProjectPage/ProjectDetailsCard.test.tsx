@@ -35,7 +35,7 @@ jest.mock('../../hooks/useProjectWriteAccess', () => ({
   }),
 }));
 jest.mock('./EditProjectDialog', () => ({ EditProjectDialog: () => null }));
-jest.mock('../EditMigrationPlan', () => ({
+jest.mock('../EditMigrationPlan/EditMigrationPlanButton', () => ({
   EditMigrationPlanButton: ({
     artifact,
     moduleId,
