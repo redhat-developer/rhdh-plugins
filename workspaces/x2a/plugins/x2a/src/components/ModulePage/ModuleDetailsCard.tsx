@@ -28,8 +28,10 @@ import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import {
   Artifact,
   ArtifactKind,
+  findModuleMigrationPlanArtifact,
   GitRepositoryRef,
   Module,
+  Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { InfoCard } from '@backstage/core-components';
 
@@ -38,14 +40,18 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { ArtifactLink } from '../ArtifactLink';
+import { EditMigrationPlanButton } from '../EditMigrationPlan';
 import { buildCodespace } from '../tools';
 
 export const ModuleDetailsCard = ({
   module,
+  project,
   targetRepository,
   migrationPlanArtifact,
 }: {
   module?: Module;
+  /** Needed to offer editing of the migration plans (permissions, repository). */
+  project?: Project;
   targetRepository?: GitRepositoryRef;
   migrationPlanArtifact?: Artifact;
 }) => {
@@ -55,9 +61,9 @@ export const ModuleDetailsCard = ({
   const targetRepoBranch = targetRepository?.branch ?? '';
   const empty = t('empty');
 
-  const moduleMigrationPlanArtifact = module?.analyze?.artifacts?.find(
-    artifact => ArtifactKind.from(artifact.type).isModuleMigrationPlan(),
-  );
+  const moduleMigrationPlanArtifact = module
+    ? findModuleMigrationPlanArtifact(module)
+    : undefined;
   const migratedSourcesArtifact = module?.migrate?.artifacts?.find(artifact =>
     ArtifactKind.from(artifact.type).isMigratedSources(),
   );
@@ -110,11 +116,19 @@ export const ModuleDetailsCard = ({
           <ItemField
             label={t('modulePage.artifacts.migration_plan')}
             value={
-              <ArtifactLink
-                artifact={migrationPlanArtifact}
-                targetRepoUrl={targetRepoUrl}
-                targetRepoBranch={targetRepoBranch}
-              />
+              <>
+                <ArtifactLink
+                  artifact={migrationPlanArtifact}
+                  targetRepoUrl={targetRepoUrl}
+                  targetRepoBranch={targetRepoBranch}
+                />
+                {project && (
+                  <EditMigrationPlanButton
+                    project={project}
+                    artifact={migrationPlanArtifact}
+                  />
+                )}
+              </>
             }
           />
         </Grid>
@@ -122,11 +136,20 @@ export const ModuleDetailsCard = ({
           <ItemField
             label={t('modulePage.artifacts.module_migration_plan')}
             value={
-              <ArtifactLink
-                artifact={moduleMigrationPlanArtifact}
-                targetRepoUrl={targetRepoUrl}
-                targetRepoBranch={targetRepoBranch}
-              />
+              <>
+                <ArtifactLink
+                  artifact={moduleMigrationPlanArtifact}
+                  targetRepoUrl={targetRepoUrl}
+                  targetRepoBranch={targetRepoBranch}
+                />
+                {project && (
+                  <EditMigrationPlanButton
+                    project={project}
+                    artifact={moduleMigrationPlanArtifact}
+                    moduleId={module?.id}
+                  />
+                )}
+              </>
             }
           />
         </Grid>

@@ -21,6 +21,8 @@ import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { createRouter } from './router';
 import { kubeServiceRef } from './services/KubeService';
+import { RestScmFileStore } from './services/ScmFileStore';
+import { buildScmHostMap } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
  * x2APlugin backend plugin
@@ -73,6 +75,7 @@ export const x2APlugin = createBackendPlugin({
             x2aDatabase,
             kubeService,
             config,
+            scmFileStore: new RestScmFileStore(buildScmHostMap(config)),
           }),
         );
       },
