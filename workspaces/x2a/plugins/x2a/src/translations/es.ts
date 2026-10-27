@@ -329,7 +329,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'editMigrationPlan.saved':
       'Guardado. Se creó una nueva confirmación (commit) en el repositorio.',
     'editMigrationPlan.resyncNote':
-      'Editar el documento no actualiza la lista de módulos. Después, use «Resincronizar plan de migración» en la página del proyecto para aplicar cambios como módulos añadidos o eliminados.',
+      'Editar el documento no actualiza la lista de módulos. Después, use «Resincronizar plan de migración» en la página del proyecto para aplicar cambios como módulos añadidos o eliminados. Para eliminar un módulo, elimínelo de todo el documento: la lista de módulos se vuelve a leer con un modelo de IA a partir de todo el texto, por lo que un módulo que se siga mencionando en otro lugar (incluidas indicaciones como «tres módulos») puede conservarse.',
     'editMigrationPlan.tooLarge':
       'El documento es demasiado grande para guardarlo desde aquí (el límite es {{limit}} kB). Edítelo directamente en el repositorio.',
     'editMigrationPlan.dialogs.keepEditing': 'Seguir editando',

@@ -333,7 +333,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'editMigrationPlan.saved':
       'Enregistré. Un nouveau commit a été créé dans le dépôt.',
     'editMigrationPlan.resyncNote':
-      'La modification du document ne met pas à jour la liste des modules. Utilisez ensuite « Resynchroniser le plan de migration » sur la page du projet pour appliquer les changements tels que des modules ajoutés ou supprimés.',
+      'La modification du document ne met pas à jour la liste des modules. Utilisez ensuite « Resynchroniser le plan de migration » sur la page du projet pour appliquer les changements tels que des modules ajoutés ou supprimés. Pour supprimer un module, retirez-le de tout le document : la liste des modules est relue par un modèle d’IA à partir de l’ensemble du texte, donc un module encore mentionné ailleurs (y compris dans des mentions telles que « trois modules ») peut être conservé.',
     'editMigrationPlan.tooLarge':
       "Le document est trop volumineux pour être enregistré d'ici (la limite est de {{limit}} ko). Modifiez-le directement dans le dépôt.",
     'editMigrationPlan.dialogs.keepEditing': 'Continuer la modification',
