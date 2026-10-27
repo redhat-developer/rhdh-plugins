@@ -16,3 +16,4 @@
 
 export { EditMigrationPlanPage } from './EditMigrationPlanPage';
 export { EditMigrationPlanButton } from './EditMigrationPlanButton';
+export { MigrationPlanLink } from './MigrationPlanLink';
