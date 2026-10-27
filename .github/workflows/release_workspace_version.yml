@@ -11,7 +11,7 @@ on:
 jobs:
   check-merged-pr:
     name: Classify prior-version release PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       is_version_pr: ${{ steps.check_pr.outputs.is_version_pr }}
       is_merged: ${{ steps.check_pr.outputs.is_merged }}
@@ -103,7 +103,7 @@ jobs:
 
   changesets-pr:
     name: LEGACY - Update Version Packages PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: check-merged-pr
     if: needs.check-merged-pr.outputs.is_supported_branch == 'true' && needs.check-merged-pr.outputs.is_version_pr == 'false' && needs.check-merged-pr.outputs.is_repository_release == 'false' && needs.check-merged-pr.outputs.is_merged == 'true'
     concurrency:
@@ -188,7 +188,7 @@ jobs:
 
   repository-release-workspaces:
     name: Find changed workspaces
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: check-merged-pr
     if: needs.check-merged-pr.outputs.is_supported_branch == 'true' && needs.check-merged-pr.outputs.is_repository_release == 'true' && needs.check-merged-pr.outputs.is_version_pr == 'false' && needs.check-merged-pr.outputs.is_merged == 'true'
     outputs:
@@ -209,7 +209,7 @@ jobs:
 
   repository-changesets-pr:
     name: Update Version Packages PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - check-merged-pr
       - repository-release-workspaces
@@ -296,7 +296,7 @@ jobs:
 
   release:
     name: LEGACY - Publish legacy workspace
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: check-merged-pr
     if: needs.check-merged-pr.outputs.is_supported_branch == 'true' && needs.check-merged-pr.outputs.is_version_pr == 'true' && needs.check-merged-pr.outputs.is_repository_release == 'false'
     concurrency:
@@ -359,7 +359,7 @@ jobs:
 
   repository-release:
     name: Publish workspace
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - check-merged-pr
     if: needs.check-merged-pr.outputs.is_supported_branch == 'true' && needs.check-merged-pr.outputs.is_version_pr == 'true' && needs.check-merged-pr.outputs.is_repository_release == 'true'

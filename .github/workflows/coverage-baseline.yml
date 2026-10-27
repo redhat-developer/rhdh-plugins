@@ -27,7 +27,7 @@ permissions:
 jobs:
   list-workspaces:
     name: Discover workspaces
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       workspaces: ${{ steps.list.outputs.workspaces }}
     steps:
@@ -45,7 +45,7 @@ jobs:
 
   coverage:
     name: Coverage — ${{ matrix.workspace }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: list-workspaces
     strategy:
       matrix:
