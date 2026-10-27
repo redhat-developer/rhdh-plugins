@@ -10,7 +10,7 @@ concurrency:
 jobs:
   find-changed-workspaces:
     name: Detect workspace changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       workspaces: ${{ steps.find-changed-workspaces.outputs.workspaces }}
     steps:
@@ -46,7 +46,7 @@ jobs:
 
   ci:
     name: Workspace ${{ matrix.workspace }}, CI step for node ${{ matrix.node-version }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: find-changed-workspaces
     strategy:
       matrix:
@@ -176,7 +176,7 @@ jobs:
 
   verify:
     name: Workspace ${{ matrix.workspace }}, Verify step
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: find-changed-workspaces
     strategy:
       matrix:
@@ -200,7 +200,7 @@ jobs:
   result:
     if: ${{ always() }}
     name: check all required jobs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [ci, verify]
     steps:
       - run: exit 1
