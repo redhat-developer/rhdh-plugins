@@ -127,7 +127,7 @@ The UI never talks to the SCM directly. The x2a backend reads and commits the fi
 - **GitLab scope `api`:** GitLab documents the `write_repository` scope as the one for Git-over-HTTP pushes, and states that it does not support API authentication. Committing a single file through the Repository Files API therefore needs the broader `api` scope. The GitLab OAuth application must allow `api`; the plugin requests it only when a user edits a document, so users are asked to re-consent at that moment. See [GitLab access token scopes](https://docs.gitlab.com/security/tokens/access_token_scopes/).
 - **Concurrent changes:** a save is rejected (HTTP 409) when the file was changed in the repository after the user opened it, and while a job that may rewrite the document is running (the init job for the project plan, the analyze job for a module plan). The user can copy their text, reload, and apply the changes again.
 - **Size limit:** the document is sent in a JSON request body, which the backend limits to about 100 kB. The UI refuses to save documents above 50 kB.
-- **Module list:** editing the project migration plan does not change the module list. Use _Resync migration plan_ on the project page afterwards.
+- **Module list:** editing the project migration plan does not change the module list. Use _Resync migration plan_ on the project page afterwards. The module list is re-extracted by an AI model from the whole document, not only from its _MODULE INVENTORY_ section, so to remove a module delete every mention of it, including counts such as "three modules". Otherwise the module may stay in the list.
 
 ## Adding New API Endpoints
 
