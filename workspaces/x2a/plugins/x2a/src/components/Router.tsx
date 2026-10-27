@@ -23,11 +23,14 @@ import { RulesPage } from './RulesPage';
 import {
   downloadRouteRef,
   moduleRouteRef,
+  modulePlanEditRouteRef,
+  projectPlanEditRouteRef,
   projectRouteRef,
   rulesRouteRef,
   adversarialAgentsRouteRef,
 } from '../routes';
 import { ProjectPage } from './ProjectPage';
+import { EditMigrationPlanPage } from './EditMigrationPlan';
 
 export const Router = () => {
   return (
@@ -36,6 +39,14 @@ export const Router = () => {
       <Route
         path={`${downloadRouteRef.path}/*`}
         element={<DownloadStaticPublicFile />}
+      />
+      <Route
+        path={projectPlanEditRouteRef.path}
+        element={<EditMigrationPlanPage />}
+      />
+      <Route
+        path={modulePlanEditRouteRef.path}
+        element={<EditMigrationPlanPage />}
       />
       <Route path={moduleRouteRef.path} element={<ModulePage />} />
       <Route path={projectRouteRef.path} element={<ProjectPage />} />
