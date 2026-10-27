@@ -325,7 +325,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'editMigrationPlan.saved':
       'Gespeichert. Im Repository wurde ein neuer Commit erstellt.',
     'editMigrationPlan.resyncNote':
-      'Die Modulliste wird durch das Bearbeiten des Dokuments nicht aktualisiert. Verwenden Sie anschließend „Migrationsplan erneut synchronisieren“ auf der Projektseite, um Änderungen wie hinzugefügte oder entfernte Module zu übernehmen.',
+      'Die Modulliste wird durch das Bearbeiten des Dokuments nicht aktualisiert. Verwenden Sie anschließend „Migrationsplan erneut synchronisieren“ auf der Projektseite, um Änderungen wie hinzugefügte oder entfernte Module zu übernehmen. Um ein Modul zu entfernen, entfernen Sie es aus dem gesamten Dokument: Die Modulliste wird von einem KI-Modell aus dem gesamten Text neu gelesen, daher kann ein Modul, das noch an anderer Stelle erwähnt wird (auch in Angaben wie „drei Module“), erhalten bleiben.',
     'editMigrationPlan.tooLarge':
       'Das Dokument ist zu groß, um von hier aus gespeichert zu werden (Limit: {{limit}} kB). Bearbeiten Sie es direkt im Repository.',
     'editMigrationPlan.dialogs.keepEditing': 'Weiter bearbeiten',

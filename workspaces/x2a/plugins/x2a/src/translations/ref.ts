@@ -377,7 +377,7 @@ export const x2aPluginMessages = {
       'Failed to save the document. Your changes are kept in the editor.',
     saved: 'Saved. A new commit was created in the repository.',
     resyncNote:
-      'The module list is not updated by editing the document. Use "Resync migration plan" on the project page afterwards to apply changes such as added or removed modules.',
+      'The module list is not updated by editing the document. Use "Resync migration plan" on the project page afterwards to apply changes such as added or removed modules. To remove a module, remove it from the whole document: the module list is re-read by an AI model from the entire text, so a module that is still mentioned elsewhere (including counts such as "three modules") may be kept.',
     tooLarge:
       'The document is too large to be saved from here (the limit is {{limit}} kB). Edit it directly in the repository.',
     dialogs: {
