@@ -23,8 +23,7 @@ import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ItemField } from '../ItemField';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useProjectWriteAccess } from '../../hooks/useProjectWriteAccess';
-import { ArtifactLink } from '../Artifacts';
-import { EditMigrationPlanButton } from '../EditMigrationPlan';
+import { MigrationPlanLink } from '../EditMigrationPlan';
 import { ProjectStatusCell } from '../ProjectStatusCell';
 import { Repository } from '../Repository';
 import { ExternalLink } from '../ExternalLink';
@@ -133,17 +132,12 @@ export const ProjectDetailsCard = ({
               label={t('artifact.types.migration_plan')}
               value={
                 project.migrationPlan ? (
-                  <>
-                    <ArtifactLink
-                      artifact={project.migrationPlan}
-                      targetRepoUrl={project.targetRepoUrl}
-                      targetRepoBranch={project.targetRepoBranch}
-                    />
-                    <EditMigrationPlanButton
-                      project={project}
-                      artifact={project.migrationPlan}
-                    />
-                  </>
+                  <MigrationPlanLink
+                    artifact={project.migrationPlan}
+                    targetRepoUrl={project.targetRepoUrl}
+                    targetRepoBranch={project.targetRepoBranch}
+                    project={project}
+                  />
                 ) : (
                   t('empty')
                 )

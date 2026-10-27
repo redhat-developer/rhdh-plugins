@@ -40,7 +40,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { ArtifactLink } from '../ArtifactLink';
-import { EditMigrationPlanButton } from '../EditMigrationPlan';
+import { MigrationPlanLink } from '../EditMigrationPlan';
 import { buildCodespace } from '../tools';
 
 export const ModuleDetailsCard = ({
@@ -116,19 +116,12 @@ export const ModuleDetailsCard = ({
           <ItemField
             label={t('modulePage.artifacts.migration_plan')}
             value={
-              <>
-                <ArtifactLink
-                  artifact={migrationPlanArtifact}
-                  targetRepoUrl={targetRepoUrl}
-                  targetRepoBranch={targetRepoBranch}
-                />
-                {project && (
-                  <EditMigrationPlanButton
-                    project={project}
-                    artifact={migrationPlanArtifact}
-                  />
-                )}
-              </>
+              <MigrationPlanLink
+                artifact={migrationPlanArtifact}
+                targetRepoUrl={targetRepoUrl}
+                targetRepoBranch={targetRepoBranch}
+                project={project}
+              />
             }
           />
         </Grid>
@@ -136,20 +129,13 @@ export const ModuleDetailsCard = ({
           <ItemField
             label={t('modulePage.artifacts.module_migration_plan')}
             value={
-              <>
-                <ArtifactLink
-                  artifact={moduleMigrationPlanArtifact}
-                  targetRepoUrl={targetRepoUrl}
-                  targetRepoBranch={targetRepoBranch}
-                />
-                {project && (
-                  <EditMigrationPlanButton
-                    project={project}
-                    artifact={moduleMigrationPlanArtifact}
-                    moduleId={module?.id}
-                  />
-                )}
-              </>
+              <MigrationPlanLink
+                artifact={moduleMigrationPlanArtifact}
+                targetRepoUrl={targetRepoUrl}
+                targetRepoBranch={targetRepoBranch}
+                project={project}
+                moduleId={module?.id}
+              />
             }
           />
         </Grid>

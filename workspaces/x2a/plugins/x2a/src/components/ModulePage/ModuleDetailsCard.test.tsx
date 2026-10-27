@@ -32,7 +32,7 @@ jest.mock('../../hooks/useTranslation', () => ({
 
 jest.mock('../ArtifactLink', () => ({ ArtifactLink: () => <div /> }));
 jest.mock('../ModuleStatusCell', () => ({ ModuleStatusCell: () => <div /> }));
-jest.mock('../EditMigrationPlan', () => ({
+jest.mock('../EditMigrationPlan/EditMigrationPlanButton', () => ({
   EditMigrationPlanButton: ({
     artifact,
     moduleId,
