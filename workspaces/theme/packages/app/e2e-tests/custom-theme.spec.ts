@@ -37,13 +37,11 @@ test.describe('CustomTheme should be applied', () => {
     }, testInfo: TestInfo) => {
       const themeVerifier = new ThemeVerifier(page);
 
-      if (theme.name === 'Light') {
-        await runAccessibilityTests(
-          page,
-          testInfo,
-          'accessibility-scan-results.json',
-        );
-      }
+      await runAccessibilityTests(
+        page,
+        testInfo,
+        'accessibility-scan-results.json',
+      );
 
       await themeVerifier.setTheme(theme.name);
       await themeVerifier.takeScreenshotAndAttach(
