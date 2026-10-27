@@ -7,7 +7,7 @@ on:
 
 jobs:
   generate-changeset:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.actor == 'renovate[bot]' && github.repository ==
       'redhat-developer/rhdh-plugins' &&
       github.event.pull_request.head.repo.full_name == github.repository
