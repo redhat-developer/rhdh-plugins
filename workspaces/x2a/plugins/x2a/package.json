@@ -38,6 +38,12 @@
     ],
     "supported-versions": "1.49.4"
   },
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-x2a",
+    "exposedModules": {
+      "PluginRoot": "./src/index.ts"
+    }
+  },
   "sideEffects": false,
   "scripts": {
     "start": "backstage-cli package start",
