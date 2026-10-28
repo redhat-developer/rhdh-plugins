@@ -46,6 +46,41 @@ const credentialNamesSchema = z
     message: 'Credential names must not contain duplicates',
   });
 
+function validateAapConfigRequest(
+  phase: ModulePhase,
+  aapConfig: { repositoryUrl: string; repositoryBranch: string } | undefined,
+  aapConfigRepoAuth: { token: string } | undefined,
+): void {
+  if ((aapConfig || aapConfigRepoAuth) && phase !== 'publish') {
+    throw new InputError(
+      'AAP Config-as-Code settings are only valid for the publish phase.',
+    );
+  }
+  if (aapConfigRepoAuth && !aapConfig) {
+    throw new InputError(
+      'Config repository authentication cannot be provided without AAP Config-as-Code settings.',
+    );
+  }
+  if (aapConfig && !aapConfigRepoAuth) {
+    throw new InputError(
+      'Config repository authentication is required for an AAP Config-as-Code publish.',
+    );
+  }
+}
+
+function resolveAapConfigRepository(
+  aapConfig: { repositoryUrl: string; repositoryBranch: string } | undefined,
+  aapConfigRepoAuth: { token: string } | undefined,
+  gitRepoResolver: GitRepositoryResolver,
+): GitRepository | undefined {
+  if (!aapConfig || !aapConfigRepoAuth) return undefined;
+  return gitRepoResolver.resolveConfiguredRepository(
+    aapConfig.repositoryUrl,
+    aapConfig.repositoryBranch,
+    aapConfigRepoAuth,
+  );
+}
+
 export function registerModuleRoutes(
   router: express.Router,
   deps: RouterDeps,
@@ -226,21 +261,7 @@ export function registerModuleRoutes(
         aapConfigRepoAuth,
       } = parsedBody.data;
 
-      if ((aapConfig || aapConfigRepoAuth) && phase !== 'publish') {
-        throw new InputError(
-          'AAP Config-as-Code settings are only valid for the publish phase.',
-        );
-      }
-      if (aapConfigRepoAuth && !aapConfig) {
-        throw new InputError(
-          'Config repository authentication cannot be provided without AAP Config-as-Code settings.',
-        );
-      }
-      if (aapConfig && !aapConfigRepoAuth) {
-        throw new InputError(
-          'Config repository authentication is required for an AAP Config-as-Code publish.',
-        );
-      }
+      validateAapConfigRequest(phase, aapConfig, aapConfigRepoAuth);
 
       const { project, userRef } = await useEnforceProjectPermissions({
         req,
@@ -254,21 +275,11 @@ export function registerModuleRoutes(
 
       assertProjectHasDirName(project);
 
-      if (aapConfig && !aapConfig.organization.trim()) {
-        throw new InputError(
-          'AAP organization is required for Config-as-Code publishing.',
-        );
-      }
-
-      let aapConfigRepo: GitRepository | undefined;
-      if (aapConfig && aapConfigRepoAuth) {
-        const configProvider = gitRepoResolver.resolveConfiguredRepository(
-          aapConfig.repositoryUrl,
-          aapConfig.repositoryBranch,
-          aapConfigRepoAuth,
-        );
-        aapConfigRepo = configProvider;
-      }
+      const aapConfigRepo = resolveAapConfigRepository(
+        aapConfig,
+        aapConfigRepoAuth,
+        gitRepoResolver,
+      );
 
       // Resolve git repositories with config-based token fallback
       const { sourceRepo, targetRepo } = gitRepoResolver.resolve({

@@ -121,49 +121,66 @@ export const ConfigRepositoryPicker = ({
         resource,
         context,
       });
+
+    const loadGitHub = async () => {
+      const result = await autocomplete('repositoriesWithOwner', { host });
+      if (cancelled) return;
+
+      setRepositories(result.results);
+      const nextOwners = Array.from(
+        new Set(result.results.map(item => item.id.split('/')[0])),
+      ).map(id => ({ id }));
+      ownersRef.current = nextOwners;
+      setOwners(nextOwners);
+    };
+
+    const loadGitLab = async () => {
+      if (!owner) {
+        const result = await autocomplete('groups', { host });
+        if (!cancelled) {
+          ownersRef.current = result.results;
+          setOwners(result.results);
+        }
+        return;
+      }
+
+      const group = ownersRef.current.find(
+        item => (item.title ?? item.id) === owner,
+      );
+      const result = await autocomplete('repositories', {
+        host,
+        id: group?.id ?? owner,
+      });
+      if (!cancelled) setRepositories(result.results);
+    };
+
+    const loadBitbucket = async () => {
+      if (!owner) {
+        const result = await autocomplete('workspaces', {});
+        if (!cancelled) setOwners(result.results);
+        return;
+      }
+      if (!project) {
+        const result = await autocomplete('projects', { workspace: owner });
+        if (!cancelled) setProjects(result.results);
+        return;
+      }
+
+      const result = await autocomplete('repositories', {
+        workspace: owner,
+        project,
+      });
+      if (!cancelled) setRepositories(result.results);
+    };
+
     const load = async () => {
       try {
         if (provider === 'github') {
-          const result = await autocomplete('repositoriesWithOwner', { host });
-          if (!cancelled) {
-            setRepositories(result.results);
-            const nextOwners = Array.from(
-              new Set(result.results.map(item => item.id.split('/')[0])),
-            ).map(id => ({ id }));
-            ownersRef.current = nextOwners;
-            setOwners(nextOwners);
-          }
+          await loadGitHub();
         } else if (provider === 'gitlab') {
-          if (!owner) {
-            const result = await autocomplete('groups', { host });
-            if (!cancelled) {
-              ownersRef.current = result.results;
-              setOwners(result.results);
-            }
-          } else {
-            const group = ownersRef.current.find(
-              item => (item.title ?? item.id) === owner,
-            );
-            const result = await autocomplete('repositories', {
-              host,
-              id: group?.id ?? owner,
-            });
-            if (!cancelled) setRepositories(result.results);
-          }
+          await loadGitLab();
         } else if (provider === 'bitbucket') {
-          if (!owner) {
-            const result = await autocomplete('workspaces', {});
-            if (!cancelled) setOwners(result.results);
-          } else if (!project) {
-            const result = await autocomplete('projects', { workspace: owner });
-            if (!cancelled) setProjects(result.results);
-          } else {
-            const result = await autocomplete('repositories', {
-              workspace: owner,
-              project,
-            });
-            if (!cancelled) setRepositories(result.results);
-          }
+          await loadBitbucket();
         }
       } catch (error) {
         if (!cancelled) {

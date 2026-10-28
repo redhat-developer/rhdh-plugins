@@ -211,7 +211,8 @@ git_config_repo() {
   local username="${AAP_CONFIG_REPO_TOKEN%%:*}"
   local password="${AAP_CONFIG_REPO_TOKEN#*:}"
 
-  git -c "credential.helper=!f() { test \"\$1\" = get && printf 'username=${username}\\npassword=${password}\\n'; }; f" "$@"
+  GIT_USERNAME="${username}" GIT_PASSWORD="${password}" \
+    git -c 'credential.helper=!f() { test "$1" = get && printf "username=%s\\npassword=%s\\n" "$GIT_USERNAME" "$GIT_PASSWORD"; }; f' "$@"
 }
 
 # Build standardized commit message for x2a job phases.
@@ -352,11 +353,11 @@ publish_aap_config() {
   role_name=$(normalize_ansible_role_name "${MODULE_NAME}")
   local playbook_path="${PROJECT_PATH}/ansible/run_${role_name}.yml"
 
-  if [ ! -f "${request_path}" ]; then
+  if [[ ! -f "${request_path}" ]]; then
     ERROR_MESSAGE="AAP Config-as-Code request not found at ${request_path}"
     exit 1
   fi
-  if [ ! -f "${playbook_path}" ]; then
+  if [[ ! -f "${playbook_path}" ]]; then
     ERROR_MESSAGE="Generated playbook not found at ${playbook_path}"
     exit 1
   fi
@@ -373,7 +374,7 @@ publish_aap_config() {
       "${AAP_CONFIG_REPO_URL}" /workspace/aap-config; then
       cd /workspace/aap-config
       default_branch=$(git symbolic-ref --short HEAD)
-      if [ "${default_branch}" != "${AAP_CONFIG_REPO_BRANCH}" ]; then
+      if [[ "${default_branch}" != "${AAP_CONFIG_REPO_BRANCH}" ]]; then
         git checkout -b "${AAP_CONFIG_REPO_BRANCH}"
       fi
     else
@@ -384,14 +385,8 @@ publish_aap_config() {
     cd /app
     run_x2a uv run app.py generate-aap-config --request "${request_path}"
 
-    mapfile -t config_files < <(
-      uv run --project /app python -c \
-        'import json, sys; request=json.load(open(sys.argv[1])); directory=request["configuration_directory"]; print(f"{directory}/controller_projects.yml"); print(f"{directory}/controller_job_templates.yml")' \
-        "${request_path}"
-    )
-
     cd /workspace/aap-config
-    git add -- "${config_files[@]}"
+    git add --all
     if git diff --cached --quiet; then
       echo "AAP configuration is already up to date"
       COMMIT_ID=$(git rev-parse HEAD)
@@ -406,7 +401,7 @@ publish_aap_config() {
     git_config_repo push origin "HEAD:${AAP_CONFIG_REPO_BRANCH}" 2>&1 | tee "${push_output}"
     local push_rc=${PIPESTATUS[0]}
     set -e
-    if [ ${push_rc} -eq 0 ]; then
+    if [[ ${push_rc} -eq 0 ]]; then
       rm -f "${push_output}"
       COMMIT_ID=$(git rev-parse HEAD)
       ERROR_MESSAGE=""

@@ -50,24 +50,11 @@ export class JobResourceBuilder {
     // Get LLM credentials from config - generic key-value pairs
     const llmCredentials = config.credentials.llm;
 
-    // Determine AAP credentials source - user-provided takes precedence over config
-    let aapSource = aapCredentials;
-
-    // If no user-provided credentials, check if config has AAP credentials
-    if (!aapSource && config.credentials.aap) {
-      const configAap = config.credentials.aap;
-      // Only use config as fallback if it has at least url and orgName defined
-      // (not undefined from missing env vars)
-      const hasOAuthToken = Boolean(configAap.oauthToken);
-      const hasUserPass = Boolean(configAap.username && configAap.password);
-      if (
-        configAap.url &&
-        configAap.orgName &&
-        (requireAapCredentials || hasOAuthToken || hasUserPass)
-      ) {
-        aapSource = configAap;
-      }
-    }
+    const aapSource = this.resolveAapCredentials(
+      aapCredentials,
+      config,
+      requireAapCredentials,
+    );
 
     if (!aapSource && requireAapCredentials) {
       throw new Error(
@@ -168,6 +155,26 @@ export class JobResourceBuilder {
         AAP_VERIFY_SSL: String(!skipSSL),
       },
     };
+  }
+
+  private static resolveAapCredentials(
+    aapCredentials: AAPCredentials | undefined,
+    config: X2AConfig,
+    required: boolean,
+  ): AAPCredentials | undefined {
+    if (aapCredentials) {
+      return aapCredentials;
+    }
+
+    const configured = config.credentials.aap;
+    if (!configured?.url || !configured.orgName) {
+      return undefined;
+    }
+
+    const hasCredentials = Boolean(
+      configured.oauthToken || (configured.username && configured.password),
+    );
+    return required || hasCredentials ? configured : undefined;
   }
 
   /**
