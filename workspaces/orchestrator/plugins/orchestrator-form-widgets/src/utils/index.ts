@@ -27,3 +27,6 @@ export * from './resolveDropdownDefault';
 export * from './useClearOnRetrigger';
 export * from './validateSingleField';
 export * from './useGetExtraErrorsForField';
+export * from './resolveFieldHelp';
+export * from './useFieldHelpLocale';
+export * from './useResolvedFieldHelp';
