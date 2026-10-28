@@ -179,30 +179,27 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
     // as the primary signal that the workflow was triggered.
     await page.waitForURL(/\/orchestrator\/instances\//, { timeout: 30000 });
 
-    // The orchestrator instance page may show a 404 due to dynamic plugin
-    // routing issues. If the URL changed to /orchestrator/instances/<id>,
-    // the workflow was triggered successfully regardless of the page content.
+    // TODO: Remove 404 workaround when RHINENG-29749 is resolved
     const is404 = await page
       .getByRole('heading', { name: /404/i })
       .isVisible({ timeout: 3000 })
       .catch(() => false);
 
-    if (!is404) {
-      // Instance page loaded — verify workflow status badges
-      const completedBadge = page.getByText('Completed', { exact: true });
-      const failedBadge = page.getByText('Failed', { exact: true });
-      const runningBadge = page.getByText('Running', { exact: true });
-      const pendingBadge = page.getByText('Pending', { exact: true });
+    expect(is404, 'Orchestrator instance page returned 404 — see RHINENG-29749').toBe(false);
 
-      const anyStatus = completedBadge
-        .or(failedBadge)
-        .or(runningBadge)
-        .or(pendingBadge);
-      await expect(anyStatus).toBeVisible({ timeout: 60000 });
+    const completedBadge = page.getByText('Completed', { exact: true });
+    const failedBadge = page.getByText('Failed', { exact: true });
+    const runningBadge = page.getByText('Running', { exact: true });
+    const pendingBadge = page.getByText('Pending', { exact: true });
 
-      const terminalStatus = completedBadge.or(failedBadge);
-      await expect(terminalStatus).toBeVisible({ timeout: 300000 });
-    }
+    const anyStatus = completedBadge
+      .or(failedBadge)
+      .or(runningBadge)
+      .or(pendingBadge);
+    await expect(anyStatus).toBeVisible({ timeout: 60000 });
+
+    const terminalStatus = completedBadge.or(failedBadge);
+    await expect(terminalStatus).toBeVisible({ timeout: 300000 });
   });
 
   test('should show Apply recommendation button on detail page', async ({
