@@ -6,7 +6,7 @@ export function registerAapConfigurationRoutes(
   router: express.Router,
   deps: RouterDeps,
 ): void {
-  router.get('/aap/configuration', async (_req, res) => {
+  router.get('/aap/configuration', (_req, res) => {
     const organization = deps.config.getOptionalString(
       'x2a.credentials.aap.orgName',
     );

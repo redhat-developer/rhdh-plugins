@@ -16,7 +16,10 @@
 
 import type { RootConfigService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
-import { GitRepository } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  buildScmHostMap,
+  GitRepository,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 interface ResolveParams {
   project: {
@@ -107,6 +110,9 @@ export class GitRepositoryResolver {
     auth: { token: string },
   ): GitRepository {
     const parsed = new URL(url);
+    if (parsed.protocol !== 'https:') {
+      throw new InputError('Repository URL must use HTTPS.');
+    }
     if (parsed.username || parsed.password) {
       throw new InputError(
         'Repository URL must not contain embedded credentials.',
@@ -117,15 +123,7 @@ export class GitRepositoryResolver {
         'Repository URL must not contain a query string or fragment.',
       );
     }
-    const configuredHosts = ['github', 'gitlab', 'bitbucket']
-      .flatMap(
-        key => this.config.getOptionalConfigArray(`integrations.${key}`) ?? [],
-      )
-      .some(
-        integration =>
-          integration.getOptionalString('host') === parsed.hostname,
-      );
-    if (!configuredHosts && parsed.hostname !== 'bitbucket.org') {
+    if (!buildScmHostMap(this.config).has(parsed.host)) {
       throw new InputError(
         'Configuration repository host is not a supported configured SCM host.',
       );

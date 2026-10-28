@@ -21,10 +21,43 @@ describe('GitRepositoryResolver', () => {
   const resolver = new GitRepositoryResolver(
     new ConfigReader({
       integrations: {
-        github: [{ host: 'github.com' }],
+        github: [
+          { host: 'github.com' },
+          { host: 'github.enterprise.com:8443' },
+        ],
       },
     }),
   );
+
+  it('rejects non-HTTPS repository URLs', () => {
+    expect(() =>
+      resolver.resolveConfiguredRepository(
+        'http://github.com/org/repository.git',
+        'main',
+        { token: 'token' },
+      ),
+    ).toThrow('Repository URL must use HTTPS.');
+  });
+
+  it('matches configured hosts including their port', () => {
+    expect(
+      resolver.resolveConfiguredRepository(
+        'https://github.enterprise.com:8443/org/repository.git',
+        'main',
+        { token: 'token' },
+      ).url,
+    ).toBe('https://github.enterprise.com:8443/org/repository.git');
+
+    expect(() =>
+      resolver.resolveConfiguredRepository(
+        'https://github.enterprise.com:9443/org/repository.git',
+        'main',
+        { token: 'token' },
+      ),
+    ).toThrow(
+      'Configuration repository host is not a supported configured SCM host.',
+    );
+  });
 
   it('rejects credentials embedded in repository URLs', () => {
     expect(() =>

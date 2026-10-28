@@ -331,7 +331,7 @@ cleanup() {
   set +e
 
   # Always try to commit and push whatever is in the working directory
-  if [ -d /workspace/target/.git ] && [ -z "${AAP_CONFIG_REPO_URL:-}" ]; then
+  if [[ -d /workspace/target/.git && -z "${AAP_CONFIG_REPO_URL:-}" ]]; then
     local commit_msg=$(build_commit_message)
     git_commit_and_push "${commit_msg}" false  # Don't exit on error in cleanup
   fi
@@ -749,7 +749,7 @@ case "${PHASE}" in
     echo "=== Ansible project contents ==="
     find "${ANSIBLE_DIR}" -type f | sed -n '1,50p'
 
-    if [ -n "${AAP_CONFIG_REPO_URL:-}" ]; then
+    if [[ -n "${AAP_CONFIG_REPO_URL:-}" ]]; then
       echo ""
       echo "=== Publishing AAP configuration to Git ==="
       publish_aap_config

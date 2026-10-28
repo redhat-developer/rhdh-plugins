@@ -695,7 +695,7 @@ export class JobResourceBuilder {
   private static normalizeAnsibleRoleName(value: string): string {
     const normalized = value
       .toLocaleLowerCase('en-US')
-      .replace(/-/g, '_')
+      .replaceAll('-', '_')
       .replace(/[^a-z0-9_]/g, '');
     if (!normalized || /^[a-z]/.test(normalized)) {
       return normalized;

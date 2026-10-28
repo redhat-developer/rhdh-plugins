@@ -111,10 +111,7 @@ export const ConfigRepositoryPicker = ({
 
   useEffect(() => {
     let cancelled = false;
-    const autocomplete = async (
-      resource: string,
-      context: Record<string, string>,
-    ) =>
+    const autocomplete = (resource: string, context: Record<string, string>) =>
       scaffolderApi.autocomplete({
         token: token!,
         provider: apiProvider!,

@@ -162,7 +162,7 @@ export const ModulePage = () => {
   );
 
   const handleRunPhase = useCallback(
-    async (phase: MigrationPhase) => runPhase(phase),
+    (phase: MigrationPhase) => runPhase(phase),
     [runPhase],
   );
 
