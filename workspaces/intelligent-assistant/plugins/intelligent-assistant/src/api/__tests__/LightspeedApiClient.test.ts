@@ -128,6 +128,47 @@ describe('LightspeedApiClient', () => {
     });
   });
 
+  describe('getNotebookConversationIds', () => {
+    it('returns notebook conversation ids', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest
+          .fn()
+          .mockResolvedValue({ conversation_ids: ['nb-1', 'nb-2'] }),
+      } as unknown as Response);
+
+      await expect(client.getNotebookConversationIds()).resolves.toEqual([
+        'nb-1',
+        'nb-2',
+      ]);
+      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/intelligent-assistant/notebook-conversation-ids',
+        expect.any(Object),
+      );
+    });
+
+    it('returns an empty list when the payload omits conversation_ids', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({}),
+      } as unknown as Response);
+
+      await expect(client.getNotebookConversationIds()).resolves.toEqual([]);
+    });
+
+    it('throws when the notebook id lookup fails', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      } as unknown as Response);
+
+      await expect(client.getNotebookConversationIds()).rejects.toThrow(
+        'failed to fetch data, status 500: Internal Server Error',
+      );
+    });
+  });
+
   describe('getConversationMessages', () => {
     it('should return empty array for temp conversation ID', async () => {
       const result = await client.getConversationMessages(TEMP_CONVERSATION_ID);
