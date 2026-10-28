@@ -54,7 +54,7 @@ import {
   BulkImportPage,
   bulkImportTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
-import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 import { SignalsDisplay } from '@backstage/plugin-signals';
 import { RbacPage } from '@backstage-community/plugin-rbac';
 import { Navigate, Route } from 'react-router-dom';
