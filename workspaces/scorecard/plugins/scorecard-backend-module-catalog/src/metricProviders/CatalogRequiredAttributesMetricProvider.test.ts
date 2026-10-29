@@ -418,7 +418,7 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
 
       expect(metrics).toHaveLength(1);
       metrics?.forEach(m => {
-        expect(m.type).toBe('number');
+        expect(m.type).toBe('string');
       });
     });
 
@@ -498,22 +498,16 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
   });
 
   describe('calculateMetrics', () => {
-    it('should return "found" status code for existing field', async () => {
+    it('should return "found" status string for existing field', async () => {
       const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig({ title: titleMetric() })),
       );
       const result = await provider?.calculateMetrics(componentEntity);
 
-      // The metric value is a numeric code mapping to "found"
-      const metrics = provider?.getMetrics();
-      const titleMet = metrics?.find(m => m.id === 'catalog.title');
-      const foundRule = titleMet?.thresholds.rules.find(r => r.key === 'found');
-      const expectedCode = Number(foundRule?.expression.replace('==', ''));
-
-      expect(result?.get('catalog.title')).toBe(expectedCode);
+      expect(result?.get('catalog.title')).toBe('found');
     });
 
-    it('should return "missed" status code for missing field', async () => {
+    it('should return "missed" status string for missing field', async () => {
       const entityWithoutTitle: Entity = {
         apiVersion: 'backstage.io/v1alpha1',
         kind: 'Component',
@@ -525,14 +519,7 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
       );
       const result = await provider?.calculateMetrics(entityWithoutTitle);
 
-      const metrics = provider?.getMetrics();
-      const titleMet = metrics?.find(m => m.id === 'catalog.title');
-      const missedRule = titleMet?.thresholds.rules.find(
-        r => r.key === 'missed',
-      );
-      const expectedCode = Number(missedRule?.expression.replace('==', ''));
-
-      expect(result?.get('catalog.title')).toBe(expectedCode);
+      expect(result?.get('catalog.title')).toBe('missed');
     });
 
     it('should return "ok" for valid lifecycle value', async () => {
@@ -541,12 +528,7 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
       );
       const result = await provider?.calculateMetrics(componentEntity);
 
-      const metrics = provider?.getMetrics();
-      const lcMetric = metrics?.find(m => m.id === 'catalog.lifecycle');
-      const okRule = lcMetric?.thresholds.rules.find(r => r.key === 'ok');
-      const expectedCode = Number(okRule?.expression.replace('==', ''));
-
-      expect(result?.get('catalog.lifecycle')).toBe(expectedCode);
+      expect(result?.get('catalog.lifecycle')).toBe('ok');
     });
 
     it('should return "invalid" for unknown lifecycle value', async () => {
@@ -559,14 +541,7 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
       );
       const result = await provider?.calculateMetrics(entity);
 
-      const metrics = provider?.getMetrics();
-      const lcMetric = metrics?.find(m => m.id === 'catalog.lifecycle');
-      const invalidRule = lcMetric?.thresholds.rules.find(
-        r => r.key === 'invalid',
-      );
-      const expectedCode = Number(invalidRule?.expression.replace('==', ''));
-
-      expect(result?.get('catalog.lifecycle')).toBe(expectedCode);
+      expect(result?.get('catalog.lifecycle')).toBe('invalid');
     });
 
     it('should return "missed" for missing lifecycle value', async () => {
@@ -579,14 +554,7 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
       );
       const result = await provider?.calculateMetrics(entity);
 
-      const metrics = provider?.getMetrics();
-      const lcMetric = metrics?.find(m => m.id === 'catalog.lifecycle');
-      const missedRule = lcMetric?.thresholds.rules.find(
-        r => r.key === 'missed',
-      );
-      const expectedCode = Number(missedRule?.expression.replace('==', ''));
-
-      expect(result?.get('catalog.lifecycle')).toBe(expectedCode);
+      expect(result?.get('catalog.lifecycle')).toBe('missed');
     });
 
     it('should handle empty string field with default mapping', async () => {
@@ -600,14 +568,7 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
       const result = await provider?.calculateMetrics(entity);
 
       // Default mapping: emptyString → 'missed'
-      const metrics = provider?.getMetrics();
-      const titleMet = metrics?.find(m => m.id === 'catalog.title');
-      const missedRule = titleMet?.thresholds.rules.find(
-        r => r.key === 'missed',
-      );
-      const expectedCode = Number(missedRule?.expression.replace('==', ''));
-
-      expect(result?.get('catalog.title')).toBe(expectedCode);
+      expect(result?.get('catalog.title')).toBe('missed');
     });
 
     it('should handle empty array field with default mapping', async () => {
@@ -628,14 +589,7 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
       );
       const result = await provider?.calculateMetrics(entity);
 
-      const metrics = provider?.getMetrics();
-      const tagsMetric = metrics?.find(m => m.id === 'catalog.tags');
-      const missedRule = tagsMetric?.thresholds.rules.find(
-        r => r.key === 'missed',
-      );
-      const expectedCode = Number(missedRule?.expression.replace('==', ''));
-
-      expect(result?.get('catalog.tags')).toBe(expectedCode);
+      expect(result?.get('catalog.tags')).toBe('missed');
     });
 
     it('should handle multiple metrics on the same entity', async () => {
