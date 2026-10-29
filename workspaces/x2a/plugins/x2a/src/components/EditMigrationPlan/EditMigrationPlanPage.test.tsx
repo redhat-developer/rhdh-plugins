@@ -435,7 +435,7 @@ describe('EditMigrationPlanPage', () => {
       expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     });
 
-    it('keeps the changes and shows the message when the SCM rejects the save', async () => {
+    it('keeps the dialog, the commit message and the changes when the SCM rejects the save', async () => {
       savePlan.mockResolvedValueOnce(
         fail(409, 'The file was changed after you opened it. Use Reload.'),
       );
@@ -444,17 +444,32 @@ describe('EditMigrationPlanPage', () => {
 
       click('Save');
       const dialog = await screen.findByRole('dialog');
+      fireEvent.change(within(dialog).getByTestId('commit-message'), {
+        target: { value: 'Keep this message' },
+      });
       fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
 
       expect(
-        await screen.findByText(
+        await within(dialog).findByText(
           'The file was changed after you opened it. Use Reload.',
         ),
       ).toBeInTheDocument();
-      await dialogClosed();
+      expect(within(dialog).getByTestId('commit-message')).toHaveValue(
+        'Keep this message',
+      );
       expect(await editor()).toHaveValue('# Changed');
-      expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
       expect(screen.queryByText(/A new commit was created/)).toBeNull();
+
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Keep editing' }),
+      );
+      await dialogClosed();
+      expect(
+        screen.getByText(
+          'The file was changed after you opened it. Use Reload.',
+        ),
+      ).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
     });
 
     it('shows a generic message when the save fails without details', async () => {
@@ -723,6 +738,38 @@ describe('EditMigrationPlanPage', () => {
 
       await type('# Plan');
       expect(beforeUnload().defaultPrevented).toBe(false);
+    });
+
+    it('asks before a breadcrumb leaves a dirty editor', async () => {
+      await renderPage();
+      await type('# Changed');
+
+      fireEvent.click(screen.getByRole('link', { name: 'My Project' }));
+
+      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(
+        await screen.findByText('Discard your changes?'),
+      ).toBeInTheDocument();
+
+      click('Discard changes');
+      await waitFor(() =>
+        expect(mockNavigate).toHaveBeenCalledWith('/x2a/projects/proj-1'),
+      );
+    });
+
+    it('follows a breadcrumb without asking when nothing changed', async () => {
+      await renderPage();
+      await editor();
+
+      const projectLink = screen.getByRole('link', { name: 'My Project' });
+      expect(projectLink).toHaveAttribute(
+        'href',
+        expect.stringContaining('/x2a/projects/proj-1'),
+      );
+      fireEvent.click(projectLink);
+
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(await editor()).toBeInTheDocument();
     });
 
     it('stops asking after the changes were saved', async () => {

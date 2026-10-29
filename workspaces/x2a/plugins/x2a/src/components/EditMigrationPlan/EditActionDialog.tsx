@@ -25,6 +25,7 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -37,6 +38,8 @@ export type EditActionDialogProps = {
   isBusy?: boolean;
   /** Adds a required, prefilled commit message field; its value is passed to onConfirm. */
   commitMessage?: { label: string; defaultValue: string };
+  /** Shown inside the dialog, so a failed confirm stays visible while it is open. */
+  error?: string;
   onConfirm: (commitMessage: string) => void;
   onClose: () => void;
 };
@@ -49,6 +52,7 @@ export const EditActionDialog = ({
   confirmLabel,
   isBusy = false,
   commitMessage,
+  error,
   onConfirm,
   onClose,
 }: EditActionDialogProps) => {
@@ -79,6 +83,11 @@ export const EditActionDialog = ({
         <Typography id="edit-action-dialog-message" variant="body1">
           {message}
         </Typography>
+        {error && (
+          <Alert severity="error" style={{ marginTop: 16 }}>
+            {error}
+          </Alert>
+        )}
         {commitMessage && (
           <TextField
             label={commitMessage.label}

@@ -42,8 +42,13 @@ export async function createRouter(deps: RouterDeps): Promise<express.Router> {
   // This endpoint needs express.raw() middleware to get raw body bytes for HMAC validation
   registerCollectArtifactsRoutes(mainRouter, deps);
 
-  // Create OpenAPI router for authenticated endpoints
-  const apiRouter = await createOpenApiRouter();
+  // Create OpenAPI router for authenticated endpoints.
+  // 512kb leaves room for a 100 kB migration plan after JSON escaping
+  // (quotes and backslashes double). The save handler rejects anything
+  // over MIGRATION_PLAN_MAX_CONTENT_BYTES with a clear error.
+  const apiRouter = await createOpenApiRouter({
+    middleware: [express.json({ limit: '512kb' })],
+  });
 
   registerProjectRoutes(apiRouter, deps);
   registerModuleRoutes(apiRouter, deps);
