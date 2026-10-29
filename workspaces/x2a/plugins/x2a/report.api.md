@@ -280,6 +280,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'editMigrationPlan.title': string;
     readonly 'editMigrationPlan.loading': string;
     readonly 'editMigrationPlan.actions.cancel': string;
+    readonly 'editMigrationPlan.actions.close': string;
     readonly 'editMigrationPlan.actions.reload': string;
     readonly 'editMigrationPlan.actions.save': string;
     readonly 'editMigrationPlan.breadcrumb': string;
@@ -315,11 +316,11 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'artifact.types.adversarial_report': string;
     readonly 'artifact.types.adversarial_report_json': string;
     readonly 'scaffolder.rulesAcceptance.required': string;
+    readonly 'scaffolder.rulesAcceptance.close': string;
     readonly 'scaffolder.rulesAcceptance.loadingRules': string;
     readonly 'scaffolder.rulesAcceptance.noRulesConfigured': string;
     readonly 'scaffolder.rulesAcceptance.fetchError': string;
     readonly 'scaffolder.rulesAcceptance.readMore': string;
-    readonly 'scaffolder.rulesAcceptance.close': string;
     readonly 'rulesPage.dialog.cancel': string;
     readonly 'rulesPage.dialog.updateError': string;
     readonly 'rulesPage.dialog.save': string;

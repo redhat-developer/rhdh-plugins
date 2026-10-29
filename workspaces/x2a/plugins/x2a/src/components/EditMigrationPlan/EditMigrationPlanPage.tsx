@@ -245,17 +245,22 @@ export const EditMigrationPlanPage = () => {
               </Button>
               <Button
                 variant="outlined"
-                disabled={saving}
+                disabled={saving || !dirty}
                 onClick={() => setDialog('reload')}
               >
                 {t('editMigrationPlan.actions.reload')}
               </Button>
+              {/* nothing to lose when unchanged: close without asking */}
               <Button
                 variant="outlined"
                 disabled={saving}
-                onClick={() => setDialog('cancel')}
+                onClick={() =>
+                  dirty ? setDialog('cancel') : navigate(backPath)
+                }
               >
-                {t('editMigrationPlan.actions.cancel')}
+                {dirty
+                  ? t('editMigrationPlan.actions.cancel')
+                  : t('editMigrationPlan.actions.close')}
               </Button>
               {dirty && (
                 <Typography variant="body2" color="textSecondary">
