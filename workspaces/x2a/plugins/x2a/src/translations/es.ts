@@ -308,6 +308,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'editMigrationPlan.title': 'Editar: {{document}}',
     'editMigrationPlan.breadcrumb': 'Editar plan de migración',
     'editMigrationPlan.actions.cancel': 'Cancelar',
+    'editMigrationPlan.actions.close': 'Cerrar',
     'editMigrationPlan.actions.reload': 'Recargar',
     'editMigrationPlan.actions.save': 'Guardar',
     'editMigrationPlan.tabs.edit': 'Editar',

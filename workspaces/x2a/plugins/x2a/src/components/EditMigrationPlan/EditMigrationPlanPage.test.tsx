@@ -362,6 +362,8 @@ describe('EditMigrationPlanPage', () => {
       });
       // The saved text is the new baseline: nothing left to save
       expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Reload' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
       expect(screen.queryByText('You have unsaved changes.')).toBeNull();
     });
 
@@ -550,6 +552,38 @@ describe('EditMigrationPlanPage', () => {
   });
 
   describe('cancelling', () => {
+    it('closes the unchanged document without asking', async () => {
+      await renderPage();
+      await editor();
+      expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
+
+      click('Close');
+
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(mockNavigate).toHaveBeenCalledWith('/x2a/projects/proj-1');
+    });
+
+    it('closes an unchanged module plan to the module page', async () => {
+      mockParams = { projectId: 'proj-1', moduleId: 'mod-1' };
+      await renderPage();
+      await editor();
+
+      click('Close');
+
+      expect(mockNavigate).toHaveBeenCalledWith(
+        '/x2a/projects/proj-1/modules/mod-1',
+      );
+    });
+
+    it('reads Cancel instead of Close once the document is edited', async () => {
+      await renderPage();
+      await type('# Changed');
+
+      expect(screen.queryByRole('button', { name: 'Close' })).toBeNull();
+      click('Cancel');
+      expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    });
+
     it('returns to the project page after confirmation', async () => {
       await renderPage();
       await type('# Changed');
@@ -567,7 +601,7 @@ describe('EditMigrationPlanPage', () => {
     it('returns to the module page for a module plan', async () => {
       mockParams = { projectId: 'proj-1', moduleId: 'mod-1' };
       await renderPage();
-      await editor();
+      await type('# Changed');
 
       click('Cancel');
       fireEvent.click(
@@ -641,13 +675,14 @@ describe('EditMigrationPlanPage', () => {
       expect(await editor()).toHaveValue('# Changed');
     });
 
-    it('also asks for confirmation when nothing changed', async () => {
+    it('is disabled until the document is edited', async () => {
       await renderPage();
       await editor();
+      expect(screen.getByRole('button', { name: 'Reload' })).toBeDisabled();
 
-      click('Reload');
+      await type('# Changed');
 
-      expect(await screen.findByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Reload' })).toBeEnabled();
     });
   });
 
