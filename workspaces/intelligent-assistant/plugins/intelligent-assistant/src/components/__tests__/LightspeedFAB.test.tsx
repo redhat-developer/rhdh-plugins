@@ -102,9 +102,10 @@ describe('LightspeedFAB', () => {
     ).toBeInTheDocument();
   });
 
-  it('should render FAB button when displayMode is docked', () => {
+  it('should render FAB when displayMode is docked and chatbot is closed', () => {
     renderWithContext(
       createContextValue({
+        isChatbotActive: false,
         displayMode: ChatbotDisplayMode.docked,
       }),
     );
@@ -113,6 +114,17 @@ describe('LightspeedFAB', () => {
     expect(
       screen.getByLabelText('Open intelligent assistant'),
     ).toBeInTheDocument();
+  });
+
+  it('should not render FAB when chatbot is open in docked mode', () => {
+    renderWithContext(
+      createContextValue({
+        isChatbotActive: true,
+        displayMode: ChatbotDisplayMode.docked,
+      }),
+    );
+
+    expect(screen.queryByTestId('lightspeed-fab')).not.toBeInTheDocument();
   });
 
   it('should not render FAB button when displayMode is embedded', () => {

@@ -33,6 +33,15 @@ export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
 
 // Actions
 export async function openChatbot(page: Page, t: LightspeedMessages) {
+  const chatbotAlreadyOpen = await page
+    .getByLabel('Chatbot', { exact: true })
+    .isVisible()
+    .catch(() => false);
+  if (chatbotAlreadyOpen) {
+    await waitForChatbotVisible(page);
+    return;
+  }
+
   const closeFab = page.getByRole('button', { name: t['tooltip.fab.close'] });
   if (!(await closeFab.isVisible().catch(() => false))) {
     await page.getByRole('button', { name: t['tooltip.fab.open'] }).click();
