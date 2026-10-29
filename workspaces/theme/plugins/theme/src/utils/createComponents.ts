@@ -59,6 +59,8 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     palette.rhdh?.primary || ({} as RHDHThemePalette['primary']);
   const rhdhSecondary =
     palette.rhdh?.secondary || ({} as RHDHThemePalette['secondary']);
+  const isDarkMode =
+    palette.mode === 'dark' || (palette as { type?: string }).type === 'dark';
 
   // PatternFly shell chrome (page inset + masthead + sidebar). Prefer
   // pageInsetBackgroundColor, then app-bar / sidebar tokens from app-config.
@@ -341,6 +343,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             backgroundColor: general.disabledBackground,
           },
         },
+        // Dark error.main is light enough for outlined/text on #292929; contained
+        // needs a darker fill so white labels stay AA (RHDHBUGS-2242).
+        ...(isDarkMode
+          ? {
+              containedError: {
+                backgroundColor: '#C62828',
+                color: '#ffffff',
+                '&:hover, &:focus-visible': {
+                  backgroundColor: '#B71C1C',
+                },
+              },
+            }
+          : {}),
         outlined: {
           borderRadius: '99em',
           border: `1px solid color-mix(in srgb, currentColor 50%, transparent)`,
