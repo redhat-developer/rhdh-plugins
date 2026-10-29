@@ -71,13 +71,20 @@
     "zod": "^3.25.76 || ^4.0.0"
   },
   "peerDependencies": {
+    "@material-ui/core": "^4.12.2",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
     "react-router-dom": "^6.30.6"
+  },
+  "peerDependenciesMeta": {
+    "@material-ui/core": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5",
     "@backstage/frontend-test-utils": "^0.6.3",
     "@backstage/test-utils": "^1.7.21",
+    "@material-ui/core": "^4.12.4",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
     "cross-fetch": "^4.0.0",

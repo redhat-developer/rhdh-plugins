@@ -17,7 +17,6 @@
 import { Content, InfoCard } from '@backstage/core-components';
 import { useTranslationRef } from '@backstage/frontend-plugin-api';
 
-import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import Link from '@mui/material/Link';
@@ -29,10 +28,14 @@ import { useLearningPathData } from '../hooks/useLearningPathData';
 import { LearningPathLink } from '../types';
 import { ErrorReport } from './ErrorReport';
 
-const infoCardSx: SxProps<Theme> = {
-  height: '100%',
-  '& .MuiPaper-root': {
-    height: '100%',
+const cardLinkSx: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  width: '100%',
+  minWidth: 0,
+  '& .MuiCard-root': {
+    flex: 1,
     transition: 'all 0.25s linear',
     textAlign: 'left',
     '&:hover': {
@@ -92,15 +95,27 @@ const LearningPathCards = () => {
   }
 
   return (
-    <Grid container justifyContent="center" alignContent="center" spacing={2}>
+    <Grid container spacing={2} alignItems="stretch">
       {data.map(p => (
-        <Grid item xs={12} sm={6} md={4} lg={3} xl={3} key={p.label}>
-          <Link href={p.url} target="_blank" underline="none">
-            <Box sx={infoCardSx}>
-              <InfoCard title={p.label} subheader={learningPathLengthInfo(p)}>
-                <Typography paragraph>{p.description}</Typography>
-              </InfoCard>
-            </Box>
+        <Grid
+          item
+          zeroMinWidth
+          xs={12}
+          sm={6}
+          md={4}
+          lg={3}
+          xl={3}
+          key={p.label}
+          sx={{ display: 'flex' }}
+        >
+          <Link href={p.url} target="_blank" underline="none" sx={cardLinkSx}>
+            <InfoCard
+              variant="fullHeight"
+              title={p.label}
+              subheader={learningPathLengthInfo(p)}
+            >
+              <Typography paragraph>{p.description}</Typography>
+            </InfoCard>
           </Link>
         </Grid>
       ))}
@@ -112,11 +127,7 @@ const LearningPathCards = () => {
 export const LearningPathsPage = () => {
   return (
     <Content>
-      <Grid container justifyContent="center">
-        <Grid item>
-          <LearningPathCards />
-        </Grid>
-      </Grid>
+      <LearningPathCards />
     </Content>
   );
 };
