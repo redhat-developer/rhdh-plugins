@@ -43,6 +43,7 @@
     "@backstage/ui": "backstage:^",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
+    "@red-hat-developer-hub/backstage-plugin-app-defaults": "^1.8.1",
     "@red-hat-developer-hub/backstage-plugin-bcc-test": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-bui-test": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-mui4-test": "workspace:^",

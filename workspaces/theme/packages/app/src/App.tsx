@@ -14,8 +14,5 @@
  */
 
 import { createApp } from '@backstage/frontend-defaults';
-import { navModule } from './modules';
 
-export default createApp({
-  features: [navModule],
-});
+export default createApp({});
