@@ -1019,6 +1019,238 @@ export const spec = {
         }
       }
     },
+    "/projects/{projectId}/migration-plan/read": {
+      "post": {
+        "summary": "Reads the project migration plan Markdown document from the target SCM repository.",
+        "description": "POST is used so the user's SCM token travels in the body, not in the URL. The document path is resolved server-side from the stored artifact.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MigrationPlanReadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The document content and its version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPlanDocument"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing token, unsupported SCM provider or unsafe document path"
+          },
+          "401": {
+            "description": "The SCM rejected the token"
+          },
+          "403": {
+            "description": "The token is not allowed to read the repository"
+          },
+          "404": {
+            "description": "Project, module, document, repository or branch not found"
+          },
+          "503": {
+            "description": "The SCM host is unreachable or failed"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/migration-plan": {
+      "put": {
+        "summary": "Commits a new version of the project migration plan Markdown document to the target SCM repository.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MigrationPlanSaveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The document was committed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPlanSaveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body (including a document above 100 kB), missing token, unsupported SCM provider or unsafe document path"
+          },
+          "401": {
+            "description": "The SCM rejected the token"
+          },
+          "403": {
+            "description": "The token is not allowed to push to the branch"
+          },
+          "404": {
+            "description": "Project, module, document, repository or branch not found"
+          },
+          "409": {
+            "description": "The document changed since it was read, a job is running, or the branch is protected"
+          },
+          "503": {
+            "description": "The SCM host is unreachable or failed"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/modules/{moduleId}/migration-plan/read": {
+      "post": {
+        "summary": "Reads the module migration plan Markdown document from the target SCM repository.",
+        "description": "POST is used so the user's SCM token travels in the body, not in the URL. The document path is resolved server-side from the stored artifact.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MigrationPlanReadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The document content and its version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPlanDocument"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing token, unsupported SCM provider or unsafe document path"
+          },
+          "401": {
+            "description": "The SCM rejected the token"
+          },
+          "403": {
+            "description": "The token is not allowed to read the repository"
+          },
+          "404": {
+            "description": "Project, module, document, repository or branch not found"
+          },
+          "503": {
+            "description": "The SCM host is unreachable or failed"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/modules/{moduleId}/migration-plan": {
+      "put": {
+        "summary": "Commits a new version of the module migration plan Markdown document to the target SCM repository.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MigrationPlanSaveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The document was committed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MigrationPlanSaveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body (including a document above 100 kB), missing token, unsupported SCM provider or unsafe document path"
+          },
+          "401": {
+            "description": "The SCM rejected the token"
+          },
+          "403": {
+            "description": "The token is not allowed to push to the branch"
+          },
+          "404": {
+            "description": "Project, module, document, repository or branch not found"
+          },
+          "409": {
+            "description": "The document changed since it was read, a job is running, or the branch is protected"
+          },
+          "503": {
+            "description": "The SCM host is unreachable or failed"
+          }
+        }
+      }
+    },
     "/projects/{projectId}/log": {
       "get": {
         "summary": "Returns logs for the init phase",
@@ -1691,6 +1923,68 @@ export const spec = {
         },
         "required": [
           "token"
+        ]
+      },
+      "MigrationPlanReadRequest": {
+        "type": "object",
+        "properties": {
+          "targetRepoAuth": {
+            "$ref": "#/components/schemas/GitRepoAuth"
+          }
+        }
+      },
+      "MigrationPlanDocument": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "The Markdown document"
+          },
+          "version": {
+            "type": "string",
+            "description": "Opaque version of the document (e.g. blob sha), to be sent back on save"
+          }
+        },
+        "required": [
+          "content",
+          "version"
+        ]
+      },
+      "MigrationPlanSaveRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "The new Markdown document"
+          },
+          "message": {
+            "type": "string",
+            "description": "Commit message"
+          },
+          "version": {
+            "type": "string",
+            "description": "The version returned when the document was read"
+          },
+          "targetRepoAuth": {
+            "$ref": "#/components/schemas/GitRepoAuth"
+          }
+        },
+        "required": [
+          "content",
+          "message",
+          "version"
+        ]
+      },
+      "MigrationPlanSaveResult": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "Version of the committed document"
+          }
+        },
+        "required": [
+          "version"
         ]
       },
       "AAPCredentials": {

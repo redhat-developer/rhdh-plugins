@@ -298,6 +298,51 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Erneute Synchronisierung des Migrationsplans für Projekt „{{name}}“ fehlgeschlagen',
     'resyncMigrationPlan.errorStart':
       'Erneute Synchronisierung des Migrationsplans konnte nicht gestartet werden',
+    'editMigrationPlan.button.edit': 'Dieses Dokument bearbeiten',
+    'editMigrationPlan.button.bitbucketUnsupported':
+      'Direktes Bearbeiten ist für Bitbucket-Repositories noch nicht verfügbar. Öffnen Sie das Dokument über den Link daneben in Bitbucket und bearbeiten Sie es dort.',
+    'editMigrationPlan.title': 'Bearbeiten: {{document}}',
+    'editMigrationPlan.breadcrumb': 'Migrationsplan bearbeiten',
+    'editMigrationPlan.actions.cancel': 'Abbrechen',
+    'editMigrationPlan.actions.close': 'Schließen',
+    'editMigrationPlan.actions.reload': 'Neu laden',
+    'editMigrationPlan.actions.save': 'Speichern',
+    'editMigrationPlan.tabs.edit': 'Bearbeiten',
+    'editMigrationPlan.tabs.preview': 'Vorschau',
+    'editMigrationPlan.editorLabel': 'Markdown-Quelltext',
+    'editMigrationPlan.loading': 'Dokument wird aus dem Repository geladen…',
+    'editMigrationPlan.unsavedChanges': 'Sie haben ungespeicherte Änderungen.',
+    'editMigrationPlan.authorize.message':
+      'Zum Lesen und Committen des Dokuments ist der Zugriff auf {{provider}} erforderlich. Autorisieren Sie ihn, um fortzufahren.',
+    'editMigrationPlan.authorize.button': '{{provider}} autorisieren',
+    'editMigrationPlan.authorize.error':
+      'Zugriffstoken für {{provider}} konnte nicht abgerufen werden: {{message}}',
+    'editMigrationPlan.notAllowed':
+      'Sie dürfen dieses Projekt nicht bearbeiten. Bitten Sie den Projektinhaber oder eine Administratorin bzw. einen Administrator um Zugriff.',
+    'editMigrationPlan.loadError':
+      'Dokument konnte nicht geladen werden. Versuchen Sie es mit der Schaltfläche „Neu laden“ erneut.',
+    'editMigrationPlan.saveError':
+      'Dokument konnte nicht gespeichert werden. Ihre Änderungen bleiben im Editor erhalten.',
+    'editMigrationPlan.saved':
+      'Gespeichert. Im Repository wurde ein neuer Commit erstellt.',
+    'editMigrationPlan.resyncNote':
+      'Die Modulliste wird durch das Bearbeiten des Dokuments nicht aktualisiert. Verwenden Sie anschließend „Migrationsplan erneut synchronisieren“ auf der Projektseite, um Änderungen wie hinzugefügte oder entfernte Module zu übernehmen. Um ein Modul zu entfernen, entfernen Sie es aus dem gesamten Dokument: Die Modulliste wird von einem KI-Modell aus dem gesamten Text neu gelesen, daher kann ein Modul, das noch an anderer Stelle erwähnt wird (auch in Angaben wie „drei Module“), erhalten bleiben.',
+    'editMigrationPlan.tooLarge':
+      'Das Dokument ist zu groß, um von hier aus gespeichert zu werden (Limit: {{limit}} kB). Bearbeiten Sie es direkt im Repository.',
+    'editMigrationPlan.dialogs.keepEditing': 'Weiter bearbeiten',
+    'editMigrationPlan.dialogs.cancel.title': 'Änderungen verwerfen?',
+    'editMigrationPlan.dialogs.cancel.message':
+      'Alle ungespeicherten Änderungen gehen verloren und Sie kehren zur vorherigen Seite zurück.',
+    'editMigrationPlan.dialogs.cancel.confirm': 'Änderungen verwerfen',
+    'editMigrationPlan.dialogs.reload.title': 'Aus dem Repository neu laden?',
+    'editMigrationPlan.dialogs.reload.message':
+      'Alle ungespeicherten Änderungen gehen verloren und die neueste Version des Dokuments wird aus dem Repository geladen.',
+    'editMigrationPlan.dialogs.reload.confirm': 'Neu laden',
+    'editMigrationPlan.dialogs.save.title': 'Änderungen speichern?',
+    'editMigrationPlan.dialogs.save.message':
+      'Auf dem Branch „{{branch}}“ des Ziel-Repositorys wird ein neuer Commit mit Ihren Änderungen erstellt.',
+    'editMigrationPlan.dialogs.save.commitMessageLabel': 'Commit-Nachricht',
+    'editMigrationPlan.dialogs.save.confirm': 'Speichern',
     'scaffolder.rulesAcceptance.loadingRules': 'Regeln werden geladen...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'Es sind keine Regeln konfiguriert.',

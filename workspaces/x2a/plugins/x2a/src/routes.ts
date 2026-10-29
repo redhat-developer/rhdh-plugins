@@ -33,6 +33,18 @@ export const projectRouteRef = createSubRouteRef({
   path: '/projects/:projectId',
 });
 
+export const projectPlanEditRouteRef = createSubRouteRef({
+  id: 'x2a.project.plan.edit',
+  parent: rootRouteRef,
+  path: '/projects/:projectId/plan/edit',
+});
+
+export const modulePlanEditRouteRef = createSubRouteRef({
+  id: 'x2a.module.plan.edit',
+  parent: rootRouteRef,
+  path: '/projects/:projectId/modules/:moduleId/plan/edit',
+});
+
 export const rulesRouteRef = createSubRouteRef({
   id: 'x2a.rules',
   parent: rootRouteRef,

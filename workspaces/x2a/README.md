@@ -46,7 +46,7 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
 
    **GitHub OAuth**: [Create a GitHub OAuth application](https://github.com/settings/developers).
 
-   **GitLab OAuth:** When [creating a GitLab OAuth application](https://gitlab.com/-/user_settings/applications), request scopes per [official documentation](https://backstage.io/docs/auth/gitlab/provider/).
+   **GitLab OAuth:** When [creating a GitLab OAuth application](https://gitlab.com/-/user_settings/applications), request scopes per [official documentation](https://backstage.io/docs/auth/gitlab/provider/). In addition, request the `api` scope, which is required to [edit migration plans](#editing-migration-plans) (`write_repository` does not support API authentication).
 
    Cloud-based **Bitbucket.org OAuth:** When creating a Bitbucket OAuth consumer via `https://bitbucket.org/[YOUR_WORKSPACE]/workspace/settings/api`, request scopes per [official documentation](https://backstage.io/docs/auth/bitbucket/provider/), which include:
    - `account:read`
@@ -115,6 +115,16 @@ integrations:
 ```
 
 Without this configuration, only the well-known cloud hosts (`github.com`, `bitbucket.org`) are detected by URL; all other hosts fall back to GitLab behavior.
+
+## Editing Migration Plans
+
+Users with write access to a project can edit the project and module migration plans (Markdown files in the target repository) with the pencil next to the document link. Saving commits to the target branch through the SCM REST API, using the user's OAuth token (or `x2a.git.targetRepo.token` if the request carries none).
+
+- **SCM providers:** GitHub (including GitHub Enterprise) and GitLab. Bitbucket is not supported yet; edit the document there through the link.
+- **GitLab scope:** the OAuth application must allow the `api` scope, see [Installation](#installation). Users are asked to re-consent when they first edit a document.
+- **Concurrent changes:** a save is rejected (HTTP 409) if the file changed in the repository since it was opened, or while a job that may rewrite it is running.
+- **Size limit:** documents above 100 kB cannot be saved.
+- **Module list:** editing the project plan does not change the module list. Run _Resync migration plan_ afterwards. The list is re-extracted by an AI model from the whole document, so to remove a module delete every mention of it, including counts such as "three modules".
 
 ## Adding New API Endpoints
 

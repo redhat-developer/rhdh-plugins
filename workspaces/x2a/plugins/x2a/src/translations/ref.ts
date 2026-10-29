@@ -343,6 +343,67 @@ export const x2aPluginMessages = {
     error: 'Failed to resync migration plan for project "{{name}}"',
     errorStart: 'Failed to start migration plan resync',
   },
+  editMigrationPlan: {
+    button: {
+      edit: 'Edit this document',
+      bitbucketUnsupported:
+        "Direct editing isn't available for Bitbucket repositories yet. Use the link next to it to open the document in Bitbucket and edit it there.",
+    },
+    title: 'Edit: {{document}}',
+    breadcrumb: 'Edit migration plan',
+    actions: {
+      cancel: 'Cancel',
+      close: 'Close',
+      reload: 'Reload',
+      save: 'Save',
+    },
+    tabs: {
+      edit: 'Edit',
+      preview: 'Preview',
+    },
+    editorLabel: 'Markdown source',
+    loading: 'Loading the document from the repository…',
+    unsavedChanges: 'You have unsaved changes.',
+    authorize: {
+      message:
+        'Access to {{provider}} is needed to read and commit the document. Authorize it to continue.',
+      button: 'Authorize {{provider}}',
+      error: 'Could not get an access token for {{provider}}: {{message}}',
+    },
+    notAllowed:
+      'You are not allowed to edit this project. Ask the project owner or an administrator for access.',
+    loadError:
+      'Failed to load the document. Try again using the Reload button.',
+    saveError:
+      'Failed to save the document. Your changes are kept in the editor.',
+    saved: 'Saved. A new commit was created in the repository.',
+    resyncNote:
+      'The module list is not updated by editing the document. Use "Resync migration plan" on the project page afterwards to apply changes such as added or removed modules. To remove a module, remove it from the whole document: the module list is re-read by an AI model from the entire text, so a module that is still mentioned elsewhere (including counts such as "three modules") may be kept.',
+    tooLarge:
+      'The document is too large to be saved from here (the limit is {{limit}} kB). Edit it directly in the repository.',
+    dialogs: {
+      keepEditing: 'Keep editing',
+      cancel: {
+        title: 'Discard your changes?',
+        message:
+          'All unsaved changes will be lost and you will return to the previous page.',
+        confirm: 'Discard changes',
+      },
+      reload: {
+        title: 'Reload from the repository?',
+        message:
+          'All unsaved changes will be lost and the latest version of the document is loaded from the repository.',
+        confirm: 'Reload',
+      },
+      save: {
+        title: 'Save your changes?',
+        message:
+          'A new commit with your changes will be created on branch "{{branch}}" of the target repository.',
+        commitMessageLabel: 'Commit message',
+        confirm: 'Save',
+      },
+    },
+  },
   artifact: {
     types: {
       migration_plan: 'Project Migration Plan',

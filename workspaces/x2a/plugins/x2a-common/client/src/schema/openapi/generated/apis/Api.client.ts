@@ -27,6 +27,10 @@ import { AdversarialAgent } from '../models/AdversarialAgent.model';
 import { AdversarialAgentsGet200Response } from '../models/AdversarialAgentsGet200Response.model';
 import { AdversarialAgentsPostRequest } from '../models/AdversarialAgentsPostRequest.model';
 import { MigrationPhase } from '../models/MigrationPhase.model';
+import { MigrationPlanDocument } from '../models/MigrationPlanDocument.model';
+import { MigrationPlanReadRequest } from '../models/MigrationPlanReadRequest.model';
+import { MigrationPlanSaveRequest } from '../models/MigrationPlanSaveRequest.model';
+import { MigrationPlanSaveResult } from '../models/MigrationPlanSaveResult.model';
 import { Module } from '../models/Module.model';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
@@ -175,6 +179,24 @@ export type ProjectsProjectIdLogGet = {
 /**
  * @public
  */
+export type ProjectsProjectIdMigrationPlanPut = {
+  path: {
+    projectId: string;
+  };
+  body: MigrationPlanSaveRequest;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdMigrationPlanReadPost = {
+  path: {
+    projectId: string;
+  };
+  body: MigrationPlanReadRequest;
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdModulesGet = {
   path: {
     projectId: string;
@@ -211,6 +233,26 @@ export type ProjectsProjectIdModulesModuleIdLogGet = {
     streaming?: boolean;
     phase: MigrationPhase;
   };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesModuleIdMigrationPlanPut = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  body: MigrationPlanSaveRequest;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesModuleIdMigrationPlanReadPost = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  body: MigrationPlanReadRequest;
 };
 /**
  * @public
@@ -620,6 +662,63 @@ export class DefaultApiClient {
   }
 
   /**
+   * Commits a new version of the project migration plan Markdown document to the target SCM repository.
+   * @param projectId -
+   * @param migrationPlanSaveRequest -
+   */
+  public async projectsProjectIdMigrationPlanPut(
+    // @ts-ignore
+    request: ProjectsProjectIdMigrationPlanPut,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<MigrationPlanSaveResult>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/migration-plan`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'PUT',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * POST is used so the user\'s SCM token travels in the body, not in the URL. The document path is resolved server-side from the stored artifact.
+   * Reads the project migration plan Markdown document from the target SCM repository.
+   * @param projectId -
+   * @param migrationPlanReadRequest -
+   */
+  public async projectsProjectIdMigrationPlanReadPost(
+    // @ts-ignore
+    request: ProjectsProjectIdMigrationPlanReadPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<MigrationPlanDocument>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/migration-plan/read`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
    * Returns a list of modules for a project
    * @param projectId -
    */
@@ -731,6 +830,67 @@ export class DefaultApiClient {
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
       method: 'GET',
+    });
+  }
+
+  /**
+   * Commits a new version of the module migration plan Markdown document to the target SCM repository.
+   * @param projectId -
+   * @param moduleId -
+   * @param migrationPlanSaveRequest -
+   */
+  public async projectsProjectIdModulesModuleIdMigrationPlanPut(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesModuleIdMigrationPlanPut,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<MigrationPlanSaveResult>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules/{moduleId}/migration-plan`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      moduleId: request.path.moduleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'PUT',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * POST is used so the user\'s SCM token travels in the body, not in the URL. The document path is resolved server-side from the stored artifact.
+   * Reads the module migration plan Markdown document from the target SCM repository.
+   * @param projectId -
+   * @param moduleId -
+   * @param migrationPlanReadRequest -
+   */
+  public async projectsProjectIdModulesModuleIdMigrationPlanReadPost(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesModuleIdMigrationPlanReadPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<MigrationPlanDocument>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules/{moduleId}/migration-plan/read`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      moduleId: request.path.moduleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
     });
   }
 

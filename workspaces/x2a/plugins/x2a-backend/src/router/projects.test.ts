@@ -952,6 +952,7 @@ describe('createRouter – projects', () => {
           getJobLogs: jest.fn().mockResolvedValue(''),
           deleteJob: jest.fn().mockResolvedValue(undefined),
         },
+        scmFileStore: { getFile: jest.fn(), putFile: jest.fn() },
       });
       const app = express();
       app.use(router);

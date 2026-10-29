@@ -129,3 +129,13 @@ export const MAX_RULE_DESCRIPTION_CHARS = 50_000;
  * @public
  */
 export const MAX_ACCEPTED_RULES_TOTAL_CHARS = 50_000;
+
+/**
+ * Maximum size of a migration plan document that can be saved, in bytes.
+ *
+ * Enforced by the editor and by the save endpoints. The API JSON parser accepts
+ * a larger body so this check still runs after the document is JSON-escaped.
+ *
+ * @public
+ */
+export const MIGRATION_PLAN_MAX_CONTENT_BYTES = 100 * 1024;
