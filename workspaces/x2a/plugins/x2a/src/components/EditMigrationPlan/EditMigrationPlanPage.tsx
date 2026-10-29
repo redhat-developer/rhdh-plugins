@@ -220,7 +220,7 @@ export const EditMigrationPlanPage = () => {
               <TextField
                 className={classes.section}
                 value={editor.content}
-                onChange={e => editor.setContent(e.target.value)}
+                onChange={e => editor.editContent(e.target.value)}
                 disabled={saving}
                 multiline
                 minRows={20}
