@@ -23,6 +23,7 @@ import {
   findMigrationPlanArtifact,
   findModuleMigrationPlanArtifact,
   JobStatus,
+  MIGRATION_PLAN_MAX_CONTENT_BYTES,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -43,6 +44,16 @@ const saveRequestSchema = z.object({
   version: z.string().min(1),
   targetRepoAuth: repoAuthSchema.optional(),
 });
+
+const contentTooLarge = (content: string): boolean =>
+  Buffer.byteLength(content, 'utf8') > MIGRATION_PLAN_MAX_CONTENT_BYTES;
+
+const contentTooLargeError = () =>
+  new InputError(
+    `The document is too large to be saved from here (the limit is ${
+      MIGRATION_PLAN_MAX_CONTENT_BYTES / 1024
+    } kB). Edit it directly in the repository.`,
+  );
 
 /** What a scope (project or module plan) contributes to the shared handlers. */
 interface PlanTarget {
@@ -212,6 +223,9 @@ export function registerMigrationPlanRoutes(
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
       const { content, message, version, targetRepoAuth } = parsedBody.data;
+      if (contentTooLarge(content)) {
+        throw contentTooLargeError();
+      }
 
       const target = await resolveTarget(req);
       // Before the path lookup: while a job (re)generates the document, its

@@ -1114,7 +1114,7 @@ export const spec = {
             }
           },
           "400": {
-            "description": "Invalid body (including a document above the request body size limit of about 100 kB), missing token, unsupported SCM provider or unsafe document path"
+            "description": "Invalid body (including a document above 100 kB), missing token, unsupported SCM provider or unsafe document path"
           },
           "401": {
             "description": "The SCM rejected the token"
@@ -1238,7 +1238,7 @@ export const spec = {
             }
           },
           "400": {
-            "description": "Invalid body (including a document above the request body size limit of about 100 kB), missing token, unsupported SCM provider or unsafe document path"
+            "description": "Invalid body (including a document above 100 kB), missing token, unsupported SCM provider or unsafe document path"
           },
           "401": {
             "description": "The SCM rejected the token"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import {
@@ -79,6 +79,7 @@ export const EditMigrationPlanPage = () => {
 
   const editor = useMigrationPlanEditor({ projectId, moduleId });
   const [dialog, setDialog] = useState<ActionDialog>();
+  const [leaveTo, setLeaveTo] = useState<string>();
   const [preview, setPreview] = useState(false);
 
   const { dirty, status, saving } = editor;
@@ -109,8 +110,10 @@ export const EditMigrationPlanPage = () => {
   const limitKb = MIGRATION_PLAN_MAX_CONTENT_BYTES / 1024;
 
   const confirmSave = async (message: string) => {
-    await editor.save(message);
-    setDialog(undefined);
+    const saved = await editor.save(message);
+    if (saved) {
+      setDialog(undefined);
+    }
   };
 
   const confirmReload = () => {
@@ -119,9 +122,30 @@ export const EditMigrationPlanPage = () => {
   };
 
   const confirmCancel = () => {
+    const target = leaveTo ?? backPath;
     setDialog(undefined);
-    navigate(backPath);
+    setLeaveTo(undefined);
+    navigate(target);
   };
+
+  const askToLeave = (to: string) => {
+    setLeaveTo(to);
+    setDialog('cancel');
+  };
+
+  /** In-app links do not fire beforeunload, so a dirty editor confirms here. */
+  const guardNavigation =
+    (to: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+      if (saving) {
+        event.preventDefault();
+        return;
+      }
+      if (!dirty) {
+        return;
+      }
+      event.preventDefault();
+      askToLeave(to);
+    };
 
   const renderBody = () => {
     switch (status) {
@@ -179,7 +203,7 @@ export const EditMigrationPlanPage = () => {
       default:
         return (
           <>
-            {editor.saveError && (
+            {editor.saveError && dialog !== 'save' && (
               <Alert severity="error" className={classes.section}>
                 {editor.saveError}
               </Alert>
@@ -255,7 +279,7 @@ export const EditMigrationPlanPage = () => {
                 variant="outlined"
                 disabled={saving}
                 onClick={() =>
-                  dirty ? setDialog('cancel') : navigate(backPath)
+                  dirty ? askToLeave(backPath) : navigate(backPath)
                 }
               >
                 {dirty
@@ -280,14 +304,22 @@ export const EditMigrationPlanPage = () => {
       />
       <Content>
         <Breadcrumbs aria-label="breadcrumb" separator=">">
-          <Link to={rootPath()}>{t('page.title')}</Link>
+          <Link to={rootPath()} onClick={guardNavigation(rootPath())}>
+            {t('page.title')}
+          </Link>
           {/* at most three items: Backstage collapses longer breadcrumbs */}
           {moduleId ? (
-            <Link to={modulePath({ projectId, moduleId })}>
+            <Link
+              to={modulePath({ projectId, moduleId })}
+              onClick={guardNavigation(modulePath({ projectId, moduleId }))}
+            >
               {editor.module?.name ?? t('modulePage.title')}
             </Link>
           ) : (
-            <Link to={projectPath({ projectId })}>
+            <Link
+              to={projectPath({ projectId })}
+              onClick={guardNavigation(projectPath({ projectId }))}
+            >
               {editor.project?.name ?? t('projectPage.title')}
             </Link>
           )}
@@ -320,6 +352,7 @@ export const EditMigrationPlanPage = () => {
         })}
         confirmLabel={t('editMigrationPlan.dialogs.save.confirm')}
         isBusy={saving}
+        error={editor.saveError}
         commitMessage={{
           label: t('editMigrationPlan.dialogs.save.commitMessageLabel'),
           defaultValue: defaultCommitMessage,

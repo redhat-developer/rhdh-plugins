@@ -37,11 +37,13 @@ export const staleVersionError = (ctx: ScmErrorContext) =>
       'Copy your changes somewhere safe, use Reload to get the latest version and apply them again.',
   );
 
-export const pushDeniedError = (ctx: ScmErrorContext) =>
+export const pushDeniedError = (ctx: ScmErrorContext, detail?: string) =>
   new NotAllowedError(
-    `You are not allowed to push to branch "${ctx.branch}" of ${ctx.repoUrl}. ` +
-      'The branch may be protected. Ask a repository administrator for write access to the branch, ' +
-      `or edit the document directly in ${ctx.providerLabel}.`,
+    `You are not allowed to push to branch "${ctx.branch}" of ${ctx.repoUrl}. ${
+      detail ? `${ctx.providerLabel} said: ${detail}. ` : ''
+    }The branch may be protected, or the changes were rejected by a repository rule. ` +
+      `Ask a repository administrator for write access to the branch, ` +
+      `remove anything the rule rejects, or edit the document directly in ${ctx.providerLabel}.`,
   );
 
 export const networkError = (ctx: ScmErrorContext, cause: unknown) =>
