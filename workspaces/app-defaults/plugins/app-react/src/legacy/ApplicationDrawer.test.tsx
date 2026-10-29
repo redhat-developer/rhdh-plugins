@@ -15,6 +15,12 @@
  */
 
 import { render, screen, act } from '@testing-library/react';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+// eslint-disable-next-line no-restricted-imports -- DrawerBreakpointTheme nests v4
+import {
+  createMuiTheme,
+  ThemeProvider as ThemeProviderV4,
+} from '@material-ui/core/styles';
 
 import { useAppDrawer } from '../drawer/hooks/useAppDrawer';
 import { drawerStore } from '../drawer/utils/drawerStore';
@@ -32,11 +38,17 @@ function CloseButton({ id }: { id: string }) {
 }
 
 function renderWithProvider(contents: AppDrawerContent[]) {
+  const themeV5 = createTheme();
+  const themeV4 = createMuiTheme();
   return render(
-    <ApplicationDrawer contents={contents}>
-      <OpenButton id="test-drawer" />
-      <CloseButton id="test-drawer" />
-    </ApplicationDrawer>,
+    <ThemeProvider theme={themeV5}>
+      <ThemeProviderV4 theme={themeV4}>
+        <ApplicationDrawer contents={contents}>
+          <OpenButton id="test-drawer" />
+          <CloseButton id="test-drawer" />
+        </ApplicationDrawer>
+      </ThemeProviderV4>
+    </ThemeProvider>,
   );
 }
 

@@ -17,6 +17,7 @@
 import { useEffect, useRef } from 'react';
 
 import { useAppDrawer } from '../drawer/hooks/useAppDrawer';
+import { DrawerBreakpointTheme } from '../drawer/utils/drawerBreakpointTheme';
 import { DrawerPanel } from './DrawerPanel';
 import type { AppDrawerContent } from '../drawer/types';
 
@@ -38,6 +39,10 @@ export interface ApplicationDrawerProps {
  * Wraps the main app content and renders the active drawer beside it.
  * Shifts the content area via margin-right so the persistent drawer
  * doesn't overlay the page.
+ *
+ * While the drawer is open, MUI v4 + v5 breakpoints for page content are
+ * raised by the drawer width so Grid / useMediaQuery use available width
+ * (`viewport - drawer`) with the same cascade as before.
  *
  * @public
  */
@@ -64,6 +69,7 @@ export const ApplicationDrawer = ({
   const activeContent = contents.find(c => c.id === activeDrawerId);
   const isOpen = !!activeContent;
   const width = activeDrawerId ? getWidth(activeDrawerId) : 0;
+  const breakpointOffset = isOpen ? width : 0;
 
   useEffect(() => {
     if (isOpen) {
@@ -87,7 +93,9 @@ export const ApplicationDrawer = ({
           marginRight: isOpen ? `${width}px` : undefined,
         }}
       >
-        {children}
+        <DrawerBreakpointTheme offset={breakpointOffset}>
+          {children}
+        </DrawerBreakpointTheme>
       </div>
       {contents.length > 0 && (
         <DrawerPanel
