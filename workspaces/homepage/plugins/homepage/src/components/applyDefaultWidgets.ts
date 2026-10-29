@@ -29,40 +29,35 @@ export function getHomepageWidgetExtensionName(
 }
 
 /**
- * Filter/order NFS widgets using backend persona visibility (`defaultWidgets`).
- * Applies per-widget layouts from the visible default-widget entries.
+ * Apply backend default-widget layouts to NFS widgets without filtering.
+ *
+ * All input widgets are returned. Widgets whose extension name matches a
+ * `defaultWidgets` entry receive the backend-supplied layout; all other
+ * widgets are included unchanged. Backend entries that don't match any
+ * NFS widget are ignored.
  */
 export function applyDefaultWidgetsToNfsWidgets(
   widgets: HomePageCardConfig[],
   defaultWidgets: VisibleDefaultWidget[],
 ): HomePageCardConfig[] {
-  const byExtensionName = new Map<string, HomePageCardConfig>();
-  for (const widget of widgets) {
+  const layoutByRef = new Map<string, Record<string, Layout> | undefined>();
+  for (const dw of defaultWidgets) {
+    layoutByRef.set(dw.ref, dw.layout as Record<string, Layout> | undefined);
+  }
+
+  return widgets.map(widget => {
     const name = getHomepageWidgetExtensionName(widget);
-    if (name) {
-      byExtensionName.set(name, widget);
-    }
-  }
+    const layout = name ? layoutByRef.get(name) : undefined;
 
-  const result: HomePageCardConfig[] = [];
-
-  for (const defaultWidget of defaultWidgets) {
-    const match = byExtensionName.get(defaultWidget.ref);
-    if (!match) {
-      continue;
+    if (layout) {
+      return {
+        ...widget,
+        breakpointLayouts: layout as Record<Breakpoint, Layout>,
+      };
     }
 
-    const layout = defaultWidget.layout as Record<string, Layout> | undefined;
-
-    result.push({
-      ...match,
-      breakpointLayouts: layout
-        ? (layout as Record<Breakpoint, Layout>)
-        : match.breakpointLayouts,
-    });
-  }
-
-  return result;
+    return widget;
+  });
 }
 
 /** @internal exported for tests */

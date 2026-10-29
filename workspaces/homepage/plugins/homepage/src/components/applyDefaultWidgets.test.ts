@@ -36,7 +36,7 @@ function widget(
 }
 
 describe('applyDefaultWidgetsToNfsWidgets', () => {
-  it('filters and orders by visible defaultWidgets refs', () => {
+  it('returns all widgets even when only some match defaultWidgets refs', () => {
     const widgets = [
       widget('rhdh-onboarding-section'),
       widget('rhdh-entity-section'),
@@ -48,30 +48,15 @@ describe('applyDefaultWidgetsToNfsWidgets', () => {
       { id: 'onboarding', ref: 'rhdh-onboarding-section' },
     ]);
 
+    expect(result).toHaveLength(3);
     expect(result.map(getHomepageWidgetExtensionName)).toEqual([
-      'featured-docs-card',
       'rhdh-onboarding-section',
+      'rhdh-entity-section',
+      'featured-docs-card',
     ]);
   });
 
-  it('matches defaultWidgets refs to NFS extension names', () => {
-    const widgets = [
-      widget('quickaccess-card'),
-      widget('recently-visited-card'),
-    ];
-
-    const result = applyDefaultWidgetsToNfsWidgets(widgets, [
-      { id: 'qa', ref: 'quickaccess-card' },
-      { id: 'recent', ref: 'recently-visited-card' },
-    ]);
-
-    expect(result.map(getHomepageWidgetExtensionName)).toEqual([
-      'quickaccess-card',
-      'recently-visited-card',
-    ]);
-  });
-
-  it('applies layout from defaultWidgets', () => {
+  it('applies layout from defaultWidgets to matching widgets', () => {
     const widgets = [widget('rhdh-entity-section')];
     const result = applyDefaultWidgetsToNfsWidgets(widgets, [
       {
@@ -84,7 +69,7 @@ describe('applyDefaultWidgetsToNfsWidgets', () => {
     expect(result[0].breakpointLayouts).toEqual({ xl: { w: 12, h: 7 } });
   });
 
-  it('skips defaultWidgets whose ref does not match any mountable widget', () => {
+  it('ignores defaultWidgets whose ref does not match any NFS widget', () => {
     const widgets = [widget('quickaccess-card')];
     const result = applyDefaultWidgetsToNfsWidgets(widgets, [
       { id: 'missing', ref: 'homepage.missing' },
@@ -110,5 +95,33 @@ describe('applyDefaultWidgetsToNfsWidgets', () => {
     expect(result[0].breakpointLayouts).toEqual({
       xl: { x: 0, y: 0, w: 6, h: 4 },
     });
+  });
+
+  it('includes widgets that have no matching defaultWidgets ref', () => {
+    const widgets = [widget('quickaccess-card'), widget('third-party-widget')];
+
+    const result = applyDefaultWidgetsToNfsWidgets(widgets, [
+      { id: 'qa', ref: 'quickaccess-card' },
+    ]);
+
+    expect(result).toHaveLength(2);
+    expect(result.map(getHomepageWidgetExtensionName)).toContain(
+      'third-party-widget',
+    );
+  });
+
+  it('returns all widgets unchanged when defaultWidgets is empty', () => {
+    const widgets = [
+      widget('quickaccess-card'),
+      widget('recently-visited-card'),
+    ];
+
+    const result = applyDefaultWidgetsToNfsWidgets(widgets, []);
+
+    expect(result).toHaveLength(2);
+    expect(result.map(getHomepageWidgetExtensionName)).toEqual([
+      'quickaccess-card',
+      'recently-visited-card',
+    ]);
   });
 });
