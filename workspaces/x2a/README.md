@@ -46,7 +46,7 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
 
    **GitHub OAuth**: [Create a GitHub OAuth application](https://github.com/settings/developers).
 
-   **GitLab OAuth:** When [creating a GitLab OAuth application](https://gitlab.com/-/user_settings/applications), request scopes per [official documentation](https://backstage.io/docs/auth/gitlab/provider/). To let users [edit migration plans](#editing-migration-plans) in the UI, the application must also allow the `api` scope (see below for why).
+   **GitLab OAuth:** When [creating a GitLab OAuth application](https://gitlab.com/-/user_settings/applications), request scopes per [official documentation](https://backstage.io/docs/auth/gitlab/provider/). In addition, request the `api` scope, which is required to [edit migration plans](#editing-migration-plans) (`write_repository` does not support API authentication).
 
    Cloud-based **Bitbucket.org OAuth:** When creating a Bitbucket OAuth consumer via `https://bitbucket.org/[YOUR_WORKSPACE]/workspace/settings/api`, request scopes per [official documentation](https://backstage.io/docs/auth/bitbucket/provider/), which include:
    - `account:read`
@@ -118,16 +118,13 @@ Without this configuration, only the well-known cloud hosts (`github.com`, `bitb
 
 ## Editing Migration Plans
 
-Users who may write a project (`x2a.user` for their own projects, or `x2a.admin` write) can edit the project migration plan and the module migration plans, which are Markdown files in the target repository. A pencil next to the link to the document opens an editor page; saving creates a commit on the project's target branch with the commit message the user confirms.
+Users with write access to a project can edit the project and module migration plans (Markdown files in the target repository) with the pencil next to the document link. Saving commits to the target branch through the SCM REST API, using the user's OAuth token (or `x2a.git.targetRepo.token` if the request carries none).
 
-The UI never talks to the SCM directly. The x2a backend reads and commits the file through the SCM REST API, using the user's OAuth token (or `x2a.git.targetRepo.token` when the request carries none, in which case commits are attributed to that token's owner).
-
-- **Supported SCM providers:** GitHub (github.com and GitHub Enterprise) and GitLab. For Bitbucket the pencil is disabled with an explanation, because direct writes are not supported there yet: open the document through the link and edit it in Bitbucket.
-- **API URLs:** they are derived from the repository host (`https://api.github.com`, `<host>/api/v3` for GitHub Enterprise, `<host>/api/v4` for GitLab). The `apiBaseUrl` of the `integrations:` entries is not read.
-- **GitLab scope `api`:** GitLab documents the `write_repository` scope as the one for Git-over-HTTP pushes, and states that it does not support API authentication. Committing a single file through the Repository Files API therefore needs the broader `api` scope. The GitLab OAuth application must allow `api`; the plugin requests it only when a user edits a document, so users are asked to re-consent at that moment. See [GitLab access token scopes](https://docs.gitlab.com/security/tokens/access_token_scopes/).
-- **Concurrent changes:** a save is rejected (HTTP 409) when the file was changed in the repository after the user opened it, and while a job that may rewrite the document is running (the init job for the project plan, the analyze job for a module plan). The user can copy their text, reload, and apply the changes again.
-- **Size limit:** the document is sent in a JSON request body, which the backend limits to about 100 kB. The UI refuses to save documents above 50 kB.
-- **Module list:** editing the project migration plan does not change the module list. Use _Resync migration plan_ on the project page afterwards. The module list is re-extracted by an AI model from the whole document, not only from its _MODULE INVENTORY_ section, so to remove a module delete every mention of it, including counts such as "three modules". Otherwise the module may stay in the list.
+- **SCM providers:** GitHub (including GitHub Enterprise) and GitLab. Bitbucket is not supported yet; edit the document there through the link.
+- **GitLab scope:** the OAuth application must allow the `api` scope, see [Installation](#installation). Users are asked to re-consent when they first edit a document.
+- **Concurrent changes:** a save is rejected (HTTP 409) if the file changed in the repository since it was opened, or while a job that may rewrite it is running.
+- **Size limit:** documents above 50 kB cannot be saved.
+- **Module list:** editing the project plan does not change the module list. Run _Resync migration plan_ afterwards. The list is re-extracted by an AI model from the whole document, so to remove a module delete every mention of it, including counts such as "three modules".
 
 ## Adding New API Endpoints
 
