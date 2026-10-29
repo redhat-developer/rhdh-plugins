@@ -353,6 +353,7 @@ export const x2aPluginMessages = {
     breadcrumb: 'Edit migration plan',
     actions: {
       cancel: 'Cancel',
+      close: 'Close',
       reload: 'Reload',
       save: 'Save',
     },
