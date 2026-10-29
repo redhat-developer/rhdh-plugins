@@ -189,6 +189,16 @@ describe('RestScmFileStore', () => {
         expect(error.message).toMatch(/Reload/);
       });
 
+      it.each([
+        'secret scanning push protection found a secret',
+        'Push declined due to repository rule violations',
+      ])('maps a blocked 409 (%s) to push denied', async message => {
+        fetchFn.mockResolvedValue(json(409, { message }));
+        const error = await store.putFile(put).catch(e => e);
+        expect(error).toBeInstanceOf(NotAllowedError);
+        expect(error.message).toContain(message);
+      });
+
       it('maps a 422 about the sha to a stale version conflict', async () => {
         fetchFn.mockResolvedValue(
           json(422, { message: 'Invalid request. "sha" wasn\'t supplied.' }),
@@ -201,6 +211,14 @@ describe('RestScmFileStore', () => {
         await expect(store.putFile(put)).rejects.toBeInstanceOf(
           ServiceUnavailableError,
         );
+      });
+
+      it('maps a pull-request requirement to push denied', async () => {
+        const message = 'Changes must be made through a pull request.';
+        fetchFn.mockResolvedValue(json(422, { message }));
+        const error = await store.putFile(put).catch(e => e);
+        expect(error).toBeInstanceOf(NotAllowedError);
+        expect(error.message).toContain(message);
       });
 
       it('maps 403 to a push denied error with next steps', async () => {

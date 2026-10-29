@@ -23,6 +23,7 @@ import {
   ServiceUnavailableError,
 } from '@backstage/errors';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { MIGRATION_PLAN_MAX_CONTENT_BYTES } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import request from 'supertest';
 
 import {
@@ -744,16 +745,29 @@ describe('createRouter – migration plan editing', () => {
       );
 
       it.each(supportedDatabaseIds)(
-        'rejects a document above the request body size limit - %p',
+        'rejects a document above 100 kB - %p',
         async databaseId => {
           const { app, scmFileStore, url } = await setupApp(databaseId);
 
-          const response = await request(app)
+          const overBytes = await request(app)
             .put(url)
-            .send({ ...body, content: 'x'.repeat(2 * 1024 * 1024) });
+            .send({
+              ...body,
+              content: 'x'.repeat(MIGRATION_PLAN_MAX_CONTENT_BYTES + 1),
+            });
+          // Two-byte characters cross the limit before the character count does
+          const overUtf8 = await request(app)
+            .put(url)
+            .send({
+              ...body,
+              content: 'č'.repeat(MIGRATION_PLAN_MAX_CONTENT_BYTES / 2 + 1),
+            });
 
-          expect(response.status).toBe(400);
-          expect(response.body.error.message).toMatch(/too large/);
+          for (const response of [overBytes, overUtf8]) {
+            expect(response.status).toBe(400);
+            expect(response.body.error.message).toMatch(/too large/);
+            expect(response.body.error.message).toMatch(/100 kB/);
+          }
           expect(scmFileStore.putFile).not.toHaveBeenCalled();
         },
         LONG_TEST_TIMEOUT,

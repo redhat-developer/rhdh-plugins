@@ -225,7 +225,7 @@ export const useMigrationPlanEditor = ({
   }, []);
 
   const save = useCallback(
-    async (message: string) => {
+    async (message: string): Promise<boolean> => {
       setSaving(true);
       setSaveError(undefined);
       setSaved(false);
@@ -240,7 +240,7 @@ export const useMigrationPlanEditor = ({
               message: errorMessage(e),
             }),
           );
-          return;
+          return false;
         }
         const body = {
           content,
@@ -263,13 +263,15 @@ export const useMigrationPlanEditor = ({
               t('editMigrationPlan.saveError'),
             ),
           );
-          return;
+          return false;
         }
         const result = await response.json();
         setOriginal({ content, version: result.version });
         setSaved(true);
+        return true;
       } catch (e) {
         setSaveError(errorMessage(e));
+        return false;
       } finally {
         setSaving(false);
       }
