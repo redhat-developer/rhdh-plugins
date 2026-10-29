@@ -64,6 +64,11 @@ export const appDefaultsTranslationRef = createTranslationRef({
         importButtonTitle: 'Register a component',
       },
     },
+    notFound: {
+      title: 'Page not found',
+      description:
+        'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.',
+    },
     learningPaths: {
       title: 'Learning Paths',
       error: {
