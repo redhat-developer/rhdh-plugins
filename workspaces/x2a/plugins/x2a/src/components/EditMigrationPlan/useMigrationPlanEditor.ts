@@ -71,7 +71,7 @@ export const useMigrationPlanEditor = ({
   const [loadError, setLoadError] = useState<string>();
   const [authError, setAuthError] = useState<string>();
   const [original, setOriginal] = useState({ content: '', version: '' });
-  const [content, setContentState] = useState('');
+  const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string>();
   const [saved, setSaved] = useState(false);
@@ -143,7 +143,7 @@ export const useMigrationPlanEditor = ({
       }
       const document = await response.json();
       setOriginal(document);
-      setContentState(document.content);
+      setContent(document.content);
       setStatus('ready');
     } catch (e) {
       setLoadError(errorMessage(e));
@@ -155,7 +155,7 @@ export const useMigrationPlanEditor = ({
   useEffect(() => {
     let cancelled = false;
     startedRef.current = false;
-    (async () => {
+    void (async () => {
       try {
         const projectResponse = await clientService.projectsProjectIdGet({
           path: { projectId },
@@ -215,12 +215,12 @@ export const useMigrationPlanEditor = ({
     } else if (provider.name === 'bitbucket') {
       setStatus('unsupported');
     } else {
-      loadDocument();
+      void loadDocument();
     }
   }, [project, provider, accessLoading, canWriteProject, loadDocument]);
 
-  const setContent = useCallback((value: string) => {
-    setContentState(value);
+  const editContent = useCallback((value: string) => {
+    setContent(value);
     setSaved(false);
   }, []);
 
@@ -294,7 +294,7 @@ export const useMigrationPlanEditor = ({
     loadError,
     authError,
     content,
-    setContent,
+    editContent,
     dirty: content !== original.content,
     tooLarge: byteLength(content) > MIGRATION_PLAN_MAX_CONTENT_BYTES,
     saving,
