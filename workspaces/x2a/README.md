@@ -123,7 +123,7 @@ Users with write access to a project can edit the project and module migration p
 - **SCM providers:** GitHub (including GitHub Enterprise) and GitLab. Bitbucket is not supported yet; edit the document there through the link.
 - **GitLab scope:** the OAuth application must allow the `api` scope, see [Installation](#installation). Users are asked to re-consent when they first edit a document.
 - **Concurrent changes:** a save is rejected (HTTP 409) if the file changed in the repository since it was opened, or while a job that may rewrite it is running.
-- **Size limit:** documents above 50 kB cannot be saved.
+- **Size limit:** documents above 100 kB cannot be saved.
 - **Module list:** editing the project plan does not change the module list. Run _Resync migration plan_ afterwards. The list is re-extracted by an AI model from the whole document, so to remove a module delete every mention of it, including counts such as "three modules".
 
 ## Adding New API Endpoints

@@ -19,6 +19,7 @@ import { parseRepoUrl } from '@red-hat-developer-hub/backstage-plugin-x2a-common
 import {
   commonStatusError,
   errorDetail,
+  pushDeniedError,
   ScmErrorContext,
   staleVersionError,
   unexpectedStatusError,
@@ -56,6 +57,13 @@ const ctxOf = (loc: ScmFileLocation): ScmErrorContext => ({
   branch: loc.branch,
   path: loc.path,
 });
+
+/**
+ * 409 is a stale blob SHA, and also secret-scanning push protection and
+ * push rulesets. 422 is a stale or missing SHA, and also "pull request required".
+ */
+const GITHUB_PUSH_BLOCKED =
+  /secret|push protection|rule violation|ruleset|protected branch|pull request/i;
 
 /** `token` is the bare token. */
 export async function githubGetFile(
@@ -112,13 +120,19 @@ export async function githubPutFile(
     ctx,
   );
   if (!response.ok) {
-    if (response.status === 409) {
-      throw staleVersionError(ctx);
-    }
     const detail = await errorDetail(response);
-    // GitHub answers 409 for a stale sha, but validation failures about the sha
-    // (e.g. the file was recreated) come as 422.
-    if (response.status === 422 && /\bsha\b/i.test(detail ?? '')) {
+    if (
+      (response.status === 409 || response.status === 422) &&
+      GITHUB_PUSH_BLOCKED.test(detail ?? '')
+    ) {
+      throw pushDeniedError(ctx, detail);
+    }
+    // A 409 without a rule or secret message is a stale blob SHA. Validation
+    // failures about the SHA (e.g. the file was recreated) come as 422.
+    if (
+      response.status === 409 ||
+      (response.status === 422 && /\bsha\b/i.test(detail ?? ''))
+    ) {
       throw staleVersionError(ctx);
     }
     throw (
