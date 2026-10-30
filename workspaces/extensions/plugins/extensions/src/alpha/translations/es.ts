@@ -169,7 +169,7 @@ const extensionsTranslationEs = createTranslationMessages({
     'installedPackages.table.tooltips.noDownloadPermissions':
       'No tiene permiso para descargar la configuración. Comuníquese con su administrador para solicitar acceso o asistencia.',
     'installedPackages.table.tooltips.noEditPermissions':
-      'No tiene permiso para modificar la configuración. Comuníquese con su administrador para solicitar acceso o asistencia.',
+      'Ver configuración. No tiene permiso para modificar la configuración. Comuníquese con su administrador para solicitar acceso o asistencia.',
     'installedPackages.table.tooltips.noTogglePermissions':
       'No tiene permiso para habilitar o deshabilitar paquetes. Comuníquese con su administrador para solicitar acceso o asistencia.',
     'installedPackages.table.tooltips.editPackage':

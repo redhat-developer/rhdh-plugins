@@ -170,7 +170,7 @@ const extensionsTranslationJa = createTranslationMessages({
     'installedPackages.table.tooltips.noDownloadPermissions':
       '設定をダウンロードする権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'installedPackages.table.tooltips.noEditPermissions':
-      '設定を編集する権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
+      '設定を表示。設定を編集する権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'installedPackages.table.tooltips.noTogglePermissions':
       'パッケージを有効化または無効化する権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'installedPackages.table.tooltips.editPackage': 'パッケージ設定を編集する',

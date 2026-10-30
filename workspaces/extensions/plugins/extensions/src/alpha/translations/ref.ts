@@ -211,11 +211,11 @@ export const extensionsMessages = {
           'To enable actions, add a catalog entity for this package.',
         enableActionsDocsLink: 'View documentation',
         noDownloadPermissions:
-          "You don't have permission to download the configuration. Contact your administrator to request access or assistance.",
+          'You do not have permission to download the configuration. Contact your administrator to request access or assistance.',
         noEditPermissions:
-          "You don't have permission to edit the configuration. Contact your administrator to request access or assistance.",
+          'View Configuration. You do not have permission to edit the configuration. Contact your administrator to request access or assistance.',
         noTogglePermissions:
-          "You don't have permission to enable or disable packages. Contact your administrator to request access or assistance.",
+          'You do not have permission to enable or disable packages. Contact your administrator to request access or assistance.',
         editPackage: 'Edit package configuration',
         downloadPackage: 'Download package configuration',
         enablePackage: 'Enable package',

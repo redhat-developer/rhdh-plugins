@@ -168,7 +168,7 @@ const extensionsTranslationDe = createTranslationMessages({
     'installedPackages.table.tooltips.noDownloadPermissions':
       'Sie haben keine Berechtigung, die Konfiguration herunterzuladen. Wenden Sie sich an den Administrator, um Zugriff oder Unterstützung anzufordern.',
     'installedPackages.table.tooltips.noEditPermissions':
-      'Sie haben keine Berechtigung, die Konfiguration zu bearbeiten. Wenden Sie sich an den Administrator, um Zugriff oder Unterstützung anzufordern.',
+      'Konfiguration anzeigen. Sie haben keine Berechtigung, die Konfiguration zu bearbeiten. Wenden Sie sich an den Administrator, um Zugriff oder Unterstützung anzufordern.',
     'installedPackages.table.tooltips.noTogglePermissions':
       'Sie haben keine Berechtigung, Pakete zu aktivieren oder zu deaktivieren. Wenden Sie sich an den Administrator, um Zugriff oder Unterstützung anzufordern.',
     'installedPackages.table.tooltips.editPackage':
