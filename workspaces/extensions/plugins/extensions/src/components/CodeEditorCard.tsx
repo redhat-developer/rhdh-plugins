@@ -26,8 +26,29 @@ const CodeEditor = lazy(() =>
 
 export const CodeEditorCard = ({ onLoad }: { onLoad: () => void }) => {
   return (
-    <Card sx={{ flex: '1 1 0' }}>
-      <CardContent style={{ display: 'flex' }}>
+    <Card
+      sx={{
+        flex: '1 1 0',
+        minHeight: 0,
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      <CardContent
+        sx={{
+          flex: '1 1 0',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          // Default CardContent padding (16/24) on top of height:100% Monaco
+          // overflows this card and shows a redundant scrollbar beside the editor.
+          p: 0,
+          '&:last-child': { pb: 0 },
+          overflow: 'hidden',
+        }}
+      >
         <Suspense
           fallback={
             <div
