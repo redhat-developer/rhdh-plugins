@@ -41,7 +41,7 @@ Workspaces missing from overlays or owned by a different upstream are skipped wi
 ### Prerequisites and rollout
 
 - The existing `RHDH_BOT_TOKEN` must have **Actions: read/write**, **Contents: read**, and **Pull requests: read** on `redhat-developer/rhdh-plugin-export-overlays`, plus **Contents: read** and **Pull requests: read/write** on `redhat-developer/rhdh-plugins`. A classic PAT needs `repo` scope and access to both repositories. The default repository-scoped `GITHUB_TOKEN` cannot perform this cross-repository dispatch.
-- Install the companion overlays concurrency change before enabling this caller: scoped updates must be grouped by workspace and target branch, and must not cancel running updates. Otherwise parallel workspace releases can cancel one another.
+- Install the companion overlays concurrency change before enabling this caller: group discovery runs by workspace and target branch so different workspaces cannot cancel one another. Include the PR number for explicit refreshes so retrying the same PR can supersede its previous refresh.
 - Backport this workflow, its helper, and the caller changes together to each source release branch where automatic propagation is needed. The helper is checked out at the triggering commit, not from a moving `main` branch.
 - Dispatch requests use GitHub REST API version `2026-03-10`, which returns the new workflow run ID. No run is selected by a timestamp or by searching for the latest run.
 
