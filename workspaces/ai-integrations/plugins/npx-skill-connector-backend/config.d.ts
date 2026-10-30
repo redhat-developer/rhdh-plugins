@@ -42,8 +42,9 @@ export interface Config {
        */
       allowedOrigins?: string[];
       /**
-       * Standard Backstage schedule for this source. When omitted, runs
-       * immediately and every ten minutes. Scope must be local.
+       * Standard Backstage schedule for this source. Refresh is added
+       * with index ingestion; its default will be immediate and every
+       * ten minutes. Scope must be local.
        * @visibility backend
        */
       schedule?: SchedulerServiceTaskScheduleDefinitionConfig;

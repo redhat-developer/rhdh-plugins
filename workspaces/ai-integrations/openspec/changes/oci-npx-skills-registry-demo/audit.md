@@ -1,14 +1,13 @@
 ## Npx demo transport scope
 
-**Last audited:** 2026-10-30T19:00:48Z
+**Last audited:** 2026-10-30T19:11:56Z
 
 The parent feature RHDHPLAN-1745 calls for demo-only skills ingestion and does
-not require DNS address validation. D7 now keeps OCI's existing connection-level
+not require address validation. D7 keeps OCI's existing connection-level
 validation while limiting npx transport validation to HTTPS, configured origins,
-credentials, localhost/literal-IP URL hosts, redirects, and bounded reads. The
-npx spec states this distinction and adds a local-host redirect scenario.
-Network egress policy is needed where configured npx hostnames must be prevented
-from resolving to internal addresses. Task 3.3 remains open for the later
+credentials, redirects, and bounded reads. The npx spec states this distinction.
+Network egress policy is needed where the demo must restrict destination
+addresses. Task 3.3 remains open for the later
 artifact-processing work; no OCI requirement or completed task was changed.
 
 | Severity   | Count |

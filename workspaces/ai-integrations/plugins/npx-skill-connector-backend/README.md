@@ -28,6 +28,5 @@ Only HTTPS origins may be added to `allowedOrigins`; paths, credentials, queries
 and fragments are rejected. The fetcher enforces a 30-second request limit,
 five redirects, a 5 MiB index limit, and a 1 MiB skill file limit.
 
-The connector does not check DNS-resolved addresses. If a deployment needs to
-prevent requests to internal addresses, enforce that through network egress
-policy for the configured source origins.
+The connector does not inspect destination addresses. Deployments that need to
+restrict destinations should use a network egress policy.

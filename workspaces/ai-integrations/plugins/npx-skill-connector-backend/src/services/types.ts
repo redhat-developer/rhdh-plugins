@@ -16,11 +16,6 @@
 
 import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-plugin-api';
 
-export const MAX_ARTIFACT_SIZE = 1024 * 1024;
-export const MAX_INDEX_RESPONSE_SIZE = 5 * 1024 * 1024;
-export const FETCH_TIMEOUT_MS = 30_000;
-export const SOURCE_OPERATION_DEADLINE_MS = 5 * 60_000;
-export const MAX_REDIRECTS = 5;
 export const DEFAULT_REFRESH_INTERVAL_MINUTES = 10;
 
 /**

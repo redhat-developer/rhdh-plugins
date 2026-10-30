@@ -19,10 +19,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { createLoadingSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
-import type {
-  SkillSnapshot,
-  SnapshotSource,
-} from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { createRouter } from './router';
 import { readSourceConfigs } from './services/config';
 import type { NpxSourceConfig } from './services/types';
@@ -52,34 +49,18 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
         config: coreServices.rootConfig,
       },
       async init({ logger, httpRouter, config }) {
-        const pluginLogger = logger.child({
-          source: 'npxSkillConnectorPlugin',
-        });
-
-        const sources: NpxSourceConfig[] = readSourceConfigs(
-          config,
-          pluginLogger,
-        );
-
-        // Per-source snapshot storage — atomic publication
+        const sources: NpxSourceConfig[] = readSourceConfigs(config, logger);
         const snapshots = new Map<string, SkillSnapshot>();
 
-        // Initialize each source with loading snapshot
         for (const source of sources) {
-          const snapshotSource: SnapshotSource = {
-            id: source.id,
-            type: 'npx',
-          };
-          snapshots.set(source.id, createLoadingSnapshot(snapshotSource));
+          snapshots.set(
+            source.id,
+            createLoadingSnapshot({ id: source.id, type: 'npx' }),
+          );
         }
 
-        httpRouter.use(await createRouter(pluginLogger, snapshots));
-        httpRouter.addAuthPolicy({
-          path: '/health',
-          allow: 'unauthenticated',
-        });
-
-        pluginLogger.info(
+        httpRouter.use(createRouter(snapshots));
+        logger.info(
           `npx skill connector initialized with ${sources.length} source(s)`,
         );
       },

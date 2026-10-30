@@ -14,51 +14,23 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import express from 'express';
-import Router from 'express-promise-router';
 
-export async function createRouter(
-  logger: LoggerService,
+export function createRouter(
   snapshots: ReadonlyMap<string, SkillSnapshot>,
-): Promise<express.Router> {
-  const router = Router();
+): express.Router {
+  const router = express.Router();
 
-  router.get('/health', async (_req, res) => {
-    logger.debug('Health check');
-    res.status(200).json({ status: 'ok' });
-  });
-
-  // Authenticated GET /skills/:sourceId — serves the shared v1
-  // SkillSnapshot for the requested source. The URL-encoded sourceId
-  // is treated as one path segment per the design D2 REST contract.
-  // Unknown source IDs return 404.
-  router.get('/skills/:sourceId', async (req, res) => {
+  router.get('/skills/:sourceId', (req, res) => {
     const sourceId = req.params.sourceId;
     const snapshot = snapshots.get(sourceId);
     if (!snapshot) {
-      res.status(404).json({ error: `Unknown source: ${sourceId}` });
+      res.status(404).json({ error: 'Unknown source' });
       return;
     }
-    res.status(200).json(snapshot);
+    res.json(snapshot);
   });
-
-  router.use(
-    (
-      error: Error,
-      _req: express.Request,
-      res: express.Response,
-      next: express.NextFunction,
-    ) => {
-      logger.error('npx skill connector request failed', error);
-      if (res.headersSent) {
-        next(error);
-        return;
-      }
-      res.status(500).json({ error: 'Internal server error' });
-    },
-  );
 
   return router;
 }

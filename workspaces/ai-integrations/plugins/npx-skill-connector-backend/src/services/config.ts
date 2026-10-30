@@ -21,15 +21,9 @@ import {
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
-import {
-  validateAllowedOrigin,
-  validateRequestUrl,
-} from './SafeSourceTransport';
+import { validateAllowedOrigin, validateRequestUrl } from './fetchSource';
 import type { NpxSourceConfig } from './types';
-import {
-  DEFAULT_REFRESH_INTERVAL_MINUTES,
-  SOURCE_OPERATION_DEADLINE_MS,
-} from './types';
+import { DEFAULT_REFRESH_INTERVAL_MINUTES } from './types';
 
 function readAllowedOrigins(
   source: Config | undefined,
@@ -38,7 +32,7 @@ function readAllowedOrigins(
   const origins = source?.getOptionalStringArray('allowedOrigins');
   if (!origins) return undefined;
   try {
-    return Object.freeze(origins.map(validateAllowedOrigin));
+    return origins.map(validateAllowedOrigin);
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Invalid origin';
     throw new InputError(`${context}.allowedOrigins: ${detail}`);
@@ -47,8 +41,7 @@ function readAllowedOrigins(
 
 /**
  * Validates that a URL is a valid HTTPS index URL.
- * Rejects non-HTTPS, embedded credentials, localhost, IP addresses,
- * and fragment identifiers.
+ * Rejects non-HTTPS URLs, embedded credentials, and fragments.
  */
 function validateIndexUrl(url: string, context: string): string {
   let parsed: URL;
@@ -62,11 +55,6 @@ function validateIndexUrl(url: string, context: string): string {
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Invalid index URL';
     throw new InputError(`${context}.indexUrl: ${detail}`);
-  }
-  if (parsed.hash) {
-    throw new InputError(
-      `${context}.indexUrl must not contain a fragment identifier`,
-    );
   }
   return parsed.toString();
 }
@@ -82,7 +70,7 @@ export function readSourceSchedule(
   if (!source?.has('schedule')) {
     return {
       frequency: { minutes: DEFAULT_REFRESH_INTERVAL_MINUTES },
-      timeout: { milliseconds: 2 * SOURCE_OPERATION_DEADLINE_MS },
+      timeout: { minutes: 10 },
       initialDelay: { seconds: 0 },
       scope: 'local',
     };
