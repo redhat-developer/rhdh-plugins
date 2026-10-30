@@ -185,7 +185,10 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
       .isVisible({ timeout: 3000 })
       .catch(() => false);
 
-    expect(is404, 'Orchestrator instance page returned 404 — see RHINENG-29749').toBe(false);
+    expect(
+      is404,
+      'Orchestrator instance page returned 404 — see RHINENG-29749',
+    ).toBe(false);
 
     const completedBadge = page.getByText('Completed', { exact: true });
     const failedBadge = page.getByText('Failed', { exact: true });
