@@ -4,4 +4,4 @@
 '@red-hat-developer-hub/backstage-plugin-bulk-import': patch
 ---
 
-Updated dependency `prettier` to `3.9.9`.
+Updated dependency `prettier` to `3.9.10`.

@@ -22,6 +22,4 @@ export const adoptionInsightsPlugin: BackstagePlugin<
   {},
   {}
 >;
-
-// (No @packageDocumentation comment for this package)
 ```

@@ -21,16 +21,17 @@ import {
   ModeCatalogBridgeTechdocUrlReader,
   ModelCatalogBridgeUrlReaderServiceReadTreeResponse,
   readBridgeConfigs,
+  readSkillSourceConfigs,
 } from './plugin';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { Readable } from 'stream';
 
-const fetch = jest.fn();
+const mockNodeFetch = jest.fn();
 jest.mock('node-fetch', () => ({
   __esModule: true,
-  default: (url: string, options: any) => fetch(url, options),
+  default: (url: string, options: any) => mockNodeFetch(url, options),
 }));
 
 jest.mock('fs', () => ({
@@ -308,6 +309,7 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
         testUrl,
         expect.objectContaining({
           method: 'GET',
+          redirect: 'error',
           headers: { Authorization: 'Bearer test-token' },
         }),
       );
@@ -317,7 +319,7 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
       const reader = newReader(readerConfig);
       await expect(
         reader.readUrl('http://localhost:7007/api/unknown-plugin/something'),
-      ).rejects.toThrow('No matching bridge config');
+      ).rejects.toThrow('No matching config');
     });
 
     it('should throw NotFoundError on 404', async () => {
@@ -425,7 +427,7 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
       // mkdocs.yml should be written at the root
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
         path.join(tmpobj.name, 'mkdocs.yml'),
-        'site_name: Model Card\nnav:\n  - Home: index.md\n',
+        "site_name: 'Model Card'\nnav:\n  - Home: index.md\n",
       );
       // docs/index.md should be written
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
@@ -451,7 +453,7 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
       // mkdocs.yml at targetDir root
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
         path.join(targetDir, 'mkdocs.yml'),
-        'site_name: Model Card\nnav:\n  - Home: index.md\n',
+        "site_name: 'Model Card'\nnav:\n  - Home: index.md\n",
       );
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
         path.join(targetDir, 'docs', 'index.md'),
@@ -460,5 +462,614 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
       expect(fs.mkdirSync).toHaveBeenCalledWith(path.join(targetDir, 'docs'));
       expect(resultDir).toBe(targetDir);
     });
+
+    it('should use custom siteName when provided', async () => {
+      const targetDir = '/custom/dir';
+      const response = new ModelCatalogBridgeUrlReaderServiceReadTreeResponse(
+        workDir,
+        etag,
+        buffer,
+        mockServices.logger.mock(),
+        'Skill Documentation',
+      );
+
+      await response.dir({ targetDir });
+
+      expect(fs.promises.writeFile).toHaveBeenCalledWith(
+        path.join(targetDir, 'mkdocs.yml'),
+        "site_name: 'Skill Documentation'\nnav:\n  - Home: index.md\n",
+      );
+    });
+  });
+});
+
+// ─── OCI skill TechDocs source configuration tests ──────────────────
+
+const validDigest =
+  'sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789';
+
+const skillConfig = {
+  catalog: {
+    providers: {
+      skillsCatalogProvider: {
+        production: {
+          sources: [
+            {
+              connectorPluginId: 'skill-image-connector',
+              sourceId: 'quay-public',
+              sourceType: 'oci',
+            },
+          ],
+          defaultOwner: 'team-skills',
+          defaultLifecycle: 'production',
+        },
+      },
+    },
+  },
+};
+
+const newSkillReader = (config: any) => {
+  return new ModeCatalogBridgeTechdocUrlReader(
+    new ConfigReader(config),
+    mockServices.logger.mock(),
+    new Map([
+      [
+        'skill-image-connector',
+        'http://localhost:7007/api/skill-image-connector',
+      ],
+    ]),
+  );
+};
+
+describe('readSkillSourceConfigs', () => {
+  it('should return empty array if no provider config', () => {
+    const config = new ConfigReader({});
+    const result = readSkillSourceConfigs(config);
+    expect(result).toEqual([]);
+  });
+
+  it('should read OCI sources from skillsCatalogProvider config', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          skillsCatalogProvider: {
+            production: {
+              sources: [
+                {
+                  connectorPluginId: 'skill-image-connector',
+                  sourceId: 'quay-public',
+                  sourceType: 'oci',
+                },
+              ],
+              defaultOwner: 'team-skills',
+              defaultLifecycle: 'production',
+            },
+          },
+        },
+      },
+    });
+    const result = readSkillSourceConfigs(config);
+    expect(result).toEqual([
+      {
+        connectorPluginId: 'skill-image-connector',
+        sourceId: 'quay-public',
+      },
+    ]);
+  });
+
+  it('should skip npx sources', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          skillsCatalogProvider: {
+            production: {
+              sources: [
+                {
+                  connectorPluginId: 'skill-image-connector',
+                  sourceId: 'quay-public',
+                  sourceType: 'oci',
+                },
+                {
+                  connectorPluginId: 'npx-skill-connector',
+                  sourceId: 'rhess-index',
+                  sourceType: 'npx',
+                },
+              ],
+              defaultOwner: 'team-skills',
+              defaultLifecycle: 'production',
+            },
+          },
+        },
+      },
+    });
+    const result = readSkillSourceConfigs(config);
+    expect(result).toHaveLength(1);
+    expect(result[0].sourceId).toBe('quay-public');
+  });
+
+  it('should skip blank source IDs', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          skillsCatalogProvider: {
+            production: {
+              sources: [
+                {
+                  connectorPluginId: 'skill-image-connector',
+                  sourceId: '',
+                  sourceType: 'oci',
+                },
+              ],
+              defaultOwner: 'team-skills',
+              defaultLifecycle: 'production',
+            },
+          },
+        },
+      },
+    });
+    const result = readSkillSourceConfigs(config);
+    expect(result).toEqual([]);
+  });
+
+  it('should skip dot source IDs', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          skillsCatalogProvider: {
+            production: {
+              sources: [
+                {
+                  connectorPluginId: 'skill-image-connector',
+                  sourceId: '.',
+                  sourceType: 'oci',
+                },
+                {
+                  connectorPluginId: 'skill-image-connector',
+                  sourceId: '..',
+                  sourceType: 'oci',
+                },
+              ],
+              defaultOwner: 'team-skills',
+              defaultLifecycle: 'production',
+            },
+          },
+        },
+      },
+    });
+    const result = readSkillSourceConfigs(config);
+    expect(result).toEqual([]);
+  });
+
+  it('should deduplicate across provider instances', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          skillsCatalogProvider: {
+            production: {
+              sources: [
+                {
+                  connectorPluginId: 'skill-image-connector',
+                  sourceId: 'quay-public',
+                  sourceType: 'oci',
+                },
+              ],
+              defaultOwner: 'team-skills',
+              defaultLifecycle: 'production',
+            },
+            staging: {
+              sources: [
+                {
+                  connectorPluginId: 'skill-image-connector',
+                  sourceId: 'quay-public',
+                  sourceType: 'oci',
+                },
+              ],
+              defaultOwner: 'team-skills',
+              defaultLifecycle: 'staging',
+            },
+          },
+        },
+      },
+    });
+    const result = readSkillSourceConfigs(config);
+    expect(result).toHaveLength(1);
+  });
+});
+
+describe('Skill docs URL matching', () => {
+  it('should match skill docs URL with correct pattern', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(true);
+  });
+
+  it('should not match root-level /skilldocs/ without /api/<pluginId>', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      `http://localhost:7007/skilldocs/quay-public/${validDigest}`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+
+  it('should not match another plugin path', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      `http://localhost:7007/api/other-plugin/skilldocs/quay-public/${validDigest}`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+
+  it('should not match untrusted source ID', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      `http://localhost:7007/api/skill-image-connector/skilldocs/unknown-source/${validDigest}`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+
+  it('should not match invalid digest format', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      'http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/sha256:tooshort',
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+
+  it('should not match URL with query string', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}?foo=bar`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+
+  it('should not match URL with fragment', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}#section`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+
+  it('should not match URL with credentials', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      `http://user:pass@localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+
+  it('should not match URL with extra path segments', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}/extra`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+
+  it('should not match URL with trailing slash', () => {
+    const reader = newSkillReader(skillConfig);
+    const url = new URL(
+      `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}/`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+
+  it('should match URL with encoded source ID', () => {
+    const encodedConfig = {
+      catalog: {
+        providers: {
+          skillsCatalogProvider: {
+            production: {
+              sources: [
+                {
+                  connectorPluginId: 'skill-image-connector',
+                  sourceId: 'quay/public',
+                  sourceType: 'oci',
+                },
+              ],
+              defaultOwner: 'team-skills',
+              defaultLifecycle: 'production',
+            },
+          },
+        },
+      },
+    };
+    const reader = newSkillReader(encodedConfig);
+    const url = new URL(
+      `http://localhost:7007/api/skill-image-connector/skilldocs/${encodeURIComponent(
+        'quay/public',
+      )}/${validDigest}`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(true);
+  });
+
+  it('should continue to match model-card URLs', () => {
+    const combinedConfig = {
+      ...skillConfig,
+      catalog: {
+        ...skillConfig.catalog,
+        providers: {
+          ...skillConfig.catalog.providers,
+          modelCatalog: {
+            test: {
+              'cluster-1': {
+                name: 'my-cluster',
+                'kubeflow-model-catalog-url': 'https://example.com',
+                'default-owner': 'owner',
+                'default-lifecycle': 'production',
+              },
+            },
+          },
+        },
+      },
+    };
+    const reader = newSkillReader(combinedConfig);
+    expect(
+      reader.bridgePredicate(new URL('https://localhost:9090/modelcard/test')),
+    ).toBe(true);
+  });
+
+  it('should not match with no skill source config', () => {
+    const reader = newSkillReader({});
+    const url = new URL(
+      `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`,
+    );
+    expect(reader.bridgePredicate(url)).toBe(false);
+  });
+});
+
+describe('Skill docs readUrl', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  const testUrl = `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`;
+
+  beforeEach(() => {
+    ModeCatalogBridgeTechdocUrlReader.auth = {
+      getPluginRequestToken: jest
+        .fn()
+        .mockResolvedValue({ token: 'test-token' }),
+      getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+    } as any;
+  });
+
+  it('should authenticate with the connector plugin ID', async () => {
+    const reader = newSkillReader(skillConfig);
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      headers: new Headers({ etag: 'response-etag' }),
+    };
+    global.fetch = jest.fn().mockResolvedValue(mockResponse);
+    jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
+      buffer: async () => Buffer.from('# Skill Docs'),
+      etag: 'response-etag',
+    } as any);
+
+    await reader.readUrl(testUrl);
+
+    expect(
+      ModeCatalogBridgeTechdocUrlReader.auth.getPluginRequestToken,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetPluginId: 'skill-image-connector',
+      }),
+    );
+    expect(global.fetch).toHaveBeenCalledWith(
+      testUrl,
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+        }),
+        redirect: 'error',
+      }),
+    );
+  });
+
+  it('should forward If-None-Match header when etag is provided', async () => {
+    const reader = newSkillReader(skillConfig);
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      headers: new Headers({ etag: 'response-etag' }),
+    };
+    global.fetch = jest.fn().mockResolvedValue(mockResponse);
+    jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
+      buffer: async () => Buffer.from('content'),
+      etag: 'response-etag',
+    } as any);
+
+    await reader.readUrl(testUrl, { etag: 'cached-etag' });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      testUrl,
+      expect.objectContaining({
+        cache: 'no-cache',
+        headers: expect.objectContaining({
+          'If-None-Match': 'cached-etag',
+          Authorization: 'Bearer test-token',
+        }),
+      }),
+    );
+  });
+
+  it('should not send If-None-Match when no etag provided', async () => {
+    const reader = newSkillReader(skillConfig);
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      headers: new Headers({ etag: 'response-etag' }),
+    };
+    global.fetch = jest.fn().mockResolvedValue(mockResponse);
+    jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
+      buffer: async () => Buffer.from('content'),
+      etag: 'response-etag',
+    } as any);
+
+    await reader.readUrl(testUrl);
+
+    const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+    expect(fetchCall[1].headers).not.toHaveProperty('If-None-Match');
+  });
+
+  it('should throw NotFoundError on 404', async () => {
+    const reader = newSkillReader(skillConfig);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+    });
+
+    await expect(reader.readUrl(testUrl)).rejects.toThrow(NotFoundError);
+  });
+
+  it('should throw NotModifiedError on 304', async () => {
+    const reader = newSkillReader(skillConfig);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 304,
+      statusText: 'Not Modified',
+    });
+
+    await expect(reader.readUrl(testUrl)).rejects.toThrow(NotModifiedError);
+  });
+
+  it('should propagate server errors', async () => {
+    const reader = newSkillReader(skillConfig);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+    });
+
+    await expect(reader.readUrl(testUrl)).rejects.toThrow('could not read');
+  });
+
+  it('should throw on fetch failure (e.g. redirect rejection)', async () => {
+    const reader = newSkillReader(skillConfig);
+    global.fetch = jest.fn().mockRejectedValue(new TypeError('redirect error'));
+
+    await expect(reader.readUrl(testUrl)).rejects.toThrow('Unable to read');
+  });
+
+  it('should throw when no config matches', async () => {
+    const reader = newSkillReader({});
+    await expect(reader.readUrl(testUrl)).rejects.toThrow('No matching config');
+  });
+});
+
+describe('Skill docs readTree', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  const testUrl = `http://localhost:7007/api/skill-image-connector/skilldocs/quay-public/${validDigest}`;
+
+  beforeEach(() => {
+    ModeCatalogBridgeTechdocUrlReader.auth = {
+      getPluginRequestToken: jest
+        .fn()
+        .mockResolvedValue({ token: 'test-token' }),
+      getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+    } as any;
+  });
+
+  it('should return response with ETag from connector response', async () => {
+    const reader = newSkillReader(skillConfig);
+    const responseBuffer = Buffer.from('# Skill Documentation');
+
+    jest.spyOn(reader, 'readUrl').mockResolvedValue({
+      buffer: async () => responseBuffer,
+      etag: 'connector-etag',
+      lastModifiedAt: new Date(),
+      stream: () => new Readable(),
+    });
+
+    const response = await reader.readTree(testUrl, {
+      etag: 'old-cached-etag',
+    });
+
+    expect(response).toBeInstanceOf(
+      ModelCatalogBridgeUrlReaderServiceReadTreeResponse,
+    );
+    // Should use the response ETag, not the request ETag
+    // @ts-ignore - accessing private field for testing
+    expect(response.etag).toBe('connector-etag');
+  });
+
+  it('should use Skill Documentation as site name', async () => {
+    const reader = newSkillReader(skillConfig);
+    const responseBuffer = Buffer.from('# Skill Documentation');
+
+    jest.spyOn(reader, 'readUrl').mockResolvedValue({
+      buffer: async () => responseBuffer,
+      etag: 'etag',
+      lastModifiedAt: new Date(),
+      stream: () => new Readable(),
+    });
+
+    const response = await reader.readTree(testUrl);
+    const targetDir = '/test-dir';
+    await response.dir({ targetDir });
+
+    expect(fs.promises.writeFile).toHaveBeenCalledWith(
+      path.join(targetDir, 'mkdocs.yml'),
+      "site_name: 'Skill Documentation'\nnav:\n  - Home: index.md\n",
+    );
+    expect(fs.promises.writeFile).toHaveBeenCalledWith(
+      path.join(targetDir, 'docs', 'index.md'),
+      responseBuffer,
+    );
+  });
+
+  it('should preserve model-card readTree behavior', async () => {
+    const modelCardConfig = {
+      catalog: {
+        providers: {
+          modelCatalog: {
+            'kserve-kubeflow-connector': {
+              'cluster-1': {
+                name: 'my-cluster',
+                'kubeflow-model-catalog-url': 'https://example.com',
+                'default-owner': 'owner',
+                'default-lifecycle': 'production',
+              },
+            },
+          },
+        },
+      },
+    };
+    const reader = newSkillReader(modelCardConfig);
+    const responseBuffer = Buffer.from('model card content');
+
+    jest.spyOn(reader, 'readUrl').mockResolvedValue({
+      buffer: async () => responseBuffer,
+      etag: 'response-etag',
+      lastModifiedAt: new Date(),
+      stream: () => new Readable(),
+    });
+
+    const modelCardUrl =
+      'http://localhost:7007/api/kserve-kubeflow-connector/modelcard/source1/modelA';
+
+    const response = await reader.readTree(modelCardUrl, {
+      etag: 'request-etag',
+    });
+
+    // Model-card readTree uses the request etag, not response etag
+    // @ts-ignore
+    expect(response.etag).toBe('request-etag');
+
+    const targetDir = '/test-dir';
+    await response.dir({ targetDir });
+    expect(fs.promises.writeFile).toHaveBeenCalledWith(
+      path.join(targetDir, 'mkdocs.yml'),
+      "site_name: 'Model Card'\nnav:\n  - Home: index.md\n",
+    );
   });
 });

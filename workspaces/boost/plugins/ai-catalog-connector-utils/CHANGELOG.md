@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-boost-connector-utils
 
+## 1.1.0
+
+### Minor Changes
+
+- aa44c81: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
 ## 1.0.1
 
 ## 1.0.0

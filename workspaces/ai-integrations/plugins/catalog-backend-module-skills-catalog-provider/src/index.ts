@@ -28,6 +28,11 @@ export { SkillsCatalogProvider } from './SkillsCatalogProvider';
 export { readSkillsCatalogProviderConfigs } from './config';
 export { calculateReconciliationPlan } from './reconciliation-planner';
 export type {
+  PendingAcknowledgment,
+  PendingDelta,
+  ReconciliationStore,
+} from './reconciliation-store';
+export type {
   CommittedSourceState,
   ExternalOwnership,
   IdentityCollision,

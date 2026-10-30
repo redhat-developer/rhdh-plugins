@@ -1,5 +1,72 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider
 
+## 1.1.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [0a42ebd]
+  - @red-hat-developer-hub/backstage-plugin-ai-skills-common@0.5.0
+
+## 1.0.0
+
+### Major Changes
+
+- f8b1032: Add OCI skill TechDocs URL annotation and reconciliation acknowledgment
+
+  Extends the common skills catalog provider to set `backstage.io/techdocs-ref`
+  on OCI skill entities using discovery-based, digest-addressed URLs derived from
+  trusted connector/source configuration. npx skill entities do not receive the
+  annotation. Captures the `X-Skilldocs-Revision` response header from connector
+  snapshots and implements the D8 reconciliation acknowledgment lifecycle:
+  atomically persists acknowledgments with ready-state ownership commits, verifies
+  catalog processing visibility before delivery, retries pending acknowledgments
+  before polling, handles superseded revisions and transport failures, and rejects
+  duplicate retention-owner assignments at startup.
+
+  ### Breaking changes
+
+  - Four new required methods on `ReconciliationStore`: `commitStateAndSaveAcknowledgment`, `getPendingAcknowledgment`, `getAllPendingAcknowledgments`, and `clearPendingAcknowledgment`.
+  - The `store` constructor parameter on `SkillsCatalogProvider` is now required (previously optional).
+  - Direct callers can no longer rely on an implicit in-memory fallback; they must supply and initialize a durable `ReconciliationStore` implementation.
+  - The `catalogApi` constructor parameter is now required and must implement `CatalogApi.getEntitiesByRefs`; visibility verification cannot be bypassed.
+
+  Pending deltas persist the complete acknowledgment context before catalog mutation
+  and recover it before polling newer snapshots. Deferred visibility checks block
+  newer polls for that source. Existing entities receive missing or changed TechDocs
+  annotations even without a digest change. Provider HTTP operations reject redirects
+  and use bounded deadlines. An additive migration preserves existing rows; legacy
+  revision-only pending deltas fail closed for operator investigation.
+
+## 0.4.0
+
+### Minor Changes
+
+- bab221f: Add durable database-backed persistence for skills catalog reconciliation
+
+  Introduces `DatabaseReconciliationStore` with crash-safe pending delta
+  writes before catalog mutations and atomic commit-and-clear after success.
+  Switches the provider from `type: 'full'` mutations to source-scoped
+  `type: 'delta'` mutations integrated with `calculateReconciliationPlan`.
+  Pending deltas are replayed on startup to recover interrupted work.
+  Completes design D6 tasks 4.3 (durable persistence), 4.4 (runtime
+  integration and replay), and 4.5 (provider verification).
+
+  Keep unresolved pending work intact when replay or ownership commit fails,
+  blocking newer snapshots only for the affected source. Verify database restart,
+  transaction rollback, interrupted additions, and OCI tag identity with file-backed
+  SQLite lifecycle tests. Keep the database store implementation internal.
+
+  Preserve the original full catalog entity reference in pending removals so
+  namespace configuration changes cannot orphan old entities. Reconcile namespace
+  changes even when content and connector observations repeat, retain old identities
+  during partial snapshots, and recover legacy pending removal targets from saved
+  ownership. Use module-scoped Knex migrations with safe adoption of existing
+  compatible development tables and isolated migration tracking in the Catalog DB.
+
 ## 0.3.0
 
 ### Minor Changes

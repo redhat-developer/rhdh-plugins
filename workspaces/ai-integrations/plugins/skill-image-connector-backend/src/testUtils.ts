@@ -129,10 +129,12 @@ export function startConnector(
   scheduler: BackendFeature = mockServices.scheduler.factory({
     includeInitialDelayedTasksOnStartup: true,
   }),
+  extraFeatures: BackendFeature[] = [],
 ) {
   return startTestBackend({
     features: [
       plugin,
+      ...extraFeatures,
       mockServices.rootLogger.factory(),
       logger.factory,
       scheduler,

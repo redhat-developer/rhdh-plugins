@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-skill-image-connector-backend
 
+## 0.10.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [0a42ebd]
+  - @red-hat-developer-hub/backstage-plugin-ai-skills-common@0.5.0
+
+## 0.9.0
+
+### Minor Changes
+
+- 9d074fe: Add durable OCI skill Markdown retention with bounded storage (50 MiB / 1,000 digests per source), monotonic `X-Skilldocs-Revision` header on completed snapshots, and `POST /skilldocs/:sourceId/reconcile` endpoint for provider-authorized acknowledgment with safe cleanup of unreferenced content. The plugin requires its Backstage database service; initialization failures stop startup. Acknowledgments and their exact eligible deletions commit atomically, preserving newer unacknowledged content across restarts.
+
 ## 0.8.0
 
 ### Minor Changes

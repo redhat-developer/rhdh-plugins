@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.5.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+## 1.4.2
+
+### Patch Changes
+
+- 85e46df: Fix missing BUI `component-overrides` CSS (e.g. Card borders) in production RHDH app bundles by expanding `sideEffects` to keep published `*.css.esm.js` styleInject modules from being tree-shaken.
+
 ## 1.4.1
 
 ### Patch Changes

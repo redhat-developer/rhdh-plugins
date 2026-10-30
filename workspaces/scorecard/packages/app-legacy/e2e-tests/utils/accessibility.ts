@@ -50,5 +50,8 @@ export async function runAccessibilityTests(
     v => v.id !== 'button-name',
   );
 
-  expect(filteredViolations, 'Accessibility violations found').toEqual([]);
+  expect(
+    filteredViolations,
+    `Accessibility check (${accessibilityScanResults.violations.length} violations)`,
+  ).toEqual([]);
 }

@@ -1,3 +1,364 @@
+## Focused PR #5339 follow-up: test-boundary comment and prose wrapping
+
+**Last audited:** 2026-10-26T17:03:01Z
+
+The combined TechDocs test now documents why it replaces registry I/O through
+an internal sibling-package OciClient path. The comment requires its Jest mock,
+requireActual and requireMock references to move together if that module is
+relocated, and states that missing targets fail Jest resolution. No public test
+injection API or stability promise was added to production code.
+
+The conditional-fetch prose in D8 and the reader README was soft-wrapped to match
+surrounding paragraphs. Word-level comparisons confirm those edits preserve the
+text exactly. Runtime behavior, configuration, public APIs, changesets and all task
+statuses are unchanged. The prior 6.5 verification and maintainer regression
+evidence remains below; this is not a new full-change audit.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No unresolved artifact inconsistencies were identified in this focused scope.
+Historical audit entries are preserved in full.
+
+---
+
+## Task 6.5 completion: integrated verification and conditional-reader correction
+
+**Last audited:** 2026-10-26T15:45:44Z
+
+PR #5339 now maps the whole task 6.5 matrix to focused new coverage and existing
+6.1–6.4 regression suites. See [verification.md](verification.md) for test paths,
+mock boundaries, commands, and reproducible maintainer instructions. Historical
+audit entries below remain unchanged.
+
+The new combined test uses actual annotated, tar and tar+gzip extraction and
+normalization, a running authenticated connector HTTP backend with SQLite content
+storage, a file-backed provider store, native fetch, provider annotations and
+acknowledgments, and actual reader MkDocs files. Registry manifest/blob I/O and
+processed Catalog API visibility are fixtures. Four distinct catalog entities
+include same-digest aliases sharing documents; tag movement changes one document
+URL without changing its entity reference. This is not a live catalog processing
+worker or a full mkdocs build. Prior 6.4 maintainer rendering evidence remains
+separate from this automated verification.
+
+The native path exposed a real conditional-request interaction: default Node
+fetch cache policy suppresses the connector's matching 304 via request cache
+control. Explicit revalidation cache mode fixes this for conditional OCI skill
+reads. The combined test failed before the fix and passed after it; a unit fetch
+assertion guards the option. The maintainer approved this production correction
+and requested a patch changeset. Model-card behavior and public APIs are unchanged;
+the API report requires no content changes. Two provider development dependencies
+and their lockfile references are test composition only, not production dependencies.
+
+Other strengthened tests verify different content per digest, three byte-limited
+partial refreshes, the real 1,000-retained-digest ceiling with repeated rejected
+admissions followed by a retained-only inventory drain and successful re-admission,
+a promise-held cleanup overlapping another refresh, and persisted content surviving
+a recovered store's reduced-budget rejection. Existing durable acknowledgment,
+visibility-delay, authorization/body-boundary, extraction-limit, redirect and
+model-card suites are referenced instead of falsely claiming those all run in the
+connector lifecycle fixture's in-memory store.
+
+Automated suites pass: 630 connector tests, 142 provider tests and 70 reader tests
+(842 total across 32 suites). Task 6.5 is checked at the maintainer's explicit
+request. The maintainer waived another broad manual regression for test-only work,
+then requested a quick manual regression of the approved reader correction; that
+quick manual regression was subsequently confirmed successful by the maintainer.
+This records the reported result without inventing specific manual cases or HTTP
+observations. No app-config.yaml or other task statuses were changed.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This focused artifact/evidence update is not a fresh independent full-change audit.
+There are no unresolved artifact inconsistencies in this scope. The maintainer
+confirmed successful regression testing and authorized this local commit; another
+Fullsend review will follow signing and pushing.
+
+---
+
+## Task 6.4 completion: maintainer end-to-end TechDocs verification
+
+**Last audited:** 2026-10-23T19:59:56Z
+
+After rebasing PR #5330 onto merged task 6.3 (PR #5324), the maintainer
+confirmed that SKILLS.md rendered as TechDocs from both imported OCI skill
+entities. This verifies the provider annotation and URL-reader integration through
+the running TechDocs path. The result is maintainer-reported manual verification;
+it does not imply additional manual security, failure, or retention test coverage.
+
+Task 6.4 is now checked in tasks.md. This entry supersedes the pending rendering
+verification status in the historical 6.4 follow-up below. Prior automated evidence
+remains valid: the rebased branch passed 70 reader tests and 141 provider tests,
+full type checking, Prettier, and strict OpenSpec validation. Task 6.5 remains
+unchecked; this completion does not claim its broader integration matrix is done.
+No runtime code, configuration, or API contract changed in this documentation update.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This is a focused completion/evidence update, not a new full-change audit.
+All earlier audit entries are preserved below.
+
+---
+
+## Focused PR #5324 final review follow-up: logging and documentation
+
+**Last audited:** 2026-10-23T19:34:52Z
+
+The provider no longer logs delivery errors immediately before rethrowing them;
+the initial-delivery or retry caller logs each failure once. Error propagation,
+pending acknowledgment persistence, and retry source blocking are unchanged.
+Blocked-source key reuse, import ordering, and migration JSDoc were tidied without
+changing reconciliation or migration behavior.
+
+README, D8 and the provider scenarios now distinguish snapshot acquisition's
+individual step deadlines from the shared 30-second visibility phase (auth and
+catalog queries) and shared 30-second delivery phase (discovery, auth and POST).
+The code retains these stricter phase bounds. Eligible ready OCI snapshots with
+revisions may acknowledge unchanged/repeated observations; idempotent connector
+handling is intentional. Recovery blocks, stale observations, deferrals, and
+failures prevent unconditional delivery on every scheduled run. A successful
+catalog reconciliation can have a separately logged, durable pending acknowledgment.
+
+The major changeset retains the required store/client/method contracts and now
+explains removal of the implicit in-memory fallback without presenting removal of
+a private class as an independent API break. Additive types and dependencies need
+no compatibility remediation. No task status or app-config.yaml changes were made.
+
+Regression verification: 141 provider tests across ten suites pass. Two new real
+SQLite cases reproduced duplicate logs before the fix and now verify exactly one
+error entry for initial and retry delivery failures, retained pending work, and
+blocked polling on retry. This focused consistency update preserves all historical
+audit entries and does not claim a new full-change audit or maintainer approval
+of these uncommitted follow-up changes.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No unresolved inconsistencies were identified within this focused scope.
+
+---
+
+## Focused task 6.4 review follow-up: trusted destinations and ETags
+
+**Last audited:** 2026-10-23T19:06:42Z
+
+This entry records PR #5330's OCI skill documentation reader implementation and
+its review corrections. It supersedes earlier no-task-status-change wording only
+for this follow-up; historical entries below retain their original scope.
+
+The URL-reader service factory now resolves configured OCI connector bases through
+Backstage discovery before publishing the synchronous reader factory. Both reader
+selection and direct reads require the exact trusted origin and complete base
+pathname, preserving deployment prefixes and decoding each route segment once.
+Malformed percent escapes produce no match. Skill-documentation paths cannot
+fall through to the legacy model-card substring matcher. Untrusted skill URLs are
+rejected before requesting or sending a service token.
+
+Successful skill-docs responses must supply a nonblank ETag, validated before the
+response body is adapted or locked. Missing validators produce a protocol error
+rather than an empty cache key. Valid ETags pass through unchanged; conditional
+requests, 404/304 propagation, and minimal MkDocs generation remain covered.
+Model-card requests now reject redirects while retaining their cache behavior.
+Delivery-plan wording was removed from source comments. The optional routing
+metadata refactor was deferred because the current priority is consistent.
+
+D8, the TechDocs scenarios, README, changeset and task note describe the same
+behavior. Task 6.4 is unchecked pending maintainer rendering/regression testing;
+this entry does not claim task 6.3 or 6.5 completion. No app-config.yaml changes
+were made.
+
+Automated verification: 70 tests across two reader suites passed, including
+red/green reproductions of off-origin matching, missing discovery prefixes,
+malformed encoding, absent ETags, redirect policy and service-factory discovery
+wiring. A real Response/body adapter test covers authenticated prefixed reads
+and ETag passthrough; a missing-ETag case verifies rejection before body locking.
+Full workspace type checking/build, package lint and API report CI checks passed.
+Reader HTTP/auth/discovery boundaries are fixtures; live TechDocs rendering remains
+the maintainer's next verification step.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No unresolved artifact inconsistencies were found in this focused scope. This is
+not a new full-change audit or an end-to-end rendering result.
+
+---
+
+## Focused task 6.3 completion follow-up: release context and visibility
+
+**Last audited:** 2026-10-23T18:13:03Z
+
+This focused consistency check covers the provider implementation, D8, provider
+scenarios, task 6.3, README, and major changeset. It does not re-audit unrelated
+pending tasks. Historical entries below retain their original scope and dates.
+
+The provider now requires processed catalog visibility verification and persists
+complete release context before a ready OCI mutation. Recovery uses that context
+before retrying acknowledgments or polling newer snapshots. Deferred visibility
+blocks only its source; incomplete query responses cannot prove removal. Partial
+and stale observations cannot authorize release. An unchanged digest/timestamp
+still permits the annotation upgrade required by 6.3. External provider operations
+have deadlines and authenticated HTTP requests reject redirects.
+
+The additive migration preserves existing state. Revision-only pending OCI deltas
+from pre-release builds fail closed for operator investigation; their ready versus
+partial provenance cannot be reconstructed safely. This limitation is documented
+in D8 and the README rather than silently dropping pending obligations.
+
+Automated provider coverage passes: 139 tests across 10 suites, including real
+SQLite crash/reopen and transaction rollback, delayed catalog processing while
+connector revisions advance, partial replay, stale URLs, annotation upgrades,
+encoded source IDs, duplicate retention owners, deadlines, and cancellation.
+Maintainer regression verification passed: the OCI TechDocs annotation is present.
+End-to-end rendering awaits the separate task 6.4 reader.
+Task 6.3 remains checked; this check makes no completion claim for 6.4 or 6.5.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No unresolved inconsistencies were identified within this focused scope.
+
+---
+
+## Task 6.3 implementation: PR #5324 OCI TechDocs acknowledgment
+
+**Last audited:** 2026-10-23T12:00:00Z
+
+Task 6.3 is now implemented. The catalog provider sets
+`backstage.io/techdocs-ref` on OCI skill entities, captures
+`X-Skilldocs-Revision`, persists durable acknowledgments with catalog
+visibility verification, retries pending acknowledgments before polling,
+handles superseded revisions (409), persists revision in pending deltas
+for crash-safe replay, acknowledges no-op ready OCI plans, isolates
+per-ack errors in the retry loop, and rejects duplicate retention-owner
+assignments at startup. The `ReconciliationStore` interface now requires
+four acknowledgment lifecycle methods (breaking change, `major` bump).
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This is a focused task-completion update, not a new full-change audit.
+
+---
+
+## Focused review follow-up: PR #5319 test precision and initialization docs
+
+**Last audited:** 2026-10-22T20:17:54Z
+
+The partial-retention test now aligns its previously owned A tuple with the
+incoming fixture, verifies exactly two resulting identities, verifies A's updated
+digest, and compares absent B against its unchanged saved entity. The stronger
+assertion reproduced the old three-entity fixture mismatch before correction.
+Constructor documentation and README now explicitly assign custom-store
+initialization to the supplying caller before provider connection. The module
+already performs that step; production behavior and public signatures are unchanged.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+This is a focused consistency update, not a new independent full-change audit.
+Earlier successful runtime verification remains below. No production behavior
+change, new configuration, or task-status change is introduced by this follow-up.
+
+---
+
+## Focused review follow-up: PR #5319 namespace and migrations
+
+**Last audited:** 2026-10-22T17:53:23Z
+
+This focused update covers the namespace and schema-management corrections after
+the prior maintainer regression verification. It is not a new full-change audit;
+previous reports and their verification evidence remain below.
+
+Removal plans now carry original catalog entity references. Repeated observations
+do not suppress namespace migration. Partial observations preserve both old and
+new identities until ready cleanup. Legacy pending removals resolve against
+persisted ownership and block safely if it cannot be recovered unambiguously.
+Production schema setup uses a packaged module-scoped Knex migration and lock,
+adopts compatible existing tables without deleting rows, rejects missing-column
+schemas, and honors Backstage migration skipping. The shared helper follows the
+flat testUtils.ts convention with a development-only dependency lint exception.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+Design, provider scenarios, task annotations, README, and changeset now cover these
+behaviors. Task 4.5 remains implemented. Maintainer regression testing of these newest
+corrections passed. Inspection of /tmp/ggm-dev.log and read-only SQLite queries
+confirmed recovery of two previously stored Markdown entries, preservation of two
+catalog ownership records during loading, and successful refresh of both configured
+images without duplicate catalog mutations. Namespace and migration failure cases
+are covered by automated tests; they are not claimed as separate manual exercises. Public store methods remain
+required and the internal implementation remains absent from the package entry
+point. API and automated check results are recorded in the implementation handoff.
+
+---
+
+## Focused implementation verification: PR #5319 (RHIDP-17331)
+
+**Last audited:** 2026-10-22T16:41:01Z
+
+This entry supersedes earlier pending-work descriptions only for the provider
+implementation addressed by PR #5319. Historical reports below are preserved.
+This is a focused consistency check, not a new audit of the entire change.
+
+The provider blocks newer observations for a source whose pending mutation
+replay or ownership commit fails. Other sources continue independently. Real
+file-backed SQLite tests replace the in-memory stand-in previously used for
+store tests, verify state through a new connection, and exercise atomic rollback.
+Provider lifecycle tests cover outages, interrupted additions followed by removal,
+replay failure, repeated replay, partial retention, invalid responses, both source
+types, same-digest tag aliases, and stable identity when a tag moves. Existing
+config/consumer/planner tests supply duplicate-config, validation, and collision
+coverage. The internal database class is removed from package exports and the
+API report is regenerated.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No new cross-artifact contradiction was identified in this focused update.
+Task 4.5 is marked implemented; maintainer basic regression testing passed.
+File-backed SQLite restart and rollback verification is automated; the local
+app-config.yaml still uses in-memory storage on this branch. Automated verification passed (96 provider tests, type check,
+build, package lint, API report validation, formatting, and strict OpenSpec validation);
+automated coverage does not claim live demo acceptance or completion of future
+TechDocs acknowledgment tasks. Automated command results are reported in the
+implementation handoff.
+
+---
+
 ## Audit Report: oci-npx-skills-registry-demo
 
 **Last audited:** 2026-10-21T19:03:14Z

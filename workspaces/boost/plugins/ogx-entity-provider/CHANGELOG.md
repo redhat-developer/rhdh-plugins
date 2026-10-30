@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-llamastack-entity-provider
 
+## 1.1.0
+
+### Minor Changes
+
+- aa44c81: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [aa44c81]
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils@1.1.0
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes

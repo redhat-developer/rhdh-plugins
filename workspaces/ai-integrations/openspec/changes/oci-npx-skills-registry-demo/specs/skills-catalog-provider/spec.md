@@ -152,12 +152,42 @@ entities, not merely acquired records. Source configuration SHALL identify the
 sole provider assignment for retention; duplicates are rejected. npx sources do
 not participate in this protocol.
 
+#### Scenario: Provider namespace changes with unchanged skill content
+
+- **WHEN** configured namespace changes while a skill's digest and connector observation timestamp remain unchanged
+- **THEN** a ready reconciliation upserts the configured identity and removes the old identity using its persisted full reference
+- **AND** replay after restart uses the original persisted removal target
+
+#### Scenario: Partial observation during namespace migration
+
+- **WHEN** a partial snapshot is reconciled after changing the provider namespace
+- **THEN** successful records may be upserted in the new namespace
+- **AND** old identities remain owned and retained until a ready reconciliation authorizes their removal
+
+#### Scenario: Legacy pending removal has no original identity
+
+- **WHEN** a pending removal without a full entity reference cannot be matched unambiguously to committed ownership
+- **THEN** the provider preserves the pending delta and blocks newer observations for that source
+- **AND** it does not construct a removal target from the current namespace
+
+#### Scenario: Existing development tables are adopted by migrations
+
+- **WHEN** the provider starts with compatible reconciliation tables created before migration tracking was introduced
+- **THEN** its module-scoped migration records the baseline without deleting committed or pending rows
+- **AND** it does not change the Catalog plugin's migration history
+
 #### Scenario: Documentation acknowledgment follows catalog commit
 
 - **WHEN** a ready OCI snapshot is successfully reconciled and ownership is durably committed
 - **AND** catalog queries confirm the affected processed entities expose their committed documentation URLs and removed entities are absent
 - **THEN** the provider sends its persisted revision and committed retained-digest set to the connector's reconcile endpoint using a service token targeted to `skill-image-connector`
 - **AND** failed mutations, invalid snapshots, partial snapshots, loading, and failed acquisition send no release acknowledgment
+
+#### Scenario: Unchanged ready observation still acknowledges
+
+- **WHEN** an eligible ready OCI snapshot carries a revision but produces unchanged entities or repeats an observation
+- **THEN** the provider persists an acknowledgment and verifies catalog visibility before delivery
+- **AND** the connector handles repeated identical acknowledgments idempotently
 
 #### Scenario: Catalog processing lags provider mutation
 
@@ -173,6 +203,44 @@ not participate in this protocol.
 - **THEN** it first recovers pending mutations, commits ownership, and retries the durable acknowledgment before consuming newer snapshots
 - **AND** transport, auth, and server errors retain the acknowledgment for retry
 - **AND** 409 discards only the superseded acknowledgment and permits a new poll, without changing catalog state or authorizing cleanup
+
+#### Scenario: Deferred acknowledgment prevents release context replacement
+
+- **WHEN** catalog processing has not satisfied an existing acknowledgment's expected URLs or removals and the connector advances its snapshot
+- **THEN** the provider preserves the existing acknowledgment and skips newer polling for that source
+- **AND** other sources continue independently
+
+#### Scenario: Crash replay preserves the original release obligations
+
+- **WHEN** a ready OCI mutation is interrupted before ownership and acknowledgment commit
+- **THEN** replay uses the complete release and visibility context persisted before that mutation
+- **AND** source configuration changes do not reconstruct or weaken those obligations
+
+#### Scenario: Partial crash recovery cannot release documentation
+
+- **WHEN** an interrupted partial OCI delta is replayed
+- **THEN** ownership can recover without creating a release acknowledgment from a response revision header
+
+#### Scenario: Legacy pending revision lacks release context
+
+- **WHEN** a pre-release OCI pending delta has a revision but lacks complete acknowledgment context
+- **THEN** the provider preserves that delta and blocks newer polling for its source with an investigation diagnostic
+- **AND** it does not infer whether that delta came from a ready or partial observation
+
+#### Scenario: Existing entities need the TechDocs annotation
+
+- **WHEN** an OCI entity lacks its expected TechDocs annotation and the next ready observation has unchanged digest and timestamp
+- **THEN** the provider upserts the expected annotation before allowing release acknowledgment
+
+#### Scenario: External provider operation stalls
+
+- **WHEN** a snapshot acquisition step (discovery, authentication, or fetch/body consumption), the complete visibility verification phase (authentication and catalog queries), or the complete acknowledgment delivery phase (discovery, authentication, and POST) exceeds its respective 30-second deadline or the scheduler cancels the run
+- **THEN** the provider bounds that operation and preserves unresolved release obligations
+
+#### Scenario: Authenticated connector request redirects
+
+- **WHEN** a snapshot or acknowledgment request returns a redirect
+- **THEN** the provider rejects the redirect without forwarding its service token
 
 #### Scenario: One skill fails during refresh
 
@@ -195,6 +263,13 @@ not participate in this protocol.
 - **WHEN** a catalog mutation fails or the process stops before saving progress
 - **THEN** that snapshot is retried without advancing the durable observation time
 - **AND** replaying a previously applied delta does not duplicate entities or remove another source's entities
+
+#### Scenario: Pending recovery fails while another source is available
+
+- **WHEN** replaying a source's pending delta or committing its recovered ownership fails
+- **THEN** the exact pending delta and previous committed observation remain recoverable
+- **AND** the provider does not consume a newer snapshot for that source until recovery succeeds
+- **AND** independently configured sources may continue reconciling
 
 #### Scenario: Connector advances after an interrupted addition
 

@@ -155,6 +155,21 @@ describe('ContentStore durable retention', () => {
     ).resolves.toBeUndefined();
   });
 
+  it('rejects a lower retention budget after recovery without deleting persisted content', async () => {
+    const store = await openStore();
+    const markdown = '# Persisted content larger than the new budget';
+    await store.store('source', digestA, markdown);
+    const reduced = new ContentStore(mockServices.logger.mock(), 10);
+    await reduced.initialize(service);
+    await expect(reduced.validateRetentionLimit('source')).rejects.toThrow(
+      /below already-retained bytes/,
+    );
+    expect(await (await openStore()).get('source', digestA)).toBe(markdown);
+    expect(
+      await database('retained_markdown').count('* as count').first(),
+    ).toMatchObject({ count: 1 });
+  });
+
   it('rejects configured database connection failure', async () => {
     const store = new ContentStore(mockServices.logger.mock());
     await expect(

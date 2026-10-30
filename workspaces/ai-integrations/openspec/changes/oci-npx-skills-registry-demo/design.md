@@ -318,9 +318,24 @@ persist a pending record containing that exact delta and its intended next
 ownership state/observation time. This is separate from committed reconciliation
 progress. After the catalog mutation succeeds, atomically commit the next state
 and clear the pending record. On restart or retry, replay any pending delta and
-commit its state before consuming a newer connector snapshot. This closes the
+commit its state before consuming a newer connector snapshot. If replay or its
+ownership commit fails, preserve the exact pending work and skip polling that
+source until recovery succeeds; independent sources may continue. This closes the
 crash window between catalog mutation and ownership persistence, including when
 the connector has already removed a newly added skill from its next snapshot.
+
+Provider removals persist the full original catalog entity reference, including
+namespace, rather than reconstructing it from current configuration. A namespace
+configuration change is reconciled even for a repeated connector observation:
+ready results add the new identity and remove the old one; partial results retain
+old identities until ready cleanup is authorized. Pre-upgrade pending removals
+recover their original references from committed ownership; missing or ambiguous
+ownership blocks that source's replay rather than guessing a namespace.
+
+The provider database uses packaged Knex migrations with independent
+`skills_catalog_provider_migrations` tracking and locking in the shared Catalog
+database. The initial migration adopts compatible pre-existing development tables
+without deleting their rows; incompatible missing-column schemas fail initialization.
 
 The OCI connector retains extracted Markdown content for skills that have
 last-known-good entities. Content retention follows the same lifecycle as
@@ -337,31 +352,29 @@ for the dedicated Markdown endpoint and content lifecycle.
 > updates, or removals; nonblank invalid owner/lifecycle hint defaulting to
 > configured values; consumer regression tests; and updated spec scenarios.
 > The snapshot-validation and entity-construction scope of 4.2 is complete.
-> The current provider implementation uses `type: 'full'` mutations scoped
-> per source instead of the delta mutations and database persistence
-> described above. `loading` and `failed` statuses skip mutation (preserving
-> previous entities); `partial` snapshots are currently handled as full
-> replacements. Consumer validation failures (source-reference construction
-> errors, malformed snapshots) reject the invalid source snapshot and
-> preserve existing entities without additions, updates, or removals. Delta
-> reconciliation, durable persistence, crash-safe pending records, and
-> comprehensive status handling are deferred to tasks 4.3 and 4.4.
-> RHIDP-17331's broader runtime/reconciliation work is tracked separately
-> under those tasks; task 4.2's completion covers its snapshot-validation
-> and entity-construction scope, while RHIDP-17331 gates the remaining
-> provider infrastructure in 4.3–4.5. Marking 4.2 complete was previously
-> deferred pending RHIDP-17331 (#5301); that gate applied to the broader
-> integration/reconciliation scope, not to the validation/construction work
-> that #5291 and #5304 together address.
+> The provider now uses `type: 'delta'` mutations scoped per source with
+> durable database persistence (tasks 4.3–4.4, PR #5319).
+> `DatabaseReconciliationStore` persists per-source committed ownership
+> state and crash-safe pending deltas using provider-scoped composite keys.
+> `loading` and `failed` statuses skip mutation (preserving previously
+> committed entities); `partial` snapshots apply upserts only with no
+> removals, retaining absent entities. Consumer validation failures
+> (source-reference construction errors, malformed snapshots) reject the
+> invalid source snapshot and preserve existing entities without additions,
+> updates, or removals. Task 4.2's completion covers its snapshot-validation
+> and entity-construction scope (#5291, #5304). Task 4.5 (comprehensive
+> integration tests) now has file-backed SQLite restart, rollback, replay, and
+> tag-identity coverage in PR #5319; maintainer basic regression verification passed.
 >
 > **Task 4.4 partial completion (PR #5315):** The pure decision portion of
 > delta reconciliation is implemented as `calculateReconciliationPlan`, a
 > standalone function that computes deterministic upsert/removal deltas
 > from committed ownership state and a validated snapshot. Covers
 > ready/partial/loading/failed status handling, stale/repeated observation
-> detection, and cross-source identity collision diagnosis. Durable
-> persistence, crash-safe replay, and runtime integration remain in
-> tasks 4.3–4.5, gated by RHIDP-17331.
+> detection, and cross-source identity collision diagnosis. PR #5319
+> integrates that planner with durable persistence and replay, blocks newer
+> observations for sources whose recovery fails, and adds database-backed
+> verification. Task 4.5 is marked implemented following automated and maintainer basic regression verification.
 
 ### D7 — Public-source safety, bounds, and configuration
 
@@ -673,6 +686,40 @@ and cannot cause cleanup. Partial snapshots may upsert but never acknowledge
 release. Duplicate provider assignments for a connector/source are rejected;
 multiple independent retention owners for one source are outside this increment.
 
+The provider requires a durable reconciliation store and a catalog client capable
+of querying processed entity references; visibility verification cannot be bypassed.
+Before applying a ready OCI delta, persist its full acknowledgment context with
+that delta: revision, connector plugin ID, retained digests, expected processed
+entity references/URLs, and removal references. Replay uses this immutable context,
+not current source configuration. Recover pending deltas first, then retry their
+acknowledgments. An unresolved visibility check blocks newer polling for that
+source, just as a delivery error does, so a later snapshot cannot overwrite its
+release obligations. Incomplete catalog responses do not prove removals.
+Partial and stale observations never create release acknowledgments.
+
+Snapshot acquisition gives discovery, authentication, and fetch/body consumption
+separate 30-second deadlines. Catalog visibility verification has one shared
+30-second deadline including authentication and catalog queries; acknowledgment
+delivery has another shared 30-second deadline including discovery, authentication,
+and POST. Individual steps within either phase do not reset that phase's deadline.
+These operations honor scheduler cancellation. Authenticated provider HTTP requests
+reject redirects.
+
+Eligible ready OCI snapshots with revisions may create acknowledgments even when
+entities are unchanged or observations repeat; the connector handles repetitions
+idempotently. This steady-state traffic is intentional and requires no additional
+last-acknowledged-revision persistence. Recovery blocks, stale observations, deferred
+visibility, and failures can prevent new delivery. Reconciliation success describes
+the committed catalog work, not completion of its asynchronous acknowledgment.
+Deferral is persisted and logged separately. Delivery errors propagate to their
+caller, which logs the failure once and preserves pending work/source blocking.
+An additive pending-delta migration preserves existing state. Legacy pre-release
+OCI deltas with a revision but no complete acknowledgment context remain pending
+and block that source for operator investigation; recovery cannot safely infer
+ready versus partial status. Older deltas without revisions can replay without
+release. Existing entities missing or changing their TechDocs annotation receive
+an upsert even when digest and observation timestamp are unchanged.
+
 **Provider annotation.** The catalog provider constructs the
 `backstage.io/techdocs-ref` annotation for OCI skill entities using
 `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` as specified
@@ -688,6 +735,9 @@ skill entities do not receive a `backstage.io/techdocs-ref` in this increment.
 **URL-reader integration.** The existing `catalog-techdoc-url-reader-backend`
 plugin is extended to match OCI skill documentation URLs from trusted
 configured or Backstage-discovered connector destinations and paths. The reader
+resolves configured OCI connector bases through Backstage discovery during service
+initialization, before publishing its synchronous reader factory. Both predicate
+selection and direct reads enforce those trusted destinations. The reader
 matches the exact trusted connector origin and base pathname, followed by
 `/skilldocs/<sourceId>/<digest>`. For example, a discovered base of
 `https://rhdh.example/api/skill-image-connector` matches
@@ -696,7 +746,9 @@ Append to the base pathname rather than resolving a leading slash against the
 origin. Source configuration rejects IDs exactly equal to `.` or `..` in
 addition to blank IDs, because URL parsing normalizes literal and encoded dot
 segments. Encode source ID and digest as individual path segments and decode each
-once when validating the route; reject extra segments, query strings, fragments,
+once when validating the route; malformed encoding returns no match rather than
+throwing from the predicate. Skill-documentation routes cannot fall through to
+legacy model-card substring routing. Reject extra segments, query strings, fragments,
 URL credentials, and paths outside the exact connector base. Do not forward
 service tokens across redirects; treat redirects as errors. It does not infer
 arbitrary credential destinations from URL substrings. The reader authenticates
@@ -707,7 +759,13 @@ reader's service-token pattern. It propagates HTTP errors from the connector:
 propagate as errors. Successful responses produce a minimal MkDocs project
 containing `mkdocs.yml` with a suitable skill title and `docs/index.md` with
 the retrieved Markdown content. The reader passes the connector's `ETag`
-response header through for TechDocs digest-based cache semantics. Already
+response header through for TechDocs digest-based cache semantics. Conditional
+OCI reads use explicit fetch revalidation cache mode so a matching ETag can
+produce the connector's 304 response rather than being overridden by Node
+fetch's automatic request cache-control policy. A successful
+skill-docs response missing a nonblank ETag is a protocol error; no empty or
+fabricated validator is substituted. Model-card HTTP requests also reject redirects,
+while preserving their existing cache behavior. Already
 validated Markdown frontmatter from the connector is included as-is in
 `docs/index.md`; the reader does not strip or re-parse it. For this increment,
 the reader renders the single extracted Markdown document only; bundled assets,

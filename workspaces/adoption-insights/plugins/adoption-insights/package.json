@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-adoption-insights",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "license": "Apache-2.0",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
@@ -44,7 +44,9 @@
       "@red-hat-developer-hub/backstage-plugin-adoption-insights-common"
     ]
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/configureMuiClassName.ts"
+  ],
   "scripts": {
     "start": "backstage-cli package start",
     "start:legacy": "backstage-cli package start --entrypoint dev/legacy.tsx",
