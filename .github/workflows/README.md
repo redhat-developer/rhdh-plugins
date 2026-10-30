@@ -8,6 +8,8 @@ Triggered on pull requests, this workflow runs tests on workspaces that have cha
 
 Handles the release process for a specific workspace from a specified branch (default: `main`). Automatic publishing requires both a package version bump and a push from merging that workspace's `Version Packages (<workspace>)` PR authored by `rhdh-bot` from `changesets-release/<workspace>/main`. Other pushes that bump versions do not publish. The explicit `force_release` input remains available for manual releases. If there is no version bump, the workflow updates the Version Packages PR from pending changesets. For more details, see the [Changesets documentation](https://github.com/changesets/changesets).
 
+After a successful automatic release, calls [update-overlays.yml](./update-overlays.yml) to request an overlays update and comment its PR link on the merged Version Packages PR. Forced manual releases do not trigger this follow-up.
+
 ## [backport.yml](./backport.yml)
 
 Creates a backport pull request when a pull request merged into `main` has one backport label. Comment exactly one of `/backport release-2.1`, `/backport release-1.10`, or `/backport release-1.9` on the pull request before it is merged. The 2.x label targets the repository-wide branch directly, such as `release-2.1`. The 1.9 and 1.10 labels require exactly one PR `workspace/<name>` label (not a branch) to select a legacy per-workspace branch such as `release-1.10/orchestrator`. The workflow creates the release label when needed, cherry-picks all commits from the source pull request, and opens a pull request for normal review. Missing release branches are reported and skipped; ambiguous release or workspace labels fail explicitly. Resolve cherry-pick conflicts manually on a branch based on the target release branch.
@@ -22,7 +24,28 @@ The same release process applies to both branch layouts:
 2. The workflow opens a separate `Version Packages` pull request for each affected workspace, from `maintenance-changesets-release/release-x.y/<workspace>`. A leftover branch with that name from a previous cycle must be deleted before the workflow can open a new PR. For legacy branches, the workspace comes from the target branch; for repository-wide branches, the workflow detects affected workspaces from the merged PR.
 3. Merge the `Version Packages` PR authored by `rhdh-bot` to publish that workspace with the `maintenance` npm dist-tag and create its Git tag. Closing it without merging does not publish.
 
+Successful maintenance releases also call [update-overlays.yml](./update-overlays.yml). The overlays target is the matching `release-x.y` branch, including when the source branch is the legacy `release-1.x/<workspace>` layout.
+
 For `yarn.lock`-only fixes without plugin code changes, no changeset or npm release is needed; update the corresponding overlays `source.json` `repo-ref` instead. See [Backporting patches](../../CONTRIBUTING.md#backporting-patches-prior-release-lines) for the full procedure, including the follow-up `CHANGELOG` PR to `main`.
+
+## [update-overlays.yml](./update-overlays.yml)
+
+Reusable post-release workflow; it has no manual or pull-request trigger. It runs only in `redhat-developer/rhdh-plugins`, after the caller's publish and tag jobs succeed. The helper in `scripts/ci/update-overlays.js`:
+
+1. Resolves the exact merged, bot-authored Version Packages PR from the release commit.
+2. Dispatches overlays' existing `update-plugins-repo-refs.yaml` workflow from `main`, scoped to the released workspace and matching target branch. If an update PR already exists, passes `pr-to-update` to refresh it.
+3. Waits up to 30 minutes for an open or merged overlays PR whose `source.json` references this repository and the exact release commit, then posts its URL on the Version Packages PR. Reruns reuse matching PRs and do not duplicate identical comments.
+
+Workspaces missing from overlays or owned by a different upstream are skipped with a warning. If no matching PR is found, failed, cancelled, incompatible/no-op, and timed-out updates fail the follow-up job with a run URL; packages already published to npm are not rolled back. Inspect the failed follow-up job and linked overlays run before retrying. A link can be posted as soon as the matching PR exists; the overlays workflow's subsequent publish checks remain separate.
+
+### Prerequisites and rollout
+
+- The existing `RHDH_BOT_TOKEN` must have **Actions: read/write**, **Contents: read**, and **Pull requests: read** on `redhat-developer/rhdh-plugin-export-overlays`, plus **Contents: read** and **Pull requests: read/write** on `redhat-developer/rhdh-plugins`. A classic PAT needs `repo` scope and access to both repositories. The default repository-scoped `GITHUB_TOKEN` cannot perform this cross-repository dispatch.
+- Install the companion overlays concurrency change before enabling this caller: scoped updates must be grouped by workspace and target branch, and must not cancel running updates. Otherwise parallel workspace releases can cancel one another.
+- Backport this workflow, its helper, and the caller changes together to each source release branch where automatic propagation is needed. The helper is checked out at the triggering commit, not from a moving `main` branch.
+- Dispatch requests use GitHub REST API version `2026-03-10`, which returns the new workflow run ID. No run is selected by a timestamp or by searching for the latest run.
+
+Run the mocked, network-free tests with `node --test scripts/ci/update-overlays.test.js`. They also run in the repository-wide CI checks. Do not validate this automation by dispatching a production update or publishing packages.
 
 ## [release.yml](./release.yml)
 

@@ -195,3 +195,14 @@ jobs:
         env:
           WORKSPACE_NAME: ${{ inputs.workspace }}
           GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN}}
+
+  update-overlays:
+    name: Update overlays for ${{ inputs.workspace }}
+    needs: [changesets-pr, release]
+    if: github.repository == 'redhat-developer/rhdh-plugins' && needs.changesets-pr.outputs.authorized_release == 'true'
+    uses: ./.github/workflows/update-overlays.yml
+    with:
+      workspace: ${{ inputs.workspace }}
+      branch: ${{ inputs.branch }}
+    secrets:
+      RHDH_BOT_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
