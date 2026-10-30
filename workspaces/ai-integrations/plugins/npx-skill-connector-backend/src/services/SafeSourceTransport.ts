@@ -19,10 +19,16 @@ import type { LookupAddress } from 'node:dns';
 import { isIP } from 'node:net';
 import { Agent } from 'undici';
 import * as ipaddr from 'ipaddr.js';
-import { MAX_REDIRECTS } from './types';
+import type { NpxSourceConfig } from './types';
+import {
+  FETCH_TIMEOUT_MS,
+  MAX_ARTIFACT_SIZE,
+  MAX_INDEX_RESPONSE_SIZE,
+  MAX_REDIRECTS,
+} from './types';
 
 /**
- * Creates a combined signal from an optional parent signal and a timeout.
+ * Stop a request when its caller cancels or the time limit expires.
  */
 function createRequestSignal(
   signal: AbortSignal | undefined,
@@ -44,8 +50,7 @@ export async function cancelResponseBody(response: Response): Promise<void> {
 }
 
 /**
- * Runs one logical request, including redirects and body reading,
- * within a single timeout envelope.
+ * Apply one time limit to redirects and reading the response body.
  */
 export async function withRequestTimeout<T>(
   operation: (signal: AbortSignal) => Promise<T>,
@@ -71,14 +76,6 @@ export async function withRequestTimeout<T>(
   }
 }
 
-/** HTTP status is kept separate from diagnostic text for retry classification. */
-export class HttpResponseError extends Error {
-  constructor(message: string, readonly status: number) {
-    super(message);
-    this.name = 'HttpResponseError';
-  }
-}
-
 function isIpAddress(hostname: string): boolean {
   const normalizedHostname = hostname.startsWith('[')
     ? hostname.slice(1, -1)
@@ -86,7 +83,7 @@ function isIpAddress(hostname: string): boolean {
   return isIP(normalizedHostname) !== 0;
 }
 
-/** Reject non-unicast destinations, including canonical IPv4-mapped IPv6. */
+/** Reject local and other non-public IP addresses, including IPv4 in IPv6 form. */
 export function isPrivateAddress(address: string, family: number): boolean {
   if (!ipaddr.isValid(address) || (family !== 4 && family !== 6)) return true;
   const parsed = ipaddr.parse(address);
@@ -95,12 +92,7 @@ export function isPrivateAddress(address: string, family: number): boolean {
 }
 
 /**
- * Resolves a hostname via DNS, validates all addresses are public,
- * and returns the complete validated address set for connection pinning.
- *
- * The returned addresses are used by a pinned Undici dispatcher so the
- * connection cannot resolve to an unvalidated (potentially private)
- * address after validation.
+ * Check every DNS address and use the checked addresses for the connection.
  */
 export async function validateAndResolveHost(
   hostname: string,
@@ -163,13 +155,6 @@ function createPinnedAgent(
   });
 }
 
-/** Optional additional trusted redirect origins. */
-export interface RequestPolicy {
-  allowedOrigins?: readonly string[];
-  /** When true, redirects are rejected instead of followed. */
-  maxRedirects?: number;
-}
-
 /** Validate operator-supplied origins without permitting paths or credentials. */
 export function validateAllowedOrigin(value: string): string {
   const url = new URL(value);
@@ -205,35 +190,27 @@ export function validateRequestUrl(url: URL): void {
 }
 
 /**
- * Fetches a URL following redirects with full safety enforcement:
- * - HTTPS only
- * - No embedded credentials
- * - No localhost or IP addresses
- * - DNS validation and connection pinning on every hop
- * - npx trust model: only the initial index origin is trusted by default;
- *   additional origins require explicit allowedOrigins configuration
- * - At most MAX_REDIRECTS redirects
- * - Authorization headers are stripped on cross-origin redirects
+ * Fetch only from the configured index origin or an explicitly allowed origin.
+ * Check each redirect and the IP address used for every connection.
  */
-export async function fetchWithRedirects(
+async function fetchWithRedirects(
   url: string,
-  init: RequestInit,
   signal: AbortSignal,
-  policy: RequestPolicy = {},
+  source: Pick<NpxSourceConfig, 'indexUrl' | 'allowedOrigins'>,
 ): Promise<Response> {
-  const initialUrl = new URL(url);
-  let currentUrl = initialUrl;
-  const headers = new Headers(init.headers);
+  let currentUrl = new URL(url);
   const allowedOrigins = new Set([
-    currentUrl.origin,
-    ...(policy.allowedOrigins ?? []).map(validateAllowedOrigin),
+    new URL(source.indexUrl).origin,
+    ...(source.allowedOrigins ?? []).map(validateAllowedOrigin),
   ]);
-  const maxRedirects = policy.maxRedirects ?? MAX_REDIRECTS;
-
-  // Validate initial request URL
   validateRequestUrl(currentUrl);
+  if (!allowedOrigins.has(currentUrl.origin)) {
+    throw new Error(
+      `Source request targets an unconfigured origin: ${currentUrl.origin}`,
+    );
+  }
 
-  for (let redirectCount = 0; redirectCount <= maxRedirects; redirectCount++) {
+  for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
     signal.throwIfAborted();
 
     // Resolve DNS and validate destination for every request, including
@@ -246,8 +223,6 @@ export async function fetchWithRedirects(
 
     try {
       const response = await fetch(currentUrl.toString(), {
-        ...init,
-        headers: Object.fromEntries(headers),
         redirect: 'manual',
         signal,
         dispatcher: pinnedAgent,
@@ -257,7 +232,7 @@ export async function fetchWithRedirects(
         return response;
       }
       await cancelResponseBody(response);
-      if (redirectCount === maxRedirects) {
+      if (redirectCount === MAX_REDIRECTS) {
         throw new Error('Response exceeded the maximum redirect count');
       }
 
@@ -268,19 +243,12 @@ export async function fetchWithRedirects(
       const nextUrl = new URL(location, currentUrl);
       validateRequestUrl(nextUrl);
 
-      // npx trust model: default trust is the index origin only (D7).
-      // Unlike OCI which trusts registry hostname + subdomains,
-      // npx requires explicit allowedOrigins for any non-index origin.
       if (!allowedOrigins.has(nextUrl.origin)) {
         throw new Error(
           `Redirect targets an unconfigured origin: ${nextUrl.origin}`,
         );
       }
 
-      // Strip authorization on cross-origin redirects
-      if (nextUrl.origin !== currentUrl.origin) {
-        headers.delete('authorization');
-      }
       currentUrl = nextUrl;
     } catch (error) {
       void pinnedAgent.destroy().catch(() => undefined);
@@ -293,6 +261,29 @@ export async function fetchWithRedirects(
   }
 
   throw new Error('Redirect handling failed');
+}
+
+/** Fetch an index or skill file using the fixed D7 time and size limits. */
+export async function fetchSourceBuffer(
+  url: string,
+  source: Pick<NpxSourceConfig, 'indexUrl' | 'allowedOrigins'>,
+  kind: 'index' | 'artifact',
+  parentSignal?: AbortSignal,
+): Promise<Buffer> {
+  const maxSize =
+    kind === 'index' ? MAX_INDEX_RESPONSE_SIZE : MAX_ARTIFACT_SIZE;
+  return withRequestTimeout(
+    async signal => {
+      const response = await fetchWithRedirects(url, signal, source);
+      if (!response.ok) {
+        await cancelResponseBody(response);
+        throw new Error(`Source request returned HTTP ${response.status}`);
+      }
+      return readResponseBuffer(response, maxSize);
+    },
+    parentSignal,
+    FETCH_TIMEOUT_MS,
+  );
 }
 
 /**
@@ -354,22 +345,6 @@ async function readStreamingResponse(
   return Buffer.concat(chunks, totalSize);
 }
 
-async function readArrayBufferResponse(
-  response: Response,
-  maxSize: number,
-): Promise<Buffer> {
-  if (typeof response.arrayBuffer !== 'function') {
-    throw new TypeError('Response does not contain a readable body');
-  }
-  const buffer = Buffer.from(await response.arrayBuffer());
-  if (buffer.length > maxSize) {
-    throw new Error(
-      `Response size ${buffer.length} exceeds maximum allowed size ${maxSize}`,
-    );
-  }
-  return buffer;
-}
-
 /**
  * Reads a response body with bounded streaming, enforcing both
  * Content-Length header validation and actual byte-count limits.
@@ -381,17 +356,5 @@ export async function readResponseBuffer(
   await validateContentLength(response, maxSize);
   return response.body
     ? readStreamingResponse(response, maxSize)
-    : readArrayBufferResponse(response, maxSize);
-}
-
-/**
- * Reads a response body as bounded JSON, enforcing byte limits and
- * parsing as JSON.
- */
-export async function readResponseJson(
-  response: Response,
-  maxSize: number,
-): Promise<unknown> {
-  const buffer = await readResponseBuffer(response, maxSize);
-  return JSON.parse(buffer.toString('utf-8'));
+    : Buffer.alloc(0);
 }

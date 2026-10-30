@@ -14,15 +14,167 @@
  * limitations under the License.
  */
 
+import { promises as dnsPromises } from 'node:dns';
 import {
+  fetchSourceBuffer,
   isPrivateAddress,
   validateAllowedOrigin,
   validateRequestUrl,
   readResponseBuffer,
   withRequestTimeout,
-  HttpResponseError,
   validateAndResolveHost,
 } from './SafeSourceTransport';
+
+jest.mock('undici', () => ({
+  Agent: jest
+    .fn()
+    .mockImplementation((options: { connect: { lookup: unknown } }) => ({
+      lookup: options.connect.lookup,
+      close: jest.fn().mockResolvedValue(undefined),
+      destroy: jest.fn().mockResolvedValue(undefined),
+    })),
+}));
+
+describe('fetchSourceBuffer', () => {
+  const source = { indexUrl: 'https://skills.example.com/index.json' };
+  const publicAddress = [{ address: '8.8.8.8', family: 4 }];
+  let fetchMock: jest.SpyInstance;
+  let lookupMock: jest.SpyInstance;
+
+  beforeEach(() => {
+    fetchMock = jest.spyOn(global, 'fetch');
+    lookupMock = jest.spyOn(dnsPromises, 'lookup');
+    lookupMock.mockResolvedValue(publicAddress);
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it('rejects an artifact outside the configured origins before fetching', async () => {
+    await expect(
+      fetchSourceBuffer('https://other.example/skill.md', source, 'artifact'),
+    ).rejects.toThrow('unconfigured origin');
+    expect(lookupMock).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects a redirect outside the configured origins', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(null, {
+        status: 302,
+        headers: { location: 'https://other.example/skill.md' },
+      }),
+    );
+    await expect(
+      fetchSourceBuffer(
+        'https://skills.example.com/skill.md',
+        source,
+        'artifact',
+      ),
+    ).rejects.toThrow('unconfigured origin');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a redirect with embedded credentials', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(null, {
+        status: 302,
+        headers: {
+          location: 'https://user:secret@skills.example.com/skill.md',
+        },
+      }),
+    );
+    await expect(
+      fetchSourceBuffer(
+        'https://skills.example.com/skill.md',
+        source,
+        'artifact',
+      ),
+    ).rejects.toThrow('credentials');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('permits an explicitly configured artifact origin', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('skill'));
+    await expect(
+      fetchSourceBuffer(
+        'https://cdn.example.com/skill.md',
+        { ...source, allowedOrigins: ['https://cdn.example.com'] },
+        'artifact',
+      ),
+    ).resolves.toEqual(Buffer.from('skill'));
+  });
+
+  it('rejects a redirect when DNS resolves to a private address', async () => {
+    lookupMock
+      .mockResolvedValueOnce(publicAddress)
+      .mockResolvedValueOnce([{ address: '127.0.0.1', family: 4 }]);
+    fetchMock.mockResolvedValueOnce(
+      new Response(null, {
+        status: 302,
+        headers: { location: '/other.md' },
+      }),
+    );
+    await expect(
+      fetchSourceBuffer(
+        'https://skills.example.com/skill.md',
+        source,
+        'artifact',
+      ),
+    ).rejects.toThrow('non-public address');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the validated DNS address for the connection', async () => {
+    lookupMock.mockReset();
+    lookupMock
+      .mockResolvedValueOnce(publicAddress)
+      .mockResolvedValue([{ address: '127.0.0.1', family: 4 }]);
+    fetchMock.mockImplementationOnce(async (_url, init) => {
+      const dispatcher = (
+        init as RequestInit & {
+          dispatcher: {
+            lookup: (
+              hostname: string,
+              options: { family: number },
+              callback: (error: Error | null, address: string) => void,
+            ) => void;
+          };
+        }
+      ).dispatcher;
+      let connectedAddress: string | undefined;
+      dispatcher.lookup(
+        'skills.example.com',
+        { family: 4 },
+        (_error, address) => {
+          connectedAddress = address;
+        },
+      );
+      expect(connectedAddress).toBe('8.8.8.8');
+      return new Response('skill');
+    });
+    await expect(
+      fetchSourceBuffer(
+        'https://skills.example.com/skill.md',
+        source,
+        'artifact',
+      ),
+    ).resolves.toEqual(Buffer.from('skill'));
+    expect(lookupMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects an artifact larger than one MiB', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(Buffer.alloc(1024 * 1024 + 1)),
+    );
+    await expect(
+      fetchSourceBuffer(
+        'https://skills.example.com/skill.md',
+        source,
+        'artifact',
+      ),
+    ).rejects.toThrow('exceeds maximum');
+  });
+});
 
 describe('validateRequestUrl', () => {
   it('accepts a valid HTTPS URL', () => {
@@ -180,14 +332,11 @@ describe('withRequestTimeout', () => {
       withRequestTimeout(async () => 42, controller.signal, 5000),
     ).rejects.toThrow('cancelled');
   });
-});
 
-describe('HttpResponseError', () => {
-  it('preserves status code', () => {
-    const error = new HttpResponseError('Not found', 404);
-    expect(error.status).toBe(404);
-    expect(error.message).toBe('Not found');
-    expect(error.name).toBe('HttpResponseError');
+  it('rejects when an operation runs past the time limit', async () => {
+    await expect(
+      withRequestTimeout(() => new Promise(() => undefined), undefined, 10),
+    ).rejects.toBeDefined();
   });
 });
 

@@ -15,75 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import {
-  readNpxConnectorOptions,
-  readSourceConfigs,
-  readSourceSchedule,
-} from './config';
-
-describe('readNpxConnectorOptions', () => {
-  it('preserves defaults when configuration is absent', () => {
-    expect(readNpxConnectorOptions(new ConfigReader({}))).toEqual({
-      fetchTimeoutMs: 30000,
-      maxArtifactSizeBytes: 1048576,
-      maxAggregateContentSizeBytes: 52428800,
-      maxIndexResponseSizeBytes: 5242880,
-      maxArtifacts: 25,
-      maxRetries: 2,
-      retryBaseDelayMs: 2000,
-      sourceOperationDeadlineMs: 300000,
-    });
-  });
-
-  it('resolves overrides independently and preserves zero retries', () => {
-    const overrides = {
-      fetchTimeoutMs: 60000,
-      maxArtifactSizeBytes: 100,
-      maxAggregateContentSizeBytes: 500,
-      maxIndexResponseSizeBytes: 200,
-      maxArtifacts: 100,
-      maxRetries: 0,
-      retryBaseDelayMs: 10,
-      sourceOperationDeadlineMs: 120000,
-    };
-    expect(
-      readNpxConnectorOptions(
-        new ConfigReader({ npxSkillConnector: overrides }),
-      ),
-    ).toEqual(overrides);
-
-    const defaults = readNpxConnectorOptions(
-      new ConfigReader({ npxSkillConnector: {} }),
-    );
-    expect(defaults.fetchTimeoutMs).toBe(30000);
-    expect(defaults.maxRetries).toBe(2);
-  });
-
-  it.each([
-    ['fetchTimeoutMs', 0],
-    ['fetchTimeoutMs', 2147483648],
-    ['retryBaseDelayMs', 2147483648],
-    ['retryBaseDelayMs', 0],
-    ['maxArtifactSizeBytes', -1],
-    ['maxArtifactSizeBytes', 1.5],
-    ['maxAggregateContentSizeBytes', 0],
-    ['maxIndexResponseSizeBytes', 0],
-    ['sourceOperationDeadlineMs', 0],
-    ['sourceOperationDeadlineMs', 2147483648],
-    ['maxArtifacts', 0],
-    ['maxArtifacts', -1],
-    ['maxArtifacts', 1.5],
-    ['maxRetries', -1],
-    ['maxRetries', 1.5],
-    ['fetchTimeoutMs', 'not-a-number'],
-  ])('rejects invalid %s = %p instead of falling back', (key, value) => {
-    expect(() =>
-      readNpxConnectorOptions(
-        new ConfigReader({ npxSkillConnector: { [key]: value } }),
-      ),
-    ).toThrow(key);
-  });
-});
+import { readSourceConfigs, readSourceSchedule } from './config';
 
 describe('readSourceConfigs', () => {
   it('returns empty when no config is present', () => {

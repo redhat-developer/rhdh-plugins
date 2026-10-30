@@ -19,56 +19,6 @@ import type { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/ba
 export interface Config {
   npxSkillConnector?: {
     /**
-     * Request deadline including redirects and body reading.
-     * Integer from 1 to 2147483647 ms; defaults to 30000 ms.
-     * @visibility backend
-     */
-    fetchTimeoutMs?: number;
-    /**
-     * Maximum bytes per downloaded artifact. Safe integer from 1 to
-     * 9007199254740991; defaults to 1048576 (1 MiB).
-     * @visibility backend
-     */
-    maxArtifactSizeBytes?: number;
-    /**
-     * Maximum combined retained content bytes across all artifacts per
-     * source. Safe integer from 1 to 9007199254740991; defaults to
-     * 52428800 (50 MiB).
-     * @visibility backend
-     */
-    maxAggregateContentSizeBytes?: number;
-    /**
-     * Maximum total discovery index candidates to process. Safe integer
-     * from 1 to 9007199254740991; defaults to 25.
-     * @visibility backend
-     */
-    maxArtifacts?: number;
-    /**
-     * Retries after the initial attempt. Safe integer from 0 to
-     * 9007199254740991; defaults to 2; 0 disables retries.
-     * @visibility backend
-     */
-    maxRetries?: number;
-    /**
-     * Initial retry delay in milliseconds, doubled on subsequent retries.
-     * Integer from 1 to 2147483647 ms; defaults to 2000.
-     * @visibility backend
-     */
-    retryBaseDelayMs?: number;
-    /**
-     * Total wall-clock deadline for processing all artifacts from one
-     * source, including discovery and retries. Integer from 1 to
-     * 2147483647 ms; defaults to 300000.
-     * @visibility backend
-     */
-    sourceOperationDeadlineMs?: number;
-    /**
-     * Maximum bytes per discovery index response. Safe integer from 1 to
-     * 9007199254740991; defaults to 5242880 (5 MiB).
-     * @visibility backend
-     */
-    maxIndexResponseSizeBytes?: number;
-    /**
      * Source-scoped configurations. Each source produces an independent
      * SkillSnapshot served via GET /skills/:sourceId.
      * @visibility backend
@@ -93,9 +43,7 @@ export interface Config {
       allowedOrigins?: string[];
       /**
        * Standard Backstage schedule for this source. When omitted, runs
-       * immediately and every ten minutes, with a timeout of twice
-       * sourceOperationDeadlineMs (at least one minute). Scope must be
-       * local; global scope is rejected.
+       * immediately and every ten minutes. Scope must be local.
        * @visibility backend
        */
       schedule?: SchedulerServiceTaskScheduleDefinitionConfig;

@@ -25,42 +25,11 @@ import {
   validateAllowedOrigin,
   validateRequestUrl,
 } from './SafeSourceTransport';
-import type { NpxConnectorOptions, NpxSourceConfig } from './types';
+import type { NpxSourceConfig } from './types';
 import {
-  DEFAULT_NPX_CONNECTOR_OPTIONS,
   DEFAULT_REFRESH_INTERVAL_MINUTES,
-  MAX_TIMER_DELAY_MS,
+  SOURCE_OPERATION_DEADLINE_MS,
 } from './types';
-
-/**
- * Reads acquisition options from the npxSkillConnector config block.
- * Returns frozen options with validated values or defaults.
- */
-export function readNpxConnectorOptions(config: Config): NpxConnectorOptions {
-  const source = config.getOptionalConfig('npxSkillConnector');
-  const DEFAULT_NUMERIC_OPTIONS: NpxConnectorOptions =
-    DEFAULT_NPX_CONNECTOR_OPTIONS;
-  const options = { ...DEFAULT_NUMERIC_OPTIONS };
-  for (const key of Object.keys(options) as Array<
-    keyof typeof DEFAULT_NUMERIC_OPTIONS
-  >) {
-    const value = source?.getOptionalNumber(key) ?? options[key];
-    const minimum = key === 'maxRetries' ? 0 : 1;
-    const maximum =
-      key === 'fetchTimeoutMs' ||
-      key === 'retryBaseDelayMs' ||
-      key === 'sourceOperationDeadlineMs'
-        ? MAX_TIMER_DELAY_MS
-        : Number.MAX_SAFE_INTEGER;
-    if (!Number.isSafeInteger(value) || value < minimum || value > maximum) {
-      throw new InputError(
-        `npxSkillConnector.${key} must be an integer between ${minimum} and ${maximum}`,
-      );
-    }
-    options[key] = value;
-  }
-  return Object.freeze(options);
-}
 
 function readAllowedOrigins(
   source: Config | undefined,
@@ -99,11 +68,6 @@ function validateIndexUrl(url: string, context: string): string {
       `${context}.indexUrl must not contain a fragment identifier`,
     );
   }
-  if (parsed.username || parsed.password) {
-    throw new InputError(
-      `${context}.indexUrl must not contain embedded credentials`,
-    );
-  }
   return parsed.toString();
 }
 
@@ -114,14 +78,11 @@ function validateIndexUrl(url: string, context: string): string {
 export function readSourceSchedule(
   source?: Config,
   context = 'npxSkillConnector',
-  sourceOperationDeadlineMs = DEFAULT_NPX_CONNECTOR_OPTIONS.sourceOperationDeadlineMs,
 ): SchedulerServiceTaskScheduleDefinition {
   if (!source?.has('schedule')) {
     return {
       frequency: { minutes: DEFAULT_REFRESH_INTERVAL_MINUTES },
-      timeout: {
-        milliseconds: Math.max(2 * sourceOperationDeadlineMs, 60000),
-      },
+      timeout: { milliseconds: 2 * SOURCE_OPERATION_DEADLINE_MS },
       initialDelay: { seconds: 0 },
       scope: 'local',
     };
@@ -170,10 +131,6 @@ export function readSourceConfigs(
     return [];
   }
 
-  const sourceOperationDeadlineMs =
-    pluginConfig.getOptionalNumber('sourceOperationDeadlineMs') ??
-    DEFAULT_NPX_CONNECTOR_OPTIONS.sourceOperationDeadlineMs;
-
   const seenIds = new Set<string>();
   return sourcesConfig.map((entry, index) => {
     const context = `npxSkillConnector.sources[${index}]`;
@@ -199,11 +156,7 @@ export function readSourceConfigs(
 
     const allowedOrigins = readAllowedOrigins(entry, context);
 
-    const schedule = readSourceSchedule(
-      entry,
-      context,
-      sourceOperationDeadlineMs,
-    );
+    const schedule = readSourceSchedule(entry, context);
 
     return {
       id,
