@@ -88,6 +88,51 @@ describe('fetchSourceBuffer', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('follows up to 5 redirects then succeeds', async () => {
+    const redirect = new Response(null, {
+      status: 302,
+      headers: { location: '/next' },
+    });
+    fetchMock
+      .mockResolvedValueOnce(redirect)
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: '/next' } }),
+      )
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: '/next' } }),
+      )
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: '/next' } }),
+      )
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: '/final' } }),
+      )
+      .mockResolvedValueOnce(new Response('final'));
+    await expect(
+      fetchSourceBuffer(artifact, source, 'artifact'),
+    ).resolves.toEqual(Buffer.from('final'));
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+  });
+
+  it('rejects when a 6th redirect exceeds the limit', async () => {
+    const redirect = () =>
+      new Response(null, {
+        status: 302,
+        headers: { location: '/next' },
+      });
+    fetchMock
+      .mockResolvedValueOnce(redirect())
+      .mockResolvedValueOnce(redirect())
+      .mockResolvedValueOnce(redirect())
+      .mockResolvedValueOnce(redirect())
+      .mockResolvedValueOnce(redirect())
+      .mockResolvedValueOnce(redirect());
+    await expect(
+      fetchSourceBuffer(artifact, source, 'artifact'),
+    ).rejects.toThrow('Too many source redirects');
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+  });
+
   it('rejects an oversized skill file while reading it', async () => {
     fetchMock.mockResolvedValue(new Response(Buffer.alloc(1024 * 1024 + 1)));
     await expect(

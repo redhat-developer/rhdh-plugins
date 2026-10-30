@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  readSchedulerServiceTaskScheduleDefinitionFromConfig,
-  type SchedulerServiceTaskScheduleDefinition,
-  type LoggerService,
+import { readSchedulerServiceTaskScheduleDefinitionFromConfig } from '@backstage/backend-plugin-api';
+import type {
+  LoggerService,
+  SchedulerServiceTaskScheduleDefinition,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
@@ -60,6 +60,39 @@ function validateIndexUrl(url: string, context: string): string {
 }
 
 /**
+ * Validates and returns a trimmed source identifier.
+ * Rejects empty, path-traversal, slash-containing, and duplicate IDs.
+ */
+function validateSourceId(
+  entry: Config,
+  context: string,
+  seenIds: Set<string>,
+): string {
+  const id = entry.getOptionalString('id')?.trim();
+  if (!id) throw new InputError(`${context}.id is required`);
+  if (id === '.' || id === '..') {
+    throw new InputError(`${context}.id must not be '.' or '..'`);
+  }
+  if (id.includes('/')) {
+    throw new InputError(`${context}.id must not contain '/'`);
+  }
+  if (seenIds.has(id)) {
+    throw new InputError(
+      `Duplicate source ID '${id}' in npxSkillConnector.sources`,
+    );
+  }
+  seenIds.add(id);
+  return id;
+}
+
+const NPX_DEFAULT_SCHEDULE: SchedulerServiceTaskScheduleDefinition = {
+  frequency: { minutes: DEFAULT_REFRESH_INTERVAL_MINUTES },
+  timeout: { minutes: 10 },
+  initialDelay: { seconds: 0 },
+  scope: 'local',
+};
+
+/**
  * Reads a standard Backstage schedule, scoped to this backend's
  * snapshot cache.
  */
@@ -67,33 +100,25 @@ export function readSourceSchedule(
   source?: Config,
   context = 'npxSkillConnector',
 ): SchedulerServiceTaskScheduleDefinition {
-  if (!source?.has('schedule')) {
-    return {
-      frequency: { minutes: DEFAULT_REFRESH_INTERVAL_MINUTES },
-      timeout: { minutes: 10 },
-      initialDelay: { seconds: 0 },
-      scope: 'local',
-    };
-  }
+  if (!source?.has('schedule')) return NPX_DEFAULT_SCHEDULE;
 
-  let schedule: SchedulerServiceTaskScheduleDefinition;
+  const raw = source.getConfig('schedule');
+  let parsed: SchedulerServiceTaskScheduleDefinition;
   try {
-    schedule = readSchedulerServiceTaskScheduleDefinitionFromConfig(
-      source.getConfig('schedule'),
-    );
+    parsed = readSchedulerServiceTaskScheduleDefinitionFromConfig(raw);
   } catch {
     throw new InputError(
-      `${context}.schedule must define a valid Backstage frequency and timeout, optional initialDelay, and local scope`,
+      `${context}.schedule must be a valid Backstage schedule with frequency, timeout, and optional initialDelay`,
     );
   }
-  if (schedule.scope === 'global') {
+  if (parsed.scope === 'global') {
     throw new InputError(
-      `${context}.schedule.scope must be local because snapshots are stored separately on each backend instance`,
+      `${context}.schedule.scope must be local; snapshots are stored per backend instance`,
     );
   }
   return {
-    ...schedule,
-    initialDelay: schedule.initialDelay ?? { seconds: 0 },
+    ...parsed,
+    initialDelay: parsed.initialDelay ?? NPX_DEFAULT_SCHEDULE.initialDelay,
     scope: 'local',
   };
 }
@@ -122,19 +147,7 @@ export function readSourceConfigs(
   const seenIds = new Set<string>();
   return sourcesConfig.map((entry, index) => {
     const context = `npxSkillConnector.sources[${index}]`;
-    const id = entry.getOptionalString('id')?.trim();
-    if (!id) {
-      throw new InputError(`${context}.id is required`);
-    }
-    if (id === '.' || id === '..') {
-      throw new InputError(`${context}.id must not be '.' or '..'`);
-    }
-    if (seenIds.has(id)) {
-      throw new InputError(
-        `Duplicate source ID '${id}' in npxSkillConnector.sources`,
-      );
-    }
-    seenIds.add(id);
+    const id = validateSourceId(entry, context, seenIds);
 
     const rawIndexUrl = entry.getOptionalString('indexUrl')?.trim();
     if (!rawIndexUrl) {

@@ -43,6 +43,7 @@ describe('npx source configuration', () => {
     [{ indexUrl: valid.indexUrl }, 'id is required'],
     [{ ...valid, id: '.' }, "must not be '.' or '..'"],
     [{ ...valid, id: '..' }, "must not be '.' or '..'"],
+    [{ ...valid, id: 'a/b' }, "must not contain '/'"],
     [{ id: valid.id }, 'indexUrl is required'],
   ])('rejects invalid source configuration', (source, message) => {
     expect(() => read(source)).toThrow(message);
