@@ -239,6 +239,10 @@ normalize_ansible_role_name() {
   printf '%s' "$normalized"
 }
 
+role_dir() {
+  printf '%s' "${PROJECT_PATH}/ansible/collections/ansible_collections/x2a/project/roles/$(normalize_ansible_role_name "$1")"
+}
+
 # Commit and push changes to target repository.
 # Returns: Sets COMMIT_ID to the pushed commit SHA, or exits on push failure.
 git_commit_and_push() {
@@ -563,8 +567,7 @@ case "${PHASE}" in
   migrate)
     echo "=== Running x2a migrate phase ==="
     MODULE_NAME_PLAN=$(echo "${MODULE_NAME}" | tr ' ' '_')
-    ANSIBLE_ROLE_NAME=$(normalize_ansible_role_name "${MODULE_NAME}")
-    ROLE_DIR="${PROJECT_PATH}/ansible/collections/ansible_collections/x2a/project/roles/${ANSIBLE_ROLE_NAME}"
+    ROLE_DIR="$(role_dir "${MODULE_NAME}")"
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
     ANSIBLE_DIR="${PROJECT_PATH}"
     mkdir -p "${OUTPUT_DIR}"
@@ -642,7 +645,7 @@ case "${PHASE}" in
       exit 1
     fi
 
-    ARTIFACTS+=("migrated_sources:${PROJECT_DIR}/ansible/collections/ansible_collections/x2a/project/roles/${ANSIBLE_ROLE_NAME}")
+    ARTIFACTS+=("migrated_sources:${ROLE_DIR#"${TARGET_BASE}/"}")
     ;;
 
   publish)
@@ -696,8 +699,7 @@ case "${PHASE}" in
       SOURCE_DIR="${OUTPUT_DIR}"
     else
       # Migrate writes the generated Ansible collection under the project
-      ANSIBLE_ROLE_NAME=$(normalize_ansible_role_name "${MODULE_NAME}")
-      ROLE_DIR="${PROJECT_PATH}/ansible/collections/ansible_collections/x2a/project/roles/${ANSIBLE_ROLE_NAME}"
+      ROLE_DIR="$(role_dir "${MODULE_NAME}")"
       SOURCE_DIR="${ROLE_DIR}"
     fi
 
