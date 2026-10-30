@@ -368,6 +368,22 @@ jobs:
           WORKSPACE_NAME: ${{ needs.check-merged-pr.outputs.workspace_name }}
           GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
 
+  update-overlays:
+    name: Update overlays after maintenance release
+    needs: [check-merged-pr, release, repository-release]
+    # One publish job is always skipped: evaluate explicitly after both finish.
+    if: >-
+      !cancelled() &&
+      github.repository == 'redhat-developer/rhdh-plugins' &&
+      needs.check-merged-pr.outputs.is_version_pr == 'true' &&
+      (needs.release.result == 'success' || needs.repository-release.result == 'success')
+    uses: ./.github/workflows/update-overlays.yml
+    with:
+      workspace: ${{ needs.check-merged-pr.outputs.workspace_name }}
+      branch: ${{ github.ref_name }}
+    secrets:
+      RHDH_BOT_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
+
   repository-release:
     name: Publish workspace
     runs-on: ubuntu-latest
