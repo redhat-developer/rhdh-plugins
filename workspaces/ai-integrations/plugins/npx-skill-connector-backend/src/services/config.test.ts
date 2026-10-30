@@ -115,7 +115,7 @@ describe('readSourceConfigs', () => {
           },
         }),
       ),
-    ).toThrow('public hostname');
+    ).toThrow('localhost or a literal IP');
   });
 
   it('rejects index URLs targeting IP addresses', () => {
@@ -129,7 +129,7 @@ describe('readSourceConfigs', () => {
           },
         }),
       ),
-    ).toThrow('public hostname');
+    ).toThrow('localhost or a literal IP');
   });
 
   it('rejects index URLs with fragment identifiers', () => {

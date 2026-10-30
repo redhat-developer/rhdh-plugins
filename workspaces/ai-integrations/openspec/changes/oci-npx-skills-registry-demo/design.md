@@ -382,13 +382,16 @@ v1 supports publicly readable registries only. Registry URLs and redirects must
 use HTTPS and stay within the source's configured destination policy. OCI source
 registry trust includes its hostname and subdomains on the same HTTPS port;
 additional unrelated origins require explicit configuration. npx defaults to its
-index origin. Requests reject embedded credentials and private/loopback/link-local destinations,
-including redirected destinations. Internal connector calls use Backstage
-discovery/auth and are separate from these upstream egress restrictions.
-Destination validation must govern the address used by the connection, including
-after redirects. A preflight DNS lookup followed by an independent fetch lookup
-does not satisfy this requirement. Task 2.4 must close this DNS-rebinding gap and
-test address changes between validation and connection.
+index origin. Both connectors reject URL credentials, localhost hostnames, and
+literal IP addresses, including redirect targets. OCI also rejects DNS-resolved
+private, loopback, and link-local addresses. Its destination validation governs
+the address used by the connection after every redirect; a preflight DNS lookup
+followed by an independent fetch lookup does not satisfy this OCI requirement.
+Task 2.4 closes that gap and tests address changes between validation and
+connection. The demo-only npx connector does not inspect or pin DNS answers;
+deployments that need to restrict resolved destinations must enforce network
+egress policy. Internal connector calls use Backstage discovery/auth and are
+separate from these upstream egress restrictions.
 
 Bound streaming reads, parsing, and concurrency: 30-second request timeouts,
 at most four concurrent artifact operations per source, five redirects, 1 MiB

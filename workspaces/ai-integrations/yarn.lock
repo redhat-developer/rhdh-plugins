@@ -10054,9 +10054,7 @@ __metadata:
     "@types/supertest": "npm:^2.0.12"
     express: "npm:^4.17.1"
     express-promise-router: "npm:^4.1.0"
-    ipaddr.js: "npm:^2.3.0"
     supertest: "npm:^6.2.4"
-    undici: "npm:^7.28.0"
   languageName: unknown
   linkType: soft
 

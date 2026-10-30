@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import { promises as dnsPromises } from 'node:dns';
-import type { LookupAddress } from 'node:dns';
 import { isIP } from 'node:net';
-import { Agent } from 'undici';
-import * as ipaddr from 'ipaddr.js';
 import type { NpxSourceConfig } from './types';
 import {
   FETCH_TIMEOUT_MS,
@@ -83,78 +79,6 @@ function isIpAddress(hostname: string): boolean {
   return isIP(normalizedHostname) !== 0;
 }
 
-/** Reject local and other non-public IP addresses, including IPv4 in IPv6 form. */
-export function isPrivateAddress(address: string, family: number): boolean {
-  if (!ipaddr.isValid(address) || (family !== 4 && family !== 6)) return true;
-  const parsed = ipaddr.parse(address);
-  if ((parsed.kind() === 'ipv4' ? 4 : 6) !== family) return true;
-  return ipaddr.process(address).range() !== 'unicast';
-}
-
-/**
- * Check every DNS address and use the checked addresses for the connection.
- */
-export async function validateAndResolveHost(
-  hostname: string,
-): Promise<LookupAddress[]> {
-  let addresses: LookupAddress[];
-  try {
-    addresses = await dnsPromises.lookup(hostname, { all: true });
-  } catch {
-    throw new Error(`Hostname ${hostname} could not be resolved`);
-  }
-
-  if (addresses.length === 0) {
-    throw new Error(`Hostname ${hostname} could not be resolved`);
-  }
-
-  for (const addr of addresses) {
-    if (isPrivateAddress(addr.address, addr.family)) {
-      throw new Error(
-        `Hostname ${hostname} resolves to non-public address ${addr.address}`,
-      );
-    }
-  }
-
-  return addresses;
-}
-
-/** Restricts all connection attempts to the validated DNS answer set. */
-function createPinnedAgent(
-  hostname: string,
-  resolved: readonly LookupAddress[],
-): Agent {
-  return new Agent({
-    autoSelectFamily: true,
-    connect: {
-      servername: hostname,
-      lookup: (requestedHost, options, callback) => {
-        if (requestedHost !== hostname) {
-          callback(new Error('Pinned connection hostname mismatch'), '', 0);
-          return;
-        }
-        if (typeof options === 'object' && options.all) {
-          callback(null, [...resolved]);
-        } else {
-          const family = typeof options === 'number' ? options : options.family;
-          const address = resolved.find(
-            candidate => !family || candidate.family === family,
-          );
-          if (!address) {
-            callback(
-              new Error('No validated address for the requested family'),
-              '',
-              0,
-            );
-            return;
-          }
-          callback(null, address.address, address.family);
-        }
-      },
-    },
-  });
-}
-
 /** Validate operator-supplied origins without permitting paths or credentials. */
 export function validateAllowedOrigin(value: string): string {
   const url = new URL(value);
@@ -185,13 +109,13 @@ export function validateRequestUrl(url: URL): void {
     url.hostname.endsWith('.localhost') ||
     isIpAddress(url.hostname)
   ) {
-    throw new Error('Source request must target a public hostname');
+    throw new Error('Source request must not use localhost or a literal IP');
   }
 }
 
 /**
  * Fetch only from the configured index origin or an explicitly allowed origin.
- * Check each redirect and the IP address used for every connection.
+ * Check each redirect before fetching it.
  */
 async function fetchWithRedirects(
   url: string,
@@ -212,52 +136,33 @@ async function fetchWithRedirects(
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
     signal.throwIfAborted();
+    const response = await fetch(currentUrl.toString(), {
+      redirect: 'manual',
+      signal,
+    });
 
-    // Resolve DNS and validate destination for every request, including
-    // the initial one. The validated address set is pinned to the connection
-    // via a custom Undici dispatcher, preventing DNS rebinding between
-    // validation and the actual TCP connection.
-    const resolved = await validateAndResolveHost(currentUrl.hostname);
-    signal.throwIfAborted();
-    const pinnedAgent = createPinnedAgent(currentUrl.hostname, resolved);
-
-    try {
-      const response = await fetch(currentUrl.toString(), {
-        redirect: 'manual',
-        signal,
-        dispatcher: pinnedAgent,
-      } as RequestInit & { dispatcher: Agent });
-
-      if (![301, 302, 303, 307, 308].includes(response.status)) {
-        return response;
-      }
-      await cancelResponseBody(response);
-      if (redirectCount === MAX_REDIRECTS) {
-        throw new Error('Response exceeded the maximum redirect count');
-      }
-
-      const location = response.headers.get('location');
-      if (!location) {
-        throw new Error('Redirect response did not include a Location');
-      }
-      const nextUrl = new URL(location, currentUrl);
-      validateRequestUrl(nextUrl);
-
-      if (!allowedOrigins.has(nextUrl.origin)) {
-        throw new Error(
-          `Redirect targets an unconfigured origin: ${nextUrl.origin}`,
-        );
-      }
-
-      currentUrl = nextUrl;
-    } catch (error) {
-      void pinnedAgent.destroy().catch(() => undefined);
-      throw error;
-    } finally {
-      void pinnedAgent.close().catch(() => {
-        void pinnedAgent.destroy().catch(() => undefined);
-      });
+    if (![301, 302, 303, 307, 308].includes(response.status)) {
+      return response;
     }
+    await cancelResponseBody(response);
+    if (redirectCount === MAX_REDIRECTS) {
+      throw new Error('Response exceeded the maximum redirect count');
+    }
+
+    const location = response.headers.get('location');
+    if (!location) {
+      throw new Error('Redirect response did not include a Location');
+    }
+    const nextUrl = new URL(location, currentUrl);
+    validateRequestUrl(nextUrl);
+
+    if (!allowedOrigins.has(nextUrl.origin)) {
+      throw new Error(
+        `Redirect targets an unconfigured origin: ${nextUrl.origin}`,
+      );
+    }
+
+    currentUrl = nextUrl;
   }
 
   throw new Error('Redirect handling failed');

@@ -24,11 +24,12 @@ source; changes to a Markdown display name SHALL NOT change that key.
 ### Requirement: Verified and bounded artifact retrieval
 
 The connector SHALL enforce HTTPS, index-origin or explicitly allowlisted
-origins, and redirect/destination validation from design D7. It SHALL cap each
-artifact at 1 MiB and verify SHA-256 over its original bytes against the index
-before decoding and normalizing frontmatter. Invalid supported entries,
-retrieval errors, digest mismatches, and exceeded bounds SHALL make the snapshot
-incomplete. Successfully processed records SHALL expose the validated discovery
+origins, and redirect URL validation from design D7. It SHALL reject localhost
+hostnames and literal IP addresses without inspecting DNS-resolved addresses.
+It SHALL cap each artifact at 1 MiB and verify SHA-256 over its original bytes
+against the index before decoding and normalizing frontmatter. Invalid supported
+entries, retrieval errors, digest mismatches, and exceeded bounds SHALL make the
+snapshot incomplete. Successfully processed records SHALL expose the validated discovery
 entry's artifact URL as `sourceUri` and the verified artifact digest; frontmatter
 SHALL NOT override either field.
 
@@ -43,6 +44,11 @@ SHALL NOT override either field.
 - **WHEN** an artifact response redirects to an origin outside the allowlist
 - **THEN** the connector rejects the redirect before retrieving the destination body
 - **AND** it reports that skill as failed
+
+#### Scenario: Redirect uses a local URL host
+
+- **WHEN** an artifact response redirects to localhost or a literal IP address
+- **THEN** the connector rejects the redirect before fetching it
 
 ### Requirement: Normalized npx REST snapshots
 
