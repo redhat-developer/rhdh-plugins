@@ -29,6 +29,33 @@ function repositoryName(url) {
     .replace(/\.git$/, '');
 }
 
+function releaseBranches(workspace, branch) {
+  if (branch === 'main') {
+    return {
+      targetBranch: branch,
+      versionBranch: `changesets-release/${workspace}/main`,
+    };
+  }
+
+  // Legacy releases use release-1.x/<workspace>; overlays uses release-1.x.
+  const legacy = branch.match(/^release-1\.\d+\/([^/]+)$/);
+  if (legacy?.[1] === workspace) {
+    return {
+      targetBranch: branch.split('/')[0],
+      versionBranch: `maintenance-changesets-release/${branch}`,
+    };
+  }
+
+  if (/^release-(?:[2-9]|[1-9]\d+)\.\d+$/.test(branch)) {
+    return {
+      targetBranch: branch,
+      versionBranch: `maintenance-changesets-release/${branch}/${workspace}`,
+    };
+  }
+
+  throw new Error(`Unsupported release branch: ${branch}`);
+}
+
 export async function updateOverlays({
   github,
   context,
@@ -48,20 +75,7 @@ export async function updateOverlays({
     throw new Error(`Invalid workspace: ${workspace}`);
   }
 
-  // Legacy releases use release-1.x/<workspace>; overlays uses release-1.x.
-  let targetBranch = branch;
-  let versionBranch = `changesets-release/${workspace}/main`;
-  if (branch !== 'main') {
-    const legacy = branch.match(/^release-1\.\d+\/([^/]+)$/);
-    if (legacy?.[1] === workspace) {
-      targetBranch = branch.split('/')[0];
-      versionBranch = `maintenance-changesets-release/${branch}`;
-    } else if (/^release-(?:[2-9]|[1-9]\d+)\.\d+$/.test(branch)) {
-      versionBranch = `maintenance-changesets-release/${branch}/${workspace}`;
-    } else {
-      throw new Error(`Unsupported release branch: ${branch}`);
-    }
-  }
+  const { targetBranch, versionBranch } = releaseBranches(workspace, branch);
 
   // Resolve by the merge commit, never by title alone or the latest closed PR.
   const releasePrs = await github.paginate(

@@ -172,7 +172,13 @@ test('dispatches a scoped main update, verifies its source SHA, and comments onc
 });
 
 test('maps repository-wide and legacy maintenance branches to the matching overlays branch', async () => {
-  for (const branch of ['release-2.1', 'release-1.10/orchestrator']) {
+  for (const branch of [
+    'release-2.1',
+    'release-3.0',
+    'release-10.2',
+    'release-1.9/orchestrator',
+    'release-1.10/orchestrator',
+  ]) {
     const { github, run } = fixture({ branch });
     await run();
     const request =
