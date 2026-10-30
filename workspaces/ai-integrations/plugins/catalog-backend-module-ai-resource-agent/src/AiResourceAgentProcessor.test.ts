@@ -175,6 +175,58 @@ describe('AiResourceAgentProcessor', () => {
       expect(result).toEqual(entity);
     });
 
+    it('should accept agent with valid spawn value', async () => {
+      const entity = makeAiResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+        instructions: 'Agent in sandbox.',
+        spawn: 'ephemeral',
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should accept agent without spawn', async () => {
+      const entity = makeAiResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should reject agent with invalid spawn value', async () => {
+      const entity = makeAiResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+        spawn: 'invalid',
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.spawn');
+    });
+
+    it('should reject agent with spawn as boolean', async () => {
+      const entity = makeAiResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+        spawn: true,
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.spawn');
+    });
+
     it('should report multiple agent errors together', async () => {
       const entity = makeAiResource({
         type: 'agent',

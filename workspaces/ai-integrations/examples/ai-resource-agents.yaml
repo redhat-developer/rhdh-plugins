@@ -91,3 +91,4 @@ spec:
     - run-diagnostics
     - search-knowledge-base
   toolUseBehavior: run_llm_again
+  spawn: local

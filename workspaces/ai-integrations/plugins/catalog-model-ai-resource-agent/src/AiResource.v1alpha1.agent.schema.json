@@ -16,6 +16,21 @@
         "owner": "ai-platform-team",
         "instructions": "You are a support router agent. Analyze incoming support requests and delegate them to the appropriate specialist agent."
       }
+    },
+    {
+      "apiVersion": "backstage.io/v1alpha1",
+      "kind": "AiResource",
+      "metadata": {
+        "name": "sandboxed-code-agent",
+        "description": "Agent that runs in an ephemeral sandbox"
+      },
+      "spec": {
+        "type": "agent",
+        "lifecycle": "production",
+        "owner": "ai-platform-team",
+        "instructions": "You are a code execution agent that runs in a sandboxed environment.",
+        "spawn": "ephemeral"
+      }
     }
   ],
   "allOf": [
@@ -146,6 +161,11 @@
                   "minLength": 1
                 }
               ]
+            },
+            "spawn": {
+              "type": "string",
+              "enum": ["none", "local", "ephemeral"],
+              "description": "Execution spawn mode — declares whether this agent runs in-process, in a child process, or in a predefined sandbox."
             }
           }
         }

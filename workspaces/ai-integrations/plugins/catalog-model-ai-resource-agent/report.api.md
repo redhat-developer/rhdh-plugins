@@ -32,6 +32,7 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     resetToolChoice?: boolean;
     modelSettings?: AgentAiResourceModelSettings;
     outputSchema?: Record<string, JsonValue | undefined> | string;
+    spawn?: 'none' | 'local' | 'ephemeral';
   };
 }
 

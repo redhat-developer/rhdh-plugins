@@ -354,6 +354,46 @@ describe('collectAgentErrors', () => {
     });
   });
 
+  describe('spec.spawn (optional, must be none|local|ephemeral)', () => {
+    it.each(['none', 'local', 'ephemeral'] as const)(
+      'accepts spawn: %s',
+      spawn => {
+        const entity = makeAgent({ spawn });
+        expect(collectAgentErrors(entity)).toEqual([]);
+      },
+    );
+
+    it('accepts missing spawn', () => {
+      const entity = makeAgent();
+      expect(collectAgentErrors(entity)).toEqual([]);
+    });
+
+    it('rejects spawn as a boolean', () => {
+      const entity = makeAgent({ spawn: true });
+
+      const errors = collectAgentErrors(entity);
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toContain('spec.spawn');
+    });
+
+    it('rejects spawn as a number', () => {
+      const entity = makeAgent({ spawn: 42 });
+
+      const errors = collectAgentErrors(entity);
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toContain('spec.spawn');
+    });
+
+    it('rejects spawn with invalid string value', () => {
+      const entity = makeAgent({ spawn: 'other' });
+
+      const errors = collectAgentErrors(entity);
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toContain('spec.spawn');
+      expect(errors[0]).toContain("'other'");
+    });
+  });
+
   describe('multiple errors reported together', () => {
     it('collects all agent field errors in a single array', () => {
       const entity = makeAgent({
@@ -409,6 +449,7 @@ describe('collectAgentErrors', () => {
           type: 'object',
           properties: { result: { type: 'string' } },
         },
+        spawn: 'ephemeral',
       });
 
       expect(collectAgentErrors(entity)).toEqual([]);
