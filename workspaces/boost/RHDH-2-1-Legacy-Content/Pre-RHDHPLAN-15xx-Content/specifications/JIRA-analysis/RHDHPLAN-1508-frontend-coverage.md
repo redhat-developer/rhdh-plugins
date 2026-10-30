@@ -61,8 +61,10 @@ remaining alignment with the Catalog response model.
 
 ## OpenSpec coverage
 
-The current design is captured in
-`openspec/changes/ai-catalog-asset-governance/`:
+This September 8 analysis mapped to the draft now archived at
+`openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/`.
+The table below records that historical coverage. The current follow-on change
+is `openspec/changes/ai-catalog-rbac-versioning-policy/`.
 
 | Area                   | OpenSpec coverage                              |
 | ---------------------- | ---------------------------------------------- |

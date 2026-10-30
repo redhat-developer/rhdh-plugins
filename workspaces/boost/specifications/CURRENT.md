@@ -78,11 +78,16 @@ There is no remaining active frontend work in `openspec/changes/`.
 
 ## RBAC follow-on work
 
-The `ai-catalog-asset-governance` proposal, design, behavioral specs, and tasks
-now describe the follow-on RBAC model built on the current Catalog and OGX
-baseline. The model uses built-in `catalog.entity.read`, RHDH conditional
-policies, API-level field redaction where required, and the existing RBAC audit
-and administration surfaces. This is not part of the RHDH 2.1 release.
+The `ai-catalog-rbac-versioning-policy` change records the follow-on RHDHPLAN-1508
+RBAC model from `agentic-feature-refinement`. It uses built-in
+`catalog.entity.read`, existing RHDH conditional policies and administration,
+and direct per-entity version policy. The earlier `ai-catalog-asset-governance`
+draft is archived. This planning change is not part of the RHDH 2.1 release.
+
+The synced change predates the October 6 Jira revision. Its
+`ai-catalog.manage` and provider-audit scope differs from the current parent
+issue's `ai-catalog.admin` and stretch provider-audit language. Reconcile
+those contracts before implementing this change.
 
 ## Status of the remaining OpenSpecs
 
@@ -110,9 +115,9 @@ listed below.
 | `rhoai-connector`                    | Follow-on RHOAI MCP connector; not current-release behavior.                                                                      |
 | `upstream-schema-alignment`          | Follow-on upstream-kind alignment and migration-readiness work; not current-release behavior.                                     |
 
-RBAC governance is tracked separately in `ai-catalog-asset-governance` as
-follow-on design work. Its examples build on the current Catalog/OGX model but
-do not add RBAC behavior to this release.
+RBAC governance is tracked separately in `ai-catalog-rbac-versioning-policy`
+as follow-on design work. Its examples build on the current Catalog/OGX model
+but do not add RBAC behavior to this release.
 
 ## Cleanup progress
 

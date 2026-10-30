@@ -9,7 +9,7 @@
 > existing conditional-policy support. The custom `ai-catalog.*` entity
 > permissions, custom category/source/tenant rules, ingestion-time policy
 > state, and standalone RBAC UI described in portions of this report are not
-> baseline requirements. See `openspec/changes/ai-catalog-asset-governance/`.
+> baseline requirements. See `openspec/changes/ai-catalog-rbac-versioning-policy/`.
 
 ---
 

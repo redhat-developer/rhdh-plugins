@@ -5,7 +5,9 @@
 > issue traceability only. Do not use its custom `ai-catalog.*` permissions,
 > custom conditional rules, provider-owned default-deny state, or standalone
 > RBAC UI as current implementation requirements. The current follow-on model
-> is defined in `openspec/changes/ai-catalog-asset-governance/`.
+> is defined in `openspec/changes/ai-catalog-rbac-versioning-policy/`.
+> The task references below point to the archived planning draft used when
+> this analysis was written.
 
 These issues implement the AI Catalog backend across RHDHPLAN-1507 (Entity Model & Ingestion Framework), RHDHPLAN-1508 (RBAC & Versioning Policy), RHDHPLAN-1510 (MCP Registry & RHOAI Connector), and RHDHPLAN-1513 (Ingestion Operations & Schema Alignment). Issues are grouped in dependency tiers — Tier 0 issues have no dependencies and can run in parallel; Tier 1 depends on Tier 0; Tier 2 depends on Tier 1.
 
@@ -213,7 +215,7 @@ Define AI Catalog permission constants (`ai-catalog.asset.access`, `ai-catalog.a
 
 ### Tasks
 
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 1 (RHIDP-15271, RHIDP-15306):
+From `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/tasks.md` group 1 (RHIDP-15271, RHIDP-15306):
 
 - 1.1 Define `AI_CATALOG_ASSET_RESOURCE_TYPE` constant in `boost-common/src/permissions.ts`
 - 1.2 Define `ai-catalog.asset.access` resource permission
@@ -222,14 +224,14 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 1 (RHIDP-1527
 - 1.5 Export all permission constants and resource type
 - 1.6 Register all 3 permissions via `permissionsRegistry.addPermissions()`
 
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 2 (RHIDP-15271, RHIDP-15272):
+From `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/tasks.md` group 2 (RHIDP-15271, RHIDP-15272):
 
 - 2.1 Implement Tier 2 field-level filtering in AI asset detail endpoint
 - 2.2 Implement entity-level filtering on list endpoint using `authorizeConditional()`
 - 2.3 Implement batch `authorizeConditional()` for Tier 2
 - 2.4 Add unit tests for field-level filtering
 
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 4 (RHIDP-15312):
+From `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/tasks.md` group 4 (RHIDP-15312):
 
 - 4.1 Implement `isAiAssetCategory` rule with `apply()` and `toQuery()`
 - 4.2 Implement `isAiAssetCategory.toQuery()` generating catalog query predicate
@@ -242,8 +244,8 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 4 (RHIDP-1531
 
 ### Specifications
 
-- `openspec/changes/ai-catalog-asset-governance/specs/graduated-visibility/spec.md`
-- `openspec/changes/ai-catalog-asset-governance/specs/conditional-policies/spec.md`
+- `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/specs/graduated-visibility/spec.md`
+- `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/specs/conditional-policies/spec.md`
 
 ---
 
@@ -1107,7 +1109,7 @@ Create `AICatalogRBACProvider` implementing the `RBACProvider` interface via `rb
 
 ### Tasks
 
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 5 (RHIDP-15274, RHIDP-15275):
+From `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/tasks.md` group 5 (RHIDP-15274, RHIDP-15275):
 
 - 5.1 Create `AICatalogRBACProvider` implementing `RBACProvider` interface
 - 5.2 Register provider via `rbacProviderExtensionPoint`
@@ -1118,7 +1120,7 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 5 (RHIDP-1527
 - 5.7 Support `policyDecisionPrecedence` config for version-specific override ordering
 - 5.8 Add unit tests for cascade propagation, override precedence, and edge cases
 
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 6 (RHIDP-15306):
+From `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/tasks.md` group 6 (RHIDP-15306):
 
 - 6.1 Add `ai-catalog.rbac.defaultPolicy` config schema (allow|deny, default: allow)
 - 6.2 Add per-category config schema
@@ -1131,8 +1133,8 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 6 (RHIDP-1530
 
 ### Specifications
 
-- `openspec/changes/ai-catalog-asset-governance/specs/version-policy-cascade/spec.md`
-- `openspec/changes/ai-catalog-asset-governance/specs/default-deny-config/spec.md`
+- `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/specs/version-policy-cascade/spec.md`
+- `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/specs/default-deny-config/spec.md`
 
 ---
 
@@ -1149,7 +1151,7 @@ Implement audit event infrastructure: define posture-change and policy CRUD even
 
 ### Tasks
 
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 7 (RHIDP-15277, RHIDP-15279, RHIDP-15280):
+From `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/tasks.md` group 7 (RHIDP-15277, RHIDP-15279, RHIDP-15280):
 
 - 7.1 Define audit event types: `posture-changed`, `policy-created`, `policy-updated`, `policy-deleted` (RHIDP-15279)
 - 7.2 Define ingestion audit events: `sync-completed`, `sync-error`, `entity-created`, `entity-updated`, `entity-deleted` (RHIDP-15280)
@@ -1178,7 +1180,7 @@ Group 4 (Disconnected Cluster Support):
 
 ### Specifications
 
-- `openspec/changes/ai-catalog-asset-governance/specs/audit-logging/spec.md`
+- `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/specs/audit-logging/spec.md`
 - `openspec/changes/ingestion-audit-metrics/specs/audit-events/spec.md`
 
 ---
@@ -1234,7 +1236,7 @@ Implement backend skill filtering using batch `authorizeConditional()` for `ai-c
 
 ### Tasks
 
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 9 (RHIDP-15310, RHIDP-15273):
+From `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/tasks.md` group 9 (RHIDP-15310, RHIDP-15273):
 
 - 9.1 Implement backend skill filtering using batch `authorizeConditional()`
 - 9.2 Add `totalSkills` and `visibleSkills` fields to SkillBundle API response
@@ -1246,7 +1248,7 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 9 (RHIDP-1531
 
 ### Specifications
 
-- `openspec/changes/ai-catalog-asset-governance/specs/skillbundle-filtering/spec.md`
+- `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/specs/skillbundle-filtering/spec.md`
 
 ---
 
@@ -1264,7 +1266,7 @@ Wrap Tier 2 sections in asset detail page with `<RequirePermission permission={a
 
 ### Tasks
 
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 3 (RHIDP-15273):
+From `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/tasks.md` group 3 (RHIDP-15273):
 
 - 3.1 Wrap Tier 2 sections in asset detail page with `<RequirePermission>`
 - 3.2 Create restricted-access placeholder component for denied Tier 2 sections
@@ -1273,7 +1275,7 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 3 (RHIDP-1527
 
 ### Specifications
 
-- `openspec/changes/ai-catalog-asset-governance/specs/graduated-visibility/spec.md`
+- `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/specs/graduated-visibility/spec.md`
 
 ---
 
@@ -1353,7 +1355,7 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 8:
 
 ### Tasks
 
-~~From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 8 (RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309):~~
+~~From `openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/tasks.md` group 8 (RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309):~~
 
 - ~~8.1 Create standalone page component at `/ai-catalog/admin/rbac` with `RequirePermission` gating (RHIDP-15307)~~
 - ~~8.2 Implement current policies view from RBAC REST API (RHIDP-15307)~~
@@ -1365,8 +1367,8 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 8:
 
 ### Specifications
 
-- ~~`openspec/changes/ai-catalog-asset-governance/specs/rbac-admin-ui/spec.md`~~
-- ~~`openspec/changes/ai-catalog-asset-governance/specs/default-deny-config/spec.md`~~
+- ~~`openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/specs/rbac-admin-ui/spec.md`~~
+- ~~`openspec/changes/archive/2026-10-30-ai-catalog-asset-governance/specs/default-deny-config/spec.md`~~
 
 ---
 
