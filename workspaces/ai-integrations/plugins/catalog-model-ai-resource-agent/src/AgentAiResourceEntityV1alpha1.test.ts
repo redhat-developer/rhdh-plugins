@@ -70,6 +70,7 @@ function makeFullAgent(): Entity {
         type: 'object',
         properties: { result: { type: 'string' } },
       },
+      spawn: 'ephemeral',
     },
   } as Entity;
 }
@@ -138,6 +139,23 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
           tools: ['my-custom-tool'],
         }),
       );
+      expect(result).toBe(true);
+    });
+
+    it.each(['none', 'local', 'ephemeral'] as const)(
+      'accepts agent with spawn: %s',
+      async spawn => {
+        const result = await agentAiResourceEntityV1alpha1Validator.check(
+          makeMinimalAgent({ spawn }),
+        );
+        expect(result).toBe(true);
+      },
+    );
+
+    it('accepts agent without spawn (field absent)', async () => {
+      const entity = makeMinimalAgent();
+      delete (entity as any).spec.spawn;
+      const result = await agentAiResourceEntityV1alpha1Validator.check(entity);
       expect(result).toBe(true);
     });
   });
@@ -237,6 +255,30 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
           makeMinimalAgent({
             modelSettings: { temperature: 'high' as any },
           }),
+        ),
+      ).rejects.toThrow();
+    });
+
+    it('rejects spawn as boolean', async () => {
+      await expect(
+        agentAiResourceEntityV1alpha1Validator.check(
+          makeMinimalAgent({ spawn: true as any }),
+        ),
+      ).rejects.toThrow();
+    });
+
+    it('rejects spawn as number', async () => {
+      await expect(
+        agentAiResourceEntityV1alpha1Validator.check(
+          makeMinimalAgent({ spawn: 42 as any }),
+        ),
+      ).rejects.toThrow();
+    });
+
+    it('rejects spawn with invalid string value', async () => {
+      await expect(
+        agentAiResourceEntityV1alpha1Validator.check(
+          makeMinimalAgent({ spawn: 'other' as any }),
         ),
       ).rejects.toThrow();
     });

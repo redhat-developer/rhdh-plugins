@@ -79,5 +79,15 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     modelSettings?: AgentAiResourceModelSettings;
     /** JSON Schema object or simple type name describing the agent's output format. */
     outputSchema?: Record<string, JsonValue | undefined> | string;
+    /**
+     * Execution spawn mode — declares whether this agent runs in-process,
+     * in a child process, or in a predefined sandbox.
+     *
+     * - `none`  — runs in the LCore process, without a sandbox.
+     * - `local` — runs in a child process, without a sandbox.
+     * - `ephemeral` — runs in the administrator-predefined sandbox profile.
+     * - Omitted — stays unset; LCore applies its default.
+     */
+    spawn?: 'none' | 'local' | 'ephemeral';
   };
 }

@@ -131,6 +131,23 @@ export function collectAgentErrors(entity: Entity): string[] {
     errors.push(`spec.model must be a string; got ${typeLabel(spec.model)}`);
   }
 
+  // Optional: spec.spawn — must be 'none', 'local', or 'ephemeral' if present
+  const validSpawnValues = ['none', 'local', 'ephemeral'];
+  if (spec.spawn !== undefined) {
+    if (
+      typeof spec.spawn !== 'string' ||
+      !validSpawnValues.includes(spec.spawn as string)
+    ) {
+      errors.push(
+        `spec.spawn must be one of 'none', 'local', 'ephemeral'; got ${
+          typeof spec.spawn === 'string'
+            ? `'${spec.spawn}'`
+            : typeLabel(spec.spawn)
+        }`,
+      );
+    }
+  }
+
   return errors;
 }
 
