@@ -564,6 +564,7 @@ case "${PHASE}" in
     echo "=== Running x2a migrate phase ==="
     MODULE_NAME_PLAN=$(echo "${MODULE_NAME}" | tr ' ' '_')
     ANSIBLE_ROLE_NAME=$(normalize_ansible_role_name "${MODULE_NAME}")
+    ROLE_DIR="${PROJECT_PATH}/ansible/collections/ansible_collections/x2a/project/roles/${ANSIBLE_ROLE_NAME}"
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
     ANSIBLE_DIR="${PROJECT_PATH}"
     mkdir -p "${OUTPUT_DIR}"
@@ -622,7 +623,7 @@ case "${PHASE}" in
     copy_changed_files "${SOURCE_BASE}" "${ANSIBLE_DIR}" \
       '^migration-plan\.md$' '^migration-dependencies/'
 
-    DEVCONTAINER_CONFIG="${OUTPUT_DIR}/ansible/.devcontainer/devcontainer.json"
+    DEVCONTAINER_CONFIG="${ANSIBLE_DIR}/ansible/.devcontainer/devcontainer.json"
     if [[ -f "${DEVCONTAINER_CONFIG}" ]]; then
       echo "Copying Ansible devcontainer configuration to the target repository."
       mkdir -p "${TARGET_BASE}/.devcontainer/ansible"
@@ -634,7 +635,7 @@ case "${PHASE}" in
     echo ""
     echo "=== Output directory contents ==="
     ls -la "${ANSIBLE_DIR}/"
-    ls -la "${ANSIBLE_DIR}/ansible/roles/" 2>/dev/null || true
+    ls -la "${ROLE_DIR}/" 2>/dev/null || true
 
     if [ ! -d "${ANSIBLE_DIR}/ansible" ]; then
       ERROR_MESSAGE="ansible output directory not created by migrate phase"
@@ -688,7 +689,6 @@ case "${PHASE}" in
 
   adversarial-analyze | adversarial-migrate)
     ACTUAL_PHASE="${PHASE#adversarial-}"
-    ANSIBLE_ROLE_NAME=$(normalize_ansible_role_name "${MODULE_NAME}")
     echo "=== Running adversarial review (${ACTUAL_PHASE} phase) ==="
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
 
@@ -696,7 +696,9 @@ case "${PHASE}" in
       SOURCE_DIR="${OUTPUT_DIR}"
     else
       # Migrate writes the generated Ansible collection under the project
-      SOURCE_DIR="${PROJECT_PATH}/ansible/collections/ansible_collections/x2a/project/roles/${ANSIBLE_ROLE_NAME}"
+      ANSIBLE_ROLE_NAME=$(normalize_ansible_role_name "${MODULE_NAME}")
+      ROLE_DIR="${PROJECT_PATH}/ansible/collections/ansible_collections/x2a/project/roles/${ANSIBLE_ROLE_NAME}"
+      SOURCE_DIR="${ROLE_DIR}"
     fi
 
     if [[ ! -d "${SOURCE_DIR}" ]]; then
