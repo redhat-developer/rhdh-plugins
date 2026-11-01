@@ -7229,59 +7229,59 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server@npm:^0.3.0":
-  version: 0.3.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server@npm:0.3.1"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server@npm:0.4.0"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.10.0"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/plugin-catalog-node": "npm:^2.2.4"
-    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server": "npm:^0.2.1"
-  checksum: 10c0/e191a253d82f78a0b1af1c2c503d1f853e56d1f876c81107a21d5c9a9ea3cea0e94fbc15a3effae6beaa23bf38af4f19480b052070327aa2b08028a676ac2f10
+    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server": "npm:^0.3.0"
+  checksum: 10c0/107110ddab5b38c5de304b5ad6c907d1fc9e566767ca8b1da77cdaaa1465e7c7498a349fdbb861244ffd5f16f62022b447247c7ce8e0142597404cb5bad0e106
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:^0.4.0":
-  version: 0.4.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:0.4.1"
-  dependencies:
-    "@backstage/backend-plugin-api": "npm:^1.10.0"
-    "@backstage/catalog-model": "npm:^1.10.0"
-    "@backstage/plugin-catalog-common": "npm:^1.1.10"
-    "@backstage/plugin-catalog-node": "npm:^2.2.4"
-    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "npm:^0.3.1"
-  checksum: 10c0/e33ef70b5ea8b1ae9ebdb9a0755e7bc3a6fc741f14117c07039fe35ee744b23bf0c268420e21afb0530542c8573f250155d0b7c83458118244dc7cb2debb2340
-  languageName: node
-  linkType: hard
-
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions@npm:^0.5.0":
-  version: 0.5.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions@npm:0.5.1"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:0.5.0"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.10.0"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/plugin-catalog-common": "npm:^1.1.10"
     "@backstage/plugin-catalog-node": "npm:^2.2.4"
-  checksum: 10c0/d8fe0aea154ef5e029bc34ca35d5328402db0fd38c5c09e6d6b8a33e587921b572dad385d7ee74de734817df81d5e1195a3a0c2410e9d39e1079b95ad0b920aa
+    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "npm:^0.4.0"
+  checksum: 10c0/1a0807340338d1f2c38747e58317424aa8a44323cc4291ab61797fb75022e91657314de4e0ddd7fee869920f972f084936c4ca8ea83e102ef64a1f25f5c7a2d8
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server@npm:0.2.1"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions@npm:0.6.0"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.10.0"
+    "@backstage/catalog-model": "npm:^1.10.0"
+    "@backstage/plugin-catalog-common": "npm:^1.1.10"
+    "@backstage/plugin-catalog-node": "npm:^2.2.4"
+  checksum: 10c0/7eac3b31f21fcee24947444ab63caaa904bf7a0de6b84fb9d16bec452edecda15919209324f715ac5a5506f06bb9e3202b3d508f75b5ddd5e9d215688284674d
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server@npm:0.3.0"
   dependencies:
     "@backstage/catalog-model": "npm:^1.10.0"
-  checksum: 10c0/bbf6f5ff706fb20b64c0a771a59b0b258663fb290ad84ebcfa268a6e748afbe08767b66d23c54efad3254dff92fe41801b1318d6f4f61b0f9429bd56a0f93336
+  checksum: 10c0/7d057ef6bb438c365923aa31d12d4e5fa2b03a2cc6549bc0df47820a10e054f14ee5b3c690668d3e1ea75d81311233e427efe067d2abffa85b3f690d6dc2a21e
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:^0.3.1":
-  version: 0.3.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:0.3.1"
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:0.4.0"
   dependencies:
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/types": "npm:^1.2.2"
-  checksum: 10c0/73659696056c71be35ffc39adcd25325fc84034d0039c8401e383310b7ce279bc2f73a9e17c8e3c040337ac95aa66129331f026d596fa3211fb5679db7d49f63
+  checksum: 10c0/d3d9228547ff688d75762461b07beefb260ba8128937b67e4190dd7736e140c2ec003f9c0fa145443458d8324b3e006cdda6a4c1af440f9ce390199c12480548
   languageName: node
   linkType: hard
 
@@ -11085,9 +11085,9 @@ __metadata:
     "@backstage/plugin-search-backend-module-catalog": "npm:^0.3.18"
     "@backstage/plugin-search-backend-module-techdocs": "npm:^0.4.17"
     "@backstage/plugin-techdocs-backend": "npm:^2.2.4"
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server": "npm:^0.3.0"
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent": "npm:^0.4.0"
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions": "npm:^0.5.0"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server": "npm:^0.4.0"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent": "npm:^0.5.0"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions": "npm:^0.6.0"
     "@red-hat-developer-hub/backstage-plugin-ogx-entity-provider": "workspace:^"
     app: "link:../app"
     better-sqlite3: "npm:^12.0.0"
