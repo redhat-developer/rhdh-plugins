@@ -104,7 +104,10 @@ export const LightspeedFABContent = () => {
     return () => cancelAnimationFrame(frame);
   }, [isChatbotActive, theme]);
 
-  if (displayMode === ChatbotDisplayMode.embedded) {
+  if (
+    displayMode === ChatbotDisplayMode.embedded ||
+    (displayMode === ChatbotDisplayMode.docked && isChatbotActive)
+  ) {
     return null;
   }
 
