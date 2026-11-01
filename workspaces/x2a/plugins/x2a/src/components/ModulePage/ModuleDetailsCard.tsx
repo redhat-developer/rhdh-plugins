@@ -24,6 +24,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import CodeIcon from '@material-ui/icons/Code';
+import PublishIcon from '@material-ui/icons/Publish';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import {
   Artifact,
@@ -38,16 +39,20 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { ArtifactLink } from '../ArtifactLink';
-import { buildCodespace } from '../tools';
+import { buildAapConfigTemplateUrl, buildCodespace } from '../tools';
 
 export const ModuleDetailsCard = ({
   module,
   targetRepository,
   migrationPlanArtifact,
+  projectName,
+  projectDirName,
 }: {
   module?: Module;
   targetRepository?: GitRepositoryRef;
   migrationPlanArtifact?: Artifact;
+  projectName?: string;
+  projectDirName?: string;
 }) => {
   const { t } = useTranslation();
   const hostMap = useScmHostMap();
@@ -64,6 +69,24 @@ export const ModuleDetailsCard = ({
   const ansibleProjectArtifact = module?.publish?.artifacts?.find(artifact =>
     ArtifactKind.from(artifact.type).isAnsibleProject(),
   );
+  const aapConfigArtifact = module?.publish?.artifacts?.find(artifact =>
+    ArtifactKind.from(artifact.type).isAapConfig(),
+  );
+  const aapConfigTemplateUrl =
+    aapConfigArtifact &&
+    module?.publish?.commitId &&
+    targetRepository &&
+    projectDirName
+      ? buildAapConfigTemplateUrl({
+          sourceRepository: targetRepoUrl,
+          sourceBranch: targetRepoBranch,
+          sourceCommit: module.publish.commitId,
+          artifactPath: aapConfigArtifact.value,
+          projectName: projectName ?? '',
+          projectDirName,
+          moduleName: module?.name ?? '',
+        })
+      : undefined;
   const codespace = targetRepository
     ? buildCodespace(targetRepository, hostMap)
     : undefined;
@@ -171,6 +194,36 @@ export const ModuleDetailsCard = ({
                 targetRepoUrl={targetRepoUrl}
                 targetRepoBranch={targetRepoBranch}
               />
+            }
+          />
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <ItemField
+            label={t('modulePage.artifacts.aap_config')}
+            value={
+              <Box
+                display="flex"
+                alignItems="center"
+                flexWrap="wrap"
+                style={{ gap: 8 }}
+              >
+                <ArtifactLink
+                  artifact={aapConfigArtifact}
+                  targetRepoUrl={targetRepoUrl}
+                  targetRepoBranch={targetRepoBranch}
+                />
+                {aapConfigTemplateUrl && (
+                  <Button
+                    href={aapConfigTemplateUrl}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<PublishIcon />}
+                  >
+                    {t('modulePage.artifacts.publishAapConfig')}
+                  </Button>
+                )}
+              </Box>
             }
           />
         </Grid>

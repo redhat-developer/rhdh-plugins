@@ -30,6 +30,7 @@ export const X2A_ARTIFACT_TYPE_VALUES = [
   'adversarial_report_json',
   'project_metadata',
   'ansible_project',
+  'aap_config',
 ] as const satisfies readonly ArtifactType[];
 
 /**

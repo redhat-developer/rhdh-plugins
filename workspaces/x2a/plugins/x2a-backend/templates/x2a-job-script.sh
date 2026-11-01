@@ -666,15 +666,17 @@ case "${PHASE}" in
     echo "=== Ansible project contents ==="
     find "${ANSIBLE_DIR}" -type f | sed -n '1,50p'
 
-    # publish-aap creates/updates an AAP Project for this repository and branch,
-    # then triggers a sync without waiting for it to finish.
+    # publish-aap generates the AAP configuration draft, creates or updates the
+    # AAP Project, and triggers a sync without waiting for it to finish.
     echo ""
     echo "=== Publishing to AAP ==="
-    cd /app
-    run_x2a uv run app.py publish-aap \
+    AAP_CONFIG_MODULE_NAME=$(normalize_ansible_role_name "${MODULE_NAME}")
+    cd "${PROJECT_PATH}"
+    run_x2a uv run --project /app /app/app.py publish-aap \
       --target-repo "${TARGET_REPO_URL}" \
       --target-branch "${TARGET_REPO_BRANCH}" \
-      --project-id "${PROJECT_DIR}"
+      --project-id "${PROJECT_DIR}" \
+      --module-name "${AAP_CONFIG_MODULE_NAME}"
 
     # Parse AAP project ID from captured output
     AAP_PROJECT_ID=$(echo "${X2A_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
@@ -684,6 +686,7 @@ case "${PHASE}" in
       echo "WARNING: Could not parse AAP project ID from publish-aap output"
       ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects")
     fi
+    ARTIFACTS+=("aap_config:${PROJECT_DIR}/ansible/aap-config/${AAP_CONFIG_MODULE_NAME}")
     ;;
 
   adversarial-analyze | adversarial-migrate)

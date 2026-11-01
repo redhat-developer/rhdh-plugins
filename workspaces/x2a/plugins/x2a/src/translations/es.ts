@@ -148,7 +148,19 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'artifact.types.migrated_sources': 'Fuentes migradas',
     'artifact.types.project_metadata': 'Metadatos del proyecto',
     'artifact.types.ansible_project': 'Proyecto AAP',
+    'artifact.types.aap_config': 'Configuración AAP',
     'modulePage.title': 'Detalles del módulo',
+    'modulePage.publishDialog.title': 'Publicar configuración de AAP',
+    'modulePage.publishDialog.inventory': 'Inventario de AAP',
+    'modulePage.publishDialog.scmCredential': 'Credencial SCM (opcional)',
+    'modulePage.publishDialog.jobCredentials':
+      'Credenciales de trabajo (opcional)',
+    'modulePage.publishDialog.jobCredentialsHelp':
+      'Separe los nombres con comas.',
+    'modulePage.publishDialog.executionEnvironment':
+      'Entorno de ejecución (opcional)',
+    'modulePage.publishDialog.cancel': 'Cancelar',
+    'modulePage.publishDialog.publish': 'Publicar',
     'modulePage.artifacts.title': 'Artefactos para revisar',
     'modulePage.artifacts.migration_plan':
       'Plan de migración general del proyecto',
@@ -157,6 +169,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.artifacts.migrated_sources': 'Fuentes migradas',
     'modulePage.artifacts.editInCodespaces': 'Editar en Codespaces',
     'modulePage.artifacts.ansible_project': 'Proyecto AAP',
+    'modulePage.artifacts.aap_config': 'Borrador de configuración AAP',
+    'modulePage.artifacts.publishAapConfig': 'Publicar configuración',
     'modulePage.artifacts.description':
       'Estos artefactos son generados por el proceso de conversión y están disponibles para revisión.',
     'modulePage.phases.title': 'Fases de migración',

@@ -149,13 +149,27 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'artifact.types.migrated_sources': 'Sources migrées',
     'artifact.types.project_metadata': 'Métadonnées du projet',
     'artifact.types.ansible_project': 'Projet AAP',
+    'artifact.types.aap_config': 'Configuration AAP',
     'modulePage.title': 'Détails du module',
+    'modulePage.publishDialog.title': 'Publier la configuration AAP',
+    'modulePage.publishDialog.inventory': 'Inventaire AAP',
+    'modulePage.publishDialog.scmCredential': 'Identifiant SCM (facultatif)',
+    'modulePage.publishDialog.jobCredentials':
+      'Identifiants de tâche (facultatif)',
+    'modulePage.publishDialog.jobCredentialsHelp':
+      'Séparez les noms par des virgules.',
+    'modulePage.publishDialog.executionEnvironment':
+      "Environnement d'exécution (facultatif)",
+    'modulePage.publishDialog.cancel': 'Annuler',
+    'modulePage.publishDialog.publish': 'Publier',
     'modulePage.artifacts.title': 'Artefacts à réviser',
     'modulePage.artifacts.migration_plan': 'Plan de migration global du projet',
     'modulePage.artifacts.module_migration_plan': 'Plan du module par analyse',
     'modulePage.artifacts.migrated_sources': 'Sources migrées',
     'modulePage.artifacts.editInCodespaces': 'Modifier dans Codespaces',
     'modulePage.artifacts.ansible_project': 'Projet AAP',
+    'modulePage.artifacts.aap_config': 'Brouillon de configuration AAP',
+    'modulePage.artifacts.publishAapConfig': 'Publier la configuration',
     'modulePage.artifacts.description':
       'Ces artefacts sont générés par le processus de conversion et sont disponibles pour examen.',
     'modulePage.phases.title': 'Phases de migration',

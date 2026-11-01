@@ -110,6 +110,14 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'projectModulesCard.spinner': string;
     readonly 'initPhaseCard.title': string;
     readonly 'modulePage.title': string;
+    readonly 'modulePage.publishDialog.title': string;
+    readonly 'modulePage.publishDialog.cancel': string;
+    readonly 'modulePage.publishDialog.inventory': string;
+    readonly 'modulePage.publishDialog.scmCredential': string;
+    readonly 'modulePage.publishDialog.jobCredentials': string;
+    readonly 'modulePage.publishDialog.jobCredentialsHelp': string;
+    readonly 'modulePage.publishDialog.executionEnvironment': string;
+    readonly 'modulePage.publishDialog.publish': string;
     readonly 'modulePage.artifacts.title': string;
     readonly 'modulePage.artifacts.description': string;
     readonly 'modulePage.artifacts.migration_plan': string;
@@ -117,6 +125,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.artifacts.migrated_sources': string;
     readonly 'modulePage.artifacts.editInCodespaces': string;
     readonly 'modulePage.artifacts.ansible_project': string;
+    readonly 'modulePage.artifacts.aap_config': string;
+    readonly 'modulePage.artifacts.publishAapConfig': string;
     readonly 'modulePage.phases.title': string;
     readonly 'modulePage.phases.id': string;
     readonly 'modulePage.phases.status': string;
@@ -245,10 +255,10 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'module.status': string;
     readonly 'module.artifacts': string;
     readonly 'module.phases.none': string;
+    readonly 'module.phases.publish': string;
     readonly 'module.phases.init': string;
     readonly 'module.phases.analyze': string;
     readonly 'module.phases.migrate': string;
-    readonly 'module.phases.publish': string;
     readonly 'module.phases.adversarial-analyze': string;
     readonly 'module.phases.adversarial-migrate': string;
     readonly 'module.statuses.error': string;
@@ -279,6 +289,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'artifact.types.module_migration_plan': string;
     readonly 'artifact.types.migrated_sources': string;
     readonly 'artifact.types.ansible_project': string;
+    readonly 'artifact.types.aap_config': string;
     readonly 'artifact.types.project_metadata': string;
     readonly 'artifact.types.adversarial_report': string;
     readonly 'artifact.types.adversarial_report_json': string;
