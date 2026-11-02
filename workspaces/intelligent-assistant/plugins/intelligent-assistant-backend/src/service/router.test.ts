@@ -434,6 +434,30 @@ describe('intelligent-assistant router tests', () => {
   });
 
   describe('PUT /v2/conversations/:conversation_id', () => {
+    it('should encode conversation IDs before forwarding to Core', async () => {
+      const conversationId = 'conversation/child?user_id=other#';
+      let upstreamUrl: URL | undefined;
+      server.use(
+        http.put(`${LOCAL_LCS_ADDR}/v2/conversations/*`, ({ request: req }) => {
+          upstreamUrl = new URL(req.url);
+          return HttpResponse.json({ success: true });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .put(
+          `/api/intelligent-assistant/v2/conversations/${encodeURIComponent(conversationId)}`,
+        )
+        .send({ topic_summary: 'new topic' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(upstreamUrl?.searchParams.getAll('user_id')).toEqual([mockUserId]);
+      expect(upstreamUrl?.pathname).toBe(
+        `/v2/conversations/${encodeURIComponent(conversationId)}`,
+      );
+    });
+
     it('should successfully update topic summary', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
