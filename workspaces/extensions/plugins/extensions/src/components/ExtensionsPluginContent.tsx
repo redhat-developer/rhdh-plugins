@@ -719,14 +719,20 @@ export const ExtensionsPluginContent = ({
                 <CatalogSourceChip plugin={plugin} />
               )}
             </Stack>
+          </Stack>
+        </Stack>
+
+        <Grid container spacing={2}>
+          <Grid item md={3}>
             {(restartRequired ||
               (plugin.spec?.installStatus &&
                 plugin.spec.installStatus !==
                   ExtensionsPluginInstallStatus.NotInstalled)) && (
-              <Box sx={{ pt: 0.5 }}>
+              <Box sx={{ mb: 3 }}>
                 <Typography
-                  variant="subtitle2"
-                  sx={{ fontWeight: 500, mb: 0.5 }}
+                  variant="h6"
+                  component="h3"
+                  sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
                 >
                   {t('table.status')}
                 </Typography>
@@ -739,11 +745,7 @@ export const ExtensionsPluginContent = ({
                 )}
               </Box>
             )}
-          </Stack>
-        </Stack>
 
-        <Grid container spacing={2}>
-          <Grid item md={3}>
             <PluginMetadataSection
               title={t('metadata.highlights')}
               value={highlights}
