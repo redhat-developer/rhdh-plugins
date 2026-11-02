@@ -354,7 +354,7 @@ describe('collectAgentErrors', () => {
     });
   });
 
-  describe('spec.spawn (optional, must be none|local|ephemeral)', () => {
+  describe('spec.spawn (optional, must be one of none, local, ephemeral)', () => {
     it.each(['none', 'local', 'ephemeral'] as const)(
       'accepts spawn: %s',
       spawn => {
