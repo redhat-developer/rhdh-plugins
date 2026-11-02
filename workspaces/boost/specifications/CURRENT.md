@@ -103,7 +103,6 @@ listed below.
 | `ai-chat-interaction-experience`     | Follow-on chat and interaction capabilities; not current-release behavior.                                                        |
 | `pluggable-ai-platform-architecture` | Follow-on provider/backend architecture; not current-release behavior.                                                            |
 | `platform-operations-deployment`     | Follow-on backend, configuration, deployment, and administration work; not current-release behavior.                              |
-| `security-safety-governance`         | Follow-on backend security and authorization work; not current-release behavior.                                                  |
 | `connector-shared-infrastructure`    | Follow-on shared connector infrastructure; not current-release behavior.                                                          |
 | `connector-config-hot-reload`        | Follow-on connector administration and backend configuration work; not current-release behavior.                                  |
 | `ingestion-audit-metrics`            | Consolidated/follow-on ingestion and analytics work; not current-release behavior.                                                |

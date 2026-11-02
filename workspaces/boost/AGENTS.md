@@ -21,12 +21,7 @@ workspaces/boost/
 │       ├── agent-creation-discovery/
 │       ├── ai-chat-interaction-experience/
 │       ├── pluggable-ai-platform-architecture/
-│       ├── platform-operations-deployment/
-│       └── security-safety-governance/
-│           ├── proposal.md        # What and why
-│           ├── design.md          # Architecture decisions
-│           ├── tasks.md           # Implementation task breakdown
-│           └── specs/             # Behavioral specs (Given/When/Then)
+│       └── platform-operations-deployment/
 ├── openspec/                      # Implementation specifications (RHDH 2.2)
 │   ├── specs/                     # Implemented behavior and release source of truth
 │   └── changes/                   # One directory per capability area (RHDH 2.2 cycle)
@@ -40,7 +35,7 @@ When implementing an issue:
 1. Read `specifications/CURRENT.md` to confirm the release boundary and status.
 2. Read `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/boost-context.md` for design principles — these are non-negotiable
 3. Find the relevant PRD in `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/specifications/prd/` for product requirements
-4. For RHDH 2.1 change areas, find the matching area in `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/` for design decisions, task breakdown, and behavioral specs. For RHDH 2.2 work, find the matching change in `openspec/changes/`.
+4. For retained RHDH 2.1 change areas, find the matching area in `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/` for design decisions, task breakdown, and behavioral specs. For RHDH 2.2 work, find the matching change in `openspec/changes/`.
 5. If the capability is already implemented, use the corresponding `openspec/specs/` document as the behavior source of truth. The `specs/` subdirectories under an active change are planning acceptance criteria and must not silently override it.
 
 ### OpenSpec scenario step discipline
