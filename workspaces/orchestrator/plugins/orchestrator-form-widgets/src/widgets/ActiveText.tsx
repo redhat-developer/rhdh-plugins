@@ -22,16 +22,18 @@ import { UiProps } from '../uiPropTypes';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import { ErrorText } from './ErrorText';
+import { FieldWithHelpLayout } from '../components/FieldHelp';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { useFetchAndEvaluate } from '../utils';
+import { useFetchAndEvaluate, useResolvedFieldHelp } from '../utils';
 
 export const ActiveText: Widget<
   JsonObject,
   JSONSchema7,
   OrchestratorFormContextProps
 > = props => {
-  const { id, options, formContext } = props;
+  const { id, label, options, formContext, required } = props;
   const uiProps = (options?.props ?? {}) as UiProps;
+  const fieldHelp = useResolvedFieldHelp(options?.fieldHelp);
 
   const formData = formContext?.formData;
   const handleFetchStarted = formContext?.handleFetchStarted;
@@ -70,5 +72,15 @@ export const ActiveText: Widget<
     content = <MarkdownContent content={text || ''} />;
   }
 
-  return <Box data-testid={id}>{content}</Box>;
+  return (
+    <Box data-testid={id}>
+      <FieldWithHelpLayout
+        label={label ?? ''}
+        help={fieldHelp}
+        required={required}
+      >
+        {content}
+      </FieldWithHelpLayout>
+    </Box>
+  );
 };

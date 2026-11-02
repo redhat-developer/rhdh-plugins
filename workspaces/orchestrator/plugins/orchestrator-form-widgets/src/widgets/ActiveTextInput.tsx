@@ -40,6 +40,8 @@ import {
   useClearOnRetrigger,
   evaluateFetchResponseSelectorTemplate,
 } from '../utils';
+import { FieldWithHelpLayout } from '../components/FieldHelp';
+import { useResolvedFieldHelp } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
 
@@ -57,10 +59,12 @@ export const ActiveTextInput: Widget<
   const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const { id, label, value, onChange, onBlur, formContext } = props;
+  const { id, label, value, onChange, onBlur, formContext, required } = props;
   const formData = formContext?.formData;
   const isChangedByUser = !!formContext?.getIsChangedByUser(id);
   const setIsChangedByUser = formContext?.setIsChangedByUser;
+  const fieldHelp = useResolvedFieldHelp(props.options?.fieldHelp);
+  const inputLabel = fieldHelp ? undefined : label;
 
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
@@ -228,50 +232,65 @@ export const ActiveTextInput: Widget<
         data-testid={`${id}-textfield`}
         onChange={event => handleChange(event.target.value, true)}
         onBlur={() => onBlur?.(id, value)}
-        label={label}
+        label={inputLabel}
         disabled={isReadOnly}
       />
     );
 
     return (
-      <FormControl variant="outlined" fullWidth>
-        <Autocomplete
-          options={autocompleteOptions}
-          data-testid={`${id}-autocomplete`}
-          value={value}
-          onChange={(_, v) => handleChange(v, true)}
-          disabled={isReadOnly}
-          renderInput={renderInput}
-          renderOption={(liProps, item, state) => {
-            return (
-              <li
-                {...liProps}
-                key={item}
-                data-testid={`${id}-autocomplete-option-${item}`}
-                className={clsx(
-                  state.selected && classes.autocompleteOptionSelected,
-                  liProps.className,
-                )}
-              >
-                {item}
-              </li>
-            );
-          }}
-        />
-      </FormControl>
+      <FieldWithHelpLayout
+        label={label}
+        help={fieldHelp}
+        required={required}
+        htmlFor={id}
+      >
+        <FormControl variant="outlined" fullWidth>
+          <Autocomplete
+            options={autocompleteOptions}
+            data-testid={`${id}-autocomplete`}
+            value={value}
+            onChange={(_, v) => handleChange(v, true)}
+            disabled={isReadOnly}
+            renderInput={renderInput}
+            renderOption={(liProps, item, state) => {
+              return (
+                <li
+                  {...liProps}
+                  key={item}
+                  data-testid={`${id}-autocomplete-option-${item}`}
+                  className={clsx(
+                    state.selected && classes.autocompleteOptionSelected,
+                    liProps.className,
+                  )}
+                >
+                  {item}
+                </li>
+              );
+            }}
+          />
+        </FormControl>
+      </FieldWithHelpLayout>
     );
   }
 
   return (
-    <FormControl variant="outlined" fullWidth>
-      <TextField
-        value={value ?? ''}
-        data-testid={`${id}-textfield`}
-        onChange={event => handleChange(event.target.value, true)}
-        onBlur={() => onBlur?.(id, value)}
-        label={label}
-        disabled={isReadOnly}
-      />
-    </FormControl>
+    <FieldWithHelpLayout
+      label={label}
+      help={fieldHelp}
+      required={required}
+      htmlFor={id}
+    >
+      <FormControl variant="outlined" fullWidth>
+        <TextField
+          id={id}
+          value={value ?? ''}
+          data-testid={`${id}-textfield`}
+          onChange={event => handleChange(event.target.value, true)}
+          onBlur={() => onBlur?.(id, value)}
+          label={inputLabel}
+          disabled={isReadOnly}
+        />
+      </FormControl>
+    </FieldWithHelpLayout>
   );
 };
