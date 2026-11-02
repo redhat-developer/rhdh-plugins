@@ -15,18 +15,19 @@
  */
 
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
-import express from 'express';
+import type express from 'express';
+import Router from 'express-promise-router';
 
 export function createRouter(
   snapshots: ReadonlyMap<string, SkillSnapshot>,
 ): express.Router {
-  const router = express.Router();
+  const router = Router();
 
   router.get('/skills/:sourceId', (req, res) => {
     const sourceId = req.params.sourceId;
     const snapshot = snapshots.get(sourceId);
     if (!snapshot) {
-      res.status(404).json({ error: 'Unknown source' });
+      res.status(404).json({ error: `Unknown source: ${sourceId}` });
       return;
     }
     res.json(snapshot);

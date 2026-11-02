@@ -140,6 +140,51 @@ describe('fetchSourceBuffer', () => {
     ).rejects.toThrow('maximum size');
   });
 
+  it('reads an index file within the 5 MiB limit', async () => {
+    const index = 'https://skills.example.com/index.json';
+    fetchMock.mockResolvedValue(new Response('index content'));
+    await expect(fetchSourceBuffer(index, source, 'index')).resolves.toEqual(
+      Buffer.from('index content'),
+    );
+  });
+
+  it('rejects an oversized index file while reading it', async () => {
+    const index = 'https://skills.example.com/index.json';
+    fetchMock.mockResolvedValue(
+      new Response(Buffer.alloc(5 * 1024 * 1024 + 1)),
+    );
+    await expect(fetchSourceBuffer(index, source, 'index')).rejects.toThrow(
+      'maximum size',
+    );
+  });
+
+  it('rejects early when Content-Length exceeds the artifact limit', async () => {
+    const oversize = String(1024 * 1024 + 1);
+    fetchMock.mockResolvedValue(
+      new Response('body', {
+        status: 200,
+        headers: { 'content-length': oversize },
+      }),
+    );
+    await expect(
+      fetchSourceBuffer(artifact, source, 'artifact'),
+    ).rejects.toThrow('maximum size');
+  });
+
+  it('rejects early when Content-Length exceeds the index limit', async () => {
+    const index = 'https://skills.example.com/index.json';
+    const oversize = String(5 * 1024 * 1024 + 1);
+    fetchMock.mockResolvedValue(
+      new Response('body', {
+        status: 200,
+        headers: { 'content-length': oversize },
+      }),
+    );
+    await expect(fetchSourceBuffer(index, source, 'index')).rejects.toThrow(
+      'maximum size',
+    );
+  });
+
   it('honors caller cancellation', async () => {
     const controller = new AbortController();
     controller.abort(new Error('cancelled'));

@@ -28,7 +28,7 @@ describe('npx skill snapshots', () => {
 
   it('returns 404 for an unknown source', async () => {
     const response = await request(app).get('/skills/missing').expect(404);
-    expect(response.body).toEqual({ error: 'Unknown source' });
+    expect(response.body).toEqual({ error: 'Unknown source: missing' });
   });
 
   it('returns the configured source snapshot', async () => {
