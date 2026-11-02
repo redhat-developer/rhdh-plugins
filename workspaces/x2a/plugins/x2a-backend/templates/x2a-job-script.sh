@@ -621,7 +621,7 @@ case "${PHASE}" in
       --module-migration-plan "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_PLAN}.md" \
       "${USER_REQ}"
 
-    # Copy all files the x2a tool created/modified to the module output directory
+    # Copy all files the x2a tool created/modified to the Ansible directory
     # Exclude files we copied into source before running x2a
     copy_changed_files "${SOURCE_BASE}" "${ANSIBLE_DIR}" \
       '^migration-plan\.md$' '^migration-dependencies/'
