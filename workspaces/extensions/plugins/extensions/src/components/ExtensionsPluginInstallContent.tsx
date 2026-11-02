@@ -139,8 +139,7 @@ export const ExtensionsPluginInstallContent = ({
         plugins: configArray,
       };
 
-      const configYaml = yaml.stringify(configObject);
-      codeEditor.setValue(configYaml);
+      codeEditor.setValue(yaml.stringify(configObject));
     } else {
       const dynamicPluginYaml = {
         plugins: (packages ?? []).map(pkg => {
@@ -234,6 +233,7 @@ export const ExtensionsPluginInstallContent = ({
             : t('install.pluginInstalled'),
         };
         setInstalledPlugins(updatedPlugins);
+        // Catalog hosts BackendRestartAlert and plugin cards with Restart required.
         navigate('/extensions');
       } else {
         setIsSubmitting(false);

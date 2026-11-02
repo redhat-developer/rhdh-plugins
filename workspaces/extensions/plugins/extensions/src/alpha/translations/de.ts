@@ -48,6 +48,7 @@ const extensionsTranslationDe = createTranslationMessages({
     'status.disabled': 'Deaktiviert',
     'status.partiallyInstalled': 'Teilweise installiert',
     'status.updateAvailable': 'Update verfügbar',
+    'status.restartRequired': 'Neustart erforderlich',
     'role.backend': 'Backend',
     'role.backendModule': 'Backend-Modul',
     'role.frontend': 'Frontend',
@@ -286,6 +287,8 @@ const extensionsTranslationDe = createTranslationMessages({
       'Sie haben keine Berechtigung, Plugins zu installieren oder deren Konfigurationen anzuzeigen. Wenden Sie sich an Ihren Administrator, um Zugriff oder Unterstützung anzufordern.',
     'tooltips.missingDynamicArtifact':
       'Dieses {{type}} kann nicht verwaltet werden. Um Aktionen zu ermöglichen, muss ein Katalogelement mit dem erforderlichen spec.dynamicArtifact hinzugefügt werden.',
+    'tooltips.restartRequired':
+      'Für diese Änderung ist ein Neustart der Plattform erforderlich, damit sie wirksam wird.',
     'aria.openPlugin': 'Plugin {{name}} öffnen',
     'aria.closeDialog': 'Dialog schließen',
     'aria.expandSection': 'Abschnitt erweitern',

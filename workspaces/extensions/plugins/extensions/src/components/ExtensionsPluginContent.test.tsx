@@ -37,6 +37,10 @@ import { configApiRef, errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../queryclient';
+import {
+  InstallationContextProvider,
+  resetInstallationStore,
+} from './InstallationContext';
 
 const mockNavigate = jest.fn();
 
@@ -95,6 +99,7 @@ queryClient.setDefaultOptions({
 });
 
 beforeEach(() => {
+  resetInstallationStore();
   usePluginConfigurationPermissionsMock.mockReturnValue({
     data: {
       write: 'ALLOW',
@@ -137,7 +142,9 @@ const renderWithProviders = (ui: ReactNode) =>
       ]}
     >
       <BrowserRouter>
-        <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          <InstallationContextProvider>{ui}</InstallationContextProvider>
+        </QueryClientProvider>
       </BrowserRouter>
     </TestApiProvider>,
   );
@@ -335,7 +342,7 @@ describe('ExtensionsPluginContent', () => {
     expect(getByTestId('disable-plugin')).toBeInTheDocument();
   });
 
-  it('navigates to the catalog tab after disabling a plugin', async () => {
+  it('keeps the drawer open and shows Restart required after disabling a plugin', async () => {
     usePluginPackagesMock.mockReturnValue({
       isLoading: false,
       data: packages,
@@ -349,17 +356,47 @@ describe('ExtensionsPluginContent', () => {
       },
     };
 
-    const { getByTestId } = renderWithProviders(
+    const { getByTestId, findByTestId } = renderWithProviders(
       <ExtensionsPluginContent plugin={installedPlugin} />,
     );
     fireEvent.click(getByTestId('plugin-actions'));
     fireEvent.click(getByTestId('disable-plugin'));
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalled();
+    expect(await findByTestId('restart-required-status')).toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('clears Restart required after reverting a disable', async () => {
+    usePluginPackagesMock.mockReturnValue({
+      isLoading: false,
+      data: packages,
     });
-    expect(mockNavigate).not.toHaveBeenCalledWith(
-      '/extensions/installed-plugins',
+
+    const installedPlugin = {
+      ...plugin,
+      spec: {
+        ...plugin.spec,
+        installStatus: ExtensionsPluginInstallStatus.Installed,
+      },
+    };
+
+    const { getByTestId, findByTestId, queryByTestId } = renderWithProviders(
+      <ExtensionsPluginContent plugin={installedPlugin} />,
     );
+
+    fireEvent.click(getByTestId('plugin-actions'));
+    fireEvent.click(getByTestId('disable-plugin'));
+    expect(await findByTestId('restart-required-status')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(getByTestId('plugin-actions')).toBeInTheDocument();
+    });
+    fireEvent.click(getByTestId('plugin-actions'));
+    fireEvent.click(getByTestId('enable-plugin'));
+
+    await waitFor(() => {
+      expect(queryByTestId('restart-required-status')).not.toBeInTheDocument();
+    });
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

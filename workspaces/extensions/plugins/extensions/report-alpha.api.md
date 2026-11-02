@@ -93,6 +93,7 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'status.disabled': string;
     readonly 'status.partiallyInstalled': string;
     readonly 'status.updateAvailable': string;
+    readonly 'status.restartRequired': string;
     readonly 'role.backend': string;
     readonly 'role.backendModule': string;
     readonly 'role.frontend': string;
@@ -100,6 +101,7 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'emptyState.mustEnableBackend': string;
     readonly 'emptyState.noPluginsDescription': string;
     readonly 'emptyState.configureBackend': string;
+    readonly 'alert.restartRequired': string;
     readonly 'alert.productionDisabled': string;
     readonly 'alert.installationDisabled': string;
     readonly 'alert.missingDynamicArtifact': string;
@@ -111,7 +113,6 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'alert.multiplePluginRestart': string;
     readonly 'alert.singlePackageRestart': string;
     readonly 'alert.multiplePackageRestart': string;
-    readonly 'alert.restartRequired': string;
     readonly 'alert.backendRestartRequired': string;
     readonly 'alert.viewPlugins': string;
     readonly 'alert.viewPackages': string;
@@ -191,6 +192,7 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'actions.packageCurrentlyDisabled': string;
     readonly 'actions.installTitle': string;
     readonly 'actions.editTitle': string;
+    readonly 'tooltips.restartRequired': string;
     readonly 'tooltips.productionDisabled': string;
     readonly 'tooltips.missingDynamicArtifact': string;
     readonly 'tooltips.extensionsDisabled': string;
