@@ -163,7 +163,6 @@ const ModelItemContent = styled('span')({
 
 /**
  * PF Dropdown applies `className` to the portaled Menu (not the toggle).
- * `$maxWidthPx` enforces the panel right margin (RHDHBUGS-4005).
  */
 const StyledDropdown = styled(Dropdown, {
   shouldForwardProp: prop => prop !== '$maxWidthPx',
@@ -286,7 +285,6 @@ export const MessageBarModelSelector = ({
         setIsOpen(false);
       }}
       onOpenChange={setOpen}
-      // RHDHBUGS-4005: stay in the chat panel with a right margin.
       popperProps={{
         position: 'left',
         preventOverflow: false,
