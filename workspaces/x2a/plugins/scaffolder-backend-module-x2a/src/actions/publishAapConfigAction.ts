@@ -284,21 +284,24 @@ export function createPublishAapConfigAction(
       'Publish generated AAP Config-as-Code files to a Git repository.',
     schema: {
       input: z => {
-        const branch = z
-          .string()
-          .min(1)
-          .regex(/^(?!-)[^:]+$/, {
-            message: 'Branch must not start with "-" or contain ":"',
-          });
-        const optionalName = z.preprocess(
-          value =>
-            value === null || (typeof value === 'string' && value.trim() === '')
-              ? undefined
-              : value,
+        const branch = () =>
           z
-            .union([z.string().trim().min(1), z.literal(''), z.null()])
-            .optional(),
-        );
+            .string()
+            .min(1)
+            .regex(/^(?!-)[^:]+$/, {
+              message: 'Branch must not start with "-" or contain ":"',
+            });
+        const optionalName = () =>
+          z.preprocess(
+            value =>
+              value === null ||
+              (typeof value === 'string' && value.trim() === '')
+                ? undefined
+                : value,
+            z
+              .union([z.string().trim().min(1), z.literal(''), z.null()])
+              .optional(),
+          );
         const jobCredentialNames = z
           .array(z.string().trim().min(1))
           .default([])
@@ -312,15 +315,15 @@ export function createPublishAapConfigAction(
           });
         return z.object({
           sourceRepository: z.string(),
-          sourceBranch: branch,
+          sourceBranch: branch(),
           sourceCommit: z.string().regex(/^[0-9a-f]{7,64}$/i),
           artifactPath: z.string().min(1),
           inventory: z.string().trim().min(1),
-          scmCredentialName: optionalName,
+          scmCredentialName: optionalName(),
           jobCredentialNames,
-          executionEnvironmentName: optionalName,
+          executionEnvironmentName: optionalName(),
           destinationRepository: z.string(),
-          destinationBranch: branch,
+          destinationBranch: branch(),
           destinationConfigDirectory: z.string().min(1),
           projectName: z.string().min(1),
           projectDirName: z.string().min(1),
