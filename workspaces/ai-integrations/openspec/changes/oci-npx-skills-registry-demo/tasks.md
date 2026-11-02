@@ -19,8 +19,8 @@
 
 - [ ] 3.1 Retrieve and validate Agent Skills v0.2 discovery indexes, including RHESS; process only `skill-md` entries and detect duplicate names.
 - [ ] 3.2 Safely retrieve artifacts and verify SHA-256 before decoding; normalize frontmatter and index metadata using the shared mapping.
-- [ ] 3.3 Enforce design D7's origin, redirect, timeout, concurrency, and size limits; test invalid entries, digest mismatch, and escaped redirects.
-- [ ] 3.4 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed skill keys, and Backstage startup/periodic refresh scheduling; test the same contract fixtures as OCI.
+- [ ] 3.3 Enforce design D7's origin, redirect, timeout, concurrency, and size limits; test invalid entries, digest mismatch, and escaped redirects. _(Partial: HTTPS origin, redirect, timeout, and size limits implemented in `fetchSourceBuffer`; concurrency limits, digest mismatch, and escaped redirect tests remain for later PRs.)_
+- [ ] 3.4 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed skill keys, and Backstage startup/periodic refresh scheduling; test the same contract fixtures as OCI. _(Partial: authenticated `GET /skills/:sourceId` with loading snapshots, `express-promise-router`, and Backstage schedule configuration implemented; atomic snapshot updates, failed skill keys, and OCI contract fixture tests remain for later PRs.)_
 
 ## 4. Common skill catalog entity provider
 
@@ -32,7 +32,7 @@
 
 ## 5. Configuration and integration verification
 
-- [ ] 5.1 Define backend-only schemas and examples for source configuration and common-provider configuration, including stable source IDs, plugin IDs, expected source types, defaults, namespace, allowed origins, and separate schedules. _(OCI source schema and examples are implemented by task 2.5; npx source and common-provider configuration remain to be implemented.)_
+- [ ] 5.1 Define backend-only schemas and examples for source configuration and common-provider configuration, including stable source IDs, plugin IDs, expected source types, defaults, namespace, allowed origins, and separate schedules. _(OCI source schema and examples are implemented by task 2.5; npx source schema, `config.d.ts`, and `README.md` examples are implemented; common-provider configuration remains to be implemented.)_
 - [ ] 5.2 Add structured source-specific acquisition and reconciliation counters and contextual errors without logging raw content or credentials.
 - [ ] 5.3 Add integration coverage for OCI and npx endpoints feeding the same provider, including service authentication and failure isolation across sources.
 - [ ] 5.4 Document demo/public-source scope, metadata mappings, the #4747 integration, and the explicit connector-only OCI extraction decision; leave MLflow implementation to a future change.
