@@ -22,6 +22,7 @@ import { type CSSObject } from '@mui/material/styles';
 
 import { ThemeConfig, ThemeConfigOptions, RHDHThemePalette } from '../types';
 import { redHatFontFaces, redHatFonts } from '../fonts';
+import { contrastTextForBackground } from './contrastTextForBackground';
 import { resolveNavigationSidebarColors } from './navigationSidebarColors';
 
 export type Component = {
@@ -59,6 +60,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     palette.rhdh?.primary || ({} as RHDHThemePalette['primary']);
   const rhdhSecondary =
     palette.rhdh?.secondary || ({} as RHDHThemePalette['secondary']);
+
+  // MUI primary palette (OFS CreateButton fill / hover / label).
+  const primaryPalette = palette.primary as
+    | { main?: string; dark?: string; contrastText?: string }
+    | undefined;
+  const primaryMain = primaryPalette?.main ?? rhdhPrimary.main ?? '#0066CC';
+  const primaryDark = primaryPalette?.dark ?? '#00478e';
+  // Derive label color from the fill — do not trust merged contrastText alone.
+  const primaryContrast = contrastTextForBackground(primaryMain);
+  const primaryDarkContrast = contrastTextForBackground(primaryDark);
 
   // PatternFly shell chrome (page inset + masthead + sidebar). Prefer
   // pageInsetBackgroundColor, then app-bar / sidebar tokens from app-config.
@@ -196,6 +207,39 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         "[class*='BackstagePage-root-'] > [class*='MuiToolbar-root']": {
           backgroundColor: theme.palette.background.paper,
         },
+        // NFS: CreateButton → <a class="MuiButton-containedPrimary"> in BUI
+        // HeaderPage. StyledEngineProvider injectFirst + MuiButtonBase
+        // (background:transparent; padding:0) win over containedPrimary, so the
+        // control renders as a bare link. Force OFS contained look (!important).
+        'a.MuiButton-containedPrimary, a[class*="MuiButton-containedPrimary"]':
+          {
+            color: `${primaryContrast} !important`,
+            backgroundColor: `${primaryMain} !important`,
+            backgroundImage: 'none !important',
+            border: '0 !important',
+            borderRadius: '99em !important',
+            boxShadow: 'none !important',
+            padding: '6px 16px !important',
+            minHeight: '36px !important',
+            minWidth: '64px',
+            lineHeight: 1.75,
+            textDecoration: 'none !important',
+            textTransform: 'none',
+          },
+        'a.MuiButton-containedPrimary:hover, a.MuiButton-containedPrimary:focus-visible, a[class*="MuiButton-containedPrimary"]:hover, a[class*="MuiButton-containedPrimary"]:focus-visible':
+          {
+            color: `${primaryDarkContrast} !important`,
+            backgroundColor: `${primaryDark} !important`,
+            backgroundImage: 'none !important',
+            border: '0 !important',
+            boxShadow: 'none !important',
+            textDecoration: 'none !important',
+          },
+        'a.MuiButton-containedPrimary:active, a[class*="MuiButton-containedPrimary"]:active':
+          {
+            color: `${primaryDarkContrast} !important`,
+            backgroundColor: `${primaryDark} !important`,
+          },
       };
     },
   };
@@ -320,8 +364,22 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             outlineOffset: '0',
           },
         },
+        // OFS CreateButton look: solid primary.main, hover primary.dark.
+        // !important beats MuiButtonBase (transparent; padding:0) when
+        // StyledEngineProvider injectFirst puts Emotion sheets first (NFS).
         containedPrimary: {
           borderRadius: '99em',
+          color: `${primaryContrast} !important`,
+          backgroundColor: `${primaryMain} !important`,
+          backgroundImage: 'none !important',
+          boxShadow: 'none',
+          padding: '6px 16px !important',
+          '&:hover, &:focus-visible, &:active': {
+            color: `${primaryDarkContrast} !important`,
+            backgroundColor: `${primaryDark} !important`,
+            backgroundImage: 'none !important',
+            boxShadow: 'none',
+          },
           '&:focus-visible': {
             boxShadow: `inset 0 0 0 1px ${rhdhPrimary.focusVisibleBorder}`,
             outline: `${rhdhPrimary.focusVisibleBorder} solid 1px`,

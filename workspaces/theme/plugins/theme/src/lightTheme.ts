@@ -22,9 +22,14 @@ import { type ThemeConfigPalette } from './types';
 export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
   primary: {
     main: '#0066CC',
+    // OFS CreateButton hover (MUI darken of #0066CC → rgb(0,71,142)).
+    dark: '#00478e',
+    contrastText: '#ffffff',
   },
   secondary: {
     main: '#0066CC',
+    dark: '#00478e',
+    contrastText: '#ffffff',
   },
   navigation: {
     background: '#f2f2f2',

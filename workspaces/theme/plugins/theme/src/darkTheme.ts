@@ -22,9 +22,14 @@ import { type ThemeConfigPalette } from './types';
 export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
   primary: {
     main: '#92c5f9',
+    // Hover lighter on dark surfaces (PF brand hover), not MUI darken.
+    dark: '#b9dafc',
+    contrastText: '#151515',
   },
   secondary: {
     main: '#92c5f9',
+    dark: '#b9dafc',
+    contrastText: '#151515',
   },
   navigation: {
     // Match page-inset / app-bar / sidebar chrome (PatternFly shell).
