@@ -23,6 +23,7 @@ import {
 import {
   ConfigurationResponse,
   ExtensionsCollection,
+  ExtensionsConfigurationResponse,
   ExtensionsPackage,
   ExtensionsPlugin,
   NodeEnvironmentType,
@@ -109,7 +110,7 @@ export interface ExtensionsApi {
     name: string,
   ): Promise<{ read: 'ALLOW' | 'DENY'; write: 'ALLOW' | 'DENY' }>;
 
-  getExtensionsConfiguration?(): Promise<{ enabled: boolean }>;
+  getExtensionsConfiguration?(): Promise<ExtensionsConfigurationResponse>;
 
   getNodeEnvironment?(): Promise<{ nodeEnv: NodeEnvironmentType }>;
 

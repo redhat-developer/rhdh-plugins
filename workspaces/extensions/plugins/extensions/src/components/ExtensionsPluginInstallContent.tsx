@@ -269,6 +269,8 @@ export const ExtensionsPluginInstallContent = ({
     t,
     !extensionsConfig?.data?.enabled,
     missingDynamicArtifact,
+    true,
+    isPluginInstalled(plugin?.spec?.installStatus),
   );
 
   const showInstallationWarning =

@@ -226,6 +226,22 @@ export const getErrorMessage = (
   return { title: '', message: '' };
 };
 
+/**
+ * True when installation is blocked by infra/config problems (missing file,
+ * invalid YAML, etc.) rather than simply being turned off in app-config.
+ */
+export const isInstallationInfrastructureError = (
+  reason: string | undefined,
+): boolean => {
+  if (!reason) {
+    return false;
+  }
+  return (
+    reason !== ExtensionsStatus.INSTALLATION_DISABLED &&
+    reason !== ExtensionsStatus.INSTALLATION_DISABLED_IN_PRODUCTION
+  );
+};
+
 export const getPluginActionTooltipMessage = (
   isProductionEnvironment: boolean,
   permissions: PluginPermissions | null,
@@ -233,12 +249,20 @@ export const getPluginActionTooltipMessage = (
   extensionsDisabled?: boolean,
   missingDynamicArtifact?: boolean,
   isPlugin: boolean = true,
+  /**
+   * When installation is disabled, choose between Install vs Actions wording.
+   * True → "Cannot manage the …"; false/undefined → "Cannot install the …".
+   */
+  isManaged?: boolean,
 ): string | null => {
   if (isProductionEnvironment) {
     return t('tooltips.productionDisabled');
   }
   if (extensionsDisabled) {
-    return t('tooltips.extensionsDisabled');
+    const type = isPlugin ? 'plugin' : 'package';
+    return isManaged
+      ? t('tooltips.extensionsDisabledManage' as any, { type })
+      : t('tooltips.extensionsDisabledInstall' as any, { type });
   }
   if (
     permissions &&

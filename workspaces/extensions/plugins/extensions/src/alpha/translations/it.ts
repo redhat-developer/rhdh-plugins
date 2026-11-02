@@ -285,8 +285,10 @@ const extensionsTranslationIt = createTranslationMessages({
       'Errore durante la lettura del file di configurazione. ',
     'tooltips.productionDisabled':
       "L'installazione del plugin è disabilitata nell'ambiente di produzione.",
-    'tooltips.extensionsDisabled':
-      "L'installazione del plugin è disabilitata. Per abilitarla, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.",
+    'tooltips.extensionsDisabledInstall':
+      'Impossibile installare il {{type}}. Per abilitare le azioni, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.',
+    'tooltips.extensionsDisabledManage':
+      'Impossibile gestire il {{type}}. Per abilitare le azioni, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.',
     'tooltips.noPermissions':
       "L'utente non dispone delle autorizzazioni necessarie per installare plugin o visualizzarne le configurazioni. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'tooltips.missingDynamicArtifact':

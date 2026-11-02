@@ -509,6 +509,12 @@ export const ExtensionsPluginContent = ({
 
     const testId = isPluginEnabled ? 'disable-plugin' : 'enable-plugin';
 
+    const isManagedPlugin =
+      plugin.spec?.installStatus === ExtensionsPluginInstallStatus.Installed ||
+      plugin.spec?.installStatus ===
+        ExtensionsPluginInstallStatus.UpdateAvailable ||
+      plugin.spec?.installStatus === ExtensionsPluginInstallStatus.Disabled;
+
     const tooltipMessage = getPluginActionTooltipMessage(
       isProductionEnvironment,
       {
@@ -519,9 +525,31 @@ export const ExtensionsPluginContent = ({
       !extensionsConfig.data?.enabled,
       missingDynamicArtifact,
       !isPackage,
+      isManagedPlugin,
     );
 
     if (disablePluginActions) {
+      // Already-installed plugins should keep the Actions affordance (disabled)
+      // when installation is blocked, instead of swapping to a disabled Install.
+      if (isManagedPlugin) {
+        return (
+          <Tooltip title={tooltipMessage}>
+            <div>
+              <Button
+                color="primary"
+                variant="contained"
+                disableElevation
+                disabled
+                endIcon={<KeyboardArrowDownIcon />}
+                data-testId="actions-disabled"
+              >
+                {t('actions.actions')}
+              </Button>
+            </div>
+          </Tooltip>
+        );
+      }
+
       return (
         <Tooltip title={tooltipMessage}>
           <div>
@@ -558,12 +586,7 @@ export const ExtensionsPluginContent = ({
       );
     }
 
-    if (
-      plugin.spec?.installStatus === ExtensionsPluginInstallStatus.Installed ||
-      plugin.spec?.installStatus ===
-        ExtensionsPluginInstallStatus.UpdateAvailable ||
-      plugin.spec?.installStatus === ExtensionsPluginInstallStatus.Disabled
-    ) {
+    if (isManagedPlugin) {
       return (
         <>
           <Button

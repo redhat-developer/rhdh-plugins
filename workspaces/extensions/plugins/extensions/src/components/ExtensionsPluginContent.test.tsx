@@ -252,6 +252,33 @@ describe('ExtensionsPluginContent', () => {
     expect(installButton).toBeDisabled();
   });
 
+  it('should have the Actions button disabled when installation is blocked for an installed plugin', async () => {
+    useExtensionsConfigurationMock.mockReturnValue({
+      data: {
+        enabled: false,
+        error: {
+          reason: 'FILE_NOT_EXISTS',
+          message: 'The file /opt/app-root/src/dynamic-plugins.yaml is missing',
+        },
+      },
+    });
+
+    const installedPlugin = {
+      ...plugin,
+      spec: {
+        ...plugin.spec,
+        installStatus: ExtensionsPluginInstallStatus.Installed,
+      },
+    };
+
+    const { getByText, getByTestId, queryByTestId } = renderWithProviders(
+      <ExtensionsPluginContent plugin={installedPlugin} />,
+    );
+    expect(getByText('Actions')).toBeInTheDocument();
+    expect(getByTestId('actions-disabled')).toBeDisabled();
+    expect(queryByTestId('install-disabled')).not.toBeInTheDocument();
+  });
+
   it('should render the Actions button', async () => {
     usePluginPackagesMock.mockReturnValue({
       isLoading: false,

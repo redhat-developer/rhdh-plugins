@@ -372,6 +372,7 @@ export const ExtensionsPackageEditContent = ({
             configError === ExtensionsStatus.INSTALLATION_DISABLED,
             !pkg.spec?.dynamicArtifact,
             false,
+            true,
           )}
         >
           <Typography component="span">
