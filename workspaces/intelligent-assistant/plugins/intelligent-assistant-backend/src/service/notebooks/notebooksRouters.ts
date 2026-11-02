@@ -232,17 +232,18 @@ export async function createNotebooksRouter(
             };
             this.push(`data: ${JSON.stringify(legacy)}\n\n`);
           } else if (eventType === 'response.completed') {
-            // Log the full response to see what we're getting
-            logger.info(
-              `Full response.completed event: ${JSON.stringify(parsed?.response, null, 2)}`,
-            );
-
-            // Extract citations/sources from tool calls (file_search results)
-
-            // this.push(`data: ${JSON.stringify(legacy)}\n\n`);
+            logger.info('Notebook response completed', {
+              responseId: parsed?.response?.id,
+            });
           } else {
             // Log unhandled event types to help identify what we're missing
-            logger.debug(`Unhandled SSE event type: ${eventType}`, parsed);
+            logger.debug(`Unhandled SSE event type: ${eventType}`, {
+              sessionId,
+              sequenceNumber: parsed?.sequence_number,
+              outputIndex: parsed?.output_index,
+              itemId: parsed?.item?.id,
+              itemType: parsed?.item?.type,
+            });
           }
         }
 
