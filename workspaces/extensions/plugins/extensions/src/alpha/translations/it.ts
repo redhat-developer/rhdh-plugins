@@ -49,6 +49,7 @@ const extensionsTranslationIt = createTranslationMessages({
     'status.disabled': 'Disabilitato',
     'status.partiallyInstalled': 'Parzialmente installato',
     'status.updateAvailable': 'Aggiornamento disponibile',
+    'status.restartRequired': 'È necessario riavviare',
     'role.backend': 'Backend',
     'role.backendModule': 'Modulo backend',
     'role.frontend': 'Frontend',
@@ -290,6 +291,8 @@ const extensionsTranslationIt = createTranslationMessages({
       "L'utente non dispone delle autorizzazioni necessarie per installare plugin o visualizzarne le configurazioni. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'tooltips.missingDynamicArtifact':
       "Impossibile gestire questo {{type}}. Per abilitare le azioni, è necessario aggiungere un'entità Catalogo con lo spec.dynamicArtifact richiesto.",
+    'tooltips.restartRequired':
+      'È necessario un riavvio della piattaforma affinché questa modifica abbia effetto.',
     'aria.openPlugin': 'Apri il plugin {{name}}',
     'aria.closeDialog': 'Chiudi finestra di dialogo',
     'aria.expandSection': 'Espandi sezione',

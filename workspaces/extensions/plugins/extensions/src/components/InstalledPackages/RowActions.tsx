@@ -388,10 +388,10 @@ export const TogglePackage = ({
     pkg.namespace!,
     pkg.parentPlugin ?? '',
   );
-  const [isPackageEnabled, setIsPackageEnabled] = useState(
+  const baselineEnabled =
     pkg.installStatus === ExtensionsPackageInstallStatus.Installed ||
-      pkg.installStatus === ExtensionsPackageInstallStatus.UpdateAvailable,
-  );
+    pkg.installStatus === ExtensionsPackageInstallStatus.UpdateAvailable;
+  const [isPackageEnabled, setIsPackageEnabled] = useState(baselineEnabled);
   const disabledIcon = (
     <Box component="span" display="inline-flex">
       <IconButton size="small" disabled>
@@ -459,13 +459,18 @@ export const TogglePackage = ({
 
       if (res?.status === 'OK') {
         setIsPackageEnabled(newValue);
-        const updated = {
-          ...installedPackages,
-          [pkg.packageName ?? pkg.name]: isPackageEnabled
-            ? t('install.packageDisabled')
-            : t('install.packageEnabled'),
-        };
-        setInstalledPackages(updated);
+        const packageKey = pkg.packageName ?? pkg.name!;
+        if (newValue === baselineEnabled) {
+          const { [packageKey]: _removed, ...rest } = installedPackages;
+          setInstalledPackages(rest);
+        } else {
+          setInstalledPackages({
+            ...installedPackages,
+            [packageKey]: isPackageEnabled
+              ? t('install.packageDisabled')
+              : t('install.packageEnabled'),
+          });
+        }
       } else {
         const errorMessage =
           apiErrorMessage(res) ?? String(res ?? 'Unknown error');
