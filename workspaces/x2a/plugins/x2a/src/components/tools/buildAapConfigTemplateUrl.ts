@@ -31,7 +31,11 @@ function toRepoPickerValue(repositoryUrl: string): string {
       return repositoryUrl;
     }
 
-    const query = new URLSearchParams({ owner, repo: repository });
+    const query = new URLSearchParams(
+      parsed.host === 'bitbucket.org'
+        ? { workspace: owner, repo: repository }
+        : { owner, repo: repository },
+    );
     return `${parsed.host}?${query.toString()}`;
   } catch {
     return repositoryUrl;

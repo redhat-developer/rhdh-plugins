@@ -32,4 +32,23 @@ describe('buildAapConfigTemplateUrl', () => {
       moduleName: 'nginx',
     });
   });
+
+  it('prefills the Bitbucket workspace instead of an owner', () => {
+    const result = buildAapConfigTemplateUrl({
+      sourceRepository: 'https://bitbucket.org/acme/migrations.git',
+      sourceBranch: 'main',
+      sourceCommit: '0123456789abcdef',
+      artifactPath: 'shop-a1b2c3/ansible/aap-config/nginx',
+      projectName: 'Shop migration',
+      projectDirName: 'shop-a1b2c3',
+      moduleName: 'nginx',
+    });
+
+    const url = new URL(result, 'https://backstage.example');
+    const formData = JSON.parse(url.searchParams.get('formData')!);
+
+    expect(formData.sourceRepository).toBe(
+      'bitbucket.org?workspace=acme&repo=migrations',
+    );
+  });
 });

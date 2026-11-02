@@ -7,7 +7,6 @@
 
 import { Config } from '@backstage/config';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
-import { z as zod } from 'zod';
 import YAML from 'yaml';
 import {
   buildScmHostMap,
@@ -23,18 +22,6 @@ import { join, resolve, relative, posix } from 'node:path';
 
 const execFileAsync = promisify(execFile);
 const REQUIRED_INVENTORY_MARKER = '__X2A_REQUIRED_INVENTORY__';
-
-const jobCredentialNamesSchema = zod
-  .array(zod.string().trim().min(1))
-  .default([])
-  .superRefine((values, ctx) => {
-    if (new Set(values).size !== values.length) {
-      ctx.addIssue({
-        code: zod.ZodIssueCode.custom,
-        message: 'jobCredentialNames must not contain duplicates',
-      });
-    }
-  });
 
 type YamlDocument = Record<string, unknown>;
 
@@ -84,10 +71,11 @@ function containsRequiredMarker(value: unknown): boolean {
 export async function finalizeDraft(
   sourceRoot: string,
   input: {
+    moduleDirectory: string;
     inventory: string;
-    scmCredentialName?: string;
+    scmCredentialName?: string | null;
     jobCredentialNames: string[];
-    executionEnvironmentName?: string;
+    executionEnvironmentName?: string | null;
   },
 ): Promise<{ projects: string; jobTemplates: string }> {
   const projectPath = join(sourceRoot, 'controller_projects.yml');
@@ -121,10 +109,14 @@ export async function finalizeDraft(
     throw new Error('AAP configuration YAML documents must be objects');
   }
 
-  const project = singleEntry(projects, 'controller_projects_x2a', 'Project');
+  const project = singleEntry(
+    projects,
+    `controller_projects_x2a_${input.moduleDirectory}`,
+    'Project',
+  );
   const jobTemplate = singleEntry(
     jobTemplates,
-    'controller_templates_x2a',
+    `controller_templates_x2a_${input.moduleDirectory}`,
     'Job Template',
   );
   if (
@@ -220,10 +212,28 @@ async function git(
   return result.stdout.trim();
 }
 
+export type GitRunner = typeof git;
+
+function gitCredentials(
+  provider: ReturnType<typeof resolveScmProvider>,
+  token: string,
+): { username: string; password: string } {
+  const augmentedToken = provider.augmentToken(token);
+  const separator = augmentedToken.indexOf(':');
+  if (separator === -1) {
+    return { username: augmentedToken, password: augmentedToken };
+  }
+  return {
+    username: augmentedToken.slice(0, separator),
+    password: augmentedToken.slice(separator + 1),
+  };
+}
+
 async function cloneRepository(
+  runGit: GitRunner,
   url: string,
   branch: string | undefined,
-  token: string,
+  password: string,
   username: string,
   destination: string,
   askpass: string,
@@ -231,21 +241,22 @@ async function cloneRepository(
   const args = ['clone', '--no-tags'];
   if (branch) args.push('--branch', branch);
   args.push(url, destination);
-  await git(tmpdir(), args, token, username, askpass);
+  await runGit(tmpdir(), args, password, username, askpass);
 }
 
 async function remoteBranchExists(
+  runGit: GitRunner,
   url: string,
   branch: string,
-  token: string,
+  password: string,
   username: string,
   askpass: string,
 ): Promise<boolean> {
   try {
-    await git(
+    await runGit(
       tmpdir(),
       ['ls-remote', '--exit-code', '--heads', url, `refs/heads/${branch}`],
-      token,
+      password,
       username,
       askpass,
     );
@@ -255,33 +266,81 @@ async function remoteBranchExists(
   }
 }
 
+export type PublishAapConfigActionOptions = {
+  git?: GitRunner;
+  hostProviderMap?: Map<string, ScmProviderName>;
+};
+
 /** Publishes the two converter-owned AAP files directly to a destination branch. */
-export function createPublishAapConfigAction(config: Config) {
-  const hostProviderMap = buildScmHostMap(config);
+export function createPublishAapConfigAction(
+  config: Config,
+  options?: PublishAapConfigActionOptions,
+) {
+  const hostProviderMap = options?.hostProviderMap ?? buildScmHostMap(config);
+  const runGit = options?.git ?? git;
   return createTemplateAction({
     id: 'x2a:aapConfig:publish',
     description:
       'Publish generated AAP Config-as-Code files to a Git repository.',
     schema: {
-      input: () =>
-        zod.object({
-          sourceRepository: zod.string(),
-          sourceBranch: zod.string().min(1),
-          sourceCommit: zod.string().regex(/^[0-9a-f]{7,64}$/i),
-          artifactPath: zod.string().min(1),
-          inventory: zod.string().trim().min(1),
-          scmCredentialName: zod.string().trim().min(1).optional(),
-          jobCredentialNames: jobCredentialNamesSchema,
-          executionEnvironmentName: zod.string().trim().min(1).optional(),
-          destinationRepository: zod.string(),
-          destinationBranch: zod.string().min(1),
-          destinationConfigDirectory: zod.string().min(1),
-          projectName: zod.string().min(1),
-          projectDirName: zod.string().min(1),
-          moduleName: zod.string().min(1),
-          sourceToken: zod.string().min(1),
-          destinationToken: zod.string().min(1),
-        }),
+      input: z => {
+        const branch = z
+          .string()
+          .min(1)
+          .regex(/^(?!-)[^:]+$/, {
+            message: 'Branch must not start with "-" or contain ":"',
+          });
+        const optionalName = z.preprocess(
+          value =>
+            value === null || (typeof value === 'string' && value.trim() === '')
+              ? undefined
+              : value,
+          z
+            .union([z.string().trim().min(1), z.literal(''), z.null()])
+            .optional(),
+        );
+        const jobCredentialNames = z
+          .array(z.string().trim().min(1))
+          .default([])
+          .superRefine((values, ctx) => {
+            if (new Set(values).size !== values.length) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: 'jobCredentialNames must not contain duplicates',
+              });
+            }
+          });
+        return z.object({
+          sourceRepository: z.string(),
+          sourceBranch: branch,
+          sourceCommit: z.string().regex(/^[0-9a-f]{7,64}$/i),
+          artifactPath: z.string().min(1),
+          inventory: z.string().trim().min(1),
+          scmCredentialName: optionalName,
+          jobCredentialNames,
+          executionEnvironmentName: optionalName,
+          destinationRepository: z.string(),
+          destinationBranch: branch,
+          destinationConfigDirectory: z.string().min(1),
+          projectName: z.string().min(1),
+          projectDirName: z.string().min(1),
+          moduleName: z.string().min(1),
+          sourceToken: z.string().min(1),
+          destinationToken: z.string().min(1),
+        });
+      },
+      output: {
+        destinationRepository: z =>
+          z.string({ description: 'The destination repository URL' }),
+        destinationBranch: z =>
+          z.string({ description: 'The destination repository branch' }),
+        destinationCommitSha: z =>
+          z.string({ description: 'The destination commit SHA' }),
+        destinationCommitUrl: z =>
+          z.string({ description: 'The destination commit URL' }),
+        changed: z =>
+          z.boolean({ description: 'Whether a new commit was created' }),
+      },
     },
     async handler(ctx) {
       const input = ctx.input;
@@ -289,6 +348,18 @@ export function createPublishAapConfigAction(config: Config) {
       const destinationUrl = repositoryUrl(
         input.destinationRepository,
         hostProviderMap,
+      );
+      const sourceCredentials = gitCredentials(
+        resolveScmProvider(sourceUrl.toString(), hostProviderMap),
+        input.sourceToken,
+      );
+      const destinationProvider = resolveScmProvider(
+        destinationUrl.toString(),
+        hostProviderMap,
+      );
+      const destinationCredentials = gitCredentials(
+        destinationProvider,
+        input.destinationToken,
       );
       const sourceBranch = input.sourceBranch;
       const destinationBranch = input.destinationBranch;
@@ -318,25 +389,26 @@ export function createPublishAapConfigAction(config: Config) {
 
       try {
         await cloneRepository(
+          runGit,
           sourceUrl.toString(),
           sourceBranch,
-          input.sourceToken,
-          'oauth2',
+          sourceCredentials.password,
+          sourceCredentials.username,
           sourceDir,
           askpass,
         );
-        await git(
+        await runGit(
           sourceDir,
           ['fetch', '--no-tags', 'origin', input.sourceCommit],
-          input.sourceToken,
-          'oauth2',
+          sourceCredentials.password,
+          sourceCredentials.username,
           askpass,
         );
-        await git(
+        await runGit(
           sourceDir,
           ['checkout', '--detach', input.sourceCommit],
-          input.sourceToken,
-          'oauth2',
+          sourceCredentials.password,
+          sourceCredentials.username,
           askpass,
         );
 
@@ -348,6 +420,7 @@ export function createPublishAapConfigAction(config: Config) {
           throw new Error('artifactPath escapes the source workspace');
         }
         const finalized = await finalizeDraft(sourceRoot, {
+          moduleDirectory,
           inventory: input.inventory,
           scmCredentialName: input.scmCredentialName,
           jobCredentialNames: input.jobCredentialNames,
@@ -355,35 +428,38 @@ export function createPublishAapConfigAction(config: Config) {
         });
 
         const destinationExists = await remoteBranchExists(
+          runGit,
           destinationUrl.toString(),
           destinationBranch,
-          input.destinationToken,
-          'oauth2',
+          destinationCredentials.password,
+          destinationCredentials.username,
           askpass,
         );
         if (destinationExists) {
           await cloneRepository(
+            runGit,
             destinationUrl.toString(),
             destinationBranch,
-            input.destinationToken,
-            'oauth2',
+            destinationCredentials.password,
+            destinationCredentials.username,
             destinationDir,
             askpass,
           );
         } else {
           await cloneRepository(
+            runGit,
             destinationUrl.toString(),
             undefined,
-            input.destinationToken,
-            'oauth2',
+            destinationCredentials.password,
+            destinationCredentials.username,
             destinationDir,
             askpass,
           );
-          await git(
+          await runGit(
             destinationDir,
             ['checkout', '-B', destinationBranch],
-            input.destinationToken,
-            'oauth2',
+            destinationCredentials.password,
+            destinationCredentials.username,
             askpass,
           );
         }
@@ -411,22 +487,22 @@ export function createPublishAapConfigAction(config: Config) {
           join(destinationRoot, 'controller_job_templates.yml'),
           finalized.jobTemplates,
         );
-        await git(
+        await runGit(
           destinationDir,
           ['add', '--', join(configDirectory, projectDirName, moduleDirectory)],
-          input.destinationToken,
-          'oauth2',
+          destinationCredentials.password,
+          destinationCredentials.username,
           askpass,
         );
-        const status = await git(
+        const status = await runGit(
           destinationDir,
           ['status', '--porcelain'],
-          input.destinationToken,
-          'oauth2',
+          destinationCredentials.password,
+          destinationCredentials.username,
           askpass,
         );
         if (status) {
-          await git(
+          await runGit(
             destinationDir,
             [
               '-c',
@@ -437,33 +513,30 @@ export function createPublishAapConfigAction(config: Config) {
               '-m',
               `x2a: publish AAP config for ${input.projectName}/${input.moduleName}`,
             ],
-            input.destinationToken,
-            'oauth2',
+            destinationCredentials.password,
+            destinationCredentials.username,
             askpass,
           );
-          await git(
+          await runGit(
             destinationDir,
             ['push', '--set-upstream', 'origin', destinationBranch],
-            input.destinationToken,
-            'oauth2',
+            destinationCredentials.password,
+            destinationCredentials.username,
             askpass,
           );
         }
-        const commit = await git(
+        const commit = await runGit(
           destinationDir,
           ['rev-parse', 'HEAD'],
-          input.destinationToken,
-          'oauth2',
+          destinationCredentials.password,
+          destinationCredentials.username,
           askpass,
         );
         const destinationBase = destinationUrl
           .toString()
           .replace(/\.git$/, '')
           .replace(/\/$/, '');
-        const provider = resolveScmProvider(
-          destinationUrl.toString(),
-          hostProviderMap,
-        ).name;
+        const provider = destinationProvider.name;
         let commitPath: string;
         if (provider === 'github') {
           commitPath = `/commit/${commit}`;
