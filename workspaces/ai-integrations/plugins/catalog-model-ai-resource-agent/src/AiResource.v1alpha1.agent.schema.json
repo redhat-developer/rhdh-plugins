@@ -29,7 +29,7 @@
         "lifecycle": "production",
         "owner": "ai-platform-team",
         "instructions": "You are a code execution agent that runs in a sandboxed environment.",
-        "spawn": "ephemeral"
+        "executionMode": "sandbox"
       }
     }
   ],
@@ -162,10 +162,10 @@
                 }
               ]
             },
-            "spawn": {
+            "executionMode": {
               "type": "string",
-              "enum": ["none", "local", "ephemeral"],
-              "description": "Execution spawn mode — declares whether this agent runs in-process, in a child process, or in a predefined sandbox."
+              "enum": ["in-process", "subprocess", "sandbox"],
+              "description": "Execution mode — declares how this agent is executed by LCore: 'in-process' runs inside the LCore process (no isolation), 'subprocess' runs in a child process managed by LCore, 'sandbox' runs in an administrator-predefined sandbox profile."
             }
           }
         }

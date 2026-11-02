@@ -175,13 +175,13 @@ describe('AiResourceAgentProcessor', () => {
       expect(result).toEqual(entity);
     });
 
-    it('should accept agent with valid spawn value', async () => {
+    it('should accept agent with valid executionMode value', async () => {
       const entity = makeAiResource({
         type: 'agent',
         lifecycle: 'production',
         owner: 'ai-platform-team',
         instructions: 'Agent in sandbox.',
-        spawn: 'ephemeral',
+        executionMode: 'sandbox',
       });
 
       const result = await processor.preProcessEntity(entity, location, emit);
@@ -189,7 +189,7 @@ describe('AiResourceAgentProcessor', () => {
       expect(result).toEqual(entity);
     });
 
-    it('should accept agent without spawn', async () => {
+    it('should accept agent without executionMode', async () => {
       const entity = makeAiResource({
         type: 'agent',
         lifecycle: 'production',
@@ -201,30 +201,30 @@ describe('AiResourceAgentProcessor', () => {
       expect(result).toEqual(entity);
     });
 
-    it('should reject agent with invalid spawn value', async () => {
+    it('should reject agent with invalid executionMode value', async () => {
       const entity = makeAiResource({
         type: 'agent',
         lifecycle: 'production',
         owner: 'ai-platform-team',
-        spawn: 'invalid',
+        executionMode: 'invalid',
       });
 
       await expect(
         processor.preProcessEntity(entity, location, emit),
-      ).rejects.toThrow('spec.spawn');
+      ).rejects.toThrow('spec.executionMode');
     });
 
-    it('should reject agent with spawn as boolean', async () => {
+    it('should reject agent with executionMode as boolean', async () => {
       const entity = makeAiResource({
         type: 'agent',
         lifecycle: 'production',
         owner: 'ai-platform-team',
-        spawn: true,
+        executionMode: true,
       });
 
       await expect(
         processor.preProcessEntity(entity, location, emit),
-      ).rejects.toThrow('spec.spawn');
+      ).rejects.toThrow('spec.executionMode');
     });
 
     it('should report multiple agent errors together', async () => {

@@ -354,42 +354,42 @@ describe('collectAgentErrors', () => {
     });
   });
 
-  describe('spec.spawn (optional, must be one of none, local, ephemeral)', () => {
-    it.each(['none', 'local', 'ephemeral'] as const)(
-      'accepts spawn: %s',
-      spawn => {
-        const entity = makeAgent({ spawn });
+  describe('spec.executionMode (optional, must be one of in-process, subprocess, sandbox)', () => {
+    it.each(['in-process', 'subprocess', 'sandbox'] as const)(
+      'accepts executionMode: %s',
+      executionMode => {
+        const entity = makeAgent({ executionMode });
         expect(collectAgentErrors(entity)).toEqual([]);
       },
     );
 
-    it('accepts missing spawn', () => {
+    it('accepts missing executionMode', () => {
       const entity = makeAgent();
       expect(collectAgentErrors(entity)).toEqual([]);
     });
 
-    it('rejects spawn as a boolean', () => {
-      const entity = makeAgent({ spawn: true });
+    it('rejects executionMode as a boolean', () => {
+      const entity = makeAgent({ executionMode: true });
 
       const errors = collectAgentErrors(entity);
       expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('spec.spawn');
+      expect(errors[0]).toContain('spec.executionMode');
     });
 
-    it('rejects spawn as a number', () => {
-      const entity = makeAgent({ spawn: 42 });
+    it('rejects executionMode as a number', () => {
+      const entity = makeAgent({ executionMode: 42 });
 
       const errors = collectAgentErrors(entity);
       expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('spec.spawn');
+      expect(errors[0]).toContain('spec.executionMode');
     });
 
-    it('rejects spawn with invalid string value', () => {
-      const entity = makeAgent({ spawn: 'other' });
+    it('rejects executionMode with invalid string value', () => {
+      const entity = makeAgent({ executionMode: 'other' });
 
       const errors = collectAgentErrors(entity);
       expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('spec.spawn');
+      expect(errors[0]).toContain('spec.executionMode');
       expect(errors[0]).toContain("'other'");
     });
   });
@@ -449,7 +449,7 @@ describe('collectAgentErrors', () => {
           type: 'object',
           properties: { result: { type: 'string' } },
         },
-        spawn: 'ephemeral',
+        executionMode: 'sandbox',
       });
 
       expect(collectAgentErrors(entity)).toEqual([]);

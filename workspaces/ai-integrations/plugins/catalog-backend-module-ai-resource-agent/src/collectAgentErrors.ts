@@ -131,18 +131,18 @@ export function collectAgentErrors(entity: Entity): string[] {
     errors.push(`spec.model must be a string; got ${typeLabel(spec.model)}`);
   }
 
-  // Optional: spec.spawn — must be 'none', 'local', or 'ephemeral' if present
-  const validSpawnValues = ['none', 'local', 'ephemeral'];
-  if (spec.spawn !== undefined) {
+  // Optional: spec.executionMode — must be 'in-process', 'subprocess', or 'sandbox' if present
+  const validExecutionModes = ['in-process', 'subprocess', 'sandbox'];
+  if (spec.executionMode !== undefined) {
     if (
-      typeof spec.spawn !== 'string' ||
-      !validSpawnValues.includes(spec.spawn as string)
+      typeof spec.executionMode !== 'string' ||
+      !validExecutionModes.includes(spec.executionMode as string)
     ) {
       errors.push(
-        `spec.spawn must be one of 'none', 'local', 'ephemeral'; got ${
-          typeof spec.spawn === 'string'
-            ? `'${spec.spawn}'`
-            : typeLabel(spec.spawn)
+        `spec.executionMode must be one of 'in-process', 'subprocess', 'sandbox'; got ${
+          typeof spec.executionMode === 'string'
+            ? `'${spec.executionMode}'`
+            : typeLabel(spec.executionMode)
         }`,
       );
     }
