@@ -22,6 +22,7 @@ import {
   TopSearches,
   TopTechDocsCount,
   TopTemplatesCount,
+  TimeSavedTotals,
   TotalUsers,
 } from '../types/event';
 import { Event } from '../models/Event';
@@ -56,6 +57,7 @@ export interface EventDatabase {
   getTopSearches(): Promise<Knex.QueryBuilder<TopSearches>>;
   getTopPluginViews(): Promise<Knex.QueryBuilder<TopPluginCount>>;
   getTopTemplateViews(): Promise<Knex.QueryBuilder<TopTemplatesCount>>;
+  getTimeSaved(): Promise<Knex.QueryBuilder<TimeSavedTotals>>;
   getTopTechDocsViews(): Promise<Knex.QueryBuilder<TopTechDocsCount>>;
   getTopCatalogEntitiesViews(): Promise<
     Knex.QueryBuilder<TopCatalogEntitiesCount>

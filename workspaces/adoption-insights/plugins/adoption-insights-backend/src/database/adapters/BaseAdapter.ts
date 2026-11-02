@@ -186,6 +186,35 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     return query.then(data => this.getResponseData(data, 'last_used'));
   }
 
+  async getTimeSaved(): Promise<Knex.QueryBuilder> {
+    this.ensureFiltersSet();
+    const { start_date, end_date } = this.filters!;
+    const query = this.db('events')
+      .select(
+        this.db.raw('CAST(COUNT(*) AS INTEGER) AS runs'),
+        this.db.raw('CAST(COUNT(value) AS INTEGER) AS runs_with_estimate'),
+        this.db.raw(
+          'COALESCE(SUM(CAST(value AS DOUBLE PRECISION)), 0) AS minutes',
+        ),
+      )
+      .where({
+        action: 'create',
+        subject: 'Task has been created',
+        plugin_id: 'scaffolder',
+      })
+      .whereBetween('created_at', [start_date, end_date]);
+
+    return query.then(rows =>
+      this.getResponseData(
+        rows.map(row => ({
+          minutes: Number(row.minutes),
+          runs: Number(row.runs),
+          runs_with_estimate: Number(row.runs_with_estimate),
+        })),
+      ),
+    );
+  }
+
   async getTopSearches(): Promise<Knex.QueryBuilder> {
     const db = this.db;
     this.ensureFiltersSet();

@@ -17,6 +17,8 @@ import { Request, Response } from 'express';
 import { json2csv as Parser } from 'json-2-csv';
 import { Knex } from 'knex';
 import { AnalyticsEvent } from '@backstage/core-plugin-api';
+import { CatalogService } from '@backstage/plugin-catalog-node';
+import { Duration } from 'luxon';
 import { EventDatabase, Filters } from '../database/event-database';
 import { EventBatchProcessor } from '../domain/EventBatchProcessor';
 import { Event } from '../models/Event';
@@ -29,6 +31,7 @@ import {
   AuditorService,
   AuditorServiceEvent,
   AuthService,
+  BackstageCredentials,
   DiscoveryService,
   HttpAuthService,
   LoggerService,
@@ -62,6 +65,7 @@ class EventApiController {
   private readonly auth: AuthService;
   private readonly httpAuth: HttpAuthService;
   private readonly discovery: DiscoveryService;
+  private readonly catalog: CatalogService;
   private readonly logger: LoggerService;
 
   constructor(
@@ -72,6 +76,7 @@ class EventApiController {
     auth: AuthService,
     httpAuth: HttpAuthService,
     discovery: DiscoveryService,
+    catalog: CatalogService,
     logger: LoggerService,
   ) {
     this.database = eventDatabase;
@@ -81,18 +86,82 @@ class EventApiController {
     this.auth = auth;
     this.httpAuth = httpAuth;
     this.discovery = discovery;
+    this.catalog = catalog;
     this.logger = logger;
   }
 
-  private processIncomingEvents(
+  private async getTimeSavedMinutes(
+    event: AnalyticsEvent,
+    credentials: BackstageCredentials,
+  ): Promise<number | undefined> {
+    const entityRef = event.context?.entityRef;
+    if (typeof entityRef !== 'string' || !entityRef) {
+      this.logger.warn('Scaffolder create event has no template entity ref');
+      return undefined;
+    }
+
+    try {
+      const entity = await this.catalog.getEntityByRef(entityRef, {
+        credentials,
+      });
+      const annotation =
+        entity?.kind.toLowerCase() === 'template'
+          ? entity.metadata.annotations?.['backstage.io/time-saved']
+          : undefined;
+      if (!annotation) {
+        this.logger.debug('Template has no time-saved estimate', { entityRef });
+        return undefined;
+      }
+
+      const minutes = Duration.fromISO(annotation).as('minutes');
+      if (!Number.isFinite(minutes) || minutes < 0) {
+        this.logger.warn('Template has an invalid time-saved estimate', {
+          entityRef,
+        });
+        return undefined;
+      }
+
+      this.logger.debug('Resolved template time-saved estimate', { entityRef });
+      return minutes;
+    } catch (error) {
+      this.logger.warn('Failed to resolve template time-saved estimate', {
+        entityRef,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return undefined;
+    }
+  }
+
+  private async processIncomingEvents(
     events: AnalyticsEvent[],
     auditEvent: AuditorServiceEvent,
-  ): void {
-    const proccessedEvents = events
-      .filter(e => !!e.context?.userId)
-      .map(event => new Event(event, this.database.isJsonSupported()));
+    userRef: string,
+    credentials: BackstageCredentials,
+  ): Promise<void> {
+    const processedEvents = await Promise.all(
+      events
+        .filter(e => !!e.context?.userId)
+        .map(async event => {
+          const isScaffolderCreate =
+            event.action === 'create' &&
+            event.subject === 'Task has been created' &&
+            event.context?.pluginId === 'scaffolder';
+          const value = isScaffolderCreate
+            ? await this.getTimeSavedMinutes(event, credentials)
+            : event.value;
 
-    proccessedEvents.forEach(event => {
+          return new Event(
+            {
+              ...event,
+              value,
+              context: { ...event.context, userName: userRef },
+            },
+            this.database.isJsonSupported(),
+          );
+        }),
+    );
+
+    processedEvents.forEach(event => {
       const result = EventSchema.safeParse(event);
 
       if (!result.success) {
@@ -118,7 +187,15 @@ class EventApiController {
     });
 
     try {
-      this.processIncomingEvents(events, auditEvent);
+      const credentials = await this.httpAuth.credentials(req, {
+        allow: ['user'],
+      });
+      await this.processIncomingEvents(
+        events,
+        auditEvent,
+        credentials.principal.userEntityRef,
+        credentials,
+      );
       res.status(200).json({ success: true, message: 'Event received' });
     } catch (error) {
       auditEvent.fail({
@@ -174,6 +251,7 @@ class EventApiController {
       top_plugins: () => db.getTopPluginViews(),
       top_techdocs: () => db.getTopTechDocsViews(),
       top_templates: () => db.getTopTemplateViews(),
+      time_saved: () => db.getTimeSaved(),
       top_catalog_entities: () => db.getTopCatalogEntitiesViews(),
     };
 

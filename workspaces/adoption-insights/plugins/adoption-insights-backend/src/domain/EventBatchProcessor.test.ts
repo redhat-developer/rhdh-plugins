@@ -37,6 +37,7 @@ describe('EventBatchProcessor', () => {
     insertEvents: mockInsertEvents.mockResolvedValue(undefined),
     insertFailedEvent: mockInsertFailedEvent.mockResolvedValue(undefined),
     getDailyUsers: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
+    getTimeSaved: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
     getTopSearches: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
     getTopPluginViews: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
     getTopTemplateViews: jest.fn().mockReturnValue({} as Knex.QueryBuilder),

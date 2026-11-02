@@ -24,6 +24,7 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { AnalyticsEvent } from '@backstage/core-plugin-api';
 import { adoptionInsightsPlugin } from './plugin';
 import { QUERY_TYPES } from './types/event-request';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import request from 'supertest';
 import type { Server } from 'http';
 import type { Knex } from 'knex';
@@ -87,6 +88,7 @@ function startAdoptionInsightsBackend(options?: {
       adoptionInsightsPlugin,
       mockServices.rootConfig.factory({ data: BASE_CONFIG }),
       mockServices.auth.factory(),
+      catalogServiceMock.factory({ entities: [] }),
       mockServices.httpAuth.factory({
         defaultCredentials: mockCredentials.user('user:default/test'),
       }),
@@ -227,6 +229,21 @@ describe('adoption-insights plugin (startTestBackend)', () => {
         backend.server.close();
       }
     });
+
+    it('requires the events read permission for time_saved', async () => {
+      const backend = await startAdoptionInsightsBackend({
+        authorizeResult: AuthorizeResult.DENY,
+      });
+
+      try {
+        const res = await request(backend.server).get(
+          eventsUrl({ type: 'time_saved' }),
+        );
+        expect(res.status).toBe(403);
+      } finally {
+        backend.server.close();
+      }
+    });
   });
 
   describe('POST /api/adoption-insights/events', () => {
@@ -323,6 +340,18 @@ const templateCreate = (user: string, entityRef: string, at: string) =>
     at,
     context: { entityRef },
   });
+
+const timeSavedRun = (user: string, at: string, value: string | null) => ({
+  ...event({
+    action: 'create',
+    subject: 'Task has been created',
+    plugin_id: 'scaffolder',
+    user,
+    at,
+    context: { entityRef: 'template:default/nodejs' },
+  }),
+  value,
+});
 
 type CatalogEntity = { kind: string; name: string; namespace: string };
 const COMPONENT: CatalogEntity = {
@@ -589,6 +618,71 @@ describe('GET /api/adoption-insights/events with seeded data', () => {
       'adoption_insights_top_searches.csv',
     );
     expect(res.text).toBe('date,count\n2025-06-03,2\n2025-06-05,1');
+  });
+});
+
+describe('GET /api/adoption-insights/events?type=time_saved', () => {
+  const databases = TestDatabases.create({ ids: ['SQLITE_3'] });
+  let server: Server;
+
+  beforeAll(async () => {
+    const knex = await databases.init('SQLITE_3');
+    ({ server } = await startAdoptionInsightsBackend({ knex }));
+    await knex('events').insert([
+      timeSavedRun('alice', '2025-06-03T10:00:00.000Z', '120'),
+      timeSavedRun('bob', '2025-06-04T10:00:00.000Z', '15.5'),
+      timeSavedRun('carol', '2025-06-05T10:00:00.000Z', null),
+      timeSavedRun('alice', '2025-06-10T10:00:00.000Z', '999'),
+      {
+        ...templateCreate(
+          'bob',
+          'template:default/nodejs',
+          '2025-06-04T10:00:00.000Z',
+        ),
+        value: '999',
+      },
+      event({
+        action: 'create',
+        subject: 'Task has been created',
+        plugin_id: 'another-plugin',
+        user: 'bob',
+        at: '2025-06-04T10:00:00.000Z',
+      }),
+    ]);
+  });
+
+  afterAll(() => {
+    server.close();
+  });
+
+  it('returns one total for created scaffolder tasks in the selected range', async () => {
+    const res = await request(server).get(seededEventsUrl('time_saved'));
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      data: [{ minutes: 135.5, runs: 3, runs_with_estimate: 2 }],
+    });
+  });
+
+  it('returns zeroes for an empty range', async () => {
+    const res = await request(server).get(
+      '/api/adoption-insights/events?type=time_saved&start_date=2025-07-01&end_date=2025-07-02&timezone=UTC',
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      data: [{ minutes: 0, runs: 0, runs_with_estimate: 0 }],
+    });
+  });
+
+  it('exports the total as CSV', async () => {
+    const res = await request(server).get(
+      seededEventsUrl('time_saved', '&format=csv'),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/csv');
+    expect(res.text).toBe('minutes,runs,runs_with_estimate\n135.5,3,2');
   });
 });
 

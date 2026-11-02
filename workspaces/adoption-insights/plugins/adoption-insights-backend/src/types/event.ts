@@ -74,4 +74,7 @@ export type TopSearches = ResponseData<DateCount[]>;
 export type TopPluginCount = ResponseWithGrouping<PluginCount[]>;
 export type TopTechDocsCount = ResponseData<TechDocsCount[]>;
 export type TopTemplatesCount = ResponseData<EntityRefCount[]>;
+export type TimeSavedTotals = ResponseData<
+  { minutes: number; runs: number; runs_with_estimate: number }[]
+>;
 export type TopCatalogEntitiesCount = ResponseData<CatalogEntityCount[]>;

@@ -108,15 +108,27 @@ When `type=top_techdocs`, the backend may enrich each row with a TechDocs `site_
 
 ## Query Parameters
 
-| Parameter    | Type                | Required | Description                                                                                                                                     |
-| ------------ | ------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`       | string              | Yes      | Filter events by type (e.g., `total_users`, `active_users`,`top_plugins`,`top_templates`,`top_techdocs`,`top_searches`,`top_catalog_entities`). |
-| `start_date` | string (YYYY-MM-DD) | Yes      | Fetch events starting from this date.                                                                                                           |
-| `end_date`   | string (YYYY-MM-DD) | Yes      | Fetch events up to this date.                                                                                                                   |
-| `limit`      | integer             | No       | Limit the number of events returned (default: `3`).                                                                                             |
-| `kind`       | string              | No       | Filter the entities by kind.                                                                                                                    |
-| `grouping`   | string              | No       | Group API endpoint `(active_users,top_plugins and top_searches)` response by `hourly`, `daily`, `weekly`, and `monthly`.                        |
-| `format`     | string              | No       | Response format, either `json` (default) or `csv`.                                                                                              |
+| Parameter    | Type                | Required | Description                                                                                                                                                        |
+| ------------ | ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `type`       | string              | Yes      | Filter events by type (e.g., `total_users`, `active_users`, `top_plugins`, `top_templates`, `time_saved`, `top_techdocs`, `top_searches`, `top_catalog_entities`). |
+| `start_date` | string (YYYY-MM-DD) | Yes      | Fetch events starting from this date.                                                                                                                              |
+| `end_date`   | string (YYYY-MM-DD) | Yes      | Fetch events up to this date.                                                                                                                                      |
+| `limit`      | integer             | No       | Limit the number of events returned (default: `3`).                                                                                                                |
+| `kind`       | string              | No       | Filter the entities by kind.                                                                                                                                       |
+| `grouping`   | string              | No       | Group API endpoint `(active_users,top_plugins and top_searches)` response by `hourly`, `daily`, `weekly`, and `monthly`.                                           |
+| `format`     | string              | No       | Response format, either `json` (default) or `csv`.                                                                                                                 |
+
+### Estimated time saved
+
+`GET /api/adoption-insights/events?type=time_saved&start_date=2025-03-01&end_date=2025-03-31&timezone=UTC` returns one total in the existing `data` array:
+
+```json
+{ "data": [{ "minutes": 480, "runs": 10, "runs_with_estimate": 7 }] }
+```
+
+The query requires `adoption-insights.events.read` and also supports `format=csv`. It counts `scaffolder` analytics events with action `create` and subject `Task has been created`, which are emitted when a task is created rather than when it completes. `runs` includes events with no usable estimate; those events add zero minutes and are excluded from `runs_with_estimate`.
+
+For new Scaffolder create events, the backend reads the Template's `backstage.io/time-saved` annotation from the catalog as the signed-in user. The annotation is an ISO 8601 duration such as `PT8H` or `PT15M`. A missing or invalid annotation, or a failed catalog lookup, leaves the event's value empty. The submitted event value is not used for these events. The backend stores the signed-in user's entity ref as `user_ref` for newly accepted events. Historical rows are not changed when a template's annotation changes.
 
 ## Example Request
 
