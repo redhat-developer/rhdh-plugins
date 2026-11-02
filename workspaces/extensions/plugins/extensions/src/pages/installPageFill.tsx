@@ -24,7 +24,30 @@ export const INSTALL_PAGE_CLASS = 'extensions-install-page';
 
 const mainSelector = `main.${INSTALL_PAGE_CLASS}[data-backstage-core-page]`;
 
+/**
+ * Parent of `<main class="extensions-install-page">` is the theme SidebarPage
+ * scrollport. Production JSS often hashes away `BackstageSidebarPage-root`, so
+ * target via :has(> main...) instead of a class substring.
+ */
+const scrollportSelector = `*:has(> ${mainSelector})`;
+
 export const installPageFillStyle = `
+/*
+ * Defense in depth for older themes that still key PluginHeader hiding on
+ * [class*='BackstagePage-root'] (stripped by production JSS). A visible
+ * PluginHeader + main { height:100% } overflows the SidebarPage scrollport →
+ * outer scrollbar + inner card scrollbar, and the install/cancel bar is not
+ * reachable without redundant scrolling. Newer themes hide via
+ * main[data-backstage-core-page]; keep this so the extensions plugin works
+ * against either. overflow-y:hidden keeps this fill layout as the sole
+ * scroll owner (cards scroll internally; action bar stays in view).
+ */
+${scrollportSelector} > .bui-PluginHeader {
+  display: none !important;
+}
+${scrollportSelector} {
+  overflow-y: hidden !important;
+}
 ${mainSelector} {
   height: 100% !important;
   max-height: 100% !important;
