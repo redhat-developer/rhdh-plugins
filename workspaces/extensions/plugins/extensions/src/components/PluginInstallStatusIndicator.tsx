@@ -17,8 +17,8 @@
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import PendingOutlinedIcon from '@mui/icons-material/PendingOutlined';
 
 import { ExtensionsPluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
@@ -36,7 +36,7 @@ export const RestartRequiredStatus = () => {
   return (
     <Tooltip title={t('tooltips.restartRequired')} describeChild>
       <Stack {...statusRowSx} data-testid="restart-required-status">
-        <PendingOutlinedIcon sx={{ fontSize: '16px', color: '#2B9AF3' }} />
+        <AccessTimeOutlinedIcon sx={{ fontSize: '16px', color: '#EC7A08' }} />
         <Typography variant="body2">{t('status.restartRequired')}</Typography>
       </Stack>
     </Tooltip>
