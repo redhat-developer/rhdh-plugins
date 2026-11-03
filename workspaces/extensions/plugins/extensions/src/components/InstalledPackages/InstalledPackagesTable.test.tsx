@@ -35,6 +35,13 @@ import { InstalledPackagesTable } from './InstalledPackagesTable';
 import { useNodeEnvironment } from '../../hooks/useNodeEnvironment';
 import { useExtensionsConfiguration } from '../../hooks/useExtensionsConfiguration';
 
+const mockNavigate = jest.fn();
+
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
+
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
   useRouteRef: () => (params: { namespace: string; name: string }) =>
@@ -55,6 +62,29 @@ const useExtensionsConfigurationMock = useExtensionsConfiguration as jest.Mock;
 type TestApiProviderApis = NonNullable<
   ComponentProps<typeof TestApiProvider>['apis']
 >;
+
+const packageEntityWithArtifact = {
+  apiVersion: 'extensions.backstage.io/v1alpha1',
+  kind: 'Package',
+  metadata: {
+    namespace: 'rhdh',
+    name: 'scope-pkg-a',
+    title: 'Package A',
+  },
+  spec: {
+    packageName: '@scope/pkg-a',
+    version: '1.0.0',
+    partOf: ['scope-pkg-a'],
+    dynamicArtifact: './dynamic-plugins/dist/scope-pkg-a',
+  },
+};
+
+const dynamicPlugin = {
+  name: '@scope/pkg-a-dynamic',
+  version: '1.0.0',
+  role: 'frontend-plugin',
+  platform: 'fe',
+};
 
 describe('InstalledPackagesTable', () => {
   const renderWithProviders = (
@@ -78,9 +108,44 @@ describe('InstalledPackagesTable', () => {
       </TestApiProvider>,
     );
 
+  const renderPackageRow = ({
+    entity = packageEntityWithArtifact,
+    permissions = { read: 'ALLOW', write: 'ALLOW' },
+  }: {
+    entity?: typeof packageEntityWithArtifact;
+    permissions?: { read: string; write: string };
+  } = {}) => {
+    const entities = {
+      items: [entity],
+      totalItems: 1,
+      pageInfo: {},
+    };
+
+    return renderWithProviders([
+      [
+        dynamicPluginsInfoApiRef,
+        { listLoadedPlugins: jest.fn().mockResolvedValue([dynamicPlugin]) },
+      ],
+      [
+        extensionsApiRef,
+        {
+          getPackages: jest.fn().mockResolvedValue(entities),
+          getPluginConfigAuthorization: jest
+            .fn()
+            .mockResolvedValue(permissions),
+          getPackageConfigByName: jest
+            .fn()
+            .mockResolvedValue({ configYaml: '' }),
+          getPackageByName: jest.fn().mockResolvedValue(entity),
+        },
+      ],
+    ] as const);
+  };
+
   beforeEach(() => {
     queryClient.clear();
     queryClient.setDefaultOptions({ queries: { retry: false } });
+    mockNavigate.mockClear();
     useNodeEnvironmentMock.mockReturnValue({
       data: { nodeEnv: 'development' },
     });
@@ -290,6 +355,74 @@ describe('InstalledPackagesTable', () => {
     const disabledButtons = screen.getAllByRole('button', { hidden: true });
     // There are three disabled action buttons rendered wrapped in span
     expect(disabledButtons.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('shows the CodeBlocks view action when the user only has read permissions', async () => {
+    renderPackageRow({ permissions: { read: 'ALLOW', write: 'DENY' } });
+
+    await waitFor(() =>
+      expect(screen.getByText('Installed packages (1)')).toBeInTheDocument(),
+    );
+
+    const viewButton = await screen.findByRole('button', { name: 'View' });
+    expect(viewButton).toBeEnabled();
+    expect(screen.getByTestId('CodeBlocksIcon')).toBeInTheDocument();
+    expect(screen.queryByTestId('EditIcon')).not.toBeInTheDocument();
+  });
+
+  it('renders a disabled edit icon when the user cannot read or write config', async () => {
+    renderPackageRow({ permissions: { read: 'DENY', write: 'DENY' } });
+
+    await waitFor(() =>
+      expect(screen.getByText('Installed packages (1)')).toBeInTheDocument(),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'View' }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(screen.queryByTestId('CodeBlocksIcon')).not.toBeInTheDocument();
+
+    const editIcon = await screen.findByTestId('EditIcon');
+    const editButton = editIcon.closest('button');
+    expect(editButton).toBeDisabled();
+  });
+
+  it('navigates in view-only mode when the user only has read permissions', async () => {
+    renderPackageRow({ permissions: { read: 'ALLOW', write: 'DENY' } });
+
+    await waitFor(() =>
+      expect(screen.getByText('Installed packages (1)')).toBeInTheDocument(),
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'View' }));
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      '/packages/rhdh/scope-pkg-a',
+      expect.objectContaining({
+        state: expect.objectContaining({ viewOnly: true }),
+      }),
+    );
+  });
+
+  it('renders the edit icon when the package can be edited', async () => {
+    renderPackageRow();
+
+    await waitFor(() =>
+      expect(screen.getByText('Installed packages (1)')).toBeInTheDocument(),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'View' }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(screen.queryByTestId('CodeBlocksIcon')).not.toBeInTheDocument();
+
+    const editIcon = await screen.findByTestId('EditIcon');
+    const editButton = editIcon.closest('button');
+    expect(editButton).toBeEnabled();
   });
 
   it('filters by search query', async () => {
