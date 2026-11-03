@@ -106,6 +106,22 @@ describe('createComponents', () => {
     );
   });
 
+  it('uses a darker containedError fill in dark mode for WCAG AA white labels', () => {
+    const dark = createComponents({ palette: customDarkTheme() });
+    const light = createComponents({ palette: customLightTheme() });
+    expect(dark.MuiButton?.styleOverrides).toEqual(
+      expect.objectContaining({
+        containedError: expect.objectContaining({
+          backgroundColor: '#C62828',
+          color: '#ffffff',
+        }),
+      }),
+    );
+    expect(light.MuiButton?.styleOverrides).not.toHaveProperty(
+      'containedError',
+    );
+  });
+
   it('clips the SidebarPage scrollport so the scrollbar follows the rounded well', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
