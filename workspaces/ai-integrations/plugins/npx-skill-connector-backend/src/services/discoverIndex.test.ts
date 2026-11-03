@@ -43,7 +43,11 @@ const source: NpxSourceConfig = {
 
 /** Helper to build a JSON response for an index page. */
 function indexPage(entries: unknown[], next?: string): Response {
-  const body = JSON.stringify({ entries, ...(next ? { next } : {}) });
+  const body = JSON.stringify({
+    $schema: 'https://schemas.agentskills.io/discovery/0.2.0/schema.json',
+    skills: entries,
+    ...(next ? { next } : {}),
+  });
   return new Response(body, {
     status: 200,
     headers: { 'content-type': 'application/json' },
@@ -499,8 +503,15 @@ describe('discoverIndex', () => {
     expect(result.entries).toEqual([]);
   });
 
-  it('reports incomplete when index page has no entries array', async () => {
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ data: [] })));
+  it('reports incomplete when index page has no skills array', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          $schema: 'https://schemas.agentskills.io/discovery/0.2.0/schema.json',
+          data: [],
+        }),
+      ),
+    );
 
     const result = await discoverIndex(source, logger);
 
@@ -528,7 +539,7 @@ describe('discoverIndex', () => {
         {
           name: 'z-bad',
           type: 'skill-md',
-          url: 'not-a-url',
+          url: 'ftp://skills.example.com/SKILL.md',
           digest,
         },
         {
@@ -748,7 +759,14 @@ describe('discoverIndex', () => {
         ),
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ entries: [], next: 42 })),
+        new Response(
+          JSON.stringify({
+            $schema:
+              'https://schemas.agentskills.io/discovery/0.2.0/schema.json',
+            skills: [],
+            next: 42,
+          }),
+        ),
       );
 
     const result = await discoverIndex(source, logger);
@@ -795,5 +813,94 @@ describe('discoverIndex', () => {
     expect(result.complete).toBe(false);
     expect(result.entries).toHaveLength(1_000);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([undefined, 'https://example.com/unknown-schema'])(
+    'rejects an absent or unsupported index schema (%s)',
+    async schema => {
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify({ $schema: schema, skills: [] })),
+      );
+
+      expect(await discoverIndex(source, logger)).toEqual({
+        entries: [],
+        failedKeys: [],
+        complete: false,
+      });
+    },
+  );
+
+  it('resolves relative artifact and next-page URLs against the index page', async () => {
+    const nestedSource = {
+      ...source,
+      indexUrl: 'https://skills.example.com/v0.2/index.json',
+    };
+    fetchMock
+      .mockResolvedValueOnce(indexPage([], 'page-2.json'))
+      .mockResolvedValueOnce(
+        indexPage([
+          {
+            name: 'relative-skill',
+            type: 'skill-md',
+            url: 'relative/SKILL.md',
+            digest,
+          },
+        ]),
+      );
+
+    const result = await discoverIndex(nestedSource, logger);
+
+    expect(result.complete).toBe(true);
+    expect(result.entries[0].url).toBe(
+      'https://skills.example.com/v0.2/relative/SKILL.md',
+    );
+    expect(fetchMock.mock.calls[1][0].toString()).toBe(
+      'https://skills.example.com/v0.2/page-2.json',
+    );
+  });
+
+  it('rejects names outside the Agent Skills naming rules', async () => {
+    fetchMock.mockResolvedValue(
+      indexPage([
+        {
+          name: 'Bad Name',
+          type: 'skill-md',
+          url: '/SKILL.md',
+          digest,
+        },
+        {
+          name: 'a'.repeat(65),
+          type: 'skill-md',
+          url: '/SKILL.md',
+          digest,
+        },
+      ]),
+    );
+
+    const result = await discoverIndex(source, logger);
+
+    expect(result.complete).toBe(false);
+    expect(result.entries).toEqual([]);
+    expect(result.failedKeys).toEqual(['Bad Name', 'a'.repeat(65)]);
+  });
+
+  it('rejects descriptions longer than the discovery format permits', async () => {
+    fetchMock.mockResolvedValue(
+      indexPage([
+        {
+          name: 'long-description',
+          type: 'skill-md',
+          description: 'x'.repeat(1_025),
+          url: '/SKILL.md',
+          digest,
+        },
+      ]),
+    );
+
+    expect(await discoverIndex(source, logger)).toEqual({
+      entries: [],
+      failedKeys: ['long-description'],
+      complete: false,
+    });
   });
 });

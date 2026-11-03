@@ -38,6 +38,9 @@ const MAX_CANDIDATES = 1_000;
 /** Keep untrusted keys and diagnostics within the snapshot response budget. */
 const MAX_NAME_BYTES = 1_024;
 
+const DISCOVERY_SCHEMA =
+  'https://schemas.agentskills.io/discovery/0.2.0/schema.json';
+
 /** Total discovery deadline in milliseconds (design D7: five minutes). */
 const DISCOVERY_DEADLINE_MS = 5 * 60 * 1_000;
 
@@ -93,21 +96,25 @@ export interface DiscoveryResult {
  * Parsed Agent Skills v0.2 index page.
  */
 interface IndexPage {
-  /** Array of index entries. */
-  entries: unknown[];
+  /** Array of index skills. */
+  skills: unknown[];
   /** Absolute URL of the next page, or absent for the last page. */
   next?: string;
 }
 
 /**
- * Validates that an artifact URL is a valid HTTPS URL without
- * credentials or fragments. Returns the serialized URL on success.
+ * Resolves an artifact URL against its index page and returns a safe,
+ * serialized HTTPS URL without credentials or fragments.
  */
-function validateArtifactUrl(raw: unknown, digest: string): string | null {
+function validateArtifactUrl(
+  raw: unknown,
+  digest: string,
+  indexUrl: string,
+): string | null {
   if (typeof raw !== 'string') return null;
   let parsed: URL;
   try {
-    parsed = new URL(raw);
+    parsed = new URL(raw, indexUrl);
   } catch {
     return null;
   }
@@ -134,7 +141,7 @@ function isValidIndexDigest(value: unknown): value is string {
  *
  * Returns the parsed page or throws on invalid JSON or structure.
  */
-function parseIndexPage(buffer: Buffer): IndexPage {
+function parseIndexPage(buffer: Buffer, indexUrl: string): IndexPage {
   let parsed: unknown;
   try {
     parsed = JSON.parse(buffer.toString('utf-8'));
@@ -148,19 +155,27 @@ function parseIndexPage(buffer: Buffer): IndexPage {
 
   const obj = parsed as Record<string, unknown>;
 
-  if (!Array.isArray(obj.entries)) {
-    throw new Error('Index page must contain an entries array');
+  if (obj.$schema !== DISCOVERY_SCHEMA) {
+    throw new Error('Index page has an unsupported discovery schema');
+  }
+
+  if (!Array.isArray(obj.skills)) {
+    throw new Error('Index page must contain a skills array');
   }
 
   const page: IndexPage = {
-    entries: obj.entries,
+    skills: obj.skills,
   };
 
   if ('next' in obj) {
     if (typeof obj.next !== 'string' || obj.next.trim().length === 0) {
       throw new Error('Index page has an invalid next URL');
     }
-    page.next = obj.next.trim();
+    try {
+      page.next = new URL(obj.next.trim(), indexUrl).toString();
+    } catch {
+      throw new Error('Index page has an invalid next URL');
+    }
   }
 
   return page;
@@ -230,7 +245,7 @@ export async function discoverIndex(
     let page: IndexPage;
     try {
       const buffer = await fetchSourceBuffer(nextUrl, source, 'index', signal);
-      page = parseIndexPage(buffer);
+      page = parseIndexPage(buffer, nextUrl);
     } catch (error) {
       const detail = error instanceof Error ? error.message : 'Unknown error';
       logger.error(
@@ -244,8 +259,8 @@ export async function discoverIndex(
 
     pageCount++;
 
-    // Process entries on this page
-    for (const rawEntry of page.entries) {
+    // Process skills on this page
+    for (const rawEntry of page.skills) {
       // Check candidate budget — skipped and failed count too
       if (candidateCount >= MAX_CANDIDATES) {
         logger.warn(
@@ -269,8 +284,7 @@ export async function discoverIndex(
       const entryData = rawEntry as RawIndexEntry;
 
       // Validate entry name
-      const name =
-        typeof entryData.name === 'string' ? entryData.name.trim() : '';
+      const name = typeof entryData.name === 'string' ? entryData.name : '';
       if (!name) {
         logger.warn(
           `Skipping index entry with missing or empty name in source '${source.id}'`,
@@ -283,6 +297,15 @@ export async function discoverIndex(
         logger.warn(
           `Skipping index entry with oversized name in source '${source.id}'`,
         );
+        complete = false;
+        continue;
+      }
+
+      if (name.length > 64 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name)) {
+        logger.warn(
+          `Skipping entry with invalid name in source '${source.id}'`,
+        );
+        failedKeys.add(name);
         complete = false;
         continue;
       }
@@ -330,10 +353,26 @@ export async function discoverIndex(
         continue;
       }
 
-      const artifactUrl = validateArtifactUrl(entryData.url, entryData.digest);
+      const artifactUrl = validateArtifactUrl(
+        entryData.url,
+        entryData.digest,
+        nextUrl,
+      );
       if (!artifactUrl) {
         logger.warn(
           `Skipping entry '${name}' in source '${source.id}': invalid or missing artifact URL`,
+        );
+        failedKeys.add(name);
+        complete = false;
+        continue;
+      }
+
+      if (
+        typeof entryData.description === 'string' &&
+        Array.from(entryData.description).length > 1_024
+      ) {
+        logger.warn(
+          `Skipping entry '${name}' with oversized description in source '${source.id}'`,
         );
         failedKeys.add(name);
         complete = false;
