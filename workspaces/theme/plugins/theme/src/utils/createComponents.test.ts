@@ -200,6 +200,20 @@ describe('createComponents', () => {
     expect(String(overrides)).toContain('--rhdh-global-header-height');
   });
 
+  it('caps BUI dialog max-height without forcing full viewport height', () => {
+    const actual = createComponents({});
+    const overrides = actual.MuiCssBaseline?.styleOverrides;
+    expect(typeof overrides).toBe('function');
+    // Source of the styleOverrides factory includes these declarations.
+    expect(String(overrides)).toContain('maxHeight:');
+    expect(String(overrides)).toContain(
+      'maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`',
+    );
+    expect(String(overrides)).not.toContain(
+      'height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`',
+    );
+  });
+
   it('publishes masthead height and hides sidebar logos when global-header is present', () => {
     const actual = createComponents({});
     const overrides = actual.MuiCssBaseline?.styleOverrides;
