@@ -16,9 +16,8 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: update-overlays-${{ inputs.branch }}-${{ inputs.workspace }}
-  cancel-in-progress: false
+# Each published release keeps its own follow-up. A shared concurrency group
+# would replace an older pending follow-up when a third release arrives.
 
 jobs:
   update:

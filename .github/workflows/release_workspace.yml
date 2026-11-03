@@ -55,7 +55,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ github.event_name == 'push' && github.sha || inputs.branch }}
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -95,7 +95,7 @@ jobs:
         env:
           WORKSPACE_NAME: ${{ inputs.workspace }}
           COMMIT_SHA_BEFORE: '${{ github.event.before }}'
-          TARGET_BRANCH: ${{ inputs.branch }}
+          TARGET_BRANCH: ${{ github.event_name == 'push' && github.sha || inputs.branch }}
 
       - name: Verify merged Version Packages PR
         id: verify_release_pr
@@ -151,7 +151,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ github.event_name == 'push' && github.sha || inputs.branch }}
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -181,6 +181,17 @@ jobs:
 
       - name: Build all packages
         run: yarn build:all
+
+      - name: Verify release commit
+        if: github.event_name == 'push'
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          actual_sha=$(git rev-parse HEAD)
+          if [ "$actual_sha" != "$RELEASE_SHA" ]; then
+            echo "::error::Refusing to publish $actual_sha; expected release commit $RELEASE_SHA" >&2
+            exit 1
+          fi
 
       - name: publish
         run: |

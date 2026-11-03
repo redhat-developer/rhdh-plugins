@@ -56,6 +56,32 @@ function releaseBranches(workspace, branch) {
   throw new Error(`Unsupported release branch: ${branch}`);
 }
 
+async function findReleasePr({
+  github,
+  repo,
+  sha,
+  workspace,
+  branch,
+  versionBranch,
+}) {
+  const prs = await github.paginate(
+    github.rest.repos.listPullRequestsAssociatedWithCommit,
+    { ...repo, commit_sha: sha, per_page: 100 },
+  );
+  const releases = prs.filter(
+    pr =>
+      pr.merged_at &&
+      pr.merge_commit_sha === sha &&
+      pr.title === `Version Packages (${workspace})` &&
+      pr.user.login === 'rhdh-bot' &&
+      pr.base.ref === branch &&
+      pr.base.repo.full_name === sourceRepository &&
+      pr.head.ref === versionBranch &&
+      pr.head.repo?.full_name === sourceRepository,
+  );
+  return releases.length === 1 ? releases[0] : undefined;
+}
+
 export async function updateOverlays({
   github,
   context,
@@ -78,25 +104,54 @@ export async function updateOverlays({
   const { targetBranch, versionBranch } = releaseBranches(workspace, branch);
 
   // Resolve by the merge commit, never by title alone or the latest closed PR.
-  const releasePrs = await github.paginate(
-    github.rest.repos.listPullRequestsAssociatedWithCommit,
-    { ...context.repo, commit_sha: context.sha, per_page: 100 },
-  );
-  const releases = releasePrs.filter(
-    pr =>
-      pr.merged_at &&
-      pr.merge_commit_sha === context.sha &&
-      pr.title === `Version Packages (${workspace})` &&
-      pr.user.login === 'rhdh-bot' &&
-      pr.base.ref === branch &&
-      pr.base.repo.full_name === sourceRepository &&
-      pr.head.ref === versionBranch &&
-      pr.head.repo?.full_name === sourceRepository,
-  );
-  if (releases.length !== 1) {
+  const release = await findReleasePr({
+    github,
+    repo: context.repo,
+    sha: context.sha,
+    workspace,
+    branch,
+    versionBranch,
+  });
+  if (!release) {
     throw new Error(
       'Expected exactly one merged, bot-authored Version Packages PR for this release.',
     );
+  }
+
+  async function verifyNewerRelease(sourceSha) {
+    try {
+      const { data } = await github.rest.repos.compareCommits({
+        ...context.repo,
+        base: context.sha,
+        head: sourceSha,
+      });
+      if (data.status !== 'ahead') return false;
+      return Boolean(
+        await findReleasePr({
+          github,
+          repo: context.repo,
+          sha: sourceSha,
+          workspace,
+          branch,
+          versionBranch,
+        }),
+      );
+    } catch (error) {
+      if (error.status === 404) return false;
+      throw error;
+    }
+  }
+
+  const newerReleases = new Map();
+  async function coversRelease(source) {
+    if (repositoryName(source?.repo) !== sourceRepository) return false;
+    const sourceSha = source['repo-ref'];
+    if (sourceSha === context.sha) return true;
+    if (!/^[a-f0-9]{40}$/.test(sourceSha)) return false;
+    if (!newerReleases.has(sourceSha)) {
+      newerReleases.set(sourceSha, verifyNewerRelease(sourceSha));
+    }
+    return newerReleases.get(sourceSha);
   }
 
   async function readSource(ref) {
@@ -155,32 +210,77 @@ export async function updateOverlays({
         source = await readSource(pr.head.sha);
         if (source) prSources.set(pr.head.sha, source);
       }
-      if (
-        repositoryName(source?.repo) === sourceRepository &&
-        source['repo-ref'] === context.sha
-      ) {
-        return pr;
+      if (await coversRelease(source)) {
+        return { pr, sourceSha: source['repo-ref'] };
       }
     }
     return undefined;
   }
 
-  async function comment(pr) {
-    const body = [
-      `<!-- rhdh-overlays-update:${workspace}:${context.sha} -->`,
+  async function comment({ pr, sourceSha }) {
+    const marker = `<!-- rhdh-overlays-update:${workspace}:${context.sha} -->`;
+    const link = `Overlays update for \`${targetBranch}\`: ${pr.html_url}`;
+    const lines = [
+      marker,
       `Published \`${workspace}\` from commit \`${context.sha}\`.`,
       '',
-      `Overlays update for \`${targetBranch}\`: ${pr.html_url}`,
-    ].join('\n');
-    const issue = { ...context.repo, issue_number: releases[0].number };
+    ];
+    if (sourceSha !== context.sha) {
+      lines.push(
+        `The overlays PR tracks newer Version Packages commit \`${sourceSha}\`, which includes this release in its history.`,
+        '',
+      );
+    }
+    lines.push(link);
+    const body = lines.join('\n');
+    const issue = { ...context.repo, issue_number: release.number };
     const comments = await github.paginate(github.rest.issues.listComments, {
       ...issue,
       per_page: 100,
     });
-    if (!comments.some(existing => existing.body === body)) {
+    if (
+      !comments.some(existing => {
+        const content = new Set(existing.body?.split(/\r?\n/) ?? []);
+        return content.has(marker) && content.has(link);
+      })
+    ) {
       await github.rest.issues.createComment({ ...issue, body });
     }
     core.info(`Overlays PR: ${pr.html_url}`);
+  }
+
+  async function waitForPullRequest(dispatch) {
+    let lastRun;
+    let reportedCompletion = false;
+    const noPrError = () =>
+      new Error(
+        `Overlays run finished (${lastRun.conclusion}) without a PR for ${context.sha}: ${dispatch.html_url}`,
+      );
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      await wait(interval);
+      const { data } = await github.rest.actions.getWorkflowRun({
+        ...overlays,
+        run_id: dispatch.workflow_run_id,
+      });
+      lastRun = data;
+      const match = await findMatchingPullRequest(await findPullRequests());
+      if (match) return match;
+      if (lastRun.status !== 'completed') continue;
+      if (!['success', 'cancelled'].includes(lastRun.conclusion))
+        throw noPrError();
+      // A newer workspace update can supersede this dispatch. Keep this
+      // release's follow-up alive until that update can be reconciled.
+      if (!reportedCompletion) {
+        core.warning(
+          `Overlays run ${lastRun.conclusion}; waiting for a matching or verified newer release PR: ${dispatch.html_url}`,
+        );
+        reportedCompletion = true;
+      }
+    }
+    if (lastRun?.status === 'completed') throw noPrError();
+    throw new Error(
+      `Timed out waiting for an overlays PR for ${context.sha}: ${dispatch.html_url}`,
+    );
   }
 
   const existingPrs = await findPullRequests();
@@ -214,26 +314,5 @@ export async function updateOverlays({
   }
   core.info(`Overlays update run: ${dispatch.html_url}`);
 
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    await wait(interval);
-    const { data: run } = await github.rest.actions.getWorkflowRun({
-      ...overlays,
-      run_id: dispatch.workflow_run_id,
-    });
-    // Read PRs after run status, so a PR created while checking a finishing run
-    // is not mistaken for a no-op update.
-    const matchingPr = await findMatchingPullRequest(await findPullRequests());
-    if (matchingPr) {
-      await comment(matchingPr);
-      return;
-    }
-    if (run.status === 'completed') {
-      throw new Error(
-        `Overlays run finished (${run.conclusion}) without a PR for ${context.sha}: ${dispatch.html_url}`,
-      );
-    }
-  }
-  throw new Error(
-    `Timed out waiting for an overlays PR for ${context.sha}: ${dispatch.html_url}`,
-  );
+  await comment(await waitForPullRequest(dispatch));
 }

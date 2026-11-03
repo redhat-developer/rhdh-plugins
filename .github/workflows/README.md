@@ -8,6 +8,8 @@ Triggered on pull requests, this workflow runs tests on workspaces that have cha
 
 Handles the release process for a specific workspace from a specified branch (default: `main`). Automatic publishing requires both a package version bump and a push from merging that workspace's `Version Packages (<workspace>)` PR authored by `rhdh-bot` from `changesets-release/<workspace>/main`. Other pushes that bump versions do not publish. The explicit `force_release` input remains available for manual releases. If there is no version bump, the workflow updates the Version Packages PR from pending changesets. For more details, see the [Changesets documentation](https://github.com/changesets/changesets).
 
+Automatic release checks and publication check out the triggering commit, not a moving branch. A SHA guard before npm publication rejects an unexpected checkout. Manual runs still check out the selected input branch.
+
 After a successful automatic release, calls [update-overlays.yml](./update-overlays.yml) to request an overlays update and comment its PR link on the merged Version Packages PR. Forced manual releases do not trigger this follow-up.
 
 ## [backport.yml](./backport.yml)
@@ -24,7 +26,7 @@ The same release process applies to both branch layouts:
 2. The workflow opens a separate `Version Packages` pull request for each affected workspace, from `maintenance-changesets-release/release-x.y/<workspace>`. A leftover branch with that name from a previous cycle must be deleted before the workflow can open a new PR. For legacy branches, the workspace comes from the target branch; for repository-wide branches, the workflow detects affected workspaces from the merged PR.
 3. Merge the `Version Packages` PR authored by `rhdh-bot` to publish that workspace with the `maintenance` npm dist-tag and create its Git tag. Closing it without merging does not publish.
 
-Successful maintenance releases also call [update-overlays.yml](./update-overlays.yml). The overlays target is the matching `release-x.y` branch, including when the source branch is the legacy `release-1.x/<workspace>` layout.
+Both maintenance publish jobs check out and verify the triggering SHA before publication. Successful maintenance releases also call [update-overlays.yml](./update-overlays.yml). The overlays target is the matching `release-x.y` branch, including when the source branch is the legacy `release-1.x/<workspace>` layout.
 
 For `yarn.lock`-only fixes without plugin code changes, no changeset or npm release is needed; update the corresponding overlays `source.json` `repo-ref` instead. See [Backporting patches](../../CONTRIBUTING.md#backporting-patches-prior-release-lines) for the full procedure, including the follow-up `CHANGELOG` PR to `main`.
 
@@ -34,7 +36,9 @@ Reusable post-release workflow; it has no manual or pull-request trigger. It run
 
 1. Resolves the exact merged, bot-authored Version Packages PR from the release commit.
 2. Dispatches overlays' existing `update-plugins-repo-refs.yaml` workflow from `main`, scoped to the released workspace and matching target branch. If an update PR already exists, passes `pr-to-update` to refresh it.
-3. Waits up to 30 minutes for an open or merged overlays PR whose `source.json` references this repository and the exact release commit, then posts its URL on the Version Packages PR. Reruns reuse matching PRs and do not duplicate identical comments.
+3. Waits up to 30 minutes for an open or merged overlays PR whose `source.json` references this repository and the release commit. It also accepts a newer commit only when GitHub confirms that it descends from this release and is the merge of a bot-authored Version Packages PR for the same workspace and source branch. The comment identifies the original published commit and explains when overlays tracks a newer release commit. Foreign, unrelated, diverged, and unverified source refs are not accepted.
+
+Each successful publish retains its own follow-up; the reusable workflow has no shared concurrency group that could replace an older pending job. If releases A, B, and C overlap and overlays coalesces their updates into C, all three Version Packages PRs can receive the verified C overlays link. A cancelled dispatch or a successful run with no matching PR does not immediately discard its follow-up: it continues looking for an exact or verified newer release PR within the polling limit. Reruns reuse matching PRs and do not duplicate the same release's link to the same overlays PR.
 
 Workspaces missing from overlays or owned by a different upstream are skipped with a warning. If no matching PR is found, failed, cancelled, incompatible/no-op, and timed-out updates fail the follow-up job with a run URL; packages already published to npm are not rolled back. Inspect the failed follow-up job and linked overlays run before retrying. A link can be posted as soon as the matching PR exists; the overlays workflow's subsequent publish checks remain separate.
 
