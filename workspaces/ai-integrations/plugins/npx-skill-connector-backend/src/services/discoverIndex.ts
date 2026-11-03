@@ -25,6 +25,7 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import { buildNpxRef } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { fetchSourceBuffer, validateRequestUrl } from './fetchSource';
 import type { NpxSourceConfig } from './types';
 
@@ -33,6 +34,9 @@ const MAX_PAGES = 100;
 
 /** Maximum number of candidates per refresh (design D7). */
 const MAX_CANDIDATES = 1_000;
+
+/** Keep untrusted keys and diagnostics within the snapshot response budget. */
+const MAX_NAME_BYTES = 1_024;
 
 /** Total discovery deadline in milliseconds (design D7: five minutes). */
 const DISCOVERY_DEADLINE_MS = 5 * 60 * 1_000;
@@ -90,7 +94,7 @@ export interface DiscoveryResult {
  */
 interface IndexPage {
   /** Array of index entries. */
-  entries: RawIndexEntry[];
+  entries: unknown[];
   /** Absolute URL of the next page, or absent for the last page. */
   next?: string;
 }
@@ -99,7 +103,7 @@ interface IndexPage {
  * Validates that an artifact URL is a valid HTTPS URL without
  * credentials or fragments. Returns the serialized URL on success.
  */
-function validateArtifactUrl(raw: unknown): string | null {
+function validateArtifactUrl(raw: unknown, digest: string): string | null {
   if (typeof raw !== 'string') return null;
   let parsed: URL;
   try {
@@ -109,6 +113,8 @@ function validateArtifactUrl(raw: unknown): string | null {
   }
   try {
     validateRequestUrl(parsed);
+    // Use the shared reference policy before retaining an untrusted URL.
+    buildNpxRef(parsed.toString(), digest);
   } catch {
     return null;
   }
@@ -147,10 +153,13 @@ function parseIndexPage(buffer: Buffer): IndexPage {
   }
 
   const page: IndexPage = {
-    entries: obj.entries as RawIndexEntry[],
+    entries: obj.entries,
   };
 
-  if (typeof obj.next === 'string' && obj.next.trim().length > 0) {
+  if ('next' in obj) {
+    if (typeof obj.next !== 'string' || obj.next.trim().length === 0) {
+      throw new Error('Index page has an invalid next URL');
+    }
     page.next = obj.next.trim();
   }
 
@@ -178,9 +187,10 @@ export async function discoverIndex(
     ? AbortSignal.any([parentSignal, deadlineSignal])
     : deadlineSignal;
 
-  // Track all entries by name for duplicate detection
+  // Track names before validating fields so a malformed duplicate cannot
+  // leave a successful entry with the same failed key.
   const entriesByName = new Map<string, DiscoveredEntry>();
-  const duplicateNames = new Set<string>();
+  const seenNames = new Set<string>();
   const failedKeys = new Set<string>();
   let complete = true;
   let candidateCount = 0;
@@ -246,9 +256,21 @@ export async function discoverIndex(
       }
       candidateCount++;
 
+      if (
+        typeof rawEntry !== 'object' ||
+        rawEntry === null ||
+        Array.isArray(rawEntry)
+      ) {
+        logger.warn(`Skipping malformed index entry in source '${source.id}'`);
+        complete = false;
+        continue;
+      }
+
+      const entryData = rawEntry as RawIndexEntry;
+
       // Validate entry name
       const name =
-        typeof rawEntry.name === 'string' ? rawEntry.name.trim() : '';
+        typeof entryData.name === 'string' ? entryData.name.trim() : '';
       if (!name) {
         logger.warn(
           `Skipping index entry with missing or empty name in source '${source.id}'`,
@@ -257,9 +279,28 @@ export async function discoverIndex(
         continue;
       }
 
+      if (Buffer.byteLength(name, 'utf8') > MAX_NAME_BYTES) {
+        logger.warn(
+          `Skipping index entry with oversized name in source '${source.id}'`,
+        );
+        complete = false;
+        continue;
+      }
+
+      if (seenNames.has(name)) {
+        entriesByName.delete(name);
+        failedKeys.add(name);
+        complete = false;
+        logger.warn(
+          `Duplicate entry name '${name}' in source '${source.id}': all occurrences excluded`,
+        );
+        continue;
+      }
+      seenNames.add(name);
+
       // Check entry type
       const entryType =
-        typeof rawEntry.type === 'string' ? rawEntry.type.trim() : '';
+        typeof entryData.type === 'string' ? entryData.type.trim() : '';
 
       // Archive entries are skipped — does NOT make snapshot incomplete
       if (entryType === 'archive') {
@@ -269,31 +310,30 @@ export async function discoverIndex(
         continue;
       }
 
-      // Non-skill-md, non-archive entries with a type are malformed supported entries
-      if (entryType && entryType !== 'skill-md') {
+      // Only explicitly declared skill-md entries can be processed.
+      if (entryType !== 'skill-md') {
         logger.warn(
-          `Skipping entry '${name}' with unsupported type '${entryType}' in source '${source.id}'`,
+          `Skipping entry '${name}' with unsupported type in source '${source.id}'`,
         );
         failedKeys.add(name);
         complete = false;
         continue;
       }
 
-      // Validate artifact URL
-      const artifactUrl = validateArtifactUrl(rawEntry.url);
+      // Validate digest before passing it to the shared URL policy.
+      if (!isValidIndexDigest(entryData.digest)) {
+        logger.warn(
+          `Skipping entry '${name}' in source '${source.id}': invalid or missing digest`,
+        );
+        failedKeys.add(name);
+        complete = false;
+        continue;
+      }
+
+      const artifactUrl = validateArtifactUrl(entryData.url, entryData.digest);
       if (!artifactUrl) {
         logger.warn(
           `Skipping entry '${name}' in source '${source.id}': invalid or missing artifact URL`,
-        );
-        failedKeys.add(name);
-        complete = false;
-        continue;
-      }
-
-      // Validate digest
-      if (!isValidIndexDigest(rawEntry.digest)) {
-        logger.warn(
-          `Skipping entry '${name}' in source '${source.id}': invalid or missing digest`,
         );
         failedKeys.add(name);
         complete = false;
@@ -304,39 +344,28 @@ export async function discoverIndex(
         name,
         type: 'skill-md',
         url: artifactUrl,
-        digest: rawEntry.digest as string,
+        digest: entryData.digest,
       };
 
       if (
-        typeof rawEntry.description === 'string' &&
-        rawEntry.description.trim().length > 0
+        typeof entryData.description === 'string' &&
+        entryData.description.trim().length > 0
       ) {
-        entry.description = rawEntry.description.trim();
-      }
-
-      // Handle duplicate names: exclude both and report as failed
-      if (duplicateNames.has(name)) {
-        // Already known duplicate — this additional occurrence is also excluded
-        failedKeys.add(name);
-        continue;
-      }
-
-      if (entriesByName.has(name)) {
-        // First duplicate detected — remove the original and mark both
-        duplicateNames.add(name);
-        entriesByName.delete(name);
-        failedKeys.add(name);
-        complete = false;
-        logger.warn(
-          `Duplicate entry name '${name}' in source '${source.id}': both entries excluded`,
-        );
-        continue;
+        entry.description = entryData.description.trim();
       }
 
       entriesByName.set(name, entry);
     }
 
-    // If candidate budget was exhausted inside the loop, stop paging
+    // A full page budget with another page still pending is incomplete.
+    if (candidateCount >= MAX_CANDIDATES && page.next) {
+      logger.warn(
+        `Candidate budget exhausted for source '${source.id}': reached ${MAX_CANDIDATES} candidates`,
+      );
+      complete = false;
+    }
+
+    // If the candidate budget was exhausted, stop before another fetch.
     if (candidateCount >= MAX_CANDIDATES && !complete) {
       break;
     }

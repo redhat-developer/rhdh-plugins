@@ -42,10 +42,7 @@ const source: NpxSourceConfig = {
 };
 
 /** Helper to build a JSON response for an index page. */
-function indexPage(
-  entries: Array<Record<string, unknown>>,
-  next?: string,
-): Response {
+function indexPage(entries: unknown[], next?: string): Response {
   const body = JSON.stringify({ entries, ...(next ? { next } : {}) });
   return new Response(body, {
     status: 200,
@@ -598,7 +595,7 @@ describe('discoverIndex', () => {
 
   // ─── Entries without explicit type ─────────────────────────────────
 
-  it('treats entries without a type field as skill-md candidates', async () => {
+  it('rejects entries without an explicit skill-md type', async () => {
     fetchMock.mockResolvedValue(
       indexPage([
         {
@@ -606,19 +603,20 @@ describe('discoverIndex', () => {
           url: 'https://skills.example.com/typeless/SKILL.md',
           digest,
         },
+        {
+          name: 'numeric-type',
+          type: 42,
+          url: 'https://skills.example.com/numeric/SKILL.md',
+          digest,
+        },
       ]),
     );
 
     const result = await discoverIndex(source, logger);
 
-    // An entry without a type should still have a valid URL and digest
-    // but the type field being empty means it's neither archive nor
-    // explicitly skill-md. The code treats empty type as not 'archive'
-    // and not an explicitly unsupported type, so it proceeds with
-    // URL/digest validation.
-    expect(result.entries).toHaveLength(1);
-    expect(result.entries[0].name).toBe('typeless-skill');
-    expect(result.entries[0].type).toBe('skill-md');
+    expect(result.complete).toBe(false);
+    expect(result.entries).toEqual([]);
+    expect(result.failedKeys).toEqual(['numeric-type', 'typeless-skill']);
   });
 
   // ─── Duplicates across pages ──────────────────────────────────────
@@ -661,5 +659,141 @@ describe('discoverIndex', () => {
     expect(result.entries[0].name).toBe('unique-on-page2');
     expect(result.failedKeys).toEqual(['cross-page-dupe']);
     expect(result.complete).toBe(false);
+  });
+
+  it.each([
+    '?token=secret',
+    '?X-Amz-Signature=secret',
+    '?se=tomorrow&sp=r&sv=2025-01-01',
+  ])('rejects a credential-bearing artifact URL (%s)', async query => {
+    fetchMock.mockResolvedValue(
+      indexPage([
+        {
+          name: 'signed-skill',
+          type: 'skill-md',
+          url: `https://skills.example.com/SKILL.md${query}`,
+          digest,
+        },
+      ]),
+    );
+
+    const result = await discoverIndex(source, logger);
+
+    expect(result).toEqual({
+      entries: [],
+      failedKeys: ['signed-skill'],
+      complete: false,
+    });
+  });
+
+  it('keeps valid entries when an index array contains null', async () => {
+    fetchMock.mockResolvedValue(
+      indexPage([
+        null,
+        {
+          name: 'valid-skill',
+          type: 'skill-md',
+          url: 'https://skills.example.com/SKILL.md',
+          digest,
+        },
+      ]),
+    );
+
+    const result = await discoverIndex(source, logger);
+
+    expect(result.complete).toBe(false);
+    expect(result.entries.map(entry => entry.name)).toEqual(['valid-skill']);
+    expect(result.failedKeys).toEqual([]);
+  });
+
+  it.each(['valid-first', 'malformed-first'])(
+    'excludes a duplicate when the %s entry has an invalid digest',
+    async order => {
+      const valid = {
+        name: 'duplicate',
+        type: 'skill-md',
+        url: 'https://skills.example.com/SKILL.md',
+        digest,
+      };
+      const malformed = { ...valid, digest: 'invalid' };
+      fetchMock.mockResolvedValue(
+        indexPage(
+          order === 'valid-first' ? [valid, malformed] : [malformed, valid],
+        ),
+      );
+
+      const result = await discoverIndex(source, logger);
+
+      expect(result).toEqual({
+        entries: [],
+        failedKeys: ['duplicate'],
+        complete: false,
+      });
+    },
+  );
+
+  it('does not treat malformed pagination as a complete inventory', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        indexPage(
+          [
+            {
+              name: 'first-page',
+              type: 'skill-md',
+              url: 'https://skills.example.com/SKILL.md',
+              digest,
+            },
+          ],
+          'https://skills.example.com/index.json?page=2',
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ entries: [], next: 42 })),
+      );
+
+    const result = await discoverIndex(source, logger);
+
+    expect(result.complete).toBe(false);
+    expect(result.entries.map(entry => entry.name)).toEqual(['first-page']);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects oversized names without retaining them as failed keys', async () => {
+    fetchMock.mockResolvedValue(
+      indexPage([
+        {
+          name: 'x'.repeat(2_000),
+          type: 'skill-md',
+          url: 'https://skills.example.com/SKILL.md',
+          digest,
+        },
+      ]),
+    );
+
+    expect(await discoverIndex(source, logger)).toEqual({
+      entries: [],
+      failedKeys: [],
+      complete: false,
+    });
+  });
+
+  it('stops at exactly 1,000 candidates when another page is advertised', async () => {
+    fetchMock.mockResolvedValue(
+      indexPage(
+        Array.from({ length: 1_000 }, (_, index) => ({
+          name: `skill-${index}`,
+          type: 'skill-md',
+          url: 'https://skills.example.com/SKILL.md',
+          digest,
+        })),
+        'https://skills.example.com/index.json?page=2',
+      ),
+    );
+
+    const result = await discoverIndex(source, logger);
+
+    expect(result.complete).toBe(false);
+    expect(result.entries).toHaveLength(1_000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
