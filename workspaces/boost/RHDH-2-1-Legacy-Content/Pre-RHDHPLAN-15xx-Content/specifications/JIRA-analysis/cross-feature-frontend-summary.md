@@ -31,12 +31,12 @@ The RHDHPLAN-1513 stories remain separate admin-panel work.
 
 ### RHDHPLAN-1508 — RBAC & Versioning Policy
 
-| Story       | Epic                               | What It Builds                                                                                                               | OpenSpec                                                    |
-| ----------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| RHIDP-15273 | RHIDP-15270 (Graduated Visibility) | API-level redaction for protected fields when a future backend returns them; no duplicate entity permission in the frontend. | `ai-catalog-asset-governance` `specs/graduated-visibility/` |
-| RHIDP-15307 | RHIDP-15304 (RBAC Admin UI)        | Canceled standalone policy dashboard; use the existing RHDH/RBAC administration surface.                                     | `ai-catalog-asset-governance`                               |
-| RHIDP-15308 | RHIDP-15304 (RBAC Admin UI)        | Canceled standalone policy editor; use the existing RHDH/RBAC administration surface.                                        | `ai-catalog-asset-governance`                               |
-| RHIDP-15309 | RHIDP-15304 (RBAC Admin UI)        | Deployment policy configuration, not a new frontend page.                                                                    | `ai-catalog-asset-governance` `specs/default-deny-config/`  |
+| Story       | Epic                               | What It Builds                                                                                                               | OpenSpec                                                                       |
+| ----------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| RHIDP-15273 | RHIDP-15270 (Graduated Visibility) | API-level redaction for protected fields when a future backend returns them; no duplicate entity permission in the frontend. | `archive/2026-10-30-ai-catalog-asset-governance` `specs/graduated-visibility/` |
+| RHIDP-15307 | RHIDP-15304 (RBAC Admin UI)        | Canceled standalone policy dashboard; use the existing RHDH/RBAC administration surface.                                     | `archive/2026-10-30-ai-catalog-asset-governance`                               |
+| RHIDP-15308 | RHIDP-15304 (RBAC Admin UI)        | Canceled standalone policy editor; use the existing RHDH/RBAC administration surface.                                        | `archive/2026-10-30-ai-catalog-asset-governance`                               |
+| RHIDP-15309 | RHIDP-15304 (RBAC Admin UI)        | Deployment policy configuration, not a new frontend page.                                                                    | `archive/2026-10-30-ai-catalog-asset-governance` `specs/default-deny-config/`  |
 
 **Theme:** Catalog permission integration and API-level protection where a
 future backend requires it.

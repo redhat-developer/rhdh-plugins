@@ -4,7 +4,7 @@
 > the historical staged-issue decomposition. Its RHDHPLAN-1508 issue labels
 > predate the current Catalog-permission direction and must not be read as a
 > current implementation plan. The current RBAC scope is defined in
-> `openspec/changes/ai-catalog-asset-governance/`.
+> `openspec/changes/ai-catalog-rbac-versioning-policy/`.
 
 ## Context
 
