@@ -1034,8 +1034,9 @@ export async function createRouter(
 
         const requestBody = JSON.stringify(request.body);
         const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
+        const encodedConversationId = encodeURIComponent(conversation_id);
         const fetchResponse = await fetch(
-          `${lcsBaseUrl}/v2/conversations/${conversation_id}?${userQueryParam}`,
+          `${lcsBaseUrl}/v2/conversations/${encodedConversationId}?${userQueryParam}`,
           {
             method: 'PUT',
             headers: {
