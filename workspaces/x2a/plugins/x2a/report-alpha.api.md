@@ -219,14 +219,6 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'projectModulesCard.spinner': string;
     readonly 'initPhaseCard.title': string;
     readonly 'modulePage.title': string;
-    readonly 'modulePage.publishDialog.title': string;
-    readonly 'modulePage.publishDialog.cancel': string;
-    readonly 'modulePage.publishDialog.inventory': string;
-    readonly 'modulePage.publishDialog.scmCredential': string;
-    readonly 'modulePage.publishDialog.jobCredentials': string;
-    readonly 'modulePage.publishDialog.jobCredentialsHelp': string;
-    readonly 'modulePage.publishDialog.executionEnvironment': string;
-    readonly 'modulePage.publishDialog.publish': string;
     readonly 'modulePage.artifacts.title': string;
     readonly 'modulePage.artifacts.description': string;
     readonly 'modulePage.artifacts.migration_plan': string;
@@ -364,10 +356,10 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'module.status': string;
     readonly 'module.artifacts': string;
     readonly 'module.phases.none': string;
-    readonly 'module.phases.publish': string;
     readonly 'module.phases.init': string;
     readonly 'module.phases.analyze': string;
     readonly 'module.phases.migrate': string;
+    readonly 'module.phases.publish': string;
     readonly 'module.phases.adversarial-analyze': string;
     readonly 'module.phases.adversarial-migrate': string;
     readonly 'module.statuses.error': string;

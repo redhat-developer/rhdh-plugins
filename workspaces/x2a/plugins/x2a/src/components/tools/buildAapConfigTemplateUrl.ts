@@ -5,6 +5,8 @@
  * you may not use this file except in compliance with the License.
  */
 
+import { bitbucketProvider } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 export const CREATE_AAP_CONFIG_TEMPLATE_PATH =
   '/create/templates/default/x2a-publish-aap-config-template';
 
@@ -32,7 +34,7 @@ function toRepoPickerValue(repositoryUrl: string): string {
     }
 
     const query = new URLSearchParams(
-      parsed.host === 'bitbucket.org'
+      bitbucketProvider.matches(repositoryUrl)
         ? { workspace: owner, repo: repository }
         : { owner, repo: repository },
     );

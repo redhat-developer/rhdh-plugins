@@ -149,16 +149,6 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'artifact.types.ansible_project': 'AAP-Projekt',
     'artifact.types.aap_config': 'AAP-Konfiguration',
     'modulePage.title': 'Moduldetails',
-    'modulePage.publishDialog.title': 'AAP-Konfiguration veröffentlichen',
-    'modulePage.publishDialog.inventory': 'AAP-Inventar',
-    'modulePage.publishDialog.scmCredential': 'SCM-Anmeldedaten (optional)',
-    'modulePage.publishDialog.jobCredentials': 'Job-Anmeldedaten (optional)',
-    'modulePage.publishDialog.jobCredentialsHelp':
-      'Namen durch Kommas trennen.',
-    'modulePage.publishDialog.executionEnvironment':
-      'Ausführungsumgebung (optional)',
-    'modulePage.publishDialog.cancel': 'Abbrechen',
-    'modulePage.publishDialog.publish': 'Veröffentlichen',
     'modulePage.artifacts.title': 'Zu überprüfende Artefakte',
     'modulePage.artifacts.migration_plan': 'Gesamter Projektmigrationsplan',
     'modulePage.artifacts.module_migration_plan': 'Modulplan nach Analyse',

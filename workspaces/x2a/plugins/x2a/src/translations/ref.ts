@@ -86,16 +86,6 @@ export const x2aPluginMessages = {
   },
   modulePage: {
     title: 'Module Details',
-    publishDialog: {
-      title: 'Publish AAP configuration',
-      inventory: 'AAP inventory',
-      scmCredential: 'SCM credential (optional)',
-      jobCredentials: 'Job credentials (optional)',
-      jobCredentialsHelp: 'Enter credential names separated by commas.',
-      executionEnvironment: 'Execution environment (optional)',
-      cancel: 'Cancel',
-      publish: 'Publish',
-    },
     artifacts: {
       title: 'Artifacts to review',
       migration_plan: 'Overall project migration plan',

@@ -5,6 +5,7 @@
  * you may not use this file except in compliance with the License.
  */
 
+import { isChildPath } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import YAML from 'yaml';
@@ -143,8 +144,17 @@ export async function finalizeDraft(
   if (scmCredentialName) project.scm_credential = scmCredentialName;
   else delete project.scm_credential;
 
-  if (input.jobCredentialNames.length) {
-    jobTemplate.credentials = input.jobCredentialNames;
+  const jobCredentialNames = input.jobCredentialNames.map(name => name.trim());
+  if (jobCredentialNames.some(name => !name)) {
+    throw new Error('AAP job credential names must be non-empty values');
+  }
+  if (new Set(jobCredentialNames).size !== jobCredentialNames.length) {
+    throw new Error('AAP job credential names must not contain duplicates');
+  }
+  if (jobCredentialNames.length) {
+    jobTemplate.credentials = jobCredentialNames;
+  } else {
+    delete jobTemplate.credentials;
   }
   const executionEnvironmentName = input.executionEnvironmentName?.trim();
   if (executionEnvironmentName) {
@@ -152,8 +162,6 @@ export async function finalizeDraft(
   } else {
     delete jobTemplate.execution_environment;
   }
-  if (!input.jobCredentialNames.length) delete jobTemplate.credentials;
-
   if (
     containsRequiredMarker(projects) ||
     containsRequiredMarker(jobTemplates)
@@ -261,8 +269,39 @@ async function remoteBranchExists(
       askpass,
     );
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    // With --exit-code, git uses status 2 specifically when no matching refs
+    // exist. Authentication, network, and other failures must remain visible.
+    if (error instanceof Error && 'code' in error && error.code === 2) {
+      return false;
+    }
+    throw error;
+  }
+}
+
+async function localCommitExists(
+  runGit: GitRunner,
+  repositoryDir: string,
+  commit: string,
+  password: string,
+  username: string,
+  askpass: string,
+): Promise<boolean> {
+  try {
+    await runGit(
+      repositoryDir,
+      ['cat-file', '-e', `${commit}^{commit}`],
+      password,
+      username,
+      askpass,
+    );
+    return true;
+  } catch (error) {
+    // cat-file exits with status 128 when the requested object is unavailable.
+    if (error instanceof Error && 'code' in error && error.code === 128) {
+      return false;
+    }
+    throw error;
   }
 }
 
@@ -400,13 +439,36 @@ export function createPublishAapConfigAction(
           sourceDir,
           askpass,
         );
-        await runGit(
+        let sourceCommitExists = await localCommitExists(
+          runGit,
           sourceDir,
-          ['fetch', '--no-tags', 'origin', input.sourceCommit],
+          input.sourceCommit,
           sourceCredentials.password,
           sourceCredentials.username,
           askpass,
         );
+        if (!sourceCommitExists) {
+          await runGit(
+            sourceDir,
+            ['fetch', '--no-tags', 'origin', sourceBranch],
+            sourceCredentials.password,
+            sourceCredentials.username,
+            askpass,
+          );
+          sourceCommitExists = await localCommitExists(
+            runGit,
+            sourceDir,
+            input.sourceCommit,
+            sourceCredentials.password,
+            sourceCredentials.username,
+            askpass,
+          );
+        }
+        if (!sourceCommitExists) {
+          throw new Error(
+            `Source commit ${input.sourceCommit} was not found on branch ${sourceBranch}`,
+          );
+        }
         await runGit(
           sourceDir,
           ['checkout', '--detach', input.sourceCommit],
@@ -458,9 +520,18 @@ export function createPublishAapConfigAction(
             destinationDir,
             askpass,
           );
+          const existingCommit = await runGit(
+            destinationDir,
+            ['rev-list', '-n', '1', '--all'],
+            destinationCredentials.password,
+            destinationCredentials.username,
+            askpass,
+          );
           await runGit(
             destinationDir,
-            ['checkout', '-B', destinationBranch],
+            existingCommit
+              ? ['checkout', '-B', destinationBranch]
+              : ['checkout', '--orphan', destinationBranch],
             destinationCredentials.password,
             destinationCredentials.username,
             askpass,
@@ -475,7 +546,7 @@ export function createPublishAapConfigAction(
           projectDirName,
           moduleDirectory,
         );
-        if (relative(destinationDir, destinationRoot).startsWith('..')) {
+        if (!isChildPath(destinationDir, destinationRoot)) {
           throw new Error('destination path escapes the destination workspace');
         }
         // The module-owned directory is replaced as a unit; everything else
