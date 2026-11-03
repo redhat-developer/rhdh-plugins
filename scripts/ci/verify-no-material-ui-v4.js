@@ -23,6 +23,7 @@
  * Checks:
  * - package.json direct dependencies across all workspaces
  * - source imports in workspaces listed in material-ui-v4-policy.json
+ *   (allowed via allowedSourcePathPrefixes or allowedSourcePaths)
  *
  * Lockfiles are not scanned because many workspaces still resolve Material UI
  * v4 transitively through Backstage dependencies.
@@ -60,6 +61,7 @@ async function loadPolicy() {
     migratedWorkspaces,
     packageJsonPaths: new Set(parsed.allowedPackageJsonPaths ?? []),
     sourcePathPrefixes: parsed.allowedSourcePathPrefixes ?? [],
+    sourcePaths: new Set(parsed.allowedSourcePaths ?? []),
   };
 }
 
@@ -69,7 +71,14 @@ function isIgnoredPath(fullPath) {
     .some(segment => IGNORED_PATH_SEGMENTS.has(segment));
 }
 
-function isAllowlistedSourcePath(relativePath, sourcePathPrefixes) {
+function isAllowlistedSourceFile(
+  relativePath,
+  sourcePaths,
+  sourcePathPrefixes,
+) {
+  if (sourcePaths.has(relativePath)) {
+    return true;
+  }
   return sourcePathPrefixes.some(prefix => relativePath.startsWith(prefix));
 }
 
@@ -216,7 +225,13 @@ async function checkSourceFiles(policy) {
         '/',
       );
 
-      if (isAllowlistedSourcePath(relativePath, policy.sourcePathPrefixes)) {
+      if (
+        isAllowlistedSourceFile(
+          relativePath,
+          policy.sourcePaths,
+          policy.sourcePathPrefixes,
+        )
+      ) {
         continue;
       }
 

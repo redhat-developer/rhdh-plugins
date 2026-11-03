@@ -9637,6 +9637,7 @@ __metadata:
     "@backstage/test-utils": "npm:^1.7.21"
     "@backstage/ui": "npm:^0.17.1"
     "@backstage/version-bridge": "npm:^1.0.12"
+    "@material-ui/core": "npm:^4.12.4"
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:5.18.0"
     "@remixicon/react": "npm:>=4.6.0 <4.9.0"
@@ -9648,8 +9649,12 @@ __metadata:
     react-use: "npm:^17.4.0"
     zod: "npm:^3.25.76 || ^4.0.0"
   peerDependencies:
+    "@material-ui/core": ^4.12.2
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.30.6
+  peerDependenciesMeta:
+    "@material-ui/core":
+      optional: true
   languageName: unknown
   linkType: soft
 
