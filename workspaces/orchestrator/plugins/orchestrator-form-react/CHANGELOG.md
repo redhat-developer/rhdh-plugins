@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.13.1
+
+### Patch Changes
+
+- dc818df: Updated dependency `prettier` to `3.9.10`.
+- Updated dependencies [dc818df]
+- Updated dependencies [f9236bd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.12.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.1
+
 ## 2.13.0
 
 ### Minor Changes
