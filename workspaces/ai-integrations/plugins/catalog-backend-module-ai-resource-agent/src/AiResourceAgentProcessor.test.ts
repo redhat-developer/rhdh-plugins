@@ -175,6 +175,58 @@ describe('AiResourceAgentProcessor', () => {
       expect(result).toEqual(entity);
     });
 
+    it('should accept agent with valid executionMode value', async () => {
+      const entity = makeAiResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+        instructions: 'Agent in sandbox.',
+        executionMode: 'sandbox',
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should accept agent without executionMode', async () => {
+      const entity = makeAiResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should reject agent with invalid executionMode value', async () => {
+      const entity = makeAiResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+        executionMode: 'invalid',
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.executionMode');
+    });
+
+    it('should reject agent with executionMode as boolean', async () => {
+      const entity = makeAiResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+        executionMode: true,
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.executionMode');
+    });
+
     it('should report multiple agent errors together', async () => {
       const entity = makeAiResource({
         type: 'agent',

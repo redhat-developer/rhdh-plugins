@@ -43,7 +43,7 @@ These are schema-layer requirements for agent authoring and tests; catalog proce
 
 The agent schema MUST allow the optional agent fields defined in this change’s `design.md` mapping table (under `spec` / `metadata`, not agent-specific annotations). Optional field membership and shapes SHALL follow that mapping rather than a divergent inventory in code.
 
-At minimum, the mapping’s optional catalog fields include: `spec.instructions`, `spec.handoffDescription`, `spec.model`, `spec.handoffs` (`string[]`), `spec.tools` (`string[]`), `spec.toolUseBehavior`, `spec.resetToolChoice`, `spec.modelSettings` (`temperature`, `maxTokens`, `toolChoice` only for v1), and `spec.outputSchema`.
+At minimum, the mapping’s optional catalog fields include: `spec.instructions`, `spec.handoffDescription`, `spec.model`, `spec.handoffs` (`string[]`), `spec.tools` (`string[]`), `spec.toolUseBehavior`, `spec.resetToolChoice`, `spec.modelSettings` (`temperature`, `maxTokens`, `toolChoice` only for v1), `spec.outputSchema`, and `spec.executionMode`.
 
 #### Scenario: Optional fields from mapping accepted
 
