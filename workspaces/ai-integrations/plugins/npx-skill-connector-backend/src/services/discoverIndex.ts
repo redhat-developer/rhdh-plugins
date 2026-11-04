@@ -18,8 +18,8 @@
  * Agent Skills v0.2 index discovery for the npx connector.
  *
  * Fetches and validates public discovery indexes, follows pagination
- * with D7 page/candidate budgets, processes only `skill-md` entries,
- * and detects duplicate names and pagination cycles.
+ * within bounded page and candidate budgets, processes only `skill-md`
+ * entries, and detects duplicate names and pagination cycles.
  *
  * @packageDocumentation
  */
@@ -29,10 +29,10 @@ import { buildNpxRef } from '@red-hat-developer-hub/backstage-plugin-ai-skills-c
 import { fetchSourceBuffer, validateRequestUrl } from './fetchSource';
 import type { NpxSourceConfig } from './types';
 
-/** Maximum number of discovery pages per refresh (design D7). */
+/** Maximum number of discovery pages to follow per refresh. */
 const MAX_PAGES = 100;
 
-/** Maximum number of candidates per refresh (design D7). */
+/** Maximum number of skill candidates to process per refresh. */
 const MAX_CANDIDATES = 1_000;
 
 /** Keep untrusted keys and diagnostics within the snapshot response budget. */
@@ -41,7 +41,7 @@ const MAX_NAME_BYTES = 1_024;
 const DISCOVERY_SCHEMA =
   'https://schemas.agentskills.io/discovery/0.2.0/schema.json';
 
-/** Total discovery deadline in milliseconds (design D7: five minutes). */
+/** Total discovery deadline in milliseconds (five minutes). */
 const DISCOVERY_DEADLINE_MS = 5 * 60 * 1_000;
 
 /**
@@ -184,9 +184,9 @@ function parseIndexPage(buffer: Buffer, indexUrl: string): IndexPage {
 /**
  * Discovers skill-md entries from an Agent Skills v0.2 index.
  *
- * Follows pagination, enforces D7 budgets (page count, candidate count,
- * and five-minute deadline), detects pagination cycles, and handles
- * duplicate entry names.
+ * Follows pagination, enforces bounded budgets (page count, candidate
+ * count, and five-minute deadline), detects pagination cycles, and
+ * handles duplicate entry names.
  *
  * Archive entries are skipped with a logged diagnostic and do not make
  * the snapshot incomplete. Malformed supported entries are counted toward
