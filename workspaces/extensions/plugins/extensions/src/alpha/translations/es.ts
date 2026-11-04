@@ -283,10 +283,14 @@ const extensionsTranslationEs = createTranslationMessages({
     'errors.unknownError': 'Error al leer el archivo de configuración. ',
     'tooltips.productionDisabled':
       'La instalación del complemento está deshabilitada en el entorno de producción.',
-    'tooltips.extensionsDisabledInstall':
-      'No se puede instalar el {{type}}. Para habilitar acciones, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
-    'tooltips.extensionsDisabledManage':
-      'No se puede gestionar el {{type}}. Para habilitar acciones, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
+    'tooltips.extensionsDisabledInstallPlugin':
+      'No se puede instalar el complemento. Para habilitar acciones, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
+    'tooltips.extensionsDisabledInstallPackage':
+      'No se puede instalar el paquete. Para habilitar acciones, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
+    'tooltips.extensionsDisabledManagePlugin':
+      'No se puede gestionar el complemento. Para habilitar acciones, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
+    'tooltips.extensionsDisabledManagePackage':
+      'No se puede gestionar el paquete. Para habilitar acciones, agregue o modifique la configuración de extensiones en su archivo de configuración de complementos dinámicos.',
     'tooltips.noPermissions':
       'No tiene permiso para instalar complementos ni ver sus configuraciones. Comuníquese con su administrador para solicitar acceso o asistencia.',
     'tooltips.missingDynamicArtifact':

@@ -282,10 +282,14 @@ const extensionsTranslationJa = createTranslationMessages({
     'errors.unknownError': '設定ファイルの読み取り中にエラーが発生しました。',
     'tooltips.productionDisabled':
       '実稼働環境ではプラグインのインストールが無効になっています。',
-    'tooltips.extensionsDisabledInstall':
-      'この {{type}} をインストールできません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
-    'tooltips.extensionsDisabledManage':
-      'この {{type}} を管理できません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'tooltips.extensionsDisabledInstallPlugin':
+      'このプラグインをインストールできません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'tooltips.extensionsDisabledInstallPackage':
+      'このパッケージをインストールできません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'tooltips.extensionsDisabledManagePlugin':
+      'このプラグインを管理できません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'tooltips.extensionsDisabledManagePackage':
+      'このパッケージを管理できません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
     'tooltips.noPermissions':
       'プラグインをインストールする権限またはその設定を表示する権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'tooltips.missingDynamicArtifact':

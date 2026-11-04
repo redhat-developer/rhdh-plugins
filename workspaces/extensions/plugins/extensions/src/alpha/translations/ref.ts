@@ -359,10 +359,14 @@ export const extensionsMessages = {
   tooltips: {
     productionDisabled:
       'Plugin installation is disabled in the production environment.',
-    extensionsDisabledInstall:
-      'Cannot install the {{type}}. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
-    extensionsDisabledManage:
-      'Cannot manage the {{type}}. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
+    extensionsDisabledInstallPlugin:
+      'Cannot install the plugin. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
+    extensionsDisabledInstallPackage:
+      'Cannot install the package. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
+    extensionsDisabledManagePlugin:
+      'Cannot manage the plugin. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
+    extensionsDisabledManagePackage:
+      'Cannot manage the package. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
     noPermissions:
       "You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.",
     missingDynamicArtifact:

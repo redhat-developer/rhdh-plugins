@@ -281,10 +281,14 @@ const extensionsTranslationDe = createTranslationMessages({
     'errors.unknownError': 'Fehler beim Lesen der Konfigurationsdatei. ',
     'tooltips.productionDisabled':
       'Die Plugin-Installation ist in der Produktionsumgebung deaktiviert.',
-    'tooltips.extensionsDisabledInstall':
-      'Dieses {{type}} kann nicht installiert werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
-    'tooltips.extensionsDisabledManage':
-      'Dieses {{type}} kann nicht verwaltet werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'tooltips.extensionsDisabledInstallPlugin':
+      'Dieses Plugin kann nicht installiert werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'tooltips.extensionsDisabledInstallPackage':
+      'Dieses Paket kann nicht installiert werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'tooltips.extensionsDisabledManagePlugin':
+      'Dieses Plugin kann nicht verwaltet werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'tooltips.extensionsDisabledManagePackage':
+      'Dieses Paket kann nicht verwaltet werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
     'tooltips.noPermissions':
       'Sie haben keine Berechtigung, Plugins zu installieren oder deren Konfigurationen anzuzeigen. Wenden Sie sich an Ihren Administrator, um Zugriff oder Unterstützung anzufordern.',
     'tooltips.missingDynamicArtifact':

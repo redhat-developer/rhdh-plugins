@@ -282,10 +282,14 @@ const extensionsTranslationFr = createTranslationMessages({
       'Erreur lors de la lecture du fichier de configuration. ',
     'tooltips.productionDisabled':
       "L'installation du plugin est désactivée dans l'environnement de production.",
-    'tooltips.extensionsDisabledInstall':
-      "Impossible d'installer le {{type}}. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.",
-    'tooltips.extensionsDisabledManage':
-      'Impossible de gérer le {{type}}. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.',
+    'tooltips.extensionsDisabledInstallPlugin':
+      "Impossible d'installer le plugin. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.",
+    'tooltips.extensionsDisabledInstallPackage':
+      "Impossible d'installer le paquet. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.",
+    'tooltips.extensionsDisabledManagePlugin':
+      'Impossible de gérer le plugin. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.',
+    'tooltips.extensionsDisabledManagePackage':
+      'Impossible de gérer le paquet. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.',
     'tooltips.noPermissions':
       "Vous n'avez pas l'autorisation d'installer des plugins ou d'afficher leurs configurations. Contactez votre administrateur pour demander un accès ou une assistance.",
     'tooltips.missingDynamicArtifact':

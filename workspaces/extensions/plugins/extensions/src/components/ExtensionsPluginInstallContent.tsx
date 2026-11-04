@@ -229,8 +229,8 @@ export const ExtensionsPluginInstallContent = ({
           [plugin.metadata.title ?? plugin.metadata.name]: isPluginInstalled(
             plugin?.spec?.installStatus,
           )
-            ? t('install.pluginUpdated')
-            : t('install.pluginInstalled'),
+            ? 'update'
+            : 'install',
         };
         setInstalledPlugins(updatedPlugins);
         // Catalog hosts BackendRestartAlert and plugin cards with Restart required.

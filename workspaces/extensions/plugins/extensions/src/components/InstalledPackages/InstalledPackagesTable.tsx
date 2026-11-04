@@ -249,6 +249,7 @@ export const InstalledPackagesTable = () => {
         const cleanedName = rawName.replace(/\s+(frontend|backend)$/i, ''); // NOSONAR
         return {
           displayName: cleanedName,
+          installationKey: rawName,
           // Show the npm package name directly from dynamic-plugins-info record
           packageName: p.name,
           parentPlugin: entity?.spec?.partOf?.[0] ?? '',

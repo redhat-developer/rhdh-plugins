@@ -21,7 +21,78 @@ import {
   useState,
 } from 'react';
 
-export type InstallationType = { [pluginName: string]: string };
+import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+
+import { extensionsTranslationRef } from '../alpha/translations';
+
+/** Structured pending restart action; display copy is derived separately. */
+export type PendingInstallationAction =
+  | 'enable'
+  | 'disable'
+  | 'install'
+  | 'update';
+
+export type InstallationType = {
+  [pluginName: string]: PendingInstallationAction;
+};
+
+/** Infer enable/disable UI state from a pending restart action. */
+export const inferEnabledFromPending = (
+  pending?: PendingInstallationAction,
+): boolean | undefined => {
+  if (pending === 'enable') {
+    return true;
+  }
+  if (pending === 'disable') {
+    return false;
+  }
+  return undefined;
+};
+
+/** Resolve a pending action by canonical key, then any alias keys. */
+export const getPendingInstallationAction = (
+  pending: InstallationType,
+  canonicalKey: string,
+  aliasKeys: readonly string[] = [],
+): PendingInstallationAction | undefined => {
+  if (canonicalKey && pending[canonicalKey]) {
+    return pending[canonicalKey];
+  }
+  for (const alias of aliasKeys) {
+    if (alias && pending[alias]) {
+      return pending[alias];
+    }
+  }
+  return undefined;
+};
+
+/** Localized label for a pending restart action (dialog / alerts). */
+export const getPendingInstallationLabel = (
+  action: PendingInstallationAction,
+  kind: 'plugin' | 'package',
+  t: TranslationFunction<typeof extensionsTranslationRef.T>,
+): string => {
+  switch (action) {
+    case 'enable':
+      return kind === 'package'
+        ? t('install.packageEnabled')
+        : t('install.pluginEnabled');
+    case 'disable':
+      return kind === 'package'
+        ? t('install.packageDisabled')
+        : t('install.pluginDisabled');
+    case 'install':
+      return t('install.pluginInstalled');
+    case 'update':
+      return kind === 'package'
+        ? t('install.packageUpdated')
+        : t('install.pluginUpdated');
+    default: {
+      const _exhaustive: never = action;
+      return _exhaustive;
+    }
+  }
+};
 
 /** Remove a pending-restart entry; returns the same object if the key is absent. */
 export const withoutInstallationEntry = (
@@ -34,6 +105,58 @@ export const withoutInstallationEntry = (
   const { [key]: _removed, ...rest } = current;
   return rest;
 };
+
+/**
+ * Canonical pending-restart key for a package — the human-readable name shown
+ * in the restart dialog (matches the Installed packages Name column).
+ */
+export const getPackageInstallationKey = (pkg: {
+  displayName?: string;
+  title?: string;
+  name?: string;
+}): string => pkg.title ?? pkg.displayName ?? pkg.name ?? '';
+
+const omitAliasKeys = (
+  current: InstallationType,
+  canonicalKey: string,
+  aliasKeys: readonly string[],
+): InstallationType => {
+  let next = current;
+  for (const alias of aliasKeys) {
+    if (alias && alias !== canonicalKey && alias in next) {
+      next = withoutInstallationEntry(next, alias);
+    }
+  }
+  return next;
+};
+
+/**
+ * Set a pending package restart under the canonical display key, dropping any
+ * alias keys (npm package name, entity name) so one package is not listed twice.
+ */
+export const withPackageInstallationEntry = (
+  current: InstallationType,
+  canonicalKey: string,
+  action: PendingInstallationAction,
+  aliasKeys: readonly string[] = [],
+): InstallationType =>
+  omitAliasKeys(
+    { ...current, [canonicalKey]: action },
+    canonicalKey,
+    aliasKeys,
+  );
+
+/** Clear a pending package restart, including any alias keys for the same package. */
+export const withoutPackageInstallationEntry = (
+  current: InstallationType,
+  canonicalKey: string,
+  aliasKeys: readonly string[] = [],
+): InstallationType =>
+  omitAliasKeys(
+    withoutInstallationEntry(current, canonicalKey),
+    canonicalKey,
+    aliasKeys,
+  );
 
 type InstallationContextType = {
   installedPlugins: InstallationType;

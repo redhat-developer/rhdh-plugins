@@ -259,10 +259,14 @@ export const getPluginActionTooltipMessage = (
     return t('tooltips.productionDisabled');
   }
   if (extensionsDisabled) {
-    const type = isPlugin ? 'plugin' : 'package';
-    return isManaged
-      ? t('tooltips.extensionsDisabledManage' as any, { type })
-      : t('tooltips.extensionsDisabledInstall' as any, { type });
+    if (isManaged) {
+      return isPlugin
+        ? t('tooltips.extensionsDisabledManagePlugin')
+        : t('tooltips.extensionsDisabledManagePackage');
+    }
+    return isPlugin
+      ? t('tooltips.extensionsDisabledInstallPlugin')
+      : t('tooltips.extensionsDisabledInstallPackage');
   }
   if (
     permissions &&

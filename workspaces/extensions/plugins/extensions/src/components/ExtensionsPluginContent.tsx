@@ -83,9 +83,14 @@ import { Links } from './Links';
 import { ActionsMenu } from './ActionsMenu';
 import { useEnablePlugin } from '../hooks/useEnablePlugin';
 import {
+  getPackageInstallationKey,
   InstallationType,
+  inferEnabledFromPending,
+  PendingInstallationAction,
   useInstallationContext,
+  withPackageInstallationEntry,
   withoutInstallationEntry,
+  withoutPackageInstallationEntry,
 } from './InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { extensionsTranslationRef } from '../alpha/translations';
@@ -302,32 +307,37 @@ export const ExtensionsPluginContent = ({
     installedPackages,
     setInstalledPackages,
   } = useInstallationContext();
-  const packages = usePluginPackages(
+  const packagesQuery = usePluginPackages(
     plugin.metadata.namespace!,
     plugin.metadata.name,
   );
+  const pluginPackages = packagesQuery.data ?? [];
 
   const pluginKey = plugin.metadata.title ?? plugin.metadata.name;
   const pendingRestarts = isPackage ? installedPackages : installedPlugins;
   const restartRequired = Boolean(pendingRestarts[pluginKey]);
 
-  const inferEnabledFromPending = (pending?: string) => {
-    if (!pending) {
-      return undefined;
+  // Backend setPluginEnabled toggles every package of the plugin; mirror that
+  // into installedPackages so the Installed packages table stays in sync.
+  const syncPackagesPendingForPlugin = (
+    current: InstallationType,
+    action: PendingInstallationAction | null,
+  ): InstallationType => {
+    let next = current;
+    for (const pkg of pluginPackages) {
+      const packageKey = getPackageInstallationKey({
+        title: pkg.metadata.title,
+        name: pkg.metadata.name,
+      });
+      const aliasKeys = [pkg.spec?.packageName, pkg.metadata.name].filter(
+        (k): k is string => Boolean(k),
+      );
+      next =
+        action === null
+          ? withoutPackageInstallationEntry(next, packageKey, aliasKeys)
+          : withPackageInstallationEntry(next, packageKey, action, aliasKeys);
     }
-    if (
-      pending === t('install.pluginDisabled') ||
-      pending === t('install.packageDisabled')
-    ) {
-      return false;
-    }
-    if (
-      pending === t('install.pluginEnabled') ||
-      pending === t('install.packageEnabled')
-    ) {
-      return true;
-    }
-    return undefined;
+    return next;
   };
 
   const baselineEnabled = useRef(
@@ -355,7 +365,6 @@ export const ExtensionsPluginContent = ({
     if (inferred !== undefined) {
       setIsPluginEnabled(inferred);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- infer via pending message + catalog status only
   }, [plugin, pluginKey, pendingRestarts]);
 
   const handleClick = (event: MouseEvent<HTMLElement>) => {
@@ -414,35 +423,49 @@ export const ExtensionsPluginContent = ({
       } else if (newValue === baselineEnabled.current) {
         // Reverted to the pre-change state — clear restart required.
         if (isPackage) {
+          const packageAliases = [
+            (plugin as ExtensionsPackage).spec?.packageName,
+            plugin.metadata.name,
+          ].filter((k): k is string => Boolean(k));
           setInstalledPackages(
-            withoutInstallationEntry(installedPackages, pluginKey),
+            withoutPackageInstallationEntry(
+              installedPackages,
+              pluginKey,
+              packageAliases,
+            ),
           );
         } else {
           setInstalledPlugins(
             withoutInstallationEntry(installedPlugins, pluginKey),
           );
+          setInstalledPackages(
+            syncPackagesPendingForPlugin(installedPackages, null),
+          );
         }
+      } else if (isPackage) {
+        const packageAliases = [
+          (plugin as ExtensionsPackage).spec?.packageName,
+          plugin.metadata.name,
+        ].filter((k): k is string => Boolean(k));
+        setInstalledPackages(
+          withPackageInstallationEntry(
+            installedPackages,
+            pluginKey,
+            previousValue ? 'disable' : 'enable',
+            packageAliases,
+          ),
+        );
       } else {
-        let message = '';
-        if (previousValue && isPackage) {
-          message = t('install.packageDisabled');
-        } else if (previousValue && !isPackage) {
-          message = t('install.pluginDisabled');
-        } else if (!previousValue && isPackage) {
-          message = t('install.packageEnabled');
-        } else {
-          message = t('install.pluginEnabled');
-        }
-
-        const updated: InstallationType = {
-          ...pendingRestarts,
-          [pluginKey]: message,
-        };
-        if (isPackage) {
-          setInstalledPackages(updated);
-        } else {
-          setInstalledPlugins(updated);
-        }
+        const action: PendingInstallationAction = previousValue
+          ? 'disable'
+          : 'enable';
+        setInstalledPlugins({
+          ...installedPlugins,
+          [pluginKey]: action,
+        });
+        setInstalledPackages(
+          syncPackagesPendingForPlugin(installedPackages, action),
+        );
       }
     } catch (err: unknown) {
       setIsPluginEnabled(previousValue);
@@ -470,7 +493,7 @@ export const ExtensionsPluginContent = ({
 
   const missingDynamicArtifact = isExtensionsPackage(plugin)
     ? !plugin.spec?.dynamicArtifact
-    : packages?.data?.some(p => !p.spec?.dynamicArtifact);
+    : pluginPackages.some(p => !p.spec?.dynamicArtifact);
 
   const pluginActionButton = () => {
     const disablePluginActions =
@@ -659,14 +682,10 @@ export const ExtensionsPluginContent = ({
     );
   };
 
-  let effectiveInstallStatus = ExtensionsPluginInstallStatus.Disabled;
-  if (isPluginEnabled) {
-    effectiveInstallStatus = ExtensionsPluginInstallStatus.Installed;
-  } else if (
-    plugin.spec?.installStatus === ExtensionsPluginInstallStatus.NotInstalled
-  ) {
-    effectiveInstallStatus = ExtensionsPluginInstallStatus.NotInstalled;
-  }
+  // Use catalog status so UpdateAvailable is not collapsed to Installed.
+  const effectiveInstallStatus =
+    (plugin.spec?.installStatus as ExtensionsPluginInstallStatus | undefined) ??
+    ExtensionsPluginInstallStatus.NotInstalled;
 
   return (
     <Content>
@@ -799,7 +818,7 @@ export const ExtensionsPluginContent = ({
             <Links entity={plugin} />
 
             {isExtensionsPlugin(plugin) && (
-              <PluginPackageTable packages={packages.data ?? []} />
+              <PluginPackageTable packages={pluginPackages} />
             )}
           </Grid>
         </Grid>

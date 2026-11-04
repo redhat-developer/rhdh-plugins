@@ -195,8 +195,10 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'tooltips.restartRequired': string;
     readonly 'tooltips.productionDisabled': string;
     readonly 'tooltips.missingDynamicArtifact': string;
-    readonly 'tooltips.extensionsDisabledInstall': string;
-    readonly 'tooltips.extensionsDisabledManage': string;
+    readonly 'tooltips.extensionsDisabledInstallPlugin': string;
+    readonly 'tooltips.extensionsDisabledInstallPackage': string;
+    readonly 'tooltips.extensionsDisabledManagePlugin': string;
+    readonly 'tooltips.extensionsDisabledManagePackage': string;
     readonly 'tooltips.noPermissions': string;
     readonly 'metadata.category': string;
     readonly 'metadata.catalogSource': string;

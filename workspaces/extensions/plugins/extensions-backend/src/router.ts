@@ -361,7 +361,7 @@ export async function createRouter(
     const initError = installationDataService.getInitializationError();
 
     // Only report installation as enabled when config allows it and the
-    // installation storage initialized successfull. Otherwise the UI would offer Edit/Disable actions that fail.
+    // installation storage initialized successfully. Otherwise the UI would offer Edit/Disable actions that fail.
     if (!isConfigEnabled || initError) {
       res.json({
         enabled: false,

@@ -72,7 +72,7 @@ const mockConfig = new MockConfigApi({});
 const PendingRestartSeeder = ({ pluginName }: { pluginName: string }) => {
   const { setInstalledPlugins } = useInstallationContext();
   useEffect(() => {
-    setInstalledPlugins({ [pluginName]: 'Plugin disabled' });
+    setInstalledPlugins({ [pluginName]: 'disable' });
   }, [pluginName, setInstalledPlugins]);
   return null;
 };

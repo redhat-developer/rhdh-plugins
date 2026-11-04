@@ -40,7 +40,19 @@ import { queryClient } from '../queryclient';
 import {
   InstallationContextProvider,
   resetInstallationStore,
+  useInstallationContext,
 } from './InstallationContext';
+
+const PackagesPendingProbe = () => {
+  const { installedPackages } = useInstallationContext();
+  return (
+    <div data-testid="packages-pending">
+      {Object.entries(installedPackages)
+        .map(([key, action]) => `${key}:${action}`)
+        .join(',')}
+    </div>
+  );
+};
 
 const mockNavigate = jest.fn();
 
@@ -384,13 +396,21 @@ describe('ExtensionsPluginContent', () => {
     };
 
     const { getByTestId, findByTestId } = renderWithProviders(
-      <ExtensionsPluginContent plugin={installedPlugin} />,
+      <>
+        <ExtensionsPluginContent plugin={installedPlugin} />
+        <PackagesPendingProbe />
+      </>,
     );
     fireEvent.click(getByTestId('plugin-actions'));
     fireEvent.click(getByTestId('disable-plugin'));
 
     expect(await findByTestId('restart-required-status')).toBeInTheDocument();
     expect(mockNavigate).not.toHaveBeenCalled();
+    // Plugin disable also mirrors pending state onto its packages for the
+    // Installed packages table.
+    expect(await findByTestId('packages-pending')).toHaveTextContent(
+      '@backstage-community/plugin-3scale-backend:disable',
+    );
   });
 
   it('clears Restart required after reverting a disable', async () => {
@@ -408,12 +428,18 @@ describe('ExtensionsPluginContent', () => {
     };
 
     const { getByTestId, findByTestId, queryByTestId } = renderWithProviders(
-      <ExtensionsPluginContent plugin={installedPlugin} />,
+      <>
+        <ExtensionsPluginContent plugin={installedPlugin} />
+        <PackagesPendingProbe />
+      </>,
     );
 
     fireEvent.click(getByTestId('plugin-actions'));
     fireEvent.click(getByTestId('disable-plugin'));
     expect(await findByTestId('restart-required-status')).toBeInTheDocument();
+    expect(await findByTestId('packages-pending')).toHaveTextContent(
+      '@backstage-community/plugin-3scale-backend:disable',
+    );
 
     await waitFor(() => {
       expect(getByTestId('plugin-actions')).toBeInTheDocument();
@@ -424,6 +450,7 @@ describe('ExtensionsPluginContent', () => {
     await waitFor(() => {
       expect(queryByTestId('restart-required-status')).not.toBeInTheDocument();
     });
+    expect(getByTestId('packages-pending')).toHaveTextContent('');
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 });
