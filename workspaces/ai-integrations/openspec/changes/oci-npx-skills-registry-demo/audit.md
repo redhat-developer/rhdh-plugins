@@ -1,3 +1,21 @@
+## Npx index discovery implementation
+
+**Last audited:** 2026-11-03T22:23:00Z
+
+Task 3.1 now covers bounded index discovery and duplicate-name handling.
+The npx specification records the 1 KiB name limit used to keep untrusted
+failed keys bounded. Task 1.4 still awaits OCI discovery-budget tests.
+Artifact verification and final snapshot publication remain tasks 3.2–3.4.
+No conflicting requirements were found.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
 ## Npx demo transport scope
 
 **Last audited:** 2026-10-30T19:11:56Z
