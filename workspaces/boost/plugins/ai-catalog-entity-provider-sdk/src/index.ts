@@ -28,7 +28,6 @@ export {
   AI_ASSET_VERSION_ANNOTATION,
   AI_ASSET_SOURCE_ANNOTATION,
   AI_ASSET_CATEGORIES,
-  AIAssetCategorySchema,
   type AIAssetCategory,
 } from './annotations';
 
@@ -38,16 +37,15 @@ export { validateAIAssetEntity } from './validateAIAssetEntity';
 
 export { AIAssetValidator } from './AIAssetValidator';
 
-export {
-  type AIAssetEntityProvider,
-  type DeltaResult,
+export type {
+  AIAssetEntityProvider,
+  DeltaResult,
 } from './AIAssetEntityProvider';
 
-export {
-  DeltaSyncManager,
-  InMemoryCursorStore,
-  type CursorState,
-  type CursorStore,
-  type ApplyDeltaOptions,
-  type DeltaSyncManagerOptions,
+export { DeltaSyncManager, InMemoryCursorStore } from './DeltaSyncManager';
+export type {
+  CursorState,
+  CursorStore,
+  ApplyDeltaOptions,
+  DeltaSyncManagerOptions,
 } from './DeltaSyncManager';

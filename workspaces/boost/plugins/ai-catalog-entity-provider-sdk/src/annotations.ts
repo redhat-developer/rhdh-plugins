@@ -40,7 +40,12 @@ export const AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source';
 /**
  * Zod schema for the allowed AI asset category values.
  *
- * @public
+ * Kept `@internal` to avoid exposing a Zod v3 type in the public API
+ * surface — a future Zod major version upgrade would otherwise be a
+ * breaking change for downstream consumers who compose with this schema.
+ * Use the {@link AIAssetCategory} string union type for public contracts.
+ *
+ * @internal
  */
 export const AIAssetCategorySchema = z.enum([
   'agent',
@@ -55,9 +60,19 @@ export const AIAssetCategorySchema = z.enum([
 /**
  * Allowed AI asset category values.
  *
+ * Defined as a plain string union so that downstream consumers are not
+ * coupled to the Zod version used internally by the SDK.
+ *
  * @public
  */
-export type AIAssetCategory = z.infer<typeof AIAssetCategorySchema>;
+export type AIAssetCategory =
+  | 'agent'
+  | 'skill'
+  | 'rule'
+  | 'skill-bundle'
+  | 'mcp-server'
+  | 'ai-model'
+  | 'model-server';
 
 /**
  * Array of all allowed AI asset category values, for display in

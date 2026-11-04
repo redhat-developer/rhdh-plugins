@@ -23,8 +23,9 @@ permission names with the Catalog `catalog.entity.read` model.
 The two installable release plugins require three supporting packages:
 `ai-catalog-common` for browser-safe taxonomy and permissions,
 `ai-catalog-connector-utils` for shared connector helpers, and
-`ai-catalog-entity-provider-sdk` for OGX entity annotations and version
-normalization. These are support dependencies, not additional dynamic plugins
+`ai-catalog-entity-provider-sdk` for OGX entity annotations, version
+normalization, entity-provider interfaces, validation utilities, and
+the delta sync framework. These are support dependencies, not additional dynamic plugins
 or additional AI Catalog release features.
 
 ## Implemented frontend (`openspec/specs/`)

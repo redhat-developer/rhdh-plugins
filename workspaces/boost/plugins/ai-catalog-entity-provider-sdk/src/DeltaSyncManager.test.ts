@@ -257,7 +257,7 @@ describe('InMemoryCursorStore', () => {
     expect(await store.get('provider-1')).toBeUndefined();
   });
 
-  it('should isolate cursors by providerId', async () => {
+  it('should isolate cursors by locationKey', async () => {
     const store = new InMemoryCursorStore();
     await store.set('provider-a', {
       cursor: 'cursor-a',

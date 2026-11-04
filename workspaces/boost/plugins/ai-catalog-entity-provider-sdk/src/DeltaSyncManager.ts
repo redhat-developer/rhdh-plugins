@@ -43,12 +43,12 @@ export interface CursorStore {
   /**
    * Retrieve the cursor state for a provider.
    *
-   * @param providerId - The unique provider identifier
-   *   (e.g. `"ogx/default"`).
+   * @param locationKey - The location key identifying the provider's
+   *   entities (e.g. `"ogx/default"`).
    * @returns The persisted cursor state, or `undefined` if no cursor
    *   has been stored (first sync or after a clear).
    */
-  get(providerId: string): Promise<CursorState | undefined>;
+  get(locationKey: string): Promise<CursorState | undefined>;
 
   /**
    * Persist a cursor state for a provider.
@@ -56,18 +56,20 @@ export interface CursorStore {
    * Called after a successful delta sync to record the cursor for
    * the next polling cycle.
    *
-   * @param providerId - The unique provider identifier.
+   * @param locationKey - The location key identifying the provider's
+   *   entities.
    * @param state - The cursor state to persist.
    */
-  set(providerId: string, state: CursorState): Promise<void>;
+  set(locationKey: string, state: CursorState): Promise<void>;
 
   /**
    * Delete the cursor for a provider, forcing a full refresh on the
    * next polling cycle.
    *
-   * @param providerId - The unique provider identifier.
+   * @param locationKey - The location key identifying the provider's
+   *   entities.
    */
-  delete(providerId: string): Promise<void>;
+  delete(locationKey: string): Promise<void>;
 }
 
 /**
@@ -257,17 +259,17 @@ export class InMemoryCursorStore implements CursorStore {
   private readonly store = new Map<string, CursorState>();
 
   /** {@inheritDoc CursorStore.get} */
-  async get(providerId: string): Promise<CursorState | undefined> {
-    return this.store.get(providerId);
+  async get(locationKey: string): Promise<CursorState | undefined> {
+    return this.store.get(locationKey);
   }
 
   /** {@inheritDoc CursorStore.set} */
-  async set(providerId: string, state: CursorState): Promise<void> {
-    this.store.set(providerId, state);
+  async set(locationKey: string, state: CursorState): Promise<void> {
+    this.store.set(locationKey, state);
   }
 
   /** {@inheritDoc CursorStore.delete} */
-  async delete(providerId: string): Promise<void> {
-    this.store.delete(providerId);
+  async delete(locationKey: string): Promise<void> {
+    this.store.delete(locationKey);
   }
 }

@@ -6,7 +6,6 @@
 import type { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import type { Entity } from '@backstage/catalog-model';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
-import { z } from 'zod';
 
 // @public
 export const AI_ASSET_CATEGORIES: readonly AIAssetCategory[];
@@ -21,20 +20,14 @@ export const AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source';
 export const AI_ASSET_VERSION_ANNOTATION = 'rhdh.io/ai-asset-version';
 
 // @public
-export type AIAssetCategory = z.infer<typeof AIAssetCategorySchema>;
-
-// @public
-export const AIAssetCategorySchema: z.ZodEnum<
-  [
-    'agent',
-    'skill',
-    'rule',
-    'skill-bundle',
-    'mcp-server',
-    'ai-model',
-    'model-server',
-  ]
->;
+export type AIAssetCategory =
+  | 'agent'
+  | 'skill'
+  | 'rule'
+  | 'skill-bundle'
+  | 'mcp-server'
+  | 'ai-model'
+  | 'model-server';
 
 // @public
 export interface AIAssetEntityProvider {
@@ -66,9 +59,9 @@ export interface CursorState {
 
 // @public
 export interface CursorStore {
-  delete(providerId: string): Promise<void>;
-  get(providerId: string): Promise<CursorState | undefined>;
-  set(providerId: string, state: CursorState): Promise<void>;
+  delete(locationKey: string): Promise<void>;
+  get(locationKey: string): Promise<CursorState | undefined>;
+  set(locationKey: string, state: CursorState): Promise<void>;
 }
 
 // @public
@@ -97,9 +90,9 @@ export interface DeltaSyncManagerOptions {
 
 // @public
 export class InMemoryCursorStore implements CursorStore {
-  delete(providerId: string): Promise<void>;
-  get(providerId: string): Promise<CursorState | undefined>;
-  set(providerId: string, state: CursorState): Promise<void>;
+  delete(locationKey: string): Promise<void>;
+  get(locationKey: string): Promise<CursorState | undefined>;
+  set(locationKey: string, state: CursorState): Promise<void>;
 }
 
 // @public
