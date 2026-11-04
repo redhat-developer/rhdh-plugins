@@ -223,7 +223,7 @@ export class VectorStoresOperator {
       );
 
       const response = await fetch(
-        `${this.baseURL}/v1/vector-stores/${vectorStoreId}`,
+        `${this.baseURL}/v1/vector-stores/${encodeURIComponent(vectorStoreId)}`,
         {
           method: 'GET',
           headers: {
@@ -256,7 +256,7 @@ export class VectorStoresOperator {
       );
 
       const response = await fetch(
-        `${this.baseURL}/v1/vector-stores/${vectorStoreId}`,
+        `${this.baseURL}/v1/vector-stores/${encodeURIComponent(vectorStoreId)}`,
         {
           method: 'PUT',
           headers: {
@@ -283,7 +283,7 @@ export class VectorStoresOperator {
       );
 
       const response = await fetch(
-        `${this.baseURL}/v1/vector-stores/${vectorStoreId}`,
+        `${this.baseURL}/v1/vector-stores/${encodeURIComponent(vectorStoreId)}`,
         {
           method: 'DELETE',
           headers: {
@@ -350,7 +350,7 @@ export class VectorStoresOperator {
         );
 
         const response = await this.fetchWithRetry(
-          `${this.baseURL}/v1/vector-stores/${vectorStoreId}/files`,
+          `${this.baseURL}/v1/vector-stores/${encodeURIComponent(vectorStoreId)}/files`,
           {
             method: 'POST',
             headers: {
@@ -382,7 +382,7 @@ export class VectorStoresOperator {
         );
 
         const response = await fetch(
-          `${this.baseURL}/v1/vector-stores/${vectorStoreId}/files`,
+          `${this.baseURL}/v1/vector-stores/${encodeURIComponent(vectorStoreId)}/files`,
           {
             method: 'GET',
             headers: {
@@ -408,7 +408,7 @@ export class VectorStoresOperator {
         );
 
         const response = await fetch(
-          `${this.baseURL}/v1/vector-stores/${vectorStoreId}/files/${fileId}`,
+          `${this.baseURL}/v1/vector-stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
           {
             method: 'GET',
             headers: {
@@ -434,7 +434,7 @@ export class VectorStoresOperator {
         );
 
         const response = await fetch(
-          `${this.baseURL}/v1/vector-stores/${vectorStoreId}/files/${fileId}`,
+          `${this.baseURL}/v1/vector-stores/${encodeURIComponent(vectorStoreId)}/files/${encodeURIComponent(fileId)}`,
           {
             method: 'DELETE',
             headers: {
@@ -522,12 +522,15 @@ export class VectorStoresOperator {
     delete: async (fileId: string): Promise<any> => {
       this.logger.debug(`VectorStoresOperator: Deleting file ${fileId}`);
 
-      const response = await fetch(`${this.baseURL}/v1/files/${fileId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${this.baseURL}/v1/files/${encodeURIComponent(fileId)}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         await handleHttpError(response, this.logger, 'delete file');
