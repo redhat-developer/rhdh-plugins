@@ -18,24 +18,29 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createLoadingSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
+import type { LoggerService } from '@backstage/backend-plugin-api';
+import {
+  boundSnapshot,
+  createFailedSnapshot,
+  createLoadingSnapshot,
+} from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { createRouter } from './router';
 import { readSourceConfigs } from './services/config';
+import { discoverIndex } from './services/discoverIndex';
+import { processArtifacts } from './services/processArtifacts';
 import type { NpxSourceConfig } from './services/types';
 
 /**
  * npxSkillConnectorPlugin backend plugin
  *
- * Registers public Agent Skills v0.2 index sources and serves their
- * initial loading snapshots via GET /skills/:sourceId.
+ * Registers public Agent Skills v0.2 index sources, discovers entries,
+ * retrieves and verifies artifacts, normalizes metadata, and serves
+ * snapshots via GET /skills/:sourceId.
  *
  * It does not create AiResource entities or mutate the catalog.
  * Public sources only; no npx execution, Git crawling, or
  * private-registry authentication.
- *
- * Index discovery is available for the later artifact retrieval and
- * snapshot publication work (tasks 3.2–3.4).
  *
  * @public
  */
@@ -47,8 +52,9 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         logger: coreServices.logger,
         config: coreServices.rootConfig,
+        scheduler: coreServices.scheduler,
       },
-      async init({ logger, httpRouter, config }) {
+      async init({ logger, httpRouter, config, scheduler }) {
         const sources: NpxSourceConfig[] = readSourceConfigs(config, logger);
         const snapshots = new Map<string, SkillSnapshot>();
 
@@ -60,6 +66,21 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
         }
 
         httpRouter.use(createRouter(snapshots));
+
+        // Schedule periodic refresh for each source
+        for (const source of sources) {
+          await scheduler.scheduleTask({
+            id: `npx-skill-connector:refresh:${source.id}`,
+            ...source.schedule,
+            fn: async (abortSignal?: AbortSignal) => {
+              const childLogger = logger.child({
+                source: source.id,
+              });
+              await refreshSource(source, snapshots, childLogger, abortSignal);
+            },
+          });
+        }
+
         logger.info(
           `npx skill connector initialized with ${sources.length} source(s)`,
         );
@@ -67,3 +88,69 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
     });
   },
 });
+
+/**
+ * Runs a single source refresh: discover, retrieve artifacts, verify,
+ * normalize, and publish the snapshot atomically.
+ */
+async function refreshSource(
+  source: NpxSourceConfig,
+  snapshots: Map<string, SkillSnapshot>,
+  logger: LoggerService,
+  abortSignal?: AbortSignal,
+): Promise<void> {
+  logger.info(`Starting refresh for source '${source.id}'`);
+
+  // Discover entries from the index
+  const discovery = await discoverIndex(source, logger, abortSignal);
+
+  if (discovery.entries.length === 0 && !discovery.complete) {
+    // Total discovery failure — no entries, incomplete
+    if (discovery.failedKeys.length === 0) {
+      snapshots.set(
+        source.id,
+        createFailedSnapshot(
+          { id: source.id, type: 'npx' },
+          new Date().toISOString(),
+        ),
+      );
+      logger.error(`Discovery failed for source '${source.id}'`);
+      return;
+    }
+  }
+
+  // Process artifacts for discovered entries
+  const processing = await processArtifacts(
+    discovery.entries,
+    source,
+    logger,
+    abortSignal,
+  );
+
+  // Combine failed keys from discovery and artifact processing
+  const allFailedKeys = [...discovery.failedKeys, ...processing.failedKeys];
+
+  // Discovery is complete only if both phases completed without failures
+  const discoveryComplete =
+    discovery.complete && processing.failedKeys.length === 0;
+
+  const observedAt = new Date().toISOString();
+
+  const snapshot = boundSnapshot({
+    source: { id: source.id, type: 'npx' },
+    records: processing.records,
+    failedSkillKeys: allFailedKeys,
+    discoveryComplete,
+    observedAt,
+  });
+
+  // Publish atomically
+  snapshots.set(source.id, snapshot);
+
+  logger.info(
+    `Refresh complete for source '${source.id}': ` +
+      `status=${snapshot.status}, ` +
+      `skills=${snapshot.skills.length}, ` +
+      `failedKeys=${snapshot.failedSkillKeys.length}`,
+  );
+}
