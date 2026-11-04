@@ -70,6 +70,7 @@ Each Jira query requires all of these gates:
 - Jira `Team`: `RHDH AI`, selected by `cf[10001]` and its Atlassian team ID.
 - Label: `fullsend` (agent opt-in).
 - Status category is not Done.
+- Updated within the past hour.
 
 Add the `fullsend` label to an eligible Jira work item before posting a
 command. `/fs-triage` does not automatically start coding; use `/fs-code`
