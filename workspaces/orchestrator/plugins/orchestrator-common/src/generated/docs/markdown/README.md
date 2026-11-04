@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost*
 | *DefaultApi* | [**abortWorkflow**](Apis/DefaultApi.md#abortworkflow) | **DELETE** /v2/workflows/instances/{instanceId}/abort | Abort a workflow instance |
 *DefaultApi* | [**executeWorkflow**](Apis/DefaultApi.md#executeworkflow) | **POST** /v2/workflows/{workflowId}/execute | Execute a workflow |
 *DefaultApi* | [**getInstanceById**](Apis/DefaultApi.md#getinstancebyid) | **GET** /v2/workflows/instances/{instanceId} | Get Workflow Instance by ID |
+*DefaultApi* | [**getInstanceInitiators**](Apis/DefaultApi.md#getinstanceinitiators) | **POST** /v2/workflows/instances/initiators | Get distinct instance initiators |
 *DefaultApi* | [**getInstances**](Apis/DefaultApi.md#getinstances) | **POST** /v2/workflows/instances | Get instances |
 *DefaultApi* | [**getWorkflowInputSchemaById**](Apis/DefaultApi.md#getworkflowinputschemabyid) | **GET** /v2/workflows/{workflowId}/inputSchema | Get the workflow input schema. It defines the input fields of the workflow |
 *DefaultApi* | [**getWorkflowInstances**](Apis/DefaultApi.md#getworkflowinstances) | **POST** /v2/workflows/{workflowId}/instances | Get instances for a specific workflow |

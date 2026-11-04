@@ -149,6 +149,18 @@ export class V2 {
     return source;
   }
 
+  public async getInstanceInitiators(
+    pagination?: Pagination,
+    filter?: Filter,
+    workflowIds?: string[],
+  ): Promise<string[]> {
+    return this.orchestratorService.fetchInstanceInitiators({
+      pagination,
+      filter,
+      workflowIds,
+    });
+  }
+
   public async getInstances(
     pagination?: Pagination,
     filter?: Filter,
@@ -160,13 +172,10 @@ export class V2 {
       workflowIds,
     });
 
-    // Fetch the instances again but without the pagination filter to get the total count.
-    const totalCount = (
-      await this.orchestratorService.fetchInstances({
-        filter,
-        workflowIds,
-      })
-    ).length;
+    const totalCount = await this.orchestratorService.countInstances({
+      filter,
+      workflowIds,
+    });
 
     const result: ProcessInstanceListResultDTO = {
       totalCount,
