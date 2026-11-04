@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.5.1
+
+### Patch Changes
+
+- c161b0e: Cap BUI dialog max-height under the global header without forcing full viewport height, so content-sized dialogs such as Scorecard data sources keep their natural size.
+- 62b3c25: Fix dark-theme error button WCAG contrast (lighter error.main for text/outlined; darker containedError fill) so axe can enforce RHDHBUGS-2242.
+- 14d7103: Fix NFS contained primary buttons (e.g. CreateButton / Register Existing API) so they match OFS: solid primary fill, correct padding, and readable contrastText when app-config overrides primary.main.
+
 ## 1.5.0
 
 ### Minor Changes
