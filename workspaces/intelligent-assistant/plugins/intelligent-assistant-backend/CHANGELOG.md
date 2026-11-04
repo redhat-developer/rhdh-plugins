@@ -1,5 +1,28 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.4.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- 8740c56: Encode conversation IDs in upstream rename URLs to preserve the authenticated user parameter.
+- 9ae48d1: Prevent notebook event logs from including potentially private conversation and document content by logging only selected event metadata.
+- 1f2b786: Reduce upstream requests for notebook document listing and status polling by separating ownership checks from document-count loading.
+- dc818df: Updated dependency `prettier` to `3.9.10`.
+- 7a92e3a: Avoid unused document-count lookups during notebook queries, uploads, and deletion. Reuse vector-store metadata during session updates while preserving document counts and embedding settings.
+- 8a76d55: Apply JSON parsing per route so queries use their configured body limit and accept attachments larger than 100 KB.
+
+  Check rate limits and permissions before parsing JSON on protected routes.
+
+- fc71da4: Skip the per-user MCP settings lookup during chat requests when no MCP servers are configured.
+- 2d55008: Ensure user-scoped Core proxy requests contain only the authenticated user ID. Match identity exemptions by GET method and exact route, allowing an optional trailing slash, and remove caller-supplied identities from exempt requests.
+- Updated dependencies [0a42ebd]
+- Updated dependencies [dc818df]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.4.0
+
 ## 5.3.10
 
 ### Patch Changes
