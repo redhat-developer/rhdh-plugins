@@ -26,6 +26,8 @@ import { QUERY_TYPES, QueryParams } from '../types/event-request';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
 import { toEndOfDayUTC, toStartOfDayUTC } from '../utils/date';
 import { TechDocsCount, TopTechDocsCount } from '../types/event';
+import { ValidationError } from '../validation/ValidationError';
+import { AuthenticationError } from '@backstage/errors';
 
 let controller: EventApiController;
 let req: Partial<Request>;
@@ -172,9 +174,10 @@ describe('trackEvents', () => {
     });
   });
 
-  it('should return 400 on failure with error message', async () => {
-    const error = new Error('Validation error') as any;
-    error.details = { fieldErrors: ['Invalid user_ref'] };
+  it('should return 400 for a validation error', async () => {
+    const error = new ValidationError('Validation error', {
+      fieldErrors: ['Invalid user_ref'],
+    });
 
     mockProcessIncomingEvents.mockRejectedValue(error);
 
@@ -185,6 +188,35 @@ describe('trackEvents', () => {
       message: 'Validation error',
       errors: ['Invalid user_ref'],
     });
+  });
+
+  it('rethrows unexpected errors for the router to handle', async () => {
+    const error = new Error('Unexpected processing failure');
+    mockProcessIncomingEvents.mockRejectedValue(error);
+
+    await expect(
+      controller.trackEvents(req as Request, res as Response),
+    ).rejects.toBe(error);
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(
+      (await mockAuditor.createEvent.mock.results[0].value).fail,
+    ).toHaveBeenCalledWith({
+      error,
+    });
+  });
+
+  it('rethrows authentication errors for the router to handle', async () => {
+    const error = new AuthenticationError('Authentication failed');
+    jest.mocked(mockHttpAuth.credentials).mockRejectedValue(error);
+
+    await expect(
+      controller.trackEvents(req as Request, res as Response),
+    ).rejects.toBe(error);
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
   });
 
   it('should not process events without user information', async () => {
@@ -320,13 +352,17 @@ describe('trackEvents', () => {
     expect(mockProcessorAddEvent.mock.calls[0][0].value).toBeUndefined();
   });
 
-  it('does not look up the catalog for other analytics events', async () => {
+  it('uses the authenticated user for non-Scaffolder events too', async () => {
     await controller.trackEvents(
       {
         body: [
           {
             ...mockEvent,
-            context: { ...mockEvent.context, userId: 'client-id' },
+            context: {
+              ...mockEvent.context,
+              userId: 'client-id',
+              userName: 'user:default/spoofed',
+            },
           },
         ],
       } as Request,

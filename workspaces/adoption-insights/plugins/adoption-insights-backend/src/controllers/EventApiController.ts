@@ -38,7 +38,11 @@ import {
   RootConfigService,
 } from '@backstage/backend-plugin-api';
 import { getLicensedUsersCount } from '../utils/config';
-import { TechDocsCount, TopTechDocsCount } from '../types/event';
+import {
+  TechDocsCount,
+  TimeSavedTotals,
+  TopTechDocsCount,
+} from '../types/event';
 import {
   buildTechDocsMetadataUrl,
   isSafeTechDocsEntitySegment,
@@ -201,9 +205,14 @@ class EventApiController {
       auditEvent.fail({
         error: error instanceof Error ? error : new Error(String(error)),
       });
-      res
-        .status(400)
-        .json({ message: error.message, errors: error.details.fieldErrors });
+      if (error instanceof ValidationError) {
+        res.status(400).json({
+          message: error.message,
+          errors: error.details.fieldErrors,
+        });
+        return;
+      }
+      throw error;
     }
   }
 
@@ -244,7 +253,10 @@ class EventApiController {
 
     db.setFilters(filters);
     db.setConfig({ licensedUsers });
-    const queryHandlers: Record<QueryType, () => Promise<Knex.QueryBuilder>> = {
+    const queryHandlers: Record<
+      QueryType,
+      () => Promise<Knex.QueryBuilder | TimeSavedTotals>
+    > = {
       total_users: () => db.getUsers(),
       active_users: () => db.getDailyUsers(),
       top_searches: () => db.getTopSearches(),

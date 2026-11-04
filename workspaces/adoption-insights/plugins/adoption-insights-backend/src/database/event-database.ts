@@ -56,10 +56,10 @@ export interface EventDatabase {
   setConfig(userConfig: UserConfig): void;
   getUsers(): Promise<Knex.QueryBuilder<TotalUsers>>;
   getDailyUsers(): Promise<Knex.QueryBuilder<DailyUsers>>;
+  getTimeSaved(): Promise<TimeSavedTotals>;
   getTopSearches(): Promise<Knex.QueryBuilder<TopSearches>>;
   getTopPluginViews(): Promise<Knex.QueryBuilder<TopPluginCount>>;
   getTopTemplates(): Promise<Knex.QueryBuilder<TopTemplatesResponse>>;
-  getTimeSaved(): Promise<Knex.QueryBuilder<TimeSavedTotals>>;
   getTopTechDocsViews(): Promise<Knex.QueryBuilder<TopTechDocsCount>>;
   getTopCatalogEntitiesViews(): Promise<
     Knex.QueryBuilder<TopCatalogEntitiesCount>

@@ -43,6 +43,13 @@ interface TemplateMetrics {
   runs: number;
   minutes: number;
 }
+
+interface TimeSavedRow {
+  minutes: number;
+  runs: number;
+  runs_with_estimate: number;
+}
+
 export interface TechDocsCount {
   site_name: string;
   kind: string;
@@ -76,7 +83,5 @@ export type TopSearches = ResponseData<DateCount[]>;
 export type TopPluginCount = ResponseWithGrouping<PluginCount[]>;
 export type TopTechDocsCount = ResponseData<TechDocsCount[]>;
 export type TopTemplatesResponse = ResponseData<TemplateMetrics[]>;
-export type TimeSavedTotals = ResponseData<
-  { minutes: number; runs: number; runs_with_estimate: number }[]
->;
+export type TimeSavedTotals = ResponseData<TimeSavedRow[]>;
 export type TopCatalogEntitiesCount = ResponseData<CatalogEntityCount[]>;

@@ -22,6 +22,7 @@ import {
   Grouping,
   ResponseData,
   ResponseWithGrouping,
+  TimeSavedTotals,
 } from '../../types/event';
 import { convertToTargetTimezone } from '../../utils/date';
 
@@ -189,8 +190,8 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     return db('events')
       .select(
         db.raw(`context->>'entityRef' AS entityref`),
-        db.raw('CAST(COUNT(*) AS INTEGER) AS runs'),
-        db.raw('COALESCE(SUM(CAST(value AS DOUBLE PRECISION)), 0) AS minutes'),
+        db.raw('CAST(COUNT(*) as INTEGER) AS runs'),
+        db.raw('COALESCE(SUM(CAST(value as DOUBLE PRECISION)), 0) AS minutes'),
       )
       .where({
         action: 'create',
@@ -275,15 +276,15 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     );
   }
 
-  async getTimeSaved(): Promise<Knex.QueryBuilder> {
+  getTimeSaved(): Promise<TimeSavedTotals> {
     this.ensureFiltersSet();
     const { start_date, end_date } = this.filters!;
     const query = this.db('events')
       .select(
-        this.db.raw('CAST(COUNT(*) AS INTEGER) AS runs'),
-        this.db.raw('CAST(COUNT(value) AS INTEGER) AS runs_with_estimate'),
+        this.db.raw('CAST(COUNT(*) as INTEGER) AS runs'),
+        this.db.raw('CAST(COUNT(value) as INTEGER) AS runs_with_estimate'),
         this.db.raw(
-          'COALESCE(SUM(CAST(value AS DOUBLE PRECISION)), 0) AS minutes',
+          'COALESCE(SUM(CAST(value as DOUBLE PRECISION)), 0) AS minutes',
         ),
       )
       .where({

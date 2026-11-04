@@ -16,9 +16,9 @@
 export const QUERY_TYPES = [
   'total_users',
   'active_users',
+  'time_saved',
   'top_plugins',
   'top_templates',
-  'time_saved',
   'top_techdocs',
   'top_searches',
   'top_catalog_entities',

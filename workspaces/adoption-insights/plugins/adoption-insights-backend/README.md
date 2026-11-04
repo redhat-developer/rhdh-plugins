@@ -153,9 +153,9 @@ For example, `GET /api/adoption-insights/events?type=top_templates&start_date=20
 { "data": [{ "minutes": 480, "runs": 10, "runs_with_estimate": 7 }] }
 ```
 
-The query requires `adoption-insights.events.read` and also supports `format=csv`. It counts `scaffolder` analytics events with action `create` and subject `Task has been created`, which are emitted when a task is created rather than when it completes. `runs` includes events with no usable estimate; those events add zero minutes and are excluded from `runs_with_estimate`.
+The query requires `adoption-insights.events.read` and also supports `format=csv`. It counts `scaffolder` analytics events with action `create` and subject `Task has been created`, which are emitted when a task is created rather than when it completes. `runs` includes events with no estimate; those events add zero minutes and are excluded from `runs_with_estimate`.
 
-For new Scaffolder create events, the backend reads the Template's `backstage.io/time-saved` annotation from the catalog as the signed-in user. The annotation is an ISO 8601 duration such as `PT8H` or `PT15M`. A missing or invalid annotation, or a failed catalog lookup, leaves the event's value empty. The submitted event value is not used for these events. The backend stores the signed-in user's entity ref as `user_ref` for newly accepted events. Historical rows are not changed when a template's annotation changes.
+For new Scaffolder create events, the backend reads the Template's `backstage.io/time-saved` annotation from the catalog as the signed-in user. The annotation is an ISO 8601 duration such as `PT8H` or `PT15M`. A missing or invalid annotation, or a failed catalog lookup, leaves the event's value empty. The submitted event value is not used for these events. The backend stores the signed-in user's entity ref as `user_ref` for every newly accepted analytics event. Historical Scaffolder create events stored minutes when an estimate was present, but those values came from the client rather than a catalog lookup. Historical rows are not changed when a template's annotation changes.
 
 ## Example Request
 
