@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 1.1.1
+
+### Patch Changes
+
+- ee2223e: Fix double scrollbars on the Extensions install/edit page so Install/Save and Cancel stay reachable without redundant scrolling.
+  Fixed the unnecessary nested scrollbar inside the YAML editor card.
+- 0a1bbff: Fix Extensions catalog filter dropdown counts getting clipped or overlapping labels when the filter column is resized.
+- cc99039: Replace the Installed Packages "View" text action with a CodeBlocks icon.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@1.1.1
+
 ## 1.1.0
 
 ### Minor Changes
