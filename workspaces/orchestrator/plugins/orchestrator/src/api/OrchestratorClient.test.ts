@@ -467,6 +467,58 @@ describe('OrchestratorClient', () => {
       await expect(promise).rejects.toThrow();
     });
   });
+  describe('listInstanceInitiators', () => {
+    it('should return distinct initiators when successful', async () => {
+      const paginationInfo: PaginationInfoDTO = {
+        offset: 0,
+        pageSize: 500,
+        orderBy: 'start',
+        orderDirection: 'DESC',
+      };
+      const mockInitiators = ['user:default/alice', 'user:default/bob'];
+      const mockResponse: AxiosResponse<string[]> = {
+        data: mockInitiators,
+        status: 200,
+        statusText: 'OK',
+        headers: {} as RawAxiosResponseHeaders,
+        config: {} as InternalAxiosRequestConfig,
+      };
+      const getInstanceInitiatorsSpy = jest.spyOn(
+        DefaultApi.prototype,
+        'getInstanceInitiators',
+      );
+      jest.spyOn(axios, 'request').mockResolvedValueOnce(mockResponse);
+
+      const result =
+        await orchestratorClient.listInstanceInitiators(paginationInfo);
+
+      expect(result.data).toEqual(mockInitiators);
+      expect(axios.request).toHaveBeenCalledWith({
+        ...getAxiosTestRequest('v2/workflows/instances/initiators'),
+        data: JSON.stringify({ paginationInfo }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...defaultAuthHeaders,
+        },
+        method: 'POST',
+      });
+      expect(getInstanceInitiatorsSpy).toHaveBeenCalledWith(
+        { paginationInfo },
+        getDefaultTestRequestConfig(),
+      );
+    });
+
+    it('should throw a ResponseError when fetching initiators fails', async () => {
+      axios.request = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('Simulated error'));
+
+      await expect(
+        orchestratorClient.listInstanceInitiators({}),
+      ).rejects.toThrow();
+    });
+  });
+
   describe('getInstance', () => {
     it('should return instance when successful', async () => {
       // Given

@@ -231,6 +231,23 @@ export class OrchestratorClient implements OrchestratorApi {
     }
   }
 
+  async listInstanceInitiators(
+    paginationInfo?: PaginationInfoDTO,
+    filters?: Filter,
+  ): Promise<AxiosResponse<string[]>> {
+    const defaultApi = await this.getDefaultAPI();
+    const reqConfigOption: AxiosRequestConfig =
+      await this.getDefaultReqConfig();
+    try {
+      return await defaultApi.getInstanceInitiators(
+        { paginationInfo, filters },
+        reqConfigOption,
+      );
+    } catch (err) {
+      throw getError(err);
+    }
+  }
+
   async getInstance(
     instanceId: string,
   ): Promise<AxiosResponse<ProcessInstanceDTO>> {
