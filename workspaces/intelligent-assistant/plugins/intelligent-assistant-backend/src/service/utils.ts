@@ -80,18 +80,42 @@ export async function handleLCSFetchError(
   response.status(fetchResponse.status).json({ error: sanitizedError });
 }
 
-export function rewriteProxyPath(path: string, userEntityRef: string): string {
-  const isSkippable = Array.from(SKIP_USER_ID_ENDPOINTS).some(endpoint =>
-    path.startsWith(endpoint),
-  );
-  if (isSkippable) {
-    return path;
+export function rewriteProxyPath(
+  path: string,
+  userEntityRef: string,
+  method: string | undefined,
+): string {
+  // Preserve encoded path segments while rewriting the query.
+  const queryIndex = path.indexOf('?');
+  let pathname = path;
+  let pathWithoutUserId = path;
+  if (queryIndex !== -1) {
+    pathname = path.slice(0, queryIndex);
+    const queryParams = new URLSearchParams(path.slice(queryIndex + 1));
+    // Global routes must also discard caller-supplied identities.
+    if (queryParams.has('user_id')) {
+      queryParams.delete('user_id');
+      const queryParamsAsString = queryParams.toString();
+      pathWithoutUserId = pathname;
+      if (queryParamsAsString) {
+        pathWithoutUserId += `?${queryParamsAsString}`;
+      }
+    }
+  }
+
+  // Express accepts an optional trailing slash, which must not prevent a global
+  // GET from matching the identity exemption.
+  if (pathname.endsWith('/')) {
+    pathname = pathname.slice(0, -1);
+  }
+  if (method === 'GET' && SKIP_USER_ID_ENDPOINTS.has(pathname)) {
+    return pathWithoutUserId;
   }
 
   const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
-  let newPath = path.includes('?')
-    ? `${path}&${userQueryParam}`
-    : `${path}?${userQueryParam}`;
+  let newPath = pathWithoutUserId.includes('?')
+    ? `${pathWithoutUserId}&${userQueryParam}`
+    : `${pathWithoutUserId}?${userQueryParam}`;
 
   if (!path.includes('history_length') && path.includes('conversation_id')) {
     const historyLengthQuery = `history_length=${DEFAULT_HISTORY_LENGTH}`;

@@ -239,7 +239,7 @@ export async function createRouter(
     changeOrigin: true,
     pathRewrite: (path, req) => {
       const userEntityRef = (req as any).userEntityRef;
-      const newPath = rewriteProxyPath(path, userEntityRef);
+      const newPath = rewriteProxyPath(path, userEntityRef, req.method);
 
       if (newPath !== path) {
         logger.info(`Rewriting path from ${path} to ${newPath}`);
