@@ -22,6 +22,11 @@
       "@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk"
     ]
   },
+  "dependencies": {
+    "@backstage/catalog-model": "^1.10.0",
+    "@backstage/plugin-catalog-node": "^2.2.4",
+    "zod": "^3.23.8"
+  },
   "devDependencies": {
     "@backstage/cli": "^0.36.5"
   },
