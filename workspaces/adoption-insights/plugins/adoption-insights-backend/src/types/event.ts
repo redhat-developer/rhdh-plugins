@@ -36,10 +36,12 @@ export interface PluginCount {
   trend_percentage: string;
 }
 
-interface EntityRefCount {
+interface TemplateMetrics {
   entityref: string;
   count: number;
-  last_used: string;
+  last_used: string | null;
+  runs: number;
+  minutes: number;
 }
 export interface TechDocsCount {
   site_name: string;
@@ -73,7 +75,7 @@ export type TotalUsers = ResponseData<TotalUser[]>;
 export type TopSearches = ResponseData<DateCount[]>;
 export type TopPluginCount = ResponseWithGrouping<PluginCount[]>;
 export type TopTechDocsCount = ResponseData<TechDocsCount[]>;
-export type TopTemplatesCount = ResponseData<EntityRefCount[]>;
+export type TopTemplatesResponse = ResponseData<TemplateMetrics[]>;
 export type TimeSavedTotals = ResponseData<
   { minutes: number; runs: number; runs_with_estimate: number }[]
 >;

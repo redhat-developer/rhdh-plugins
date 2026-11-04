@@ -40,7 +40,7 @@ describe('EventBatchProcessor', () => {
     getTimeSaved: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
     getTopSearches: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
     getTopPluginViews: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
-    getTopTemplateViews: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
+    getTopTemplates: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
     getTopTechDocsViews: jest.fn().mockReturnValue({} as Knex.QueryBuilder),
     getTopCatalogEntitiesViews: jest
       .fn()

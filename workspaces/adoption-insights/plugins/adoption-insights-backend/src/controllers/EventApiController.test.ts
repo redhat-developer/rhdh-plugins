@@ -40,7 +40,7 @@ const mockEventDb = {
   getTopSearches: jest.fn(),
   getTopPluginViews: jest.fn(),
   getTopTechDocsViews: jest.fn(),
-  getTopTemplateViews: jest.fn(),
+  getTopTemplates: jest.fn(),
   getTimeSaved: jest.fn(),
   getTopCatalogEntitiesViews: jest.fn(),
   getTechdocsMetadata: jest.fn(),
@@ -427,7 +427,7 @@ describe('GetInsights', () => {
     mockEventDb.getDailyUsers.mockResolvedValue({} as any);
     mockEventDb.getTopSearches.mockResolvedValue({} as any);
     mockEventDb.getTopPluginViews.mockResolvedValue({} as any);
-    mockEventDb.getTopTemplateViews.mockResolvedValue({} as any);
+    mockEventDb.getTopTemplates.mockResolvedValue({} as any);
     mockEventDb.getTimeSaved.mockResolvedValue({} as any);
     mockEventDb.getTopTechDocsViews.mockResolvedValue({} as any);
     mockEventDb.getTopCatalogEntitiesViews.mockResolvedValue({} as any);
@@ -448,7 +448,7 @@ describe('GetInsights', () => {
     expect(mockEventDb.getDailyUsers).toHaveBeenCalled();
     expect(mockEventDb.getTopSearches).toHaveBeenCalled();
     expect(mockEventDb.getTopPluginViews).toHaveBeenCalled();
-    expect(mockEventDb.getTopTemplateViews).toHaveBeenCalled();
+    expect(mockEventDb.getTopTemplates).toHaveBeenCalled();
     expect(mockEventDb.getTopTechDocsViews).toHaveBeenCalled();
     expect(mockEventDb.getTopCatalogEntitiesViews).toHaveBeenCalled();
   });

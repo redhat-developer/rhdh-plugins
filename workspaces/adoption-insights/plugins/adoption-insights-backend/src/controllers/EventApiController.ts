@@ -250,7 +250,7 @@ class EventApiController {
       top_searches: () => db.getTopSearches(),
       top_plugins: () => db.getTopPluginViews(),
       top_techdocs: () => db.getTopTechDocsViews(),
-      top_templates: () => db.getTopTemplateViews(),
+      top_templates: () => db.getTopTemplates(),
       time_saved: () => db.getTimeSaved(),
       top_catalog_entities: () => db.getTopCatalogEntitiesViews(),
     };

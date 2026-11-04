@@ -26,11 +26,15 @@ export const QUERY_TYPES = [
 
 export type QueryType = (typeof QUERY_TYPES)[number];
 
+export const TEMPLATE_SORT_BY = ['clicks', 'runs'] as const;
+export type TemplateSortBy = (typeof TEMPLATE_SORT_BY)[number];
+
 export interface QueryParams {
   type: QueryType;
   start_date: string;
   end_date: string;
   limit?: string;
+  sort_by?: TemplateSortBy;
   kind?: string;
   format?: string;
   licensedUsers?: number;

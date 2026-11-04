@@ -113,10 +113,37 @@ When `type=top_techdocs`, the backend may enrich each row with a TechDocs `site_
 | `type`       | string              | Yes      | Filter events by type (e.g., `total_users`, `active_users`, `top_plugins`, `top_templates`, `time_saved`, `top_techdocs`, `top_searches`, `top_catalog_entities`). |
 | `start_date` | string (YYYY-MM-DD) | Yes      | Fetch events starting from this date.                                                                                                                              |
 | `end_date`   | string (YYYY-MM-DD) | Yes      | Fetch events up to this date.                                                                                                                                      |
-| `limit`      | integer             | No       | Limit the number of events returned (default: `3`).                                                                                                                |
+| `limit`      | integer             | No       | Limit the number of rows returned (default: `3`).                                                                                                                  |
+| `sort_by`    | `clicks` or `runs`  | No       | Rank `top_templates` by clicks on the wizard's final Create button (default) or created task runs.                                                                 |
 | `kind`       | string              | No       | Filter the entities by kind.                                                                                                                                       |
 | `grouping`   | string              | No       | Group API endpoint `(active_users,top_plugins and top_searches)` response by `hourly`, `daily`, `weekly`, and `monthly`.                                           |
 | `format`     | string              | No       | Response format, either `json` (default) or `csv`.                                                                                                                 |
+
+### Top templates
+
+`GET /api/adoption-insights/events?type=top_templates&start_date=2025-03-01&end_date=2025-03-31&timezone=UTC&limit=3` returns the templates with the most clicks on the wizard's final Create button, alongside their task runs and estimated minutes saved in the same date range:
+
+```json
+{
+  "data": [
+    {
+      "entityref": "template:default/example",
+      "count": 5,
+      "last_used": "2025-03-20T10:00:00Z",
+      "runs": 3,
+      "minutes": 135.5
+    }
+  ]
+}
+```
+
+Omitting `sort_by` or setting `sort_by=clicks` keeps the existing ranking: `limit` selects the templates with the most final Create button clicks. The click event is emitted before the task creation request, so a failed submission can increase `count` without increasing `runs`. Opening a template card emits a different event and does not increase `count`. The click filter matches the exact label `Create`; a customized button label is not included.
+
+Set `sort_by=runs` to select the templates with the most Scaffolder tasks created in the date range. The `count` and `last_used` fields always describe matching final Create button clicks. A task creation event with no matching `Create` click can appear in the runs ranking with `count: 0` and `last_used: null`.
+
+`runs` includes task creation events without an estimate. `minutes` sums the estimates stored on those events; a run without an estimate adds zero minutes. Templates with clicks but no task runs return zero for both new fields. Editing the template annotation later does not change minutes already stored for earlier runs.
+
+For example, `GET /api/adoption-insights/events?type=top_templates&start_date=2025-03-01&end_date=2025-03-31&timezone=UTC&sort_by=runs&limit=3` returns the three most-run templates. Both sort modes also support `format=csv`.
 
 ### Estimated time saved
 
