@@ -263,16 +263,15 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
         ? this.buildTopTemplatesByRunsQuery(dateRange, rowLimit)
         : this.buildTopTemplatesByClicksQuery(dateRange, rowLimit);
 
-    return query.then(data =>
-      this.getResponseData(
-        data.map((row: Record<string, unknown>) => ({
-          ...row,
-          count: Number(row.count),
-          runs: Number(row.runs),
-          minutes: Number(row.minutes),
-        })),
-        'last_used',
-      ),
+    const data = await query;
+    return this.getResponseData(
+      data.map((row: Record<string, unknown>) => ({
+        ...row,
+        count: Number(row.count),
+        runs: Number(row.runs),
+        minutes: Number(row.minutes),
+      })),
+      'last_used',
     );
   }
 
@@ -294,14 +293,13 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
       })
       .whereBetween('created_at', [start_date, end_date]);
 
-    return query.then(rows =>
-      this.getResponseData(
-        rows.map(row => ({
-          minutes: Number(row.minutes),
-          runs: Number(row.runs),
-          runs_with_estimate: Number(row.runs_with_estimate),
-        })),
-      ),
+    const rows = await query;
+    return this.getResponseData(
+      rows.map(row => ({
+        minutes: Number(row.minutes),
+        runs: Number(row.runs),
+        runs_with_estimate: Number(row.runs_with_estimate),
+      })),
     );
   }
 
