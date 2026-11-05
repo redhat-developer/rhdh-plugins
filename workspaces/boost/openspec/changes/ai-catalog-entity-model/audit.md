@@ -33,3 +33,25 @@
 - **[B] proposal.md:37** — Updated "five defined values" → "seven defined values" and added `rule`, `skill-bundle` to match design.md D1 and implementation.
 - **[D] proposal.md:92-96** — Updated Impact section paths: `plugins/boost-entity-provider-sdk/` (was `plugins/boost-backend/src/entity-provider-sdk/`), `AIAssetValidator.ts` path, `kagenti-entity-provider` and `ogx-entity-provider` (was `boost-backend-module-kagenti/llamastack`).
 - **[G] annotation-scheme/spec.md:21-27** — Split combined "Missing or invalid category rejected" scenario into two: "Missing category rejected" (uses `"Invalid or missing …"` message) and "Invalid category rejected with value shown" (uses `"Invalid … value 'foo'. Allowed: …"` message), matching entity-provider-sdk spec and implementation.
+
+### Recovery follow-up, 2026-11-05 (limited check)
+
+The delta-sync cursor-store scenario's example now names `locationKey`, matching
+the `CursorStore` parameter and the scenario's existing storage-key requirement.
+This terminology correction does not change cursor behavior or resolve the
+conceptual `DeltaSyncCursor.providerId` design. The full audit timestamp and
+findings above remain historical; broader reconciliation belongs to RHIDP-18761.
+
+The shared-validator missing-category scenario now includes the allowed-values
+suffix emitted by `validateAIAssetEntity`, matching the companion annotation
+scenario. This records the diagnostic correction without changing annotation
+policy, categories, or the broader SDK design. The recovered processor methods
+also have descriptive public documentation; regenerated declarations retain both
+methods.
+
+The rejected-category diagnostics now escape Unicode control characters and
+line/paragraph separators as literal `\uXXXX` sequences in both validators.
+Validation still uses the original value. Regression cases cover newline, tab,
+terminal escape, NUL, carriage return, DEL, C1, Unicode separators, and a control
+character embedded in an otherwise valid category. Missing-category assertions
+also compare the complete error message, including the allowed-values hint.

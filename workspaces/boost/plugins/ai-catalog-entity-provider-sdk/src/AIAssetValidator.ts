@@ -16,6 +16,7 @@
 
 import type { Entity } from '@backstage/catalog-model';
 import type { CatalogProcessor } from '@backstage/plugin-catalog-node';
+import { escapeDiagnosticValue } from './escapeDiagnosticValue';
 import {
   AI_ASSET_CATEGORY_ANNOTATION,
   AI_ASSET_VERSION_ANNOTATION,
@@ -62,12 +63,23 @@ function hasAnyAIAssetAnnotation(entity: Entity): boolean {
  * @public
  */
 export class AIAssetValidator implements CatalogProcessor {
-  /** @internal */
+  /**
+   * Return the processor name used in catalog diagnostics.
+   *
+   * @public
+   */
   getProcessorName(): string {
     return 'AIAssetValidator';
   }
 
-  /** @internal */
+  /**
+   * Validate required annotations on entities carrying AI asset metadata.
+   *
+   * @returns Always false after successful annotation validation so another
+   * processor remains responsible for validating the entity kind.
+   * @throws Error if a required AI asset annotation is missing or invalid.
+   * @public
+   */
   async validateEntityKind(entity: Entity): Promise<boolean> {
     // Only intercept entities carrying AI asset annotations.
     // Return false for non-AI-asset entities so the next processor
@@ -89,7 +101,7 @@ export class AIAssetValidator implements CatalogProcessor {
     const parsed = AIAssetCategorySchema.safeParse(category);
     if (!parsed.success) {
       throw new Error(
-        `Invalid ${AI_ASSET_CATEGORY_ANNOTATION} value '${category}'. ` +
+        `Invalid ${AI_ASSET_CATEGORY_ANNOTATION} value '${escapeDiagnosticValue(category)}'. ` +
           `Allowed: ${AI_ASSET_CATEGORIES.join(', ')}`,
       );
     }

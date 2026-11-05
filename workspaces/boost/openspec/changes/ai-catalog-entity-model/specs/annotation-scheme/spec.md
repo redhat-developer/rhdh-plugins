@@ -33,6 +33,12 @@ The vocabulary includes `rule` and `skill-bundle` in addition to the original fi
 - **AND** the entity does NOT appear in the catalog
 - **AND** the error is logged with entity identifier and source registry
 
+#### Scenario: Invalid category diagnostics do not carry control characters
+
+- **WHEN** an AI-annotated entity has category `ag` followed by a line feed and `ent`
+- **THEN** the CatalogProcessor validator rejects the original value
+- **AND** its error displays the category as `ag\u000aent`, with a literal backslash escape instead of a line feed
+
 #### Scenario: All entity providers populate category annotation (RHIDP-15255)
 
 - **WHEN** the Kagenti entity provider emits an agent entity

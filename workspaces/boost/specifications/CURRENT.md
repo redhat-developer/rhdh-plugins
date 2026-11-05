@@ -27,6 +27,26 @@ The two installable release plugins require three supporting packages:
 normalization. These are support dependencies, not additional dynamic plugins
 or additional AI Catalog release features.
 
+## RHDH 2.2 SDK recovery and planning references
+
+[RHIDP-18760](https://redhat.atlassian.net/browse/RHIDP-18760) recovers reusable
+SDK interfaces, validators, delta helpers, and documentation from the archive
+for subsequent 2.2 reconciliation. This recovery does not expand the 2.1 release
+boundary above or activate the restored helpers in live providers. See the
+[recovery manifest](RHIDP-18760-recovery-manifest.md) for provenance, preserved
+files, exclusions, and the follow-on scope.
+
+These recovered documents are follow-on planning references:
+
+- [AI asset upstream migration design](ai-asset-upstream-migration-design.md)
+  points to the canonical migration plan.
+- [Annotation specification](annotation-specification.md) preserves the prior
+  mapping and annotation design for reconciliation.
+
+Their historical category and mapping statements do not establish current
+minimum requirements. The `ai-catalog-entity-model` change remains follow-on
+planning, as recorded in the status table below.
+
 ## Implemented frontend (`openspec/specs/`)
 
 Archived from `ai-catalog-frontend` (snapshot:

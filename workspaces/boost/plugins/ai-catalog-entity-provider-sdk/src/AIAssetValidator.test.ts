@@ -99,7 +99,9 @@ describe('AIAssetValidator', () => {
         'rhdh.io/ai-asset-source': 'kagenti/default',
       });
       await expect(validator.validateEntityKind(entity)).rejects.toThrow(
-        'Invalid or missing rhdh.io/ai-asset-category annotation',
+        new Error(
+          'Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server',
+        ),
       );
     });
 
@@ -123,6 +125,38 @@ describe('AIAssetValidator', () => {
         'Invalid or missing rhdh.io/ai-asset-version annotation',
       );
     });
+
+    it.each([
+      {
+        name: 'newline, tab, and terminal escape',
+        category: 'agent\nFORGED\t\u001b[31m',
+        escaped: 'agent\\u000aFORGED\\u0009\\u001b[31m',
+      },
+      {
+        name: 'NUL, carriage return, DEL, C1, and Unicode line separators',
+        category: '\u0000bad\r\u007f\u0085\u2028\u2029',
+        escaped: '\\u0000bad\\u000d\\u007f\\u0085\\u2028\\u2029',
+      },
+      {
+        name: 'control character inside an otherwise valid category',
+        category: 'ag\nent',
+        escaped: 'ag\\u000aent',
+      },
+    ])(
+      'escapes $name in a rejected category diagnostic',
+      async ({ category, escaped }) => {
+        const entity = makeEntity({
+          'rhdh.io/ai-asset-category': category,
+          'rhdh.io/ai-asset-version': '1.0.0',
+          'rhdh.io/ai-asset-source': 'kagenti/default',
+        });
+        await expect(validator.validateEntityKind(entity)).rejects.toThrow(
+          new Error(
+            `Invalid rhdh.io/ai-asset-category value '${escaped}'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`,
+          ),
+        );
+      },
+    );
 
     it('rejects entities with missing source', async () => {
       const entity = makeEntity({

@@ -35,7 +35,7 @@ Sync cursors MUST be persisted across polling cycles so providers can resume inc
 #### Scenario: Cursor persisted after successful delta sync (RHIDP-15262)
 
 - **WHEN** a delta sync completes successfully with `nextCursor: 'etag-abc123'`
-- **THEN** the cursor is persisted via the configured `CursorStore`, keyed by the manager's construction-time `locationKey`, as a `CursorState`: `{ cursor: 'etag-abc123', lastSyncTimestamp: '2026-07-08T10:00:00Z' }` (e.g. for `providerId: 'ogx/default'`)
+- **THEN** the cursor is persisted via the configured `CursorStore`, keyed by the manager's construction-time `locationKey`, as a `CursorState`: `{ cursor: 'etag-abc123', lastSyncTimestamp: '2026-07-08T10:00:00Z' }` (e.g. for `locationKey: 'ogx/default'`)
 - **AND** on the next polling cycle, the provider reads the cursor and passes it to the connector's delta API
 
 #### Scenario: Cursor retrieved on next poll (RHIDP-15262)
