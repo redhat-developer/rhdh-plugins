@@ -1,6 +1,7 @@
 name: CI Create Workspace
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'package.json'
