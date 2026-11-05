@@ -15,7 +15,7 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import yaml from 'js-yaml';
 import { Entity } from '@backstage/catalog-model';
 import { JsonFileData } from '../types';
@@ -56,7 +56,7 @@ export const findTopmostFolder = (
 export const readYamlFiles = <T extends Entity>(
   folderPath: string,
 ): JsonFileData<T>[] => {
-  const yamlFiles = glob.sync(path.join(folderPath, '**/*.@(yaml|yml)'));
+  const yamlFiles = globSync(path.join(folderPath, '**/*.@(yaml|yml)'));
   const jsonFiles: JsonFileData<T>[] = [];
 
   yamlFiles.forEach(filePath => {
