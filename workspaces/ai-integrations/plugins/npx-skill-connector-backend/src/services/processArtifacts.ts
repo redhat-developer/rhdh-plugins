@@ -42,7 +42,7 @@ import type { DiscoveredEntry } from './discoverIndex';
 import { fetchSourceBuffer } from './fetchSource';
 import type { NpxSourceConfig } from './types';
 
-/** Maximum concurrent artifact operations per source per D7. */
+/** Maximum concurrent artifact operations per source. */
 const MAX_CONCURRENCY = 4;
 
 /**
@@ -74,7 +74,7 @@ export function parseMarkdownFrontmatter(
     throw new TypeError('Frontmatter has no closing delimiter');
   const content = lines.slice(1, closing).join('\n');
   if (!content.trim()) return {};
-  const doc: unknown = parseYaml(content);
+  const doc: unknown = parseYaml(content, { maxAliasCount: 0, schema: 'core' });
   if (!doc || typeof doc !== 'object' || Array.isArray(doc)) {
     throw new TypeError('Frontmatter must be a YAML object');
   }
@@ -101,12 +101,17 @@ async function processSingleEntry(
   entry: DiscoveredEntry,
   source: NpxSourceConfig,
   logger: LoggerService,
-  signal?: AbortSignal,
+  parentSignal?: AbortSignal,
 ): Promise<NpxSkillRecord | null> {
   // Fetch the artifact bytes through the configured safe transport
   let buffer: Buffer;
   try {
-    buffer = await fetchSourceBuffer(entry.url, source, 'artifact', signal);
+    buffer = await fetchSourceBuffer(
+      entry.url,
+      source,
+      'artifact',
+      parentSignal,
+    );
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Unknown error';
     logger.warn(
@@ -158,7 +163,7 @@ async function processSingleEntry(
     digest: entry.digest,
   };
 
-  // Normalize using the shared D3 normalizer
+  // Normalize using the shared metadata normalizer
   const { record, diagnostics } = normalizeNpxMetadata(
     {
       entry: {
@@ -193,8 +198,7 @@ async function processSingleEntry(
  * Each entry is fetched, verified, parsed, and normalized independently.
  * One bad entry never suppresses valid records.
  *
- * Concurrency is capped at four concurrent artifact operations per source
- * per design D7.
+ * Concurrency is capped at four concurrent artifact operations per source.
  */
 export async function processArtifacts(
   entries: DiscoveredEntry[],

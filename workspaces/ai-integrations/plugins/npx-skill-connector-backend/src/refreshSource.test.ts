@@ -17,7 +17,7 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { createLoadingSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
-import type { NpxSourceConfig } from './services/types';
+import { createMockLogger, testSource as source } from './testUtils';
 
 // jest.mock factories run before variable declarations, so use inline jest.fn()
 jest.mock('./services/discoverIndex', () => ({
@@ -30,34 +30,11 @@ jest.mock('./services/processArtifacts', () => ({
 
 // Import after mocks are set up
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { refreshSource } = require('./plugin');
+const { refreshSource } = require('./services/refreshSource');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { discoverIndex } = require('./services/discoverIndex');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { processArtifacts } = require('./services/processArtifacts');
-
-/** Minimal mock logger. */
-function createMockLogger(): LoggerService {
-  return {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    child: jest.fn().mockReturnThis(),
-  } as unknown as LoggerService;
-}
-
-/** Default source config for tests. */
-const source: NpxSourceConfig = {
-  id: 'test-source',
-  indexUrl: 'https://skills.example.com/index.json',
-  schedule: {
-    frequency: { minutes: 10 },
-    timeout: { minutes: 10 },
-    initialDelay: { seconds: 0 },
-    scope: 'local',
-  },
-};
 
 describe('refreshSource', () => {
   let snapshots: Map<string, SkillSnapshot>;

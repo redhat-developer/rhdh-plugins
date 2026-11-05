@@ -16,37 +16,14 @@
 
 import { createHash } from 'crypto';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import { createMockLogger, testSource as source } from '../testUtils';
 import type { DiscoveredEntry } from './discoverIndex';
 import { parseMarkdownFrontmatter, processArtifacts } from './processArtifacts';
-import type { NpxSourceConfig } from './types';
-
-/** Minimal mock logger. */
-function createMockLogger(): LoggerService {
-  return {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    child: jest.fn().mockReturnThis(),
-  } as unknown as LoggerService;
-}
 
 /** Compute a valid sha256 digest for a buffer. */
 function sha256(data: Buffer): string {
   return `sha256:${createHash('sha256').update(data).digest('hex')}`;
 }
-
-/** Default source config for tests. */
-const source: NpxSourceConfig = {
-  id: 'test-source',
-  indexUrl: 'https://skills.example.com/index.json',
-  schedule: {
-    frequency: { minutes: 10 },
-    timeout: { minutes: 10 },
-    initialDelay: { seconds: 0 },
-    scope: 'local',
-  },
-};
 
 /** A skill Markdown document with full frontmatter. */
 const fullFrontmatter = `---
@@ -335,7 +312,7 @@ digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     );
   });
 
-  it('uses frontmatter name with D3 precedence over entry name', async () => {
+  it('uses frontmatter name over entry name', async () => {
     const content = `---
 name: Frontmatter Display Name
 ---
@@ -348,7 +325,7 @@ name: Frontmatter Display Name
     const result = await processArtifacts([entry], source, logger);
 
     expect(result.records).toHaveLength(1);
-    // D3: frontmatter name has higher precedence than entry name
+    // Frontmatter name takes precedence over entry name
     expect(result.records[0].name).toBe('Frontmatter Display Name');
     // But key always comes from entry.name
     expect(result.records[0].key).toBe('entry-key');
@@ -370,7 +347,7 @@ description: A skill without a name in frontmatter
     const result = await processArtifacts([entry], source, logger);
 
     expect(result.records).toHaveLength(1);
-    // D3: falls back to entry name
+    // Falls back to entry name when frontmatter has no name
     expect(result.records[0].name).toBe('fallback-name');
   });
 
@@ -406,7 +383,7 @@ description: Frontmatter description
     const result = await processArtifacts([entry], source, logger);
 
     expect(result.records).toHaveLength(1);
-    // D3: frontmatter description has higher precedence
+    // Frontmatter description takes precedence over index description
     expect(result.records[0].description).toBe('Frontmatter description');
   });
 
@@ -463,7 +440,7 @@ version: '1.0.0'
     const result = await processArtifacts([entry], source, logger);
 
     expect(result.records).toHaveLength(1);
-    // D3: metadata.version takes precedence over top-level version
+    // metadata.version takes precedence over top-level version
     expect(result.records[0].version).toBe('2.0.0');
   });
 

@@ -15,31 +15,8 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import { createMockLogger, testSource as source } from '../testUtils';
 import { discoverIndex } from './discoverIndex';
-import type { NpxSourceConfig } from './types';
-
-/** Minimal mock logger. */
-function createMockLogger(): LoggerService {
-  return {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    child: jest.fn().mockReturnThis(),
-  } as unknown as LoggerService;
-}
-
-/** Default source config for tests. */
-const source: NpxSourceConfig = {
-  id: 'test-source',
-  indexUrl: 'https://skills.example.com/index.json',
-  schedule: {
-    frequency: { minutes: 10 },
-    timeout: { minutes: 10 },
-    initialDelay: { seconds: 0 },
-    scope: 'local',
-  },
-};
 
 /** Helper to build a JSON response for an index page. */
 function indexPage(entries: unknown[], next?: string): Response {
