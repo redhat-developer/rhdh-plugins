@@ -31,6 +31,9 @@ import { discoverIndex } from './services/discoverIndex';
 import { processArtifacts } from './services/processArtifacts';
 import type { NpxSourceConfig } from './services/types';
 
+/** Maximum duration for a source refresh, including artifact processing. */
+const REFRESH_DEADLINE_MS = 5 * 60 * 1_000;
+
 /**
  * npxSkillConnectorPlugin backend plugin
  *
@@ -104,13 +107,17 @@ export async function refreshSource(
   abortSignal?: AbortSignal,
 ): Promise<void> {
   logger.info(`Starting refresh for source '${source.id}'`);
+  const deadlineSignal = AbortSignal.timeout(REFRESH_DEADLINE_MS);
+  const signal = abortSignal
+    ? AbortSignal.any([abortSignal, deadlineSignal])
+    : deadlineSignal;
 
   try {
     // Discover entries from the index
-    const discovery = await discoverIndex(source, logger, abortSignal);
+    const discovery = await discoverIndex(source, logger, signal);
 
-    if (discovery.entries.length === 0 && !discovery.complete) {
-      // Total discovery failure — no entries, incomplete
+    if (!discovery.hasUsablePage) {
+      // No index page could be parsed, so there is no usable discovery result
       snapshots.set(
         source.id,
         createFailedSnapshot(
@@ -127,7 +134,7 @@ export async function refreshSource(
       discovery.entries,
       source,
       logger,
-      abortSignal,
+      signal,
     );
 
     // Combine failed keys from discovery and artifact processing
@@ -135,7 +142,9 @@ export async function refreshSource(
 
     // Discovery is complete only if both phases completed without failures
     const discoveryComplete =
-      discovery.complete && processing.failedKeys.length === 0;
+      discovery.complete &&
+      processing.failedKeys.length === 0 &&
+      !signal.aborted;
 
     const observedAt = new Date().toISOString();
 

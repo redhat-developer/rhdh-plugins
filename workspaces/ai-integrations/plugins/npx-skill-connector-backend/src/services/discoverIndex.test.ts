@@ -93,6 +93,7 @@ describe('discoverIndex', () => {
     const result = await discoverIndex(source, logger);
 
     expect(result.complete).toBe(true);
+    expect(result.hasUsablePage).toBe(true);
     expect(result.failedKeys).toEqual([]);
     expect(result.entries).toHaveLength(2);
     expect(result.entries[0].name).toBe('skill-a');
@@ -693,6 +694,7 @@ describe('discoverIndex', () => {
     expect(result).toEqual({
       entries: [],
       failedKeys: ['signed-skill'],
+      hasUsablePage: true,
       complete: false,
     });
   });
@@ -738,6 +740,7 @@ describe('discoverIndex', () => {
       expect(result).toEqual({
         entries: [],
         failedKeys: ['duplicate'],
+        hasUsablePage: true,
         complete: false,
       });
     },
@@ -776,6 +779,23 @@ describe('discoverIndex', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('retains a usable empty page when the next page fails', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        indexPage([], 'https://skills.example.com/index.json?page=2'),
+      )
+      .mockRejectedValueOnce(new Error('Network timeout'));
+
+    const result = await discoverIndex(source, logger);
+
+    expect(result).toEqual({
+      entries: [],
+      failedKeys: [],
+      hasUsablePage: true,
+      complete: false,
+    });
+  });
+
   it('rejects oversized names without retaining them as failed keys', async () => {
     fetchMock.mockResolvedValue(
       indexPage([
@@ -791,6 +811,7 @@ describe('discoverIndex', () => {
     expect(await discoverIndex(source, logger)).toEqual({
       entries: [],
       failedKeys: [],
+      hasUsablePage: true,
       complete: false,
     });
   });
@@ -825,6 +846,7 @@ describe('discoverIndex', () => {
       expect(await discoverIndex(source, logger)).toEqual({
         entries: [],
         failedKeys: [],
+        hasUsablePage: false,
         complete: false,
       });
     },
@@ -900,6 +922,7 @@ describe('discoverIndex', () => {
     expect(await discoverIndex(source, logger)).toEqual({
       entries: [],
       failedKeys: ['long-description'],
+      hasUsablePage: true,
       complete: false,
     });
   });

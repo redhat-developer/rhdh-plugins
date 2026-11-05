@@ -73,10 +73,13 @@ describe('refreshSource', () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => jest.restoreAllMocks());
+
   it('publishes a failed snapshot on total discovery failure', async () => {
     discoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: [],
+      hasUsablePage: false,
       complete: false,
     });
 
@@ -102,6 +105,7 @@ describe('refreshSource', () => {
         },
       ],
       failedKeys: ['discovery-fail'],
+      hasUsablePage: true,
       complete: false,
     });
 
@@ -139,6 +143,7 @@ describe('refreshSource', () => {
         },
       ],
       failedKeys: [],
+      hasUsablePage: true,
       complete: true,
     });
 
@@ -192,6 +197,7 @@ describe('refreshSource', () => {
         },
       ],
       failedKeys: [],
+      hasUsablePage: true,
       complete: true,
     });
 
@@ -208,19 +214,81 @@ describe('refreshSource', () => {
     );
   });
 
-  it('publishes a failed snapshot for discovery with failed keys but no entries', async () => {
+  it('publishes a partial snapshot with known failures and no valid entries', async () => {
     discoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: ['bad-entry-1', 'bad-entry-2'],
+      hasUsablePage: true,
       complete: false,
     });
+    processArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
 
     await refreshSource(source, snapshots, logger);
 
     const snapshot = snapshots.get(source.id)!;
-    // Zero entries with incomplete discovery is always a failure,
-    // even when failed keys are present
-    expect(snapshot.status).toBe('failed');
-    expect(processArtifacts).not.toHaveBeenCalled();
+    expect(snapshot.status).toBe('partial');
+    expect(snapshot.skills).toEqual([]);
+    expect(snapshot.failedSkillKeys).toEqual(['bad-entry-1', 'bad-entry-2']);
+  });
+
+  it('publishes a partial snapshot when a later page fails without known keys', async () => {
+    discoverIndex.mockResolvedValue({
+      entries: [],
+      failedKeys: [],
+      hasUsablePage: true,
+      complete: false,
+    });
+    processArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
+
+    await refreshSource(source, snapshots, logger);
+
+    expect(snapshots.get(source.id)).toMatchObject({
+      status: 'partial',
+      skills: [],
+      failedSkillKeys: [],
+    });
+  });
+
+  it('publishes a ready snapshot for a complete empty index', async () => {
+    discoverIndex.mockResolvedValue({
+      entries: [],
+      failedKeys: [],
+      hasUsablePage: true,
+      complete: true,
+    });
+    processArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
+
+    await refreshSource(source, snapshots, logger);
+
+    expect(snapshots.get(source.id)).toMatchObject({
+      status: 'ready',
+      skills: [],
+      failedSkillKeys: [],
+    });
+  });
+
+  it('shares the five-minute deadline across both phases', async () => {
+    const deadline = new AbortController();
+    const timeoutSpy = jest
+      .spyOn(AbortSignal, 'timeout')
+      .mockReturnValue(deadline.signal);
+    discoverIndex.mockResolvedValue({
+      entries: [],
+      failedKeys: [],
+      hasUsablePage: true,
+      complete: true,
+    });
+    processArtifacts.mockImplementation(async () => {
+      deadline.abort();
+      return { records: [], failedKeys: [] };
+    });
+
+    await refreshSource(source, snapshots, logger);
+
+    expect(timeoutSpy).toHaveBeenCalledWith(5 * 60 * 1_000);
+    expect(processArtifacts.mock.calls[0][3]).toBe(
+      discoverIndex.mock.calls[0][2],
+    );
+    expect(snapshots.get(source.id)?.status).toBe('partial');
   });
 });

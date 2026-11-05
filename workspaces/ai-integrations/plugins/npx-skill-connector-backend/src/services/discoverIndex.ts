@@ -88,6 +88,8 @@ export interface DiscoveryResult {
   entries: DiscoveredEntry[];
   /** Stable keys of entries that failed processing (duplicates, etc.). */
   failedKeys: string[];
+  /** Whether at least one index page was fetched and parsed successfully. */
+  hasUsablePage: boolean;
   /** Whether discovery completed without failures, limits, or cycles. */
   complete: boolean;
 }
@@ -437,6 +439,7 @@ export async function discoverIndex(
   return {
     entries,
     failedKeys: sortedFailedKeys,
+    hasUsablePage: pageCount > 0,
     complete,
   };
 }
