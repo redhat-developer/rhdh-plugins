@@ -58,7 +58,7 @@ The SDK MUST be published as an installable npm package with shared validation u
 #### Scenario: Shared validation rejects invalid entities (RHIDP-15260)
 
 - **WHEN** `validateAIAssetEntity(entity)` is called with an entity missing `rhdh.io/ai-asset-category`
-- **THEN** it throws: `Error: Invalid or missing rhdh.io/ai-asset-category annotation`
+- **THEN** it throws: `Error: Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
 - **AND** **WHEN** called with an entity having `rhdh.io/ai-asset-category: invalid-value`
 - **THEN** it throws: `Error: Invalid rhdh.io/ai-asset-category value 'invalid-value'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
 

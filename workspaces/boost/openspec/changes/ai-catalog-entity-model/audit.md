@@ -41,3 +41,10 @@ the `CursorStore` parameter and the scenario's existing storage-key requirement.
 This terminology correction does not change cursor behavior or resolve the
 conceptual `DeltaSyncCursor.providerId` design. The full audit timestamp and
 findings above remain historical; broader reconciliation belongs to RHIDP-18761.
+
+The shared-validator missing-category scenario now includes the allowed-values
+suffix emitted by `validateAIAssetEntity`, matching the companion annotation
+scenario. This records the diagnostic correction without changing annotation
+policy, categories, or the broader SDK design. The recovered processor methods
+also have descriptive public documentation; regenerated declarations retain both
+methods.

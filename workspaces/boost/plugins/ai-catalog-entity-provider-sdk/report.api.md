@@ -40,9 +40,7 @@ export interface AIAssetEntityProvider {
 
 // @public
 export class AIAssetValidator implements CatalogProcessor {
-  // (undocumented)
   getProcessorName(): string;
-  // (undocumented)
   validateEntityKind(entity: Entity): Promise<boolean>;
 }
 

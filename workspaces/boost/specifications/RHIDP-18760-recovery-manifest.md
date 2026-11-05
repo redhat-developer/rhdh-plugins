@@ -19,6 +19,21 @@ that those decisions are settled.
 The additive public exports have a minor changeset. Package publication remains
 part of the separate repository release workflow.
 
+### Publication prerequisite for the expanded SDK surface
+
+Do not publish this recovery's expanded SDK surface until RHIDP-18761 and
+RHIDP-18762 are complete and the restored public contracts are settled. The
+maintainer must check this prerequisite before merging a Version Packages PR
+that releases these exports. This is a maintainer release prerequisite; this
+recovery does not add an automated publication block.
+
+Root-entry-point exports remain `@public` because the workspace's API-report
+release-tag validation requires that tag for the main entry point. Changing
+only the tags to `@alpha` or `@beta` would fail that check. If experimental APIs
+are needed before reconciliation is complete, define a separate experimental
+entry point and its package wiring in follow-on work. Breaking public contract
+changes after publication require the corresponding semver treatment.
+
 ## Source-to-destination inventory
 
 All paths below are relative to `workspaces/boost/`. The archive root is
