@@ -41,17 +41,17 @@ All paths below are relative to `workspaces/boost/`. The archive root is
 was the archive root plus the destination path. PR #5449 moves these nine files;
 their recreated archive copies were removed in commit `547dda1679`.
 
-| Original relative path / active destination                                | Recovery status                                                                                                             |
-| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `plugins/ai-catalog-entity-provider-sdk/src/AIAssetEntityProvider.ts`      | Moved; provider contract retained for reconciliation.                                                                       |
-| `plugins/ai-catalog-entity-provider-sdk/src/AIAssetValidator.ts`           | Moved; processor methods made public so generated declarations satisfy `CatalogProcessor`. No processor registration added. |
-| `plugins/ai-catalog-entity-provider-sdk/src/AIAssetValidator.test.ts`      | Moved; existing behavior coverage retained.                                                                                 |
-| `plugins/ai-catalog-entity-provider-sdk/src/DeltaSyncManager.ts`           | Moved; cursor-store parameters clarified as `locationKey`. Synchronization behavior preserved.                              |
-| `plugins/ai-catalog-entity-provider-sdk/src/DeltaSyncManager.test.ts`      | Moved; cursor-key test description clarified.                                                                               |
-| `plugins/ai-catalog-entity-provider-sdk/src/validateAIAssetEntity.ts`      | Moved; missing-category diagnostics include the same allowed-values hint as the processor.                                  |
-| `plugins/ai-catalog-entity-provider-sdk/src/validateAIAssetEntity.test.ts` | Moved; existing validation coverage retained.                                                                               |
-| `specifications/ai-asset-upstream-migration-design.md`                     | Moved; relative links and Decision 1 anchors corrected. Remains a follow-on planning pointer.                               |
-| `specifications/annotation-specification.md`                               | Moved; relative links and Decision 1 anchors corrected. Historical mappings await reconciliation.                           |
+| Original relative path / active destination                                | Recovery status                                                                                                                                                    |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `plugins/ai-catalog-entity-provider-sdk/src/AIAssetEntityProvider.ts`      | Moved; provider contract retained for reconciliation.                                                                                                              |
+| `plugins/ai-catalog-entity-provider-sdk/src/AIAssetValidator.ts`           | Moved; processor methods made public so generated declarations satisfy `CatalogProcessor`. Rejected-category diagnostics escaped. No processor registration added. |
+| `plugins/ai-catalog-entity-provider-sdk/src/AIAssetValidator.test.ts`      | Moved; missing-category assertions strengthened and control-character diagnostic cases added.                                                                      |
+| `plugins/ai-catalog-entity-provider-sdk/src/DeltaSyncManager.ts`           | Moved; cursor-store parameters clarified as `locationKey`. Synchronization behavior preserved.                                                                     |
+| `plugins/ai-catalog-entity-provider-sdk/src/DeltaSyncManager.test.ts`      | Moved; cursor-key test description clarified.                                                                                                                      |
+| `plugins/ai-catalog-entity-provider-sdk/src/validateAIAssetEntity.ts`      | Moved; missing-category diagnostics include the same allowed-values hint as the processor. Rejected-category diagnostics escaped.                                  |
+| `plugins/ai-catalog-entity-provider-sdk/src/validateAIAssetEntity.test.ts` | Moved; missing-category assertions strengthened and control-character diagnostic cases added.                                                                      |
+| `specifications/ai-asset-upstream-migration-design.md`                     | Moved; relative links and Decision 1 anchors corrected. Remains a follow-on planning pointer.                                                                      |
+| `specifications/annotation-specification.md`                               | Moved; relative links and Decision 1 anchors corrected. Historical mappings await reconciliation.                                                                  |
 
 Historical source delivery is traceable through
 [PR #4212](https://github.com/redhat-developer/rhdh-plugins/pull/4212),
@@ -84,6 +84,13 @@ the minor changeset, and `specifications/CURRENT.md`. The latter retains the
 2.1 dependency boundary and separately identifies this 2.2 recovery and its
 planning references.
 
+The new internal helper
+`plugins/ai-catalog-entity-provider-sdk/src/escapeDiagnosticValue.ts` shares
+diagnostic escaping between both validators. It escapes Unicode control
+characters and line/paragraph separators for display. Both validators continue
+to validate the original input. This file was added during review, not recovered
+from the archive, and is not exported from the package entry point.
+
 ## Already-active OpenSpec artifacts
 
 These files already existed under
@@ -103,9 +110,11 @@ specs/performance-resilience/spec.md
 specs/air-gapped-deployment/spec.md
 ```
 
-The recovery preserves these planning artifacts for reconciliation. The only
-follow-up edit to a behavioral spec corrects a cursor-store example from
-`providerId` to `locationKey`; `audit.md` records that limited terminology check.
+The recovery preserves these planning artifacts for reconciliation. Review
+follow-up edits correct a cursor-store example from `providerId` to
+`locationKey` and update the annotation-scheme and entity-provider-sdk specs for
+the allowed-values diagnostic hint and escaped rejected-category diagnostics.
+`audit.md` records these terminology and diagnostic corrections.
 The conceptual `DeltaSyncCursor.providerId` design remains unchanged. Existing
 graph, bundle, air-gap, performance, and mapping statements in these historical
 plans do not become minimum-scope commitments through recovery.
