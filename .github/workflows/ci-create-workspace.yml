@@ -46,8 +46,7 @@ jobs:
           YARN_ENABLE_SCRIPTS: 'false'
 
       - name: Create workspace
-        run: |
-          printf '%s\n%s\n' "$WORKSPACE_NAME" '@ci-bot' | yarn create-workspace
+        run: yarn create-workspace --name "$WORKSPACE_NAME" --owner '@ci-bot'
 
       - name: Check workspace files
         run: |
@@ -70,7 +69,8 @@ jobs:
 
       - name: Install new workspace dependencies
         working-directory: ./workspaces/${{ env.WORKSPACE_NAME }}
-        run: yarn install --immutable
+        # Template yarn.lock is a seed and is rewritten on first install.
+        run: yarn install
         env:
           YARN_ENABLE_SCRIPTS: 'false'
 
