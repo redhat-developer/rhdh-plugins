@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 2.4.0
+
+### Minor Changes
+
+- 10926d3: Add optional on-demand field help (`ui:fieldHelp`) for Active form widgets, with markdown, external links, and locale fallback.
+
+### Patch Changes
+
+- Updated dependencies [dc818df]
+- Updated dependencies [f9236bd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.12.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.13.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.1
+
 ## 2.3.0
 
 ### Minor Changes

@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora
 
+## 0.3.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.6.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@4.6.1
+
 ## 0.3.0
 
 ### Minor Changes

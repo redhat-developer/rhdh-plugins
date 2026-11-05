@@ -239,7 +239,7 @@ export async function createRouter(
     changeOrigin: true,
     pathRewrite: (path, req) => {
       const userEntityRef = (req as any).userEntityRef;
-      const newPath = rewriteProxyPath(path, userEntityRef);
+      const newPath = rewriteProxyPath(path, userEntityRef, req.method);
 
       if (newPath !== path) {
         logger.info(`Rewriting path from ${path} to ${newPath}`);
@@ -1034,8 +1034,9 @@ export async function createRouter(
 
         const requestBody = JSON.stringify(request.body);
         const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
+        const encodedConversationId = encodeURIComponent(conversation_id);
         const fetchResponse = await fetch(
-          `${lcsBaseUrl}/v2/conversations/${conversation_id}?${userQueryParam}`,
+          `${lcsBaseUrl}/v2/conversations/${encodedConversationId}?${userQueryParam}`,
           {
             method: 'PUT',
             headers: {

@@ -34,8 +34,8 @@ import type { NpxSourceConfig } from './services/types';
  * Public sources only; no npx execution, Git crawling, or
  * private-registry authentication.
  *
- * Index retrieval, parsing, and artifact normalization are left to
- * following stories (tasks 3.1, 3.2, 3.4).
+ * Index discovery is available for the later artifact retrieval and
+ * snapshot publication work (tasks 3.2–3.4).
  *
  * @public
  */

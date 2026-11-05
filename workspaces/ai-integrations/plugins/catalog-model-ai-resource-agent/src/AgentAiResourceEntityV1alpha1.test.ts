@@ -70,6 +70,7 @@ function makeFullAgent(): Entity {
         type: 'object',
         properties: { result: { type: 'string' } },
       },
+      executionMode: 'sandbox',
     },
   } as Entity;
 }
@@ -138,6 +139,23 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
           tools: ['my-custom-tool'],
         }),
       );
+      expect(result).toBe(true);
+    });
+
+    it.each(['in-process', 'subprocess', 'sandbox'] as const)(
+      'accepts agent with executionMode: %s',
+      async executionMode => {
+        const result = await agentAiResourceEntityV1alpha1Validator.check(
+          makeMinimalAgent({ executionMode }),
+        );
+        expect(result).toBe(true);
+      },
+    );
+
+    it('accepts agent without executionMode (field absent)', async () => {
+      const entity = makeMinimalAgent();
+      delete (entity as any).spec.executionMode;
+      const result = await agentAiResourceEntityV1alpha1Validator.check(entity);
       expect(result).toBe(true);
     });
   });
@@ -237,6 +255,30 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
           makeMinimalAgent({
             modelSettings: { temperature: 'high' as any },
           }),
+        ),
+      ).rejects.toThrow();
+    });
+
+    it('rejects executionMode as boolean', async () => {
+      await expect(
+        agentAiResourceEntityV1alpha1Validator.check(
+          makeMinimalAgent({ executionMode: true as any }),
+        ),
+      ).rejects.toThrow();
+    });
+
+    it('rejects executionMode as number', async () => {
+      await expect(
+        agentAiResourceEntityV1alpha1Validator.check(
+          makeMinimalAgent({ executionMode: 42 as any }),
+        ),
+      ).rejects.toThrow();
+    });
+
+    it('rejects executionMode with invalid string value', async () => {
+      await expect(
+        agentAiResourceEntityV1alpha1Validator.check(
+          makeMinimalAgent({ executionMode: 'other' as any }),
         ),
       ).rejects.toThrow();
     });

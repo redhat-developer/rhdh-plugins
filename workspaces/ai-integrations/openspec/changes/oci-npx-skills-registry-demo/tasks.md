@@ -5,7 +5,7 @@
 - [x] 1.1 Implement and export the design D2 `SkillRecord` and `SkillSnapshot` schemas and runtime validators from `ai-skills-common` for both connectors and the common provider.
 - [x] 1.2 Implement design D3's native-field mappings, precedence, optional metadata, and allowlisted extensions; add OCI SkillCard/Markdown and npx fixtures, including conflicting versions.
 - [x] 1.3 Implement pure helpers for stable identity, catalog-valid tags, SemVer fallback, and OCI/npx reference serialization with round-trip tests; cover empty, invalid, and overlength tags using Backstage's validator, plus credential-bearing and signed query URLs.
-- [ ] 1.4 Test source-discriminated extension validation, deterministic limit ordering, snapshot status invariants, unknown versions, duplicate keys, source mismatch, response/count limits, total discovery budgets, and pagination cycles; document the shared REST contract. _(Shared-library portions complete in `ai-skills-common`: extension validation, ordering, status invariants, version/key/count/size checks, REST contract docs. Remaining: OCI/npx discovery budgets and pagination-cycle tests — connector scope.)_
+- [ ] 1.4 Test source-discriminated extension validation, deterministic limit ordering, snapshot status invariants, unknown versions, duplicate keys, source mismatch, response/count limits, total discovery budgets, and pagination cycles; document the shared REST contract. _(Shared-library portions complete in `ai-skills-common`; npx discovery budgets and pagination cycles covered by 3.1. Remaining: OCI discovery budgets and pagination-cycle tests.)_
 
 ## 2. OCI connector and REST API
 
@@ -17,7 +17,7 @@
 
 ## 3. npx connector and REST API
 
-- [ ] 3.1 Retrieve and validate Agent Skills v0.2 discovery indexes, including RHESS; process only `skill-md` entries and detect duplicate names.
+- [x] 3.1 Retrieve and validate Agent Skills v0.2 discovery indexes, including RHESS; process only `skill-md` entries and detect duplicate names. _(Implemented as a discovery service; artifact retrieval and snapshot publication remain in 3.2–3.4.)_
 - [ ] 3.2 Safely retrieve artifacts and verify SHA-256 before decoding; normalize frontmatter and index metadata using the shared mapping.
 - [ ] 3.3 Enforce design D7's origin, redirect, timeout, concurrency, and size limits; test invalid entries, digest mismatch, and escaped redirects. _(Partial: HTTPS origin, redirect, timeout, and size limits implemented in `fetchSourceBuffer`; concurrency limits, digest mismatch, and escaped redirect tests remain for later PRs.)_
 - [ ] 3.4 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed skill keys, and Backstage startup/periodic refresh scheduling; test the same contract fixtures as OCI. _(Partial: authenticated `GET /skills/:sourceId` with loading snapshots, `express-promise-router`, and Backstage schedule configuration implemented; atomic snapshot updates, failed skill keys, and OCI contract fixture tests remain for later PRs.)_

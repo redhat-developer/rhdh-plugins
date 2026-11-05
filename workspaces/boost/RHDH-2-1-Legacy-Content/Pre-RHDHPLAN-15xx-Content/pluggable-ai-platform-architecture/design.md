@@ -18,7 +18,7 @@ Boost implements the provider abstraction as modular RHDH dynamic plugins from t
 - Modifying chat interaction behavior or message rendering
 - Rewriting the ADK orchestration library
 - Creating catalog entities for models/agents (covered in agent-creation-discovery change)
-- Kagenti service-account auth (covered in security-safety-governance change — OAuth2 Client Credentials Grant adopted)
+- Kagenti service-account auth (OAuth2 Client Credentials Grant, handled by the Kagenti provider)
 
 ## Decisions
 

@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.14.1
+
+### Patch Changes
+
+- dc818df: Updated dependency `prettier` to `3.9.10`.
+- Updated dependencies [f9236bd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.6.1
+
 ## 8.14.0
 
 ### Minor Changes

@@ -39,6 +39,7 @@ describe('Notebooks Router', () => {
   const server = setupServer(...lightspeedCoreHandlers);
   let app: express.Application;
   let httpAuth: ReturnType<typeof mockServices.httpAuth>;
+  let routerLogger: ReturnType<typeof mockServices.logger.mock>;
 
   beforeAll(() => {
     // Only intercept Llama Stack requests, bypass local Express app requests
@@ -62,6 +63,7 @@ describe('Notebooks Router', () => {
     resetMockStorage();
     VectorStoresOperator.resetInstance(); // Reset singleton before each test
     const logger = mockServices.logger.mock();
+    routerLogger = logger;
     const config = mockServices.rootConfig({
       data: {
         'intelligent-assistant': {
@@ -773,6 +775,69 @@ describe('Notebooks Router', () => {
         .post('/notebooks/v1/sessions')
         .send({ name: 'Test Session' });
       sessionId = response.body.session.session_id;
+    });
+
+    it('should stream notebook content without logging event payloads', async () => {
+      const content = 'private notebook content';
+      const events = [
+        ['response.output_text.delta', { delta: content }],
+        [
+          'response.completed',
+          { response: { id: 'response-1', output: content } },
+        ],
+        [
+          'response.output_item.done',
+          {
+            sequence_number: 7,
+            output_index: 0,
+            item: { id: 'item-1', type: 'message', text: content },
+          },
+        ],
+      ];
+      server.use(
+        http.post(
+          `${LIGHTSPEED_CORE_ADDR}/v1/responses`,
+          () =>
+            new HttpResponse(
+              `${events
+                .map(
+                  ([event, data]) =>
+                    `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`,
+                )
+                .join('')}data: [DONE]\n\n`,
+              { headers: { 'Content-Type': 'text/event-stream' } },
+            ),
+        ),
+      );
+
+      const response = await request(app)
+        .post(`/notebooks/v1/sessions/${sessionId}/query`)
+        .send({ query: 'What is in this notebook?' });
+
+      expect(response.status).toBe(200);
+      expect(response.text).toContain(content);
+      expect(response.text).toContain('data: [DONE]');
+      expect(routerLogger.info).toHaveBeenCalledWith(
+        'Notebook response completed',
+        { responseId: 'response-1' },
+      );
+      expect(routerLogger.debug).toHaveBeenCalledWith(
+        'Unhandled SSE event type: response.output_item.done',
+        {
+          sessionId,
+          sequenceNumber: 7,
+          outputIndex: 0,
+          itemId: 'item-1',
+          itemType: 'message',
+        },
+      );
+      const logCalls = [
+        ...routerLogger.info.mock.calls,
+        ...routerLogger.debug.mock.calls,
+        ...routerLogger.warn.mock.calls,
+        ...routerLogger.error.mock.calls,
+      ];
+      expect(JSON.stringify(logCalls)).not.toContain(content);
     });
 
     it('should return 404 for non-existing session', async () => {

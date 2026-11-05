@@ -56,6 +56,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.branch }}
+          token: ${{ secrets.RHDH_BOT_TOKEN }}
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -101,7 +102,7 @@ jobs:
         id: verify_release_pr
         if: steps.release_check.outputs.needs_release == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' && inputs.branch == 'main'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
           WORKSPACE_NAME: ${{ inputs.workspace }}
         run: |
           # A version bump is not sufficient: the pushed commit must be the

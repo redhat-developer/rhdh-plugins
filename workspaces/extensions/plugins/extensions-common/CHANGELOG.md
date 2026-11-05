@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-extensions-common
 
+## 1.1.1
+
 ## 1.1.0
 
 ### Minor Changes

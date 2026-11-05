@@ -32,6 +32,7 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     resetToolChoice?: boolean;
     modelSettings?: AgentAiResourceModelSettings;
     outputSchema?: Record<string, JsonValue | undefined> | string;
+    executionMode?: 'in-process' | 'subprocess' | 'sandbox';
   };
 }
 

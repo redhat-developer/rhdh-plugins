@@ -102,8 +102,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
 
       // Sticky AppBar is z-index 1100. BUI Dialog overlay is 1000 and
       // InspectEntityDialog uses height 100vh, so the masthead covers the
-      // title and close control (RHDHBUGS-3603). 64px fallback matches the
-      // MUI Toolbar default when --rhdh-global-header-height is unset.
+      // title and close control (RHDHBUGS-3603). Cap max-height only — do not
+      // force height, or content-sized dialogs (e.g. Scorecard data sources)
+      // fill the viewport. 64px fallback matches the MUI Toolbar default when
+      // --rhdh-global-header-height is unset.
       const dialogMastheadOffset = 'var(--rhdh-global-header-height, 64px)';
       // Prefer branding chrome tokens; fall back to MUI default for empty configs.
       const shellBackground =
@@ -143,7 +145,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
         ':root:has(#global-header) [class*="bui-DialogOverlay"] > [class*="bui-Dialog"]':
           {
-            height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
             maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
           },
         // Masthead shares the shell chrome color (config or RHDH defaults).

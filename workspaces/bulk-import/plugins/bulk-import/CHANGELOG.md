@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.2.2
+
+### Patch Changes
+
+- 47916ec: Fix Add Repositories dark-theme styling under NFS (RHDHBUGS-4028): configure MUI ClassNameGenerator with a `v5-` prefix to avoid class collisions, use `background.paper` and flex `gap` on the form footer, and switch the table Paper to `sx`. Also bump `@red-hat-developer-hub/backstage-plugin-theme` to `^1.4.1`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.2.2
+
+## 9.2.1
+
+### Patch Changes
+
+- dc818df: Updated dependency `prettier` to `3.9.10`.
+- 8620b76: Updated dependency `@testing-library/user-event` to `14.6.8`.
+- 90e0f01: Updated dependency `@playwright/test` to `1.64.1`.
+- Updated dependencies [dc818df]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.2.1
+
 ## 9.2.0
 
 ### Minor Changes

@@ -6166,7 +6166,6 @@ __metadata:
     "@playwright/test": "npm:1.61.1"
     "@types/jest": "npm:^30.0.0"
     "@types/jsdom": "npm:^27.0.0"
-    changeset: "npm:^0.2.6"
     jest: "npm:^30.3.0"
     jsdom: "npm:^27.1.0"
     knip: "npm:^5.27.4"
@@ -16580,16 +16579,6 @@ __metadata:
   version: 5.6.2
   resolution: "chalk@npm:5.6.2"
   checksum: 10c0/99a4b0f0e7991796b1e7e3f52dceb9137cae2a9dfc8fc0784a550dc4c558e15ab32ed70b14b21b52beb2679b4892b41a0aa44249bcb996f01e125d58477c6976
-  languageName: node
-  linkType: hard
-
-"changeset@npm:^0.2.6":
-  version: 0.2.6
-  resolution: "changeset@npm:0.2.6"
-  dependencies:
-    udc: "npm:^1.0.0"
-    underscore: "npm:^1.8.3"
-  checksum: 10c0/6a8139aec4d192c96411eee786b5d50160ba012b299378f1086958379efd090b265885763ab5d558f87e49b2b18d887775230b2c4b6b5f8a6c0efc0c9a147d33
   languageName: node
   linkType: hard
 
@@ -33991,13 +33980,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"udc@npm:^1.0.0":
-  version: 1.0.1
-  resolution: "udc@npm:1.0.1"
-  checksum: 10c0/9e2e5dfe4fc0cd6d807b8be9fee327efc8c65319a94e8f32afab6837347e61ddb7d9844edc106cdda2f0feefd5939a49da97f1346522ac7bdf9fb68cbaab80c0
-  languageName: node
-  linkType: hard
-
 "uglify-js@npm:^3.1.4":
   version: 3.19.3
   resolution: "uglify-js@npm:3.19.3"
@@ -34044,7 +34026,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"underscore@npm:^1.13.3, underscore@npm:^1.8.3, underscore@npm:~1.13.2":
+"underscore@npm:^1.13.3, underscore@npm:~1.13.2":
   version: 1.13.8
   resolution: "underscore@npm:1.13.8"
   checksum: 10c0/6677688daeda30484823e77c0b89ce4dcf29964a77d5a06f37299c007ab4bb1c66a0ff75e0d274620b62a1fe2a6ba29879f8214533ca611d71a1ae504f2bfc9b
