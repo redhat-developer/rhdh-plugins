@@ -35,6 +35,8 @@ export interface SidebarModelItem {
   title: string;
   icon?: SidebarModelIcon;
   to?: string;
+  /** HTML anchor target from config or extension data. */
+  target?: '_blank' | '_self';
   onClick?: () => void;
   priority: number;
 }
@@ -106,6 +108,7 @@ function toModelItem(item: SidebarItemData): SidebarModelItem {
     title: item.title,
     icon: item.icon,
     to: item.to,
+    target: item.target,
     onClick: item.onClick,
     priority: defaultSidebarPathPriority(item.to, item.priority),
   };

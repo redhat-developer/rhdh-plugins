@@ -70,6 +70,7 @@ export const SidebarItemBlueprint = createExtensionBlueprint({
     priority: z.number().optional(),
     group: z.string().optional(),
     requiresRoute: z.boolean().optional(),
+    target: z.enum(['_blank', '_self']).optional(),
   },
   *factory(
     params: {
@@ -80,6 +81,7 @@ export const SidebarItemBlueprint = createExtensionBlueprint({
       priority?: number;
       group?: string;
       requiresRoute?: boolean;
+      target?: '_blank' | '_self';
     },
     { config, node },
   ) {
@@ -92,6 +94,7 @@ export const SidebarItemBlueprint = createExtensionBlueprint({
       priority: config.priority ?? params.priority,
       group: config.group ?? params.group,
       requiresRoute: config.requiresRoute ?? params.requiresRoute,
+      target: config.target ?? params.target,
     });
   },
 });

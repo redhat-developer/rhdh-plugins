@@ -45,6 +45,27 @@ const navItems = (items: NavContentNavItem[]): NavContentNavItems => ({
 const HomeIcon = () => <span data-testid="home-icon" />;
 
 describe('AppSidebar', () => {
+  it('passes target and rel for external _blank links', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          {
+            id: 'help',
+            title: 'Help',
+            to: 'https://example.com/help',
+            target: '_blank',
+          },
+        ]}
+        groups={[]}
+      />,
+    );
+
+    const link = screen.getByRole('link', { name: /help/i });
+    expect(link).toHaveAttribute('href', 'https://example.com/help');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
   it('renders items in priority order with links', async () => {
     await renderInTestApp(
       <AppSidebar
