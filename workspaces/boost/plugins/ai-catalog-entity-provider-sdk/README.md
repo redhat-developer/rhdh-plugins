@@ -4,6 +4,17 @@ SDK for AI asset entity providers in the Backstage catalog.
 
 Exports annotation constants, validation utilities, entity-provider interfaces, and the delta sync framework for the AI catalog entity model.
 
+The provider interfaces, validators, category vocabulary, and delta helpers were
+recovered for RHDH 2.2 reconciliation under
+[RHIDP-18760](https://redhat.atlassian.net/browse/RHIDP-18760). They do not expand
+the RHDH 2.1 release contract and are not registered with live providers by this
+recovery. Their annotation policy, minimum categories, and synchronization
+contract remain subject to the follow-on work in
+[RHIDP-18761](https://redhat.atlassian.net/browse/RHIDP-18761) and
+[RHIDP-18762](https://redhat.atlassian.net/browse/RHIDP-18762), followed by the
+deferred SDK design decisions. See the
+[recovery manifest](../../specifications/RHIDP-18760-recovery-manifest.md).
+
 ## Installation
 
 ```bash

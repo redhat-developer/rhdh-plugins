@@ -62,12 +62,12 @@ function hasAnyAIAssetAnnotation(entity: Entity): boolean {
  * @public
  */
 export class AIAssetValidator implements CatalogProcessor {
-  /** @internal */
+  /** @public */
   getProcessorName(): string {
     return 'AIAssetValidator';
   }
 
-  /** @internal */
+  /** @public */
   async validateEntityKind(entity: Entity): Promise<boolean> {
     // Only intercept entities carrying AI asset annotations.
     // Return false for non-AI-asset entities so the next processor

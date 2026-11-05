@@ -41,7 +41,8 @@ export function validateAIAssetEntity(entity: Entity): void {
   const category = annotations[AI_ASSET_CATEGORY_ANNOTATION];
   if (!category) {
     throw new Error(
-      `Invalid or missing ${AI_ASSET_CATEGORY_ANNOTATION} annotation`,
+      `Invalid or missing ${AI_ASSET_CATEGORY_ANNOTATION} annotation. ` +
+        `Allowed values: ${AI_ASSET_CATEGORIES.join(', ')}`,
     );
   }
   const parsed = AIAssetCategorySchema.safeParse(category);

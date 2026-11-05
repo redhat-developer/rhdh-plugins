@@ -22,7 +22,7 @@ OpenSpec `migration-plan.md` file and keep this stub as a link only.
 ## Scope
 
 The migration design document covers all seven AI-asset categories per
-[Decision 1](../openspec/changes/ai-catalog-entity-model/design.md):
+[Decision 1](../openspec/changes/ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds):
 `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`,
 `model-server`. For each category it documents:
 
