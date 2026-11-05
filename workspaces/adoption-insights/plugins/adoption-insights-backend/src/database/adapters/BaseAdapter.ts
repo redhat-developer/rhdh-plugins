@@ -276,7 +276,7 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     );
   }
 
-  getTimeSaved(): Promise<TimeSavedTotals> {
+  async getTimeSaved(): Promise<TimeSavedTotals> {
     this.ensureFiltersSet();
     const { start_date, end_date } = this.filters!;
     const query = this.db('events')

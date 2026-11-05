@@ -25,9 +25,13 @@ import { AnalyticsEvent } from '@backstage/core-plugin-api';
 import { adoptionInsightsPlugin } from './plugin';
 import { QUERY_TYPES } from './types/event-request';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
+import { createPartition } from './database/partition';
 import request from 'supertest';
 import type { Server } from 'http';
 import type { Knex } from 'knex';
+
+// Postgres TestDatabases spin up a container, which can exceed the default 5s.
+jest.setTimeout(60_000);
 
 const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -903,6 +907,78 @@ describe('GET /api/adoption-insights/events?type=time_saved', () => {
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toContain('text/csv');
     expect(res.text).toBe('minutes,runs,runs_with_estimate\n135.5,3,2');
+  });
+});
+
+describe('GET /api/adoption-insights/events value aggregation across databases', () => {
+  const databases = TestDatabases.create({ ids: ['POSTGRES_15', 'SQLITE_3'] });
+
+  describe.each(databases.eachSupportedId())('%s', databaseId => {
+    let server: Server;
+
+    beforeAll(async () => {
+      const knex = await databases.init(databaseId);
+      ({ server } = await startAdoptionInsightsBackend({ knex }));
+      // Postgres partitions only the current month on startup; create the one
+      // the fixed seed dates fall into so the inserts below have a home.
+      if (knex.client.config.client === 'pg') {
+        await createPartition(knex, 2025, 6);
+      }
+      await knex('events').insert([
+        timeSavedRun(
+          'alice',
+          '2025-06-03T10:00:00.000Z',
+          '120',
+          'template:default/aggregated',
+        ),
+        timeSavedRun(
+          'bob',
+          '2025-06-04T10:00:00.000Z',
+          '30',
+          'template:default/aggregated',
+        ),
+        // Null value: a run without an estimate, excluded from the minutes sum
+        // and the estimate count on both engines.
+        timeSavedRun(
+          'carol',
+          '2025-06-05T10:00:00.000Z',
+          null,
+          'template:default/aggregated',
+        ),
+      ]);
+    });
+
+    afterAll(() => {
+      // server may be undefined if beforeAll failed (e.g. Docker unavailable
+      // for the Postgres container); avoid masking the real error.
+      server?.close();
+    });
+
+    it('aggregates the time_saved total consistently', async () => {
+      const res = await request(server).get(seededEventsUrl('time_saved'));
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        data: [{ minutes: 150, runs: 3, runs_with_estimate: 2 }],
+      });
+    });
+
+    it('aggregates top_templates run totals consistently', async () => {
+      const res = await request(server).get(
+        seededEventsUrl('top_templates', '&sort_by=runs'),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual([
+        {
+          entityref: 'template:default/aggregated',
+          count: 0,
+          last_used: null,
+          runs: 3,
+          minutes: 150,
+        },
+      ]);
+    });
   });
 });
 
