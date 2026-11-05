@@ -49,7 +49,7 @@ Workspaces missing from overlays or owned by a different upstream are skipped wi
 - Backport this workflow, its helper, and the caller changes together to each source release branch where automatic propagation is needed. The helper is checked out at the triggering commit, not from a moving `main` branch.
 - Dispatch requests use GitHub REST API version `2026-03-10`, which returns the new workflow run ID. No run is selected by a timestamp or by searching for the latest run.
 
-Run the mocked, network-free tests with `node --test scripts/ci/update-overlays.test.js`. They also run in the repository-wide CI checks. Do not validate this automation by dispatching a production update or publishing packages.
+Local checks cover workflow syntax (`actionlint`), helper linting (ESLint), and formatting (Prettier). Live cross-repository verification requires an approved test setup. Do not dispatch production updates or publish packages for local validation.
 
 ## [release.yml](./release.yml)
 

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.13.1
+
+### Patch Changes
+
+- f9e6574: Offset MUI breakpoints by the docked app-drawer width so Grid and useMediaQuery use available content width (viewport minus drawer) while keeping the same responsive cascade as before.
+
 ## 1.13.0
 
 ### Minor Changes

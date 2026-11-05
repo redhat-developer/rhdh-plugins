@@ -1,3 +1,44 @@
+## Npx index discovery implementation
+
+**Last audited:** 2026-11-03T22:23:00Z
+
+Task 3.1 now covers bounded index discovery and duplicate-name handling.
+The npx specification records the 1 KiB name limit used to keep untrusted
+failed keys bounded. Task 1.4 still awaits OCI discovery-budget tests.
+Artifact verification and final snapshot publication remain tasks 3.2–3.4.
+No conflicting requirements were found.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
+## Npx demo transport scope
+
+**Last audited:** 2026-10-30T19:11:56Z
+
+The parent feature RHDHPLAN-1745 calls for demo-only skills ingestion and does
+not require address validation. D7 keeps OCI's existing connection-level
+validation while limiting npx transport validation to HTTPS, configured origins,
+credentials, redirects, and bounded reads. The npx spec states this distinction.
+Network egress policy is needed where the demo must restrict destination
+addresses. Task 3.3 remains open for the later
+artifact-processing work; no OCI requirement or completed task was changed.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+No inconsistencies were found in the edited OpenSpec scope. Historical audit
+entries remain below.
+
+---
+
 ## Focused PR #5339 follow-up: test-boundary comment and prose wrapping
 
 **Last audited:** 2026-10-26T17:03:01Z

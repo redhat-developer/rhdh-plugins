@@ -170,7 +170,7 @@ const extensionsTranslationIt = createTranslationMessages({
     'installedPackages.table.tooltips.noDownloadPermissions':
       "L'utente non dispone dell'autorizzazione per scaricare la configurazione. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'installedPackages.table.tooltips.noEditPermissions':
-      "L'utente non dispone dell'autorizzazione per modificare la configurazione. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
+      "Visualizza configurazione. L'utente non dispone dell'autorizzazione per modificare la configurazione. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'installedPackages.table.tooltips.noTogglePermissions':
       "L'utente non dispone dell'autorizzazione per abilitare o disabilitare i pacchetti. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'installedPackages.table.tooltips.editPackage':

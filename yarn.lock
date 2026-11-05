@@ -3910,7 +3910,6 @@ __metadata:
     node-fetch: "npm:^2.6.7"
     prettier: "npm:^3.4.2"
     semver: "npm:^7.7.2"
-    yaml: "npm:^2.0.0"
   languageName: unknown
   linkType: soft
 

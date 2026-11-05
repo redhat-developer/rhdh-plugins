@@ -25,8 +25,10 @@
  * - Pushes the fixed Backstage sidebar root below the full-width masthead
  *   (`top` + `height: 100vh - header`); the absolute drawer fills the root.
  * - Offsets BUI dialog overlays so the sticky AppBar (z-index 1100) does not
- *   cover the title/close control (RHDHBUGS-3603). Overlay z-index is raised
- *   above the AppBar default of 1000.
+ *   cover the title/close control (RHDHBUGS-3603). Caps dialog max-height so
+ *   full-viewport dialogs (Inspect Entity) fit below the masthead without
+ *   stretching content-sized dialogs. Overlay z-index is raised above the
+ *   AppBar default of 1000.
  *
  * Drawer reset targets `[data-testid="sidebar-root"] > *` because production
  * JSS often hashes class names without `BackstageSidebar-drawer`.
@@ -55,7 +57,6 @@ export const GLOBAL_HEADER_DIALOG_OFFSET_CSS = `
   z-index: 1300;
 }
 [class*="bui-DialogOverlay"] > [class*="bui-Dialog"] {
-  height: calc(100vh - var(--rhdh-global-header-height, 64px) - 3rem) !important;
   max-height: calc(100vh - var(--rhdh-global-header-height, 64px) - 3rem) !important;
 }
 `;

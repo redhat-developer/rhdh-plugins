@@ -16,6 +16,21 @@
         "owner": "ai-platform-team",
         "instructions": "You are a support router agent. Analyze incoming support requests and delegate them to the appropriate specialist agent."
       }
+    },
+    {
+      "apiVersion": "backstage.io/v1alpha1",
+      "kind": "AiResource",
+      "metadata": {
+        "name": "sandboxed-code-agent",
+        "description": "Agent that runs in an ephemeral sandbox"
+      },
+      "spec": {
+        "type": "agent",
+        "lifecycle": "production",
+        "owner": "ai-platform-team",
+        "instructions": "You are a code execution agent that runs in a sandboxed environment.",
+        "executionMode": "sandbox"
+      }
     }
   ],
   "allOf": [
@@ -146,6 +161,11 @@
                   "minLength": 1
                 }
               ]
+            },
+            "executionMode": {
+              "type": "string",
+              "enum": ["in-process", "subprocess", "sandbox"],
+              "description": "Execution mode — declares how this agent is executed by LCore: 'in-process' runs inside the LCore process (no isolation), 'subprocess' runs in a child process managed by LCore, 'sandbox' runs in an administrator-predefined sandbox profile."
             }
           }
         }

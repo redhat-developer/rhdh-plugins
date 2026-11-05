@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.6.1
+
+### Patch Changes
+
+- c161b0e: Keep the View data sources dialog Close action end-aligned under the RHDH theme DialogFooter row-reverse override.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.6.1
+
 ## 4.6.0
 
 ### Minor Changes

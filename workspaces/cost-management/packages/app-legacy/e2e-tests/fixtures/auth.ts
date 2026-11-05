@@ -14,7 +14,56 @@
  * limitations under the License.
  */
 
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
+
+/**
+ * Wait for the OIDC Sign in button. Reload once if it does not appear.
+ */
+async function waitForSignInButton(page: Page): Promise<Locator> {
+  const signInButton = page.locator('button:has-text("Sign in")');
+  const visible = await signInButton
+    .waitFor({ state: 'visible', timeout: 30000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!visible) {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await signInButton.waitFor({ state: 'visible', timeout: 30000 });
+  }
+  return signInButton;
+}
+
+/**
+ * Complete OIDC login via Keycloak popup.
+ * Assumes the caller already navigated to the login page.
+ */
+async function completeOIDCLogin(
+  page: Page,
+  username?: string,
+  password?: string,
+) {
+  const user = username ?? process.env.OIDC_USERNAME ?? 'ro-read-no-workflow';
+  const pass = password ?? process.env.OIDC_PASSWORD ?? 'test';
+
+  const signInButton = await waitForSignInButton(page);
+
+  const popupPromise = page.waitForEvent('popup');
+  await signInButton.click();
+  const popup = await popupPromise;
+
+  await popup.getByLabel('Username or email').fill(user);
+  await popup.getByLabel('Password').fill(pass);
+  await popup.getByRole('button', { name: 'Sign in' }).click();
+
+  await popup.waitForEvent('close', { timeout: 30000 }).catch(() => {
+    // Popup may already be closed
+  });
+
+  // Wait for the nav bar to appear — indicates login completed
+  await page
+    .locator('nav')
+    .first()
+    .waitFor({ state: 'visible', timeout: 30000 });
+}
 
 /**
  * Perform guest login by navigating to the base URL and clicking Enter.
@@ -46,33 +95,10 @@ export async function performOIDCLogin(
   username?: string,
   password?: string,
 ) {
-  const user = username ?? process.env.OIDC_USERNAME ?? 'ro-read-no-workflow';
-  const pass = password ?? process.env.OIDC_PASSWORD ?? 'test';
-
-  // Navigate to root (login page)
+  // Navigate to root (login page) and wait for it to render
   await page.goto('/');
-
-  // Click the OIDC Sign In button and handle the Keycloak popup
-  const popupPromise = page.waitForEvent('popup');
-  await page.locator('button:has-text("Sign in")').click();
-  const popup = await popupPromise;
-
-  // Fill in Keycloak credentials
-  await popup.getByLabel('Username or email').fill(user);
-  await popup.getByLabel('Password').fill(pass);
-  await popup.getByRole('button', { name: 'Sign in' }).click();
-
-  // Wait for the popup to close
-  await popup.waitForEvent('close', { timeout: 30000 }).catch(() => {
-    // Popup may already be closed
-  });
-
-  // Wait for the sidebar to appear — reliable indicator that login completed
-  // Wait for the nav bar to appear — indicates login completed
-  await page
-    .locator('nav')
-    .first()
-    .waitFor({ state: 'visible', timeout: 30000 });
+  await page.waitForLoadState('domcontentloaded');
+  await completeOIDCLogin(page, username, password);
 }
 
 /**
@@ -100,24 +126,8 @@ export async function performLogin(
     await enterButton.click();
     await page.waitForLoadState('networkidle', { timeout: 30000 });
   } else {
-    // OIDC login — we're already on the login page, no need to navigate again
-    const user = username ?? process.env.OIDC_USERNAME ?? 'ro-read-no-workflow';
-    const pass = password ?? process.env.OIDC_PASSWORD ?? 'test';
-
-    const popupPromise = page.waitForEvent('popup');
-    await page.locator('button:has-text("Sign in")').click();
-    const popup = await popupPromise;
-
-    await popup.getByLabel('Username or email').fill(user);
-    await popup.getByLabel('Password').fill(pass);
-    await popup.getByRole('button', { name: 'Sign in' }).click();
-
-    await popup.waitForEvent('close', { timeout: 30000 }).catch(() => {});
-    // Wait for the nav bar to appear — indicates login completed
-    await page
-      .locator('nav')
-      .first()
-      .waitFor({ state: 'visible', timeout: 30000 });
+    // OIDC login — already on the login page
+    await completeOIDCLogin(page, username, password);
   }
 }
 

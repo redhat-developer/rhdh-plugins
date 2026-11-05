@@ -45,7 +45,9 @@ import {
   useProcessingState,
   useClearOnRetrigger,
   evaluateFetchResponseSelectorTemplate,
+  useResolvedFieldHelp,
 } from '../utils';
+import { FieldWithHelpLayout } from '../components/FieldHelp';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
 
@@ -78,11 +80,14 @@ export const ActiveMultiSelect: Widget<
     onChange,
     onBlur,
     formContext,
+    required,
   } = props;
   const value = rawValue as string[];
   const formData = formContext?.formData;
   const isChangedByUser = !!formContext?.getIsChangedByUser(id);
   const setIsChangedByUser = formContext?.setIsChangedByUser;
+  const fieldHelp = useResolvedFieldHelp(props.options?.fieldHelp);
+  const inputLabel = fieldHelp ? undefined : label;
 
   const uiProps = useMemo(
     () => (props.options.props ?? {}) as UiProps,
@@ -350,80 +355,88 @@ export const ActiveMultiSelect: Widget<
     suppressFetchError;
   if (hasOptionsToShow) {
     return (
-      <Box>
-        <FormControl variant="outlined" fullWidth>
-          <Autocomplete
-            multiple
-            freeSolo={allowNewItems}
-            data-testid={`${id}-autocomplete`}
-            disabled={isReadOnly}
-            onBlur={() => onBlur?.(id, value)}
-            options={allOptions}
-            isOptionEqualToValue={(option, selected) => option === selected}
-            value={value}
-            inputValue={inProgressItem}
-            onInputChange={(_, newInputValue, reason) => {
-              // Only update input value for user input, not when selecting/clearing
-              if (reason === 'input') {
-                setInProgressItem(newInputValue);
-              } else if (reason === 'clear') {
-                setInProgressItem('');
-              }
-            }}
-            filterSelectedOptions
-            onChange={handleChange}
-            renderOption={(liProps, item) => {
-              return (
-                <li
-                  {...liProps}
-                  key={item}
-                  data-testid={`${id}-autocomplete-option-${item}`}
-                >
-                  {item}
-                </li>
-              );
-            }}
-            renderInput={params => (
-              <TextField
-                {...params}
-                data-testid={`${id}-text-field`}
-                name={name}
-                variant="outlined"
-                label={label}
-                onKeyDown={handleKeyDown}
-              />
-            )}
-            renderTags={(values, getTagProps) =>
-              values.map((item, index) => {
-                const tagProps = getTagProps({ index });
-                const {
-                  className,
-                  onDelete,
-                  key: _,
-                  ...restTagProps
-                } = tagProps;
-
+      <FieldWithHelpLayout
+        label={label}
+        help={fieldHelp}
+        required={required}
+        htmlFor={id}
+      >
+        <Box>
+          <FormControl variant="outlined" fullWidth>
+            <Autocomplete
+              multiple
+              freeSolo={allowNewItems}
+              data-testid={`${id}-autocomplete`}
+              disabled={isReadOnly}
+              onBlur={() => onBlur?.(id, value)}
+              options={allOptions}
+              isOptionEqualToValue={(option, selected) => option === selected}
+              value={value}
+              inputValue={inProgressItem}
+              onInputChange={(_, newInputValue, reason) => {
+                // Only update input value for user input, not when selecting/clearing
+                if (reason === 'input') {
+                  setInProgressItem(newInputValue);
+                } else if (reason === 'clear') {
+                  setInProgressItem('');
+                }
+              }}
+              filterSelectedOptions
+              onChange={handleChange}
+              renderOption={(liProps, item) => {
                 return (
-                  <Box key={item} title={item}>
-                    <Chip
-                      data-testid={`${id}-chip-${item}`}
-                      variant="outlined"
-                      label={item}
-                      className={clsx(tagProps.className, classes.chip)}
-                      onDelete={
-                        mandatoryValues?.includes(item)
-                          ? undefined /* mandatory - can not be deleted */
-                          : onDelete
-                      }
-                      {...restTagProps}
-                    />
-                  </Box>
+                  <li
+                    {...liProps}
+                    key={item}
+                    data-testid={`${id}-autocomplete-option-${item}`}
+                  >
+                    {item}
+                  </li>
                 );
-              })
-            }
-          />
-        </FormControl>
-      </Box>
+              }}
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  id={id}
+                  data-testid={`${id}-text-field`}
+                  name={name}
+                  variant="outlined"
+                  label={inputLabel}
+                  onKeyDown={handleKeyDown}
+                />
+              )}
+              renderTags={(values, getTagProps) =>
+                values.map((item, index) => {
+                  const tagProps = getTagProps({ index });
+                  const {
+                    className,
+                    onDelete,
+                    key: _,
+                    ...restTagProps
+                  } = tagProps;
+
+                  return (
+                    <Box key={item} title={item}>
+                      <Chip
+                        data-testid={`${id}-chip-${item}`}
+                        variant="outlined"
+                        label={item}
+                        className={clsx(tagProps.className, classes.chip)}
+                        onDelete={
+                          mandatoryValues?.includes(item)
+                            ? undefined /* mandatory - can not be deleted */
+                            : onDelete
+                        }
+                        {...restTagProps}
+                      />
+                    </Box>
+                  );
+                })
+              }
+            />
+          </FormControl>
+        </Box>
+      </FieldWithHelpLayout>
     );
   }
 

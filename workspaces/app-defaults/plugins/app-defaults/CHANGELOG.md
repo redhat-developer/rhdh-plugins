@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.13.1
+
+### Patch Changes
+
+- f9e6574: Fix Learning Paths card layout: drop the shrink-wrapped outer Grid (staircase), and use InfoCard fullHeight so cards in a row share the row height.
+- Updated dependencies [f9e6574]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.13.1
+
 ## 1.13.0
 
 ### Minor Changes

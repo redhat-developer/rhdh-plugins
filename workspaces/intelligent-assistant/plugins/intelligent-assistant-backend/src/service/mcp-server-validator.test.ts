@@ -74,4 +74,109 @@ describe('McpServerValidator auth header behavior', () => {
       Authorization: 'Basic abc123',
     });
   });
+
+  function jsonResponse(
+    body: unknown,
+    init?: { status?: number; headers?: Record<string, string> },
+  ) {
+    return new Response(JSON.stringify(body), {
+      status: init?.status ?? 200,
+      headers: { 'content-type': 'application/json', ...init?.headers },
+    });
+  }
+
+  it('reads tools from a JSON tools/list response and forwards the session id', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({}, { headers: { 'mcp-session-id': 'sess-1' } }),
+      )
+      .mockResolvedValueOnce(jsonResponse({}))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          result: { tools: [{ name: 'search' }] },
+        }),
+      );
+    global.fetch = fetchMock;
+
+    const validator = new McpServerValidator(logger);
+    await expect(validator.validate(url, 'raw-token')).resolves.toEqual({
+      valid: true,
+      toolCount: 1,
+      tools: [{ name: 'search', description: '' }],
+    });
+    expect(fetchMock.mock.calls[1][1]?.headers).toMatchObject({
+      'Mcp-Session-Id': 'sess-1',
+    });
+    expect(fetchMock.mock.calls[2][1]?.headers).toMatchObject({
+      'Mcp-Session-Id': 'sess-1',
+    });
+  });
+
+  it('parses tools from an SSE tools/list body and skips junk data lines', async () => {
+    const sse = [
+      ': keepalive',
+      'data:',
+      'data: {not-json',
+      'data: {"jsonrpc":"2.0","result":{"tools":[{"name":"list","description":"List items"}]}}',
+    ].join('\n');
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(new Response('{}', { status: 200 }))
+      .mockResolvedValueOnce(new Response(null, { status: 202 }))
+      .mockResolvedValueOnce(
+        new Response(sse, {
+          status: 200,
+          headers: { 'content-type': 'text/event-stream' },
+        }),
+      );
+    global.fetch = fetchMock;
+
+    const validator = new McpServerValidator(logger);
+    await expect(validator.validate(url, 'raw-token')).resolves.toEqual({
+      valid: true,
+      toolCount: 1,
+      tools: [{ name: 'list', description: 'List items' }],
+    });
+  });
+
+  it('stays connected with zero tools when SSE has no result object', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(new Response('{}', { status: 200 }))
+      .mockResolvedValueOnce(new Response(null, { status: 202 }))
+      .mockResolvedValueOnce(
+        new Response('data: {"jsonrpc":"2.0","id":2}\n', {
+          status: 200,
+          headers: { 'content-type': 'text/event-stream' },
+        }),
+      );
+    global.fetch = fetchMock;
+
+    const validator = new McpServerValidator(logger);
+    await expect(validator.validate(url, 'raw-token')).resolves.toEqual({
+      valid: true,
+      toolCount: 0,
+      tools: [],
+    });
+  });
+
+  it('stays connected when tools/list fails after initialize succeeds', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce(new Response('{}', { status: 200 }))
+      .mockResolvedValueOnce(new Response(null, { status: 202 }))
+      .mockResolvedValueOnce(new Response(null, { status: 500 }));
+    global.fetch = fetchMock;
+
+    const validator = new McpServerValidator(logger);
+    await expect(validator.validate(url, 'raw-token')).resolves.toEqual({
+      valid: true,
+      toolCount: 0,
+      tools: [],
+    });
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('tools/list returned 500'),
+    );
+  });
 });

@@ -36,7 +36,9 @@ import {
   useProcessingState,
   useClearOnRetrigger,
   evaluateFetchResponseSelectorTemplate,
+  useResolvedFieldHelp,
 } from '../utils';
+import { FieldWithHelpLayout } from '../components/FieldHelp';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
 
@@ -62,10 +64,12 @@ export const ActiveDropdown: Widget<
   const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const { id, label, value, onChange, onBlur, formContext } = props;
+  const { id, label, value, onChange, onBlur, formContext, required } = props;
   const formData = formContext?.formData;
   const isChangedByUser = !!formContext?.getIsChangedByUser(id);
   const setIsChangedByUser = formContext?.setIsChangedByUser;
+  const fieldHelp = useResolvedFieldHelp(props.options?.fieldHelp);
+  const inputLabel = fieldHelp ? undefined : label;
 
   const labelId = `${props.id}-label`;
 
@@ -277,17 +281,26 @@ export const ActiveDropdown: Widget<
   if (!hasOptions && !hasFallbackDefault) {
     if (suppressFetchError) {
       return (
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel id={labelId}>{label}</InputLabel>
-          <Select
-            labelId={labelId}
-            id={id}
-            data-testid={id}
-            value={value ?? ''}
-            label={label}
-            disabled
-          />
-        </FormControl>
+        <FieldWithHelpLayout
+          label={label}
+          help={fieldHelp}
+          required={required}
+          htmlFor={id}
+        >
+          <FormControl variant="outlined" fullWidth>
+            {inputLabel ? (
+              <InputLabel id={labelId}>{inputLabel}</InputLabel>
+            ) : null}
+            <Select
+              labelId={inputLabel ? labelId : undefined}
+              id={id}
+              data-testid={id}
+              value={value ?? ''}
+              label={inputLabel}
+              disabled
+            />
+          </FormControl>
+        </FieldWithHelpLayout>
       );
     }
     return <CircularProgress size={20} />;
@@ -298,35 +311,42 @@ export const ActiveDropdown: Widget<
   const displayValues = hasOptions ? values : [staticDefaultValue!];
 
   return (
-    <FormControl variant="outlined" fullWidth>
-      <InputLabel id={labelId}>{label}</InputLabel>
-      <Select
-        labelId={labelId}
-        id={id}
-        data-testid={id}
-        value={value ?? ''}
-        label={label}
-        disabled={isReadOnly}
-        onChange={event => handleChange(event.target.value as string, true)}
-        onBlur={() => onBlur?.(id, value)}
-        MenuProps={{
-          PaperProps: { sx: { maxHeight: '20rem' } },
-        }}
-      >
-        {displayLabels.map((itemLabel, idx) => (
-          <MenuItem
-            key={displayValues[idx]}
-            value={displayValues[idx]}
-            data-testid={`${id}-menuitem-${displayValues[idx]}`}
-            className={clsx(
-              classes.menuItem,
-              value === displayValues[idx] && classes.menuItemSelected,
-            )}
-          >
-            {itemLabel}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+    <FieldWithHelpLayout
+      label={label}
+      help={fieldHelp}
+      required={required}
+      htmlFor={id}
+    >
+      <FormControl variant="outlined" fullWidth>
+        {inputLabel ? <InputLabel id={labelId}>{inputLabel}</InputLabel> : null}
+        <Select
+          labelId={inputLabel ? labelId : undefined}
+          id={id}
+          data-testid={id}
+          value={value ?? ''}
+          label={inputLabel}
+          disabled={isReadOnly}
+          onChange={event => handleChange(event.target.value as string, true)}
+          onBlur={() => onBlur?.(id, value)}
+          MenuProps={{
+            PaperProps: { sx: { maxHeight: '20rem' } },
+          }}
+        >
+          {displayLabels.map((itemLabel, idx) => (
+            <MenuItem
+              key={displayValues[idx]}
+              value={displayValues[idx]}
+              data-testid={`${id}-menuitem-${displayValues[idx]}`}
+              className={clsx(
+                classes.menuItem,
+                value === displayValues[idx] && classes.menuItemSelected,
+              )}
+            >
+              {itemLabel}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </FieldWithHelpLayout>
   );
 };

@@ -2,9 +2,10 @@
 #
 # Build x2a dynamic plugins and package them as OCI images.
 #
-# Usage: ./scripts/build-dynamic-plugins.sh [--push] [--tag <tag>] [--registry <registry>] [--report]
+# Usage: ./scripts/build-dynamic-plugins.sh [--plugin <dir>] [--push] [--tag <tag>] [--registry <registry>] [--report]
 #
 # Options:
+#   --plugin <dir>          Build/package only one plugin (e.g. x2a)
 #   --push                 Push built images to the registry after packaging
 #   --tag <tag>            Additional tag to apply to images (e.g., nightly, latest)
 #   --registry <registry>  Image registry prefix (default: quay.io/x2ansible)
@@ -24,7 +25,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-RHDH_CLI_VERSION="${RHDH_CLI_VERSION:-2.1.2}"
+RHDH_CLI_VERSION="${RHDH_CLI_VERSION:-1.10.8}"
+RHDH_CLI_WEBPACK_VERSION="${RHDH_CLI_WEBPACK_VERSION:-5.105.4}"
+RHDH_CLI_PREFIX="${XDG_CACHE_HOME:-${HOME}/.cache}/x2a-rhdh-cli/${RHDH_CLI_VERSION}-webpack-${RHDH_CLI_WEBPACK_VERSION}"
+RHDH_CLI_BIN="${RHDH_CLI_PREFIX}/node_modules/@red-hat-developer-hub/cli/bin/rhdh-cli"
 EMBED_COMMON="@red-hat-developer-hub/backstage-plugin-x2a-common"
 EMBED_NODE="@red-hat-developer-hub/backstage-plugin-x2a-node"
 IMAGE_REGISTRY="quay.io/x2ansible"
@@ -39,6 +43,12 @@ declare -A PLUGIN_EMBED_PACKAGES=(
   ["x2a-backend"]="${EMBED_COMMON} ${EMBED_NODE}"
   ["x2a-mcp-extras"]="${EMBED_COMMON} ${EMBED_NODE}"
 )
+
+declare -A PLUGIN_EXPORT_ARGS=(
+  ["x2a"]="--no-generate-module-federation-assets"
+  ["x2a-dcr"]="--no-generate-module-federation-assets"
+)
+SELECTED_PLUGINS=()
 
 declare -A PLUGIN_IMAGES=(
   ["x2a"]="red-hat-developer-hub-backstage-plugin-x2a"
@@ -58,7 +68,7 @@ log() {
 
 check_prerequisites() {
   local missing=()
-  for cmd in node yarn npx podman; do
+  for cmd in node yarn npm podman; do
     if ! command -v "$cmd" &>/dev/null; then
       missing+=("$cmd")
     fi
@@ -120,6 +130,24 @@ install_dependencies() {
   yarn --cwd "$WORKSPACE_DIR" install
 }
 
+install_rhdh_cli() {
+  if [[ -x "$RHDH_CLI_BIN" ]]; then
+    return
+  fi
+
+  log "Installing RHDH CLI ${RHDH_CLI_VERSION} with Webpack ${RHDH_CLI_WEBPACK_VERSION}"
+  mkdir -p "$RHDH_CLI_PREFIX"
+  cat > "${RHDH_CLI_PREFIX}/package.json" <<EOF
+{"private":true,"dependencies":{"@red-hat-developer-hub/cli":"${RHDH_CLI_VERSION}"},"overrides":{"webpack":"${RHDH_CLI_WEBPACK_VERSION}"}}
+EOF
+  npm install --prefix "$RHDH_CLI_PREFIX" --no-audit --no-fund
+
+  if [[ ! -x "$RHDH_CLI_BIN" ]]; then
+    echo "ERROR: RHDH CLI was not installed at $RHDH_CLI_BIN" >&2
+    exit 1
+  fi
+}
+
 build_workspace() {
   log "Building all workspace packages"
   yarn --cwd "$WORKSPACE_DIR" build:all
@@ -152,9 +180,20 @@ export_plugin() {
     embed_args+=(--embed-package "$pkg")
   done
 
+  local export_args=()
+  if [[ -n "${PLUGIN_EXPORT_ARGS[$plugin_dir]:-}" ]]; then
+    read -r -a export_args <<< "${PLUGIN_EXPORT_ARGS[$plugin_dir]}"
+  fi
+
   log "Exporting dynamic plugin: ${plugin_dir}"
-  (cd "$plugin_path" && npx "@red-hat-developer-hub/cli@${RHDH_CLI_VERSION}" plugin export \
-    "${embed_args[@]}")
+  (cd "$plugin_path" && node "$RHDH_CLI_BIN" plugin export \
+    --clean "${embed_args[@]}" "${export_args[@]}")
+
+  if [[ -n "${PLUGIN_EXPORT_ARGS[$plugin_dir]:-}" ]] &&
+    [[ ! -s "${plugin_path}/dist-dynamic/dist-scalprum/plugin-manifest.json" ]]; then
+    echo "ERROR: Scalprum export is missing dist-dynamic/dist-scalprum/plugin-manifest.json for ${plugin_dir}" >&2
+    exit 1
+  fi
 }
 
 package_plugin() {
@@ -166,7 +205,7 @@ package_plugin() {
   local image_tag="${IMAGE_REGISTRY}/${image_name}:${version}"
 
   log "Packaging plugin image: ${image_tag}"
-  (cd "$plugin_path" && npx "@red-hat-developer-hub/cli@${RHDH_CLI_VERSION}" plugin package \
+  (cd "$plugin_path" && node "$RHDH_CLI_BIN" plugin package \
     -t "$image_tag")
 
   if [[ -n "$CUSTOM_TAG" ]]; then
@@ -225,6 +264,18 @@ parse_args() {
         REPORT_ONLY=true
         shift
         ;;
+      --plugin)
+        if [[ -z "${2:-}" ]]; then
+          echo "ERROR: --plugin requires a plugin directory (e.g. x2a)" >&2
+          exit 1
+        fi
+        if [[ -z "${PLUGIN_IMAGES[$2]:-}" ]]; then
+          echo "ERROR: unknown plugin: $2" >&2
+          exit 1
+        fi
+        SELECTED_PLUGINS+=("$2")
+        shift 2
+        ;;
       *)
         echo "ERROR: unknown argument: $1" >&2
         exit 1
@@ -244,8 +295,16 @@ main() {
   check_prerequisites
   install_dependencies
   build_workspace
+  install_rhdh_cli
 
-  for plugin_dir in "${!PLUGIN_IMAGES[@]}"; do
+  local plugin_dirs=()
+  if [[ ${#SELECTED_PLUGINS[@]} -gt 0 ]]; then
+    plugin_dirs=("${SELECTED_PLUGINS[@]}")
+  else
+    plugin_dirs=("${!PLUGIN_IMAGES[@]}")
+  fi
+
+  for plugin_dir in "${plugin_dirs[@]}"; do
     export_plugin "$plugin_dir"
     package_plugin "$plugin_dir"
   done
@@ -254,7 +313,7 @@ main() {
   podman images --filter "reference=${IMAGE_REGISTRY}/*"
 
   if [[ "$PUSH_IMAGES" == true ]]; then
-    for plugin_dir in "${!PLUGIN_IMAGES[@]}"; do
+    for plugin_dir in "${plugin_dirs[@]}"; do
       push_plugin "$plugin_dir"
     done
     log "All images pushed."

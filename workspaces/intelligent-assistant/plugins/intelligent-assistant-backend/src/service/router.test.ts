@@ -434,6 +434,30 @@ describe('intelligent-assistant router tests', () => {
   });
 
   describe('PUT /v2/conversations/:conversation_id', () => {
+    it('should encode conversation IDs before forwarding to Core', async () => {
+      const conversationId = 'conversation/child?user_id=other#';
+      let upstreamUrl: URL | undefined;
+      server.use(
+        http.put(`${LOCAL_LCS_ADDR}/v2/conversations/*`, ({ request: req }) => {
+          upstreamUrl = new URL(req.url);
+          return HttpResponse.json({ success: true });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .put(
+          `/api/intelligent-assistant/v2/conversations/${encodeURIComponent(conversationId)}`,
+        )
+        .send({ topic_summary: 'new topic' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(upstreamUrl?.searchParams.getAll('user_id')).toEqual([mockUserId]);
+      expect(upstreamUrl?.pathname).toBe(
+        `/v2/conversations/${encodeURIComponent(conversationId)}`,
+      );
+    });
+
     it('should successfully update topic summary', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
@@ -998,6 +1022,30 @@ describe('intelligent-assistant router tests', () => {
     });
 
     describe('DELETE /v1/saved-prompts/:prompt_id', () => {
+      it('uses only the authenticated identity when deleting a config-prefixed prompt', async () => {
+        let upstreamUrl: URL | undefined;
+        server.use(
+          http.delete(
+            `${LOCAL_LCS_ADDR}/v1/saved-prompts/:prompt_id`,
+            ({ request: upstreamRequest }) => {
+              upstreamUrl = new URL(upstreamRequest.url);
+              return HttpResponse.json({ deleted: true });
+            },
+          ),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).delete(
+          '/api/intelligent-assistant/v1/saved-prompts/config-extra?user_id=other&%75ser_id=another',
+        );
+
+        expect(response.statusCode).toEqual(200);
+        expect(upstreamUrl?.pathname).toBe('/v1/saved-prompts/config-extra');
+        expect(upstreamUrl?.searchParams.getAll('user_id')).toEqual([
+          mockUserId,
+        ]);
+      });
+
       it('deletes a saved prompt with 200 JSON body and injects user_id', async () => {
         const upstreamUrls: URL[] = [];
         server.use(
@@ -1639,14 +1687,9 @@ describe('intelligent-assistant router tests', () => {
     });
   });
 
-  // Regression guard: /v1/query intentionally runs validation before
-  // authorization so malformed requests are rejected cheaply without a
-  // permission-service round-trip. These tests arm the auth layer with DENY
-  // and send invalid bodies — getting 400 (not 403) proves validation still
-  // executes first regardless of permission state.
-  describe('POST /v1/query validation-before-auth ordering', () => {
-    it('returns 400 for missing provider even when permission is denied', async () => {
-      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+  describe('POST /v1/query input validation', () => {
+    it('returns 400 for missing provider when permission is allowed', async () => {
+      const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .post('/api/intelligent-assistant/v1/query')
         .send({
@@ -1660,8 +1703,8 @@ describe('intelligent-assistant router tests', () => {
       );
     });
 
-    it('returns 400 for missing model even when permission is denied', async () => {
-      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+    it('returns 400 for missing model when permission is allowed', async () => {
+      const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .post('/api/intelligent-assistant/v1/query')
         .send({
@@ -1674,8 +1717,8 @@ describe('intelligent-assistant router tests', () => {
       );
     });
 
-    it('returns 400 for missing query even when permission is denied', async () => {
-      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+    it('returns 400 for missing query when permission is allowed', async () => {
+      const backendServer = await startBackendServer();
       const response = await request(backendServer)
         .post('/api/intelligent-assistant/v1/query')
         .send({

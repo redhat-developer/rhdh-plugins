@@ -2,8 +2,9 @@
 
 > **Note:** This file references specifications and openspec change areas from the
 > RHDH 2.1 development cycle that have been archived to
-> `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/`. All paths below reflect
-> the archived locations.
+> `RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/`. References below to
+> `security-safety-governance/` are historical: that planning area was removed
+> from the checkout and remains available in Git history.
 
 These issues implement the boost backend in dependency order. Each issue is scoped for a single fullsend `/fs-code` run. Frontend/UI work is excluded and will be covered in a separate set of issues.
 

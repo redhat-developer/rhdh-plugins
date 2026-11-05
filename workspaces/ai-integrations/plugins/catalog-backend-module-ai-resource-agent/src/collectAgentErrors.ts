@@ -131,6 +131,23 @@ export function collectAgentErrors(entity: Entity): string[] {
     errors.push(`spec.model must be a string; got ${typeLabel(spec.model)}`);
   }
 
+  // Optional: spec.executionMode — must be 'in-process', 'subprocess', or 'sandbox' if present
+  const validExecutionModes = ['in-process', 'subprocess', 'sandbox'];
+  if (spec.executionMode !== undefined) {
+    if (
+      typeof spec.executionMode !== 'string' ||
+      !validExecutionModes.includes(spec.executionMode as string)
+    ) {
+      errors.push(
+        `spec.executionMode must be one of 'in-process', 'subprocess', 'sandbox'; got ${
+          typeof spec.executionMode === 'string'
+            ? `'${spec.executionMode}'`
+            : typeLabel(spec.executionMode)
+        }`,
+      );
+    }
+  }
+
   return errors;
 }
 

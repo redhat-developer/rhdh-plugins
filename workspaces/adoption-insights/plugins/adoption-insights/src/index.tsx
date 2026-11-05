@@ -19,6 +19,7 @@
  *
  * @packageDocumentation
  */
+import './configureMuiClassName';
 import {
   configApiRef,
   createApiFactory,

@@ -22,6 +22,7 @@ import { type CSSObject } from '@mui/material/styles';
 
 import { ThemeConfig, ThemeConfigOptions, RHDHThemePalette } from '../types';
 import { redHatFontFaces, redHatFonts } from '../fonts';
+import { contrastTextForBackground } from './contrastTextForBackground';
 import { resolveNavigationSidebarColors } from './navigationSidebarColors';
 
 export type Component = {
@@ -59,6 +60,18 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     palette.rhdh?.primary || ({} as RHDHThemePalette['primary']);
   const rhdhSecondary =
     palette.rhdh?.secondary || ({} as RHDHThemePalette['secondary']);
+  const isDarkMode =
+    palette.mode === 'dark' || (palette as { type?: string }).type === 'dark';
+
+  // MUI primary palette (OFS CreateButton fill / hover / label).
+  const primaryPalette = palette.primary as
+    | { main?: string; dark?: string; contrastText?: string }
+    | undefined;
+  const primaryMain = primaryPalette?.main ?? rhdhPrimary.main ?? '#0066CC';
+  const primaryDark = primaryPalette?.dark ?? '#00478e';
+  // Derive label color from the fill — do not trust merged contrastText alone.
+  const primaryContrast = contrastTextForBackground(primaryMain);
+  const primaryDarkContrast = contrastTextForBackground(primaryDark);
 
   // PatternFly shell chrome (page inset + masthead + sidebar). Prefer
   // pageInsetBackgroundColor, then app-bar / sidebar tokens from app-config.
@@ -89,8 +102,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
 
       // Sticky AppBar is z-index 1100. BUI Dialog overlay is 1000 and
       // InspectEntityDialog uses height 100vh, so the masthead covers the
-      // title and close control (RHDHBUGS-3603). 64px fallback matches the
-      // MUI Toolbar default when --rhdh-global-header-height is unset.
+      // title and close control (RHDHBUGS-3603). Cap max-height only — do not
+      // force height, or content-sized dialogs (e.g. Scorecard data sources)
+      // fill the viewport. 64px fallback matches the MUI Toolbar default when
+      // --rhdh-global-header-height is unset.
       const dialogMastheadOffset = 'var(--rhdh-global-header-height, 64px)';
       // Prefer branding chrome tokens; fall back to MUI default for empty configs.
       const shellBackground =
@@ -130,7 +145,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
         ':root:has(#global-header) [class*="bui-DialogOverlay"] > [class*="bui-Dialog"]':
           {
-            height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
             maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
           },
         // Masthead shares the shell chrome color (config or RHDH defaults).
@@ -196,6 +210,39 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         "[class*='BackstagePage-root-'] > [class*='MuiToolbar-root']": {
           backgroundColor: theme.palette.background.paper,
         },
+        // NFS: CreateButton → <a class="MuiButton-containedPrimary"> in BUI
+        // HeaderPage. StyledEngineProvider injectFirst + MuiButtonBase
+        // (background:transparent; padding:0) win over containedPrimary, so the
+        // control renders as a bare link. Force OFS contained look (!important).
+        'a.MuiButton-containedPrimary, a[class*="MuiButton-containedPrimary"]':
+          {
+            color: `${primaryContrast} !important`,
+            backgroundColor: `${primaryMain} !important`,
+            backgroundImage: 'none !important',
+            border: '0 !important',
+            borderRadius: '99em !important',
+            boxShadow: 'none !important',
+            padding: '6px 16px !important',
+            minHeight: '36px !important',
+            minWidth: '64px',
+            lineHeight: 1.75,
+            textDecoration: 'none !important',
+            textTransform: 'none',
+          },
+        'a.MuiButton-containedPrimary:hover, a.MuiButton-containedPrimary:focus-visible, a[class*="MuiButton-containedPrimary"]:hover, a[class*="MuiButton-containedPrimary"]:focus-visible':
+          {
+            color: `${primaryDarkContrast} !important`,
+            backgroundColor: `${primaryDark} !important`,
+            backgroundImage: 'none !important',
+            border: '0 !important',
+            boxShadow: 'none !important',
+            textDecoration: 'none !important',
+          },
+        'a.MuiButton-containedPrimary:active, a[class*="MuiButton-containedPrimary"]:active':
+          {
+            color: `${primaryDarkContrast} !important`,
+            backgroundColor: `${primaryDark} !important`,
+          },
       };
     },
   };
@@ -320,8 +367,22 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             outlineOffset: '0',
           },
         },
+        // OFS CreateButton look: solid primary.main, hover primary.dark.
+        // !important beats MuiButtonBase (transparent; padding:0) when
+        // StyledEngineProvider injectFirst puts Emotion sheets first (NFS).
         containedPrimary: {
           borderRadius: '99em',
+          color: `${primaryContrast} !important`,
+          backgroundColor: `${primaryMain} !important`,
+          backgroundImage: 'none !important',
+          boxShadow: 'none',
+          padding: '6px 16px !important',
+          '&:hover, &:focus-visible, &:active': {
+            color: `${primaryDarkContrast} !important`,
+            backgroundColor: `${primaryDark} !important`,
+            backgroundImage: 'none !important',
+            boxShadow: 'none',
+          },
           '&:focus-visible': {
             boxShadow: `inset 0 0 0 1px ${rhdhPrimary.focusVisibleBorder}`,
             outline: `${rhdhPrimary.focusVisibleBorder} solid 1px`,
@@ -341,6 +402,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             backgroundColor: general.disabledBackground,
           },
         },
+        // Dark error.main is light enough for outlined/text on #292929; contained
+        // needs a darker fill so white labels stay AA (RHDHBUGS-2242).
+        ...(isDarkMode
+          ? {
+              containedError: {
+                backgroundColor: '#C62828',
+                color: '#ffffff',
+                '&:hover, &:focus-visible': {
+                  backgroundColor: '#B71C1C',
+                },
+              },
+            }
+          : {}),
         outlined: {
           borderRadius: '99em',
           border: `1px solid color-mix(in srgb, currentColor 50%, transparent)`,

@@ -5421,7 +5421,7 @@ __metadata:
     jsdom: "npm:^27.1.0"
     knip: "npm:^5.27.4"
     node-gyp: "npm:^9.0.0"
-    prettier: "npm:3.9.9"
+    prettier: "npm:3.9.10"
     react: "npm:^18.3.1"
     typescript: "npm:~5.8.0"
   languageName: unknown
@@ -8422,7 +8422,7 @@ __metadata:
     markitdown-ts: "npm:^0.0.10"
     msw: "npm:2.15.0"
     multer: "npm:^2.2.0"
-    prettier: "npm:3.9.9"
+    prettier: "npm:3.9.10"
     supertest: "npm:6.3.4"
   languageName: unknown
   linkType: soft
@@ -8435,7 +8435,7 @@ __metadata:
     "@backstage/plugin-permission-common": "npm:^0.9.10"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.0"
     "@spotify/prettier-config": "npm:^15.0.0"
-    prettier: "npm:3.9.9"
+    prettier: "npm:3.9.10"
   peerDependencies:
     "@backstage/plugin-permission-common": ^0.9.10
   languageName: unknown
@@ -8476,10 +8476,10 @@ __metadata:
     "@testing-library/dom": "npm:^10.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^15.0.0"
-    "@testing-library/user-event": "npm:14.6.7"
+    "@testing-library/user-event": "npm:14.6.8"
     html2canvas-pro: "npm:^1.5.0"
     monaco-editor: "npm:^0.56.0"
-    prettier: "npm:3.9.9"
+    prettier: "npm:3.9.10"
     react: "npm:^18.0.0"
     react-aria: "npm:3.49.0"
     react-dom: "npm:^18.0.0"
@@ -10688,12 +10688,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/user-event@npm:14.6.7, @testing-library/user-event@npm:^14.0.0":
-  version: 14.6.7
-  resolution: "@testing-library/user-event@npm:14.6.7"
+"@testing-library/user-event@npm:14.6.8, @testing-library/user-event@npm:^14.0.0":
+  version: 14.6.8
+  resolution: "@testing-library/user-event@npm:14.6.8"
   peerDependencies:
     "@testing-library/dom": ">=7.21.4"
-  checksum: 10c0/21f5e01bea2699b069947ae06d0b0fbabe0e90d2a2206b8f56a3f46126d09bd85320cba3fd3910c4d18710b1873e6966fb9021668966c615aaa14bf35d7df3ef
+  checksum: 10c0/374bbf9f477fdc278f4bf56d6a27f88b1801c90cce9dffc414777dbf33fb1e421efc7341ee169cb286435bb742076a7899bb463c9927d2acca95aafaa5324820
   languageName: node
   linkType: hard
 
@@ -26618,12 +26618,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.9.9":
-  version: 3.9.9
-  resolution: "prettier@npm:3.9.9"
+"prettier@npm:3.9.10":
+  version: 3.9.10
+  resolution: "prettier@npm:3.9.10"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/d50ea2537b2ff7dbd5088a214f4d936484e55c665cea2185b477a55b0770be55f3b156a71f63a9a639def6b334667bb327139dc85f2a1041c0a34752cdc74647
+  checksum: 10c0/0b3531593aa6fb36ac6baf629cb058bda472c59a6938774f931fe55283a07c62e6f56e621b043a82d8a3e21fc284c08c34f9e539fc70072635f79b7bae1a1067
   languageName: node
   linkType: hard
 

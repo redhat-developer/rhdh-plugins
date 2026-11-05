@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { SyntheticEvent } from 'react';
+import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { SelectItem } from '@backstage/core-components';
 import Autocomplete from '@mui/material/Autocomplete';
 import Checkbox from '@mui/material/Checkbox';
@@ -45,9 +45,31 @@ export interface CustomSelectFilterProps {
 
 export const CustomSelectFilter = (props: CustomSelectFilterProps) => {
   const inputId = `extensions-filter-${props.label.toLowerCase().replace(/\s+/g, '-')}`;
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Autocomplete sets the open list width from anchorEl.clientWidth only on
+  // render. Re-render when the filter column resizes so counts are not left
+  // clipped after the viewport grows again.
+  const [, setMenuWidth] = useState(0);
+
+  useEffect(() => {
+    const element = rootRef.current;
+    if (!element || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(entries => {
+      const nextWidth = entries[0]?.contentRect.width;
+      if (nextWidth) {
+        setMenuWidth(nextWidth);
+      }
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <Box
+      ref={rootRef}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -78,14 +100,42 @@ export const CustomSelectFilter = (props: CustomSelectFilterProps) => {
         isOptionEqualToValue={(option, value) => option.value === value.value}
         getOptionLabel={option => option.label}
         onChange={props.onChange}
+        // Autocomplete sets menu width to the input; minWidth keeps labels
+        // and counts readable when the filter column is very narrow.
+        slotProps={{
+          popper: {
+            sx: {
+              minWidth: 200,
+            },
+          },
+        }}
+        sx={{
+          // Default option styles use nowrap + overflow:hidden, which clips
+          // the trailing count when the filter column is narrow.
+          '& .MuiAutocomplete-option': {
+            alignItems: 'flex-start',
+            whiteSpace: 'normal',
+            boxSizing: 'border-box',
+          },
+        }}
         renderOption={(renderProps, option, selectedOption) => {
           const { key, ...optionProps } = renderProps;
           return (
-            <li key={key} {...optionProps}>
+            <Box
+              component="li"
+              key={key}
+              {...optionProps}
+              sx={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                width: '100%',
+                columnGap: 1,
+              }}
+            >
               <Checkbox
                 icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
                 checkedIcon={<CheckBoxIcon fontSize="small" />}
-                style={{ marginRight: 8 }}
+                sx={{ flexShrink: 0, p: 0.5, mr: 0.5 }}
                 checked={
                   props.selectedItems.find(
                     c => c.label === option.label.toString(),
@@ -97,31 +147,38 @@ export const CustomSelectFilter = (props: CustomSelectFilterProps) => {
               {option.isBadge && (
                 <TaskAltIcon
                   style={{ color: option.badgeColor }}
-                  sx={{ marginRight: 1 }}
+                  sx={{ flexShrink: 0, mt: 0.25 }}
                 />
               )}
 
               {option.helperText ? (
-                <div style={{ flexGrow: 1 }}>
+                <Box sx={{ flex: '1 1 auto', minWidth: 0, overflow: 'hidden' }}>
                   <Typography variant="body1">{option.label}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {option.helperText}
                   </Typography>
-                </div>
+                </Box>
               ) : (
-                <div style={{ flexGrow: 1 }}>{option.label}</div>
+                <Box sx={{ flex: '1 1 auto', minWidth: 0, overflow: 'hidden' }}>
+                  {option.label}
+                </Box>
               )}
 
-              {option.count ? (
+              {typeof option.count === 'number' ? (
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ pl: 1 }}
+                  sx={{
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                    pl: 0.5,
+                    pt: 0.25,
+                  }}
                 >
                   {option.count}
                 </Typography>
               ) : null}
-            </li>
+            </Box>
           );
         }}
         size="small"

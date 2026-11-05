@@ -40,11 +40,27 @@ const CodeEditorContext = createContext<CodeEditorContextValue>(
 
 export const CodeEditorContextProvider = (props: { children: ReactNode }) => {
   const editorRef = useRef<MonacoEditor.editor.ICodeEditor | null>(null);
+  // Buffers the latest setValue() issued before Monaco has mounted, so the
+  // value isn't silently dropped by the editorRef null-guard below. The editor
+  // is populated imperatively and the lazy-loaded Monaco instance can mount
+  // after setValue() is first called; setEditor() flushes this on mount.
+  const pendingValueRef = useRef<{ value: string; autoFocus: boolean } | null>(
+    null,
+  );
   const contextValue = useMemo<CodeEditorContextValue>(
     () => ({
       getEditor: () => editorRef.current,
       setEditor: (editor: MonacoEditor.editor.ICodeEditor) => {
         editorRef.current = editor;
+        // Apply any value requested before the editor existed.
+        if (pendingValueRef.current) {
+          const { value, autoFocus } = pendingValueRef.current;
+          pendingValueRef.current = null;
+          editor.setValue(value);
+          if (autoFocus) {
+            editor.focus();
+          }
+        }
       },
       getPosition: () => editorRef.current?.getPosition() || null,
       setPosition: (cursorPosition: MonacoEditor.Position) => {
@@ -56,9 +72,14 @@ export const CodeEditorContextProvider = (props: { children: ReactNode }) => {
       },
       getValue: () => editorRef.current?.getValue(),
       setValue: (value: string, autoFocus = true) => {
-        editorRef.current?.setValue(value);
+        if (!editorRef.current) {
+          // Editor not mounted yet — remember it; setEditor() applies it later.
+          pendingValueRef.current = { value, autoFocus };
+          return;
+        }
+        editorRef.current.setValue(value);
         if (autoFocus) {
-          editorRef.current?.focus();
+          editorRef.current.focus();
         }
       },
     }),
