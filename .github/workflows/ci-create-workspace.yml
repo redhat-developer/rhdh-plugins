@@ -70,7 +70,8 @@ jobs:
       - name: Install new workspace dependencies
         working-directory: ./workspaces/${{ env.WORKSPACE_NAME }}
         # Template yarn.lock is a seed and is rewritten on first install.
-        run: yarn install
+        # CI=true enables immutable installs by default; allow the lockfile update here.
+        run: yarn install --no-immutable
         env:
           YARN_ENABLE_SCRIPTS: 'false'
 
