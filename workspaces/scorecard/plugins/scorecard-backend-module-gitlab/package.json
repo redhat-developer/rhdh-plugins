@@ -41,6 +41,7 @@
     "@backstage/catalog-client": "^1.16.0",
     "@backstage/catalog-model": "^1.9.0",
     "@backstage/integration": "^2.0.3",
+    "@gitbeaker/rest": "^43.4.0",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
   },
