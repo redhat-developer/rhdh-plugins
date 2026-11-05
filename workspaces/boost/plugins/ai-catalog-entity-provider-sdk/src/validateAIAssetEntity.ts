@@ -15,6 +15,7 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
+import { escapeDiagnosticValue } from './escapeDiagnosticValue';
 import {
   AI_ASSET_CATEGORY_ANNOTATION,
   AI_ASSET_VERSION_ANNOTATION,
@@ -48,7 +49,7 @@ export function validateAIAssetEntity(entity: Entity): void {
   const parsed = AIAssetCategorySchema.safeParse(category);
   if (!parsed.success) {
     throw new Error(
-      `Invalid ${AI_ASSET_CATEGORY_ANNOTATION} value '${category}'. Allowed: ${AI_ASSET_CATEGORIES.join(', ')}`,
+      `Invalid ${AI_ASSET_CATEGORY_ANNOTATION} value '${escapeDiagnosticValue(category)}'. Allowed: ${AI_ASSET_CATEGORIES.join(', ')}`,
     );
   }
 

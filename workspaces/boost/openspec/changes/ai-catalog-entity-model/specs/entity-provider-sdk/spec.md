@@ -62,6 +62,12 @@ The SDK MUST be published as an installable npm package with shared validation u
 - **AND** **WHEN** called with an entity having `rhdh.io/ai-asset-category: invalid-value`
 - **THEN** it throws: `Error: Invalid rhdh.io/ai-asset-category value 'invalid-value'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
 
+#### Scenario: Rejected category diagnostics escape control characters
+
+- **WHEN** `validateAIAssetEntity(entity)` receives category `ag` followed by a line feed and `ent`
+- **THEN** it rejects the original category value
+- **AND** its error displays the category as `ag\u000aent`, with a literal backslash escape instead of a line feed
+
 #### Scenario: SDK has README, CHANGELOG, semver (RHIDP-15260)
 
 - **WHEN** the SDK package is published

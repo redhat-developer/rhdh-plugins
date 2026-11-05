@@ -48,3 +48,10 @@ scenario. This records the diagnostic correction without changing annotation
 policy, categories, or the broader SDK design. The recovered processor methods
 also have descriptive public documentation; regenerated declarations retain both
 methods.
+
+The rejected-category diagnostics now escape Unicode control characters and
+line/paragraph separators as literal `\uXXXX` sequences in both validators.
+Validation still uses the original value. Regression cases cover newline, tab,
+terminal escape, NUL, carriage return, DEL, C1, Unicode separators, and a control
+character embedded in an otherwise valid category. Missing-category assertions
+also compare the complete error message, including the allowed-values hint.

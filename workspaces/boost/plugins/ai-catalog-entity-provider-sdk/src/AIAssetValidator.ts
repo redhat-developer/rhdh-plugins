@@ -16,6 +16,7 @@
 
 import type { Entity } from '@backstage/catalog-model';
 import type { CatalogProcessor } from '@backstage/plugin-catalog-node';
+import { escapeDiagnosticValue } from './escapeDiagnosticValue';
 import {
   AI_ASSET_CATEGORY_ANNOTATION,
   AI_ASSET_VERSION_ANNOTATION,
@@ -100,7 +101,7 @@ export class AIAssetValidator implements CatalogProcessor {
     const parsed = AIAssetCategorySchema.safeParse(category);
     if (!parsed.success) {
       throw new Error(
-        `Invalid ${AI_ASSET_CATEGORY_ANNOTATION} value '${category}'. ` +
+        `Invalid ${AI_ASSET_CATEGORY_ANNOTATION} value '${escapeDiagnosticValue(category)}'. ` +
           `Allowed: ${AI_ASSET_CATEGORIES.join(', ')}`,
       );
     }
