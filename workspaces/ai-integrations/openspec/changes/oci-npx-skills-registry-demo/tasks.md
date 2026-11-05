@@ -18,9 +18,9 @@
 ## 3. npx connector and REST API
 
 - [x] 3.1 Retrieve and validate Agent Skills v0.2 discovery indexes, including RHESS; process only `skill-md` entries and detect duplicate names. _(Implemented as a discovery service; artifact retrieval and snapshot publication remain in 3.2–3.4.)_
-- [ ] 3.2 Safely retrieve artifacts and verify SHA-256 before decoding; normalize frontmatter and index metadata using the shared mapping.
-- [ ] 3.3 Enforce design D7's origin, redirect, timeout, concurrency, and size limits; test invalid entries, digest mismatch, and escaped redirects. _(Partial: HTTPS origin, redirect, timeout, and size limits implemented in `fetchSourceBuffer`; concurrency limits, digest mismatch, and escaped redirect tests remain for later PRs.)_
-- [ ] 3.4 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed skill keys, and Backstage startup/periodic refresh scheduling; test the same contract fixtures as OCI. _(Partial: authenticated `GET /skills/:sourceId` with loading snapshots, `express-promise-router`, and Backstage schedule configuration implemented; atomic snapshot updates, failed skill keys, and OCI contract fixture tests remain for later PRs.)_
+- [x] 3.2 Safely retrieve artifacts and verify SHA-256 before decoding; normalize frontmatter and index metadata using the shared mapping. _(Implemented in PR #5452: `processArtifacts` fetches through the configured safe transport, verifies SHA-256 over original response bytes, parses Markdown YAML frontmatter, and normalizes using the shared D3 `normalizeNpxMetadata` function. Per-key failure isolation ensures one bad artifact never suppresses valid records.)_
+- [ ] 3.3 Enforce design D7's origin, redirect, timeout, concurrency, and size limits; test invalid entries, digest mismatch, and escaped redirects. _(Partial: HTTPS origin, redirect, timeout, and size limits implemented in `fetchSourceBuffer`; concurrency limits (`MAX_CONCURRENCY=4`) and digest mismatch handling implemented in PR #5452; escaped redirect tests remain for later PRs.)_
+- [ ] 3.4 Add authenticated `GET /skills/:sourceId`, atomic snapshots, failed skill keys, and Backstage startup/periodic refresh scheduling; test the same contract fixtures as OCI. _(Partial: authenticated `GET /skills/:sourceId` with loading snapshots, `express-promise-router`, and Backstage schedule configuration implemented; atomic snapshot updates and failed skill keys via `boundSnapshot` and `refreshSource` added in PR #5452; OCI contract fixture tests remain for later PRs.)_
 
 ## 4. Common skill catalog entity provider
 

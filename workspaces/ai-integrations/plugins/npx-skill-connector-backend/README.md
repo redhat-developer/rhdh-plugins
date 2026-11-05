@@ -1,12 +1,11 @@
 # npx skill connector backend
 
-This demo connector prepares public Agent Skills indexes as sources for the AI
-skills catalog. Index parsing, artifact normalization, and snapshot refresh are
-separate follow-up work. Until then, configured sources return a `loading`
-snapshot.
-
-The `schedule` setting is validated now; refresh tasks will use it when index
-retrieval is implemented.
+This demo connector discovers, retrieves, verifies, and normalizes public Agent
+Skills v0.2 index sources for the AI skills catalog. On each scheduled refresh,
+discovered `skill-md` entries are fetched through the configured safe transport,
+verified against their index SHA-256 digest before decoding, and normalized using
+the shared D3 metadata normalizer. Snapshots reflect actual discovered skills, or
+partial/failed status on errors.
 
 Configure sources in backend `app-config.yaml`:
 

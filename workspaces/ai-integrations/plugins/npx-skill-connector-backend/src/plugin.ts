@@ -92,8 +92,12 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
 /**
  * Runs a single source refresh: discover, retrieve artifacts, verify,
  * normalize, and publish the snapshot atomically.
+ *
+ * Exported for testing; not part of the public package API.
+ *
+ * @internal
  */
-async function refreshSource(
+export async function refreshSource(
   source: NpxSourceConfig,
   snapshots: Map<string, SkillSnapshot>,
   logger: LoggerService,
@@ -101,12 +105,12 @@ async function refreshSource(
 ): Promise<void> {
   logger.info(`Starting refresh for source '${source.id}'`);
 
-  // Discover entries from the index
-  const discovery = await discoverIndex(source, logger, abortSignal);
+  try {
+    // Discover entries from the index
+    const discovery = await discoverIndex(source, logger, abortSignal);
 
-  if (discovery.entries.length === 0 && !discovery.complete) {
-    // Total discovery failure — no entries, incomplete
-    if (discovery.failedKeys.length === 0) {
+    if (discovery.entries.length === 0 && !discovery.complete) {
+      // Total discovery failure — no entries, incomplete
       snapshots.set(
         source.id,
         createFailedSnapshot(
@@ -117,40 +121,52 @@ async function refreshSource(
       logger.error(`Discovery failed for source '${source.id}'`);
       return;
     }
+
+    // Process artifacts for discovered entries
+    const processing = await processArtifacts(
+      discovery.entries,
+      source,
+      logger,
+      abortSignal,
+    );
+
+    // Combine failed keys from discovery and artifact processing
+    const allFailedKeys = [...discovery.failedKeys, ...processing.failedKeys];
+
+    // Discovery is complete only if both phases completed without failures
+    const discoveryComplete =
+      discovery.complete && processing.failedKeys.length === 0;
+
+    const observedAt = new Date().toISOString();
+
+    const snapshot = boundSnapshot({
+      source: { id: source.id, type: 'npx' },
+      records: processing.records,
+      failedSkillKeys: allFailedKeys,
+      discoveryComplete,
+      observedAt,
+    });
+
+    // Publish atomically
+    snapshots.set(source.id, snapshot);
+
+    logger.info(
+      `Refresh complete for source '${source.id}': ` +
+        `status=${snapshot.status}, ` +
+        `skills=${snapshot.skills.length}, ` +
+        `failedKeys=${snapshot.failedSkillKeys.length}`,
+    );
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : 'Unknown error';
+    logger.error(
+      `Unexpected error during refresh for source '${source.id}': ${detail}`,
+    );
+    snapshots.set(
+      source.id,
+      createFailedSnapshot(
+        { id: source.id, type: 'npx' },
+        new Date().toISOString(),
+      ),
+    );
   }
-
-  // Process artifacts for discovered entries
-  const processing = await processArtifacts(
-    discovery.entries,
-    source,
-    logger,
-    abortSignal,
-  );
-
-  // Combine failed keys from discovery and artifact processing
-  const allFailedKeys = [...discovery.failedKeys, ...processing.failedKeys];
-
-  // Discovery is complete only if both phases completed without failures
-  const discoveryComplete =
-    discovery.complete && processing.failedKeys.length === 0;
-
-  const observedAt = new Date().toISOString();
-
-  const snapshot = boundSnapshot({
-    source: { id: source.id, type: 'npx' },
-    records: processing.records,
-    failedSkillKeys: allFailedKeys,
-    discoveryComplete,
-    observedAt,
-  });
-
-  // Publish atomically
-  snapshots.set(source.id, snapshot);
-
-  logger.info(
-    `Refresh complete for source '${source.id}': ` +
-      `status=${snapshot.status}, ` +
-      `skills=${snapshot.skills.length}, ` +
-      `failedKeys=${snapshot.failedSkillKeys.length}`,
-  );
 }

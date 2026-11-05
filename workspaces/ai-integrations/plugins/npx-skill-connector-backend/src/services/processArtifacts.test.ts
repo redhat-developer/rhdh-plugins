@@ -86,6 +86,29 @@ const noFrontmatter = `# Just a Markdown file
 No frontmatter here.
 `;
 
+/** Helper to create a response with correct content. */
+function artifactResponse(content: string): Response {
+  return new Response(content, {
+    status: 200,
+    headers: { 'content-type': 'text/markdown' },
+  });
+}
+
+/** Helper to build a discovered entry with correct digest for content. */
+function entryForContent(
+  name: string,
+  content: string,
+  url = `https://skills.example.com/${name}/SKILL.md`,
+): DiscoveredEntry {
+  const buf = Buffer.from(content, 'utf-8');
+  return {
+    name,
+    type: 'skill-md',
+    url,
+    digest: sha256(buf),
+  };
+}
+
 describe('parseMarkdownFrontmatter', () => {
   it('parses valid YAML frontmatter', () => {
     const result = parseMarkdownFrontmatter(fullFrontmatter);
@@ -135,29 +158,6 @@ describe('processArtifacts', () => {
   });
 
   afterEach(() => jest.restoreAllMocks());
-
-  /** Helper to create a response with correct content. */
-  function artifactResponse(content: string): Response {
-    return new Response(content, {
-      status: 200,
-      headers: { 'content-type': 'text/markdown' },
-    });
-  }
-
-  /** Helper to build a discovered entry with correct digest for content. */
-  function entryForContent(
-    name: string,
-    content: string,
-    url = `https://skills.example.com/${name}/SKILL.md`,
-  ): DiscoveredEntry {
-    const buf = Buffer.from(content, 'utf-8');
-    return {
-      name,
-      type: 'skill-md',
-      url,
-      digest: sha256(buf),
-    };
-  }
 
   it('produces a normalized record from a verified artifact', async () => {
     const content = fullFrontmatter;
@@ -412,17 +412,39 @@ description: Frontmatter description
 
   it('processes entries with bounded concurrency', async () => {
     // Create 6 entries to exercise batching (max concurrency = 4)
+    // Track concurrent fetches to verify batching occurs, not serial
+    let activeFetches = 0;
+    let maxConcurrentFetches = 0;
+
     const entries: DiscoveredEntry[] = [];
     for (let i = 0; i < 6; i++) {
       const content = `---\nname: Skill ${i}\n---\n# Skill ${i}\n`;
       entries.push(entryForContent(`skill-${i}`, content));
-      fetchMock.mockResolvedValueOnce(artifactResponse(content));
     }
+
+    fetchMock.mockImplementation(async (urlArg: URL | string) => {
+      activeFetches++;
+      maxConcurrentFetches = Math.max(maxConcurrentFetches, activeFetches);
+      // Yield to let concurrent fetches in the same batch start
+      await new Promise(resolve => setTimeout(resolve, 10));
+      activeFetches--;
+      // Return content matching the requested entry URL
+      const urlStr = urlArg instanceof URL ? urlArg.href : String(urlArg);
+      const match = urlStr.match(/skill-(\d+)/);
+      const idx = match ? parseInt(match[1], 10) : 0;
+      const content = `---\nname: Skill ${idx}\n---\n# Skill ${idx}\n`;
+      return artifactResponse(content);
+    });
 
     const result = await processArtifacts(entries, source, logger);
 
     expect(result.records).toHaveLength(6);
     expect(result.failedKeys).toEqual([]);
+    // A serial implementation would have maxConcurrentFetches === 1;
+    // verify that batching allows concurrent fetches
+    expect(maxConcurrentFetches).toBeGreaterThan(1);
+    // Verify concurrency is bounded at the maximum of 4
+    expect(maxConcurrentFetches).toBeLessThanOrEqual(4);
   });
 
   it('handles version from frontmatter metadata.version', async () => {
