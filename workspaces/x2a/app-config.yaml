@@ -204,6 +204,17 @@ x2a:
       limits:
         cpu: ${X2A_KUBERNETES_CPU_LIMIT:-2000m}
         memory: ${X2A_KUBERNETES_MEMORY_LIMIT:-4Gi}
+    # Optional additive-only patch applied to every generated X2A Job.
+    # Conflicts with plugin-generated values fail Job creation.
+    # deploymentPatch:
+    #   spec:
+    #     template:
+    #       spec:
+    #         containers:
+    #           - name: x2a
+    #             env:
+    #               - name: CUSTOM_SETTING
+    #                 value: example
   credentials:
     # LLM provider credentials as environment variables
     # Generic key-value pairs passed to the job container

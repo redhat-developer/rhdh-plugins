@@ -349,6 +349,72 @@ describe('KubeService', () => {
       expect(result.k8sJobName).toBeDefined();
     });
 
+    it('should pass the configured deployment patch to Kubernetes', async () => {
+      mockConfig.kubernetes.deploymentPatch = {
+        spec: {
+          template: {
+            spec: {
+              containers: [
+                {
+                  name: 'x2a',
+                  env: [{ name: 'CUSTOM_SETTING', value: 'example' }],
+                },
+              ],
+            },
+          },
+        },
+      };
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+
+      await kubeService.createJob(params);
+
+      expect(mockBatchV1Api.createNamespacedJob).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            spec: expect.objectContaining({
+              template: expect.objectContaining({
+                spec: expect.objectContaining({
+                  containers: expect.arrayContaining([
+                    expect.objectContaining({
+                      name: 'x2a',
+                      env: expect.arrayContaining([
+                        { name: 'CUSTOM_SETTING', value: 'example' },
+                      ]),
+                    }),
+                  ]),
+                }),
+              }),
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('should reject a conflicting patch before making Kubernetes changes', async () => {
+      mockConfig.kubernetes.deploymentPatch = {
+        spec: {
+          template: {
+            spec: {
+              containers: [
+                {
+                  name: 'x2a',
+                  env: [{ name: 'PHASE', value: 'replacement' }],
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      await expect(kubeService.createJob(params)).rejects.toThrow(
+        'spec.template.spec.containers[x2a].env[PHASE].value',
+      );
+      expect(mockCoreV1Api.createNamespacedSecret).not.toHaveBeenCalled();
+      expect(mockBatchV1Api.createNamespacedJob).not.toHaveBeenCalled();
+    });
+
     it('should create job secret with ownerReference containing job uid', async () => {
       mockBatchV1Api.createNamespacedJob.mockResolvedValue({
         metadata: { name: 'job-x2a-init-abc123', uid: 'uid-456' },

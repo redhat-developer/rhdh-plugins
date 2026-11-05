@@ -24,6 +24,8 @@ export type {
   JobCreateParams,
   AAPCredentials,
   GitRepo,
+  JsonValue,
+  JsonObject,
 } from './services';
 
 export {

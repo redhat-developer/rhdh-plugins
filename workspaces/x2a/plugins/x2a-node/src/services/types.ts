@@ -24,6 +24,24 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
+ * JSON-compatible object used for backend configuration.
+ * @public
+ */
+export type JsonObject = { [key: string]: JsonValue };
+
+/**
+ * JSON-compatible value used for backend configuration passed to Kubernetes.
+ * @public
+ */
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | JsonObject;
+
+/**
  * X2A configuration structure.
  * Runtime type extracted from `app-config.yaml` under the `x2a` key.
  * Defaults for optional values are defined in `x2a-backend/src/services/constants.ts`.
@@ -36,6 +54,7 @@ export interface X2AConfig {
     imageTag: string;
     imagePullPolicy?: string;
     ttlSecondsAfterFinished: number;
+    deploymentPatch?: JsonObject;
     resources: {
       requests: {
         cpu: string;
