@@ -42,3 +42,11 @@ export const getLicensedUsersCount = (config: RootConfigService) => {
     100
   );
 };
+
+export const getMaxEventsPerRequest = (config: RootConfigService) => {
+  return (
+    config.getOptionalNumber(
+      'app.analytics.adoptionInsights.maxEventsPerRequest',
+    ) || 100
+  );
+};

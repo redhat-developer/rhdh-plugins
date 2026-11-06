@@ -37,7 +37,7 @@ import {
   LoggerService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
-import { getLicensedUsersCount } from '../utils/config';
+import { getLicensedUsersCount, getMaxEventsPerRequest } from '../utils/config';
 import {
   TechDocsCount,
   TimeSavedTotals,
@@ -62,6 +62,10 @@ function readTechDocsSiteName(payload: unknown): string | undefined {
 }
 
 class EventApiController {
+  // Upper bound on simultaneous catalog lookups when resolving template
+  // time-saved estimates for a single incoming batch.
+  private static readonly MAX_CATALOG_LOOKUP_CONCURRENCY = 5;
+
   private readonly database: EventDatabase;
   private readonly config: RootConfigService;
   private readonly processor: EventBatchProcessor;
@@ -94,16 +98,18 @@ class EventApiController {
     this.logger = logger;
   }
 
+  private isScaffolderCreateEvent(event: AnalyticsEvent): boolean {
+    return (
+      event.action === 'create' &&
+      event.subject === 'Task has been created' &&
+      event.context?.pluginId === 'scaffolder'
+    );
+  }
+
   private async getTimeSavedMinutes(
-    event: AnalyticsEvent,
+    entityRef: string,
     credentials: BackstageCredentials,
   ): Promise<number | undefined> {
-    const entityRef = event.context?.entityRef;
-    if (typeof entityRef !== 'string' || !entityRef) {
-      this.logger.warn('Scaffolder create event has no template entity ref');
-      return undefined;
-    }
-
     try {
       const entity = await this.catalog.getEntityByRef(entityRef, {
         credentials,
@@ -136,47 +142,108 @@ class EventApiController {
     }
   }
 
+  /**
+   * Resolves each distinct template ref to its time-saved estimate once, while
+   * bounding how many catalog lookups run at the same time.
+   */
+  private async resolveTimeSavedByRef(
+    entityRefs: string[],
+    credentials: BackstageCredentials,
+  ): Promise<Map<string, number | undefined>> {
+    const timeSavedByRef = new Map<string, number | undefined>();
+    const concurrency = EventApiController.MAX_CATALOG_LOOKUP_CONCURRENCY;
+
+    for (let i = 0; i < entityRefs.length; i += concurrency) {
+      const chunk = entityRefs.slice(i, i + concurrency);
+      const minutes = await Promise.all(
+        chunk.map(ref => this.getTimeSavedMinutes(ref, credentials)),
+      );
+      chunk.forEach((ref, index) => timeSavedByRef.set(ref, minutes[index]));
+    }
+
+    return timeSavedByRef;
+  }
+
   private async processIncomingEvents(
     events: AnalyticsEvent[],
     auditEvent: AuditorServiceEvent,
     userRef: string,
     credentials: BackstageCredentials,
   ): Promise<void> {
-    const processedEvents = await Promise.all(
-      events
-        .filter(e => !!e.context?.userId)
-        .map(async event => {
-          const isScaffolderCreate =
-            event.action === 'create' &&
-            event.subject === 'Task has been created' &&
-            event.context?.pluginId === 'scaffolder';
-          const value = isScaffolderCreate
-            ? await this.getTimeSavedMinutes(event, credentials)
-            : event.value;
+    const maxEventsPerRequest = getMaxEventsPerRequest(this.config);
+    if (!Array.isArray(events) || events.length > maxEventsPerRequest) {
+      const error = new ValidationError('Invalid event data', {
+        fieldErrors: {
+          events: [
+            `A maximum of ${maxEventsPerRequest} events may be submitted per request`,
+          ],
+        },
+      });
+      auditEvent.fail({ error });
+      throw error;
+    }
 
-          return new Event(
-            {
-              ...event,
-              value,
-              context: { ...event.context, userName: userRef },
-            },
-            this.database.isJsonSupported(),
-          );
-        }),
-    );
+    // Only events carrying a user id are persisted.
+    const candidateEvents = events.filter(e => !!e.context?.userId);
 
-    processedEvents.forEach(event => {
-      const result = EventSchema.safeParse(event);
-
+    // Validate every event before performing any catalog lookups so that
+    // rejected batches never trigger enrichment requests.
+    for (const event of candidateEvents) {
+      const candidate = new Event(
+        { ...event, context: { ...event.context, userName: userRef } },
+        this.database.isJsonSupported(),
+      );
+      const result = EventSchema.safeParse(candidate);
       if (!result.success) {
         auditEvent.fail({
           error: new Error(JSON.stringify(result.error.flatten())),
         });
         throw new ValidationError('Invalid event data', result.error.flatten());
       }
-      auditEvent.success({ meta: { eventId: event.id } });
-      return this.processor.addEvent(event);
-    });
+    }
+
+    const entityRefs = new Set<string>();
+    for (const event of candidateEvents) {
+      const entityRef = event.context?.entityRef;
+      if (
+        this.isScaffolderCreateEvent(event) &&
+        typeof entityRef === 'string' &&
+        entityRef
+      ) {
+        entityRefs.add(entityRef);
+      }
+    }
+    const timeSavedByRef = await this.resolveTimeSavedByRef(
+      [...entityRefs],
+      credentials,
+    );
+
+    // Enrich the validated events from the lookup table and persist them.
+    for (const event of candidateEvents) {
+      let value = event.value;
+      if (this.isScaffolderCreateEvent(event)) {
+        const entityRef = event.context?.entityRef;
+        if (typeof entityRef === 'string' && entityRef) {
+          value = timeSavedByRef.get(entityRef);
+        } else {
+          this.logger.warn(
+            'Scaffolder create event has no template entity ref',
+          );
+          value = undefined;
+        }
+      }
+
+      const processedEvent = new Event(
+        {
+          ...event,
+          value,
+          context: { ...event.context, userName: userRef },
+        },
+        this.database.isJsonSupported(),
+      );
+      auditEvent.success({ meta: { eventId: processedEvent.id } });
+      this.processor.addEvent(processedEvent);
+    }
   }
 
   async trackEvents(

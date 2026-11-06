@@ -37,7 +37,9 @@ export async function createRouter({
 }): Promise<express.Router> {
   const router = Router();
 
-  router.use(express.json());
+  // Cap the request body size as defense-in-depth against oversized event
+  // batches; the per-request event count is also enforced in the controller.
+  router.use(express.json({ limit: '1mb' }));
 
   const authorizeUser = async (
     req: Request<{}, {}, {}, QueryParams>,

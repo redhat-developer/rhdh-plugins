@@ -4,11 +4,11 @@ This plugin builds the backend for Adoption Insights Plugin. It helps store anal
 
 ## Installation
 
-This plugin is installed via the `@red-hat-developer-hub/backstage-plugin-adoption-insights-backend` package. To install it to your backend package, run the following command:
+This plugin requires the Catalog backend service. If your backend does not already include the Catalog backend, install it alongside the Adoption Insights backend plugin:
 
 ```bash
 # From your root directory
-yarn --cwd packages/backend add @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
+yarn --cwd packages/backend add @backstage/plugin-catalog-backend @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 ```
 
 Then add the plugin to your backend in `packages/backend/src/index.ts`:
@@ -16,10 +16,13 @@ Then add the plugin to your backend in `packages/backend/src/index.ts`:
 ```ts
 const backend = createBackend();
 // ...
+backend.add(import('@backstage/plugin-catalog-backend'));
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-adoption-insights-backend'),
 );
 ```
+
+If the Catalog backend is already registered, keep its existing registration and add only the Adoption Insights backend plugin.
 
 ## Configuration
 
@@ -33,6 +36,7 @@ app:
       flushInterval: 5000 # Optional: Flush interval in milliseconds for event batching (default: 5000ms)
       debug: false # Optional: Enable debug mode to log every event in the browser console (default: false)
       licensedUsers: 100 # Administrators can set this value to see the user adoption metrics.
+      maxEventsPerRequest: 100 # Optional: Maximum number of events accepted in a single POST /events request (default: 100)
 ```
 
 #### Permission Framework Support
@@ -94,7 +98,8 @@ The Adoption Insights Backend plugin has support for the permission framework. T
 
 This plugin backend can be started in a standalone mode from directly in this
 package with `yarn start`. It is a limited setup that is most convenient when
-developing the plugin backend itself.
+developing the plugin backend itself. This development setup provides a Catalog
+service mock.
 
 If you want to run the entire project, including the frontend, run `yarn start` from the root directory.
 
@@ -105,6 +110,16 @@ If you want to run the entire project, including the frontend, run `yarn start` 
 `GET /api/adoption-insights/events`
 
 When `type=top_techdocs`, the backend may enrich each row with a TechDocs `site_name`. That lookup uses Backstage plugin-to-plugin authentication (`getPluginRequestToken`) on behalf of the calling user — it does not forward the caller's raw `Authorization` header. TechDocs therefore evaluates `catalog.entity.read` for that user; entities they cannot read fall back to the entity name, as do failed lookups and invalid entity paths. Rows with empty `namespace` / `kind` / `name` keep an empty `site_name` (TechDocs root).
+
+## Ingesting events
+
+`POST /api/adoption-insights/events`
+
+The analytics module batches events on the client and sends them as a JSON array to this endpoint. The backend applies the following limits and validation before persisting a batch:
+
+- **Batch size limit.** A single request may contain at most `maxEventsPerRequest` events (default `100`, configurable under `app.analytics.adoptionInsights.maxEventsPerRequest`). Oversized batches are rejected with `400` before any catalog lookup or enqueue runs. The default analytics module flushes far smaller batches (see `maxBufferSize`), so this limit only affects callers that batch aggressively — raise it if you have a legitimate need.
+- **All-or-nothing validation.** Every event in the batch is validated before any of them are enqueued. If any event fails validation the whole request is rejected with `400` and no events from that batch are stored. (Previously, valid events appearing before the first invalid one could be partially persisted.)
+- **Deduplicated enrichment.** Scaffolder create events are enriched with the Template's `backstage.io/time-saved` estimate; each distinct template ref is resolved from the catalog only once per batch, with bounded concurrency, to avoid flooding the catalog on large batches.
 
 ## Query Parameters
 

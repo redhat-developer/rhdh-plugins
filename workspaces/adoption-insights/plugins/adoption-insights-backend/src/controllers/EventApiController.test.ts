@@ -352,6 +352,86 @@ describe('trackEvents', () => {
     expect(mockProcessorAddEvent.mock.calls[0][0].value).toBeUndefined();
   });
 
+  it('resolves the catalog estimate once per distinct template ref', async () => {
+    jest.mocked(mockCatalog.getEntityByRef).mockResolvedValue({
+      kind: 'Template',
+      metadata: {
+        name: 'example',
+        annotations: { 'backstage.io/time-saved': 'PT2H' },
+      },
+    } as any);
+
+    await controller.trackEvents(
+      {
+        body: [scaffolderCreate(), scaffolderCreate(), scaffolderCreate()],
+      } as Request,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    // Three duplicate Scaffolder events share one template ref -> one lookup.
+    expect(mockCatalog.getEntityByRef).toHaveBeenCalledTimes(1);
+    expect(mockProcessorAddEvent).toHaveBeenCalledTimes(3);
+    for (const call of mockProcessorAddEvent.mock.calls) {
+      expect(call[0].value).toBe(120);
+    }
+  });
+
+  it('rejects oversized event batches before any catalog lookup', async () => {
+    const limitedController = new EventApiController(
+      mockEventDb,
+      mockProcessor,
+      mockServices.rootConfig({
+        data: {
+          app: { analytics: { adoptionInsights: { maxEventsPerRequest: 1 } } },
+        },
+      }),
+      mockAuditor,
+      mockAuth,
+      mockHttpAuth,
+      mockDiscovery,
+      mockCatalog,
+      mockLogger,
+    );
+
+    await limitedController.trackEvents(
+      { body: [scaffolderCreate(), scaffolderCreate()] } as Request,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Invalid event data',
+      errors: {
+        events: ['A maximum of 1 events may be submitted per request'],
+      },
+    });
+    expect(mockCatalog.getEntityByRef).not.toHaveBeenCalled();
+    expect(mockProcessorAddEvent).not.toHaveBeenCalled();
+  });
+
+  it('does not run catalog lookups when an event fails validation', async () => {
+    await controller.trackEvents(
+      {
+        body: [
+          scaffolderCreate(),
+          // Missing action -> fails EventSchema validation.
+          {
+            context: {
+              ...mockEvent.context,
+              userId: 'client-id',
+            } as AnalyticsContextValue,
+          } as AnalyticsEvent,
+        ],
+      } as Request,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(mockCatalog.getEntityByRef).not.toHaveBeenCalled();
+    expect(mockProcessorAddEvent).not.toHaveBeenCalled();
+  });
+
   it('uses the authenticated user for non-Scaffolder events too', async () => {
     await controller.trackEvents(
       {

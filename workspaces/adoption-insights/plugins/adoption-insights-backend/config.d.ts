@@ -41,6 +41,13 @@ export interface Config {
          * @visibility backend
          */
         licensedUsers?: number;
+        /**
+         * Maximum number of events accepted in a single POST /events request.
+         * Oversized batches are rejected before any catalog lookups run.
+         * default 100
+         * @visibility backend
+         */
+        maxEventsPerRequest?: number;
       };
     };
   };
