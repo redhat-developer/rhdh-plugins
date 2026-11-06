@@ -108,11 +108,10 @@ export async function extractCatalogIndexLayers(
       );
     }
 
+    const manifestText = await fs.readFile(manifestPath, 'utf8');
     let manifest: OciManifest;
     try {
-      manifest = JSON.parse(
-        await fs.readFile(manifestPath, 'utf8'),
-      ) as OciManifest;
+      manifest = JSON.parse(manifestText) as OciManifest;
     } catch (err) {
       throw new InstallException(
         `Malformed manifest.json in catalog index image ${image}: ${errorMessage(err)}`,
@@ -128,16 +127,19 @@ export async function extractCatalogIndexLayers(
       const [, fname] = digest.split(':');
       if (!fname) continue;
       const layerPath = path.join(localDir, fname);
-      if (!(await fileExists(layerPath))) continue;
+      if (!(await fileExists(layerPath))) {
+        throw new InstallException(
+          `Layer ${digest} listed in manifest.json is missing from catalog index image ${image}`,
+        );
+      }
 
       const extraction = tar.x({
         file: layerPath,
         cwd: destDirAbs,
         preservePaths: false,
         // The filter captures `pending` (a single-write latch) and runs
-        // synchronously inside the awaited tar.x call — iterations are
-        // serialised, so the closure-in-loop hazard the rule guards against
-        // does not apply.
+        // synchronously inside tar.x, which is awaited before the next layer,
+        // so the closure-in-loop hazard the rule guards against does not apply.
         // eslint-disable-next-line no-loop-func
         filter: (filePath, entry) => {
           if (pending) return false;

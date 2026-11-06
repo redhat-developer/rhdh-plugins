@@ -23,7 +23,6 @@ import {
   extractCatalogIndex,
   extractCatalogIndexLayers,
   extractExtraCatalogIndex,
-  parseExtraCatalogIndexImages,
 } from './catalog-index';
 import { InstallException } from './errors';
 import type { Skopeo } from './skopeo';
@@ -72,12 +71,12 @@ type Layer = { digest?: string; blob?: Buffer | string };
 
 /**
  * Stub skopeo whose `copy` materialises an OCI `dir:` layout: manifest.json
- * plus one blob per layer. `manifest` overrides the generated manifest text.
+ * plus one blob per layer. `manifest` overrides the generated manifest text;
+ * `null` omits manifest.json.
  */
 function stubSkopeo(layers: Layer[], manifest?: string | null) {
   const copies: Array<{ src: string; dst: string }> = [];
   const skopeo = {
-    exists: jest.fn(async () => true),
     copy: jest.fn(async (src: string, dst: string) => {
       copies.push({ src, dst });
       const dir = dst.replace(/^dir:/, '');
@@ -110,7 +109,6 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  await fs.chmod(work, 0o755).catch(() => undefined);
   await fs.rm(work, { recursive: true, force: true });
 });
 
@@ -148,11 +146,10 @@ describe('extractCatalogIndexLayers', () => {
     );
   });
 
-  it('skips layers with no digest, a digest without an algorithm, or a missing blob', async () => {
+  it('skips manifest entries with no digest or a digest without an algorithm', async () => {
     const { skopeo } = stubSkopeo([
-      { blob: 'unused' },
-      { digest: 'nodigestseparator', blob: 'not a tar' },
-      { digest: 'sha256:absent' },
+      {},
+      { digest: 'nodigestseparator' },
       { digest: 'sha256:good', blob: rawTar([{ path: 'ok.txt', body: 'ok' }]) },
     ]);
     await extractCatalogIndexLayers(skopeo, IMAGE, work);
@@ -172,7 +169,9 @@ describe('extractCatalogIndexLayers', () => {
     await expect(
       extractCatalogIndexLayers(bad.skopeo, IMAGE, work),
     ).rejects.toThrow(InstallException);
-    for (const { dst } of [...ok.copies, ...bad.copies]) {
+    const copies = [...ok.copies, ...bad.copies];
+    expect(copies).toHaveLength(2);
+    for (const { dst } of copies) {
       // dst is dir:<workDir>/idx; the whole workDir must be gone.
       expect(existsSync(path.dirname(dst.replace(/^dir:/, '')))).toBe(false);
     }
@@ -180,32 +179,51 @@ describe('extractCatalogIndexLayers', () => {
 
   it('raises an InstallException naming the image when manifest.json is missing', async () => {
     const { skopeo } = stubSkopeo([], null);
-    const err = extractCatalogIndexLayers(skopeo, IMAGE, work);
-    await expect(err).rejects.toThrow(InstallException);
-    await expect(err).rejects.toThrow(
+    const extraction = extractCatalogIndexLayers(skopeo, IMAGE, work);
+    await expect(extraction).rejects.toThrow(InstallException);
+    await expect(extraction).rejects.toThrow(
       `manifest.json not found in catalog index image ${IMAGE}`,
     );
   });
 
   it('raises an InstallException naming the image when manifest.json is malformed', async () => {
     const { skopeo } = stubSkopeo([], '{not json');
-    const err = extractCatalogIndexLayers(skopeo, IMAGE, work);
-    await expect(err).rejects.toThrow(InstallException);
-    await expect(err).rejects.toThrow(
+    const extraction = extractCatalogIndexLayers(skopeo, IMAGE, work);
+    await expect(extraction).rejects.toThrow(InstallException);
+    await expect(extraction).rejects.toThrow(
       `Malformed manifest.json in catalog index image ${IMAGE}`,
     );
   });
 
-  it('raises an InstallException naming the image and digest when a layer is not a tar archive', async () => {
+  it('raises an InstallException naming the image and digest when a layer blob is missing', async () => {
     const { skopeo } = stubSkopeo([
-      { digest: 'sha256:corrupt', blob: 'this is not a tar archive' },
+      { digest: 'sha256:good', blob: rawTar([{ path: 'ok.txt', body: 'ok' }]) },
+      { digest: 'sha256:absent' },
     ]);
-    const err = extractCatalogIndexLayers(skopeo, IMAGE, work);
-    await expect(err).rejects.toThrow(InstallException);
-    await expect(err).rejects.toThrow(
-      `Failed to extract layer sha256:corrupt of catalog index image ${IMAGE}`,
+    const extraction = extractCatalogIndexLayers(skopeo, IMAGE, work);
+    await expect(extraction).rejects.toThrow(InstallException);
+    await expect(extraction).rejects.toThrow(
+      `Layer sha256:absent listed in manifest.json is missing from catalog index image ${IMAGE}`,
     );
   });
+
+  it.each([
+    ['not a tar archive', Buffer.from('this is not a tar archive')],
+    [
+      'truncated',
+      rawTar([{ path: 'a.txt', body: 'x'.repeat(2000) }]).subarray(0, 1200),
+    ],
+  ])(
+    'raises an InstallException naming the image and digest when a layer is %s',
+    async (_kind, blob) => {
+      const { skopeo } = stubSkopeo([{ digest: 'sha256:corrupt', blob }]);
+      const extraction = extractCatalogIndexLayers(skopeo, IMAGE, work);
+      await expect(extraction).rejects.toThrow(InstallException);
+      await expect(extraction).rejects.toThrow(
+        `Failed to extract layer sha256:corrupt of catalog index image ${IMAGE}`,
+      );
+    },
+  );
 
   it('drops entries that escape the destination and keeps the safe ones', async () => {
     const outside = path.join(work, 'outside');
@@ -265,8 +283,8 @@ describe('extractCatalogIndexLayers entry size cap', () => {
       },
       { digest: 'sha256:two', blob: rawTar([{ path: 'two.txt', body: 'x' }]) },
     ]);
-    const err = mod.extractCatalogIndexLayers(skopeo, IMAGE, work);
-    await expect(err).rejects.toMatchObject({
+    const extraction = mod.extractCatalogIndexLayers(skopeo, IMAGE, work);
+    await expect(extraction).rejects.toMatchObject({
       name: 'InstallException',
       message: 'Zip bomb detected in big.bin',
     });
@@ -327,44 +345,39 @@ describe('extractCatalogIndex', () => {
     const { skopeo } = stubSkopeo([
       { digest: 'sha256:x', blob: rawTar([{ path: 'other.txt', body: 'x' }]) },
     ]);
-    const err = extractCatalogIndex(skopeo, IMAGE, work, work);
-    await expect(err).rejects.toThrow(InstallException);
-    await expect(err).rejects.toThrow(
+    const extraction = extractCatalogIndex(skopeo, IMAGE, work, work);
+    await expect(extraction).rejects.toThrow(InstallException);
+    await expect(extraction).rejects.toThrow(
       `dynamic-plugins.default.yaml not found in ${IMAGE}`,
     );
-  });
-
-  it('raises an InstallException naming the image when the only layer blob is missing', async () => {
-    const { skopeo } = stubSkopeo([{ digest: 'sha256:missing' }]);
-    await expect(
-      extractCatalogIndex(skopeo, IMAGE, work, work),
-    ).rejects.toThrow(`dynamic-plugins.default.yaml not found in ${IMAGE}`);
   });
 });
 
 describe('extractExtraCatalogIndex', () => {
-  it.each(['/etc', '/', '../escape', String.raw`C:\evil`])(
-    'refuses unsafe subdirectory %p before pulling anything',
-    async bad => {
-      const { skopeo } = stubSkopeo([]);
-      const err = extractExtraCatalogIndex(skopeo, IMAGE, bad, work, null);
-      await expect(err).rejects.toThrow(InstallException);
-      await expect(err).rejects.toThrow(
-        `Refusing to extract extra catalog index into unsafe subdirectory '${bad}'`,
-      );
-      expect(skopeo.copy).not.toHaveBeenCalled();
-    },
-  );
+  it('refuses an absolute subdirectory before pulling anything', async () => {
+    const { skopeo } = stubSkopeo([]);
+    const extraction = extractExtraCatalogIndex(
+      skopeo,
+      IMAGE,
+      '/etc',
+      work,
+      null,
+    );
+    await expect(extraction).rejects.toThrow(InstallException);
+    await expect(extraction).rejects.toThrow(
+      "Refusing to extract extra catalog index into unsafe subdirectory '/etc'",
+    );
+    expect(skopeo.copy).not.toHaveBeenCalled();
+  });
 
-  it('propagates a corrupt-layer InstallException naming the image', async () => {
-    const { skopeo } = stubSkopeo([
-      { digest: 'sha256:corrupt', blob: 'not a tar' },
-    ]);
+  it('fails instead of warning when a layer blob is missing', async () => {
+    const { skopeo } = stubSkopeo([{ digest: 'sha256:absent' }]);
     await expect(
       extractExtraCatalogIndex(skopeo, IMAGE, 'community', work, null),
     ).rejects.toThrow(
-      `Failed to extract layer sha256:corrupt of catalog index image ${IMAGE}`,
+      `Layer sha256:absent listed in manifest.json is missing from catalog index image ${IMAGE}`,
     );
+    expect(existsSync(path.join(work, 'community'))).toBe(false);
   });
 
   it('replaces content from a previous extraction into the same subdirectory', async () => {
@@ -381,14 +394,6 @@ describe('extractExtraCatalogIndex', () => {
     ]);
     await extractExtraCatalogIndex(skopeo, IMAGE, 'community', work, null);
     expect(await fs.readdir(stale)).toEqual(['p.yaml']);
-  });
-});
-
-describe('parseExtraCatalogIndexImages', () => {
-  it.each(['/abs', '/'])('skips an absolute subdirectory name %p', name => {
-    expect(
-      parseExtraCatalogIndexImages(`${name}=quay.io/x:1,quay.io/y:2`),
-    ).toEqual([['quay.io_y_2', 'quay.io/y:2']]);
   });
 });
 

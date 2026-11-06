@@ -56,6 +56,7 @@ describe('dynamic-plugins-root with unexpected entries', () => {
     await fs.rm(dir, { recursive: true, force: true });
   });
 
+  // 0o000 only differs from 0o755 for a non-root user (EACCES vs ENOENT).
   it.each([0o755, 0o000])(
     'skips lost+found (mode %o) and a stray file while removing an obsolete plugin',
     async mode => {
