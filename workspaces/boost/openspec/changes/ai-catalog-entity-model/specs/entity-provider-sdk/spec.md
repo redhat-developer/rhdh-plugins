@@ -12,6 +12,8 @@
 
 A TypeScript SDK package defining the contract for AI asset entity providers, exporting shared types and validation utilities.
 
+The minimum feature categories are `agent`, `skill`, `mcp-server`, `ai-model`, and `model-server`. Existing `rule` compatibility is retained separately. The scenarios below are reconciliation targets for RHIDP-18762; TypeScript, tests, README, and API-report changes are not part of RHIDP-18761. In particular, the current SDK still includes the historical `skill-bundle` value until that reconciliation.
+
 ## ADDED Requirements
 
 ### Requirement: TypeScript Interface Contract
@@ -34,10 +36,12 @@ The SDK MUST define TypeScript interfaces for AI asset entity providers covering
 
 #### Scenario: Full-refresh and delta sync pattern support (RHIDP-15259)
 
-- **WHEN** a provider implements only the `entities()` generator
-- **THEN** it operates in full-refresh mode: yields all entities on each poll
-- **AND** **WHEN** a provider implements the optional `delta(cursor?: string)` method
-- **THEN** it operates in incremental mode: yields only additions/updates/deletions since the cursor
+- **WHEN** consuming provider code explicitly calls its `entities()` generator for a full refresh
+- **THEN** the generator yields the full entity set
+- **AND** **WHEN** consuming provider code explicitly calls its optional `delta(cursor?: string)` method with a valid source cursor
+- **THEN** that method yields the source-reported additions/updates/deletions since the cursor
+
+Method selection and refresh orchestration belong to the consuming provider. Adding `delta()` does not cause the Catalog engine or `DeltaSyncManager` to detect and call it automatically. Backstage incremental-ingestion integration remains deferred to RHIDP-18840.
 
 ### Requirement: Published SDK Package with Validation
 

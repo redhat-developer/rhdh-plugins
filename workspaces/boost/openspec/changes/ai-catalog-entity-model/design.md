@@ -55,11 +55,11 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 ### Decision 1: Annotation independence from entity kinds
 
-The `rhdh.io/ai-asset-category` annotation provides a flat vocabulary (`agent`, `skill`, `rule`, `mcp-server`, `ai-model`, `model-server`) independent of the Backstage entity kind.
+The `rhdh.io/ai-asset-category` annotation provides five minimum feature categories (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) independent of the Backstage entity kind. The reconciled vocabulary also retains existing `rule` compatibility; that additional value does not establish a sixth minimum feature category.
 
 **Why:** Backstage entity kinds are structural categories (Component, Resource, API), not domain categories. A model is semantically a Resource, but so is a deployed MCP server instance. The annotation distinguishes them.
 
-**Why `rule`:** The original five values (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) did not cover AI decision rules, which are AIResource entities (same kind as skills per RHDHPLAN-1113) that need a distinct category so the validator can validate them and the browse UI can list them separately from skills. The `rule` value closes the gap between the annotation enum and the full set of AI entity types the system needs to validate and display.
+**Existing `rule` compatibility:** The recovered SDK and taxonomy already recognize AI decision rules. Preserve that compatibility without adding rule discovery, frontend behavior, or a new provider requirement to the five-category minimum. The mapping below retains `rule` as a compatibility reference. Further contract decisions belong to [RHIDP-18839](https://redhat.atlassian.net/browse/RHIDP-18839).
 
 **Mapping reference (not a constraint):**
 
@@ -89,30 +89,24 @@ Single npm package `@red-hat-developer-hub/backstage-plugin-boost-entity-provide
 - Validation utilities (`validateAIAssetEntity()`, rejects entities with missing/invalid annotations)
 - Entity kind mapping reference (documented mapping table from Decision 1)
 
-**Why a single package:** All AI asset entity providers share the same contracts. Splitting into multiple packages creates versioning coordination overhead without modularity benefit.
+**Recovered package boundary:** The restored code uses one shared package. This baseline does not decide the future shared/per-kind SDK structure; that design belongs to [RHIDP-18839](https://redhat.atlassian.net/browse/RHIDP-18839).
 
 **Interface over implementation:** The SDK exports TypeScript interfaces and constants. Providers implement the interfaces; the SDK does NOT provide a base class or abstract provider implementation. This follows Backstage's catalog provider pattern.
 
 ### Decision 3: Delta sync via `applyMutation({ type: 'delta' })`
 
-Delta sync uses Backstage's built-in delta mutation API. The SDK provides a wrapper that:
+The recovered helper uses Backstage's built-in delta mutation API. `DeltaSyncManager`:
 
 1. Accepts connector-reported additions/updates/deletions relative to a sync cursor
 2. Translates deltas into `applyMutation({ type: 'delta', added: [...], removed: [...] })` calls
-3. Persists sync cursors (ETag, last-modified timestamp, or connector-specific token) across polling cycles
-4. Falls back to full refresh when cursor invalid or missing
+3. Stores a supplied next cursor through the consumer's `CursorStore` after a successful mutation
+4. Exposes `getCursor()` and `clearCursor()` so consuming providers can manage their own refresh path
 
-**Alternative considered:** `IncrementalEntityProvider` with paginated iteration. Rejected because it doesn't handle deletions — it's for splitting a large full-refresh into pages, not for delta sync.
+**Consumer responsibilities:** The provider owns fetching source data, scheduling, detecting missing/rejected cursors, selecting full versus delta refresh, and submitting full mutations. The helper does not call `entities()` or `delta()` and does not automatically switch provider modes.
 
-**Cursor persistence:** Cursors stored in catalog database as provider-scoped key-value pairs. Backstage's `DatabaseManager` provides storage. The SDK abstracts cursor read/write so providers don't interact with the database directly.
+**Cursor persistence:** The SDK provides the `CursorStore` interface and an `InMemoryCursorStore` for development/testing. Consumers supply storage keyed by the manager's `locationKey`; stored `CursorState` contains `cursor` and `lastSyncTimestamp`. Durable storage is not delivered by this baseline.
 
-```typescript
-interface DeltaSyncCursor {
-  providerId: string;
-  cursor: string; // ETag, last-modified, or connector-specific token
-  lastSyncTimestamp: string; // ISO 8601
-}
-```
+**Deferred design:** The earlier rejection of `IncrementalEntityProvider` is withdrawn. Backstage incremental ingestion uses paginated bursts and mark-and-sweep deletion reconciliation; it is not inherently a source change-token feed. [RHIDP-18840](https://redhat.atlassian.net/browse/RHIDP-18840) owns the integration design, cursor semantics, durable storage, and automatic refresh/recovery orchestration. This reconciliation does not implement or choose that architecture. See [Backstage incremental providers](https://backstage.io/docs/features/software-catalog/external-integrations/incremental-entity-providers/).
 
 ### Decision 4: Air-gapped credential pattern _(Moved to RHIDP-15316)_
 

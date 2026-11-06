@@ -12,7 +12,7 @@
 
 This document is the formal specification of all RHDH AI Asset annotations,
 entity kind/`spec.type` pairings, and upstream Backstage entity kind mappings.
-It covers six AI-asset categories per
+It covers five minimum feature categories plus existing `rule` compatibility per
 [ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds)
 (the authoritative source of truth for current RHDH AI Asset entity mappings,
 after RHIDP-18761 reconciliation removed `skill-bundle`).
@@ -29,22 +29,28 @@ explicitly framed as future work.
 ### 1.1 `rhdh.io/ai-asset-category`
 
 **Purpose:** Classifies a Backstage catalog entity as an AI asset and assigns
-it to one of seven domain categories. The annotation is independent of the
+it to one of six documented values: five minimum categories plus existing `rule` compatibility. The annotation is independent of the
 entity's `kind` — the category is the semantic classification, while `kind` is
 the structural Backstage type.
 
-**Valid values (six):**
+**Reconciled values (five minimum categories plus `rule` compatibility):**
 
 | Value          | Description                                      |
 | -------------- | ------------------------------------------------ |
 | `agent`        | An AI agent capable of autonomous task execution |
 | `skill`        | A reusable AI skill invokable by agents          |
-| `rule`         | An AI decision rule governing agent behavior     |
+| `rule`         | Existing AI decision-rule compatibility only     |
 | `mcp-server`   | A Model Context Protocol server                  |
 | `ai-model`     | An AI/ML model                                   |
 | `model-server` | An inference endpoint serving one or more models |
 
-**Format:** Lowercase kebab-case string, must be one of the seven values above.
+**Format:** Lowercase kebab-case string, must be one of the six values above.
+
+The five minimum feature categories are `agent`, `skill`, `mcp-server`,
+`ai-model`, and `model-server`. Retaining `rule` does not add discovery,
+provider, or frontend obligations for rules. These are RHIDP-18762
+reconciliation targets; the current SDK's historical seven-value enum,
+README, and API report remain unchanged by this documentation PR.
 
 **Example:**
 

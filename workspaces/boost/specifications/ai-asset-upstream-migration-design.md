@@ -21,11 +21,12 @@ OpenSpec `migration-plan.md` file and keep this stub as a link only.
 
 ## Scope
 
-The migration design document covers six AI-asset categories per
+The migration design document covers five minimum feature categories per
 [Decision 1](../openspec/changes/ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds)
 (after RHIDP-18761 reconciliation):
-`agent`, `skill`, `rule`, `mcp-server`, `ai-model`,
-`model-server`. For each category it documents:
+`agent`, `skill`, `mcp-server`, `ai-model`, and `model-server`.
+Existing `rule` mappings remain a compatibility reference, not a sixth
+minimum feature deliverable. For each documented category it records:
 
 - Current kind / `spec.type` / annotation mapping (post entity-type
   pivot: #4164, #4211, #4260)

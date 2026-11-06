@@ -32,7 +32,8 @@ continue to work through the transition.
 Key inputs:
 
 - [ai-catalog-entity-model/design.md Decision 1](../../design.md) —
-  current six-category model (after RHIDP-18761 reconciliation).
+  five minimum categories plus existing `rule` compatibility (after
+  RHIDP-18761 reconciliation).
 - Upstream RFCs/PRs: `McpServerApiEntity`
   ([#34016](https://github.com/backstage/backstage/pull/34016)),
   `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261);
@@ -85,8 +86,9 @@ The following decisions are resolved and are not re-litigated here:
 
 - **Current-state SoT:**
   [ai-catalog-entity-model/design.md Decision 1](../../design.md) —
-  six categories (`agent`, `skill`, `rule`,
-  `mcp-server`, `ai-model`, `model-server`).
+  five minimum categories (`agent`, `skill`, `mcp-server`, `ai-model`,
+  `model-server`) plus existing `rule` compatibility. The `rule` rows below
+  are compatibility references, not a sixth minimum feature deliverable.
 - **MCP alignment:** RFC
   [#32062](https://github.com/backstage/backstage/issues/32062) Option 3
   shipped as `McpServerApiEntity`
@@ -504,7 +506,7 @@ GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server
 ## Out of Scope
 
 - **`vector-store` / `ai-tool` / `skill-bundle`:** Excluded from
-  the six-category upstream-migration SoT. `vector-store` and `ai-tool`
+  the minimum-and-compatibility mapping reference. `vector-store` and `ai-tool`
   are Augment POC vestiges (still recognized by boost `isAiAsset` /
   fixtures until explicitly retired). `skill-bundle` removed from
   minimum scope by RHIDP-18761.

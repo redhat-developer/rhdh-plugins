@@ -2,9 +2,9 @@
 
 > **Status: Consolidated into RHIDP-15258 (Entity-Provider SDK)** — Annotation scheme is now part of the SDK epic. Single story RHIDP-15255 covers all 3 annotations (category, version, source). Stories RHIDP-15256 and RHIDP-15257 have been closed.
 
-Standardized annotation scheme for classifying AI assets (agents, skills, rules, MCP servers, models, model servers) in the Backstage catalog, with documented normalization rules for versioning and provenance tracking.
+Standardized annotation scheme for the five minimum feature categories (agents, skills, MCP servers, models, model servers), with existing rule compatibility retained separately.
 
-Requirements cover: `rhdh.io/ai-asset-category` (6 values: agent, skill, rule, mcp-server, ai-model, model-server), `rhdh.io/ai-asset-version` (4 normalization rules), `rhdh.io/ai-asset-source` (provenance), and migration-readiness mapping.
+Requirements cover: `rhdh.io/ai-asset-category` (five minimum categories plus the existing `rule` compatibility value), `rhdh.io/ai-asset-version` (4 normalization rules), `rhdh.io/ai-asset-source` (provenance), and migration-readiness mapping. SDK implementation and diagnostic-message reconciliation belong to RHIDP-18762; these curated scenarios do not claim that the current seven-value SDK has already changed.
 
 ## ADDED Requirements
 
@@ -12,13 +12,18 @@ Requirements cover: `rhdh.io/ai-asset-category` (6 values: agent, skill, rule, m
 
 All AI asset entities MUST carry the `rhdh.io/ai-asset-category` annotation with one of the allowed values.
 
-The vocabulary includes `rule` in addition to the original five values. `rule` covers AI decision rules — these are AIResource entities (same kind as skills) that need their own category value so the CatalogProcessor validator can validate them and the frontend can filter them in browse views.
+The five minimum categories are `agent`, `skill`, `mcp-server`, `ai-model`, and `model-server`. Existing `rule` values remain accepted for compatibility. This does not require new rule discovery, providers, or frontend functionality. The kind/spec.type mappings are separate from this category vocabulary.
 
-#### Scenario: Valid category annotation values
+#### Scenario: Valid minimum category annotation values
 
-- **WHEN** an entity provider emits an AI asset entity
-- **THEN** the entity MUST have `metadata.annotations['rhdh.io/ai-asset-category']` set to one of: `agent`, `skill`, `rule`, `mcp-server`, `ai-model`, `model-server`
+- **WHEN** an entity provider emits an asset in one of the five minimum feature categories
+- **THEN** the entity MUST have `metadata.annotations['rhdh.io/ai-asset-category']` set to one of: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`
 - **AND** the CatalogProcessor validator accepts the entity
+
+#### Scenario: Existing rule category remains compatible
+
+- **WHEN** an otherwise valid AI asset entity has `rhdh.io/ai-asset-category: rule`
+- **THEN** the CatalogProcessor validator accepts that category
 
 #### Scenario: Missing category annotation rejected (AI entities only)
 

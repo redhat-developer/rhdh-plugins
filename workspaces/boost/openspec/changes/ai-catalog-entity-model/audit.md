@@ -65,8 +65,9 @@ scope. Changes applied:
   (Decision 8), and their task groups (3, 4) from the minimum baseline.
 - Archived `neo4j-knowledge-graph`, `oci-skill-registry`, and
   `oci-skill-connector` change directories.
-- Removed `skill-bundle` from the mandatory annotation category values
-  (seven → six).
+- Removed `skill-bundle` from minimum annotation obligations. The curated
+  vocabulary distinguishes five minimum feature categories from existing
+  `rule` compatibility. SDK implementation changes remain with RHIDP-18762.
 - Removed the `air-gapped-deployment` spec from active minimum specs
   (configuration examples preserved in `connector-shared-infrastructure`).
 - Separated 5,000-entity load/SLA acceptance requirements as stretch.
@@ -74,3 +75,18 @@ scope. Changes applied:
   invalid-cursor orchestration, incremental entity providers).
 - Updated migration-readiness mappings: removed skill-bundle rows,
   updated category counts. Sign-off remains pending.
+- Updated the companion documents `specifications/annotation-specification.md`
+  and `specifications/ai-asset-upstream-migration-design.md` to describe the
+  five-category minimum and retain `rule` mappings as compatibility references.
+  Corrected the remaining stale category counts.
+- Reconciled proposal, Decision 3, delta scenarios, SDK integration prose,
+  and tasks with the existing helper: consumers own scheduling, source
+  fetching, refresh selection, and rejected-cursor recovery. The helper
+  translates deltas and reads/writes/clears state through `CursorStore`.
+- Withdrew the historical automatic-method-detection claim and the rejection
+  of Backstage incremental providers. Durable storage and shared orchestration
+  remain deferred to RHIDP-18840; shared/per-kind contracts remain deferred
+  to RHIDP-18839. This reconciliation implements neither design.
+- Corrected migration-readiness links to Decision 1 and the archived
+  catalog-entities reference. Other features' OpenSpecs and SDK source/API
+  reports remain unchanged.

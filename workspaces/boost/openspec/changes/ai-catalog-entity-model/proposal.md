@@ -39,7 +39,7 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 > _Consolidated into RHIDP-15258 (Entity-Provider SDK). Single story RHIDP-15255 covers all 3 annotations._
 
-- `rhdh.io/ai-asset-category` annotation with six defined values: `agent`, `skill`, `rule`, `mcp-server`, `ai-model`, `model-server`
+- `rhdh.io/ai-asset-category` annotation with five minimum feature categories: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`. Existing `rule` compatibility is documented separately; it is not a sixth minimum deliverable.
 - `rhdh.io/ai-asset-version` annotation with documented normalization rules (semver pass-through, date-based → semver, commit hash → version string)
 - `rhdh.io/ai-asset-source` annotation for provenance tracking (`connector-name/registry-instance-id`)
 - CatalogProcessor validator rejects entities with missing/invalid annotations at ingestion time
@@ -60,9 +60,13 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 - Cursor/ETag-based delta sync built on `applyMutation({ type: 'delta' })`
 - Connector-reported additions/updates/deletions translated into catalog mutations
-- Sync cursors persisted across polling cycles
-- Fallback to full refresh when cursor invalid
-- Existing full-refresh providers work without modification
+- Sync cursors stored through a consumer-supplied `CursorStore`; the SDK's `InMemoryCursorStore` is for development/testing
+- Consuming providers own first/full refresh, cursor rejection handling, and method selection; the helper does not orchestrate those operations
+- Existing full-refresh providers retain their own scheduling and mutation submission
+
+Durable-store implementation, automatic refresh orchestration, and Backstage
+incremental-provider integration remain follow-on design work under
+[RHIDP-18840](https://redhat.atlassian.net/browse/RHIDP-18840).
 
 ### Air-Gapped Deployment Support
 

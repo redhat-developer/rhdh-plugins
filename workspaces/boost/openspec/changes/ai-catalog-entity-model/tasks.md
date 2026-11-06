@@ -7,6 +7,12 @@
 
 ## 1. Annotation Scheme Definition and Validation (P0) — _RHIDP-15258_
 
+The five minimum feature categories are `agent`, `skill`, `mcp-server`,
+`ai-model`, and `model-server`. The existing `rule` value below is retained
+for compatibility, not as a sixth minimum deliverable. SDK code and fixture
+reconciliation belong to RHIDP-18762; future shared/per-kind design belongs
+to RHIDP-18839.
+
 - [ ] 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `rule`, `mcp-server`, `ai-model`, `model-server`) in SDK package (RHIDP-15255)
 - [ ] 1.2 Define `rhdh.io/ai-asset-version` annotation constant in SDK package (RHIDP-15255)
 - [ ] 1.3 Define `rhdh.io/ai-asset-source` annotation constant in SDK package (RHIDP-15255)
@@ -30,8 +36,8 @@
 - [ ] 2.9 Add `applyDelta({ added, updated, removed, nextCursor })` method translating connector deltas to catalog mutations (RHIDP-15262)
 - [ ] 2.10 Implement sync cursor persistence via a pluggable `CursorStore` interface (SDK ships `InMemoryCursorStore`; a durable DB-backed store is the consuming backend plugin's responsibility) (RHIDP-15262)
 - [ ] 2.11 Implement `getCursor(): Promise<string | undefined>` method retrieving the last persisted cursor for the manager's construction-time `locationKey` (RHIDP-15262)
-- [ ] 2.12 Implement fallback to full refresh when cursor invalid or missing (RHIDP-15262)
-- [ ] 2.13 Add unit tests for delta sync framework covering cursor persistence, fallback, mutation translation (RHIDP-15262)
+- [ ] 2.12 ~~Implement framework-managed fallback to full refresh when cursor invalid or missing~~ (RHIDP-15262) — **DEFERRED** to RHIDP-18840. Existing consumers own refresh orchestration; no shared fallback implementation is required by this baseline.
+- [ ] 2.13 Add unit tests for the existing delta helper covering mutation translation and cursor read/write/reset through `CursorStore` (RHIDP-15262)
 
 ## ~~3. Neo4j Sync Adapter Interface (P0)~~ REMOVED
 
@@ -103,7 +109,7 @@
 
 - [ ] 10.1 Verify all three annotations are enforced by CatalogProcessor validator (reject entities with missing/invalid values)
 - [x] 10.2 Verify OGX provider annotation emission through the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md); targeted model and agent tests cover category, source, and normalized-version annotations
-- [ ] 10.3 Verify delta sync framework falls back to full refresh when cursor invalid
+- [ ] 10.3 Verify `getCursor()` returns `undefined` for absent/cleared state and `clearCursor()` resets only the configured `locationKey` without initiating a full mutation; automated fallback remains deferred to RHIDP-18840
 - [ ] 10.4 Verify custom CA bundles are honored for TLS connections in air-gapped deployment
 - [ ] 10.5 Verify startup validation rejects plaintext credentials with descriptive error
 - [ ] 10.6 ~~Verify load test passes with p95 latency degradation ≤10% at 5,000+ entities~~ — stretch
