@@ -108,9 +108,15 @@ export async function extractCatalogIndexLayers(
       );
     }
 
-    const manifest = JSON.parse(
-      await fs.readFile(manifestPath, 'utf8'),
-    ) as OciManifest;
+    const manifestText = await fs.readFile(manifestPath, 'utf8');
+    let manifest: OciManifest;
+    try {
+      manifest = JSON.parse(manifestText) as OciManifest;
+    } catch (err) {
+      throw new InstallException(
+        `Malformed manifest.json in catalog index image ${image}: ${errorMessage(err)}`,
+      );
+    }
     const layers = manifest.layers ?? [];
 
     let pending: InstallException | null = null;
@@ -121,16 +127,19 @@ export async function extractCatalogIndexLayers(
       const [, fname] = digest.split(':');
       if (!fname) continue;
       const layerPath = path.join(localDir, fname);
-      if (!(await fileExists(layerPath))) continue;
+      if (!(await fileExists(layerPath))) {
+        throw new InstallException(
+          `Layer ${digest} listed in manifest.json is missing from catalog index image ${image}`,
+        );
+      }
 
-      await tar.x({
+      const extraction = tar.x({
         file: layerPath,
         cwd: destDirAbs,
         preservePaths: false,
         // The filter captures `pending` (a single-write latch) and runs
-        // synchronously inside the awaited tar.x call — iterations are
-        // serialised, so the closure-in-loop hazard the rule guards against
-        // does not apply.
+        // synchronously inside tar.x, which is awaited before the next layer,
+        // so the closure-in-loop hazard the rule guards against does not apply.
         // eslint-disable-next-line no-loop-func
         filter: (filePath, entry) => {
           if (pending) return false;
@@ -152,6 +161,11 @@ export async function extractCatalogIndexLayers(
 
           return isAllowedEntryType(stat.type);
         },
+      });
+      await extraction.catch((err: unknown) => {
+        throw new InstallException(
+          `Failed to extract layer ${digest} of catalog index image ${image}: ${errorMessage(err)}`,
+        );
       });
     }
     if (pending) throw pending;
@@ -307,6 +321,10 @@ export async function cleanupCatalogIndexTemp(mountDir: string): Promise<void> {
     recursive: true,
     force: true,
   });
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 async function copyDir(src: string, dst: string): Promise<void> {
