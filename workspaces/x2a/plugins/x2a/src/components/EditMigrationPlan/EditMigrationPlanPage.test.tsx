@@ -16,6 +16,7 @@
 
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/test-utils';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { MIGRATION_PLAN_MAX_CONTENT_BYTES } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
@@ -105,7 +106,20 @@ const readModulePlan =
 const saveModulePlan =
   clientServiceMock.projectsProjectIdModulesModuleIdMigrationPlanPut;
 
-const renderPage = () => renderInTestApp(<EditMigrationPlanPage />);
+/** Link uses the real router; the page's useNavigate is mocked. */
+const LocationProbe = () => {
+  const { pathname } = useLocation();
+  return <div data-testid="location">{pathname}</div>;
+};
+
+const renderPage = () =>
+  renderInTestApp(
+    <>
+      <LocationProbe />
+      <RouterLink to="/catalog">Catalog</RouterLink>
+      <EditMigrationPlanPage />
+    </>,
+  );
 const editor = () => screen.findByLabelText('Markdown source');
 const type = async (value: string) =>
   fireEvent.change(await editor(), { target: { value } });
@@ -770,6 +784,80 @@ describe('EditMigrationPlanPage', () => {
 
       expect(screen.queryByRole('dialog')).toBeNull();
       expect(await editor()).toBeInTheDocument();
+    });
+
+    it('asks before an in-app link leaves a dirty editor', async () => {
+      await renderPage();
+      await type('# Changed');
+
+      expect(
+        fireEvent.click(screen.getByRole('link', { name: 'Catalog' })),
+      ).toBe(false);
+
+      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(
+        await screen.findByText('Discard your changes?'),
+      ).toBeInTheDocument();
+
+      click('Discard changes');
+      await waitFor(() =>
+        expect(mockNavigate).toHaveBeenCalledWith('/catalog'),
+      );
+    });
+
+    it('follows an in-app link without asking when nothing changed', async () => {
+      await renderPage();
+      await editor();
+
+      fireEvent.click(screen.getByRole('link', { name: 'Catalog' }));
+
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.getByTestId('location')).toHaveTextContent('/catalog');
+    });
+
+    it('leaves modifier clicks and other sites alone', async () => {
+      await renderPage();
+      await type('# Changed');
+      const catalog = screen.getByRole('link', { name: 'Catalog' });
+
+      expect(fireEvent.click(catalog, { ctrlKey: true })).toBe(true);
+
+      const external = document.createElement('a');
+      external.href = 'https://example.com/docs';
+      document.body.appendChild(external);
+      expect(fireEvent.click(external)).toBe(true);
+      external.remove();
+
+      expect(screen.queryByText('Discard your changes?')).toBeNull();
+    });
+
+    it('swallows an in-app link while a save is in progress', async () => {
+      savePlan.mockReturnValue(new Promise(() => {}));
+      await renderPage();
+      await type('# Changed');
+
+      click('Save');
+      fireEvent.click(
+        within(await screen.findByRole('dialog')).getByRole('button', {
+          name: 'Save',
+        }),
+      );
+      await waitFor(() => {
+        expect(savePlan).toHaveBeenCalled();
+        expect(
+          within(screen.getByRole('dialog')).getByRole('button', {
+            name: 'Save',
+          }),
+        ).toBeDisabled();
+      });
+
+      expect(
+        fireEvent.click(
+          screen.getByRole('link', { name: 'Catalog', hidden: true }),
+        ),
+      ).toBe(false);
+      expect(screen.queryByText('Discard your changes?')).toBeNull();
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
 
     it('stops asking after the changes were saved', async () => {
