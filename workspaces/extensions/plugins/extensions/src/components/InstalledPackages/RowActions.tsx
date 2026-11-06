@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import type { HTMLAttributes, ReactElement, ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useRouteRef } from '@backstage/core-plugin-api';
@@ -46,7 +46,14 @@ import { apiErrorMessage } from '../../utils';
 import { CATALOG_ENTITY_DOCS_URL } from '../../consts';
 import { usePluginConfigurationPermissions } from '../../hooks/usePluginConfigurationPermissions';
 import { useEnablePlugin } from '../../hooks/useEnablePlugin';
-import { useInstallationContext } from '../InstallationContext';
+import {
+  getPackageInstallationKey,
+  getPendingInstallationAction,
+  inferEnabledFromPending,
+  useInstallationContext,
+  withPackageInstallationEntry,
+  withoutPackageInstallationEntry,
+} from '../InstallationContext';
 import { CodeBlocksIcon } from '../icons/CodeBlocksIcon';
 
 /**
@@ -132,6 +139,8 @@ const MissingCatalogEntityTooltip = ({
 
 export type InstalledPackageRow = {
   displayName: string;
+  /** Canonical pending-restart key (catalog title); must match edit/drawer. */
+  installationKey: string;
   packageName: string;
   parentPlugin?: string;
   installStatus?: ExtensionsPackageInstallStatus;
@@ -388,10 +397,45 @@ export const TogglePackage = ({
     pkg.namespace!,
     pkg.parentPlugin ?? '',
   );
-  const [isPackageEnabled, setIsPackageEnabled] = useState(
+  // Catalog status is the pre-restart baseline (same as the package drawer).
+  const baselineEnabled =
     pkg.installStatus === ExtensionsPackageInstallStatus.Installed ||
-      pkg.installStatus === ExtensionsPackageInstallStatus.UpdateAvailable,
+    pkg.installStatus === ExtensionsPackageInstallStatus.UpdateAvailable;
+  const packageKey = getPackageInstallationKey({
+    title: pkg.installationKey,
+    displayName: pkg.displayName,
+    name: pkg.name,
+  });
+  const aliasKeys = [pkg.packageName, pkg.name].filter((k): k is string =>
+    Boolean(k),
   );
+  const pendingAction = getPendingInstallationAction(
+    installedPackages,
+    packageKey,
+    aliasKeys,
+  );
+
+  const [isPackageEnabled, setIsPackageEnabled] = useState(() => {
+    const inferred = inferEnabledFromPending(pendingAction);
+    if (inferred !== undefined) {
+      return inferred;
+    }
+    return baselineEnabled;
+  });
+
+  useEffect(() => {
+    // Prefer local pending enable/disable so a drawer toggle is reflected here
+    // before backend restart updates catalog installStatus.
+    if (!pendingAction) {
+      setIsPackageEnabled(baselineEnabled);
+      return;
+    }
+    const inferred = inferEnabledFromPending(pendingAction);
+    if (inferred !== undefined) {
+      setIsPackageEnabled(inferred);
+    }
+  }, [baselineEnabled, pendingAction]);
+
   const disabledIcon = (
     <Box component="span" display="inline-flex">
       <IconButton size="small" disabled>
@@ -459,13 +503,26 @@ export const TogglePackage = ({
 
       if (res?.status === 'OK') {
         setIsPackageEnabled(newValue);
-        const updated = {
-          ...installedPackages,
-          [pkg.packageName ?? pkg.name]: isPackageEnabled
-            ? t('install.packageDisabled')
-            : t('install.packageEnabled'),
-        };
-        setInstalledPackages(updated);
+        // Same key as edit/drawer (catalog title) — not npm packageName —
+        // so enable/disable does not create a second restart entry.
+        if (newValue === baselineEnabled) {
+          setInstalledPackages(
+            withoutPackageInstallationEntry(
+              installedPackages,
+              packageKey,
+              aliasKeys,
+            ),
+          );
+        } else {
+          setInstalledPackages(
+            withPackageInstallationEntry(
+              installedPackages,
+              packageKey,
+              isPackageEnabled ? 'disable' : 'enable',
+              aliasKeys,
+            ),
+          );
+        }
       } else {
         const errorMessage =
           apiErrorMessage(res) ?? String(res ?? 'Unknown error');

@@ -29,12 +29,16 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { useInstallationContext } from './InstallationContext';
+import {
+  getPendingInstallationLabel,
+  useInstallationContext,
+} from './InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
 
 const PluginsTable = ({ showPackages }: { showPackages?: boolean }) => {
   const { t } = useTranslation();
   const { installedPlugins, installedPackages } = useInstallationContext();
+  const kind = showPackages ? 'package' : 'plugin';
   return (
     <Table aria-label={t('table.pluginsTable')}>
       <TableHead>
@@ -46,12 +50,14 @@ const PluginsTable = ({ showPackages }: { showPackages?: boolean }) => {
       <TableBody>
         {Object.entries(
           showPackages ? installedPackages : installedPlugins,
-        ).map(row => (
-          <TableRow key={row[0]}>
+        ).map(([name, action]) => (
+          <TableRow key={name}>
             <TableCell component="th" scope="row">
-              {row[0]}
+              {name}
             </TableCell>
-            <TableCell align="left">{row[1]}</TableCell>
+            <TableCell align="left">
+              {getPendingInstallationLabel(action, kind, t)}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

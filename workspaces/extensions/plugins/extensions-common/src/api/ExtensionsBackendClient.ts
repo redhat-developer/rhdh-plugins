@@ -23,6 +23,7 @@ import type { ConfigApi } from '@backstage/core-plugin-api';
 import type {
   ConfigurationResponse,
   ExtensionsCollection,
+  ExtensionsConfigurationResponse,
   ExtensionsPackage,
   ExtensionsPlugin,
 } from '../types';
@@ -250,7 +251,7 @@ export class ExtensionsBackendClient implements ExtensionsApi {
     );
   }
 
-  async getExtensionsConfiguration(): Promise<{ enabled: boolean }> {
+  async getExtensionsConfiguration(): Promise<ExtensionsConfigurationResponse> {
     return this.request(`/plugins/configure`, 'GET');
   }
 
