@@ -10,7 +10,9 @@
 > - RHIDP-15329 — SDK must expose the shared CA bundle resolution utility for all connectors
 > - RHIDP-15330 — SDK must define the per-entity and per-connector error isolation contract
 
-A TypeScript SDK package defining the contract for AI asset entity providers, exporting shared types, validation utilities, and adapter interfaces for Neo4j and skillcard.yaml schemas.
+A TypeScript SDK package defining the contract for AI asset entity providers, exporting shared types and validation utilities.
+
+The minimum feature categories are `agent`, `skill`, `mcp-server`, `ai-model`, and `model-server`. Existing `rule` compatibility is retained separately. The scenarios below are reconciliation targets for RHIDP-18762; TypeScript, tests, README, and API-report changes are not part of RHIDP-18761. In particular, the current SDK still includes the historical `skill-bundle` value until that reconciliation.
 
 ## ADDED Requirements
 
@@ -34,10 +36,12 @@ The SDK MUST define TypeScript interfaces for AI asset entity providers covering
 
 #### Scenario: Full-refresh and delta sync pattern support (RHIDP-15259)
 
-- **WHEN** a provider implements only the `entities()` generator
-- **THEN** it operates in full-refresh mode: yields all entities on each poll
-- **AND** **WHEN** a provider implements the optional `delta(cursor?: string)` method
-- **THEN** it operates in incremental mode: yields only additions/updates/deletions since the cursor
+- **WHEN** consuming provider code explicitly calls its `entities()` generator for a full refresh
+- **THEN** the generator yields the full entity set
+- **AND** **WHEN** consuming provider code explicitly calls its optional `delta(cursor?: string)` method with a valid source cursor
+- **THEN** that method yields the source-reported additions/updates/deletions since the cursor
+
+Method selection and refresh orchestration belong to the consuming provider. Adding `delta()` does not cause the Catalog engine or `DeltaSyncManager` to detect and call it automatically. Backstage incremental-ingestion integration remains deferred to RHIDP-18840.
 
 ### Requirement: Published SDK Package with Validation
 
@@ -58,9 +62,9 @@ The SDK MUST be published as an installable npm package with shared validation u
 #### Scenario: Shared validation rejects invalid entities (RHIDP-15260)
 
 - **WHEN** `validateAIAssetEntity(entity)` is called with an entity missing `rhdh.io/ai-asset-category`
-- **THEN** it throws: `Error: Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
+- **THEN** it throws: `Error: Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, mcp-server, ai-model, model-server`
 - **AND** **WHEN** called with an entity having `rhdh.io/ai-asset-category: invalid-value`
-- **THEN** it throws: `Error: Invalid rhdh.io/ai-asset-category value 'invalid-value'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
+- **THEN** it throws: `Error: Invalid rhdh.io/ai-asset-category value 'invalid-value'. Allowed: agent, skill, rule, mcp-server, ai-model, model-server`
 
 #### Scenario: Rejected category diagnostics escape control characters
 
@@ -71,43 +75,19 @@ The SDK MUST be published as an installable npm package with shared validation u
 #### Scenario: SDK has README, CHANGELOG, semver (RHIDP-15260)
 
 - **WHEN** the SDK package is published
-- **THEN** it has `README.md` documenting: interface contract, annotation constants, validation usage, Neo4j adapter, SkillBundle schema
+- **THEN** it has `README.md` documenting: interface contract, annotation constants, validation usage
 - **AND** it has `CHANGELOG.md` tracking version changes
 - **AND** it follows semver (e.g., `1.0.0`, `1.1.0`)
 
-### Requirement: Neo4j Sync Adapter Interface
+### ~~Requirement: Neo4j Sync Adapter Interface~~ REMOVED
 
-The SDK MUST define a TypeScript interface for Neo4j sync adapters with node/relationship creation contracts.
+> Removed from minimum scope (RHIDP-18761). Neo4j knowledge graph
+> integration is archived — see
+> `openspec/changes/archive/2026-11-06-neo4j-knowledge-graph/`.
 
-#### Scenario: Neo4jSyncAdapter interface definition (RHIDP-15303)
+### ~~Requirement: SkillBundle Metadata Contract~~ REMOVED
 
-- **WHEN** a developer implements a Neo4j sync adapter
-- **THEN** they implement the `Neo4jSyncAdapter` interface from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
-- **AND** the interface requires methods: `createNode()`, `updateNode()`, `deleteNode()`, `createRelationship()`
-
-#### Scenario: Relationship type constants (RHIDP-15303)
-
-- **WHEN** a developer creates a relationship via `createRelationship(fromRef, toRef, type, metadata?)`
-- **THEN** `type` is one of: `DEPENDS_ON`, `USES_TOOL`, `BELONGS_TO`, `SIMILAR_TO`, `IMPLEMENTED_BY`, `INCLUDES`
-- **AND** the SDK exports a `RelationshipType` union type with these constants
-
-#### Scenario: Interface documentation (RHIDP-15303)
-
-- **WHEN** the SDK is published
-- **THEN** the `Neo4jSyncAdapter` interface has JSDoc comments explaining: when to use each method, what metadata should contain, how relationships are used for knowledge graph queries
-
-### Requirement: SkillBundle Metadata Contract
-
-The SDK MUST define the TypeScript type for SkillBundle metadata (skillcard.yaml schema).
-
-#### Scenario: SkillBundleMetadata type definition (RHIDP-15303)
-
-- **WHEN** a developer parses a `skillcard.yaml` file
-- **THEN** they use the `SkillBundleMetadata` type from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
-- **AND** the type defines fields: `name: string`, `version: string`, `description?: string`, `author?: string`, `tags?: string[]`, `runtime?: { language: string, dependencies?: Record<string, string> }`, `mcp?: { servers: string[] }`
-
-#### Scenario: OCI skill registry uses SkillBundleMetadata (RHIDP-15303)
-
-- **WHEN** the OCI skill registry provider parses an OCI artifact's `skillcard.yaml`
-- **THEN** it validates the YAML against the `SkillBundleMetadataSchema` Zod schema (`.parse()`) and uses the inferred TypeScript type `SkillBundleMetadata`
-- **AND** it emits a catalog entity with metadata derived from the skillcard (name, version, tags, runtime)
+> Removed from minimum scope (RHIDP-18761). SkillBundle/skillcard.yaml
+> contracts and the OCI skill registry are archived — see
+> `openspec/changes/archive/2026-11-06-oci-skill-registry/` and
+> `openspec/changes/archive/2026-11-06-oci-skill-connector/`.
