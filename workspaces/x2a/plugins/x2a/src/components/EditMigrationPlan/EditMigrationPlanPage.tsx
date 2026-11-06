@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { useEffect, useState, type MouseEvent } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useHref, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import {
   Breadcrumbs,
@@ -62,6 +62,25 @@ const useStyles = makeStyles(theme => ({
 type ActionDialog = 'cancel' | 'reload' | 'save';
 
 /**
+ * In-app path of a same-origin URL, with the app base removed.
+ * Undefined when the URL is not under that base.
+ */
+const routerPath = (url: URL, base: string): string | undefined => {
+  const prefix = base === '/' ? '' : base.replace(/\/$/, '');
+  let path: string;
+  if (!prefix) {
+    path = url.pathname;
+  } else if (url.pathname === prefix) {
+    path = '/';
+  } else if (url.pathname.startsWith(`${prefix}/`)) {
+    path = url.pathname.slice(prefix.length);
+  } else {
+    return undefined;
+  }
+  return `${path}${url.search}${url.hash}`;
+};
+
+/**
  * Edits the project migration plan (route without moduleId) or the migration
  * plan of a module (route with moduleId) through the backend.
  */
@@ -69,6 +88,8 @@ export const EditMigrationPlanPage = () => {
   const { t } = useTranslation();
   const classes = useStyles();
   const navigate = useNavigate();
+  const route = useLocation();
+  const baseHref = useHref('/');
   const { projectId = '', moduleId } = useParams<{
     projectId: string;
     moduleId?: string;
@@ -128,24 +149,67 @@ export const EditMigrationPlanPage = () => {
     navigate(target);
   };
 
-  const askToLeave = (to: string) => {
+  const askToLeave = useCallback((to: string) => {
     setLeaveTo(to);
     setDialog('cancel');
-  };
+  }, []);
 
-  /** In-app links do not fire beforeunload, so a dirty editor confirms here. */
-  const guardNavigation =
-    (to: string) => (event: MouseEvent<HTMLAnchorElement>) => {
-      if (saving) {
-        event.preventDefault();
+  // Sidebar, logo, and breadcrumb links are outside this page's handlers, and
+  // a client-side navigation does not fire beforeunload.
+  useEffect(() => {
+    if (!dirty && !saving) {
+      return undefined;
+    }
+    const here = `${route.pathname}${route.search}${route.hash}`;
+    const onClick = (event: MouseEvent) => {
+      if (
+        event.button !== 0 ||
+        event.metaKey ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.shiftKey
+      ) {
         return;
       }
-      if (!dirty) {
+      const raw = event.target;
+      let element: Element | null = null;
+      if (raw instanceof Element) {
+        element = raw;
+      } else if (raw instanceof Node) {
+        element = raw.parentElement;
+      }
+      const anchor = element?.closest('a');
+      if (
+        !anchor ||
+        anchor.hasAttribute('download') ||
+        (anchor.target && anchor.target !== '_self')
+      ) {
+        return;
+      }
+      const url = new URL(anchor.href);
+      if (url.origin !== window.location.origin) {
+        return;
+      }
+      const next = routerPath(url, baseHref);
+      if (!next || next === here) {
         return;
       }
       event.preventDefault();
-      askToLeave(to);
+      if (!saving) {
+        askToLeave(next);
+      }
     };
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, [
+    askToLeave,
+    baseHref,
+    dirty,
+    route.hash,
+    route.pathname,
+    route.search,
+    saving,
+  ]);
 
   const renderBody = () => {
     switch (status) {
@@ -304,22 +368,14 @@ export const EditMigrationPlanPage = () => {
       />
       <Content>
         <Breadcrumbs aria-label="breadcrumb" separator=">">
-          <Link to={rootPath()} onClick={guardNavigation(rootPath())}>
-            {t('page.title')}
-          </Link>
+          <Link to={rootPath()}>{t('page.title')}</Link>
           {/* at most three items: Backstage collapses longer breadcrumbs */}
           {moduleId ? (
-            <Link
-              to={modulePath({ projectId, moduleId })}
-              onClick={guardNavigation(modulePath({ projectId, moduleId }))}
-            >
+            <Link to={modulePath({ projectId, moduleId })}>
               {editor.module?.name ?? t('modulePage.title')}
             </Link>
           ) : (
-            <Link
-              to={projectPath({ projectId })}
-              onClick={guardNavigation(projectPath({ projectId }))}
-            >
+            <Link to={projectPath({ projectId })}>
               {editor.project?.name ?? t('projectPage.title')}
             </Link>
           )}
