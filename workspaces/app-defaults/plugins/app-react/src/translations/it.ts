@@ -81,5 +81,19 @@ export default createTranslationMessages({
     'catalog.entityTabs.Todo': 'Da fare',
     'catalog.entityTabs.Topology': 'Topologia',
     'catalog.entityTabs.Workflows': 'Workflow',
+    'templateCard.timeSaved.add': 'Aggiungi tempo stim. risparmiato',
+    'templateCard.timeSaved.addTooltip':
+      'Aiuta gli altri a vedere il valore di questo modello. Aggiungi questa annotazione al suo template.yaml:',
+    'templateCard.timeSaved.copied': 'Copiato',
+    'templateCard.timeSaved.copy': 'Copia annotazione',
+    'templateCard.timeSaved.estimate': 'Tempo stim. risparmiato: {{duration}}',
+    'templateCard.timeSaved.estimateTooltip':
+      'Questo numero indica il tempo tipico per svolgere questo lavoro senza il modello, come indicato dal proprietario.',
+    'templateCard.timeSaved.hour_one': '{{count}} ora',
+    'templateCard.timeSaved.hour_other': '{{count}} ore',
+    'templateCard.timeSaved.day_one': '{{count}} giorno',
+    'templateCard.timeSaved.day_other': '{{count}} giorni',
+    'templateCard.timeSaved.minute_one': '{{count}} minuto',
+    'templateCard.timeSaved.minute_other': '{{count}} minuti',
   },
 });
