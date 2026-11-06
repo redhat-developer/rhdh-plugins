@@ -164,6 +164,21 @@ class EventApiController {
     return timeSavedByRef;
   }
 
+  private collectScaffolderEntityRefs(events: AnalyticsEvent[]): string[] {
+    const entityRefs = new Set<string>();
+    for (const event of events) {
+      const entityRef = event.context?.entityRef;
+      if (
+        this.isScaffolderCreateEvent(event) &&
+        typeof entityRef === 'string' &&
+        entityRef
+      ) {
+        entityRefs.add(entityRef);
+      }
+    }
+    return [...entityRefs];
+  }
+
   private async processIncomingEvents(
     events: AnalyticsEvent[],
     auditEvent: AuditorServiceEvent,
@@ -202,19 +217,8 @@ class EventApiController {
       }
     }
 
-    const entityRefs = new Set<string>();
-    for (const event of candidateEvents) {
-      const entityRef = event.context?.entityRef;
-      if (
-        this.isScaffolderCreateEvent(event) &&
-        typeof entityRef === 'string' &&
-        entityRef
-      ) {
-        entityRefs.add(entityRef);
-      }
-    }
     const timeSavedByRef = await this.resolveTimeSavedByRef(
-      [...entityRefs],
+      this.collectScaffolderEntityRefs(candidateEvents),
       credentials,
     );
 
