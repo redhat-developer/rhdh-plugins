@@ -108,9 +108,16 @@ export async function extractCatalogIndexLayers(
       );
     }
 
-    const manifest = JSON.parse(
-      await fs.readFile(manifestPath, 'utf8'),
-    ) as OciManifest;
+    let manifest: OciManifest;
+    try {
+      manifest = JSON.parse(
+        await fs.readFile(manifestPath, 'utf8'),
+      ) as OciManifest;
+    } catch (err) {
+      throw new InstallException(
+        `Malformed manifest.json in catalog index image ${image}: ${errorMessage(err)}`,
+      );
+    }
     const layers = manifest.layers ?? [];
 
     let pending: InstallException | null = null;
@@ -123,7 +130,7 @@ export async function extractCatalogIndexLayers(
       const layerPath = path.join(localDir, fname);
       if (!(await fileExists(layerPath))) continue;
 
-      await tar.x({
+      const extraction = tar.x({
         file: layerPath,
         cwd: destDirAbs,
         preservePaths: false,
@@ -152,6 +159,11 @@ export async function extractCatalogIndexLayers(
 
           return isAllowedEntryType(stat.type);
         },
+      });
+      await extraction.catch((err: unknown) => {
+        throw new InstallException(
+          `Failed to extract layer ${digest} of catalog index image ${image}: ${errorMessage(err)}`,
+        );
       });
     }
     if (pending) throw pending;
@@ -307,6 +319,10 @@ export async function cleanupCatalogIndexTemp(mountDir: string): Promise<void> {
     recursive: true,
     force: true,
   });
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 async function copyDir(src: string, dst: string): Promise<void> {
