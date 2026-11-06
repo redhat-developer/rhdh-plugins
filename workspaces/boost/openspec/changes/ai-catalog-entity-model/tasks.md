@@ -54,9 +54,7 @@ to RHIDP-18839.
 
 ## 5. Provider Implementations (P1) — _RHIDP-15258_
 
-- [ ] 5.1 ~~Update Kagenti provider to emit entities with all three required annotations~~ **DO NOT IMPLEMENT** — Kagenti is out of scope for this change (RHIDP-15255)
 - [x] 5.2 OGX provider annotation emission is covered by the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md); its model and agent providers emit category, source, and normalized-version annotations (RHIDP-15255)
-- [ ] 5.3 ~~Verify Kagenti provider compiles against SDK interface without errors~~ **DO NOT IMPLEMENT** — Kagenti is out of scope for this change (RHIDP-15259)
 - [x] 5.4 Verify that the OGX providers use Backstage `EntityProvider` and the SDK annotation/version utilities; this is covered by the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md) and its targeted test suite (RHIDP-15259)
 
 ## 6. Air-Gapped Deployment Support (P1) — _Moved to RHIDP-15316 (RHDHPLAN-1510)_

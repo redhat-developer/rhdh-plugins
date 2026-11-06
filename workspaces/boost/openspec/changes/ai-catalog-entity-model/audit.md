@@ -31,7 +31,7 @@
 ### Fixes Applied (Pass 1)
 
 - **[B] proposal.md:37** — Updated "five defined values" → "seven defined values" and added `rule`, `skill-bundle` to match design.md D1 and implementation.
-- **[D] proposal.md:92-96** — Updated Impact section paths: `plugins/boost-entity-provider-sdk/` (was `plugins/boost-backend/src/entity-provider-sdk/`), `AIAssetValidator.ts` path, `kagenti-entity-provider` and `ogx-entity-provider` (was `boost-backend-module-kagenti/llamastack`).
+- **[D] proposal.md:92-96** — Updated SDK package, validator, and OGX provider paths in the Impact section.
 - **[G] annotation-scheme/spec.md:21-27** — Split combined "Missing or invalid category rejected" scenario into two: "Missing category rejected" (uses `"Invalid or missing …"` message) and "Invalid category rejected with value shown" (uses `"Invalid … value 'foo'. Allowed: …"` message), matching entity-provider-sdk spec and implementation.
 
 ### Recovery follow-up, 2026-11-05 (limited check)
@@ -90,3 +90,13 @@ scope. Changes applied:
 - Corrected migration-readiness links to Decision 1 and the archived
   catalog-entities reference. Other features' OpenSpecs and SDK source/API
   reports remain unchanged.
+
+### Maintainer-directed removal of obsolete provider material, 2026-11-06
+
+Removed obsolete provider-specific scenarios, configuration, examples, impact
+paths, and cancelled tasks 5.1/5.3 from non-archived planning. Remaining task
+identifiers stay unchanged. Generic reference configuration remains available.
+Also removed the earlier POC-specific capability-matching design and its
+analytics endpoint, scenarios, tasks, goal, and risk references from
+`ingestion-audit-metrics`.
+This cleanup does not select a replacement source or capability schema.

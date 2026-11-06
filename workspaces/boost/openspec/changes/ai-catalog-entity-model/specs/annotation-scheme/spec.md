@@ -48,9 +48,7 @@ The five minimum categories are `agent`, `skill`, `mcp-server`, `ai-model`, and 
 
 #### Scenario: All entity providers populate category annotation (RHIDP-15255)
 
-- **WHEN** the Kagenti entity provider emits an agent entity
-- **THEN** the entity has `rhdh.io/ai-asset-category: agent`
-- **AND** **WHEN** the OGX entity provider emits a model entity
+- **WHEN** the OGX entity provider emits a model entity
 - **THEN** the entity has `rhdh.io/ai-asset-category: ai-model`
 - **AND** **WHEN** the MCP registry provider emits an MCP server entity
 - **THEN** the entity has `rhdh.io/ai-asset-category: mcp-server`
@@ -101,13 +99,8 @@ Additional connector names may be added when new connectors ship. The CatalogPro
 
 - **WHEN** an entity provider emits an entity
 - **THEN** the entity has `metadata.annotations['rhdh.io/ai-asset-source']` in format: `connector-name/registry-instance-id`
-- **AND** `connector-name` is one of: `kagenti`, `ogx`, `mcp-registry`, `rhoai`
-- **AND** `registry-instance-id` is the app-config provider instance ID (e.g., `default`, `prod-kagenti`, `dev-skills`)
-
-#### Scenario: Kagenti provider source annotation (RHIDP-15255)
-
-- **WHEN** the Kagenti provider with instance ID `prod-kagenti` emits an entity
-- **THEN** the entity has `rhdh.io/ai-asset-source: kagenti/prod-kagenti`
+- **AND** `connector-name` is one of: `ogx`, `mcp-registry`, `rhoai`
+- **AND** `registry-instance-id` is the app-config provider instance ID (e.g., `default`, `dev-skills`)
 
 #### Scenario: MCP Registry provider source annotation (RHIDP-15255)
 
@@ -123,7 +116,6 @@ Additional connector names may be added when new connectors ship. The CatalogPro
 
 - **WHEN** an AI asset entity is queried from the catalog
 - **THEN** the `rhdh.io/ai-asset-source` annotation provides audit trail: which connector and which registry instance produced this entity
-- **AND** this enables troubleshooting (e.g., "all entities from kagenti/prod-kagenti failing validation")
 
 ### Requirement: Migration-Readiness Mapping to Upstream Kinds
 

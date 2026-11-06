@@ -35,7 +35,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 ## Goals
 
 - Standardized annotation scheme for all AI asset categories: agents, skills, MCP servers, models, model servers
-- Entity provider SDK enabling clean connector implementations (Kagenti, OGX)
+- Entity provider SDK enabling clean connector implementations
 - Delta sync support via Backstage's built-in `applyMutation({ type: 'delta' })` API
 - Per-entity fault isolation and contextual logging
 - Migration-readiness mapping to upstream entity kinds
@@ -46,7 +46,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 - Creating new upstream Backstage entity kinds (we use AIResource for skills/rules per RHDHPLAN-1113, API for MCP servers, and existing kinds for agents/models pending RHDHPLAN-1113/RHDHPLAN-404)
 - Changing Backstage catalog core behavior or mutation APIs
-- Implementing specific connectors (Kagenti/OGX) — covered in separate changes
+- Implementing specific connectors — covered in separate changes
 - Neo4j knowledge graph ingestion pipeline — archived (see `archive/2026-11-06-neo4j-knowledge-graph/`)
 - OCI skill registry connector — archived (see `archive/2026-11-06-oci-skill-registry/`)
 - SkillBundle/skillcard.yaml contracts — archived (see `archive/2026-11-06-oci-skill-connector/`)
@@ -112,23 +112,11 @@ The recovered helper uses Backstage's built-in delta mutation API. `DeltaSyncMan
 
 **Custom CA bundles:** Providers read CA certificates from mounted Secret/ConfigMap via `NODE_EXTRA_CA_CERTS` environment variable or explicit `https.Agent` configuration. This is standard Node.js TLS.
 
-**K8s Secret-only credentials:** All credentials are supplied via K8s Secrets mounted as environment variables. Helm/Operator config mounts the Secret into the container; app-config references the env vars with standard Backstage `$env` resolvers:
-
-```yaml
-boost:
-  providers:
-    kagenti:
-      clientId:
-        $env: KAGENTI_CLIENT_ID
-      clientSecret:
-        $env: KAGENTI_CLIENT_SECRET
-```
+**K8s Secret-only credentials:** All credentials are supplied via K8s Secrets mounted as environment variables. Helm/Operator config mounts the Secret into the container; app-config references the env vars with standard Backstage `$env` resolvers. Generic endpoint, CA, credential, and schedule examples remain in [app-config.connectors.yaml](../../../examples/app-config.connectors.yaml).
 
 Startup validation rejects plaintext credentials with descriptive error: `Plaintext credentials not allowed. Use $env references backed by mounted K8s Secrets.`
 
 **Configurable endpoints:** All registry endpoint URLs configurable via app-config. No hardcoded SaaS URLs. Startup validation verifies URLs are syntactically valid.
-
-Reference app-config pattern applies to all connectors (Kagenti, OGX).
 
 ### Decision 5: Performance SLAs and error resilience _(Distributed: load testing → RHIDP-15294, error resilience → RHIDP-15316)_
 

@@ -24,7 +24,6 @@ Single entity failures MUST NOT block the entire sync cycle. Failures are logged
 
 - **WHEN** an entity fails validation (e.g., missing `rhdh.io/ai-asset-category` annotation)
 - **THEN** the error is logged with: entity identifier (`metadata.name` or source registry ID), source registry (`rhdh.io/ai-asset-source` annotation value), field that failed, human-readable error message
-- **AND** the log entry format is: `[AI Catalog] Entity validation failed: entity=component:default/broken-agent, source=kagenti/prod-kagenti, field=rhdh.io/ai-asset-category, error=Missing required annotation`
 
 #### Scenario: Remaining entities still ingested (RHIDP-15330)
 

@@ -6,7 +6,7 @@
 
 ## Why
 
-The AI Catalog in Red Hat Developer Hub needs a standardized entity model to classify, track, and manage AI assets — agents, skills, MCP servers, models, and model servers — as first-class catalog entities. Today's Backstage catalog has no normalization scheme for these assets. External registries (Kagenti, OGX) use different categorization and version schemes, creating integration friction.
+The AI Catalog in Red Hat Developer Hub needs a standardized entity model to classify, track, and manage AI assets — agents, skills, MCP servers, models, and model servers — as first-class catalog entities. Today's Backstage catalog has no normalization scheme for these assets.
 
 Enterprise deployments require operational quality: delta sync to minimize catalog churn and per-entity fault isolation so that individual ingestion failures do not block the sync cycle. Air-gapped deployment patterns (custom CAs, K8s Secret-only credentials) and large-scale performance validation (5,000+ entity load/SLA) are stretch goals tracked separately. The entity model must also be migration-ready for upstream Backstage entity kinds (e.g., `McpServerApiEntity` via [#34016](https://github.com/backstage/backstage/pull/34016), `AiResource` via [#33575](https://github.com/backstage/backstage/issues/33575)) so that RHDH can transition from custom annotations to first-class kinds without breaking consumers.
 
@@ -98,6 +98,5 @@ incremental-provider integration remain follow-on design work under
 
 - `plugins/boost-entity-provider-sdk/` — SDK package (types, annotations, validation)
 - `plugins/boost-entity-provider-sdk/src/AIAssetValidator.ts` — CatalogProcessor annotation validator
-- `plugins/kagenti-entity-provider/` — Kagenti provider implements SDK
 - `plugins/ogx-entity-provider/` — OGX provider implements SDK
 - Reference app-config examples for connector configuration (see `connector-shared-infrastructure` change)
