@@ -6,9 +6,9 @@
 
 ## Why
 
-The AI Catalog in Red Hat Developer Hub needs a standardized entity model to classify, track, and manage AI assets — agents, skills, MCP servers, models, and model servers — as first-class catalog entities. Today's Backstage catalog has no normalization scheme for these assets. External registries (Kagenti, OGX, OCI skill repositories) use different categorization and version schemes, creating integration friction.
+The AI Catalog in Red Hat Developer Hub needs a standardized entity model to classify, track, and manage AI assets — agents, skills, MCP servers, models, and model servers — as first-class catalog entities. Today's Backstage catalog has no normalization scheme for these assets. External registries (Kagenti, OGX) use different categorization and version schemes, creating integration friction.
 
-Enterprise deployments require operational quality from day one: air-gapped environments with custom CAs and K8s Secret-only credentials, delta sync to minimize catalog churn, and performance resilience at 5,000+ entities without degrading catalog latency. The entity model must also be migration-ready for upstream Backstage entity kinds (e.g., `McpServerApiEntity` via [#34016](https://github.com/backstage/backstage/pull/34016), `AiResource` via [#33575](https://github.com/backstage/backstage/issues/33575)) so that RHDH can transition from custom annotations to first-class kinds without breaking consumers.
+Enterprise deployments require operational quality: delta sync to minimize catalog churn and per-entity fault isolation so that individual ingestion failures do not block the sync cycle. Air-gapped deployment patterns (custom CAs, K8s Secret-only credentials) and large-scale performance validation (5,000+ entity load/SLA) are stretch goals tracked separately. The entity model must also be migration-ready for upstream Backstage entity kinds (e.g., `McpServerApiEntity` via [#34016](https://github.com/backstage/backstage/pull/34016), `AiResource` via [#33575](https://github.com/backstage/backstage/issues/33575)) so that RHDH can transition from custom annotations to first-class kinds without breaking consumers.
 
 Boost builds this as a foundational layer: a standardized annotation scheme, a shared entity provider SDK, and operational-quality patterns that every AI registry connector can adopt from the start.
 
@@ -39,7 +39,7 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 > _Consolidated into RHIDP-15258 (Entity-Provider SDK). Single story RHIDP-15255 covers all 3 annotations._
 
-- `rhdh.io/ai-asset-category` annotation with seven defined values: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
+- `rhdh.io/ai-asset-category` annotation with six defined values: `agent`, `skill`, `rule`, `mcp-server`, `ai-model`, `model-server`
 - `rhdh.io/ai-asset-version` annotation with documented normalization rules (semver pass-through, date-based → semver, commit hash → version string)
 - `rhdh.io/ai-asset-source` annotation for provenance tracking (`connector-name/registry-instance-id`)
 - CatalogProcessor validator rejects entities with missing/invalid annotations at ingestion time
@@ -52,8 +52,6 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 - TypeScript interface contract defining: entity emission, required annotation population, entity kind/spec.type mapping (kind depends on RHDHPLAN-1113 — see Stakeholder Alignment)
 - Support for both full-refresh and incremental-sync patterns
 - Shared validation utilities rejecting entities with missing/invalid annotations
-- Neo4j sync adapter interface for knowledge graph integration
-- SkillBundle metadata contract for skillcard.yaml schema
 - Published npm package (`@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`)
 
 ### Delta Sync Framework
@@ -79,7 +77,7 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 > _Distributed: load testing → RHIDP-15294 (OCI Skill Registry, story RHIDP-15268), error isolation → RHIDP-15316 (Cross-Connector, story RHIDP-15330)._
 
-- Load testing with 5,000+ entities validating p95 latency degradation ≤10%
+- ~~Load testing with 5,000+ entities validating p95 latency degradation ≤10%~~ — **Stretch:** deferred from minimum baseline
 - Per-entity error resilience: single entity failures logged with identifier, source, field, and error; remaining entities still ingested
 - Sync cycle completes even with multiple failures
 - Error-handling guarantees documented
@@ -94,10 +92,8 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 ## Impact
 
-- `plugins/boost-entity-provider-sdk/` — SDK package (types, annotations, validation, adapter interfaces)
+- `plugins/boost-entity-provider-sdk/` — SDK package (types, annotations, validation)
 - `plugins/boost-entity-provider-sdk/src/AIAssetValidator.ts` — CatalogProcessor annotation validator
 - `plugins/kagenti-entity-provider/` — Kagenti provider implements SDK
 - `plugins/ogx-entity-provider/` — OGX provider implements SDK
-- `plugins/boost-backend-module-oci-skill/src/provider/` — OCI skill connector provider implements SDK
-- Reference app-config examples for air-gapped deployment
-- Load testing harness for catalog performance validation
+- Reference app-config examples for connector configuration (see `connector-shared-infrastructure` change)

@@ -4,6 +4,14 @@
 
 Cursor-based incremental sync framework built on Backstage's `applyMutation({ type: 'delta' })` API, enabling entity providers to report only changes since the last sync.
 
+> **Deferred (RHIDP-18761):** Durable (database-backed) cursor storage,
+> invalid-cursor orchestration beyond the basic fallback-to-full-refresh
+> path, and use of Backstage `IncrementalEntityProvider` remain deferred.
+> The minimum baseline describes the existing delta helper's consumer
+> responsibilities: the SDK ships an `InMemoryCursorStore` for
+> development and a pluggable `CursorStore` interface; a durable
+> implementation is the consuming backend plugin's responsibility.
+
 ## ADDED Requirements
 
 ### Requirement: Cursor/ETag-Based Delta Sync

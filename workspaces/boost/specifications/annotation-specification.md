@@ -12,9 +12,10 @@
 
 This document is the formal specification of all RHDH AI Asset annotations,
 entity kind/`spec.type` pairings, and upstream Backstage entity kind mappings.
-It covers all seven AI-asset categories per
+It covers six AI-asset categories per
 [ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds)
-(the authoritative source of truth for current RHDH AI Asset entity mappings).
+(the authoritative source of truth for current RHDH AI Asset entity mappings,
+after RHIDP-18761 reconciliation removed `skill-bundle`).
 
 MCP servers are kind-aligned with upstream (`McpServerApiEntity`,
 [backstage#34016](https://github.com/backstage/backstage/pull/34016));
@@ -32,14 +33,13 @@ it to one of seven domain categories. The annotation is independent of the
 entity's `kind` — the category is the semantic classification, while `kind` is
 the structural Backstage type.
 
-**Valid values (seven only):**
+**Valid values (six):**
 
 | Value          | Description                                      |
 | -------------- | ------------------------------------------------ |
 | `agent`        | An AI agent capable of autonomous task execution |
 | `skill`        | A reusable AI skill invokable by agents          |
 | `rule`         | An AI decision rule governing agent behavior     |
-| `skill-bundle` | A curated collection of related skills           |
 | `mcp-server`   | A Model Context Protocol server                  |
 | `ai-model`     | An AI/ML model                                   |
 | `model-server` | An inference endpoint serving one or more models |
@@ -54,9 +54,11 @@ metadata:
     rhdh.io/ai-asset-category: skill
 ```
 
-> **Out of scope:** `vector-store` and `ai-tool` are not AI asset categories.
-> They appear in the `AI_ASSET_SPEC_TYPES` taxonomy for catalog browsing but
-> are not part of the annotation scheme.
+> **Out of scope:** `vector-store`, `ai-tool`, and `skill-bundle` are not
+> part of the minimum baseline annotation scheme. `vector-store` and `ai-tool`
+> appear in the `AI_ASSET_SPEC_TYPES` taxonomy for catalog browsing but are
+> not part of the annotation scheme. `skill-bundle` was removed from the
+> minimum scope by RHIDP-18761.
 
 ### 1.2 `rhdh.io/ai-asset-version`
 
@@ -94,13 +96,12 @@ instances; `registry-instance-id` is then the app-config provider instance key
 `ogx` because its release configuration has no registry-instance component.
 Known `connector-name` values include:
 
-| Token                | Connector                           |
-| -------------------- | ----------------------------------- |
-| `kagenti`            | Kagenti agentic framework connector |
-| `ogx`                | OGX connector (formerly LlamaStack) |
-| `oci-skill-registry` | OCI skill registry connector        |
-| `mcp-registry`       | MCP Registry connector              |
-| `rhoai`              | Red Hat OpenShift AI connector      |
+| Token          | Connector                           |
+| -------------- | ----------------------------------- |
+| `kagenti`      | Kagenti agentic framework connector |
+| `ogx`          | OGX connector (formerly LlamaStack) |
+| `mcp-registry` | MCP Registry connector              |
+| `rhoai`        | Red Hat OpenShift AI connector      |
 
 Additional connector names may be added when new connectors ship. The
 CatalogProcessor/SDK today only requires a non-empty string.
@@ -144,7 +145,6 @@ but documents the current connector-emitted kinds for `agent` and
 | `agent`        | AiResource       | `agent`           | Diverged from Decision 1 (`Component`/`ai-agent`); connectors emit `AiResource`/`agent`. Pending RHDHPLAN-1113    |
 | `skill`        | AIResource       | `skill`           | AIResource per RHDHPLAN-1113                                                                                      |
 | `rule`         | AIResource       | `rule`            | AIResource per RHDHPLAN-1113                                                                                      |
-| `skill-bundle` | AIResource       | `ai-skill-bundle` | Curated skill collections; frontend browse category                                                               |
 | `mcp-server`   | API              | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable                                    |
 | `ai-model`     | Resource         | `ai-model`        | Pending RHDHPLAN-404 (upstream entity schema)                                                                     |
 | `model-server` | AiModelServerAPI | `ai-model-server` | Diverged from Decision 1 (`Resource`/`ai-model-server`); connectors emit `AiModelServerAPI`. Pending RHDHPLAN-404 |
@@ -235,20 +235,7 @@ before upstream merges.
 
 **Confidence rationale:** No upstream kind proposed; mapping is speculative.
 
-### 3.5 Skill Bundle — Confidence: Low
-
-| Field       | Current           | Target           |
-| ----------- | ----------------- | ---------------- |
-| `kind`      | `AIResource`      | No upstream kind |
-| `spec.type` | `ai-skill-bundle` | TBD              |
-
-**Status:** No upstream kind exists for skill bundles.
-
-**Recommendation:** Stay on current mapping; track future upstream RFCs.
-
-**Confidence rationale:** No upstream kind proposed.
-
-### 3.6 Agent — Confidence: Low
+### 3.5 Agent — Confidence: Low
 
 | Field       | Current      | Target                          |
 | ----------- | ------------ | ------------------------------- |
@@ -271,12 +258,12 @@ depends on RHDHPLAN-1113.
 
 ## 4. Confidence Level Summary
 
-| Confidence      | Categories                          | Meaning                                            |
-| --------------- | ----------------------------------- | -------------------------------------------------- |
-| **High**        | `mcp-server`                        | Upstream kind shipped and stable, kind aligned     |
-| **Medium–High** | `skill`, `rule`                     | Upstream kind shipped, field/name alignment needed |
-| **Medium/Low**  | `model-server`                      | Upstream target proposed in open PR, hedge         |
-| **Low**         | `ai-model`, `agent`, `skill-bundle` | No solid upstream kind, mapping speculative        |
+| Confidence      | Categories          | Meaning                                            |
+| --------------- | ------------------- | -------------------------------------------------- |
+| **High**        | `mcp-server`        | Upstream kind shipped and stable, kind aligned     |
+| **Medium–High** | `skill`, `rule`     | Upstream kind shipped, field/name alignment needed |
+| **Medium/Low**  | `model-server`      | Upstream target proposed in open PR, hedge         |
+| **Low**         | `ai-model`, `agent` | No solid upstream kind, mapping speculative        |
 
 ---
 
@@ -303,7 +290,7 @@ actual migration is future work.
 - `kind`: `AiModelServerAPI` → `API` (if upstream PR merges as proposed)
 - API-specific field additions (`spec.lifecycle`, API definition fields)
 
-### AI Model / Skill Bundle / Agent (Low confidence)
+### AI Model / Agent (Low confidence)
 
 - No field transformations identified — upstream kinds not yet defined.
   Continue using current field structure.

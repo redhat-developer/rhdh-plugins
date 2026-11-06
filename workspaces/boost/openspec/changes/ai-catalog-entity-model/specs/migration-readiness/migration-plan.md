@@ -32,7 +32,7 @@ continue to work through the transition.
 Key inputs:
 
 - [ai-catalog-entity-model/design.md Decision 1](../../design.md) —
-  current seven-category model.
+  current six-category model (after RHIDP-18761 reconciliation).
 - Upstream RFCs/PRs: `McpServerApiEntity`
   ([#34016](https://github.com/backstage/backstage/pull/34016)),
   `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261);
@@ -85,7 +85,7 @@ The following decisions are resolved and are not re-litigated here:
 
 - **Current-state SoT:**
   [ai-catalog-entity-model/design.md Decision 1](../../design.md) —
-  seven categories (`agent`, `skill`, `rule`, `skill-bundle`,
+  six categories (`agent`, `skill`, `rule`,
   `mcp-server`, `ai-model`, `model-server`).
 - **MCP alignment:** RFC
   [#32062](https://github.com/backstage/backstage/issues/32062) Option 3
@@ -123,12 +123,10 @@ The following decisions are resolved and are not re-litigated here:
   preview allows breaking changes.
 - **RHDHPLAN-1113 resolved:** Boost uses `AiResource`-kind skills/rules
   directly. The dual-path interim narrative is retired.
-- **`vector-store` / `ai-tool`:** Out of scope for this seven-category
-  upstream-migration SoT (Augment POC vestiges per
-  [gate comment](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)).
-  These have been retired — the `resource` entry was removed from
-  `AI_ASSET_SPEC_TYPES`, so `isAiAsset` no longer recognizes
-  `Resource` + `ai-tool` / `vector-store`.
+- **`vector-store` / `ai-tool` / `skill-bundle`:** Out of scope.
+  `vector-store` and `ai-tool` are Augment POC vestiges (retired from
+  `AI_ASSET_SPEC_TYPES`). `skill-bundle` (SkillBundle/skillcard.yaml
+  contracts) was removed from the minimum baseline by RHIDP-18761.
 - **Sign-off scope:** RHDH architect / tech lead (not upstream
   maintainer required).
 
@@ -159,24 +157,24 @@ Mapping tables reconciled via
 | `rule`         | AiResource   | `rule`              | `rhdh.io/ai-asset-category: rule`         | `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261) merged; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)                                  | Medium-High |
 | `model-server` | API          | `ai-model-server`   | `rhdh.io/ai-asset-category: model-server` | `AiModelServerAPI` ([#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211)); byte-for-byte with upstream [#34476](https://github.com/backstage/backstage/pull/34476)         | Medium      |
 | `ai-model`     | —            | —                   | —                                         | Part of `AiModelServerAPI` (models are a list of model names within the model-server entity); no separate entity kind                                                                     | Medium      |
-| `skill-bundle` | AiResource   | `ai-skill-bundle`   | `rhdh.io/ai-asset-category: skill-bundle` | No upstream kind                                                                                                                                                                          | Low         |
 | `agent`        | AiResource   | `agent`             | `rhdh.io/ai-asset-category: agent`        | `AiResource` / `agent` ([#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164), merged); boost pivot via [#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260) | Medium      |
 
 ### Notes
 
-- **`vector-store` / `ai-tool`** are out of scope for this readiness
-  table (not part of the Decision 1 seven-category model). Boost
-  frontend still classifies them via `isAiAsset`
+- **`vector-store` / `ai-tool` / `skill-bundle`** are out of scope for
+  this readiness table. `vector-store` and `ai-tool` were Augment POC
+  vestiges. `skill-bundle` (SkillBundle/skillcard.yaml contracts) was
+  removed from the minimum baseline by RHIDP-18761. Boost frontend
+  still classifies `ai-tool` / `vector-store` via `isAiAsset`
   (`Resource` + `ai-tool` / `vector-store`) and sample fixtures until
   explicitly retired.
-- **Boost `isAiAsset` gap (`skill-bundle` / `model-server`):** Decision 1
-  includes `skill-bundle` (`spec.type: ai-skill-bundle`) and
-  `model-server` (`spec.type: ai-model-server`), but boost
-  `isAiAsset` / `buildCatalogFilter` do **not** track them today.
+- **Boost `isAiAsset` gap (`model-server`):** Decision 1
+  includes `model-server` (`spec.type: ai-model-server`), but boost
+  `isAiAsset` / `buildCatalogFilter` do **not** track it today.
   `AI_ASSET_SPEC_TYPES` covers `skill` / `rule`, `mcp-server`,
   `ai-agent`, and `ai-model` / `ai-tool` / `vector-store` only. Catalog
-  UI Filters "current" rows for `skill-bundle` and `model-server` are
-  catalog/annotation query patterns, not boost frontend coverage yet.
+  UI Filters "current" row for `model-server` is a
+  catalog/annotation query pattern, not boost frontend coverage yet.
 - **Model-server downstream work:**
   [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211)
   introduces `AiModelServerAPI` (`kind: API`,
@@ -328,17 +326,6 @@ and [#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211)
 model list within `AiModelServerAPI`. Track any edge cases where models
 need independent entity identity.
 
-### Skill Bundle (Confidence: Low)
-
-**Kind change:** None planned. No upstream kind exists.
-
-**Field-level transforms:** N/A — no target to transform toward.
-
-**Recommendation:** Stay on current mapping
-(`kind: AiResource`, `spec.type: ai-skill-bundle`). Track future
-upstream RFCs. If `AiResource` gains support for bundle semantics,
-the mapping is already aligned.
-
 ### Agent (Confidence: Medium)
 
 **Kind change:** Committed to `AiResource` / `spec.type: agent` for
@@ -375,46 +362,43 @@ RHDH 2.1 from
 
 ## Consumer-Facing Changes
 
-> **Boost frontend note:** Catalog filter patterns below for
-> `skill-bundle` and `model-server` are Decision 1 / catalog query
-> patterns. Boost `isAiAsset` / `buildCatalogFilter` do not yet include
-> those types — see [Notes](#notes).
+> **Boost frontend note:** Catalog filter pattern below for
+> `model-server` is a Decision 1 / catalog query pattern. Boost
+> `isAiAsset` / `buildCatalogFilter` does not yet include this type —
+> see [Notes](#notes).
 
 ### Catalog UI Filters
 
-| Category       | Current Filter                                                 | Post-Migration Filter                                                                                                                                          | Impact                                                                    |
-| -------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `mcp-server`   | `kind: API` + `rhdh.io/ai-asset-category: mcp-server`          | Same (no kind change)                                                                                                                                          | None                                                                      |
-| `skill`        | `kind: AiResource` + `rhdh.io/ai-asset-category: skill`        | Same (kind already aligned upstream)                                                                                                                           | None — annotation still useful for category distinction                   |
-| `rule`         | `kind: AiResource` + `rhdh.io/ai-asset-category: rule`         | Same (kind already aligned upstream)                                                                                                                           | None                                                                      |
-| `skill-bundle` | `kind: AiResource` + `rhdh.io/ai-asset-category: skill-bundle` | No change planned                                                                                                                                              | None (until upstream kind exists)                                         |
-| `model-server` | `kind: API` + `spec.type: ai-model-server`                     | Same — `AiModelServerAPI` ([#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211))                                                                | Filters already use `kind: API`; adjust from prior `kind: Resource` usage |
-| `ai-model`     | —                                                              | Part of `AiModelServerAPI` entity (model list); no separate filter                                                                                             | N/A                                                                       |
-| `agent`        | `kind: AiResource` + `spec.type: agent`                        | Same — committed via [#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) / [#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260) | Filters already use `kind: AiResource, spec.type: agent`                  |
+| Category       | Current Filter                                          | Post-Migration Filter                                                                                                                                          | Impact                                                                    |
+| -------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `mcp-server`   | `kind: API` + `rhdh.io/ai-asset-category: mcp-server`   | Same (no kind change)                                                                                                                                          | None                                                                      |
+| `skill`        | `kind: AiResource` + `rhdh.io/ai-asset-category: skill` | Same (kind already aligned upstream)                                                                                                                           | None — annotation still useful for category distinction                   |
+| `rule`         | `kind: AiResource` + `rhdh.io/ai-asset-category: rule`  | Same (kind already aligned upstream)                                                                                                                           | None                                                                      |
+| `model-server` | `kind: API` + `spec.type: ai-model-server`              | Same — `AiModelServerAPI` ([#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211))                                                                | Filters already use `kind: API`; adjust from prior `kind: Resource` usage |
+| `ai-model`     | —                                                       | Part of `AiModelServerAPI` entity (model list); no separate filter                                                                                             | N/A                                                                       |
+| `agent`        | `kind: AiResource` + `spec.type: agent`                 | Same — committed via [#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) / [#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260) | Filters already use `kind: AiResource, spec.type: agent`                  |
 
 ### Entity References
 
-| Category       | Current Entity Ref             | Post-Migration Entity Ref                      | Impact                                           |
-| -------------- | ------------------------------ | ---------------------------------------------- | ------------------------------------------------ |
-| `mcp-server`   | `api:default/my-mcp-server`    | `api:default/my-mcp-server`                    | None                                             |
-| `skill`        | `airesource:default/my-skill`  | `airesource:default/my-skill`                  | None (Backstage lowercases kind in entity refs)  |
-| `rule`         | `airesource:default/my-rule`   | `airesource:default/my-rule`                   | None (same lowercasing behavior)                 |
-| `skill-bundle` | `airesource:default/my-bundle` | `airesource:default/my-bundle`                 | None                                             |
-| `model-server` | `api:default/my-server`        | `api:default/my-server`                        | None — `AiModelServerAPI` is already `kind: API` |
-| `ai-model`     | —                              | Part of model-server entity; no standalone ref | N/A                                              |
-| `agent`        | `airesource:default/my-agent`  | `airesource:default/my-agent`                  | None — already `kind: AiResource` per #4164      |
+| Category       | Current Entity Ref            | Post-Migration Entity Ref                      | Impact                                           |
+| -------------- | ----------------------------- | ---------------------------------------------- | ------------------------------------------------ |
+| `mcp-server`   | `api:default/my-mcp-server`   | `api:default/my-mcp-server`                    | None                                             |
+| `skill`        | `airesource:default/my-skill` | `airesource:default/my-skill`                  | None (Backstage lowercases kind in entity refs)  |
+| `rule`         | `airesource:default/my-rule`  | `airesource:default/my-rule`                   | None (same lowercasing behavior)                 |
+| `model-server` | `api:default/my-server`       | `api:default/my-server`                        | None — `AiModelServerAPI` is already `kind: API` |
+| `ai-model`     | —                             | Part of model-server entity; no standalone ref | N/A                                              |
+| `agent`        | `airesource:default/my-agent` | `airesource:default/my-agent`                  | None — already `kind: AiResource` per #4164      |
 
 ### API Queries
 
-| Category       | Current Query                                                                | Post-Migration Query                                                                               | Impact          |
-| -------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------- |
-| `mcp-server`   | `GET /api/catalog/entities?filter=kind=API,spec.type=mcp-server`             | Same                                                                                               | None            |
-| `skill`        | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=skill`           | Same                                                                                               | None            |
-| `rule`         | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=rule`            | Same                                                                                               | None            |
-| `model-server` | `GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server`        | Same — `AiModelServerAPI` from [#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | None post-pivot |
-| `ai-model`     | N/A                                                                          | Part of model-server entity                                                                        | N/A             |
-| `skill-bundle` | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=ai-skill-bundle` | Same                                                                                               | None            |
-| `agent`        | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=agent`           | Same — committed via #4164                                                                         | None post-pivot |
+| Category       | Current Query                                                         | Post-Migration Query                                                                               | Impact          |
+| -------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------- |
+| `mcp-server`   | `GET /api/catalog/entities?filter=kind=API,spec.type=mcp-server`      | Same                                                                                               | None            |
+| `skill`        | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=skill`    | Same                                                                                               | None            |
+| `rule`         | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=rule`     | Same                                                                                               | None            |
+| `model-server` | `GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server` | Same — `AiModelServerAPI` from [#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | None post-pivot |
+| `ai-model`     | N/A                                                                   | Part of model-server entity                                                                        | N/A             |
+| `agent`        | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=agent`    | Same — committed via #4164                                                                         | None post-pivot |
 
 ## Backward Compatibility Strategy
 
@@ -519,9 +503,11 @@ GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server
 
 ## Out of Scope
 
-- **`vector-store` / `ai-tool`:** Excluded from the seven-category
-  upstream-migration SoT (Augment POC vestiges). Still recognized by
-  boost `isAiAsset` / fixtures until explicitly retired.
+- **`vector-store` / `ai-tool` / `skill-bundle`:** Excluded from
+  the six-category upstream-migration SoT. `vector-store` and `ai-tool`
+  are Augment POC vestiges (still recognized by boost `isAiAsset` /
+  fixtures until explicitly retired). `skill-bundle` removed from
+  minimum scope by RHIDP-18761.
 - **Annotation specification publish (RHIDP-15346):** Split to
   [#4220](https://github.com/redhat-developer/rhdh-plugins/issues/4220).
 - **Migration-readiness CLI (RHIDP-15347):** Split to

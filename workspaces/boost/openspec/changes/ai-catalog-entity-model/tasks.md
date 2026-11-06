@@ -7,7 +7,7 @@
 
 ## 1. Annotation Scheme Definition and Validation (P0) — _RHIDP-15258_
 
-- [ ] 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`) in SDK package (RHIDP-15255)
+- [ ] 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `rule`, `mcp-server`, `ai-model`, `model-server`) in SDK package (RHIDP-15255)
 - [ ] 1.2 Define `rhdh.io/ai-asset-version` annotation constant in SDK package (RHIDP-15255)
 - [ ] 1.3 Define `rhdh.io/ai-asset-source` annotation constant in SDK package (RHIDP-15255)
 - [ ] 1.4 Implement `normalizeAIAssetVersion(sourceVersion: string, options?: { entityRef?: string; warn?: (message: string) => void }): string` utility with all four normalization rules (semver pass-through, date-based, commit hash, fallback) (RHIDP-15255)
@@ -33,18 +33,18 @@
 - [ ] 2.12 Implement fallback to full refresh when cursor invalid or missing (RHIDP-15262)
 - [ ] 2.13 Add unit tests for delta sync framework covering cursor persistence, fallback, mutation translation (RHIDP-15262)
 
-## 3. Neo4j Sync Adapter Interface (P0) — _RHIDP-15258_
+## ~~3. Neo4j Sync Adapter Interface (P0)~~ REMOVED
 
-- [ ] 3.1 Define `Neo4jSyncAdapter` TypeScript interface with methods: `createNode()`, `updateNode()`, `deleteNode()`, `createRelationship()` (RHIDP-15303)
-- [ ] 3.2 Define `RelationshipType` union type with constants: `DEPENDS_ON`, `USES_TOOL`, `BELONGS_TO`, `SIMILAR_TO`, `IMPLEMENTED_BY`, `INCLUDES` (RHIDP-15303)
-- [ ] 3.3 Export `Neo4jSyncAdapter` interface from SDK package (RHIDP-15303)
-- [ ] 3.4 Add JSDoc documentation to interface explaining when to use each method and relationship type (RHIDP-15303)
+> Removed from minimum scope (RHIDP-18761). Neo4j knowledge graph
+> integration is archived — see
+> `openspec/changes/archive/2026-11-06-neo4j-knowledge-graph/`.
 
-## 4. SkillBundle Metadata Schema (P0) — _RHIDP-15258_
+## ~~4. SkillBundle Metadata Schema (P0)~~ REMOVED
 
-- [ ] 4.1 Define `SkillBundleMetadata` TypeScript type with fields: `name`, `version`, `description?`, `author?`, `tags?`, `runtime?`, `mcp?` (RHIDP-15303)
-- [ ] 4.2 Export `SkillBundleMetadata` type from SDK package (RHIDP-15303)
-- [ ] 4.3 Add JSDoc documentation with example skillcard.yaml structure (RHIDP-15303)
+> Removed from minimum scope (RHIDP-18761). SkillBundle/skillcard.yaml
+> contracts are archived — see
+> `openspec/changes/archive/2026-11-06-oci-skill-registry/` and
+> `openspec/changes/archive/2026-11-06-oci-skill-connector/`.
 
 ## 5. Provider Implementations (P1) — _RHIDP-15258_
 
@@ -66,14 +66,12 @@
 
 ## 7. Performance and Resilience Testing (P1) — _Distributed_
 
-### Load Testing — _RHIDP-15294 (OCI Skill Registry)_
+### Load Testing — _RHIDP-15294 (OCI Skill Registry)_ — **Stretch**
 
-- [ ] 7.1 Create load test harness generating 5,000+ AI asset entities (distributed across categories) (RHIDP-15268)
-- [ ] 7.2 Measure baseline p95 latency for catalog queries without AI Catalog entities (RHIDP-15268)
-- [ ] 7.3 Measure with-AI-Catalog p95 latency with 5,000+ entities ingested (RHIDP-15268)
-- [ ] 7.4 Validate p95 latency degradation ≤10% SLA; fail test if violated (RHIDP-15268)
-- [ ] 7.5 Measure processing-loop duration (entity emission → catalog API availability) (RHIDP-15268)
-- [ ] 7.6 Document load test execution steps and reproducibility in `tests/load/README.md` (RHIDP-15268)
+> Deferred from minimum baseline (RHIDP-18761). 5,000-entity load/SLA
+> acceptance is a stretch goal.
+
+- [ ] 7.1–7.6 ~~Load test harness, p95 latency SLA validation, processing-loop measurement~~ (RHIDP-15268) — stretch
 
 ### Error Resilience — _RHIDP-15316 (Cross-Connector)_
 
@@ -95,7 +93,7 @@
 
 ## 9. Documentation and Examples (P2) — _RHIDP-15258_
 
-- [ ] 9.1 Write SDK package README documenting: interface contract, annotation constants, validation usage, Neo4j adapter, SkillBundle schema (RHIDP-15260)
+- [ ] 9.1 Write SDK package README documenting: interface contract, annotation constants, validation usage (RHIDP-15260)
 - [ ] 9.2 Add code examples to README showing provider implementation (RHIDP-15260)
 - [ ] 9.3 Document version normalization rules in SDK README with examples (RHIDP-15255)
 - [ ] 9.4 Document air-gapped configuration pattern as generic "AI Catalog connector configuration" for reuse by all connectors (RHIDP-15266)
@@ -108,6 +106,6 @@
 - [ ] 10.3 Verify delta sync framework falls back to full refresh when cursor invalid
 - [ ] 10.4 Verify custom CA bundles are honored for TLS connections in air-gapped deployment
 - [ ] 10.5 Verify startup validation rejects plaintext credentials with descriptive error
-- [ ] 10.6 Verify load test passes with p95 latency degradation ≤10% at 5,000+ entities
+- [ ] 10.6 ~~Verify load test passes with p95 latency degradation ≤10% at 5,000+ entities~~ — stretch
 - [ ] 10.7 Verify single entity failures are isolated and remaining entities are ingested
 - [ ] 10.8 Verify migration design document has upstream maintainer or RHDH architect sign-off

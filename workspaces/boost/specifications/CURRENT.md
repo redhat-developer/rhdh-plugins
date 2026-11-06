@@ -127,9 +127,9 @@ listed below.
 | `connector-config-hot-reload`        | Follow-on connector administration and backend configuration work; not current-release behavior.                                  |
 | `ingestion-audit-metrics`            | Consolidated/follow-on ingestion and analytics work; not current-release behavior.                                                |
 | `ingestion-health-dashboard`         | Follow-on backend/admin health dashboard work; not current-release behavior.                                                      |
-| `neo4j-knowledge-graph`              | Follow-on graph synchronization work; not current-release behavior.                                                               |
-| `oci-skill-connector`                | Follow-on OCI connector implementation; not current-release behavior.                                                             |
-| `oci-skill-registry`                 | Follow-on OCI registry ingestion framework; not current-release behavior.                                                         |
+| `neo4j-knowledge-graph`              | Archived (RHIDP-18761) — see `archive/2026-11-06-neo4j-knowledge-graph/`.                                                         |
+| `oci-skill-connector`                | Archived (RHIDP-18761) — see `archive/2026-11-06-oci-skill-connector/`.                                                           |
+| `oci-skill-registry`                 | Archived (RHIDP-18761) — see `archive/2026-11-06-oci-skill-registry/`.                                                            |
 | `mcp-registry-connector`             | Follow-on MCP Registry productization; not current-release behavior.                                                              |
 | `rhoai-connector`                    | Follow-on RHOAI MCP connector; not current-release behavior.                                                                      |
 | `upstream-schema-alignment`          | Follow-on upstream-kind alignment and migration-readiness work; not current-release behavior.                                     |

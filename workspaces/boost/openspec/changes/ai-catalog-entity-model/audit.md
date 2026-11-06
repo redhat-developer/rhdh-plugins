@@ -55,3 +55,22 @@ Validation still uses the original value. Regression cases cover newline, tab,
 terminal escape, NUL, carriage return, DEL, C1, Unicode separators, and a control
 character embedded in an otherwise valid category. Missing-category assertions
 also compare the complete error message, including the allowed-values hint.
+
+### RHIDP-18761 reconciliation, 2026-11-06
+
+Reconciled recovered RHDHPLAN-1507 specifications with the agreed 2.2 minimum
+scope. Changes applied:
+
+- Removed Neo4j adapter interface (Decision 7), SkillBundle metadata contract
+  (Decision 8), and their task groups (3, 4) from the minimum baseline.
+- Archived `neo4j-knowledge-graph`, `oci-skill-registry`, and
+  `oci-skill-connector` change directories.
+- Removed `skill-bundle` from the mandatory annotation category values
+  (seven → six).
+- Removed the `air-gapped-deployment` spec from active minimum specs
+  (configuration examples preserved in `connector-shared-infrastructure`).
+- Separated 5,000-entity load/SLA acceptance requirements as stretch.
+- Noted deferred items in delta-sync-framework (durable storage,
+  invalid-cursor orchestration, incremental entity providers).
+- Updated migration-readiness mappings: removed skill-bundle rows,
+  updated category counts. Sign-off remains pending.
