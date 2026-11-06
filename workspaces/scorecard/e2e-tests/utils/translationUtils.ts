@@ -15,12 +15,12 @@
  */
 
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { scorecardMessages } from '../../../../plugins/scorecard/src/translations/ref';
-import scorecardTranslationDe from '../../../../plugins/scorecard/src/translations/de';
-import scorecardTranslationFr from '../../../../plugins/scorecard/src/translations/fr';
-import scorecardTranslationEs from '../../../../plugins/scorecard/src/translations/es';
-import scorecardTranslationIt from '../../../../plugins/scorecard/src/translations/it';
-import scorecardTranslationJa from '../../../../plugins/scorecard/src/translations/ja';
+import { scorecardMessages } from '../../plugins/scorecard/src/translations/ref';
+import scorecardTranslationDe from '../../plugins/scorecard/src/translations/de';
+import scorecardTranslationFr from '../../plugins/scorecard/src/translations/fr';
+import scorecardTranslationEs from '../../plugins/scorecard/src/translations/es';
+import scorecardTranslationIt from '../../plugins/scorecard/src/translations/it';
+import scorecardTranslationJa from '../../plugins/scorecard/src/translations/ja';
 import type { ScalarAggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 

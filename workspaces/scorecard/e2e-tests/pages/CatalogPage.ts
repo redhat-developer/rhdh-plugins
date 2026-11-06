@@ -40,11 +40,9 @@ export class CatalogPage {
     await this.page.goto('/');
     const enterButton = this.page.getByRole('button', { name: 'Enter' });
     await expect(enterButton).toBeVisible({ timeout: 30000 });
-    // Accept the legacy-guest-token fallback dialog if the auth backend
-    // is not yet ready when the "Enter" button is clicked.
+    // Accept guest-token dialog if auth is not ready yet.
     this.page.once('dialog', dialog => dialog.accept());
     await enterButton.click();
-    // Guest flow copy varies by Backstage / branding; wait for shell instead of "Welcome back!".
     await expect(
       this.page.getByRole('link', { name: 'Home' }).first(),
     ).toBeVisible({
@@ -54,19 +52,27 @@ export class CatalogPage {
   }
 
   async openCatalog() {
-    // Select the "All" user filter via URL instead of clicking the picker:
-    // on CI the picker item's container <li> intercepts pointer events and
-    // the click times out (rendering/font metrics differ from local runs).
-    await this.page.goto('/catalog?filters[user]=all');
-    await expect(this.page.getByTestId('user-picker-all')).toBeVisible();
+    // URL filter avoids a flaky CI click on the user picker. Retry while the
+    // catalog backend is still starting (entity fetch can fail briefly).
+    await expect(async () => {
+      await this.page.goto('/catalog?filters[user]=all');
+      await expect(this.page.getByTestId('user-picker-all')).toBeVisible();
+      await expect(
+        this.page.getByText('Could not fetch catalog entities'),
+      ).toHaveCount(0);
+      await expect(
+        this.page.getByRole('textbox', { name: 'Search' }),
+      ).toBeVisible();
+    }).toPass({ timeout: 60_000 });
   }
 
   async openComponent(componentName: string) {
+    const search = this.page.getByRole('textbox', { name: 'Search' });
+    await expect(search).toBeVisible({ timeout: 30_000 });
+    await search.fill(componentName);
+
     const link = this.page.getByRole('link', { name: componentName });
-    await this.page
-      .getByRole('textbox', { name: 'Search' })
-      .fill(componentName);
-    await expect(link).toBeVisible({ timeout: 10000 });
+    await expect(link).toBeVisible({ timeout: 30_000 });
     await link.click();
   }
 
