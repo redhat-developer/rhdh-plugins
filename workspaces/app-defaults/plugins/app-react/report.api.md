@@ -164,6 +164,15 @@ export interface DrawerPanelProps {
 }
 
 // @public
+export const NotFoundPage: (props: NotFoundPageProps) => JSX_2.Element;
+
+// @public
+export interface NotFoundPageProps {
+  description: string;
+  title: string;
+}
+
+// @public
 export const SidebarDividerBlueprint: ExtensionBlueprint<{
   kind: 'sidebar-divider';
   params: {
