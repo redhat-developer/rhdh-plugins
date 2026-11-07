@@ -10,7 +10,6 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const adoptionInsightsTranslationRef: TranslationRef<
   'plugin.adoption-insights',
   {
-    readonly 'page.title': string;
     readonly 'header.title': string;
     readonly 'header.dateRange.title': string;
     readonly 'header.dateRange.dateRange': string;
@@ -24,16 +23,27 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'header.dateRange.defaultLabel': string;
     readonly 'header.dateRange.startDate': string;
     readonly 'header.dateRange.endDate': string;
+    readonly 'table.headers.name': string;
+    readonly 'table.headers.kind': string;
+    readonly 'table.headers.lastUsed': string;
+    readonly 'table.headers.views': string;
+    readonly 'table.headers.executions': string;
+    readonly 'table.headers.trend': string;
+    readonly 'table.headers.entity': string;
+    readonly 'table.pagination.topN': string;
+    readonly 'filter.all': string;
+    readonly 'filter.selectKind': string;
+    readonly 'page.title': string;
+    readonly 'activeUsers.legend.newUsers': string;
+    readonly 'activeUsers.legend.returningUsers': string;
+    readonly 'activeUsers.title': string;
     readonly 'activeUsers.hour': string;
     readonly 'activeUsers.day': string;
     readonly 'activeUsers.week': string;
     readonly 'activeUsers.month': string;
-    readonly 'activeUsers.title': string;
     readonly 'activeUsers.averagePrefix': string;
     readonly 'activeUsers.averageText': string;
     readonly 'activeUsers.averageSuffix': string;
-    readonly 'activeUsers.legend.newUsers': string;
-    readonly 'activeUsers.legend.returningUsers': string;
     readonly 'templates.title': string;
     readonly 'templates.topNTitle': string;
     readonly 'templates.allTitle': string;
@@ -46,11 +56,11 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'techDocs.title': string;
     readonly 'techDocs.topNTitle': string;
     readonly 'techDocs.allTitle': string;
+    readonly 'searches.title': string;
     readonly 'searches.hour': string;
     readonly 'searches.day': string;
     readonly 'searches.week': string;
     readonly 'searches.month': string;
-    readonly 'searches.title': string;
     readonly 'searches.averagePrefix': string;
     readonly 'searches.averageText': string;
     readonly 'searches.averageSuffix': string;
@@ -62,16 +72,6 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'users.licensedNotLoggedIn': string;
     readonly 'users.ofTotal': string;
     readonly 'users.tooltip': string;
-    readonly 'table.headers.name': string;
-    readonly 'table.headers.kind': string;
-    readonly 'table.headers.lastUsed': string;
-    readonly 'table.headers.views': string;
-    readonly 'table.headers.executions': string;
-    readonly 'table.headers.trend': string;
-    readonly 'table.headers.entity': string;
-    readonly 'table.pagination.topN': string;
-    readonly 'filter.all': string;
-    readonly 'filter.selectKind': string;
     readonly 'common.today': string;
     readonly 'common.noResults': string;
     readonly 'common.readMore': string;
@@ -85,8 +85,8 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'common.loading': string;
     readonly 'permission.title': string;
     readonly 'permission.description': string;
-    readonly 'homepage.topPlugins.visits': string;
     readonly 'homepage.topPlugins.title': string;
+    readonly 'homepage.topPlugins.visits': string;
     readonly 'homepage.topPlugins.empty': string;
     readonly 'homepage.topPlugins.error': string;
     readonly 'homepage.topPlugins.permissionDenied': string;
