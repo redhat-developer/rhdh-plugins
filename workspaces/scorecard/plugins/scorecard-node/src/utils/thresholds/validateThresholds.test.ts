@@ -419,7 +419,7 @@ describe('validateThresholds', () => {
           rules: [{ key: 'success', expression: '<5', color: 'FF5733' }],
         },
         expectedError:
-          'Invalid color format for rule "success": "FF5733" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+          'Invalid color format for rule "success": "FF5733" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\', \'info.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
       },
       {
         description: 'invalid hex characters',
@@ -427,7 +427,7 @@ describe('validateThresholds', () => {
           rules: [{ key: 'success', expression: '<5', color: '#GGGGGG' }],
         },
         expectedError:
-          'Invalid color format for rule "success": "#GGGGGG" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+          'Invalid color format for rule "success": "#GGGGGG" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\', \'info.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
       },
       {
         description: 'invalid predefined constant',
@@ -435,7 +435,7 @@ describe('validateThresholds', () => {
           rules: [{ key: 'success', expression: '<5', color: 'invalid.color' }],
         },
         expectedError:
-          'Invalid color format for rule "success": "invalid.color" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+          'Invalid color format for rule "success": "invalid.color" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\', \'info.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
       },
       {
         description: 'empty color string',
@@ -461,7 +461,7 @@ describe('validateThresholds', () => {
           ],
         },
         expectedError:
-          'Invalid color format for rule "success": "rgb(50, 87 37)" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+          'Invalid color format for rule "success": "rgb(50, 87 37)" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\', \'info.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
       },
     ])(
       'should throw error for invalid color: $description',
