@@ -23,6 +23,10 @@ import { AdversarialAgent } from '../models/AdversarialAgent.model';
 import { AdversarialAgentsGet200Response } from '../models/AdversarialAgentsGet200Response.model';
 import { AdversarialAgentsPostRequest } from '../models/AdversarialAgentsPostRequest.model';
 import { MigrationPhase } from '../models/MigrationPhase.model';
+import { MigrationPlanDocument } from '../models/MigrationPlanDocument.model';
+import { MigrationPlanReadRequest } from '../models/MigrationPlanReadRequest.model';
+import { MigrationPlanSaveRequest } from '../models/MigrationPlanSaveRequest.model';
+import { MigrationPlanSaveResult } from '../models/MigrationPlanSaveResult.model';
 import { Module } from '../models/Module.model';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
@@ -166,6 +170,26 @@ export type ProjectsProjectIdLogGet = {
 /**
  * @public
  */
+export type ProjectsProjectIdMigrationPlanPut = {
+  path: {
+    projectId: string;
+  };
+  body: MigrationPlanSaveRequest;
+  response: MigrationPlanSaveResult | void | void | void | void | void | void;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdMigrationPlanReadPost = {
+  path: {
+    projectId: string;
+  };
+  body: MigrationPlanReadRequest;
+  response: MigrationPlanDocument | void | void | void | void | void;
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdModulesGet = {
   path: {
     projectId: string;
@@ -206,6 +230,28 @@ export type ProjectsProjectIdModulesModuleIdLogGet = {
     phase: MigrationPhase;
   };
   response: string | void;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesModuleIdMigrationPlanPut = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  body: MigrationPlanSaveRequest;
+  response: MigrationPlanSaveResult | void | void | void | void | void | void;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesModuleIdMigrationPlanReadPost = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  body: MigrationPlanReadRequest;
+  response: MigrationPlanDocument | void | void | void | void | void;
 };
 /**
  * @public
@@ -305,6 +351,10 @@ export type EndpointMap = {
 
   '#get|/projects/{projectId}/log': ProjectsProjectIdLogGet;
 
+  '#put|/projects/{projectId}/migration-plan': ProjectsProjectIdMigrationPlanPut;
+
+  '#post|/projects/{projectId}/migration-plan/read': ProjectsProjectIdMigrationPlanReadPost;
+
   '#get|/projects/{projectId}/modules': ProjectsProjectIdModulesGet;
 
   '#post|/projects/{projectId}/modules/{moduleId}/cancel': ProjectsProjectIdModulesModuleIdCancelPost;
@@ -312,6 +362,10 @@ export type EndpointMap = {
   '#get|/projects/{projectId}/modules/{moduleId}': ProjectsProjectIdModulesModuleIdGet;
 
   '#get|/projects/{projectId}/modules/{moduleId}/log': ProjectsProjectIdModulesModuleIdLogGet;
+
+  '#put|/projects/{projectId}/modules/{moduleId}/migration-plan': ProjectsProjectIdModulesModuleIdMigrationPlanPut;
+
+  '#post|/projects/{projectId}/modules/{moduleId}/migration-plan/read': ProjectsProjectIdModulesModuleIdMigrationPlanReadPost;
 
   '#post|/projects/{projectId}/modules/{moduleId}/run': ProjectsProjectIdModulesModuleIdRunPost;
 

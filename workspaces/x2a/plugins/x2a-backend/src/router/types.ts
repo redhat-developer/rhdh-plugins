@@ -22,6 +22,7 @@ import type {
   RootConfigService,
 } from '@backstage/backend-plugin-api';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
+import type { ScmFileStore } from '../services/ScmFileStore';
 import type {
   X2ADatabaseServiceApi,
   KubeServiceApi,
@@ -38,4 +39,5 @@ export interface RouterDeps {
   logger: LoggerService;
   permissionsSvc: PermissionsService;
   config: RootConfigService;
+  scmFileStore: ScmFileStore;
 }
