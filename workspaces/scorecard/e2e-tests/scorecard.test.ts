@@ -344,113 +344,6 @@ test.describe('Scorecard Plugin Tests', () => {
     });
   });
 
-  test.describe('SonarQube Entity Scorecards', () => {
-    test.skip(
-      process.env.APP_MODE === 'nfs',
-      'Legacy-only: NFS uses grouped metric cards',
-    );
-
-    test('Verify all SonarQube metrics display correctly', async ({}, testInfo) => {
-      const sonarqubeMetricTitles = Object.entries(translations.metric)
-        .filter(([key]) => key.startsWith('sonarqube.'))
-        .map(([, value]) => (value as { title: string }).title);
-
-      await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
-
-      await catalogPage.openCatalog();
-      await catalogPage.openComponent('sonarqube-scorecard-only');
-      await page.getByText('Scorecard', { exact: true }).click();
-
-      for (const title of sonarqubeMetricTitles) {
-        await expect(
-          page.getByText(title, { exact: true }).first(),
-        ).toBeVisible({ timeout: 10000 });
-      }
-
-      await runAccessibilityTests(page, testInfo);
-    });
-
-    test('Verify SonarQube metric values', async () => {
-      await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
-
-      await catalogPage.openCatalog();
-      await catalogPage.openComponent('sonarqube-scorecard-only');
-      await page.getByText('Scorecard', { exact: true }).click();
-
-      await expect(
-        page.getByText(translations.metric['sonarqube.securityIssues'].title, {
-          exact: true,
-        }),
-      ).toBeVisible({ timeout: 10000 });
-
-      const expectedValues: Record<string, string> = {
-        [translations.metric['sonarqube.securityIssues'].title]: '0',
-        [translations.metric['sonarqube.securityReviewRating'].title]: '1',
-        [translations.metric['sonarqube.reliabilityRating'].title]: '1',
-        [translations.metric['sonarqube.reliabilityIssues'].title]: '0',
-        [translations.metric['sonarqube.maintainabilityIssues'].title]: '12',
-        [translations.metric['sonarqube.codeDuplications'].title]: '3.2',
-        [translations.metric['sonarqube.qualityGate'].title]:
-          translations.thresholds.success,
-        [translations.metric['sonarqube.openIssues'].title]: '3',
-        [translations.metric['sonarqube.securityRating'].title]: '1',
-        [translations.metric['sonarqube.securityHotspots'].title]: '2',
-        [translations.metric['sonarqube.maintainabilityRating'].title]: '1',
-        [translations.metric['sonarqube.codeCoverage'].title]: '82.5',
-      };
-
-      for (const [title, value] of Object.entries(expectedValues)) {
-        const card = page
-          .locator('[role="article"]')
-          .filter({ hasText: title })
-          .first();
-        await expect(card).toContainText(value);
-      }
-
-      const qualityGateCard = page
-        .locator('[role="article"]')
-        .filter({
-          hasText: translations.metric['sonarqube.qualityGate'].title,
-        })
-        .first();
-      await expect(
-        qualityGateCard.getByTestId('CheckCircleOutlineIcon'),
-      ).toBeVisible();
-    });
-
-    test('Verify SonarQube quality gate failure state', async () => {
-      await mockSonarqubeScorecardResponse(
-        page,
-        sonarqubeFailedQualityGateResponse,
-      );
-
-      await catalogPage.openCatalog();
-      await catalogPage.openComponent('sonarqube-scorecard-only');
-      await page.getByText('Scorecard', { exact: true }).click();
-
-      const qualityGateCard = page
-        .locator('[role="article"]')
-        .filter({
-          hasText: translations.metric['sonarqube.qualityGate'].title,
-        })
-        .first();
-      await expect(qualityGateCard).toBeVisible({ timeout: 10000 });
-      await expect(
-        qualityGateCard.getByTestId('DangerousOutlinedIcon'),
-      ).toBeVisible();
-    });
-
-    test('Verify empty state for sonarqube entity with no metrics', async () => {
-      await mockSonarqubeScorecardResponse(page, emptyScorecardResponse);
-
-      await catalogPage.openCatalog();
-      await catalogPage.openComponent('sonarqube-scorecard-only');
-      await page.getByText('Scorecard', { exact: true }).click();
-
-      await expect(page.getByText(translations.emptyState.title)).toBeVisible();
-    });
-  });
-
   test.describe('Homepage aggregated scorecards', () => {
     test('Verify missing permission on all default homepage scorecard widgets', async () => {
       await mockHomepageAggregationsPermissionDenied(page);
@@ -481,19 +374,16 @@ test.describe('Scorecard Plugin Tests', () => {
       await mockAllDefaultHomepageAggregationsSuccess(page);
 
       await homePage.navigateToHome();
+      await homePage.enterEditMode();
+      await homePage.clearAllCards();
+      await homePage.addCard('Onboarding section');
+      await homePage.saveChanges();
 
-      if (process.env.APP_MODE === 'nfs') {
-        await homePage.enterEditMode();
-        await homePage.clearAllCards();
-        await homePage.addCard('Onboarding section');
-        await homePage.saveChanges();
-
-        for (const instanceId of Object.values(AGGREGATED_CARDS_METRIC_IDS)) {
-          await homePage.expectCardNotVisible(instanceId);
-        }
-
-        await addAggregatedScorecardWidgets(homePage);
+      for (const instanceId of Object.values(AGGREGATED_CARDS_METRIC_IDS)) {
+        await homePage.expectCardNotVisible(instanceId);
       }
+
+      await addAggregatedScorecardWidgets(homePage);
 
       for (const instanceId of Object.values(AGGREGATED_CARDS_METRIC_IDS)) {
         await homePage.expectCardVisible(instanceId);
@@ -1312,5 +1202,206 @@ test.describe('Scorecard Plugin Tests', () => {
         await expect(card).toContainText('customUnknownAggregationKind');
       });
     });
+  });
+});
+
+test.describe('Metric Group Cards', () => {
+  let page: Page;
+  let catalogPage: CatalogPage;
+  let scorecardPage: ScorecardPage;
+  let translations: ScorecardMessages;
+
+  test.beforeAll(async ({ browser }, testInfo) => {
+    const locale = (testInfo.project.use.locale as string | undefined) ?? 'en';
+    const context = await browser.newContext({ locale });
+    await context.addInitScript(installWebpackDevOverlayGuards);
+    page = await context.newPage();
+    const currentLocale = await page.evaluate(
+      () => globalThis.navigator.language,
+    );
+    translations = getTranslations(currentLocale);
+
+    catalogPage = new CatalogPage(page);
+    scorecardPage = new ScorecardPage(page, translations);
+
+    await catalogPage.loginAndSetLocale(currentLocale);
+
+    await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
+    await catalogPage.openCatalog();
+    await catalogPage.openComponent('sonarqube-scorecard-only');
+    await page.getByText('Scorecard', { exact: true }).click();
+    await expect(
+      scorecardPage.getGroupCard('Security Vulnerabilities'),
+    ).toBeVisible({
+      timeout: 15000,
+    });
+  });
+
+  test.afterAll(async () => {
+    await page?.context()?.close();
+  });
+
+  test('Verify group cards render with titles, descriptions, and bucket tiles', async ({}, testInfo) => {
+    const securityCard = scorecardPage.getGroupCard('Security Vulnerabilities');
+    await expect(securityCard).toBeVisible();
+    await expect(
+      securityCard.getByText('Track security issues across your repositories'),
+    ).toBeVisible();
+    await expect(
+      scorecardPage.getBucketTile(securityCard, 'success'),
+    ).toContainText('1');
+
+    const codeQualityCard = scorecardPage.getGroupCard('Code Quality');
+    await expect(codeQualityCard).toBeVisible();
+    await expect(
+      codeQualityCard.getByText('Code quality and maintainability metrics'),
+    ).toBeVisible();
+    await expect(
+      scorecardPage.getBucketTile(codeQualityCard, 'success'),
+    ).toContainText('3');
+
+    const coverageCard = scorecardPage.getGroupCard('SonarQube Coverage');
+    await expect(coverageCard).toBeVisible();
+    await expect(
+      coverageCard.getByText('SonarQube coverage metrics'),
+    ).toBeVisible();
+    await expect(
+      scorecardPage.getBucketTile(coverageCard, 'warning'),
+    ).toContainText('2');
+    await expect(
+      scorecardPage.getBucketTile(coverageCard, 'success'),
+    ).toContainText('1');
+
+    await runAccessibilityTests(page, testInfo);
+  });
+
+  test('Verify data sources dialog opens from menu', async ({}, testInfo) => {
+    const securityCard = scorecardPage.getGroupCard('Security Vulnerabilities');
+    const dialog = await scorecardPage.openDataSourcesDialog(securityCard);
+
+    await expect(dialog).toContainText(
+      scorecardPage.getDialogTitle('Security Vulnerabilities'),
+    );
+
+    const expectedColumns = [
+      translations.dataSourcesDialog.columns.plugin,
+      translations.dataSourcesDialog.columns.check,
+      translations.dataSourcesDialog.columns.value,
+      translations.dataSourcesDialog.columns.status,
+      translations.dataSourcesDialog.columns.lastSynced,
+    ];
+    for (const column of expectedColumns) {
+      await expect(dialog.getByText(column, { exact: true })).toBeVisible();
+    }
+
+    await runAccessibilityTests(page, testInfo, undefined, {
+      disableRules: ['color-contrast'],
+    });
+
+    await scorecardPage.closeDialog(dialog);
+    await expect(dialog).not.toBeVisible();
+  });
+
+  test('Verify filter pills filter data sources by threshold in SonarQube Coverage', async () => {
+    const coverageCard = scorecardPage.getGroupCard('SonarQube Coverage');
+    const dialog = await scorecardPage.openDataSourcesDialog(coverageCard);
+    const tableRows = scorecardPage.getTableRows(dialog);
+
+    await expect(tableRows).toHaveCount(3);
+
+    const warningPill = scorecardPage.getFilterPill(dialog, 'warning');
+    await warningPill.click();
+    await expect(warningPill).toHaveAttribute('aria-pressed', 'true');
+    await expect(tableRows).toHaveCount(2);
+    for (const row of await tableRows.all()) {
+      await expect(row).toContainText(translations.thresholds.warning);
+    }
+
+    await warningPill.click();
+    await expect(warningPill).toHaveAttribute('aria-pressed', 'false');
+    await expect(tableRows).toHaveCount(3);
+
+    const successPill = scorecardPage.getFilterPill(dialog, 'success');
+    await successPill.click();
+    await expect(successPill).toHaveAttribute('aria-pressed', 'true');
+    await expect(tableRows).toHaveCount(1);
+    for (const row of await tableRows.all()) {
+      await expect(row).toContainText(translations.thresholds.success);
+    }
+
+    await scorecardPage.closeDialog(dialog);
+  });
+
+  test('Verify clicking bucket tile opens dialog with filter pre-applied', async () => {
+    const coverageCard = scorecardPage.getGroupCard('SonarQube Coverage');
+
+    await scorecardPage.getBucketTile(coverageCard, 'warning').click();
+
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    const activePill = dialog.locator('[role="button"][aria-pressed="true"]');
+    await expect(activePill).toBeVisible();
+    const tableRows = scorecardPage.getTableRows(dialog);
+    await expect(tableRows).toHaveCount(2);
+    for (const row of await tableRows.all()) {
+      await expect(row).toContainText(translations.thresholds.warning);
+    }
+
+    await scorecardPage.closeDialog(dialog);
+  });
+
+  test('Verify ungrouped metrics render as individual cards alongside group cards', async ({}, testInfo) => {
+    await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
+    await catalogPage.openCatalog();
+    await catalogPage.openComponent('sonarqube-scorecard-only');
+    await page.getByText('Scorecard', { exact: true }).click();
+
+    const groupedMetricIds = new Set([
+      'sonarqube.qualityGate',
+      'sonarqube.codeCoverage',
+      'sonarqube.maintainabilityRating',
+      'sonarqube.openIssues',
+      'sonarqube.securityHotspots',
+      'sonarqube.securityRating',
+    ]);
+
+    const ungroupedMetricTitles = Object.entries(translations.metric)
+      .filter(
+        ([key]) => key.startsWith('sonarqube.') && !groupedMetricIds.has(key),
+      )
+      .map(([, value]) => (value as { title: string }).title);
+
+    for (const title of ungroupedMetricTitles) {
+      await expect(page.getByText(title, { exact: true }).first()).toBeVisible({
+        timeout: 10000,
+      });
+    }
+
+    await expect(
+      scorecardPage.getGroupCard('Security Vulnerabilities'),
+    ).toBeVisible();
+    await expect(scorecardPage.getGroupCard('Code Quality')).toBeVisible();
+    await expect(
+      scorecardPage.getGroupCard('SonarQube Coverage'),
+    ).toBeVisible();
+
+    await runAccessibilityTests(page, testInfo);
+  });
+
+  test('Verify quality gate failure shows error bucket on Code Quality group card', async () => {
+    await mockSonarqubeScorecardResponse(
+      page,
+      sonarqubeFailedQualityGateResponse,
+    );
+    await catalogPage.openCatalog();
+    await catalogPage.openComponent('sonarqube-scorecard-only');
+    await page.getByText('Scorecard', { exact: true }).click();
+
+    const codeQualityCard = scorecardPage.getGroupCard('Code Quality');
+    await expect(codeQualityCard).toBeVisible({ timeout: 10000 });
+    await expect(
+      scorecardPage.getBucketTile(codeQualityCard, 'error'),
+    ).toBeVisible();
   });
 });

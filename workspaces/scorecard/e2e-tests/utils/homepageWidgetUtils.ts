@@ -35,21 +35,10 @@ type SetupHomepageAggregationCardOptions = {
   status?: number;
 };
 
-const isNfs = () => process.env.APP_MODE === 'nfs';
-
-async function addWidget(
-  homePage: HomePage,
-  aggregationMetadata: { id: string; title: string },
-) {
+async function clearAndEditHomepage(homePage: HomePage) {
   await homePage.navigateToHome();
-  if (!isNfs()) {
-    return;
-  }
-
   await homePage.enterEditMode();
   await homePage.clearAllCards();
-  await homePage.addScorecardCard(aggregationMetadata.id);
-  await homePage.saveChanges();
 }
 
 export async function addAggregatedScorecardWidgets(
@@ -58,13 +47,7 @@ export async function addAggregatedScorecardWidgets(
     typeof AGGREGATED_CARDS_METRIC_IDS
   > = AGGREGATED_CARDS_METRIC_IDS,
 ) {
-  await homePage.navigateToHome();
-  if (!isNfs()) {
-    return;
-  }
-
-  await homePage.enterEditMode();
-  await homePage.clearAllCards();
+  await clearAndEditHomepage(homePage);
 
   for (const instanceId of Object.keys(widgetIds)) {
     if (!isAggregatedCardWidgetKey(instanceId)) {
@@ -86,10 +69,9 @@ export async function setupHomepageAggregationCard(
   const { aggregationMetadata, route, response, status } = options;
 
   await mockApiResponse(page, route, response, status ?? 200);
-
-  await addWidget(homePage, aggregationMetadata);
-
-  // Reload clears the singleton React Query cache
+  await clearAndEditHomepage(homePage);
+  await homePage.addScorecardCard(aggregationMetadata.id);
+  await homePage.saveChanges();
   await page.reload();
 }
 
@@ -98,7 +80,6 @@ export async function setupHomepageAllCardsNoData(
   homePage: HomePage,
 ): Promise<void> {
   await mockAggregationNoDataFound(page);
-
   await addAggregatedScorecardWidgets(homePage);
 
   const responseWaits = Object.values(AGGREGATED_CARDS_METRIC_IDS).map(id =>

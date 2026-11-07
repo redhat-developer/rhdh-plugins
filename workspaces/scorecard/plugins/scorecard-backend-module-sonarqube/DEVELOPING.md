@@ -40,4 +40,4 @@ yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-
 
 ## When this harness is not enough
 
-`packages/app` and `packages/app-legacy` already exist for cross-plugin home and catalog flows. Do not add another application package for this module. Start them from `workspaces/scorecard` with `yarn start` or `yarn start:legacy`. The [Scorecard backend guide](../scorecard-backend/DEVELOPING.md) covers the plugin without a metric module.
+`packages/app` already exists for cross-plugin home and catalog flows. Do not add another application package for this module. Start it from `workspaces/scorecard` with `yarn start`. The [Scorecard backend guide](../scorecard-backend/DEVELOPING.md) covers the plugin without a metric module.

@@ -111,8 +111,6 @@ export class ScorecardPage {
     }
   }
 
-  // Metric Group Card helpers
-
   getGroupCard(title: string): Locator {
     return this.page
       .locator('[role="article"]')
