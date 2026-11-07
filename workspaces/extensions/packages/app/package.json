@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
-    "@playwright/test": "1.63.0",
+    "@playwright/test": "1.64.1",
     "@types/react-dom": "*"
   },
   "browserslist": {
