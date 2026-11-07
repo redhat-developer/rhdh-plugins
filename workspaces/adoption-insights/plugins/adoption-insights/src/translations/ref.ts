@@ -132,6 +132,17 @@ export const adoptionInsightsMessages = {
     description:
       'To view "Adoption Insights" plugin, contact your administrator to give the adoption-insights.events.read permissions.',
   },
+  homepage: {
+    topPlugins: {
+      title: 'Top Plugins',
+      empty: 'No plugin usage data yet',
+      error: "Couldn't load plugin data",
+      permissionDenied:
+        'You do not have permission to view adoption insights data.',
+      trendTooltip: 'Trend calculated based on the last 28 days',
+      visits: 'visits',
+    },
+  },
 };
 
 /**

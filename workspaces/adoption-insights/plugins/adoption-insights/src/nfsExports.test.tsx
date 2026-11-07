@@ -93,4 +93,12 @@ describe('adoption-insights NFS wiring', () => {
     expect(plugin.getExtension('page:adoption-insights')).toBeDefined();
     expect(plugin.getExtension('api:adoption-insights')).toBeDefined();
   });
+
+  it('registers the Top Plugins homepage widget', () => {
+    expect(
+      plugin.getExtension(
+        'home-page-widget:adoption-insights/top-plugins-card',
+      ),
+    ).toBeDefined();
+  });
 });

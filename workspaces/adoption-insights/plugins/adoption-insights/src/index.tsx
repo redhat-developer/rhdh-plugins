@@ -38,6 +38,7 @@ import { SidebarItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-ap
 import { rootRouteRef } from './routes';
 import { AdoptionInsightsApiClient, adoptionInsightsApiRef } from './api';
 import { adoptionInsightsTranslations } from './translations';
+import { topPluginsCardWidget } from './extensions/homePageCards';
 
 const adoptionInsightsAccess = {
   permissions: {
@@ -99,6 +100,7 @@ export default createFrontendPlugin({
     adoptionInsightsPage,
     adoptionInsightsSidebarItem,
     adoptionInsightsApi,
+    topPluginsCardWidget,
   ],
   routes: { root: rootRouteRef },
 });
