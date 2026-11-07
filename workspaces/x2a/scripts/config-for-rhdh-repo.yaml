@@ -90,6 +90,10 @@ catalog:
       target: ../../x2a-conversion-project-template.yaml
       rules:
         - allow: [Template]
+    - type: file
+      target: ../../x2a-publish-aap-config-template.yaml
+      rules:
+        - allow: [Template]
 permission:
   enabled: true
   rbac:

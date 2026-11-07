@@ -9720,6 +9720,7 @@ __metadata:
     "@backstage/plugin-scaffolder-node": "npm:^0.13.1"
     "@backstage/plugin-scaffolder-node-test-utils": "npm:^0.3.9"
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
+    yaml: "npm:^2.0.0"
   languageName: unknown
   linkType: soft
 

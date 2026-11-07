@@ -33,6 +33,7 @@ export const humanizeArtifactType = (
   if (kind.isMigratedSources()) return t('artifact.types.migrated_sources');
   if (kind.isProjectMetadata()) return t('artifact.types.project_metadata');
   if (kind.isAnsibleProject()) return t('artifact.types.ansible_project');
+  if (kind.isAapConfig()) return t('artifact.types.aap_config');
   if (kind.isAdversarialReport()) return t('artifact.types.adversarial_report');
   if (kind.isAdversarialReportJson())
     return t('artifact.types.adversarial_report_json');
