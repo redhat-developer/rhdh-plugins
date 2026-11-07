@@ -59,6 +59,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import LanguageIcon from '@mui/icons-material/Language';
 
 import type { TemplateCardActionData, TemplateCardBadgeData } from '../types';
+import { TimeSavedChip } from './TimeSavedChip';
 
 /** @alpha */
 export interface TemplateCardProps extends TemplateCardComponentProps {
@@ -133,11 +134,8 @@ export const TemplateCard = (props: TemplateCardProps) => {
   const theme = useTheme();
   const { t } = useTranslationRef(scaffolderReactTranslationRef);
   const ownedByRelations = getEntityRelations(template, RELATION_OWNED_BY);
-  const hasTags = !!template.metadata.tags?.length;
-  const hasBadgesOrTags = badges.length > 0 || hasTags;
   const hasLinks =
     !!additionalLinks?.length || !!template.metadata.links?.length;
-  const displayDefaultDivider = !hasBadgesOrTags && !hasLinks;
 
   const { allowed: canCreateTask } = usePermission({
     permission: taskCreatePermission,
@@ -214,47 +212,37 @@ export const TemplateCard = (props: TemplateCardProps) => {
               />
             </Box>
           </Grid>
-          {displayDefaultDivider && (
-            <Grid item xs={12}>
-              <Divider data-testid="template-card-separator" />
-            </Grid>
-          )}
-          {hasBadgesOrTags && (
-            <>
-              <Grid item xs={12}>
-                <Divider data-testid="template-card-separator--tags" />
-              </Grid>
-              <Grid item xs={12}>
-                <Box
-                  sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}
-                  data-testid="template-card-tags"
-                >
-                  {[...badges]
-                    .sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))
-                    .map((badge, index) => {
-                      const BadgeComponent = badge.component;
-                      return (
-                        <BadgeComponent
-                          key={`badge-${index}`}
-                          template={
-                            template as unknown as Record<string, unknown>
-                          }
-                        />
-                      );
-                    })}
-                  {template.metadata.tags?.map(tag => (
-                    <Chip
-                      key={tag}
-                      style={{ margin: 0 }}
-                      size="small"
-                      label={tag}
-                      data-testid={`template-card-tag-chip-${tag}`}
+          <Grid item xs={12}>
+            <Divider data-testid="template-card-separator--tags" />
+          </Grid>
+          <Grid item xs={12}>
+            <Box
+              sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}
+              data-testid="template-card-tags"
+            >
+              <TimeSavedChip template={template} />
+              {[...badges]
+                .sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0))
+                .map((badge, index) => {
+                  const BadgeComponent = badge.component;
+                  return (
+                    <BadgeComponent
+                      key={`badge-${index}`}
+                      template={template as unknown as Record<string, unknown>}
                     />
-                  ))}
-                </Box>
-              </Grid>
-            </>
-          )}
+                  );
+                })}
+              {template.metadata.tags?.map(tag => (
+                <Chip
+                  key={tag}
+                  style={{ margin: 0 }}
+                  size="small"
+                  label={tag}
+                  data-testid={`template-card-tag-chip-${tag}`}
+                />
+              ))}
+            </Box>
+          </Grid>
           {hasLinks && (
             <>
               <Grid item xs={12}>
