@@ -14,34 +14,9 @@
  * limitations under the License.
  */
 
-/**
- * Best-effort map from Adoption Insights plugin_id values to RHDH routes.
- * Unknown plugins render non-clickable (no broken routes).
- *
- * Keys are matched after {@link normalizePluginId}.
- */
-const KNOWN_PLUGIN_DESTINATIONS: Record<string, string> = {
-  catalog: '/catalog',
-  scaffolder: '/create',
-  techdocs: '/docs',
-  'tech-docs': '/docs',
-  search: '/search',
-  kubernetes: '/kubernetes',
-  ansible: '/ansible',
-  homepage: '/',
-  home: '/',
-  'user-settings': '/settings',
-  'adoption-insights': '/adoption-insights',
-};
-
-export function normalizePluginId(pluginId: string): string {
-  return pluginId.trim().toLowerCase().replace(/\s+/g, '-');
-}
-
-/**
- * Resolve a navigation path for a plugin id, or undefined when unknown.
- */
-export function resolvePluginDestination(pluginId: string): string | undefined {
-  const key = normalizePluginId(pluginId);
-  return KNOWN_PLUGIN_DESTINATIONS[key];
-}
+export {
+  normalizePluginId,
+  parsePluginDestinations,
+  resolvePluginDestination,
+} from '../popularContent/pluginDestinations';
+export type { PluginDestinationOverrides } from '../popularContent/pluginDestinations';

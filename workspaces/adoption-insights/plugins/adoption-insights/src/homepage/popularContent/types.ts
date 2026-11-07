@@ -78,6 +78,11 @@ export type PopularContentCardConfig = {
    * Ignored in auto mode.
    */
   items?: PopularContentConfigItem[];
+  /**
+   * Extra / overriding `plugin_id` → app path map for ranked rows (and curated
+   * items that omit `href`). Keys are normalized like built-in destinations.
+   */
+  pluginDestinations?: Record<string, string>;
 };
 
 export const DEFAULT_POPULAR_CONTENT_DISPLAY_COUNT = 3;

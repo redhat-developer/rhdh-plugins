@@ -26,6 +26,7 @@ describe('resolvePopularContentConfig', () => {
       displayCount: 3,
       title: undefined,
       items: undefined,
+      pluginDestinations: undefined,
     });
   });
 
@@ -36,12 +37,14 @@ describe('resolvePopularContentConfig', () => {
         displayCount: 5,
         title: ' Featured ',
         items: [{ id: 'catalog', title: 'Catalog', href: '/catalog' }],
+        pluginDestinations: { 'my-plugin': '/my-plugin' },
       }),
     ).toEqual({
       mode: 'hybrid',
       displayCount: 5,
       title: 'Featured',
       items: [{ id: 'catalog', title: 'Catalog', href: '/catalog' }],
+      pluginDestinations: { 'my-plugin': '/my-plugin' },
     });
   });
 
@@ -51,12 +54,14 @@ describe('resolvePopularContentConfig', () => {
         mode: 'nope',
         displayCount: -1,
         items: [{ title: 'missing-id' }, null, { id: 'ok' }],
+        pluginDestinations: { bad: 'nope' },
       }),
     ).toEqual({
       mode: 'auto',
       displayCount: 3,
       title: undefined,
       items: [{ id: 'ok' }],
+      pluginDestinations: undefined,
     });
   });
 

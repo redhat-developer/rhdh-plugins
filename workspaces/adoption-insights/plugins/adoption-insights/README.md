@@ -131,16 +131,22 @@ Shows org-wide most-used plugins/extensions from Adoption Insights.
 
 **Settings / layout props**
 
-| Prop           | Type                            | Default | Description                                                    |
-| -------------- | ------------------------------- | ------- | -------------------------------------------------------------- |
-| `mode`         | `auto` \| `hybrid` \| `curated` | `auto`  | Content selection mode                                         |
-| `displayCount` | number                          | `3`     | Number of rows to show                                         |
-| `title`        | string                          | —       | Optional card title override                                   |
-| `items`        | `{ id, title?, href?, … }[]`    | —       | Curated list (`curated`) or pins (`hybrid`); ignored in `auto` |
+| Prop                 | Type                            | Default | Description                                                                  |
+| -------------------- | ------------------------------- | ------- | ---------------------------------------------------------------------------- |
+| `mode`               | `auto` \| `hybrid` \| `curated` | `auto`  | Content selection mode                                                       |
+| `displayCount`       | number                          | `3`     | Number of rows to show                                                       |
+| `title`              | string                          | —       | Optional card title override                                                 |
+| `items`              | `{ id, title?, href?, … }[]`    | —       | Curated list (`curated`) or pins (`hybrid`); ignored in `auto`               |
+| `pluginDestinations` | `{ [pluginId]: '/path' }`       | —       | Extra / overriding routes for ranked rows (and curated items without `href`) |
+
+Rows link only when a destination is known. Built-in destinations cover common OOTB / supported plugins (Catalog, Catalog Graph, Bulk Import, RBAC, Tech Radar, …). Unknown `plugin_id` values stay plain text unless you add them via `pluginDestinations` (or set `items[].href` in curated/hybrid).
 
 On an editable homepage, add **Top Plugins** from the widget catalog and edit mode / display count / title in card settings. Use `widgetLayout` props for a read-only homepage (or to seed defaults).
 
-Example `app-config.yaml` (with the Homepage plugin):
+Example `app-config.yaml` (with the Homepage plugin). On RHDH / when
+`homepage-backend` is installed, **also** list the widget under
+`homepage.defaultWidgets` — the Add-widget catalog only includes refs that
+match the extension name (`top-plugins-card`):
 
 ```yaml
 app:
@@ -161,6 +167,11 @@ app:
               props:
                 mode: auto
                 displayCount: 5
+                # Optional: register custom / third-party plugin routes
+                pluginDestinations:
+                  my-custom-plugin: /my-custom-plugin
+                  # Override a built-in destination if your path differs
+                  # scaffolder: /templates
               breakpoints:
                 xl: { w: 4, h: 5 }
                 lg: { w: 4, h: 5 }
@@ -168,6 +179,15 @@ app:
                 sm: { w: 6, h: 5 }
                 xs: { w: 12, h: 5 }
                 xxs: { w: 12, h: 5 }
+
+homepage:
+  defaultWidgets:
+    - id: top-plugins-card
+      ref: top-plugins-card
+      props:
+        title: Top Plugins
+        mode: auto
+        displayCount: 5
 ```
 
 Read-only curated example (no Adoption Insights ranking call):

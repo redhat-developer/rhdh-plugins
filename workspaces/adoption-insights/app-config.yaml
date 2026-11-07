@@ -41,11 +41,16 @@ app:
         config:
           customizable: true
           widgetLayout:
+            # Key matches HomePageWidgetBlueprint params.name (also accepts
+            # extension name top-plugins-card).
             TopPluginsCard:
               priority: 400
               props:
                 mode: auto
                 displayCount: 3
+                # Example: add routes for custom plugins (optional)
+                # pluginDestinations:
+                #   my-custom-plugin: /my-custom-plugin
               breakpoints:
                 xl: { w: 4, h: 5, x: 0, y: 0 }
                 lg: { w: 4, h: 5, x: 0, y: 0 }
@@ -53,6 +58,19 @@ app:
                 sm: { w: 6, h: 5, x: 0, y: 0 }
                 xs: { w: 12, h: 5, x: 0, y: 0 }
                 xxs: { w: 12, h: 5, x: 0, y: 0 }
+
+# When homepage-backend is installed (RHDH / rhdh-local), Add-widget only lists
+# cards whose extension name matches a defaultWidgets.ref (last path segment of
+# home-page-widget:adoption-insights/top-plugins-card → top-plugins-card).
+# Without this entry the Top Plugins card never appears in the catalog.
+homepage:
+  defaultWidgets:
+    - id: top-plugins-card
+      ref: top-plugins-card
+      props:
+        title: Top Plugins
+        mode: auto
+        displayCount: 3
 
 organization:
   name: My Company

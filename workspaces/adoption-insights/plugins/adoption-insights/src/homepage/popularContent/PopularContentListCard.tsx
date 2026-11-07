@@ -16,14 +16,11 @@
 
 import type { ReactNode } from 'react';
 
+import { InfoCard, Link as BackstageLink } from '@backstage/core-components';
 import {
   ButtonIcon,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
   Flex,
-  Link,
+  Link as ExternalLink,
   List,
   ListRow,
   Skeleton,
@@ -39,6 +36,41 @@ import {
 } from '@remixicon/react';
 
 import { PopularContentItem } from './types';
+
+/** Absolute / protocol-relative / mailto links leave the SPA; paths stay in-app. */
+function isExternalHref(href: string): boolean {
+  return (
+    href.startsWith('http://') ||
+    href.startsWith('https://') ||
+    href.startsWith('//') ||
+    href.startsWith('mailto:') ||
+    href.startsWith('tel:')
+  );
+}
+
+function ItemTitleLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) {
+  // @backstage/ui Link renders a plain <a href> (full document load). Use
+  // core-components Link for in-app router navigation like other homepage cards.
+  if (isExternalHref(href)) {
+    return (
+      <ExternalLink href={href} weight="bold">
+        {children}
+      </ExternalLink>
+    );
+  }
+
+  return (
+    <BackstageLink to={href} style={{ fontWeight: 700 }}>
+      {children}
+    </BackstageLink>
+  );
+}
 
 export type PopularContentListCardProps = {
   title: string;
@@ -227,20 +259,31 @@ export function PopularContentListCard({
             item.title
           );
 
+          const leadingIcon =
+            item.icon ??
+            (item.iconUrl ? (
+              <img
+                src={item.iconUrl}
+                alt=""
+                width={16}
+                height={16}
+                style={{ display: 'block' }}
+              />
+            ) : undefined);
+
           return (
             <ListRow
               key={item.id}
               id={item.id}
               textValue={item.title}
               description={item.subtitle}
+              icon={leadingIcon}
               customActions={
                 <RowMetrics item={item} visitsLabel={visitsLabel} />
               }
             >
               {item.href ? (
-                <Link href={item.href} weight="bold">
-                  {titleNode}
-                </Link>
+                <ItemTitleLink href={item.href}>{titleNode}</ItemTitleLink>
               ) : (
                 titleNode
               )}
@@ -251,33 +294,29 @@ export function PopularContentListCard({
     );
   }
 
+  // InfoCard (MUI paper) matches other NFS homepage widgets. @backstage/ui Card
+  // uses bg="neutral" (e.g. --bui-bg-neutral-1), which reads as a different
+  // surface in dark mode next to theme.palette.background.paper.
   return (
-    <Card>
-      <CardHeader>
-        <Flex
-          justify="between"
-          align="center"
-          gap="2"
-          style={{ width: '100%' }}
-        >
-          <Text variant="title-x-small" weight="bold">
-            {title}
-          </Text>
-          {titleTooltip ? (
-            <TooltipTrigger delay={300}>
-              <ButtonIcon
-                aria-label={titleTooltip}
-                icon={<RiInformationLine size={16} />}
-                size="small"
-                variant="tertiary"
-              />
-              <Tooltip>{titleTooltip}</Tooltip>
-            </TooltipTrigger>
-          ) : null}
-        </Flex>
-      </CardHeader>
-      <CardBody>{body}</CardBody>
-      {footer ? <CardFooter>{footer}</CardFooter> : null}
-    </Card>
+    <InfoCard
+      title={title}
+      divider={!!title}
+      action={
+        titleTooltip ? (
+          <TooltipTrigger delay={300}>
+            <ButtonIcon
+              aria-label={titleTooltip}
+              icon={<RiInformationLine size={16} />}
+              size="small"
+              variant="tertiary"
+            />
+            <Tooltip>{titleTooltip}</Tooltip>
+          </TooltipTrigger>
+        ) : undefined
+      }
+    >
+      {body}
+      {footer}
+    </InfoCard>
   );
 }

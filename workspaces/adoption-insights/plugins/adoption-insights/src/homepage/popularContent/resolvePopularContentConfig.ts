@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { parsePluginDestinations } from './pluginDestinations';
 import {
   DEFAULT_POPULAR_CONTENT_DISPLAY_COUNT,
   DEFAULT_POPULAR_CONTENT_MODE,
@@ -103,6 +104,7 @@ export function resolvePopularContentConfig(
     displayCount,
     title,
     items: parseConfigItems(raw.items),
+    pluginDestinations: parsePluginDestinations(raw.pluginDestinations),
   };
 }
 

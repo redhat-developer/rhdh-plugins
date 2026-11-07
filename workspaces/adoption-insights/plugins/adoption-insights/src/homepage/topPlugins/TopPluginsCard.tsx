@@ -27,7 +27,10 @@ import {
   shouldFetchAdoptionInsights,
   useAdoptionInsightsRanking,
 } from '../popularContent';
-import { mapPluginTrendsToPopularContentItems } from './mapPlugins';
+import {
+  applyPluginDestinations,
+  mapPluginTrendsToPopularContentItems,
+} from './mapPlugins';
 
 export type TopPluginsCardProps = {
   mode?: string;
@@ -35,6 +38,8 @@ export type TopPluginsCardProps = {
   displayCount?: number | string;
   limit?: number | string;
   items?: unknown;
+  /** Admin map of plugin_id → route path (overrides built-in destinations). */
+  pluginDestinations?: Record<string, string>;
   [key: string]: unknown;
 };
 
@@ -71,9 +76,12 @@ export function TopPluginsCard(props: TopPluginsCardProps) {
         limit: options.limit,
         grouping: options.grouping,
       });
-      return mapPluginTrendsToPopularContentItems(response?.data ?? []);
+      return mapPluginTrendsToPopularContentItems(
+        response?.data ?? [],
+        config.pluginDestinations,
+      );
     },
-    [api],
+    [api, config.pluginDestinations],
   );
 
   const ranking = useAdoptionInsightsRanking({
@@ -84,10 +92,13 @@ export function TopPluginsCard(props: TopPluginsCardProps) {
 
   const items = useMemo(
     () =>
-      resolvePopularContentItems({
-        config,
-        ranked: ranking.items,
-      }),
+      applyPluginDestinations(
+        resolvePopularContentItems({
+          config,
+          ranked: ranking.items,
+        }),
+        config.pluginDestinations,
+      ),
     [config, ranking.items],
   );
 

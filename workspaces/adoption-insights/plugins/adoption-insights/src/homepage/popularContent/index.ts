@@ -30,6 +30,12 @@ export {
 } from './resolvePopularContentConfig';
 export { resolvePopularContentItems } from './resolvePopularContentItems';
 export {
+  normalizePluginId,
+  parsePluginDestinations,
+  resolvePluginDestination,
+} from './pluginDestinations';
+export type { PluginDestinationOverrides } from './pluginDestinations';
+export {
   useAdoptionInsightsRanking,
   POPULAR_CONTENT_DEFAULT_LOOKBACK_DAYS,
 } from './useAdoptionInsightsRanking';

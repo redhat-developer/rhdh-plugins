@@ -20,12 +20,17 @@ import { screen } from '@testing-library/react';
 import { PopularContentListCard } from '../PopularContentListCard';
 
 describe('PopularContentListCard', () => {
-  it('renders items with links and non-clickable entries', async () => {
+  it('renders items with links, icons, and non-clickable entries', async () => {
     await renderInTestApp(
       <PopularContentListCard
         title="Top Plugins"
         items={[
-          { id: 'catalog', title: 'Software Catalog', href: '/catalog' },
+          {
+            id: 'catalog',
+            title: 'Software Catalog',
+            href: '/catalog',
+            icon: <span data-testid="catalog-icon" />,
+          },
           { id: 'unknown', title: 'mystery-plugin' },
         ]}
       />,
@@ -35,6 +40,7 @@ describe('PopularContentListCard', () => {
     expect(
       screen.getByRole('link', { name: 'Software Catalog' }),
     ).toHaveAttribute('href', '/catalog');
+    expect(screen.getByTestId('catalog-icon')).toBeInTheDocument();
     expect(screen.getByText('mystery-plugin')).toBeInTheDocument();
     expect(
       screen.queryByRole('link', { name: 'mystery-plugin' }),
