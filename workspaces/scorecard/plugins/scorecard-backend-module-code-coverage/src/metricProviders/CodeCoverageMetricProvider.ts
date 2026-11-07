@@ -105,7 +105,7 @@ export const CODE_COVERAGE_AGGREGATE_KEYS: Record<
   branchMissed: { section: 'branch', field: 'missed' },
 };
 
-const PERCENTAGE_THRESHOLDS: ThresholdConfig = {
+export const PERCENTAGE_THRESHOLDS: ThresholdConfig = {
   rules: [
     { key: 'success', expression: '>80' },
     { key: 'warning', expression: '50-80' },
