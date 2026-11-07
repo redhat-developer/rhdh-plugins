@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-node
 
+## 1.1.0
+
+### Minor Changes
+
+- aa44c81: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- 1f60858: Enforce rule content limits: max 50,000 characters per rule description, and max 50,000 total characters across all rules accepted by a project
+- Updated dependencies [c1ea707]
+- Updated dependencies [1f60858]
+- Updated dependencies [aa44c81]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@2.1.0
+
 ## 1.0.1
 
 ### Patch Changes
