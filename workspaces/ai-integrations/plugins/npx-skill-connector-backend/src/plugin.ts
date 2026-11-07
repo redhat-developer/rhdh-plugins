@@ -22,20 +22,19 @@ import { createLoadingSnapshot } from '@red-hat-developer-hub/backstage-plugin-a
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { createRouter } from './router';
 import { readSourceConfigs } from './services/config';
+import { refreshSource } from './services/refreshSource';
 import type { NpxSourceConfig } from './services/types';
 
 /**
  * npxSkillConnectorPlugin backend plugin
  *
- * Registers public Agent Skills v0.2 index sources and serves their
- * initial loading snapshots via GET /skills/:sourceId.
+ * Registers public Agent Skills v0.2 index sources, discovers entries,
+ * retrieves and verifies artifacts, normalizes metadata, and serves
+ * snapshots via GET /skills/:sourceId.
  *
  * It does not create AiResource entities or mutate the catalog.
  * Public sources only; no npx execution, Git crawling, or
  * private-registry authentication.
- *
- * Index discovery is available for the later artifact retrieval and
- * snapshot publication work (tasks 3.2–3.4).
  *
  * @public
  */
@@ -47,8 +46,9 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         logger: coreServices.logger,
         config: coreServices.rootConfig,
+        scheduler: coreServices.scheduler,
       },
-      async init({ logger, httpRouter, config }) {
+      async init({ logger, httpRouter, config, scheduler }) {
         const sources: NpxSourceConfig[] = readSourceConfigs(config, logger);
         const snapshots = new Map<string, SkillSnapshot>();
 
@@ -60,6 +60,21 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
         }
 
         httpRouter.use(createRouter(snapshots));
+
+        // Schedule periodic refresh for each source
+        for (const source of sources) {
+          await scheduler.scheduleTask({
+            id: `npx-skill-connector:refresh:${source.id}`,
+            ...source.schedule,
+            fn: async (abortSignal?: AbortSignal) => {
+              const childLogger = logger.child({
+                source: source.id,
+              });
+              await refreshSource(source, snapshots, childLogger, abortSignal);
+            },
+          });
+        }
+
         logger.info(
           `npx skill connector initialized with ${sources.length} source(s)`,
         );
