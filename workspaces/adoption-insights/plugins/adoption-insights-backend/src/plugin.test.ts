@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { adoptionInsightsPlugin } from './plugin';
 import request from 'supertest';
 
@@ -28,7 +29,10 @@ describe('plugin', () => {
   // eslint-disable-next-line jest/expect-expect
   it('should throw Bad request when query params are not passed', async () => {
     const { server } = await startTestBackend({
-      features: [adoptionInsightsPlugin],
+      features: [
+        adoptionInsightsPlugin,
+        catalogServiceMock.factory({ entities: [] }),
+      ],
     });
 
     await request(server)
@@ -41,7 +45,7 @@ describe('plugin', () => {
           ],
           end_date: ['end_date is required. Use YYYY-MM-DD (e.g., 2025-03-02)'],
           type: [
-            'Invalid type. Allowed values: total_users,active_users,top_plugins,top_templates,top_techdocs,top_searches,top_catalog_entities',
+            'Invalid type. Allowed values: total_users,active_users,time_saved,top_plugins,top_templates,top_techdocs,top_searches,top_catalog_entities',
           ],
         },
       });
@@ -64,6 +68,7 @@ describe('plugin', () => {
     const { server } = await startTestBackend({
       features: [
         adoptionInsightsPlugin,
+        catalogServiceMock.factory({ entities: [] }),
         mockServices.rootConfig.factory({
           data: { ...BASE_CONFIG },
         }),

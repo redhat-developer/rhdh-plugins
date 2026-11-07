@@ -24,9 +24,14 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { AnalyticsEvent } from '@backstage/core-plugin-api';
 import { adoptionInsightsPlugin } from './plugin';
 import { QUERY_TYPES } from './types/event-request';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
+import { createPartition } from './database/partition';
 import request from 'supertest';
 import type { Server } from 'http';
 import type { Knex } from 'knex';
+
+// Postgres TestDatabases spin up a container, which can exceed the default 5s.
+jest.setTimeout(60_000);
 
 const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -87,6 +92,7 @@ function startAdoptionInsightsBackend(options?: {
       adoptionInsightsPlugin,
       mockServices.rootConfig.factory({ data: BASE_CONFIG }),
       mockServices.auth.factory(),
+      catalogServiceMock.factory({ entities: [] }),
       mockServices.httpAuth.factory({
         defaultCredentials: mockCredentials.user('user:default/test'),
       }),
@@ -227,6 +233,21 @@ describe('adoption-insights plugin (startTestBackend)', () => {
         backend.server.close();
       }
     });
+
+    it('requires the events read permission for time_saved', async () => {
+      const backend = await startAdoptionInsightsBackend({
+        authorizeResult: AuthorizeResult.DENY,
+      });
+
+      try {
+        const res = await request(backend.server).get(
+          eventsUrl({ type: 'time_saved' }),
+        );
+        expect(res.status).toBe(403);
+      } finally {
+        backend.server.close();
+      }
+    });
   });
 
   describe('POST /api/adoption-insights/events', () => {
@@ -323,6 +344,23 @@ const templateCreate = (user: string, entityRef: string, at: string) =>
     at,
     context: { entityRef },
   });
+
+const timeSavedRun = (
+  user: string,
+  at: string,
+  value: string | null,
+  entityRef = 'template:default/nodejs',
+) => ({
+  ...event({
+    action: 'create',
+    subject: 'Task has been created',
+    plugin_id: 'scaffolder',
+    user,
+    at,
+    context: { entityRef },
+  }),
+  value,
+});
 
 type CatalogEntity = { kind: string; name: string; namespace: string };
 const COMPONENT: CatalogEntity = {
@@ -445,7 +483,7 @@ describe('GET /api/adoption-insights/events with seeded data', () => {
     });
   });
 
-  it('returns top_templates ranked by scaffolder creations', async () => {
+  it('returns top_templates ranked by wizard-opening clicks', async () => {
     const res = await request(server).get(seededEventsUrl('top_templates'));
 
     expect(res.status).toBe(200);
@@ -455,11 +493,15 @@ describe('GET /api/adoption-insights/events with seeded data', () => {
           entityref: 'template:default/nodejs',
           count: 2,
           last_used: '2025-06-04T10:00:00Z',
+          runs: 0,
+          minutes: 0,
         },
         {
           entityref: 'template:default/python',
           count: 1,
           last_used: '2025-06-05T10:00:00Z',
+          runs: 0,
+          minutes: 0,
         },
       ],
     });
@@ -573,6 +615,8 @@ describe('GET /api/adoption-insights/events with seeded data', () => {
           entityref: 'template:default/nodejs',
           count: 2,
           last_used: '2025-06-04T10:00:00Z',
+          runs: 0,
+          minutes: 0,
         },
       ],
     });
@@ -589,6 +633,352 @@ describe('GET /api/adoption-insights/events with seeded data', () => {
       'adoption_insights_top_searches.csv',
     );
     expect(res.text).toBe('date,count\n2025-06-03,2\n2025-06-05,1');
+  });
+});
+
+describe('GET /api/adoption-insights/events?type=top_templates with runs', () => {
+  const databases = TestDatabases.create({ ids: ['SQLITE_3'] });
+  let server: Server;
+
+  beforeAll(async () => {
+    const knex = await databases.init('SQLITE_3');
+    ({ server } = await startAdoptionInsightsBackend({ knex }));
+    await knex('events').insert([
+      templateCreate(
+        'alice',
+        'template:default/nodejs',
+        '2025-06-03T10:00:00.000Z',
+      ),
+      templateCreate(
+        'bob',
+        'template:default/nodejs',
+        '2025-06-04T10:00:00.000Z',
+      ),
+      templateCreate(
+        'alice',
+        'template:default/python',
+        '2025-06-05T10:00:00.000Z',
+      ),
+      timeSavedRun('alice', '2025-06-03T11:00:00.000Z', '120'),
+      timeSavedRun('bob', '2025-06-04T11:00:00.000Z', '15.5'),
+      timeSavedRun('carol', '2025-06-04T12:00:00.000Z', null),
+      timeSavedRun(
+        'alice',
+        '2025-06-05T11:00:00.000Z',
+        '10',
+        'template:default/python',
+      ),
+      timeSavedRun(
+        'bob',
+        '2025-06-05T12:00:00.000Z',
+        '10',
+        'template:default/python',
+      ),
+      timeSavedRun(
+        'carol',
+        '2025-06-05T13:00:00.000Z',
+        '10',
+        'template:default/python',
+      ),
+      timeSavedRun(
+        'alice',
+        '2025-06-05T14:00:00.000Z',
+        '10',
+        'template:default/python',
+      ),
+      timeSavedRun('alice', '2025-06-10T10:00:00.000Z', '999'),
+      timeSavedRun(
+        'alice',
+        '2025-06-04T13:00:00.000Z',
+        '200',
+        'template:default/run-only',
+      ),
+      {
+        ...timeSavedRun('bob', '2025-06-04T14:00:00.000Z', '999'),
+        plugin_id: 'other-plugin',
+      },
+      {
+        ...timeSavedRun('bob', '2025-06-04T15:00:00.000Z', '999'),
+        subject: 'Other task event',
+      },
+    ]);
+  });
+
+  afterAll(() => {
+    server.close();
+  });
+
+  it('adds historical minutes and task runs without changing click counts', async () => {
+    const res = await request(server).get(seededEventsUrl('top_templates'));
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      data: [
+        {
+          entityref: 'template:default/nodejs',
+          count: 2,
+          last_used: '2025-06-04T10:00:00Z',
+          runs: 3,
+          minutes: 135.5,
+        },
+        {
+          entityref: 'template:default/python',
+          count: 1,
+          last_used: '2025-06-05T10:00:00Z',
+          runs: 4,
+          minutes: 40,
+        },
+      ],
+    });
+  });
+
+  it('keeps the existing click-based limit', async () => {
+    const res = await request(server).get(
+      seededEventsUrl('top_templates', '&limit=1'),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual([
+      {
+        entityref: 'template:default/nodejs',
+        count: 2,
+        last_used: '2025-06-04T10:00:00Z',
+        runs: 3,
+        minutes: 135.5,
+      },
+    ]);
+  });
+
+  it('accepts explicit click sorting with the same result as the default', async () => {
+    const res = await request(server).get(
+      seededEventsUrl('top_templates', '&sort_by=clicks&limit=1'),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual([
+      {
+        entityref: 'template:default/nodejs',
+        count: 2,
+        last_used: '2025-06-04T10:00:00Z',
+        runs: 3,
+        minutes: 135.5,
+      },
+    ]);
+  });
+
+  it('applies the limit after ranking by task runs', async () => {
+    const res = await request(server).get(
+      seededEventsUrl('top_templates', '&sort_by=runs&limit=1'),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual([
+      {
+        entityref: 'template:default/python',
+        count: 1,
+        last_used: '2025-06-05T10:00:00Z',
+        runs: 4,
+        minutes: 40,
+      },
+    ]);
+  });
+
+  it('includes templates with runs but no wizard clicks in the runs ranking', async () => {
+    const res = await request(server).get(
+      seededEventsUrl('top_templates', '&sort_by=runs&limit=3'),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual([
+      {
+        entityref: 'template:default/python',
+        count: 1,
+        last_used: '2025-06-05T10:00:00Z',
+        runs: 4,
+        minutes: 40,
+      },
+      {
+        entityref: 'template:default/nodejs',
+        count: 2,
+        last_used: '2025-06-04T10:00:00Z',
+        runs: 3,
+        minutes: 135.5,
+      },
+      {
+        entityref: 'template:default/run-only',
+        count: 0,
+        last_used: null,
+        runs: 1,
+        minutes: 200,
+      },
+    ]);
+  });
+
+  it('rejects invalid sort values', async () => {
+    const res = await request(server).get(
+      seededEventsUrl('top_templates', '&sort_by=minutes'),
+    );
+
+    expect(res.status).toBe(400);
+    expect(res.body.errors.sort_by).toBeDefined();
+  });
+
+  it('exports the added fields as CSV', async () => {
+    const res = await request(server).get(
+      seededEventsUrl('top_templates', '&limit=1&format=csv'),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/csv');
+    expect(res.text).toBe(
+      'entityref,count,last_used,runs,minutes\ntemplate:default/nodejs,2,2025-06-04T10:00:00Z,3,135.5',
+    );
+  });
+
+  it('keeps the org-wide total across all created templates', async () => {
+    const res = await request(server).get(seededEventsUrl('time_saved'));
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      data: [{ minutes: 375.5, runs: 8, runs_with_estimate: 7 }],
+    });
+  });
+});
+
+describe('GET /api/adoption-insights/events?type=time_saved', () => {
+  const databases = TestDatabases.create({ ids: ['SQLITE_3'] });
+  let server: Server;
+
+  beforeAll(async () => {
+    const knex = await databases.init('SQLITE_3');
+    ({ server } = await startAdoptionInsightsBackend({ knex }));
+    await knex('events').insert([
+      timeSavedRun('alice', '2025-06-03T10:00:00.000Z', '120'),
+      timeSavedRun('bob', '2025-06-04T10:00:00.000Z', '15.5'),
+      timeSavedRun('carol', '2025-06-05T10:00:00.000Z', null),
+      timeSavedRun('alice', '2025-06-10T10:00:00.000Z', '999'),
+      {
+        ...templateCreate(
+          'bob',
+          'template:default/nodejs',
+          '2025-06-04T10:00:00.000Z',
+        ),
+        value: '999',
+      },
+      event({
+        action: 'create',
+        subject: 'Task has been created',
+        plugin_id: 'another-plugin',
+        user: 'bob',
+        at: '2025-06-04T10:00:00.000Z',
+      }),
+    ]);
+  });
+
+  afterAll(() => {
+    server.close();
+  });
+
+  it('returns one total for created scaffolder tasks in the selected range', async () => {
+    const res = await request(server).get(seededEventsUrl('time_saved'));
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      data: [{ minutes: 135.5, runs: 3, runs_with_estimate: 2 }],
+    });
+  });
+
+  it('returns zeroes for an empty range', async () => {
+    const res = await request(server).get(
+      '/api/adoption-insights/events?type=time_saved&start_date=2025-07-01&end_date=2025-07-02&timezone=UTC',
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      data: [{ minutes: 0, runs: 0, runs_with_estimate: 0 }],
+    });
+  });
+
+  it('exports the total as CSV', async () => {
+    const res = await request(server).get(
+      seededEventsUrl('time_saved', '&format=csv'),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/csv');
+    expect(res.text).toBe('minutes,runs,runs_with_estimate\n135.5,3,2');
+  });
+});
+
+describe('GET /api/adoption-insights/events value aggregation across databases', () => {
+  const databases = TestDatabases.create({ ids: ['POSTGRES_15', 'SQLITE_3'] });
+
+  describe.each(databases.eachSupportedId())('%s', databaseId => {
+    let server: Server;
+
+    beforeAll(async () => {
+      const knex = await databases.init(databaseId);
+      ({ server } = await startAdoptionInsightsBackend({ knex }));
+      // Postgres partitions only the current month on startup; create the one
+      // the fixed seed dates fall into so the inserts below have a home.
+      if (knex.client.config.client === 'pg') {
+        await createPartition(knex, 2025, 6);
+      }
+      await knex('events').insert([
+        timeSavedRun(
+          'alice',
+          '2025-06-03T10:00:00.000Z',
+          '120',
+          'template:default/aggregated',
+        ),
+        timeSavedRun(
+          'bob',
+          '2025-06-04T10:00:00.000Z',
+          '30',
+          'template:default/aggregated',
+        ),
+        // Null value: a run without an estimate, excluded from the minutes sum
+        // and the estimate count on both engines.
+        timeSavedRun(
+          'carol',
+          '2025-06-05T10:00:00.000Z',
+          null,
+          'template:default/aggregated',
+        ),
+      ]);
+    });
+
+    afterAll(() => {
+      // server may be undefined if beforeAll failed (e.g. Docker unavailable
+      // for the Postgres container); avoid masking the real error.
+      server?.close();
+    });
+
+    it('aggregates the time_saved total consistently', async () => {
+      const res = await request(server).get(seededEventsUrl('time_saved'));
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        data: [{ minutes: 150, runs: 3, runs_with_estimate: 2 }],
+      });
+    });
+
+    it('aggregates top_templates run totals consistently', async () => {
+      const res = await request(server).get(
+        seededEventsUrl('top_templates', '&sort_by=runs'),
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual([
+        {
+          entityref: 'template:default/aggregated',
+          count: 0,
+          last_used: null,
+          runs: 3,
+          minutes: 150,
+        },
+      ]);
+    });
   });
 });
 

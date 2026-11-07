@@ -22,6 +22,7 @@ import {
   Grouping,
   ResponseData,
   ResponseWithGrouping,
+  TimeSavedTotals,
 } from '../../types/event';
 import { convertToTargetTimezone } from '../../utils/date';
 
@@ -163,11 +164,11 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
     });
   }
 
-  async getTopTemplateViews(): Promise<Knex.QueryBuilder> {
-    this.ensureFiltersSet();
-    const { start_date, end_date, limit } = this.filters!;
+  private buildTemplateClickCountsQuery(
+    dateRange: [string, string],
+  ): Knex.QueryBuilder {
     const db = this.db;
-    const query = db('events')
+    return db('events')
       .select(
         db.raw(`context->>'entityRef' AS entityref`),
         db.raw('CAST(COUNT(*) as INTEGER) AS count'),
@@ -178,12 +179,128 @@ export abstract class BaseDatabaseAdapter implements EventDatabase {
         subject: 'Create',
         plugin_id: 'scaffolder',
       })
-      .whereBetween('created_at', [start_date, end_date])
-      .groupByRaw('entityref')
-      .orderBy('count', 'desc')
-      .limit(Number(limit) || 3);
+      .whereBetween('created_at', dateRange)
+      .groupByRaw('entityref');
+  }
 
-    return query.then(data => this.getResponseData(data, 'last_used'));
+  private buildTemplateRunTotalsQuery(
+    dateRange: [string, string],
+  ): Knex.QueryBuilder {
+    const db = this.db;
+    return db('events')
+      .select(
+        db.raw(`context->>'entityRef' AS entityref`),
+        db.raw('CAST(COUNT(*) as INTEGER) AS runs'),
+        db.raw('COALESCE(SUM(CAST(value as DOUBLE PRECISION)), 0) AS minutes'),
+      )
+      .where({
+        action: 'create',
+        subject: 'Task has been created',
+        plugin_id: 'scaffolder',
+      })
+      .whereBetween('created_at', dateRange)
+      .whereRaw(`NULLIF(context->>'entityRef', '') IS NOT NULL`)
+      .groupByRaw('entityref');
+  }
+
+  private buildTopTemplatesByClicksQuery(
+    dateRange: [string, string],
+    limit: number,
+  ): Knex.QueryBuilder {
+    const db = this.db;
+    const clicks = this.buildTemplateClickCountsQuery(dateRange)
+      .orderBy('count', 'desc')
+      .limit(limit)
+      .as('template_clicks');
+    const runs =
+      this.buildTemplateRunTotalsQuery(dateRange).as('template_runs');
+
+    return db
+      .from(clicks)
+      .leftJoin(runs, 'template_clicks.entityref', 'template_runs.entityref')
+      .select(
+        'template_clicks.entityref',
+        'template_clicks.count',
+        'template_clicks.last_used',
+        db.raw('COALESCE(template_runs.runs, 0) AS runs'),
+        db.raw('COALESCE(template_runs.minutes, 0) AS minutes'),
+      )
+      .orderBy('template_clicks.count', 'desc');
+  }
+
+  private buildTopTemplatesByRunsQuery(
+    dateRange: [string, string],
+    limit: number,
+  ): Knex.QueryBuilder {
+    const db = this.db;
+    const runs = this.buildTemplateRunTotalsQuery(dateRange)
+      .orderBy('runs', 'desc')
+      .limit(limit)
+      .as('template_runs');
+    const clicks =
+      this.buildTemplateClickCountsQuery(dateRange).as('template_clicks');
+
+    return db
+      .from(runs)
+      .leftJoin(clicks, 'template_runs.entityref', 'template_clicks.entityref')
+      .select(
+        'template_runs.entityref',
+        db.raw('COALESCE(template_clicks.count, 0) AS count'),
+        'template_clicks.last_used',
+        'template_runs.runs',
+        'template_runs.minutes',
+      )
+      .orderBy('template_runs.runs', 'desc');
+  }
+
+  async getTopTemplates(): Promise<Knex.QueryBuilder> {
+    this.ensureFiltersSet();
+    const { start_date, end_date, limit, sort_by } = this.filters!;
+    const dateRange: [string, string] = [start_date, end_date];
+    const rowLimit = Number(limit) || 3;
+    const query =
+      sort_by === 'runs'
+        ? this.buildTopTemplatesByRunsQuery(dateRange, rowLimit)
+        : this.buildTopTemplatesByClicksQuery(dateRange, rowLimit);
+
+    const data = await query;
+    return this.getResponseData(
+      data.map((row: Record<string, unknown>) => ({
+        ...row,
+        count: Number(row.count),
+        runs: Number(row.runs),
+        minutes: Number(row.minutes),
+      })),
+      'last_used',
+    );
+  }
+
+  async getTimeSaved(): Promise<TimeSavedTotals> {
+    this.ensureFiltersSet();
+    const { start_date, end_date } = this.filters!;
+    const query = this.db('events')
+      .select(
+        this.db.raw('CAST(COUNT(*) as INTEGER) AS runs'),
+        this.db.raw('CAST(COUNT(value) as INTEGER) AS runs_with_estimate'),
+        this.db.raw(
+          'COALESCE(SUM(CAST(value as DOUBLE PRECISION)), 0) AS minutes',
+        ),
+      )
+      .where({
+        action: 'create',
+        subject: 'Task has been created',
+        plugin_id: 'scaffolder',
+      })
+      .whereBetween('created_at', [start_date, end_date]);
+
+    const rows = await query;
+    return this.getResponseData(
+      rows.map(row => ({
+        minutes: Number(row.minutes),
+        runs: Number(row.runs),
+        runs_with_estimate: Number(row.runs_with_estimate),
+      })),
+    );
   }
 
   async getTopSearches(): Promise<Knex.QueryBuilder> {
