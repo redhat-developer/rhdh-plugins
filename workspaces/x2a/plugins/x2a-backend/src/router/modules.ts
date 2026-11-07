@@ -38,6 +38,7 @@ import {
   useEnforceProjectPermissions,
 } from './common';
 import { GitRepositoryResolver } from './GitRepositoryResolver';
+import { markJobErrorAndRethrow } from './markJobErrorAndRethrow';
 
 export function registerModuleRoutes(
   router: express.Router,
@@ -250,23 +251,33 @@ export function registerModuleRoutes(
         projectId,
       });
 
-      const { k8sJobName } = await kubeService.createJob({
-        jobId: job.id,
-        projectId,
-        projectName: project.name,
-        projectDirName: project.dirName,
-        phase,
-        user: userRef,
-        callbackToken: callbackToken.value,
-        callbackUrl,
-        moduleId,
-        moduleName: module.name,
-        sourceTechnology: module.technology,
-        sourceRepo,
-        targetRepo,
-        aapCredentials,
-        acceptedRules,
-      });
+      let k8sJobName: string;
+      try {
+        ({ k8sJobName } = await kubeService.createJob({
+          jobId: job.id,
+          projectId,
+          projectName: project.name,
+          projectDirName: project.dirName,
+          phase,
+          user: userRef,
+          callbackToken: callbackToken.value,
+          callbackUrl,
+          moduleId,
+          moduleName: module.name,
+          sourceTechnology: module.technology,
+          sourceRepo,
+          targetRepo,
+          aapCredentials,
+          acceptedRules,
+        }));
+      } catch (error: unknown) {
+        return await markJobErrorAndRethrow({
+          x2aDatabase,
+          logger,
+          jobId: job.id,
+          error,
+        });
+      }
 
       // Re-read the job to detect cancellation during the K8s creation window
       const freshJob = await x2aDatabase.getJob({ id: job.id });

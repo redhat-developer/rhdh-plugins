@@ -24,6 +24,7 @@ import type {
   CoreV1Api,
   BatchV1Api,
   KubeConfig,
+  V1ConfigMap,
   V1OwnerReference,
   V1Pod,
   V1PodList,
@@ -46,20 +47,23 @@ import { Phase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { stringifyError } from '../utils';
 import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
-import type { X2AConfig } from './types';
+import { mapX2AConfig } from './mapX2AConfig';
 import {
-  DEFAULT_LLM_MODEL,
-  DEFAULT_KUBERNETES_NAMESPACE,
-  DEFAULT_KUBERNETES_IMAGE,
-  DEFAULT_KUBERNETES_IMAGE_TAG,
-  DEFAULT_TTL_SECONDS_AFTER_FINISHED,
-  DEFAULT_CPU_REQUEST,
-  DEFAULT_MEMORY_REQUEST,
-  DEFAULT_CPU_LIMIT,
-  DEFAULT_MEMORY_LIMIT,
-  DEFAULT_GIT_AUTHOR_NAME,
-  DEFAULT_GIT_AUTHOR_EMAIL,
-} from './constants';
+  CLUSTER_CA_CONFIG_MAP_NAME,
+  CLUSTER_CA_FORBIDDEN_MESSAGE,
+  CLUSTER_CA_LABELS,
+  CLUSTER_CA_POLL_INTERVAL_MS,
+  CLUSTER_CA_TIMEOUT_MESSAGE,
+  CLUSTER_CA_WAIT_TIMEOUT_MS,
+  clusterCaForeignMessage,
+  hasInjectTrustedCaBundleLabel,
+  isClusterCaBundlePopulated,
+  isX2aManagedConfigMap,
+  resolveGitTls,
+  skipSslIgnoredWarning,
+} from './gitTls';
+import type { X2AConfig } from './types';
+import { DEFAULT_KUBERNETES_NAMESPACE } from './constants';
 
 /**
  * The API does not guarantee `items` order. Never use `items[0]`: a Pending
@@ -126,6 +130,24 @@ export function resolveNamespace(
   return { namespace: defaultNamespace, source: 'default' };
 }
 
+function k8sStatusCode(error: any): number | undefined {
+  const code = error?.statusCode ?? error?.response?.statusCode ?? error?.code;
+  if (typeof code === 'number') {
+    return code;
+  }
+  return undefined;
+}
+
+export type KubeWaitClock = {
+  now: () => number;
+  sleep: (ms: number) => Promise<void>;
+};
+
+const defaultWaitClock: KubeWaitClock = {
+  now: () => Date.now(),
+  sleep: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
+};
+
 export class KubeService implements KubeServiceApi {
   readonly #logger: LoggerService;
   readonly #coreV1Api: CoreV1Api;
@@ -133,17 +155,31 @@ export class KubeService implements KubeServiceApi {
   readonly #kubeConfig: KubeConfig;
   readonly #config: X2AConfig;
   readonly #namespace: string;
+  readonly #waitClock: KubeWaitClock;
 
-  static async create(options: { logger: LoggerService; config: X2AConfig }) {
-    const service = new KubeService(options.logger, options.config);
+  static async create(options: {
+    logger: LoggerService;
+    config: X2AConfig;
+    waitClock?: KubeWaitClock;
+  }) {
+    const service = new KubeService(
+      options.logger,
+      options.config,
+      options.waitClock ?? defaultWaitClock,
+    );
     await service.initialize();
     return service;
   }
 
-  private constructor(logger: LoggerService, config: X2AConfig) {
+  private constructor(
+    logger: LoggerService,
+    config: X2AConfig,
+    waitClock: KubeWaitClock,
+  ) {
     this.#logger = logger;
     this.#config = config;
     this.#namespace = config.kubernetes.namespace;
+    this.#waitClock = waitClock;
     this.#coreV1Api = null as any; // Initialized in initialize()
     this.#batchV1Api = null as any; // Initialized in initialize()
     this.#kubeConfig = null as any; // Initialized in initialize()
@@ -300,6 +336,19 @@ export class KubeService implements KubeServiceApi {
         ? `x2a-adversarial-agents-${params.jobId}`
         : undefined;
 
+    const gitTls = resolveGitTls(this.#config, params.jobId);
+    if (this.#config.git?.skipSSLVerification === true) {
+      const skipWarn = skipSslIgnoredWarning(gitTls);
+      if (skipWarn) {
+        this.#logger.warn(skipWarn);
+      }
+    }
+
+    if (gitTls.useClusterTrustedCABundle) {
+      await this.ensureClusterTrustedCaConfigMap();
+      await this.waitForClusterTrustedCaBundle();
+    }
+
     const job = JobResourceBuilder.buildJobSpec(
       params,
       this.#config,
@@ -376,6 +425,20 @@ export class KubeService implements KubeServiceApi {
           body: adversarialAgentsConfigMap,
         });
       }
+
+      if (gitTls.gitCaConfigMapName && gitTls.trimmedCa) {
+        const gitCaConfigMap = JobResourceBuilder.buildGitCaConfigMap(
+          gitTls.gitCaConfigMapName,
+          gitTls.trimmedCa,
+          params.jobId,
+          ownerReference,
+        );
+        this.#logger.info(`Creating git CA ConfigMap for job: ${params.jobId}`);
+        await this.#coreV1Api.createNamespacedConfigMap({
+          namespace: this.#namespace,
+          body: gitCaConfigMap,
+        });
+      }
     } catch (error: any) {
       this.#logger.error(
         `Failed to create job resources, cleaning up job ${k8sJobName}: ${error.message}`,
@@ -385,6 +448,96 @@ export class KubeService implements KubeServiceApi {
     }
 
     return { k8sJobName };
+  }
+
+  private throwIfForbidden(error: unknown): void {
+    if (k8sStatusCode(error) === 403) {
+      this.#logger.error(CLUSTER_CA_FORBIDDEN_MESSAGE);
+      throw new Error(CLUSTER_CA_FORBIDDEN_MESSAGE);
+    }
+  }
+
+  private async readClusterTrustedCaConfigMap(): Promise<V1ConfigMap> {
+    try {
+      return await this.#coreV1Api.readNamespacedConfigMap({
+        name: CLUSTER_CA_CONFIG_MAP_NAME,
+        namespace: this.#namespace,
+      });
+    } catch (error: any) {
+      this.throwIfForbidden(error);
+      throw error;
+    }
+  }
+
+  private assertX2aManagedClusterCa(cm: V1ConfigMap): void {
+    if (!isX2aManagedConfigMap(cm.metadata?.labels)) {
+      throw new Error(clusterCaForeignMessage(this.#namespace));
+    }
+  }
+
+  private async patchClusterCaInjectLabel(): Promise<void> {
+    try {
+      await this.#coreV1Api.patchNamespacedConfigMap({
+        name: CLUSTER_CA_CONFIG_MAP_NAME,
+        namespace: this.#namespace,
+        body: Object.entries(CLUSTER_CA_LABELS).map(([key, value]) => ({
+          op: 'add',
+          path: `/metadata/labels/${key.replaceAll('/', '~1')}`,
+          value,
+        })),
+      });
+    } catch (error: any) {
+      this.throwIfForbidden(error);
+      throw error;
+    }
+  }
+
+  private async ensureClusterTrustedCaConfigMap(): Promise<void> {
+    let existing: V1ConfigMap | undefined;
+    try {
+      existing = await this.readClusterTrustedCaConfigMap();
+    } catch (error: any) {
+      if (k8sStatusCode(error) !== 404) {
+        throw error;
+      }
+    }
+
+    if (!existing) {
+      try {
+        await this.#coreV1Api.createNamespacedConfigMap({
+          namespace: this.#namespace,
+          body: JobResourceBuilder.buildClusterTrustedCaConfigMap(),
+        });
+        this.#logger.info(
+          `Created cluster trusted CA ConfigMap ${CLUSTER_CA_CONFIG_MAP_NAME}`,
+        );
+        return;
+      } catch (error: any) {
+        this.throwIfForbidden(error);
+        if (k8sStatusCode(error) !== 409) {
+          throw error;
+        }
+        existing = await this.readClusterTrustedCaConfigMap();
+      }
+    }
+
+    this.assertX2aManagedClusterCa(existing);
+    if (hasInjectTrustedCaBundleLabel(existing.metadata?.labels)) {
+      return;
+    }
+    await this.patchClusterCaInjectLabel();
+  }
+
+  private async waitForClusterTrustedCaBundle(): Promise<void> {
+    const deadline = this.#waitClock.now() + CLUSTER_CA_WAIT_TIMEOUT_MS;
+    while (this.#waitClock.now() < deadline) {
+      const cm = await this.readClusterTrustedCaConfigMap();
+      if (isClusterCaBundlePopulated(cm.data)) {
+        return;
+      }
+      await this.#waitClock.sleep(CLUSTER_CA_POLL_INTERVAL_MS);
+    }
+    throw new Error(CLUSTER_CA_TIMEOUT_MESSAGE);
   }
 
   /**
@@ -606,50 +759,7 @@ export const kubeServiceFactory = createServiceFactory({
       `Using namespace '${namespace}' from ${source} configuration`,
     );
 
-    const x2aConfig: X2AConfig = {
-      kubernetes: {
-        namespace,
-        image: rawConfig?.kubernetes?.image ?? DEFAULT_KUBERNETES_IMAGE,
-        imageTag:
-          rawConfig?.kubernetes?.imageTag ?? DEFAULT_KUBERNETES_IMAGE_TAG,
-        imagePullPolicy: rawConfig?.kubernetes?.imagePullPolicy,
-        ttlSecondsAfterFinished:
-          rawConfig?.kubernetes?.ttlSecondsAfterFinished ??
-          DEFAULT_TTL_SECONDS_AFTER_FINISHED,
-        resources: {
-          requests: {
-            cpu:
-              rawConfig?.kubernetes?.resources?.requests?.cpu ??
-              DEFAULT_CPU_REQUEST,
-            memory:
-              rawConfig?.kubernetes?.resources?.requests?.memory ??
-              DEFAULT_MEMORY_REQUEST,
-          },
-          limits: {
-            cpu:
-              rawConfig?.kubernetes?.resources?.limits?.cpu ??
-              DEFAULT_CPU_LIMIT,
-            memory:
-              rawConfig?.kubernetes?.resources?.limits?.memory ??
-              DEFAULT_MEMORY_LIMIT,
-          },
-        },
-      },
-      git: {
-        author: {
-          name: rawConfig?.git?.author?.name ?? DEFAULT_GIT_AUTHOR_NAME,
-          email: rawConfig?.git?.author?.email ?? DEFAULT_GIT_AUTHOR_EMAIL,
-        },
-      },
-      credentials: {
-        llm: rawConfig?.credentials?.llm ?? {},
-        aap: rawConfig?.credentials?.aap,
-      },
-    };
-
-    if (!x2aConfig.credentials.llm.LLM_MODEL) {
-      x2aConfig.credentials.llm.LLM_MODEL = DEFAULT_LLM_MODEL;
-    }
+    const x2aConfig = mapX2AConfig(rawConfig, namespace);
 
     if (!x2aConfig.kubernetes.image) {
       throw new Error('X2A configuration error: kubernetes.image is required');
