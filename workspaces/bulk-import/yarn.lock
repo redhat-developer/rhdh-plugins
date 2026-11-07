@@ -10655,7 +10655,6 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "npm:^3.7.3"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@types/express": "npm:4.17.25"
-    "@types/git-url-parse": "npm:^9.0.0"
     "@types/knex": "npm:^0.16.1"
     "@types/supertest": "npm:2.0.16"
     ajv-formats: "npm:^3.0.1"
@@ -14332,13 +14331,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/git-url-parse@npm:^9.0.0":
-  version: 9.0.3
-  resolution: "@types/git-url-parse@npm:9.0.3"
-  checksum: 10c0/7335a185ed33921c025428fba62d86208573001f3ec686519bda272a9dfefbf32aba2dbc5c782ca705282f3338e04a45df6548863d26b9616531d45078160b93
-  languageName: node
-  linkType: hard
-
 "@types/graceful-fs@npm:^4.1.3":
   version: 4.1.9
   resolution: "@types/graceful-fs@npm:4.1.9"
@@ -16951,7 +16943,6 @@ __metadata:
     "@spotify/prettier-config": "npm:^15.0.0"
     "@types/express": "npm:^4.17.6"
     "@types/express-serve-static-core": "npm:^4.17.5"
-    "@types/git-url-parse": "npm:^9.0.0"
     "@types/knex": "npm:^0.16.1"
     "@types/luxon": "npm:^2.0.4"
     "@types/supertest": "npm:2.0.16"
