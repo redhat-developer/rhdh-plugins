@@ -45,12 +45,13 @@ export { appDefaultsTranslationRef } from './translations';
 
 export { autoLogoutElement } from './autoLogout/autoLogoutExtension';
 
-export {
-  appDrawerExtension,
-  appDrawerModule,
-  appLayoutExtension,
-  appLayoutModule,
-} from './layout/appLayoutModule';
+export { appDrawerExtension, appDrawerModule } from './drawer/appDrawerModule';
+
+export { appLayoutExtension, appLayoutModule } from './layout/appLayoutModule';
+export { AppLayout } from './layout/AppLayout';
+export type { AppLayoutProps } from './layout/AppLayout';
+export { AppHeaders } from './header/AppHeaders';
+export type { AppHeadersProps } from './header/AppHeaders';
 
 export { learningPathsModule } from './learning-paths';
 
@@ -72,7 +73,8 @@ export {
 export type { CompanyLogoProps, LogoURLs } from './sidebar/logo';
 
 /**
- * Feature loader that registers the RHDH app defaults module, the catalog
+ * Feature loader that registers the RHDH app defaults module (app layout with
+ * headers and drawer, sidebar, template card, icons, auto logout), the catalog
  * entity header layout that localizes the catalog tab titles, and all plugin
  * overrides (catalog, catalog graph, scaffolder, API docs, TechDocs) that add
  * empty-state pages when no entities are available.
