@@ -79,6 +79,12 @@ export interface Config {
          * @visibility frontend
          */
         requiresRoute?: boolean;
+        /**
+         * HTML anchor target for the link (`_blank` opens in a new tab,
+         * `_self` in the same tab). Invalid values are ignored.
+         * @visibility frontend
+         */
+        target?: '_blank' | '_self';
       }[];
       /**
        * Groups collect the items that reference their id.
@@ -170,6 +176,11 @@ export interface Config {
              * @visibility frontend
              */
             requiresRoute?: boolean;
+            /**
+             * HTML anchor target for the link (`_blank` or `_self`).
+             * @visibility frontend
+             */
+            target?: '_blank' | '_self';
           }[];
           /**
            * Groups collect the items that reference their id.
