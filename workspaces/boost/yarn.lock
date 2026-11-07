@@ -7244,16 +7244,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:0.5.0"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:0.6.0"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.10.0"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/plugin-catalog-common": "npm:^1.1.10"
     "@backstage/plugin-catalog-node": "npm:^2.2.4"
-    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "npm:^0.4.0"
-  checksum: 10c0/1a0807340338d1f2c38747e58317424aa8a44323cc4291ab61797fb75022e91657314de4e0ddd7fee869920f972f084936c4ca8ea83e102ef64a1f25f5c7a2d8
+    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "npm:^0.5.0"
+  checksum: 10c0/2ee638bdf8a60d2dcc6aa20d1db75f9a93bd12c2f54a260067c70e162ec596c2149df61725927727ffb4e7791864346f822e802368360600425be72cde7f0c9c
   languageName: node
   linkType: hard
 
@@ -7278,13 +7278,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:0.4.0"
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:0.5.0"
   dependencies:
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/types": "npm:^1.2.2"
-  checksum: 10c0/d3d9228547ff688d75762461b07beefb260ba8128937b67e4190dd7736e140c2ec003f9c0fa145443458d8324b3e006cdda6a4c1af440f9ce390199c12480548
+  checksum: 10c0/1f3c66377fc1ba59ef33f7d622677f5589aabb6da62df521db968e18e0f0b8e1e89d881d2607349f669667b98dbbbd25f5fb45aa2b027e0cd397b478fc65b86b
   languageName: node
   linkType: hard
 
@@ -11089,7 +11089,7 @@ __metadata:
     "@backstage/plugin-search-backend-module-techdocs": "npm:^0.4.17"
     "@backstage/plugin-techdocs-backend": "npm:^2.2.4"
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server": "npm:^0.4.0"
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent": "npm:^0.5.0"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent": "npm:^0.6.0"
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions": "npm:^0.6.0"
     "@red-hat-developer-hub/backstage-plugin-ogx-entity-provider": "workspace:^"
     app: "link:../app"
