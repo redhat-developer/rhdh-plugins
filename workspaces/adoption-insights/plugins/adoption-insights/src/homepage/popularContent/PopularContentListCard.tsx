@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ReactNode } from 'react';
+import { isValidElement, type ReactNode } from 'react';
 
 import { InfoCard, Link as BackstageLink } from '@backstage/core-components';
 import {
@@ -277,7 +277,7 @@ export function PopularContentListCard({
               id={item.id}
               textValue={item.title}
               description={item.subtitle}
-              icon={leadingIcon}
+              icon={isValidElement(leadingIcon) ? leadingIcon : undefined}
               customActions={
                 <RowMetrics item={item} visitsLabel={visitsLabel} />
               }

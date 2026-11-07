@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ReactElement } from 'react';
+import type { ComponentType, ReactElement } from 'react';
 
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
@@ -38,10 +38,8 @@ import { normalizePluginId } from '../popularContent/pluginDestinations';
 
 const ICON_SIZE = 16;
 
-type IconComponent = (props: SvgIconProps) => ReactElement;
-
 /** Sidebar-aligned icons for known plugin ids (DTUX-3136: 16px). */
-const KNOWN_PLUGIN_ICONS: Record<string, IconComponent> = {
+const KNOWN_PLUGIN_ICONS: Record<string, ComponentType<SvgIconProps>> = {
   catalog: CategoryOutlinedIcon,
   'catalog-graph': SchemaOutlinedIcon,
   scaffolder: CreateNewFolderOutlinedIcon,
