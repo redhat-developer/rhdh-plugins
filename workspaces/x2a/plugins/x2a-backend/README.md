@@ -45,7 +45,33 @@ x2a:
       limits:
         cpu: ${X2A_KUBERNETES_CPU_LIMIT:-2000m}
         memory: ${X2A_KUBERNETES_MEMORY_LIMIT:-4Gi}
+    # Optional additive-only patch for every generated X2A Job.
+    # deploymentPatch:
+    #   spec:
+    #     template:
+    #       spec:
+    #         containers:
+    #           - name: x2a
+    #             env:
+    #               - name: CUSTOM_SETTING
+    #                 value: example
+    #             volumeMounts:
+    #               - name: custom-config
+    #                 mountPath: /etc/custom-config
+    #                 readOnly: true
+    #         volumes:
+    #           - name: custom-config
+    #             configMap:
+    #               name: custom-config
 ```
+
+`x2a.kubernetes.deploymentPatch` is an optional, backend-visible JSON object
+that adds configuration to every generated Job. Kubernetes lists for
+containers, environment variables, volume mounts, and volumes are merged by
+`name`; new sidecar containers are also supported. The patch cannot change or
+remove plugin-generated configuration, and conflicts fail Job creation with a
+path-specific error. Other Kubernetes fields are ultimately validated by the
+Kubernetes API.
 
 ### LLM Provider Credentials
 

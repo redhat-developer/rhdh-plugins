@@ -67,6 +67,12 @@ export interface Config {
        */
       ttlSecondsAfterFinished?: number;
       /**
+       * Additive-only JSON object merged into every generated X2A Job.
+       * Conflicts with generated configuration fail Job creation.
+       * @visibility backend
+       */
+      deploymentPatch?: Record<string, unknown>;
+      /**
        * Resource requests and limits for job pods
        * @visibility backend
        */

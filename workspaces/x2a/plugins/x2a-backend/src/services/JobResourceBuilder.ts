@@ -25,6 +25,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { Phase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { X2AConfig, JobCreateParams, AAPCredentials, GitRepo } from './types';
+import { applyDeploymentPatch } from './applyDeploymentPatch';
 
 /**
  * Builds Kubernetes Job and Secret resources for X2A migration jobs
@@ -222,7 +223,7 @@ export class JobResourceBuilder {
       !!params.acceptedRules &&
       params.acceptedRules.length > 0;
 
-    return {
+    const generatedJob: V1Job = {
       apiVersion: 'batch/v1',
       kind: 'Job',
       metadata: {
@@ -464,6 +465,10 @@ export class JobResourceBuilder {
         },
       },
     };
+
+    return config.kubernetes.deploymentPatch !== undefined
+      ? applyDeploymentPatch(generatedJob, config.kubernetes.deploymentPatch)
+      : generatedJob;
   }
 
   /**

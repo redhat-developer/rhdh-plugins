@@ -21,6 +21,8 @@ export type {
   GitRepo,
   AAPCredentials,
   JobCreateParams,
+  JsonValue,
+  JsonObject,
 } from './types';
 
 export type { X2ADatabaseServiceApi } from './X2ADatabaseService';
