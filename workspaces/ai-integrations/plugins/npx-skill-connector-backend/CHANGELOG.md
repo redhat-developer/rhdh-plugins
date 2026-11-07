@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-npx-skill-connector-backend
 
+## 0.4.0
+
+### Minor Changes
+
+- b689d69: Add artifact retrieval, SHA-256 verification, and metadata normalization for npx skill-md entries. Discovered entries are fetched through the configured safe transport, verified against their index digest before decoding, and normalized using the shared metadata normalizer. Snapshots are now published with scheduled refresh instead of remaining in loading state.
+
 ## 0.3.0
 
 ### Minor Changes
