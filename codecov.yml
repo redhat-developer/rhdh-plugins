@@ -20,7 +20,7 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: "40...80"
+  range: '40...80'
 
   status:
     project:
@@ -30,62 +30,62 @@ coverage:
         informational: true
         only_pulls: false
         paths:
-          - "workspaces/*/plugins/*/src/**"
+          - 'workspaces/*/plugins/*/src/**'
     patch:
       default:
         target: auto
         threshold: 100%
         informational: true
         paths:
-          - "workspaces/*/plugins/*/src/**"
+          - 'workspaces/*/plugins/*/src/**'
 
 comment:
-  layout: "header, diff, flags, footer"
+  layout: 'header, diff, flags, footer'
   behavior: default
   require_changes: false
   show_carryforward_flags: true
 
 ignore:
-  - "**/*.test.ts"
-  - "**/*.test.tsx"
-  - "**/*.spec.ts"
-  - "**/*.spec.tsx"
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.ts'
+  - '**/*.spec.tsx'
   # Package entry points / NFS plugin wiring (createFrontendPlugin, blueprints).
   # Nested index.ts(x) under api/, components/, services/ often hold real logic
   # and must remain in the coverage denominator (hence the /src/ prefix).
-  - "**/src/index.ts"
-  - "**/src/index.tsx"
-  - "**/__fixtures__/**"
-  - "**/__tests__/**"
-  - "**/__mocks__/**"
-  - "**/dist/**"
-  - "**/build/**"
-  - "**/node_modules/**"
-  - "**/setupTests.*"
-  - "**/playwright.config.ts"
-  - "**/scripts/**"
-  - "**/docs/**"
-  - "workspaces/*/packages/app/**"
-  - "workspaces/*/packages/app-legacy/**"
-  - "workspaces/*/packages/backend/**"
+  - '**/src/index.ts'
+  - '**/src/index.tsx'
+  - '**/__fixtures__/**'
+  - '**/__tests__/**'
+  - '**/__mocks__/**'
+  - '**/dist/**'
+  - '**/build/**'
+  - '**/node_modules/**'
+  - '**/setupTests.*'
+  - '**/playwright.config.ts'
+  - '**/scripts/**'
+  - '**/docs/**'
+  - 'workspaces/*/packages/app/**'
+  - 'workspaces/*/packages/app-legacy/**'
+  - 'workspaces/*/packages/backend/**'
   # Test-helper plugins live under workspaces/<workspace>/plugins/*-test
-  - "workspaces/*/plugins/*-test/**"
-  - "**/generated/**"
+  - 'workspaces/*/plugins/*-test/**'
+  - '**/generated/**'
   # Locale catalogs, test helpers, and Backstage plugin wiring (no business logic).
   # Do not ignore src/alpha/** wholesale — those folders often contain real logic.
-  - "workspaces/*/plugins/*/src/translations/**"
-  - "workspaces/*/plugins/*/src/test-utils/**"
-  - "workspaces/*/plugins/*/src/plugin.ts"
-  - "workspaces/*/plugins/*/src/alpha.ts"
-  - "workspaces/*/plugins/*/src/alpha.tsx"
-  - "workspaces/*/plugins/*/src/alpha/index.ts"
-  - "workspaces/*/plugins/*/src/alpha/index.tsx"
-  - "workspaces/*/plugins/*/src/alpha/plugin.ts"
+  - 'workspaces/*/plugins/*/src/translations/**'
+  - 'workspaces/*/plugins/*/src/test-utils/**'
+  - 'workspaces/*/plugins/*/src/plugin.ts'
+  - 'workspaces/*/plugins/*/src/alpha.ts'
+  - 'workspaces/*/plugins/*/src/alpha.tsx'
+  - 'workspaces/*/plugins/*/src/alpha/index.ts'
+  - 'workspaces/*/plugins/*/src/alpha/index.tsx'
+  - 'workspaces/*/plugins/*/src/alpha/plugin.ts'
   # Route tables / i18n wrappers; page behavior is covered by e2e where needed.
-  - "workspaces/*/plugins/*/src/components/Router.tsx"
-  - "workspaces/*/plugins/*/src/components/Trans.tsx"
+  - 'workspaces/*/plugins/*/src/components/Router.tsx'
+  - 'workspaces/*/plugins/*/src/components/Trans.tsx'
   # Frontend string/number constants only (not *-common constants modules).
-  - "workspaces/orchestrator/plugins/orchestrator/src/constants.ts"
+  - 'workspaces/orchestrator/plugins/orchestrator/src/constants.ts'
 
 component_management:
   # GENERATED — do not edit by hand.
@@ -146,9 +146,6 @@ flag_management:
     - name: app-defaults
       paths:
         - workspaces/app-defaults/
-    - name: augment
-      paths:
-        - workspaces/augment/
     - name: bulk-import
       paths:
         - workspaces/bulk-import/
