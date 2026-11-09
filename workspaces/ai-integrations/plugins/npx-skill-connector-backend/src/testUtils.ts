@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+import type { BackendFeature } from '@backstage/backend-plugin-api';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+// eslint-disable-next-line @backstage/no-undeclared-imports -- Shared fixtures are imported only by tests.
+import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
+import type { Config } from '../config';
 import type { NpxSourceConfig } from './services/types';
 
 /** Minimal mock logger for tests. */
@@ -39,3 +43,38 @@ export const testSource: NpxSourceConfig = {
     scope: 'local',
   },
 };
+
+// Expand imported config interfaces into structural JSON objects accepted by
+// Backstage's config test service while retaining schema checking at call sites.
+type JsonConfig<T> = T extends object
+  ? { [K in keyof T]: JsonConfig<T[K]> }
+  : T;
+export type NpxConnectorTestConfig = JsonConfig<
+  NonNullable<Config['npxSkillConnector']>
+>;
+
+/** Start a connector backend for integration testing. */
+export function startConnector(
+  settings: NpxConnectorTestConfig,
+  logger: ReturnType<typeof mockServices.logger.mock>,
+  plugin: BackendFeature,
+  scheduler: BackendFeature = mockServices.scheduler.factory({
+    includeInitialDelayedTasksOnStartup: true,
+  }),
+) {
+  return startTestBackend({
+    features: [
+      plugin,
+      mockServices.rootLogger.factory(),
+      logger.factory,
+      scheduler,
+      mockServices.rootConfig.factory({
+        data: {
+          app: { baseUrl: 'http://localhost:3000' },
+          backend: { baseUrl: 'http://localhost:7007' },
+          npxSkillConnector: settings,
+        },
+      }),
+    ],
+  });
+}
