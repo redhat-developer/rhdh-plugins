@@ -14,10 +14,10 @@ reconciliation belong to RHIDP-18762; future shared/per-kind design belongs
 to RHIDP-18839.
 
 - [ ] 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `rule`, `mcp-server`, `ai-model`, `model-server`) in SDK package (RHIDP-15255)
-- [ ] 1.2 Define `rhdh.io/ai-asset-version` annotation constant in SDK package (RHIDP-15255)
-- [ ] 1.3 Define `rhdh.io/ai-asset-source` annotation constant in SDK package (RHIDP-15255)
-- [ ] 1.4 Implement `normalizeAIAssetVersion(sourceVersion: string, options?: { entityRef?: string; warn?: (message: string) => void }): string` utility with all four normalization rules (semver pass-through, date-based, commit hash, fallback) (RHIDP-15255)
-- [ ] 1.5 Add unit tests for `normalizeAIAssetVersion()` covering all normalization rules (RHIDP-15255)
+- [x] 1.2 Define `rhdh.io/ai-asset-version` annotation constant in SDK package (RHIDP-15255)
+- [x] 1.3 Define `rhdh.io/ai-asset-source` annotation constant in SDK package (RHIDP-15255)
+- [x] 1.4 Implement `normalizeAIAssetVersion(sourceVersion: string, options?: { entityRef?: string; warn?: (message: string) => void }): string` utility with all four normalization rules (semver pass-through, date-based, commit hash, fallback) (RHIDP-15255)
+- [x] 1.5 Add unit tests for `normalizeAIAssetVersion()` covering all normalization rules (RHIDP-15255)
 - [ ] 1.6 Implement CatalogProcessor validator rejecting entities with missing/invalid `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, or `rhdh.io/ai-asset-source` annotations — gated to entities carrying any `rhdh.io/ai-asset-*` annotation (RHIDP-15255)
 - [ ] 1.7 Add unit tests for CatalogProcessor validator covering valid and invalid annotation values (RHIDP-15255)
 
@@ -25,19 +25,19 @@ to RHIDP-18839.
 
 > **Cross-connector dependencies:** RHIDP-15260 is blocked by RHIDP-15265 (endpoint/credential config schema), RHIDP-15329 (shared CA bundle utility), and RHIDP-15330 (error isolation contract). The SDK must export the configuration schema, CA bundle utility, and error-handling guarantees defined by those stories.
 
-- [ ] 2.1 Create `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` package with `package.json`, `tsconfig.json`, `README.md`, `CHANGELOG.md` (RHIDP-15260)
-- [ ] 2.2 Define `AIAssetEntityProvider` TypeScript interface with required methods: `connect()`, `* entities()`, `getProviderName()`, `getProviderId()` (RHIDP-15259)
-- [ ] 2.3 Define optional `delta(cursor?: string)` method for incremental sync pattern (RHIDP-15259)
-- [ ] 2.4 Export annotation constants: `AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION` (RHIDP-15260)
+- [x] 2.1 Create the `ai-catalog-entity-provider-sdk` package (`@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk`) with package metadata, README, and changelog; use workspace TypeScript defaults (RHIDP-15260)
+- [x] 2.2 Define `AIAssetEntityProvider` TypeScript interface with required methods: `connect()`, `* entities()`, `getProviderName()`, `getProviderId()` (RHIDP-15259)
+- [x] 2.3 Define optional `delta(cursor?: string)` method for incremental sync pattern (RHIDP-15259)
+- [x] 2.4 Export annotation constants: `AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION` (RHIDP-15260)
 - [ ] 2.5 Implement `validateAIAssetEntity(entity: Entity): void` utility throwing on missing/invalid annotations (RHIDP-15260)
 - [ ] 2.6 Add unit tests for `validateAIAssetEntity()` covering all validation rules (RHIDP-15260)
 - [ ] 2.7 Publish SDK package to npm registry with semver versioning (RHIDP-15260)
-- [ ] 2.8 Implement `DeltaSyncManager` class wrapping `applyMutation({ type: 'delta' })` API (RHIDP-15262)
-- [ ] 2.9 Add `applyDelta({ added, updated, removed, nextCursor })` method translating connector deltas to catalog mutations (RHIDP-15262)
-- [ ] 2.10 Implement sync cursor persistence via a pluggable `CursorStore` interface (SDK ships `InMemoryCursorStore`; a durable DB-backed store is the consuming backend plugin's responsibility) (RHIDP-15262)
-- [ ] 2.11 Implement `getCursor(): Promise<string | undefined>` method retrieving the last persisted cursor for the manager's construction-time `locationKey` (RHIDP-15262)
+- [x] 2.8 Implement `DeltaSyncManager` class wrapping `applyMutation({ type: 'delta' })` API (RHIDP-15262)
+- [x] 2.9 Add `applyDelta({ added, updated, removed, nextCursor })` method translating connector deltas to catalog mutations (RHIDP-15262)
+- [x] 2.10 Implement sync cursor persistence via a pluggable `CursorStore` interface (SDK ships `InMemoryCursorStore`; a durable DB-backed store is the consuming backend plugin's responsibility) (RHIDP-15262)
+- [x] 2.11 Implement `getCursor(): Promise<string | undefined>` method retrieving the last persisted cursor for the manager's construction-time `locationKey` (RHIDP-15262)
 - [ ] 2.12 ~~Implement framework-managed fallback to full refresh when cursor invalid or missing~~ (RHIDP-15262) — **DEFERRED** to RHIDP-18840. Existing consumers own refresh orchestration; no shared fallback implementation is required by this baseline.
-- [ ] 2.13 Add unit tests for the existing delta helper covering mutation translation and cursor read/write/reset through `CursorStore` (RHIDP-15262)
+- [x] 2.13 Add unit tests for the existing delta helper covering mutation translation and cursor read/write/reset through `CursorStore` (RHIDP-15262)
 
 ## ~~3. Neo4j Sync Adapter Interface (P0)~~ REMOVED
 
@@ -104,17 +104,17 @@ to RHIDP-18839.
 
 ## 9. Documentation and Examples (P2) — _RHIDP-15258_
 
-- [ ] 9.1 Write SDK package README documenting: interface contract, annotation constants, validation usage (RHIDP-15260)
+- [x] 9.1 Write SDK package README documenting: interface contract, annotation constants, validation usage (RHIDP-15260)
 - [ ] 9.2 Add code examples to README showing provider implementation (RHIDP-15260)
-- [ ] 9.3 Document version normalization rules in SDK README with examples (RHIDP-15255)
+- [x] 9.3 Document version normalization rules in SDK README with examples (RHIDP-15255)
 - [ ] 9.4 Document air-gapped configuration pattern as generic "AI Catalog connector configuration" for reuse by all connectors (RHIDP-15266)
-- [ ] 9.5 Create `CHANGELOG.md` with initial version entry (RHIDP-15260)
+- [x] 9.5 Create `CHANGELOG.md` with initial version entry (RHIDP-15260)
 
 ## 10. Verify
 
 - [ ] 10.1 Verify all three annotations are enforced by CatalogProcessor validator (reject entities with missing/invalid values)
 - [x] 10.2 Verify OGX provider annotation emission through the archived [`ogx-entity-provider` spec](../../specs/ogx-entity-provider/spec.md); targeted model and agent tests cover category, source, and normalized-version annotations
-- [ ] 10.3 Verify `getCursor()` returns `undefined` for absent/cleared state and `clearCursor()` resets only the configured `locationKey` without initiating a full mutation; automated fallback remains deferred to RHIDP-18840
+- [x] 10.3 Verify `getCursor()` returns `undefined` for absent/cleared state and `clearCursor()` resets only the configured `locationKey` without initiating a full mutation; automated fallback remains deferred to RHIDP-18840
 - [ ] 10.4 Verify custom CA bundles are honored for TLS connections in air-gapped deployment
 - [ ] 10.5 Verify startup validation rejects plaintext credentials with descriptive error
 - [ ] 10.6 ~~Verify load test passes with p95 latency degradation ≤10% at 5,000+ entities~~ (RHIDP-15268) — **DEFERRED — stretch, tracked under RHIDP-15294, outside minimum scope**
