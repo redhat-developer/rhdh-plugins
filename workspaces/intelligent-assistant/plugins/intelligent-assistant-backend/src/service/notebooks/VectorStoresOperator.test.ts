@@ -18,6 +18,48 @@ import { mockServices } from '@backstage/backend-test-utils';
 
 import { VectorStoresOperator } from './VectorStoresOperator';
 
+describe('VectorStoresOperator URL encoding', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+    VectorStoresOperator.resetInstance();
+  });
+
+  it.each([
+    {
+      operation: 'listing files',
+      request: (client: VectorStoresOperator) =>
+        client.vectorStores.files.list('vs/child?x=1#'),
+      path: '/v1/vector-stores/vs%2Fchild%3Fx%3D1%23/files',
+      method: 'GET',
+    },
+    {
+      operation: 'deleting an attachment',
+      request: (client: VectorStoresOperator) =>
+        client.vectorStores.files.delete('vs/child?x=1#', 'file/child?x=2#'),
+      path: '/v1/vector-stores/vs%2Fchild%3Fx%3D1%23/files/file%2Fchild%3Fx%3D2%23',
+      method: 'DELETE',
+    },
+  ])(
+    'encodes resource IDs when $operation',
+    async ({ request, path, method }) => {
+      const fetchMock = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValueOnce(new Response('{}', { status: 200 }));
+      const client = VectorStoresOperator.getInstance(
+        'http://lcs.test',
+        mockServices.logger.mock(),
+      );
+
+      await request(client);
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        `http://lcs.test${path}`,
+        expect.objectContaining({ method }),
+      );
+    },
+  );
+});
+
 /**
  * These tests exercise the 429 retry behaviour of {@link VectorStoresOperator}
  * through its public `vectorStores.files.create` method (POST attach), which is
