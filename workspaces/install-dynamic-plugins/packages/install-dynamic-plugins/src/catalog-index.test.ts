@@ -162,19 +162,24 @@ describe('extractCatalogIndexLayers', () => {
     expect(await fs.readdir(work)).toEqual([]);
   });
 
-  it('removes its download directory on success and on failure', async () => {
-    const ok = stubSkopeo([]);
-    await extractCatalogIndexLayers(ok.skopeo, IMAGE, work);
-    const bad = stubSkopeo([], 'not json');
+  // dst is dir:<workDir>/idx; the whole workDir must be gone.
+  const downloadDirOf = (copies: Array<{ dst: string }>) =>
+    path.dirname(copies[0]!.dst.replace(/^dir:/, ''));
+
+  it('removes its download directory when extraction succeeds', async () => {
+    const { skopeo, copies } = stubSkopeo([]);
+    await extractCatalogIndexLayers(skopeo, IMAGE, work);
+    expect(copies).toHaveLength(1);
+    expect(existsSync(downloadDirOf(copies))).toBe(false);
+  });
+
+  it('removes its download directory when extraction fails', async () => {
+    const { skopeo, copies } = stubSkopeo([], 'not json');
     await expect(
-      extractCatalogIndexLayers(bad.skopeo, IMAGE, work),
+      extractCatalogIndexLayers(skopeo, IMAGE, work),
     ).rejects.toThrow(InstallException);
-    const copies = [...ok.copies, ...bad.copies];
-    expect(copies).toHaveLength(2);
-    for (const { dst } of copies) {
-      // dst is dir:<workDir>/idx; the whole workDir must be gone.
-      expect(existsSync(path.dirname(dst.replace(/^dir:/, '')))).toBe(false);
-    }
+    expect(copies).toHaveLength(1);
+    expect(existsSync(downloadDirOf(copies))).toBe(false);
   });
 
   it('raises an InstallException naming the image when manifest.json is missing', async () => {
@@ -192,6 +197,30 @@ describe('extractCatalogIndexLayers', () => {
     await expect(extraction).rejects.toThrow(InstallException);
     await expect(extraction).rejects.toThrow(
       `Malformed manifest.json in catalog index image ${IMAGE}`,
+    );
+  });
+
+  it.each(['null', '{"layers":"x"}'])(
+    'raises an InstallException naming the image when manifest.json is %s',
+    async manifest => {
+      const { skopeo } = stubSkopeo([], manifest);
+      const extraction = extractCatalogIndexLayers(skopeo, IMAGE, work);
+      await expect(extraction).rejects.toThrow(InstallException);
+      await expect(extraction).rejects.toThrow(
+        `Malformed manifest.json in catalog index image ${IMAGE}`,
+      );
+    },
+  );
+
+  it('refuses a layer digest that resolves outside the download directory', async () => {
+    const { skopeo } = stubSkopeo(
+      [],
+      '{"layers":[{"digest":"sha256:../../x"}]}',
+    );
+    const extraction = extractCatalogIndexLayers(skopeo, IMAGE, work);
+    await expect(extraction).rejects.toThrow(InstallException);
+    await expect(extraction).rejects.toThrow(
+      `Layer digest sha256:../../x in catalog index image ${IMAGE} resolves outside the download directory`,
     );
   });
 

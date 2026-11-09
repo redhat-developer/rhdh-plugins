@@ -23,11 +23,12 @@ import { resolveImage } from './image-resolver';
 import { type Skopeo } from './skopeo';
 import { DOCKER_PROTO, isDockerUrl, OCI_PROTO } from './protocols';
 import { DPDY_FILENAME, MAX_ENTRY_SIZE } from './types';
-import { fileExists, isAllowedEntryType, isInside } from './util';
-
-type OciManifest = {
-  layers?: Array<{ digest?: string }>;
-};
+import {
+  fileExists,
+  isAllowedEntryType,
+  isInside,
+  isPlainObject,
+} from './util';
 
 /**
  * Extract the plugin catalog index OCI image (when `CATALOG_INDEX_IMAGE` is
@@ -109,16 +110,22 @@ export async function extractCatalogIndexLayers(
     }
 
     const manifestText = await fs.readFile(manifestPath, 'utf8');
-    let manifest: OciManifest;
+    let manifest: unknown;
     try {
-      manifest = JSON.parse(manifestText) as OciManifest;
+      manifest = JSON.parse(manifestText);
     } catch (err) {
       throw new InstallException(
         `Malformed manifest.json in catalog index image ${image}: ${errorMessage(err)}`,
       );
     }
-    const layers = await resolveLayerPaths(
-      manifest.layers ?? [],
+    const manifestLayers = isPlainObject(manifest) ? manifest.layers : null;
+    if (manifestLayers !== undefined && !Array.isArray(manifestLayers)) {
+      throw new InstallException(
+        `Malformed manifest.json in catalog index image ${image}: expected an object with a layers array`,
+      );
+    }
+    const layers = await resolveLayerBlobs(
+      manifestLayers ?? [],
       localDir,
       image,
     );
@@ -283,21 +290,34 @@ export async function cleanupCatalogIndexTemp(mountDir: string): Promise<void> {
   });
 }
 
-type LayerBlob = { digest: string; path: string };
+type LayerBlob = { digest: string; file: string };
 
-/** Map manifest layers to their downloaded blobs, failing if any is absent. */
-async function resolveLayerPaths(
-  layers: NonNullable<OciManifest['layers']>,
+/**
+ * Map manifest layers to their downloaded blobs, failing if a digest points
+ * outside the download or a blob is absent.
+ */
+async function resolveLayerBlobs(
+  layers: unknown[],
   localDir: string,
   image: string,
 ): Promise<LayerBlob[]> {
-  const blobs = layers.flatMap(({ digest }) => {
+  const blobs = layers.flatMap(layer => {
+    const digest =
+      isPlainObject(layer) && typeof layer.digest === 'string'
+        ? layer.digest
+        : undefined;
     const fname = digest?.split(':')[1];
     return digest && fname
-      ? [{ digest, path: path.join(localDir, fname) }]
+      ? [{ digest, file: path.resolve(localDir, fname) }]
       : [];
   });
-  const present = await Promise.all(blobs.map(blob => fileExists(blob.path)));
+  const escaping = blobs.find(blob => !isInside(blob.file, localDir));
+  if (escaping) {
+    throw new InstallException(
+      `Layer digest ${escaping.digest} in catalog index image ${image} resolves outside the download directory`,
+    );
+  }
+  const present = await Promise.all(blobs.map(blob => fileExists(blob.file)));
   const missing = blobs.find((_, i) => !present[i]);
   if (missing) {
     throw new InstallException(
@@ -316,18 +336,20 @@ async function extractLayer(
   image: string,
   destDirAbs: string,
 ): Promise<void> {
-  let rejected: InstallException | null = null;
+  // Errors thrown inside `tar` filter callbacks are sometimes swallowed by the
+  // parser; capture them in a closure and re-throw after extraction completes.
+  let pending: InstallException | null = null;
   try {
     await tar.x({
-      file: layer.path,
+      file: layer.file,
       cwd: destDirAbs,
       preservePaths: false,
       filter: (filePath, entry) => {
-        if (rejected) return false;
+        if (pending) return false;
         const stat = entry as tar.ReadEntry;
 
         if (stat.size > MAX_ENTRY_SIZE) {
-          rejected = new InstallException(`Zip bomb detected in ${filePath}`);
+          pending = new InstallException(`Zip bomb detected in ${filePath}`);
           return false;
         }
 
@@ -348,7 +370,7 @@ async function extractLayer(
       `Failed to extract layer ${layer.digest} of catalog index image ${image}: ${errorMessage(err)}`,
     );
   }
-  if (rejected) throw rejected;
+  if (pending) throw pending;
 }
 
 function errorMessage(err: unknown): string {
