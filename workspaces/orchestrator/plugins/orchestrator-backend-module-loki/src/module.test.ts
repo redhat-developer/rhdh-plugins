@@ -22,31 +22,40 @@ import {
 
 import { orchestratorModuleLoki } from './module';
 
-describe('orchestratorModuleLoki', () => {
-  it('registers the Loki workflow log provider on the extension point', async () => {
-    const extensionPoint = {
-      addWorkflowLogProvider: jest.fn(),
-    };
+async function bootWithLokiConfig(
+  lokiConfigOverrides: Record<string, unknown> = {},
+) {
+  const extensionPoint = {
+    addWorkflowLogProvider: jest.fn(),
+  };
 
-    await startTestBackend({
-      extensionPoints: [[workflowLogsExtensionEndpoint, extensionPoint]],
-      features: [
-        orchestratorModuleLoki,
-        mockServices.rootConfig.factory({
-          data: {
-            orchestrator: {
-              workflowLogProvider: {
-                loki: {
-                  baseUrl: 'http://localhost:3100',
-                  token: 'test-token',
-                  allowInsecureHttp: true,
-                },
+  await startTestBackend({
+    extensionPoints: [[workflowLogsExtensionEndpoint, extensionPoint]],
+    features: [
+      orchestratorModuleLoki,
+      mockServices.rootConfig.factory({
+        data: {
+          orchestrator: {
+            workflowLogProvider: {
+              loki: {
+                baseUrl: 'http://localhost:3100',
+                token: 'test-token',
+                allowInsecureHttp: true,
+                ...lokiConfigOverrides,
               },
             },
           },
-        }),
-      ],
-    });
+        },
+      }),
+    ],
+  });
+
+  return extensionPoint;
+}
+
+describe('orchestratorModuleLoki', () => {
+  it('registers the Loki workflow log provider on the extension point', async () => {
+    const extensionPoint = await bootWithLokiConfig();
 
     expect(extensionPoint.addWorkflowLogProvider).toHaveBeenCalledTimes(1);
     const provider = extensionPoint.addWorkflowLogProvider.mock
@@ -58,35 +67,15 @@ describe('orchestratorModuleLoki', () => {
   // validation in init and crash-loop the backend.
   it.each([
     ['line_format with braces', ['| json', '| line_format "{{.message}}"']],
-    ['backtick pattern', ['| pattern `<_> level={{.level}} <msg>`']],
+    [
+      'backtick line_format',
+      ['| json', '| line_format `{{.level}} {{.message}}`'],
+    ],
     ['label_format with braces', ['| label_format lvl="{{.level}}"']],
   ])(
     'boots with non-default logPipelineFilters (%s)',
     async (_name, logPipelineFilters) => {
-      const extensionPoint = {
-        addWorkflowLogProvider: jest.fn(),
-      };
-
-      await startTestBackend({
-        extensionPoints: [[workflowLogsExtensionEndpoint, extensionPoint]],
-        features: [
-          orchestratorModuleLoki,
-          mockServices.rootConfig.factory({
-            data: {
-              orchestrator: {
-                workflowLogProvider: {
-                  loki: {
-                    baseUrl: 'http://localhost:3100',
-                    token: 'test-token',
-                    allowInsecureHttp: true,
-                    logPipelineFilters,
-                  },
-                },
-              },
-            },
-          }),
-        ],
-      });
+      const extensionPoint = await bootWithLokiConfig({ logPipelineFilters });
 
       expect(extensionPoint.addWorkflowLogProvider).toHaveBeenCalledTimes(1);
     },
