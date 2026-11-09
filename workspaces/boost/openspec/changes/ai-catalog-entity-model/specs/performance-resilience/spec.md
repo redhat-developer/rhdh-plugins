@@ -10,7 +10,7 @@ Per-entity error resilience ensuring single entity failures don't block the enti
 
 ## ADDED Requirements
 
-### ~~Requirement: Load Testing with 5,000+ Entities~~ — Stretch
+### ~~Requirement: Load Testing with 5,000+ Entities~~ — **STRETCH**
 
 > Deferred from minimum baseline (RHIDP-18761). Load testing at 5,000+
 > entities (RHIDP-15268) with p95 latency SLA ≤10% degradation is a

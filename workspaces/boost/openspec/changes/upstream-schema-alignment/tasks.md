@@ -2,14 +2,14 @@
 
 ## 1. Annotation Specification Document (P0) — RHIDP-15346
 
-- [ ] 1.1 Document all `rhdh.io/ai-asset-category` values (agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server)
+- [ ] 1.1 Document the five minimum `rhdh.io/ai-asset-category` values (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) and retain `rule` as a compatibility value; exclude archived SkillBundle contracts
 - [ ] 1.2 Document `rhdh.io/ai-asset-version` annotation format and normalization rules
 - [ ] 1.3 Document `rhdh.io/ai-asset-source` annotation format
 - [ ] 1.4 Document entity kind + `spec.type` mapping table for all AI Asset types
 - [ ] 1.5 Map MCP server to upstream `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016)) — kind already aligned, document field/module gaps
 - [ ] 1.6 Map skills/rules to upstream `AiResource` ([#33575](https://github.com/backstage/backstage/issues/33575)) — document kind/name casing alignment
 - [ ] 1.6a Map model-server to candidate `API` / `ai-model-server` ([#34476](https://github.com/backstage/backstage/pull/34476)) — hedge on open PR
-- [ ] 1.6b Map remaining categories (ai-model, agent, skill-bundle) — document explicit uncertainty
+- [ ] 1.6b Map remaining minimum categories (`ai-model`, `agent`) — document explicit uncertainty; document `rule` only as a compatibility mapping
 - [ ] 1.7 Assign confidence levels to each mapping (high/medium–high/medium–low/low)
 - [ ] 1.8 Document fields requiring transformation per entity type
 - [ ] 1.9 Add explicit "Future Work" section framing actual migration as separate effort
@@ -34,7 +34,7 @@
 
 ## 3. Testing (P1)
 
-- [ ] 3.1 Unit test mapping logic with fixture entities (all seven AI Asset types)
+- [ ] 3.1 Unit test mapping logic with fixture entities for the five minimum categories and retained `rule` compatibility; do not include archived SkillBundle fixtures
 - [ ] 3.2 Unit test confidence level assignment
 - [ ] 3.3 Unit test field transformation identification
 - [ ] 3.4 Integration test against mock catalog API

@@ -132,10 +132,14 @@ The following decisions are resolved and are not re-litigated here:
 - **Sign-off scope:** RHDH architect / tech lead (not upstream
   maintainer required).
 
-## Confidence Levels
+## Confidence Levels — RHDH 2.1 Target
 
-Each mapping carries a confidence level reflecting the maturity of the
-upstream target:
+The confidence in this table reflects the maturity of the RHDH 2.1
+downstream target and its expected alignment with upstream. It is distinct
+from the confidence in `annotation-specification.md`, which measures upstream
+schema readiness. A mapping can therefore be Medium here when the RHDH target
+is committed, while its upstream readiness is Low because no upstream kind
+exists yet.
 
 | Level       | Meaning                                                  |
 | ----------- | -------------------------------------------------------- |

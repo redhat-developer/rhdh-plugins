@@ -117,6 +117,6 @@ to RHIDP-18839.
 - [ ] 10.3 Verify `getCursor()` returns `undefined` for absent/cleared state and `clearCursor()` resets only the configured `locationKey` without initiating a full mutation; automated fallback remains deferred to RHIDP-18840
 - [ ] 10.4 Verify custom CA bundles are honored for TLS connections in air-gapped deployment
 - [ ] 10.5 Verify startup validation rejects plaintext credentials with descriptive error
-- [ ] 10.6 ~~Verify load test passes with p95 latency degradation ≤10% at 5,000+ entities~~ — stretch
+- [ ] 10.6 ~~Verify load test passes with p95 latency degradation ≤10% at 5,000+ entities~~ (RHIDP-15268) — **DEFERRED — stretch, tracked under RHIDP-15294, outside minimum scope**
 - [ ] 10.7 Verify single entity failures are isolated and remaining entities are ingested
 - [ ] 10.8 Verify migration design document has upstream maintainer or RHDH architect sign-off

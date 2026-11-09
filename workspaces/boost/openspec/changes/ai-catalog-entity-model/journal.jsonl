@@ -1,0 +1,6 @@
+{"ts":"2026-11-09T21:16:26Z","phase":"any","event":"turn.start","input":"Implement accepted Fullsend review findings using the Boost OpenSpec workflow."}
+{"ts":"2026-11-09T21:24:30Z","phase":"any","event":"skill.invoked","name":"receiving-code-review"}
+{"ts":"2026-11-09T21:24:30Z","phase":"authoring","event":"artifact.revised","ref":"specs/migration-readiness/migration-plan.md","input":"Clarify how migration confidence ratings relate to upstream readiness.","output":"Distinguished committed RHDH 2.1 target confidence from upstream schema readiness."}
+{"ts":"2026-11-09T21:24:31Z","phase":"authoring","event":"artifact.revised","ref":"specs/performance-resilience/spec.md","input":"Normalize the deferred load-test label.","output":"Matched the stretch marker to the task deferral convention."}
+{"ts":"2026-11-09T21:24:31Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md","input":"Clarify the deferred load-test task.","output":"Added RHIDP-15268 traceability and RHIDP-15294 deferral context."}
+{"ts":"2026-11-09T21:24:31Z","phase":"any","event":"turn.end","output":"Clarified confidence dimensions and load-test deferral; Prettier and OpenSpec validation passed."}

@@ -6,7 +6,7 @@
 
 ## Overview
 
-Formal specification of all RHDH AI Asset annotations and entity kinds, with explicit mapping to upstream Backstage entity kind targets. Covers all seven AI-asset categories per [ai-catalog-entity-model/design.md Decision 1](../../design.md). MCP servers are kind-aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); remaining categories have varying upstream readiness. Published in a location accessible to platform engineers. Actual migration is explicitly framed as future work.
+Formal specification of RHDH AI Asset annotations and entity kinds, with explicit mapping to upstream Backstage entity kind targets. Covers the five minimum categories and the retained `rule` compatibility value per [ai-catalog-entity-model/design.md Decision 1](../../design.md). SkillBundle/`skillcard.yaml` contracts are outside this baseline and archived. MCP servers are kind-aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); remaining categories have varying upstream readiness. Published in a location accessible to platform engineers. Actual migration is explicitly framed as future work.
 
 ## ADDED Requirements
 
@@ -29,7 +29,7 @@ mapping without executing a migration.
 **WHEN** the specification document is published  
 **THEN** all `rhdh.io/ai-asset-*` annotations are documented:
 
-- `rhdh.io/ai-asset-category` values: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
+- `rhdh.io/ai-asset-category` minimum values: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`; `rule` is documented as a retained compatibility value, not as a sixth minimum category
 - `rhdh.io/ai-asset-version` format and normalization rules
 - `rhdh.io/ai-asset-source` format
 - Each annotation includes: purpose, valid values, format constraints, examples
@@ -42,14 +42,14 @@ mapping without executing a migration.
 **WHEN** the specification document is published  
 **THEN** all `spec.type` values for AI Assets are documented:
 
-- `agent` (AiResource kind)
+- `ai-agent` (Component kind; current mapping per Decision 1)
 - `skill` (AIResource kind)
-- `rule` (AIResource kind)
-- `ai-skill-bundle` (AIResource kind)
+- `rule` (AIResource kind; compatibility mapping)
 - `mcp-server` (API kind)
 - `ai-model` (Resource kind)
 - `ai-model-server` (AiModelServerAPI kind)
-- Each type includes: entity kind pairing, purpose, examples
+- Each minimum type includes: entity kind pairing, purpose, examples
+- The `rule` compatibility type is documented without adding a new provider or feature requirement
 
 ---
 
@@ -104,14 +104,13 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Skill bundle and agent mappings documented
+## Scenario: Agent mapping documented
 
-**GIVEN** no upstream kinds exist for skill bundles or agents  
+**GIVEN** no upstream agent kind exists and RFC [#32062](https://github.com/backstage/backstage/issues/32062) is MCP-only
 **WHEN** the specification document is published  
-**THEN** the mappings document explicit uncertainty:
+**THEN** the agent mapping documents explicit uncertainty:
 
-- **Skill Bundle:** Current `kind: AIResource`, `spec.type: ai-skill-bundle` → No upstream kind. Confidence: Low. Stay on current mapping; track future RFCs.
-- **Agent:** Current `kind: AiResource`, `spec.type: agent` → No upstream kind via RFC #32062 (that RFC is MCP-only). Confidence: Low. Track agent-kind ownership under RHDHPLAN-1113.
+- **Agent:** Current `kind: Component`, `spec.type: ai-agent` → No upstream kind via RFC #32062. Confidence: Low. Track agent-kind ownership under RHDHPLAN-1113.
 
 ---
 
@@ -124,7 +123,7 @@ mapping without executing a migration.
 - **High:** Upstream kind shipped and stable, kind already aligned (e.g., MCP server)
 - **Medium–High:** Upstream kind shipped, field/name alignment work remains (e.g., skills, rules)
 - **Medium/Low:** Upstream target proposed in an open PR, hedge accordingly (e.g., model server)
-- **Low:** No solid upstream kind yet, or mapping is speculative (e.g., AI model, agent, skill bundle)
+- **Low:** No solid upstream kind yet, or mapping is speculative (e.g., AI model, agent)
 - Confidence level rationale documented per mapping
 
 ---
@@ -159,4 +158,4 @@ mapping without executing a migration.
 
 **GIVEN** the `ai-catalog-entity-model` change defined the entity mapping table (Decision 1)  
 **WHEN** the annotation specification document is written  
-**THEN** it cross-references `ai-catalog-entity-model/design.md` Decision 1 as the source of truth for current RHDH AI Asset entity mappings (covers all 7 category values including `skill`, `rule`, `skill-bundle`, and `model-server`)
+**THEN** it cross-references `ai-catalog-entity-model/design.md` Decision 1 as the source of truth for the five minimum AI Asset categories and the retained `rule` compatibility value; it does not present `skill-bundle` as part of the current baseline
