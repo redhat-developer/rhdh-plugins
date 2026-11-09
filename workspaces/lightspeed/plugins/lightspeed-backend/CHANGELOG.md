@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 2.8.9
+
+### Patch Changes
+
+- 809b498: Removed unused `@langchain/core` and `@langchain/openai` dependencies left over after the backend switched from an in-process LangChain client to the Lightspeed Core HTTP proxy.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.9
+
 ## 2.8.8
 
 ### Patch Changes

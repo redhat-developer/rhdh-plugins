@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.9
+
+### Patch Changes
+
+- d3e3abb: Updated dependency `monaco-editor` to `^0.57.0`, which pulls in a patched `dompurify` (`3.4.15`).
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.9
+
 ## 2.8.8
 
 ### Patch Changes
