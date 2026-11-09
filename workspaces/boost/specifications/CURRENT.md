@@ -10,8 +10,8 @@ PRDs and Jira analysis are background, not current truth.
 - `plugins/ai-catalog` — AI Catalog frontend
 - `plugins/ogx-entity-provider`
 
-The `boost-backend` plugin and Kagenti packages are development scaffolding;
-they are not released for RHDH 2.1. Browse and entity cards use
+The `boost-backend` plugin is development scaffolding;
+it is not released for RHDH 2.1. Browse and entity cards use
 `catalogApiRef` only and do not call a Boost backend.
 
 The unreleased backend and the current Usage card still contain project-specific

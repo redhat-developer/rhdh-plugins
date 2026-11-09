@@ -100,3 +100,20 @@ Also removed the earlier POC-specific capability-matching design and its
 analytics endpoint, scenarios, tasks, goal, and risk references from
 `ingestion-audit-metrics`.
 This cleanup does not select a replacement source or capability schema.
+
+### Review follow-up, 2026-11-09
+
+- Extended the retired-provider cleanup to the companion annotation
+  specification, current-status document, and frontend architecture reference.
+  Removed the obsolete connector row, source examples, permission entry,
+  status endpoint, and provider-specific UI assumptions. No replacement
+  provider or runtime permission change is introduced.
+- Restored individual historical load-task entries 7.1–7.6 with their original
+  descriptions and identifiers. Every entry remains struck through and marked
+  deferred/stretch, outside minimum implementation scope.
+- Replaced the deleted air-gap dependency in the shared-infrastructure
+  proposal with its surviving CA and reference-configuration specifications.
+  This changes the cross-reference, not that feature's requirements.
+- Preserved the analytics scenario identifiers after the deliberate removal
+  of Scenario 3. Other features' category and bundle contract reconciliation
+  remains follow-on work.

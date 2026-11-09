@@ -97,14 +97,13 @@ registry instance ingested it into the catalog.
 
 **Format:** A provider-defined provenance identifier. A provider may use
 `connector-name/registry-instance-id` when it needs to distinguish registry
-instances; `registry-instance-id` is then the app-config provider instance key
-(e.g., `default`, `prod-kagenti`). The current OGX provider emits the value
+instances; `registry-instance-id` is then the app-config provider instance key.
+The current OGX provider emits the value
 `ogx` because its release configuration has no registry-instance component.
 Known `connector-name` values include:
 
 | Token          | Connector                           |
 | -------------- | ----------------------------------- |
-| `kagenti`      | Kagenti agentic framework connector |
 | `ogx`          | OGX connector (formerly LlamaStack) |
 | `mcp-registry` | MCP Registry connector              |
 | `rhoai`        | Red Hat OpenShift AI connector      |
@@ -117,14 +116,6 @@ CatalogProcessor/SDK today only requires a non-empty string.
 > registry instance, the full value (e.g., `rhoai/default`) is distinct from
 > the bare connector name. The current OGX provider emits `ogx`, so policies
 > for OGX entities must match `ogx` unless the provider contract changes.
-
-**Example:**
-
-```yaml
-metadata:
-  annotations:
-    rhdh.io/ai-asset-source: kagenti/default
-```
 
 The current OGX provider uses the following value:
 

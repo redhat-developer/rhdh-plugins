@@ -74,8 +74,15 @@ to RHIDP-18839.
 
 > Deferred from minimum baseline (RHIDP-18761). 5,000-entity load/SLA
 > acceptance is a stretch goal.
+> The identifiers below preserve historical traceability only. They do not
+> authorize implementation or create coding-story mappings for this baseline.
 
-- [ ] 7.1–7.6 ~~Load test harness, p95 latency SLA validation, processing-loop measurement~~ (RHIDP-15268) — stretch
+- [ ] 7.1 ~~Create load test harness generating 5,000+ AI asset entities (distributed across categories)~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.2 ~~Measure baseline p95 latency for catalog queries without AI Catalog entities~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.3 ~~Measure with-AI-Catalog p95 latency with 5,000+ entities ingested~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.4 ~~Validate p95 latency degradation ≤10% SLA; fail test if violated~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.5 ~~Measure processing-loop duration (entity emission → catalog API availability)~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
+- [ ] 7.6 ~~Document load test execution steps and reproducibility in `tests/load/README.md`~~ (RHIDP-15268) — **DEFERRED — stretch, outside minimum scope**
 
 ### Error Resilience — _RHIDP-15316 (Cross-Connector)_
 
