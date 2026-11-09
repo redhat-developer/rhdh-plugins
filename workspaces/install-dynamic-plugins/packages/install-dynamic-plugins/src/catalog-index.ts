@@ -117,58 +117,18 @@ export async function extractCatalogIndexLayers(
         `Malformed manifest.json in catalog index image ${image}: ${errorMessage(err)}`,
       );
     }
-    const layers = manifest.layers ?? [];
-
-    let pending: InstallException | null = null;
-    for (const layer of layers) {
-      if (pending) break;
-      const digest = layer.digest;
-      if (!digest) continue;
-      const [, fname] = digest.split(':');
-      if (!fname) continue;
-      const layerPath = path.join(localDir, fname);
-      if (!(await fileExists(layerPath))) {
-        throw new InstallException(
-          `Layer ${digest} listed in manifest.json is missing from catalog index image ${image}`,
-        );
-      }
-
-      const extraction = tar.x({
-        file: layerPath,
-        cwd: destDirAbs,
-        preservePaths: false,
-        // The filter captures `pending` (a single-write latch) and runs
-        // synchronously inside tar.x, which is awaited before the next layer,
-        // so the closure-in-loop hazard the rule guards against does not apply.
-        // eslint-disable-next-line no-loop-func
-        filter: (filePath, entry) => {
-          if (pending) return false;
-          const stat = entry as tar.ReadEntry;
-
-          if (stat.size > MAX_ENTRY_SIZE) {
-            pending = new InstallException(`Zip bomb detected in ${filePath}`);
-            return false;
-          }
-
-          if (stat.type === 'SymbolicLink' || stat.type === 'Link') {
-            const linkTarget = path.resolve(destDirAbs, stat.linkpath ?? '');
-            if (!isInside(linkTarget, destDirAbs)) return false;
-          }
-
-          // Reject any entry that would resolve outside destDirAbs.
-          const memberPath = path.resolve(destDirAbs, filePath);
-          if (!isInside(memberPath, destDirAbs)) return false;
-
-          return isAllowedEntryType(stat.type);
-        },
-      });
-      await extraction.catch((err: unknown) => {
-        throw new InstallException(
-          `Failed to extract layer ${digest} of catalog index image ${image}: ${errorMessage(err)}`,
-        );
-      });
-    }
-    if (pending) throw pending;
+    const layers = await resolveLayerPaths(
+      manifest.layers ?? [],
+      localDir,
+      image,
+    );
+    // Layers apply in manifest order (later ones overwrite earlier ones), so
+    // they are chained rather than extracted concurrently.
+    await layers.reduce<Promise<void>>(
+      (previous, layer) =>
+        previous.then(() => extractLayer(layer, image, destDirAbs)),
+      Promise.resolve(),
+    );
   } finally {
     await fs.rm(workDir, { recursive: true, force: true });
   }
@@ -321,6 +281,74 @@ export async function cleanupCatalogIndexTemp(mountDir: string): Promise<void> {
     recursive: true,
     force: true,
   });
+}
+
+type LayerBlob = { digest: string; path: string };
+
+/** Map manifest layers to their downloaded blobs, failing if any is absent. */
+async function resolveLayerPaths(
+  layers: NonNullable<OciManifest['layers']>,
+  localDir: string,
+  image: string,
+): Promise<LayerBlob[]> {
+  const blobs = layers.flatMap(({ digest }) => {
+    const fname = digest?.split(':')[1];
+    return digest && fname
+      ? [{ digest, path: path.join(localDir, fname) }]
+      : [];
+  });
+  const present = await Promise.all(blobs.map(blob => fileExists(blob.path)));
+  const missing = blobs.find((_, i) => !present[i]);
+  if (missing) {
+    throw new InstallException(
+      `Layer ${missing.digest} listed in manifest.json is missing from catalog index image ${image}`,
+    );
+  }
+  return blobs;
+}
+
+/**
+ * Extract one layer blob into destDirAbs, dropping entries that escape it and
+ * aborting on an oversized entry (zip bomb).
+ */
+async function extractLayer(
+  layer: LayerBlob,
+  image: string,
+  destDirAbs: string,
+): Promise<void> {
+  let rejected: InstallException | null = null;
+  try {
+    await tar.x({
+      file: layer.path,
+      cwd: destDirAbs,
+      preservePaths: false,
+      filter: (filePath, entry) => {
+        if (rejected) return false;
+        const stat = entry as tar.ReadEntry;
+
+        if (stat.size > MAX_ENTRY_SIZE) {
+          rejected = new InstallException(`Zip bomb detected in ${filePath}`);
+          return false;
+        }
+
+        if (stat.type === 'SymbolicLink' || stat.type === 'Link') {
+          const linkTarget = path.resolve(destDirAbs, stat.linkpath ?? '');
+          if (!isInside(linkTarget, destDirAbs)) return false;
+        }
+
+        // Reject any entry that would resolve outside destDirAbs.
+        const memberPath = path.resolve(destDirAbs, filePath);
+        if (!isInside(memberPath, destDirAbs)) return false;
+
+        return isAllowedEntryType(stat.type);
+      },
+    });
+  } catch (err) {
+    throw new InstallException(
+      `Failed to extract layer ${layer.digest} of catalog index image ${image}: ${errorMessage(err)}`,
+    );
+  }
+  if (rejected) throw rejected;
 }
 
 function errorMessage(err: unknown): string {
