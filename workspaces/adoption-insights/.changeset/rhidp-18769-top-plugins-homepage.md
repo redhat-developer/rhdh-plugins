@@ -2,4 +2,4 @@
 '@red-hat-developer-hub/backstage-plugin-adoption-insights': minor
 ---
 
-Add a Top Plugins homepage card with shared Popular Content primitives (auto/hybrid/curated modes, BUI list rows with rank/16px icons/trend/visits, empty/error states, and Adoption Insights fetch helpers) for the org-wide popular content widget family. The card shell uses InfoCard so dark-mode surfaces match other NFS homepage widgets.
+Add a Top Plugins homepage card and shared Popular Content primitives (auto/hybrid/curated modes, display-count and title config, Adoption Insights fetch helpers, empty/error/permission-denied states, and `HomePageWidgetBlueprint` registration). List rows support rank, 16px icons, display name, plugin id subtitle, signed trend %, and visit counts, with an InfoCard shell so dark-mode surfaces match other NFS homepage widgets. Built-in plugin destinations are overridable via `pluginDestinations`, and in-app links use the Backstage router so clicks do not reload the whole app.
