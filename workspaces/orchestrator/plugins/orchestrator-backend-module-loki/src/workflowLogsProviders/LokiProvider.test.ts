@@ -830,6 +830,44 @@ describe('LokiProvider', () => {
       expect(calls[0][0]).toEqual(urlToFetch);
     });
 
+    it('keeps a quoted line_format template unchanged in the LogQL query', async () => {
+      const mockResponse: Partial<Response> = {
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockWorkflowLog),
+      };
+      jest.mocked(undiciFetch).mockResolvedValue(mockResponse as any);
+
+      const provider = LokiProvider.fromConfig(
+        new ConfigReader({
+          orchestrator: {
+            workflowLogProvider: {
+              loki: {
+                baseUrl: 'http://localhost:3100',
+                token: 'notsecret',
+                logPipelineFilters: ['| json', '| line_format "{{.message}}"'],
+              },
+            },
+          },
+        }),
+      );
+
+      await provider.fetchWorkflowLogsByInstance({
+        id: '12345',
+        processId: '54321',
+        start: '2025-12-05T16:35:13.621Z',
+        end: '',
+        nodes: [],
+      });
+
+      const calls = jest.mocked(undiciFetch).mock.calls;
+      expect(calls).toHaveLength(1);
+      const actualURL = new URL(calls[0][0] as string);
+      expect(actualURL.searchParams.get('query')).toEqual(
+        '{openshift_log_type="application"} |="12345" | json | line_format "{{.message}}"',
+      );
+    });
+
     it('should have a custom limit', async () => {
       const mockResponse: Partial<Response> = {
         ok: true,

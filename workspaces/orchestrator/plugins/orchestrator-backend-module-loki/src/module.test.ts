@@ -53,4 +53,42 @@ describe('orchestratorModuleLoki', () => {
       .calls[0][0] as WorkflowLogProvider;
     expect(provider.getProviderId()).toBe('loki');
   });
+
+  // RHDHBUGS-3398: quoted braces in logPipelineFilters used to fail
+  // validation in init and crash-loop the backend.
+  it.each([
+    ['line_format with braces', ['| json', '| line_format "{{.message}}"']],
+    ['backtick pattern', ['| pattern `<_> level={{.level}} <msg>`']],
+    ['label_format with braces', ['| label_format lvl="{{.level}}"']],
+  ])(
+    'boots with non-default logPipelineFilters (%s)',
+    async (_name, logPipelineFilters) => {
+      const extensionPoint = {
+        addWorkflowLogProvider: jest.fn(),
+      };
+
+      await startTestBackend({
+        extensionPoints: [[workflowLogsExtensionEndpoint, extensionPoint]],
+        features: [
+          orchestratorModuleLoki,
+          mockServices.rootConfig.factory({
+            data: {
+              orchestrator: {
+                workflowLogProvider: {
+                  loki: {
+                    baseUrl: 'http://localhost:3100',
+                    token: 'test-token',
+                    allowInsecureHttp: true,
+                    logPipelineFilters,
+                  },
+                },
+              },
+            },
+          }),
+        ],
+      });
+
+      expect(extensionPoint.addWorkflowLogProvider).toHaveBeenCalledTimes(1);
+    },
+  );
 });
