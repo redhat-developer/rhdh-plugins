@@ -195,7 +195,7 @@ describe('extractCatalogIndexLayers', () => {
     );
   });
 
-  it('raises an InstallException naming the image and digest when a layer blob is missing', async () => {
+  it('raises an InstallException naming the image and digest when a layer blob is missing, before extracting any layer', async () => {
     const { skopeo } = stubSkopeo([
       { digest: 'sha256:good', blob: rawTar([{ path: 'ok.txt', body: 'ok' }]) },
       { digest: 'sha256:absent' },
@@ -205,6 +205,7 @@ describe('extractCatalogIndexLayers', () => {
     await expect(extraction).rejects.toThrow(
       `Layer sha256:absent listed in manifest.json is missing from catalog index image ${IMAGE}`,
     );
+    expect(await fs.readdir(work)).toEqual([]);
   });
 
   it.each([

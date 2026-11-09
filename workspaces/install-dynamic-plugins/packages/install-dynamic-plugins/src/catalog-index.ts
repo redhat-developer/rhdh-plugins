@@ -26,7 +26,7 @@ import { DPDY_FILENAME, MAX_ENTRY_SIZE } from './types';
 import { fileExists, isAllowedEntryType, isInside } from './util';
 
 type OciManifest = {
-  layers?: Array<{ digest: string }>;
+  layers?: Array<{ digest?: string }>;
 };
 
 /**
