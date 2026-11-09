@@ -293,23 +293,26 @@ export async function cleanupCatalogIndexTemp(mountDir: string): Promise<void> {
 type LayerBlob = { digest: string; file: string };
 
 /**
- * Map manifest layers to their downloaded blobs, failing if a digest points
- * outside the download or a blob is absent.
+ * Map manifest layers to their downloaded blobs, failing if an entry has no
+ * usable digest, a digest points outside the download, or a blob is absent.
  */
 async function resolveLayerBlobs(
   layers: unknown[],
   localDir: string,
   image: string,
 ): Promise<LayerBlob[]> {
-  const blobs = layers.flatMap(layer => {
+  const blobs = layers.map((layer, index) => {
     const digest =
       isPlainObject(layer) && typeof layer.digest === 'string'
         ? layer.digest
         : undefined;
     const fname = digest?.split(':')[1];
-    return digest && fname
-      ? [{ digest, file: path.resolve(localDir, fname) }]
-      : [];
+    if (!digest || !fname) {
+      throw new InstallException(
+        `Layer entry ${index} in manifest.json of catalog index image ${image} has no usable digest`,
+      );
+    }
+    return { digest, file: path.resolve(localDir, fname) };
   });
   const escaping = blobs.find(blob => !isInside(blob.file, localDir));
   if (escaping) {

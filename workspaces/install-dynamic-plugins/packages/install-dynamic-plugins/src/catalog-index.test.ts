@@ -146,15 +146,31 @@ describe('extractCatalogIndexLayers', () => {
     );
   });
 
-  it('skips manifest entries with no digest or a digest without an algorithm', async () => {
-    const { skopeo } = stubSkopeo([
-      {},
-      { digest: 'nodigestseparator' },
-      { digest: 'sha256:good', blob: rawTar([{ path: 'ok.txt', body: 'ok' }]) },
-    ]);
-    await extractCatalogIndexLayers(skopeo, IMAGE, work);
-    expect(await fs.readdir(work)).toEqual(['ok.txt']);
-  });
+  it.each([
+    ['no digest', '{}'],
+    ['a non-string digest', '{"digest":5}'],
+    ['a digest without an algorithm', '{"digest":"nodigestseparator"}'],
+    ['a non-object entry', 'null'],
+  ])(
+    'raises an InstallException for a layer entry with %s, before extracting any layer',
+    async (_kind, entry) => {
+      const { skopeo } = stubSkopeo(
+        [
+          {
+            digest: 'sha256:good',
+            blob: rawTar([{ path: 'ok.txt', body: 'ok' }]),
+          },
+        ],
+        `{"layers":[{"digest":"sha256:good"},${entry}]}`,
+      );
+      const extraction = extractCatalogIndexLayers(skopeo, IMAGE, work);
+      await expect(extraction).rejects.toThrow(InstallException);
+      await expect(extraction).rejects.toThrow(
+        `Layer entry 1 in manifest.json of catalog index image ${IMAGE} has no usable digest`,
+      );
+      expect(await fs.readdir(work)).toEqual([]);
+    },
+  );
 
   it('resolves without writing anything when the manifest has no layers', async () => {
     const { skopeo } = stubSkopeo([], '{}');
@@ -193,10 +209,16 @@ describe('extractCatalogIndexLayers', () => {
 
   it('raises an InstallException naming the image when manifest.json is malformed', async () => {
     const { skopeo } = stubSkopeo([], '{not json');
+    let parseError = '';
+    try {
+      JSON.parse('{not json');
+    } catch (err) {
+      parseError = (err as Error).message;
+    }
     const extraction = extractCatalogIndexLayers(skopeo, IMAGE, work);
     await expect(extraction).rejects.toThrow(InstallException);
     await expect(extraction).rejects.toThrow(
-      `Malformed manifest.json in catalog index image ${IMAGE}`,
+      `Malformed manifest.json in catalog index image ${IMAGE}: ${parseError}`,
     );
   });
 
@@ -207,7 +229,7 @@ describe('extractCatalogIndexLayers', () => {
       const extraction = extractCatalogIndexLayers(skopeo, IMAGE, work);
       await expect(extraction).rejects.toThrow(InstallException);
       await expect(extraction).rejects.toThrow(
-        `Malformed manifest.json in catalog index image ${IMAGE}`,
+        `Malformed manifest.json in catalog index image ${IMAGE}: expected an object with a layers array`,
       );
     },
   );
