@@ -239,7 +239,21 @@ describe('VectorStoresOperator 429 retry', () => {
     const error = await attach().catch(err => err);
 
     expect(error).toBeInstanceOf(Error);
+    expect(error.message).toBe('boom');
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(logger.warn).not.toHaveBeenCalled();
+  });
+
+  it('preserves a plain-text error message from Core', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response('Core temporarily unavailable', {
+        status: 503,
+        headers: { 'content-type': 'text/plain' },
+      }),
+    );
+
+    const error = await attach().catch(err => err);
+
+    expect(error.message).toBe('Core temporarily unavailable');
   });
 });

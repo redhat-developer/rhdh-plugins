@@ -67,11 +67,12 @@ async function handleHttpError(
   logger: LoggerService,
   operation: string,
 ): Promise<never> {
+  const responseBodyAsText = await response.text();
   let error;
   try {
-    error = await response.json();
+    error = JSON.parse(responseBodyAsText);
   } catch {
-    error = { detail: await response.text() };
+    error = { detail: responseBodyAsText };
   }
   logger.error(`Failed to ${operation}:`, error);
 
