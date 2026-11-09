@@ -144,6 +144,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'table.columns.sourceRepo': string;
     readonly 'table.columns.targetRepo': string;
     readonly 'table.columns.statusSortDisabledTooltip': string;
+    readonly 'table.columns.inError': string;
+    readonly 'table.columns.inErrorSortDisabledTooltip': string;
     readonly 'table.columns.createdAt': string;
     readonly 'table.actions.deleteProject': string;
     readonly 'table.actions.retriggerInit': string;
@@ -277,6 +279,15 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.telemetry.toolCalls': string;
     readonly 'modulePage.phases.telemetry.totalInputTokens': string;
     readonly 'modulePage.phases.telemetry.totalOutputTokens': string;
+    readonly 'portfolio.projects': string;
+    readonly 'portfolio.modules': string;
+    readonly 'portfolio.published': string;
+    readonly 'portfolio.noModules': string;
+    readonly 'portfolio.inputTokens': string;
+    readonly 'portfolio.outputTokens': string;
+    readonly 'portfolio.modulesInError': string;
+    readonly 'portfolio.expand': string;
+    readonly 'portfolio.collapse': string;
     readonly 'retriggerInit.error': string;
     readonly 'retriggerInit.confirm.title': string;
     readonly 'retriggerInit.confirm.message': string;

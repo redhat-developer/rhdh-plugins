@@ -16,6 +16,7 @@ import type { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
+import type { PortfolioSummary } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { RuleEntity } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -413,6 +414,7 @@ export interface X2ADatabaseServiceApi {
   ): Promise<{
     projects: Project[];
     totalCount: number;
+    portfolio: PortfolioSummary;
   }>;
   // (undocumented)
   listRules(): Promise<RuleEntity[]>;

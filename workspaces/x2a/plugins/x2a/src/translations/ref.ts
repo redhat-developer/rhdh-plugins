@@ -181,12 +181,26 @@ export const x2aPluginMessages = {
       },
     },
   },
+  portfolio: {
+    noModules: 'No modules have been discovered yet.',
+    published: '{{n}} of {{m}} modules published',
+    modulesInError: '{{count}} modules in error',
+    inputTokens: '{{count}} input tokens',
+    outputTokens: '{{count}} output tokens',
+    expand: 'Expand portfolio summary',
+    collapse: 'Collapse portfolio summary',
+    modules: 'Modules',
+    projects: 'Projects',
+  },
   table: {
     columns: {
       name: 'Name',
       status: 'Status',
       statusSortDisabledTooltip:
         'Sorting by status is not available when the project count exceeds {{threshold}}',
+      inError: 'In error',
+      inErrorSortDisabledTooltip:
+        'Sorting by module errors is not available when the project count exceeds {{threshold}}',
       sourceRepo: 'Source Repository',
       targetRepo: 'Target Repository',
       createdAt: 'Created At',

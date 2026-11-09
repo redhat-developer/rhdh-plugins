@@ -78,6 +78,7 @@ export const spec = {
                 "createdAt",
                 "name",
                 "status",
+                "moduleErrors",
                 "description",
                 "ownedBy"
               ]
@@ -104,8 +105,14 @@ export const spec = {
                       "items": {
                         "$ref": "#/components/schemas/Project"
                       }
+                    },
+                    "portfolio": {
+                      "$ref": "#/components/schemas/PortfolioSummary"
                     }
-                  }
+                  },
+                  "required": [
+                    "portfolio"
+                  ]
                 }
               }
             }
@@ -1572,6 +1579,69 @@ export const spec = {
         "required": [
           "state",
           "modulesSummary"
+        ]
+      },
+      "PortfolioProjectCounts": {
+        "type": "object",
+        "description": "Count of projects in each project state for the permitted set.",
+        "properties": {
+          "created": {
+            "type": "integer"
+          },
+          "initializing": {
+            "type": "integer"
+          },
+          "initialized": {
+            "type": "integer"
+          },
+          "inProgress": {
+            "type": "integer"
+          },
+          "completed": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created",
+          "initializing",
+          "initialized",
+          "inProgress",
+          "completed",
+          "failed"
+        ]
+      },
+      "PortfolioSummary": {
+        "type": "object",
+        "description": "Module, project-state, and token totals for every project the caller is allowed to see.\nIndependent of the current page.\n",
+        "properties": {
+          "modules": {
+            "$ref": "#/components/schemas/ModulesStatusSummary"
+          },
+          "projectCounts": {
+            "$ref": "#/components/schemas/PortfolioProjectCounts"
+          },
+          "inputTokens": {
+            "type": "integer",
+            "description": "Sum of reported input tokens across every stored job in scope."
+          },
+          "outputTokens": {
+            "type": "integer",
+            "description": "Sum of reported output tokens across every stored job in scope."
+          },
+          "tokensReported": {
+            "type": "boolean",
+            "description": "True when any job has reported a numeric input or output token field, including zero."
+          }
+        },
+        "required": [
+          "modules",
+          "projectCounts",
+          "inputTokens",
+          "outputTokens",
+          "tokensReported"
         ]
       },
       "Job": {

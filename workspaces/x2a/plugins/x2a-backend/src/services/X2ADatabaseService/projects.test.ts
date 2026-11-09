@@ -526,6 +526,117 @@ describe('X2ADatabaseService – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
+      'portfolio totals include projects that are not on the current page - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const first = await service.createProject(
+          {
+            name: 'Aaa',
+            description: 'first',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const second = await service.createProject(
+          {
+            name: 'Zzz',
+            description: 'second',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        await service.createModule({
+          name: 'module-a',
+          sourcePath: '/a',
+          projectId: first.id,
+        });
+        await service.createModule({
+          name: 'module-z',
+          sourcePath: '/z',
+          projectId: second.id,
+        });
+
+        const page = await service.listProjects(
+          { page: 1, pageSize: 1, sort: 'name', order: 'asc' },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(page.projects.map(project => project.name)).toEqual(['Zzz']);
+        expect(page.portfolio.modules.total).toBe(2);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'sorts by module errors then error ratio - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+
+        const addModules = async (
+          name: string,
+          errorCount: number,
+          pendingCount: number,
+        ) => {
+          const project = await service.createProject(
+            {
+              name,
+              description: name,
+              ...defaultProjectRepoFields,
+            },
+            { credentials },
+          );
+          for (let i = 0; i < errorCount; i++) {
+            const mod = await service.createModule({
+              name: `${name}-error-${i}`,
+              sourcePath: `/${name}-error-${i}`,
+              projectId: project.id,
+            });
+            await service.createJob({
+              projectId: project.id,
+              moduleId: mod.id,
+              phase: 'analyze',
+              status: 'error',
+            });
+          }
+          for (let i = 0; i < pendingCount; i++) {
+            await service.createModule({
+              name: `${name}-pending-${i}`,
+              sourcePath: `/${name}-pending-${i}`,
+              projectId: project.id,
+            });
+          }
+        };
+
+        await addModules('High', 2, 0);
+        await addModules('Mid', 2, 2);
+        await addModules('Low', 1, 1);
+
+        const list = (order: 'asc' | 'desc') =>
+          service.listProjects(
+            { sort: 'moduleErrors', order, pageSize: 10 },
+            { credentials, groupsOfUser: [] },
+          );
+
+        const desc = await list('desc');
+        expect(desc.projects.map(project => project.name)).toEqual([
+          'High',
+          'Mid',
+          'Low',
+        ]);
+
+        const asc = await list('asc');
+        expect(asc.projects.map(project => project.name)).toEqual([
+          'Low',
+          'Mid',
+          'High',
+        ]);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
       'uses default pageSize when not specified - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
