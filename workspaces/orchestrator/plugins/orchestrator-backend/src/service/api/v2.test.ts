@@ -19,6 +19,7 @@ import { Request } from 'express';
 import {
   ExecuteWorkflowResponseDTO,
   FieldFilterOperatorEnum,
+  Filter,
   ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
   SearchRequest,
@@ -76,6 +77,8 @@ const createMockOrchestratorService = (): OrchestratorService => {
   mockOrchestratorService.fetchWorkflowSource = jest.fn();
   mockOrchestratorService.fetchWorkflowInfo = jest.fn();
   mockOrchestratorService.fetchInstances = jest.fn();
+  mockOrchestratorService.fetchInstanceInitiators = jest.fn();
+  mockOrchestratorService.countInstances = jest.fn().mockResolvedValue(0);
   mockOrchestratorService.fetchInstance = jest.fn();
   mockOrchestratorService.executeWorkflow = jest.fn();
   mockOrchestratorService.executeWorkflowAsCloudEvent = jest.fn();
@@ -704,6 +707,42 @@ describe('executeWorkflow as event type', () => {
   });
 });
 
+describe('getInstanceInitiators', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('forwards pagination, filters, and authorized workflow ids', async () => {
+    const pagination: Pagination = {
+      limit: 500,
+      offset: 0,
+      order: 'DESC',
+      sortField: 'start',
+    };
+    const filter: Filter = {
+      field: 'state',
+      operator: FieldFilterOperatorEnum.Eq,
+      value: 'COMPLETED',
+    };
+    const workflowIds = ['flow-a'];
+    (
+      mockOrchestratorService.fetchInstanceInitiators as jest.Mock
+    ).mockResolvedValue(['user:default/alice']);
+
+    const result = await v2.getInstanceInitiators(
+      pagination,
+      filter,
+      workflowIds,
+    );
+
+    expect(result).toEqual(['user:default/alice']);
+    expect(
+      mockOrchestratorService.fetchInstanceInitiators,
+    ).toHaveBeenCalledWith({ pagination, filter, workflowIds });
+    expect(mockOrchestratorService.countInstances).not.toHaveBeenCalled();
+  });
+});
+
 describe('getInstances', () => {
   const mockRequest: any = {
     query: {},
@@ -731,6 +770,7 @@ describe('getInstances', () => {
     (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([
       processInstance,
     ]);
+    (mockOrchestratorService.countInstances as jest.Mock).mockResolvedValue(1);
 
     // Act
     const processInstanceV2: ProcessInstanceListResultDTO =
@@ -749,6 +789,9 @@ describe('getInstances', () => {
     (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue(
       processInstances,
     );
+    (mockOrchestratorService.countInstances as jest.Mock).mockResolvedValue(
+      howmany,
+    );
 
     // Act
     const processInstanceList: ProcessInstanceListResultDTO =
@@ -764,27 +807,33 @@ describe('getInstances', () => {
     expect(processInstanceList.totalCount).toBe(howmany);
   });
 
-  it('sets totalCount from unfiltered fetch when pagination returns a page subset', async () => {
+  it('uses a separate exact count with the page query filters', async () => {
     const pageItems = generateProcessInstances(2);
-    const allItems = generateProcessInstances(10);
     const pagedRequest: Pagination = { limit: 2, offset: 0 };
+    const filter: Filter = {
+      field: 'state',
+      operator: FieldFilterOperatorEnum.Eq,
+      value: 'COMPLETED',
+    };
+    const workflowIds = ['test-workflow'];
 
-    (mockOrchestratorService.fetchInstances as jest.Mock).mockImplementation(
-      (args: { pagination?: Pagination }) =>
-        Promise.resolve(args.pagination ? pageItems : allItems),
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue(
+      pageItems,
     );
+    (mockOrchestratorService.countInstances as jest.Mock).mockResolvedValue(10);
 
-    const result = await v2.getInstances(pagedRequest);
+    const result = await v2.getInstances(pagedRequest, filter, workflowIds);
 
-    expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledTimes(2);
-    expect(mockOrchestratorService.fetchInstances).toHaveBeenNthCalledWith(1, {
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledTimes(1);
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledWith({
       pagination: pagedRequest,
-      filter: undefined,
-      workflowIds: undefined,
+      filter,
+      workflowIds,
     });
-    expect(mockOrchestratorService.fetchInstances).toHaveBeenNthCalledWith(2, {
-      filter: undefined,
-      workflowIds: undefined,
+    expect(mockOrchestratorService.countInstances).toHaveBeenCalledTimes(1);
+    expect(mockOrchestratorService.countInstances).toHaveBeenCalledWith({
+      filter,
+      workflowIds,
     });
     expect(result.items).toHaveLength(2);
     expect(result.totalCount).toBe(10);

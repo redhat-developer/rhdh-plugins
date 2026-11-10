@@ -202,6 +202,33 @@ spec:
                 application/json:
                   schema:
                     $ref: '#/components/schemas/ErrorResponse'
+      /v2/workflows/instances/initiators:
+        post:
+          operationId: getInstanceInitiators
+          summary: Get distinct instance initiators
+          description: Retrieve unique initiator entity references from up to 500 matching workflow executions
+          requestBody:
+            required: false
+            description: Filters and pagination for retrieving instance initiators
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/SearchRequest'
+          responses:
+            '200':
+              description: Success
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      type: string
+            '500':
+              description: Error fetching instance initiators
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ErrorResponse'
       /v2/workflows/{workflowId}/instances:
         post:
           operationId: getWorkflowInstances
