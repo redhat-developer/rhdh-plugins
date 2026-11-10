@@ -321,9 +321,9 @@ actual migration is future work.
 - **Source of truth (current entity mappings):**
   [ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds)
 - **Supplementary (catalog entity taxonomy):**
-  `boost-common/src/aiAssetTaxonomy.ts` (`AI_ASSET_SPEC_TYPES`)
+  `ai-catalog-common/src/aiAssetTaxonomy.ts` (`AI_ASSET_SPEC_TYPES`)
 - **Annotation constants (SDK):**
-  `boost-entity-provider-sdk/src/annotations.ts`
+  `ai-catalog-entity-provider-sdk/src/annotations.ts`
 - **Upstream RFCs:**
   - MCP: [backstage#34016](https://github.com/backstage/backstage/pull/34016)
     / RFC [#32062](https://github.com/backstage/backstage/issues/32062)
