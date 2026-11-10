@@ -146,6 +146,6 @@ describe('CatalogInfoAction', () => {
       </BrowserRouter>,
     );
     expect(getByTestId('view-catalog-info')).toBeInTheDocument();
-    expect(getByTestId('OpenInNewIcon')).toBeInTheDocument();
+    expect(getByTestId('external-link-icon')).toBeInTheDocument();
   });
 });

@@ -15,19 +15,18 @@
  */
 
 import { useApi } from '@backstage/core-plugin-api';
+import {
+  Alert,
+  Button,
+  ButtonIcon,
+  Dialog,
+  DialogBody,
+  DialogFooter,
+  DialogHeader,
+  Flex,
+  Text,
+} from '@backstage/ui';
 
-import CloseIcon from '@mui/icons-material/Close';
-import WarningIcon from '@mui/icons-material/Warning';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -35,6 +34,7 @@ import { useGitlabConfigured } from '../../hooks';
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData, ImportFlow } from '../../types';
+import { BulkImportCloseIcon, BulkImportWarningIcon } from '../bulkImportIcons';
 
 const DeleteRepositoryDialog = ({
   open,
@@ -78,109 +78,80 @@ const DeleteRepositoryDialog = ({
       : t('repositories.removeRepositoryWarning');
   }
 
+  const dialogTitle = t('repositories.removeRepositoryQuestion' as any, {
+    repoName: repository.repoName || '',
+    repositoryText: gitlabConfigured ? '' : t('repositories.repositoryText'),
+  });
+
   return (
     <Dialog
-      maxWidth="md"
-      open={open}
-      onClose={closeDialog}
-      sx={{ height: '70%' }}
+      isOpen={open}
+      onOpenChange={isOpen => !isOpen && closeDialog()}
+      width={720}
     >
-      <DialogTitle
+      <DialogHeader
         id="delete-repository"
-        title={t('repositories.deleteRepository')}
-        sx={{ padding: '16px 20px' }}
+        style={{ padding: '16px 20px', position: 'relative' }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
+        <Flex align="center" gap="2" style={{ paddingRight: '40px' }}>
+          <BulkImportWarningIcon size={14} />
+          <Text style={{ fontWeight: 'bold' }}>{dialogTitle}</Text>
+        </Flex>
+        <ButtonIcon
+          icon={<BulkImportCloseIcon size={14} />}
+          aria-label={t('common.close')}
+          variant="tertiary"
+          onPress={closeDialog}
+          style={{
+            position: 'absolute',
+            right: '8px',
+            top: '8px',
           }}
-        >
-          <Typography component="span" style={{ fontWeight: 'bold' }}>
-            <WarningIcon
-              sx={{
-                alignContent: 'center',
-                marginTop: '7px',
-                marginBottom: '-5px',
-                color: '#F0AB00',
-              }}
-              color="warning"
-            />{' '}
-            {t('repositories.removeRepositoryQuestion' as any, {
-              repoName: repository.repoName || '',
-              repositoryText: gitlabConfigured
-                ? ''
-                : t('repositories.repositoryText'),
-            })}
-          </Typography>
-
-          <IconButton
-            aria-label="close"
-            onClick={closeDialog}
-            title={t('common.close')}
-            size="large"
-            sx={{
-              position: 'absolute',
-              right: 1,
-              top: 1,
-              color: 'grey.700',
+        />
+      </DialogHeader>
+      <DialogBody style={{ padding: '0 20px' }}>
+        <Text>{deleteMsg}</Text>
+        {(isUrlMissing || mutationDelete.isError) && (
+          <div style={{ maxWidth: '650px', marginTop: '16px' }}>
+            <Alert
+              status="danger"
+              icon
+              description={[
+                isUrlMissing ? t('repositories.cannotRemoveRepositoryUrl') : '',
+                mutationDelete.isError
+                  ? t('repositories.unableToRemoveRepository' as any, {
+                      error: String(mutationDelete.error),
+                    })
+                  : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            />
+          </div>
+        )}
+      </DialogBody>
+      <DialogFooter style={{ justifyContent: 'flex-start', padding: '20px' }}>
+        <Flex gap="3" align="center">
+          <Button
+            variant="primary"
+            onPress={handleClickRemove}
+            isDisabled={
+              isUrlMissing || mutationDelete.isLoading || mutationDelete.isError
+            }
+            isPending={mutationDelete.isLoading}
+            style={{
+              backgroundColor: '#C9190B',
             }}
           >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-      <DialogContent>
-        <Typography variant="body1">{`${deleteMsg}`}</Typography>
-      </DialogContent>
-      {(isUrlMissing || mutationDelete.isError) && (
-        <Box maxWidth="650px" marginLeft="20px">
-          <Alert severity="error">
-            {isUrlMissing && t('repositories.cannotRemoveRepositoryUrl')}
-            {mutationDelete.isError &&
-              t('repositories.unableToRemoveRepository' as any, {
-                error: String(mutationDelete.error),
-              })}
-          </Alert>
-        </Box>
-      )}
-      <DialogActions style={{ justifyContent: 'left', padding: '20px' }}>
-        <Button
-          variant="contained"
-          onClick={() => handleClickRemove()}
-          disabled={
-            isUrlMissing || mutationDelete.isLoading || mutationDelete.isError
-          }
-          startIcon={
-            mutationDelete.isLoading && (
-              <CircularProgress size="20px" color="inherit" />
-            )
-          }
-          sx={{
-            backgroundColor: '#C9190B',
-            textTransform: 'none',
-            color: theme =>
-              theme.palette.getContrastText(theme.palette.error.main),
-            '&:hover': {
-              backgroundColor: 'error.dark',
-            },
-          }}
-        >
-          {mutationDelete.isLoading
-            ? t('repositories.removing')
-            : t('common.remove')}
-        </Button>
-        <Button
-          variant="outlined"
-          sx={{
-            textTransform: 'none',
-          }}
-          onClick={() => closeDialog()}
-        >
-          {t('common.cancel')}
-        </Button>
-      </DialogActions>
+            {mutationDelete.isLoading
+              ? t('repositories.removing')
+              : t('common.remove')}
+          </Button>
+          <Button variant="secondary" onPress={closeDialog}>
+            {t('common.cancel')}
+          </Button>
+        </Flex>
+      </DialogFooter>
     </Dialog>
   );
 };

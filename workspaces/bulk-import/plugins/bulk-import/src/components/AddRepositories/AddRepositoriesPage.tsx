@@ -18,9 +18,7 @@ import { useState } from 'react';
 
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
-
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
+import { Alert } from '@backstage/ui';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
@@ -59,10 +57,13 @@ export const AddRepositoriesPage = () => {
     }
     return (
       <div style={{ padding: '24px' }}>
-        <Alert severity="warning" data-testid="no-permission-alert">
-          <AlertTitle>{t('permissions.title')}</AlertTitle>
-          {t('permissions.addRepositoriesMessage')}
-        </Alert>
+        <Alert
+          status="warning"
+          icon
+          data-testid="no-permission-alert"
+          title={t('permissions.title')}
+          description={t('permissions.addRepositoriesMessage')}
+        />
       </div>
     );
   };
@@ -70,7 +71,7 @@ export const AddRepositoriesPage = () => {
     <Page themeId="tool">
       <Header
         title={t('page.title')}
-        style={{ borderBottom: '1px solid #ccc' }}
+        style={{ borderBottom: '1px solid var(--bui-border-1)' }}
       />
       <Content noPadding>{showContent()}</Content>
     </Page>

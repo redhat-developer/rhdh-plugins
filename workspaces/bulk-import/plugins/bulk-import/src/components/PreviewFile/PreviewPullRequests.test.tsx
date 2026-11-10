@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
-
 import { configApiRef, errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import { CatalogApi, catalogApiRef } from '@backstage/plugin-catalog-react';
@@ -35,11 +33,6 @@ import { mockEntities } from '../../mocks/mockEntities';
 import { ApprovalTool, ImportJobStatus, RepositoryStatus } from '../../types';
 import { getPRTemplate } from '../../utils/repository-utils';
 import { PreviewPullRequests } from './PreviewPullRequests';
-
-jest.mock('react', () => ({
-  ...jest.requireActual('react'),
-  useState: jest.fn(),
-}));
 
 jest.mock('formik', () => ({
   ...jest.requireActual('formik'),
@@ -61,12 +54,6 @@ class MockBulkImportApi {
     ) as ImportJobStatus;
   }
 }
-
-const setState = jest.fn();
-
-beforeEach(() => {
-  (useState as jest.Mock).mockImplementation(initial => [initial, setState]);
-});
 
 const mockCatalogApi: Partial<CatalogApi> = {
   getEntities: jest.fn().mockReturnValue(mockEntities),

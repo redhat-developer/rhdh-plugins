@@ -54,7 +54,7 @@ jest.mock('../../hooks', () => ({
 }));
 
 // Mock the child components to avoid complex dependencies
-jest.mock('./AddRepositoriesTableToolbar', () => ({
+jest.mock('./RepositoriesTableToolbar', () => ({
   AddRepositoriesTableToolbar: ({ title }: { title: string }) => (
     <div data-testid="table-toolbar">{title}</div>
   ),

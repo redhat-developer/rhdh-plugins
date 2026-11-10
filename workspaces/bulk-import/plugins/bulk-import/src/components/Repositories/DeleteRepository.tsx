@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import Delete from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
+import { ButtonIcon, Tooltip, TooltipTrigger } from '@backstage/ui';
 
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData, ImportFlow } from '../../types';
+import { BulkImportDeleteIcon } from '../bulkImportIcons';
 import { useDeleteDialog } from '../DeleteDialogContext';
 
 const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
@@ -51,19 +49,18 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
   }
 
   return (
-    <Tooltip title={tooltipMessage}>
-      <Typography component="span" data-testid="delete-repository">
-        <IconButton
-          color="inherit"
-          onClick={() => openDialog(data)}
+    <TooltipTrigger>
+      <span data-testid="delete-repository">
+        <ButtonIcon
+          icon={<BulkImportDeleteIcon size={14} />}
           aria-label={t('common.delete')}
-          size="large"
-          disabled={delDisabled}
-        >
-          <Delete />
-        </IconButton>
-      </Typography>
-    </Tooltip>
+          variant="tertiary"
+          isDisabled={delDisabled}
+          onPress={() => openDialog(data)}
+        />
+      </span>
+      <Tooltip placement="top">{tooltipMessage}</Tooltip>
+    </TooltipTrigger>
   );
 };
 

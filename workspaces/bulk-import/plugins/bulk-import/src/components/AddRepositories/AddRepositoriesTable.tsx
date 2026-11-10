@@ -17,8 +17,8 @@
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'react-use';
 
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
+import { Box } from '@backstage/ui';
+
 import { useFormikContext } from 'formik';
 
 import { useNumberOfApprovalTools } from '../../hooks';
@@ -27,9 +27,10 @@ import {
   AddRepositoriesFormValues,
   ApprovalTool as ApprovalToolEnum,
 } from '../../types';
-import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
 import ApprovalTool from './ApprovalTool';
 import { RepositoriesTable } from './RepositoriesTable';
+import { repositoriesTablePanelStyle } from './repositoriesTableShared';
+import { AddRepositoriesTableToolbar } from './RepositoriesTableToolbar';
 
 export const AddRepositoriesTable = ({ title }: { title?: string }) => {
   const { t } = useTranslation();
@@ -56,8 +57,8 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
   const { numberOfApprovalTools } = useNumberOfApprovalTools();
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%' }}>
+    <Box style={{ width: '100%' }}>
+      <Box bg="neutral" style={repositoriesTablePanelStyle}>
         {numberOfApprovalTools > 1 && (
           <ApprovalTool
             approvalTool={values.approvalTool}
@@ -77,7 +78,7 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
           isApprovalToolGitlab={isApprovalToolGitlab}
           setPage={setPage}
         />
-      </Paper>
+      </Box>
     </Box>
   );
 };

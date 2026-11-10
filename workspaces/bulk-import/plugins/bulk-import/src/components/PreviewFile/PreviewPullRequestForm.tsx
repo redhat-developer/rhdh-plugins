@@ -14,32 +14,19 @@
  * limitations under the License.
  */
 
-import type { ChangeEvent, FocusEvent } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAsync } from 'react-use';
 
 import { Entity, EntityMeta } from '@backstage/catalog-model';
-import { MarkdownContent } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import {
-  PreviewCatalogInfoComponent,
-  PreviewPullRequestComponent,
-} from '@backstage/plugin-catalog-import';
 import {
   catalogApiRef,
   humanizeEntityRef,
 } from '@backstage/plugin-catalog-react';
+import { Box, Checkbox, Combobox, Flex, Text, TextField } from '@backstage/ui';
 
-import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormHelperText from '@mui/material/FormHelperText';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
+import { Spinner } from '@patternfly/react-core';
 import { FormikErrors, useFormik, useFormikContext } from 'formik';
-import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -53,13 +40,39 @@ import {
   getValidationSchema,
   getYamlKeyValuePairs,
 } from '../../utils/repository-utils';
-import KeyValueTextField from './KeyValueTextField';
+import { bulkImportTypographyPreviewSection } from '../bulkImportTypography';
+import { PreviewAutoResizeTextAreaField } from './PreviewAutoResizeTextAreaField';
+import { PreviewCatalogInfoPreviewCard } from './PreviewCatalogInfoPreviewCard';
+import { PreviewFloatingLabelField } from './PreviewFloatingLabelField';
+import { PreviewPullRequestPreviewCard } from './PreviewPullRequestPreviewCard';
 
-const useStyles = makeStyles()({
-  previewCardContent: {
-    paddingTop: 0,
-  },
-});
+const previewFieldStyle = {
+  width: '100%',
+  maxWidth: '100%',
+  marginTop: '16px',
+  flex: '0 0 auto' as const,
+};
+
+const previewFloatingFieldControlStyle = {
+  width: '100%',
+  marginTop: 0,
+  flex: '0 0 auto' as const,
+};
+
+/** Renders translation strings that emphasize segments with `*asterisks*`. */
+const renderMessageWithEmphasis = (message: string) =>
+  message
+    .split(/(\*[^*]+\*)/g)
+    .filter(segment => segment.length > 0)
+    .map((segment, index) =>
+      segment.startsWith('*') && segment.endsWith('*') ? (
+        <Text key={index} as="em" variant="body-small">
+          {segment.slice(1, -1)}
+        </Text>
+      ) : (
+        <span key={index}>{segment}</span>
+      ),
+    );
 
 export const PreviewPullRequestForm = ({
   repoId,
@@ -77,7 +90,6 @@ export const PreviewPullRequestForm = ({
   setFormErrors: (pullRequest: PullRequestPreviewData) => void;
 }) => {
   const { t } = useTranslation();
-  const { classes } = useStyles();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
   const catalogApi = useApi(catalogApiRef);
 
@@ -111,6 +123,19 @@ export const PreviewPullRequestForm = ({
       .map(e => humanizeEntityRef(e, { defaultNamespace: 'true' }))
       .sort((a, b) => a.localeCompare(b));
   });
+
+  const entityOwnerOptions = useMemo(
+    () =>
+      (entities ?? []).map(entity => ({
+        id: entity,
+        label: entity,
+      })),
+    [entities],
+  );
+
+  const entityOwnerLoadingSpinner = entitiesLoading ? (
+    <Spinner size="sm" aria-label={t('previewFile.pullRequest.loadingText')} />
+  ) : undefined;
 
   const updatePullRequestKeyValuePairFields = (
     field: string,
@@ -151,7 +176,7 @@ export const PreviewPullRequestForm = ({
     });
   };
 
-  const updateField = (field: string, value: string) => {
+  const updateField = (field: string, value: string | boolean) => {
     if (formik.values?.[field as keyof PullRequestPreview] !== value) {
       formik.setFieldValue(field, value);
     }
@@ -160,7 +185,7 @@ export const PreviewPullRequestForm = ({
       [repoId]: {
         ...formik.values,
         [field]: value,
-        ...(field === 'componentName'
+        ...(field === 'componentName' && typeof value === 'string'
           ? {
               yaml: {
                 ...formik.values?.yaml,
@@ -187,13 +212,10 @@ export const PreviewPullRequestForm = ({
     setPullRequest({ ...pullRequest, ...pr });
   };
 
-  const handleChange = (
-    event: FocusEvent<HTMLTextAreaElement | HTMLInputElement>,
+  const handleNamedChange = (
+    targetName: string,
+    inputValue: string | boolean,
   ) => {
-    const targetName = event.target.name;
-
-    if (!targetName) return;
-    const inputValue = event.target.value;
     switch (targetName) {
       case 'prTitle':
       case 'prDescription':
@@ -206,19 +228,23 @@ export const PreviewPullRequestForm = ({
       case 'prAnnotations':
         updatePullRequestKeyValuePairFields(
           'prAnnotations',
-          inputValue,
+          String(inputValue),
           'metadata.annotations',
         );
         break;
       case 'prLabels':
         updatePullRequestKeyValuePairFields(
           'prLabels',
-          inputValue,
+          String(inputValue),
           'metadata.labels',
         );
         break;
       case 'prSpec':
-        updatePullRequestKeyValuePairFields('prSpec', inputValue, 'spec');
+        updatePullRequestKeyValuePairFields(
+          'prSpec',
+          String(inputValue),
+          'spec',
+        );
         break;
       default:
         break;
@@ -268,172 +294,196 @@ export const PreviewPullRequestForm = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formik.errors]);
 
+  const pullRequestTitleLabel = t('previewFile.pullRequest.titleLabel' as any, {
+    tool: approvalToolLabel[values.approvalTool],
+  });
+  const pullRequestBodyLabel = t('previewFile.pullRequest.bodyLabel' as any, {
+    tool: approvalToolLabel[values.approvalTool],
+  });
+
   return (
     <>
-      <Box marginTop={2}>
-        <Typography variant="h6">
+      <Box style={{ marginTop: '16px' }}>
+        <Text as="h3" style={bulkImportTypographyPreviewSection}>
           {t('previewFile.pullRequest.details' as any, {
             tool: approvalToolLabel[values.approvalTool],
           })}
-        </Typography>
+        </Text>
       </Box>
-      <TextField
-        label={t('previewFile.pullRequest.titleLabel' as any, {
-          tool: approvalToolLabel[values.approvalTool],
-        })}
-        placeholder={t('previewFile.pullRequest.titlePlaceholder')}
-        variant="outlined"
-        margin="normal"
-        sx={{ width: '99%' }}
-        name="prTitle"
-        value={formik.values?.prTitle}
-        onChange={handleChange}
-        error={!!formik.errors?.prTitle}
-        helperText={formik.errors?.prTitle}
+      <PreviewFloatingLabelField
+        label={pullRequestTitleLabel}
         required
-      />
-      <TextField
-        label={t('previewFile.pullRequest.bodyLabel' as any, {
-          tool: approvalToolLabel[values.approvalTool],
-        })}
-        placeholder={t('previewFile.pullRequest.bodyPlaceholder')}
-        margin="normal"
-        variant="outlined"
-        sx={{ width: '99%' }}
-        onChange={handleChange}
-        name="prDescription"
-        value={formik.values?.prDescription}
-        error={!!formik.errors?.prDescription}
-        helperText={formik.errors?.prDescription}
-        multiline
-        required
-      />
-      <Box marginTop={2}>
-        <Typography variant="h6">
-          {t('previewFile.pullRequest.entityConfiguration')}
-        </Typography>
-      </Box>
-      <TextField
-        label={t('previewFile.pullRequest.componentNameLabel')}
-        placeholder={t('previewFile.pullRequest.componentNamePlaceholder')}
-        margin="normal"
-        variant="outlined"
-        onChange={handleChange}
-        name="componentName"
-        value={formik.values?.componentName}
-        error={!!formik.errors?.componentName}
-        helperText={formik.errors?.componentName}
-        sx={{ width: '99%' }}
-        required
-      />
-      <br />
-      <br />
-      {!formik.values?.useCodeOwnersFile && (
-        <Autocomplete
-          options={entities || []}
-          value={formik.values?.entityOwner}
-          loading={entitiesLoading}
-          loadingText={t('previewFile.pullRequest.loadingText')}
-          onChange={(_event, value) =>
-            handleChange({
-              target: { name: 'entityOwner', value },
-            } as any)
-          }
-          onInputChange={(_event, value) =>
-            handleChange({
-              target: { name: 'entityOwner', value },
-            } as any)
-          }
-          renderInput={params => (
-            <TextField
-              {...params}
-              name="entityOwner"
-              variant="outlined"
-              error={!!formik.errors?.entityOwner}
-              label={t('previewFile.pullRequest.entityOwnerLabel')}
-              placeholder={t('previewFile.pullRequest.entityOwnerPlaceholder')}
-              helperText={
-                formik.errors?.entityOwner ||
-                t('previewFile.pullRequest.entityOwnerHelper')
-              }
-              InputProps={{
-                ...params.InputProps,
-                endAdornment: (
-                  <>
-                    {entitiesLoading ? (
-                      <CircularProgress color="inherit" size="1em" />
-                    ) : null}
-                    {params.InputProps.endAdornment}
-                  </>
-                ),
-              }}
-              required
-            />
-          )}
+        hasValue={!!formik.values?.prTitle?.trim()}
+        description={formik.errors?.prTitle}
+        isInvalid={!!formik.errors?.prTitle}
+        style={previewFieldStyle}
+      >
+        <TextField
+          name="prTitle"
+          aria-label={pullRequestTitleLabel}
+          placeholder={t('previewFile.pullRequest.titlePlaceholder')}
+          value={formik.values?.prTitle ?? ''}
+          onChange={value => handleNamedChange('prTitle', value)}
+          isInvalid={!!formik.errors?.prTitle}
+          isRequired
+          size="small"
+          style={previewFloatingFieldControlStyle}
         />
-      )}
-      <FormControlLabel
-        control={
-          <Checkbox
-            name="useCodeOwnersFile"
-            checked={formik.values?.useCodeOwnersFile}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              handleChange({
-                target: {
-                  name: 'useCodeOwnersFile',
-                  value: event.target.checked,
-                },
-              } as any)
+      </PreviewFloatingLabelField>
+      <PreviewFloatingLabelField
+        label={pullRequestBodyLabel}
+        required
+        multiline
+        hasValue={!!formik.values?.prDescription?.trim()}
+        description={formik.errors?.prDescription}
+        isInvalid={!!formik.errors?.prDescription}
+        style={previewFieldStyle}
+      >
+        <PreviewAutoResizeTextAreaField
+          name="prDescription"
+          aria-label={pullRequestBodyLabel}
+          placeholder={t('previewFile.pullRequest.bodyPlaceholder')}
+          value={formik.values?.prDescription ?? ''}
+          onChange={value => handleNamedChange('prDescription', value)}
+          isInvalid={!!formik.errors?.prDescription}
+          isRequired
+          size="small"
+          style={previewFloatingFieldControlStyle}
+        />
+      </PreviewFloatingLabelField>
+      <Box style={{ marginTop: '16px' }}>
+        <Text as="h3" style={bulkImportTypographyPreviewSection}>
+          {t('previewFile.pullRequest.entityConfiguration')}
+        </Text>
+      </Box>
+      <PreviewFloatingLabelField
+        label={t('previewFile.pullRequest.componentNameLabel')}
+        required
+        hasValue={!!formik.values?.componentName?.trim()}
+        description={formik.errors?.componentName}
+        isInvalid={!!formik.errors?.componentName}
+        style={previewFieldStyle}
+      >
+        <TextField
+          name="componentName"
+          aria-label={t('previewFile.pullRequest.componentNameLabel')}
+          placeholder={t('previewFile.pullRequest.componentNamePlaceholder')}
+          value={formik.values?.componentName ?? ''}
+          onChange={value => handleNamedChange('componentName', value)}
+          isInvalid={!!formik.errors?.componentName}
+          isRequired
+          size="small"
+          style={previewFloatingFieldControlStyle}
+        />
+      </PreviewFloatingLabelField>
+      {!formik.values?.useCodeOwnersFile && (
+        <PreviewFloatingLabelField
+          label={t('previewFile.pullRequest.entityOwnerLabel')}
+          required
+          combobox
+          hasValue={!!formik.values?.entityOwner?.trim()}
+          description={
+            formik.errors?.entityOwner ||
+            t('previewFile.pullRequest.entityOwnerHelper')
+          }
+          isInvalid={!!formik.errors?.entityOwner}
+          style={previewFieldStyle}
+        >
+          <Combobox
+            name="entityOwner"
+            aria-label={t('previewFile.pullRequest.entityOwnerLabel')}
+            placeholder={t('previewFile.pullRequest.entityOwnerPlaceholder')}
+            isRequired
+            options={entityOwnerOptions}
+            selectedKey={formik.values?.entityOwner || null}
+            onSelectionChange={key =>
+              handleNamedChange(
+                'entityOwner',
+                key === null || key === undefined ? '' : String(key),
+              )
             }
+            search={{
+              mode: 'client',
+              inputValue: formik.values?.entityOwner ?? '',
+              onInputChange: value => handleNamedChange('entityOwner', value),
+            }}
+            loading={
+              entitiesLoading ? { state: 'loading' as const } : undefined
+            }
+            icon={entityOwnerLoadingSpinner}
+            size="small"
+            style={previewFloatingFieldControlStyle}
           />
-        }
-        label={
-          <MarkdownContent
-            content={t('previewFile.pullRequest.useCodeOwnersFile')}
-          />
-        }
-      />
-      <FormHelperText>
-        {t('previewFile.pullRequest.codeOwnersWarning')}
-      </FormHelperText>
+        </PreviewFloatingLabelField>
+      )}
+      <Flex direction="column" gap="2" style={{ marginTop: '16px' }}>
+        <Checkbox
+          name="useCodeOwnersFile"
+          isSelected={!!formik.values?.useCodeOwnersFile}
+          onChange={checked => handleNamedChange('useCodeOwnersFile', checked)}
+        >
+          <Text as="span" variant="body-small">
+            {renderMessageWithEmphasis(
+              t('previewFile.pullRequest.useCodeOwnersFile'),
+            )}
+          </Text>
+        </Checkbox>
+        <Text variant="body-small">
+          {t('previewFile.pullRequest.codeOwnersWarning')}
+        </Text>
+      </Flex>
       {keyValueTextFields.map(field => {
+        const fieldError = formik.errors?.[
+          field.name as keyof PullRequestPreview
+        ] as string | undefined;
+
+        const helperText =
+          fieldError ||
+          t('previewFile.useSemicolonSeparator' as any, {
+            label: field.label.toLocaleLowerCase('en-US'),
+          });
+
         return (
-          <KeyValueTextField
+          <PreviewFloatingLabelField
             key={field.name}
             label={field.label}
-            value={field.value ?? ''}
-            name={field.name}
-            onChange={handleChange}
-            fieldError={
-              formik.errors?.[field.name as keyof PullRequestPreview] as string
-            }
-          />
+            multiline
+            hasValue={!!field.value?.trim()}
+            description={helperText}
+            isInvalid={!!fieldError}
+            style={previewFieldStyle}
+          >
+            <PreviewAutoResizeTextAreaField
+              name={field.name}
+              aria-label={field.label}
+              placeholder={t('previewFile.keyValuePlaceholder')}
+              value={field.value ?? ''}
+              onChange={value => handleNamedChange(field.name, value)}
+              isInvalid={!!fieldError}
+              size="small"
+              style={previewFloatingFieldControlStyle}
+            />
+          </PreviewFloatingLabelField>
         );
       })}
-      <Box marginTop={2}>
-        <Typography variant="h6">
+      <Box style={{ marginTop: '16px' }}>
+        <Text as="h3" style={bulkImportTypographyPreviewSection}>
           {t('previewFile.preview')}{' '}
           {approvalToolLabel[values.approvalTool].toLowerCase()}
-        </Typography>
+        </Text>
       </Box>
-      <PreviewPullRequestComponent
+      <PreviewPullRequestPreviewCard
         title={formik.values?.prTitle ?? ''}
         description={formik.values?.prDescription ?? ''}
-        classes={{
-          cardContent: classes.previewCardContent,
-        }}
       />
-      <Box marginTop={2} marginBottom={1}>
-        <Typography variant="h6">
+      <Box style={{ marginTop: '16px', marginBottom: '8px' }}>
+        <Text as="h3" style={bulkImportTypographyPreviewSection}>
           {t('previewFile.pullRequest.previewEntities')}
-        </Typography>
+        </Text>
       </Box>
-      <PreviewCatalogInfoComponent
+      <PreviewCatalogInfoPreviewCard
         entities={[formik.values?.yaml]}
         repositoryUrl={repoUrl}
-        classes={{
-          cardContent: classes.previewCardContent,
-        }}
       />
     </>
   );

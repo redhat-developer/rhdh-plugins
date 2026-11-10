@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-import type { ChangeEvent, MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Table from '@mui/material/Table';
-import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
+import { Alert, Flex } from '@backstage/ui';
+
 import { useFormikContext } from 'formik';
 
 import { useRepositories } from '../../hooks';
@@ -43,21 +40,12 @@ import {
 import { AddRepositoriesDrawer } from './AddRepositoriesDrawer';
 import { RepositoriesHeader } from './RepositoriesHeader';
 import { RepositoriesTableBody } from './RepositoriesTableBody';
-
-const repositoriesTableFixedColumnsSx = {
-  '& th:nth-child(1), & td:nth-child(1)': {
-    width: '20%',
-  },
-  '& th:nth-child(2), & td:nth-child(2)': {
-    width: '30%',
-  },
-  '& th:nth-child(3), & td:nth-child(3)': {
-    width: '20%',
-  },
-  '& th:nth-child(4), & td:nth-child(4)': {
-    width: '30%',
-  },
-};
+import { RepositoriesTablePagination } from './RepositoriesTablePagination';
+import {
+  repositoriesTableContainerStyle,
+  repositoriesTableFixedColumnCss,
+  repositoriesTableRootStyle,
+} from './repositoriesTableShared';
 
 export const RepositoriesTable = ({
   searchString,
@@ -192,7 +180,7 @@ export const RepositoriesTable = ({
       updateSelectedRepositories(newSelectedRows);
     }
   };
-  const handleSelectAllClick = (_event: ChangeEvent<HTMLInputElement>) => {
+  const handleSelectAllClick = () => {
     if (drawerOrganization) {
       handleClickAllForRepositoriesTable(true);
     } else {
@@ -235,8 +223,7 @@ export const RepositoriesTable = ({
     }
   };
 
-  const handleChangeRowsPerPage = (event: ChangeEvent<HTMLInputElement>) => {
-    const newRowsPerPage = parseInt(event.target.value, 10);
+  const handleChangeRowsPerPage = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
     if (drawerOrganization) {
       setDrawerPage(0);
@@ -298,25 +285,29 @@ export const RepositoriesTable = ({
     return 'repositories-table';
   };
 
+  const errorDescription =
+    error?.message ||
+    (Array.isArray(error?.errors) && error.errors.length > 1
+      ? error?.errors?.join('\n')
+      : error?.errors);
+
   return (
     <>
-      <TableContainer style={{ padding: '0 24px', height: '100%' }}>
+      <div style={repositoriesTableContainerStyle}>
+        <style>{repositoriesTableFixedColumnCss}</style>
         {error && Object.keys(error).length > 0 && (
           <div style={{ paddingBottom: '16px' }}>
-            <Alert severity="error">
-              <AlertTitle>{error?.name}</AlertTitle>
-              {error?.message ||
-                (Array.isArray(error?.errors) && error.errors.length > 1
-                  ? error?.errors?.join('\n')
-                  : error.errors)}
-            </Alert>
+            <Alert
+              status="danger"
+              title={error?.name}
+              description={errorDescription}
+            />
           </div>
         )}
-        <Table
-          style={{ minWidth: 750 }}
-          size="small"
+        <table
+          className="bulk-import-repositories-table"
+          style={repositoriesTableRootStyle}
           data-testid={ariaLabel()}
-          sx={repositoriesTableFixedColumnsSx}
         >
           <RepositoriesHeader
             numSelected={
@@ -343,26 +334,19 @@ export const RepositoriesTable = ({
             showOrganizations={showOrganizations}
             loginRejected={loginRejected}
           />
-        </Table>
+        </table>
         {!isOpen && tableData?.length > 0 && (
-          <TablePagination
-            rowsPerPageOptions={[
-              { value: 5, label: t('table.pagination.rows5') },
-              { value: 10, label: t('table.pagination.rows10') },
-              { value: 20, label: t('table.pagination.rows20') },
-              { value: 50, label: t('table.pagination.rows50') },
-              { value: 100, label: t('table.pagination.rows100') },
-            ]}
-            component="div"
-            count={filteredData?.length || 0}
-            rowsPerPage={rowsPerPage}
-            page={effectivePage}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            labelRowsPerPage={null}
-          />
+          <Flex justify="end">
+            <RepositoriesTablePagination
+              count={filteredData?.length || 0}
+              page={effectivePage}
+              rowsPerPage={rowsPerPage}
+              onPageChange={newPage => handleChangePage(undefined, newPage)}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Flex>
         )}
-      </TableContainer>
+      </div>
       {showOrganizations && activeOrganization && (
         <AddRepositoriesDrawer
           title={`${t('addRepositories.selectedLabel')} ${isApprovalToolGitlab ? t('addRepositories.selectedProjects') : t('addRepositories.selectedRepositories')}`}

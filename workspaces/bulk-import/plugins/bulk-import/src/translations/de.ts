@@ -143,6 +143,8 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Gruppen und Benutzer werden geladen',
     'previewFile.pullRequest.mergeRequest': 'Merge Request',
     'previewFile.pullRequest.previewEntities': 'Vorschau der Entitys',
+    'previewFile.pullRequest.previewCardSubheader':
+      'Neuen Pull Request erstellen',
     'previewFile.pullRequest.serviceNowTicket': 'ServiceNow-Ticket',
     'previewFile.pullRequest.spec': 'Spezifikation',
     'previewFile.pullRequest.title': 'Pull Request',

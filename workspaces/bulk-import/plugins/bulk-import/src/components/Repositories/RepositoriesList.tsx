@@ -17,10 +17,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { Table } from '@backstage/core-components';
-
-import Box from '@mui/material/Box';
-import TablePagination from '@mui/material/TablePagination';
+import { Box, Flex } from '@backstage/ui';
 
 import { useGitlabConfigured } from '../../hooks';
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
@@ -31,13 +28,19 @@ import {
   SortingOrderEnum,
 } from '../../types';
 import { RepositoriesHeader } from '../AddRepositories/RepositoriesHeader';
+import { RepositoriesTablePagination } from '../AddRepositories/RepositoriesTablePagination';
+import {
+  repositoriesTableContainerStyle,
+  repositoriesTablePanelStyle,
+  repositoriesTableRootStyle,
+} from '../AddRepositories/repositoriesTableShared';
+import { RepositoriesTableToolbar } from '../AddRepositories/RepositoriesTableToolbar';
 import { useDeleteDialog } from '../DeleteDialogContext';
 import { useDrawer } from '../DrawerContext';
 import { AddedRepositoriesTableBody } from './AddedRepositoriesTableBody';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';
 import EditCatalogInfo from './EditCatalogInfo';
 import { RepositoriesAddLink } from './RepositoriesAddLink';
-import { getRepositoriesListColumns } from './RepositoriesListColumns';
 
 export const RepositoriesList = () => {
   const navigate = useNavigate();
@@ -70,13 +73,22 @@ export const RepositoriesList = () => {
   };
 
   const closeDrawer = () => {
+    setOpenDrawer(false);
+    const hasDeepLink =
+      queryParams.has('repository') || queryParams.has('defaultBranch');
+    if (!hasDeepLink) {
+      return;
+    }
     queryParams.delete('repository');
     queryParams.delete('defaultBranch');
-    navigate({
-      pathname: location.pathname,
-      search: `?${queryParams.toString()}`,
-    });
-    setOpenDrawer(false);
+    const search = queryParams.toString();
+    navigate(
+      {
+        pathname: location.pathname,
+        search: search ? `?${search}` : '',
+      },
+      { replace: true },
+    );
   };
 
   // Avoid a layout jump when reaching the last page with empty rows.
@@ -107,70 +119,37 @@ export const RepositoriesList = () => {
   return (
     <>
       <RepositoriesAddLink />
-      <Table
-        data={importJobs.addedRepositories ?? []}
-        columns={getRepositoriesListColumns(t, gitlabConfigured)}
-        onSearchChange={handleSearch}
-        title={finalTitle}
-        options={{
-          search: true,
-        }}
-        localization={{
-          toolbar: {
-            searchPlaceholder: t('common.filter'),
-          },
-        }}
-        components={{
-          Header: () => <RepositoriesHeader showImportJobs />,
-          Body: () => (
+      <Box bg="neutral" style={repositoriesTablePanelStyle}>
+        <RepositoriesTableToolbar
+          title={finalTitle}
+          setSearchString={handleSearch}
+        />
+        <div style={repositoriesTableContainerStyle}>
+          <table
+            className="bulk-import-repositories-table"
+            style={repositoriesTableRootStyle}
+          >
+            <RepositoriesHeader showImportJobs />
             <AddedRepositoriesTableBody
               error={errJobs}
               loading={loading}
               rows={importJobs.addedRepositories || []}
               emptyRows={emptyRows}
             />
-          ),
-
-          Pagination: () => (
-            <TablePagination
-              rowsPerPageOptions={[
-                { value: 5, label: t('table.pagination.rows5') },
-                { value: 10, label: t('table.pagination.rows10') },
-                { value: 20, label: t('table.pagination.rows20') },
-                { value: 50, label: t('table.pagination.rows50') },
-                { value: 100, label: t('table.pagination.rows100') },
-              ]}
-              component="div"
-              count={importJobs.totalJobs || 0}
-              rowsPerPage={rowsPerPage}
-              page={pageNumber}
-              onPageChange={(_event, page: number) => {
-                setPageNumber(page);
-              }}
-              onRowsPerPageChange={event => {
-                setRowsPerPage(event.target.value as unknown as number);
-              }}
-              labelRowsPerPage={null}
-            />
-          ),
-        }}
-        emptyContent={
-          <Box
-            data-testid="no-import-jobs-found"
-            sx={{
-              padding: 2,
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-          >
-            {t(
-              gitlabConfigured
-                ? 'repositories.noProjectsFound'
-                : 'repositories.noRecordsFound',
-            )}
-          </Box>
-        }
-      />
+          </table>
+          {(importJobs.totalJobs || 0) > 0 && (
+            <Flex justify="end">
+              <RepositoriesTablePagination
+                count={importJobs.totalJobs || 0}
+                page={pageNumber}
+                rowsPerPage={rowsPerPage}
+                onPageChange={setPageNumber}
+                onRowsPerPageChange={setRowsPerPage}
+              />
+            </Flex>
+          )}
+        </div>
+      </Box>
       {openDrawer && (
         <EditCatalogInfo
           open={openDrawer}

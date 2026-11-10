@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Typography from '@mui/material/Typography';
+import { Flex, Text } from '@backstage/ui';
 
 import { getImageForIconClass } from '../../utils/icons';
 
@@ -26,28 +26,23 @@ export const Illustrations = ({
   iconText: string;
 }) => {
   return (
-    <div>
-      <Typography
-        component="span"
-        style={{
-          justifyContent: 'center',
-          display: 'flex',
-        }}
-      >
+    <Flex direction="column" align="center">
+      <Flex justify="center">
         <img
           src={getImageForIconClass(iconClassname)}
           alt={iconText}
           height="100px"
         />
-      </Typography>
-      <Typography
+      </Flex>
+      <Text
+        variant="body-medium"
         style={{
           maxWidth: '150px',
           textAlign: 'center',
         }}
       >
         {iconText}
-      </Typography>
-    </div>
+      </Text>
+    </Flex>
   );
 };

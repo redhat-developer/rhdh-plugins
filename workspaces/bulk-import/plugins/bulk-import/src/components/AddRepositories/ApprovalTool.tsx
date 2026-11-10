@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-import type { ChangeEvent, FC } from 'react';
+import type { FC } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import HelpIcon from '@mui/icons-material/HelpOutline';
-import Box from '@mui/material/Box';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import { useTheme } from '@mui/material/styles';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
+import {
+  Flex,
+  Radio,
+  RadioGroup,
+  Text,
+  Tooltip,
+  TooltipTrigger,
+} from '@backstage/ui';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { BulkImportHelpIcon } from '../bulkImportIcons';
+import { bulkImportTypographyApprovalToolTitle } from '../bulkImportTypography';
 
 interface ApprovalToolProps {
   approvalTool: string;
@@ -38,13 +40,9 @@ const ApprovalTool: FC<ApprovalToolProps> = ({
   setFieldValue,
 }) => {
   const { t } = useTranslation();
-  const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const handleApprovalToolChange = (
-    _event: ChangeEvent<{}>,
-    newValue: string,
-  ) => {
+  const handleApprovalToolChange = (newValue: string) => {
     setFieldValue('approvalTool', newValue);
 
     // Persist approval tool selection in URL
@@ -52,58 +50,41 @@ const ApprovalTool: FC<ApprovalToolProps> = ({
     newSearchParams.set('approvalTool', newValue);
     setSearchParams(newSearchParams, { replace: true });
   };
+
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'left',
-        alignItems: 'center',
-        paddingTop: theme.spacing(3),
-        paddingBottom: theme.spacing(3),
-        paddingLeft: theme.spacing(2),
+    <Flex
+      align="center"
+      gap="3"
+      style={{
+        paddingTop: '24px',
+        paddingBottom: '24px',
+        paddingLeft: '16px',
         // backgroundColor: theme.palette.background.paper,
-        borderBottom: `1px solid ${theme.palette.divider}`,
-        borderBottomColor: theme.palette.divider,
+        borderBottom: '1px solid var(--bui-border-1)',
       }}
     >
-      <Typography fontSize="14px" fontWeight="500">
+      <Text as="span" style={bulkImportTypographyApprovalToolTitle}>
         {t('addRepositories.approvalTool.title')}
-      </Typography>
-      <Tooltip
-        placement="top"
-        title={t('addRepositories.approvalTool.tooltip')}
-      >
-        <Typography
-          sx={{
-            paddingTop: theme.spacing(0.5),
-            paddingRight: theme.spacing(3),
-            paddingLeft: theme.spacing(0.5),
-          }}
-        >
-          <HelpIcon fontSize="small" />
-        </Typography>
-      </Tooltip>
+      </Text>
+      <TooltipTrigger>
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <BulkImportHelpIcon />
+        </span>
+        <Tooltip placement="top">
+          {t('addRepositories.approvalTool.tooltip')}
+        </Tooltip>
+      </TooltipTrigger>
       <RadioGroup
         id="approval-tool"
         data-testid="approval-tool"
-        row
-        name="approvalTool"
+        orientation="horizontal"
         value={approvalTool}
         onChange={handleApprovalToolChange}
       >
-        <FormControlLabel
-          value="GIT"
-          control={<Radio />}
-          label={t('addRepositories.approvalTool.github')}
-        />
-        <FormControlLabel
-          value="GITLAB"
-          control={<Radio />}
-          label={t('addRepositories.approvalTool.gitlab')}
-        />
+        <Radio value="GIT">{t('addRepositories.approvalTool.github')}</Radio>
+        <Radio value="GITLAB">{t('addRepositories.approvalTool.gitlab')}</Radio>
       </RadioGroup>
-    </Box>
+    </Flex>
   );
 };
 export default ApprovalTool;

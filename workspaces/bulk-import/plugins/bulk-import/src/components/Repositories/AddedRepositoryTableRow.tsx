@@ -16,9 +16,6 @@
 
 import { Link } from '@backstage/core-components';
 
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
 import { useFormikContext } from 'formik';
 
 import { useImportFlow } from '../../hooks/useImportFlow';
@@ -33,14 +30,14 @@ import {
   getImportStatus,
   urlHelper,
 } from '../../utils/repository-utils';
+import { repositoriesTableCellStyle } from '../AddRepositories/repositoriesTableShared';
+import {
+  BulkImportExternalLinkIcon,
+  bulkImportExternalLinkLinkStyle,
+} from '../bulkImportIcons';
 import CatalogInfoAction from './CatalogInfoAction';
 import DeleteRepository from './DeleteRepository';
 import SyncRepository from './SyncRepository';
-
-const tableCellSx = {
-  lineHeight: '1.5rem',
-  fontSize: '0.875rem',
-};
 
 const ImportStatusComponent = ({ data }: { data: AddRepositoryData }) => {
   const { t } = useTranslation();
@@ -81,8 +78,8 @@ export const AddedRepositoryTableRow = ({
   const importFlow = useImportFlow();
 
   return (
-    <TableRow hover>
-      <TableCell component="th" scope="row" sx={tableCellSx}>
+    <tr>
+      <th scope="row" style={repositoriesTableCellStyle}>
         {importFlow === ImportFlow.Scaffolder ||
         importFlow === ImportFlow.Orchestrator ? (
           <Link
@@ -95,43 +92,42 @@ export const AddedRepositoryTableRow = ({
         ) : (
           data.repoName
         )}
-      </TableCell>
-      <TableCell align="left" sx={tableCellSx}>
+      </th>
+      <td style={repositoriesTableCellStyle}>
         {data?.repoUrl ? (
-          <Link to={data.repoUrl || ''}>
+          <Link to={data.repoUrl || ''} style={bulkImportExternalLinkLinkStyle}>
             {urlHelper(data.repoUrl || '')}
-            <OpenInNewIcon
-              style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-            />
+            <BulkImportExternalLinkIcon />
           </Link>
         ) : (
           <>-</>
         )}
-      </TableCell>
-      <TableCell align="left" sx={tableCellSx}>
+      </td>
+      <td style={repositoriesTableCellStyle}>
         {data?.organizationUrl ? (
-          <Link to={data.organizationUrl || ''}>
+          <Link
+            to={data.organizationUrl || ''}
+            style={bulkImportExternalLinkLinkStyle}
+          >
             {data.orgName}
-            <OpenInNewIcon
-              style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-            />
+            <BulkImportExternalLinkIcon />
           </Link>
         ) : (
           <>-</>
         )}
-      </TableCell>
-      <TableCell align="left" sx={tableCellSx}>
+      </td>
+      <td style={repositoriesTableCellStyle}>
         <ImportStatusComponent data={data} />
-      </TableCell>
+      </td>
 
-      <TableCell align="left" sx={tableCellSx}>
+      <td style={repositoriesTableCellStyle}>
         <LastUpdated data={data} />
-      </TableCell>
-      <TableCell align="left" sx={tableCellSx}>
+      </td>
+      <td style={repositoriesTableCellStyle}>
         <CatalogInfoAction data={data} />
         <DeleteRepository data={data} />
         <SyncRepository data={data} />
-      </TableCell>
-    </TableRow>
+      </td>
+    </tr>
   );
 };

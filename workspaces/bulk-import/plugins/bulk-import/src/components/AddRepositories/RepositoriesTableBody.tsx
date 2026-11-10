@@ -16,9 +16,7 @@
 
 import type { MouseEvent } from 'react';
 
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import TableBody from '@mui/material/TableBody';
+import { Flex, Skeleton, Text } from '@backstage/ui';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddedRepositories, AddRepositoryData } from '../../types';
@@ -54,32 +52,30 @@ export const RepositoriesTableBody = ({
     return !!selectedRepos[id];
   };
 
+  const columnCount = getRepositoriesColumnHeader(
+    isApprovalToolGitlab,
+    t,
+  ).length;
+
   if (loading) {
     return (
       <tbody>
         <tr>
-          <td
-            colSpan={
-              getRepositoriesColumnHeader(isApprovalToolGitlab, t).length
-            }
-          >
-            <Box
+          <td colSpan={columnCount}>
+            <Flex
               data-testid={`${ariaLabel}-loading`}
-              sx={{
-                padding: 2,
-                display: 'flex',
-                justifyContent: 'center',
-              }}
+              justify="center"
+              style={{ padding: '16px' }}
             >
-              <CircularProgress />
-            </Box>
+              <Skeleton width={40} height={40} />
+            </Flex>
           </td>
         </tr>
       </tbody>
     );
   } else if (rows?.length > 0) {
     return (
-      <TableBody>
+      <tbody>
         {rows.map(row => {
           const isItemSelected = isSelected(row.id);
           return showOrganizations ? (
@@ -98,7 +94,7 @@ export const RepositoriesTableBody = ({
             />
           );
         })}
-      </TableBody>
+      </tbody>
     );
   }
 
@@ -120,19 +116,14 @@ export const RepositoriesTableBody = ({
   return (
     <tbody>
       <tr>
-        <td
-          colSpan={getRepositoriesColumnHeader(isApprovalToolGitlab, t).length}
-        >
-          <Box
+        <td colSpan={columnCount}>
+          <Flex
             data-testid="no-repositories-found"
-            sx={{
-              p: 2,
-              display: 'flex',
-              justifyContent: 'center',
-            }}
+            justify="center"
+            style={{ padding: '16px' }}
           >
-            {t(emptyStateMessageKey)}
-          </Box>
+            <Text>{t(emptyStateMessageKey)}</Text>
+          </Flex>
         </td>
       </tr>
     </tbody>

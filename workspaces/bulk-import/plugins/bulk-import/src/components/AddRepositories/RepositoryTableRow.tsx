@@ -19,11 +19,8 @@ import type { MouseEvent } from 'react';
 
 import { Link } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
+import { Checkbox, Flex } from '@backstage/ui';
 
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Checkbox from '@mui/material/Checkbox';
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
 import { useQuery } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -35,13 +32,12 @@ import {
   WorkflowStatus,
 } from '../../types';
 import { urlHelper } from '../../utils/repository-utils';
+import {
+  BulkImportExternalLinkIcon,
+  bulkImportExternalLinkLinkStyle,
+} from '../bulkImportIcons';
 import { CatalogInfoStatus } from './CatalogInfoStatus';
-
-const tableCellSx = {
-  lineHeight: '1.5rem',
-  fontSize: '0.875rem',
-  padding: '15px 16px 15px 6px',
-};
+import { repositoriesTableCellStyle } from './repositoriesTableShared';
 
 export const RepositoryTableRow = ({
   handleClick,
@@ -109,74 +105,84 @@ export const RepositoryTableRow = ({
     importId = importStatus.workflow.workflowId;
   }
 
+  const isChecked =
+    value?.status === RepositoryStatus.ADDED ||
+    value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
+    value?.status === TaskStatus.Processing ||
+    value?.status === TaskStatus.Completed ||
+    value?.status === WorkflowStatus.Active ||
+    value?.status === WorkflowStatus.Pending ||
+    value?.status === WorkflowStatus.Completed ||
+    value?.status === WorkflowStatus.Suspended
+      ? true
+      : isItemSelected;
+
+  const isCheckboxDisabled =
+    loading ||
+    value?.status === RepositoryStatus.ADDED ||
+    value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
+    value?.status === TaskStatus.Processing ||
+    value?.status === TaskStatus.Completed ||
+    value?.status === WorkflowStatus.Active ||
+    value?.status === WorkflowStatus.Pending ||
+    value?.status === WorkflowStatus.Completed ||
+    value?.status === WorkflowStatus.Suspended;
+
   return (
-    <TableRow
-      hover
+    <tr
       aria-checked={isItemSelected}
       tabIndex={-1}
-      key={data.id}
-      selected={isItemSelected}
+      style={
+        isItemSelected
+          ? { backgroundColor: 'var(--bui-bg-neutral-2)' }
+          : undefined
+      }
     >
-      <TableCell component="th" scope="row" padding="none" sx={tableCellSx}>
-        <Checkbox
-          disableRipple
-          color="primary"
-          checked={
-            value?.status === RepositoryStatus.ADDED ||
-            value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
-            value?.status === TaskStatus.Processing ||
-            value?.status === TaskStatus.Completed ||
-            value?.status === WorkflowStatus.Active ||
-            value?.status === WorkflowStatus.Pending ||
-            value?.status === WorkflowStatus.Completed ||
-            value?.status === WorkflowStatus.Suspended
-              ? true
-              : isItemSelected
-          }
-          disabled={
-            loading ||
-            value?.status === RepositoryStatus.ADDED ||
-            value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
-            value?.status === TaskStatus.Processing ||
-            value?.status === TaskStatus.Completed ||
-            value?.status === WorkflowStatus.Active ||
-            value?.status === WorkflowStatus.Pending ||
-            value?.status === WorkflowStatus.Completed ||
-            value?.status === WorkflowStatus.Suspended
-          }
-          onClick={event => handleClick(event, data)}
-          style={{ padding: '0 12px' }}
-        />
-        {data.repoName}
-      </TableCell>
-      <TableCell align="left" sx={tableCellSx}>
+      <th scope="row" style={repositoriesTableCellStyle}>
+        <Flex align="center" gap="2" style={{ fontSize: '0.875rem' }}>
+          <Checkbox
+            aria-label={`select ${data.repoName}`}
+            isSelected={isChecked}
+            isDisabled={isCheckboxDisabled}
+            onChange={() => handleClick({} as MouseEvent, data)}
+          />
+          <span style={{ lineHeight: '1.5rem' }}>{data.repoName}</span>
+        </Flex>
+      </th>
+      <td style={repositoriesTableCellStyle}>
         {data.repoUrl ? (
-          <Link to={data.repoUrl}>
+          <Link
+            to={data.repoUrl}
+            style={{
+              fontSize: '0.875rem',
+              lineHeight: '1.5rem',
+              ...bulkImportExternalLinkLinkStyle,
+            }}
+          >
             {urlHelper(data.repoUrl)}
-            <OpenInNewIcon
-              style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-            />
+            <BulkImportExternalLinkIcon />
           </Link>
         ) : (
           <>-</>
         )}
-      </TableCell>
+      </td>
       {!isDrawer && (
-        <TableCell align="left" sx={tableCellSx}>
+        <td style={repositoriesTableCellStyle}>
           {data?.organizationUrl ? (
-            <Link to={data.organizationUrl}>
+            <Link
+              to={data.organizationUrl}
+              style={bulkImportExternalLinkLinkStyle}
+            >
               {data.orgName}
-              <OpenInNewIcon
-                style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-              />
+              <BulkImportExternalLinkIcon />
             </Link>
           ) : (
             <>-</>
           )}
-        </TableCell>
+        </td>
       )}
 
-      <TableCell align="left" sx={tableCellSx}>
+      <td style={repositoriesTableCellStyle}>
         <CatalogInfoStatus
           data={data}
           importStatus={value?.status as string}
@@ -189,7 +195,7 @@ export const RepositoryTableRow = ({
             (value as ImportJobStatus)?.gitlab?.pullRequest?.url
           }
         />
-      </TableCell>
-    </TableRow>
+      </td>
+    </tr>
   );
 };

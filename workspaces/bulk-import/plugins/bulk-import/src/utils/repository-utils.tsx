@@ -18,7 +18,6 @@ import { Entity } from '@backstage/catalog-model';
 import { Link, StatusOK } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import Typography from '@mui/material/Typography';
 import { loadAll } from 'js-yaml';
 import { get } from 'lodash';
 import { stringify } from 'yaml';
@@ -298,6 +297,13 @@ export const urlHelper = (url: string) => {
   return url.split('https://')[1] || url;
 };
 
+const importStatusRowStyle = {
+  display: 'flex',
+  alignItems: 'baseline',
+  fontSize: '0.875rem',
+  lineHeight: '1.5rem',
+} as const;
+
 export const getImportStatus = (
   status: string,
   t: (key: string) => string,
@@ -320,13 +326,10 @@ export const getImportStatus = (
 
   if (status === 'ADDED') {
     return showIcon ? (
-      <Typography
-        component="span"
-        style={{ display: 'flex', alignItems: 'baseline' }}
-      >
+      <span style={importStatusRowStyle}>
         <StatusOK />
         {t('status.imported')}
-      </Typography>
+      </span>
     ) : (
       labelText
     );
@@ -335,22 +338,16 @@ export const getImportStatus = (
   if (taskOrWorkflowId && status.startsWith('TASK')) {
     const { taskLabelText, taskIcon } = getTaskStatusInfo(status, t);
     return showIcon ? (
-      <Typography
-        component="span"
-        style={{ display: 'flex', alignItems: 'baseline' }}
-      >
+      <span style={importStatusRowStyle}>
         {taskIcon}
         {taskLabelText}
         <TaskLink taskId={taskOrWorkflowId} t={t} />
-      </Typography>
+      </span>
     ) : (
-      <Typography
-        component="span"
-        style={{ display: 'flex', alignItems: 'baseline' }}
-      >
+      <span style={importStatusRowStyle}>
         {taskLabelText}
         <TaskLink taskId={taskOrWorkflowId} t={t} />
-      </Typography>
+      </span>
     );
   }
 
@@ -360,22 +357,16 @@ export const getImportStatus = (
       t,
     );
     return showIcon ? (
-      <Typography
-        component="span"
-        style={{ display: 'flex', alignItems: 'baseline' }}
-      >
+      <span style={importStatusRowStyle}>
         {workflowIcon}
         {workflowLabelText}
         <WorkflowLink workflowId={taskOrWorkflowId} t={t} />
-      </Typography>
+      </span>
     ) : (
-      <Typography
-        component="span"
-        style={{ display: 'flex', alignItems: 'baseline' }}
-      >
+      <span style={importStatusRowStyle}>
         {workflowLabelText}
         <WorkflowLink workflowId={taskOrWorkflowId} t={t} />
-      </Typography>
+      </span>
     );
   }
 

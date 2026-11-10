@@ -16,13 +16,8 @@
 
 import { CodeSnippet, Link } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import { Alert, Box, Flex, Text } from '@backstage/ui';
 
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { useImportFlow } from '../../hooks/useImportFlow';
@@ -35,6 +30,11 @@ import {
 } from '../../types';
 import { getImageForIconClass } from '../../utils/icons';
 import { getCustomisedErrorMessage } from '../../utils/repository-utils';
+import {
+  BulkImportExternalLinkIcon,
+  bulkImportExternalLinkLinkStyle,
+} from '../bulkImportIcons';
+import { bulkImportTypographyH3 } from '../bulkImportTypography';
 import { useDrawer } from '../DrawerContext';
 import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
@@ -83,40 +83,30 @@ export const AddRepositories = ({ error }: { error?: any }) => {
   // Show missing configuration page if no integrations are configured
   if (hasMissingIntegrations) {
     return (
-      <Box
-        sx={{ display: 'flex', minHeight: '50vh', padding: 3, paddingLeft: 6 }}
+      <Flex
+        style={{
+          minHeight: '50vh',
+          padding: '24px',
+          paddingLeft: '48px',
+        }}
       >
-        <Box sx={{ flex: 0.8, pr: 2, pt: 8, pl: 3 }}>
-          <Box sx={{ mb: 2, pt: 12 }}>
-            <Typography
-              variant="h3"
-              component="h1"
-              sx={{
-                fontSize: '2rem',
-                fontWeight: 400,
-                margin: '0 0 1rem 0',
-              }}
-            >
+        <Box style={{ flex: '0.8', paddingRight: '16px', paddingTop: '64px' }}>
+          <Box style={{ marginBottom: '16px', paddingTop: '96px' }}>
+            <Text as="h1" style={bulkImportTypographyH3}>
               {t('status.missingConfigurations')}
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                lineHeight: '1.5',
-                margin: '0 0 1rem 0',
-              }}
+            </Text>
+            <Text
+              variant="body-medium"
+              style={{ lineHeight: 1.5, margin: '0 0 1rem 0' }}
             >
               {t('errors.noIntegrationsConfigured')}
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                lineHeight: '1.5',
-                margin: '0 0 2rem 0',
-              }}
+            </Text>
+            <Text
+              variant="body-medium"
+              style={{ lineHeight: 1.5, margin: '0 0 2rem 0' }}
             >
               {t('errors.addIntegrationsToConfig')}
-            </Typography>
+            </Text>
             <CodeSnippet
               text={`integrations:
   github:
@@ -137,23 +127,15 @@ export const AddRepositories = ({ error }: { error?: any }) => {
               to="https://backstage.io/docs/integrations/#configuration"
               target="_blank"
               rel="noopener noreferrer"
+              style={bulkImportExternalLinkLinkStyle}
             >
               {t('common.documentation')}
-              <OpenInNewIcon
-                style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-              />
+              <BulkImportExternalLinkIcon />
             </Link>
           </Box>
         </Box>
 
-        <Box
-          sx={{
-            flex: 1,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+        <Flex align="center" justify="center" style={{ flex: 1 }}>
           <img
             src={getImageForIconClass('missing-configuration')}
             alt="Missing configuration"
@@ -166,14 +148,14 @@ export const AddRepositories = ({ error }: { error?: any }) => {
               objectFit: 'contain',
             }}
           />
-        </Box>
-      </Box>
+        </Flex>
+      </Flex>
     );
   }
 
   return (
     <>
-      <FormControl fullWidth>
+      <div style={{ width: '100%' }}>
         <div
           style={{
             marginBottom: '50px',
@@ -182,19 +164,23 @@ export const AddRepositories = ({ error }: { error?: any }) => {
         >
           {error && (
             <div style={{ paddingBottom: '10px' }}>
-              <Alert severity="error">
-                <AlertTitle>
-                  {errorMessage?.error?.name ??
-                    error?.error?.name ??
-                    error?.name ??
-                    t('errors.errorOccurred')}
-                </AlertTitle>
-                {errorMessage?.error?.message ??
+              <Alert
+                status="danger"
+                icon
+                title={
+                  errorMessage?.error?.name ??
+                  error?.error?.name ??
+                  error?.name ??
+                  t('errors.errorOccurred')
+                }
+                description={
+                  errorMessage?.error?.message ??
                   error?.error?.message ??
                   error?.message ??
                   error?.err ??
-                  t('errors.failedToCreatePullRequest')}
-              </Alert>
+                  t('errors.failedToCreatePullRequest')
+                }
+              />
             </div>
           )}
           {showOrchestratorJobErrors && (
@@ -214,17 +200,18 @@ export const AddRepositories = ({ error }: { error?: any }) => {
                   .filter(Boolean)
                   .join('/');
                 return (
-                  <Alert
+                  <div
                     key={repoId}
-                    severity="error"
-                    sx={{ mb: 1 }}
+                    style={{ marginBottom: '8px' }}
                     data-testid={`orchestrator-job-error-${repoId}`}
                   >
-                    <AlertTitle>
-                      {repoLabel || t('errors.errorOccurred')}
-                    </AlertTitle>
-                    {message}
-                  </Alert>
+                    <Alert
+                      status="danger"
+                      icon
+                      title={repoLabel || t('errors.errorOccurred')}
+                      description={message}
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -232,7 +219,7 @@ export const AddRepositories = ({ error }: { error?: any }) => {
           <AddRepositoriesTable />
         </div>
         <br />
-      </FormControl>
+      </div>
       <AddRepositoriesFormFooter />
       {openDrawer && (
         <PreviewFileSidebar

@@ -17,16 +17,8 @@
 import { useEffect, useState } from 'react';
 
 import { Link } from '@backstage/core-components';
+import { Box, Button, ButtonIcon, Flex, Text } from '@backstage/ui';
 
-import CloseIcon from '@mui/icons-material/Close';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Container from '@mui/material/Container';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -36,8 +28,15 @@ import {
   AddRepositoryData,
 } from '../../types';
 import { urlHelper } from '../../utils/repository-utils';
-import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
+import {
+  BulkImportCloseIcon,
+  BulkImportExternalLinkIcon,
+  bulkImportExternalLinkLinkStyle,
+} from '../bulkImportIcons';
+import { BulkImportRightDrawer } from '../BulkImportRightDrawer';
+import { bulkImportTypographyH5 } from '../bulkImportTypography';
 import { RepositoriesTable } from './RepositoriesTable';
+import { AddRepositoriesTableToolbar } from './RepositoriesTableToolbar';
 
 export const AddRepositoriesDrawer = ({
   open,
@@ -84,44 +83,55 @@ export const AddRepositoriesDrawer = ({
   }, [orgData?.orgName, values.repositories]);
 
   return (
-    <Drawer
-      anchor="right"
+    <BulkImportRightDrawer
       open={open}
-      variant="temporary"
-      sx={{
-        '@media (max-width: 960px)': {
-          '& > div[class*="MuiDrawer-paper-"]': {
-            width: '-webkit-fill-available',
-          },
-        },
-      }}
       onClose={onClose}
+      variant="temporary"
+      paperWidth="50%"
     >
-      <Container
-        sx={{
-          padding: '20px',
+      <Flex
+        direction="column"
+        style={{
+          flex: 1,
+          minHeight: 0,
           height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
+          padding: '20px',
+          boxSizing: 'border-box',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <Typography variant="h5">{orgData?.orgName}</Typography>
-            <Link to={orgData?.organizationUrl || ''}>
-              {urlHelper(orgData?.organizationUrl || '')}
-              <OpenInNewIcon
-                style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-              />
-            </Link>
-          </div>
-          <div>
-            <IconButton onClick={onClose} className="align-right" size="large">
-              <CloseIcon />
-            </IconButton>
-          </div>
-        </div>
-        <Card style={{ marginTop: '20px', marginBottom: '60px' }}>
+        <Flex align="start" justify="between">
+          <Flex direction="column" gap="1" align="start">
+            <Text as="h2" style={bulkImportTypographyH5}>
+              {orgData?.orgName}
+            </Text>
+            <span style={{ fontSize: '0.875rem', lineHeight: '1.5rem' }}>
+              <Link
+                to={orgData?.organizationUrl || ''}
+                style={bulkImportExternalLinkLinkStyle}
+              >
+                {urlHelper(orgData?.organizationUrl || '')}
+                <BulkImportExternalLinkIcon />
+              </Link>
+            </span>
+          </Flex>
+          <ButtonIcon
+            icon={<BulkImportCloseIcon />}
+            aria-label={t('common.cancel')}
+            variant="tertiary"
+            onPress={onClose}
+          />
+        </Flex>
+        <Box
+          bg="neutral"
+          style={{
+            marginTop: '20px',
+            border: '1px solid var(--bui-border-1)',
+            borderRadius: 'var(--bui-radius-2)',
+            flex: 1,
+            minHeight: 0,
+            overflow: 'hidden',
+          }}
+        >
           <AddRepositoriesTableToolbar
             title={title}
             setSearchString={setSearchString}
@@ -133,41 +143,34 @@ export const AddRepositoriesDrawer = ({
             updateSelectedReposInDrawer={updateSelectedReposInDrawer}
             drawerOrganization={orgData?.orgName}
           />
-        </Card>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'right',
-            mt: 2,
-            position: 'fixed',
-            bottom: '20px',
+        </Box>
+        <Flex
+          align="center"
+          gap="3"
+          justify="end"
+          style={{
+            flexShrink: 0,
+            marginTop: '20px',
+            paddingTop: '12px',
+            borderTop: '1px solid var(--bui-border-1)',
           }}
         >
-          <Typography component="span">
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleSelectRepoFromDrawer(selectedRepos)}
-              sx={{
-                mr: 1,
-              }}
-              data-testid="select-from-drawer"
-            >
-              {t('common.select')}
-            </Button>
-          </Typography>
-          <Typography component="span">
-            <Button
-              data-testid="close-drawer"
-              variant="outlined"
-              onClick={onClose}
-            >
-              {t('common.cancel')}
-            </Button>
-          </Typography>
-        </Box>
-      </Container>
-    </Drawer>
+          <Button
+            variant="primary"
+            onPress={() => handleSelectRepoFromDrawer(selectedRepos)}
+            data-testid="select-from-drawer"
+          >
+            {t('common.select')}
+          </Button>
+          <Button
+            variant="secondary"
+            onPress={onClose}
+            data-testid="close-drawer"
+          >
+            {t('common.cancel')}
+          </Button>
+        </Flex>
+      </Flex>
+    </BulkImportRightDrawer>
   );
 };

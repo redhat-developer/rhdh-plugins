@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
+import { useMemo, type ReactNode } from 'react';
+
+import {
+  CellText,
+  ColumnConfig,
+  Table,
+  TableItem,
+  useTable,
+} from '@backstage/ui';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { OrchestratorWorkflow, ScaffolderTask } from '../../types';
 import { TaskLink, WorkflowLink } from '../../utils/repository-utils';
+
+interface HistoryTableRow extends TableItem {
+  displayId: string;
+  link: ReactNode;
+}
 
 export const ImportHistoryTable = ({
   tasks,
@@ -33,37 +42,44 @@ export const ImportHistoryTable = ({
   const { t } = useTranslation();
   const isWorkflow = workflows.length > 0;
 
-  const rows = isWorkflow
-    ? workflows.map(w => ({
-        id: w.workflowId,
-        link: <WorkflowLink workflowId={w.workflowId} t={t} />,
-      }))
-    : tasks.map(tk => ({
-        id: tk.taskId,
-        link: <TaskLink taskId={tk.taskId} t={t} />,
-      }));
-
-  return (
-    <Table>
-      <TableHead>
-        <TableRow>
-          <TableCell>
-            {isWorkflow ? t('workflows.workflowId') : t('tasks.taskId')}
-          </TableCell>
-          <TableCell>
-            {isWorkflow ? t('workflows.workflowLink') : t('tasks.taskLink')}
-          </TableCell>
-        </TableRow>
-      </TableHead>
-
-      <TableBody>
-        {rows.map(row => (
-          <TableRow key={row.id}>
-            <TableCell>{row.id}</TableCell>
-            <TableCell>{row.link}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+  const rows = useMemo<HistoryTableRow[]>(
+    () =>
+      isWorkflow
+        ? workflows.map(w => ({
+            id: w.workflowId,
+            displayId: w.workflowId,
+            link: <WorkflowLink workflowId={w.workflowId} t={t} />,
+          }))
+        : tasks.map(task => ({
+            id: task.taskId,
+            displayId: task.taskId,
+            link: <TaskLink taskId={task.taskId} t={t} />,
+          })),
+    [isWorkflow, tasks, workflows, t],
   );
+
+  const columnConfig = useMemo<ColumnConfig<HistoryTableRow>[]>(
+    () => [
+      {
+        id: 'displayId',
+        label: isWorkflow ? t('workflows.workflowId') : t('tasks.taskId'),
+        cell: item => <CellText title={item.displayId} />,
+        isRowHeader: true,
+      },
+      {
+        id: 'link',
+        label: isWorkflow ? t('workflows.workflowLink') : t('tasks.taskLink'),
+        cell: item => <>{item.link}</>,
+      },
+    ],
+    [isWorkflow, t],
+  );
+
+  const { tableProps } = useTable({
+    mode: 'complete',
+    data: rows,
+    paginationOptions: { type: 'none' },
+  });
+
+  return <Table columnConfig={columnConfig} {...tableProps} />;
 };

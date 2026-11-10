@@ -22,7 +22,6 @@ import {
   useApi,
 } from '@backstage/core-plugin-api';
 
-import Drawer from '@mui/material/Drawer';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -41,6 +40,7 @@ import {
   evaluatePRTemplate,
   getPRTemplate,
 } from '../../utils/repository-utils';
+import { BulkImportRightDrawer } from '../BulkImportRightDrawer';
 import { PreviewFileSidebarDrawerContent } from './PreviewFileSidebarDrawerContent';
 
 export const PreviewFileSidebar = ({
@@ -184,33 +184,35 @@ export const PreviewFileSidebar = ({
   }, [data, bulkImportApi, setStatus, status]);
 
   useEffect(() => {
-    if (!isInitialized && data?.id) {
+    if (!isInitialized && open && data?.id) {
       initializePullRequest();
     }
-  }, [isInitialized, data?.id, initializePullRequest]);
+  }, [isInitialized, open, data?.id, initializePullRequest]);
 
-  const handleCancel = () => {
-    initializePullRequest(); // reset any unsaved changes
+  useEffect(() => {
+    if (!open) {
+      setIsInitialized(false);
+      setPullRequest({});
+    }
+  }, [open]);
+
+  const handleClose = () => {
     onClose();
   };
 
   return (
-    <Drawer
-      anchor="right"
+    <BulkImportRightDrawer
       open={open}
-      onClose={onClose}
-      data-testid={
+      onClose={handleClose}
+      testId={
         !isInitialized
           ? 'preview-pullrequest-sidebar-loading'
           : 'preview-pullrequest-sidebar'
       }
-      PaperProps={{
-        sx: { width: '40%', gap: '3%' },
-      }}
     >
       <PreviewFileSidebarDrawerContent
         repositoryType={repositoryType}
-        onCancel={handleCancel}
+        onCancel={handleClose}
         isLoading={!isInitialized}
         isSubmitting={isSubmitting}
         data={data}
@@ -218,6 +220,6 @@ export const PreviewFileSidebar = ({
         onSave={handleSave}
         setPullRequest={setPullRequest}
       />
-    </Drawer>
+    </BulkImportRightDrawer>
   );
 };
