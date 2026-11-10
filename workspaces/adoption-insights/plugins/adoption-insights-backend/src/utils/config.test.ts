@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { mockServices } from '@backstage/backend-test-utils';
-import { getConfigurationOptions } from './config';
+import { getConfigurationOptions, getMaxEventsPerRequest } from './config';
 
 describe('getConfigurationOptions', () => {
   it('should return the default values', () => {
@@ -38,5 +38,29 @@ describe('getConfigurationOptions', () => {
       batchSize: 3,
       debug: false,
     });
+  });
+});
+
+describe('getMaxEventsPerRequest', () => {
+  it('returns 100 when the setting is absent', () => {
+    expect(getMaxEventsPerRequest(mockServices.rootConfig.mock())).toBe(100);
+  });
+
+  it('returns a configured positive integer', () => {
+    const config = mockServices.rootConfig.mock({
+      getOptionalNumber: jest.fn().mockReturnValue(25),
+    });
+
+    expect(getMaxEventsPerRequest(config)).toBe(25);
+  });
+
+  it.each([0, -1, 1.5])('rejects an invalid limit of %s', value => {
+    const config = mockServices.rootConfig.mock({
+      getOptionalNumber: jest.fn().mockReturnValue(value),
+    });
+
+    expect(() => getMaxEventsPerRequest(config)).toThrow(
+      'app.analytics.adoptionInsights.maxEventsPerRequest must be a positive integer',
+    );
   });
 });

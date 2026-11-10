@@ -36,7 +36,7 @@ app:
       flushInterval: 5000 # Optional: Flush interval in milliseconds for event batching (default: 5000ms)
       debug: false # Optional: Enable debug mode to log every event in the browser console (default: false)
       licensedUsers: 100 # Administrators can set this value to see the user adoption metrics.
-      maxEventsPerRequest: 100 # Optional: Maximum number of events accepted in a single POST /events request (default: 100)
+      maxEventsPerRequest: 100 # Optional: Positive integer maximum number of events accepted in a single POST /events request (default: 100)
 ```
 
 #### Permission Framework Support
@@ -117,7 +117,7 @@ When `type=top_techdocs`, the backend may enrich each row with a TechDocs `site_
 
 The analytics module batches events on the client and sends them as a JSON array to this endpoint. The backend applies the following limits and validation before persisting a batch:
 
-- **Batch size limit.** A single request may contain at most `maxEventsPerRequest` events (default `100`, configurable under `app.analytics.adoptionInsights.maxEventsPerRequest`). Oversized batches are rejected with `400` before any catalog lookup or enqueue runs. The default analytics module flushes far smaller batches (see `maxBufferSize`), so this limit only affects callers that batch aggressively — raise it if you have a legitimate need.
+- **Batch size limit.** A single request may contain at most `maxEventsPerRequest` events (default `100`, configurable under `app.analytics.adoptionInsights.maxEventsPerRequest`). The configured limit must be a positive integer. Oversized batches are rejected with `400` before any catalog lookup or enqueue runs. The default analytics module flushes far smaller batches (see `maxBufferSize`), so this limit only affects callers that batch aggressively — raise it if you have a legitimate need.
 - **All-or-nothing validation.** Every event in the batch is validated before any of them are enqueued. If any event fails validation the whole request is rejected with `400` and no events from that batch are stored. (Previously, valid events appearing before the first invalid one could be partially persisted.)
 - **Deduplicated enrichment.** Scaffolder create events are enriched with the Template's `backstage.io/time-saved` estimate; each distinct template ref is resolved from the catalog only once per batch, with bounded concurrency, to avoid flooding the catalog on large batches.
 

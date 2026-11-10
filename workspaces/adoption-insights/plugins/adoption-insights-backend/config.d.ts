@@ -43,6 +43,7 @@ export interface Config {
         licensedUsers?: number;
         /**
          * Maximum number of events accepted in a single POST /events request.
+         * Must be a positive integer.
          * Oversized batches are rejected before any catalog lookups run.
          * default 100
          * @visibility backend
