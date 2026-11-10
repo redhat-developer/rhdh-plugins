@@ -334,23 +334,27 @@ need independent entity identity.
 
 ### Agent (Confidence: Medium)
 
-**Kind change:** Committed to `AiResource` / `spec.type: agent` for
+**Current agent mapping:** `AiResource` / `spec.type: agent`, committed for
 RHDH 2.1 from
 [#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164)
-(merged). Boost is pivoting via
+(merged). Boost adopted this mapping via
 [#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260).
 
-**Field-level transforms:**
+The table below records the historical Component migration. Entities already
+using `AiResource` / `agent` keep that kind/type; the legacy mapping is not
+an alternative for new providers.
 
-| Field               | Current (Decision 1 / boost) | Target (#4164 / ai-integrations)     | Action                                       |
-| ------------------- | ---------------------------- | ------------------------------------ | -------------------------------------------- |
-| `kind`              | `Component`                  | `AiResource`                         | Kind change (identity cutover)               |
-| `spec.type`         | `ai-agent`                   | `agent`                              | Rename type to match agent AiResource schema |
-| `spec.lifecycle`    | May be missing               | Required                             | Ensure lifecycle is populated                |
-| `spec.owner`        | May be missing               | Required                             | Ensure owner is populated                    |
-| `spec.instructions` | Not on Component mapping     | Required non-empty string            | Populate agent instructions (system prompt)  |
-| `spec.handoffs`     | N/A                          | Optional string refs to other agents | Map if present in source configuration       |
-| `spec.model` / etc. | Provider-specific            | Optional per #4164 schema            | Align optional fields when migrating         |
+**Historical field-level transforms:**
+
+| Field               | Legacy Component mapping | RHDH baseline (#4164)                | Legacy migration action                      |
+| ------------------- | ------------------------ | ------------------------------------ | -------------------------------------------- |
+| `kind`              | `Component`              | `AiResource`                         | Kind change (identity cutover)               |
+| `spec.type`         | `ai-agent`               | `agent`                              | Rename type to match agent AiResource schema |
+| `spec.lifecycle`    | May be missing           | Required                             | Ensure lifecycle is populated                |
+| `spec.owner`        | May be missing           | Required                             | Ensure owner is populated                    |
+| `spec.instructions` | Not on Component mapping | Required non-empty string            | Populate agent instructions (system prompt)  |
+| `spec.handoffs`     | N/A                      | Optional string refs to other agents | Map if present in source configuration       |
+| `spec.model` / etc. | Provider-specific        | Optional per #4164 schema            | Align optional fields when migrating         |
 
 **Notes:**
 

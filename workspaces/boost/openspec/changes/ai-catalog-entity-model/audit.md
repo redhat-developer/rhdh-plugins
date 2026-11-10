@@ -117,3 +117,13 @@ This cleanup does not select a replacement source or capability schema.
 - Preserved the analytics scenario identifiers after the deliberate removal
   of Scenario 3. Other features' category and bundle contract reconciliation
   remains follow-on work.
+
+### Agent mapping follow-up, 2026-11-10 (limited check)
+
+Confirmed `kind: AiResource`, `spec.type: agent` against the OGX agent provider
+and the shared taxonomy. Reconciled Decision 1, the proposal, SDK contract,
+migration-readiness scenario, and upstream annotation references to that settled
+mapping. The former Component migration remains explicitly historical. Future
+upstream schema alignment does not reopen the chosen RHDH kind/type. This check
+does not implement SDK changes or resolve the deferred metadata/incremental-sync
+design. The earlier full-audit findings above retain their original scope.

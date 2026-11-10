@@ -29,7 +29,7 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 > Per RHDHPLAN-1505 stakeholder meeting:
 >
-> - **RHDHPLAN-1113 dependency:** Entity kind strategy is conditional. If RHDHPLAN-1113 lands before RHIDP-15258 work begins, the SDK adopts AIResource/AIContext kinds directly — no temporary Resource/Component mapping needed. If RHIDP-15258 starts first, Resource/Component is used as interim.
+> - **RHDHPLAN-1113 dependency (reconciled 2026-11-10):** Agents use `kind: AiResource`, `spec.type: agent`. The former conditional Resource/Component fallback is retired; it does not authorize an interim agent mapping. Other category mappings follow Decision 1.
 > - **MCP resource mapping is outside this current Boost release** — broader
 >   RHDHPLAN-1510 work owns the follow-on decision and upstream due diligence.
 
@@ -43,13 +43,13 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 - `rhdh.io/ai-asset-version` annotation with documented normalization rules (semver pass-through, date-based → semver, commit hash → version string)
 - `rhdh.io/ai-asset-source` annotation for provenance tracking (`connector-name/registry-instance-id`)
 - CatalogProcessor validator rejects entities with missing/invalid annotations at ingestion time
-- Migration-readiness mapping for transforming to upstream entity kinds when available (starting from Resource/Component or AIResource per RHDHPLAN-1113 — see Stakeholder Alignment above)
+- Migration-readiness mapping for future upstream schema alignment, preserving the settled `AiResource` / `agent` mapping
 
 ### Entity Provider SDK
 
 > _RHIDP-15258 — expanded scope. Now includes annotation scheme, delta sync framework, and per-entity error isolation._
 
-- TypeScript interface contract defining: entity emission, required annotation population, entity kind/spec.type mapping (kind depends on RHDHPLAN-1113 — see Stakeholder Alignment)
+- TypeScript interface contract defining entity emission, required annotation population, and the kind/spec.type mappings in Decision 1, including `AiResource` / `agent`
 - Support for both full-refresh and incremental-sync patterns
 - Shared validation utilities rejecting entities with missing/invalid annotations
 - Published npm package (`@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`)

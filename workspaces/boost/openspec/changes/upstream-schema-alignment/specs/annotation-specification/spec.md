@@ -6,7 +6,7 @@
 
 ## Overview
 
-Formal specification of RHDH AI Asset annotations and entity kinds, with explicit mapping to upstream Backstage entity kind targets. Covers the five minimum categories and the retained `rule` compatibility value per [ai-catalog-entity-model/design.md Decision 1](../../design.md). SkillBundle/`skillcard.yaml` contracts are outside this baseline and archived. MCP servers are kind-aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); remaining categories have varying upstream readiness. Published in a location accessible to platform engineers. Actual migration is explicitly framed as future work.
+Formal specification of RHDH AI Asset annotations and entity kinds, with explicit mapping to upstream Backstage entity kind targets. Covers the five minimum categories and the retained `rule` compatibility value per [ai-catalog-entity-model/design.md Decision 1](../../../ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds). SkillBundle/`skillcard.yaml` contracts are outside this baseline and archived. MCP servers are kind-aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); remaining categories have varying upstream readiness. Published in a location accessible to platform engineers. Actual migration is explicitly framed as future work.
 
 ## ADDED Requirements
 
@@ -42,7 +42,7 @@ mapping without executing a migration.
 **WHEN** the specification document is published  
 **THEN** all `spec.type` values for AI Assets are documented:
 
-- `ai-agent` (Component kind; current mapping per Decision 1)
+- `agent` (AiResource kind; current mapping per Decision 1)
 - `skill` (AIResource kind)
 - `rule` (AIResource kind; compatibility mapping)
 - `mcp-server` (API kind)
@@ -110,7 +110,7 @@ mapping without executing a migration.
 **WHEN** the specification document is published  
 **THEN** the agent mapping documents explicit uncertainty:
 
-- **Agent:** Current `kind: Component`, `spec.type: ai-agent` → No upstream kind via RFC #32062. Confidence: Low. Track agent-kind ownership under RHDHPLAN-1113.
+- **Agent:** Current `kind: AiResource`, `spec.type: agent`. This is the settled RHDH mapping; RFC #32062 is MCP-only. Confidence: Low applies to future upstream agent-schema alignment, not to the chosen RHDH kind/type. Track upstream alignment under RHDHPLAN-1113.
 
 ---
 

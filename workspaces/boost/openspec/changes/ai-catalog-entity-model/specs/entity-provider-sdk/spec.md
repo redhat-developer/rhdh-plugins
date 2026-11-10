@@ -18,7 +18,7 @@ The minimum feature categories are `agent`, `skill`, `mcp-server`, `ai-model`, a
 
 ### Requirement: TypeScript Interface Contract
 
-The SDK MUST define TypeScript interfaces for AI asset entity providers covering entity emission, annotation population, and kind/spec.type mapping. The entity kind definitions depend on RHDHPLAN-1113: if RHDHPLAN-1113 lands before RHIDP-15258 work begins, the SDK uses AIResource/AIContext kinds directly; otherwise Resource/Component is used as interim (see design.md Stakeholder Alignment).
+The SDK MUST define TypeScript interfaces for AI asset entity providers covering entity emission, annotation population, and kind/spec.type mapping. Agent providers MUST use `kind: AiResource` and `spec.type: agent`; there is no interim `Component` / `ai-agent` alternative. Other category mappings follow [Decision 1](../../design.md#decision-1-annotation-independence-from-entity-kinds). Future upstream agent-schema alignment remains under RHDHPLAN-1113.
 
 #### Scenario: AIAssetEntityProvider interface definition (RHIDP-15259)
 

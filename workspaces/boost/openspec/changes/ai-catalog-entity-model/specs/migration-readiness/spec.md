@@ -42,10 +42,10 @@ A design document MUST map current custom annotations to upstream entity kinds w
 
 - **WHEN** the migration document maps the `agent` category
 - **THEN** the migration document specifies:
-  - **Current:** `kind: Component`, `spec.type: ai-agent`, `rhdh.io/ai-asset-category: agent` (Decision 1 / boost today; RHDHPLAN-1113 owns agent-kind strategy)
-  - **Target:** No upstream kind via RFC #32062 (MCP-only). Downstream RHDH target from [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) (merged): `kind: AiResource`, `spec.type: agent` (`AgentAiResourceEntityV1alpha1`).
-  - **Confidence:** Low
-  - **Note:** RFC #32062 does **not** define `AIAgent`. Do not attribute agent kind to RFC #32062.
+  - **Current:** `kind: AiResource`, `spec.type: agent`, `rhdh.io/ai-asset-category: agent` (Decision 1 and the current Boost provider).
+  - **RHDH baseline:** Keep `AiResource` / `agent`, using the schema from [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) (`AgentAiResourceEntityV1alpha1`). No agent kind/type migration is required for entities already using this mapping.
+  - **Upstream alignment confidence:** Low; RFC #32062 is MCP-only and does not define the agent schema.
+  - **Note:** The former `Component` / `ai-agent` mapping is historical. Do not use it for new agents or attribute the agent schema to RFC #32062.
 
 #### Scenario: Example mapping for MCP servers — kind-aligned (RHIDP-15302)
 

@@ -133,13 +133,13 @@ Each AI asset category maps to a Backstage entity kind and `spec.type` value.
 The table below reflects the **actual entity model as implemented** by
 connectors. It is based on
 [ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds)
-but documents the current connector-emitted kinds for `agent` and
-`model-server`, which have diverged from Decision 1's reference mapping
+but documents the current connector-emitted kind for
+`model-server`, which differs from Decision 1's reference mapping
 (see notes column).
 
 | Category       | Backstage Kind   | `spec.type`       | Notes                                                                                                             |
 | -------------- | ---------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `agent`        | AiResource       | `agent`           | Diverged from Decision 1 (`Component`/`ai-agent`); connectors emit `AiResource`/`agent`. Pending RHDHPLAN-1113    |
+| `agent`        | AiResource       | `agent`           | Settled RHDH mapping, matching Decision 1; future upstream agent-schema alignment remains under RHDHPLAN-1113     |
 | `skill`        | AIResource       | `skill`           | AIResource per RHDHPLAN-1113                                                                                      |
 | `rule`         | AIResource       | `rule`            | AIResource per RHDHPLAN-1113                                                                                      |
 | `mcp-server`   | API              | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable                                    |
@@ -147,8 +147,9 @@ but documents the current connector-emitted kinds for `agent` and
 | `model-server` | AiModelServerAPI | `ai-model-server` | Diverged from Decision 1 (`Resource`/`ai-model-server`); connectors emit `AiModelServerAPI`. Pending RHDHPLAN-404 |
 
 > The annotation (`rhdh.io/ai-asset-category`) is the source of truth for
-> classification, not the entity kind. Connectors MAY map differently based
-> on their domain. See Decision 1 in the design document for rationale.
+> classification, not the entity kind. Agent providers use `AiResource` /
+> `agent`; other category mappings MAY differ based on connector domain.
+> See Decision 1 in the design document for rationale.
 > Decision 1's table is a reference mapping — this table documents the
 > current reality.
 
