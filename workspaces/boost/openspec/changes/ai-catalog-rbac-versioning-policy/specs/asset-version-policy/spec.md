@@ -20,10 +20,14 @@ This change SHALL NOT implement automatic asset-to-version inheritance or preced
 - **THEN** automatic inheritance is excluded from implementation
 - **AND** each entity continues to use direct Catalog policy
 
+Before inheritance is implemented, a reviewed follow-up change must specify
+inheritance and override semantics. An integration spike against the target
+RBAC version must prove same-role and cross-role precedence for an asset-wide
+allow plus an independent version-specific deny. The follow-up must define
+safe behavior for precedence, removal, orphaned versions, migration, and
+resolver failure.
+
 #### Scenario: Entity-model prerequisite becomes available
 
 - **WHEN** RHDHPLAN-1507 supplies the required model and inheritance work resumes
-- **THEN** inheritance and override semantics are specified in a reviewed follow-up change before implementation
-- **AND** an integration spike against the target RBAC version proves same-role and cross-role precedence for an asset-wide allow plus an independent version-specific deny
-- **AND** that follow-up defines safe behavior for precedence, removal, orphaned versions, migration, and resolver failure
-- **AND** the arrival of model metadata alone does not activate inheritance
+- **THEN** the arrival of model metadata alone does not activate inheritance

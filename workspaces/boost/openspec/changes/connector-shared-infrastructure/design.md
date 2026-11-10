@@ -133,7 +133,9 @@ export function createProviderWrapper(
     async connect(connection: unknown): Promise<void> {
       try {
         await provider.connect(connection);
-      } catch (error) {
+      } catch (thrown) {
+        const error =
+          thrown instanceof Error ? thrown : new Error(String(thrown));
         logger.error('Connector connect() failed', {
           connectorId: provider.getProviderName(),
           errorType: error.constructor.name,
@@ -155,7 +157,9 @@ export function createSafeRefresh(
   return async () => {
     try {
       await refreshFn();
-    } catch (error) {
+    } catch (thrown) {
+      const error =
+        thrown instanceof Error ? thrown : new Error(String(thrown));
       logger.error('Connector refresh failed', {
         connectorId,
         errorType: error.constructor.name,

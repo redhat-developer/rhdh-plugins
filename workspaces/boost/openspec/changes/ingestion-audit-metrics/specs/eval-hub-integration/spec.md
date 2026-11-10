@@ -40,8 +40,8 @@ an independent change; RHIDP-15277 is the authoritative owner.
 ### Scenario 3: Per-skill score storage
 
 **GIVEN** the Eval Hub ingestion service fetches quality scores  
-**WHEN** a score is received for skill `skill:default/code-review`  
-**THEN** the score is stored in the DB with columns: `skill_entity_ref: 'skill:default/code-review'`, `eval_source: 'lighteval'`, `score: 0.85`, `timestamp: '2026-07-08T12:00:00Z'`  
+**WHEN** a score is received for skill `airesource:default/code-review`  
+**THEN** the score is stored in the DB with columns: `skill_entity_ref: 'airesource:default/code-review'`, `eval_source: 'lighteval'`, `score: 0.85`, `timestamp: '2026-07-08T12:00:00Z'`  
 **AND** if a score for the same skill and eval source already exists, the new score is inserted (historical scores retained)  
 **AND** the DB table supports multiple scores per skill (e.g., daily quality scores over time)
 

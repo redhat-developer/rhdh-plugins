@@ -4,7 +4,7 @@
 
 Connector fault isolation ensures one connector failure does not block other connectors or degrade non-AI catalog entities. Each entity provider runs in its own isolated bucket (Backstage built-in). Additional hardening: wrap each provider's `connect()` and scheduled refresh callback in try/catch to prevent unhandled rejections from crashing the Node.js process. Actionable error details logged per connector on failure.
 
-## EXISTING Requirements
+## ADDED Requirements
 
 ### Requirement: Provider Crash Contained to Own Bucket
 
@@ -32,7 +32,7 @@ One connector crash does not affect other connectors' entities or non-AI catalog
 - **THEN** `createProviderWrapper()` catches the error in the wrapped `connect()` try/catch
 - **AND** logs a structured error with connector ID and failure details
 - **AND** the catalog backend continues starting other providers
-- **AND** the failed connector's entity bucket remains empty (no stale entities)
+- **AND** on first startup the failed connector's entity bucket remains empty (no stale entities from this connector)
 
 ### Requirement: Structured Error Logging with Connector Context
 

@@ -28,7 +28,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 > Per RHDHPLAN-1505 stakeholder meeting (updated 2026-07-20):
 >
-> - **RHDHPLAN-1113 dependency (resolved):** RHDHPLAN-1113 is sufficiently advanced — Boost uses AIResource for skills/rules directly. No interim Resource/Component mapping needed.
+> - **RHDHPLAN-1113 dependency (resolved):** RHDHPLAN-1113 is sufficiently advanced — Boost uses AiResource for skills/rules directly. No interim Resource/Component mapping needed.
 > - **MCP → API mapping is tracked by broader RHDH 2.1 work** via RHDHPLAN-1510. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server`. This mapping is not a deliverable of the current Boost frontend/OGX release.
 > - **Entity kind strategy (reconciled 2026-11-10):** Agents use `kind: AiResource`, `spec.type: agent`. The mapping table in Decision 1 retains the skills/rules reference mapping. Model/model-server mappings remain under RHDHPLAN-404.
 
@@ -66,8 +66,8 @@ The `rhdh.io/ai-asset-category` annotation provides five minimum feature categor
 | Category       | Backstage Kind | spec.type         | Notes                                                                             |
 | -------------- | -------------- | ----------------- | --------------------------------------------------------------------------------- |
 | `agent`        | AiResource     | `agent`           | Settled RHDH agent mapping; upstream schema alignment remains under RHDHPLAN-1113 |
-| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113                                                      |
-| `rule`         | AIResource     | `rule`            | AIResource per RHDHPLAN-1113                                                      |
+| `skill`        | AiResource     | `skill`           | AiResource per RHDHPLAN-1113                                                      |
+| `rule`         | AiResource     | `rule`            | AiResource per RHDHPLAN-1113                                                      |
 | `mcp-server`   | API            | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable    |
 | `ai-model`     | Resource       | `ai-model`        | Mapping pending RHDHPLAN-404 (upstream entity schema work)                        |
 | `model-server` | Resource       | `ai-model-server` | Mapping pending RHDHPLAN-404 (upstream entity schema work)                        |
