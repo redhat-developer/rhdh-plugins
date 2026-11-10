@@ -34,6 +34,7 @@ import {
   bulkImportExternalLinkLinkStyle,
 } from '../bulkImportIcons';
 import { BulkImportRightDrawer } from '../BulkImportRightDrawer';
+import { bulkImportOpaqueElevatedSurfaceColor } from '../bulkImportSurfaces';
 import { bulkImportTypographyH5 } from '../bulkImportTypography';
 import { RepositoriesTable } from './RepositoriesTable';
 import { AddRepositoriesTableToolbar } from './RepositoriesTableToolbar';
@@ -122,7 +123,7 @@ export const AddRepositoriesDrawer = ({
           />
         </Flex>
         <Box
-          bg="neutral"
+          className="bulk-import-drawer-elevated-surface"
           style={{
             marginTop: '20px',
             border: '1px solid var(--bui-border-1)',
@@ -130,6 +131,7 @@ export const AddRepositoriesDrawer = ({
             flex: 1,
             minHeight: 0,
             overflow: 'hidden',
+            backgroundColor: bulkImportOpaqueElevatedSurfaceColor,
           }}
         >
           <AddRepositoriesTableToolbar

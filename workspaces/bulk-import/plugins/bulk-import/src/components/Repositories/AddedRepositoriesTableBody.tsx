@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import { Alert, Flex, Skeleton, Text } from '@backstage/ui';
+import { Alert, Flex, Text } from '@backstage/ui';
+
+import { Spinner } from '@patternfly/react-core';
 
 import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -51,7 +53,7 @@ export const AddedRepositoriesTableBody = ({
               justify="center"
               style={{ padding: '16px' }}
             >
-              <Skeleton width={40} height={40} />
+              <Spinner size="lg" aria-label={t('importActions.loading')} />
             </Flex>
           </td>
         </tr>

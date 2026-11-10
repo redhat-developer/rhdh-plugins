@@ -16,7 +16,9 @@
 
 import type { MouseEvent } from 'react';
 
-import { Flex, Skeleton, Text } from '@backstage/ui';
+import { Flex, Text } from '@backstage/ui';
+
+import { Spinner } from '@patternfly/react-core';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddedRepositories, AddRepositoryData } from '../../types';
@@ -67,7 +69,7 @@ export const RepositoriesTableBody = ({
               justify="center"
               style={{ padding: '16px' }}
             >
-              <Skeleton width={40} height={40} />
+              <Spinner size="lg" aria-label={t('importActions.loading')} />
             </Flex>
           </td>
         </tr>

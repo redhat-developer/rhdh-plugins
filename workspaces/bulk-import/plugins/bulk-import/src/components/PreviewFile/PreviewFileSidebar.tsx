@@ -204,6 +204,7 @@ export const PreviewFileSidebar = ({
     <BulkImportRightDrawer
       open={open}
       onClose={handleClose}
+      variant="temporary"
       testId={
         !isInitialized
           ? 'preview-pullrequest-sidebar-loading'

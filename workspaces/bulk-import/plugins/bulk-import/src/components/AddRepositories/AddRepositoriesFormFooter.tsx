@@ -21,6 +21,7 @@ import { useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
+import { bulkImportOpaqueSurfaceColor } from '../bulkImportSurfaces';
 
 export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
@@ -76,7 +77,6 @@ export const AddRepositoriesFormFooter = () => {
     <Flex
       align="center"
       gap="3"
-      bg="neutral"
       pt="4"
       pb="8"
       pl="6"
@@ -85,9 +85,10 @@ export const AddRepositoriesFormFooter = () => {
         position: 'fixed',
         bottom: 0,
         width: '100%',
-        zIndex: 1,
-        backgroundColor: 'var(--bui-bg-neutral-1)',
+        zIndex: 10,
+        backgroundColor: bulkImportOpaqueSurfaceColor,
         borderTop: '1px solid var(--bui-border-1)',
+        boxSizing: 'border-box',
       }}
     >
       {disableCreate ? (

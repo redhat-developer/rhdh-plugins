@@ -85,6 +85,82 @@ export const repositoriesTablePanelStyle: CSSProperties = {
 };
 
 /** Column width hints for the four-column add-repositories layout. */
+/** Compact BUI TablePagination: tighter row-size select and even gaps between controls. */
+export const bulkImportTablePaginationCss = `
+.bulk-import-table-pagination {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--bui-space-2, 0.5rem) var(--bui-space-6, 1.5rem)
+    var(--bui-space-3, 0.75rem);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bulk-import-table-pagination > [class*='bui-TablePagination'] {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--bui-space-4, 1rem);
+  width: auto;
+  max-width: 100%;
+  padding-top: 0;
+}
+
+.bulk-import-table-pagination [class*='bui-TablePaginationLeft'],
+.bulk-import-table-pagination [class*='bui-TablePaginationRight'] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--bui-space-3, 0.75rem);
+  flex: 0 0 auto;
+}
+
+.bulk-import-table-pagination [class*='bui-TablePaginationSelect'] {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 7.75rem;
+  max-width: 11rem;
+}
+
+.bulk-import-table-pagination
+  [class*='bui-TablePaginationSelect']
+  > [class*='bui-Select']:not([class*='Popover']) {
+  width: 100%;
+  min-width: 100%;
+  flex: 0 0 auto;
+}
+
+.bulk-import-table-pagination
+  [class*='bui-TablePaginationSelect']
+  [class*='SelectTrigger'] {
+  min-height: 2rem;
+  font-size: 0.8125rem;
+}
+
+.bulk-import-table-pagination
+  [class*='bui-TablePaginationSelect']
+  [class*='SelectValue'] {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bulk-import-table-pagination [class*='bui-TablePaginationRight'] p {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
+.bulk-import-table-pagination [class*='bui-TablePaginationRight'] [class*='ButtonIcon'] {
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+}
+`;
+
 export const repositoriesTableFixedColumnCss = `
   .bulk-import-repositories-table th:nth-child(1),
   .bulk-import-repositories-table td:nth-child(1) {

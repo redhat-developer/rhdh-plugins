@@ -17,7 +17,7 @@
 import type { MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Alert, Flex } from '@backstage/ui';
+import { Alert } from '@backstage/ui';
 
 import { useFormikContext } from 'formik';
 
@@ -335,16 +335,14 @@ export const RepositoriesTable = ({
             loginRejected={loginRejected}
           />
         </table>
-        {!isOpen && tableData?.length > 0 && (
-          <Flex justify="end">
-            <RepositoriesTablePagination
-              count={filteredData?.length || 0}
-              page={effectivePage}
-              rowsPerPage={rowsPerPage}
-              onPageChange={newPage => handleChangePage(undefined, newPage)}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </Flex>
+        {!isOpen && !loading && tableData?.length > 0 && (
+          <RepositoriesTablePagination
+            count={filteredData?.length || 0}
+            page={effectivePage}
+            rowsPerPage={rowsPerPage}
+            onPageChange={newPage => handleChangePage(undefined, newPage)}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         )}
       </div>
       {showOrganizations && activeOrganization && (

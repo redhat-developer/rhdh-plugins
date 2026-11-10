@@ -31,6 +31,7 @@ import {
   BulkImportExternalLinkIcon,
   bulkImportExternalLinkLinkStyle,
 } from '../bulkImportIcons';
+import { bulkImportOpaqueSurfaceColor } from '../bulkImportSurfaces';
 import { bulkImportTypographyH6 } from '../bulkImportTypography';
 import { PreviewPullRequest } from './PreviewPullRequest';
 import { PreviewPullRequests } from './PreviewPullRequests';
@@ -194,14 +195,13 @@ export const PreviewFileSidebarDrawerContent = ({
       <Flex
         align="center"
         gap="3"
-        bg="neutral"
         style={{
           flexShrink: 0,
           paddingTop: '20px',
           paddingBottom: '24px',
           paddingLeft: '24px',
           paddingRight: '24px',
-          backgroundColor: 'var(--bui-bg-neutral-1)',
+          backgroundColor: bulkImportOpaqueSurfaceColor,
           borderTop: '1px solid var(--bui-border-1)',
         }}
       >

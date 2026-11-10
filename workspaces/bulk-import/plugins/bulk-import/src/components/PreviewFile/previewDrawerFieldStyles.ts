@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import { bulkImportOpaqueSurfaceColor } from '../bulkImportSurfaces';
+
 /** Bumped when styles change so dev HMR picks up updates (element id is replaced). */
-const STYLE_ID = 'bulk-import-preview-drawer-field-styles-v2';
+const STYLE_ID = 'bulk-import-preview-drawer-field-styles-v5';
 
 export const PREVIEW_DRAWER_FIELD_STYLES = `
 .bulk-import-right-drawer-content {
@@ -58,7 +60,7 @@ export const PREVIEW_DRAWER_FIELD_STYLES = `
   box-sizing: border-box;
   border: 1px solid var(--bui-border-1, #c7c7c7);
   border-radius: var(--bui-radius-2, 6px);
-  background-color: var(--bui-bg-neutral-1, #fff);
+  background-color: ${bulkImportOpaqueSurfaceColor};
   min-height: 2.75rem;
   padding: 0;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -95,7 +97,7 @@ export const PREVIEW_DRAWER_FIELD_STYLES = `
   font-weight: 400;
   color: var(--bui-fg-secondary, #6a6e73);
   pointer-events: none;
-  z-index: 0;
+  z-index: 2;
   transition:
     top 0.15s ease,
     transform 0.15s ease,
@@ -112,9 +114,11 @@ export const PREVIEW_DRAWER_FIELD_STYLES = `
 .bulk-import-floating-field--shrink-label .bulk-import-floating-field__label,
 .bulk-import-floating-field:focus-within .bulk-import-floating-field__label {
   top: 0;
+  left: 0.625rem;
+  z-index: 3;
   transform: translateY(-50%) scale(0.875);
   padding: 0 0.25rem;
-  background-color: var(--bui-bg-neutral-1, #fff);
+  background-color: ${bulkImportOpaqueSurfaceColor};
 }
 
 .bulk-import-floating-field:focus-within .bulk-import-floating-field__label {
@@ -194,12 +198,14 @@ export const PREVIEW_DRAWER_FIELD_STYLES = `
 }
 
 .bulk-import-floating-field--combobox .bulk-import-floating-field__control [class*='Combobox'] {
-  z-index: 2;
+  z-index: 1;
 }
 
 .bulk-import-floating-field--combobox .bulk-import-floating-field__control [class*='ComboboxInput'] {
   background-color: transparent !important;
+  border: none !important;
   box-shadow: none !important;
+  outline: none !important;
   border-radius: 0 !important;
   width: 100%;
   height: 2.5rem;
@@ -229,16 +235,11 @@ export const PREVIEW_DRAWER_FIELD_STYLES = `
   min-height: 1.25rem;
 }
 
-.bulk-import-floating-field--combobox:has([class*='ComboboxInputIcon'])
+.bulk-import-floating-field--combobox:has([class*='ComboboxInputIcon']):not(
+    .bulk-import-floating-field--shrink-label
+  ):not(:focus-within)
   .bulk-import-floating-field__label {
   left: 2.25rem;
-}
-
-.bulk-import-floating-field--combobox:has([class*='ComboboxInputIcon']).bulk-import-floating-field--shrink-label
-  .bulk-import-floating-field__label,
-.bulk-import-floating-field--combobox:has([class*='ComboboxInputIcon']):focus-within
-  .bulk-import-floating-field__label {
-  left: 2rem;
 }
 
 .bulk-import-floating-field--combobox [class*='ComboboxInputChevron'] {
@@ -265,7 +266,7 @@ export const PREVIEW_DRAWER_FIELD_STYLES = `
 .bulk-import-preview-pr-card {
   border: 1px solid var(--bui-border-1, #c7c7c7);
   border-radius: var(--bui-radius-2, 6px);
-  background: var(--bui-bg-neutral-1, #fff);
+  background: ${bulkImportOpaqueSurfaceColor};
   overflow: hidden;
 }
 
@@ -297,6 +298,8 @@ export const PREVIEW_DRAWER_FIELD_STYLES = `
 const LEGACY_STYLE_IDS = [
   'bulk-import-preview-drawer-field-styles',
   'bulk-import-preview-drawer-field-styles-v2',
+  'bulk-import-preview-drawer-field-styles-v3',
+  'bulk-import-preview-drawer-field-styles-v4',
 ];
 
 export const injectPreviewDrawerFieldStyles = () => {

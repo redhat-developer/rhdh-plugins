@@ -25,8 +25,8 @@ const mockT = jest.fn((key: string) => key);
 jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: mockT,
-    tParams: (key: string, params: Record<string, string | number>) =>
-      mockT(key, params),
+    tParams: (key: string, _params?: Record<string, string | number>) =>
+      mockT(key),
   }),
 }));
 

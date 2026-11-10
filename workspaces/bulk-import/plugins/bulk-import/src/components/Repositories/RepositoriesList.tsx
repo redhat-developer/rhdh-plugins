@@ -17,7 +17,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { Box, Flex } from '@backstage/ui';
+import { Box } from '@backstage/ui';
 
 import { useGitlabConfigured } from '../../hooks';
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
@@ -137,16 +137,14 @@ export const RepositoriesList = () => {
               emptyRows={emptyRows}
             />
           </table>
-          {(importJobs.totalJobs || 0) > 0 && (
-            <Flex justify="end">
-              <RepositoriesTablePagination
-                count={importJobs.totalJobs || 0}
-                page={pageNumber}
-                rowsPerPage={rowsPerPage}
-                onPageChange={setPageNumber}
-                onRowsPerPageChange={setRowsPerPage}
-              />
-            </Flex>
+          {!loading && (importJobs.totalJobs || 0) > 0 && (
+            <RepositoriesTablePagination
+              count={importJobs.totalJobs || 0}
+              page={pageNumber}
+              rowsPerPage={rowsPerPage}
+              onPageChange={setPageNumber}
+              onRowsPerPageChange={setRowsPerPage}
+            />
           )}
         </div>
       </Box>

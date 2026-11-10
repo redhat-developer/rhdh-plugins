@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
+import { useEffect } from 'react';
+
 import { TablePagination } from '@backstage/ui';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { bulkImportTablePaginationCss } from './repositoriesTableShared';
+
+const STYLE_ID = 'bulk-import-table-pagination-styles-v3';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 20, 50, 100] as const;
 
@@ -33,6 +38,29 @@ const PAGE_SIZE_LABEL_KEYS: Record<
   20: 'table.pagination.rows20',
   50: 'table.pagination.rows50',
   100: 'table.pagination.rows100',
+};
+
+const LEGACY_PAGINATION_STYLE_IDS = [
+  'bulk-import-table-pagination-styles',
+  'bulk-import-table-pagination-styles-v2',
+];
+
+const injectTablePaginationStyles = () => {
+  if (typeof document === 'undefined') {
+    return;
+  }
+  for (const id of LEGACY_PAGINATION_STYLE_IDS) {
+    document.getElementById(id)?.remove();
+  }
+  const existing = document.getElementById(STYLE_ID);
+  if (existing) {
+    existing.textContent = bulkImportTablePaginationCss;
+    return;
+  }
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = bulkImportTablePaginationCss;
+  document.head.appendChild(style);
 };
 
 export const RepositoriesTablePagination = ({
@@ -55,18 +83,24 @@ export const RepositoriesTablePagination = ({
     label: t(PAGE_SIZE_LABEL_KEYS[value]),
   }));
 
+  useEffect(() => {
+    injectTablePaginationStyles();
+  }, []);
+
   return (
-    <TablePagination
-      pageSize={rowsPerPage}
-      pageSizeOptions={pageSizeOptions}
-      offset={offset}
-      totalCount={count}
-      hasNextPage={offset + rowsPerPage < count}
-      hasPreviousPage={page > 0}
-      onNextPage={() => onPageChange(page + 1)}
-      onPreviousPage={() => onPageChange(page - 1)}
-      onPageSizeChange={onRowsPerPageChange}
-      showPageSizeOptions
-    />
+    <div className="bulk-import-table-pagination">
+      <TablePagination
+        pageSize={rowsPerPage}
+        pageSizeOptions={pageSizeOptions}
+        offset={offset}
+        totalCount={count}
+        hasNextPage={offset + rowsPerPage < count}
+        hasPreviousPage={page > 0}
+        onNextPage={() => onPageChange(page + 1)}
+        onPreviousPage={() => onPageChange(page - 1)}
+        onPageSizeChange={onRowsPerPageChange}
+        showPageSizeOptions
+      />
+    </div>
   );
 };
