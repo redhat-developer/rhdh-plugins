@@ -30,11 +30,12 @@ import {
   mockRepositoriesData,
   mockSCMHostsData,
 } from './utils/apiUtils';
+import { getFullPreviewSidebarSnapshot } from './utils/ariaSnapshots';
 import {
-  getPreviewSidebarSnapshots,
-  PreviewSidebarSnapshotsType,
-} from './utils/ariaSnapshots';
-import { runAccessibilityTests, switchToLocale } from './utils/helpers';
+  runAccessibilityTests,
+  setBuiCheckbox,
+  switchToLocale,
+} from './utils/helpers';
 import { installMockBulkImportPermission } from './utils/permissionUtils';
 import {
   BulkImportMessages,
@@ -48,7 +49,6 @@ test.describe('Bulk Import', () => {
 
   let sharedPage: Page;
   let translations: BulkImportMessages;
-  let previewSidebarSnapshots: PreviewSidebarSnapshotsType;
   let context: BrowserContext;
 
   test.beforeAll(async ({ browser }) => {
@@ -118,8 +118,6 @@ test.describe('Bulk Import', () => {
     // Now switch locale AFTER catalog is loaded
     await switchToLocale(sharedPage, currentLocale);
     translations = getTranslations(currentLocale);
-    previewSidebarSnapshots = getPreviewSidebarSnapshots(translations);
-
     const bulkImportNavLabel = getBulkImportNavLabel(currentLocale);
     await expect(
       sharedPage.getByRole('link', { name: bulkImportNavLabel }),
@@ -183,31 +181,37 @@ test.describe('Bulk Import', () => {
     const fiveSelected = getSelectedRepositoriesHeading(translations, 5);
 
     await expect(selectedReposHeading).toContainText(zeroSelected);
-    await selectAllCheckbox.check();
+    await expect(selectAllCheckbox).toBeEnabled();
+    await setBuiCheckbox(sharedPage, 'select all repositories', true);
     await expect(selectAllCheckbox).toBeChecked();
     await expect(selectedReposHeading).toContainText(fiveSelected);
     const readyToImport = await sharedPage
       .getByText(translations.status.readyToImport)
       .count();
     expect(readyToImport).toEqual(5);
-    await selectAllCheckbox.uncheck();
+    await setBuiCheckbox(sharedPage, 'select all repositories', false);
     await expect(selectAllCheckbox).not.toBeChecked();
   });
 
   test('Verify preview sidebar', async ({ browser }, testInfo: TestInfo) => {
-    const backendServiceCheckbox = sharedPage
-      .getByRole('rowheader', { name: 'backend-service' })
-      .getByRole('checkbox');
+    const backendServiceCheckbox = sharedPage.getByRole('checkbox', {
+      name: 'select backend-service',
+    });
     const sidebar = sharedPage.getByTestId('preview-pullrequest-sidebar');
 
-    await backendServiceCheckbox.check();
+    await expect(backendServiceCheckbox).toBeEnabled();
+    await setBuiCheckbox(sharedPage, 'select backend-service', true);
+    await expect(backendServiceCheckbox).toBeChecked();
     await expect(
       sharedPage.getByText(translations.status.readyToImport).first(),
     ).toBeVisible();
+    await mockBulkImportByRepoResponse(sharedPage, mockImportByRepoData);
     await sharedPage.getByTestId('preview-file').first().click();
 
     // Wait for sidebar to be fully visible and loaded
     await expect(sidebar).toBeVisible();
+    const previewForm = sidebar.getByTestId('preview-pull-request-form');
+    await expect(previewForm).toBeVisible();
     await expect(sidebar.getByRole('heading', { level: 2 })).toContainText(
       'backend-service',
     );
@@ -216,45 +220,24 @@ test.describe('Bulk Import', () => {
       - button "${translations.common.cancel}"
       `);
 
-    // Validate each section individually for better readability
-    await expect(sidebar).toMatchAriaSnapshot(
-      previewSidebarSnapshots.pullRequestDetails,
-    );
-    await expect(sidebar).toMatchAriaSnapshot(
-      previewSidebarSnapshots.entityConfigHeader,
-    );
-    await expect(sidebar).toMatchAriaSnapshot(
-      previewSidebarSnapshots.entityOwner,
-    );
-    await expect(sidebar).toMatchAriaSnapshot(
-      previewSidebarSnapshots.codeownersOption,
-    );
-    await expect(sidebar).toMatchAriaSnapshot(
-      previewSidebarSnapshots.annotations,
-    );
-    await expect(sidebar).toMatchAriaSnapshot(previewSidebarSnapshots.labels);
-    await expect(sidebar).toMatchAriaSnapshot(previewSidebarSnapshots.spec);
-    await expect(sidebar).toMatchAriaSnapshot(
-      previewSidebarSnapshots.previewPullRequest,
-    );
-    await expect(sidebar).toMatchAriaSnapshot(
-      previewSidebarSnapshots.previewEntities,
+    await expect(previewForm).toMatchAriaSnapshot(
+      getFullPreviewSidebarSnapshot(translations, testInfo.project.name),
     );
 
     await runAccessibilityTests(sharedPage, testInfo);
 
-    await sharedPage
+    await sidebar
       .getByRole('button', { name: translations.common.cancel })
       .click();
   });
 
   test('Verify Import flow', async ({}, testInfo) => {
-    const backendServiceCheckbox = sharedPage
-      .getByRole('rowheader', { name: 'backend-service' })
-      .getByRole('checkbox');
-    const frontendAppCheckbox = sharedPage
-      .getByRole('rowheader', { name: 'frontend-app' })
-      .getByRole('checkbox');
+    const backendServiceCheckbox = sharedPage.getByRole('checkbox', {
+      name: 'select backend-service',
+    });
+    const frontendAppCheckbox = sharedPage.getByRole('checkbox', {
+      name: 'select frontend-app',
+    });
     const addRepoFooter = sharedPage.getByTestId('add-repository-footer');
 
     await mockBulkImportDryRunResponse(sharedPage, mockImportsDryRunData);
@@ -264,8 +247,12 @@ test.describe('Bulk Import', () => {
       sharedPage,
       mockImportByRepoFrontendData,
     );
-    await backendServiceCheckbox.check();
-    await frontendAppCheckbox.check();
+    await expect(backendServiceCheckbox).toBeEnabled();
+    await setBuiCheckbox(sharedPage, 'select backend-service', true);
+    await expect(backendServiceCheckbox).toBeChecked();
+    await expect(frontendAppCheckbox).toBeEnabled();
+    await setBuiCheckbox(sharedPage, 'select frontend-app', true);
+    await expect(frontendAppCheckbox).toBeChecked();
     await expect(addRepoFooter).toMatchAriaSnapshot(`
       - button "${translations.common.import}"
       - link "${translations.common.cancel}":
@@ -290,7 +277,9 @@ test.describe('Bulk Import', () => {
 
   test('test rows dropdown', async () => {
     await sharedPage
-      .getByRole('combobox', { name: translations.table.pagination.rows5 })
+      .getByRole('button', {
+        name: `${translations.table.pagination.rows5} Select table page size`,
+      })
       .click();
     await expect(sharedPage.getByRole('listbox')).toMatchAriaSnapshot(`
       - listbox:

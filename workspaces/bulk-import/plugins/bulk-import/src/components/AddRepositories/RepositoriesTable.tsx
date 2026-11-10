@@ -149,7 +149,10 @@ export const RepositoriesTable = ({
     return filteredData?.slice(startIndex, startIndex + rowsPerPage) || [];
   }, [filteredData, effectivePage, rowsPerPage]);
 
-  const handleClickAllForRepositoriesTable = (drawer?: boolean) => {
+  const handleClickAllForRepositoriesTable = (
+    drawer?: boolean,
+    targetSelected?: boolean,
+  ) => {
     let newSelectedRows: AddedRepositories = { ...selected };
 
     const rowsEligibleForSelection = paginatedData.filter(
@@ -158,11 +161,11 @@ export const RepositoriesTable = ({
     const isAllSelected = rowsEligibleForSelection.every(
       row => selected[row.id],
     );
+    const selectAll =
+      targetSelected !== undefined ? targetSelected : !isAllSelected;
 
     rowsEligibleForSelection.forEach(row => {
-      if (isAllSelected) {
-        delete newSelectedRows[row.id];
-      } else {
+      if (selectAll) {
         if (!drawer) {
           setFieldValue(
             `repositories.${row.repoName}.catalogInfoYaml.status`,
@@ -170,6 +173,8 @@ export const RepositoriesTable = ({
           );
         }
         newSelectedRows = { ...newSelectedRows, [row.id]: row };
+      } else {
+        delete newSelectedRows[row.id];
       }
     });
 
@@ -180,11 +185,11 @@ export const RepositoriesTable = ({
       updateSelectedRepositories(newSelectedRows);
     }
   };
-  const handleSelectAllClick = () => {
+  const handleSelectAllClick = (isSelected?: boolean) => {
     if (drawerOrganization) {
-      handleClickAllForRepositoriesTable(true);
+      handleClickAllForRepositoriesTable(true, isSelected);
     } else {
-      handleClickAllForRepositoriesTable();
+      handleClickAllForRepositoriesTable(false, isSelected);
     }
   };
 

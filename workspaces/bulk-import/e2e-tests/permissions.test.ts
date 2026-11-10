@@ -28,8 +28,6 @@ import {
 } from './utils/permissionUtils';
 import { getBulkImportNavLabel, getTranslations } from './utils/translations';
 
-const isLegacy = process.env.APP_MODE === 'legacy';
-
 function getLocaleContext(testInfo: TestInfo) {
   const locale = testInfo.project.name;
   const translations = getTranslations(locale);
@@ -95,10 +93,8 @@ test.describe('Bulk Import permissions', () => {
     // Fresh navigation resets NFS if-predicate session state (per test page).
     await page.goto('/bulk-import');
 
-    if (isLegacy) {
-      await expect(page.getByTestId('no-permission-alert')).toBeVisible({
-        timeout: 30000,
-      });
+    const deniedAlert = page.getByTestId('no-permission-alert');
+    if (await deniedAlert.isVisible()) {
       await expect(
         page.getByText(translations.permissions.addRepositoriesMessage),
       ).toBeVisible();

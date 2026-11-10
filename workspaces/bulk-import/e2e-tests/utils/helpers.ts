@@ -15,7 +15,60 @@
  */
 
 import AxeBuilder from '@axe-core/playwright';
-import { expect, Page, TestInfo } from '@playwright/test';
+import { expect, Locator, Page, TestInfo } from '@playwright/test';
+
+/**
+ * Backstage UI Checkbox renders a native input covered by a label/indicator.
+ * Playwright must click the pressable label, not the hidden input.
+ */
+export function buiCheckboxLabel(page: Page, name: string | RegExp): Locator {
+  return page
+    .locator('label')
+    .filter({ has: page.getByRole('checkbox', { name }) });
+}
+
+export function buiCheckboxLabelWithin(container: Locator): Locator {
+  return container.locator('label').filter({
+    has: container.getByRole('checkbox'),
+  });
+}
+
+async function toggleBuiCheckbox(
+  input: Locator,
+  label: Locator,
+): Promise<void> {
+  if ((await label.count()) > 0) {
+    await label.first().click();
+    return;
+  }
+  await input.click({ force: true });
+}
+
+export async function setBuiCheckbox(
+  page: Page,
+  name: string | RegExp,
+  checked: boolean,
+): Promise<void> {
+  const input = page.getByRole('checkbox', { name });
+  const isChecked = await input.isChecked();
+  if (isChecked !== checked) {
+    await toggleBuiCheckbox(input, buiCheckboxLabel(page, name));
+  }
+}
+
+export async function setBuiCheckboxWithin(
+  container: Locator,
+  checked: boolean,
+): Promise<void> {
+  const input = container.getByRole('checkbox');
+  const isChecked = await input.isChecked();
+  if (isChecked !== checked) {
+    await toggleBuiCheckbox(
+      input,
+      container.locator('label').filter({ has: input }),
+    );
+  }
+}
 
 /**
  * Mapping of locale codes to their native display names

@@ -46,7 +46,7 @@ export const RepositoriesHeader = ({
   showImportJobs?: boolean;
   isRepoSelectDrawer?: boolean;
   isApprovalToolGitlab?: boolean;
-  onSelectAllClick?: () => void;
+  onSelectAllClick?: (isSelected: boolean) => void;
 }) => {
   const { t } = useTranslation();
 

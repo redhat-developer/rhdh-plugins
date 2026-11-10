@@ -144,7 +144,11 @@ export const RepositoryTableRow = ({
             aria-label={`select ${data.repoName}`}
             isSelected={isChecked}
             isDisabled={isCheckboxDisabled}
-            onChange={() => handleClick({} as MouseEvent, data)}
+            onChange={isSelected => {
+              if (isSelected !== isChecked) {
+                handleClick({} as MouseEvent, data);
+              }
+            }}
           />
           <span style={{ lineHeight: '1.5rem' }}>{data.repoName}</span>
         </Flex>

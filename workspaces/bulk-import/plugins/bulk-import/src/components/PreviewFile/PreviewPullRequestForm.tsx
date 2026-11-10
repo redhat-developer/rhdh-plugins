@@ -329,7 +329,7 @@ export const PreviewPullRequestForm = ({
   });
 
   return (
-    <>
+    <Box data-testid="preview-pull-request-form">
       <Box style={{ marginTop: '16px' }}>
         <Text as="h3" style={bulkImportTypographyPreviewSection}>
           {tParams('previewFile.pullRequest.details', {
@@ -512,6 +512,6 @@ export const PreviewPullRequestForm = ({
         entities={[formik.values?.yaml]}
         repositoryUrl={repoUrl}
       />
-    </>
+    </Box>
   );
 };
