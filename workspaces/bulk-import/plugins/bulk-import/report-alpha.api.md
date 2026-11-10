@@ -168,6 +168,7 @@ export const bulkImportTranslationRef: TranslationRef<
     readonly 'previewFile.pullRequest.entityOwnerHelper': string;
     readonly 'previewFile.pullRequest.loadingText': string;
     readonly 'previewFile.pullRequest.previewEntities': string;
+    readonly 'previewFile.pullRequest.previewCardSubheader': string;
     readonly 'previewFile.pullRequest.annotations': string;
     readonly 'previewFile.pullRequest.labels': string;
     readonly 'previewFile.pullRequest.spec': string;

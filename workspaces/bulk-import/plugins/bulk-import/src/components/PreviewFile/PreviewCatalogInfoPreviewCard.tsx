@@ -47,7 +47,10 @@ export const PreviewCatalogInfoPreviewCard = ({
   return (
     <Card className={className}>
       <CardHeader>
-        <Text as="code" style={bulkImportTypographyH6}>
+        <Text
+          as="span"
+          style={{ ...bulkImportTypographyH6, fontFamily: 'monospace' }}
+        >
           {headerPath}
         </Text>
       </CardHeader>
