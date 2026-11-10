@@ -20,6 +20,7 @@ import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
 import type { RendererProps } from '@backstage/plugin-home-react';
 
 import type { TopPluginsCardProps } from '../homepage/topPlugins/TopPluginsCard';
+import { adoptionInsightsAccess } from '../permissions/adoptionInsightsAccess';
 
 const defaultCardLayout = {
   width: {
@@ -60,6 +61,9 @@ function lazyTopPluginsWidget(
  *
  * Widget name: `top-plugins-card`
  *
+ * Gated by `adoption-insights.events.read` so denied users neither see the
+ * card on the homepage nor as an option in the Add Widget catalog.
+ *
  * Settings (editable homepage) / layout props:
  * - `mode`: `auto` | `hybrid` | `curated` (default `auto`)
  * - `displayCount`: number of rows (default `3`)
@@ -70,6 +74,8 @@ function lazyTopPluginsWidget(
 export const topPluginsCardWidget = HomePageWidgetBlueprint.make({
   name: 'top-plugins-card',
   attachTo: { id: 'page:homepage', input: 'widgets' },
+  // Hide from homepage grid + Add Widget catalog without events.read.
+  if: adoptionInsightsAccess,
   params: {
     name: 'TopPluginsCard',
     title: 'Top Plugins',

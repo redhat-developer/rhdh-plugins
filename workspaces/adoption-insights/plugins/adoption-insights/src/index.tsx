@@ -31,19 +31,13 @@ import {
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import MUIAdoptionInsightsIcon from '@mui/icons-material/QueryStatsOutlined';
 
-import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
 import { SidebarItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { rootRouteRef } from './routes';
 import { AdoptionInsightsApiClient, adoptionInsightsApiRef } from './api';
 import { adoptionInsightsTranslations } from './translations';
 import { topPluginsCardWidget } from './extensions/homePageCards';
-
-const adoptionInsightsAccess = {
-  permissions: {
-    $contains: `${adoptionInsightsEventsReadPermission.name}#read`,
-  },
-};
+import { adoptionInsightsAccess } from './permissions/adoptionInsightsAccess';
 
 const adoptionInsightsPage = PageBlueprint.make({
   if: adoptionInsightsAccess,
