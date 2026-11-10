@@ -40,6 +40,7 @@ import {
 } from '../helpers/queryBuilder';
 import { Pagination } from '../types/pagination';
 import { FETCH_PROCESS_INSTANCES_SORT_FIELD } from './constants';
+import type { WorkflowRunStatsInstance } from './Helper';
 
 export class DataIndexService {
   private readonly client: Client;
@@ -59,6 +60,7 @@ export class DataIndexService {
 
   private getNewGraphQLClient(): Client {
     const diURL = `${this.dataIndexUrl}/graphql`;
+
     return new Client({
       url: diURL,
       exchanges: [fetchExchange],
@@ -279,14 +281,11 @@ export class DataIndexService {
     return this.filterDeletedWorkflows(result.data.ProcessDefinitions);
   }
 
-  public async fetchInstances(args: {
+  private async buildProcessInstancesWhereClause(args: {
     definitionIds?: string[];
-    pagination?: Pagination;
     filter?: Filter;
-  }): Promise<ProcessInstance[]> {
-    const { pagination, definitionIds, filter } = args;
-    if (pagination) pagination.sortField ??= FETCH_PROCESS_INSTANCES_SORT_FIELD;
-
+  }) {
+    const { definitionIds, filter } = args;
     const processIdNotNullCondition = 'processId: {isNull: false}';
     const definitionIdsCondition =
       definitionIds && definitionIds.length > 0
@@ -294,10 +293,8 @@ export class DataIndexService {
         : undefined;
     const type = 'ProcessInstance';
 
-    // For nested filters, there might be more than one filter for the same field
-    // so we need to group them by the field and then combine the nested filters into an array
+    // Group nested filters by field to combine repeated fields correctly.
     const processedFilters = filter ? groupNestedFilters(filter) : undefined;
-
     const filterCondition = processedFilters
       ? buildFilterCondition(
           await this.inspectInputArgument(type),
@@ -306,38 +303,45 @@ export class DataIndexService {
         )
       : undefined;
 
-    let whereClause = '';
-    const conditions = [];
-
-    if (processIdNotNullCondition) {
-      conditions.push(`{${processIdNotNullCondition}}`);
-    }
+    const conditions = [`{${processIdNotNullCondition}}`];
 
     if (definitionIdsCondition) {
       conditions.push(`{${definitionIdsCondition}}`);
     }
 
     if (filterCondition) {
-      conditions.push(`{${filterCondition?.clause}}`);
+      conditions.push(`{${filterCondition.clause}}`);
     }
 
-    if (conditions.length === 0) {
-      whereClause = processIdNotNullCondition;
-    } else if (conditions.length === 1) {
-      whereClause = conditions[0].slice(1, -1); // Remove the outer braces
-    } else if (conditions.length > 1) {
+    let whereClause: string;
+    if (conditions.length === 1) {
+      whereClause = conditions[0].slice(1, -1);
+    } else {
       whereClause = `and: [${conditions.join(', ')}]`;
     }
+
+    return { whereClause, filterCondition };
+  }
+
+  public async fetchInstances(args: {
+    definitionIds?: string[];
+    pagination?: Pagination;
+    filter?: Filter;
+  }): Promise<ProcessInstance[]> {
+    const { pagination } = args;
+    if (pagination) pagination.sortField ??= FETCH_PROCESS_INSTANCES_SORT_FIELD;
+
+    const { whereClause, filterCondition } =
+      await this.buildProcessInstancesWhereClause(args);
 
     const graphQlQuery = buildGraphQlQuery({
       type: 'ProcessInstances',
       queryBody:
-        'id, version, processName, processId, state, start, end, nodes { id }, variables, executionSummary, parentProcessInstance {id, processName, businessKey}',
+        'id, version, processName, processId, state, start, end, nodes { id }, variables, executionSummary',
       whereClause,
       pagination,
-      filterCondition: filterCondition,
+      filterCondition,
     });
-
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
 
     const paramVariables = buildQueryParamVariable(pagination, filterCondition);
@@ -355,12 +359,146 @@ export class DataIndexService {
 
     const processInstancesSrc = result.data ? result.data.ProcessInstances : [];
 
-    const processInstances = await Promise.all(
-      processInstancesSrc.map(async instance => {
-        return await this.getWorkflowDefinitionFromInstance(instance);
-      }),
+    // Resolve metadata once per distinct process ID in this batch and reuse it
+    // for matching rows, preserving description enrichment and source validation.
+    const workflowInfoByProcessId = new Map<string, WorkflowInfo | undefined>();
+    await Promise.all(
+      [...new Set(processInstancesSrc.map(instance => instance.processId))].map(
+        async processId => {
+          workflowInfoByProcessId.set(
+            processId,
+            await this.fetchWorkflowInfo(processId),
+          );
+        },
+      ),
     );
-    return processInstances;
+
+    return processInstancesSrc.map(instance =>
+      this.getWorkflowDefinitionFromInstance(
+        instance,
+        workflowInfoByProcessId.get(instance.processId),
+      ),
+    );
+  }
+
+  public async fetchInstanceInitiators(args: {
+    definitionIds?: string[];
+    pagination?: Pagination;
+    filter?: Filter;
+  }): Promise<string[]> {
+    const { whereClause, filterCondition } =
+      await this.buildProcessInstancesWhereClause(args);
+
+    const graphQlQuery = buildGraphQlQuery({
+      type: 'ProcessInstances',
+      queryBody: 'variables',
+      whereClause,
+      pagination: args.pagination,
+      filterCondition,
+    });
+    this.logger.debug(`GraphQL instance initiator query: ${graphQlQuery}`);
+
+    const paramVariables = buildQueryParamVariable(
+      args.pagination,
+      filterCondition,
+    );
+    this.logger.debug(
+      'GraphQL instance initiator query params:',
+      paramVariables,
+    );
+
+    const result = await this.client.query<{
+      ProcessInstances: Array<{ variables?: ProcessInstance['variables'] }>;
+    }>(graphQlQuery, paramVariables);
+
+    this.handleGraphqlClientError(
+      'Error when fetching instance initiators',
+      result,
+    );
+
+    const initiators = new Set<string>();
+    (result.data?.ProcessInstances ?? []).forEach(instance => {
+      const variables = parseWorkflowVariables(instance.variables as object) as
+        { initiatorEntity?: unknown } | undefined;
+      if (
+        typeof variables?.initiatorEntity === 'string' &&
+        variables.initiatorEntity
+      ) {
+        initiators.add(variables.initiatorEntity);
+      }
+    });
+
+    return [...initiators];
+  }
+
+  public async fetchStatsInstances(args: {
+    definitionIds?: string[];
+    filter?: Filter;
+  }): Promise<WorkflowRunStatsInstance[]> {
+    const { whereClause, filterCondition } =
+      await this.buildProcessInstancesWhereClause(args);
+
+    const graphQlQuery = buildGraphQlQuery({
+      type: 'ProcessInstances',
+      queryBody: 'processId, version, state, start, end',
+      whereClause,
+      filterCondition,
+    });
+    this.logger.debug(`GraphQL workflow run stats query: ${graphQlQuery}`);
+
+    const paramVariables = buildQueryParamVariable(undefined, filterCondition);
+    this.logger.debug(
+      'GraphQL workflow run stats query params:',
+      paramVariables,
+    );
+
+    const result = await this.client.query<{
+      ProcessInstances: WorkflowRunStatsInstance[];
+    }>(graphQlQuery, paramVariables);
+
+    this.handleGraphqlClientError(
+      'Error when fetching workflow run stats instances',
+      result,
+    );
+
+    return result.data?.ProcessInstances ?? [];
+  }
+
+  public async countInstances(args: {
+    definitionIds?: string[];
+    filter?: Filter;
+  }): Promise<number> {
+    const { whereClause, filterCondition } =
+      await this.buildProcessInstancesWhereClause(args);
+    const filterVariables = filterCondition?.clauseVariable ?? [];
+    const variableDefinitions = filterVariables
+      .map(
+        variable =>
+          `$${variable.clauseVariableName}: ${variable.clauseVariableType}`,
+      )
+      .join(', ');
+    const queryHeader = variableDefinitions
+      ? `query (${variableDefinitions})`
+      : 'query';
+    const graphQlQuery = `${queryHeader} { CountProcessInstances(where: {${whereClause}}) }`;
+    const paramVariables: Record<string, string | boolean | string[]> = {};
+    filterVariables.forEach(variable => {
+      paramVariables[variable.clauseVariableName] = variable.formattedValue;
+    });
+
+    this.logger.debug(`GraphQL count query: ${graphQlQuery}`);
+    this.logger.debug(`GraphQL count query params:`, paramVariables);
+
+    const result = await this.client.query<{
+      CountProcessInstances: number;
+    }>(graphQlQuery, paramVariables);
+    this.logger.debug(
+      `Count process instances result: ${JSON.stringify(result)}`,
+    );
+
+    this.handleGraphqlClientError('Error when counting instances', result);
+
+    return result.data?.CountProcessInstances ?? 0;
   }
 
   public async fetchDefinitionIdsFromInstances(args: {
@@ -429,8 +567,10 @@ export class DataIndexService {
     return distinctProcessIds;
   }
 
-  private async getWorkflowDefinitionFromInstance(instance: ProcessInstance) {
-    const workflowInfo = await this.fetchWorkflowInfo(instance.processId);
+  private getWorkflowDefinitionFromInstance(
+    instance: ProcessInstance,
+    workflowInfo: WorkflowInfo | undefined,
+  ): ProcessInstance {
     if (!workflowInfo?.source) {
       throw new Error(
         `Workflow defintion is required to fetch instance ${instance.id}`,
@@ -512,7 +652,6 @@ export class DataIndexService {
             offset: args.offset,
           },
     );
-
     this.logger.debug(
       `Fetch workflow instances result: ${JSON.stringify(result)}`,
     );
@@ -523,6 +662,76 @@ export class DataIndexService {
     );
 
     return result.data.ProcessInstances;
+  }
+
+  public async fetchLatestInstancesByDefinitionIds(args: {
+    definitionIds: string[];
+    targetEntity?: string;
+  }): Promise<Map<string, ProcessInstance | undefined>> {
+    const definitionIds = [...new Set(args.definitionIds)];
+    const latestInstances = new Map<string, ProcessInstance | undefined>(
+      definitionIds.map(definitionId => [definitionId, undefined]),
+    );
+
+    if (definitionIds.length === 0) {
+      return latestInstances;
+    }
+
+    const definitionIdVariables = definitionIds.map(
+      (_definitionId, index) => `$definitionId${index}: String!`,
+    );
+    const variableDefinitions = args.targetEntity
+      ? [...definitionIdVariables, '$targetEntity: String']
+      : definitionIdVariables;
+    const targetEntityCondition = args.targetEntity
+      ? ', variables: {targetEntity: {equal: $targetEntity}}'
+      : '';
+    // Keep the limit scoped to each workflow; a shared limited list could be
+    // filled by one workflow's history and omit another workflow's latest run.
+    const latestInstanceSelections = definitionIds
+      .map(
+        (_definitionId, index) => `
+          latest${index}: ProcessInstances(
+            where: {processId: {equal: $definitionId${index}}${targetEntityCondition}},
+            orderBy: {start: DESC},
+            pagination: {limit: 1, offset: 0}
+          ) { id version processName processId state start end }
+        `,
+      )
+      .join('\n');
+    const graphQlQuery = `query FetchLatestWorkflowInstances(${variableDefinitions.join(', ')}) {
+      ${latestInstanceSelections}
+    }`;
+    const paramVariables: Record<string, string> = {};
+    definitionIds.forEach((definitionId, index) => {
+      paramVariables[`definitionId${index}`] = definitionId;
+    });
+    if (args.targetEntity) {
+      paramVariables.targetEntity = args.targetEntity;
+    }
+
+    this.logger.debug(
+      `GraphQL latest workflow instances query: ${graphQlQuery}`,
+    );
+    this.logger.debug(
+      'GraphQL latest workflow instances query params:',
+      paramVariables,
+    );
+
+    const result = await this.client.query<Record<string, ProcessInstance[]>>(
+      graphQlQuery,
+      paramVariables,
+    );
+    this.handleGraphqlClientError(
+      'Error when fetching latest workflow instances',
+      result,
+    );
+
+    definitionIds.forEach((definitionId, index) => {
+      latestInstances.set(definitionId, result.data?.[`latest${index}`]?.[0]);
+    });
+
+    return latestInstances;
   }
 
   public async fetchInstanceVariables(

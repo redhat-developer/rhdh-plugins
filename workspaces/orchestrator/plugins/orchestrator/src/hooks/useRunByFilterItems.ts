@@ -49,14 +49,14 @@ const getInitiatorLabel = (entityRef: string, entity?: Entity): string => {
 };
 
 export const collectDistinctInitiatorEntities = (
-  instances: Array<{ initiatorEntity?: string }>,
+  initiatorEntities: string[],
   additionalInitiators: string[] = [],
 ): string[] => {
   const initiators = new Set<string>();
 
-  instances.forEach(instance => {
-    if (instance.initiatorEntity) {
-      initiators.add(instance.initiatorEntity);
+  initiatorEntities.forEach(initiator => {
+    if (initiator) {
+      initiators.add(initiator);
     }
   });
 
@@ -106,14 +106,14 @@ export const useRunByFilterItems = (options: {
     };
 
     orchestratorApi
-      .listInstances(paginationInfo, options.filters)
+      .listInstanceInitiators(paginationInfo, options.filters)
       .then(async response => {
         if (cancelled) {
           return;
         }
 
         const refs = collectDistinctInitiatorEntities(
-          response.data.items ?? [],
+          response.data ?? [],
           additionalInitiators,
         );
 
