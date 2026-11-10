@@ -10,7 +10,7 @@
 
 - [x] 1.1 Record the PM decision supplied by John Collier on 2026-09-15: defer inheritance until RHDHPLAN-1507 supplies stable cross-version identity, multi-version representation, and relationships; use direct per-entity policy now and review inheritance in a separate follow-up.
 - [x] 1.2 Record the PM decision supplied on 2026-09-15: whole-entity `catalog.entity.read` is sufficient, graduated visibility is excluded from v1, and permissions are managed through the existing Backstage/RHDH RBAC UI.
-- [ ] 1.3 Before bundle-serving work, obtain the remaining RHDHPLAN-1507/Skills contract for bundle-definition ownership, serving API, and bundle-level authorization. Build on its existing `SkillBundle`/`INCLUDES` model and canonical skill identifiers. If unavailable for v1, defer tasks 2.9–2.11 and bundle promotion; direct Catalog authorization remains independently deliverable.
+- [ ] 1.3 Before considering bundle-serving work, obtain an approved RHDHPLAN-1507/Skills contract for bundle-definition ownership, representation, serving API, canonical member identity, and bundle-level authorization. Do not assume the archived Neo4j proposal's `SkillBundle`/`INCLUDES` model is approved. Until the contract exists, tasks 2.9–2.11 and bundle-spec promotion remain deferred; direct Catalog authorization is independently deliverable.
 - [ ] 1.4 Update RHDHPLAN-1508 or its linked implementation work with the resolved permission names, retained requirements, and explicitly deferred branches before implementation starts.
 
 ## 2. Establish the permission and entity-authorization baseline
@@ -23,9 +23,9 @@
 - [ ] 2.6 Document conditional-policy examples using exact category, source, namespace, label, and owner values emitted by supported providers.
 - [ ] 2.7 Add multi-team tests proving different authorized views over one ingested entity set without re-ingestion.
 - [ ] 2.8 Verify API and UI consumers allow entity readers to access available usage, configuration, and connection details without a second usage-detail grant; remove stale detail gates if present and test the authorized-reader and denied-entity paths.
-- [ ] 2.9 If task 1.3 confirms bundle serving for v1, implement backend resolution and `catalog.entity.read` checks for canonical members before serialization, with the bundle's own authorization taken from that contract.
-- [ ] 2.10 If bundle serving proceeds, add automated tests for mixed-access and zero-visible-member responses, missing or unresolvable member identities, and omission of unauthorized member identifiers, names, counts, and metadata.
-- [ ] 2.11 If bundle serving proceeds, render only returned members and document per-viewer bundle contents; verify partial-visibility and empty-state behavior against the approved serving contract.
+- [ ] 2.9 ~~Implement backend resolution and `catalog.entity.read` checks for canonical members before serialization, with the bundle's own authorization taken from the approved contract.~~ **DEFERRED — requires task 1.3 contract and explicit scope approval**
+- [ ] 2.10 ~~Test mixed-access and zero-visible-member responses, missing or unresolvable member identities, and omission of unauthorized member identifiers, names, counts, and metadata.~~ **DEFERRED — requires task 1.3 contract and explicit scope approval**
+- [ ] 2.11 ~~Render only returned members and document per-viewer bundle contents; verify partial-visibility and empty-state behavior against the approved serving contract.~~ **DEFERRED — requires task 1.3 contract and explicit scope approval**
 
 ## 3. Complete the required audit integration
 
@@ -48,4 +48,4 @@
 
 - [ ] 5.1 Promote `catalog-entity-visibility`, `conditional-asset-access`, `ai-catalog-management-permission`, and `ai-catalog-audit-events` after acceptance.
 - [ ] 5.2 Promote `asset-version-policy` with direct per-entity behavior and the explicit inheritance deferral; do not promote a protected-detail capability or inheritance implementation requirements.
-- [ ] 5.3 Promote `skill-bundle-authorization` only after the owning architecture contract is confirmed.
+- [ ] 5.3 ~~Promote `skill-bundle-authorization`~~ **DEFERRED — only after the owning architecture contract is approved and bundle serving is explicitly in scope**

@@ -1,7 +1,7 @@
 ## Canonical Touchpoints
 
 - No PRD or ADR files currently exist in this repository.
-- On completion, the six change-local capability specs will be promoted to the matching paths under `openspec/specs/` listed in the proposal. Bundle serving remains subject to its owning architecture contract; the version-policy spec records direct policy and the inheritance deferral only.
+- On acceptance, the five active capability specs will be promoted to the matching paths under `openspec/specs/` listed in the proposal. The sixth draft, `skill-bundle-authorization`, remains deferred and must not be implemented or promoted until its owning architecture contract and explicit scope approval exist. The version-policy spec records direct policy and the inheritance deferral only.
 
 ## Context
 
@@ -74,11 +74,11 @@ Registered permissions and conditions appear through existing RBAC administratio
 
 RHDHPLAN-1508 separately requires provider synchronization events. The owning provider or ingestion feature emits those non-RBAC events through the same RHDH audit channel, while this change verifies the combined Audit Log outcome.
 
-### D8 — Bundle members are authorized by canonical Catalog identity
+### D8 — Future bundle members are authorized by canonical Catalog identity
 
-Each skill member is authorized with `catalog.entity.read` against its canonical Catalog entity regardless of whether bundle composition is represented in Catalog or returned as nested Neo4j/API data. Neo4j remains a derived index, not an authorization authority. A backend returning nested members resolves their canonical entity identifiers, filters unauthorized members before serialization, and does not expose hidden identifiers or counts. The frontend never reconstructs omitted members.
+If a future approved bundle-serving contract is introduced, each skill member must be authorized with `catalog.entity.read` against its canonical Catalog entity, regardless of whether bundle composition is represented in Catalog or returned as nested API data. Any derived graph remains an index, not an authorization authority. A backend returning nested members resolves their canonical entity identifiers, filters unauthorized members before serialization, and does not expose hidden identifiers or counts. The frontend never reconstructs omitted members.
 
-RHDHPLAN-1507 already specifies Neo4j `SkillBundle` nodes, `INCLUDES` relationships, and canonical skill identifiers. The remaining RHDHPLAN-1507/Skills architecture dependency is to reconcile ownership of bundle definitions with Neo4j's derived-index role and define the complete serving API and bundle-level authorization target. Resolving that dependency does not reopen member authorization or graduated visibility. Conditional implementation and mixed-access tests are tracked in tasks 2.9–2.11; that serving work does not block the direct Catalog baseline.
+The archived Neo4j proposal is not an approved/current contract for `SkillBundle` nodes, `INCLUDES` relationships, or canonical bundle-member identifiers. A future RHDHPLAN-1507/Skills architecture must establish bundle-definition ownership, any representation and serving API, and the bundle-level authorization target before this deferred requirement or tasks 2.9–2.11 can be activated. This work is outside the current five-category baseline and does not block direct Catalog authorization.
 
 ## Risks / Trade-offs
 
@@ -98,7 +98,7 @@ Baseline v1 reuses existing Catalog and RBAC behavior and requires no bespoke mi
 1. **D1/D2 — Resolved by PM, 2026-09-15:** Whole-entity `catalog.entity.read` is sufficient. Graduated visibility and a protected-detail permission are excluded from v1.
 2. **D4 — Resolved by PM, 2026-09-15:** Use existing RBAC configuration, administration permissions, conditional policies, and UI. No dedicated AI Catalog permission-management workflow is required.
 3. **D6 — Deferral accepted by PM, 2026-09-15:** Use direct per-entity policy now. Inheritance and override precedence await the RHDHPLAN-1507 model and a separate reviewed follow-up.
-4. **D8 — Resolved for members; serving dependency remains:** Authorize canonical skill entities with `catalog.entity.read`. Complete bundle ownership, serving, and bundle-level authorization through RHDHPLAN-1507/Skills architecture before implementing the conditional serving tasks.
+4. **D8 — Deferred:** The canonical-member authorization rule applies only if a future bundle-serving contract is approved. The archived Neo4j proposal is not an accepted representation contract; keep bundle requirements unpromoted until RHDHPLAN-1507/Skills architecture defines ownership, representation, serving, and bundle-level authorization.
 5. **D5 — Resolved:** Define global `ai-catalog.manage`; retain deprecated `ai-catalog.admin` compatibility for one release. Neither grants entity visibility or replaces RBAC policy-management permissions.
 6. **D7 — Resolved:** Reuse existing policy-change audit events and retain provider-sync events. The audit-correlation warning in `audit.md` remains to be addressed.
 7. **Resolved:** Retain Jira's 10 percent p95 requirement without prescribing new benchmark infrastructure; it may be verified manually against the stated comparison.
