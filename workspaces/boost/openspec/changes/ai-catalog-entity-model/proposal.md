@@ -52,7 +52,7 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 - TypeScript interface contract defining entity emission, required annotation population, and the kind/spec.type mappings in Decision 1, including `AiResource` / `agent`
 - Support for both full-refresh and incremental-sync patterns
 - Shared validation utilities rejecting entities with missing/invalid annotations
-- Published npm package (`@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`)
+- Published npm package (`@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk`)
 
 ### Delta Sync Framework
 
@@ -68,14 +68,18 @@ Durable-store implementation, automatic refresh orchestration, and Backstage
 incremental-provider integration remain follow-on design work under
 [RHIDP-18840](https://redhat.atlassian.net/browse/RHIDP-18840).
 
-### Air-Gapped Deployment Support
+### Air-Gapped Deployment Qualification — Stretch
 
 > _Moved to RHIDP-15316 (Cross-Connector Shared Infrastructure, RHDHPLAN-1510). Stories: RHIDP-15265, 15266, 15329._
 
-- Custom CA bundle support via mounted Secret/ConfigMap for all TLS connections
-- K8s Secret-only credential references — startup validation rejects plaintext credentials
-- Configurable endpoint URLs with startup validation (no hardcoded SaaS endpoints)
-- Reference Helm chart and Operator CR examples for air-gapped configuration
+Full disconnected-deployment qualification is deferred and does not gate the
+minimum SDK. Existing connector utilities and generic endpoint, CA, Secret, and
+schedule reference examples remain available in shared infrastructure.
+
+- ~~Qualify custom CA bundles via mounted Secret/ConfigMap for all TLS connections~~ — **DEFERRED — stretch**
+- ~~Qualify K8s Secret-only credential references and rejection of plaintext credentials~~ — **DEFERRED — stretch**
+- ~~Qualify configurable endpoint URLs with startup validation across all providers~~ — **DEFERRED — stretch**
+- Retain reference app-config, Helm chart, and Operator CR examples for generic connector configuration without claiming full deployment qualification
 
 ### Performance and Resilience
 
@@ -96,7 +100,7 @@ incremental-provider integration remain follow-on design work under
 
 ## Impact
 
-- `plugins/boost-entity-provider-sdk/` — SDK package (types, annotations, validation)
-- `plugins/boost-entity-provider-sdk/src/AIAssetValidator.ts` — CatalogProcessor annotation validator
+- `plugins/ai-catalog-entity-provider-sdk/` — SDK package (types, annotations, validation)
+- `plugins/ai-catalog-entity-provider-sdk/src/AIAssetValidator.ts` — CatalogProcessor annotation validator
 - `plugins/ogx-entity-provider/` — OGX provider implements SDK
 - Reference app-config examples for connector configuration (see `connector-shared-infrastructure` change)

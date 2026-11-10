@@ -82,7 +82,7 @@ Agent providers MUST use `kind: AiResource`, `spec.type: agent`. The other rows 
 
 ### Decision 2: SDK package scope and structure
 
-Single npm package `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` exports:
+Single npm package `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk` exports:
 
 - Provider interface types (`AIAssetEntityProvider`, entity emission contract)
 - Annotation constants (`AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION`)
@@ -108,15 +108,19 @@ The recovered helper uses Backstage's built-in delta mutation API. `DeltaSyncMan
 
 **Deferred design:** The earlier rejection of `IncrementalEntityProvider` is withdrawn. Backstage incremental ingestion uses paginated bursts and mark-and-sweep deletion reconciliation; it is not inherently a source change-token feed. [RHIDP-18840](https://redhat.atlassian.net/browse/RHIDP-18840) owns the integration design, cursor semantics, durable storage, and automatic refresh/recovery orchestration. This reconciliation does not implement or choose that architecture. See [Backstage incremental providers](https://backstage.io/docs/features/software-catalog/external-integrations/incremental-entity-providers/).
 
-### Decision 4: Air-gapped credential pattern _(Moved to RHIDP-15316)_
+### Decision 4: Credential and CA reference patterns _(Qualification deferred to RHIDP-15316)_
 
-**Custom CA bundles:** Providers read CA certificates from mounted Secret/ConfigMap via `NODE_EXTRA_CA_CERTS` environment variable or explicit `https.Agent` configuration. This is standard Node.js TLS.
+These patterns preserve generic configuration examples and existing shared
+utilities. Full disconnected-deployment qualification is stretch work and does
+not require new SDK configuration/CA re-exports or block minimum SDK publication.
 
-**K8s Secret-only credentials:** All credentials are supplied via K8s Secrets mounted as environment variables. Helm/Operator config mounts the Secret into the container; app-config references the env vars with standard Backstage `$env` resolvers. Generic endpoint, CA, credential, and schedule examples remain in [app-config.connectors.yaml](../../../examples/app-config.connectors.yaml).
+**Custom CA reference configuration:** Provider examples read CA certificates from mounted Secret/ConfigMap via `NODE_EXTRA_CA_CERTS` or explicit `https.Agent` configuration. This is standard Node.js TLS.
 
-Startup validation rejects plaintext credentials with descriptive error: `Plaintext credentials not allowed. Use $env references backed by mounted K8s Secrets.`
+**Secret-based reference configuration:** Credentials can be supplied via K8s Secrets mounted as environment variables. Helm/Operator examples mount the Secret into the container; app-config references the env vars with standard Backstage `$env` resolvers. This reference pattern does not establish a minimum SDK guarantee that every provider rejects plaintext credentials. Generic endpoint, CA, credential, and schedule examples remain in [app-config.connectors.yaml](../../../examples/app-config.connectors.yaml).
 
-**Configurable endpoints:** All registry endpoint URLs configurable via app-config. No hardcoded SaaS URLs. Startup validation verifies URLs are syntactically valid.
+~~Startup validation rejects plaintext credentials with descriptive error: `Plaintext credentials not allowed. Use $env references backed by mounted K8s Secrets.`~~ **DEFERRED — stretch qualification, not minimum SDK acceptance.**
+
+**Configurable endpoint reference configuration:** Generic examples use app-config endpoint overrides. Qualification of endpoint configuration and startup URL validation across all providers remains deferred with task 6.5. Existing provider-specific validation remains owned by the consuming provider.
 
 ### Decision 5: Performance SLAs and error resilience _(Distributed: load testing → RHIDP-15294, error resilience → RHIDP-15316)_
 

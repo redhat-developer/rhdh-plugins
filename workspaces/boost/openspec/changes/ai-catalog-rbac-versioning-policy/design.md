@@ -1,7 +1,7 @@
 ## Canonical Touchpoints
 
 - No PRD or ADR files currently exist in this repository.
-- On completion, the six change-local capability specs will be promoted to the matching paths under `openspec/specs/` listed in the proposal. Bundle serving remains subject to its owning architecture contract; the version-policy spec records direct policy and the inheritance deferral only.
+- On acceptance, the five active capability specs will be promoted to the matching paths under `openspec/specs/` listed in the proposal. The sixth draft, `skill-bundle-authorization`, remains deferred and must not be implemented or promoted until its owning architecture contract and explicit scope approval exist. The version-policy spec records direct policy and the inheritance deferral only.
 
 ## Context
 

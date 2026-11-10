@@ -4,11 +4,14 @@
 >
 > Post-consolidation, RHIDP-15258 absorbs: annotation scheme (RHIDP-15255), delta sync framework (RHIDP-15262), and migration readiness (RHIDP-15302). See companion specs for detailed requirements.
 >
-> **Cross-connector dependencies:** RHIDP-15260 (SDK package) is blocked by three RHIDP-15316 stories:
->
-> - RHIDP-15265 — SDK must export the configuration schema for endpoint URLs and Secret-based credential validation
-> - RHIDP-15329 — SDK must expose the shared CA bundle resolution utility for all connectors
-> - RHIDP-15330 — SDK must define the per-entity and per-connector error isolation contract
+> **Minimum SDK boundary:** The historical RHIDP-15265 and RHIDP-15329
+> configuration/CA work belongs to cross-connector infrastructure under
+> RHIDP-15316. It does not require new SDK re-exports or block the minimum SDK
+> reconciliation/publication on full disconnected-deployment qualification.
+> Existing reusable helpers remain in `ai-catalog-connector-utils`, and generic
+> endpoint, CA, Secret, and scheduling examples remain available. Full
+> qualification is deferred/stretch. Per-entity fault isolation and contextual
+> logging remain minimum behavior under RHIDP-15330.
 
 A TypeScript SDK package defining the contract for AI asset entity providers, exporting shared types and validation utilities.
 
@@ -23,7 +26,7 @@ The SDK MUST define TypeScript interfaces for AI asset entity providers covering
 #### Scenario: AIAssetEntityProvider interface definition (RHIDP-15259)
 
 - **WHEN** a developer implements an AI asset entity provider
-- **THEN** they implement the `AIAssetEntityProvider` interface from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
+- **THEN** they implement the `AIAssetEntityProvider` interface from `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk`
 - **AND** the interface requires methods: `connect()`, `* entities()` (async generator), `getProviderName()`, `getProviderId()`
 - **AND** the interface supports both full-refresh and incremental-sync patterns (incremental via optional `delta()` method)
 
@@ -49,14 +52,14 @@ The SDK MUST be published as an installable npm package with shared validation u
 
 #### Scenario: SDK package is installable (RHIDP-15260)
 
-- **WHEN** a developer runs `npm install @red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
+- **WHEN** a developer runs `npm install @red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk`
 - **THEN** the package installs successfully
 - **AND** the package exports: `AIAssetEntityProvider`, `AIAssetCategory`, annotation constants, `validateAIAssetEntity()`, `normalizeAIAssetVersion()`
 - **AND** the package exports the delta sync framework: `DeltaSyncManager`, `InMemoryCursorStore`, `CursorStore`, `CursorState`, `ApplyDeltaOptions`, `DeltaSyncManagerOptions`
 
 #### Scenario: Annotation constants exported (RHIDP-15260)
 
-- **WHEN** a developer imports from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
+- **WHEN** a developer imports from `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk`
 - **THEN** they can use constants: `AI_ASSET_CATEGORY_ANNOTATION = 'rhdh.io/ai-asset-category'`, `AI_ASSET_VERSION_ANNOTATION = 'rhdh.io/ai-asset-version'`, `AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source'`
 
 #### Scenario: Shared validation rejects invalid entities (RHIDP-15260)

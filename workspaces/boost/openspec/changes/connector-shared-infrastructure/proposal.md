@@ -42,7 +42,7 @@ Duplicating CA/TLS handling, error logging, and enable/disable config across eac
 
 ## Impact
 
-- `plugins/boost-connector-utils/` — shared utility package (`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`)
+- `plugins/ai-catalog-connector-utils/` — shared utility package (`@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils`)
   - `loadCaBundle()` function
   - `createProviderWrapper()` fault isolation wrapper for `connect()`
   - `createSafeRefresh()` fault isolation wrapper for scheduled refresh callbacks

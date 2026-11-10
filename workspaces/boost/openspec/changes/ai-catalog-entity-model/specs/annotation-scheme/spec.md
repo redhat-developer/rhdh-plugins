@@ -84,7 +84,7 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-version` annotation with 
 
 #### Scenario: SDK exports normalizeAIAssetVersion utility (RHIDP-15255)
 
-- **WHEN** a developer imports `normalizeAIAssetVersion` from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
+- **WHEN** a developer imports `normalizeAIAssetVersion` from `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk`
 - **THEN** it is a function accepting `sourceVersion: string` and returning normalized semver string
 - **AND** it implements all four normalization rules (semver pass-through, date-based, commit hash, fallback)
 - **AND** unit tests cover all normalization rules

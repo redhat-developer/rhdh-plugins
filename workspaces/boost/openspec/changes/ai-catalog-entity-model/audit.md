@@ -1,8 +1,57 @@
 ## Audit Report: ai-catalog-entity-model
 
-**Last audited:** 2026-08-14T20:15:00Z
+**Last audited:** 2026-11-10T16:26:13Z
+
+### Scope
+
+PR #5474 follow-up limited to the four approved package-reference and scope-deferral corrections. Independent re-audits checked the edited contracts and their cross-artifact propagation. This is not a full re-audit of inherited requirements.
+
+The 26 inherited observations are preserved for validation and ownership triage in [RHIDP-18929](https://redhat.atlassian.net/browse/RHIDP-18929). They are not merge conditions for this PR. Only confirmed SDK ambiguities may become prerequisites for RHIDP-18762.
 
 ### Summary
+
+| Category | CRITICAL | WARNING | SUGGESTION |
+| -------- | -------- | ------- | ---------- |
+| A        | 0        | 0       | 0          |
+| B        | 0        | 0       | 0          |
+| C        | 0        | 0       | 0          |
+| D        | 0        | 0       | 0          |
+| E        | 0        | 0       | 0          |
+| F        | 0        | 0       | 0          |
+| G        | 0        | 0       | 0          |
+| H        | 0        | 0       | 0          |
+
+### CRITICAL
+
+- None
+
+### WARNING
+
+- None
+
+### SUGGESTION
+
+- None
+
+### Resolved PR-scoped findings
+
+- Propagated the existing ai-catalog-entity-provider-sdk package name and paths through proposal, design, and import/install scenarios.
+- Removed full air-gap qualification and new configuration/CA re-exports as minimum SDK prerequisites. Retained generic endpoint, CA, Secret, and schedule references plus minimum per-entity fault isolation.
+- Marked historical qualification tasks 6.1–6.5 and verification 10.4–10.5 deferred/stretch; retained generic reference tasks 6.6–6.8 and documentation task 9.4.
+
+### Outcome
+
+**Audit clean (no CRITICAL)** within the stated PR scope. The independent scoped re-audit returned no remaining findings.
+
+Fixes to one file can introduce new drift elsewhere — re-run the audit after resolving remaining findings.
+
+## Retained historical audit and reconciliation record
+
+The following record predates this scoped follow-up. Its counts and findings are historical and are not included in the current PR-scoped summary.
+
+**Historical full-artifact audit:** 2026-08-14T20:15:00Z
+
+### Historical summary
 
 | Category | CRITICAL | WARNING | SUGGESTION |
 | -------- | -------- | ------- | ---------- |
@@ -15,15 +64,15 @@
 | G        | 0        | 0       | 1          |
 | H        | 0        | 0       | 0          |
 
-### CRITICAL
+### Historical CRITICAL
 
 - None
 
-### WARNING
+### Historical WARNING
 
 - None
 
-### SUGGESTION
+### Historical SUGGESTION
 
 - **[D] `openspec/changes/ai-catalog-entity-model/tasks.md:52-54`** — Tasks 5.2 and 5.4 reference "LlamaStack provider" (`plugins/boost-backend-module-llamastack`), but this module was renamed to OGX (`plugins/boost-backend-module-ogx`). The "LlamaStack" name also appears in proposal.md, design.md, annotation-scheme/spec.md, and entity-provider-sdk/spec.md within this change, plus several sibling changes (agent-creation-discovery, pluggable-ai-platform-architecture, platform-operations-deployment). **Recommendation:** Coordinate a cross-change LlamaStack → OGX rename.
 - **[G] `openspec/changes/ai-catalog-entity-model/specs/annotation-scheme/spec.md:70`** — `normalizeAIAssetVersion` described as "a function accepting `sourceVersion: string`" but the implementation accepts an optional second `options` parameter (for entity context and custom warning callback). Design.md D6 and tasks.md 1.4 were already updated to reflect this. The spec describes behavioral contract (which is still satisfied) — the `options` param is additive. **Recommendation:** Consider adding "and optional `options` for entity context" to the spec for completeness.
