@@ -62,8 +62,8 @@ metadata:
 
 > **Out of scope:** `vector-store`, `ai-tool`, and `skill-bundle` are not
 > part of the minimum baseline annotation scheme. `vector-store` and `ai-tool`
-> appear in the `AI_ASSET_SPEC_TYPES` taxonomy for catalog browsing but are
-> not part of the annotation scheme. `skill-bundle` was removed from the
+> were also retired from the `AI_ASSET_SPEC_TYPES` taxonomy for catalog
+> browsing. `skill-bundle` was removed from the
 > minimum scope by RHIDP-18761.
 
 ### 1.2 `rhdh.io/ai-asset-version`

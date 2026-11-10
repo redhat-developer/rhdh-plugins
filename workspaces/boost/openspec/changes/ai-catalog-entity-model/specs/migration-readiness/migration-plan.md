@@ -169,18 +169,16 @@ Mapping tables reconciled via
 
 - **`vector-store` / `ai-tool` / `skill-bundle`** are out of scope for
   this readiness table. `vector-store` and `ai-tool` were Augment POC
-  vestiges. `skill-bundle` (SkillBundle/skillcard.yaml contracts) was
-  removed from the minimum baseline by RHIDP-18761. Boost frontend
-  still classifies `ai-tool` / `vector-store` via `isAiAsset`
-  (`Resource` + `ai-tool` / `vector-store`) and sample fixtures until
-  explicitly retired.
-- **Boost `isAiAsset` gap (`model-server`):** Decision 1
-  includes `model-server` (`spec.type: ai-model-server`), but boost
-  `isAiAsset` / `buildCatalogFilter` do **not** track it today.
-  `AI_ASSET_SPEC_TYPES` covers `skill` / `rule`, `mcp-server`,
-  `ai-agent`, and `ai-model` / `ai-tool` / `vector-store` only. Catalog
-  UI Filters "current" row for `model-server` is a
-  catalog/annotation query pattern, not boost frontend coverage yet.
+  vestiges and were retired from `AI_ASSET_SPEC_TYPES`. `skill-bundle`
+  (SkillBundle/skillcard.yaml contracts) was removed from the minimum
+  baseline by RHIDP-18761.
+- **Current Boost browse taxonomy:** `isAiAsset` and
+  `buildAiAssetCatalogFilter` use `AI_ASSET_SPEC_TYPES`, which recognizes
+  `AiResource` with `skill`, `rule`, or `agent`; `AiModelServerAPI` with
+  `ai-model-server`; and `API` with `mcp-server`. Model servers are already
+  recognized by the frontend. This kind/type inventory describes current
+  browsing behavior, separately from the minimum annotation categories and
+  future upstream migration targets.
 - **Model-server downstream work:**
   [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211)
   introduces `AiModelServerAPI` (`kind: API`,
@@ -372,10 +370,10 @@ an alternative for new providers.
 
 ## Consumer-Facing Changes
 
-> **Boost frontend note:** Catalog filter pattern below for
-> `model-server` is a Decision 1 / catalog query pattern. Boost
-> `isAiAsset` / `buildCatalogFilter` does not yet include this type —
-> see [Notes](#notes).
+> **Boost frontend note:** The current shared browse taxonomy already recognizes
+> `AiModelServerAPI` / `ai-model-server`. The catalog/annotation query patterns
+> below are migration-readiness references, not a missing frontend capability.
+> See [Notes](#notes) for the current kind/type inventory.
 
 ### Catalog UI Filters
 
@@ -515,8 +513,8 @@ GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server
 
 - **`vector-store` / `ai-tool` / `skill-bundle`:** Excluded from
   the minimum-and-compatibility mapping reference. `vector-store` and `ai-tool`
-  are Augment POC vestiges (still recognized by boost `isAiAsset` /
-  fixtures until explicitly retired). `skill-bundle` removed from
+  are Augment POC vestiges retired from the shared browse taxonomy.
+  `skill-bundle` was removed from
   minimum scope by RHIDP-18761.
 - **Annotation specification publish (RHIDP-15346):** Split to
   [#4220](https://github.com/redhat-developer/rhdh-plugins/issues/4220).

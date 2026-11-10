@@ -1,10 +1,10 @@
 ## Audit Report: ai-catalog-entity-model
 
-**Last audited:** 2026-11-10T16:26:13Z
+**Last audited:** 2026-11-10T16:40:16Z
 
 ### Scope
 
-PR #5474 follow-up limited to the four approved package-reference and scope-deferral corrections. Independent re-audits checked the edited contracts and their cross-artifact propagation. This is not a full re-audit of inherited requirements.
+PR #5474 follow-up limited to the four approved package-reference and scope-deferral corrections and the current-taxonomy documentation correction. Independent re-audits checked the edited contracts and their cross-artifact propagation. This is not a full re-audit of inherited requirements.
 
 The 26 inherited observations are preserved for validation and ownership triage in [RHIDP-18929](https://redhat.atlassian.net/browse/RHIDP-18929). They are not merge conditions for this PR. Only confirmed SDK ambiguities may become prerequisites for RHIDP-18762.
 
@@ -34,6 +34,8 @@ The 26 inherited observations are preserved for validation and ownership triage 
 - None
 
 ### Resolved PR-scoped findings
+
+- Corrected the migration plan and companion annotation specification against the current shared taxonomy: retired `ai-tool`/`vector-store` values stay retired, and model-server browsing is already supported. Updated duplicate claims in the same migration plan without changing the minimum annotation categories.
 
 - Propagated the existing ai-catalog-entity-provider-sdk package name and paths through proposal, design, and import/install scenarios.
 - Removed full air-gap qualification and new configuration/CA re-exports as minimum SDK prerequisites. Retained generic endpoint, CA, Secret, and schedule references plus minimum per-entity fault isolation.
