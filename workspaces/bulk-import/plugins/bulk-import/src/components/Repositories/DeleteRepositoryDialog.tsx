@@ -45,7 +45,7 @@ const DeleteRepositoryDialog = ({
   repository: AddRepositoryData;
   closeDialog: () => void;
 }) => {
-  const { t } = useTranslation();
+  const { t, tParams } = useTranslation();
   const bulkImportApi = useApi(bulkImportApiRef);
   const deleteRepository = (deleteRepo: AddRepositoryData) => {
     return bulkImportApi.deleteImportAction(
@@ -78,7 +78,7 @@ const DeleteRepositoryDialog = ({
       : t('repositories.removeRepositoryWarning');
   }
 
-  const dialogTitle = t('repositories.removeRepositoryQuestion' as any, {
+  const dialogTitle = tParams('repositories.removeRepositoryQuestion', {
     repoName: repository.repoName || '',
     repositoryText: gitlabConfigured ? '' : t('repositories.repositoryText'),
   });
@@ -119,7 +119,7 @@ const DeleteRepositoryDialog = ({
               description={[
                 isUrlMissing ? t('repositories.cannotRemoveRepositoryUrl') : '',
                 mutationDelete.isError
-                  ? t('repositories.unableToRemoveRepository' as any, {
+                  ? tParams('repositories.unableToRemoveRepository', {
                       error: String(mutationDelete.error),
                     })
                   : '',

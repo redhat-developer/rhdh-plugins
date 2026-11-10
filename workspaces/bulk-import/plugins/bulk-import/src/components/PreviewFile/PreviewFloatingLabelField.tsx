@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import type { CSSProperties, ReactNode } from 'react';
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  useId,
+  type CSSProperties,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
 export type PreviewFloatingLabelFieldProps = {
   label: string;
@@ -45,6 +53,8 @@ export const PreviewFloatingLabelField = ({
   style,
   children,
 }: PreviewFloatingLabelFieldProps) => {
+  const fieldId = useId();
+  const labelId = `${fieldId}-label`;
   const labelText = required ? `${label} *` : label;
   const shrinkLabel = hasValue || !!multiline;
 
@@ -57,6 +67,17 @@ export const PreviewFloatingLabelField = ({
     .filter(Boolean)
     .join(' ');
 
+  const child = Children.only(children);
+  const control = isValidElement(child)
+    ? cloneElement(
+        child as ReactElement<{ id?: string; 'aria-labelledby'?: string }>,
+        {
+          id: (child.props as { id?: string }).id ?? fieldId,
+          'aria-labelledby': labelId,
+        },
+      )
+    : children;
+
   return (
     <div
       className={classNames}
@@ -65,8 +86,14 @@ export const PreviewFloatingLabelField = ({
       style={style}
     >
       <div className="bulk-import-floating-field__control">
-        {children}
-        <label className="bulk-import-floating-field__label">{labelText}</label>
+        {control}
+        <label
+          id={labelId}
+          htmlFor={fieldId}
+          className="bulk-import-floating-field__label"
+        >
+          {labelText}
+        </label>
       </div>
       {description ? (
         <div className="bulk-import-floating-field__helper">{description}</div>

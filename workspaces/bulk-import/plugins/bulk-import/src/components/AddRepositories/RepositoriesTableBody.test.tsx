@@ -23,7 +23,11 @@ import { RepositoriesTableBody } from './RepositoriesTableBody';
 const mockT = jest.fn((key: string) => key);
 
 jest.mock('../../hooks/useTranslation', () => ({
-  useTranslation: () => ({ t: mockT }),
+  useTranslation: () => ({
+    t: mockT,
+    tParams: (key: string, params: Record<string, string | number>) =>
+      mockT(key, params),
+  }),
 }));
 
 jest.mock('./OrganizationTableRow', () => ({

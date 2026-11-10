@@ -47,7 +47,15 @@ export const mockT = (key: string, params?: any) => {
   return message;
 };
 
-export const mockUseTranslation = () => ({ t: mockT });
+export const mockTParams = (
+  key: string,
+  params: Record<string, string | number>,
+) => mockT(key, params);
+
+export const mockUseTranslation = () => ({
+  t: mockT,
+  tParams: mockTParams,
+});
 
 // Export default for easier imports
 export default {

@@ -303,9 +303,11 @@ export const injectPreviewDrawerFieldStyles = () => {
   if (typeof document === 'undefined') {
     return;
   }
-  LEGACY_STYLE_IDS.filter(id => id !== STYLE_ID).forEach(id => {
-    document.getElementById(id)?.remove();
-  });
+  for (const id of LEGACY_STYLE_IDS) {
+    if (id !== STYLE_ID) {
+      document.getElementById(id)?.remove();
+    }
+  }
   const existing = document.getElementById(STYLE_ID);
   if (existing) {
     existing.textContent = PREVIEW_DRAWER_FIELD_STYLES;

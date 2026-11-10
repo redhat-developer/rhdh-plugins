@@ -58,7 +58,12 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
 
   return (
     <Box style={{ width: '100%' }}>
-      <Box bg="neutral" style={repositoriesTablePanelStyle}>
+      <Box
+        bg="neutral"
+        data-testid="add-repositories-table-panel"
+        role="article"
+        style={repositoriesTablePanelStyle}
+      >
         {numberOfApprovalTools > 1 && (
           <ApprovalTool
             approvalTool={values.approvalTool}

@@ -48,21 +48,16 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
   // The asterisks mark emphasis around CODEOWNERS
   const codeOwnersText = t.previewFile.pullRequest.useCodeOwnersFile;
   const codeOwnersCheckboxName = codeOwnersText.replace(/\*/g, '');
-  const codeOwnersParts = codeOwnersText.split('*CODEOWNERS*');
-  const codeOwnersBeforeText = codeOwnersParts[0].trim();
-  const codeOwnersAfterText = codeOwnersParts[1].trim();
 
   return {
     /**
      * Pull request details section - contains title and body textboxes
      */
     pullRequestDetails: `
-    - heading "${prDetails}" [level=6]
-    - text: "${prTitleLabel}"
+    - heading "${prDetails}" [level=3]
     - textbox "${prTitleLabel}":
       - /placeholder: ${t.previewFile.pullRequest.titlePlaceholder}
       - text: Add catalog-info.yaml config file
-    - text: "${prBodyLabel}"
     - textbox "${prBodyLabel}":
       - /placeholder: ${t.previewFile.pullRequest.bodyPlaceholder}
       - text: /This pull request adds a \\*\\*Backstage entity metadata file\\*\\* to this repository so that the component can be added to the \\[software catalog\\]\\(http:\\/\\/localhost:\\d+\\/catalog\\)\\. After this pull request is merged, the component will become available\\. For more information, read an \\[overview of the Backstage software catalog\\]\\(https:\\/\\/backstage\\.io\\/docs\\/features\\/software-catalog\\/\\)\\. View the import job in your app \\[here\\]\\(http:\\/\\/localhost:\\d+\\/bulk-import\\?repository=https:\\/\\/github\\.com\\/test-org\\/backend-service&defaultBranch=main\\)\\./
@@ -72,8 +67,7 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
      * Entity configuration heading and component name field
      */
     entityConfigHeader: `
-    - heading "${t.previewFile.pullRequest.entityConfiguration}" [level=6]
-    - text: ${t.previewFile.pullRequest.componentNameLabel}
+    - heading "${t.previewFile.pullRequest.entityConfiguration}" [level=3]
     - textbox "${t.previewFile.pullRequest.componentNameLabel}":
       - /placeholder: ${t.previewFile.pullRequest.componentNamePlaceholder}
   `,
@@ -82,10 +76,8 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
      * Entity owner selection field
      */
     entityOwner: `
-    - text: ${t.previewFile.pullRequest.entityOwnerLabel}
     - combobox "${t.previewFile.pullRequest.entityOwnerLabel}": user:development/guest
-    - button "Open"
-    - paragraph: ${t.previewFile.pullRequest.entityOwnerHelper}
+    - text: ${t.previewFile.pullRequest.entityOwnerHelper}
   `,
 
     /**
@@ -93,51 +85,45 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
      */
     codeownersOption: `
     - checkbox "${codeOwnersCheckboxName}"
-    - paragraph:
-      - text: ${codeOwnersBeforeText}
-      - emphasis: CODEOWNERS
-      - text: ${codeOwnersAfterText}
-    - paragraph: "${t.previewFile.pullRequest.codeOwnersWarning}"
+    - text: ${t.previewFile.pullRequest.codeOwnersWarning}
   `,
 
     /**
      * Annotations field
      */
     annotations: `
-    - text: ${t.previewFile.pullRequest.annotations}
     - textbox "${t.previewFile.pullRequest.annotations}":
       - /placeholder: "${t.previewFile.keyValuePlaceholder}"
       - text: "github.com/project-slug: test-org/backend-service"
-    - paragraph: ${annotationsSeparator}
+    - text: ${annotationsSeparator}
   `,
 
     /**
      * Labels field
      */
     labels: `
-    - text: ${t.previewFile.pullRequest.labels}
     - textbox "${t.previewFile.pullRequest.labels}":
       - /placeholder: "${t.previewFile.keyValuePlaceholder}"
-    - paragraph: ${labelsSeparator}
+    - text: ${labelsSeparator}
   `,
 
     /**
      * Spec field
      */
     spec: `
-    - text: ${t.previewFile.pullRequest.spec}
     - textbox "${t.previewFile.pullRequest.spec}":
       - /placeholder: "${t.previewFile.keyValuePlaceholder}"
       - text: "type: other; lifecycle: unknown; owner: user:development/guest"
-    - paragraph: ${specSeparator}
+    - text: ${specSeparator}
   `,
 
     /**
      * Preview pull request section - shows the PR preview with links
      */
     previewPullRequest: `
-    - heading "${t.previewFile.preview} ${t.previewFile.pullRequest.title.toLowerCase()}" [level=6]
-    - text: Add catalog-info.yaml config file Create a new Pull Request
+    - heading "${t.previewFile.preview} ${t.previewFile.pullRequest.title.toLowerCase()}" [level=3]
+    - heading "Add catalog-info.yaml config file" [level=4]
+    - text: ${t.previewFile.pullRequest.previewCardSubheader}
     - paragraph:
       - text: This pull request adds a
       - strong: Backstage entity metadata file
@@ -157,9 +143,9 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
      * Preview entities section - shows the generated catalog-info.yaml content
      */
     previewEntities: `
-    - heading "${t.previewFile.pullRequest.previewEntities}" [level=6]
-    - code: https://github.com/test-org/backend-service/catalog-info.yaml
-    - code: "apiVersion: backstage.io/v1alpha1 kind: Component metadata: name: backend-service annotations: github.com/project-slug: test-org/backend-service spec: type: other lifecycle: unknown owner: user:development/guest"
+    - heading "${t.previewFile.pullRequest.previewEntities}" [level=3]
+    - text: https://github.com/test-org/backend-service/catalog-info.yaml
+    - text: /apiVersion: backstage\\.io\\/v1alpha1/
   `,
   };
 }

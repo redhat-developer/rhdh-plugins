@@ -60,19 +60,47 @@ const previewFloatingFieldControlStyle = {
 };
 
 /** Renders translation strings that emphasize segments with `*asterisks*`. */
-const renderMessageWithEmphasis = (message: string) =>
-  message
-    .split(/(\*[^*]+\*)/g)
-    .filter(segment => segment.length > 0)
-    .map((segment, index) =>
-      segment.startsWith('*') && segment.endsWith('*') ? (
-        <Text key={index} as="em" variant="body-small">
-          {segment.slice(1, -1)}
-        </Text>
-      ) : (
-        <span key={index}>{segment}</span>
-      ),
-    );
+const renderMessageWithEmphasis = (message: string) => {
+  const parts: { key: string; content: string; emphasize: boolean }[] = [];
+  const pattern = /(\*[^*]+\*)/g;
+  let lastIndex = 0;
+  let match = pattern.exec(message);
+
+  while (match) {
+    if (match.index > lastIndex) {
+      parts.push({
+        key: `text-${lastIndex}`,
+        content: message.slice(lastIndex, match.index),
+        emphasize: false,
+      });
+    }
+    parts.push({
+      key: `em-${match.index}`,
+      content: match[0].slice(1, -1),
+      emphasize: true,
+    });
+    lastIndex = match.index + match[0].length;
+    match = pattern.exec(message);
+  }
+
+  if (lastIndex < message.length) {
+    parts.push({
+      key: `text-${lastIndex}`,
+      content: message.slice(lastIndex),
+      emphasize: false,
+    });
+  }
+
+  return parts.map(part =>
+    part.emphasize ? (
+      <Text key={part.key} as="em" variant="body-small">
+        {part.content}
+      </Text>
+    ) : (
+      <span key={part.key}>{part.content}</span>
+    ),
+  );
+};
 
 export const PreviewPullRequestForm = ({
   repoId,
@@ -89,7 +117,7 @@ export const PreviewPullRequestForm = ({
   setPullRequest: (pullRequest: PullRequestPreviewData) => void;
   setFormErrors: (pullRequest: PullRequestPreviewData) => void;
 }) => {
-  const { t } = useTranslation();
+  const { t, tParams } = useTranslation();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
   const catalogApi = useApi(catalogApiRef);
 
@@ -102,14 +130,13 @@ export const PreviewPullRequestForm = ({
   const formik = useFormik<PullRequestPreview>({
     enableReinitialize: true,
     initialValues: pullRequest[repoId],
-    initialErrors: formErrors?.[
-      repoId
-    ] as any as FormikErrors<PullRequestPreview>,
+    initialErrors: formErrors?.[repoId] as unknown as
+      FormikErrors<PullRequestPreview> | undefined,
     validationSchema: getValidationSchema(
       approvalToolLabel[values.approvalTool],
       t,
     ),
-    onSubmit: () => {},
+    onSubmit: () => undefined,
   });
 
   const { loading: entitiesLoading, value: entities } = useAsync(async () => {
@@ -282,7 +309,7 @@ export const PreviewPullRequestForm = ({
   useEffect(() => {
     const err = {
       ...formErrors,
-      [repoId]: formik.errors as any as PullRequestPreview,
+      [repoId]: formik.errors as unknown as PullRequestPreview,
     };
 
     if (!formik.errors) {
@@ -294,10 +321,10 @@ export const PreviewPullRequestForm = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formik.errors]);
 
-  const pullRequestTitleLabel = t('previewFile.pullRequest.titleLabel' as any, {
+  const pullRequestTitleLabel = tParams('previewFile.pullRequest.titleLabel', {
     tool: approvalToolLabel[values.approvalTool],
   });
-  const pullRequestBodyLabel = t('previewFile.pullRequest.bodyLabel' as any, {
+  const pullRequestBodyLabel = tParams('previewFile.pullRequest.bodyLabel', {
     tool: approvalToolLabel[values.approvalTool],
   });
 
@@ -305,7 +332,7 @@ export const PreviewPullRequestForm = ({
     <>
       <Box style={{ marginTop: '16px' }}>
         <Text as="h3" style={bulkImportTypographyPreviewSection}>
-          {t('previewFile.pullRequest.details' as any, {
+          {tParams('previewFile.pullRequest.details', {
             tool: approvalToolLabel[values.approvalTool],
           })}
         </Text>
@@ -439,7 +466,7 @@ export const PreviewPullRequestForm = ({
 
         const helperText =
           fieldError ||
-          t('previewFile.useSemicolonSeparator' as any, {
+          tParams('previewFile.useSemicolonSeparator', {
             label: field.label.toLocaleLowerCase('en-US'),
           });
 

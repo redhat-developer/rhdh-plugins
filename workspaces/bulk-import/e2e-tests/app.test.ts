@@ -134,13 +134,15 @@ test.describe('Bulk Import', () => {
   test('should render bulk import page with source control options, search, and repositories table', async ({
     browser,
   }, testInfo: TestInfo) => {
-    const article = sharedPage.getByRole('article');
+    const addRepositoriesPanel = sharedPage.getByTestId(
+      'add-repositories-table-panel',
+    );
 
-    await expect(article).toMatchAriaSnapshot(`
-      - paragraph: ${translations.addRepositories.approvalTool.title}
-      - paragraph
+    await expect(addRepositoriesPanel).toMatchAriaSnapshot(`
+      - text: ${translations.addRepositories.approvalTool.title}
+      - img
       - radiogroup:
-        - radio "${translations.addRepositories.approvalTool.github}"
+        - radio "${translations.addRepositories.approvalTool.github}" [checked]
         - text: ${translations.addRepositories.approvalTool.github}
         - radio "${translations.addRepositories.approvalTool.gitlab}"
         - text: ${translations.addRepositories.approvalTool.gitlab}
@@ -150,13 +152,12 @@ test.describe('Bulk Import', () => {
       translations,
       0,
     );
-    await expect(article).toMatchAriaSnapshot(`
-      - heading "${selectedReposHeading}"
-      - textbox "search"
-      - button "${translations.addRepositories.clearSearch}" 
+    await expect(addRepositoriesPanel).toMatchAriaSnapshot(`
+      - heading "${selectedReposHeading}" [level=2]
+      - searchbox "search"
       `);
 
-    await expect(article).toMatchAriaSnapshot(`
+    await expect(addRepositoriesPanel).toMatchAriaSnapshot(`
       - table:
         - rowgroup:
           - row "select all repositories ${translations.table.headers.name} ${translations.table.headers.url} ${translations.table.headers.organization} ${translations.table.headers.status}":
@@ -207,12 +208,12 @@ test.describe('Bulk Import', () => {
 
     // Wait for sidebar to be fully visible and loaded
     await expect(sidebar).toBeVisible();
-    await expect(sidebar.locator('h5')).toContainText('backend-service');
+    await expect(sidebar.getByRole('heading', { level: 2 })).toContainText(
+      'backend-service',
+    );
     await expect(sidebar).toMatchAriaSnapshot(`
       - button "${translations.common.save}"
-      - link "${translations.common.cancel}":
-        - /url: /bulk-import
-        - button "${translations.common.cancel}"
+      - button "${translations.common.cancel}"
       `);
 
     // Validate each section individually for better readability
