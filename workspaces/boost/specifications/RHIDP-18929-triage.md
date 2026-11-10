@@ -12,18 +12,22 @@
 
 ## SDK-Readiness Decision
 
-Of the 26 findings, **one** is an SDK prerequisite that should be
-resolved before RHIDP-18762:
+No additional SDK prerequisite was identified among these 26 findings.
+The confirmed corrections in this PR clarify the baseline documentation;
+owning-feature follow-ups and deferred design decisions remain separate.
 
-- **#17 (audit-events secret redaction):** The config-change audit
-  event (Scenario 4) lacked a redaction assertion for secret-bearing
-  fields, inconsistent with the existing line 31 assertion for
-  failure events. A redaction step was added to the spec. This
-  affects the SDK's audit-event contract.
+- **#7 and #22 (model-server kind):** The current kind is
+  `AiModelServerAPI`, with `spec.type: ai-model-server`. The dedicated
+  catalog model and existing providers agree. Current-state references
+  are corrected accordingly. A candidate upstream `API` mapping remains
+  conditional future migration work, not the current mapping.
+- **#17 (audit-events secret redaction):** The traceability snapshot now
+  includes config-change redaction. Authoritative audit-event work remains
+  with RHIDP-15280. The restored SDK has no audit-event or config-change API,
+  so this observation does not add auditing work to RHIDP-18762.
 
-All other confirmed findings are either already corrected in this PR,
-are owning-feature follow-ups in `ai-integrations`, or are deferred
-design decisions that do not block the SDK.
+This decision covers the inherited observations only. RHIDP-18762 still
+must satisfy its own SDK reconciliation acceptance criteria and dependencies.
 
 ## Disposition Legend
 
@@ -112,12 +116,16 @@ reconciled when migration actually begins.
 
 **File:** `workspaces/boost/openspec/changes/ai-catalog-entity-model/specs/migration-readiness/spec.md:82`
 **Observation:** "Current: kind: API, spec.type: ai-model-server" vs AiModelServerAPI.
-**Disposition:** Not reproducible.
-**Rationale:** Already reconciled. Line 82 correctly states
-`kind: API` and parenthetically names the entity type
-`AiModelServerAPI from #4211`. The `AiModelServerAPI` type uses
-`kind: API` with `spec.type: ai-model-server` — it is not a
-separate kind.
+**Authoritative contract:** `ai-integrations/plugins/catalog-model-ai-model-server/src/types.ts`
+defines `kind: AiModelServerAPI`; Boost's `OgxModelEntityProvider` emits it
+and `ai-catalog-common/src/aiAssetTaxonomy.ts` recognizes it.
+**Disposition:** Spec correction.
+**Owner:** RHDHPLAN-1507 / RHIDP-18929 current-state reconciliation.
+**Correction:** Use `AiModelServerAPI` / `ai-model-server` in Decision 1
+and migration-readiness current-state tables, filters, queries, and entity
+refs. Historical `Resource` / `API` inputs remain legacy examples only.
+A candidate upstream `API` kind is conditional future migration work;
+it is not a type-import-only change and is not implemented by this PR.
 
 ---
 
@@ -242,13 +250,22 @@ formally documented for the first time.
 
 **File:** `workspaces/boost/openspec/changes/ingestion-audit-metrics/specs/audit-events/spec.md:56`
 **Observation:** Config-change event serializes before/after values without redacting secret-bearing fields.
-**Authoritative contract:** Same spec, line 31 (failure events already require "credentials, tokens, and secret configuration values are not recorded"). Carry correction into RHIDP-15280.
-**Disposition:** SDK prerequisite.
+**Authoritative contract:** `openspec/changes/ai-catalog-rbac-versioning-policy/specs/ai-catalog-audit-events/spec.md`,
+"Synchronization failure" scenario, prohibits recording credentials,
+tokens, and secret configuration values in failure events. The config-change
+safeguard applies the same secret-handling principle; that failure-event
+assertion is not in the ingestion snapshot.
+**Disposition:** Owning-feature follow-up.
+**Owner:** RHDHPLAN-1508 / RHIDP-15280.
 **Correction:** Added a redaction assertion to Scenario 4 requiring
-secret-bearing configuration fields to be redacted before
-serialization, consistent with the existing failure-event assertion.
-**SDK impact:** The audit-event contract's redaction requirement
-affects SDK exports, validators, and delta-helper behavior.
+secret-bearing configuration fields to be redacted before serialization.
+This file remains a traceability snapshot. RHIDP-15280 owns propagation
+into the authoritative config-change audit contract and its implementation
+and verification tasks.
+**SDK impact:** No affected SDK export, validator, or delta-helper
+contract was identified. The restored SDK exposes no audit-event or
+config-change API. This finding does not block RHIDP-18762 or authorize
+new audit functionality in that story.
 
 ---
 
@@ -307,13 +324,15 @@ migration arrow notation).
 
 **File:** `workspaces/boost/openspec/changes/upstream-schema-alignment/design.md:73`
 **Observation:** Model Server Current Kind column shows `Resource` instead of `AiModelServerAPI`.
-**Disposition:** Not reproducible.
-**Rationale:** The table documents the current-state-to-upstream
-transformation, and the current deployed model-server kind in the
-catalog really is `Resource`. The upstream target column correctly
-shows `Candidate API / ai-model-server`. The `AiModelServerAPI` type
-name applies when the migration is completed. The table is correctly
-documenting the current state.
+**Authoritative contract:** The dedicated catalog model and existing
+provider emission described in finding #7, plus the companion annotation
+specification's current connector-emitted mapping.
+**Disposition:** Spec correction.
+**Owner:** RHDHPLAN-1507 / RHIDP-18929 current-state reconciliation.
+**Correction:** Use `AiModelServerAPI` in the current-kind columns of
+the upstream-alignment proposal and design. Any candidate upstream
+transformation starts from that dedicated kind. No runtime migration
+or new upstream-kind decision is included.
 
 ---
 
@@ -323,7 +342,7 @@ documenting the current state.
 **Observation:** Level-two `## Scenario` headings outside any `### Requirement` block.
 **Authoritative contract:** Installed spec-driven schema structure (scenarios as `####` under `### Requirement`).
 **Disposition:** Spec correction.
-**Correction:** Grouped 12 orphan `## Scenario` headings into 4
+**Correction:** Grouped 11 orphan `## Scenario` headings into 4
 `### Requirement` blocks:
 
 - Requirement: Complete annotation and entity-kind documentation (2 scenarios)
@@ -382,14 +401,14 @@ capabilities.
 
 ## Summary
 
-| Disposition                                | Count | Entries                                                            |
-| ------------------------------------------ | ----- | ------------------------------------------------------------------ |
-| Spec correction                            | 14    | #5, #8, #10, #11, #13, #14, #15, #16, #19, #21, #23, #24, #25, #26 |
-| Not reproducible                           | 2     | #7, #22                                                            |
-| Deferred design                            | 4     | #6, #9, #18, #20                                                   |
-| Owning-feature follow-up (ai-integrations) | 4     | #1, #2, #3, #4                                                     |
-| Owning-feature follow-up (boost)           | 1     | #12                                                                |
-| SDK prerequisite                           | 1     | #17                                                                |
+| Disposition                                | Count | Entries                                                                     |
+| ------------------------------------------ | ----- | --------------------------------------------------------------------------- |
+| Spec correction                            | 16    | #5, #7, #8, #10, #11, #13, #14, #15, #16, #19, #21, #22, #23, #24, #25, #26 |
+| Not reproducible                           | 0     | None                                                                        |
+| Deferred design                            | 4     | #6, #9, #18, #20                                                            |
+| Owning-feature follow-up (ai-integrations) | 4     | #1, #2, #3, #4                                                              |
+| Owning-feature follow-up (boost)           | 2     | #12, #17                                                                    |
+| SDK prerequisite                           | 0     | None                                                                        |
 
 ## Metadata/Per-Kind SDK Design Decisions
 
@@ -404,9 +423,14 @@ This triage does not choose those designs. Specifically:
 
 ## SDK Handoff
 
-The accepted specification revision is the current HEAD after this PR's
-corrections. The single SDK prerequisite (finding #17, audit-events
-secret redaction) has been resolved in the specification.
+At RHIDP-18762 implementation start, record this PR's final merged revision
+and the relevant numbered OpenSpec tasks. This review does not claim an
+unmerged revision is accepted or that historical completed tasks finish
+SDK reconciliation.
+
+No additional SDK prerequisite was identified in this inventory. Finding
+#17 remains audit-owner work under RHIDP-15280; it does not expand the
+SDK's exports, validators, or delta-helper responsibilities.
 
 Relevant task references:
 

@@ -10,10 +10,6 @@ Each AI catalog connector (MCP Registry, RHOAI MCP Catalog, OCI Skill Registry) 
 
 This specification covers the reference app-config YAML that lives in the rhdh-plugins repository (e.g., `workspaces/boost/examples/`).
 
-## EXISTING Requirements
-
-None. This is a new reference configuration artifact.
-
 ## ADDED Requirements
 
 ### Requirement: MCP Registry Connector Configuration

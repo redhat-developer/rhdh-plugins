@@ -133,18 +133,17 @@ Each AI asset category maps to a Backstage entity kind and `spec.type` value.
 The table below reflects the **actual entity model as implemented** by
 connectors. It is based on
 [ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds)
-but documents the current connector-emitted kind for
-`model-server`, which differs from Decision 1's reference mapping
-(see notes column).
+and matches the current connector-emitted kind for
+`model-server` after Decision 1's reconciliation.
 
-| Category       | Backstage Kind   | `spec.type`       | Notes                                                                                                             |
-| -------------- | ---------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `agent`        | AiResource       | `agent`           | Settled RHDH mapping, matching Decision 1; future upstream agent-schema alignment remains under RHDHPLAN-1113     |
-| `skill`        | AIResource       | `skill`           | AIResource per RHDHPLAN-1113                                                                                      |
-| `rule`         | AIResource       | `rule`            | AIResource per RHDHPLAN-1113                                                                                      |
-| `mcp-server`   | API              | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable                                    |
-| `ai-model`     | Resource         | `ai-model`        | Pending RHDHPLAN-404 (upstream entity schema)                                                                     |
-| `model-server` | AiModelServerAPI | `ai-model-server` | Diverged from Decision 1 (`Resource`/`ai-model-server`); connectors emit `AiModelServerAPI`. Pending RHDHPLAN-404 |
+| Category       | Backstage Kind   | `spec.type`       | Notes                                                                                                                    |
+| -------------- | ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `agent`        | AiResource       | `agent`           | Settled RHDH mapping, matching Decision 1; future upstream agent-schema alignment remains under RHDHPLAN-1113            |
+| `skill`        | AiResource       | `skill`           | AiResource per RHDHPLAN-1113                                                                                             |
+| `rule`         | AiResource       | `rule`            | AiResource per RHDHPLAN-1113                                                                                             |
+| `mcp-server`   | API              | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable                                           |
+| `ai-model`     | Resource         | `ai-model`        | Pending RHDHPLAN-404 (upstream entity schema)                                                                            |
+| `model-server` | AiModelServerAPI | `ai-model-server` | Current dedicated kind, matching Decision 1 and connector emission. Future upstream alignment remains under RHDHPLAN-404 |
 
 > The annotation (`rhdh.io/ai-asset-category`) is the source of truth for
 > classification, not the entity kind. Agent providers use `AiResource` /
@@ -180,6 +179,10 @@ but documents the current connector-emitted kind for
 the same kind/type pairing.
 
 ### 3.2 Skills and Rules — Confidence: Medium–High
+
+The casing transformation below applies to historical `AIResource` inputs.
+Current providers use `AiResource`; this table does not claim a pending
+kind change for those entities. Field-level alignment remains separate.
 
 | Field       | Current          | Target (upstream)            |
 | ----------- | ---------------- | ---------------------------- |
@@ -278,6 +281,9 @@ actual migration is future work.
 - Legacy `Resource` kind entities → `API` kind
 
 ### Skills / Rules (Medium–High confidence)
+
+The casing example below describes historical inputs; current `AiResource`
+entities need no casing migration.
 
 - `kind`: `AIResource` → `AiResource` (casing alignment)
 - Field alignment per upstream `AiResource` schema (field names, required vs

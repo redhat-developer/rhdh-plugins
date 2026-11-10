@@ -63,18 +63,18 @@ The `rhdh.io/ai-asset-category` annotation provides five minimum feature categor
 
 **Mapping reference (agent mapping settled):**
 
-| Category       | Backstage Kind | spec.type         | Notes                                                                             |
-| -------------- | -------------- | ----------------- | --------------------------------------------------------------------------------- |
-| `agent`        | AiResource     | `agent`           | Settled RHDH agent mapping; upstream schema alignment remains under RHDHPLAN-1113 |
-| `skill`        | AiResource     | `skill`           | AiResource per RHDHPLAN-1113                                                      |
-| `rule`         | AiResource     | `rule`            | AiResource per RHDHPLAN-1113                                                      |
-| `mcp-server`   | API            | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable    |
-| `ai-model`     | Resource       | `ai-model`        | Mapping pending RHDHPLAN-404 (upstream entity schema work)                        |
-| `model-server` | Resource       | `ai-model-server` | Mapping pending RHDHPLAN-404 (upstream entity schema work)                        |
+| Category       | Backstage Kind   | spec.type         | Notes                                                                             |
+| -------------- | ---------------- | ----------------- | --------------------------------------------------------------------------------- |
+| `agent`        | AiResource       | `agent`           | Settled RHDH agent mapping; upstream schema alignment remains under RHDHPLAN-1113 |
+| `skill`        | AiResource       | `skill`           | AiResource per RHDHPLAN-1113                                                      |
+| `rule`         | AiResource       | `rule`            | AiResource per RHDHPLAN-1113                                                      |
+| `mcp-server`   | API              | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable    |
+| `ai-model`     | Resource         | `ai-model`        | Mapping pending RHDHPLAN-404 (upstream entity schema work)                        |
+| `model-server` | AiModelServerAPI | `ai-model-server` | Current dedicated kind; future upstream alignment remains under RHDHPLAN-404      |
 
 Agent providers MUST use `kind: AiResource`, `spec.type: agent`. The other rows are documented for reference; connectors MAY map those categories differently based on their domain. The annotation remains the source of truth for AI asset category, not the kind.
 
-> **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (reconciled 2026-11-10):** The `skill` and `rule` reference mappings remain under RHDHPLAN-1113. The `agent` category uses `kind: AiResource`, `spec.type: agent`; the former `Component` / `ai-agent` mapping is historical and is not an implementation option. Future upstream agent-schema alignment remains under RHDHPLAN-1113. The `ai-model` and `model-server` mappings remain under RHDHPLAN-404 upstream entity schema work. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` under broader RHDHPLAN-1510 work; it is not part of the current Boost frontend/OGX release contract.
+> **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (reconciled 2026-11-10):** The `skill` and `rule` reference mappings remain under RHDHPLAN-1113. The `agent` category uses `kind: AiResource`, `spec.type: agent`; the former `Component` / `ai-agent` mapping is historical and is not an implementation option. Future upstream agent-schema alignment remains under RHDHPLAN-1113. Model servers currently use `AiModelServerAPI` / `ai-model-server`. The `ai-model` mapping and future model-server upstream alignment remain under RHDHPLAN-404. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` under broader RHDHPLAN-1510 work; it is not part of the current Boost frontend/OGX release contract.
 
 **Migration path:** When upstream kinds stabilize, we document field-level transformations. For example, `AiResource` casing alignment for skills: `kind: AIResource` + `spec.type: skill` + `rhdh.io/ai-asset-category: skill` → `kind: AiResource` (see [#33575](https://github.com/backstage/backstage/issues/33575)). The annotation remains for backward compatibility during the transition.
 
