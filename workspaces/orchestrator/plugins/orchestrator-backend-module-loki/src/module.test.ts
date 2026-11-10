@@ -53,14 +53,18 @@ async function bootWithLokiConfig(
   return extensionPoint;
 }
 
+function registeredProvider(
+  extensionPoint: Awaited<ReturnType<typeof bootWithLokiConfig>>,
+): WorkflowLogProvider {
+  expect(extensionPoint.addWorkflowLogProvider).toHaveBeenCalledTimes(1);
+  return extensionPoint.addWorkflowLogProvider.mock.calls[0][0];
+}
+
 describe('orchestratorModuleLoki', () => {
   it('registers the Loki workflow log provider on the extension point', async () => {
     const extensionPoint = await bootWithLokiConfig();
 
-    expect(extensionPoint.addWorkflowLogProvider).toHaveBeenCalledTimes(1);
-    const provider = extensionPoint.addWorkflowLogProvider.mock
-      .calls[0][0] as WorkflowLogProvider;
-    expect(provider.getProviderId()).toBe('loki');
+    expect(registeredProvider(extensionPoint).getProviderId()).toBe('loki');
   });
 
   // RHDHBUGS-3398: quoted braces in logPipelineFilters used to fail
@@ -77,7 +81,7 @@ describe('orchestratorModuleLoki', () => {
     async (_name, logPipelineFilters) => {
       const extensionPoint = await bootWithLokiConfig({ logPipelineFilters });
 
-      expect(extensionPoint.addWorkflowLogProvider).toHaveBeenCalledTimes(1);
+      expect(registeredProvider(extensionPoint).getProviderId()).toBe('loki');
     },
   );
 });
