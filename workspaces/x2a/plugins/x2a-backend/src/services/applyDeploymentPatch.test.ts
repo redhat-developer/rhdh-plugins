@@ -64,6 +64,125 @@ const generatedJob = (): V1Job => ({
 });
 
 describe('applyDeploymentPatch', () => {
+  it('returns the exact merged Job for a representative patch', () => {
+    const result = applyDeploymentPatch(generatedJob(), {
+      metadata: {
+        labels: { team: 'platform', custom: 'yes' },
+        annotations: { custom: 'yes' },
+      },
+      spec: {
+        backoffLimit: 0,
+        template: {
+          metadata: { labels: { template: 'yes' } },
+          spec: {
+            serviceAccountName: null,
+            nodeSelector: { custom: 'node' },
+            tolerations: [{ key: 'custom', operator: 'Equal', value: 'yes' }],
+            hostAliases: [{ ip: '127.0.0.1', hostnames: ['custom.local'] }],
+            initContainers: [{ name: 'init', image: 'init:latest' }],
+            imagePullSecrets: [{ name: 'pull-secret' }],
+            containers: [
+              {
+                name: 'x2a',
+                image: 'custom:latest',
+                command: ['custom-command'],
+                args: ['custom-arg'],
+                env: [
+                  { name: 'PHASE', value: 'replaced' },
+                  { name: 'CUSTOM', value: 'yes' },
+                ],
+                envFrom: [{ configMapRef: { name: 'custom-config' } }],
+                volumeMounts: [
+                  {
+                    name: 'workspace',
+                    mountPath: '/workspace',
+                    readOnly: true,
+                  },
+                  { name: 'custom-volume', mountPath: '/custom' },
+                ],
+                ports: [{ containerPort: 8080, protocol: 'UDP' }],
+                resources: {
+                  requests: { cpu: '250m' },
+                  limits: { memory: '512Mi' },
+                },
+              },
+              { name: 'sidecar', image: 'sidecar:latest' },
+            ],
+            volumes: [
+              {
+                name: 'rules',
+                configMap: null,
+                secret: { secretName: 'custom-rules' },
+              },
+              { name: 'custom-volume', emptyDir: {} },
+            ],
+          },
+        },
+      },
+    });
+
+    const expected: V1Job = {
+      apiVersion: 'batch/v1',
+      kind: 'Job',
+      metadata: {
+        name: 'generated',
+        labels: { generated: 'yes', team: 'platform', custom: 'yes' },
+        annotations: { generated: 'yes', custom: 'yes' },
+      },
+      spec: {
+        backoffLimit: 0,
+        ttlSecondsAfterFinished: 86400,
+        template: {
+          metadata: { labels: { generated: 'yes', template: 'yes' } },
+          spec: {
+            restartPolicy: 'Never',
+            nodeSelector: { 'kubernetes.io/os': 'linux', custom: 'node' },
+            tolerations: [{ key: 'custom', operator: 'Equal', value: 'yes' }],
+            hostAliases: [{ ip: '127.0.0.1', hostnames: ['custom.local'] }],
+            initContainers: [{ name: 'init', image: 'init:latest' }],
+            imagePullSecrets: [{ name: 'pull-secret' }],
+            containers: [
+              {
+                name: 'x2a',
+                image: 'custom:latest',
+                imagePullPolicy: 'IfNotPresent',
+                command: ['custom-command'],
+                args: ['custom-arg'],
+                env: [
+                  { name: 'PHASE', value: 'replaced' },
+                  { name: 'CUSTOM', value: 'yes' },
+                ],
+                envFrom: [{ configMapRef: { name: 'custom-config' } }],
+                volumeMounts: [
+                  {
+                    name: 'workspace',
+                    mountPath: '/workspace',
+                    readOnly: true,
+                  },
+                  { name: 'rules', mountPath: '/rules' },
+                  { name: 'custom-volume', mountPath: '/custom' },
+                ],
+                ports: [{ containerPort: 8080, protocol: 'UDP' }],
+                resources: {
+                  requests: { cpu: '250m', memory: '1Gi' },
+                  limits: { cpu: '1', memory: '512Mi' },
+                },
+              },
+              { name: 'sidecar', image: 'sidecar:latest' },
+            ],
+            volumes: [
+              { name: 'workspace', emptyDir: {} },
+              { name: 'rules', secret: { secretName: 'custom-rules' } },
+              { name: 'custom-volume', emptyDir: {} },
+            ],
+          },
+        },
+      },
+    };
+
+    expect(result).toEqual(expected);
+  });
+
   it('merges common keyed lists and metadata', () => {
     const result = applyDeploymentPatch(generatedJob(), {
       metadata: {

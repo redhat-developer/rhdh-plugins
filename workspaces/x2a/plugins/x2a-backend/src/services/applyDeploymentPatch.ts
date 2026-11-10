@@ -81,7 +81,7 @@ const clone = (value: JsonValue): JsonValue => {
 
 const validatePatch = (value: unknown, path: string[]): void => {
   if (Array.isArray(value)) {
-    const fieldName = path.length > 0 ? path[path.length - 1] : undefined;
+    const fieldName = path.at(-1);
     const mergeKey = fieldName === undefined ? undefined : mergeKeys[fieldName];
     const seen = new Set<string>();
 
@@ -180,6 +180,48 @@ const mergeKeyedList = (
   return result;
 };
 
+const mergeArray = (
+  generated: unknown,
+  patch: JsonValue[],
+  path: string[],
+): JsonValue => {
+  const fieldName = path.at(-1);
+  const mergeKey = fieldName === undefined ? undefined : mergeKeys[fieldName];
+
+  if (mergeKey === undefined) {
+    return clone(patch);
+  }
+  return mergeKeyedList(generated, patch, path, mergeKey);
+};
+
+const mergeObject = (
+  generated: unknown,
+  patch: PlainObject,
+  path: string[],
+): JsonValue => {
+  if (!isPlainObject(generated)) {
+    return clone(patch);
+  }
+
+  const result: Record<string, JsonValue> = {};
+  for (const [key, generatedValue] of Object.entries(generated)) {
+    if (!Object.hasOwn(patch, key)) {
+      result[key] = clone(generatedValue);
+    }
+  }
+
+  for (const [key, patchValue] of Object.entries(patch)) {
+    const generatedValue = Object.hasOwn(generated, key)
+      ? generated[key]
+      : undefined;
+    const merged = mergeValue(generatedValue, patchValue, [...path, key]);
+    if (merged !== undefined) {
+      result[key] = merged;
+    }
+  }
+  return result;
+};
+
 function mergeValue(
   generated: unknown,
   patch: unknown,
@@ -187,42 +229,8 @@ function mergeValue(
 ): JsonValue | undefined {
   if (patch === null) return undefined;
   if (patch === undefined) return clone(generated as JsonValue);
-
-  if (Array.isArray(patch)) {
-    const fieldName = path[path.length - 1];
-    const mergeKey = fieldName === undefined ? undefined : mergeKeys[fieldName];
-    if (mergeKey !== undefined) {
-      return mergeKeyedList(generated, patch, path, mergeKey);
-    }
-    return clone(patch);
-  }
-
-  if (isPlainObject(patch)) {
-    if (!isPlainObject(generated)) {
-      return clone(patch);
-    }
-
-    const result: Record<string, JsonValue> = {};
-    for (const [key, generatedValue] of Object.entries(generated)) {
-      if (!Object.prototype.hasOwnProperty.call(patch, key)) {
-        result[key] = clone(generatedValue);
-      }
-    }
-    for (const [key, patchValue] of Object.entries(patch)) {
-      const merged = mergeValue(
-        Object.prototype.hasOwnProperty.call(generated, key)
-          ? generated[key]
-          : undefined,
-        patchValue,
-        [...path, key],
-      );
-      if (merged !== undefined) {
-        result[key] = merged;
-      }
-    }
-    return result;
-  }
-
+  if (Array.isArray(patch)) return mergeArray(generated, patch, path);
+  if (isPlainObject(patch)) return mergeObject(generated, patch, path);
   return clone(patch as JsonValue);
 }
 
