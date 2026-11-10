@@ -17,6 +17,8 @@ import { JSX as JSX_2 } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
 import { RouteRef } from '@backstage/frontend-plugin-api';
+import { SidebarIcon } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -154,11 +156,11 @@ const aiCatalogPlugin: OverridableFrontendPlugin<
       kind: 'entity-card';
       name: 'agent-instructions';
       config: {
-        filter: FilterPredicate | undefined;
+        filter: string | FilterPredicate | undefined;
         type: 'content' | 'info' | undefined;
       };
       configInput: {
-        filter?: FilterPredicate | undefined;
+        filter?: string | FilterPredicate | undefined;
         type?: 'content' | 'info' | undefined;
       };
       output:
@@ -195,11 +197,11 @@ const aiCatalogPlugin: OverridableFrontendPlugin<
       kind: 'entity-card';
       name: 'ai-asset-details';
       config: {
-        filter: FilterPredicate | undefined;
+        filter: string | FilterPredicate | undefined;
         type: 'content' | 'info' | undefined;
       };
       configInput: {
-        filter?: FilterPredicate | undefined;
+        filter?: string | FilterPredicate | undefined;
         type?: 'content' | 'info' | undefined;
       };
       output:
@@ -236,11 +238,11 @@ const aiCatalogPlugin: OverridableFrontendPlugin<
       kind: 'entity-card';
       name: 'usage';
       config: {
-        filter: FilterPredicate | undefined;
+        filter: string | FilterPredicate | undefined;
         type: 'content' | 'info' | undefined;
       };
       configInput: {
-        filter?: FilterPredicate | undefined;
+        filter?: string | FilterPredicate | undefined;
         type?: 'content' | 'info' | undefined;
       };
       output:
@@ -359,6 +361,37 @@ const aiCatalogPlugin: OverridableFrontendPlugin<
         loader?: () => Promise<JSX_2.Element>;
         routeRef?: RouteRef;
         noHeader?: boolean;
+      };
+    }>;
+    'sidebar-item:ai-catalog/ai-catalog': OverridableExtensionDefinition<{
+      kind: 'sidebar-item';
+      name: 'ai-catalog';
+      config: {
+        title: string | undefined;
+        icon: string | undefined;
+        to: string | undefined;
+        priority: number | undefined;
+        group: string | undefined;
+        requiresRoute: boolean | undefined;
+      };
+      configInput: {
+        title?: string | undefined;
+        icon?: string | undefined;
+        to?: string | undefined;
+        priority?: number | undefined;
+        group?: string | undefined;
+        requiresRoute?: boolean | undefined;
+      };
+      output: ExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>;
+      inputs: {};
+      params: {
+        title: string;
+        icon?: SidebarIcon;
+        to?: string;
+        onClick?: () => void;
+        priority?: number;
+        group?: string;
+        requiresRoute?: boolean;
       };
     }>;
   }

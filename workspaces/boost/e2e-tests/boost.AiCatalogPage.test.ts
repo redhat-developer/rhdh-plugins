@@ -94,11 +94,13 @@ test.describe('AI Catalog', () => {
     await mockCatalogEntities(page, []);
     await signInAsGuest(page);
 
+    const sidebar = page.getByRole('navigation', { name: 'sidebar nav' });
+    const aiCatalogLink = sidebar.getByRole('link', { name: 'AI Catalog' });
+    await expect(aiCatalogLink).toBeVisible();
+    await expect(aiCatalogLink.locator('svg')).toBeVisible();
     await expect(
-      page.getByRole('navigation', { name: 'sidebar nav' }).getByRole('link', {
-        name: 'AI Catalog',
-      }),
-    ).toBeVisible();
+      sidebar.locator('a[href="/ai-catalog"], a[href="/catalog"]'),
+    ).toHaveText(['AI Catalog', 'Catalog']);
     await expect(
       page.getByRole('heading', { name: 'AI Catalog' }),
     ).toBeVisible();

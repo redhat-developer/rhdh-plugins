@@ -16,14 +16,14 @@
 
 import { createApp } from '@backstage/frontend-defaults';
 import { aiCatalogTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-ai-catalog/translations';
-import { navModule } from './modules/nav';
+import appSidebarModule from '@red-hat-developer-hub/backstage-plugin-app-defaults/app-sidebar-module';
 import { sampleFilterModule } from './modules/sampleFilter';
 import { signInModule } from './modules/signIn';
 
 export default createApp({
   features: [
     signInModule,
-    navModule,
+    appSidebarModule,
     sampleFilterModule,
     aiCatalogTranslationsModule,
   ],
