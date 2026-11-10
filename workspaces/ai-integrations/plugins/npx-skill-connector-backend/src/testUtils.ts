@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import type { BackendFeature } from '@backstage/backend-plugin-api';
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  BackendFeature,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 // eslint-disable-next-line @backstage/no-undeclared-imports -- Shared fixtures are imported only by tests.
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import type { Config } from '../config';
