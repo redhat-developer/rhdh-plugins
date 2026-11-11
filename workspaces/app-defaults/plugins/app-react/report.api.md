@@ -117,11 +117,11 @@ export const appReactTranslationRef: TranslationRef<
     readonly 'pageTabs.Tree': 'Tree';
     readonly 'pageTabs.Detailed': 'Detailed';
     readonly 'pageTabs.Text': 'Text';
+    readonly 'templateCard.timeSaved.copy': 'Copy annotation';
     readonly 'templateCard.timeSaved.estimate': 'Est. time saved: {{duration}}';
     readonly 'templateCard.timeSaved.estimateTooltip': 'This number reflects the typical time to do this work without the template, as reported by the owner.';
     readonly 'templateCard.timeSaved.add': 'Add est. time saved';
     readonly 'templateCard.timeSaved.addTooltip': 'Help others see the value of this template. Add this annotation to its template.yaml:';
-    readonly 'templateCard.timeSaved.copy': 'Copy annotation';
     readonly 'templateCard.timeSaved.copied': 'Copied';
     readonly 'templateCard.timeSaved.minute_one': '{{count}} minute';
     readonly 'templateCard.timeSaved.minute_other': '{{count}} minutes';
