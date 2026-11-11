@@ -21,8 +21,9 @@ import { DeltaSyncManager, InMemoryCursorStore } from './DeltaSyncManager';
 function makeEntity(name: string): Entity {
   return {
     apiVersion: 'backstage.io/v1alpha1',
-    kind: 'Component',
+    kind: 'AiResource',
     metadata: { name },
+    spec: { type: 'agent' },
   };
 }
 
@@ -80,7 +81,7 @@ describe('DeltaSyncManager', () => {
     await manager.applyDelta({
       added: [],
       updated: [],
-      removed: [{ entityRef: 'component:default/agent-foo' }],
+      removed: [{ entityRef: 'airesource:default/agent-foo' }],
       nextCursor: 'cursor-2',
     });
 
@@ -90,7 +91,7 @@ describe('DeltaSyncManager', () => {
     expect(mutation.type).toBe('delta');
     expect(mutation.added).toHaveLength(0);
     expect(mutation.removed).toHaveLength(1);
-    expect(mutation.removed[0].entityRef).toBe('component:default/agent-foo');
+    expect(mutation.removed[0].entityRef).toBe('airesource:default/agent-foo');
     expect(mutation.removed[0].locationKey).toBe('test-provider');
   });
 
@@ -184,8 +185,8 @@ describe('DeltaSyncManager', () => {
       added: [added1],
       updated: [updated1],
       removed: [
-        { entityRef: 'component:default/old-agent-1' },
-        { entityRef: 'component:default/old-agent-2' },
+        { entityRef: 'airesource:default/old-agent-1' },
+        { entityRef: 'airesource:default/old-agent-2' },
       ],
       nextCursor: 'page-token-42',
     });
@@ -196,8 +197,12 @@ describe('DeltaSyncManager', () => {
     expect(mutation.type).toBe('delta');
     expect(mutation.added).toHaveLength(2);
     expect(mutation.removed).toHaveLength(2);
-    expect(mutation.removed[0].entityRef).toBe('component:default/old-agent-1');
-    expect(mutation.removed[1].entityRef).toBe('component:default/old-agent-2');
+    expect(mutation.removed[0].entityRef).toBe(
+      'airesource:default/old-agent-1',
+    );
+    expect(mutation.removed[1].entityRef).toBe(
+      'airesource:default/old-agent-2',
+    );
 
     expect(await manager.getCursor()).toBe('page-token-42');
   });
