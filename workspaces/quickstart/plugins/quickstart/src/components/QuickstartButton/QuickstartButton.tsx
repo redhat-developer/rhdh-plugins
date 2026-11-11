@@ -15,10 +15,9 @@
  */
 
 import { CSSProperties, useCallback } from 'react';
-import { Box, Flex, Text } from '@backstage/ui';
-import { RiHand } from '@remixicon/react';
 import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
 
+import { QuickstartMenuItemLayout } from '../QuickstartMenuItemLayout';
 import { useQuickstartDrawerContext } from '../../hooks/useQuickstartDrawerContext';
 import { useTranslation } from '../../hooks/useTranslation';
 import { QuickstartItemData } from '../../types';
@@ -67,8 +66,6 @@ export const QuickstartButton = ({
       ? filterQuickstartItemsByRole(quickstartItems, userRole)
       : [];
 
-  const defaultTitle = t('button.quickstart');
-
   const handleClick = useCallback(() => {
     toggleDrawer();
     onClick();
@@ -79,48 +76,11 @@ export const QuickstartButton = ({
   }
 
   return (
-    <Box
-      role="menuitem"
-      tabIndex={0}
-      style={{
-        display: 'flex',
-        width: '100%',
-        boxSizing: 'border-box',
-        padding: 0,
-        border: 'none',
-        // Use backgroundColor (not shorthand) so consumer `style` can override it
-        backgroundColor: 'transparent',
-        color: 'inherit',
-        cursor: 'pointer',
-        listStyle: 'none',
-        ...style,
-      }}
+    <QuickstartMenuItemLayout
+      label={title || t('button.quickstart')}
+      onActivate={handleClick}
+      style={style}
       data-testid="quickstart-button"
-      onClick={handleClick}
-      onKeyDown={event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          handleClick();
-        }
-      }}
-    >
-      <Flex
-        align="center"
-        justify="between"
-        px="4"
-        my="2"
-        style={{ width: '100%' }}
-      >
-        <Flex align="center" gap="2">
-          <Box
-            aria-hidden
-            style={{ display: 'flex', color: 'var(--bui-fg-disabled)' }}
-          >
-            <RiHand size={20} />
-          </Box>
-          <Text variant="body-small">{title || defaultTitle}</Text>
-        </Flex>
-      </Flex>
-    </Box>
+    />
   );
 };
