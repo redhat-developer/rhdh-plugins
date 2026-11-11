@@ -224,6 +224,14 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'conversation.category.pinnedChats': string;
     readonly 'conversation.category.recent': string;
     readonly 'conversation.category.savedPrompts': string;
+    readonly 'settings.menu.label': string;
+    readonly 'settings.preferences.tab.title': string;
+    readonly 'settings.preferences.pinnedChats.label': string;
+    readonly 'settings.preferences.pinnedChats.description': string;
+    readonly 'settings.preferences.savedPrompts.label': string;
+    readonly 'settings.preferences.savedPrompts.description': string;
+    readonly 'settings.preferences.screenContext.label': string;
+    readonly 'settings.preferences.screenContext.description': string;
     readonly 'settings.pinned.enable': string;
     readonly 'settings.pinned.disable': string;
     readonly 'settings.pinned.enabled.description': string;
