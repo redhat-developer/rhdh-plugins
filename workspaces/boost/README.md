@@ -48,6 +48,11 @@ ignored, including when old and new values coexist.
 
 This workspace is aligned with **Backstage 1.54.6** (see [`backstage.json`](backstage.json)).
 
+## Package releases
+
+See the [maintainer release guide](.changeset/README.md) for version grouping,
+dependency compatibility, the shared release batch, and release-plan checks.
+
 ## Development
 
 The workspace includes a dev app (`packages/app`) and dev backend (`packages/backend`) for local development.
