@@ -1,5 +1,32 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.4.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- b6ac0a6: Hide the Intelligent Assistant FAB while dock-to-window mode is open so it no longer overlaps the chat UI.
+- 9412521: Fix model selector menu overflowing the docked/overlay chat panel (RHDHBUGS-4005), and show native title tips only for clipped model labels.
+- 2b3234c: Updated dependency `@adobe/react-spectrum` to `3.47.7`.
+  Updated dependency `@patternfly/chatbot` to `6.9.0`.
+  Updated dependency `@yarnpkg/core` to `4.9.2`.
+- dc818df: Updated dependency `prettier` to `3.9.10`.
+- 7c28bb7: Updated dependency `@patternfly/chatbot` to `6.9.0-prerelease.8`.
+- 8620b76: Updated dependency `@testing-library/user-event` to `14.6.8`.
+- 750b8d9: Updated dependency `@patternfly/react-code-editor` to `6.7.0`.
+  Updated dependency `@patternfly/react-core` to `6.7.0`.
+  Updated dependency `monaco-editor` to `^0.57.0`.
+  Updated dependency `react-aria` to `3.53.1`.
+  Updated dependency `react-stately` to `3.51.0`.
+  Updated dependency `@react-types/shared` to `3.37.0`.
+  Updated dependency `react-aria-components` to `1.22.1`.
+- Updated dependencies [0a42ebd]
+- Updated dependencies [dc818df]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.4.0
+
 ## 5.3.10
 
 ### Patch Changes
