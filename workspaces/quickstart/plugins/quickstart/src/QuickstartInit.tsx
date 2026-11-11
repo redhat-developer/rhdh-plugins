@@ -15,18 +15,18 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  configApiRef,
-  identityApiRef,
-  useApi,
-} from '@backstage/core-plugin-api';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { toastApiRef } from '@backstage/frontend-plugin-api';
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { useQuickstartRole } from './hooks/useQuickstartRole';
+import { useQuickstartUserKey } from './hooks/useQuickstartUserKey';
 import { useTranslation } from './hooks/useTranslation';
-import { QuickstartItemData } from './types';
-import { filterQuickstartItemsByRole } from './utils';
+import {
+  getConfiguredQuickstartItems,
+  getEligibleQuickstartItems,
+  postQuickstartHelpToast,
+} from './utils';
 import { QUICKSTART_DRAWER_ID } from './const';
 
 /**
@@ -36,12 +36,11 @@ import { QUICKSTART_DRAWER_ID } from './const';
  * notification when the drawer is closed for the first time.
  */
 export const QuickstartInit = () => {
-  const [userKey, setUserKey] = useState<string>('');
   const [hasShownNotification, setHasShownNotification] = useState(false);
   const initDone = useRef(false);
   const prevOpen = useRef(false);
 
-  const identityApi = useApi(identityApiRef);
+  const userKey = useQuickstartUserKey();
   const configApi = useApi(configApiRef);
   const toastApi = useApi(toastApiRef);
   const { t } = useTranslation();
@@ -50,44 +49,17 @@ export const QuickstartInit = () => {
 
   const drawerOpen = isOpen(QUICKSTART_DRAWER_ID);
 
-  // Resolve the current user's identity to scope localStorage keys per user
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const identity = await identityApi.getBackstageIdentity();
-        const ref = identity?.userEntityRef?.toLowerCase() || 'guest';
-        if (!cancelled) setUserKey(ref);
-      } catch {
-        if (!cancelled) setUserKey('guest');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [identityApi]);
-
   // Initialize drawer state based on per-user keys and eligible quickstart items
   useEffect(() => {
     if (!userKey || roleLoading || initDone.current) return;
 
-    const quickstartItems: QuickstartItemData[] = (() => {
-      try {
-        if (!configApi?.has('app.quickstart')) return [];
-        const items = configApi.get('app.quickstart') as unknown;
-        if (!Array.isArray(items)) return [];
-        return items as QuickstartItemData[];
-      } catch {
-        return [];
-      }
-    })();
+    if (getConfiguredQuickstartItems(configApi).length === 0) return;
 
-    if (quickstartItems.length === 0) return;
-
-    const eligibleItems = userRole
-      ? filterQuickstartItemsByRole(quickstartItems, userRole)
-      : [];
-
+    const eligibleItems = getEligibleQuickstartItems(
+      configApi,
+      roleLoading,
+      userRole,
+    );
     if (eligibleItems.length === 0) return;
 
     const visitedKey = `quickstart-visited:${userKey}`;
@@ -114,22 +86,18 @@ export const QuickstartInit = () => {
     if (!initDone.current) return;
 
     if (prevOpen.current && !drawerOpen) {
-      const openKey = `quickstart-open:${userKey}`;
-      localStorage.setItem(openKey, 'false');
+      localStorage.setItem(`quickstart-open:${userKey}`, 'false');
 
       if (!hasShownNotification) {
-        toastApi.post({
-          title: t('snackbar.helpPrompt'),
-          status: 'info',
-          timeout: 5000,
-        });
+        postQuickstartHelpToast(toastApi, t('snackbar.helpPrompt'));
         setHasShownNotification(true);
-        const notificationKey = `quickstart-notification-shown:${userKey}`;
-        localStorage.setItem(notificationKey, 'true');
+        localStorage.setItem(
+          `quickstart-notification-shown:${userKey}`,
+          'true',
+        );
       }
     } else if (!prevOpen.current && drawerOpen) {
-      const openKey = `quickstart-open:${userKey}`;
-      localStorage.setItem(openKey, 'true');
+      localStorage.setItem(`quickstart-open:${userKey}`, 'true');
     }
 
     prevOpen.current = drawerOpen;

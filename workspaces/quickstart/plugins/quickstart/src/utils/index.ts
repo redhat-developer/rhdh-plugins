@@ -15,4 +15,9 @@
  */
 
 export { filterQuickstartItemsByRole } from './filterQuickstartItems';
+export {
+  getConfiguredQuickstartItems,
+  getEligibleQuickstartItems,
+} from './getEligibleQuickstartItems';
 export { getTranslatedTextWithFallback } from './translationUtils';
+export { postQuickstartHelpToast } from './postQuickstartHelpToast';
