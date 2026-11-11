@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
-import List from '@mui/material/List';
-import CircularProgress from '@mui/material/CircularProgress';
+import { AccordionGroup, Box, Flex, Skeleton } from '@backstage/ui';
+
 import { QuickstartItem } from './QuickstartItem';
-import { useState, useEffect } from 'react';
 import { QuickstartItemData } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -32,60 +30,38 @@ type QuickstartContentProps = {
 export const QuickstartContent = ({
   quickstartItems,
   setProgress,
-  itemCount,
+  itemCount: _itemCount,
   isLoading,
 }: QuickstartContentProps) => {
   const { t } = useTranslation();
-  const [openItems, setOpenItems] = useState<boolean[]>(
-    new Array(itemCount).fill(false),
-  );
 
-  // Re-initialize openItems when itemCount changes (e.g., after loading)
-  useEffect(() => {
-    setOpenItems(new Array(itemCount).fill(false));
-  }, [itemCount]);
-
-  // Show loading spinner when user role is still being determined
   if (isLoading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '50vh',
-          width: '100%',
-        }}
+      <Flex
+        align="center"
+        justify="center"
+        style={{ minHeight: '50vh', width: '100%' }}
+        role="status"
+        aria-label={t('content.loading')}
       >
-        <CircularProgress aria-label={t('content.loading')} />
-      </Box>
+        <Skeleton width="48px" height="48px" />
+      </Flex>
     );
   }
 
   return (
-    <Box
-      sx={{
-        paddingTop: theme => `${theme.spacing(3)}`,
-      }}
-    >
-      <List disablePadding>
+    <Box pt="6">
+      {/* --bui-space-0_5 = 2px; beats theme AccordionGroup gap via inline style */}
+      <AccordionGroup style={{ gap: 'var(--bui-space-0_5)' }}>
         {quickstartItems.map((item: QuickstartItemData, index: number) => (
           <QuickstartItem
             key={`${item.title}-${index}`}
             item={item}
             index={index}
-            open={openItems[index]}
-            handleOpen={() =>
-              setOpenItems(oi => {
-                return oi.map((val, valIndex) =>
-                  valIndex === index ? !val : false,
-                );
-              })
-            }
             setProgress={() => setProgress(index)}
           />
         ))}
-      </List>
+      </AccordionGroup>
     </Box>
   );
 };

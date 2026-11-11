@@ -14,44 +14,37 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
+import { Flex, Text } from '@backstage/ui';
+
 import quickstartImage from '../assets/quickstart-image.png';
+import { useIsDarkTheme } from '../hooks/useIsDarkTheme';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const QuickstartHeader = () => {
   const { t } = useTranslation();
+  const isDark = useIsDarkTheme();
 
   return (
-    <Toolbar
-      sx={{
-        justifyContent: 'center',
-        display: 'flex',
-        flexFlow: 'column',
-      }}
-    >
+    <Flex direction="column" align="center">
       <img
         src={quickstartImage}
         alt=""
-        width="128px"
-        style={{ backgroundColor: '#f2f2f2' }}
-      />
-      <Box
-        sx={{
-          alignItems: 'center',
-          display: 'flex',
-          flexFlow: 'column',
-          padding: theme => `${theme.spacing(3)} 0px`,
+        width={128}
+        style={{
+          height: 'auto',
+          // Dark logo asset → white in dark mode
+          filter: isDark ? 'brightness(0) invert(1)' : undefined,
         }}
-      >
-        <Typography sx={{ fontSize: theme => theme.typography.h6 }}>
+      />
+      <Flex direction="column" align="center" py="6">
+        {/* title-small = 24px; body-large = --bui-font-size-4 = 18px under RHDH theme */}
+        <Text as="h2" variant="body-large">
           {t('header.title')}
-        </Typography>
-        <Typography sx={{ fontSize: theme => theme.typography.caption }}>
+        </Text>
+        <Text variant="body-small" color="secondary">
           {t('header.subtitle')}
-        </Typography>
-      </Box>
-    </Toolbar>
+        </Text>
+      </Flex>
+    </Flex>
   );
 };

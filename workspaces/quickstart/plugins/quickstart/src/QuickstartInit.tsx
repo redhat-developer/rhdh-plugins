@@ -16,15 +16,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
+  alertApiRef,
   configApiRef,
   identityApiRef,
   useApi,
 } from '@backstage/core-plugin-api';
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import Snackbar from '@mui/material/Snackbar';
-import IconButton from '@mui/material/IconButton';
 
-import { QuickstartIcon } from './components/QuickstartContent/QuickstartIcon';
 import { useQuickstartRole } from './hooks/useQuickstartRole';
 import { useTranslation } from './hooks/useTranslation';
 import { QuickstartItemData } from './types';
@@ -34,18 +32,18 @@ import { QUICKSTART_DRAWER_ID } from './const';
 /**
  * Side-effect component rendered at the app root via AppRootElementBlueprint.
  *
- * Handles first-visit auto-open of the quickstart drawer and shows a snackbar
+ * Handles first-visit auto-open of the quickstart drawer and posts an alert
  * notification when the drawer is closed for the first time.
  */
 export const QuickstartInit = () => {
   const [userKey, setUserKey] = useState<string>('');
-  const [showNotification, setShowNotification] = useState(false);
   const [hasShownNotification, setHasShownNotification] = useState(false);
   const initDone = useRef(false);
   const prevOpen = useRef(false);
 
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
+  const alertApi = useApi(alertApiRef);
   const { t } = useTranslation();
   const { isOpen, openDrawer } = useAppDrawer();
   const { isLoading: roleLoading, userRole } = useQuickstartRole();
@@ -111,7 +109,7 @@ export const QuickstartInit = () => {
     initDone.current = true;
   }, [userKey, configApi, roleLoading, userRole, openDrawer]);
 
-  // Track drawer close to show snackbar and persist state
+  // Track drawer close to show alert and persist state
   useEffect(() => {
     if (!initDone.current) return;
 
@@ -120,7 +118,11 @@ export const QuickstartInit = () => {
       localStorage.setItem(openKey, 'false');
 
       if (!hasShownNotification) {
-        setShowNotification(true);
+        alertApi.post({
+          message: t('snackbar.helpPrompt'),
+          severity: 'info',
+          display: 'transient',
+        });
         setHasShownNotification(true);
         const notificationKey = `quickstart-notification-shown:${userKey}`;
         localStorage.setItem(notificationKey, 'true');
@@ -131,28 +133,7 @@ export const QuickstartInit = () => {
     }
 
     prevOpen.current = drawerOpen;
-  }, [drawerOpen, userKey, hasShownNotification]);
+  }, [drawerOpen, userKey, hasShownNotification, alertApi, t]);
 
-  const handleNotificationClose = () => setShowNotification(false);
-
-  return (
-    <Snackbar
-      sx={{ top: '80px !important' }}
-      open={showNotification}
-      autoHideDuration={10000}
-      onClose={handleNotificationClose}
-      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      message={t('snackbar.helpPrompt')}
-      action={
-        <IconButton
-          size="small"
-          aria-label="close"
-          color="inherit"
-          onClick={handleNotificationClose}
-        >
-          <QuickstartIcon icon="close" size="small" />
-        </IconButton>
-      }
-    />
-  );
+  return null;
 };

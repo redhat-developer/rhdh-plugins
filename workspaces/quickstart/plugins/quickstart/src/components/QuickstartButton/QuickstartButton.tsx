@@ -15,17 +15,14 @@
  */
 
 import { CSSProperties, useCallback } from 'react';
-import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
-import WavingHandIcon from '@mui/icons-material/WavingHandOutlined';
+import { Box, Flex, Text } from '@backstage/ui';
+import { RiHand } from '@remixicon/react';
+import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
+
 import { useQuickstartDrawerContext } from '../../hooks/useQuickstartDrawerContext';
 import { useTranslation } from '../../hooks/useTranslation';
-import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { QuickstartItemData } from '../../types';
 import { filterQuickstartItemsByRole } from '../../utils';
-// Role is now provided through context
 
 /**
  * Props for the QuickstartButton component
@@ -56,12 +53,9 @@ export const QuickstartButton = ({
   style,
   onClick = () => {},
 }: QuickstartButtonProps) => {
-  // All hooks must be called at the top level, before any early returns
   const { t } = useTranslation();
   const { toggleDrawer, userRole, roleLoading } = useQuickstartDrawerContext();
-  const theme = useTheme();
 
-  // Check if there are any quickstart items available for the current user
   const apiHolder = useApiHolder();
   const config = apiHolder.get(configApiRef);
   const quickstartItems: QuickstartItemData[] = config?.has('app.quickstart')
@@ -80,58 +74,53 @@ export const QuickstartButton = ({
     onClick();
   }, [toggleDrawer, onClick]);
 
-  // Hide the button if there are no quickstart items for the user
   if (!roleLoading && filteredItems.length === 0) {
     return null;
   }
 
   return (
-    <MenuItem
-      sx={{
+    <Box
+      role="menuitem"
+      tabIndex={0}
+      style={{
+        display: 'flex',
         width: '100%',
+        boxSizing: 'border-box',
+        padding: 0,
+        border: 'none',
+        // Use backgroundColor (not shorthand) so consumer `style` can override it
+        backgroundColor: 'transparent',
         color: 'inherit',
+        cursor: 'pointer',
+        listStyle: 'none',
+        ...style,
       }}
-      style={style}
       data-testid="quickstart-button"
       onClick={handleClick}
+      onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          margin: '8px 0',
-          color: 'inherit',
-          width: '100%',
-        }}
+      <Flex
+        align="center"
+        justify="between"
+        px="4"
+        my="2"
+        style={{ width: '100%' }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <WavingHandIcon
-            sx={{
-              fontSize: 20,
-              marginRight: '0.5rem',
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              color:
-                theme.palette.mode === 'dark'
-                  ? theme.palette.text.primary
-                  : theme.palette.text.disabled,
-            }}
-          />
+        <Flex align="center" gap="2">
           <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-            }}
+            aria-hidden
+            style={{ display: 'flex', color: 'var(--bui-fg-disabled)' }}
           >
-            <Typography variant="body2" color={theme.palette.text.primary}>
-              {title || defaultTitle}
-            </Typography>
+            <RiHand size={20} />
           </Box>
-        </Box>
-      </Box>
-    </MenuItem>
+          <Text variant="body-small">{title || defaultTitle}</Text>
+        </Flex>
+      </Flex>
+    </Box>
   );
 };

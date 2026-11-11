@@ -14,72 +14,96 @@
  * limitations under the License.
  */
 
-import type { ComponentType } from 'react';
-import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
-import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
-import ControlPointOutlinedIcon from '@mui/icons-material/ControlPointOutlined';
-import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
-import LoginIcon from '@mui/icons-material/Login';
-import PowerOutlinedIcon from '@mui/icons-material/PowerOutlined';
-import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
-import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
-import Box from '@mui/material/Box';
-import { SxProps, Theme } from '@mui/material/styles';
-import { SvgIconProps } from '@mui/material/SvgIcon';
+import type { ComponentType, CSSProperties } from 'react';
+import { Box } from '@backstage/ui';
+import {
+  RiAddCircleLine,
+  RiAdminLine,
+  RiKey2Line,
+  RiLoginBoxLine,
+  RiPlugLine,
+  RiPriceTag3Line,
+  RiFileCopyLine,
+  RiGraduationCapLine,
+} from '@remixicon/react';
 
 import { QuickstartIcon } from './QuickstartIcon';
 import { LightspeedIcon } from './LightspeedIcon';
 
 export interface QuickstartItemIconProps {
   icon?: string;
-  sx?: SxProps<Theme>;
+  className?: string;
+  style?: CSSProperties;
 }
 
 /**
- * Legacy PascalCase step-type ids → MUI outlined components for the drawer.
+ * Legacy PascalCase step-type ids → Remix outlined icons for the drawer.
  *
- * Checked before `QuickstartIcon` so step rows keep the historical OFS glyphs.
+ * Checked before `QuickstartIcon` so step rows keep dedicated glyphs.
  * These are intentionally separate from `quickstartLegacyIconAliases`, which
  * maps the same keys to system / Material ligature ids for the generic
  * `QuickstartIcon` path (help menu, CTAs, etc.). Updating one map does not
  * update the other — keep both in sync when adding a new legacy id.
  */
-const commonIcons: Record<
-  string,
-  ComponentType<SvgIconProps<'svg', object>>
-> = {
-  Admin: AdminPanelSettingsOutlinedIcon,
-  Rbac: VpnKeyOutlinedIcon,
-  Git: FileCopyOutlinedIcon,
-  Plugins: PowerOutlinedIcon,
-  Import: LoginIcon,
-  Catalog: CategoryOutlinedIcon,
-  SelfService: ControlPointOutlinedIcon,
-  Learning: SchoolOutlinedIcon,
+const commonIcons: Record<string, ComponentType<{ size?: number | string }>> = {
+  Admin: RiAdminLine,
+  Rbac: RiKey2Line,
+  Git: RiFileCopyLine,
+  Plugins: RiPlugLine,
+  Import: RiLoginBoxLine,
+  Catalog: RiPriceTag3Line,
+  SelfService: RiAddCircleLine,
+  Learning: RiGraduationCapLine,
 };
 
-export const QuickstartItemIcon = ({ icon, sx }: QuickstartItemIconProps) => {
+const commonIconTestIds: Record<string, string> = {
+  Admin: 'AdminIcon',
+  Rbac: 'RbacIcon',
+  Git: 'GitIcon',
+  Plugins: 'PluginsIcon',
+  Import: 'ImportIcon',
+  Catalog: 'CatalogIcon',
+  SelfService: 'SelfServiceIcon',
+  Learning: 'LearningIcon',
+};
+
+export const QuickstartItemIcon = ({
+  icon,
+  className,
+  style,
+}: QuickstartItemIconProps) => {
   if (!icon) {
     return null;
   }
 
   if (icon === 'Lightspeed') {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', ...sx }}>
+      <Box className={className} style={style}>
         <LightspeedIcon />
       </Box>
     );
   }
 
-  // Prefer commonIcons over system icons so legacy step ids keep OFS MUI glyphs.
+  // Prefer commonIcons over system icons so legacy step ids keep dedicated glyphs.
   const CommonIcon = commonIcons[icon];
   if (CommonIcon) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', ...sx }}>
-        <CommonIcon fontSize="medium" />
+      <Box
+        className={className}
+        style={style}
+        data-testid={commonIconTestIds[icon]}
+      >
+        <CommonIcon size={24} />
       </Box>
     );
   }
 
-  return <QuickstartIcon icon={icon} size="medium" sx={sx} />;
+  return (
+    <QuickstartIcon
+      icon={icon}
+      size="medium"
+      className={className}
+      style={style}
+    />
+  );
 };

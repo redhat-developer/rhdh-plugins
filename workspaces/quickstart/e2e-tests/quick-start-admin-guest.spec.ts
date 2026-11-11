@@ -50,6 +50,11 @@ test.describe('Test Quick Start plugin', () => {
     await uiHelper.verifyText(translations.header.title);
     await uiHelper.verifyText(translations.header.subtitle);
     await uiHelper.verifyText(translations.footer.notStarted);
+    // Wait until role filtering finishes so the step list (not the loading
+    // skeleton) is present before the axe scan.
+    await page
+      .getByText(translations.steps.setupAuthentication.title, { exact: true })
+      .waitFor({ state: 'visible', timeout: 15000 });
 
     await runAccessibilityTests(
       page,

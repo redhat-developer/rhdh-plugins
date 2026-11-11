@@ -20,11 +20,6 @@ import { renderInTestApp } from '@backstage/test-utils';
 import { mockQuickstartItems } from '../mockData';
 import { filterQuickstartItemsByRole } from '../../utils';
 
-jest.mock('@mui/material/Collapse', () => ({
-  __esModule: true,
-  default: ({ in: open, children }: any) => (open ? children : null),
-}));
-
 beforeEach(() => {
   localStorage.clear();
   jest.clearAllMocks();
@@ -107,33 +102,31 @@ describe('QuickstartContent', () => {
   });
 
   it('only opens one item at a time', async () => {
+    const adminItems = filterQuickstartItemsByRole(
+      mockQuickstartItems,
+      'admin',
+    ).slice(0, 2);
+
     await renderInTestApp(
       <QuickstartContent
-        quickstartItems={mockQuickstartItems}
+        quickstartItems={adminItems}
         setProgress={mockSetProgress}
-        itemCount={2}
+        itemCount={adminItems.length}
         isLoading={false}
       />,
     );
 
-    const items = screen.getAllByRole('button', {
-      name: /expand .* details/i,
-    });
+    const first = screen.getByRole('button', { name: /Step 1 for Admin/i });
+    const second = screen.getByRole('button', { name: /Step 2 for Admin/i });
 
-    fireEvent.click(items[0]);
+    fireEvent.click(first);
+    await waitFor(() => expect(first).toHaveAttribute('aria-expanded', 'true'));
+    expect(second).toHaveAttribute('aria-expanded', 'false');
 
+    fireEvent.click(second);
     await waitFor(() =>
-      expect(screen.getByText('Description for Step 1')).toBeInTheDocument(),
+      expect(second).toHaveAttribute('aria-expanded', 'true'),
     );
-
-    fireEvent.click(items[1]);
-
-    await waitFor(() =>
-      expect(screen.getByText('Description for Step 2')).toBeInTheDocument(),
-    );
-
-    expect(
-      screen.queryByText('Description for Step 1'),
-    ).not.toBeInTheDocument();
+    expect(first).toHaveAttribute('aria-expanded', 'false');
   });
 });
