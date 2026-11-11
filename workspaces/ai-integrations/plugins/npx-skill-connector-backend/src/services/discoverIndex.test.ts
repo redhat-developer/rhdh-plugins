@@ -15,31 +15,8 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import { createMockLogger, testSource as source } from '../testUtils';
 import { discoverIndex } from './discoverIndex';
-import type { NpxSourceConfig } from './types';
-
-/** Minimal mock logger. */
-function createMockLogger(): LoggerService {
-  return {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
-    child: jest.fn().mockReturnThis(),
-  } as unknown as LoggerService;
-}
-
-/** Default source config for tests. */
-const source: NpxSourceConfig = {
-  id: 'test-source',
-  indexUrl: 'https://skills.example.com/index.json',
-  schedule: {
-    frequency: { minutes: 10 },
-    timeout: { minutes: 10 },
-    initialDelay: { seconds: 0 },
-    scope: 'local',
-  },
-};
 
 /** Helper to build a JSON response for an index page. */
 function indexPage(entries: unknown[], next?: string): Response {
@@ -93,6 +70,7 @@ describe('discoverIndex', () => {
     const result = await discoverIndex(source, logger);
 
     expect(result.complete).toBe(true);
+    expect(result.hasUsablePage).toBe(true);
     expect(result.failedKeys).toEqual([]);
     expect(result.entries).toHaveLength(2);
     expect(result.entries[0].name).toBe('skill-a');
@@ -693,6 +671,7 @@ describe('discoverIndex', () => {
     expect(result).toEqual({
       entries: [],
       failedKeys: ['signed-skill'],
+      hasUsablePage: true,
       complete: false,
     });
   });
@@ -738,6 +717,7 @@ describe('discoverIndex', () => {
       expect(result).toEqual({
         entries: [],
         failedKeys: ['duplicate'],
+        hasUsablePage: true,
         complete: false,
       });
     },
@@ -776,6 +756,23 @@ describe('discoverIndex', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('retains a usable empty page when the next page fails', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        indexPage([], 'https://skills.example.com/index.json?page=2'),
+      )
+      .mockRejectedValueOnce(new Error('Network timeout'));
+
+    const result = await discoverIndex(source, logger);
+
+    expect(result).toEqual({
+      entries: [],
+      failedKeys: [],
+      hasUsablePage: true,
+      complete: false,
+    });
+  });
+
   it('rejects oversized names without retaining them as failed keys', async () => {
     fetchMock.mockResolvedValue(
       indexPage([
@@ -791,6 +788,7 @@ describe('discoverIndex', () => {
     expect(await discoverIndex(source, logger)).toEqual({
       entries: [],
       failedKeys: [],
+      hasUsablePage: true,
       complete: false,
     });
   });
@@ -825,6 +823,7 @@ describe('discoverIndex', () => {
       expect(await discoverIndex(source, logger)).toEqual({
         entries: [],
         failedKeys: [],
+        hasUsablePage: false,
         complete: false,
       });
     },
@@ -900,6 +899,7 @@ describe('discoverIndex', () => {
     expect(await discoverIndex(source, logger)).toEqual({
       entries: [],
       failedKeys: ['long-description'],
+      hasUsablePage: true,
       complete: false,
     });
   });

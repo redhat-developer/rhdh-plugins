@@ -48,6 +48,7 @@ const extensionsTranslationDe = createTranslationMessages({
     'status.disabled': 'Deaktiviert',
     'status.partiallyInstalled': 'Teilweise installiert',
     'status.updateAvailable': 'Update verfügbar',
+    'status.restartRequired': 'Neustart erforderlich',
     'role.backend': 'Backend',
     'role.backendModule': 'Backend-Modul',
     'role.frontend': 'Frontend',
@@ -280,12 +281,20 @@ const extensionsTranslationDe = createTranslationMessages({
     'errors.unknownError': 'Fehler beim Lesen der Konfigurationsdatei. ',
     'tooltips.productionDisabled':
       'Die Plugin-Installation ist in der Produktionsumgebung deaktiviert.',
-    'tooltips.extensionsDisabled':
-      'Die Plugin-Installation ist deaktiviert. Um dies zu aktivieren, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'tooltips.extensionsDisabledInstallPlugin':
+      'Dieses Plugin kann nicht installiert werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'tooltips.extensionsDisabledInstallPackage':
+      'Dieses Paket kann nicht installiert werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'tooltips.extensionsDisabledManagePlugin':
+      'Dieses Plugin kann nicht verwaltet werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'tooltips.extensionsDisabledManagePackage':
+      'Dieses Paket kann nicht verwaltet werden. Um Aktionen zu ermöglichen, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
     'tooltips.noPermissions':
       'Sie haben keine Berechtigung, Plugins zu installieren oder deren Konfigurationen anzuzeigen. Wenden Sie sich an Ihren Administrator, um Zugriff oder Unterstützung anzufordern.',
     'tooltips.missingDynamicArtifact':
       'Dieses {{type}} kann nicht verwaltet werden. Um Aktionen zu ermöglichen, muss ein Katalogelement mit dem erforderlichen spec.dynamicArtifact hinzugefügt werden.',
+    'tooltips.restartRequired':
+      'Für diese Änderung ist ein Neustart der Plattform erforderlich, damit sie wirksam wird.',
     'aria.openPlugin': 'Plugin {{name}} öffnen',
     'aria.closeDialog': 'Dialog schließen',
     'aria.expandSection': 'Abschnitt erweitern',

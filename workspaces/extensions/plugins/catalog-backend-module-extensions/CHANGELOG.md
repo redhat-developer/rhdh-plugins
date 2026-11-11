@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
 
+## 1.1.2
+
+### Patch Changes
+
+- Updated dependencies [e185cdb]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@1.1.2
+
 ## 1.1.1
 
 ### Patch Changes

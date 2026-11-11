@@ -303,6 +303,73 @@ describe('InstalledPackagesTable', () => {
     );
   });
 
+  it('disables mutate actions and shows missing-file warning when config file is missing', async () => {
+    useExtensionsConfigurationMock.mockReturnValue({
+      data: {
+        enabled: false,
+        error: {
+          reason: 'FILE_NOT_EXISTS',
+          message: 'The file /opt/app-root/src/dynamic-plugins.yaml is missing',
+        },
+      },
+    });
+
+    const dynamicPlugins = [
+      {
+        name: '@scope/pkg-a-dynamic',
+        version: '1.0.0',
+        role: 'frontend-plugin',
+        platform: 'fe',
+      },
+    ];
+
+    const entities = {
+      items: [
+        {
+          apiVersion: 'extensions.backstage.io/v1alpha1',
+          kind: 'Package',
+          metadata: {
+            namespace: 'rhdh',
+            name: 'scope-pkg-a',
+            title: 'Package A',
+          },
+          spec: { packageName: '@scope/pkg-a', version: '1.0.0' },
+        },
+      ],
+      totalItems: 1,
+      pageInfo: {},
+    };
+
+    const apis = [
+      [
+        dynamicPluginsInfoApiRef,
+        { listLoadedPlugins: jest.fn().mockResolvedValue(dynamicPlugins) },
+      ],
+      [
+        extensionsApiRef,
+        { getPackages: jest.fn().mockResolvedValue(entities) },
+      ],
+    ] as const;
+
+    renderWithProviders(apis);
+
+    await waitFor(() =>
+      expect(screen.getByText('Installed packages (1)')).toBeInTheDocument(),
+    );
+
+    expect(
+      screen.getByText(
+        /Configuration file is incorrect, misspelled or does not exist/i,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/dynamic-plugins.yaml is missing/i),
+    ).toBeInTheDocument();
+
+    // Toggle must be disabled so users cannot hit the failing disable API.
+    expect(screen.getByRole('checkbox')).toBeDisabled();
+  });
+
   it('disables actions in the production env', async () => {
     useNodeEnvironmentMock.mockReturnValue({
       data: {

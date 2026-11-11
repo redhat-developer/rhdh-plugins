@@ -9,13 +9,13 @@
 >
 > **Design document:** [migration-plan.md](migration-plan.md) — implements RHIDP-15302 tasks 8.1–8.4 (canonical SoT). Platform engineers can also find a pointer at [`specifications/ai-asset-upstream-migration-design.md`](../../../../../specifications/ai-asset-upstream-migration-design.md).
 
-Design document mapping custom annotations and entity kinds to upstream Backstage entity kind targets, identifying consumer-facing changes, and obtaining RHDH architect / tech-lead sign-off (upstream maintainer optional). Current-state source of truth: [ai-catalog-entity-model/design.md Decision 1](../../design.md). MCP server kind is already aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); RFC [#32062](https://github.com/backstage/backstage/issues/32062) is MCP-only and does **not** define an agent kind. Entity-type pivot landed: `AiResource` (lowercase `i`) for skills/rules/agents, `AiModelServerAPI` for model servers.
+Design document mapping custom annotations and entity kinds to upstream Backstage entity kind targets, identifying consumer-facing changes, and obtaining RHDH architect / tech-lead sign-off (upstream maintainer optional). Current-state source of truth: [ai-catalog-entity-model/design.md Decision 1](../../design.md#decision-1-annotation-independence-from-entity-kinds) (five minimum categories plus existing `rule` compatibility after RHIDP-18761 reconciliation). MCP server kind is already aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); RFC [#32062](https://github.com/backstage/backstage/issues/32062) is MCP-only and does **not** define an agent kind. Entity-type pivot landed: `AiResource` (lowercase `i`) for skills/rules/agents, `AiModelServerAPI` for model servers.
 
 ## Stakeholder Alignment (2026-07-13, updated 2026-08-06)
 
 > Per RHDHPLAN-1505 stakeholder meeting and [#4042 gate comment](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995):
 >
-> - **Decision 1 baseline:** The current-state source of truth is [ai-catalog-entity-model/design.md Decision 1](../../design.md). The mapping table uses Decision 1's seven categories as the starting point.
+> - **Decision 1 baseline:** The current-state source of truth is [ai-catalog-entity-model/design.md Decision 1](../../design.md#decision-1-annotation-independence-from-entity-kinds). The mapping table covers five minimum feature categories and preserves existing `rule` mappings separately for compatibility. RHIDP-18761 removes `skill-bundle` from minimum obligations.
 > - **RHDHPLAN-1113 resolved:** Boost uses `AiResource` (lowercase `i`) for skills/rules directly. The dual-path (Resource/Component interim vs AiResource) is retired as the primary narrative.
 > - **MCP kind-aligned:** RFC [#32062](https://github.com/backstage/backstage/issues/32062) Option 3 shipped as `McpServerApiEntity` ([backstage#34016](https://github.com/backstage/backstage/pull/34016)). MCP stays `kind: API`. **No** `API` → `McpServer` kind rename.
 > - **Skills/rules shipped:** `AiResource` kind shipped upstream via [backstage#34261](https://github.com/backstage/backstage/pull/34261) ([#33575](https://github.com/backstage/backstage/issues/33575) lineage). The entity kind is `AiResource` (lowercase `i`) — there is no kind called `AIResource`. Remaining work is docs/emitter alignment to canonical casing.
@@ -34,17 +34,18 @@ A design document MUST map current custom annotations to upstream entity kinds w
 
 - **WHEN** the migration-readiness design document is reviewed
 - **THEN** it contains a table mapping: current kind + spec.type + annotation → upstream target kind
-- **AND** the table covers all seven AI asset categories per Decision 1: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
-- **AND** the table uses [ai-catalog-entity-model/design.md Decision 1](../../design.md) as the current-state source of truth
+- **AND** the table covers the five minimum feature categories: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`
+- **AND** existing `rule` mappings are labeled as compatibility references
+- **AND** the table uses [ai-catalog-entity-model/design.md Decision 1](../../design.md#decision-1-annotation-independence-from-entity-kinds) as the current-state source of truth
 
 #### Scenario: Example mapping for agents (RHIDP-15302)
 
 - **WHEN** the migration document maps the `agent` category
 - **THEN** the migration document specifies:
-  - **Current:** `kind: Component`, `spec.type: ai-agent`, `rhdh.io/ai-asset-category: agent` (Decision 1 / boost today; RHDHPLAN-1113 owns agent-kind strategy)
-  - **Target:** No upstream kind via RFC #32062 (MCP-only). Downstream RHDH target from [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) (merged): `kind: AiResource`, `spec.type: agent` (`AgentAiResourceEntityV1alpha1`).
-  - **Confidence:** Low
-  - **Note:** RFC #32062 does **not** define `AIAgent`. Do not attribute agent kind to RFC #32062.
+  - **Current:** `kind: AiResource`, `spec.type: agent`, `rhdh.io/ai-asset-category: agent` (Decision 1 and the current Boost provider).
+  - **RHDH baseline:** Keep `AiResource` / `agent`, using the schema from [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) (`AgentAiResourceEntityV1alpha1`). No agent kind/type migration is required for entities already using this mapping.
+  - **Upstream alignment confidence:** Low; RFC #32062 is MCP-only and does not define the agent schema.
+  - **Note:** The former `Component` / `ai-agent` mapping is historical. Do not use it for new agents or attribute the agent schema to RFC #32062.
 
 #### Scenario: Example mapping for MCP servers — kind-aligned (RHIDP-15302)
 
@@ -83,24 +84,15 @@ A design document MUST map current custom annotations to upstream entity kinds w
   - **Confidence:** Medium (downstream committed; upstream alignment pending)
   - **Note:** AI models are part of the model-server entity (list of model names) — no separate entity kind per #34476 and #4211
 
-#### Scenario: Example mapping for skill bundles (RHIDP-15302)
-
-- **WHEN** the migration document maps the `skill-bundle` category
-- **THEN** the migration document specifies:
-  - **Current:** `kind: AiResource`, `spec.type: ai-skill-bundle`, `rhdh.io/ai-asset-category: skill-bundle`
-  - **Target:** No upstream kind
-  - **Confidence:** Low
-  - **Recommendation:** Stay on current mapping; track future RFCs.
-
 #### Scenario: Mapping for categories without upstream kinds (RHIDP-15302)
 
-- **WHEN** no upstream kind exists for `skill-bundle`
+- **WHEN** no upstream kind exists for a category
 - **THEN** the migration document specifies: "No upstream kind defined yet. Continue using current mapping until upstream stabilizes."
 - **AND** for `agent` and `model-server`, the downstream committed targets (`AiResource`/`agent` from #4164, `AiModelServerAPI` from #4211) are documented as the RHDH 2.1 targets
 - **AND** for `ai-model`, documents that models are part of the `AiModelServerAPI` entity (no separate entity kind)
 - **AND** the document tracks relevant upstream proposals or discussions
 
-> **Out of scope:** `vector-store` and `ai-tool` were excluded from the seven-category upstream-migration SoT and have been retired from `AI_ASSET_SPEC_TYPES` (the `resource` entry was removed). Source of truth for the seven AI-asset categories: [ai-catalog-entity-model/design.md Decision 1](../../design.md#decision-1-annotation-independence-from-entity-kinds). The [catalog-entities spec](../../../agent-creation-discovery/specs/catalog-entities/spec.md) is supplementary context for provider-deployment, not a competing mapping SoT.
+> **Out of scope:** `vector-store`, `ai-tool`, and `skill-bundle` are not part of the minimum baseline annotation scheme. `vector-store` and `ai-tool` were excluded from the upstream-migration SoT and have been retired from `AI_ASSET_SPEC_TYPES`. `skill-bundle` contracts (SkillBundle/skillcard.yaml) were removed from minimum scope (RHIDP-18761). Source of truth for the five minimum categories and existing `rule` compatibility: [ai-catalog-entity-model/design.md Decision 1](../../design.md#decision-1-annotation-independence-from-entity-kinds). The archived [catalog-entities spec](../../../../../RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/specs/catalog-entities/spec.md) is supplementary context for provider-deployment, not a competing mapping SoT.
 
 ### Requirement: Consumer-Facing Changes Identified
 

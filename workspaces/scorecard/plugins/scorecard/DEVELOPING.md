@@ -37,11 +37,10 @@ yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard lint
 
 ## When this harness is not enough
 
-`packages/app` and `packages/app-legacy` already cover cross-plugin home and catalog flows. Do not add another application package for Scorecard work. From `workspaces/scorecard`:
+`packages/app` already covers cross-plugin home and catalog flows. Do not add another application package for Scorecard work. From `workspaces/scorecard`:
 
 ```sh
 yarn start
-yarn start:legacy
 ```
 
-`yarn test:e2e:all` runs the legacy and new-frontend end-to-end suites. Those tests fulfill the Scorecard API in the browser. They are not a merge gate for a backend contract change. A live backend integration belongs in [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays).
+`yarn test:e2e` runs the NFS end-to-end suite. Those tests fulfill the Scorecard API in the browser. They are not a merge gate for a backend contract change. A live backend integration belongs in [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays).

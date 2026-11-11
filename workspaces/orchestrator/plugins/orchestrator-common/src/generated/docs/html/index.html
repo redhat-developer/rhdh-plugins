@@ -1473,6 +1473,9 @@ ul.nav-tabs {
                     <li data-group="Default" data-name="getInstanceById" class="">
                       <a href="#api-Default-getInstanceById">getInstanceById</a>
                     </li>
+                    <li data-group="Default" data-name="getInstanceInitiators" class="">
+                      <a href="#api-Default-getInstanceInitiators">getInstanceInitiators</a>
+                    </li>
                     <li data-group="Default" data-name="getInstances" class="">
                       <a href="#api-Default-getInstances">getInstances</a>
                     </li>
@@ -2844,6 +2847,455 @@ ID of the workflow instance
                                     </script>
                                   </div>
                                   <input id='responses-Default-getInstanceById-500-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Default-getInstanceInitiators">
+                      <article id="api-Default-getInstanceInitiators-0" data-group="User" data-name="getInstanceInitiators" data-version="0">
+                        <div class="pull-left">
+                          <h1>getInstanceInitiators</h1>
+                          <p>Get distinct instance initiators</p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked">Retrieve unique initiator entity references from up to 500 matching workflow executions</p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="post"><code><span class="pln">/v2/workflows/instances/initiators</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Default-getInstanceInitiators-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-dart">Dart</a></li>
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Default-getInstanceInitiators-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Default-getInstanceInitiators-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-python">Python</a></li>
+                          <li class=""><a href="#examples-Default-getInstanceInitiators-0-rust">Rust</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Default-getInstanceInitiators-0-curl">
+                            <pre class="prettyprint"><code class="language-bsh">curl -X POST \
+ -H "Accept: application/json" \
+ -H "Content-Type: application/json" \
+ "http://localhost/v2/workflows/instances/initiators" \
+ -d '{
+  &quot;paginationInfo&quot; : {
+    &quot;offset&quot; : 2.027123023002322,
+    &quot;pageSize&quot; : 3.616076749251911,
+    &quot;orderDirection&quot; : &quot;ASC&quot;,
+    &quot;orderBy&quot; : &quot;orderBy&quot;
+  },
+  &quot;filters&quot; : {
+    &quot;filters&quot; : [ null, null ],
+    &quot;operator&quot; : &quot;AND&quot;
+  }
+}'
+</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-java">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.*;
+import org.openapitools.client.auth.*;
+import org.openapitools.client.model.*;
+import org.openapitools.client.api.DefaultApi;
+
+import java.io.File;
+import java.util.*;
+
+public class DefaultApiExample {
+    public static void main(String[] args) {
+
+        // Create an instance of the API class
+        DefaultApi apiInstance = new DefaultApi();
+        SearchRequest searchRequest = ; // SearchRequest | 
+
+        try {
+            array['String'] result = apiInstance.getInstanceInitiators(searchRequest);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#getInstanceInitiators");
+            e.printStackTrace();
+        }
+    }
+}
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-dart">
+                            <pre class="prettyprint"><code class="language-dart">import 'package:openapi/api.dart';
+
+final api_instance = DefaultApi();
+
+final SearchRequest searchRequest = new SearchRequest(); // SearchRequest | 
+
+try {
+    final result = await api_instance.getInstanceInitiators(searchRequest);
+    print(result);
+} catch (e) {
+    print('Exception when calling DefaultApi->getInstanceInitiators: $e\n');
+}
+
+</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-android">
+                            <pre class="prettyprint"><code class="language-java">import org.openapitools.client.api.DefaultApi;
+
+public class DefaultApiExample {
+    public static void main(String[] args) {
+        DefaultApi apiInstance = new DefaultApi();
+        SearchRequest searchRequest = ; // SearchRequest | 
+
+        try {
+            array['String'] result = apiInstance.getInstanceInitiators(searchRequest);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#getInstanceInitiators");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp">
+
+// Create an instance of the API class
+DefaultApi *apiInstance = [[DefaultApi alloc] init];
+SearchRequest *searchRequest = ; //  (optional)
+
+// Get distinct instance initiators
+[apiInstance getInstanceInitiatorsWith:searchRequest
+              completionHandler: ^(array['String'] output, NSError* error) {
+    if (output) {
+        NSLog(@"%@", output);
+    }
+    if (error) {
+        NSLog(@"Error: %@", error);
+    }
+}];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var OrchestratorPlugin = require('orchestrator_plugin');
+
+// Create an instance of the API class
+var api = new OrchestratorPlugin.DefaultApi()
+var opts = {
+  'searchRequest':  // {SearchRequest} 
+};
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully. Returned data: ' + data);
+  }
+};
+api.getInstanceInitiators(opts, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Default-getInstanceInitiators-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using Org.OpenAPITools.Api;
+using Org.OpenAPITools.Client;
+using Org.OpenAPITools.Model;
+
+namespace Example
+{
+    public class getInstanceInitiatorsExample
+    {
+        public void main()
+        {
+
+            // Create an instance of the API class
+            var apiInstance = new DefaultApi();
+            var searchRequest = new SearchRequest(); // SearchRequest |  (optional) 
+
+            try {
+                // Get distinct instance initiators
+                array['String'] result = apiInstance.getInstanceInitiators(searchRequest);
+                Debug.WriteLine(result);
+            } catch (Exception e) {
+                Debug.Print("Exception when calling DefaultApi.getInstanceInitiators: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+// Create an instance of the API class
+$api_instance = new OpenAPITools\Client\Api\DefaultApi();
+$searchRequest = ; // SearchRequest | 
+
+try {
+    $result = $api_instance->getInstanceInitiators($searchRequest);
+    print_r($result);
+} catch (Exception $e) {
+    echo 'Exception when calling DefaultApi->getInstanceInitiators: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::OPenAPIClient::Configuration;
+use WWW::OPenAPIClient::DefaultApi;
+
+# Create an instance of the API class
+my $api_instance = WWW::OPenAPIClient::DefaultApi->new();
+my $searchRequest = WWW::OPenAPIClient::Object::SearchRequest->new(); # SearchRequest | 
+
+eval {
+    my $result = $api_instance->getInstanceInitiators(searchRequest => $searchRequest);
+    print Dumper($result);
+};
+if ($@) {
+    warn "Exception when calling DefaultApi->getInstanceInitiators: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Create an instance of the API class
+api_instance = openapi_client.DefaultApi()
+searchRequest =  # SearchRequest |  (optional)
+
+try:
+    # Get distinct instance initiators
+    api_response = api_instance.get_instance_initiators(searchRequest=searchRequest)
+    pprint(api_response)
+except ApiException as e:
+    print("Exception when calling DefaultApi->getInstanceInitiators: %s\n" % e)</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-getInstanceInitiators-0-rust">
+                              <pre class="prettyprint"><code class="language-rust">extern crate DefaultApi;
+
+pub fn main() {
+    let searchRequest = ; // SearchRequest
+
+    let mut context = DefaultApi::Context::default();
+    let result = client.getInstanceInitiators(searchRequest, &context).wait();
+
+    println!("{:?}", result);
+}
+</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Scopes</h2>
+                          <table>
+                            
+                          </table>
+
+                          <h2>Parameters</h2>
+
+
+
+                            <div class="methodsubtabletitle">Body parameters</div>
+                            <table id="methodsubtable">
+                              <tr>
+                                <th width="150px">Name</th>
+                                <th>Description</th>
+                              </tr>
+                                <tr><td style="width:150px;">searchRequest </td>
+<td>
+<p class="marked">Filters and pagination for retrieving instance initiators</p>
+<script>
+$(document).ready(function() {
+  var schemaWrapper = {
+  "description" : "Filters and pagination for retrieving instance initiators",
+  "content" : {
+    "application/json" : {
+      "schema" : {
+        "$ref" : "#/components/schemas/SearchRequest"
+      }
+    }
+  },
+  "required" : false
+};
+
+  var schema = findNode('schema',schemaWrapper).schema;
+  if (!schema) {
+    schema = schemaWrapper.schema;
+  }
+  if (schema.$ref != null) {
+    schema = defsParser.$refs.get(schema.$ref);
+  } else {
+    schemaWrapper.definitions = Object.assign({}, defs);
+    $RefParser.dereference(schemaWrapper).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  var view = new JSONSchemaView(schema,2,{isBodyParam: true});
+  var result = $('#d2e199_getInstanceInitiators_searchRequest');
+  result.empty();
+  result.append(view.render());
+});
+</script>
+<div id="d2e199_getInstanceInitiators_searchRequest"></div>
+</td>
+</tr>
+
+                            </table>
+
+
+
+                          <h2>Responses</h2>
+                            <h3 id="examples-Default-getInstanceInitiators-title-200"></h3>
+                            <p id="examples-Default-getInstanceInitiators-description-200" class="marked"></p>
+                            <script>
+                              var responseDefault200_description = `Success`;
+                              var responseDefault200_description_break = responseDefault200_description.indexOf('\n');
+                              if (responseDefault200_description_break == -1) {
+                                $("#examples-Default-getInstanceInitiators-title-200").text("Status: 200 - " + responseDefault200_description);
+                              } else {
+                                $("#examples-Default-getInstanceInitiators-title-200").text("Status: 200 - " + responseDefault200_description.substring(0, responseDefault200_description_break));
+                                $("#examples-Default-getInstanceInitiators-description-200").html(responseDefault200_description.substring(responseDefault200_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Default-getInstanceInitiators-200" class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-Default-getInstanceInitiators-200-schema">Schema</a>
+                                </li>
+
+
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Default-getInstanceInitiators-200-wrapper" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-Default-getInstanceInitiators-200-schema">
+                                  <div id="responses-Default-getInstanceInitiators-schema-200" class="exampleStyle">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = ;
+                                        var schema = findNode('schema',schemaWrapper).schema;
+                                        if (!schema) {
+                                          schema = schemaWrapper.schema;
+                                        }
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                          Object.keys(schema.properties).forEach( (item) => {
+                                            if (schema.properties[item].$ref != null) {
+                                              schema.properties[item] = defsParser.$refs.get(schema.properties[item].$ref);
+                                            }
+                                          });
+                                        } else if (schema.items != null && schema.items.$ref != null) {
+                                            schema.items = defsParser.$refs.get(schema.items.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-Default-getInstanceInitiators-200-schema-data').val(JSON.stringify(schema));
+                                        var result = $('#responses-Default-getInstanceInitiators-schema-200');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-Default-getInstanceInitiators-200-schema-data' type='hidden' value=''></input>
+                                </div>
+                            </div>
+                            <h3 id="examples-Default-getInstanceInitiators-title-500"></h3>
+                            <p id="examples-Default-getInstanceInitiators-description-500" class="marked"></p>
+                            <script>
+                              var responseDefault500_description = `Error fetching instance initiators`;
+                              var responseDefault500_description_break = responseDefault500_description.indexOf('\n');
+                              if (responseDefault500_description_break == -1) {
+                                $("#examples-Default-getInstanceInitiators-title-500").text("Status: 500 - " + responseDefault500_description);
+                              } else {
+                                $("#examples-Default-getInstanceInitiators-title-500").text("Status: 500 - " + responseDefault500_description.substring(0, responseDefault500_description_break));
+                                $("#examples-Default-getInstanceInitiators-description-500").html(responseDefault500_description.substring(responseDefault500_description_break));
+                              }
+                            </script>
+
+
+                            <ul id="responses-detail-Default-getInstanceInitiators-500" class="nav nav-tabs nav-tabs-examples" >
+                                <li class="active">
+                                  <a data-toggle="tab" href="#responses-Default-getInstanceInitiators-500-schema">Schema</a>
+                                </li>
+
+
+
+
+                            </ul>
+
+
+                            <div class="tab-content" id="responses-Default-getInstanceInitiators-500-wrapper" style='margin-bottom: 10px;'>
+                                <div class="tab-pane active" id="responses-Default-getInstanceInitiators-500-schema">
+                                  <div id="responses-Default-getInstanceInitiators-schema-500" class="exampleStyle">
+                                    <script>
+                                      $(document).ready(function() {
+                                        var schemaWrapper = ;
+                                        var schema = findNode('schema',schemaWrapper).schema;
+                                        if (!schema) {
+                                          schema = schemaWrapper.schema;
+                                        }
+                                        if (schema.$ref != null) {
+                                          schema = defsParser.$refs.get(schema.$ref);
+                                          Object.keys(schema.properties).forEach( (item) => {
+                                            if (schema.properties[item].$ref != null) {
+                                              schema.properties[item] = defsParser.$refs.get(schema.properties[item].$ref);
+                                            }
+                                          });
+                                        } else if (schema.items != null && schema.items.$ref != null) {
+                                            schema.items = defsParser.$refs.get(schema.items.$ref);
+                                        } else {
+                                          schemaWrapper.definitions = Object.assign({}, defs);
+                                          $RefParser.dereference(schemaWrapper).catch(function(err) {
+                                            console.log(err);
+                                          });
+                                        }
+
+                                        var view = new JSONSchemaView(schema, 3);
+                                        $('#responses-Default-getInstanceInitiators-500-schema-data').val(JSON.stringify(schema));
+                                        var result = $('#responses-Default-getInstanceInitiators-schema-500');
+                                        result.empty();
+                                        result.append(view.render());
+                                      });
+                                    </script>
+                                  </div>
+                                  <input id='responses-Default-getInstanceInitiators-500-schema-data' type='hidden' value=''></input>
                                 </div>
                             </div>
                         </article>

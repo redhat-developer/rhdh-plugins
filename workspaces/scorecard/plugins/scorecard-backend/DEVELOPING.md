@@ -43,10 +43,10 @@ yarn workspace @red-hat-developer-hub/backstage-plugin-scorecard-backend lint
 
 ## When this harness is not enough
 
-`packages/app` and `packages/app-legacy` already exist so homepage and catalog flows can be exercised with the frontend. Do not add another application package for a backend change. Start them from `workspaces/scorecard` with `yarn start` (new frontend system) or `yarn start:legacy`.
+`packages/app` already exists so homepage and catalog flows can be exercised with the frontend. Do not add another application package for a backend change. Start it from `workspaces/scorecard` with `yarn start`.
 
 Those full-workspace runs are for UI flows. This backend `dev/` entry is the default loop for REST checks.
 
-Legacy end-to-end tests fulfill the Scorecard HTTP API in the browser. They do not call this backend. A live provider integration belongs in [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays), not in a new app in this workspace.
+End-to-end tests fulfill the Scorecard HTTP API in the browser. They do not call this backend. A live provider integration belongs in [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays), not in a new app in this workspace.
 
 The frontend package `dev/` apps use `MockScorecardApi`. They cannot verify these HTTP routes. Use this harness, or a full workspace whose backend includes the Scorecard plugin, for that check.

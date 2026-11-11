@@ -66,6 +66,18 @@ SHALL return 404.
 - **WHEN** the first discovery attempt has not completed
 - **THEN** the endpoint returns `loading`, empty skills and failed-key arrays, and `observedAt: null`
 
+#### Scenario: Total discovery failure
+
+- **WHEN** discovery returns no entries and no index page could be parsed
+- **THEN** the connector publishes a `failed` snapshot
+- **AND** no artifact processing is attempted
+
+#### Scenario: Unhandled exception during discovery or processing
+
+- **WHEN** an unexpected exception is thrown by discovery or artifact processing
+- **THEN** the connector catches it and publishes a `failed` snapshot
+- **AND** the error is logged
+
 #### Scenario: Successful empty discovery
 
 - **WHEN** the entire index is retrieved and validated successfully and contains no supported skills

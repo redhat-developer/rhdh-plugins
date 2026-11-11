@@ -4659,7 +4659,7 @@ __metadata:
     "@changesets/cli": "npm:^2.27.1"
     "@fission-ai/openspec": "npm:^1.4.1"
     "@jest/environment-jsdom-abstract": "npm:^30.3.0"
-    "@playwright/test": "npm:1.64.1"
+    "@playwright/test": "npm:1.65.0"
     "@types/jest": "npm:^30.0.0"
     jest: "npm:^30.3.0"
     jsdom: "npm:^27.1.0"
@@ -6986,14 +6986,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.64.1":
-  version: 1.64.1
-  resolution: "@playwright/test@npm:1.64.1"
+"@playwright/test@npm:1.65.0":
+  version: 1.65.0
+  resolution: "@playwright/test@npm:1.65.0"
   dependencies:
-    playwright: "npm:1.64.1"
+    playwright: "npm:1.65.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/0a1a853d76d6c532cafaf0366a5448584b766737ebd39bbd23dc0580f3d3b6ef4c833082af47a792e7fc2501f444debdfaad37a87a76cc5b195f3803fc80ea3c
+  checksum: 10c0/137a641e1be8035686a165e69d86d242ee7ed5cbe71e5230f9195cb6e65be37a66ba697f16919b508d04c4d682fd4e167d1a755b64ceb545afac780de72b594b
   languageName: node
   linkType: hard
 
@@ -7191,7 +7191,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk@workspace:plugins/ai-catalog-entity-provider-sdk"
   dependencies:
+    "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"
+    "@backstage/plugin-catalog-node": "npm:^2.2.4"
+    zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
 
@@ -7241,16 +7244,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:0.5.0"
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:0.6.0"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.10.0"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/plugin-catalog-common": "npm:^1.1.10"
     "@backstage/plugin-catalog-node": "npm:^2.2.4"
-    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "npm:^0.4.0"
-  checksum: 10c0/1a0807340338d1f2c38747e58317424aa8a44323cc4291ab61797fb75022e91657314de4e0ddd7fee869920f972f084936c4ca8ea83e102ef64a1f25f5c7a2d8
+    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "npm:^0.5.0"
+  checksum: 10c0/2ee638bdf8a60d2dcc6aa20d1db75f9a93bd12c2f54a260067c70e162ec596c2149df61725927727ffb4e7791864346f822e802368360600425be72cde7f0c9c
   languageName: node
   linkType: hard
 
@@ -7275,13 +7278,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:0.4.0"
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:0.5.0"
   dependencies:
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/types": "npm:^1.2.2"
-  checksum: 10c0/d3d9228547ff688d75762461b07beefb260ba8128937b67e4190dd7736e140c2ec003f9c0fa145443458d8324b3e006cdda6a4c1af440f9ce390199c12480548
+  checksum: 10c0/1f3c66377fc1ba59ef33f7d622677f5589aabb6da62df521db968e18e0f0b8e1e89d881d2607349f669667b98dbbbd25f5fb45aa2b027e0cd397b478fc65b86b
   languageName: node
   linkType: hard
 
@@ -11086,7 +11089,7 @@ __metadata:
     "@backstage/plugin-search-backend-module-techdocs": "npm:^0.4.17"
     "@backstage/plugin-techdocs-backend": "npm:^2.2.4"
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server": "npm:^0.4.0"
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent": "npm:^0.5.0"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent": "npm:^0.6.0"
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions": "npm:^0.6.0"
     "@red-hat-developer-hub/backstage-plugin-ogx-entity-provider": "workspace:^"
     app: "link:../app"
@@ -22465,23 +22468,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.64.1":
-  version: 1.64.1
-  resolution: "playwright-core@npm:1.64.1"
+"playwright-core@npm:1.65.0":
+  version: 1.65.0
+  resolution: "playwright-core@npm:1.65.0"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/91c4f5ed1cff4b0e18b6ac62f66770f5f1b6c204d4aebd6a321c07466dca18a70822ac692597c6059705a703f9768097ac551df179fb49294d639509148e04f3
+  checksum: 10c0/ed905c6fc2457a725c3fdb3ad4500f43c7a1bb2c6e4e8c708e1e314930c7dce446a5756ad073425bf3c6e3ca975e5a35fb0221118e2d51ef7b4b6c6d13d0644c
   languageName: node
   linkType: hard
 
-"playwright@npm:1.64.1":
-  version: 1.64.1
-  resolution: "playwright@npm:1.64.1"
+"playwright@npm:1.65.0":
+  version: 1.65.0
+  resolution: "playwright@npm:1.65.0"
   dependencies:
-    playwright-core: "npm:1.64.1"
+    playwright-core: "npm:1.65.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/edf52d0a79feca37bf383e841a467aa68750684128218eac560063991c9e4b615a94901f580cd8a088bb05fd53008ab4a0e5e8d976067698b60ae5d1de2459f3
+  checksum: 10c0/a7d71f3ca5bcad0531b5f3c39ae1a9be0da8e74be6fee8510d99b9f5fc07fd5b3d889aa4ca487c70ca29aba8625f74e3c2c7473b4c8a784dc14fefff80474ac3
   languageName: node
   linkType: hard
 
@@ -28268,7 +28271,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.25.76":
+"zod@npm:^3.23.8, zod@npm:^3.25.76":
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c

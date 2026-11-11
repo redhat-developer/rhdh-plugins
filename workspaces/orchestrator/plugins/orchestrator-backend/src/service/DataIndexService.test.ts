@@ -551,6 +551,7 @@ describe('fetchInstances', () => {
   let loggerMock: LoggerService;
   let buildFilterConditionSpy: any;
   let buildGraphQlQuerySpy: any;
+  let fetchWorkflowInfoSpy: jest.SpyInstance;
   let mockClient: jest.Mocked<Client>;
 
   let dataIndexService: DataIndexService;
@@ -563,7 +564,7 @@ describe('fetchInstances', () => {
     definitionIds,
   )}`;
   const queryBody =
-    'id, version, processName, processId, state, start, end, nodes { id }, variables, executionSummary, parentProcessInstance {id, processName, businessKey}';
+    'id, version, processName, processId, state, start, end, nodes { id }, variables, executionSummary';
 
   const mockProcessInstances: ProcessInstance[] = [
     {
@@ -618,7 +619,9 @@ describe('fetchInstances', () => {
     };
     dataIndexService = new DataIndexService('fakeUrl', loggerMock);
     // Create a spy for method1
-    jest.spyOn(dataIndexService, 'fetchWorkflowInfo').mockResolvedValue(wfInfo);
+    fetchWorkflowInfoSpy = jest
+      .spyOn(dataIndexService, 'fetchWorkflowInfo')
+      .mockResolvedValue(wfInfo);
     // Set up spies on the graphql utility functions
     buildGraphQlQuerySpy = jest.spyOn(
       buildGrahQLQueryUtils,
@@ -666,6 +669,71 @@ describe('fetchInstances', () => {
         orderByInfo: {},
         paginationInfo: {},
       },
+    );
+  });
+
+  it('fetches only fields needed for workflow run stats without enrichment', async () => {
+    const statsInstances = [
+      {
+        processId: 'processId1',
+        version: '1.0',
+        state: 'Completed',
+        start: '2024-01-01T00:00:00.000Z',
+        end: '2024-01-01T00:10:00.000Z',
+      },
+    ];
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: statsInstances }),
+    );
+
+    const whereClause = `and: [{${processIdNotNullCondition}}, {${processIdDefinitions}}}]`;
+    const expectedQueryArgs = createQueryArgs(
+      'ProcessInstances',
+      'processId, version, state, start, end',
+      whereClause,
+    );
+
+    const result = await dataIndexService.fetchStatsInstances({
+      definitionIds,
+    });
+
+    expect(result).toEqual(statsInstances);
+    expect(buildGraphQlQuerySpy).toHaveBeenCalledWith(expectedQueryArgs);
+    expect(mockClient.query).toHaveBeenCalledWith(
+      buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
+    );
+    expect(fetchWorkflowInfoSpy).not.toHaveBeenCalled();
+  });
+
+  it('looks up workflow metadata once per distinct process id', async () => {
+    const processInstances = [
+      ...mockProcessInstances,
+      { ...mockProcessInstances[0], id: 'another-id' },
+    ];
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: processInstances }),
+    );
+
+    const result = await dataIndexService.fetchInstances({});
+
+    expect(
+      fetchWorkflowInfoSpy.mock.calls.map(([processId]) => processId),
+    ).toEqual(['processId1', 'processId2']);
+    expect(result).toStrictEqual(processInstances);
+  });
+
+  it('rejects an instance when its workflow definition has no source', async () => {
+    fetchWorkflowInfoSpy.mockResolvedValue({ id: 'wfinfo1' });
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: [mockProcessInstances[0]] }),
+    );
+
+    await expect(dataIndexService.fetchInstances({})).rejects.toThrow(
+      'Workflow defintion is required to fetch instance id',
     );
   });
 
@@ -949,6 +1017,110 @@ function createMockSetup() {
   const dataIndexService = new DataIndexService('fakeUrl', loggerMock);
   return { loggerMock, mockClient, dataIndexService };
 }
+
+// ---------------------------------------------------------------------------
+describe('fetchInstanceInitiators', () => {
+  it('queries only variables and returns distinct initiator refs', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const pagination = {
+      limit: 500,
+      offset: 0,
+      order: 'DESC',
+      sortField: 'start',
+    };
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({
+        ProcessInstances: [
+          { variables: { initiatorEntity: 'user:default/alice' } },
+          {
+            variables: JSON.stringify({ initiatorEntity: 'user:default/bob' }),
+          },
+          { variables: { initiatorEntity: 'user:default/alice' } },
+          { variables: { workflowdata: {} } },
+          { variables: { initiatorEntity: '' } },
+        ],
+      }),
+    );
+    const fetchWorkflowInfoSpy = jest.spyOn(
+      dataIndexService,
+      'fetchWorkflowInfo',
+    );
+
+    const result = await dataIndexService.fetchInstanceInitiators({
+      definitionIds: ['flow-a', 'flow-b'],
+      pagination,
+    });
+
+    expect(result).toEqual(['user:default/alice', 'user:default/bob']);
+    expect(mockClient.query).toHaveBeenCalledTimes(1);
+    const [query, params] = mockClient.query.mock.calls[0];
+    expect(query).toContain('ProcessInstances');
+    expect(query).toContain('{variables ');
+    expect(query).toContain('processId: {in: ["flow-a","flow-b"]}');
+    expect(query).not.toContain('executionSummary');
+    expect(query).not.toContain('nodes');
+    expect(params).toEqual({
+      orderByInfo: { start: 'DESC' },
+      paginationInfo: { limit: 500, offset: 0 },
+    });
+    expect(fetchWorkflowInfoSpy).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// countInstances
+// ---------------------------------------------------------------------------
+
+describe('countInstances', () => {
+  it('counts matching process instances without list pagination', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const definitionIds = ['flow-a', 'flow-b'];
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ CountProcessInstances: 13 }),
+    );
+
+    const result = await dataIndexService.countInstances({ definitionIds });
+
+    expect(result).toBe(13);
+    expect(mockClient.query).toHaveBeenCalledWith(
+      'query { CountProcessInstances(where: {and: [{processId: {isNull: false}}, {processId: {in: ["flow-a","flow-b"]}}]}) }',
+      {},
+    );
+  });
+
+  it('applies the same filters using GraphQL variables', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const definitionIds = ['flow-a', 'flow-b'];
+    const filter: FieldFilter = {
+      field: 'processName',
+      operator: FieldFilterOperatorEnum.Like,
+      value: 'processName%',
+    };
+    mockClient.query
+      .mockResolvedValueOnce(mockOperationResult(mockProcessInstanceArguments))
+      .mockResolvedValueOnce(mockOperationResult({ CountProcessInstances: 4 }));
+
+    const result = await dataIndexService.countInstances({
+      definitionIds,
+      filter,
+    });
+
+    expect(result).toBe(4);
+    expect(mockClient.query).toHaveBeenCalledTimes(2);
+    const [query, variables] = mockClient.query.mock.calls[1];
+    const queryString = query as string;
+    const queryVariables = variables as Record<string, unknown>;
+    const variableName = Object.keys(queryVariables)[0] ?? '';
+
+    expect(queryString).toContain('CountProcessInstances(where: {and:');
+    expect(queryString).toContain('processId: {isNull: false}');
+    expect(queryString).toContain('processId: {in: ["flow-a","flow-b"]}');
+    expect(queryString).toContain(`$${variableName}: String`);
+    expect(queryString).toContain(`processName: {like: $${variableName}}`);
+    expect(queryString).not.toMatch(/pagination|orderBy/i);
+    expect(queryVariables).toEqual({ [variableName]: 'processName%' });
+  });
+});
 
 // ---------------------------------------------------------------------------
 // fetchWorkflowInfo
@@ -1321,6 +1493,75 @@ describe('fetchInstancesByDefinitionId', () => {
         definitionId: 'wf1',
         limit: 10,
         offset: 0,
+      }),
+    ).rejects.toThrow('Query error');
+  });
+});
+
+describe('fetchLatestInstancesByDefinitionIds', () => {
+  it('fetches the latest instance for multiple workflows in one aliased query', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const latestInstance: ProcessInstance = {
+      id: 'latest-instance',
+      processId: 'wf1',
+      version: '1.0',
+      processName: 'Workflow 1',
+      state: 'COMPLETED' as any,
+      start: '2024-01-02T00:00:00.000Z',
+      endpoint: '',
+      nodes: [],
+    };
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ latest0: [latestInstance], latest1: [] }),
+    );
+
+    const result = await dataIndexService.fetchLatestInstancesByDefinitionIds({
+      definitionIds: ['wf1', 'wf2'],
+      targetEntity: 'component:default/my-svc',
+    });
+
+    expect(result).toEqual(
+      new Map([
+        ['wf1', latestInstance],
+        ['wf2', undefined],
+      ]),
+    );
+    expect(mockClient.query).toHaveBeenCalledTimes(1);
+    const [query, variables] = mockClient.query.mock.calls[0];
+    expect(query).toContain('latest0: ProcessInstances');
+    expect(query).toContain('latest1: ProcessInstances');
+    expect(query).toContain('orderBy: {start: DESC}');
+    expect(query).toContain('pagination: {limit: 1, offset: 0}');
+    expect(query).toContain(
+      'variables: {targetEntity: {equal: $targetEntity}}',
+    );
+    expect(variables).toEqual({
+      definitionId0: 'wf1',
+      definitionId1: 'wf2',
+      targetEntity: 'component:default/my-svc',
+    });
+  });
+
+  it('does not send a query when there are no workflow ids', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+
+    const result = await dataIndexService.fetchLatestInstancesByDefinitionIds({
+      definitionIds: [],
+    });
+
+    expect(result).toEqual(new Map());
+    expect(mockClient.query).not.toHaveBeenCalled();
+  });
+
+  it('throws when the client returns an error', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({}, new Error('Query error')),
+    );
+
+    await expect(
+      dataIndexService.fetchLatestInstancesByDefinitionIds({
+        definitionIds: ['wf1'],
       }),
     ).rejects.toThrow('Query error');
   });

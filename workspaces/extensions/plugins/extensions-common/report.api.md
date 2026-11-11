@@ -139,9 +139,7 @@ export interface ExtensionsApi {
     request: GetEntityFacetsRequest,
   ): Promise<GetEntityFacetsResponse>;
   // (undocumented)
-  getExtensionsConfiguration?(): Promise<{
-    enabled: boolean;
-  }>;
+  getExtensionsConfiguration?(): Promise<ExtensionsConfigurationResponse>;
   // (undocumented)
   getNodeEnvironment?(): Promise<{
     nodeEnv: NodeEnvironmentType;
@@ -256,9 +254,7 @@ export class ExtensionsBackendClient implements ExtensionsApi {
     request: GetEntityFacetsRequest,
   ): Promise<GetEntityFacetsResponse>;
   // (undocumented)
-  getExtensionsConfiguration(): Promise<{
-    enabled: boolean;
-  }>;
+  getExtensionsConfiguration(): Promise<ExtensionsConfigurationResponse>;
   // (undocumented)
   getNodeEnvironment(): Promise<{
     nodeEnv: NodeEnvironmentType;
@@ -409,6 +405,15 @@ export interface ExtensionsCollectionSpec extends JsonObject {
   // (undocumented)
   type?: 'curated';
 }
+
+// @public (undocumented)
+export type ExtensionsConfigurationResponse = {
+  enabled: boolean;
+  error?: {
+    reason: string;
+    message: string;
+  };
+};
 
 // @public (undocumented)
 export enum ExtensionsKind {

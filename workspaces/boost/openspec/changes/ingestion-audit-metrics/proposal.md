@@ -11,7 +11,7 @@
 
 > **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed — its scope has been absorbed by RHIDP-15277 (AI Catalog RBAC Audit Logging) under RHDHPLAN-1508. RHDHPLAN-1513 continues with 3 surviving epics: RHIDP-15331 (Ingestion Health Dashboard), RHIDP-15332 (Connector Config Hot-Reload), and RHIDP-15334 (Upstream Schema Alignment). Orphaned stories: RHIDP-15343 → RHIDP-15280, RHIDP-15344 → RHIDP-15277 scope, RHIDP-15345 → RHIDP-15277 scope.
 
-Compliance requires an audit trail of ingestion operations. Every sync attempt, every config change, and every quality score must be recorded with timestamps, actors, and outcomes. The Analytics tab needs historical sync data, quality distributions, and match coverage metrics to give admins visibility into the AI system's health and evolution.
+Compliance requires an audit trail of ingestion operations. Every sync attempt, every config change, and every quality score must be recorded with timestamps, actors, and outcomes. The Analytics tab needs historical sync data and quality distributions to give admins visibility into the AI system's health and evolution.
 
 Eval Hub integration closes the quality feedback loop — scores from LightEval, IBM Clear, and GuideLLM flow into the analytics API and surface in the admin UI. Without this loop, quality is invisible; with it, teams can track quality degradation over time and debug skill performance regressions.
 
@@ -31,7 +31,6 @@ Boost builds this as RHDH-native audit logging and authorization-gated REST endp
 
 - `/api/boost/admin/analytics/sync-history` — per-connector timeline of sync attempts with outcomes
 - `/api/boost/admin/analytics/quality-scores` — per-skill quality scores and aggregate distribution
-- `/api/boost/admin/analytics/match-coverage` — agent capabilities vs. available skills coverage ratio
 - Neo4j sync status embedded in analytics responses
 - All endpoints gated by the existing `boost.admin` permission, granted by an
   RHDH RBAC role
@@ -52,15 +51,15 @@ Boost builds this as RHDH-native audit logging and authorization-gated REST endp
 - **Authorization-gated analytics** — endpoints require `boost.admin`, granted
   by an RHDH RBAC role
 - **Pluggable eval backends** — generic quality score ingestion interface, not hardcoded to specific eval frameworks
-- **On-demand computation** — match coverage calculated when API is called, not continuously
+- **On-demand computation** — aggregate quality distributions calculated when API is called, not continuously
 - **Asynchronous ingestion** — Eval Hub scores arrive in batches, stored in DB, surfaced via analytics API
 
 ## Impact
 
 - `plugins/boost-backend/src/audit/` — audit event infrastructure, event types, RHDH audit log integration
 - `plugins/boost-backend/src/ingestion/` — sync audit event emission in connector lifecycle hooks
-- `plugins/boost-backend/src/api/admin/analytics/` — REST API routes for sync history, quality scores, match coverage
+- `plugins/boost-backend/src/api/admin/analytics/` — REST API routes for sync history and quality scores
 - `plugins/boost-backend/src/db/` — quality score storage table, schema migrations
 - `plugins/boost-backend/src/eval-hub/` — Eval Hub client, quality score ingestion service
-- `plugins/boost-backend/src/analytics/` — match coverage calculator, aggregate distribution calculator
+- `plugins/boost-backend/src/analytics/` — aggregate distribution calculator
 - `app-config.yaml` — `boost.evalHub.endpoint` configuration
