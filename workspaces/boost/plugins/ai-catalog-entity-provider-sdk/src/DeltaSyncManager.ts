@@ -63,8 +63,10 @@ export interface CursorStore {
   set(locationKey: string, state: CursorState): Promise<void>;
 
   /**
-   * Delete the cursor for a provider, forcing a full refresh on the
-   * next polling cycle.
+   * Delete the stored cursor state for a provider.
+   *
+   * Deletion does not initiate a full refresh. The consuming provider
+   * owns missing-cursor recovery and refresh orchestration.
    *
    * @param locationKey - The location key identifying the provider's
    *   entities.

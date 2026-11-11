@@ -51,7 +51,9 @@ describe('AI_ASSET_CATEGORIES', () => {
     expect(AI_ASSET_CATEGORIES).toHaveLength(6);
     expect(AI_ASSET_CATEGORIES).not.toContain('skill-bundle');
   });
+});
 
+describe('AIAssetCategorySchema', () => {
   it('rejects skill-bundle as invalid category', () => {
     const result = AIAssetCategorySchema.safeParse('skill-bundle');
     expect(result.success).toBe(false);

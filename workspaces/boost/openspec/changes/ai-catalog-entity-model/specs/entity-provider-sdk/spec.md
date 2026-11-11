@@ -15,7 +15,7 @@
 
 A TypeScript SDK package defining the contract for AI asset entity providers, exporting shared types and validation utilities.
 
-The minimum feature categories are `agent`, `skill`, `mcp-server`, `ai-model`, and `model-server`. Existing `rule` compatibility is retained separately. The scenarios below are reconciliation targets for RHIDP-18762; TypeScript, tests, README, and API-report changes are not part of RHIDP-18761. In particular, the current SDK still includes the historical `skill-bundle` value until that reconciliation.
+The minimum feature categories are `agent`, `skill`, `mcp-server`, `ai-model`, and `model-server`. Existing `rule` compatibility is retained separately. RHIDP-18762 reconciles the SDK's public type, validation schema, category list, tests, README, and API report to these six values. The active SDK excludes `skill-bundle`. Provider adoption and further SDK design remain separate work; the scenarios below continue to define their respective acceptance contracts.
 
 ## ADDED Requirements
 

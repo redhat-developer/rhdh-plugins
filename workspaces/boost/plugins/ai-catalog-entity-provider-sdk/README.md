@@ -59,6 +59,13 @@ const category: AIAssetCategory = 'agent';
 console.log(AI_ASSET_CATEGORIES); // ['agent', 'skill', ...]
 ```
 
+### Upgrading from SDK 1.x
+
+SDK 1.2.1 exported `skill-bundle` as a public `AIAssetCategory` member.
+The 2.0 release removes it from the public type, category list, and validation
+schema. Remove `skill-bundle` from consumer typed values and provider annotation
+inputs before upgrading. SDK validation rejects entities with that category.
+
 ## Entity validation
 
 The `validateAIAssetEntity` function checks that an entity carries the required AI asset annotations with valid values. The `AIAssetValidator` class implements the Backstage `CatalogProcessor` interface for integration with the catalog processing pipeline.

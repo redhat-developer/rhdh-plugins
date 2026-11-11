@@ -150,7 +150,7 @@ describe('DeltaSyncManager', () => {
     expect(cursor).toBeUndefined();
   });
 
-  it('should clear cursor to trigger full refresh', async () => {
+  it('should clear stored cursor state without initiating a refresh', async () => {
     const manager = new DeltaSyncManager({
       connection: mockConnection,
       cursorStore,
@@ -169,6 +169,8 @@ describe('DeltaSyncManager', () => {
     // Clear it — simulates invalid cursor fallback
     await manager.clearCursor();
     expect(await manager.getCursor()).toBeUndefined();
+    expect(mockConnection.applyMutation).toHaveBeenCalledTimes(1);
+    expect(mockConnection.refresh).not.toHaveBeenCalled();
   });
 
   it('should handle mixed additions, updates, and removals', async () => {
