@@ -8,6 +8,9 @@ app:
           redirects:
             - from: /
               to: /ai-catalog
+    - sidebar-item:ai-catalog/ai-catalog:
+        config:
+          priority: 200
     - api:app/app-language:
         config:
           defaultLanguage: en
