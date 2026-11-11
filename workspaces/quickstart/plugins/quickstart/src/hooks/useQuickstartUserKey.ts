@@ -27,19 +27,19 @@ export const useQuickstartUserKey = () => {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      try {
-        const identity = await identityApi.getBackstageIdentity();
+    identityApi
+      .getBackstageIdentity()
+      .then(identity => {
         const ref = identity?.userEntityRef?.toLowerCase() || 'guest';
         if (!cancelled) {
           setUserKey(ref);
         }
-      } catch {
+      })
+      .catch(() => {
         if (!cancelled) {
           setUserKey('guest');
         }
-      }
-    })();
+      });
     return () => {
       cancelled = true;
     };
