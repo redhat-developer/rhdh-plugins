@@ -104,20 +104,21 @@ export const WorkflowBuilderCanvas = () => {
   const [edges, , onEdgesChange] = useEdgesState([]);
 
   const onAddStep = useCallback(() => {
-    const id = `step-${Date.now()}`;
-    const offset = nodes.length * 24;
-    setNodes(current => [
-      ...current,
-      {
-        id,
-        type: 'step',
-        position: { x: 120 + offset, y: 100 + offset + 110 },
-        data: { label: `Step ${current.length}`, showStartBadge: false },
-        draggable: true,
-        style: { width: STEP_WIDTH },
-      },
-    ]);
-  }, [nodes.length, setNodes]);
+    setNodes(current => {
+      const offset = current.length * 24;
+      return [
+        ...current,
+        {
+          id: `step-${window.crypto.randomUUID()}`,
+          type: 'step',
+          position: { x: 120 + offset, y: 100 + offset + 110 },
+          data: { label: `Step ${current.length}`, showStartBadge: false },
+          draggable: true,
+          style: { width: STEP_WIDTH },
+        },
+      ];
+    });
+  }, [setNodes]);
 
   const defaultEdgeOptions = useMemo(() => ({ type: 'smoothstep' }), []);
 

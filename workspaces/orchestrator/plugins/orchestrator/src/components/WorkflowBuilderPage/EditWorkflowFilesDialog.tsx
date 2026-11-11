@@ -104,7 +104,11 @@ export const EditWorkflowFilesDialog = ({
   }, [activeFile, clearCopiedTimer]);
 
   const handleCopy = useCallback(async () => {
-    await window.navigator.clipboard.writeText(activeContent);
+    try {
+      await window.navigator.clipboard.writeText(activeContent);
+    } catch {
+      return;
+    }
     setCopied(true);
     setCopyTooltipOpen(true);
     clearCopiedTimer();

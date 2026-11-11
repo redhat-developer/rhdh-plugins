@@ -37,6 +37,3 @@ export type WorkflowBuilderFiles = {
   /** Optional; kept empty by default. */
   outputSchemaJson: string;
 };
-
-export type WorkflowBuilderFileKey =
-  'workflow' | 'template' | 'inputSchema' | 'outputSchema';
