@@ -3,7 +3,7 @@
   border: 0;
   outline: none;
   background: transparent;
-  padding: 0;
+  padding: var(--bui-space-1, 0.25rem) var(--bui-space-2, 0.5rem);
   margin: 0;
   width: 100%;
   color: var(--bui-fg-primary, inherit);
@@ -11,8 +11,12 @@
 }
 
 .headerField:focus-visible {
-  outline: 2px solid var(--bui-ring, #1f5493);
-  outline-offset: 2px;
+  outline: 1px solid var(--pf-t--global--color--brand--default, #06c);
+  outline-offset: 0;
+}
+
+:global([data-theme-mode='dark']) .headerField:focus-visible {
+  outline-color: var(--pf-t--global--color--brand--default, #92c5f9);
 }
 
 .nameField {

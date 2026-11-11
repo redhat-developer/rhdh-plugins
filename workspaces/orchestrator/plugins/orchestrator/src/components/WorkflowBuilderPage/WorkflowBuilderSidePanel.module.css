@@ -86,11 +86,11 @@
 /* Unlayered module CSS beats BUI @layer components; keep focus/invalid rings. */
 .outlinedFields input[data-focused],
 .outlinedFields textarea[data-focused] {
-  box-shadow: inset 0 0 0 1px var(--bui-ring, #1f5493);
+  box-shadow: inset 0 0 0 1px var(--builder-tab-selected, #06c);
 }
 
 .outlinedFields [data-focused] button[aria-haspopup='listbox'] {
-  box-shadow: inset 0 0 0 1px var(--bui-ring, #1f5493);
+  box-shadow: inset 0 0 0 1px var(--builder-tab-selected, #06c);
 }
 
 .outlinedFields input[data-invalid],

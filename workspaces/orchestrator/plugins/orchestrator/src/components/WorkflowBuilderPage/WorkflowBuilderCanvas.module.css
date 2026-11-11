@@ -25,7 +25,9 @@
   box-shadow: none;
 }
 
-:global([data-theme-mode='dark']) .canvas :global(.react-flow__controls-button) {
+:global([data-theme-mode='dark'])
+  .canvas
+  :global(.react-flow__controls-button) {
   background: var(--bui-bg-neutral-1, #2a2a2a);
   border-color: var(--bui-border-1, #5c5c5c);
   fill: var(--bui-fg-primary, #f5f5f5);
@@ -41,14 +43,18 @@
   box-sizing: border-box;
   color: var(--bui-fg-primary, inherit);
   box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .stepNodeSelected {
   /* Prototype: selected step uses a stronger blue outline. */
   border-color: #0066cc;
   border-width: 2.5px;
-  box-shadow: 0 0 0 1px #0066cc, 0 2px 6px rgb(0 102 204 / 20%);
+  box-shadow:
+    0 0 0 1px #0066cc,
+    0 2px 6px rgb(0 102 204 / 20%);
 }
 
 :global([data-theme-mode='dark']) .stepNode {
