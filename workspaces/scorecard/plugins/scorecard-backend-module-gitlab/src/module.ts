@@ -30,14 +30,15 @@ export const scorecardModuleGitlab = createBackendModule({
     reg.registerInit({
       deps: {
         config: coreServices.rootConfig,
+        logger: coreServices.logger,
         metrics: scorecardMetricsExtensionPoint,
       },
-      async init({ config, metrics }) {
+      async init({ config, logger, metrics }) {
         metrics.addMetricProvider(
-          GitlabIssuesProvider.fromConfig(config),
-          GitlabMergeRequestsProvider.fromConfig(config),
-          GitlabPipelinesProvider.fromConfig(config),
-          GitlabJobsProvider.fromConfig(config),
+          GitlabIssuesProvider.fromConfig(config, { logger }),
+          GitlabMergeRequestsProvider.fromConfig(config, { logger }),
+          GitlabPipelinesProvider.fromConfig(config, { logger }),
+          GitlabJobsProvider.fromConfig(config, { logger }),
         );
       },
     });

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import type { Entity } from '@backstage/catalog-model';
+import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
@@ -23,44 +24,41 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GitlabClient } from '../gitlab/GitlabClient';
-import { getProjectSlugFromEntity } from '../gitlab/utils';
+import { getProjectSlugFromEntity } from '../utils/getProjectSlugFromEntity';
 import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
 import {
-  calculateRatio,
-  PERCENTAGE_THRESHOLDS,
-} from './GitlabPipelinesProvider';
-
-const METRIC_IDS = {
-  STARTED_7D: 'gitlab.startedJobs7d',
-  SUCCESSFUL_7D: 'gitlab.successfulJobs7d',
-  FAILED_7D: 'gitlab.failedJobs7d',
-  SUCCESS_RATIO_7D: 'gitlab.jobSuccessRatio7d',
-  SUCCESS_RATIO_24H: 'gitlab.jobSuccessRatio24h',
-} as const;
+  GITLAB_JOBS_METRIC_IDS,
+  GITLAB_PERCENTAGE_THRESHOLDS,
+  GITLAB_METRIC,
+} from './GitlabConfig';
+import { calculateRatio } from '../utils/calculateRatio';
 
 export class GitlabJobsProvider implements MetricProvider<'number'> {
   private readonly gitlabClient: GitlabClient;
 
-  private constructor(config: Config) {
-    this.gitlabClient = new GitlabClient(config);
+  private constructor(gitlabClient: GitlabClient) {
+    this.gitlabClient = gitlabClient;
   }
 
-  static fromConfig(config: Config): GitlabJobsProvider {
-    return new GitlabJobsProvider(config);
+  static fromConfig(
+    config: Config,
+    options: { logger: LoggerService },
+  ): GitlabJobsProvider {
+    return new GitlabJobsProvider(new GitlabClient(config, options.logger));
   }
 
   getProviderDatasourceId(): string {
-    return 'gitlab';
+    return GITLAB_METRIC;
   }
 
   getProviderId(): string {
-    return METRIC_IDS.STARTED_7D;
+    return GITLAB_JOBS_METRIC_IDS.STARTED_7D;
   }
 
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: METRIC_IDS.STARTED_7D,
+        id: GITLAB_JOBS_METRIC_IDS.STARTED_7D,
         title: 'GitLab jobs started (7d)',
         description:
           'Number of jobs started in the last 7 days for a given GitLab project.',
@@ -69,7 +67,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         history: true,
       },
       {
-        id: METRIC_IDS.SUCCESSFUL_7D,
+        id: GITLAB_JOBS_METRIC_IDS.SUCCESSFUL_7D,
         title: 'GitLab successful jobs (7d)',
         description:
           'Number of successfully finished jobs in the last 7 days for a given GitLab project.',
@@ -78,7 +76,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         history: true,
       },
       {
-        id: METRIC_IDS.FAILED_7D,
+        id: GITLAB_JOBS_METRIC_IDS.FAILED_7D,
         title: 'GitLab failed jobs (7d)',
         description:
           'Number of failed jobs in the last 7 days for a given GitLab project.',
@@ -87,21 +85,21 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         history: true,
       },
       {
-        id: METRIC_IDS.SUCCESS_RATIO_7D,
+        id: GITLAB_JOBS_METRIC_IDS.SUCCESS_RATIO_7D,
         title: 'GitLab job success ratio (7d)',
         description:
           'Ratio of successful vs successful+failed jobs in the last 7 days (percentage). Ignores pending, running, and canceled jobs.',
         type: 'number',
-        thresholds: PERCENTAGE_THRESHOLDS,
+        thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
         history: true,
       },
       {
-        id: METRIC_IDS.SUCCESS_RATIO_24H,
+        id: GITLAB_JOBS_METRIC_IDS.SUCCESS_RATIO_24H,
         title: 'GitLab job success ratio (24h)',
         description:
           'Ratio of successful vs successful+failed jobs in the last 24 hours (percentage). Ignores pending, running, and canceled jobs.',
         type: 'number',
-        thresholds: PERCENTAGE_THRESHOLDS,
+        thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
         history: true,
       },
     ];
@@ -116,24 +114,39 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const projectSlug = getProjectSlugFromEntity(entity);
+    const { target } = getEntitySourceLocation(entity);
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const [started7d, successful7d, failed7d, successful24h, failed24h] =
       await Promise.all([
-        this.gitlabClient.getJobsCount(projectSlug, sevenDaysAgo),
-        this.gitlabClient.getJobsCount(projectSlug, sevenDaysAgo, ['success']),
-        this.gitlabClient.getJobsCount(projectSlug, sevenDaysAgo, ['failed']),
-        this.gitlabClient.getJobsCount(projectSlug, oneDayAgo, ['success']),
-        this.gitlabClient.getJobsCount(projectSlug, oneDayAgo, ['failed']),
+        this.gitlabClient.getJobsCount(target, projectSlug, sevenDaysAgo),
+        this.gitlabClient.getJobsCount(target, projectSlug, sevenDaysAgo, [
+          'success',
+        ]),
+        this.gitlabClient.getJobsCount(target, projectSlug, sevenDaysAgo, [
+          'failed',
+        ]),
+        this.gitlabClient.getJobsCount(target, projectSlug, oneDayAgo, [
+          'success',
+        ]),
+        this.gitlabClient.getJobsCount(target, projectSlug, oneDayAgo, [
+          'failed',
+        ]),
       ]);
 
     return new Map([
-      [METRIC_IDS.STARTED_7D, started7d],
-      [METRIC_IDS.SUCCESSFUL_7D, successful7d],
-      [METRIC_IDS.FAILED_7D, failed7d],
-      [METRIC_IDS.SUCCESS_RATIO_7D, calculateRatio(successful7d, failed7d)],
-      [METRIC_IDS.SUCCESS_RATIO_24H, calculateRatio(successful24h, failed24h)],
+      [GITLAB_JOBS_METRIC_IDS.STARTED_7D, started7d],
+      [GITLAB_JOBS_METRIC_IDS.SUCCESSFUL_7D, successful7d],
+      [GITLAB_JOBS_METRIC_IDS.FAILED_7D, failed7d],
+      [
+        GITLAB_JOBS_METRIC_IDS.SUCCESS_RATIO_7D,
+        calculateRatio(successful7d, failed7d),
+      ],
+      [
+        GITLAB_JOBS_METRIC_IDS.SUCCESS_RATIO_24H,
+        calculateRatio(successful24h, failed24h),
+      ],
     ]);
   }
 }

@@ -14,184 +14,195 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import { ScmIntegrations } from '@backstage/integration';
-import type { GitlabProjectSlug } from './types';
+import {
+  DefaultGitlabCredentialsProvider,
+  ScmIntegrations,
+} from '@backstage/integration';
+import { Gitlab } from '@gitbeaker/rest';
+
+type GitlabApi = InstanceType<typeof Gitlab>;
+
+type GitlabIssuesOptions = {
+  state?: 'opened' | 'closed';
+  createdAfter?: string;
+  updatedAfter?: string;
+};
+
+type GitlabMergeRequestsOptions = {
+  state?: 'opened' | 'closed' | 'merged';
+  createdAfter?: string;
+  updatedAfter?: string;
+};
 
 export class GitlabClient {
   private readonly integrations: ScmIntegrations;
+  private readonly credentialsProvider: DefaultGitlabCredentialsProvider;
+  private readonly logger: LoggerService;
 
-  constructor(config: Config) {
+  constructor(config: Config, logger: LoggerService) {
     this.integrations = ScmIntegrations.fromConfig(config);
+
+    this.credentialsProvider =
+      DefaultGitlabCredentialsProvider.fromIntegrations(this.integrations);
+    this.logger = logger;
   }
 
-  private getApiBaseUrl(projectSlug: string): {
-    apiBaseUrl: string;
-    token: string | undefined;
-  } {
-    // Derive the host from the project slug or default to gitlab.com
-    const host = 'gitlab.com';
-    const url = `https://${host}/${projectSlug}`;
-    const integration = this.integrations.gitlab.byUrl(url);
-
-    if (!integration) {
+  private async getGitlabApi(url: string): Promise<GitlabApi> {
+    const gitlabIntegration = this.integrations.gitlab.byUrl(url);
+    if (!gitlabIntegration) {
       throw new Error(`Missing GitLab integration for '${url}'`);
     }
 
-    return {
-      apiBaseUrl: integration.config.apiBaseUrl ?? `https://${host}/api/v4`,
-      token: integration.config.token,
-    };
-  }
+    const { token } = await this.credentialsProvider.getCredentials({ url });
 
-  private async fetchApi(
-    projectSlug: GitlabProjectSlug,
-    endpoint: string,
-    params: Record<string, string> = {},
-  ): Promise<Response> {
-    const { apiBaseUrl, token } = this.getApiBaseUrl(projectSlug);
-    const encodedProject = encodeURIComponent(projectSlug);
-    const url = new URL(`${apiBaseUrl}/projects/${encodedProject}${endpoint}`);
-
-    for (const [key, value] of Object.entries(params)) {
-      url.searchParams.set(key, value);
-    }
-
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers['PRIVATE-TOKEN'] = token;
-    }
-
-    return fetch(url.toString(), { headers });
-  }
-
-  private async fetchTotalCount(
-    projectSlug: GitlabProjectSlug,
-    endpoint: string,
-    params: Record<string, string> = {},
-  ): Promise<number> {
-    const response = await this.fetchApi(projectSlug, endpoint, {
-      ...params,
-      per_page: '1',
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `GitLab API error: ${response.status} ${response.statusText}`,
+    if (!token) {
+      this.logger.warn(
+        `No GitLab token provided for '${url}'. Configure integrations.gitlab token (Backend Service Integration).`,
       );
     }
 
-    const total = response.headers.get('x-total');
-    if (total !== null) {
-      return parseInt(total, 10);
-    }
-
-    // Fallback: count items from response body
-    const items = (await response.json()) as unknown[];
-    return items.length;
-  }
-
-  async getOpenIssuesCount(projectSlug: GitlabProjectSlug): Promise<number> {
-    return this.fetchTotalCount(projectSlug, '/issues', {
-      state: 'opened',
+    return new Gitlab({
+      host: gitlabIntegration.config.baseUrl,
+      ...(token ? { oauthToken: token } : {}),
     });
   }
 
+  private resolveTotalCount(
+    data: unknown[],
+    total: number | undefined,
+  ): number {
+    return Number.isFinite(total) ? (total as number) : data.length;
+  }
+
+  private async getIssuesCount(
+    url: string,
+    projectSlug: string,
+    options?: GitlabIssuesOptions,
+  ): Promise<number> {
+    const api = await this.getGitlabApi(url);
+    const { data, paginationInfo } = await api.Issues.all({
+      projectId: projectSlug,
+      perPage: 1,
+      maxPages: 1,
+      page: 1,
+      showExpanded: true,
+      ...options,
+    });
+    return this.resolveTotalCount(data, paginationInfo.total);
+  }
+
+  async getOpenIssuesCount(url: string, projectSlug: string): Promise<number> {
+    return this.getIssuesCount(url, projectSlug, { state: 'opened' });
+  }
+
   async getOpenedIssuesCount(
-    projectSlug: GitlabProjectSlug,
+    url: string,
+    projectSlug: string,
     since: Date,
   ): Promise<number> {
-    return this.fetchTotalCount(projectSlug, '/issues', {
-      created_after: since.toISOString(),
+    return this.getIssuesCount(url, projectSlug, {
+      createdAfter: since.toISOString(),
     });
   }
 
   async getClosedIssuesCount(
-    projectSlug: GitlabProjectSlug,
+    url: string,
+    projectSlug: string,
     since: Date,
   ): Promise<number> {
-    return this.fetchTotalCount(projectSlug, '/issues', {
+    return this.getIssuesCount(url, projectSlug, {
       state: 'closed',
-      updated_after: since.toISOString(),
+      updatedAfter: since.toISOString(),
     });
+  }
+
+  private async getMergeRequestsCount(
+    url: string,
+    projectSlug: string,
+    options?: GitlabMergeRequestsOptions,
+  ): Promise<number> {
+    const api = await this.getGitlabApi(url);
+    const { data, paginationInfo } = await api.MergeRequests.all({
+      projectId: projectSlug,
+      perPage: 1,
+      maxPages: 1,
+      page: 1,
+      showExpanded: true,
+      ...options,
+    });
+    return this.resolveTotalCount(data, paginationInfo.total);
   }
 
   async getOpenMergeRequestsCount(
-    projectSlug: GitlabProjectSlug,
+    url: string,
+    projectSlug: string,
   ): Promise<number> {
-    return this.fetchTotalCount(projectSlug, '/merge_requests', {
-      state: 'opened',
-    });
+    return this.getMergeRequestsCount(url, projectSlug, { state: 'opened' });
   }
 
   async getOpenedMergeRequestsCount(
-    projectSlug: GitlabProjectSlug,
+    url: string,
+    projectSlug: string,
     since: Date,
   ): Promise<number> {
-    return this.fetchTotalCount(projectSlug, '/merge_requests', {
-      created_after: since.toISOString(),
+    return this.getMergeRequestsCount(url, projectSlug, {
+      createdAfter: since.toISOString(),
     });
   }
 
   async getClosedMergeRequestsCount(
-    projectSlug: GitlabProjectSlug,
+    url: string,
+    projectSlug: string,
     since: Date,
   ): Promise<number> {
-    const closedCount = await this.fetchTotalCount(
-      projectSlug,
-      '/merge_requests',
-      {
-        state: 'closed',
-        updated_after: since.toISOString(),
-      },
-    );
-    const mergedCount = await this.fetchTotalCount(
-      projectSlug,
-      '/merge_requests',
-      {
-        state: 'merged',
-        updated_after: since.toISOString(),
-      },
-    );
-    return closedCount + mergedCount;
+    const closedMRs = await this.getMergeRequestsCount(url, projectSlug, {
+      state: 'closed',
+      updatedAfter: since.toISOString(),
+    });
+    const mergedMRs = await this.getMergeRequestsCount(url, projectSlug, {
+      state: 'merged',
+      updatedAfter: since.toISOString(),
+    });
+
+    return closedMRs + mergedMRs;
   }
 
   async getPipelinesCount(
-    projectSlug: GitlabProjectSlug,
+    url: string,
+    projectSlug: string,
     since: Date,
     status?: string,
   ): Promise<number> {
-    const params: Record<string, string> = {
-      updated_after: since.toISOString(),
-    };
-    if (status) {
-      params.status = status;
-    }
-    return this.fetchTotalCount(projectSlug, '/pipelines', params);
+    const api = await this.getGitlabApi(url);
+    const { data, paginationInfo } = await api.Pipelines.all(projectSlug, {
+      updatedAfter: since.toISOString(),
+      ...(status ? { status: status as 'success' | 'failed' } : {}),
+      perPage: 1,
+      maxPages: 1,
+      page: 1,
+      showExpanded: true,
+    });
+    return this.resolveTotalCount(data, paginationInfo.total);
   }
 
   async getJobsCount(
-    projectSlug: GitlabProjectSlug,
+    url: string,
+    projectSlug: string,
     since: Date,
     scope?: string[],
   ): Promise<number> {
-    const params: Record<string, string> = {};
-
-    if (scope && scope.length > 0) {
-      params['scope[]'] = scope.join(',');
-    }
-
-    // The jobs API doesn't support date filtering directly,
-    // so we need to fetch and filter by created_at
-    const jobs = await this.fetchAllPages(projectSlug, '/jobs', params, since);
+    const api = await this.getGitlabApi(url);
+    const jobs = await this.fetchJobsSince(api, projectSlug, since, scope);
     return jobs.length;
   }
 
-  private async fetchAllPages(
-    projectSlug: GitlabProjectSlug,
-    endpoint: string,
-    params: Record<string, string>,
+  private async fetchJobsSince(
+    api: GitlabApi,
+    projectSlug: string,
     since: Date,
+    scope?: string[],
   ): Promise<Array<{ created_at: string }>> {
     const allItems: Array<{ created_at: string }> = [];
     let page = 1;
@@ -199,19 +210,19 @@ export class GitlabClient {
     let hasMore = true;
 
     while (hasMore) {
-      const response = await this.fetchApi(projectSlug, endpoint, {
-        ...params,
-        page: String(page),
-        per_page: String(perPage),
-      });
+      // GitLab accepts repeated scope[] query params; gitbeaker types only a
+      // single JobScope in this release, so cast options for array callers.
+      const options = {
+        ...(scope && scope.length > 0 ? { scope } : {}),
+        page,
+        perPage,
+        maxPages: 1,
+      } as { page: number; perPage: number; maxPages: number };
 
-      if (!response.ok) {
-        throw new Error(
-          `GitLab API error: ${response.status} ${response.statusText}`,
-        );
-      }
+      const items = (await api.Jobs.all(projectSlug, options)) as {
+        created_at: string;
+      }[];
 
-      const items = (await response.json()) as Array<{ created_at: string }>;
       if (items.length === 0) {
         hasMore = false;
         continue;

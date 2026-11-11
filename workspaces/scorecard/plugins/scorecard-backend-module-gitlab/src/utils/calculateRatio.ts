@@ -14,27 +14,10 @@
  * limitations under the License.
  */
 
-export type GitlabProjectSlug = string;
-
-export type GitlabPipelineStatus =
-  | 'created'
-  | 'waiting_for_resource'
-  | 'preparing'
-  | 'pending'
-  | 'running'
-  | 'success'
-  | 'failed'
-  | 'canceled'
-  | 'skipped'
-  | 'manual'
-  | 'scheduled';
-
-export type GitlabJobStatus =
-  | 'created'
-  | 'pending'
-  | 'running'
-  | 'failed'
-  | 'success'
-  | 'canceled'
-  | 'skipped'
-  | 'manual';
+export function calculateRatio(success: number, failed: number): number {
+  const total = success + failed;
+  if (total === 0) {
+    return 100;
+  }
+  return Math.round((success / total) * 100);
+}

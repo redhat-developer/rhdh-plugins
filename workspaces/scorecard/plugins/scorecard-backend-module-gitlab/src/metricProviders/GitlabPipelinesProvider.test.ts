@@ -14,25 +14,43 @@
  * limitations under the License.
  */
 
-import { ConfigReader } from '@backstage/config';
+import { mockServices } from '@backstage/backend-test-utils';
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import {
-  GitlabPipelinesProvider,
-  calculateRatio,
-} from './GitlabPipelinesProvider';
+  DEFAULT_NUMBER_THRESHOLDS,
+  type ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { GitlabClient } from '../gitlab/GitlabClient';
+import { GitlabPipelinesProvider } from './GitlabPipelinesProvider';
+import { GITLAB_PERCENTAGE_THRESHOLDS } from './GitlabConfig';
 
+jest.mock('@backstage/catalog-model', () => ({
+  ...jest.requireActual('@backstage/catalog-model'),
+  getEntitySourceLocation: jest.fn().mockReturnValue({
+    type: 'url',
+    target: 'https://gitlab.com/my-group/my-project/-/tree/main/',
+  }),
+}));
 jest.mock('../gitlab/GitlabClient');
 
 describe('GitlabPipelinesProvider', () => {
   let provider: GitlabPipelinesProvider;
+
   const mockedGitlabClient = GitlabClient as jest.MockedClass<
     typeof GitlabClient
   >;
-  const mockedClientInstance = {
+  const mockedClientInstance: jest.Mocked<
+    Pick<GitlabClient, 'getPipelinesCount'>
+  > = {
     getPipelinesCount: jest.fn(),
-  } as any;
-  mockedGitlabClient.mockImplementation(() => mockedClientInstance);
+  };
+
+  mockedGitlabClient.mockImplementation(() => mockedClientInstance as any);
+
+  const sourceUrl = 'https://gitlab.com/my-group/my-project/-/tree/main/';
+  const projectSlug = 'my-group/my-project';
+  const fixedNow = new Date('2024-06-15T12:00:00.000Z');
 
   const mockEntity: Entity = {
     apiVersion: 'backstage.io/v1alpha1',
@@ -40,14 +58,24 @@ describe('GitlabPipelinesProvider', () => {
     metadata: {
       name: 'test-component',
       annotations: {
-        'gitlab.com/project-slug': 'my-group/my-project',
+        'gitlab.com/project-slug': projectSlug,
       },
     },
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    provider = GitlabPipelinesProvider.fromConfig(new ConfigReader({}));
+    jest.useFakeTimers();
+    jest.setSystemTime(fixedNow);
+
+    provider = GitlabPipelinesProvider.fromConfig(
+      mockServices.rootConfig({ data: {} }),
+      { logger: mockServices.logger.mock() },
+    );
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe('metadata', () => {
@@ -55,27 +83,65 @@ describe('GitlabPipelinesProvider', () => {
       expect(provider.getProviderDatasourceId()).toBe('gitlab');
     });
 
-    it('should return five metrics', () => {
+    it('should return correct provider ID', () => {
+      expect(provider.getProviderId()).toBe('gitlab.startedPipelines7d');
+    });
+
+    it('should return catalog filter for gitlab annotation', () => {
+      expect(provider.getCatalogFilter()).toEqual({
+        'metadata.annotations.gitlab.com/project-slug': CATALOG_FILTER_EXISTS,
+      });
+    });
+
+    it('should return five metrics with thresholds', () => {
       const metrics = provider.getMetrics();
+
+      const expectedMetrics = {
+        'gitlab.startedPipelines7d': {
+          id: 'gitlab.startedPipelines7d',
+          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        },
+        'gitlab.successfulPipelines7d': {
+          id: 'gitlab.successfulPipelines7d',
+          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        },
+        'gitlab.failedPipelines7d': {
+          id: 'gitlab.failedPipelines7d',
+          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        },
+        'gitlab.pipelineSuccessRatio7d': {
+          id: 'gitlab.pipelineSuccessRatio7d',
+          thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+        },
+        'gitlab.pipelineSuccessRatio24h': {
+          id: 'gitlab.pipelineSuccessRatio24h',
+          thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+        },
+      } as Record<string, { id: string; thresholds: ThresholdConfig }>;
+
       expect(metrics).toHaveLength(5);
-      expect(metrics.map(m => m.id)).toEqual([
-        'gitlab.startedPipelines7d',
-        'gitlab.successfulPipelines7d',
-        'gitlab.failedPipelines7d',
-        'gitlab.pipelineSuccessRatio7d',
-        'gitlab.pipelineSuccessRatio24h',
-      ]);
+
+      metrics.forEach(metric => {
+        expect(metric.type).toBe('number');
+        expect(metric.id).toEqual(expectedMetrics[metric.id].id);
+        expect(metric.thresholds).toEqual(
+          expectedMetrics[metric.id].thresholds,
+        );
+      });
     });
   });
 
   describe('calculateMetrics', () => {
+    const sevenDaysAgo = new Date(fixedNow.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneDayAgo = new Date(fixedNow.getTime() - 24 * 60 * 60 * 1000);
+
     it('should return all pipeline metrics', async () => {
       mockedClientInstance.getPipelinesCount
-        .mockResolvedValueOnce(100) // started 7d
-        .mockResolvedValueOnce(80) // successful 7d
-        .mockResolvedValueOnce(15) // failed 7d
-        .mockResolvedValueOnce(20) // successful 24h
-        .mockResolvedValueOnce(5); // failed 24h
+        .mockResolvedValueOnce(100)
+        .mockResolvedValueOnce(80)
+        .mockResolvedValueOnce(15)
+        .mockResolvedValueOnce(20)
+        .mockResolvedValueOnce(5);
 
       const result = await provider.calculateMetrics(mockEntity);
 
@@ -84,33 +150,64 @@ describe('GitlabPipelinesProvider', () => {
       expect(result.get('gitlab.failedPipelines7d')).toBe(15);
       expect(result.get('gitlab.pipelineSuccessRatio7d')).toBe(84);
       expect(result.get('gitlab.pipelineSuccessRatio24h')).toBe(80);
+
+      expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
+        1,
+        sourceUrl,
+        projectSlug,
+        sevenDaysAgo,
+      );
+      expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
+        2,
+        sourceUrl,
+        projectSlug,
+        sevenDaysAgo,
+        'success',
+      );
+      expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
+        3,
+        sourceUrl,
+        projectSlug,
+        sevenDaysAgo,
+        'failed',
+      );
+      expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
+        4,
+        sourceUrl,
+        projectSlug,
+        oneDayAgo,
+        'success',
+      );
+      expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
+        5,
+        sourceUrl,
+        projectSlug,
+        oneDayAgo,
+        'failed',
+      );
     });
 
-    it('should return 100% ratio when no pipelines exist', async () => {
-      mockedClientInstance.getPipelinesCount.mockResolvedValue(0);
+    it('should throw when project-slug annotation is missing', async () => {
+      const entityWithoutAnnotation: Entity = {
+        ...mockEntity,
+        metadata: { name: 'test-component' },
+      };
 
-      const result = await provider.calculateMetrics(mockEntity);
-
-      expect(result.get('gitlab.pipelineSuccessRatio7d')).toBe(100);
-      expect(result.get('gitlab.pipelineSuccessRatio24h')).toBe(100);
+      await expect(
+        provider.calculateMetrics(entityWithoutAnnotation),
+      ).rejects.toThrow(
+        "Missing annotation 'gitlab.com/project-slug' for entity component:default/test-component",
+      );
     });
-  });
-});
 
-describe('calculateRatio', () => {
-  it('should return 100 when no pipelines exist', () => {
-    expect(calculateRatio(0, 0)).toBe(100);
-  });
+    it('should propagate client errors', async () => {
+      mockedClientInstance.getPipelinesCount.mockRejectedValue(
+        new Error('GitLab unavailable'),
+      );
 
-  it('should calculate correct ratio', () => {
-    expect(calculateRatio(80, 20)).toBe(80);
-    expect(calculateRatio(9, 1)).toBe(90);
-    expect(calculateRatio(0, 10)).toBe(0);
-    expect(calculateRatio(10, 0)).toBe(100);
-  });
-
-  it('should round to nearest integer', () => {
-    expect(calculateRatio(1, 2)).toBe(33);
-    expect(calculateRatio(2, 1)).toBe(67);
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        'GitLab unavailable',
+      );
+    });
   });
 });

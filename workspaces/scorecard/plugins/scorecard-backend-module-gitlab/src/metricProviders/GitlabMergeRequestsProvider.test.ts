@@ -14,25 +14,49 @@
  * limitations under the License.
  */
 
-import { ConfigReader } from '@backstage/config';
+import { mockServices } from '@backstage/backend-test-utils';
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
-import { GitlabMergeRequestsProvider } from './GitlabMergeRequestsProvider';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  type ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { GitlabClient } from '../gitlab/GitlabClient';
-import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { GitlabMergeRequestsProvider } from './GitlabMergeRequestsProvider';
 
+jest.mock('@backstage/catalog-model', () => ({
+  ...jest.requireActual('@backstage/catalog-model'),
+  getEntitySourceLocation: jest.fn().mockReturnValue({
+    type: 'url',
+    target: 'https://gitlab.com/my-group/my-project/-/tree/main/',
+  }),
+}));
 jest.mock('../gitlab/GitlabClient');
 
 describe('GitlabMergeRequestsProvider', () => {
   let provider: GitlabMergeRequestsProvider;
+
   const mockedGitlabClient = GitlabClient as jest.MockedClass<
     typeof GitlabClient
   >;
-  const mockedClientInstance = {
+  const mockedClientInstance: jest.Mocked<
+    Pick<
+      GitlabClient,
+      | 'getOpenMergeRequestsCount'
+      | 'getOpenedMergeRequestsCount'
+      | 'getClosedMergeRequestsCount'
+    >
+  > = {
     getOpenMergeRequestsCount: jest.fn(),
     getOpenedMergeRequestsCount: jest.fn(),
     getClosedMergeRequestsCount: jest.fn(),
-  } as any;
-  mockedGitlabClient.mockImplementation(() => mockedClientInstance);
+  };
+
+  mockedGitlabClient.mockImplementation(() => mockedClientInstance as any);
+
+  const sourceUrl = 'https://gitlab.com/my-group/my-project/-/tree/main/';
+  const projectSlug = 'my-group/my-project';
+  const fixedNow = new Date('2024-06-15T12:00:00.000Z');
 
   const mockEntity: Entity = {
     apiVersion: 'backstage.io/v1alpha1',
@@ -40,14 +64,24 @@ describe('GitlabMergeRequestsProvider', () => {
     metadata: {
       name: 'test-component',
       annotations: {
-        'gitlab.com/project-slug': 'my-group/my-project',
+        'gitlab.com/project-slug': projectSlug,
       },
     },
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    provider = GitlabMergeRequestsProvider.fromConfig(new ConfigReader({}));
+    jest.useFakeTimers();
+    jest.setSystemTime(fixedNow);
+
+    provider = GitlabMergeRequestsProvider.fromConfig(
+      mockServices.rootConfig({ data: {} }),
+      { logger: mockServices.logger.mock() },
+    );
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe('metadata', () => {
@@ -60,23 +94,38 @@ describe('GitlabMergeRequestsProvider', () => {
     });
 
     it('should return catalog filter for gitlab annotation', () => {
-      const filter = provider.getCatalogFilter();
-      expect(
-        filter['metadata.annotations.gitlab.com/project-slug'],
-      ).toBeDefined();
+      expect(provider.getCatalogFilter()).toEqual({
+        'metadata.annotations.gitlab.com/project-slug': CATALOG_FILTER_EXISTS,
+      });
     });
 
     it('should return three metrics with thresholds', () => {
       const metrics = provider.getMetrics();
+
+      const expectedMetrics = {
+        'gitlab.openMergeRequests': {
+          id: 'gitlab.openMergeRequests',
+          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        },
+        'gitlab.openedMergeRequests7d': {
+          id: 'gitlab.openedMergeRequests7d',
+          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        },
+        'gitlab.closedMergeRequests7d': {
+          id: 'gitlab.closedMergeRequests7d',
+          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        },
+      } as Record<string, { id: string; thresholds: ThresholdConfig }>;
+
       expect(metrics).toHaveLength(3);
-      expect(metrics.map(m => m.id)).toEqual([
-        'gitlab.openMergeRequests',
-        'gitlab.openedMergeRequests7d',
-        'gitlab.closedMergeRequests7d',
-      ]);
-      for (const metric of metrics) {
-        expect(metric.thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
-      }
+
+      metrics.forEach(metric => {
+        expect(metric.type).toBe('number');
+        expect(metric.id).toEqual(expectedMetrics[metric.id].id);
+        expect(metric.thresholds).toEqual(
+          expectedMetrics[metric.id].thresholds,
+        );
+      });
     });
   });
 
@@ -88,9 +137,46 @@ describe('GitlabMergeRequestsProvider', () => {
 
       const result = await provider.calculateMetrics(mockEntity);
 
+      const sevenDaysAgo = new Date(
+        fixedNow.getTime() - 7 * 24 * 60 * 60 * 1000,
+      );
+
       expect(result.get('gitlab.openMergeRequests')).toBe(10);
       expect(result.get('gitlab.openedMergeRequests7d')).toBe(4);
       expect(result.get('gitlab.closedMergeRequests7d')).toBe(6);
+
+      expect(
+        mockedClientInstance.getOpenMergeRequestsCount,
+      ).toHaveBeenCalledWith(sourceUrl, projectSlug);
+      expect(
+        mockedClientInstance.getOpenedMergeRequestsCount,
+      ).toHaveBeenCalledWith(sourceUrl, projectSlug, sevenDaysAgo);
+      expect(
+        mockedClientInstance.getClosedMergeRequestsCount,
+      ).toHaveBeenCalledWith(sourceUrl, projectSlug, sevenDaysAgo);
+    });
+
+    it('should throw when project-slug annotation is missing', async () => {
+      const entityWithoutAnnotation: Entity = {
+        ...mockEntity,
+        metadata: { name: 'test-component' },
+      };
+
+      await expect(
+        provider.calculateMetrics(entityWithoutAnnotation),
+      ).rejects.toThrow(
+        "Missing annotation 'gitlab.com/project-slug' for entity component:default/test-component",
+      );
+    });
+
+    it('should propagate client errors', async () => {
+      mockedClientInstance.getOpenMergeRequestsCount.mockRejectedValue(
+        new Error('GitLab unavailable'),
+      );
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        'GitLab unavailable',
+      );
     });
   });
 });

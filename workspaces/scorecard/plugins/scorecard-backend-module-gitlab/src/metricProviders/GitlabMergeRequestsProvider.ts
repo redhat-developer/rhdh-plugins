@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import type { Entity } from '@backstage/catalog-model';
+import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
@@ -23,38 +24,41 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GitlabClient } from '../gitlab/GitlabClient';
-import { getProjectSlugFromEntity } from '../gitlab/utils';
+import { getProjectSlugFromEntity } from '../utils/getProjectSlugFromEntity';
 import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
-
-const METRIC_IDS = {
-  OPEN_MRS: 'gitlab.openMergeRequests',
-  OPENED_MRS_7D: 'gitlab.openedMergeRequests7d',
-  CLOSED_MRS_7D: 'gitlab.closedMergeRequests7d',
-} as const;
+import {
+  GITLAB_MERGE_REQUESTS_METRIC_IDS,
+  GITLAB_METRIC,
+} from './GitlabConfig';
 
 export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
   private readonly gitlabClient: GitlabClient;
 
-  private constructor(config: Config) {
-    this.gitlabClient = new GitlabClient(config);
+  private constructor(gitlabClient: GitlabClient) {
+    this.gitlabClient = gitlabClient;
   }
 
-  static fromConfig(config: Config): GitlabMergeRequestsProvider {
-    return new GitlabMergeRequestsProvider(config);
+  static fromConfig(
+    config: Config,
+    options: { logger: LoggerService },
+  ): GitlabMergeRequestsProvider {
+    return new GitlabMergeRequestsProvider(
+      new GitlabClient(config, options.logger),
+    );
   }
 
   getProviderDatasourceId(): string {
-    return 'gitlab';
+    return GITLAB_METRIC;
   }
 
   getProviderId(): string {
-    return METRIC_IDS.OPEN_MRS;
+    return GITLAB_MERGE_REQUESTS_METRIC_IDS.OPEN_MRS;
   }
 
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: METRIC_IDS.OPEN_MRS,
+        id: GITLAB_MERGE_REQUESTS_METRIC_IDS.OPEN_MRS,
         title: 'GitLab open merge requests',
         description:
           'Current count of open merge requests for a given GitLab project.',
@@ -63,7 +67,7 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
         history: true,
       },
       {
-        id: METRIC_IDS.OPENED_MRS_7D,
+        id: GITLAB_MERGE_REQUESTS_METRIC_IDS.OPENED_MRS_7D,
         title: 'GitLab merge requests opened (7d)',
         description:
           'Number of merge requests opened in the last 7 days for a given GitLab project.',
@@ -72,7 +76,7 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
         history: true,
       },
       {
-        id: METRIC_IDS.CLOSED_MRS_7D,
+        id: GITLAB_MERGE_REQUESTS_METRIC_IDS.CLOSED_MRS_7D,
         title: 'GitLab merge requests closed (7d)',
         description:
           'Number of merge requests closed or merged in the last 7 days for a given GitLab project.',
@@ -92,18 +96,27 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const projectSlug = getProjectSlugFromEntity(entity);
+    const { target } = getEntitySourceLocation(entity);
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const [openMRs, openedMRs, closedMRs] = await Promise.all([
-      this.gitlabClient.getOpenMergeRequestsCount(projectSlug),
-      this.gitlabClient.getOpenedMergeRequestsCount(projectSlug, sevenDaysAgo),
-      this.gitlabClient.getClosedMergeRequestsCount(projectSlug, sevenDaysAgo),
+      this.gitlabClient.getOpenMergeRequestsCount(target, projectSlug),
+      this.gitlabClient.getOpenedMergeRequestsCount(
+        target,
+        projectSlug,
+        sevenDaysAgo,
+      ),
+      this.gitlabClient.getClosedMergeRequestsCount(
+        target,
+        projectSlug,
+        sevenDaysAgo,
+      ),
     ]);
 
     return new Map([
-      [METRIC_IDS.OPEN_MRS, openMRs],
-      [METRIC_IDS.OPENED_MRS_7D, openedMRs],
-      [METRIC_IDS.CLOSED_MRS_7D, closedMRs],
+      [GITLAB_MERGE_REQUESTS_METRIC_IDS.OPEN_MRS, openMRs],
+      [GITLAB_MERGE_REQUESTS_METRIC_IDS.OPENED_MRS_7D, openedMRs],
+      [GITLAB_MERGE_REQUESTS_METRIC_IDS.CLOSED_MRS_7D, closedMRs],
     ]);
   }
 }

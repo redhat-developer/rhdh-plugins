@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import type { Entity } from '@backstage/catalog-model';
+import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
@@ -23,38 +24,36 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GitlabClient } from '../gitlab/GitlabClient';
-import { getProjectSlugFromEntity } from '../gitlab/utils';
+import { getProjectSlugFromEntity } from '../utils/getProjectSlugFromEntity';
 import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
-
-const METRIC_IDS = {
-  OPEN_ISSUES: 'gitlab.openIssues',
-  OPENED_ISSUES_7D: 'gitlab.openedIssues7d',
-  CLOSED_ISSUES_7D: 'gitlab.closedIssues7d',
-} as const;
+import { GITLAB_ISSUES_METRIC_IDS, GITLAB_METRIC } from './GitlabConfig';
 
 export class GitlabIssuesProvider implements MetricProvider<'number'> {
   private readonly gitlabClient: GitlabClient;
 
-  private constructor(config: Config) {
-    this.gitlabClient = new GitlabClient(config);
+  private constructor(gitlabClient: GitlabClient) {
+    this.gitlabClient = gitlabClient;
   }
 
-  static fromConfig(config: Config): GitlabIssuesProvider {
-    return new GitlabIssuesProvider(config);
+  static fromConfig(
+    config: Config,
+    options: { logger: LoggerService },
+  ): GitlabIssuesProvider {
+    return new GitlabIssuesProvider(new GitlabClient(config, options.logger));
   }
 
   getProviderDatasourceId(): string {
-    return 'gitlab';
+    return GITLAB_METRIC;
   }
 
   getProviderId(): string {
-    return METRIC_IDS.OPEN_ISSUES;
+    return GITLAB_ISSUES_METRIC_IDS.OPEN_ISSUES;
   }
 
   getMetrics(): Metric<'number'>[] {
     return [
       {
-        id: METRIC_IDS.OPEN_ISSUES,
+        id: GITLAB_ISSUES_METRIC_IDS.OPEN_ISSUES,
         title: 'GitLab open issues',
         description: 'Current count of open issues for a given GitLab project.',
         type: 'number',
@@ -62,7 +61,7 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
         history: true,
       },
       {
-        id: METRIC_IDS.OPENED_ISSUES_7D,
+        id: GITLAB_ISSUES_METRIC_IDS.OPENED_ISSUES_7D,
         title: 'GitLab issues opened (7d)',
         description:
           'Number of issues opened in the last 7 days for a given GitLab project.',
@@ -71,7 +70,7 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
         history: true,
       },
       {
-        id: METRIC_IDS.CLOSED_ISSUES_7D,
+        id: GITLAB_ISSUES_METRIC_IDS.CLOSED_ISSUES_7D,
         title: 'GitLab issues closed (7d)',
         description:
           'Number of issues closed in the last 7 days for a given GitLab project.',
@@ -91,18 +90,19 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const projectSlug = getProjectSlugFromEntity(entity);
+    const { target } = getEntitySourceLocation(entity);
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const [openIssues, openedIssues, closedIssues] = await Promise.all([
-      this.gitlabClient.getOpenIssuesCount(projectSlug),
-      this.gitlabClient.getOpenedIssuesCount(projectSlug, sevenDaysAgo),
-      this.gitlabClient.getClosedIssuesCount(projectSlug, sevenDaysAgo),
+      this.gitlabClient.getOpenIssuesCount(target, projectSlug),
+      this.gitlabClient.getOpenedIssuesCount(target, projectSlug, sevenDaysAgo),
+      this.gitlabClient.getClosedIssuesCount(target, projectSlug, sevenDaysAgo),
     ]);
 
     return new Map([
-      [METRIC_IDS.OPEN_ISSUES, openIssues],
-      [METRIC_IDS.OPENED_ISSUES_7D, openedIssues],
-      [METRIC_IDS.CLOSED_ISSUES_7D, closedIssues],
+      [GITLAB_ISSUES_METRIC_IDS.OPEN_ISSUES, openIssues],
+      [GITLAB_ISSUES_METRIC_IDS.OPENED_ISSUES_7D, openedIssues],
+      [GITLAB_ISSUES_METRIC_IDS.CLOSED_ISSUES_7D, closedIssues],
     ]);
   }
 }

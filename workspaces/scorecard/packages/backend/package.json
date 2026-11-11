@@ -54,6 +54,7 @@
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-gitlab": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube": "workspace:^",
