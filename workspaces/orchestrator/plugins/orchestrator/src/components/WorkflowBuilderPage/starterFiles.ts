@@ -37,16 +37,17 @@ export const slugifyWorkflowId = (name: string): string =>
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 
 /** Escape a value for inclusion inside a YAML double-quoted scalar. */
 const escapeYamlDoubleQuoted = (value: string): string =>
   value
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/\r/g, '\\r')
-    .replace(/\n/g, '\\n')
-    .replace(/\t/g, '\\t');
+    .replaceAll('\\', '\\\\')
+    .replaceAll('"', '\\"')
+    .replaceAll('\r', '\\r')
+    .replaceAll('\n', '\\n')
+    .replaceAll('\t', '\\t');
 
 const yamlDoubleQuoted = (value: string): string =>
   `"${escapeYamlDoubleQuoted(value)}"`;

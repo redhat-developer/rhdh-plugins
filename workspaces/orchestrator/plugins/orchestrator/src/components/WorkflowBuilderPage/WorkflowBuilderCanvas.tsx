@@ -50,7 +50,12 @@ const StepNode = ({
     <div
       data-testid="builder-step-node"
       data-selected={selected ? 'true' : undefined}
-      className={`${styles.stepNode}${selected ? ` ${styles.stepNodeSelected}` : ''}`}
+      className={[
+        styles.stepNode,
+        selected ? styles.stepNodeSelected : undefined,
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
       <div className={styles.badgeRow}>
         <span className={`${styles.badge} ${styles.needsSetupBadge}`}>

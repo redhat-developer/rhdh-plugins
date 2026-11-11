@@ -61,7 +61,7 @@
 
 /* React Flow selection ring is redundant; we style the card itself. */
 .canvas :global(.react-flow__node.selected) {
-  z-index: 10 !important;
+  z-index: 10;
 }
 
 .badgeRow {

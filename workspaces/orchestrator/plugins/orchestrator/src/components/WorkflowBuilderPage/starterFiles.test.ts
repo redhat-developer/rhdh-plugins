@@ -26,6 +26,7 @@ describe('slugifyWorkflowId', () => {
   it('kebab-cases the workflow display name', () => {
     expect(slugifyWorkflowId('test name new')).toBe('test-name-new');
     expect(slugifyWorkflowId('New workflow')).toBe('new-workflow');
+    expect(slugifyWorkflowId('---Hello---')).toBe('hello');
   });
 });
 
