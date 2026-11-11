@@ -243,6 +243,10 @@ provider bucket.
 `## ADDED Requirements` in both `ca-bundle-resolution/spec.md` and
 `fault-isolation/spec.md`. These are baseline requirements being
 formally documented for the first time.
+The same review follow-up removed the empty `EXISTING Requirements: None`
+template section from `reference-app-config/spec.md`. Its substantive
+requirements already use `ADDED`; this is related cleanup under finding #16,
+not an additional inventory finding.
 
 ---
 

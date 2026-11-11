@@ -14,18 +14,18 @@ RHDH SHALL evaluate each AI Catalog entity using direct Catalog policy in v1. Th
 
 This change SHALL NOT implement automatic asset-to-version inheritance or precedence rules that make a version-specific policy override an inherited asset policy. RHDHPLAN-1507 SHALL supply stable cross-version identity, multi-version representation, and a resolvable relationship contract before an inheritance follow-up is designed. This dependency SHALL NOT block delivery of direct per-entity authorization.
 
-#### Scenario: Entity-model prerequisite remains unavailable
-
-- **WHEN** RHDHPLAN-1507 has not supplied the required model
-- **THEN** automatic inheritance is excluded from implementation
-- **AND** each entity continues to use direct Catalog policy
-
 Before inheritance is implemented, a reviewed follow-up change must specify
 inheritance and override semantics. An integration spike against the target
 RBAC version must prove same-role and cross-role precedence for an asset-wide
 allow plus an independent version-specific deny. The follow-up must define
 safe behavior for precedence, removal, orphaned versions, migration, and
 resolver failure.
+
+#### Scenario: Entity-model prerequisite remains unavailable
+
+- **WHEN** RHDHPLAN-1507 has not supplied the required model
+- **THEN** automatic inheritance is excluded from implementation
+- **AND** each entity continues to use direct Catalog policy
 
 #### Scenario: Entity-model prerequisite becomes available
 
