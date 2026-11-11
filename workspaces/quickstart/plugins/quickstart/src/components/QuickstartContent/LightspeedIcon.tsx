@@ -16,8 +16,7 @@
 
 import { RhUiAiChatbotIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-chatbot-icon';
 
+/** Same absolute 24px box as Remix step icons (`size={24}`). */
 export const LightspeedIcon = () => (
-  <RhUiAiChatbotIcon
-    style={{ height: '24px', width: '24px', display: 'block' }}
-  />
+  <RhUiAiChatbotIcon width={24} height={24} style={{ display: 'block' }} />
 );

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import { render, screen } from '@testing-library/react';
-import HomeIcon from '@mui/icons-material/Home';
 
 import { QuickstartItemIcon } from './QuickstartItemIcon';
 
@@ -44,7 +43,7 @@ describe('QuickstartItemIcon', () => {
 
   it('should render system icon when available', () => {
     mockGetSystemIcon.mockReturnValue(() => (
-      <HomeIcon data-testid="system-home-icon" />
+      <span data-testid="system-home-icon" />
     ));
 
     render(<QuickstartItemIcon icon="home" />);
@@ -98,66 +97,52 @@ describe('QuickstartItemIcon', () => {
     expect(img.getAttribute('src')).toBe(dataUri);
   });
 
-  it('should render legacy Rbac icon as VpnKeyOutlined', () => {
-    const { container } = render(<QuickstartItemIcon icon="Rbac" />);
-    expect(
-      container.querySelector('[data-testid="VpnKeyOutlinedIcon"]'),
-    ).toBeInTheDocument();
+  it('should render legacy Rbac icon', () => {
+    render(<QuickstartItemIcon icon="Rbac" />);
+    expect(screen.getByTestId('RbacIcon')).toBeInTheDocument();
   });
 
-  it('should render legacy Git icon as FileCopyOutlined', () => {
-    const { container } = render(<QuickstartItemIcon icon="Git" />);
-    expect(
-      container.querySelector('[data-testid="FileCopyOutlinedIcon"]'),
-    ).toBeInTheDocument();
+  it('should render legacy Git icon', () => {
+    render(<QuickstartItemIcon icon="Git" />);
+    expect(screen.getByTestId('GitIcon')).toBeInTheDocument();
   });
 
-  it('should render legacy Plugins icon as PowerOutlined', () => {
-    const { container } = render(<QuickstartItemIcon icon="Plugins" />);
-    expect(
-      container.querySelector('[data-testid="PowerOutlinedIcon"]'),
-    ).toBeInTheDocument();
+  it('should render legacy Plugins icon', () => {
+    render(<QuickstartItemIcon icon="Plugins" />);
+    expect(screen.getByTestId('PluginsIcon')).toBeInTheDocument();
   });
 
-  it('should render legacy Import icon as Login', () => {
-    const { container } = render(<QuickstartItemIcon icon="Import" />);
-    expect(
-      container.querySelector('[data-testid="LoginIcon"]'),
-    ).toBeInTheDocument();
+  it('should render legacy Import icon', () => {
+    render(<QuickstartItemIcon icon="Import" />);
+    expect(screen.getByTestId('ImportIcon')).toBeInTheDocument();
   });
 
-  it('should render legacy Catalog icon as CategoryOutlined', () => {
-    const { container } = render(<QuickstartItemIcon icon="Catalog" />);
-    expect(
-      container.querySelector('[data-testid="CategoryOutlinedIcon"]'),
-    ).toBeInTheDocument();
+  it('should render legacy Catalog icon', () => {
+    render(<QuickstartItemIcon icon="Catalog" />);
+    expect(screen.getByTestId('CatalogIcon')).toBeInTheDocument();
   });
 
-  it('should render legacy SelfService icon as ControlPointOutlined', () => {
-    const { container } = render(<QuickstartItemIcon icon="SelfService" />);
-    expect(
-      container.querySelector('[data-testid="ControlPointOutlinedIcon"]'),
-    ).toBeInTheDocument();
+  it('should render legacy SelfService icon', () => {
+    render(<QuickstartItemIcon icon="SelfService" />);
+    expect(screen.getByTestId('SelfServiceIcon')).toBeInTheDocument();
   });
 
-  it('should render legacy Learning icon as SchoolOutlined', () => {
-    const { container } = render(<QuickstartItemIcon icon="Learning" />);
-    expect(
-      container.querySelector('[data-testid="SchoolOutlinedIcon"]'),
-    ).toBeInTheDocument();
+  it('should render legacy Learning icon', () => {
+    render(<QuickstartItemIcon icon="Learning" />);
+    expect(screen.getByTestId('LearningIcon')).toBeInTheDocument();
   });
 
-  it('should render legacy Admin icon as AdminPanelSettingsOutlined', () => {
-    const { container } = render(<QuickstartItemIcon icon="Admin" />);
-    expect(
-      container.querySelector('[data-testid="AdminPanelSettingsOutlinedIcon"]'),
-    ).toBeInTheDocument();
+  it('should render legacy Admin icon', () => {
+    render(<QuickstartItemIcon icon="Admin" />);
+    expect(screen.getByTestId('AdminIcon')).toBeInTheDocument();
   });
 
-  it('should render Lightspeed common icon', () => {
+  it('should render Lightspeed common icon at the same 24px size as Remix step icons', () => {
     const { container } = render(<QuickstartItemIcon icon="Lightspeed" />);
     const svg = container.querySelector('svg.pf-v6-svg');
     expect(svg).toBeInTheDocument();
+    expect(svg).toHaveAttribute('width', '24');
+    expect(svg).toHaveAttribute('height', '24');
   });
 
   it('should fall back to material ligature for lowercase config ids', () => {
@@ -165,31 +150,26 @@ describe('QuickstartItemIcon', () => {
     expect(screen.getByText('settings')).toHaveClass('material-icons-outlined');
   });
 
-  it('should apply custom sx prop to the icon container', () => {
-    mockGetSystemIcon.mockReturnValue(() => (
-      <HomeIcon data-testid="system-icon" />
-    ));
+  it('should apply custom className to the icon container', () => {
+    mockGetSystemIcon.mockReturnValue(() => <span data-testid="system-icon" />);
 
     const { container } = render(
-      <QuickstartItemIcon icon="home" sx={{ color: 'red' }} />,
+      <QuickstartItemIcon icon="home" className="custom-icon" />,
     );
 
-    expect(container.firstChild).toBeInTheDocument();
+    expect(container.firstChild).toHaveClass('custom-icon');
   });
 
-  it('should apply custom sx prop only to the common icon container', () => {
+  it('should apply custom className to the common icon container', () => {
     const { container } = render(
-      <QuickstartItemIcon icon="Admin" sx={{ marginRight: 1 }} />,
+      <QuickstartItemIcon icon="Admin" className="custom-admin" />,
     );
 
-    const icon = container.querySelector(
-      '[data-testid="AdminPanelSettingsOutlinedIcon"]',
-    );
-    expect(icon).toBeInTheDocument();
-    expect(icon).not.toHaveStyle({ marginRight: '8px' });
+    expect(container.firstChild).toHaveClass('custom-admin');
+    expect(screen.getByTestId('AdminIcon')).toBeInTheDocument();
   });
 
-  it('should render MUI fallback for invalid icon ids', () => {
+  it('should render Remix fallback for invalid icon ids', () => {
     render(<QuickstartItemIcon icon="NotAValidIcon" />);
     expect(screen.getByTestId('QuickstartIconFallback')).toBeInTheDocument();
   });

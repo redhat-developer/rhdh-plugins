@@ -16,17 +16,12 @@
 
 import { screen, fireEvent } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/test-utils';
+import { AccordionGroup } from '@backstage/ui';
 import { QuickstartItem } from './QuickstartItem';
 import { QuickstartItemData } from '../../types';
 
-jest.mock('@mui/material/Collapse', () => ({
-  __esModule: true,
-  default: ({ in: open, children }: any) => (open ? children : null),
-}));
-
 describe('QuickstartItem)', () => {
   const mockSetProgress = jest.fn();
-  const mockHandleOpen = jest.fn();
   const item: QuickstartItemData = {
     title: 'Test Step',
     description: 'This is the test description',
@@ -37,15 +32,11 @@ describe('QuickstartItem)', () => {
     },
   };
 
-  const renderItem = (open = false) =>
+  const renderItem = () =>
     renderInTestApp(
-      <QuickstartItem
-        item={item}
-        setProgress={mockSetProgress}
-        handleOpen={mockHandleOpen}
-        open={open}
-        index={0}
-      />,
+      <AccordionGroup>
+        <QuickstartItem item={item} setProgress={mockSetProgress} index={0} />
+      </AccordionGroup>,
     );
 
   beforeEach(() => {
@@ -60,44 +51,38 @@ describe('QuickstartItem)', () => {
   });
 
   it('does not show description and CTA when closed', async () => {
-    await renderItem(false);
+    await renderItem();
+    // Accordion keeps panel content mounted but hidden when collapsed.
     expect(
       screen.queryByText('This is the test description'),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText('Start Now')).not.toBeInTheDocument();
+    ).not.toBeVisible();
+    expect(screen.queryByText('Start Now')).not.toBeVisible();
   });
 
-  it('shows description and CTA when open is true', async () => {
-    await renderItem(true);
+  it('shows description and CTA when expanded', async () => {
+    await renderItem();
+    fireEvent.click(screen.getByRole('button', { name: /Test Step/i }));
     expect(
       screen.getByText('This is the test description'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Start Now' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Start Now' }),
+    ).toBeInTheDocument();
   });
 
-  it('calls handleOpen when item is clicked', async () => {
-    await renderItem(false);
-    const listItem = screen.getByRole('button', {
-      name: /expand test step details/i,
-    });
-    fireEvent.click(listItem);
-    expect(mockHandleOpen).toHaveBeenCalled();
+  it('expands when the trigger is clicked', async () => {
+    await renderItem();
+    const trigger = screen.getByRole('button', { name: /Test Step/i });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('calls setProgress and sets stepCompleted in localStorage on CTA click', async () => {
-    await renderItem(true);
-
-    const cta = screen.getByRole('link', { name: 'Start Now' });
-    fireEvent.click(cta);
-
+  it('marks the step completed after CTA click', async () => {
+    await renderItem();
+    fireEvent.click(screen.getByRole('button', { name: /Test Step/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Start Now' }));
     expect(mockSetProgress).toHaveBeenCalled();
-    expect(localStorage.getItem('Test Step-0')).toBe('true');
-  });
-
-  it('reads stepCompleted from localStorage on mount', async () => {
-    localStorage.setItem('Test Step-0', 'true');
-    await renderItem(true);
-    expect(screen.getByText('Start Now')).toBeInTheDocument();
     expect(localStorage.getItem('Test Step-0')).toBe('true');
   });
 });
