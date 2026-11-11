@@ -21,12 +21,11 @@ export const useIsDarkTheme = () => {
   const [isDark, setIsDark] = useState(
     () =>
       typeof document !== 'undefined' &&
-      document.body.getAttribute('data-theme-mode') === 'dark',
+      document.body.dataset.themeMode === 'dark',
   );
 
   useEffect(() => {
-    const sync = () =>
-      setIsDark(document.body.getAttribute('data-theme-mode') === 'dark');
+    const sync = () => setIsDark(document.body.dataset.themeMode === 'dark');
     sync();
     const observer = new MutationObserver(sync);
     observer.observe(document.body, {

@@ -42,11 +42,7 @@ export const CustomDrawer = (props: CustomDrawerProps) => {
     isDrawerOpen,
     drawerWidth,
     onWidthChange: _onWidthChange,
-    ...restDrawerProps
   } = props;
-
-  // Keep non-layout drawer props available for callers that still forward them.
-  void restDrawerProps;
 
   const width = drawerWidth || initialWidth;
 
