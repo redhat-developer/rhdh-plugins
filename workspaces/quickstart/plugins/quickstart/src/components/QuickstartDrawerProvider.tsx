@@ -15,16 +15,16 @@
  */
 
 import { useEffect, PropsWithChildren, useState } from 'react';
-import {
-  configApiRef,
-  identityApiRef,
-  useApi,
-} from '@backstage/core-plugin-api';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { toastApiRef } from '@backstage/frontend-plugin-api';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
-import { QuickstartItemData } from '../types';
-import { filterQuickstartItemsByRole } from '../utils';
+import {
+  getConfiguredQuickstartItems,
+  getEligibleQuickstartItems,
+  postQuickstartHelpToast,
+} from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
+import { useQuickstartUserKey } from '../hooks/useQuickstartUserKey';
 import { useTranslation } from '../hooks/useTranslation';
 
 /**
@@ -32,11 +32,10 @@ import { useTranslation } from '../hooks/useTranslation';
  * @public
  */
 export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [hasShownNotification, setHasShownNotification] = useState(false);
-  const [drawerWidth, setDrawerWidth] = useState<number>(500);
-  const [userKey, setUserKey] = useState<string>('guest');
-  const identityApi = useApi(identityApiRef);
+  const [drawerWidth, setDrawerWidth] = useState(500);
+  const userKey = useQuickstartUserKey();
   const configApi = useApi(configApiRef);
   const toastApi = useApi(toastApiRef);
   const { t } = useTranslation();
@@ -44,61 +43,28 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   // Determine role once at provider level to avoid re-fetching on drawer open/close
   const { isLoading: roleLoading, userRole } = useQuickstartRole();
 
-  // Resolve the current user's identity to scope localStorage keys per user
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const identity = await identityApi.getBackstageIdentity();
-        const ref = identity?.userEntityRef?.toLowerCase() || 'guest';
-        if (!cancelled) setUserKey(ref);
-      } catch (e) {
-        if (!cancelled) setUserKey('guest');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [identityApi]);
-
   // Initialize drawer state based on per-user keys and only when quickstarts exist
   useEffect(() => {
     if (!userKey) return;
 
-    // Determine if there are any quickstart items configured globally
-    const hasAnyQuickstarts = (() => {
-      try {
-        if (!configApi?.has('app.quickstart')) return false;
-        const items = configApi.get('app.quickstart') as unknown;
-        return Array.isArray(items) && items.length > 0;
-      } catch {
-        return false;
-      }
-    })();
-
     const openKey = `quickstart-open:${userKey}`;
     const visitedKey = `quickstart-visited:${userKey}`;
     const notificationKey = `quickstart-notification-shown:${userKey}`;
+    const configuredItems = getConfiguredQuickstartItems(configApi);
 
     // If no quickstarts are configured, ensure the drawer is closed and don't mark as visited
-    if (!hasAnyQuickstarts) {
+    if (configuredItems.length === 0) {
       setIsDrawerOpen(false);
       // Avoid persisting visited so future addition of items can auto-open
       localStorage.setItem(openKey, 'false');
       return;
     }
 
-    // Check if user has any eligible quickstart items
-    const quickstartItems: QuickstartItemData[] = configApi?.has(
-      'app.quickstart',
-    )
-      ? (configApi.get('app.quickstart') as QuickstartItemData[])
-      : [];
-
-    const eligibleItems =
-      !roleLoading && userRole
-        ? filterQuickstartItemsByRole(quickstartItems, userRole)
-        : [];
+    const eligibleItems = getEligibleQuickstartItems(
+      configApi,
+      roleLoading,
+      userRole,
+    );
 
     // If user has no eligible items, close the drawer and don't mark as visited
     if (!roleLoading && eligibleItems.length === 0) {
@@ -126,47 +92,32 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   }, [userKey, configApi, roleLoading, userRole]);
 
   const openDrawer = () => {
-    // Check if user has eligible items before opening
-    const quickstartItems: QuickstartItemData[] = configApi?.has(
-      'app.quickstart',
-    )
-      ? (configApi.get('app.quickstart') as QuickstartItemData[])
-      : [];
+    const eligibleItems = getEligibleQuickstartItems(
+      configApi,
+      roleLoading,
+      userRole,
+    );
 
-    const eligibleItems =
-      !roleLoading && userRole
-        ? filterQuickstartItemsByRole(quickstartItems, userRole)
-        : [];
-
-    // Only open if user has eligible items
-    if (!roleLoading && eligibleItems.length > 0) {
+    if (eligibleItems.length > 0) {
       setIsDrawerOpen(true);
-      const openKey = `quickstart-open:${userKey}`;
-      localStorage.setItem(openKey, 'true');
+      localStorage.setItem(`quickstart-open:${userKey}`, 'true');
     }
   };
 
   const closeDrawer = () => {
     setIsDrawerOpen(false);
     if (!hasShownNotification) {
-      toastApi.post({
-        title: t('snackbar.helpPrompt'),
-        status: 'info',
-        timeout: 5000,
-      });
+      postQuickstartHelpToast(toastApi, t('snackbar.helpPrompt'));
       setHasShownNotification(true);
-      const notificationKey = `quickstart-notification-shown:${userKey}`;
-      localStorage.setItem(notificationKey, 'true');
+      localStorage.setItem(`quickstart-notification-shown:${userKey}`, 'true');
     }
-    const openKey = `quickstart-open:${userKey}`;
-    localStorage.setItem(openKey, 'false');
+    localStorage.setItem(`quickstart-open:${userKey}`, 'false');
   };
 
   const toggleDrawer = () => {
     const next = !isDrawerOpen;
     setIsDrawerOpen(next);
-    const openKey = `quickstart-open:${userKey}`;
-    localStorage.setItem(openKey, next.toString());
+    localStorage.setItem(`quickstart-open:${userKey}`, next.toString());
   };
 
   return (
