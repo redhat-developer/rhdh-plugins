@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-llamastack-entity-provider
 
+## 1.2.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils@1.2.1
+- @red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk@1.2.1
+
 ## 1.2.0
 
 ### Patch Changes
