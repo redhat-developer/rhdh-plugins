@@ -19,7 +19,11 @@ import type {
   LoggerService,
 } from '@backstage/backend-plugin-api';
 // eslint-disable-next-line @backstage/no-undeclared-imports -- Shared fixtures are imported only by tests.
-import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
+import {
+  mockCredentials,
+  mockServices,
+  startTestBackend,
+} from '@backstage/backend-test-utils';
 import type { Config } from '../config';
 import type { NpxSourceConfig } from './services/types';
 
@@ -70,6 +74,9 @@ export function startConnector(
       mockServices.rootLogger.factory(),
       logger.factory,
       scheduler,
+      mockServices.httpAuth.factory({
+        defaultCredentials: mockCredentials.none(),
+      }),
       mockServices.rootConfig.factory({
         data: {
           app: { baseUrl: 'http://localhost:3000' },
