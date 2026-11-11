@@ -104,7 +104,8 @@ export const WorkflowBuilderPage = () => {
     }
     const onBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
-      event.returnValue = '';
+      // Still required for a reliable cross-browser unload prompt.
+      event.returnValue = ''; // NOSONAR
     };
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => window.removeEventListener('beforeunload', onBeforeUnload);

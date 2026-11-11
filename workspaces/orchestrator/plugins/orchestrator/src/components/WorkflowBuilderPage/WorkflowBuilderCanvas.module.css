@@ -6,10 +6,13 @@
   background: var(--bui-white, #fff);
 }
 
+/* Beat React Flow defaults without !important (unlayered module CSS). */
 .canvas :global(.react-flow),
 .canvas :global(.react-flow__renderer),
-.canvas :global(.react-flow__background) {
-  background: transparent !important;
+.canvas :global(.react-flow__background),
+.canvas :global(.react-flow__pane) {
+  background: transparent;
+  background-color: transparent;
 }
 
 :global([data-theme-mode='dark']) .canvas {

@@ -32,22 +32,31 @@ export const DEFAULT_BUILDER_IDENTITY: WorkflowBuilderIdentity = {
  * Derives workflow id / filenames from the display name (prototype: kebab-case).
  * e.g. "test name new" → "test-name-new"
  */
-export const slugifyWorkflowId = (name: string): string =>
-  name
+export const slugifyWorkflowId = (name: string): string => {
+  const slug = name
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
+    .replace(/[^a-z0-9]+/g, '-');
+
+  let start = 0;
+  let end = slug.length;
+  while (start < end && slug.charAt(start) === '-') {
+    start += 1;
+  }
+  while (end > start && slug.charAt(end - 1) === '-') {
+    end -= 1;
+  }
+  return slug.slice(start, end);
+};
 
 /** Escape a value for inclusion inside a YAML double-quoted scalar. */
 const escapeYamlDoubleQuoted = (value: string): string =>
   value
-    .replaceAll('\\', '\\\\')
-    .replaceAll('"', '\\"')
-    .replaceAll('\r', '\\r')
-    .replaceAll('\n', '\\n')
-    .replaceAll('\t', '\\t');
+    .replaceAll('\\', String.raw`\\`)
+    .replaceAll('"', String.raw`\"`)
+    .replaceAll('\r', String.raw`\r`)
+    .replaceAll('\n', String.raw`\n`)
+    .replaceAll('\t', String.raw`\t`);
 
 const yamlDoubleQuoted = (value: string): string =>
   `"${escapeYamlDoubleQuoted(value)}"`;
