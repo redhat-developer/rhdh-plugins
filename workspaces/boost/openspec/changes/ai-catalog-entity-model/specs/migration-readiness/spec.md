@@ -19,7 +19,7 @@ Design document mapping custom annotations and entity kinds to upstream Backstag
 > - **RHDHPLAN-1113 resolved:** Boost uses `AiResource` (lowercase `i`) for skills/rules directly. The dual-path (Resource/Component interim vs AiResource) is retired as the primary narrative.
 > - **MCP kind-aligned:** RFC [#32062](https://github.com/backstage/backstage/issues/32062) Option 3 shipped as `McpServerApiEntity` ([backstage#34016](https://github.com/backstage/backstage/pull/34016)). MCP stays `kind: API`. **No** `API` → `McpServer` kind rename.
 > - **Skills/rules shipped:** `AiResource` kind shipped upstream via [backstage#34261](https://github.com/backstage/backstage/pull/34261) ([#33575](https://github.com/backstage/backstage/issues/33575) lineage). The entity kind is `AiResource` (lowercase `i`) — there is no kind called `AIResource`. Remaining work is docs/emitter alignment to canonical casing.
-> - **Model servers committed:** `AiModelServerAPI` from [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) is the committed RHDH 2.1 target. Byte-for-byte with upstream [backstage#34476](https://github.com/backstage/backstage/pull/34476) if it merges.
+> - **Model servers committed:** `AiModelServerAPI` from [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) is the current dedicated kind. Any adoption of upstream `API` / `ai-model-server` requires separately planned kind, entity-ref, and consumer changes.
 > - **Agents committed:** `AiResource` / `spec.type: agent` from [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) (merged) is the committed RHDH 2.1 target. Boost pivoting via [#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260).
 >
 > The mapping scenarios below use Decision 1 as the baseline. The RHDHPLAN-1113 dual-path is no longer the primary narrative.
@@ -77,10 +77,10 @@ A design document MUST map current custom annotations to upstream entity kinds w
 
 #### Scenario: Example mapping for model servers (RHIDP-15302)
 
-- **WHEN** downstream committed to `AiModelServerAPI` from [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) (`kind: API`, `spec.type: ai-model-server`) for RHDH 2.1
+- **WHEN** downstream committed to `AiModelServerAPI` from [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) (`kind: AiModelServerAPI`, `spec.type: ai-model-server`) for RHDH 2.1
 - **THEN** the migration document specifies:
-  - **Current:** `kind: API`, `spec.type: ai-model-server` (`AiModelServerAPI` from #4211)
-  - **Target:** Same schema. If upstream [backstage#34476](https://github.com/backstage/backstage/pull/34476) merges, migration is byte-for-byte (switch to upstream types). **Not** a new kind named `ai-model-server`.
+  - **Current:** `kind: AiModelServerAPI`, `spec.type: ai-model-server` (`AiModelServerAPI` from #4211)
+  - **Target:** Keep the dedicated kind for the current baseline. If upstream [backstage#34476](https://github.com/backstage/backstage/pull/34476) is adopted with `kind: API`, assess a separate kind and entity-ref migration; switching type imports alone is insufficient.
   - **Confidence:** Medium (downstream committed; upstream alignment pending)
   - **Note:** AI models are part of the model-server entity (list of model names) — no separate entity kind per #34476 and #4211
 
@@ -105,19 +105,19 @@ The migration document MUST identify consumer-facing changes when transitioning 
 
 #### Scenario: Catalog UI filters impacted — kind-changing categories (RHIDP-15302)
 
-- **WHEN** the catalog UI filters by `kind: Resource` + `rhdh.io/ai-asset-category: model-server`
-- **THEN** the migration document identifies: "If [#34476](https://github.com/backstage/backstage/pull/34476) merges, filters must change to `kind: API, spec.type: ai-model-server`."
+- **WHEN** the catalog UI filters by `kind: AiModelServerAPI` + `rhdh.io/ai-asset-category: model-server`
+- **THEN** the migration document identifies: "If [#34476](https://github.com/backstage/backstage/pull/34476) is adopted with its candidate API mapping, filters must change to `kind: API, spec.type: ai-model-server`."
 
 #### Scenario: Entity refs change format (RHIDP-15302)
 
-- **WHEN** an entity ref uses a kind that will change (e.g., model-server: `resource:default/my-server`)
-- **THEN** the migration document identifies: "For model-server if [#34476](https://github.com/backstage/backstage/pull/34476) merges: `resource:default/my-server` → `api:default/my-server` (kind change `Resource` → `API`). For skills/rules: entity refs stay the same (`airesource:default/my-skill`) because Backstage lowercases kind prefixes and `AIResource` → `AiResource` produces the same ref string."
+- **WHEN** an entity ref uses a kind that will change (e.g., model-server: `aimodelserverapi:default/my-server`)
+- **THEN** the migration document identifies: "For model-server if [#34476](https://github.com/backstage/backstage/pull/34476) is adopted with its candidate API mapping: `aimodelserverapi:default/my-server` → `api:default/my-server` (kind change `AiModelServerAPI` → `API`). For skills/rules: entity refs stay the same (`airesource:default/my-skill`) because Backstage lowercases kind prefixes and `AIResource` → `AiResource` produces the same ref string."
 - **AND** this impacts: entity links in catalog, relationship references, API queries filtering by entity ref
 
 #### Scenario: Queries and API calls impacted (RHIDP-15302)
 
-- **WHEN** API clients query `GET /api/catalog/entities?filter=kind=Resource,metadata.annotations.rhdh.io/ai-asset-category=model-server`
-- **THEN** the migration document identifies: "If [#34476](https://github.com/backstage/backstage/pull/34476) merges, queries must change to `?filter=kind=API,spec.type=ai-model-server`. For MCP servers: no kind change needed (already `kind: API`)."
+- **WHEN** API clients query `GET /api/catalog/entities?filter=kind=AiModelServerAPI,metadata.annotations.rhdh.io/ai-asset-category=model-server`
+- **THEN** the migration document identifies: "If [#34476](https://github.com/backstage/backstage/pull/34476) is adopted with its candidate API mapping, queries must change to `?filter=kind=API,spec.type=ai-model-server`. For MCP servers: no kind change needed (already `kind: API`)."
 
 #### Scenario: Backward compatibility strategy documented (RHIDP-15302)
 

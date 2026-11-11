@@ -23,7 +23,11 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Specification covers all rhdh.io/ai-asset-\* annotations
+### Requirement: Complete annotation and entity-kind documentation
+
+The specification MUST document all `rhdh.io/ai-asset-*` annotations and all `spec.type` values used by AI Asset entities.
+
+#### Scenario: Specification covers all rhdh.io/ai-asset-\* annotations
 
 **GIVEN** the RHDH AI Asset annotation scheme  
 **WHEN** the specification document is published  
@@ -36,15 +40,15 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Specification covers all spec.type values
+#### Scenario: Specification covers all spec.type values
 
 **GIVEN** the RHDH AI Asset entity type conventions  
 **WHEN** the specification document is published  
 **THEN** all `spec.type` values for AI Assets are documented:
 
 - `agent` (AiResource kind; current mapping per Decision 1)
-- `skill` (AIResource kind)
-- `rule` (AIResource kind; compatibility mapping)
+- `skill` (AiResource kind)
+- `rule` (AiResource kind; compatibility mapping)
 - `mcp-server` (API kind)
 - `ai-model` (Resource kind)
 - `ai-model-server` (AiModelServerAPI kind)
@@ -53,7 +57,11 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: MCP server mapping documented (kind-aligned)
+### Requirement: Per-kind mapping with upstream target
+
+Each AI Asset category MUST have a documented mapping from its current RHDH entity kind to the upstream Backstage target, with transformation requirements.
+
+#### Scenario: MCP server mapping documented (kind-aligned)
 
 **GIVEN** upstream Backstage shipped `McpServerApiEntity` via [backstage#34016](https://github.com/backstage/backstage/pull/34016) (RFC [#32062](https://github.com/backstage/backstage/issues/32062) Option 3)  
 **WHEN** the specification document is published  
@@ -67,7 +75,7 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Model server mapping documented (candidate)
+#### Scenario: Model server mapping documented (candidate)
 
 **GIVEN** an open upstream PR [backstage#34476](https://github.com/backstage/backstage/pull/34476) proposes `kind: API`, `spec.type: ai-model-server`  
 **WHEN** the specification document is published  
@@ -79,7 +87,7 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: AI model mapping documented (no upstream kind)
+#### Scenario: AI model mapping documented (no upstream kind)
 
 **GIVEN** no solid upstream kind exists for AI models  
 **WHEN** the specification document is published  
@@ -91,7 +99,7 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Skill and rule mapping documented (upstream shipped)
+#### Scenario: Skill and rule mapping documented (upstream shipped)
 
 **GIVEN** upstream Backstage shipped `AiResource` kind (see [#33575](https://github.com/backstage/backstage/issues/33575) lineage)  
 **WHEN** the specification document is published  
@@ -104,7 +112,7 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Agent mapping documented
+#### Scenario: Agent mapping documented
 
 **GIVEN** no upstream agent kind exists and RFC [#32062](https://github.com/backstage/backstage/issues/32062) is MCP-only
 **WHEN** the specification document is published  
@@ -114,7 +122,11 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Confidence levels assigned per mapping
+### Requirement: Confidence-level classification
+
+Each entity mapping MUST include a confidence level indicating the stability of the upstream target.
+
+#### Scenario: Confidence levels assigned per mapping
 
 **GIVEN** the draft status of upstream RFCs  
 **WHEN** the specification document includes entity mappings  
@@ -128,7 +140,11 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Migration explicitly framed as future work
+### Requirement: Future-work boundary and publication
+
+The specification MUST frame migration as future work and be accessible to platform engineers.
+
+#### Scenario: Migration explicitly framed as future work
 
 **GIVEN** the specification document maps current entities to draft RFC kinds  
 **WHEN** the document is published  
@@ -141,7 +157,7 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Spec accessible to platform engineers
+#### Scenario: Spec accessible to platform engineers
 
 **GIVEN** the annotation specification document is complete  
 **WHEN** it is published  
@@ -154,7 +170,7 @@ mapping without executing a migration.
 
 ---
 
-## Scenario: Spec references authoritative entity mapping
+#### Scenario: Spec references authoritative entity mapping
 
 **GIVEN** the `ai-catalog-entity-model` change defined the entity mapping table (Decision 1)  
 **WHEN** the annotation specification document is written  
