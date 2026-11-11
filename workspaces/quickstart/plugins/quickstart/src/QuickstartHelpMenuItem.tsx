@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import { Box, Flex, Text } from '@backstage/ui';
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { RiHand } from '@remixicon/react';
 
+import { QuickstartMenuItemLayout } from './components/QuickstartMenuItemLayout';
 import { QUICKSTART_DRAWER_ID } from './const';
 import { useTranslation } from './hooks/useTranslation';
 
@@ -38,52 +37,14 @@ export const QuickstartHelpMenuItem = ({
   const { t } = useTranslation();
   const { toggleDrawer } = useAppDrawer();
 
-  const handleClick = () => {
-    toggleDrawer(QUICKSTART_DRAWER_ID);
-    handleClose?.();
-  };
-
   return (
-    <Box
+    <QuickstartMenuItemLayout
       as="li"
-      role="menuitem"
-      tabIndex={0}
-      style={{
-        display: 'flex',
-        width: '100%',
-        boxSizing: 'border-box',
-        padding: 0,
-        border: 'none',
-        background: 'transparent',
-        color: 'inherit',
-        cursor: 'pointer',
-        listStyle: 'none',
+      label={t('button.quickstart')}
+      onActivate={() => {
+        toggleDrawer(QUICKSTART_DRAWER_ID);
+        handleClose?.();
       }}
-      onClick={handleClick}
-      onKeyDown={event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          handleClick();
-        }
-      }}
-    >
-      <Flex
-        align="center"
-        justify="between"
-        px="4"
-        my="2"
-        style={{ width: '100%' }}
-      >
-        <Flex align="center" gap="2">
-          <Box
-            aria-hidden
-            style={{ display: 'flex', color: 'var(--bui-fg-disabled)' }}
-          >
-            <RiHand size={20} />
-          </Box>
-          <Text variant="body-small">{t('button.quickstart')}</Text>
-        </Flex>
-      </Flex>
-    </Box>
+    />
   );
 };

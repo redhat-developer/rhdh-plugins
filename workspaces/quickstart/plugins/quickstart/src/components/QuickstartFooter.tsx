@@ -68,6 +68,7 @@ export const QuickstartFooter = ({
         <Text variant="body-small">{progressLabel}</Text>
         <ButtonLink
           href="#"
+          style={{ fontWeight: 400 }}
           onClick={event => {
             event.preventDefault();
           }}
