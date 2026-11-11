@@ -16,11 +16,11 @@
 
 import { useEffect, PropsWithChildren, useState } from 'react';
 import {
-  alertApiRef,
   configApiRef,
   identityApiRef,
   useApi,
 } from '@backstage/core-plugin-api';
+import { toastApiRef } from '@backstage/frontend-plugin-api';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
@@ -38,7 +38,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const [userKey, setUserKey] = useState<string>('guest');
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
-  const alertApi = useApi(alertApiRef);
+  const toastApi = useApi(toastApiRef);
   const { t } = useTranslation();
 
   // Determine role once at provider level to avoid re-fetching on drawer open/close
@@ -149,10 +149,10 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const closeDrawer = () => {
     setIsDrawerOpen(false);
     if (!hasShownNotification) {
-      alertApi.post({
-        message: t('snackbar.helpPrompt'),
-        severity: 'info',
-        display: 'transient',
+      toastApi.post({
+        title: t('snackbar.helpPrompt'),
+        status: 'info',
+        timeout: 5000,
       });
       setHasShownNotification(true);
       const notificationKey = `quickstart-notification-shown:${userKey}`;

@@ -20,11 +20,8 @@ import {
   renderInTestApp,
   TestApiProvider,
 } from '@backstage/test-utils';
-import {
-  alertApiRef,
-  configApiRef,
-  identityApiRef,
-} from '@backstage/core-plugin-api';
+import { configApiRef, identityApiRef } from '@backstage/core-plugin-api';
+import { toastApiRef } from '@backstage/frontend-plugin-api';
 import { QuickstartInit } from './QuickstartInit';
 import { QUICKSTART_DRAWER_ID } from './const';
 
@@ -61,9 +58,8 @@ const mockIdentityApi = {
   signOut: jest.fn(),
 };
 
-const mockAlertApi = {
-  post: jest.fn(),
-  alert$: jest.fn(),
+const mockToastApi = {
+  post: jest.fn(() => ({ close: jest.fn() })),
 };
 
 describe('QuickstartInit', () => {
@@ -93,7 +89,7 @@ describe('QuickstartInit', () => {
         apis={[
           [configApiRef, configApi],
           [identityApiRef, mockIdentityApi],
-          [alertApiRef, mockAlertApi],
+          [toastApiRef, mockToastApi],
         ]}
       >
         <QuickstartInit />

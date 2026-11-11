@@ -16,11 +16,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
-  alertApiRef,
   configApiRef,
   identityApiRef,
   useApi,
 } from '@backstage/core-plugin-api';
+import { toastApiRef } from '@backstage/frontend-plugin-api';
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { useQuickstartRole } from './hooks/useQuickstartRole';
@@ -32,7 +32,7 @@ import { QUICKSTART_DRAWER_ID } from './const';
 /**
  * Side-effect component rendered at the app root via AppRootElementBlueprint.
  *
- * Handles first-visit auto-open of the quickstart drawer and posts an alert
+ * Handles first-visit auto-open of the quickstart drawer and posts a toast
  * notification when the drawer is closed for the first time.
  */
 export const QuickstartInit = () => {
@@ -43,7 +43,7 @@ export const QuickstartInit = () => {
 
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
-  const alertApi = useApi(alertApiRef);
+  const toastApi = useApi(toastApiRef);
   const { t } = useTranslation();
   const { isOpen, openDrawer } = useAppDrawer();
   const { isLoading: roleLoading, userRole } = useQuickstartRole();
@@ -109,7 +109,7 @@ export const QuickstartInit = () => {
     initDone.current = true;
   }, [userKey, configApi, roleLoading, userRole, openDrawer]);
 
-  // Track drawer close to show alert and persist state
+  // Track drawer close to show toast and persist state
   useEffect(() => {
     if (!initDone.current) return;
 
@@ -118,10 +118,10 @@ export const QuickstartInit = () => {
       localStorage.setItem(openKey, 'false');
 
       if (!hasShownNotification) {
-        alertApi.post({
-          message: t('snackbar.helpPrompt'),
-          severity: 'info',
-          display: 'transient',
+        toastApi.post({
+          title: t('snackbar.helpPrompt'),
+          status: 'info',
+          timeout: 5000,
         });
         setHasShownNotification(true);
         const notificationKey = `quickstart-notification-shown:${userKey}`;
@@ -133,7 +133,7 @@ export const QuickstartInit = () => {
     }
 
     prevOpen.current = drawerOpen;
-  }, [drawerOpen, userKey, hasShownNotification, alertApi, t]);
+  }, [drawerOpen, userKey, hasShownNotification, toastApi, t]);
 
   return null;
 };
