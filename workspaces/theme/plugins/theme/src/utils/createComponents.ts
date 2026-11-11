@@ -855,7 +855,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         label: {
+          fontSize: 12,
           '&[class*="MuiTypography-subtitle2"]': {
+            fontSize: 12,
             fontWeight: 'normal',
           },
         },
