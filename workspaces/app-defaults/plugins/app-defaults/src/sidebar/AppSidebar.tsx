@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { isValidElement, useEffect, useMemo, useState } from 'react';
+import {
+  isValidElement,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   ErrorBoundary,
@@ -38,6 +45,7 @@ import type {
   SidebarItemData,
   SidebarItemGroupData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { Focusable, Tooltip, TooltipTrigger } from '@backstage/ui';
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -136,11 +144,72 @@ function useSidebarIcon(icon: SidebarModelIcon | undefined): IconComponent {
   }, [icon, iconsApi]);
 }
 
+type SidebarNavItemProps = ComponentProps<typeof SidebarItem>;
+
+function isSidebarLabelTruncated(root: HTMLElement): boolean {
+  const label = root.querySelector(
+    'span[class*="MuiTypography-subtitle2"]',
+  ) as HTMLElement | null;
+  return !!label && label.scrollWidth > label.clientWidth + 1;
+}
+
+/** Shows a tooltip for long/truncated sidebar labels on hover. */
+function SidebarLabelTooltip({
+  text,
+  children,
+}: {
+  text?: string;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  if (!text) {
+    return <>{children}</>;
+  }
+  return (
+    <TooltipTrigger
+      delay={300}
+      isOpen={open}
+      onOpenChange={nextOpen => {
+        if (!nextOpen) {
+          setOpen(false);
+        }
+      }}
+    >
+      <Focusable excludeFromTabOrder>
+        <Box
+          component="span"
+          style={{ display: 'block', width: '100%' }}
+          onMouseEnter={event => {
+            setOpen(isSidebarLabelTruncated(event.currentTarget));
+          }}
+          onMouseLeave={() => setOpen(false)}
+        >
+          {children}
+        </Box>
+      </Focusable>
+      <Tooltip placement="bottom">{text}</Tooltip>
+    </TooltipTrigger>
+  );
+}
+
+function SidebarNavItem(props: SidebarNavItemProps) {
+  const { text } = props;
+  return (
+    <SidebarLabelTooltip text={text}>
+      <SidebarItem {...props} />
+    </SidebarLabelTooltip>
+  );
+}
+
 function SidebarModelItemEntry({ item }: { item: SidebarModelItem }) {
   const icon = useSidebarIcon(item.icon);
   const translate = useTranslateTitle('pages');
   const text = translate(item.title);
-  return <SidebarConfiguredItem icon={icon} text={text} item={item} />;
+  return (
+    <SidebarLabelTooltip text={text}>
+      <SidebarConfiguredItem icon={icon} text={text} item={item} />
+    </SidebarLabelTooltip>
+  );
 }
 
 function SidebarModelSubmenuItem({ item }: { item: SidebarModelItem }) {
@@ -191,13 +260,13 @@ function SidebarModelInlineGroup({ group }: { group: SidebarModelGroup }) {
   return (
     <>
       {group.to ? (
-        <SidebarItem icon={icon} text={title} to={group.to} onClick={toggle}>
+        <SidebarNavItem icon={icon} text={title} to={group.to} onClick={toggle}>
           {arrow}
-        </SidebarItem>
+        </SidebarNavItem>
       ) : (
-        <SidebarItem icon={icon} text={title} onClick={toggle}>
+        <SidebarNavItem icon={icon} text={title} onClick={toggle}>
           {arrow}
-        </SidebarItem>
+        </SidebarNavItem>
       )}
       <Collapse in={expanded} unmountOnExit>
         <Box sx={{ pl: isSidebarOpen ? 2 : 0 }}>
@@ -215,13 +284,13 @@ function SidebarModelFlyoutGroup({ group }: { group: SidebarModelGroup }) {
   const translate = useTranslateTitle('pages');
   const title = translate(group.title);
   return (
-    <SidebarItem icon={icon} text={title} to={group.to}>
+    <SidebarNavItem icon={icon} text={title} to={group.to}>
       <SidebarSubmenu title={title}>
         {group.items.map(item => (
           <SidebarModelSubmenuItem key={item.id} item={item} />
         ))}
       </SidebarSubmenu>
-    </SidebarItem>
+    </SidebarNavItem>
   );
 }
 
@@ -233,7 +302,7 @@ function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
       return null;
     }
     return (
-      <SidebarItem icon={icon} text={translate(group.title)} to={group.to} />
+      <SidebarNavItem icon={icon} text={translate(group.title)} to={group.to} />
     );
   }
   if (group.variant === 'flyout') {

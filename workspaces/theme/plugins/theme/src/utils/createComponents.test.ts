@@ -97,6 +97,24 @@ describe('createComponents', () => {
     );
   });
 
+  it('uses a compact 12px font for BackstageSidebarItem labels', () => {
+    const actual = createComponents({});
+    const item = actual.BackstageSidebarItem?.styleOverrides as
+      | Record<string, Record<string, unknown>>
+      | undefined;
+    expect(item?.label).toEqual(
+      expect.objectContaining({
+        fontSize: 12,
+      }),
+    );
+    expect(item?.label?.['&[class*="MuiTypography-subtitle2"]']).toEqual(
+      expect.objectContaining({
+        fontSize: 12,
+        fontWeight: 'normal',
+      }),
+    );
+  });
+
   it('paints BackstageSidebarPage with mainSectionBackgroundColor on all viewports', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
