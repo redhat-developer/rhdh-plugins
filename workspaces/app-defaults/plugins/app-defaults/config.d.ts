@@ -177,7 +177,8 @@ export interface Config {
              */
             requiresRoute?: boolean;
             /**
-             * HTML anchor target for the link (`_blank` or `_self`).
+             * HTML anchor target for the link (`_blank` opens in a new tab,
+             * `_self` in the same tab). Invalid values are ignored.
              * @visibility frontend
              */
             target?: '_blank' | '_self';

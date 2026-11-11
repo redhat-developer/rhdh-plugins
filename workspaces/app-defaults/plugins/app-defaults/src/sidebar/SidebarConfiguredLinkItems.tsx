@@ -30,14 +30,6 @@ import LaunchIcon from '@mui/icons-material/Launch';
 import type { SidebarModelItem } from './buildSidebarModel';
 import { resolveSidebarLinkAttributes } from './sidebarLinkAttributes';
 
-function sidebarItemLinkProps(item: SidebarModelItem) {
-  const { target, rel } = resolveSidebarLinkAttributes(item.to, item.target);
-  return {
-    ...(target ? { target } : {}),
-    ...(rel ? { rel } : {}),
-  };
-}
-
 function submenuItemRowSx(theme: Theme) {
   return {
     height: 48,
@@ -83,7 +75,8 @@ export function SidebarConfiguredItem({
       text={text}
       to={item.to}
       onClick={item.onClick}
-      {...sidebarItemLinkProps(item)}
+      {...(link.target ? { target: link.target } : {})}
+      {...(link.rel ? { rel: link.rel } : {})}
     >
       {link.externalLinkIcon ? (
         <LaunchIcon fontSize="small" aria-hidden />
