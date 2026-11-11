@@ -1,0 +1,95 @@
+/* Layout chrome for the edit-files dialog (not BUI component overrides). */
+
+.body {
+  display: flex;
+  gap: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.fileList {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--bui-border-1, #d2d2d2);
+  padding-right: var(--bui-space-3, 12px);
+  overflow: auto;
+}
+
+/*
+ * BUI List collapses gap to 0 when selectionMode is set; restore spacing to
+ * match the prototype file picker.
+ */
+.fileList [class*='bui-List'],
+.fileList [role='grid'] {
+  gap: var(--bui-space-4, 16px);
+}
+
+.fileList [class*='ListRow'][data-selection-mode] {
+  padding-block: var(--bui-space-3, 12px);
+}
+
+/* Prototype file picker uses selection highlight only — no checkmark. */
+.fileList [class*='ListRowCheck'] {
+  display: none;
+}
+
+/* Expected: 16px name, 12px filename, 4px between (RedHatText via BUI font). */
+.fileList [class*='ListRowLabel'] {
+  gap: var(--bui-space-1, 4px);
+  font-family: var(--bui-font-regular, 'RedHatText', sans-serif);
+  font-size: var(--bui-font-size-4, 1rem); /* 16px */
+  line-height: 1.25;
+}
+
+.fileList [class*='ListRowDescription'] {
+  font-family: var(--bui-font-regular, 'RedHatText', sans-serif);
+  font-size: var(--bui-font-size-2, 0.75rem); /* 12px */
+  line-height: 1.25;
+}
+
+.previewColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bui-space-3, 12px);
+  flex: 1;
+  min-width: 0;
+  padding-left: var(--bui-space-4, 16px);
+}
+
+.previewBox {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--bui-border-1, #d2d2d2);
+  border-radius: var(--bui-radius-2, 4px);
+  background: var(--bui-bg-neutral-1, #fff);
+  overflow: auto;
+}
+
+.previewActions {
+  position: absolute;
+  top: var(--bui-space-2, 8px);
+  right: var(--bui-space-2, 8px);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--bui-space-1, 4px);
+  z-index: 1;
+}
+
+.previewActions > * {
+  flex: 0 0 auto;
+}
+
+.previewContent {
+  margin: 0;
+  padding: var(--bui-space-4, 16px);
+  font-family: var(--bui-font-regular-mono, ui-monospace, monospace);
+  font-size: var(--bui-font-size-2, 0.75rem);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--bui-fg-primary, inherit);
+}

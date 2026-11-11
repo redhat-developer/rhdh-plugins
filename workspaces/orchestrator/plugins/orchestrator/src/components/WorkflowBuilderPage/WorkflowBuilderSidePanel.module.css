@@ -1,0 +1,100 @@
+/*
+ * BUI TextField/Select use fill (no resting border). Prototype wants
+ * transparent fields with a visible outline — scoped here only.
+ *
+ * Transparent fill is done via BUI background tokens (inherited by hashed
+ * input classes) so we avoid !important. Resting outline still needs
+ * element targeting because BUI has no resting-border token.
+ */
+
+.panel {
+  flex-shrink: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--bui-border-1, #d2d2d2);
+  background: var(--bui-white, #fff);
+  color: var(--bui-fg-primary, inherit);
+}
+
+:global([data-theme-mode='dark']) .panel {
+  background: var(--bui-bg-app, #151515);
+}
+
+/*
+ * Prototype tabs: Identity starts flush with form content (no BUI tab
+ * padding-inline gap). Selected brand: light #06c, dark #92c5f9.
+ */
+.tabs {
+  --builder-tab-selected: var(--pf-t--global--color--brand--default, #06c);
+}
+
+:global([data-theme-mode='dark']) .tabs {
+  --builder-tab-selected: var(--pf-t--global--color--brand--default, #92c5f9);
+}
+
+.tabs [role='tablist'] {
+  padding-inline: var(--bui-space-4);
+  gap: var(--bui-space-4);
+}
+
+.tabs [role='tab'] {
+  padding-inline: 0;
+  font-size: var(--bui-font-size-2, 0.75rem);
+  font-weight: var(--bui-font-weight-bold, 600);
+  height: 28px;
+  line-height: 1.2;
+}
+
+.tabs [role='tab'][data-selected='true'] {
+  color: var(--builder-tab-selected);
+}
+
+/* BUI TabActive is a sibling indicator; hashed class still contains TabActive. */
+.tabs [class*='TabActive'] {
+  left: var(--active-tab-left);
+  width: var(--active-tab-width);
+  background-color: var(--builder-tab-selected);
+}
+
+/* Prototype tabs have no hover pill — hide BUI TabHovered indicator. */
+.tabs [class*='TabHovered'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tabs [role='tabpanel'] {
+  padding-inline: 0;
+  padding-top: 0;
+}
+
+.outlinedFields {
+  --bui-bg-neutral-1: transparent;
+  --bui-bg-neutral-2: transparent;
+  --bui-bg-neutral-3: transparent;
+  --bui-bg-neutral-4: transparent;
+}
+
+.outlinedFields input,
+.outlinedFields textarea,
+.outlinedFields button[aria-haspopup='listbox'] {
+  color: var(--bui-fg-primary, inherit);
+  box-shadow: inset 0 0 0 1px var(--bui-border-1, #c7c7c7);
+}
+
+/* Unlayered module CSS beats BUI @layer components; keep focus/invalid rings. */
+.outlinedFields input[data-focused],
+.outlinedFields textarea[data-focused] {
+  box-shadow: inset 0 0 0 1px var(--bui-ring, #1f5493);
+}
+
+.outlinedFields [data-focused] button[aria-haspopup='listbox'] {
+  box-shadow: inset 0 0 0 1px var(--bui-ring, #1f5493);
+}
+
+.outlinedFields input[data-invalid],
+.outlinedFields textarea[data-invalid],
+.outlinedFields [data-invalid] button[aria-haspopup='listbox'] {
+  box-shadow: inset 0 0 0 1px var(--bui-border-danger, #c9190b);
+}

@@ -1,0 +1,24 @@
+/* Borderless edit-in-place fields in the builder header. */
+.headerField {
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  color: var(--bui-fg-primary, inherit);
+  font: inherit;
+}
+
+.headerField:focus-visible {
+  outline: 2px solid var(--bui-ring, #1f5493);
+  outline-offset: 2px;
+}
+
+.nameField {
+  font-weight: 600;
+}
+
+.descriptionField {
+  color: inherit;
+}

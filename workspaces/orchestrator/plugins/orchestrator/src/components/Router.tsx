@@ -20,12 +20,14 @@ import {
   entityInstanceRouteRef,
   entityWorkflowRouteRef,
   executeWorkflowRouteRef,
+  workflowBuilderRouteRef,
   workflowInstanceRouteRef,
   workflowRouteRef,
 } from '../routes';
 import { CatalogWorkflowPage } from './catalogComponents/CatalogWorkflowPage';
 import { ExecuteWorkflowPage } from './ExecuteWorkflowPage/ExecuteWorkflowPage';
 import { OrchestratorPage } from './OrchestratorPage/OrchestratorPage';
+import { WorkflowBuilderPage } from './WorkflowBuilderPage/WorkflowBuilderPage';
 import { WorkflowInstancePage } from './WorkflowInstancePage/WorkflowInstancePage';
 import { WorkflowPage } from './WorkflowPage/WorkflowPage';
 
@@ -33,7 +35,10 @@ export const Router = () => {
   return (
     // relative to orchestrator/
     <Routes>
-      <Route path="/*" element={<OrchestratorPage />} />
+      <Route
+        path={workflowBuilderRouteRef.path}
+        element={<WorkflowBuilderPage />}
+      />
       <Route path={`${workflowRouteRef.path}/*`} element={<WorkflowPage />} />
       <Route
         path={executeWorkflowRouteRef.path}
@@ -51,6 +56,7 @@ export const Router = () => {
         path={entityInstanceRouteRef.path}
         element={<WorkflowInstancePage />}
       />
+      <Route path="/*" element={<OrchestratorPage />} />
     </Routes>
   );
 };

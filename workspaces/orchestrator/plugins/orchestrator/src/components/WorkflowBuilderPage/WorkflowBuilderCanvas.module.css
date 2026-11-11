@@ -1,0 +1,121 @@
+.canvas {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bui-white, #fff);
+}
+
+.canvas :global(.react-flow),
+.canvas :global(.react-flow__renderer),
+.canvas :global(.react-flow__background) {
+  background: transparent !important;
+}
+
+:global([data-theme-mode='dark']) .canvas {
+  background: var(--bui-bg-app, #151515);
+}
+
+:global([data-theme-mode='dark']) .canvas :global(.react-flow__controls) {
+  background: var(--bui-bg-neutral-1, #2a2a2a);
+  border-color: var(--bui-border-1, #5c5c5c);
+  box-shadow: none;
+}
+
+:global([data-theme-mode='dark']) .canvas :global(.react-flow__controls-button) {
+  background: var(--bui-bg-neutral-1, #2a2a2a);
+  border-color: var(--bui-border-1, #5c5c5c);
+  fill: var(--bui-fg-primary, #f5f5f5);
+}
+
+.stepNode {
+  width: 176px;
+  min-height: 72px;
+  padding: 8px 10px;
+  border: 1.5px solid #7c3aed;
+  border-radius: 6px;
+  background: var(--bui-white, #fff);
+  box-sizing: border-box;
+  color: var(--bui-fg-primary, inherit);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.stepNodeSelected {
+  /* Prototype: selected step uses a stronger blue outline. */
+  border-color: #0066cc;
+  border-width: 2.5px;
+  box-shadow: 0 0 0 1px #0066cc, 0 2px 6px rgb(0 102 204 / 20%);
+}
+
+:global([data-theme-mode='dark']) .stepNode {
+  border-color: #a78bfa;
+  background: var(--bui-bg-neutral-1, #2a2a2a);
+  box-shadow: none;
+}
+
+:global([data-theme-mode='dark']) .stepNodeSelected {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 1px #60a5fa;
+}
+
+/* React Flow selection ring is redundant; we style the card itself. */
+.canvas :global(.react-flow__node.selected) {
+  z-index: 10 !important;
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badgeIcon {
+  display: inline-flex;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.needsSetupBadge {
+  background: var(--bui-bg-warning, #ffedd5);
+  color: var(--bui-fg-warning-on-bg, #9a3412);
+}
+
+.startBadge {
+  background: var(--bui-bg-success, #dcfce7);
+  color: var(--bui-fg-success-on-bg, #166534);
+}
+
+.stepLabel {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--bui-fg-primary, inherit);
+}
+
+.stepType {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #7c3aed;
+}
+
+:global([data-theme-mode='dark']) .stepType {
+  color: #a78bfa;
+}

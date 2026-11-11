@@ -266,6 +266,73 @@ export const orchestratorMessages = {
       learnMore: 'Learn more',
     },
   },
+  builder: {
+    create: {
+      button: 'Create',
+      startFromScratch: 'Start from scratch',
+      importLocalFiles: 'Import Local Files',
+    },
+    page: {
+      defaultTitle: 'New workflow',
+      addDescriptionPlaceholder: 'Click to add description',
+    },
+    actions: {
+      editWorkflowFiles: 'Edit workflow files',
+    },
+    canvas: {
+      addStep: 'Add step',
+      needsSetup: 'Needs setup',
+      startBadge: 'Start',
+      operation: 'OPERATION',
+    },
+    sidePanel: {
+      workflow: 'Workflow',
+      resize: 'Resize side panel',
+      tabs: {
+        identity: 'Identity',
+        catalog: 'Catalog',
+        questions: 'Questions',
+        functions: 'Functions',
+      },
+    },
+    identity: {
+      name: 'Name',
+      nameHelper: 'sw.yaml name + template title',
+      description: 'Description',
+      descriptionHelper: 'sw.yaml description + template description',
+      workflowId: 'Workflow ID',
+      workflowIdHelper:
+        'Unique id. Used in filenames and orchestrator:run workflowId',
+      version: 'Version',
+      versionHelper: 'sw.yaml version (e.g. 1.0)',
+      specVersion: 'Workflow specification version',
+      specVersionHelper:
+        'CNCF Serverless Workflow specification version (MVP: 0.8)',
+    },
+    files: {
+      dialogTitle: 'Edit workflow files',
+      workflow: 'Workflow',
+      template: 'Catalog template',
+      inputSchema: 'Input schema',
+      outputSchema: 'Output schema',
+      emptyOutputSchema: '(empty — optional until you add content)',
+      starterWarning:
+        'This is a basic starter structure. Add workflow details before applying changes.',
+      copy: 'Copy',
+      copied: 'Copied',
+      download: 'Download',
+      downloadZip: 'Download ZIP',
+      applyChanges: 'Apply changes',
+    },
+    unsavedChanges: {
+      title: 'Close workflow builder?',
+      warning: 'Your unsaved changes will be lost if you close the builder.',
+      confirm: 'Close the builder and discard your changes?',
+      exportZip: 'Export ZIP',
+      keepEditing: 'Keep editing',
+      discard: 'Close and discard changes',
+    },
+  },
   emptyState: {
     illustrationAlt: 'No workflows or runs illustration',
     workflows: {

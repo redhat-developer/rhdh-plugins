@@ -1,0 +1,15 @@
+/*
+ * Alert warning surface:
+ * - light: dimmer cream than default --bui-bg-warning (prototype)
+ * - dark: lighter olive-brown than default dark --bui-bg-warning (#302008),
+ *   which reads nearly black against the dialog
+ */
+
+.warningAlert {
+  margin-bottom: 16px;
+  --alert-bg: #fffae7;
+}
+
+:global([data-theme-mode='dark']) .warningAlert {
+  --alert-bg: #3f351c;
+}
