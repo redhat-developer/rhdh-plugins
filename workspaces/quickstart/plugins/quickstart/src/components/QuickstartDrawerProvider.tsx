@@ -16,13 +16,11 @@
 
 import { useEffect, PropsWithChildren, useState } from 'react';
 import {
+  alertApiRef,
   configApiRef,
   identityApiRef,
   useApi,
 } from '@backstage/core-plugin-api';
-import CloseIcon from '@mui/icons-material/Close';
-import IconButton from '@mui/material/IconButton';
-import Snackbar from '@mui/material/Snackbar';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
@@ -35,12 +33,12 @@ import { useTranslation } from '../hooks/useTranslation';
  */
 export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [showNotification, setShowNotification] = useState(false);
   const [hasShownNotification, setHasShownNotification] = useState(false);
   const [drawerWidth, setDrawerWidth] = useState<number>(500);
   const [userKey, setUserKey] = useState<string>('guest');
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
+  const alertApi = useApi(alertApiRef);
   const { t } = useTranslation();
 
   // Determine role once at provider level to avoid re-fetching on drawer open/close
@@ -151,7 +149,11 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const closeDrawer = () => {
     setIsDrawerOpen(false);
     if (!hasShownNotification) {
-      setShowNotification(true);
+      alertApi.post({
+        message: t('snackbar.helpPrompt'),
+        severity: 'info',
+        display: 'transient',
+      });
       setHasShownNotification(true);
       const notificationKey = `quickstart-notification-shown:${userKey}`;
       localStorage.setItem(notificationKey, 'true');
@@ -167,8 +169,6 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
     localStorage.setItem(openKey, next.toString());
   };
 
-  const handleNotificationClose = () => setShowNotification(false);
-
   return (
     <QuickstartDrawerContext.Provider
       value={{
@@ -183,24 +183,6 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
       }}
     >
       {children}
-      <Snackbar
-        sx={{ top: '80px !important' }}
-        open={showNotification}
-        autoHideDuration={10000}
-        onClose={handleNotificationClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        message={t('snackbar.helpPrompt')}
-        action={
-          <IconButton
-            size="small"
-            aria-label="close"
-            color="inherit"
-            onClick={handleNotificationClose}
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        }
-      />
     </QuickstartDrawerContext.Provider>
   );
 };
