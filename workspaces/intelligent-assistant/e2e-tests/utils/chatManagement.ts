@@ -347,15 +347,29 @@ export const verifyPinnedSectionHidden = async (
   ).not.toBeVisible();
 };
 
+export const openPreferencesFromOptionsMenu = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
+  await openChatbotSettings(page, translations);
+  await page
+    .getByRole('menuitem', { name: translations['settings.menu.label'] })
+    .click();
+  await page
+    .getByRole('button', {
+      name: translations['settings.preferences.tab.title'],
+      exact: true,
+    })
+    .click();
+};
+
 export const verifyDisablePinnedChatsOption = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByRole('menuitem', {
-      name: `${translations['settings.pinned.disable']} ${translations['settings.pinned.enabled.description']}`,
-    }),
-  ).toBeVisible();
+    page.getByLabel(translations['settings.preferences.pinnedChats.label']),
+  ).toBeChecked();
 };
 
 export const verifyEnablePinnedChatsOption = async (
@@ -363,10 +377,8 @@ export const verifyEnablePinnedChatsOption = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByRole('menuitem', {
-      name: `${translations['settings.pinned.enable']} ${translations['settings.pinned.disabled.description']}`,
-    }),
-  ).toBeVisible();
+    page.getByLabel(translations['settings.preferences.pinnedChats.label']),
+  ).not.toBeChecked();
 };
 
 export const selectDisablePinnedChats = async (
@@ -374,7 +386,7 @@ export const selectDisablePinnedChats = async (
   translations: LightspeedMessages,
 ) => {
   await page
-    .getByRole('menuitem', { name: translations['settings.pinned.disable'] })
+    .getByLabel(translations['settings.preferences.pinnedChats.label'])
     .click();
 };
 
@@ -383,7 +395,7 @@ export const selectEnablePinnedChats = async (
   translations: LightspeedMessages,
 ) => {
   await page
-    .getByRole('menuitem', { name: translations['settings.pinned.enable'] })
+    .getByLabel(translations['settings.preferences.pinnedChats.label'])
     .click();
 };
 

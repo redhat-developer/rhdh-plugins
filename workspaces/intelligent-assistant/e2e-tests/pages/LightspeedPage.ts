@@ -155,22 +155,42 @@ export async function verifyDisplayModeMenuOptions(
 
   await expect(
     page.getByRole('menuitem', {
-      name: `${t['settings.pinned.disable']} ${t['settings.pinned.enabled.description']}`,
+      name: t['settings.pinned.disable'],
     }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(
-    page.getByRole('menuitem', { name: t['settings.mcp.label'] }),
+    page.getByRole('menuitem', { name: t['settings.menu.label'] }),
   ).toBeVisible();
 }
 
 // MCP settings (McpServersSettings — strings from `mcp.settings.*` translations)
 
-export async function openMcpSettingsPanel(page: Page, t: LightspeedMessages) {
+export async function openSettingsPanel(page: Page, t: LightspeedMessages) {
   await page.getByRole('button', { name: t['aria.options.label'] }).click();
   await expect(
-    page.getByRole('menuitem', { name: t['settings.mcp.label'] }),
+    page.getByRole('menuitem', { name: t['settings.menu.label'] }),
   ).toBeVisible();
-  await page.getByRole('menuitem', { name: t['settings.mcp.label'] }).click();
+  await page.getByRole('menuitem', { name: t['settings.menu.label'] }).click();
+}
+
+export async function openMcpSettingsPanel(page: Page, t: LightspeedMessages) {
+  await openSettingsPanel(page, t);
+  await page
+    .getByRole('button', { name: t['mcp.settings.title'], exact: true })
+    .click();
+}
+
+export async function openPreferencesSettingsTab(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await openSettingsPanel(page, t);
+  await page
+    .getByRole('button', {
+      name: t['settings.preferences.tab.title'],
+      exact: true,
+    })
+    .click();
 }
 
 export async function closeMcpSettingsPanel(page: Page, t: LightspeedMessages) {

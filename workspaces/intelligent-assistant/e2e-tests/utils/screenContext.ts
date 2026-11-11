@@ -16,7 +16,7 @@
 
 import { expect, type Page } from '@playwright/test';
 import type { LightspeedMessages } from './translations';
-import { openChatbotSettings } from './chatManagement';
+import { openPreferencesFromOptionsMenu } from './chatManagement';
 
 export const screenContextChip = (page: Page) =>
   page.locator('.lightspeed-page-context-label');
@@ -54,10 +54,8 @@ export const verifyEnableScreenContextOption = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByRole('menuitem', {
-      name: `${translations['settings.screenContext.enable']} ${translations['settings.screenContext.disabled.description']}`,
-    }),
-  ).toBeVisible();
+    page.getByLabel(translations['settings.preferences.screenContext.label']),
+  ).not.toBeChecked();
 };
 
 export const verifyDisableScreenContextOption = async (
@@ -65,10 +63,8 @@ export const verifyDisableScreenContextOption = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByRole('menuitem', {
-      name: `${translations['settings.screenContext.disable']} ${translations['settings.screenContext.enabled.description']}`,
-    }),
-  ).toBeVisible();
+    page.getByLabel(translations['settings.preferences.screenContext.label']),
+  ).toBeChecked();
 };
 
 export const selectEnableScreenContext = async (
@@ -76,9 +72,7 @@ export const selectEnableScreenContext = async (
   translations: LightspeedMessages,
 ) => {
   await page
-    .getByRole('menuitem', {
-      name: translations['settings.screenContext.enable'],
-    })
+    .getByLabel(translations['settings.preferences.screenContext.label'])
     .click();
 };
 
@@ -87,9 +81,7 @@ export const selectDisableScreenContext = async (
   translations: LightspeedMessages,
 ) => {
   await page
-    .getByRole('menuitem', {
-      name: translations['settings.screenContext.disable'],
-    })
+    .getByLabel(translations['settings.preferences.screenContext.label'])
     .click();
 };
 
@@ -97,7 +89,7 @@ export const enableScreenContextViaKebab = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await openChatbotSettings(page, translations);
+  await openPreferencesFromOptionsMenu(page, translations);
   await verifyEnableScreenContextOption(page, translations);
   await selectEnableScreenContext(page, translations);
   await expectScreenContextRecordingVisible(page);
@@ -107,7 +99,7 @@ export const disableScreenContextViaKebab = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await openChatbotSettings(page, translations);
+  await openPreferencesFromOptionsMenu(page, translations);
   await verifyDisableScreenContextOption(page, translations);
   await selectDisableScreenContext(page, translations);
   await expectScreenContextChipHidden(page);

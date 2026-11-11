@@ -348,6 +348,17 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.displayMode.overlay': 'Recouvrir',
     'settings.mcp.badge': 'Nouveau',
     'settings.panel.title': 'Paramètres',
+    'settings.menu.label': 'Paramètres',
+    'settings.preferences.tab.title': 'Préférences',
+    'settings.preferences.pinnedChats.label': 'Discussions épinglées',
+    'settings.preferences.pinnedChats.description':
+      "Afficher les discussions épinglées dans le panneau d'historique des conversations.",
+    'settings.preferences.savedPrompts.label': 'Prompts sauvegardés',
+    'settings.preferences.savedPrompts.description':
+      "Afficher les prompts sauvegardés dans le panneau d'historique des conversations.",
+    'settings.preferences.screenContext.label': "Contexte d'écran",
+    'settings.preferences.screenContext.description':
+      "Partager votre écran actuel avec l'assistant lors de l'envoi de messages. Désactivé par défaut.",
     'settings.mcp.label': 'Paramètres MCP',
     'settings.prompt.label': 'Paramètres de prompts',
     'settings.pinned.disable': 'Désactiver les discussions épinglées',

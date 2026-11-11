@@ -349,6 +349,17 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'settings.displayMode.overlay': 'Overlay',
     'settings.mcp.badge': 'Neu',
     'settings.panel.title': 'Einstellungen',
+    'settings.menu.label': 'Einstellungen',
+    'settings.preferences.tab.title': 'Präferenzen',
+    'settings.preferences.pinnedChats.label': 'Angeheftete Chats',
+    'settings.preferences.pinnedChats.description':
+      'Angeheftete Chats im Chatverlauf anzeigen.',
+    'settings.preferences.savedPrompts.label': 'Gespeicherte Prompts',
+    'settings.preferences.savedPrompts.description':
+      'Gespeicherte Prompts im Chatverlauf anzeigen.',
+    'settings.preferences.screenContext.label': 'Bildschirmkontext',
+    'settings.preferences.screenContext.description':
+      'Aktuellen Bildschirm beim Senden von Nachrichten mit dem Assistenten teilen. Standardmäßig deaktiviert.',
     'settings.mcp.label': 'MCP-Einstellungen',
     'settings.prompt.label': 'Prompt-Einstellungen',
     'settings.pinned.disable': 'Angeheftete Chats deaktivieren',
