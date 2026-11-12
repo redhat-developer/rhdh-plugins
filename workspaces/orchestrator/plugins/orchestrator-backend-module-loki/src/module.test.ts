@@ -22,35 +22,66 @@ import {
 
 import { orchestratorModuleLoki } from './module';
 
-describe('orchestratorModuleLoki', () => {
-  it('registers the Loki workflow log provider on the extension point', async () => {
-    const extensionPoint = {
-      addWorkflowLogProvider: jest.fn(),
-    };
+async function bootWithLokiConfig(
+  lokiConfigOverrides: Record<string, unknown> = {},
+) {
+  const extensionPoint = {
+    addWorkflowLogProvider: jest.fn(),
+  };
 
-    await startTestBackend({
-      extensionPoints: [[workflowLogsExtensionEndpoint, extensionPoint]],
-      features: [
-        orchestratorModuleLoki,
-        mockServices.rootConfig.factory({
-          data: {
-            orchestrator: {
-              workflowLogProvider: {
-                loki: {
-                  baseUrl: 'http://localhost:3100',
-                  token: 'test-token',
-                  allowInsecureHttp: true,
-                },
+  await startTestBackend({
+    extensionPoints: [[workflowLogsExtensionEndpoint, extensionPoint]],
+    features: [
+      orchestratorModuleLoki,
+      mockServices.rootConfig.factory({
+        data: {
+          orchestrator: {
+            workflowLogProvider: {
+              loki: {
+                baseUrl: 'http://localhost:3100',
+                token: 'test-token',
+                allowInsecureHttp: true,
+                ...lokiConfigOverrides,
               },
             },
           },
-        }),
-      ],
-    });
-
-    expect(extensionPoint.addWorkflowLogProvider).toHaveBeenCalledTimes(1);
-    const provider = extensionPoint.addWorkflowLogProvider.mock
-      .calls[0][0] as WorkflowLogProvider;
-    expect(provider.getProviderId()).toBe('loki');
+        },
+      }),
+    ],
   });
+
+  return extensionPoint;
+}
+
+function registeredProvider(
+  extensionPoint: Awaited<ReturnType<typeof bootWithLokiConfig>>,
+): WorkflowLogProvider {
+  expect(extensionPoint.addWorkflowLogProvider).toHaveBeenCalledTimes(1);
+  return extensionPoint.addWorkflowLogProvider.mock.calls[0][0];
+}
+
+describe('orchestratorModuleLoki', () => {
+  it('registers the Loki workflow log provider on the extension point', async () => {
+    const extensionPoint = await bootWithLokiConfig();
+
+    expect(registeredProvider(extensionPoint).getProviderId()).toBe('loki');
+  });
+
+  // RHDHBUGS-3398: quoted braces in logPipelineFilters used to fail
+  // validation in init and crash-loop the backend.
+  it.each([
+    ['line_format with braces', ['| json', '| line_format "{{.message}}"']],
+    [
+      'backtick line_format',
+      ['| json', '| line_format `{{.level}} {{.message}}`'],
+    ],
+    ['label_format with braces', ['| label_format lvl="{{.level}}"']],
+  ])(
+    'boots with non-default logPipelineFilters (%s)',
+    async (_name, logPipelineFilters) => {
+      const extensionPoint = await bootWithLokiConfig({ logPipelineFilters });
+
+      expect(registeredProvider(extensionPoint).getProviderId()).toBe('loki');
+    },
+  );
 });
