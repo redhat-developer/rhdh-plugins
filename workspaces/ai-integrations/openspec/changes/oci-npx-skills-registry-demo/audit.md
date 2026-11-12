@@ -1,3 +1,42 @@
+## Npx artifact verification and normalization
+
+**Last audited:** 2026-11-05T00:30:00Z
+
+PR #5452 implements task 3.2 (artifact retrieval, SHA-256 verification, and
+metadata normalization) and advances tasks 3.3 (concurrency limits, digest
+mismatch handling) and 3.4 (atomic snapshot updates, failed skill keys,
+scheduled refresh via `scheduler.scheduleTask`). The `refreshSource` function
+is wrapped in a try-catch to publish a failed snapshot on unexpected errors.
+The README is updated to reflect implemented behavior. Task 3.2 is checked;
+tasks 3.3 and 3.4 retain remaining items (escaped redirect tests, OCI contract
+fixture tests). No conflicting requirements were found.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
+## Npx index discovery implementation
+
+**Last audited:** 2026-11-03T22:23:00Z
+
+Task 3.1 now covers bounded index discovery and duplicate-name handling.
+The npx specification records the 1 KiB name limit used to keep untrusted
+failed keys bounded. Task 1.4 still awaits OCI discovery-budget tests.
+Artifact verification and final snapshot publication remain tasks 3.2–3.4.
+No conflicting requirements were found.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
 ## Npx demo transport scope
 
 **Last audited:** 2026-10-30T19:11:56Z

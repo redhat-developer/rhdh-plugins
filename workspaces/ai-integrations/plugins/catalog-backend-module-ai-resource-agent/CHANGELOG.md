@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent
 
+## 0.6.0
+
+### Minor Changes
+
+- 9e107b2: Validate the new optional `spec.executionMode` field on agent AiResource entities. The processor and `collectAgentErrors` now accept `'in-process'`, `'subprocess'`, or `'sandbox'` and reject invalid values.
+
+### Patch Changes
+
+- Updated dependencies [9e107b2]
+  - @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@0.5.0
+
 ## 0.5.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 3.2.1
+
+### Patch Changes
+
+- 8620b76: Updated dependency `@testing-library/user-event` to `14.6.8`.
+
 ## 3.2.0
 
 ### Minor Changes

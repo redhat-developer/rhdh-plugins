@@ -173,7 +173,23 @@ test.describe('Resource Optimization - Apply Recommendation @live @ro @workflow'
       test.skip(true, `Workflow failed for all ${rowsToTry} row(s) tried`);
     }
 
-    // --- Verify the workflow ran (any terminal or in-progress status) ---
+    // --- Verify the workflow ran ---
+    // After clicking Apply, the plugin calls executeWorkflow() and then
+    // navigates to /orchestrator/instances/<id>. Wait for the URL to change
+    // as the primary signal that the workflow was triggered.
+    await page.waitForURL(/\/orchestrator\/instances\//, { timeout: 30000 });
+
+    // TODO: Remove 404 workaround when RHINENG-29749 is resolved
+    const is404 = await page
+      .getByRole('heading', { name: /404/i })
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
+
+    expect(
+      is404,
+      'Orchestrator instance page returned 404 — see RHINENG-29749',
+    ).toBe(false);
+
     const completedBadge = page.getByText('Completed', { exact: true });
     const failedBadge = page.getByText('Failed', { exact: true });
     const runningBadge = page.getByText('Running', { exact: true });

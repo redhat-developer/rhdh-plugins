@@ -4,11 +4,8 @@
   "commit": false,
   "fixed": [
     [
-      "@red-hat-developer-hub/backstage-plugin-ai-catalog",
       "@red-hat-developer-hub/backstage-plugin-ai-catalog-common",
-      "@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils",
-      "@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk",
-      "@red-hat-developer-hub/backstage-plugin-ogx-entity-provider"
+      "@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils"
     ]
   ],
   "linked": [],

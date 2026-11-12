@@ -135,6 +135,9 @@ export const DataSourcesDialog = ({
       <DialogBody style={{ paddingTop: '0' }}>{renderBody()}</DialogBody>
       <DialogFooter
         style={{
+          // Theme DialogFooter uses flex-direction: row-reverse for PF action
+          // order; undo that here so the legend stays start and Close stays end.
+          flexDirection: 'row',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '0.5rem',

@@ -175,30 +175,38 @@ describe('handleLCSFetchError', () => {
 const userRef = 'user:default/test-user';
 
 describe('rewriteProxyPath', () => {
-  it.each(['/v1/models', '/v1/shields', '/v1/saved-prompts/config'])(
-    'returns path unchanged for skip endpoint %s',
-    path => {
-      expect(rewriteProxyPath(path, userRef)).toBe(path);
-    },
-  );
+  it.each([
+    '/v1/models',
+    '/v1/models/',
+    '/v1/shields',
+    '/v1/shields/',
+    '/v1/saved-prompts/config',
+    '/v1/saved-prompts/config/',
+  ])('returns path unchanged for skip endpoint %s', path => {
+    expect(rewriteProxyPath(path, userRef, 'GET')).toBe(path);
+  });
 
   it.each(['/v1/saved-prompts', '/v1/saved-prompts/abc'])(
     'appends user_id for saved-prompts path %s',
     path => {
-      const result = rewriteProxyPath(path, userRef);
+      const result = rewriteProxyPath(path, userRef, 'GET');
       expect(result).toBe(`${path}?user_id=${encodeURIComponent(userRef)}`);
     },
   );
 
   it('appends user_id to a path without query params', () => {
-    const result = rewriteProxyPath('/v2/conversations', userRef);
+    const result = rewriteProxyPath('/v2/conversations', userRef, 'GET');
     expect(result).toBe(
       `/v2/conversations?user_id=${encodeURIComponent(userRef)}`,
     );
   });
 
   it('appends user_id with & when query params already exist', () => {
-    const result = rewriteProxyPath('/v2/conversations?foo=bar', userRef);
+    const result = rewriteProxyPath(
+      '/v2/conversations?foo=bar',
+      userRef,
+      'GET',
+    );
     expect(result).toBe(
       `/v2/conversations?foo=bar&user_id=${encodeURIComponent(userRef)}`,
     );
@@ -208,6 +216,7 @@ describe('rewriteProxyPath', () => {
     const result = rewriteProxyPath(
       '/v2/conversations/conversation_id_123',
       userRef,
+      'GET',
     );
     expect(result).toContain(`user_id=${encodeURIComponent(userRef)}`);
     expect(result).toContain(`history_length=${DEFAULT_HISTORY_LENGTH}`);
@@ -217,14 +226,54 @@ describe('rewriteProxyPath', () => {
     const result = rewriteProxyPath(
       '/v2/conversations/conversation_id_123?history_length=5',
       userRef,
+      'GET',
     );
     expect(result).toContain(`user_id=${encodeURIComponent(userRef)}`);
     expect(result).not.toContain(`history_length=${DEFAULT_HISTORY_LENGTH}`);
   });
 
   it('does not append history_length when no conversation_id in path', () => {
-    const result = rewriteProxyPath('/v1/feedback', userRef);
+    const result = rewriteProxyPath('/v1/feedback', userRef, 'GET');
     expect(result).toContain(`user_id=${encodeURIComponent(userRef)}`);
     expect(result).not.toContain('history_length');
+  });
+
+  it.each(['user_id=other&user_id=another', '%75ser_id=other&user_id=another'])(
+    'replaces supplied identities in %s with the authenticated user',
+    query => {
+      const pathname = '/v2/conversations/conversation%2Fchild';
+      const result = rewriteProxyPath(
+        `${pathname}?foo=bar&${query}`,
+        userRef,
+        'GET',
+      );
+      const url = new URL(result, 'http://localhost');
+
+      expect(url.pathname).toBe(pathname);
+      expect(url.searchParams.get('foo')).toBe('bar');
+      expect(url.searchParams.getAll('user_id')).toEqual([userRef]);
+    },
+  );
+
+  it.each([
+    ['GET', '/v1/saved-prompts/config-extra'],
+    ['DELETE', '/v1/saved-prompts/config'],
+    ['DELETE', '/v1/saved-prompts/config/'],
+    ['DELETE', '/v1/saved-prompts/config-extra'],
+  ])('injects the authenticated identity for %s %s', (method, path) => {
+    const result = rewriteProxyPath(path, userRef, method);
+    const url = new URL(result, 'http://localhost');
+
+    expect(url.searchParams.getAll('user_id')).toEqual([userRef]);
+  });
+
+  it('removes supplied identities from an exempt global GET', () => {
+    const result = rewriteProxyPath(
+      '/v1/saved-prompts/config?user_id=other&%75ser_id=another&foo=bar',
+      userRef,
+      'GET',
+    );
+
+    expect(result).toBe('/v1/saved-prompts/config?foo=bar');
   });
 });

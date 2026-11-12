@@ -13,9 +13,7 @@ This workspace contains the Boost plugin family for Red Hat Developer Hub.
 | ai-catalog-connector-utils     | `@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils`     | Shared CA/fault-isolation/startup helpers for AI Catalog connectors        |
 | ai-catalog-entity-provider-sdk | `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk` | SDK for AI Catalog entity providers                                        |
 | boost-backend-module-ogx       | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx`       | OGX provider module                                                        |
-| boost-backend-module-kagenti   | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti`   | Kagenti provider module                                                    |
 | ogx-entity-provider            | `@red-hat-developer-hub/backstage-plugin-ogx-entity-provider`            | OGX catalog entity provider                                                |
-| kagenti-entity-provider        | `@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider`        | Kagenti catalog entity provider                                            |
 | boost-migration-readiness      | `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness`      | Read-only CLI assessing AI asset entities against upstream Backstage kinds |
 
 ## Consumer migration
@@ -49,6 +47,11 @@ ignored, including when old and new values coexist.
 ## Compatibility
 
 This workspace is aligned with **Backstage 1.54.6** (see [`backstage.json`](backstage.json)).
+
+## Package releases
+
+See the [maintainer release guide](.changeset/README.md) for version grouping,
+dependency compatibility, the shared release batch, and release-plan checks.
 
 ## Development
 

@@ -16,6 +16,7 @@
     "translations"
   ],
   "allowedPackageJsonPaths": [
+    "workspaces/app-defaults/plugins/app-react/package.json",
     "workspaces/augment/packages/app/package.json",
     "workspaces/cost-management/packages/app-legacy/package.json",
     "workspaces/cost-management/plugins/cost-management/package.json",
@@ -32,5 +33,10 @@
   "allowedSourcePathPrefixes": [
     "workspaces/extensions/packages/app-legacy/",
     "workspaces/theme/plugins/mui4-test/"
+  ],
+  "allowedSourcePaths": [
+    "workspaces/app-defaults/plugins/app-react/src/drawer/utils/drawerBreakpointTheme.tsx",
+    "workspaces/app-defaults/plugins/app-react/src/drawer/utils/drawerBreakpointTheme.test.tsx",
+    "workspaces/app-defaults/plugins/app-react/src/legacy/ApplicationDrawer.test.tsx"
   ]
 }

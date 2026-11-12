@@ -106,6 +106,22 @@ describe('createComponents', () => {
     );
   });
 
+  it('uses a darker containedError fill in dark mode for WCAG AA white labels', () => {
+    const dark = createComponents({ palette: customDarkTheme() });
+    const light = createComponents({ palette: customLightTheme() });
+    expect(dark.MuiButton?.styleOverrides).toEqual(
+      expect.objectContaining({
+        containedError: expect.objectContaining({
+          backgroundColor: '#C62828',
+          color: '#ffffff',
+        }),
+      }),
+    );
+    expect(light.MuiButton?.styleOverrides).not.toHaveProperty(
+      'containedError',
+    );
+  });
+
   it('clips the SidebarPage scrollport so the scrollbar follows the rounded well', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
@@ -182,6 +198,20 @@ describe('createComponents', () => {
     expect(typeof overrides).toBe('function');
     expect(String(overrides)).toContain('bui-DialogOverlay');
     expect(String(overrides)).toContain('--rhdh-global-header-height');
+  });
+
+  it('caps BUI dialog max-height without forcing full viewport height', () => {
+    const actual = createComponents({});
+    const overrides = actual.MuiCssBaseline?.styleOverrides;
+    expect(typeof overrides).toBe('function');
+    // Source of the styleOverrides factory includes these declarations.
+    expect(String(overrides)).toContain('maxHeight:');
+    expect(String(overrides)).toContain(
+      'maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`',
+    );
+    expect(String(overrides)).not.toContain(
+      'height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`',
+    );
   });
 
   it('publishes masthead height and hides sidebar logos when global-header is present', () => {

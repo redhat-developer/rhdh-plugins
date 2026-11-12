@@ -17,7 +17,10 @@
 import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
 
 import { aiCatalogFilterExtensions } from './extensions/aiCatalogFilters';
-import { aiCatalogPage } from './extensions/aiCatalogPage';
+import {
+  aiCatalogPage,
+  aiCatalogSidebarItem,
+} from './extensions/aiCatalogPage';
 import { entityCardExtensions } from './extensions/entityCards';
 import { rootRouteRef } from './routes';
 
@@ -29,6 +32,7 @@ export const aiCatalogPlugin = createFrontendPlugin({
   pluginId: 'ai-catalog',
   extensions: [
     aiCatalogPage,
+    aiCatalogSidebarItem,
     ...aiCatalogFilterExtensions,
     ...entityCardExtensions,
   ],

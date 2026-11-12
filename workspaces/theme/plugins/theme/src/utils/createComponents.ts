@@ -60,6 +60,8 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     palette.rhdh?.primary || ({} as RHDHThemePalette['primary']);
   const rhdhSecondary =
     palette.rhdh?.secondary || ({} as RHDHThemePalette['secondary']);
+  const isDarkMode =
+    palette.mode === 'dark' || (palette as { type?: string }).type === 'dark';
 
   // MUI primary palette (OFS CreateButton fill / hover / label).
   const primaryPalette = palette.primary as
@@ -100,8 +102,10 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
 
       // Sticky AppBar is z-index 1100. BUI Dialog overlay is 1000 and
       // InspectEntityDialog uses height 100vh, so the masthead covers the
-      // title and close control (RHDHBUGS-3603). 64px fallback matches the
-      // MUI Toolbar default when --rhdh-global-header-height is unset.
+      // title and close control (RHDHBUGS-3603). Cap max-height only — do not
+      // force height, or content-sized dialogs (e.g. Scorecard data sources)
+      // fill the viewport. 64px fallback matches the MUI Toolbar default when
+      // --rhdh-global-header-height is unset.
       const dialogMastheadOffset = 'var(--rhdh-global-header-height, 64px)';
       // Prefer branding chrome tokens; fall back to MUI default for empty configs.
       const shellBackground =
@@ -141,7 +145,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
         ':root:has(#global-header) [class*="bui-DialogOverlay"] > [class*="bui-Dialog"]':
           {
-            height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
             maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
           },
         // Masthead shares the shell chrome color (config or RHDH defaults).
@@ -399,6 +402,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             backgroundColor: general.disabledBackground,
           },
         },
+        // Dark error.main is light enough for outlined/text on #292929; contained
+        // needs a darker fill so white labels stay AA (RHDHBUGS-2242).
+        ...(isDarkMode
+          ? {
+              containedError: {
+                backgroundColor: '#C62828',
+                color: '#ffffff',
+                '&:hover, &:focus-visible': {
+                  backgroundColor: '#B71C1C',
+                },
+              },
+            }
+          : {}),
         outlined: {
           borderRadius: '99em',
           border: `1px solid color-mix(in srgb, currentColor 50%, transparent)`,

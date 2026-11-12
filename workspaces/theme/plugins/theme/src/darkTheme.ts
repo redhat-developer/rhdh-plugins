@@ -31,6 +31,12 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
     dark: '#b9dafc',
     contrastText: '#151515',
   },
+  // MUI default error (#f44336) fails WCAG AA as text/outline on #292929 (~3.95:1)
+  // and as contained fill with white (~3.68:1). Lighter main covers text/outlined;
+  // createComponents uses a darker containedError fill for white label text.
+  error: {
+    main: '#FF5252',
+  },
   navigation: {
     // Match page-inset / app-bar / sidebar chrome (PatternFly shell).
     background: '#151515',

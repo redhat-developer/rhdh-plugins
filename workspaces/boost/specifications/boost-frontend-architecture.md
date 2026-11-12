@@ -214,8 +214,8 @@ Read-only `GET /config/status` currently. Frontend-visible config keys include `
 
 ## Permissions
 
-The frontend's primary Boost permission set contains 23 `boost.*` permissions
-defined in `boost-backend`:
+The frontend planning surface uses these `boost.*` permissions defined in
+`boost-backend`:
 
 | Scope                | Permissions                                                                                                                        |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -223,7 +223,6 @@ defined in `boost-backend`:
 | Chat                 | `boost.chat.read`, `boost.chat.create`                                                                                             |
 | Agent lifecycle (10) | `boost.agent.list`, `.register`, `.configure`, `.promote`, `.approve`, `.demote`, `.publish`, `.unpublish`, `.withdraw`, `.delete` |
 | Tool lifecycle (5)   | `boost.tool.promote`, `.approve`, `.demote`, `.publish`, `.unpublish`                                                              |
-| Infrastructure       | `boost.kagenti.admin`                                                                                                              |
 | Functional           | `boost.documents.manage`, `boost.mcp.manage`, `boost.config.manage`                                                                |
 
 AI Catalog entity visibility uses Backstage Catalog's built-in
@@ -274,7 +273,6 @@ The AI Catalog is the first domain. Here is how future capabilities map to surfa
 - **Backend**: `POST /chat/stream` (SSE), conversation CRUD, feedback
 - **Key components**: `ChatContainer`, `ChatInput`, `VirtualizedMessageList`, `StreamingMessage`, `ToolApprovalDialog`, `ConversationHistory`
 - **PatternFly AI**: Uses `@patternfly/chatbot` for message rendering, input, streaming
-- **Provider adaptation**: Llama Stack (auto-route to default agent) vs Kagenti (mandatory agent selection) — driven by `ProviderCapabilities`
 
 ### Agent Gallery and Lifecycle
 
@@ -286,9 +284,8 @@ The AI Catalog is the first domain. Here is how future capabilities map to surfa
 ### Admin Panels
 
 - **Surfaces**: `PageBlueprint` with lazy-loaded panel groups
-- **Backend**: `/config/status`, `/mcp/servers` CRUD, `/kagenti/status`, future config write API
+- **Backend**: `/config/status`, `/mcp/servers` CRUD, future config write API
 - **Key components**: `AdminLayout` with capability-gated sidebar, config forms, MCP server editor, RAG pipeline manager, branding/appearance panels
-- **Provider adaptation**: Kagenti shows 8-panel sidebar (agents, tools, build pipelines, sandbox, platform links); Llama Stack shows Command Center (agents, orchestration, model config)
 
 ### MCP Tool Configuration
 

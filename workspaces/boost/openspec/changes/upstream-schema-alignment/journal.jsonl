@@ -1,0 +1,75 @@
+{"ts":"2026-11-09T21:16:26Z","phase":"any","event":"turn.start","input":"Implement accepted Fullsend review findings using the Boost OpenSpec workflow."}
+{"ts":"2026-11-09T21:24:31Z","phase":"any","event":"skill.invoked","name":"receiving-code-review"}
+{"ts":"2026-11-09T21:24:32Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md","input":"Reconcile the proposal with the current entity-category baseline.","output":"Replaced seven-category scope with five minimum categories plus rule compatibility; removed SkillBundle mapping."}
+{"ts":"2026-11-09T21:24:32Z","phase":"authoring","event":"artifact.revised","ref":"design.md","input":"Correct stale category-count source text.","output":"Aligned the source-of-truth description with five minimum categories and rule compatibility."}
+{"ts":"2026-11-09T21:24:32Z","phase":"authoring","event":"artifact.revised","ref":"specs/annotation-specification/spec.md","input":"Reconcile category coverage and agent mapping.","output":"Removed SkillBundle from the baseline and aligned the current agent mapping with Decision 1."}
+{"ts":"2026-11-09T21:24:32Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md","input":"Reconcile mapping and fixture tasks with current scope.","output":"Listed five minimum categories plus rule compatibility and excluded archived SkillBundle fixtures."}
+{"ts":"2026-11-09T21:24:32Z","phase":"authoring","event":"artifact.revised","ref":"workspaces/boost/AGENTS.md","input":"Remove stale Kagenti references from workspace guidance.","output":"Updated connector examples, provider guidance, permissions, and package inventory to current scope."}
+{"ts":"2026-11-09T21:24:33Z","phase":"authoring","event":"artifact.revised","ref":"workspaces/boost/README.md","input":"Remove unimplemented Kagenti packages from the inventory.","output":"Kept only current Boost packages in the plugin table."}
+{"ts":"2026-11-09T21:24:33Z","phase":"any","event":"turn.end","output":"Reconciled category scope, agent mapping, and package references; Prettier and OpenSpec validation passed."}
+{"ts":"2026-11-09T21:48:34Z","phase":"any","event":"turn.start","input":"Reconcile implemented OpenSpec tasks against current implementation evidence."}
+{"ts":"2026-11-09T21:48:35Z","phase":"apply","event":"mode.chosen","mode":"direct","input":"Use direct mode for task-checkbox documentation reconciliation; verify each item against code, tests, and docs."}
+{"ts":"2026-11-09T21:48:35Z","phase":"any","event":"skill.invoked","name":"openspec-apply-change"}
+{"ts":"2026-11-09T22:04:30Z","phase":"apply","event":"task.start","ref":"1.1"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.2"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.3"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.4"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.5"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.6"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.6a"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.6b"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.7"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.8"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.9"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.10"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.11"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"1.12"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"4.1"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"4.2"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"4.3"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"4.4"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"4.5"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"4.6"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"4.7"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"4.8"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"5.1"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"5.2"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"5.3"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.start","ref":"5.5"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.complete","ref":"1.1","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:31Z","phase":"apply","event":"task.complete","ref":"1.2","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.4","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.5","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.6","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.6a","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.6b","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.7","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.8","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.9","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.10","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.11","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"1.12","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"4.1","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"4.2","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"4.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"4.4","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"4.5","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"4.6","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"4.7","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"4.8","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"5.1","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"5.2","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"5.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"apply","event":"task.complete","ref":"5.5","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:04:32Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md","input":"Reconcile completed work and stale task wording","output":"Checked only tasks supported by current implementation evidence"}
+{"ts":"2026-11-09T22:06:51Z","phase":"any","event":"decision","input":"Reconcile completed checklist work against current evidence","output":"Leave CLI implementation and test tasks open because the preserved legacy package uses the superseded category contract."}
+{"ts":"2026-11-09T22:06:51Z","phase":"any","event":"turn.end","output":"Marked published mapping documentation and README/cross-reference tasks complete; retained revised-scope CLI and cross-reference work."}
+{"ts":"2026-11-10T14:45:08Z","phase":"any","event":"turn.start","input":"Correct agent AiResource mapping and respond to final PR 5474 review."}
+{"ts":"2026-11-10T14:49:42Z","phase":"authoring","event":"artifact.revised","ref":"design.md","input":"Address final PR 5474 review and maintainer direction.","output":"Documented AiResource/agent as the settled mapping; retained Component migration only as historical context."}
+{"ts":"2026-11-10T14:49:42Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md","input":"Address final PR 5474 review and maintainer direction.","output":"Documented AiResource/agent as the settled mapping; retained Component migration only as historical context."}
+{"ts":"2026-11-10T14:49:42Z","phase":"authoring","event":"artifact.revised","ref":"specs/annotation-specification/spec.md","input":"Address final PR 5474 review and maintainer direction.","output":"Documented AiResource/agent as the settled mapping; retained Component migration only as historical context."}
+{"ts":"2026-11-10T14:55:19Z","phase":"any","event":"turn.end","output":"Agent mapping and review follow-up validated; PR/Jira text and review threads updated. Local changes remain uncommitted."}
+{"ts":"2026-11-10T21:41:17Z","phase":"any","event":"turn.start","input":"Propagate the confirmed current model-server mapping and preserve historical casing examples."}
+{"ts":"2026-11-10T21:49:46Z","phase":"authoring","event":"artifact.revised","ref":"design.md,proposal.md","input":"Correct model-server current-state mappings.","output":"Current-kind tables use AiModelServerAPI; candidate upstream API transitions begin from the dedicated kind."}
+{"ts":"2026-11-10T21:51:04Z","phase":"any","event":"turn.end","output":"PR5508 corrections verified: OpenSpec 15/15, Markdown formatting and scoped readbacks passed. Local changes remain uncommitted."}

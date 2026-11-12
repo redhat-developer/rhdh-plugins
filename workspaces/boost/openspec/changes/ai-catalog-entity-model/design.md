@@ -20,59 +20,61 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 > - **RHIDP-15294** (OCI Skill Registry) — absorbs load testing
 > - **RHIDP-15316** (Cross-Connector, RHDHPLAN-1510) — absorbs air-gapped patterns, error resilience
 >
-> Decisions 1–3, 6–8 remain under RHIDP-15258. Decision 4 (air-gapped) moved to RHIDP-15316.
+> Decisions 1–3 and 6 remain under RHIDP-15258. Decision 4 (air-gapped) moved to RHIDP-15316.
 > Decision 5 (performance) distributed: load testing → RHIDP-15294, error resilience → RHIDP-15316.
+> Decisions 7 (Neo4j) and 8 (SkillBundle) removed from minimum scope (RHIDP-18761).
 
 ## Stakeholder Alignment (2026-07-13)
 
 > Per RHDHPLAN-1505 stakeholder meeting (updated 2026-07-20):
 >
-> - **RHDHPLAN-1113 dependency (resolved):** RHDHPLAN-1113 is sufficiently advanced — Boost uses AIResource for skills/rules directly. No interim Resource/Component mapping needed.
+> - **RHDHPLAN-1113 dependency (resolved):** RHDHPLAN-1113 is sufficiently advanced — Boost uses AiResource for skills/rules directly. No interim Resource/Component mapping needed.
 > - **MCP → API mapping is tracked by broader RHDH 2.1 work** via RHDHPLAN-1510. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server`. This mapping is not a deliverable of the current Boost frontend/OGX release.
-> - **Entity kind strategy:** The mapping table in Decision 1 uses AIResource for skills/rules. Agent kind mapping is pending RHDHPLAN-1113. Model/model-server mappings are pending RHDHPLAN-404.
+> - **Entity kind strategy (reconciled 2026-11-10):** Agents use `kind: AiResource`, `spec.type: agent`. The mapping table in Decision 1 retains the skills/rules reference mapping. Model/model-server mappings remain under RHDHPLAN-404.
 
 ## Goals
 
 - Standardized annotation scheme for all AI asset categories: agents, skills, MCP servers, models, model servers
-- Entity provider SDK enabling clean connector implementations (Kagenti, OGX, OCI skill registry)
+- Entity provider SDK enabling clean connector implementations
 - Delta sync support via Backstage's built-in `applyMutation({ type: 'delta' })` API
-- Air-gapped deployment readiness: custom CA bundles, K8s Secret-only credentials, configurable endpoints
-- Performance resilience: 5,000+ entities with ≤10% p95 latency degradation
+- Per-entity fault isolation and contextual logging
 - Migration-readiness mapping to upstream entity kinds
+- **Stretch:** Air-gapped deployment qualification (custom CA bundles, K8s Secret-only credentials, configurable endpoints) — tracked under RHIDP-15316
+- **Stretch:** Performance validation at 5,000+ entities with ≤10% p95 latency degradation — tracked under RHIDP-15294
 
 ## Non-Goals
 
-- Creating new upstream Backstage entity kinds (we use AIResource for skills/rules per RHDHPLAN-1113, API for MCP servers, and existing kinds for agents/models pending RHDHPLAN-1113/RHDHPLAN-404)
+- Creating new upstream Backstage entity kinds (agents use `AiResource` / `agent`; skills/rules follow RHDHPLAN-1113, MCP servers use API, and model mappings remain under RHDHPLAN-404)
 - Changing Backstage catalog core behavior or mutation APIs
-- Implementing specific connectors (Kagenti/OGX) — covered in separate changes
-- Neo4j knowledge graph ingestion pipeline — covered in `neo4j-knowledge-graph` change
-- OCI skill registry connector — covered in `oci-skill-registry` change
+- Implementing specific connectors — covered in separate changes
+- Neo4j knowledge graph ingestion pipeline — archived (see `archive/2026-11-06-neo4j-knowledge-graph/`)
+- OCI skill registry connector — archived (see `archive/2026-11-06-oci-skill-registry/`)
+- SkillBundle/skillcard.yaml contracts — archived (see `archive/2026-11-06-oci-skill-connector/`)
 
 ## Decisions
 
 ### Decision 1: Annotation independence from entity kinds
 
-The `rhdh.io/ai-asset-category` annotation provides a flat vocabulary (`agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`) independent of the Backstage entity kind.
+The `rhdh.io/ai-asset-category` annotation provides five minimum feature categories (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) independent of the Backstage entity kind. The reconciled vocabulary also retains existing `rule` compatibility; that additional value does not establish a sixth minimum feature category.
 
 **Why:** Backstage entity kinds are structural categories (Component, Resource, API), not domain categories. A model is semantically a Resource, but so is a deployed MCP server instance. The annotation distinguishes them.
 
-**Why `rule` and `skill-bundle`:** The original five values (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) did not cover two entity types that pass through the CatalogProcessor validator and frontend browse filtering. `rule` covers AI decision rules — these are AIResource entities (same kind as skills per RHDHPLAN-1113) that need a distinct category so the validator can validate them and the browse UI can list them separately from skills. `skill-bundle` covers curated skill collections (e.g., "security-toolkit", "code-review skills"); without a dedicated category value, SkillBundle entities would fail the validator's enum check or require special-casing outside the annotation scheme. Both values close the gap between the annotation enum and the full set of AI entity types the system needs to validate and display.
+**Existing `rule` compatibility:** The recovered SDK and taxonomy already recognize AI decision rules. Preserve that compatibility without adding rule discovery, frontend behavior, or a new provider requirement to the five-category minimum. The mapping below retains `rule` as a compatibility reference. Further contract decisions belong to [RHIDP-18839](https://redhat.atlassian.net/browse/RHIDP-18839).
 
-**Mapping reference (not a constraint):**
+**Mapping reference (agent mapping settled):**
 
-| Category       | Backstage Kind | spec.type         | Notes                                                                          |
-| -------------- | -------------- | ----------------- | ------------------------------------------------------------------------------ |
-| `agent`        | Component      | `ai-agent`        | Mapping pending RHDHPLAN-1113 (owns agent entity kind definition)              |
-| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113                                                   |
-| `rule`         | AIResource     | `rule`            | AIResource per RHDHPLAN-1113                                                   |
-| `skill-bundle` | AIResource     | `ai-skill-bundle` | Curated skill collections; enables frontend browse category                    |
-| `mcp-server`   | API            | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable |
-| `ai-model`     | Resource       | `ai-model`        | Mapping pending RHDHPLAN-404 (upstream entity schema work)                     |
-| `model-server` | Resource       | `ai-model-server` | Mapping pending RHDHPLAN-404 (upstream entity schema work)                     |
+| Category       | Backstage Kind   | spec.type         | Notes                                                                             |
+| -------------- | ---------------- | ----------------- | --------------------------------------------------------------------------------- |
+| `agent`        | AiResource       | `agent`           | Settled RHDH agent mapping; upstream schema alignment remains under RHDHPLAN-1113 |
+| `skill`        | AiResource       | `skill`           | AiResource per RHDHPLAN-1113                                                      |
+| `rule`         | AiResource       | `rule`            | AiResource per RHDHPLAN-1113                                                      |
+| `mcp-server`   | API              | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable    |
+| `ai-model`     | Resource         | `ai-model`        | Mapping pending RHDHPLAN-404 (upstream entity schema work)                        |
+| `model-server` | AiModelServerAPI | `ai-model-server` | Current dedicated kind; future upstream alignment remains under RHDHPLAN-404      |
 
-This mapping is documented for reference — connectors MAY map differently based on their domain. The annotation is the source of truth for AI asset category, not the kind.
+Agent providers MUST use `kind: AiResource`, `spec.type: agent`. The other rows are documented for reference; connectors MAY map those categories differently based on their domain. The annotation remains the source of truth for AI asset category, not the kind.
 
-> **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (updated 2026-07-20):** The `skill`, `rule`, and `skill-bundle` categories use `AIResource` kind per RHDHPLAN-1113 (resolved). The `agent` category mapping is pending RHDHPLAN-1113 — Boost will refrain from defining agent entity kind mappings independently. The `ai-model` and `model-server` mappings are pending RHDHPLAN-404 upstream entity schema work. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` under broader RHDHPLAN-1510 work; it is not part of the current Boost frontend/OGX release contract.
+> **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (reconciled 2026-11-10):** The `skill` and `rule` reference mappings remain under RHDHPLAN-1113. The `agent` category uses `kind: AiResource`, `spec.type: agent`; the former `Component` / `ai-agent` mapping is historical and is not an implementation option. Future upstream agent-schema alignment remains under RHDHPLAN-1113. Model servers currently use `AiModelServerAPI` / `ai-model-server`. The `ai-model` mapping and future model-server upstream alignment remain under RHDHPLAN-404. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` under broader RHDHPLAN-1510 work; it is not part of the current Boost frontend/OGX release contract.
 
 **Migration path:** When upstream kinds stabilize, we document field-level transformations. For example, `AiResource` casing alignment for skills: `kind: AIResource` + `spec.type: skill` + `rhdh.io/ai-asset-category: skill` → `kind: AiResource` (see [#33575](https://github.com/backstage/backstage/issues/33575)). The annotation remains for backward compatibility during the transition.
 
@@ -80,71 +82,49 @@ This mapping is documented for reference — connectors MAY map differently base
 
 ### Decision 2: SDK package scope and structure
 
-Single npm package `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` exports:
+Single npm package `@red-hat-developer-hub/backstage-plugin-ai-catalog-entity-provider-sdk` exports:
 
 - Provider interface types (`AIAssetEntityProvider`, entity emission contract)
 - Annotation constants (`AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION`)
 - Validation utilities (`validateAIAssetEntity()`, rejects entities with missing/invalid annotations)
 - Entity kind mapping reference (documented mapping table from Decision 1)
-- Neo4j sync adapter interface (`Neo4jSyncAdapter`, node/relationship creation contracts)
-- SkillBundle metadata schema (TypeScript types for skillcard.yaml structure)
 
-**Why a single package:** All AI asset entity providers share the same contracts. Splitting into multiple packages creates versioning coordination overhead without modularity benefit.
+**Recovered package boundary:** The restored code uses one shared package. This baseline does not decide the future shared/per-kind SDK structure; that design belongs to [RHIDP-18839](https://redhat.atlassian.net/browse/RHIDP-18839).
 
 **Interface over implementation:** The SDK exports TypeScript interfaces and constants. Providers implement the interfaces; the SDK does NOT provide a base class or abstract provider implementation. This follows Backstage's catalog provider pattern.
 
 ### Decision 3: Delta sync via `applyMutation({ type: 'delta' })`
 
-Delta sync uses Backstage's built-in delta mutation API. The SDK provides a wrapper that:
+The recovered helper uses Backstage's built-in delta mutation API. `DeltaSyncManager`:
 
 1. Accepts connector-reported additions/updates/deletions relative to a sync cursor
 2. Translates deltas into `applyMutation({ type: 'delta', added: [...], removed: [...] })` calls
-3. Persists sync cursors (ETag, last-modified timestamp, or connector-specific token) across polling cycles
-4. Falls back to full refresh when cursor invalid or missing
+3. Stores a supplied next cursor through the consumer's `CursorStore` after a successful mutation
+4. Exposes `getCursor()` and `clearCursor()` so consuming providers can manage their own refresh path
 
-**Alternative considered:** `IncrementalEntityProvider` with paginated iteration. Rejected because it doesn't handle deletions — it's for splitting a large full-refresh into pages, not for delta sync.
+**Consumer responsibilities:** The provider owns fetching source data, scheduling, detecting missing/rejected cursors, selecting full versus delta refresh, and submitting full mutations. The helper does not call `entities()` or `delta()` and does not automatically switch provider modes.
 
-**Cursor persistence:** Cursors stored in catalog database as provider-scoped key-value pairs. Backstage's `DatabaseManager` provides storage. The SDK abstracts cursor read/write so providers don't interact with the database directly.
+**Cursor persistence:** The SDK provides the `CursorStore` interface and an `InMemoryCursorStore` for development/testing. Consumers supply storage keyed by the manager's `locationKey`; stored `CursorState` contains `cursor` and `lastSyncTimestamp`. Durable storage is not delivered by this baseline.
 
-```typescript
-interface DeltaSyncCursor {
-  providerId: string;
-  cursor: string; // ETag, last-modified, or connector-specific token
-  lastSyncTimestamp: string; // ISO 8601
-}
-```
+**Deferred design:** The earlier rejection of `IncrementalEntityProvider` is withdrawn. Backstage incremental ingestion uses paginated bursts and mark-and-sweep deletion reconciliation; it is not inherently a source change-token feed. [RHIDP-18840](https://redhat.atlassian.net/browse/RHIDP-18840) owns the integration design, cursor semantics, durable storage, and automatic refresh/recovery orchestration. This reconciliation does not implement or choose that architecture. See [Backstage incremental providers](https://backstage.io/docs/features/software-catalog/external-integrations/incremental-entity-providers/).
 
-### Decision 4: Air-gapped credential pattern _(Moved to RHIDP-15316)_
+### Decision 4: Credential and CA reference patterns _(Qualification deferred to RHIDP-15316)_
 
-**Custom CA bundles:** Providers read CA certificates from mounted Secret/ConfigMap via `NODE_EXTRA_CA_CERTS` environment variable or explicit `https.Agent` configuration. This is standard Node.js TLS.
+These patterns preserve generic configuration examples and existing shared
+utilities. Full disconnected-deployment qualification is stretch work and does
+not require new SDK configuration/CA re-exports or block minimum SDK publication.
 
-**K8s Secret-only credentials:** All credentials are supplied via K8s Secrets mounted as environment variables. Helm/Operator config mounts the Secret into the container; app-config references the env vars with standard Backstage `$env` resolvers:
+**Custom CA reference configuration:** Provider examples read CA certificates from mounted Secret/ConfigMap via `NODE_EXTRA_CA_CERTS` or explicit `https.Agent` configuration. This is standard Node.js TLS.
 
-```yaml
-boost:
-  providers:
-    kagenti:
-      clientId:
-        $env: KAGENTI_CLIENT_ID
-      clientSecret:
-        $env: KAGENTI_CLIENT_SECRET
-```
+**Secret-based reference configuration:** Credentials can be supplied via K8s Secrets mounted as environment variables. Helm/Operator examples mount the Secret into the container; app-config references the env vars with standard Backstage `$env` resolvers. This reference pattern does not establish a minimum SDK guarantee that every provider rejects plaintext credentials. Generic endpoint, CA, credential, and schedule examples remain in [app-config.connectors.yaml](../../../examples/app-config.connectors.yaml).
 
-Startup validation rejects plaintext credentials with descriptive error: `Plaintext credentials not allowed. Use $env references backed by mounted K8s Secrets.`
+~~Startup validation rejects plaintext credentials with descriptive error: `Plaintext credentials not allowed. Use $env references backed by mounted K8s Secrets.`~~ **DEFERRED — stretch qualification, not minimum SDK acceptance.**
 
-**Configurable endpoints:** All registry endpoint URLs configurable via app-config. No hardcoded SaaS URLs. Startup validation verifies URLs are syntactically valid.
-
-Reference app-config pattern applies to all connectors (Kagenti, OGX, OCI skill registry).
+**Configurable endpoint reference configuration:** Generic examples use app-config endpoint overrides. Qualification of endpoint configuration and startup URL validation across all providers remains deferred with task 6.5. Existing provider-specific validation remains owned by the consuming provider.
 
 ### Decision 5: Performance SLAs and error resilience _(Distributed: load testing → RHIDP-15294, error resilience → RHIDP-15316)_
 
-**Load testing:** Test harness creates 5,000+ entities and measures:
-
-- Baseline p95 latency without AI Catalog
-- With-AI-Catalog p95 latency
-- Processing-loop duration (entity ingestion → catalog API availability)
-
-**SLA:** p95 latency must not exceed 10% degradation with 5,000+ entities.
+**Load testing (stretch):** Test harness creates 5,000+ entities and measures baseline and with-AI-Catalog p95 latency plus processing-loop duration. The 5,000-entity load/SLA acceptance requirement is deferred from the minimum baseline; error isolation below is the minimum requirement.
 
 **Per-entity error isolation:** Single entity failure logged with:
 
@@ -168,65 +148,18 @@ The `rhdh.io/ai-asset-version` annotation has documented normalization rules:
 
 **Documented in SDK:** The SDK exports a `normalizeAIAssetVersion(sourceVersion: string, options?: { entityRef?: string; warn?: (message: string) => void }): string` utility with test coverage for all normalization rules. The optional `options` parameter provides entity context for warning messages and a custom warning callback.
 
-### Decision 7: Neo4j sync adapter interface
+### ~~Decision 7: Neo4j sync adapter interface~~ REMOVED
 
-The SDK defines a TypeScript interface for Neo4j sync adapters (implementation is in the `neo4j-knowledge-graph` change):
+> Removed from minimum scope (RHIDP-18761). Neo4j knowledge graph
+> integration is archived — see
+> `openspec/changes/archive/2026-11-06-neo4j-knowledge-graph/`.
 
-```typescript
-interface Neo4jSyncAdapter {
-  createNode(
-    entityRef: string,
-    properties: Record<string, unknown>,
-  ): Promise<void>;
+### ~~Decision 8: SkillBundle metadata contract~~ REMOVED
 
-  createRelationship(
-    fromRef: string,
-    toRef: string,
-    type: RelationshipType,
-    metadata?: Record<string, unknown>,
-  ): Promise<void>;
-
-  updateNode(
-    entityRef: string,
-    properties: Record<string, unknown>,
-  ): Promise<void>;
-
-  deleteNode(entityRef: string): Promise<void>;
-}
-
-type RelationshipType =
-  | 'DEPENDS_ON'
-  | 'USES_TOOL'
-  | 'BELONGS_TO'
-  | 'SIMILAR_TO'
-  | 'IMPLEMENTED_BY'
-  | 'INCLUDES';
-```
-
-**Why in the SDK:** Entity providers emit catalog entities AND trigger Neo4j sync. The interface contract lives in the SDK so both the provider and the Neo4j sync implementation can depend on it without circular imports.
-
-### Decision 8: SkillBundle metadata contract
-
-The SDK exports TypeScript types for the `skillcard.yaml` schema (used by the OCI skill registry connector):
-
-```typescript
-interface SkillBundleMetadata {
-  name: string;
-  version: string;
-  description?: string;
-  author?: string;
-  tags?: string[];
-  runtime?: {
-    language: string;
-    dependencies?: Record<string, string>;
-  };
-  mcp?: {
-    servers: string[]; // MCP server entity refs
-  };
-}
-```
-
-**Why in the SDK:** The OCI skill registry connector parses `skillcard.yaml` from OCI artifacts and emits entities. The schema contract lives in the SDK so the connector and any skill authoring tools share the same types.
+> Removed from minimum scope (RHIDP-18761). SkillBundle/skillcard.yaml
+> contracts and the OCI skill registry are archived — see
+> `openspec/changes/archive/2026-11-06-oci-skill-registry/` and
+> `openspec/changes/archive/2026-11-06-oci-skill-connector/`.
 
 ## Risks
 

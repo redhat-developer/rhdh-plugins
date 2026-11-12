@@ -42,7 +42,7 @@ Duplicating CA/TLS handling, error logging, and enable/disable config across eac
 
 ## Impact
 
-- `plugins/boost-connector-utils/` — shared utility package (`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`)
+- `plugins/ai-catalog-connector-utils/` — shared utility package (`@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils`)
   - `loadCaBundle()` function
   - `createProviderWrapper()` fault isolation wrapper for `connect()`
   - `createSafeRefresh()` fault isolation wrapper for scheduled refresh callbacks
@@ -59,4 +59,11 @@ Duplicating CA/TLS handling, error logging, and enable/disable config across eac
   - RHIDP-15314 (RHOAI connector)
 - RHDHPLAN-1507 (Entity Model & Ingestion)
   - RHIDP-15294 (OCI Skill Registry — also consumes shared infrastructure)
-  - `ai-catalog-entity-model` change (air-gapped-deployment patterns for CA/credential injection)
+
+CA bundle behavior and reference connector configuration are owned by this
+shared-infrastructure change under RHIDP-15316. See
+[CA bundle resolution](specs/ca-bundle-resolution/spec.md) and
+[reference app-config](specs/reference-app-config/spec.md). The former
+`ai-catalog-entity-model/specs/air-gapped-deployment/spec.md` dependency was
+retired by RHIDP-18761; full disconnected-deployment qualification remains
+outside the 1507 minimum scope.

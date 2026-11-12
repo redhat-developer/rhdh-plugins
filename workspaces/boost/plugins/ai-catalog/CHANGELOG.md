@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-ai-catalog
 
+## 1.2.1
+
+### Patch Changes
+
+- cdd3501: Add the AI Catalog page icon and a sidebar item whose priority can be configured by the host app.
+  - @red-hat-developer-hub/backstage-plugin-ai-catalog-common@1.2.1
+
+## 1.2.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-ai-catalog-common@1.2.0
+
 ## 1.1.0
 
 ### Minor Changes

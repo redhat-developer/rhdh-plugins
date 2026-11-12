@@ -1,5 +1,17 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.12.2
+
+### Patch Changes
+
+- 2c22798: reduce Data Index queries for workflow pages
+
+## 3.12.1
+
+### Patch Changes
+
+- f9236bd: Updated dependency `@openapitools/openapi-generator-cli` to `2.42.0`.
+
 ## 3.12.0
 
 ### Minor Changes

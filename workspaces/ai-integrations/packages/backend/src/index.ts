@@ -103,6 +103,9 @@ backend.add(
   ),
 );
 backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-npx-skill-connector-backend'),
+);
+backend.add(
   import(
     '@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend'
   ),

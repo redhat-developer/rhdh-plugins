@@ -74,6 +74,11 @@ export interface OrchestratorApi {
     annotationWorkflowIds: string[],
   ): Promise<AxiosResponse<WorkflowOverviewListResultDTO>>;
 
+  listInstanceInitiators(
+    paginationInfo?: PaginationInfoDTO,
+    filters?: Filter,
+  ): Promise<AxiosResponse<string[]>>;
+
   listInstances(
     paginationInfo?: PaginationInfoDTO,
     filters?: Filter,

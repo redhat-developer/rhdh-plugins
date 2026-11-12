@@ -7,7 +7,6 @@
   },
   "scripts": {
     "start": "backstage-cli repo start",
-    "start:legacy": "backstage-cli repo start packages/app-legacy packages/backend",
     "start-backend": "yarn workspace backend start",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
@@ -21,10 +20,7 @@
     "test": "backstage-cli repo test",
     "test:all": "backstage-cli repo test --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:legacy": "APP_MODE=legacy playwright test",
-    "test:e2e:nfs": "APP_MODE=nfs playwright test",
-    "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
-    "playwright": "bash -c 'if [[ \"$*\" == \"test\" ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _",
+    "playwright": "bash -c 'if [[ \"$*\" == \"test\" ]]; then yarn test:e2e; else npx playwright \"$@\"; fi' _",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
@@ -45,6 +41,7 @@
     "directory": "workspaces/scorecard"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.0",
     "@backstage/cli": "^0.36.5",
     "@backstage/cli-defaults": "^0.1.5",
     "@backstage/e2e-test-utils": "^0.1.2",
@@ -75,8 +72,5 @@
     "*.{json,md}": [
       "prettier --write"
     ]
-  },
-  "dependencies": {
-    "changeset": "^0.2.6"
   }
 }

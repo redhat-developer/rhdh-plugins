@@ -23,11 +23,12 @@ import { resolveImage } from './image-resolver';
 import { type Skopeo } from './skopeo';
 import { DOCKER_PROTO, isDockerUrl, OCI_PROTO } from './protocols';
 import { DPDY_FILENAME, MAX_ENTRY_SIZE } from './types';
-import { fileExists, isAllowedEntryType, isInside } from './util';
-
-type OciManifest = {
-  layers?: Array<{ digest: string }>;
-};
+import {
+  fileExists,
+  isAllowedEntryType,
+  isInside,
+  isPlainObject,
+} from './util';
 
 /**
  * Extract the plugin catalog index OCI image (when `CATALOG_INDEX_IMAGE` is
@@ -108,53 +109,33 @@ export async function extractCatalogIndexLayers(
       );
     }
 
-    const manifest = JSON.parse(
-      await fs.readFile(manifestPath, 'utf8'),
-    ) as OciManifest;
-    const layers = manifest.layers ?? [];
-
-    let pending: InstallException | null = null;
-    for (const layer of layers) {
-      if (pending) break;
-      const digest = layer.digest;
-      if (!digest) continue;
-      const [, fname] = digest.split(':');
-      if (!fname) continue;
-      const layerPath = path.join(localDir, fname);
-      if (!(await fileExists(layerPath))) continue;
-
-      await tar.x({
-        file: layerPath,
-        cwd: destDirAbs,
-        preservePaths: false,
-        // The filter captures `pending` (a single-write latch) and runs
-        // synchronously inside the awaited tar.x call — iterations are
-        // serialised, so the closure-in-loop hazard the rule guards against
-        // does not apply.
-        // eslint-disable-next-line no-loop-func
-        filter: (filePath, entry) => {
-          if (pending) return false;
-          const stat = entry as tar.ReadEntry;
-
-          if (stat.size > MAX_ENTRY_SIZE) {
-            pending = new InstallException(`Zip bomb detected in ${filePath}`);
-            return false;
-          }
-
-          if (stat.type === 'SymbolicLink' || stat.type === 'Link') {
-            const linkTarget = path.resolve(destDirAbs, stat.linkpath ?? '');
-            if (!isInside(linkTarget, destDirAbs)) return false;
-          }
-
-          // Reject any entry that would resolve outside destDirAbs.
-          const memberPath = path.resolve(destDirAbs, filePath);
-          if (!isInside(memberPath, destDirAbs)) return false;
-
-          return isAllowedEntryType(stat.type);
-        },
-      });
+    const manifestText = await fs.readFile(manifestPath, 'utf8');
+    let manifest: unknown;
+    try {
+      manifest = JSON.parse(manifestText);
+    } catch (err) {
+      throw new InstallException(
+        `Malformed manifest.json in catalog index image ${image}: ${errorMessage(err)}`,
+      );
     }
-    if (pending) throw pending;
+    const manifestLayers = isPlainObject(manifest) ? manifest.layers : null;
+    if (manifestLayers !== undefined && !Array.isArray(manifestLayers)) {
+      throw new InstallException(
+        `Malformed manifest.json in catalog index image ${image}: expected an object with a layers array`,
+      );
+    }
+    const layers = await resolveLayerBlobs(
+      manifestLayers ?? [],
+      localDir,
+      image,
+    );
+    // Layers apply in manifest order (later ones overwrite earlier ones), so
+    // they are chained rather than extracted concurrently.
+    await layers.reduce<Promise<void>>(
+      (previous, layer) =>
+        previous.then(() => extractLayer(layer, image, destDirAbs)),
+      Promise.resolve(),
+    );
   } finally {
     await fs.rm(workDir, { recursive: true, force: true });
   }
@@ -307,6 +288,96 @@ export async function cleanupCatalogIndexTemp(mountDir: string): Promise<void> {
     recursive: true,
     force: true,
   });
+}
+
+type LayerBlob = { digest: string; file: string };
+
+/**
+ * Map manifest layers to their downloaded blobs, failing if an entry has no
+ * usable digest, a digest points outside the download, or a blob is absent.
+ */
+async function resolveLayerBlobs(
+  layers: unknown[],
+  localDir: string,
+  image: string,
+): Promise<LayerBlob[]> {
+  const blobs = layers.map((layer, index) => {
+    const digest =
+      isPlainObject(layer) && typeof layer.digest === 'string'
+        ? layer.digest
+        : undefined;
+    const fname = digest?.split(':')[1];
+    if (!digest || !fname) {
+      throw new InstallException(
+        `Layer entry ${index} in manifest.json of catalog index image ${image} has no usable digest`,
+      );
+    }
+    return { digest, file: path.resolve(localDir, fname) };
+  });
+  const escaping = blobs.find(blob => !isInside(blob.file, localDir));
+  if (escaping) {
+    throw new InstallException(
+      `Layer digest ${escaping.digest} in catalog index image ${image} resolves outside the download directory`,
+    );
+  }
+  const present = await Promise.all(blobs.map(blob => fileExists(blob.file)));
+  const missing = blobs.find((_, i) => !present[i]);
+  if (missing) {
+    throw new InstallException(
+      `Layer ${missing.digest} listed in manifest.json is missing from catalog index image ${image}`,
+    );
+  }
+  return blobs;
+}
+
+/**
+ * Extract one layer blob into destDirAbs, dropping entries that escape it and
+ * aborting on an oversized entry (zip bomb).
+ */
+async function extractLayer(
+  layer: LayerBlob,
+  image: string,
+  destDirAbs: string,
+): Promise<void> {
+  // Errors thrown inside `tar` filter callbacks are sometimes swallowed by the
+  // parser; capture them in a closure and re-throw after extraction completes.
+  let pending: InstallException | null = null;
+  try {
+    await tar.x({
+      file: layer.file,
+      cwd: destDirAbs,
+      preservePaths: false,
+      filter: (filePath, entry) => {
+        if (pending) return false;
+        const stat = entry as tar.ReadEntry;
+
+        if (stat.size > MAX_ENTRY_SIZE) {
+          pending = new InstallException(`Zip bomb detected in ${filePath}`);
+          return false;
+        }
+
+        if (stat.type === 'SymbolicLink' || stat.type === 'Link') {
+          const linkTarget = path.resolve(destDirAbs, stat.linkpath ?? '');
+          if (!isInside(linkTarget, destDirAbs)) return false;
+        }
+
+        // Reject any entry that would resolve outside destDirAbs.
+        const memberPath = path.resolve(destDirAbs, filePath);
+        if (!isInside(memberPath, destDirAbs)) return false;
+
+        return isAllowedEntryType(stat.type);
+      },
+    });
+  } catch (err) {
+    throw new InstallException(
+      `Failed to extract layer ${layer.digest} of catalog index image ${image}: ${errorMessage(err)}`,
+    );
+  }
+  if (pending) throw pending;
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 async function copyDir(src: string, dst: string): Promise<void> {

@@ -49,6 +49,7 @@ const extensionsTranslationFr = createTranslationMessages({
     'status.disabled': 'Désactivé',
     'status.partiallyInstalled': 'Partiellement installé',
     'status.updateAvailable': 'Mise à jour disponible',
+    'status.restartRequired': 'Redémarrage requis',
     'role.backend': 'Backend',
     'role.backendModule': 'Module backend',
     'role.frontend': "L'extrémité avant",
@@ -168,7 +169,7 @@ const extensionsTranslationFr = createTranslationMessages({
     'installedPackages.table.tooltips.noDownloadPermissions':
       'Vous n’avez pas l’autorisation de télécharger la configuration. Contactez votre administrateur pour demander un accès ou une assistance.',
     'installedPackages.table.tooltips.noEditPermissions':
-      'Vous n’avez pas la permission de modifier la configuration. Contactez votre administrateur pour demander un accès ou une assistance.',
+      'Afficher la configuration. Vous n’avez pas la permission de modifier la configuration. Contactez votre administrateur pour demander un accès ou une assistance.',
     'installedPackages.table.tooltips.noTogglePermissions':
       'Vous n’avez pas la permission d’activer ou de désactiver les paquets. Contactez votre administrateur pour demander un accès ou une assistance.',
     'installedPackages.table.tooltips.editPackage':
@@ -281,12 +282,20 @@ const extensionsTranslationFr = createTranslationMessages({
       'Erreur lors de la lecture du fichier de configuration. ',
     'tooltips.productionDisabled':
       "L'installation du plugin est désactivée dans l'environnement de production.",
-    'tooltips.extensionsDisabled':
-      "L'installation du plugin est désactivée. Pour l’activer, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.",
+    'tooltips.extensionsDisabledInstallPlugin':
+      "Impossible d'installer le plugin. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.",
+    'tooltips.extensionsDisabledInstallPackage':
+      "Impossible d'installer le paquet. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.",
+    'tooltips.extensionsDisabledManagePlugin':
+      'Impossible de gérer le plugin. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.',
+    'tooltips.extensionsDisabledManagePackage':
+      'Impossible de gérer le paquet. Pour activer les actions, ajouter ou modifier la configuration des extensions dans votre fichier de configuration dynamic-plugins.',
     'tooltips.noPermissions':
       "Vous n'avez pas l'autorisation d'installer des plugins ou d'afficher leurs configurations. Contactez votre administrateur pour demander un accès ou une assistance.",
     'tooltips.missingDynamicArtifact':
       'Impossible de gérer ce {{type}}. Pour activer les actions, un catalogue avec le spec.dynamicArtifact requis doit être ajouté.',
+    'tooltips.restartRequired':
+      'Un redémarrage de la plateforme est requis pour que cette modification prenne effet.',
     'aria.openPlugin': 'Ouvrir le plugin {{name}}',
     'aria.closeDialog': 'Fermer la boîte de dialogue',
     'aria.expandSection': 'Développer la section',

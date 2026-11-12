@@ -54,6 +54,7 @@ an independent change; RHIDP-15280 is the authoritative owner.
 **AND** the event payload includes `config_change: { field: string, before: string, after: string }`  
 **AND** the `actor` field contains the user identifier (username or service account ID)  
 **AND** the `before` and `after` values contain the old and new configuration values (serialized as strings)  
+**AND** secret-bearing configuration fields (credentials, tokens, passwords) are redacted before serialization — the field name, actor, and change outcome are retained without recording secret values  
 **AND** the event is written to the RHDH audit log channel
 
 ### Scenario 5: Audit event format consistency with RHIDP-15277

@@ -23,15 +23,15 @@ Boost builds three AI catalog connectors (MCP Registry, RHOAI, OCI Skill Registr
 
 ### Decision 1: Shared utility package — not a Backstage plugin
 
-The shared infrastructure lives in a standalone utility package (`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`) published as a Node.js library. It is NOT a Backstage plugin or backend module — just a utility package importable by all connector backend modules.
+The shared infrastructure lives in a standalone utility package (`@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils`) published as a Node.js library. It is NOT a Backstage plugin or backend module — just a utility package importable by all connector backend modules.
 
 **Why:** The three connectors are independent backend modules. Each module depends on the shared utilities but operates independently. A shared plugin would create unnecessary coupling and module-to-module dependencies. A utility package provides clear boundaries: connectors import functions, not Backstage extension points.
 
 **Package structure:**
 
 ```
-plugins/boost-connector-utils/
-├── package.json               # @red-hat-developer-hub/backstage-plugin-boost-connector-utils
+plugins/ai-catalog-connector-utils/
+├── package.json               # @red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils
 ├── src/
 │   ├── index.ts              # Exports: loadCaBundle, createHttpsAgent, createProviderWrapper, createSafeRefresh, classifyConnectorError, isConnectorEnabled, validateConnectorStartupConfig, ConnectorEntityProvider, ConnectorErrorContext, ValidateConnectorStartupConfigOptions
 │   ├── ca-bundle.ts          # CA bundle loading logic
@@ -48,7 +48,7 @@ import {
   loadCaBundle,
   createProviderWrapper,
   isConnectorEnabled,
-} from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
+} from '@red-hat-developer-hub/backstage-plugin-ai-catalog-connector-utils';
 ```
 
 ### Decision 2: CA bundle loading strategy
@@ -122,7 +122,7 @@ Backstage already provides entity data isolation per provider via entity buckets
 **Implementation:**
 
 ```typescript
-// In boost-connector-utils/src/fault-isolation.ts
+// In plugins/ai-catalog-connector-utils/src/fault-isolation.ts
 export function createProviderWrapper(
   provider: ConnectorEntityProvider,
   logger: LoggerService,
@@ -133,7 +133,9 @@ export function createProviderWrapper(
     async connect(connection: unknown): Promise<void> {
       try {
         await provider.connect(connection);
-      } catch (error) {
+      } catch (thrown) {
+        const error =
+          thrown instanceof Error ? thrown : new Error(String(thrown));
         logger.error('Connector connect() failed', {
           connectorId: provider.getProviderName(),
           errorType: error.constructor.name,
@@ -155,7 +157,9 @@ export function createSafeRefresh(
   return async () => {
     try {
       await refreshFn();
-    } catch (error) {
+    } catch (thrown) {
+      const error =
+        thrown instanceof Error ? thrown : new Error(String(thrown));
       logger.error('Connector refresh failed', {
         connectorId,
         errorType: error.constructor.name,
