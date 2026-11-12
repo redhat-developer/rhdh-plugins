@@ -39,7 +39,7 @@ export const QuickstartFooter = ({
       : t('footer.notStarted');
 
   return (
-    <div>
+    <Box>
       <Box
         role="progressbar"
         aria-valuemin={0}
@@ -60,9 +60,7 @@ export const QuickstartFooter = ({
             backgroundColor: 'var(--bui-accent-bg)',
             transition: 'width 0.2s ease',
           }}
-        >
-          {null}
-        </Box>
+        />
       </Box>
       <Flex align="center" justify="between" p="5">
         <Text variant="body-small">{progressLabel}</Text>
@@ -77,6 +75,6 @@ export const QuickstartFooter = ({
           {t('footer.hide')}
         </ButtonLink>
       </Flex>
-    </div>
+    </Box>
   );
 };

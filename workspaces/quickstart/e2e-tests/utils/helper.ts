@@ -60,9 +60,18 @@ export class UIhelper {
       .first()
       .click();
   }
+  /**
+   * CTAs are BUI Buttons (not anchors). Target URL is exposed as data-cta-href.
+   */
   async verifyButtonURL(label: string | RegExp, url: string) {
-    const anchor = this.page.locator('a').filter({ hasText: label });
-    expect(await anchor.first().getAttribute('href')).toContain(url);
+    const buttons = this.page.getByRole('button', { name: label });
+    await expect(buttons.first()).toBeVisible();
+    const count = await buttons.count();
+    const hrefs: string[] = [];
+    for (let i = 0; i < count; i++) {
+      hrefs.push((await buttons.nth(i).getAttribute('data-cta-href')) ?? '');
+    }
+    expect(hrefs.some(href => href.includes(url))).toBeTruthy();
   }
   async verifyHeading(heading: string | RegExp, exact: boolean = true) {
     await expect(
