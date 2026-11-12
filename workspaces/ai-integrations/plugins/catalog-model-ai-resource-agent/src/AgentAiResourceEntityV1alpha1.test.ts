@@ -56,7 +56,7 @@ function makeFullAgent(): Entity {
       system: 'ai-tooling',
       instructions: 'You are a fully configured agent.',
       handoffDescription: 'Handles everything.',
-      model: 'gpt-4o',
+      model: { provider: 'openai', name: 'gpt-4o' },
       handoffs: ['agent-a', 'agent-b'],
       tools: ['tool-x', 'tool-y'],
       toolUseBehavior: 'run_llm_again',
@@ -161,6 +161,27 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
   });
 
   describe('reject paths', () => {
+    it.each([
+      ['a string', 'gpt-4o'],
+      ['a number', 42],
+      ['a boolean', true],
+      ['null', null],
+      ['an array', []],
+      ['an empty object', {}],
+      ['missing provider', { name: 'gpt-4o' }],
+      ['missing name', { provider: 'openai' }],
+      ['empty provider', { provider: '', name: 'gpt-4o' }],
+      ['empty name', { provider: 'openai', name: '' }],
+      ['non-string provider', { provider: 42, name: 'gpt-4o' }],
+      ['non-string name', { provider: 'openai', name: 42 }],
+    ])('rejects spec.model with %s', async (_description, model) => {
+      await expect(
+        agentAiResourceEntityV1alpha1Validator.check(
+          makeMinimalAgent({ model: model as any }),
+        ),
+      ).rejects.toThrow(/model/);
+    });
+
     it('accepts missing spec.instructions', async () => {
       const entity = makeMinimalAgent();
       delete (entity as any).spec.instructions;

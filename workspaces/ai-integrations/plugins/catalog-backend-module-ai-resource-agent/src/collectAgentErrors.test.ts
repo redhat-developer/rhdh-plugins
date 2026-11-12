@@ -338,19 +338,48 @@ describe('collectAgentErrors', () => {
     });
   });
 
-  describe('spec.model (optional, must be string)', () => {
-    it('accepts model as a string', () => {
-      const entity = makeAgent({ model: 'gpt-4o' });
+  describe('spec.model (optional, requires provider and name)', () => {
+    it('accepts model with provider and name', () => {
+      const entity = makeAgent({
+        model: { provider: 'openai', name: 'gpt-4o' },
+      });
       expect(collectAgentErrors(entity)).toEqual([]);
     });
 
-    it('rejects model as a number', () => {
-      const entity = makeAgent({ model: 42 });
+    it('accepts an omitted model', () => {
+      expect(collectAgentErrors(makeAgent())).toEqual([]);
+    });
 
-      const errors = collectAgentErrors(entity);
+    it.each(['gpt-4o', 42, true, null, []])('rejects model as %j', model => {
+      const errors = collectAgentErrors(makeAgent({ model }));
       expect(errors).toHaveLength(1);
       expect(errors[0]).toContain('spec.model');
-      expect(errors[0]).toContain('string');
+      expect(errors[0]).toContain('object');
+    });
+
+    it('reports both missing fields for an empty model object', () => {
+      const errors = collectAgentErrors(makeAgent({ model: {} }));
+      expect(errors).toHaveLength(2);
+      expect(errors).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('spec.model.provider'),
+          expect.stringContaining('spec.model.name'),
+        ]),
+      );
+    });
+
+    it.each([
+      ['provider', { name: 'gpt-4o' }],
+      ['name', { provider: 'openai' }],
+      ['provider', { provider: '', name: 'gpt-4o' }],
+      ['name', { provider: 'openai', name: '' }],
+      ['provider', { provider: 42, name: 'gpt-4o' }],
+      ['name', { provider: 'openai', name: 42 }],
+    ])('rejects invalid spec.model.%s in %j', (field, model) => {
+      const errors = collectAgentErrors(makeAgent({ model }));
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toContain(`spec.model.${field}`);
+      expect(errors[0]).toContain('non-empty string');
     });
   });
 
@@ -435,7 +464,7 @@ describe('collectAgentErrors', () => {
       const entity = makeAgent({
         instructions: 'You are a fully configured agent.',
         handoffDescription: 'Handles everything.',
-        model: 'gpt-4o',
+        model: { provider: 'openai', name: 'gpt-4o' },
         handoffs: ['agent-a', 'agent-b'],
         tools: ['tool-x', 'tool-y'],
         toolUseBehavior: 'run_llm_again',

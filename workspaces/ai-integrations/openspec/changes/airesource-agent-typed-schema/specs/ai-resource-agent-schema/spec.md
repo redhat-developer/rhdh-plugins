@@ -67,6 +67,30 @@ At minimum, the mapping’s optional catalog fields include: `spec.instructions`
 
 ---
 
+### Requirement: Optional agent model object
+
+An agent-shaped AiResource MAY omit `spec.model`. When present, `spec.model`
+MUST be an object containing both `provider` and `name` as non-empty strings.
+`provider` identifies the model provider and `name` identifies the model.
+The previous string form MUST be rejected.
+
+#### Scenario: Model omitted
+
+- **WHEN** an otherwise valid agent entity omits `spec.model`
+- **THEN** the agent schema accepts it
+
+#### Scenario: Complete model object accepted
+
+- **WHEN** an otherwise valid agent entity sets `spec.model` to `{ provider: openai, name: gpt-4o }`
+- **THEN** the agent schema accepts it
+
+#### Scenario: Invalid model rejected
+
+- **WHEN** an agent entity sets `spec.model` to a string, number, boolean, null, array, or an object with either `provider` or `name` missing, empty, or not a string
+- **THEN** the agent schema rejects it with an error naming the invalid model field
+
+---
+
 ### Requirement: Agent fields in spec and metadata only
 
 Agent configuration fields from the design mapping MUST be represented on the entity as `metadata.*` / `spec.*` fields. The agent schema MUST NOT introduce agent-specific annotations for those configuration fields.

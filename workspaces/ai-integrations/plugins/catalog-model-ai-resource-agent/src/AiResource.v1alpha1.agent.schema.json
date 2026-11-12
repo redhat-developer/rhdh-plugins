@@ -83,9 +83,21 @@
               "minLength": 1
             },
             "model": {
-              "type": "string",
-              "description": "The model identifier for this agent.",
-              "minLength": 1
+              "type": "object",
+              "description": "The model for this agent. Optional; when set, both provider and name are required.",
+              "required": ["provider", "name"],
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "description": "The model provider.",
+                  "minLength": 1
+                },
+                "name": {
+                  "type": "string",
+                  "description": "The model identifier.",
+                  "minLength": 1
+                }
+              }
             },
             "handoffs": {
               "type": "array",

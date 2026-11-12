@@ -126,9 +126,26 @@ export function collectAgentErrors(entity: Entity): string[] {
     );
   }
 
-  // Optional: spec.model — must be a string if present
-  if (spec.model !== undefined && typeof spec.model !== 'string') {
-    errors.push(`spec.model must be a string; got ${typeLabel(spec.model)}`);
+  // Optional: spec.model — requires non-empty provider and name strings if present
+  if (spec.model !== undefined) {
+    if (
+      typeof spec.model !== 'object' ||
+      spec.model === null ||
+      Array.isArray(spec.model)
+    ) {
+      errors.push(`spec.model must be an object; got ${typeLabel(spec.model)}`);
+    } else {
+      for (const field of ['provider', 'name']) {
+        const value = spec.model[field];
+        if (typeof value !== 'string' || value.length === 0) {
+          errors.push(
+            `spec.model.${field} must be a non-empty string; got ${typeLabel(
+              value,
+            )}`,
+          );
+        }
+      }
+    }
   }
 
   // Optional: spec.executionMode — must be 'in-process', 'subprocess', or 'sandbox' if present

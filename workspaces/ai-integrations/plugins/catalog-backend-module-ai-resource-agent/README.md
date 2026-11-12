@@ -27,18 +27,18 @@ Runs only for `kind: AiResource`. When `spec.type` is `'agent'`, validates
 agent-specific fields and collects all violations into a single error.
 Non-agent AiResource entities (`skill`, `rule`, `model`, …) are unaffected.
 
-| Field                     | Rule                                                                      |
-| ------------------------- | ------------------------------------------------------------------------- |
-| `spec.instructions`       | Optional; must be a string if present                                     |
-| `spec.handoffs`           | Optional; must be an array if present                                     |
-| `spec.tools`              | Optional; must be an array if present                                     |
-| `spec.resetToolChoice`    | Optional; must be a boolean if present                                    |
-| `spec.modelSettings`      | Optional; must be a plain object if present                               |
-| `spec.toolUseBehavior`    | Optional; string or string array if present                               |
-| `spec.outputSchema`       | Optional; string or plain object if present                               |
-| `spec.handoffDescription` | Optional; must be a string if present                                     |
-| `spec.model`              | Optional; must be a string if present                                     |
-| `spec.executionMode`      | Optional; must be one of 'in-process', 'subprocess', 'sandbox' if present |
+| Field                     | Rule                                                                              |
+| ------------------------- | --------------------------------------------------------------------------------- |
+| `spec.instructions`       | Optional; must be a string if present                                             |
+| `spec.handoffs`           | Optional; must be an array if present                                             |
+| `spec.tools`              | Optional; must be an array if present                                             |
+| `spec.resetToolChoice`    | Optional; must be a boolean if present                                            |
+| `spec.modelSettings`      | Optional; must be a plain object if present                                       |
+| `spec.toolUseBehavior`    | Optional; string or string array if present                                       |
+| `spec.outputSchema`       | Optional; string or plain object if present                                       |
+| `spec.handoffDescription` | Optional; must be a string if present                                             |
+| `spec.model`              | Optional; object with required non-empty `provider` and `name` strings if present |
+| `spec.executionMode`      | Optional; must be one of 'in-process', 'subprocess', 'sandbox' if present         |
 
 `handoffs` / `tools` accept opaque string arrays without entity-ref format
 enforcement. Core entity fields such as `spec.owner` and `spec.lifecycle`
@@ -56,6 +56,19 @@ companion `catalog-model-ai-resource-agent` package.
 | `catalog-backend-module-ai-resource-extensions`           | RHDH `spec.scope` + OCI source-location validation |
 
 ## Examples
+
+The `model` object is optional. When provided, both `provider` and `name`
+are required and must be non-empty strings:
+
+```yaml
+spec:
+  type: agent
+  lifecycle: production
+  owner: ai-platform-team
+  model:
+    provider: openai
+    name: gpt-4o
+```
 
 See [`examples/ai-resource-agents.yaml`](../../examples/ai-resource-agents.yaml)
 for router + specialist agent catalog entities.

@@ -26,6 +26,28 @@ When an AiResource entity declares `spec.type: agent`, the catalog processor MUS
 
 ---
 
+### Requirement: Optional agent model validation
+
+The processor MUST accept an omitted `spec.model`. When present, `spec.model`
+MUST be an object with both `provider` and `name` as non-empty strings.
+
+#### Scenario: Model object accepted at ingestion
+
+- **WHEN** an otherwise valid agent entity sets `spec.model` to `{ provider: openai, name: gpt-4o }`
+- **THEN** the processor accepts the entity
+
+#### Scenario: Invalid model shape rejected at ingestion
+
+- **WHEN** an agent entity sets `spec.model` to a string, number, boolean, null, or array
+- **THEN** the processor rejects ingestion with an error naming `spec.model`
+
+#### Scenario: Invalid model fields reported at ingestion
+
+- **WHEN** an agent entity supplies a model object with either `provider` or `name` missing, empty, or not a string
+- **THEN** the processor reports each invalid field as `spec.model.provider` or `spec.model.name`
+
+---
+
 ### Requirement: Opaque handoffs and tools at processor layer
 
 For `spec.type: agent`, the processor MUST accept `spec.handoffs` and `spec.tools` as arrays of strings without requiring catalog entity-ref format.
