@@ -16,19 +16,37 @@
 
 import { expect, type Page } from '@playwright/test';
 import type { LightspeedMessages } from './translations';
-import { openPreferencesFromOptionsMenu } from './chatManagement';
+import {
+  clickPreferenceSwitch,
+  closeSettingsPanel,
+  openPreferencesFromOptionsMenu,
+  preferenceSwitch,
+} from './chatManagement';
+
+/** Accessible-name prefix from `contextChip.aria.pause` (`Pause screen context: {{label}}`). */
+const pauseScreenContextLabelPrefix = (translations: LightspeedMessages) =>
+  translations['contextChip.aria.pause']
+    .split('{{')[0]
+    .replace(/:\s*$/, '')
+    .trim();
 
 export const screenContextChip = (page: Page) =>
   page.locator('.lightspeed-page-context-label');
+
+export const screenContextPauseControl = (
+  page: Page,
+  translations: LightspeedMessages,
+) => page.getByLabel(pauseScreenContextLabelPrefix(translations));
 
 export const expectScreenContextChipHidden = async (page: Page) => {
   await expect(screenContextChip(page)).toHaveCount(0);
 };
 
-export const expectScreenContextRecordingVisible = async (page: Page) => {
-  await expect(
-    page.locator('.lightspeed-page-context-label-recording'),
-  ).toBeVisible();
+export const expectScreenContextRecordingVisible = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
+  await expect(screenContextPauseControl(page, translations)).toBeVisible();
 };
 
 export const expectScreenContextPausedVisible = async (
@@ -54,7 +72,10 @@ export const verifyEnableScreenContextOption = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByLabel(translations['settings.preferences.screenContext.label']),
+    preferenceSwitch(
+      page,
+      translations['settings.preferences.screenContext.label'],
+    ),
   ).not.toBeChecked();
 };
 
@@ -63,7 +84,10 @@ export const verifyDisableScreenContextOption = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByLabel(translations['settings.preferences.screenContext.label']),
+    preferenceSwitch(
+      page,
+      translations['settings.preferences.screenContext.label'],
+    ),
   ).toBeChecked();
 };
 
@@ -71,18 +95,20 @@ export const selectEnableScreenContext = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await page
-    .getByLabel(translations['settings.preferences.screenContext.label'])
-    .click();
+  await clickPreferenceSwitch(
+    page,
+    translations['settings.preferences.screenContext.label'],
+  );
 };
 
 export const selectDisableScreenContext = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await page
-    .getByLabel(translations['settings.preferences.screenContext.label'])
-    .click();
+  await clickPreferenceSwitch(
+    page,
+    translations['settings.preferences.screenContext.label'],
+  );
 };
 
 export const enableScreenContextViaKebab = async (
@@ -92,7 +118,8 @@ export const enableScreenContextViaKebab = async (
   await openPreferencesFromOptionsMenu(page, translations);
   await verifyEnableScreenContextOption(page, translations);
   await selectEnableScreenContext(page, translations);
-  await expectScreenContextRecordingVisible(page);
+  await closeSettingsPanel(page, translations);
+  await expectScreenContextRecordingVisible(page, translations);
 };
 
 export const disableScreenContextViaKebab = async (
@@ -102,11 +129,15 @@ export const disableScreenContextViaKebab = async (
   await openPreferencesFromOptionsMenu(page, translations);
   await verifyDisableScreenContextOption(page, translations);
   await selectDisableScreenContext(page, translations);
+  await closeSettingsPanel(page, translations);
   await expectScreenContextChipHidden(page);
 };
 
-export const pauseScreenContextChip = async (page: Page) => {
-  await page.locator('.lightspeed-page-context-label-recording').click();
+export const pauseScreenContextChip = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
+  await screenContextPauseControl(page, translations).click();
 };
 
 export const resumeScreenContextChip = async (

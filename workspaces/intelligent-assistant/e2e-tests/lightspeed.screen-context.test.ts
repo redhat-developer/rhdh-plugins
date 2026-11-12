@@ -30,7 +30,10 @@ import {
   LIGHTSPEED_E2E_DEFAULT_BOT_QUERY,
 } from './utils/lightspeedE2eSetup';
 import { sendMessage } from './utils/testHelper';
-import { openPreferencesFromOptionsMenu } from './utils/chatManagement';
+import {
+  closeSettingsPanel,
+  openPreferencesFromOptionsMenu,
+} from './utils/chatManagement';
 import { mockQuery } from './utils/devMode';
 import {
   disableScreenContextViaKebab,
@@ -64,11 +67,12 @@ test.describe('Intelligent assistant screen context', () => {
   test('kebab Enable shows recording chip; Disable hides it', async () => {
     await expectScreenContextChipHidden(sharedPage);
 
-    // Open Preferences and toggle screen context in the same panel session.
+    // Options → Settings → Screen context switch → close → recording chip.
     await openPreferencesFromOptionsMenu(sharedPage, translations);
     await verifyEnableScreenContextOption(sharedPage, translations);
     await selectEnableScreenContext(sharedPage, translations);
-    await expectScreenContextRecordingVisible(sharedPage);
+    await closeSettingsPanel(sharedPage, translations);
+    await expectScreenContextRecordingVisible(sharedPage, translations);
 
     await disableScreenContextViaKebab(sharedPage, translations);
     await expectScreenContextChipHidden(sharedPage);
@@ -76,11 +80,11 @@ test.describe('Intelligent assistant screen context', () => {
 
   test('chip pause/resume toggles Context: paused label', async () => {
     await enableScreenContextViaKebab(sharedPage, translations);
-    await pauseScreenContextChip(sharedPage);
+    await pauseScreenContextChip(sharedPage, translations);
     await expectScreenContextPausedVisible(sharedPage, translations);
 
     await resumeScreenContextChip(sharedPage, translations);
-    await expectScreenContextRecordingVisible(sharedPage);
+    await expectScreenContextRecordingVisible(sharedPage, translations);
 
     await disableScreenContextViaKebab(sharedPage, translations);
   });
@@ -95,12 +99,13 @@ test.describe('Intelligent assistant screen context', () => {
     await openPreferencesFromOptionsMenu(sharedPage, translations);
     await verifyEnableScreenContextOption(sharedPage, translations);
     await selectEnableScreenContext(sharedPage, translations);
+    await closeSettingsPanel(sharedPage, translations);
     await expectScreenContextUnavailableVisible(sharedPage, translations);
   });
 
   test('paused send omits screen-context attachments', async () => {
     await enableScreenContextViaKebab(sharedPage, translations);
-    await pauseScreenContextChip(sharedPage);
+    await pauseScreenContextChip(sharedPage, translations);
     await expectScreenContextPausedVisible(sharedPage, translations);
 
     let capturedAttachments: Array<{ attachment_type?: string }> | undefined;

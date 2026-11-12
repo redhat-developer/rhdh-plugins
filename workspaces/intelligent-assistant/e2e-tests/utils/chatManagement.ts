@@ -352,14 +352,32 @@ export const openPreferencesFromOptionsMenu = async (
   translations: LightspeedMessages,
 ) => {
   await openChatbotSettings(page, translations);
+  // Accessible name includes the "New" badge (`Settings New`).
   await page
     .getByRole('menuitem', { name: translations['settings.menu.label'] })
     .click();
+  // Settings opens on Preferences by default (`openSettings('preferences')`).
+};
+
+export const closeSettingsPanel = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
   await page
-    .getByRole('button', {
-      name: translations['settings.preferences.tab.title'],
-      exact: true,
-    })
+    .getByRole('button', { name: translations['mcp.settings.closeAriaLabel'] })
+    .click();
+};
+
+/** PatternFly Switch overlays the input; click the first span inside the label. */
+export const preferenceSwitch = (page: Page, label: string): Locator =>
+  page.getByRole('switch', { name: label });
+
+export const clickPreferenceSwitch = async (page: Page, label: string) => {
+  await page
+    .locator('label')
+    .filter({ hasText: label })
+    .locator('span')
+    .first()
     .click();
 };
 
@@ -368,7 +386,10 @@ export const verifyDisablePinnedChatsOption = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByLabel(translations['settings.preferences.pinnedChats.label']),
+    preferenceSwitch(
+      page,
+      translations['settings.preferences.pinnedChats.label'],
+    ),
   ).toBeChecked();
 };
 
@@ -377,7 +398,10 @@ export const verifyEnablePinnedChatsOption = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByLabel(translations['settings.preferences.pinnedChats.label']),
+    preferenceSwitch(
+      page,
+      translations['settings.preferences.pinnedChats.label'],
+    ),
   ).not.toBeChecked();
 };
 
@@ -385,18 +409,20 @@ export const selectDisablePinnedChats = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await page
-    .getByLabel(translations['settings.preferences.pinnedChats.label'])
-    .click();
+  await clickPreferenceSwitch(
+    page,
+    translations['settings.preferences.pinnedChats.label'],
+  );
 };
 
 export const selectEnablePinnedChats = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await page
-    .getByLabel(translations['settings.preferences.pinnedChats.label'])
-    .click();
+  await clickPreferenceSwitch(
+    page,
+    translations['settings.preferences.pinnedChats.label'],
+  );
 };
 
 export const searchChats = async (
