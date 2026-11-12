@@ -17,6 +17,27 @@
 export interface Config {
   app?: {
     /**
+     * Branding options shared with the global header masthead.
+     * @visibility frontend
+     */
+    branding?: {
+      /**
+       * Base64 URI for the full logo.
+       * If the value is a string it is used as the logo for all themes.
+       * You can also specific a theme for each theme-id or variant (light/dark).
+       * @deepVisibility frontend
+       */
+      fullLogo?: string | { [themeIdOrVariant: string]: string };
+      /**
+       * Fallback width for the full logo in the global header.
+       * Accepts any valid CSS length (e.g. `'200px'`, `'12rem'`).
+       * Used only when a `width` prop isn't supplied through the extension configuration.
+       * @visibility frontend
+       */
+      fullLogoWidth?: string | number;
+    };
+
+    /**
      * Sidebar entries declared by deployers and merged with entries
      * contributed through SidebarItemBlueprint and SidebarItemGroupBlueprint.
      * @visibility frontend
@@ -214,5 +235,52 @@ export interface Config {
         };
       };
     };
+  };
+
+  globalHeader?: {
+    /**
+     * Simple icon-button toolbar components that deployers can add without
+     * writing a plugin. Each entry renders a clickable icon in the header bar.
+     * @visibility frontend
+     */
+    components?: Array<{
+      /** @visibility frontend */
+      title: string;
+      /** @visibility frontend */
+      titleKey?: string;
+      /** @visibility frontend */
+      icon: string;
+      /** @visibility frontend */
+      link: string;
+      /** @visibility frontend */
+      tooltip?: string;
+      /** @visibility frontend */
+      priority?: number;
+    }>;
+    /**
+     * Simple link menu items that deployers can add without writing a plugin.
+     * Each item is injected into the dropdown identified by `target`.
+     * @visibility frontend
+     */
+    menuItems?: Array<{
+      /** @visibility frontend */
+      target: string;
+      /** @visibility frontend */
+      title: string;
+      /** @visibility frontend */
+      titleKey?: string;
+      /** @visibility frontend */
+      icon?: string;
+      /** @visibility frontend */
+      link: string;
+      /** @visibility frontend */
+      sectionLabel?: string;
+      /** @visibility frontend */
+      sectionLink?: string;
+      /** @visibility frontend */
+      sectionLinkLabel?: string;
+      /** @visibility frontend */
+      priority?: number;
+    }>;
   };
 }

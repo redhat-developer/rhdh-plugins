@@ -15,10 +15,11 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
+import {
+  AppDrawerContentBlueprint,
+  GlobalHeaderMenuItemBlueprint,
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { ChatDrawerContent, HelpDrawerContent } from './DrawerDemoContent';
-import { HelpDrawerMenuItem } from './HelpDrawerMenuItem';
 
 const chatDrawer = AppDrawerContentBlueprint.make({
   name: 'demo-chat',
@@ -43,8 +44,11 @@ const helpMenuItem = GlobalHeaderMenuItemBlueprint.make({
   name: 'demo-help',
   params: {
     target: 'help',
-    component: HelpDrawerMenuItem,
     priority: 50,
+    // Import building blocks from `/global-header-components` inside the
+    // loader so they stay off the root Module Federation sync chunk.
+    loader: () =>
+      import('./HelpDrawerMenuItem').then(m => m.HelpDrawerMenuItem),
   },
 });
 

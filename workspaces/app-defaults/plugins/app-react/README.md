@@ -287,6 +287,28 @@ app:
           submenu: flyout
 ```
 
+## Global header extension APIs
+
+Plugins contribute masthead toolbar items and dropdown entries through
+`GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint`. The
+default header implementation lives in
+`@red-hat-developer-hub/backstage-plugin-app-defaults`; this package only
+exports the contracts.
+
+`GlobalHeaderProvider` stores its React context on `globalThis` so Module
+Federation bundles that load a second copy of this module still share one
+provider. **Custom header or dropdown UI must use**
+`useGlobalHeaderComponents` / `useGlobalHeaderMenuItems` from this package —
+do not invent a private React context, or duplicate module copies will
+silently see empty menus.
+
+```typescript
+import {
+  GlobalHeaderMenuItemBlueprint,
+  useGlobalHeaderMenuItems,
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
+```
+
 ## Exports
 
 ### Main entry (`@red-hat-developer-hub/backstage-plugin-app-react`)
@@ -303,10 +325,14 @@ app:
 - `TemplateCardBadgeBlueprint` -- blueprint for template card badges
 - `templateCardExtension` -- extensible scaffolder template card component
 - `templateCardModule` -- frontend module (registers the template card)
+- `GlobalHeaderComponentBlueprint` / `globalHeaderComponentDataRef` -- toolbar item blueprint
+- `GlobalHeaderMenuItemBlueprint` / `globalHeaderMenuItemDataRef` -- dropdown item blueprint
+- `GlobalHeaderProvider` / `useGlobalHeaderComponents` / `useGlobalHeaderMenuItems` -- header extension data
 - `useAppDrawer` -- hook to control drawers
 - `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
 - `TemplateCardActionData` / `TemplateCardActionProps` / `TemplateCardBadgeData` types
 - `SidebarIcon` / `SidebarItemData` / `SidebarItemGroupData` / `SidebarElementData` types
+- `GlobalHeaderComponentData` / `GlobalHeaderMenuItemData` / `MenuItemParams` / `ToolbarComponentParams` types
 
 ### Legacy entry (`@red-hat-developer-hub/backstage-plugin-app-react/legacy`)
 
