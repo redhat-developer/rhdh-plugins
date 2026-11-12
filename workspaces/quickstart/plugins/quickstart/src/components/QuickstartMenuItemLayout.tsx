@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { CSSProperties, KeyboardEvent } from 'react';
+import type { CSSProperties, KeyboardEvent, JSX } from 'react';
 import { Box, Flex, Text } from '@backstage/ui';
 import { RiHand } from '@remixicon/react';
 
