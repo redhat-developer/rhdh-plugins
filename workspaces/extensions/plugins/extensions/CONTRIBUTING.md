@@ -21,7 +21,7 @@ From `plugins/extensions`, or via `yarn workspace @red-hat-developer-hub/backsta
 
 Both use mock Extensions API data and do **not** require a running backend. Use them for UI layout, routing, and catalog-browse components.
 
-Curl against a live backend (`yarn start` / `yarn start:legacy` from the workspace, or the backend plugin harness) needs a contributor-supplied static token. See [extensions-backend/CONTRIBUTING.md](../extensions-backend/CONTRIBUTING.md).
+Curl against a live backend (`yarn start` from the workspace, or the backend plugin harness) needs a contributor-supplied static token. See [extensions-backend/CONTRIBUTING.md](../extensions-backend/CONTRIBUTING.md).
 
 ## Tests, lint, typecheck
 

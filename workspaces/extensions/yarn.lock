@@ -1357,48 +1357,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-<<<<<<< HEAD
-"@backstage-community/plugin-rbac@npm:^2.3.0":
-  version: 2.3.0
-  resolution: "@backstage-community/plugin-rbac@npm:2.3.0"
-  dependencies:
-    "@backstage-community/plugin-rbac-common": "npm:^2.1.0"
-    "@backstage/catalog-model": "npm:^1.10.0"
-    "@backstage/core-components": "npm:^0.18.13"
-    "@backstage/core-plugin-api": "npm:^1.12.9"
-    "@backstage/frontend-plugin-api": "npm:^0.18.0"
-    "@backstage/plugin-app-react": "npm:^0.2.6"
-    "@backstage/plugin-catalog": "npm:^2.0.8"
-    "@backstage/plugin-catalog-common": "npm:^1.1.10"
-    "@backstage/plugin-permission-common": "npm:^0.9.10"
-    "@backstage/plugin-permission-react": "npm:^0.5.4"
-    "@backstage/theme": "npm:^0.7.3"
-    "@mui/icons-material": "npm:5.18.0"
-    "@mui/material": "npm:^5.14.18"
-    "@rjsf/core": "npm:^5.21.2"
-    "@rjsf/mui": "npm:^5.21.2"
-    "@rjsf/utils": "npm:^5.21.2"
-    "@rjsf/validator-ajv8": "npm:^5.21.2"
-    autosuggest-highlight: "npm:^3.3.4"
-    formik: "npm:^2.4.5"
-    react-use: "npm:^17.4.0"
-    yup: "npm:^1.3.2"
-  peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.0.0
-  checksum: 10c0/c2b76641a3ecb91255031adade5e0401665963c5b253e02f31e1adf846442cfe14149a9eacd586444ae3f8f497b203ff7b6fc4b599b9351c7f1fb44a98c9c1d6
-  languageName: node
-  linkType: hard
-
 "@backstage/app-defaults@npm:^1.7.13":
   version: 1.7.13
   resolution: "@backstage/app-defaults@npm:1.7.13"
-=======
-"@backstage/app-defaults@npm:^1.7.11":
-  version: 1.7.11
-  resolution: "@backstage/app-defaults@npm:1.7.11"
->>>>>>> 3011df36f (chore(extensions): remove app-legacy)
   dependencies:
     "@backstage/core-app-api": "npm:^1.20.6"
     "@backstage/core-components": "npm:^0.18.15"
@@ -14012,54 +13973,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-<<<<<<< HEAD
-"app-legacy@workspace:packages/app-legacy":
-  version: 0.0.0-use.local
-  resolution: "app-legacy@workspace:packages/app-legacy"
-  dependencies:
-    "@axe-core/playwright": "npm:^4.10.0"
-    "@backstage-community/plugin-rbac": "npm:^2.3.0"
-    "@backstage/app-defaults": "npm:^1.7.13"
-    "@backstage/catalog-model": "npm:^1.10.2"
-    "@backstage/cli": "npm:^0.36.7"
-    "@backstage/core-app-api": "npm:^1.20.6"
-    "@backstage/core-components": "npm:^0.18.15"
-    "@backstage/core-plugin-api": "npm:^1.12.11"
-    "@backstage/integration-react": "npm:^1.2.23"
-    "@backstage/plugin-api-docs": "npm:^0.14.6"
-    "@backstage/plugin-catalog": "npm:^2.0.10"
-    "@backstage/plugin-catalog-common": "npm:^1.2.1"
-    "@backstage/plugin-catalog-graph": "npm:^0.6.9"
-    "@backstage/plugin-catalog-import": "npm:^0.13.19"
-    "@backstage/plugin-catalog-react": "npm:^3.3.0"
-    "@backstage/plugin-kubernetes": "npm:^0.12.24"
-    "@backstage/plugin-org": "npm:^0.8.0"
-    "@backstage/plugin-permission-react": "npm:^0.5.6"
-    "@backstage/plugin-scaffolder": "npm:^1.40.0"
-    "@backstage/plugin-search": "npm:^1.7.9"
-    "@backstage/plugin-search-react": "npm:^1.11.9"
-    "@backstage/plugin-techdocs": "npm:^1.19.0"
-    "@backstage/plugin-techdocs-module-addons-contrib": "npm:^1.1.41"
-    "@backstage/plugin-techdocs-react": "npm:^1.4.0"
-    "@backstage/plugin-user-settings": "npm:^0.9.8"
-    "@backstage/theme": "npm:^0.7.3"
-    "@backstage/ui": "npm:^0.19.0"
-    "@material-ui/core": "npm:^4.12.2"
-    "@material-ui/icons": "npm:^4.9.1"
-    "@playwright/test": "npm:1.65.1"
-    "@red-hat-developer-hub/backstage-plugin-extensions": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.2.0"
-    "@testing-library/jest-dom": "npm:^6.0.0"
-    "@testing-library/react": "npm:^14.0.0"
-    "@types/react-dom": "npm:*"
-    react: "npm:^18.0.2"
-    react-dom: "npm:^18.0.2"
-    react-router-dom: "npm:^6.30.6"
-  languageName: unknown
-  linkType: soft
-
-=======
->>>>>>> 3011df36f (chore(extensions): remove app-legacy)
 "app-root-path@npm:^3.1.0":
   version: 3.1.0
   resolution: "app-root-path@npm:3.1.0"
@@ -31838,7 +31751,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-<<<<<<< HEAD
 "token-types@npm:^6.1.1":
   version: 6.2.0
   resolution: "token-types@npm:6.2.0"
@@ -31850,15 +31762,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"toposort@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "toposort@npm:2.0.2"
-  checksum: 10c0/ab9ca91fce4b972ccae9e2f539d755bf799a0c7eb60da07fd985fce0f14c159ed1e92305ff55697693b5bc13e300f5417db90e2593b127d421c9f6c440950222
-  languageName: node
-  linkType: hard
-
-=======
->>>>>>> 3011df36f (chore(extensions): remove app-legacy)
 "tosource@npm:^2.0.0-alpha.3":
   version: 2.0.0-alpha.3
   resolution: "tosource@npm:2.0.0-alpha.3"
