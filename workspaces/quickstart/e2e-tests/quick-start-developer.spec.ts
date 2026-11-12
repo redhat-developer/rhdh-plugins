@@ -110,7 +110,8 @@ test.describe('Test Quick Start plugin', () => {
       testInfo,
       'quick-start-user-accessibility.json',
       {
-        exclude: ['table'],
+        // Host MUI spinner can appear without a name during page load
+        exclude: ['table', '[data-testid="loading-indicator"]'],
       },
     );
 
@@ -120,20 +121,13 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.importApplication.ctaTitle,
       '/bulk-import',
     );
-    await uiHelper.clickButtonByText(
-      translations.steps.importApplication.ctaTitle,
-      {
-        exact: true,
-      },
-    );
+    await uiHelper.clickCtaByHref('/bulk-import');
     await page.getByText(translations.steps.learnAboutCatalog.title).click();
     await uiHelper.verifyButtonURL(
       translations.steps.learnAboutCatalog.ctaTitle,
       '/catalog',
     );
-    await uiHelper.clickButtonByText(
-      translations.steps.learnAboutCatalog.ctaTitle,
-    );
+    await uiHelper.clickCtaByHref('/catalog');
     await uiHelper.verifyHeading('My Company Catalog');
     await page
       .getByText(translations.steps.exploreSelfServiceTemplates.title)
@@ -142,18 +136,14 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.exploreSelfServiceTemplates.ctaTitle,
       '/create',
     );
-    await uiHelper.clickButtonByText(
-      translations.steps.exploreSelfServiceTemplates.ctaTitle,
-    );
+    await uiHelper.clickCtaByHref('/create');
     await expect(page).toHaveURL(/\/create/);
     await page.getByText(translations.steps.findAllLearningPaths.title).click();
     await uiHelper.verifyButtonURL(
       translations.steps.findAllLearningPaths.ctaTitle,
       '/learning-paths',
     );
-    await uiHelper.clickButtonByText(
-      translations.steps.findAllLearningPaths.ctaTitle,
-    );
+    await uiHelper.clickCtaByHref('/learning-paths');
     const progress100Pattern = new RegExp(
       translations.footer.progress.replace('{{progress}}', '100'),
     );
