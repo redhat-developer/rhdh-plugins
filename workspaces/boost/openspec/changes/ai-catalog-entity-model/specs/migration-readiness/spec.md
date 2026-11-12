@@ -92,7 +92,7 @@ A design document MUST map current custom annotations to upstream entity kinds w
 - **AND** for `ai-model`, documents that models are part of the `AiModelServerAPI` entity (no separate entity kind)
 - **AND** the document tracks relevant upstream proposals or discussions
 
-> **Out of scope:** `vector-store`, `ai-tool`, and `skill-bundle` are not part of the minimum baseline annotation scheme. `vector-store` and `ai-tool` were excluded from the upstream-migration SoT and have been retired from `AI_ASSET_SPEC_TYPES`. `skill-bundle` contracts (SkillBundle/skillcard.yaml) were removed from minimum scope (RHIDP-18761). Source of truth for the five minimum categories and existing `rule` compatibility: [ai-catalog-entity-model/design.md Decision 1](../../design.md#decision-1-annotation-independence-from-entity-kinds). The archived [catalog-entities spec](../../../../../RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/specs/catalog-entities/spec.md) is supplementary context for provider-deployment, not a competing mapping SoT.
+> **Out of scope:** `vector-store`, `ai-tool`, and `skill-bundle` are not part of the minimum baseline annotation scheme. `vector-store` and `ai-tool` were excluded from the upstream-migration SoT and have been retired from `AI_ASSET_SPEC_TYPES`. `skill-bundle` contracts (SkillBundle/skillcard.yaml) were removed from minimum scope (RHIDP-18761). Source of truth for the five minimum categories and existing `rule` compatibility: [ai-catalog-entity-model/design.md Decision 1](../../design.md#decision-1-annotation-independence-from-entity-kinds).
 
 ### Requirement: Consumer-Facing Changes Identified
 

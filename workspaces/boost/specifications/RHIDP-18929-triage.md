@@ -388,6 +388,10 @@ historical "from" value.
 correct legacy content path. Updated the same broken reference in
 `proposal.md` (lines 53, 64). Updated task descriptions in `tasks.md`
 (tasks 1.11, 5.2) to note the spec resides in RHDH-2-1-Legacy-Content.
+**Post-cleanup note (#5548):** The `agent-creation-discovery` directory
+was removed entirely. The supplementary catalog-entities references
+were removed from design.md, proposal.md, and tasks.md; Decision 1 in
+`ai-catalog-entity-model/design.md` is the sole mapping SoT.
 
 ---
 
