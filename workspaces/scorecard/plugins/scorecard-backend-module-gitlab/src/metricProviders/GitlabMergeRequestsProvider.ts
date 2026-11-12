@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { Config } from '@backstage/config';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
@@ -29,6 +27,7 @@ import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
 import {
   GITLAB_MERGE_REQUESTS_METRIC_IDS,
   GITLAB_METRIC,
+  GITLAB_PROVIDER_IDS,
 } from './GitlabConfig';
 
 export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
@@ -38,13 +37,8 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
     this.gitlabClient = gitlabClient;
   }
 
-  static fromConfig(
-    config: Config,
-    options: { logger: LoggerService },
-  ): GitlabMergeRequestsProvider {
-    return new GitlabMergeRequestsProvider(
-      new GitlabClient(config, options.logger),
-    );
+  static create(gitlabClient: GitlabClient): GitlabMergeRequestsProvider {
+    return new GitlabMergeRequestsProvider(gitlabClient);
   }
 
   getProviderDatasourceId(): string {
@@ -52,7 +46,7 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
   }
 
   getProviderId(): string {
-    return GITLAB_MERGE_REQUESTS_METRIC_IDS.OPEN_MRS;
+    return GITLAB_PROVIDER_IDS.MERGE_REQUESTS;
   }
 
   getMetrics(): Metric<'number'>[] {
@@ -79,7 +73,7 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
         id: GITLAB_MERGE_REQUESTS_METRIC_IDS.CLOSED_MRS_7D,
         title: 'GitLab merge requests closed (7d)',
         description:
-          'Number of merge requests closed or merged in the last 7 days for a given GitLab project.',
+          'Number of merge requests in closed or merged state that were updated in the last 7 days for a given GitLab project.',
         type: 'number',
         thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,

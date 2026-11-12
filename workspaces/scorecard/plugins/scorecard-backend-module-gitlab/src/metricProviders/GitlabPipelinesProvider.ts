@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { Config } from '@backstage/config';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
@@ -29,7 +27,9 @@ import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
 import {
   GITLAB_PIPELINES_METRIC_IDS,
   GITLAB_PERCENTAGE_THRESHOLDS,
+  GITLAB_SUCCESS_COUNT_THRESHOLDS,
   GITLAB_METRIC,
+  GITLAB_PROVIDER_IDS,
 } from './GitlabConfig';
 import { calculateRatio } from '../utils/calculateRatio';
 
@@ -40,13 +40,8 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
     this.gitlabClient = gitlabClient;
   }
 
-  static fromConfig(
-    config: Config,
-    options: { logger: LoggerService },
-  ): GitlabPipelinesProvider {
-    return new GitlabPipelinesProvider(
-      new GitlabClient(config, options.logger),
-    );
+  static create(gitlabClient: GitlabClient): GitlabPipelinesProvider {
+    return new GitlabPipelinesProvider(gitlabClient);
   }
 
   getProviderDatasourceId(): string {
@@ -54,7 +49,7 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
   }
 
   getProviderId(): string {
-    return GITLAB_PIPELINES_METRIC_IDS.STARTED_7D;
+    return GITLAB_PROVIDER_IDS.PIPELINES;
   }
 
   getMetrics(): Metric<'number'>[] {
@@ -74,7 +69,7 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
         description:
           'Number of successfully finished pipelines in the last 7 days for a given GitLab project.',
         type: 'number',
-        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        thresholds: GITLAB_SUCCESS_COUNT_THRESHOLDS,
         history: true,
       },
       {
@@ -93,6 +88,7 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
           'Ratio of successful vs successful+failed pipelines in the last 7 days (percentage). Ignores pending, running, and canceled pipelines.',
         type: 'number',
         thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+        unit: '%',
         history: true,
       },
       {
@@ -102,6 +98,7 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
           'Ratio of successful vs successful+failed pipelines in the last 24 hours (percentage). Ignores pending, running, and canceled pipelines.',
         type: 'number',
         thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+        unit: '%',
         history: true,
       },
     ];

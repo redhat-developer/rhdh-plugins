@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import {
@@ -23,7 +22,10 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { GitlabClient } from '../gitlab/GitlabClient';
 import { GitlabPipelinesProvider } from './GitlabPipelinesProvider';
-import { GITLAB_PERCENTAGE_THRESHOLDS } from './GitlabConfig';
+import {
+  GITLAB_PERCENTAGE_THRESHOLDS,
+  GITLAB_SUCCESS_COUNT_THRESHOLDS,
+} from './GitlabConfig';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -32,21 +34,15 @@ jest.mock('@backstage/catalog-model', () => ({
     target: 'https://gitlab.com/my-group/my-project/-/tree/main/',
   }),
 }));
-jest.mock('../gitlab/GitlabClient');
 
 describe('GitlabPipelinesProvider', () => {
   let provider: GitlabPipelinesProvider;
 
-  const mockedGitlabClient = GitlabClient as jest.MockedClass<
-    typeof GitlabClient
-  >;
   const mockedClientInstance: jest.Mocked<
     Pick<GitlabClient, 'getPipelinesCount'>
   > = {
     getPipelinesCount: jest.fn(),
   };
-
-  mockedGitlabClient.mockImplementation(() => mockedClientInstance as any);
 
   const sourceUrl = 'https://gitlab.com/my-group/my-project/-/tree/main/';
   const projectSlug = 'my-group/my-project';
@@ -68,9 +64,8 @@ describe('GitlabPipelinesProvider', () => {
     jest.useFakeTimers();
     jest.setSystemTime(fixedNow);
 
-    provider = GitlabPipelinesProvider.fromConfig(
-      mockServices.rootConfig({ data: {} }),
-      { logger: mockServices.logger.mock() },
+    provider = GitlabPipelinesProvider.create(
+      mockedClientInstance as unknown as GitlabClient,
     );
   });
 
@@ -84,7 +79,7 @@ describe('GitlabPipelinesProvider', () => {
     });
 
     it('should return correct provider ID', () => {
-      expect(provider.getProviderId()).toBe('gitlab.startedPipelines7d');
+      expect(provider.getProviderId()).toBe('gitlab.pipelines');
     });
 
     it('should return catalog filter for gitlab annotation', () => {
@@ -103,7 +98,7 @@ describe('GitlabPipelinesProvider', () => {
         },
         'gitlab.successfulPipelines7d': {
           id: 'gitlab.successfulPipelines7d',
-          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+          thresholds: GITLAB_SUCCESS_COUNT_THRESHOLDS,
         },
         'gitlab.failedPipelines7d': {
           id: 'gitlab.failedPipelines7d',
@@ -112,12 +107,17 @@ describe('GitlabPipelinesProvider', () => {
         'gitlab.pipelineSuccessRatio7d': {
           id: 'gitlab.pipelineSuccessRatio7d',
           thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+          unit: '%',
         },
         'gitlab.pipelineSuccessRatio24h': {
           id: 'gitlab.pipelineSuccessRatio24h',
           thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+          unit: '%',
         },
-      } as Record<string, { id: string; thresholds: ThresholdConfig }>;
+      } as Record<
+        string,
+        { id: string; thresholds: ThresholdConfig; unit?: string }
+      >;
 
       expect(metrics).toHaveLength(5);
 
@@ -127,6 +127,7 @@ describe('GitlabPipelinesProvider', () => {
         expect(metric.thresholds).toEqual(
           expectedMetrics[metric.id].thresholds,
         );
+        expect(metric.unit).toEqual(expectedMetrics[metric.id].unit);
       });
     });
   });

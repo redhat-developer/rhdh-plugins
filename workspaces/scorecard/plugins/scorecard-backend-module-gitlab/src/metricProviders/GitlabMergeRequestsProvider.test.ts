@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import {
@@ -31,14 +30,10 @@ jest.mock('@backstage/catalog-model', () => ({
     target: 'https://gitlab.com/my-group/my-project/-/tree/main/',
   }),
 }));
-jest.mock('../gitlab/GitlabClient');
 
 describe('GitlabMergeRequestsProvider', () => {
   let provider: GitlabMergeRequestsProvider;
 
-  const mockedGitlabClient = GitlabClient as jest.MockedClass<
-    typeof GitlabClient
-  >;
   const mockedClientInstance: jest.Mocked<
     Pick<
       GitlabClient,
@@ -51,8 +46,6 @@ describe('GitlabMergeRequestsProvider', () => {
     getOpenedMergeRequestsCount: jest.fn(),
     getClosedMergeRequestsCount: jest.fn(),
   };
-
-  mockedGitlabClient.mockImplementation(() => mockedClientInstance as any);
 
   const sourceUrl = 'https://gitlab.com/my-group/my-project/-/tree/main/';
   const projectSlug = 'my-group/my-project';
@@ -74,9 +67,8 @@ describe('GitlabMergeRequestsProvider', () => {
     jest.useFakeTimers();
     jest.setSystemTime(fixedNow);
 
-    provider = GitlabMergeRequestsProvider.fromConfig(
-      mockServices.rootConfig({ data: {} }),
-      { logger: mockServices.logger.mock() },
+    provider = GitlabMergeRequestsProvider.create(
+      mockedClientInstance as unknown as GitlabClient,
     );
   });
 
@@ -90,7 +82,7 @@ describe('GitlabMergeRequestsProvider', () => {
     });
 
     it('should return correct provider ID', () => {
-      expect(provider.getProviderId()).toBe('gitlab.openMergeRequests');
+      expect(provider.getProviderId()).toBe('gitlab.mergeRequests');
     });
 
     it('should return catalog filter for gitlab annotation', () => {

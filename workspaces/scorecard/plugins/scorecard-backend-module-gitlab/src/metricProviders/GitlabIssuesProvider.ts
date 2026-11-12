@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { Config } from '@backstage/config';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
@@ -26,7 +24,11 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 import { GitlabClient } from '../gitlab/GitlabClient';
 import { getProjectSlugFromEntity } from '../utils/getProjectSlugFromEntity';
 import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
-import { GITLAB_ISSUES_METRIC_IDS, GITLAB_METRIC } from './GitlabConfig';
+import {
+  GITLAB_ISSUES_METRIC_IDS,
+  GITLAB_METRIC,
+  GITLAB_PROVIDER_IDS,
+} from './GitlabConfig';
 
 export class GitlabIssuesProvider implements MetricProvider<'number'> {
   private readonly gitlabClient: GitlabClient;
@@ -35,11 +37,8 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
     this.gitlabClient = gitlabClient;
   }
 
-  static fromConfig(
-    config: Config,
-    options: { logger: LoggerService },
-  ): GitlabIssuesProvider {
-    return new GitlabIssuesProvider(new GitlabClient(config, options.logger));
+  static create(gitlabClient: GitlabClient): GitlabIssuesProvider {
+    return new GitlabIssuesProvider(gitlabClient);
   }
 
   getProviderDatasourceId(): string {
@@ -47,7 +46,7 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
   }
 
   getProviderId(): string {
-    return GITLAB_ISSUES_METRIC_IDS.OPEN_ISSUES;
+    return GITLAB_PROVIDER_IDS.ISSUES;
   }
 
   getMetrics(): Metric<'number'>[] {
@@ -73,7 +72,7 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
         id: GITLAB_ISSUES_METRIC_IDS.CLOSED_ISSUES_7D,
         title: 'GitLab issues closed (7d)',
         description:
-          'Number of issues closed in the last 7 days for a given GitLab project.',
+          'Number of issues in closed state that were updated in the last 7 days for a given GitLab project.',
         type: 'number',
         thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,

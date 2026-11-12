@@ -18,6 +18,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { GitlabClient } from './gitlab/GitlabClient';
 import { GitlabIssuesProvider } from './metricProviders/GitlabIssuesProvider';
 import { GitlabMergeRequestsProvider } from './metricProviders/GitlabMergeRequestsProvider';
 import { GitlabPipelinesProvider } from './metricProviders/GitlabPipelinesProvider';
@@ -35,11 +36,13 @@ export const scorecardModuleGitlab = createBackendModule({
         metrics: scorecardMetricsExtensionPoint,
       },
       async init({ config, logger, metrics }) {
+        const gitlabClient = new GitlabClient(config, logger);
+
         metrics.addMetricProvider(
-          GitlabIssuesProvider.fromConfig(config, { logger }),
-          GitlabMergeRequestsProvider.fromConfig(config, { logger }),
-          GitlabPipelinesProvider.fromConfig(config, { logger }),
-          GitlabJobsProvider.fromConfig(config, { logger }),
+          GitlabIssuesProvider.create(gitlabClient),
+          GitlabMergeRequestsProvider.create(gitlabClient),
+          GitlabPipelinesProvider.create(gitlabClient),
+          GitlabJobsProvider.create(gitlabClient),
         );
       },
     });

@@ -36,7 +36,17 @@ type GitlabMergeRequestsOptions = {
   updatedAfter?: string;
 };
 
+type FetchJobsSinceOptions = {
+  since: Date;
+  scope?: string[];
+  fetchItemsLimit?: number;
+};
+
 export class GitlabClient {
+  private static readonly MAX_JOBS_PAGES = 10;
+  private static readonly GITLAB_JOBS_PAGE_SIZE = 100;
+  private static readonly JOBS_FETCH_ITEMS_LIMIT = 1000;
+
   private readonly integrations: ScmIntegrations;
   private readonly credentialsProvider: DefaultGitlabCredentialsProvider;
   private readonly logger: LoggerService;
@@ -70,10 +80,16 @@ export class GitlabClient {
   }
 
   private resolveTotalCount(
-    data: unknown[],
     total: number | undefined,
+    context: string,
   ): number {
-    return Number.isFinite(total) ? (total as number) : data.length;
+    if (!Number.isFinite(total)) {
+      throw new Error(
+        `GitLab did not return a pagination total for ${context}. ` +
+          'Counts cannot be derived from a single page when X-Total is absent.',
+      );
+    }
+    return total as number;
   }
 
   private async getIssuesCount(
@@ -82,7 +98,7 @@ export class GitlabClient {
     options?: GitlabIssuesOptions,
   ): Promise<number> {
     const api = await this.getGitlabApi(url);
-    const { data, paginationInfo } = await api.Issues.all({
+    const { paginationInfo } = await api.Issues.all({
       projectId: projectSlug,
       perPage: 1,
       maxPages: 1,
@@ -90,7 +106,10 @@ export class GitlabClient {
       showExpanded: true,
       ...options,
     });
-    return this.resolveTotalCount(data, paginationInfo.total);
+    return this.resolveTotalCount(
+      paginationInfo.total,
+      `issues in '${projectSlug}'`,
+    );
   }
 
   async getOpenIssuesCount(url: string, projectSlug: string): Promise<number> {
@@ -124,7 +143,7 @@ export class GitlabClient {
     options?: GitlabMergeRequestsOptions,
   ): Promise<number> {
     const api = await this.getGitlabApi(url);
-    const { data, paginationInfo } = await api.MergeRequests.all({
+    const { paginationInfo } = await api.MergeRequests.all({
       projectId: projectSlug,
       perPage: 1,
       maxPages: 1,
@@ -132,7 +151,10 @@ export class GitlabClient {
       showExpanded: true,
       ...options,
     });
-    return this.resolveTotalCount(data, paginationInfo.total);
+    return this.resolveTotalCount(
+      paginationInfo.total,
+      `merge requests in '${projectSlug}'`,
+    );
   }
 
   async getOpenMergeRequestsCount(
@@ -176,7 +198,7 @@ export class GitlabClient {
     status?: string,
   ): Promise<number> {
     const api = await this.getGitlabApi(url);
-    const { data, paginationInfo } = await api.Pipelines.all(projectSlug, {
+    const { paginationInfo } = await api.Pipelines.all(projectSlug, {
       updatedAfter: since.toISOString(),
       ...(status ? { status: status as 'success' | 'failed' } : {}),
       perPage: 1,
@@ -184,42 +206,57 @@ export class GitlabClient {
       page: 1,
       showExpanded: true,
     });
-    return this.resolveTotalCount(data, paginationInfo.total);
+    return this.resolveTotalCount(
+      paginationInfo.total,
+      `pipelines in '${projectSlug}'`,
+    );
   }
 
   async getJobsCount(
     url: string,
     projectSlug: string,
-    since: Date,
-    scope?: string[],
+    options: FetchJobsSinceOptions,
   ): Promise<number> {
     const api = await this.getGitlabApi(url);
-    const jobs = await this.fetchJobsSince(api, projectSlug, since, scope);
+    const jobs = await this.fetchJobsSince(api, projectSlug, options);
     return jobs.length;
   }
 
   private async fetchJobsSince(
     api: GitlabApi,
     projectSlug: string,
-    since: Date,
-    scope?: string[],
+    options: FetchJobsSinceOptions,
   ): Promise<Array<{ created_at: string }>> {
-    const allItems: Array<{ created_at: string }> = [];
-    let page = 1;
-    const perPage = 100;
-    let hasMore = true;
+    const {
+      since,
+      scope,
+      fetchItemsLimit = GitlabClient.JOBS_FETCH_ITEMS_LIMIT,
+    } = options;
 
-    while (hasMore) {
+    const perPage = GitlabClient.GITLAB_JOBS_PAGE_SIZE;
+
+    const allItems: Array<{ created_at: string }> = [];
+
+    let page = 1;
+    let hasMore = true;
+    let truncated = false;
+
+    while (hasMore && allItems.length < fetchItemsLimit) {
+      if (page > GitlabClient.MAX_JOBS_PAGES) {
+        truncated = true;
+        break;
+      }
+
       // GitLab accepts repeated scope[] query params; gitbeaker types only a
       // single JobScope in this release, so cast options for array callers.
-      const options = {
+      const jobOptions = {
         ...(scope && scope.length > 0 ? { scope } : {}),
         page,
         perPage,
         maxPages: 1,
       } as { page: number; perPage: number; maxPages: number };
 
-      const items = (await api.Jobs.all(projectSlug, options)) as {
+      const items = (await api.Jobs.all(projectSlug, jobOptions)) as {
         created_at: string;
       }[];
 
@@ -229,9 +266,19 @@ export class GitlabClient {
       }
 
       for (const item of items) {
+        if (allItems.length >= fetchItemsLimit) {
+          truncated = true;
+          break;
+        }
         if (new Date(item.created_at) >= since) {
           allItems.push(item);
         }
+      }
+
+      if (allItems.length >= fetchItemsLimit) {
+        truncated = true;
+        hasMore = false;
+        continue;
       }
 
       // If the oldest item on this page is before 'since', we've gone far enough
@@ -247,6 +294,13 @@ export class GitlabClient {
       }
 
       page++;
+    }
+
+    if (truncated) {
+      this.logger.warn(
+        `Reached jobs fetch limit for '${projectSlug}' ` +
+          `(fetchItemsLimit=${fetchItemsLimit}, maxPages=${GitlabClient.MAX_JOBS_PAGES}); stopping fetch`,
+      );
     }
 
     return allItems;

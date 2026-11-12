@@ -105,26 +105,30 @@ describe('GitlabClient', () => {
       });
     });
 
-    it('should fall back to data.length when total is not finite', async () => {
+    it('should throw when total is not finite', async () => {
       mockGitlabApi.Issues.all.mockResolvedValue({
         data: [{ id: 1 }],
         paginationInfo: { total: Number.NaN },
       });
 
-      const result = await gitlabClient.getOpenIssuesCount(url, projectSlug);
-
-      expect(result).toBe(1);
+      await expect(
+        gitlabClient.getOpenIssuesCount(url, projectSlug),
+      ).rejects.toThrow(
+        `GitLab did not return a pagination total for issues in '${projectSlug}'`,
+      );
     });
 
-    it('should fall back to data.length when total is undefined', async () => {
+    it('should throw when total is undefined', async () => {
       mockGitlabApi.Issues.all.mockResolvedValue({
         data: [{ id: 1 }, { id: 2 }],
         paginationInfo: {},
       });
 
-      const result = await gitlabClient.getOpenIssuesCount(url, projectSlug);
-
-      expect(result).toBe(2);
+      await expect(
+        gitlabClient.getOpenIssuesCount(url, projectSlug),
+      ).rejects.toThrow(
+        `GitLab did not return a pagination total for issues in '${projectSlug}'`,
+      );
     });
 
     it('should throw error on API failure', async () => {
@@ -325,9 +329,10 @@ describe('GitlabClient', () => {
         { created_at: new Date(now - 3000).toISOString() },
       ]);
 
-      const result = await gitlabClient.getJobsCount(url, projectSlug, since, [
-        'success',
-      ]);
+      const result = await gitlabClient.getJobsCount(url, projectSlug, {
+        since,
+        scope: ['success'],
+      });
 
       expect(result).toBe(3);
       expect(mockGitlabApi.Jobs.all).toHaveBeenCalledWith(projectSlug, {
@@ -346,7 +351,7 @@ describe('GitlabClient', () => {
         { created_at: new Date(now - 500).toISOString() },
       ]);
 
-      await gitlabClient.getJobsCount(url, projectSlug, since);
+      await gitlabClient.getJobsCount(url, projectSlug, { since });
 
       expect(mockGitlabApi.Jobs.all).toHaveBeenCalledWith(projectSlug, {
         page: 1,
@@ -363,7 +368,7 @@ describe('GitlabClient', () => {
         { created_at: new Date(now - 500).toISOString() },
       ]);
 
-      await gitlabClient.getJobsCount(url, projectSlug, since, []);
+      await gitlabClient.getJobsCount(url, projectSlug, { since, scope: [] });
 
       expect(mockGitlabApi.Jobs.all).toHaveBeenCalledWith(projectSlug, {
         page: 1,
@@ -381,7 +386,9 @@ describe('GitlabClient', () => {
         { created_at: new Date(now - 5000).toISOString() },
       ]);
 
-      const result = await gitlabClient.getJobsCount(url, projectSlug, since);
+      const result = await gitlabClient.getJobsCount(url, projectSlug, {
+        since,
+      });
 
       expect(result).toBe(1);
     });
@@ -390,7 +397,9 @@ describe('GitlabClient', () => {
       const since = new Date('2024-01-01T00:00:00Z');
       mockGitlabApi.Jobs.all.mockResolvedValue([]);
 
-      const result = await gitlabClient.getJobsCount(url, projectSlug, since);
+      const result = await gitlabClient.getJobsCount(url, projectSlug, {
+        since,
+      });
 
       expect(result).toBe(0);
       expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(1);
@@ -406,7 +415,9 @@ describe('GitlabClient', () => {
 
       mockGitlabApi.Jobs.all.mockResolvedValue(page);
 
-      const result = await gitlabClient.getJobsCount(url, projectSlug, since);
+      const result = await gitlabClient.getJobsCount(url, projectSlug, {
+        since,
+      });
 
       expect(result).toBe(99);
       expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(1);
@@ -427,7 +438,9 @@ describe('GitlabClient', () => {
         .mockResolvedValueOnce(firstPage)
         .mockResolvedValueOnce(secondPage);
 
-      const result = await gitlabClient.getJobsCount(url, projectSlug, since);
+      const result = await gitlabClient.getJobsCount(url, projectSlug, {
+        since,
+      });
 
       expect(result).toBe(102);
       expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(2);
@@ -436,6 +449,51 @@ describe('GitlabClient', () => {
         perPage: 100,
         maxPages: 1,
       });
+    });
+
+    it('should stop at fetchItemsLimit and warn', async () => {
+      const now = Date.now();
+      const since = new Date(now - 10_000);
+      const firstPage = Array.from({ length: 100 }, (_, index) => ({
+        created_at: new Date(now - index).toISOString(),
+      }));
+
+      mockGitlabApi.Jobs.all.mockResolvedValue(firstPage);
+
+      const result = await gitlabClient.getJobsCount(url, projectSlug, {
+        since,
+        fetchItemsLimit: 50,
+      });
+
+      expect(result).toBe(50);
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(1);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        `Reached jobs fetch limit for '${projectSlug}' ` +
+          `(fetchItemsLimit=50, maxPages=10); stopping fetch`,
+      );
+    });
+
+    it('should stop paging after MAX_JOBS_PAGES and warn', async () => {
+      const now = Date.now();
+      const since = new Date(now - 1_000_000);
+      const fullPage = Array.from({ length: 100 }, (_, index) => ({
+        created_at: new Date(now - index).toISOString(),
+      }));
+
+      mockGitlabApi.Jobs.all.mockResolvedValue(fullPage);
+
+      const result = await gitlabClient.getJobsCount(url, projectSlug, {
+        since,
+        // High enough that the page cap stops the fetch first
+        fetchItemsLimit: 1001,
+      });
+
+      expect(result).toBe(10 * 100);
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(10);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        `Reached jobs fetch limit for '${projectSlug}' ` +
+          `(fetchItemsLimit=1001, maxPages=10); stopping fetch`,
+      );
     });
   });
 

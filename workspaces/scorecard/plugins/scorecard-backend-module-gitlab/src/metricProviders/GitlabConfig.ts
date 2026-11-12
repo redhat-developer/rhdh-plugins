@@ -18,6 +18,13 @@ import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scoreca
 
 export const GITLAB_METRIC = 'gitlab';
 
+export const GITLAB_PROVIDER_IDS = {
+  ISSUES: `${GITLAB_METRIC}.issues`,
+  MERGE_REQUESTS: `${GITLAB_METRIC}.mergeRequests`,
+  PIPELINES: `${GITLAB_METRIC}.pipelines`,
+  JOBS: `${GITLAB_METRIC}.jobs`,
+} as const;
+
 export const GITLAB_PIPELINES_METRIC_IDS = {
   STARTED_7D: `${GITLAB_METRIC}.startedPipelines7d`,
   SUCCESSFUL_7D: `${GITLAB_METRIC}.successfulPipelines7d`,
@@ -31,6 +38,14 @@ export const GITLAB_PERCENTAGE_THRESHOLDS: ThresholdConfig = {
     { key: 'error', expression: '<50' },
     { key: 'warning', expression: '50-80' },
     { key: 'success', expression: '>80' },
+  ],
+} as const;
+
+export const GITLAB_SUCCESS_COUNT_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    { key: 'error', expression: '<10' },
+    { key: 'warning', expression: '10-50' },
+    { key: 'success', expression: '>50' },
   ],
 } as const;
 

@@ -21,11 +21,22 @@ import {
   GITLAB_METRIC,
   GITLAB_PERCENTAGE_THRESHOLDS,
   GITLAB_PIPELINES_METRIC_IDS,
+  GITLAB_PROVIDER_IDS,
+  GITLAB_SUCCESS_COUNT_THRESHOLDS,
 } from './GitlabConfig';
 
 describe('GitlabConfig', () => {
   it('should use gitlab as the datasource id', () => {
     expect(GITLAB_METRIC).toBe('gitlab');
+  });
+
+  it('should lock stable provider ids', () => {
+    expect(GITLAB_PROVIDER_IDS).toEqual({
+      ISSUES: 'gitlab.issues',
+      MERGE_REQUESTS: 'gitlab.mergeRequests',
+      PIPELINES: 'gitlab.pipelines',
+      JOBS: 'gitlab.jobs',
+    });
   });
 
   it('should lock issues metric ids', () => {
@@ -70,6 +81,16 @@ describe('GitlabConfig', () => {
         { key: 'error', expression: '<50' },
         { key: 'warning', expression: '50-80' },
         { key: 'success', expression: '>80' },
+      ],
+    });
+  });
+
+  it('should lock higher-is-better success count thresholds', () => {
+    expect(GITLAB_SUCCESS_COUNT_THRESHOLDS).toEqual({
+      rules: [
+        { key: 'error', expression: '<10' },
+        { key: 'warning', expression: '10-50' },
+        { key: 'success', expression: '>50' },
       ],
     });
   });

@@ -19,5 +19,6 @@
  *
  * @packageDocumentation
  */
+
 /** @public */
 export { scorecardModuleGitlab as default } from './module';

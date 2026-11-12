@@ -83,32 +83,47 @@ For self-hosted GitLab, point the source location at that host (for example `url
 
 ## Available Metrics
 
-| Metric ID                        | Description                                        | Type       | Time Window |
-| -------------------------------- | -------------------------------------------------- | ---------- | ----------- |
-| `gitlab.openIssues`              | Currently open issues                              | Number     | —           |
-| `gitlab.openedIssues7d`          | Issues opened in the last 7 days                   | Number     | 7 days      |
-| `gitlab.closedIssues7d`          | Issues closed in the last 7 days                   | Number     | 7 days      |
-| `gitlab.openMergeRequests`       | Currently open merge requests                      | Number     | —           |
-| `gitlab.openedMergeRequests7d`   | Merge requests opened in the last 7 days           | Number     | 7 days      |
-| `gitlab.closedMergeRequests7d`   | Merge requests closed or merged in the last 7 days | Number     | 7 days      |
-| `gitlab.startedPipelines7d`      | Pipelines started in the last 7 days               | Number     | 7 days      |
-| `gitlab.successfulPipelines7d`   | Successful pipelines in the last 7 days            | Number     | 7 days      |
-| `gitlab.failedPipelines7d`       | Failed pipelines in the last 7 days                | Number     | 7 days      |
-| `gitlab.pipelineSuccessRatio7d`  | Pipeline success ratio over the last 7 days        | Number (%) | 7 days      |
-| `gitlab.pipelineSuccessRatio24h` | Pipeline success ratio over the last 24 hours      | Number (%) | 24 hours    |
-| `gitlab.startedJobs7d`           | Jobs started in the last 7 days                    | Number     | 7 days      |
-| `gitlab.successfulJobs7d`        | Successful jobs in the last 7 days                 | Number     | 7 days      |
-| `gitlab.failedJobs7d`            | Failed jobs in the last 7 days                     | Number     | 7 days      |
-| `gitlab.jobSuccessRatio7d`       | Job success ratio over the last 7 days             | Number (%) | 7 days      |
-| `gitlab.jobSuccessRatio24h`      | Job success ratio over the last 24 hours           | Number (%) | 24 hours    |
+| Metric ID                        | Description                                                                   | Type       | Time Window |
+| -------------------------------- | ----------------------------------------------------------------------------- | ---------- | ----------- |
+| `gitlab.openIssues`              | Currently open issues                                                         | Number     | —           |
+| `gitlab.openedIssues7d`          | Issues opened in the last 7 days                                              | Number     | 7 days      |
+| `gitlab.closedIssues7d`          | Closed issues updated in the last 7 days (approx. recently closed)            | Number     | 7 days      |
+| `gitlab.openMergeRequests`       | Currently open merge requests                                                 | Number     | —           |
+| `gitlab.openedMergeRequests7d`   | Merge requests opened in the last 7 days                                      | Number     | 7 days      |
+| `gitlab.closedMergeRequests7d`   | Closed/merged MRs updated in the last 7 days (approx. recently closed/merged) | Number     | 7 days      |
+| `gitlab.startedPipelines7d`      | Pipelines started in the last 7 days                                          | Number     | 7 days      |
+| `gitlab.successfulPipelines7d`   | Successful pipelines in the last 7 days                                       | Number     | 7 days      |
+| `gitlab.failedPipelines7d`       | Failed pipelines in the last 7 days                                           | Number     | 7 days      |
+| `gitlab.pipelineSuccessRatio7d`  | Pipeline success ratio over the last 7 days                                   | Number (%) | 7 days      |
+| `gitlab.pipelineSuccessRatio24h` | Pipeline success ratio over the last 24 hours                                 | Number (%) | 24 hours    |
+| `gitlab.startedJobs7d`           | Jobs started in the last 7 days                                               | Number     | 7 days      |
+| `gitlab.successfulJobs7d`        | Successful jobs in the last 7 days                                            | Number     | 7 days      |
+| `gitlab.failedJobs7d`            | Failed jobs in the last 7 days                                                | Number     | 7 days      |
+| `gitlab.jobSuccessRatio7d`       | Job success ratio over the last 7 days                                        | Number (%) | 7 days      |
+| `gitlab.jobSuccessRatio24h`      | Job success ratio over the last 24 hours                                      | Number (%) | 24 hours    |
 
 Success ratio metrics are `successful / (successful + failed)` as a percentage. Pending, running, and canceled pipelines/jobs are ignored. When there are no successful or failed items in the window, the ratio is `100`.
 
-The module registers four metric providers (`gitlab.openIssues`, `gitlab.openMergeRequests`, `gitlab.startedPipelines7d`, `gitlab.startedJobs7d`). Schedule and threshold overrides are keyed by those provider names under `scorecard.metricProviders.gitlab`.
+Closed issues/MRs (`gitlab.closedIssues7d`, `gitlab.closedMergeRequests7d`) use GitLab `updatedAfter` with `state=closed`/`merged` because GitLab has no `closedAfter` filter. That approximates recently closed items, but also includes closed/merged items that were only commented on, relabeled, or otherwise updated in the window. Exact close-event counts would require the GitLab Events API.
+
+Job counts page through the Jobs API with a default client-side cap of 1000 items per query; when the cap is hit the client logs a warning and returns a truncated count.
+
+## Available Providers
+
+Schedule and threshold overrides in `app-config.yaml` are keyed by the **config key** under `scorecard.metricProviders.gitlab`. That key is the local part of the provider ID (everything after `gitlab.`). Per-metric overrides under `metrics.` use the local metric name (everything after `gitlab.`).
+
+| Provider ID            | Config key      | Metric IDs (local names under `metrics.`)                                                                               |
+| ---------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `gitlab.issues`        | `issues`        | `openIssues`, `openedIssues7d`, `closedIssues7d`                                                                        |
+| `gitlab.mergeRequests` | `mergeRequests` | `openMergeRequests`, `openedMergeRequests7d`, `closedMergeRequests7d`                                                   |
+| `gitlab.pipelines`     | `pipelines`     | `startedPipelines7d`, `successfulPipelines7d`, `failedPipelines7d`, `pipelineSuccessRatio7d`, `pipelineSuccessRatio24h` |
+| `gitlab.jobs`          | `jobs`          | `startedJobs7d`, `successfulJobs7d`, `failedJobs7d`, `jobSuccessRatio7d`, `jobSuccessRatio24h`                          |
+
+Prefer per-metric threshold overrides for `pipelines` and `jobs`, because those providers mix lower-is-better counts, higher-is-better success counts, and percentage ratios. A provider-level `thresholds` block applies to every metric from that provider.
 
 ## Default thresholds
 
-Count metrics (issues, merge requests, started/successful/failed pipelines and jobs) use the default number thresholds:
+Lower-is-better count metrics (open issues/MRs, opened/closed windows, started and failed pipelines/jobs) use the default number thresholds:
 
 ```yaml
 # Equivalent defaults (applied in code when no override is set)
@@ -118,6 +133,18 @@ rules:
   - key: warning
     expression: '10-50'
   - key: error
+    expression: '>50'
+```
+
+Successful pipeline/job counts use higher-is-better thresholds:
+
+```yaml
+rules:
+  - key: error
+    expression: '<10'
+  - key: warning
+    expression: '10-50'
+  - key: success
     expression: '>50'
 ```
 
@@ -137,14 +164,15 @@ rules:
 
 ### Threshold Configuration
 
-Thresholds define conditions that determine which category a metric value belongs to (`error`, `warning`, or `success`). You can override them per provider or per metric:
+Thresholds define conditions that determine which category a metric value belongs to (`error`, `warning`, or `success`). Override them per provider (config key from the table above) or per metric (local metric name under `metrics.`):
 
 ```yaml
 # app-config.yaml
 scorecard:
   metricProviders:
     gitlab:
-      openIssues:
+      # Provider-level: applies to all metrics from gitlab.issues
+      issues:
         thresholds:
           rules:
             - key: success
@@ -153,7 +181,8 @@ scorecard:
               expression: '5-20'
             - key: error
               expression: '>20'
-      startedPipelines7d:
+      # Metric-level: overrides only gitlab.pipelineSuccessRatio7d
+      pipelines:
         metrics:
           pipelineSuccessRatio7d:
             thresholds:
@@ -170,13 +199,13 @@ See [threshold configuration](../scorecard-backend/docs/thresholds.md) for detai
 
 ### Schedule Configuration
 
-The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers every hour by default. You can change the schedule per provider in `app-config.yaml`:
+The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers every hour by default. You can change the schedule per provider (config key from the table above) in `app-config.yaml`:
 
 ```yaml
 scorecard:
   metricProviders:
     gitlab:
-      openIssues:
+      issues:
         schedule:
           frequency:
             cron: '0 6 * * *'
@@ -186,6 +215,6 @@ scorecard:
             seconds: 5
 ```
 
-Use the same `schedule` block under `openMergeRequests`, `startedPipelines7d`, or `startedJobs7d` to override those providers.
+Use the same `schedule` block under `mergeRequests`, `pipelines`, or `jobs` for those providers.
 
 The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). See [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for more details.

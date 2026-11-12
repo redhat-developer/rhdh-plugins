@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import {
@@ -23,7 +22,10 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { GitlabClient } from '../gitlab/GitlabClient';
 import { GitlabJobsProvider } from './GitlabJobsProvider';
-import { GITLAB_PERCENTAGE_THRESHOLDS } from './GitlabConfig';
+import {
+  GITLAB_PERCENTAGE_THRESHOLDS,
+  GITLAB_SUCCESS_COUNT_THRESHOLDS,
+} from './GitlabConfig';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -32,20 +34,14 @@ jest.mock('@backstage/catalog-model', () => ({
     target: 'https://gitlab.com/my-group/my-project/-/tree/main/',
   }),
 }));
-jest.mock('../gitlab/GitlabClient');
 
 describe('GitlabJobsProvider', () => {
   let provider: GitlabJobsProvider;
 
-  const mockedGitlabClient = GitlabClient as jest.MockedClass<
-    typeof GitlabClient
-  >;
   const mockedClientInstance: jest.Mocked<Pick<GitlabClient, 'getJobsCount'>> =
     {
       getJobsCount: jest.fn(),
     };
-
-  mockedGitlabClient.mockImplementation(() => mockedClientInstance as any);
 
   const sourceUrl = 'https://gitlab.com/my-group/my-project/-/tree/main/';
   const projectSlug = 'my-group/my-project';
@@ -66,9 +62,8 @@ describe('GitlabJobsProvider', () => {
     jest.clearAllMocks();
     jest.useFakeTimers();
     jest.setSystemTime(fixedNow);
-    provider = GitlabJobsProvider.fromConfig(
-      mockServices.rootConfig({ data: {} }),
-      { logger: mockServices.logger.mock() },
+    provider = GitlabJobsProvider.create(
+      mockedClientInstance as unknown as GitlabClient,
     );
   });
 
@@ -82,7 +77,7 @@ describe('GitlabJobsProvider', () => {
     });
 
     it('should return correct provider ID', () => {
-      expect(provider.getProviderId()).toBe('gitlab.startedJobs7d');
+      expect(provider.getProviderId()).toBe('gitlab.jobs');
     });
 
     it('should return catalog filter for gitlab annotation', () => {
@@ -101,7 +96,7 @@ describe('GitlabJobsProvider', () => {
         },
         'gitlab.successfulJobs7d': {
           id: 'gitlab.successfulJobs7d',
-          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+          thresholds: GITLAB_SUCCESS_COUNT_THRESHOLDS,
         },
         'gitlab.failedJobs7d': {
           id: 'gitlab.failedJobs7d',
@@ -110,12 +105,17 @@ describe('GitlabJobsProvider', () => {
         'gitlab.jobSuccessRatio7d': {
           id: 'gitlab.jobSuccessRatio7d',
           thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+          unit: '%',
         },
         'gitlab.jobSuccessRatio24h': {
           id: 'gitlab.jobSuccessRatio24h',
           thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+          unit: '%',
         },
-      } as Record<string, { id: string; thresholds: ThresholdConfig }>;
+      } as Record<
+        string,
+        { id: string; thresholds: ThresholdConfig; unit?: string }
+      >;
 
       expect(metrics).toHaveLength(5);
 
@@ -125,6 +125,7 @@ describe('GitlabJobsProvider', () => {
         expect(metric.thresholds).toEqual(
           expectedMetrics[metric.id].thresholds,
         );
+        expect(metric.unit).toEqual(expectedMetrics[metric.id].unit);
       });
     });
   });
@@ -157,35 +158,31 @@ describe('GitlabJobsProvider', () => {
         1,
         sourceUrl,
         projectSlug,
-        sevenDaysAgo,
+        { since: sevenDaysAgo },
       );
       expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
         2,
         sourceUrl,
         projectSlug,
-        sevenDaysAgo,
-        ['success'],
+        { since: sevenDaysAgo, scope: ['success'] },
       );
       expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
         3,
         sourceUrl,
         projectSlug,
-        sevenDaysAgo,
-        ['failed'],
+        { since: sevenDaysAgo, scope: ['failed'] },
       );
       expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
         4,
         sourceUrl,
         projectSlug,
-        oneDayAgo,
-        ['success'],
+        { since: oneDayAgo, scope: ['success'] },
       );
       expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
         5,
         sourceUrl,
         projectSlug,
-        oneDayAgo,
-        ['failed'],
+        { since: oneDayAgo, scope: ['failed'] },
       );
     });
 

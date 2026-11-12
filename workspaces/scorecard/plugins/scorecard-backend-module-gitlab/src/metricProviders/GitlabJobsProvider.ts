@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { Config } from '@backstage/config';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
@@ -29,7 +27,9 @@ import { GITLAB_PROJECT_ANNOTATION } from '../gitlab/constants';
 import {
   GITLAB_JOBS_METRIC_IDS,
   GITLAB_PERCENTAGE_THRESHOLDS,
+  GITLAB_SUCCESS_COUNT_THRESHOLDS,
   GITLAB_METRIC,
+  GITLAB_PROVIDER_IDS,
 } from './GitlabConfig';
 import { calculateRatio } from '../utils/calculateRatio';
 
@@ -40,11 +40,8 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
     this.gitlabClient = gitlabClient;
   }
 
-  static fromConfig(
-    config: Config,
-    options: { logger: LoggerService },
-  ): GitlabJobsProvider {
-    return new GitlabJobsProvider(new GitlabClient(config, options.logger));
+  static create(gitlabClient: GitlabClient): GitlabJobsProvider {
+    return new GitlabJobsProvider(gitlabClient);
   }
 
   getProviderDatasourceId(): string {
@@ -52,7 +49,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
   }
 
   getProviderId(): string {
-    return GITLAB_JOBS_METRIC_IDS.STARTED_7D;
+    return GITLAB_PROVIDER_IDS.JOBS;
   }
 
   getMetrics(): Metric<'number'>[] {
@@ -72,7 +69,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         description:
           'Number of successfully finished jobs in the last 7 days for a given GitLab project.',
         type: 'number',
-        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        thresholds: GITLAB_SUCCESS_COUNT_THRESHOLDS,
         history: true,
       },
       {
@@ -91,6 +88,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
           'Ratio of successful vs successful+failed jobs in the last 7 days (percentage). Ignores pending, running, and canceled jobs.',
         type: 'number',
         thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+        unit: '%',
         history: true,
       },
       {
@@ -100,6 +98,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
           'Ratio of successful vs successful+failed jobs in the last 24 hours (percentage). Ignores pending, running, and canceled jobs.',
         type: 'number',
         thresholds: GITLAB_PERCENTAGE_THRESHOLDS,
+        unit: '%',
         history: true,
       },
     ];
@@ -120,19 +119,25 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
 
     const [started7d, successful7d, failed7d, successful24h, failed24h] =
       await Promise.all([
-        this.gitlabClient.getJobsCount(target, projectSlug, sevenDaysAgo),
-        this.gitlabClient.getJobsCount(target, projectSlug, sevenDaysAgo, [
-          'success',
-        ]),
-        this.gitlabClient.getJobsCount(target, projectSlug, sevenDaysAgo, [
-          'failed',
-        ]),
-        this.gitlabClient.getJobsCount(target, projectSlug, oneDayAgo, [
-          'success',
-        ]),
-        this.gitlabClient.getJobsCount(target, projectSlug, oneDayAgo, [
-          'failed',
-        ]),
+        this.gitlabClient.getJobsCount(target, projectSlug, {
+          since: sevenDaysAgo,
+        }),
+        this.gitlabClient.getJobsCount(target, projectSlug, {
+          since: sevenDaysAgo,
+          scope: ['success'],
+        }),
+        this.gitlabClient.getJobsCount(target, projectSlug, {
+          since: sevenDaysAgo,
+          scope: ['failed'],
+        }),
+        this.gitlabClient.getJobsCount(target, projectSlug, {
+          since: oneDayAgo,
+          scope: ['success'],
+        }),
+        this.gitlabClient.getJobsCount(target, projectSlug, {
+          since: oneDayAgo,
+          scope: ['failed'],
+        }),
       ]);
 
     return new Map([

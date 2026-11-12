@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import {
@@ -31,13 +30,9 @@ jest.mock('@backstage/catalog-model', () => ({
     target: 'https://gitlab.com/my-group/my-project/-/tree/main/',
   }),
 }));
-jest.mock('../gitlab/GitlabClient');
 
 describe('GitlabIssuesProvider', () => {
   let provider: GitlabIssuesProvider;
-  const mockedGitlabClient = GitlabClient as jest.MockedClass<
-    typeof GitlabClient
-  >;
   const mockedClientInstance: jest.Mocked<
     Pick<
       GitlabClient,
@@ -48,7 +43,6 @@ describe('GitlabIssuesProvider', () => {
     getOpenedIssuesCount: jest.fn(),
     getClosedIssuesCount: jest.fn(),
   };
-  mockedGitlabClient.mockImplementation(() => mockedClientInstance as any);
 
   const sourceUrl = 'https://gitlab.com/my-group/my-project/-/tree/main/';
   const projectSlug = 'my-group/my-project';
@@ -70,9 +64,8 @@ describe('GitlabIssuesProvider', () => {
     jest.useFakeTimers();
     jest.setSystemTime(fixedNow);
 
-    provider = GitlabIssuesProvider.fromConfig(
-      mockServices.rootConfig({ data: {} }),
-      { logger: mockServices.logger.mock() },
+    provider = GitlabIssuesProvider.create(
+      mockedClientInstance as unknown as GitlabClient,
     );
   });
 
@@ -86,7 +79,7 @@ describe('GitlabIssuesProvider', () => {
     });
 
     it('should return correct provider ID', () => {
-      expect(provider.getProviderId()).toBe('gitlab.openIssues');
+      expect(provider.getProviderId()).toBe('gitlab.issues');
     });
 
     it('should return catalog filter for gitlab annotation', () => {
