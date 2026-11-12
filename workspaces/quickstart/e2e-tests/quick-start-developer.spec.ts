@@ -138,6 +138,8 @@ test.describe('Test Quick Start plugin', () => {
     );
     await uiHelper.clickCtaByHref('/create');
     await expect(page).toHaveURL(/\/create/);
+    // Drawer should remain open across in-app navigations
+    await uiHelper.verifyText(translations.header.title);
     await page.getByText(translations.steps.findAllLearningPaths.title).click();
     await uiHelper.verifyButtonURL(
       translations.steps.findAllLearningPaths.ctaTitle,

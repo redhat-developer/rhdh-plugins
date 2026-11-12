@@ -75,18 +75,12 @@ export class UIhelper {
   }
   /** Click the Quickstart CTA whose data-cta-href matches `url` (avoids title/CTA name collisions). */
   async clickCtaByHref(url: string) {
-    const buttons = this.page.getByRole('button');
-    const count = await buttons.count();
-    for (let i = 0; i < count; i++) {
-      const href = await buttons.nth(i).getAttribute('data-cta-href');
-      if (href?.includes(url)) {
-        await buttons.nth(i).click();
-        return;
-      }
-    }
-    throw new Error(
-      `No CTA button found with data-cta-href containing "${url}"`,
+    // Use a locator + auto-wait: accordion panels remount after navigation/progress
+    // updates, so a one-shot getByRole scan can miss the CTA.
+    const cta = this.page.locator(
+      `button[data-cta-href="${url}"], button[data-cta-href*="${url}"]`,
     );
+    await cta.first().click({ timeout: 15000 });
   }
   async verifyHeading(heading: string | RegExp, exact: boolean = true) {
     await expect(
