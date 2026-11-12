@@ -159,6 +159,16 @@ integrations:
     # - host: ghe.example.net
     #   apiBaseUrl: https://ghe.example.net/api/v3
     #   token: ${GHE_TOKEN}
+  gitlab:
+    - host: gitlab.com
+      # Personal Access Token or Project Access Token from GitLab.
+      # https://backstage.io/docs/integrations/gitlab/locations/#configuration
+      token: ${GITLAB_TOKEN}
+      apiBaseUrl: https://gitlab.com/api/v4
+    ### Example for a self-hosted GitLab instance:
+    # - host: gitlab.example.com
+    #   apiBaseUrl: https://gitlab.example.com/api/v4
+    #   token: ${GITLAB_TOKEN}
 
 proxy:
   '/jira/api':
@@ -499,6 +509,27 @@ scorecard:
           initialDelay: { seconds: 10 }
     github:
       openPRs:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+    gitlab:
+      issues:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      mergeRequests:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      pipelines:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      jobs:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }

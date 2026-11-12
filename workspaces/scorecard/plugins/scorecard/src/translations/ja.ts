@@ -121,6 +121,64 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.github.openPRs.description':
       '特定の GitHub リポジトリーにおけるオープン状態のプルリクエストの数。',
     'metric.github.openPRs.title': 'GitHub のオープン状態の PR',
+    'metric.gitlab.openIssues.title': 'GitLab のオープン状態のイシュー',
+    'metric.gitlab.openIssues.description':
+      '特定の GitLab プロジェクトにおけるオープン状態のイシューの現在の数。',
+    'metric.gitlab.openedIssues7d.title':
+      'GitLab でオープンされたイシュー (7 日)',
+    'metric.gitlab.openedIssues7d.description':
+      '特定の GitLab プロジェクトで過去 7 日間にオープンされたイシューの数。',
+    'metric.gitlab.closedIssues7d.title':
+      'GitLab でクローズされたイシュー (7 日)',
+    'metric.gitlab.closedIssues7d.description':
+      '特定の GitLab プロジェクトで、クローズ状態かつ過去 7 日間に更新されたイシューの数。',
+    'metric.gitlab.openMergeRequests.title':
+      'GitLab のオープン状態のマージリクエスト',
+    'metric.gitlab.openMergeRequests.description':
+      '特定の GitLab プロジェクトにおけるオープン状態のマージリクエストの現在の数。',
+    'metric.gitlab.openedMergeRequests7d.title':
+      'GitLab でオープンされたマージリクエスト (7 日)',
+    'metric.gitlab.openedMergeRequests7d.description':
+      '特定の GitLab プロジェクトで過去 7 日間にオープンされたマージリクエストの数。',
+    'metric.gitlab.closedMergeRequests7d.title':
+      'GitLab でクローズされたマージリクエスト (7 日)',
+    'metric.gitlab.closedMergeRequests7d.description':
+      '特定の GitLab プロジェクトで、クローズまたはマージ済みの状態かつ過去 7 日間に更新されたマージリクエストの数。',
+    'metric.gitlab.startedPipelines7d.title':
+      'GitLab で開始されたパイプライン (7 日)',
+    'metric.gitlab.startedPipelines7d.description':
+      '特定の GitLab プロジェクトで過去 7 日間に開始されたパイプラインの数。',
+    'metric.gitlab.successfulPipelines7d.title':
+      'GitLab で成功したパイプライン (7 日)',
+    'metric.gitlab.successfulPipelines7d.description':
+      '特定の GitLab プロジェクトで過去 7 日間に正常に完了したパイプラインの数。',
+    'metric.gitlab.failedPipelines7d.title':
+      'GitLab で失敗したパイプライン (7 日)',
+    'metric.gitlab.failedPipelines7d.description':
+      '特定の GitLab プロジェクトで過去 7 日間に失敗したパイプラインの数。',
+    'metric.gitlab.pipelineSuccessRatio7d.title':
+      'GitLab パイプライン成功率 (7 日)',
+    'metric.gitlab.pipelineSuccessRatio7d.description':
+      '過去 7 日間の成功パイプラインと成功+失敗パイプラインの比率 (パーセンテージ)。保留中、実行中、およびキャンセルされたパイプラインは無視されます。',
+    'metric.gitlab.pipelineSuccessRatio24h.title':
+      'GitLab パイプライン成功率 (24 時間)',
+    'metric.gitlab.pipelineSuccessRatio24h.description':
+      '過去 24 時間の成功パイプラインと成功+失敗パイプラインの比率 (パーセンテージ)。保留中、実行中、およびキャンセルされたパイプラインは無視されます。',
+    'metric.gitlab.startedJobs7d.title': 'GitLab で開始されたジョブ (7 日)',
+    'metric.gitlab.startedJobs7d.description':
+      '特定の GitLab プロジェクトで過去 7 日間に開始されたジョブの数。',
+    'metric.gitlab.successfulJobs7d.title': 'GitLab で成功したジョブ (7 日)',
+    'metric.gitlab.successfulJobs7d.description':
+      '特定の GitLab プロジェクトで過去 7 日間に正常に完了したジョブの数。',
+    'metric.gitlab.failedJobs7d.title': 'GitLab で失敗したジョブ (7 日)',
+    'metric.gitlab.failedJobs7d.description':
+      '特定の GitLab プロジェクトで過去 7 日間に失敗したジョブの数。',
+    'metric.gitlab.jobSuccessRatio7d.title': 'GitLab ジョブ成功率 (7 日)',
+    'metric.gitlab.jobSuccessRatio7d.description':
+      '過去 7 日間の成功ジョブと成功+失敗ジョブの比率 (パーセンテージ)。保留中、実行中、およびキャンセルされたジョブは無視されます。',
+    'metric.gitlab.jobSuccessRatio24h.title': 'GitLab ジョブ成功率 (24 時間)',
+    'metric.gitlab.jobSuccessRatio24h.description':
+      '過去 24 時間の成功ジョブと成功+失敗ジョブの比率 (パーセンテージ)。保留中、実行中、およびキャンセルされたジョブは無視されます。',
     'metric.homepageEntityCalculationHealth':
       'メトリクス計算エラーのないエンティティー: {{healthy}} / {{total}}',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} エンティティー',

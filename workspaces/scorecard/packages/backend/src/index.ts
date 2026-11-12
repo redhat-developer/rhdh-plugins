@@ -108,4 +108,10 @@ backend.add(
   ),
 );
 backend.add(import('@backstage/plugin-mcp-actions-backend'));
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-gitlab'
+  ),
+);
+
 backend.start();

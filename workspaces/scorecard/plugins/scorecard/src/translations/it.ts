@@ -126,6 +126,62 @@ const scorecardTranslationIt = createTranslationMessages({
     'metric.github.openPRs.description':
       'Numero attuale di richiesta pull aperte per un determinato repository di GitHub.',
     'metric.github.openPRs.title': 'RP aperte su GitHub',
+    'metric.gitlab.openIssues.title': 'Issue GitLab aperte',
+    'metric.gitlab.openIssues.description':
+      'Conteggio attuale delle issue aperte per un determinato progetto GitLab.',
+    'metric.gitlab.openedIssues7d.title': 'Issue GitLab aperte (7 g)',
+    'metric.gitlab.openedIssues7d.description':
+      'Numero di issue aperte negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.closedIssues7d.title': 'Issue GitLab chiuse (7 g)',
+    'metric.gitlab.closedIssues7d.description':
+      'Numero di issue in stato chiuso aggiornate negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.openMergeRequests.title': 'Merge request GitLab aperte',
+    'metric.gitlab.openMergeRequests.description':
+      'Conteggio attuale delle merge request aperte per un determinato progetto GitLab.',
+    'metric.gitlab.openedMergeRequests7d.title':
+      'Merge request GitLab aperte (7 g)',
+    'metric.gitlab.openedMergeRequests7d.description':
+      'Numero di merge request aperte negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.closedMergeRequests7d.title':
+      'Merge request GitLab chiuse (7 g)',
+    'metric.gitlab.closedMergeRequests7d.description':
+      'Numero di merge request in stato chiuso o unito aggiornate negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.startedPipelines7d.title': 'Pipeline GitLab avviate (7 g)',
+    'metric.gitlab.startedPipelines7d.description':
+      'Numero di pipeline avviate negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.successfulPipelines7d.title':
+      'Pipeline GitLab riuscite (7 g)',
+    'metric.gitlab.successfulPipelines7d.description':
+      'Numero di pipeline completate con successo negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.failedPipelines7d.title':
+      'Pipeline GitLab non riuscite (7 g)',
+    'metric.gitlab.failedPipelines7d.description':
+      'Numero di pipeline non riuscite negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.pipelineSuccessRatio7d.title':
+      'Tasso di successo delle pipeline GitLab (7 g)',
+    'metric.gitlab.pipelineSuccessRatio7d.description':
+      'Rapporto tra pipeline riuscite e riuscite+non riuscite negli ultimi 7 giorni (percentuale). Ignora pipeline in sospeso, in esecuzione e annullate.',
+    'metric.gitlab.pipelineSuccessRatio24h.title':
+      'Tasso di successo delle pipeline GitLab (24 h)',
+    'metric.gitlab.pipelineSuccessRatio24h.description':
+      'Rapporto tra pipeline riuscite e riuscite+non riuscite nelle ultime 24 ore (percentuale). Ignora pipeline in sospeso, in esecuzione e annullate.',
+    'metric.gitlab.startedJobs7d.title': 'Job GitLab avviati (7 g)',
+    'metric.gitlab.startedJobs7d.description':
+      'Numero di job avviati negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.successfulJobs7d.title': 'Job GitLab riusciti (7 g)',
+    'metric.gitlab.successfulJobs7d.description':
+      'Numero di job completati con successo negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.failedJobs7d.title': 'Job GitLab non riusciti (7 g)',
+    'metric.gitlab.failedJobs7d.description':
+      'Numero di job non riusciti negli ultimi 7 giorni per un determinato progetto GitLab.',
+    'metric.gitlab.jobSuccessRatio7d.title':
+      'Tasso di successo dei job GitLab (7 g)',
+    'metric.gitlab.jobSuccessRatio7d.description':
+      'Rapporto tra job riusciti e riusciti+non riusciti negli ultimi 7 giorni (percentuale). Ignora job in sospeso, in esecuzione e annullati.',
+    'metric.gitlab.jobSuccessRatio24h.title':
+      'Tasso di successo dei job GitLab (24 h)',
+    'metric.gitlab.jobSuccessRatio24h.description':
+      'Rapporto tra job riusciti e riusciti+non riusciti nelle ultime 24 ore (percentuale). Ignora job in sospeso, in esecuzione e annullati.',
     'metric.homepageEntityCalculationHealth':
       '{{healthy}} / {{total}} entità senza errori di calcolo della metrica',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entità',

@@ -123,6 +123,62 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.github.openPRs.description':
       'Aktuelle Anzahl offener Pull Requests für ein bestimmtes GitHub-Repository.',
     'metric.github.openPRs.title': 'GitHub – offene PRs',
+    'metric.gitlab.openIssues.title': 'GitLab – offene Issues',
+    'metric.gitlab.openIssues.description':
+      'Aktuelle Anzahl offener Issues für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.openedIssues7d.title': 'GitLab – geöffnete Issues (7 T.)',
+    'metric.gitlab.openedIssues7d.description':
+      'Anzahl der in den letzten 7 Tagen geöffneten Issues für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.closedIssues7d.title': 'GitLab – geschlossene Issues (7 T.)',
+    'metric.gitlab.closedIssues7d.description':
+      'Anzahl der geschlossenen Issues, die in den letzten 7 Tagen aktualisiert wurden, für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.openMergeRequests.title': 'GitLab – offene Merge Requests',
+    'metric.gitlab.openMergeRequests.description':
+      'Aktuelle Anzahl offener Merge Requests für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.openedMergeRequests7d.title':
+      'GitLab – geöffnete Merge Requests (7 T.)',
+    'metric.gitlab.openedMergeRequests7d.description':
+      'Anzahl der in den letzten 7 Tagen geöffneten Merge Requests für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.closedMergeRequests7d.title':
+      'GitLab – geschlossene Merge Requests (7 T.)',
+    'metric.gitlab.closedMergeRequests7d.description':
+      'Anzahl der geschlossenen oder gemergten Merge Requests, die in den letzten 7 Tagen aktualisiert wurden, für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.startedPipelines7d.title':
+      'GitLab – gestartete Pipelines (7 T.)',
+    'metric.gitlab.startedPipelines7d.description':
+      'Anzahl der in den letzten 7 Tagen gestarteten Pipelines für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.successfulPipelines7d.title':
+      'GitLab – erfolgreiche Pipelines (7 T.)',
+    'metric.gitlab.successfulPipelines7d.description':
+      'Anzahl der in den letzten 7 Tagen erfolgreich abgeschlossenen Pipelines für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.failedPipelines7d.title':
+      'GitLab – fehlgeschlagene Pipelines (7 T.)',
+    'metric.gitlab.failedPipelines7d.description':
+      'Anzahl der in den letzten 7 Tagen fehlgeschlagenen Pipelines für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.pipelineSuccessRatio7d.title':
+      'GitLab – Pipeline-Erfolgsrate (7 T.)',
+    'metric.gitlab.pipelineSuccessRatio7d.description':
+      'Verhältnis erfolgreicher zu erfolgreichen+fehlgeschlagenen Pipelines in den letzten 7 Tagen (Prozent). Ignoriert ausstehende, laufende und abgebrochene Pipelines.',
+    'metric.gitlab.pipelineSuccessRatio24h.title':
+      'GitLab – Pipeline-Erfolgsrate (24 Std.)',
+    'metric.gitlab.pipelineSuccessRatio24h.description':
+      'Verhältnis erfolgreicher zu erfolgreichen+fehlgeschlagenen Pipelines in den letzten 24 Stunden (Prozent). Ignoriert ausstehende, laufende und abgebrochene Pipelines.',
+    'metric.gitlab.startedJobs7d.title': 'GitLab – gestartete Jobs (7 T.)',
+    'metric.gitlab.startedJobs7d.description':
+      'Anzahl der in den letzten 7 Tagen gestarteten Jobs für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.successfulJobs7d.title': 'GitLab – erfolgreiche Jobs (7 T.)',
+    'metric.gitlab.successfulJobs7d.description':
+      'Anzahl der in den letzten 7 Tagen erfolgreich abgeschlossenen Jobs für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.failedJobs7d.title': 'GitLab – fehlgeschlagene Jobs (7 T.)',
+    'metric.gitlab.failedJobs7d.description':
+      'Anzahl der in den letzten 7 Tagen fehlgeschlagenen Jobs für ein bestimmtes GitLab-Projekt.',
+    'metric.gitlab.jobSuccessRatio7d.title': 'GitLab – Job-Erfolgsrate (7 T.)',
+    'metric.gitlab.jobSuccessRatio7d.description':
+      'Verhältnis erfolgreicher zu erfolgreichen+fehlgeschlagenen Jobs in den letzten 7 Tagen (Prozent). Ignoriert ausstehende, laufende und abgebrochene Jobs.',
+    'metric.gitlab.jobSuccessRatio24h.title':
+      'GitLab – Job-Erfolgsrate (24 Std.)',
+    'metric.gitlab.jobSuccessRatio24h.description':
+      'Verhältnis erfolgreicher zu erfolgreichen+fehlgeschlagenen Jobs in den letzten 24 Stunden (Prozent). Ignoriert ausstehende, laufende und abgebrochene Jobs.',
     'metric.homepageEntityCalculationHealth':
       '{{healthy}} / {{total}} Entitäten ohne Metrikberechnungsfehler',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} Entitäten',

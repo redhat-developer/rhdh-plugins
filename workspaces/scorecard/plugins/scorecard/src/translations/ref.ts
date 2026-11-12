@@ -107,6 +107,85 @@ export const scorecardMessages = {
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
     },
+    'gitlab.openIssues': {
+      title: 'GitLab open issues',
+      description: 'Current count of open issues for a given GitLab project.',
+    },
+    'gitlab.openedIssues7d': {
+      title: 'GitLab issues opened (7d)',
+      description:
+        'Number of issues opened in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.closedIssues7d': {
+      title: 'GitLab issues closed (7d)',
+      description:
+        'Number of issues in closed state that were updated in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.openMergeRequests': {
+      title: 'GitLab open merge requests',
+      description:
+        'Current count of open merge requests for a given GitLab project.',
+    },
+    'gitlab.openedMergeRequests7d': {
+      title: 'GitLab merge requests opened (7d)',
+      description:
+        'Number of merge requests opened in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.closedMergeRequests7d': {
+      title: 'GitLab merge requests closed (7d)',
+      description:
+        'Number of merge requests in closed or merged state that were updated in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.startedPipelines7d': {
+      title: 'GitLab pipelines started (7d)',
+      description:
+        'Number of pipelines started in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.successfulPipelines7d': {
+      title: 'GitLab successful pipelines (7d)',
+      description:
+        'Number of successfully finished pipelines in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.failedPipelines7d': {
+      title: 'GitLab failed pipelines (7d)',
+      description:
+        'Number of failed pipelines in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.pipelineSuccessRatio7d': {
+      title: 'GitLab pipeline success ratio (7d)',
+      description:
+        'Ratio of successful vs successful+failed pipelines in the last 7 days (percentage). Ignores pending, running, and canceled pipelines.',
+    },
+    'gitlab.pipelineSuccessRatio24h': {
+      title: 'GitLab pipeline success ratio (24h)',
+      description:
+        'Ratio of successful vs successful+failed pipelines in the last 24 hours (percentage). Ignores pending, running, and canceled pipelines.',
+    },
+    'gitlab.startedJobs7d': {
+      title: 'GitLab jobs started (7d)',
+      description:
+        'Number of jobs started in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.successfulJobs7d': {
+      title: 'GitLab successful jobs (7d)',
+      description:
+        'Number of successfully finished jobs in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.failedJobs7d': {
+      title: 'GitLab failed jobs (7d)',
+      description:
+        'Number of failed jobs in the last 7 days for a given GitLab project.',
+    },
+    'gitlab.jobSuccessRatio7d': {
+      title: 'GitLab job success ratio (7d)',
+      description:
+        'Ratio of successful vs successful+failed jobs in the last 7 days (percentage). Ignores pending, running, and canceled jobs.',
+    },
+    'gitlab.jobSuccessRatio24h': {
+      title: 'GitLab job success ratio (24h)',
+      description:
+        'Ratio of successful vs successful+failed jobs in the last 24 hours (percentage). Ignores pending, running, and canceled jobs.',
+    },
     'jira.openIssues': {
       title: 'Jira open blocking tickets',
       description:
