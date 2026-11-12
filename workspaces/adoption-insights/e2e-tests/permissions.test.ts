@@ -29,8 +29,6 @@ import {
   getTranslations,
 } from './utils/translations';
 
-const isLegacy = process.env.APP_MODE === 'legacy';
-
 function getLocaleContext(testInfo: TestInfo) {
   const locale = testInfo.project.name;
   const translations = getTranslations(locale);
@@ -43,11 +41,6 @@ test.describe('Adoption Insights permissions', () => {
   test('shows Adoption Insights in the sidebar when events.read is allowed', async ({
     page,
   }, testInfo) => {
-    test.skip(
-      isLegacy,
-      'OFS sidebar is a hardcoded SidebarItem and is not gated by permission',
-    );
-
     const { locale, navLabel } = getLocaleContext(testInfo);
 
     await installMockAdoptionInsightsPermission(page, 'ALLOW');
@@ -62,11 +55,6 @@ test.describe('Adoption Insights permissions', () => {
   test('hides Adoption Insights from the sidebar when events.read is denied', async ({
     page,
   }, testInfo) => {
-    test.skip(
-      isLegacy,
-      'OFS sidebar is a hardcoded SidebarItem and is not gated by permission',
-    );
-
     const { locale, navLabel } = getLocaleContext(testInfo);
 
     await installMockAdoptionInsightsPermission(page, 'DENY');
@@ -99,13 +87,6 @@ test.describe('Adoption Insights permissions', () => {
     await loginAsGuest(page, locale);
 
     await page.goto('/adoption-insights');
-
-    if (isLegacy) {
-      await expect(page.getByText(translations.permission.title)).toBeVisible({
-        timeout: 30000,
-      });
-      return;
-    }
 
     await expect(
       page.getByRole('heading', { name: translations.header.title }).first(),

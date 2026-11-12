@@ -21,12 +21,10 @@ Before installing the frontend plugin, ensure that the Adoption Insights backend
 
 ### Installation
 
-Install the package in your frontend (use `app` for NFS or `app-legacy` for legacy):
+Install the package in your frontend:
 
 ```sh
 yarn workspace app add @red-hat-developer-hub/backstage-plugin-adoption-insights
-# or for the legacy frontend:
-yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-adoption-insights
 ```
 
 **Note**
@@ -82,7 +80,7 @@ export default app.createRoot();
 
 The translations module uses `pluginId: 'app'` and is also available as the default export of `@red-hat-developer-hub/backstage-plugin-adoption-insights/adoption-insights-translations-module`.
 
-#### OFS (legacy frontend) — app-legacy
+#### OFS (legacy frontend)
 
 1. Add the **Adoption Insights** page to your Backstage application by modifying `packages/app/src/App.tsx`:
 

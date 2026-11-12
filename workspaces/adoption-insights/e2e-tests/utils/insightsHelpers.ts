@@ -54,10 +54,6 @@ export async function navigate(page: Page, link: string) {
 }
 
 export async function expandCollapsedSidebarGroup(page: Page) {
-  if (process.env.APP_MODE === 'legacy') {
-    return;
-  }
-
   const insightsLink = page
     .locator('nav a:has-text("Adoption Insights")')
     .first();
