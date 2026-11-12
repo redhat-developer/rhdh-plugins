@@ -283,6 +283,8 @@ export const orchestratorMessages = {
       addStep: 'Add step',
       needsSetup: 'Needs setup',
       startBadge: 'Start',
+      startLabel: 'Start',
+      stepLabel: 'Step {{count}}',
       operation: 'OPERATION',
     },
     sidePanel: {

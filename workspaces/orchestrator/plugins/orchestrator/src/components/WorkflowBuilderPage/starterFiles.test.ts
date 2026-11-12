@@ -18,6 +18,7 @@ import {
   createStarterWorkflowFiles,
   DEFAULT_BUILDER_IDENTITY,
   getBuilderFileName,
+  resolveWorkflowFileId,
   slugifyWorkflowId,
 } from './starterFiles';
 import { DEFAULT_WORKFLOW_SPEC_VERSION } from './types';
@@ -27,6 +28,16 @@ describe('slugifyWorkflowId', () => {
     expect(slugifyWorkflowId('test name new')).toBe('test-name-new');
     expect(slugifyWorkflowId('New workflow')).toBe('new-workflow');
     expect(slugifyWorkflowId('---Hello---')).toBe('hello');
+  });
+});
+
+describe('resolveWorkflowFileId', () => {
+  it('falls back when the workflow id is empty or whitespace', () => {
+    expect(resolveWorkflowFileId('')).toBe(DEFAULT_BUILDER_IDENTITY.workflowId);
+    expect(resolveWorkflowFileId('   ')).toBe(
+      DEFAULT_BUILDER_IDENTITY.workflowId,
+    );
+    expect(resolveWorkflowFileId('my-flow')).toBe('my-flow');
   });
 });
 
@@ -72,6 +83,23 @@ describe('createStarterWorkflowFiles', () => {
     );
     expect(getBuilderFileName('outputSchemaJson', identity.workflowId)).toBe(
       'test-name-new.output.schema.json',
+    );
+  });
+
+  it('falls back to the default id when workflowId is empty', () => {
+    const files = createStarterWorkflowFiles({
+      ...DEFAULT_BUILDER_IDENTITY,
+      workflowId: '  ',
+    });
+
+    expect(files.workflowYaml).toContain(
+      `id: "${DEFAULT_BUILDER_IDENTITY.workflowId}"`,
+    );
+    expect(files.workflowYaml).toContain(
+      `dataInputSchema: "schemas/${DEFAULT_BUILDER_IDENTITY.workflowId}.schema.json"`,
+    );
+    expect(getBuilderFileName('workflowYaml', '')).toBe(
+      `${DEFAULT_BUILDER_IDENTITY.workflowId}.sw.yaml`,
     );
   });
 

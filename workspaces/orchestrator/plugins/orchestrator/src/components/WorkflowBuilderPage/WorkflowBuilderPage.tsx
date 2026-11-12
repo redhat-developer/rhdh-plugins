@@ -150,7 +150,7 @@ export const WorkflowBuilderPage = () => {
     return () => document.removeEventListener('click', onDocumentClick, true);
   }, [dirty]);
 
-  const leaveToOrchestrator = useCallback(() => {
+  const confirmLeave = useCallback(() => {
     const pendingHref = pendingHrefRef.current;
     pendingHrefRef.current = null;
     setDirty(false);
@@ -218,7 +218,7 @@ export const WorkflowBuilderPage = () => {
       <UnsavedChangesDialog
         open={leaveDialogOpen}
         onCancel={cancelLeave}
-        onConfirmDiscard={leaveToOrchestrator}
+        onConfirmDiscard={confirmLeave}
       />
     </Page>
   );

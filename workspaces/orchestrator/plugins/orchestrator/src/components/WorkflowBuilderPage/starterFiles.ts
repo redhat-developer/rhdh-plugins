@@ -65,10 +65,17 @@ const yamlDoubleQuoted = (value: string): string =>
  * Builds the starter set of 4 builder files for a from-scratch session.
  * Output schema is intentionally empty (optional until the user fills it).
  */
+/** Prefer a non-empty id so starter filenames/YAML stay valid. */
+export const resolveWorkflowFileId = (workflowId: string): string => {
+  const trimmed = workflowId.trim();
+  return trimmed !== '' ? trimmed : DEFAULT_BUILDER_IDENTITY.workflowId;
+};
+
 export const createStarterWorkflowFiles = (
   identity: WorkflowBuilderIdentity = DEFAULT_BUILDER_IDENTITY,
 ): WorkflowBuilderFiles => {
-  const { name, description, workflowId, version, specVersion } = identity;
+  const { name, description, version, specVersion } = identity;
+  const workflowId = resolveWorkflowFileId(identity.workflowId);
   const inputSchemaPath = `schemas/${workflowId}.schema.json`;
 
   const workflowYaml = [
@@ -132,16 +139,17 @@ export const getBuilderFileName = (
   key: keyof WorkflowBuilderFiles,
   workflowId: string,
 ): string => {
+  const fileId = resolveWorkflowFileId(workflowId);
   switch (key) {
     case 'workflowYaml':
-      return `${workflowId}.sw.yaml`;
+      return `${fileId}.sw.yaml`;
     case 'templateYaml':
       return 'template.yaml';
     case 'inputSchemaJson':
-      return `${workflowId}.schema.json`;
+      return `${fileId}.schema.json`;
     case 'outputSchemaJson':
-      return `${workflowId}.output.schema.json`;
+      return `${fileId}.output.schema.json`;
     default:
-      return workflowId;
+      return fileId;
   }
 };

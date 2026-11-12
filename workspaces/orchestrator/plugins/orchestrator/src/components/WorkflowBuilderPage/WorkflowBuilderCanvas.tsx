@@ -86,11 +86,11 @@ const StepNode = ({
 
 const nodeTypes = { step: StepNode };
 
-const createStartNode = (): Node => ({
+const createStartNode = (label: string): Node => ({
   id: 'start',
   type: 'step',
   position: { x: 120, y: 100 },
-  data: { label: 'Start', showStartBadge: true },
+  data: { label, showStartBadge: true },
   draggable: true,
   style: { width: STEP_WIDTH },
 });
@@ -100,7 +100,9 @@ const createStartNode = (): Node => ({
  */
 export const WorkflowBuilderCanvas = () => {
   const { t } = useTranslation();
-  const [nodes, setNodes, onNodesChange] = useNodesState([createStartNode()]);
+  const [nodes, setNodes, onNodesChange] = useNodesState([
+    createStartNode(t('builder.canvas.startLabel')),
+  ]);
   const [edges, , onEdgesChange] = useEdgesState([]);
 
   const onAddStep = useCallback(() => {
@@ -112,13 +114,19 @@ export const WorkflowBuilderCanvas = () => {
           id: `step-${window.crypto.randomUUID()}`,
           type: 'step',
           position: { x: 120 + offset, y: 100 + offset + 110 },
-          data: { label: `Step ${current.length}`, showStartBadge: false },
+          data: {
+            label: t('builder.canvas.stepLabel').replace(
+              '{{count}}',
+              String(current.length),
+            ),
+            showStartBadge: false,
+          },
           draggable: true,
           style: { width: STEP_WIDTH },
         },
       ];
     });
-  }, [setNodes]);
+  }, [setNodes, t]);
 
   const defaultEdgeOptions = useMemo(() => ({ type: 'smoothstep' }), []);
 
