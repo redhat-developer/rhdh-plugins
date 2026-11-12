@@ -23,6 +23,10 @@ agents:
   - name: spec-audit
     runtime: claude
     source: rhdh/harness/spec-audit.yaml
+  # CVE dependency-bump assessment (RHIDP-17209). Trigger: cve-fix label
+  # or /fs-cve-pr-review on a PR. Posts advisory PASS/FAIL/PARTIAL; no merge.
+  - name: cve-reviewer
+    source: rhdh/harness/cve-review.yaml
 roles:
   - triage
   - coder
