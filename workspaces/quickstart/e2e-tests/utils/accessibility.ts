@@ -35,6 +35,9 @@ export async function runAccessibilityTests(
     }
   }
 
+  // Remove when https://redhat.atlassian.net/browse/RHDHBUGS-4099 is resolved
+  builder.disableRules('label-content-name-mismatch');
+
   const accessibilityScanResults = await builder.analyze();
 
   await testInfo.attach(attachName, {
