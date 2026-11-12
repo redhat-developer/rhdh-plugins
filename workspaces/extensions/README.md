@@ -89,6 +89,7 @@ To develop the frontend plugin in isolation (mock data, no backend):
 ```bash
 cd plugins/extensions
 yarn start          # NFS dev mode
+yarn start:legacy   # Legacy dev mode
 ```
 
 Navigate to Extensions on the bottom left.
