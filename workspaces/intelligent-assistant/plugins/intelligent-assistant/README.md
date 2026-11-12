@@ -166,7 +166,7 @@ Screen context attaches structured page content from the current RHDH viewport t
 Enablement has two levels:
 
 1. **Administrator** — set `screen-context.enabled: true` in `app-config.yaml` (default: `false`).
-2. **User** — opt in from the chatbot options (kebab) menu with **Enable screen context**. Sharing is off until the user opts in.
+2. **User** — opt in from **Settings > Preferences** with the **Screen context** toggle. Sharing is off until the user opts in.
 
 When sharing is on, a **context chip** in the message bar shows the current page label and state:
 
@@ -187,7 +187,7 @@ intelligent-assistant:
       maxChars: 8000 # Max characters extracted per page (default: 8000)
 ```
 
-- `screen-context.enabled` — enables the full screen-context feature (DOM extraction and optional screenshots). Users must still opt in via the kebab menu.
+- `screen-context.enabled` — enables the full screen-context feature (DOM extraction and optional screenshots). Users must still opt in via **Settings > Preferences**.
 - `screen-context.screenshots.enabled` — toggles screenshot capture. Screenshots are only attached when the selected model supports vision (`supportsVision`).
 - `screen-context.dom-extraction.enabled` — toggles DOM text extraction independently of screenshots.
 - `screen-context.dom-extraction.maxChars` — caps the extracted text size to control LLM token usage.
@@ -196,8 +196,9 @@ Form fields are emitted as cleaned HTML to preserve label/input structure; all o
 
 ### Settings panel
 
-Open the settings panel from the chatbot options menu (**MCP and Prompt Settings**). The panel has two tabs:
+Open the settings panel from the chatbot options menu (**Settings**). The panel has three tabs; **Preferences** is the default:
 
+- **Preferences** — chat preferences such as Pinned chats, Saved prompts visibility, and Screen context
 - **MCP servers** — manage MCP server connections
 - **Saved prompts** — create, view, and delete reusable prompts
 

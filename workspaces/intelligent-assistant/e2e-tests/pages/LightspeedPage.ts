@@ -180,19 +180,6 @@ export async function openMcpSettingsPanel(page: Page, t: LightspeedMessages) {
     .click();
 }
 
-export async function openPreferencesSettingsTab(
-  page: Page,
-  t: LightspeedMessages,
-) {
-  await openSettingsPanel(page, t);
-  await page
-    .getByRole('button', {
-      name: t['settings.preferences.tab.title'],
-      exact: true,
-    })
-    .click();
-}
-
 export async function closeMcpSettingsPanel(page: Page, t: LightspeedMessages) {
   await page
     .getByRole('button', { name: t['mcp.settings.closeAriaLabel'] })

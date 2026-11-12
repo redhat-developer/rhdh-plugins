@@ -18,7 +18,7 @@ import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
 
-export type PreferencesSettingsProps = {
+type PreferencesSettingsProps = {
   isPinningChatsEnabled: boolean;
   onPinnedChatsToggle: (enabled: boolean) => void;
   isSavedPromptsEnabled: boolean;
