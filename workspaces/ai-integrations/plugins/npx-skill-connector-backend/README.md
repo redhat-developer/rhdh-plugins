@@ -7,7 +7,9 @@ verified against their index SHA-256 digest before decoding, and normalized usin
 the shared metadata normalizer. Snapshots reflect actual discovered skills, or
 partial/failed status on errors.
 
-All endpoints require Backstage service-to-service authentication.
+The snapshot endpoint uses Backstage's default backend authentication. Both
+authenticated users and services can read it; the catalog provider uses a
+service token.
 
 ## Configuration
 
@@ -104,9 +106,9 @@ catalog:
 An HTTP or authentication failure for one source does not stop the other.
 Each source has independent acquisition, reconciliation, and catalog ownership.
 
-## RHESS demo
+## Public Agent Skills demo
 
-To run the demo with a public Agent Skills v0.2 index:
+To run the demo with Evil Martians' public Agent Skills v0.2 index:
 
 1. Add the npx connector and the skills catalog provider to your backend
    packages:
@@ -156,9 +158,10 @@ To run the demo with a public Agent Skills v0.2 index:
 3. Start the backend with `yarn dev`. The connector snapshot will appear at
    `/api/npx-skill-connector/skills/public-agent-skills` and the catalog
    provider will create `AiResource` skill entities with `npx`
-   source/reference annotations within the first provider cycle.
+   source/reference annotations after the connector refresh and a subsequent
+   provider cycle.
 
-4. Verify the snapshot endpoint (requires a valid service token):
+4. Verify the snapshot endpoint with a valid Backstage service token:
 
    ```bash
    curl -H "Authorization: Bearer <service-token>" \

@@ -1,19 +1,21 @@
-## Npx service auth, integration tests, and catalog provider docs
+## Npx authentication tests and catalog provider docs
 
-**Last audited:** 2026-11-12T00:00:00Z
+**Last audited:** 2026-11-12T22:20:43Z
 
-PR #5497 adds service-to-service authentication enforcement on the npx
-connector plugin by declaring `httpAuth` in `deps` (same implicit activation
-pattern as `kserve-kubeflow-connector-backend`). Integration tests
-(`plugin.integration.test.ts`) cover auth enforcement (401 for unauthenticated,
-200 for authenticated), unknown source handling (404), snapshot lifecycle states
-(loading/ready/empty/failed/partial), source isolation, and scheduled refresh.
+PR #5497 verifies the existing Backstage default backend authentication on the
+npx connector. The HTTP router already applies the credentials barrier to
+plugin routes; no additional `httpAuth` dependency is needed. Integration tests
+(`plugin.integration.test.ts`) cover unauthenticated, user, and service requests,
+unknown source handling (404), snapshot lifecycle states
+(loading/ready/empty/failed/partial), isolation between npx sources, and
+scheduled refresh.
 The `startConnector` test helper and `NpxConnectorTestConfig` type are added to
 `testUtils.ts`. README is expanded with catalog provider integration guide,
-combined OCI+npx source configuration, and step-by-step RHESS demo
-instructions. Task 3.4's partial-completion note is updated to credit PR #5497
-integration tests. A `minor` changeset is added for the authentication
-behavioral change. No conflicting requirements were found.
+combined OCI+npx source configuration, and a public Evil Martians index demo.
+RHESS-specific demo verification and joint OCI+npx provider integration remain
+open under tasks 5.3–5.4. Task 3.4's partial-completion note is updated to
+credit PR #5497 integration tests. A `patch` changeset covers the documentation
+and schedule diagnostics without claiming an authentication behavior change.
 
 | Severity   | Count |
 | ---------- | ----- |

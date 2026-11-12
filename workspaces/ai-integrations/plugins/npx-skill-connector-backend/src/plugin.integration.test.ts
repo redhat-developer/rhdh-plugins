@@ -54,7 +54,7 @@ const defaultSource: NpxConnectorTestConfig = {
   ],
 };
 
-describe('service authentication', () => {
+describe('backend authentication', () => {
   it('rejects unauthenticated requests to GET /skills/:sourceId', async () => {
     mockedDiscoverIndex.mockResolvedValue({
       entries: [],
@@ -77,7 +77,7 @@ describe('service authentication', () => {
     expect(response.status).toBe(401);
   });
 
-  it('accepts authenticated requests to GET /skills/:sourceId', async () => {
+  it('accepts service credentials for GET /skills/:sourceId', async () => {
     mockedDiscoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: [],
@@ -95,6 +95,28 @@ describe('service authentication', () => {
     const response = await request(server)
       .get('/api/npx-skill-connector/skills/rhess')
       .set('Authorization', mockCredentials.service.header());
+
+    expect(response.status).toBe(200);
+  });
+
+  it('accepts user credentials for GET /skills/:sourceId', async () => {
+    mockedDiscoverIndex.mockResolvedValue({
+      entries: [],
+      failedKeys: [],
+      hasUsablePage: true,
+      complete: true,
+    });
+    mockedProcessArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
+
+    const { server } = await startConnector(
+      defaultSource,
+      logger,
+      npxSkillConnectorPlugin,
+    );
+
+    const response = await request(server)
+      .get('/api/npx-skill-connector/skills/rhess')
+      .set('Authorization', mockCredentials.user.header());
 
     expect(response.status).toBe(200);
   });

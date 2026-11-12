@@ -44,15 +44,10 @@ export const npxSkillConnectorPlugin = createBackendPlugin({
     env.registerInit({
       deps: {
         httpRouter: coreServices.httpRouter,
-        httpAuth: coreServices.httpAuth,
         logger: coreServices.logger,
         config: coreServices.rootConfig,
         scheduler: coreServices.scheduler,
       },
-      // httpAuth is not destructured — declaring it in deps is sufficient to
-      // activate Backstage's automatic service-to-service auth enforcement on
-      // all routes registered by this plugin (same pattern as
-      // kserve-kubeflow-connector-backend).
       async init({ logger, httpRouter, config, scheduler }) {
         const sources: NpxSourceConfig[] = readSourceConfigs(config, logger);
         const snapshots = new Map<string, SkillSnapshot>();
