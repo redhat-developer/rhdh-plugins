@@ -108,6 +108,8 @@ export const orchestratorTranslationRef: TranslationRef<
     readonly 'builder.canvas.addStep': string;
     readonly 'builder.canvas.needsSetup': string;
     readonly 'builder.canvas.startBadge': string;
+    readonly 'builder.canvas.startLabel': string;
+    readonly 'builder.canvas.stepLabel': string;
     readonly 'builder.actions.editWorkflowFiles': string;
     readonly 'builder.create.button': string;
     readonly 'builder.create.startFromScratch': string;
