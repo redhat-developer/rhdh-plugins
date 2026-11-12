@@ -10,16 +10,21 @@ import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendFeatureLoader } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
+import { GlobalHeaderComponentData } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { GlobalHeaderMenuItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { JSX as JSX_2 } from 'react';
 import { JSX as JSX_3 } from 'react/jsx-runtime';
+import { MenuItemParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { NavContentComponent } from '@backstage/plugin-app-react';
 import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
+import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
 import { ReactNode } from 'react';
 import { SidebarElementData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SidebarItemGroupData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SwappableComponentRef } from '@backstage/frontend-plugin-api';
+import { ToolbarComponentParams } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -212,6 +217,420 @@ export interface CompanyLogoProps {
 // @public
 const _default: FrontendFeatureLoader;
 export default _default;
+
+// @public
+export const globalHeaderModule: FrontendModule;
+
+// @public
+export const globalHeaderPlugin: OverridableFrontendPlugin<
+  {},
+  {},
+  {
+    'gh-component:global-header/app-launcher-dropdown': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'app-launcher-dropdown';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-component:global-header/company-logo': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'company-logo';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-component:global-header/divider': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'divider';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-component:global-header/help-dropdown': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'help-dropdown';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-component:global-header/notification-button': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'notification-button';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-component:global-header/profile-dropdown': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'profile-dropdown';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-component:global-header/search': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'search';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-component:global-header/self-service-button': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'self-service-button';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-component:global-header/spacer': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'spacer';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-component:global-header/starred-dropdown': OverridableExtensionDefinition<{
+      kind: 'gh-component';
+      name: 'starred-dropdown';
+      config: {
+        priority: number | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderComponentData,
+        'global-header.component',
+        {}
+      >;
+      inputs: {};
+      params: ToolbarComponentParams;
+    }>;
+    'gh-menu-item:global-header/app-launcher-devhub': OverridableExtensionDefinition<{
+      kind: 'gh-menu-item';
+      name: 'app-launcher-devhub';
+      config: {
+        priority: number | undefined;
+        title: string | undefined;
+        titleKey: string | undefined;
+        icon: string | undefined;
+        link: string | undefined;
+        sectionLabel: string | undefined;
+        sectionLink: string | undefined;
+        sectionLinkLabel: string | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
+        sectionLabel?: string | undefined;
+        sectionLink?: string | undefined;
+        sectionLinkLabel?: string | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderMenuItemData,
+        'global-header.menu-item',
+        {}
+      >;
+      inputs: {};
+      params: MenuItemParams;
+    }>;
+    'gh-menu-item:global-header/app-launcher-rhdh-local': OverridableExtensionDefinition<{
+      kind: 'gh-menu-item';
+      name: 'app-launcher-rhdh-local';
+      config: {
+        priority: number | undefined;
+        title: string | undefined;
+        titleKey: string | undefined;
+        icon: string | undefined;
+        link: string | undefined;
+        sectionLabel: string | undefined;
+        sectionLink: string | undefined;
+        sectionLinkLabel: string | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
+        sectionLabel?: string | undefined;
+        sectionLink?: string | undefined;
+        sectionLinkLabel?: string | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderMenuItemData,
+        'global-header.menu-item',
+        {}
+      >;
+      inputs: {};
+      params: MenuItemParams;
+    }>;
+    'gh-menu-item:global-header/logout': OverridableExtensionDefinition<{
+      kind: 'gh-menu-item';
+      name: 'logout';
+      config: {
+        priority: number | undefined;
+        title: string | undefined;
+        titleKey: string | undefined;
+        icon: string | undefined;
+        link: string | undefined;
+        sectionLabel: string | undefined;
+        sectionLink: string | undefined;
+        sectionLinkLabel: string | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
+        sectionLabel?: string | undefined;
+        sectionLink?: string | undefined;
+        sectionLinkLabel?: string | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderMenuItemData,
+        'global-header.menu-item',
+        {}
+      >;
+      inputs: {};
+      params: MenuItemParams;
+    }>;
+    'gh-menu-item:global-header/my-profile': OverridableExtensionDefinition<{
+      kind: 'gh-menu-item';
+      name: 'my-profile';
+      config: {
+        priority: number | undefined;
+        title: string | undefined;
+        titleKey: string | undefined;
+        icon: string | undefined;
+        link: string | undefined;
+        sectionLabel: string | undefined;
+        sectionLink: string | undefined;
+        sectionLinkLabel: string | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
+        sectionLabel?: string | undefined;
+        sectionLink?: string | undefined;
+        sectionLinkLabel?: string | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderMenuItemData,
+        'global-header.menu-item',
+        {}
+      >;
+      inputs: {};
+      params: MenuItemParams;
+    }>;
+    'gh-menu-item:global-header/settings': OverridableExtensionDefinition<{
+      kind: 'gh-menu-item';
+      name: 'settings';
+      config: {
+        priority: number | undefined;
+        title: string | undefined;
+        titleKey: string | undefined;
+        icon: string | undefined;
+        link: string | undefined;
+        sectionLabel: string | undefined;
+        sectionLink: string | undefined;
+        sectionLinkLabel: string | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
+        sectionLabel?: string | undefined;
+        sectionLink?: string | undefined;
+        sectionLinkLabel?: string | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderMenuItemData,
+        'global-header.menu-item',
+        {}
+      >;
+      inputs: {};
+      params: MenuItemParams;
+    }>;
+    'gh-menu-item:global-header/support-button': OverridableExtensionDefinition<{
+      kind: 'gh-menu-item';
+      name: 'support-button';
+      config: {
+        priority: number | undefined;
+        title: string | undefined;
+        titleKey: string | undefined;
+        icon: string | undefined;
+        link: string | undefined;
+        sectionLabel: string | undefined;
+        sectionLink: string | undefined;
+        sectionLinkLabel: string | undefined;
+      };
+      configInput: {
+        priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
+        sectionLabel?: string | undefined;
+        sectionLink?: string | undefined;
+        sectionLinkLabel?: string | undefined;
+      };
+      output: ExtensionDataRef<
+        GlobalHeaderMenuItemData,
+        'global-header.menu-item',
+        {}
+      >;
+      inputs: {};
+      params: MenuItemParams;
+    }>;
+  }
+>;
+
+// @public
+export const globalHeaderTranslationRef: TranslationRef<
+  'plugin.global-header',
+  {
+    readonly 'search.clear': string;
+    readonly 'search.placeholder': string;
+    readonly 'search.noResults': string;
+    readonly 'search.errorFetching': string;
+    readonly 'search.allResults': string;
+    readonly 'profile.picture': string;
+    readonly 'profile.settings': string;
+    readonly 'profile.myProfile': string;
+    readonly 'profile.signOut': string;
+    readonly 'help.tooltip': string;
+    readonly 'help.noSupportLinks': string;
+    readonly 'help.noSupportLinksSubtitle': string;
+    readonly 'help.quickStart': string;
+    readonly 'help.supportTitle': string;
+    readonly 'notifications.title': string;
+    readonly 'notifications.unsupportedDismissOption': string;
+    readonly 'create.title': string;
+    readonly 'create.templates.errorFetching': string;
+    readonly 'create.templates.sectionTitle': string;
+    readonly 'create.templates.allTemplates': string;
+    readonly 'create.templates.noTemplatesAvailable': string;
+    readonly 'create.registerComponent.title': string;
+    readonly 'create.registerComponent.subtitle': string;
+    readonly 'starred.title': string;
+    readonly 'starred.removeTooltip': string;
+    readonly 'starred.noItemsTitle': string;
+    readonly 'starred.noItemsSubtitle': string;
+    readonly 'applicationLauncher.tooltip': string;
+    readonly 'applicationLauncher.developerHub': string;
+    readonly 'applicationLauncher.noLinksTitle': string;
+    readonly 'applicationLauncher.noLinksSubtitle': string;
+    readonly 'applicationLauncher.rhdhLocal': string;
+    readonly 'applicationLauncher.sections.documentation': string;
+    readonly 'applicationLauncher.sections.developerTools': string;
+  }
+>;
+
+// @public
+export const globalHeaderTranslations: TranslationResource<'plugin.global-header'>;
+
+// @public
+export const globalHeaderTranslationsModule: FrontendModule;
 
 // @public
 export const learningPathsModule: FrontendModule;

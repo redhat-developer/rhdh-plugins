@@ -57,3 +57,21 @@ export type {
   SidebarItemData,
   SidebarItemGroupData,
 } from './sidebar';
+
+export { GlobalHeaderComponentBlueprint } from './globalHeader';
+export { GlobalHeaderMenuItemBlueprint } from './globalHeader';
+export {
+  globalHeaderComponentDataRef,
+  globalHeaderMenuItemDataRef,
+} from './globalHeader';
+export {
+  GlobalHeaderProvider,
+  useGlobalHeaderComponents,
+  useGlobalHeaderMenuItems,
+} from './globalHeader';
+export type {
+  GlobalHeaderComponentData,
+  GlobalHeaderMenuItemData,
+  MenuItemParams,
+  ToolbarComponentParams,
+} from './globalHeader';
