@@ -64,6 +64,8 @@ interface RouterApi {
   v2: V2;
 }
 
+const RUN_BY_FILTER_MAX_PAGE_SIZE = 500;
+
 // Thin, request-based adapters over the shared, credentials-based helpers in
 // `workflowAuthorization.ts`. Kept here (rather than inlined at every call
 // site below) so the ~10 `setupInternalRoutes` handlers don't need to change
@@ -294,6 +296,47 @@ function setupInternalRoutes(
     if (!allowed) {
       manageDenyAuthorization(auditEvent);
     }
+  }
+
+  async function getAuthorizedInstanceFilters(
+    request: HttpRequest,
+  ): Promise<
+    { authorizedWorkflowIds: string[]; filters: Filter | undefined } | undefined
+  > {
+    const allWorkflowIds = routerApi.v2.getWorkflowIds();
+    const authorizedWorkflowIds = await filterAuthorizedWorkflowIds(
+      request,
+      permissions,
+      httpAuth,
+      allWorkflowIds,
+      conditionTransformer,
+      logger,
+    );
+
+    if (authorizedWorkflowIds.length === 0) {
+      return undefined;
+    }
+
+    const credentials = await httpAuth.credentials(request);
+    const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
+      credentials,
+      userInfo,
+    );
+    const isUserAuthorizedForInstanceAdminView =
+      await isUserAuthorizedForInstanceAdminViewPermission(
+        request,
+        permissions,
+        httpAuth,
+      );
+    const requestFilters = getRequestFilters(request);
+    const filters = isUserAuthorizedForInstanceAdminView
+      ? requestFilters
+      : workflowAuth.buildInstanceOwnershipFilter(
+          initiatorEntity,
+          requestFilters,
+        );
+
+    return { authorizedWorkflowIds, filters };
   }
 
   // v2
@@ -786,6 +829,55 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
+    'getInstanceInitiators',
+    async (_c, req: express.Request, res: express.Response, next) => {
+      const auditEvent = await auditor.createEvent({
+        eventId: 'get-instance-initiators',
+        request: req,
+      });
+
+      try {
+        const instanceFilters = await getAuthorizedInstanceFilters(req);
+        if (!instanceFilters) {
+          res.json([]);
+          return;
+        }
+
+        const requestedPagination = buildPagination(req);
+        const pagination = {
+          limit: Math.max(
+            0,
+            Math.min(
+              requestedPagination.limit ?? RUN_BY_FILTER_MAX_PAGE_SIZE,
+              RUN_BY_FILTER_MAX_PAGE_SIZE,
+            ),
+          ),
+          offset: Math.max(requestedPagination.offset ?? 0, 0),
+          order: requestedPagination.order ?? 'DESC',
+          sortField: requestedPagination.sortField ?? 'start',
+        };
+
+        const result = await routerApi.v2.getInstanceInitiators(
+          pagination,
+          instanceFilters.filters,
+          instanceFilters.authorizedWorkflowIds,
+        );
+
+        auditEvent.success({
+          meta: {
+            authorizedWorkflowIds: instanceFilters.authorizedWorkflowIds,
+          },
+        });
+        res.json(result);
+      } catch (error) {
+        auditEvent.fail({ error });
+        next(error);
+      }
+    },
+  );
+
+  // v2
+  routerApi.openApiBackend.register(
     'getInstances',
     async (_c, req: express.Request, res: express.Response, next) => {
       const auditEvent = await auditor.createEvent({
@@ -795,50 +887,23 @@ function setupInternalRoutes(
 
       try {
         // Once we assign user to the instance in the future, we can rework this filtering
-        const allWorkflowIds = routerApi.v2.getWorkflowIds();
-        const authorizedWorkflowIds: string[] =
-          await filterAuthorizedWorkflowIds(
-            req,
-            permissions,
-            httpAuth,
-            allWorkflowIds,
-            conditionTransformer,
-            logger,
-          );
-
-        if (!authorizedWorkflowIds || authorizedWorkflowIds.length === 0) {
+        const instanceFilters = await getAuthorizedInstanceFilters(req);
+        if (!instanceFilters) {
           res.json([]);
           return;
         }
 
-        const credentials = await httpAuth.credentials(req);
-        const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
-          credentials,
-          userInfo,
-        );
-        const isUserAuthorizedForInstanceAdminView: boolean = // This permission will let user see ALL instances (including ones others created)
-          await isUserAuthorizedForInstanceAdminViewPermission(
-            req,
-            permissions,
-            httpAuth,
-          );
-
-        const requestFilters = getRequestFilters(req);
-
-        const filters = isUserAuthorizedForInstanceAdminView
-          ? requestFilters
-          : workflowAuth.buildInstanceOwnershipFilter(
-              initiatorEntity,
-              requestFilters,
-            );
-
         const result = await routerApi.v2.getInstances(
           buildPagination(req),
-          filters,
-          authorizedWorkflowIds,
+          instanceFilters.filters,
+          instanceFilters.authorizedWorkflowIds,
         );
 
-        auditEvent.success({ meta: { authorizedWorkflowIds } });
+        auditEvent.success({
+          meta: {
+            authorizedWorkflowIds: instanceFilters.authorizedWorkflowIds,
+          },
+        });
         res.json(result);
       } catch (error) {
         auditEvent.fail({ error });

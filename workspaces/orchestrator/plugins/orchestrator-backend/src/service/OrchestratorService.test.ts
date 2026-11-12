@@ -15,6 +15,8 @@
  */
 
 import {
+  FieldFilterOperatorEnum,
+  Filter,
   ProcessInstance,
   WorkflowDefinition,
   WorkflowExecutionResponse,
@@ -137,6 +139,70 @@ describe('OrchestratorService', () => {
     });
   });
 
+  describe('fetchInstanceInitiators', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('forwards workflow ids, filters, and pagination to the data index', async () => {
+      const args = {
+        pagination: {
+          limit: 500,
+          offset: 0,
+          order: 'DESC',
+          sortField: 'start',
+        },
+        filter: {
+          field: 'state',
+          operator: FieldFilterOperatorEnum.Eq,
+          value: 'COMPLETED',
+        },
+        workflowIds: ['flow-a'],
+      };
+      dataIndexServiceMock.fetchInstanceInitiators = jest
+        .fn()
+        .mockResolvedValue(['user:default/alice']);
+
+      const result = await orchestratorService.fetchInstanceInitiators(args);
+
+      expect(result).toEqual(['user:default/alice']);
+      expect(dataIndexServiceMock.fetchInstanceInitiators).toHaveBeenCalledWith(
+        {
+          definitionIds: ['flow-a'],
+          pagination: args.pagination,
+          filter: args.filter,
+        },
+      );
+    });
+  });
+
+  describe('countInstances', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('forwards filters and workflow IDs to Data Index', async () => {
+      const filter: Filter = {
+        field: 'state',
+        operator: 'EQ',
+        value: 'COMPLETED',
+      };
+      const workflowIds = [definitionId];
+      dataIndexServiceMock.countInstances = jest.fn().mockResolvedValue(7);
+
+      const result = await orchestratorService.countInstances({
+        filter,
+        workflowIds,
+      });
+
+      expect(result).toBe(7);
+      expect(dataIndexServiceMock.countInstances).toHaveBeenCalledWith({
+        definitionIds: workflowIds,
+        filter,
+      });
+    });
+  });
+
   describe('fetchWorkflowOverviews', () => {
     const availabilityResponse = {
       isAvailable: false,
@@ -150,9 +216,7 @@ describe('OrchestratorService', () => {
       sonataFlowServiceMock.pingWorkflowService = jest
         .fn()
         .mockResolvedValue(availabilityResponse);
-      dataIndexServiceMock.fetchWorkflowServiceUrls = jest
-        .fn()
-        .mockResolvedValue({ [definitionId]: serviceUrl });
+      dataIndexServiceMock.fetchWorkflowServiceUrls = jest.fn();
     });
 
     it('should throw error when data index returns error', async () => {
@@ -170,7 +234,7 @@ describe('OrchestratorService', () => {
     it('should execute the operation', async () => {
       sonataFlowServiceMock.fetchWorkflowOverviews = jest
         .fn()
-        .mockResolvedValue(workflowOverviews);
+        .mockResolvedValue({ overviews: workflowOverviews, serviceUrls: {} });
       workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(true);
 
       const result = await orchestratorService.fetchWorkflowOverviews({});
@@ -178,12 +242,18 @@ describe('OrchestratorService', () => {
       expect(result).toHaveLength(workflowOverviews.length);
       expect(sonataFlowServiceMock.fetchWorkflowOverviews).toHaveBeenCalled();
       expect(sonataFlowServiceMock.pingWorkflowService).not.toHaveBeenCalled();
+      expect(
+        dataIndexServiceMock.fetchWorkflowServiceUrls,
+      ).not.toHaveBeenCalled();
     });
 
     it('pings unavailable workflows and sets availability on each overview', async () => {
       sonataFlowServiceMock.fetchWorkflowOverviews = jest
         .fn()
-        .mockResolvedValue([createWorkflowOverviewMock(1)]);
+        .mockResolvedValue({
+          overviews: [createWorkflowOverviewMock(1)],
+          serviceUrls: { [definitionId]: serviceUrl },
+        });
       workflowCacheServiceMock.isAvailable = jest.fn().mockReturnValue(false);
 
       const result = await orchestratorService.fetchWorkflowOverviews({});
@@ -193,11 +263,25 @@ describe('OrchestratorService', () => {
       expect(result?.[0].availability).toEqual(availabilityResponse);
       expect(
         dataIndexServiceMock.fetchWorkflowServiceUrls,
-      ).toHaveBeenCalledTimes(1);
+      ).not.toHaveBeenCalled();
       expect(sonataFlowServiceMock.pingWorkflowService).toHaveBeenCalledWith({
         definitionId,
         serviceUrl,
       });
+    });
+
+    it('returns no workflows without looking up service URLs when the list is empty', async () => {
+      sonataFlowServiceMock.fetchWorkflowOverviews = jest
+        .fn()
+        .mockResolvedValue({ overviews: [], serviceUrls: {} });
+
+      const result = await orchestratorService.fetchWorkflowOverviews({});
+
+      expect(result).toEqual([]);
+      expect(
+        dataIndexServiceMock.fetchWorkflowServiceUrls,
+      ).not.toHaveBeenCalled();
+      expect(sonataFlowServiceMock.pingWorkflowService).not.toHaveBeenCalled();
     });
   });
 
