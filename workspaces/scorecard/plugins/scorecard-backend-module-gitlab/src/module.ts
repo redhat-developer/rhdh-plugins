@@ -23,6 +23,7 @@ import { GitlabMergeRequestsProvider } from './metricProviders/GitlabMergeReques
 import { GitlabPipelinesProvider } from './metricProviders/GitlabPipelinesProvider';
 import { GitlabJobsProvider } from './metricProviders/GitlabJobsProvider';
 
+/** @public */
 export const scorecardModuleGitlab = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'gitlab',
