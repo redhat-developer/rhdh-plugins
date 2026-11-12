@@ -136,7 +136,11 @@ jobs:
         run: yarn backstage-cli repo build --all
 
       - name: lint
-        run: yarn backstage-cli repo lint --since origin/main
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          git fetch --no-tags origin "+${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
+          yarn backstage-cli repo lint --since "origin/${PR_BASE_REF}"
 
       - name: publish check
         run: yarn backstage-cli repo fix --check --publish
