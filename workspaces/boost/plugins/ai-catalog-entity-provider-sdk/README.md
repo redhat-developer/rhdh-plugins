@@ -66,6 +66,12 @@ The 2.0 release removes it from the public type, category list, and validation
 schema. Remove `skill-bundle` from consumer typed values and provider annotation
 inputs before upgrading. SDK validation rejects entities with that category.
 
+Already-ingested catalog entities carrying
+`rhdh.io/ai-asset-category: skill-bundle` also fail when passed through SDK 2.x
+validation. Correct their source/provider output to an appropriate supported
+category and re-ingest them, or retire the unsupported entities. Upgrading the
+SDK does not automatically migrate or delete existing catalog entities.
+
 ## Entity validation
 
 The `validateAIAssetEntity` function checks that an entity carries the required AI asset annotations with valid values. The `AIAssetValidator` class implements the Backstage `CatalogProcessor` interface for integration with the catalog processing pipeline.
