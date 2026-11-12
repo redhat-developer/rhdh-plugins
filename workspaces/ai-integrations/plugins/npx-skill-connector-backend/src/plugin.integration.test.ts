@@ -16,8 +16,11 @@
 
 import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import request from 'supertest';
-import { type NpxConnectorTestConfig, startConnector } from './testUtils';
+import type { NpxConnectorTestConfig } from './testUtils';
+import { startConnector } from './testUtils';
 import { npxSkillConnectorPlugin } from './plugin';
+import { discoverIndex } from './services/discoverIndex';
+import { processArtifacts } from './services/processArtifacts';
 
 jest.mock('./services/discoverIndex', () => ({
   discoverIndex: jest.fn(),
@@ -27,10 +30,8 @@ jest.mock('./services/processArtifacts', () => ({
   processArtifacts: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { discoverIndex } = require('./services/discoverIndex');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { processArtifacts } = require('./services/processArtifacts');
+const mockedDiscoverIndex = jest.mocked(discoverIndex);
+const mockedProcessArtifacts = jest.mocked(processArtifacts);
 
 const logger = mockServices.logger.mock();
 
@@ -55,13 +56,13 @@ const defaultSource: NpxConnectorTestConfig = {
 
 describe('service authentication', () => {
   it('rejects unauthenticated requests to GET /skills/:sourceId', async () => {
-    discoverIndex.mockResolvedValue({
+    mockedDiscoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: [],
       hasUsablePage: true,
       complete: true,
     });
-    processArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
+    mockedProcessArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
 
     const { server } = await startConnector(
       defaultSource,
@@ -77,13 +78,13 @@ describe('service authentication', () => {
   });
 
   it('accepts authenticated requests to GET /skills/:sourceId', async () => {
-    discoverIndex.mockResolvedValue({
+    mockedDiscoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: [],
       hasUsablePage: true,
       complete: true,
     });
-    processArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
+    mockedProcessArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
 
     const { server } = await startConnector(
       defaultSource,
@@ -101,13 +102,13 @@ describe('service authentication', () => {
 
 describe('unknown source handling', () => {
   it('returns 404 for an unknown source ID', async () => {
-    discoverIndex.mockResolvedValue({
+    mockedDiscoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: [],
       hasUsablePage: true,
       complete: true,
     });
-    processArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
+    mockedProcessArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
 
     const { server } = await startConnector(
       defaultSource,
@@ -150,7 +151,7 @@ describe('snapshot lifecycle', () => {
   });
 
   it('returns ready with normalized records after refresh', async () => {
-    discoverIndex.mockResolvedValue({
+    mockedDiscoverIndex.mockResolvedValue({
       entries: [
         {
           name: 'my-skill',
@@ -164,7 +165,7 @@ describe('snapshot lifecycle', () => {
       complete: true,
     });
 
-    processArtifacts.mockResolvedValue({
+    mockedProcessArtifacts.mockResolvedValue({
       records: [
         {
           key: 'my-skill',
@@ -196,13 +197,13 @@ describe('snapshot lifecycle', () => {
   });
 
   it('returns ready with empty skills for a successful empty index', async () => {
-    discoverIndex.mockResolvedValue({
+    mockedDiscoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: [],
       hasUsablePage: true,
       complete: true,
     });
-    processArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
+    mockedProcessArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
 
     const { server } = await startConnector(
       defaultSource,
@@ -226,7 +227,7 @@ describe('snapshot lifecycle', () => {
 
 describe('atomic publication', () => {
   it('publishes a failed snapshot when discovery returns no usable page', async () => {
-    discoverIndex.mockResolvedValue({
+    mockedDiscoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: [],
       hasUsablePage: false,
@@ -250,7 +251,7 @@ describe('atomic publication', () => {
   });
 
   it('publishes a partial snapshot with failed keys', async () => {
-    discoverIndex.mockResolvedValue({
+    mockedDiscoverIndex.mockResolvedValue({
       entries: [
         {
           name: 'good-skill',
@@ -264,7 +265,7 @@ describe('atomic publication', () => {
       complete: false,
     });
 
-    processArtifacts.mockResolvedValue({
+    mockedProcessArtifacts.mockResolvedValue({
       records: [
         {
           key: 'good-skill',
@@ -322,7 +323,7 @@ describe('source isolation', () => {
     };
 
     // source-a succeeds, source-b fails
-    discoverIndex.mockImplementation(async (source: { id: string }) => {
+    mockedDiscoverIndex.mockImplementation(async (source: { id: string }) => {
       if (source.id === 'source-a') {
         return {
           entries: [
@@ -347,7 +348,7 @@ describe('source isolation', () => {
       };
     });
 
-    processArtifacts.mockImplementation(
+    mockedProcessArtifacts.mockImplementation(
       async (_entries: Array<{ name: string }>, source: { id: string }) => {
         if (source.id === 'source-a') {
           return {
@@ -396,13 +397,13 @@ describe('source isolation', () => {
 
 describe('scheduled refresh', () => {
   it('registers scheduler tasks for each configured source', async () => {
-    discoverIndex.mockResolvedValue({
+    mockedDiscoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: [],
       hasUsablePage: true,
       complete: true,
     });
-    processArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
+    mockedProcessArtifacts.mockResolvedValue({ records: [], failedKeys: [] });
 
     await startConnector(
       {
@@ -422,7 +423,12 @@ describe('scheduled refresh', () => {
       npxSkillConnectorPlugin,
     );
 
-    // The scheduler was invoked, which calls discoverIndex
-    expect(discoverIndex).toHaveBeenCalled();
+    // The scheduler was invoked, which calls discoverIndex for the configured source
+    expect(mockedDiscoverIndex).toHaveBeenCalledTimes(1);
+    expect(mockedDiscoverIndex).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'scheduled-source' }),
+      expect.anything(),
+      expect.anything(),
+    );
   });
 });

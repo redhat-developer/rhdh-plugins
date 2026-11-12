@@ -1,3 +1,28 @@
+## Npx service auth, integration tests, and catalog provider docs
+
+**Last audited:** 2026-11-12T00:00:00Z
+
+PR #5497 adds service-to-service authentication enforcement on the npx
+connector plugin by declaring `httpAuth` in `deps` (same implicit activation
+pattern as `kserve-kubeflow-connector-backend`). Integration tests
+(`plugin.integration.test.ts`) cover auth enforcement (401 for unauthenticated,
+200 for authenticated), unknown source handling (404), snapshot lifecycle states
+(loading/ready/empty/failed/partial), source isolation, and scheduled refresh.
+The `startConnector` test helper and `NpxConnectorTestConfig` type are added to
+`testUtils.ts`. README is expanded with catalog provider integration guide,
+combined OCI+npx source configuration, and step-by-step RHESS demo
+instructions. Task 3.4's partial-completion note is updated to credit PR #5497
+integration tests. A `minor` changeset is added for the authentication
+behavioral change. No conflicting requirements were found.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
 ## Npx artifact verification and normalization
 
 **Last audited:** 2026-11-05T00:30:00Z
