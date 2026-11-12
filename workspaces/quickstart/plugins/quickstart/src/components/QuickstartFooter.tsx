@@ -60,7 +60,10 @@ export const QuickstartFooter = ({
             backgroundColor: 'var(--bui-accent-bg)',
             transition: 'width 0.2s ease',
           }}
-        />
+        >
+          {/* Box requires children; empty fill bar */}
+          {null}
+        </Box>
       </Box>
       <Flex align="center" justify="between" p="5">
         <Text variant="body-small">{progressLabel}</Text>
