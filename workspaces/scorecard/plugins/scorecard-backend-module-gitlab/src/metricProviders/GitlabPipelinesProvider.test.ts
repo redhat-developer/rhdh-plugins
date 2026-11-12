@@ -26,6 +26,7 @@ import {
   GITLAB_PERCENTAGE_THRESHOLDS,
   GITLAB_SUCCESS_COUNT_THRESHOLDS,
 } from './GitlabConfig';
+import { oneDayAgo, sevenDaysAgo } from '../utils/relativeDates';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -133,8 +134,8 @@ describe('GitlabPipelinesProvider', () => {
   });
 
   describe('calculateMetrics', () => {
-    const sevenDaysAgo = new Date(fixedNow.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const oneDayAgo = new Date(fixedNow.getTime() - 24 * 60 * 60 * 1000);
+    const since7d = sevenDaysAgo(fixedNow.getTime());
+    const since1d = oneDayAgo(fixedNow.getTime());
 
     it('should return all pipeline metrics', async () => {
       mockedClientInstance.getPipelinesCount
@@ -156,34 +157,34 @@ describe('GitlabPipelinesProvider', () => {
         1,
         sourceUrl,
         projectSlug,
-        sevenDaysAgo,
+        since7d,
       );
       expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
         2,
         sourceUrl,
         projectSlug,
-        sevenDaysAgo,
+        since7d,
         'success',
       );
       expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
         3,
         sourceUrl,
         projectSlug,
-        sevenDaysAgo,
+        since7d,
         'failed',
       );
       expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
         4,
         sourceUrl,
         projectSlug,
-        oneDayAgo,
+        since1d,
         'success',
       );
       expect(mockedClientInstance.getPipelinesCount).toHaveBeenNthCalledWith(
         5,
         sourceUrl,
         projectSlug,
-        oneDayAgo,
+        since1d,
         'failed',
       );
     });

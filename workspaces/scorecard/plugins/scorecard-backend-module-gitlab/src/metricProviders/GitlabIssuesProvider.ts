@@ -29,6 +29,7 @@ import {
   GITLAB_METRIC,
   GITLAB_PROVIDER_IDS,
 } from './GitlabConfig';
+import { sevenDaysAgo } from '../utils/relativeDates';
 
 export class GitlabIssuesProvider implements MetricProvider<'number'> {
   private readonly gitlabClient: GitlabClient;
@@ -90,12 +91,12 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const projectSlug = getProjectSlugFromEntity(entity);
     const { target } = getEntitySourceLocation(entity);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const since7d = sevenDaysAgo();
 
     const [openIssues, openedIssues, closedIssues] = await Promise.all([
       this.gitlabClient.getOpenIssuesCount(target, projectSlug),
-      this.gitlabClient.getOpenedIssuesCount(target, projectSlug, sevenDaysAgo),
-      this.gitlabClient.getClosedIssuesCount(target, projectSlug, sevenDaysAgo),
+      this.gitlabClient.getOpenedIssuesCount(target, projectSlug, since7d),
+      this.gitlabClient.getClosedIssuesCount(target, projectSlug, since7d),
     ]);
 
     return new Map([

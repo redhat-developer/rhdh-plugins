@@ -32,6 +32,7 @@ import {
   GITLAB_PROVIDER_IDS,
 } from './GitlabConfig';
 import { calculateRatio } from '../utils/calculateRatio';
+import { oneDayAgo, sevenDaysAgo } from '../utils/relativeDates';
 
 export class GitlabJobsProvider implements MetricProvider<'number'> {
   private readonly gitlabClient: GitlabClient;
@@ -114,28 +115,28 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const projectSlug = getProjectSlugFromEntity(entity);
     const { target } = getEntitySourceLocation(entity);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const since7d = sevenDaysAgo();
+    const since1d = oneDayAgo();
 
     const [started7d, successful7d, failed7d, successful24h, failed24h] =
       await Promise.all([
         this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: sevenDaysAgo,
+          since: since7d,
         }),
         this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: sevenDaysAgo,
+          since: since7d,
           scope: ['success'],
         }),
         this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: sevenDaysAgo,
+          since: since7d,
           scope: ['failed'],
         }),
         this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: oneDayAgo,
+          since: since1d,
           scope: ['success'],
         }),
         this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: oneDayAgo,
+          since: since1d,
           scope: ['failed'],
         }),
       ]);

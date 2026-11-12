@@ -21,6 +21,7 @@ import {
   type ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { GitlabClient } from '../gitlab/GitlabClient';
+import { sevenDaysAgo } from '../utils/relativeDates';
 import { GitlabIssuesProvider } from './GitlabIssuesProvider';
 
 jest.mock('@backstage/catalog-model', () => ({
@@ -126,9 +127,7 @@ describe('GitlabIssuesProvider', () => {
 
       const result = await provider.calculateMetrics(mockEntity);
 
-      const sevenDaysAgo = new Date(
-        fixedNow.getTime() - 7 * 24 * 60 * 60 * 1000,
-      );
+      const since7d = sevenDaysAgo(fixedNow.getTime());
 
       expect(result.get('gitlab.openIssues')).toBe(10);
       expect(result.get('gitlab.openedIssues7d')).toBe(5);
@@ -141,12 +140,12 @@ describe('GitlabIssuesProvider', () => {
       expect(mockedClientInstance.getOpenedIssuesCount).toHaveBeenCalledWith(
         sourceUrl,
         projectSlug,
-        sevenDaysAgo,
+        since7d,
       );
       expect(mockedClientInstance.getClosedIssuesCount).toHaveBeenCalledWith(
         sourceUrl,
         projectSlug,
-        sevenDaysAgo,
+        since7d,
       );
     });
 

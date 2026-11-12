@@ -29,6 +29,7 @@ import {
   GITLAB_METRIC,
   GITLAB_PROVIDER_IDS,
 } from './GitlabConfig';
+import { sevenDaysAgo } from '../utils/relativeDates';
 
 export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
   private readonly gitlabClient: GitlabClient;
@@ -91,19 +92,19 @@ export class GitlabMergeRequestsProvider implements MetricProvider<'number'> {
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const projectSlug = getProjectSlugFromEntity(entity);
     const { target } = getEntitySourceLocation(entity);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const since7d = sevenDaysAgo();
 
     const [openMRs, openedMRs, closedMRs] = await Promise.all([
       this.gitlabClient.getOpenMergeRequestsCount(target, projectSlug),
       this.gitlabClient.getOpenedMergeRequestsCount(
         target,
         projectSlug,
-        sevenDaysAgo,
+        since7d,
       ),
       this.gitlabClient.getClosedMergeRequestsCount(
         target,
         projectSlug,
-        sevenDaysAgo,
+        since7d,
       ),
     ]);
 

@@ -32,6 +32,7 @@ import {
   GITLAB_PROVIDER_IDS,
 } from './GitlabConfig';
 import { calculateRatio } from '../utils/calculateRatio';
+import { oneDayAgo, sevenDaysAgo } from '../utils/relativeDates';
 
 export class GitlabPipelinesProvider implements MetricProvider<'number'> {
   private readonly gitlabClient: GitlabClient;
@@ -114,34 +115,34 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const projectSlug = getProjectSlugFromEntity(entity);
     const { target } = getEntitySourceLocation(entity);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const since7d = sevenDaysAgo();
+    const since1d = oneDayAgo();
 
     const [started7d, successful7d, failed7d, successful24h, failed24h] =
       await Promise.all([
-        this.gitlabClient.getPipelinesCount(target, projectSlug, sevenDaysAgo),
+        this.gitlabClient.getPipelinesCount(target, projectSlug, since7d),
         this.gitlabClient.getPipelinesCount(
           target,
           projectSlug,
-          sevenDaysAgo,
+          since7d,
           'success',
         ),
         this.gitlabClient.getPipelinesCount(
           target,
           projectSlug,
-          sevenDaysAgo,
+          since7d,
           'failed',
         ),
         this.gitlabClient.getPipelinesCount(
           target,
           projectSlug,
-          oneDayAgo,
+          since1d,
           'success',
         ),
         this.gitlabClient.getPipelinesCount(
           target,
           projectSlug,
-          oneDayAgo,
+          since1d,
           'failed',
         ),
       ]);

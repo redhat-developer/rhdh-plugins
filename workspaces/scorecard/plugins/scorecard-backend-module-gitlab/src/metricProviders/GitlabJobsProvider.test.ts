@@ -26,6 +26,7 @@ import {
   GITLAB_PERCENTAGE_THRESHOLDS,
   GITLAB_SUCCESS_COUNT_THRESHOLDS,
 } from './GitlabConfig';
+import { oneDayAgo, sevenDaysAgo } from '../utils/relativeDates';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -141,10 +142,8 @@ describe('GitlabJobsProvider', () => {
 
       const result = await provider.calculateMetrics(mockEntity);
 
-      const sevenDaysAgo = new Date(
-        fixedNow.getTime() - 7 * 24 * 60 * 60 * 1000,
-      );
-      const oneDayAgo = new Date(fixedNow.getTime() - 24 * 60 * 60 * 1000);
+      const since7d = sevenDaysAgo(fixedNow.getTime());
+      const since1d = oneDayAgo(fixedNow.getTime());
 
       expect(result.get('gitlab.startedJobs7d')).toBe(300);
       expect(result.get('gitlab.successfulJobs7d')).toBe(250);
@@ -158,31 +157,31 @@ describe('GitlabJobsProvider', () => {
         1,
         sourceUrl,
         projectSlug,
-        { since: sevenDaysAgo },
+        { since: since7d },
       );
       expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
         2,
         sourceUrl,
         projectSlug,
-        { since: sevenDaysAgo, scope: ['success'] },
+        { since: since7d, scope: ['success'] },
       );
       expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
         3,
         sourceUrl,
         projectSlug,
-        { since: sevenDaysAgo, scope: ['failed'] },
+        { since: since7d, scope: ['failed'] },
       );
       expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
         4,
         sourceUrl,
         projectSlug,
-        { since: oneDayAgo, scope: ['success'] },
+        { since: since1d, scope: ['success'] },
       );
       expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
         5,
         sourceUrl,
         projectSlug,
-        { since: oneDayAgo, scope: ['failed'] },
+        { since: since1d, scope: ['failed'] },
       );
     });
 

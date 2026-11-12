@@ -21,6 +21,7 @@ import {
   type ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { GitlabClient } from '../gitlab/GitlabClient';
+import { sevenDaysAgo } from '../utils/relativeDates';
 import { GitlabMergeRequestsProvider } from './GitlabMergeRequestsProvider';
 
 jest.mock('@backstage/catalog-model', () => ({
@@ -129,9 +130,7 @@ describe('GitlabMergeRequestsProvider', () => {
 
       const result = await provider.calculateMetrics(mockEntity);
 
-      const sevenDaysAgo = new Date(
-        fixedNow.getTime() - 7 * 24 * 60 * 60 * 1000,
-      );
+      const since7d = sevenDaysAgo(fixedNow.getTime());
 
       expect(result.get('gitlab.openMergeRequests')).toBe(10);
       expect(result.get('gitlab.openedMergeRequests7d')).toBe(4);
@@ -142,10 +141,10 @@ describe('GitlabMergeRequestsProvider', () => {
       ).toHaveBeenCalledWith(sourceUrl, projectSlug);
       expect(
         mockedClientInstance.getOpenedMergeRequestsCount,
-      ).toHaveBeenCalledWith(sourceUrl, projectSlug, sevenDaysAgo);
+      ).toHaveBeenCalledWith(sourceUrl, projectSlug, since7d);
       expect(
         mockedClientInstance.getClosedMergeRequestsCount,
-      ).toHaveBeenCalledWith(sourceUrl, projectSlug, sevenDaysAgo);
+      ).toHaveBeenCalledWith(sourceUrl, projectSlug, since7d);
     });
 
     it('should throw when project-slug annotation is missing', async () => {
