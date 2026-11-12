@@ -98,7 +98,7 @@ The following extensions are available in the plugin:
 For the old frontend system, import OFS components and the plugin from `./legacy`. Translation resources still come from `./alpha`:
 
 ```tsx
-// packages/app-legacy/src/App.tsx
+// app/src/App.tsx
 import { DynamicExtensionsPluginRouter as Extensions } from '@red-hat-developer-hub/backstage-plugin-extensions/legacy';
 import { extensionsTranslations } from '@red-hat-developer-hub/backstage-plugin-extensions/alpha';
 
