@@ -51,6 +51,7 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
     return (
       <Button
         variant="secondary"
+        data-cta-href={cta.link}
         iconEnd={<RiExternalLinkLine size={15} />}
         onPress={() => {
           onClick();
@@ -65,6 +66,7 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
   return (
     <Button
       variant="secondary"
+      data-cta-href={cta.link}
       onPress={() => {
         onClick();
         navigate(cta.link);
