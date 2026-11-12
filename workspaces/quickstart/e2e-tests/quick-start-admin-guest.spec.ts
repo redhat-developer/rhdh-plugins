@@ -61,7 +61,8 @@ test.describe('Test Quick Start plugin', () => {
       testInfo,
       'quick-start-accessibility.json',
       {
-        exclude: ['table'],
+        // Host MUI spinner can appear without a name during page load
+        exclude: ['table', '[data-testid="loading-indicator"]'],
       },
     );
 
@@ -148,7 +149,7 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.managePlugins.ctaTitle,
       '/extensions',
     );
-    await uiHelper.clickButtonByText(translations.steps.managePlugins.ctaTitle);
+    await uiHelper.clickCtaByHref('/extensions');
     await expect(page).toHaveURL(/extensions/);
 
     await expect(page.getByRole('progressbar')).toBeVisible();
