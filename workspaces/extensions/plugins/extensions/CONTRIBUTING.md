@@ -41,13 +41,12 @@ Stay on plugin `dev/` for frontend-only work and for **Backstage version-bump PR
 
 Start the workspace when you need a live backend, catalog module entities, or install/configure against `extensions-backend`:
 
-| Command (from `workspaces/extensions`) | What it starts       |
-| -------------------------------------- | -------------------- |
-| `yarn start`                           | NFS app + backend    |
-| `yarn start:legacy`                    | Legacy app + backend |
+| Command (from `workspaces/extensions`) | What it starts    |
+| -------------------------------------- | ----------------- |
+| `yarn start`                           | NFS app + backend |
 
 `packages/backend` already wires the backend plugin and `@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions`. Do not add a third full app.
 
-Workspace Playwright (`yarn test:e2e:ci`) is catalog UI + i18n + axe. It is **not** required to merge bump-trust changes. It does not cover install/configure, RBAC denial, or live dynamic-plugin install (see [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays)).
+Workspace Playwright (`yarn test:e2e`) is catalog UI + i18n + axe. It is **not** required to merge bump-trust changes. It does not cover install/configure, RBAC denial, or live dynamic-plugin install (see [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays)).
 
 See the [workspace contributor index](../../CONTRIBUTING.md) for all package commands.
