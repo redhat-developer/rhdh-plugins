@@ -171,7 +171,6 @@ export const TimeSavedChip = (props: { template: TemplateWithAnnotations }) => {
     >
       <Chip
         size="small"
-        variant="outlined"
         icon={<AccessTimeOutlined />}
         label={t('templateCard.timeSaved.estimate', {
           duration: durationLabel,
