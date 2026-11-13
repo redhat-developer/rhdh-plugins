@@ -117,6 +117,20 @@ export const sidebarCreateItem = SidebarItemBlueprint.make({
 });
 
 /**
+ * Placeholder item that claims `/catalog-graph` with an empty title, so the
+ * auto-discovered Catalog Graph page does not appear in the menu.
+ * Extension ID: `sidebar-item:app/catalog-graph`. Disable it (or give it a title)
+ * via `app-config.yaml` to show the Catalog Graph entry again.
+ */
+export const sidebarCatalogGraphItem = SidebarItemBlueprint.make({
+  name: 'catalog-graph',
+  params: {
+    title: '',
+    to: '/catalog-graph',
+  },
+});
+
+/**
  * Search entry shown below the company logo when enabled. Extension ID:
  * `sidebar-element:app/search`.
  * Disabled by default; enable via `app-config.yaml`.
@@ -220,6 +234,7 @@ export const defaultSidebarExtensions = [
   sidebarLogoSpacer,
   sidebarSearchItem,
   sidebarCreateItem,
+  sidebarCatalogGraphItem,
   sidebarSearchElement,
   sidebarSearchDivider,
   sidebarBottomSpacer,

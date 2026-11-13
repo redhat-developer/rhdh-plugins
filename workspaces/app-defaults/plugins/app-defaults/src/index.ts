@@ -27,12 +27,6 @@ import {
   appDefaultsTranslationsModule,
 } from './appDefaultsModule';
 import { appDefaultsTranslations } from './translations';
-import { apiDocsPluginOverride } from './api-docs/apiDocsPluginOverride';
-import { catalogPluginOverride } from './catalog/catalogPluginOverride';
-import { catalogModule } from './catalog/catalogModule';
-import { catalogGraphPluginOverride } from './catalog-graph/catalogGraphPluginOverride';
-import { docsPluginOverride } from './docs/docsPluginOverride';
-import { scaffolderPluginOverride } from './scaffolder/scaffolderPluginOverride';
 import { learningPathsModule } from './learning-paths';
 
 export { appDefaultsModule };
@@ -72,10 +66,12 @@ export {
 export type { CompanyLogoProps, LogoURLs } from './sidebar/logo';
 
 /**
- * Feature loader that registers the RHDH app defaults module, the catalog
- * entity header layout that localizes the catalog tab titles, and all plugin
- * overrides (catalog, catalog graph, scaffolder, API docs, TechDocs) that add
- * empty-state pages when no entities are available.
+ * Feature loader that registers the RHDH app defaults module, the
+ * translations module, and learning paths.
+ *
+ * Plugin overrides (catalog, catalog graph, scaffolder, API docs, TechDocs)
+ * are available as individual subpath exports (e.g. `./catalog-plugin-override`)
+ * so they can be loaded conditionally when their respective plugins are enabled.
  *
  * @public
  */
@@ -85,12 +81,6 @@ export default createFrontendFeatureLoader({
       appDefaultsModule,
       appDefaultsTranslationsModule,
       learningPathsModule,
-      catalogPluginOverride,
-      catalogModule,
-      catalogGraphPluginOverride,
-      scaffolderPluginOverride,
-      apiDocsPluginOverride,
-      docsPluginOverride,
     ];
   },
 });
