@@ -86,7 +86,7 @@ const signInModule = createFrontendModule({
  * - ApiBlueprint
  * - SignInPageBlueprint
  *
- * To run: yarn start (NFS) or yarn start:legacy (legacy app)
+ * To run: yarn start
  */
 const app = createApp({
   features: [

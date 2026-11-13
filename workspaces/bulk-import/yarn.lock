@@ -1036,14 +1036,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@axe-core/playwright@npm:^4.11.0":
-  version: 4.11.1
-  resolution: "@axe-core/playwright@npm:4.11.1"
+"@axe-core/playwright@npm:^4.11.0, @axe-core/playwright@npm:^4.14.0":
+  version: 4.14.0
+  resolution: "@axe-core/playwright@npm:4.14.0"
   dependencies:
-    axe-core: "npm:~4.11.1"
+    axe-core: "npm:~4.14.0"
   peerDependencies:
     playwright-core: ">= 1.0.0"
-  checksum: 10c0/8c916cd2dd831d91f8c2ab9e3a07ef19837415bb41d40439e4acb88ed0009af2479696b865670199b13ccad984a247868610fbb34d520fca9f7c02de0f7a9439
+  checksum: 10c0/a42bca2305bbb80a374be9ff6642cac7b45f5f0aef1be9170ae42617c3423501ab1a33c8581641a71554a0c6a69f6ca512a5cc6e320ed197339a9ac4edfa713c
   languageName: node
   linkType: hard
 
@@ -6028,7 +6028,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/bulk-import@workspace:."
   dependencies:
-    "@axe-core/playwright": "npm:^4.11.0"
+    "@axe-core/playwright": "npm:^4.14.0"
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/e2e-test-utils": "npm:^0.1.2"
     "@backstage/repo-tools": "npm:^0.19.0"
@@ -16058,80 +16058,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app-legacy@workspace:packages/app-legacy":
-  version: 0.0.0-use.local
-  resolution: "app-legacy@workspace:packages/app-legacy"
-  dependencies:
-    "@axe-core/playwright": "npm:^4.11.0"
-    "@backstage-community/plugin-rbac": "npm:^1.54.0"
-    "@backstage/app-defaults": "npm:^1.7.11"
-    "@backstage/catalog-model": "npm:^1.10.0"
-    "@backstage/cli": "npm:^0.36.5"
-    "@backstage/core-app-api": "npm:^1.20.4"
-    "@backstage/core-components": "npm:^0.18.13"
-    "@backstage/core-plugin-api": "npm:^1.12.9"
-    "@backstage/dev-utils": "npm:^1.1.26"
-    "@backstage/integration-react": "npm:^1.2.21"
-    "@backstage/plugin-api-docs": "npm:^0.14.4"
-    "@backstage/plugin-catalog": "npm:^2.0.8"
-    "@backstage/plugin-catalog-common": "npm:^1.1.10"
-    "@backstage/plugin-catalog-graph": "npm:^0.6.7"
-    "@backstage/plugin-catalog-import": "npm:^0.13.17"
-    "@backstage/plugin-catalog-react": "npm:^3.2.2"
-    "@backstage/plugin-notifications": "npm:^0.5.20"
-    "@backstage/plugin-org": "npm:^0.7.8"
-    "@backstage/plugin-permission-react": "npm:^0.5.4"
-    "@backstage/plugin-scaffolder": "npm:^1.38.2"
-    "@backstage/plugin-search": "npm:^1.7.7"
-    "@backstage/plugin-search-react": "npm:^1.11.7"
-    "@backstage/plugin-signals": "npm:^0.0.34"
-    "@backstage/plugin-techdocs": "npm:^1.18.0"
-    "@backstage/plugin-techdocs-module-addons-contrib": "npm:^1.1.39"
-    "@backstage/plugin-techdocs-react": "npm:^1.3.14"
-    "@backstage/plugin-user-settings": "npm:^0.9.6"
-    "@backstage/test-utils": "npm:^1.7.21"
-    "@backstage/theme": "npm:^0.7.3"
-    "@backstage/ui": "npm:^0.17.1"
-    "@mui/icons-material": "npm:5.18.0"
-    "@mui/lab": "npm:5.0.0-alpha.177"
-    "@mui/material": "npm:5.18.0"
-    "@mui/styles": "npm:5.18.0"
-    "@playwright/test": "npm:1.65.0"
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:6.3.1"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "npm:2.4.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.4.1"
-    "@spotify/prettier-config": "npm:^15.0.0"
-    "@tanstack/react-query": "npm:^4.29.21"
-    "@testing-library/dom": "npm:^10.0.0"
-    "@testing-library/jest-dom": "npm:^6.0.0"
-    "@testing-library/react": "npm:^15.0.0"
-    "@testing-library/user-event": "npm:14.6.8"
-    "@types/js-yaml": "npm:^4.0.9"
-    "@types/lodash": "npm:^4.14.151"
-    "@types/react": "npm:^18.2.58"
-    "@types/react-dom": "npm:*"
-    cross-env: "npm:^7.0.0"
-    formik: "npm:^2.4.5"
-    history: "npm:^5.3.0"
-    js-yaml: "npm:^4.3.1"
-    lodash: "npm:^4.17.21"
-    msw: "npm:1.3.5"
-    prettier: "npm:3.9.10"
-    react: "npm:16.13.1 || ^17.0.0 || ^18.0.0"
-    react-dom: "npm:^18.0.2"
-    react-router: "npm:^6.3.0"
-    react-router-dom: "npm:^6.3.0"
-    react-use: "npm:^17.4.0"
-    yaml: "npm:^2.0.0"
-    yup: "npm:^1.4.0"
-  peerDependencies:
-    react: 16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.0.0
-  languageName: unknown
-  linkType: soft
-
 "app-root-path@npm:^3.1.0":
   version: 3.1.0
   resolution: "app-root-path@npm:3.1.0"
@@ -16683,10 +16609,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:^4.10.0, axe-core@npm:~4.11.1":
-  version: 4.11.1
-  resolution: "axe-core@npm:4.11.1"
-  checksum: 10c0/1e6997454b61c7c9a4d740f395952835dcf87f2c04fd81577217d68634d197d602c224f9e8f17b22815db4c117a2519980cfc8911fc0027c54a6d8ebca47c6a7
+"axe-core@npm:^4.10.0, axe-core@npm:~4.14.0":
+  version: 4.14.0
+  resolution: "axe-core@npm:4.14.0"
+  checksum: 10c0/8aaa0bf748e0dcf202e8f837951a37b28b4b62d639bed58c07a6890bf035ed6a11ede9f4006db9ca8041db821dc80476c27cff08fd70afa9195ee58fb995a958
   languageName: node
   linkType: hard
 
@@ -19109,18 +19035,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-env@npm:^7.0.0":
-  version: 7.0.3
-  resolution: "cross-env@npm:7.0.3"
-  dependencies:
-    cross-spawn: "npm:^7.0.1"
-  bin:
-    cross-env: src/bin/cross-env.js
-    cross-env-shell: src/bin/cross-env-shell.js
-  checksum: 10c0/f3765c25746c69fcca369655c442c6c886e54ccf3ab8c16847d5ad0e91e2f337d36eedc6599c1227904bf2a228d721e690324446876115bc8e7b32a866735ecf
-  languageName: node
-  linkType: hard
-
 "cross-fetch@npm:^3.1.5":
   version: 3.2.0
   resolution: "cross-fetch@npm:3.2.0"
@@ -19139,7 +19053,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-spawn@npm:^7.0.1, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3, cross-spawn@npm:^7.0.5, cross-spawn@npm:^7.0.6":
+"cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.3, cross-spawn@npm:^7.0.5, cross-spawn@npm:^7.0.6":
   version: 7.0.6
   resolution: "cross-spawn@npm:7.0.6"
   dependencies:
@@ -32868,7 +32782,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:6.30.6, react-router@npm:^6.3.0":
+"react-router@npm:6.30.6":
   version: 6.30.6
   resolution: "react-router@npm:6.30.6"
   dependencies:
