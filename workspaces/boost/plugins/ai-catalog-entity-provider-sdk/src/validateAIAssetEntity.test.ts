@@ -20,10 +20,13 @@ import { validateAIAssetEntity } from './validateAIAssetEntity';
 function makeEntity(annotations: Record<string, string>): Entity {
   return {
     apiVersion: 'backstage.io/v1alpha1',
-    kind: 'Resource',
+    kind: 'AiResource',
     metadata: {
       name: 'test-entity',
       annotations,
+    },
+    spec: {
+      type: 'agent',
     },
   };
 }
@@ -33,7 +36,7 @@ describe('validateAIAssetEntity', () => {
     const entity = makeEntity({
       'rhdh.io/ai-asset-category': 'agent',
       'rhdh.io/ai-asset-version': '1.0.0',
-      'rhdh.io/ai-asset-source': 'kagenti/default',
+      'rhdh.io/ai-asset-source': 'ogx/default',
     });
     expect(() => validateAIAssetEntity(entity)).not.toThrow();
   });
@@ -41,11 +44,11 @@ describe('validateAIAssetEntity', () => {
   it('throws when category is missing', () => {
     const entity = makeEntity({
       'rhdh.io/ai-asset-version': '1.0.0',
-      'rhdh.io/ai-asset-source': 'kagenti/default',
+      'rhdh.io/ai-asset-source': 'ogx/default',
     });
     expect(() => validateAIAssetEntity(entity)).toThrow(
       new Error(
-        'Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server',
+        'Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, mcp-server, ai-model, model-server',
       ),
     );
   });
@@ -54,17 +57,17 @@ describe('validateAIAssetEntity', () => {
     const entity = makeEntity({
       'rhdh.io/ai-asset-category': 'invalid-category',
       'rhdh.io/ai-asset-version': '1.0.0',
-      'rhdh.io/ai-asset-source': 'kagenti/default',
+      'rhdh.io/ai-asset-source': 'ogx/default',
     });
     expect(() => validateAIAssetEntity(entity)).toThrow(
-      "Invalid rhdh.io/ai-asset-category value 'invalid-category'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server",
+      "Invalid rhdh.io/ai-asset-category value 'invalid-category'. Allowed: agent, skill, rule, mcp-server, ai-model, model-server",
     );
   });
 
   it('throws when version is missing', () => {
     const entity = makeEntity({
       'rhdh.io/ai-asset-category': 'agent',
-      'rhdh.io/ai-asset-source': 'kagenti/default',
+      'rhdh.io/ai-asset-source': 'ogx/default',
     });
     expect(() => validateAIAssetEntity(entity)).toThrow(
       'Invalid or missing rhdh.io/ai-asset-version annotation',
@@ -93,11 +96,11 @@ describe('validateAIAssetEntity', () => {
       const entity = makeEntity({
         'rhdh.io/ai-asset-category': category,
         'rhdh.io/ai-asset-version': '1.0.0',
-        'rhdh.io/ai-asset-source': 'kagenti/default',
+        'rhdh.io/ai-asset-source': 'ogx/default',
       });
       expect(() => validateAIAssetEntity(entity)).toThrow(
         new Error(
-          `Invalid rhdh.io/ai-asset-category value '${escaped}'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`,
+          `Invalid rhdh.io/ai-asset-category value '${escaped}'. Allowed: agent, skill, rule, mcp-server, ai-model, model-server`,
         ),
       );
     },
@@ -118,7 +121,6 @@ describe('validateAIAssetEntity', () => {
       'agent',
       'skill',
       'rule',
-      'skill-bundle',
       'mcp-server',
       'ai-model',
       'model-server',
@@ -127,7 +129,7 @@ describe('validateAIAssetEntity', () => {
       const entity = makeEntity({
         'rhdh.io/ai-asset-category': category,
         'rhdh.io/ai-asset-version': '1.0.0',
-        'rhdh.io/ai-asset-source': 'kagenti/default',
+        'rhdh.io/ai-asset-source': 'ogx/default',
       });
       expect(() => validateAIAssetEntity(entity)).not.toThrow();
     }
@@ -137,7 +139,7 @@ describe('validateAIAssetEntity', () => {
     const entity = makeEntity({});
     expect(() => validateAIAssetEntity(entity)).toThrow(
       new Error(
-        'Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server',
+        'Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, mcp-server, ai-model, model-server',
       ),
     );
   });

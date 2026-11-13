@@ -34,8 +34,8 @@ The SDK MUST provide a delta sync framework accepting connector-reported additio
 
 #### Scenario: Connector reports deletions (RHIDP-15262)
 
-- **WHEN** the connector reports `removed: ['component:default/agent-foo']`
-- **THEN** the entity ref `component:default/agent-foo` is included in the `removed` array passed to `applyMutation`
+- **WHEN** the connector reports `removed: ['airesource:default/agent-foo']`
+- **THEN** the entity ref `airesource:default/agent-foo` is included in the `removed` array passed to `applyMutation`
 - **AND** the entity is deleted from the catalog
 
 ### Requirement: Sync Cursor Persistence

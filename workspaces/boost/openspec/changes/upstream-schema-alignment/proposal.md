@@ -50,7 +50,7 @@ The tool is a scaffold — it establishes the structure for migration-readiness 
 
 ### Current RHDH AI Asset Entity Mapping
 
-> **Current-state source of truth:** [ai-catalog-entity-model/design.md Decision 1](../ai-catalog-entity-model/design.md). The [catalog-entities spec](../../../RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/specs/catalog-entities/spec.md) is supplementary context, not a competing SoT for readiness.
+> **Current-state source of truth:** [ai-catalog-entity-model/design.md Decision 1](../ai-catalog-entity-model/design.md).
 
 | AI Asset             | Current Kind     | Current spec.type | Upstream Target (today)                                                                                 | Confidence  | Notes                                                                                                                                            |
 | -------------------- | ---------------- | ----------------- | ------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -61,7 +61,7 @@ The tool is a scaffold — it establishes the structure for migration-readiness 
 | Rule (compatibility) | AiResource       | rule              | `AiResource` (shipped; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)           | Medium–High | Compatibility mapping only; not a sixth minimum category. Kind/name aligned. Field alignment needed.                                             |
 | Agent                | AiResource       | agent             | Upstream agent-schema alignment remains separate from MCP-only RFC #32062                               | Low         | Keep the settled RHDH `AiResource` / `agent` mapping; track future upstream alignment under RHDHPLAN-1113.                                       |
 
-> **Out of scope:** `skill-bundle` and its SkillBundle/`skillcard.yaml` contracts were removed from the minimum baseline by RHIDP-18761 and are archived; `vector-store` and `ai-tool` are not annotation categories for this readiness work (confirmed in [#4042 gate comment §0](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)). The source of truth for the five minimum categories and retained `rule` compatibility value is [ai-catalog-entity-model/design.md Decision 1](../ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds). The [catalog-entities spec](../../../RHDH-2-1-Legacy-Content/Pre-RHDHPLAN-15xx-Content/agent-creation-discovery/specs/catalog-entities/spec.md) is supplementary context for provider-deployment.
+> **Out of scope:** `skill-bundle` and its SkillBundle/`skillcard.yaml` contracts were removed from the minimum baseline by RHIDP-18761 and are archived; `vector-store` and `ai-tool` are not annotation categories for this readiness work (confirmed in [#4042 gate comment §0](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)). The source of truth for the five minimum categories and retained `rule` compatibility value is [ai-catalog-entity-model/design.md Decision 1](../ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds).
 
 ## Capabilities
 

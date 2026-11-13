@@ -18,10 +18,8 @@ workspaces/boost/
 │       ├── specifications/        # Product requirements (RHDH 2.1)
 │       │   ├── boost-context.md   # Project rationale, 12 design principles
 │       │   └── prd/               # Product Requirements Documents
-│       ├── agent-creation-discovery/
-│       ├── ai-chat-interaction-experience/
-│       ├── pluggable-ai-platform-architecture/
-│       └── platform-operations-deployment/
+│       └── RHDHPLAN-1513-potential-openspecs/  # Historical reference (#5548)
+│           └── platform-operations-deployment/
 ├── openspec/                      # Implementation specifications (RHDH 2.2)
 │   ├── specs/                     # Implemented behavior and release source of truth
 │   └── changes/                   # One directory per capability area (RHDH 2.2 cycle)

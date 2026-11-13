@@ -48,9 +48,10 @@ the structural Backstage type.
 
 The five minimum feature categories are `agent`, `skill`, `mcp-server`,
 `ai-model`, and `model-server`. Retaining `rule` does not add discovery,
-provider, or frontend obligations for rules. These are RHIDP-18762
-reconciliation targets; the current SDK's historical seven-value enum,
-README, and API report remain unchanged by this documentation PR.
+provider, or frontend obligations for rules. RHIDP-18762 reconciles the SDK's
+`AIAssetCategory` union, validation schema, category list, README, and API
+report to these six values. `skill-bundle` is excluded from the active SDK
+vocabulary. Further metadata and provider-adoption design remains separate.
 
 **Example:**
 
