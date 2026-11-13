@@ -67,6 +67,14 @@ export interface Config {
        */
       ttlSecondsAfterFinished?: number;
       /**
+       * SMP-like JSON object merged into every generated X2A Job. Common keyed
+       * lists are merged and other fields can override generated values.
+       * This is not a complete implementation of Kubernetes Strategic Merge Patch.
+       * Incorrect patches can prevent X2A jobs from running or being tracked correctly.
+       * @visibility backend
+       */
+      deploymentPatch?: Record<string, unknown>;
+      /**
        * Resource requests and limits for job pods
        * @visibility backend
        */

@@ -45,7 +45,40 @@ x2a:
       limits:
         cpu: ${X2A_KUBERNETES_CPU_LIMIT:-2000m}
         memory: ${X2A_KUBERNETES_MEMORY_LIMIT:-4Gi}
+    # Optional SMP-like patch for every generated X2A Job.
+    # deploymentPatch:
+    #   spec:
+    #     template:
+    #       spec:
+    #         containers:
+    #           - name: x2a
+    #             env:
+    #               - name: CUSTOM_SETTING
+    #                 value: example
+    #             volumeMounts:
+    #               - name: custom-config
+    #                 mountPath: /etc/custom-config
+    #                 readOnly: true
+    #         volumes:
+    #           - name: custom-config
+    #             configMap:
+    #               name: custom-config
 ```
+
+`x2a.kubernetes.deploymentPatch` is an optional, backend-visible JSON object
+merged into every generated Job. It uses SMP-like semantics for common
+Kubernetes lists and can override generated fields. Containers,
+initContainers, environment variables, volumes, and image pull secrets are
+merged by `name`; volume mounts are merged by `mountPath`; volume devices are
+merged by `devicePath`; ports are merged by `containerPort`. Other arrays,
+including `command`, `args`, `envFrom`, and tolerations, are replaced. A `null`
+value removes a generated field. This is not a complete implementation of
+Kubernetes Strategic Merge Patch and does not support `$patch` directives.
+The final Job is ultimately validated by the Kubernetes API.
+
+Because this setting can replace plugin-generated fields, it is intended for
+administrators. An incorrect patch can prevent X2A jobs from running or being
+tracked correctly.
 
 ### LLM Provider Credentials
 

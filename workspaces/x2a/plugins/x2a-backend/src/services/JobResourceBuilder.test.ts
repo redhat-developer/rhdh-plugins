@@ -555,6 +555,241 @@ describe('JobResourceBuilder', () => {
       },
     };
 
+    describe('deploymentPatch across phases', () => {
+      it('rejects a null deployment patch', () => {
+        mockConfig.kubernetes.deploymentPatch =
+          null as unknown as X2AConfig['kubernetes']['deploymentPatch'];
+
+        expect(() =>
+          JobResourceBuilder.buildJobSpec(baseParams, mockConfig),
+        ).toThrow('deploymentPatch must be a plain object');
+      });
+
+      it.each([
+        'init',
+        'analyze',
+        'migrate',
+        'publish',
+        'adversarial-analyze',
+        'adversarial-migrate',
+      ] as const)('applies the configured patch to %s Jobs', phase => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    env: [{ name: 'PATCH_TEST', value: 'present' }],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          { ...baseParams, phase },
+          mockConfig,
+        );
+        const container = job.spec?.template.spec?.containers?.[0];
+
+        expect(container?.env).toEqual(
+          expect.arrayContaining([
+            { name: 'PHASE', value: phase },
+            { name: 'PATCH_TEST', value: 'present' },
+          ]),
+        );
+      });
+
+      it('preserves rule mounts and volumes while applying the patch', () => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    env: [{ name: 'PATCH_TEST', value: 'present' }],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          {
+            ...baseParams,
+            acceptedRules: [
+              { id: 'rule-1', title: 'Test rule', description: 'Rule body' },
+            ],
+          },
+          mockConfig,
+        );
+        const podSpec = job.spec?.template.spec;
+        const container = podSpec?.containers?.[0];
+
+        expect(container?.volumeMounts).toEqual(
+          expect.arrayContaining([expect.objectContaining({ name: 'rules' })]),
+        );
+        expect(podSpec?.volumes).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'rules',
+              configMap: { name: 'x2a-rules-init-job-123' },
+            }),
+          ]),
+        );
+        expect(container?.env).toEqual(
+          expect.arrayContaining([{ name: 'PATCH_TEST', value: 'present' }]),
+        );
+      });
+
+      it('preserves adversarial-agent mounts and volumes while applying the patch', () => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    env: [{ name: 'PATCH_TEST', value: 'present' }],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          {
+            ...baseParams,
+            phase: 'adversarial-analyze',
+            adversarialAgents: [
+              {
+                id: 'agent-1',
+                name: 'Test agent',
+                prompt: 'Test prompt',
+                phases: ['analyze'],
+                critical: false,
+              },
+            ],
+          },
+          mockConfig,
+          'x2a-adversarial-agents-job-123',
+        );
+        const podSpec = job.spec?.template.spec;
+        const container = podSpec?.containers?.[0];
+
+        expect(container?.volumeMounts).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ name: 'adversarial-agents-config' }),
+          ]),
+        );
+        expect(podSpec?.volumes).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'adversarial-agents-config',
+              configMap: { name: 'x2a-adversarial-agents-job-123' },
+            }),
+          ]),
+        );
+      });
+
+      it('overrides a phase-specific rules mount at the same path', () => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    volumeMounts: [
+                      { name: 'rules', mountPath: '/rules', readOnly: true },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          {
+            ...baseParams,
+            acceptedRules: [
+              { id: 'rule-1', title: 'Test rule', description: 'Rule body' },
+            ],
+          },
+          mockConfig,
+        );
+        const container = job.spec?.template.spec?.containers?.[0];
+
+        expect(container?.volumeMounts).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'rules',
+              mountPath: '/rules',
+              readOnly: true,
+            }),
+          ]),
+        );
+      });
+
+      it('overrides a phase-specific adversarial-agent mount at the same path', () => {
+        mockConfig.kubernetes.deploymentPatch = {
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'x2a',
+                    volumeMounts: [
+                      {
+                        name: 'adversarial-agents-config',
+                        mountPath: '/etc/x2a/adversarial-agents',
+                        readOnly: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        };
+
+        const job = JobResourceBuilder.buildJobSpec(
+          {
+            ...baseParams,
+            phase: 'adversarial-analyze',
+            adversarialAgents: [
+              {
+                id: 'agent-1',
+                name: 'Test agent',
+                prompt: 'Test prompt',
+                phases: ['analyze'],
+                critical: false,
+              },
+            ],
+          },
+          mockConfig,
+          'x2a-adversarial-agents-job-123',
+        );
+        const container = job.spec?.template.spec?.containers?.[0];
+
+        expect(container?.volumeMounts).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: 'adversarial-agents-config',
+              mountPath: '/etc/x2a/adversarial-agents',
+              readOnly: true,
+            }),
+          ]),
+        );
+      });
+    });
+
     describe('Job metadata', () => {
       it('should generate unique job name with phase', () => {
         const job1 = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
