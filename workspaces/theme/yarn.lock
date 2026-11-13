@@ -653,14 +653,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@axe-core/playwright@npm:^4.11.0":
-  version: 4.11.0
-  resolution: "@axe-core/playwright@npm:4.11.0"
+"@axe-core/playwright@npm:^4.14.0":
+  version: 4.14.0
+  resolution: "@axe-core/playwright@npm:4.14.0"
   dependencies:
-    axe-core: "npm:~4.11.0"
+    axe-core: "npm:~4.14.0"
   peerDependencies:
     playwright-core: ">= 1.0.0"
-  checksum: 10c0/73f93cbe510b2399986aa14e4b07bff79fb757b7205240a6ed59b39f3c252014beeb6e6ce0850c1d392fe1f3f3f04c4e5ff860cbcdeaaf7b6dc1598c3209e539
+  checksum: 10c0/a42bca2305bbb80a374be9ff6642cac7b45f5f0aef1be9170ae42617c3423501ab1a33c8581641a71554a0c6a69f6ca512a5cc6e320ed197339a9ac4edfa713c
   languageName: node
   linkType: hard
 
@@ -1257,7 +1257,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/app-defaults@backstage:^::backstage=1.54.6&npm=1.7.11, @backstage/app-defaults@npm:^1.7.11":
+"@backstage/app-defaults@npm:^1.7.11":
   version: 1.7.11
   resolution: "@backstage/app-defaults@npm:1.7.11"
   dependencies:
@@ -1451,7 +1451,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-model@backstage:^::backstage=1.54.6&npm=1.10.0, @backstage/catalog-model@npm:^1.10.0, @backstage/catalog-model@npm:^1.9.0":
+"@backstage/catalog-model@npm:^1.10.0, @backstage/catalog-model@npm:^1.9.0":
   version: 1.10.0
   resolution: "@backstage/catalog-model@npm:1.10.0"
   dependencies:
@@ -2647,7 +2647,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-common@backstage:^::backstage=1.54.6&npm=1.1.10, @backstage/plugin-catalog-common@npm:^1.1.10":
+"@backstage/plugin-catalog-common@npm:^1.1.10":
   version: 1.1.10
   resolution: "@backstage/plugin-catalog-common@npm:1.1.10"
   dependencies:
@@ -2754,7 +2754,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-react@backstage:^::backstage=1.54.6&npm=3.2.2, @backstage/plugin-catalog-react@npm:^3.2.1, @backstage/plugin-catalog-react@npm:^3.2.2":
+"@backstage/plugin-catalog-react@npm:^3.2.1, @backstage/plugin-catalog-react@npm:^3.2.2":
   version: 3.2.2
   resolution: "@backstage/plugin-catalog-react@npm:3.2.2"
   dependencies:
@@ -3186,7 +3186,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-react@backstage:^::backstage=1.54.6&npm=0.5.4, @backstage/plugin-permission-react@npm:^0.5.4":
+"@backstage/plugin-permission-react@npm:^0.5.4":
   version: 0.5.4
   resolution: "@backstage/plugin-permission-react@npm:0.5.4"
   dependencies:
@@ -3582,7 +3582,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-react@backstage:^::backstage=1.54.6&npm=1.11.7, @backstage/plugin-search-react@npm:^1.11.7":
+"@backstage/plugin-search-react@npm:^1.11.7":
   version: 1.11.7
   resolution: "@backstage/plugin-search-react@npm:1.11.7"
   dependencies:
@@ -3808,7 +3808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-techdocs-react@backstage:^::backstage=1.54.6&npm=1.3.14, @backstage/plugin-techdocs-react@npm:^1.3.14":
+"@backstage/plugin-techdocs-react@npm:^1.3.14":
   version: 1.3.14
   resolution: "@backstage/plugin-techdocs-react@npm:1.3.14"
   dependencies:
@@ -5391,7 +5391,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/theme@workspace:."
   dependencies:
-    "@axe-core/playwright": "npm:^4.11.0"
+    "@axe-core/playwright": "npm:^4.14.0"
     "@backstage/cli": "backstage:^"
     "@backstage/cli-defaults": "backstage:^"
     "@backstage/e2e-test-utils": "backstage:^"
@@ -13198,60 +13198,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app-legacy@workspace:packages/app-legacy":
-  version: 0.0.0-use.local
-  resolution: "app-legacy@workspace:packages/app-legacy"
-  dependencies:
-    "@axe-core/playwright": "npm:^4.11.0"
-    "@backstage/app-defaults": "backstage:^"
-    "@backstage/catalog-model": "backstage:^"
-    "@backstage/cli": "backstage:^"
-    "@backstage/core-app-api": "backstage:^"
-    "@backstage/core-components": "backstage:^"
-    "@backstage/core-plugin-api": "backstage:^"
-    "@backstage/integration-react": "backstage:^"
-    "@backstage/plugin-api-docs": "backstage:^"
-    "@backstage/plugin-catalog": "backstage:^"
-    "@backstage/plugin-catalog-common": "backstage:^"
-    "@backstage/plugin-catalog-graph": "backstage:^"
-    "@backstage/plugin-catalog-import": "backstage:^"
-    "@backstage/plugin-catalog-react": "backstage:^"
-    "@backstage/plugin-kubernetes": "backstage:^"
-    "@backstage/plugin-notifications": "backstage:^"
-    "@backstage/plugin-org": "backstage:^"
-    "@backstage/plugin-permission-react": "backstage:^"
-    "@backstage/plugin-scaffolder": "backstage:^"
-    "@backstage/plugin-search": "backstage:^"
-    "@backstage/plugin-search-react": "backstage:^"
-    "@backstage/plugin-signals": "backstage:^"
-    "@backstage/plugin-techdocs": "backstage:^"
-    "@backstage/plugin-techdocs-module-addons-contrib": "backstage:^"
-    "@backstage/plugin-techdocs-react": "backstage:^"
-    "@backstage/plugin-user-settings": "backstage:^"
-    "@backstage/test-utils": "backstage:^"
-    "@backstage/theme": "backstage:^"
-    "@backstage/ui": "backstage:^"
-    "@mui/icons-material": "npm:5.18.0"
-    "@mui/material": "npm:5.18.0"
-    "@playwright/test": "npm:1.63.0"
-    "@red-hat-developer-hub/backstage-plugin-bcc-test": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-bui-test": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-mui4-test": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-mui5-test": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "workspace:^"
-    "@testing-library/dom": "npm:^9.0.0"
-    "@testing-library/jest-dom": "npm:^6.0.0"
-    "@testing-library/react": "npm:^14.0.0"
-    "@testing-library/user-event": "npm:^14.0.0"
-    "@types/react-dom": "npm:*"
-    cross-env: "npm:^7.0.0"
-    react: "npm:^18.0.2"
-    react-dom: "npm:^18.0.2"
-    react-router: "npm:^6.3.0"
-    react-router-dom: "npm:^6.30.6"
-  languageName: unknown
-  linkType: soft
-
 "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
   version: 0.0.0-use.local
   resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
@@ -13262,7 +13208,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app@workspace:packages/app"
   dependencies:
-    "@axe-core/playwright": "npm:^4.11.0"
+    "@axe-core/playwright": "npm:^4.14.0"
     "@backstage/cli": "backstage:^"
     "@backstage/core-components": "backstage:^"
     "@backstage/core-plugin-api": "backstage:^"
@@ -13719,10 +13665,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:^4.10.0, axe-core@npm:~4.11.0":
-  version: 4.11.0
-  resolution: "axe-core@npm:4.11.0"
-  checksum: 10c0/7d7020a568a824c303711858c2fcfe56d001d27e46c0c2ff75dc31b436cfddfd4857a301e70536cc9e64829d25338f7fb782102d23497ebdc66801e9900fc895
+"axe-core@npm:^4.10.0, axe-core@npm:~4.14.0":
+  version: 4.14.0
+  resolution: "axe-core@npm:4.14.0"
+  checksum: 10c0/8aaa0bf748e0dcf202e8f837951a37b28b4b62d639bed58c07a6890bf035ed6a11ede9f4006db9ca8041db821dc80476c27cff08fd70afa9195ee58fb995a958
   languageName: node
   linkType: hard
 
@@ -27462,7 +27408,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:6.30.6, react-router@npm:^6.3.0, react-router@npm:^6.30.2":
+"react-router@npm:6.30.6, react-router@npm:^6.30.2":
   version: 6.30.6
   resolution: "react-router@npm:6.30.6"
   dependencies:
