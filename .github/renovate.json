@@ -38,6 +38,11 @@
       "groupName": "GitHub Actions"
     },
     {
+      "description": "Allow digest updates for the renovate-config-validator image",
+      "matchPackageNames": ["ghcr.io/renovatebot/renovate"],
+      "digest": { "enabled": true }
+    },
+    {
       "matchPackageNames": ["node-fetch"],
       "allowedVersions": "<3.0.0"
     },
