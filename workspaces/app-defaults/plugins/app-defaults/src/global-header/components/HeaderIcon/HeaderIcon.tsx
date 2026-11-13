@@ -15,7 +15,7 @@
  */
 
 import type { CSSProperties } from 'react';
-import { useApi } from '@backstage/core-plugin-api';
+import { useApiHolder, useApp } from '@backstage/core-plugin-api';
 import { iconsApiRef } from '@backstage/frontend-plugin-api';
 import MuiIcon from '@mui/material/Icon';
 import Box from '@mui/material/Box';
@@ -33,6 +33,12 @@ export interface HeaderIconProps {
 }
 
 /**
+ * Resolves a header icon id from the host icon catalog.
+ *
+ * Prefers `iconsApi` (IconBundle / NFS). Falls back to
+ * `useApp().getSystemIcon` so icons registered via the legacy app icons map
+ * (or older global-header configs that relied on that path) keep rendering.
+ *
  * @public
  */
 export const HeaderIcon = ({
@@ -40,16 +46,29 @@ export const HeaderIcon = ({
   size = 'small',
   layout,
 }: HeaderIconProps) => {
-  const iconsApi = useApi(iconsApiRef);
+  const iconsApi = useApiHolder().get(iconsApiRef);
+  const app = useApp();
+
   if (!icon) {
     return null;
   }
 
-  const iconElement = iconsApi.icon(icon);
+  // Prefer IconElement from iconsApi; then IconComponent (getIcon / getSystemIcon)
+  // so size/fontSize still applies for legacy MUI IconComponent registrations.
+  const iconElement = iconsApi?.icon(icon);
   if (iconElement) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
         {iconElement}
+      </Box>
+    );
+  }
+
+  const SystemIcon = iconsApi?.getIcon(icon) ?? app.getSystemIcon(icon);
+  if (SystemIcon) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
+        <SystemIcon fontSize={size} />
       </Box>
     );
   }
@@ -82,7 +101,7 @@ export const HeaderIcon = ({
 
   // eslint-disable-next-line no-console
   console.warn(
-    `HeaderIcon: unregistered icon id "${icon}". Register via IconBundleBlueprint, iconsApi.icon(), or use an image/SVG URL.`,
+    `HeaderIcon: unregistered icon id "${icon}". Register via IconBundleBlueprint, iconsApi / app.getSystemIcon(), or use an image/SVG URL.`,
   );
 
   return (

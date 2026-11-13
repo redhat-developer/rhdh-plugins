@@ -18,16 +18,26 @@ import { render, screen } from '@testing-library/react';
 import { HeaderIcon } from './HeaderIcon';
 
 const mockIcon = jest.fn();
+const mockGetIcon = jest.fn();
+const mockGetSystemIcon = jest.fn();
 
 jest.mock('@backstage/core-plugin-api', () => ({
-  useApi: () => ({
-    icon: mockIcon,
+  useApiHolder: () => ({
+    get: () => ({
+      icon: mockIcon,
+      getIcon: mockGetIcon,
+    }),
+  }),
+  useApp: () => ({
+    getSystemIcon: mockGetSystemIcon,
   }),
 }));
 
 describe('HeaderIcon', () => {
   beforeEach(() => {
     mockIcon.mockReset();
+    mockGetIcon.mockReset();
+    mockGetSystemIcon.mockReset();
   });
 
   it('returns null when icon is not provided', () => {
@@ -35,12 +45,25 @@ describe('HeaderIcon', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('renders system icon when available', () => {
+  it('renders system icon from iconsApi when available', () => {
     mockIcon.mockReturnValue(<span data-testid="system-home-icon" />);
 
     render(<HeaderIcon icon="home" />);
     expect(screen.getByTestId('system-home-icon')).toBeInTheDocument();
     expect(mockIcon).toHaveBeenCalledWith('home');
+    expect(mockGetSystemIcon).not.toHaveBeenCalled();
+  });
+
+  it('falls back to useApp().getSystemIcon for legacy registrations', () => {
+    mockIcon.mockReturnValue(undefined);
+    mockGetIcon.mockReturnValue(undefined);
+    mockGetSystemIcon.mockReturnValue(() => (
+      <span data-testid="legacy-support-icon" />
+    ));
+
+    render(<HeaderIcon icon="support" />);
+    expect(screen.getByTestId('legacy-support-icon')).toBeInTheDocument();
+    expect(mockGetSystemIcon).toHaveBeenCalledWith('support');
   });
 
   it('renders inline svg icons', () => {
