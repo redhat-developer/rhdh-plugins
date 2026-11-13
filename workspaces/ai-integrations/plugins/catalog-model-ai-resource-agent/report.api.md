@@ -26,6 +26,10 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     instructions?: string;
     handoffDescription?: string;
     model?: string;
+    inferenceProvider?: {
+      name: string;
+      model: string;
+    };
     handoffs?: string[];
     tools?: string[];
     toolUseBehavior?: string | string[];

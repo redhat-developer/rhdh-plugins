@@ -67,6 +67,13 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     handoffDescription?: string;
     /** The model identifier for this agent. */
     model?: string;
+    /** Optional inference provider. When set, both name and model are required. */
+    inferenceProvider?: {
+      /** The inference provider identifier. */
+      name: string;
+      /** The model identifier. */
+      model: string;
+    };
     /** Opaque string references to other agents this agent can hand off to. */
     handoffs?: string[];
     /** Opaque string references to tools available to this agent. */

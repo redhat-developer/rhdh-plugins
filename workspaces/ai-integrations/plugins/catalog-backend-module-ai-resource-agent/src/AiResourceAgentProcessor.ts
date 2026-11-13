@@ -41,6 +41,7 @@ import { collectAgentErrors } from './collectAgentErrors';
  * - `spec.toolUseBehavior`: must be string or string array if present
  * - `spec.outputSchema`: must be string or object if present
  * - `spec.handoffDescription` / `spec.model`: must be strings if present
+ * - `spec.inferenceProvider`: must be an object with non-empty name and model strings if present
  *
  * Non-agent AiResource entities (skill, rule, model) are unaffected.
  * All constraint violations are collected and reported in a single
