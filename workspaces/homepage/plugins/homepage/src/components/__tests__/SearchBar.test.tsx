@@ -16,6 +16,8 @@
 
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { TestApiProvider } from '@backstage/test-utils';
+import { searchApiRef } from '@backstage/plugin-search-react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { SearchBar } from '../SearchBar';
@@ -31,46 +33,64 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: () => mockUseTranslation(),
 }));
 
-jest.mock('@backstage/plugin-search-react', () => ({
-  SearchBarBase: ({
-    placeholder,
-    value,
-    onChange,
-    onSubmit,
-    inputProps,
-  }: {
-    placeholder: string;
-    value: string;
-    onChange: (value: string) => void;
-    onSubmit: () => void;
-    inputProps: { ref: React.RefObject<HTMLInputElement> };
-  }) => (
-    <form
-      onSubmit={e => {
-        e.preventDefault();
-        onSubmit();
-      }}
-    >
-      <input
-        ref={inputProps.ref}
-        placeholder={placeholder}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-      />
-    </form>
-  ),
-}));
+jest.mock('@backstage/plugin-search-react', () => {
+  const actual = jest.requireActual('@backstage/plugin-search-react');
+  return {
+    ...actual,
+    SearchBarBase: ({
+      placeholder,
+      value,
+      onChange,
+      onSubmit,
+      inputProps,
+    }: {
+      placeholder: string;
+      value: string;
+      onChange: (value: string) => void;
+      onSubmit: () => void;
+      inputProps: { ref: React.RefObject<HTMLInputElement> };
+    }) => (
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
+        <input
+          ref={inputProps.ref}
+          placeholder={placeholder}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+        />
+      </form>
+    ),
+  };
+});
 
 describe('SearchBar', () => {
   beforeEach(() => {
     mockNavigate.mockClear();
   });
 
+  it('returns null when searchApi is not available', () => {
+    const { container } = render(
+      <TestApiProvider apis={[]}>
+        <MemoryRouter>
+          <SearchBar />
+        </MemoryRouter>
+      </TestApiProvider>,
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   it('navigates to default search path on submit', () => {
     render(
-      <MemoryRouter>
-        <SearchBar />
-      </MemoryRouter>,
+      <TestApiProvider apis={[[searchApiRef, {}]]}>
+        <MemoryRouter>
+          <SearchBar />
+        </MemoryRouter>
+      </TestApiProvider>,
     );
 
     const input = screen.getByPlaceholderText('Search');
@@ -82,9 +102,11 @@ describe('SearchBar', () => {
 
   it('uses custom path and query param on submit', () => {
     render(
-      <MemoryRouter>
-        <SearchBar path="/custom-search" queryParam="q" />
-      </MemoryRouter>,
+      <TestApiProvider apis={[[searchApiRef, {}]]}>
+        <MemoryRouter>
+          <SearchBar path="/custom-search" queryParam="q" />
+        </MemoryRouter>
+      </TestApiProvider>,
     );
 
     const input = screen.getByRole('textbox');

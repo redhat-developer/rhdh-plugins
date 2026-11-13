@@ -13,15 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useApi } from '@backstage/core-plugin-api';
+import { useApiHolder } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import useAsync from 'react-use/lib/useAsync';
 
 export const useEntities = ({ kind }: { kind: string | string[] }) => {
-  const catalogApi = useApi(catalogApiRef);
+  const apiHolder = useApiHolder();
+  const catalogApi = apiHolder.get(catalogApiRef);
 
   const { loading, error, value } = useAsync(async () => {
+    if (!catalogApi) {
+      return { items: [], totalItems: 0 };
+    }
     return await catalogApi.queryEntities({
       filter: {
         kind: kind,

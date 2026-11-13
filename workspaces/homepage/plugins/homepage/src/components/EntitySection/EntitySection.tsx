@@ -22,7 +22,8 @@ import {
   WarningPanel,
   Link as BackstageLink,
 } from '@backstage/core-components';
-import { useUserProfile } from '@backstage/plugin-user-settings';
+import { useApiHolder } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -39,6 +40,7 @@ import EntityCard from './EntityCard';
 import { ViewMoreLink } from './ViewMoreLink';
 import HomePageEntityIllustration from '../../images/homepage-entities-1.svg';
 import { useEntities } from '../../hooks/useEntities';
+import { useUserIdentity } from '../../hooks/useUserIdentity';
 import {
   addDismissedEntityIllustrationUsers,
   hasEntityIllustrationUserDismissed,
@@ -63,7 +65,9 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
 export const EntitySectionContent = () => {
   const theme = useTheme();
   const { t } = useTranslation();
-  const { displayName, loading: profileLoading } = useUserProfile();
+  const apiHolder = useApiHolder();
+  const catalogApi = apiHolder.get(catalogApiRef);
+  const { displayName, loading: profileLoading } = useUserIdentity();
   const [isRemoveFirstCard, setIsRemoveFirstCard] = useState(false);
   const [showDiscoveryCard, setShowDiscoveryCard] = useState(true);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -109,6 +113,10 @@ export const EntitySectionContent = () => {
   const { data, error, isLoading } = useEntities({
     kind: ['Component', 'API', 'Resource', 'System'],
   });
+
+  if (!catalogApi) {
+    return <></>;
+  }
 
   const entities = data?.items ?? [];
 
