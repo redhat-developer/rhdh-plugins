@@ -43,7 +43,6 @@ export const X2APage = x2APlugin.provide(
     mountPoint: rootRouteRef,
   }),
 );
-
 /** @public */
 export const RepoAuthenticationExtension = x2APlugin.provide(
   createScaffolderFieldExtension({

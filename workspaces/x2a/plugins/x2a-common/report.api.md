@@ -166,6 +166,8 @@ export interface Artifact {
 // @public (undocumented)
 export class ArtifactKind {
   // (undocumented)
+  static readonly AAP_CONFIG: ArtifactKind;
+  // (undocumented)
   static readonly ADVERSARIAL_REPORT: ArtifactKind;
   // (undocumented)
   static readonly ADVERSARIAL_REPORT_JSON: ArtifactKind;
@@ -177,6 +179,8 @@ export class ArtifactKind {
   equals(other: ArtifactKind): boolean;
   // (undocumented)
   static from(raw: string): ArtifactKind;
+  // (undocumented)
+  isAapConfig(): boolean;
   // (undocumented)
   isAdversarialReport(): boolean;
   // (undocumented)
@@ -214,6 +218,7 @@ export type ArtifactType =
   | 'migrated_sources'
   | 'project_metadata'
   | 'ansible_project'
+  | 'aap_config'
   | 'adversarial_report'
   | 'adversarial_report_json';
 
@@ -1145,6 +1150,7 @@ export const X2A_ARTIFACT_TYPE_VALUES: readonly [
   'adversarial_report_json',
   'project_metadata',
   'ansible_project',
+  'aap_config',
 ];
 
 // @public
