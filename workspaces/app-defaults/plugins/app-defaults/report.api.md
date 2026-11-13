@@ -4,6 +4,7 @@
 
 ```ts
 import { AppDrawerContent } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { AppHeaderData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
@@ -61,12 +62,32 @@ export const appDefaultsTranslationsModule: FrontendModule;
 export const appDrawerExtension: OverridableExtensionDefinition<{
   config: {};
   configInput: {};
-  output: ExtensionDataRef<
-    (props: { children: ReactNode }) => JSX.Element | null,
-    'app.root.wrapper',
-    {}
-  >;
+  output: ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>;
   inputs: {
+    nav: ExtensionInput<
+      ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>,
+      {
+        singleton: true;
+        optional: false;
+        internal: false;
+      }
+    >;
+    content: ExtensionInput<
+      ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>,
+      {
+        singleton: true;
+        optional: false;
+        internal: false;
+      }
+    >;
+    headers: ExtensionInput<
+      ConfigurableExtensionDataRef<AppHeaderData, 'app.header', {}>,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
     drawers: ExtensionInput<
       ConfigurableExtensionDataRef<AppDrawerContent, 'app.drawer.content', {}>,
       {
@@ -76,27 +97,55 @@ export const appDrawerExtension: OverridableExtensionDefinition<{
       }
     >;
   };
-  kind: 'app-root-wrapper';
-  name: 'drawer';
-  params: {
-    Component?: [error: 'Use the `component` parameter instead'];
-    component: (props: { children: ReactNode }) => JSX.Element | null;
-  };
+  params: never;
+  kind: undefined;
+  name: 'layout';
 }>;
 
 // @public @deprecated
 export const appDrawerModule: FrontendModule;
 
 // @public
+export const AppHeaders: (input: AppHeadersProps) => JSX_3.Element | null;
+
+// @public
+export interface AppHeadersProps {
+  headers: AppHeaderData[];
+}
+
+// @public
+export const AppLayout: (input: AppLayoutProps) => JSX_3.Element;
+
+// @public
 export const appLayoutExtension: OverridableExtensionDefinition<{
   config: {};
   configInput: {};
-  output: ExtensionDataRef<
-    (props: { children: ReactNode }) => JSX.Element | null,
-    'app.root.wrapper',
-    {}
-  >;
+  output: ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>;
   inputs: {
+    nav: ExtensionInput<
+      ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>,
+      {
+        singleton: true;
+        optional: false;
+        internal: false;
+      }
+    >;
+    content: ExtensionInput<
+      ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>,
+      {
+        singleton: true;
+        optional: false;
+        internal: false;
+      }
+    >;
+    headers: ExtensionInput<
+      ConfigurableExtensionDataRef<AppHeaderData, 'app.header', {}>,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
     drawers: ExtensionInput<
       ConfigurableExtensionDataRef<AppDrawerContent, 'app.drawer.content', {}>,
       {
@@ -106,16 +155,21 @@ export const appLayoutExtension: OverridableExtensionDefinition<{
       }
     >;
   };
-  kind: 'app-root-wrapper';
-  name: 'drawer';
-  params: {
-    Component?: [error: 'Use the `component` parameter instead'];
-    component: (props: { children: ReactNode }) => JSX.Element | null;
-  };
+  params: never;
+  kind: undefined;
+  name: 'layout';
 }>;
 
 // @public
 export const appLayoutModule: FrontendModule;
+
+// @public
+export interface AppLayoutProps {
+  content: ReactNode;
+  drawers: AppDrawerContent[];
+  headers: AppHeaderData[];
+  nav: ReactNode;
+}
 
 // @public
 export const AppSidebar: (input: AppSidebarProps) => JSX_3.Element;

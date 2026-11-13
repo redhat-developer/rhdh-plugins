@@ -14,10 +14,23 @@
  * limitations under the License.
  */
 
+import { appLayoutExtension, appLayoutModule } from '../layout/appLayoutModule';
+
 /**
- * @deprecated Use `appLayoutExtension` from `../layout/appLayoutModule`.
- * Kept for source compatibility with existing app-defaults imports.
+ * The app drawer is rendered by the RHDH app layout since the headers were
+ * introduced; this alias keeps existing imports working.
  *
  * @public
+ * @deprecated Use `appLayoutExtension` instead.
  */
-export { appDrawerExtension, appDrawerModule } from '../layout/appLayoutModule';
+export const appDrawerExtension = appLayoutExtension;
+
+/**
+ * The app drawer is rendered by the RHDH app layout since the headers were
+ * introduced; this alias keeps existing imports and the
+ * `./app-drawer-module` entry point working.
+ *
+ * @public
+ * @deprecated Use `appLayoutModule` instead.
+ */
+export const appDrawerModule = appLayoutModule;
