@@ -9149,7 +9149,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^1.2.2, @red-hat-developer-hub/backstage-plugin-theme@npm:^1.5.1":
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^1.2.2":
   version: 1.5.1
   resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:1.5.1"
   dependencies:
@@ -13790,7 +13790,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-app-defaults": "npm:^1.8.1"
     "@red-hat-developer-hub/backstage-plugin-homepage": "npm:^3.1.0"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.5.1"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.2.2"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
