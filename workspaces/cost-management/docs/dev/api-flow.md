@@ -193,7 +193,7 @@ Full checklist: [`walkthrough-architecture-api.md` §6](./walkthrough-architectu
 - [`architecture.md`](./architecture.md) — packages, security model, config overview
 - [`walkthrough-architecture-api.md`](./walkthrough-architecture-api.md) — walkthrough + verification checklist
 - [`rbac.md`](../rbac.md) — permission names and policies
-- [`local-dev-setup.md`](./local-dev-setup.md) · [`dynamic-plugin.md`](../dynamic-plugin.md)
+- [`local-dev-setup.md`](./local-dev-setup.md) · [`installing-on-rhdh.md`](../installing-on-rhdh.md)
 - [`plugins/cost-management-backend/README.md`](../plugins/cost-management-backend/README.md)
 - [Backstage Logger Service](https://backstage.io/docs/backend-system/core-services/logger/)
 - [Backstage Auditor Service](https://backstage.io/docs/backend-system/core-services/auditor/) — related; not used by this plugin
