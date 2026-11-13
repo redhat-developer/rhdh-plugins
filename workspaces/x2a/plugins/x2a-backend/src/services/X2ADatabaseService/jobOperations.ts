@@ -477,4 +477,30 @@ export class JobOperations {
       `Marked ${updatedCount} jobs as stale (${jobIds.length - updatedCount} were skipped as active)`,
     );
   }
+
+  async listPortfolioJobs(projectIds: string[]): Promise<
+    Array<{
+      project_id: string;
+      module_id: string | null;
+      phase: string;
+      status: string;
+      started_at: Date | string;
+      telemetry: string | null;
+    }>
+  > {
+    if (projectIds.length === 0) {
+      return [];
+    }
+    const rows = await this.#dbClient('jobs')
+      .whereIn('project_id', projectIds)
+      .select(
+        'project_id',
+        'module_id',
+        'phase',
+        'status',
+        'started_at',
+        'telemetry',
+      );
+    return rows;
+  }
 }

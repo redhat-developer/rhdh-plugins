@@ -86,6 +86,7 @@ export function registerProjectRoutes(
           'name',
           // sorting by status is expensive for large datasets
           'status',
+          'moduleErrors',
           'description',
           'ownedBy',
         ])
@@ -112,15 +113,19 @@ export function registerProjectRoutes(
       credentials,
     });
 
-    const { projects, totalCount } = await x2aDatabase.listProjects(query, {
-      credentials,
-      canViewAll,
-      groupsOfUser,
-    });
+    const { projects, totalCount, portfolio } = await x2aDatabase.listProjects(
+      query,
+      {
+        credentials,
+        canViewAll,
+        groupsOfUser,
+      },
+    );
 
     const response: ProjectsGet['response'] = {
       totalCount,
       items: projects,
+      portfolio,
     };
     res.json(response);
   });

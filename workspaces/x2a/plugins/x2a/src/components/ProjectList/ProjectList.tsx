@@ -23,6 +23,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { EmptyProjectList } from './EmptyProjectList';
+import { PortfolioStrip } from './PortfolioStrip';
 import { usePolledFetch } from '../../hooks/usePolledFetch';
 
 import { mapOrderByToSort, ProjectTable } from './ProjectTable';
@@ -68,18 +69,23 @@ export const ProjectList = () => {
   }
 
   return (
-    <ProjectTable
-      projects={value.items}
-      totalCount={value?.totalCount || 0}
-      forceRefresh={forceRefresh}
-      orderBy={orderBy}
-      orderDirection={orderDirection}
-      setOrderBy={setOrderBy}
-      setOrderDirection={setOrderDirection}
-      page={page}
-      pageSize={pageSize}
-      onPageChange={setPage}
-      onRowsPerPageChange={setPageSize}
-    />
+    <>
+      {value.totalCount && value.totalCount > 0 && value.portfolio ? (
+        <PortfolioStrip portfolio={value.portfolio} />
+      ) : null}
+      <ProjectTable
+        projects={value.items}
+        totalCount={value?.totalCount || 0}
+        forceRefresh={forceRefresh}
+        orderBy={orderBy}
+        orderDirection={orderDirection}
+        setOrderBy={setOrderBy}
+        setOrderDirection={setOrderDirection}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onRowsPerPageChange={setPageSize}
+      />
+    </>
   );
 };

@@ -37,6 +37,7 @@ import {
   NotFoundError,
 } from '@backstage/errors';
 import { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { emptyPortfolio } from './services/X2ADatabaseService/portfolioSummary';
 
 // Mock the Kubernetes client to avoid ES Module import issues
 jest.mock('./services/makeK8sClient', () => ({
@@ -232,6 +233,7 @@ describe('plugin', () => {
     await request(server).get('/api/x2a/projects').expect(200, {
       totalCount: 0,
       items: [],
+      portfolio: emptyPortfolio(),
     });
 
     const createRes = await request(server)

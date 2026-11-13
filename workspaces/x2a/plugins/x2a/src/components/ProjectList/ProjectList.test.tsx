@@ -54,6 +54,7 @@ import { POLLING_INTERVAL_MS } from '@red-hat-developer-hub/backstage-plugin-x2a
 import {
   createMockProjects,
   createMockResponse,
+  emptyPortfolio,
   mockPermissionApi,
 } from '../../test-utils/projectListTestUtils';
 
@@ -63,6 +64,7 @@ describe('ProjectList', () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
+    window.localStorage.clear();
     discoveryApiMock = mockApis.discovery({
       baseUrl: 'http://localhost:1234',
     });
@@ -119,6 +121,7 @@ describe('ProjectList', () => {
       expect(
         screen.getByText('No conversion initiated yet'),
       ).toBeInTheDocument();
+      expect(screen.queryByTestId('portfolio-strip')).not.toBeInTheDocument();
       expect(screen.getByText('Start first conversion')).toBeInTheDocument();
     });
   });
@@ -424,6 +427,72 @@ describe('ProjectList', () => {
       await waitFor(() => {
         expect(screen.getByText('Project 0')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('portfolio strip', () => {
+    const renderList = async (
+      portfolio: typeof emptyPortfolio = emptyPortfolio,
+    ) => {
+      fetchApiMock.mockResolvedValue({
+        ok: true,
+        json: async () =>
+          createMockResponse(createMockProjects(1), 1, portfolio),
+      } as Response);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [fetchApiRef, { fetch: fetchApiMock }],
+            [discoveryApiRef, discoveryApiMock],
+            [permissionApiRef, mockPermissionApi],
+          ]}
+        >
+          <ProjectList />
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      });
+    };
+
+    it('says that no modules have been discovered when there are no module rows', async () => {
+      await renderList();
+
+      expect(screen.getByTestId('portfolio-summary')).toHaveTextContent(
+        'No modules have been discovered yet.',
+      );
+      expect(screen.getByTestId('portfolio-summary')).not.toHaveTextContent(
+        'input tokens',
+      );
+    });
+
+    it('shows 0 of 0 when every module is removed', async () => {
+      await renderList({
+        ...emptyPortfolio,
+        modules: { ...emptyPortfolio.modules, removed: 2 },
+      });
+
+      const summary = screen.getByTestId('portfolio-summary');
+      expect(summary).toHaveTextContent('0 of 0 modules published');
+      expect(summary).toHaveTextContent('0 modules in error');
+    });
+
+    it('shows token totals when a job has reported them', async () => {
+      await renderList({
+        ...emptyPortfolio,
+        inputTokens: 20,
+        outputTokens: 5,
+        tokensReported: true,
+      });
+
+      expect(screen.getByTestId('portfolio-summary')).toHaveTextContent(
+        '20 input tokens',
+      );
+      expect(screen.getByTestId('portfolio-summary')).toHaveTextContent(
+        '5 output tokens',
+      );
     });
   });
 });

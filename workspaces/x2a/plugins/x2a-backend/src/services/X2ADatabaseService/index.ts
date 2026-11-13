@@ -37,6 +37,7 @@ import {
   DEFAULT_PAGE_SIZE,
   IN_MEMORY_SORT_WARN_THRESHOLD,
   ProjectsGet,
+  PortfolioSummary,
   RuleEntity,
   type RuleSnapshot,
   AdversarialAgentEntity,
@@ -44,7 +45,6 @@ import {
 import {
   x2aDatabaseServiceRef,
   removeSensitiveFromJob,
-  calculateModuleStatus,
   type X2ADatabaseServiceApi,
   type CreateJobInput,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
@@ -58,24 +58,11 @@ import { isNonDbSortField } from './queryHelpers';
 import { MAX_CONCURRENT_ENRICHMENT_JOBS } from '../constants';
 import { migrate } from '../dbMigrate';
 import { maxConcurrency } from '../../utils';
-import { calculateProjectStatus } from './projectStatus';
-
-function enrichModuleWithJobStatus(
-  module: Module,
-  lastJobs: {
-    analyze?: Job;
-    migrate?: Job;
-    publish?: Job;
-  },
-): Module {
-  const { status, errorDetails } = calculateModuleStatus(lastJobs);
-  return {
-    ...module,
-    ...lastJobs,
-    status: module.removedAt ? 'removed' : status,
-    errorDetails: module.removedAt ? undefined : errorDetails,
-  };
-}
+import { summarizePortfolio } from './portfolioSummary';
+import {
+  calculateProjectStatus,
+  enrichModuleWithJobStatus,
+} from './projectStatus';
 
 export class X2ADatabaseService implements X2ADatabaseServiceApi {
   readonly #logger: LoggerService;
@@ -172,7 +159,11 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       canViewAll?: boolean;
       groupsOfUser: string[];
     },
-  ): Promise<{ projects: Project[]; totalCount: number }> {
+  ): Promise<{
+    projects: Project[];
+    totalCount: number;
+    portfolio: PortfolioSummary;
+  }> {
     const sortByComputedField = isNonDbSortField(query.sort);
 
     const result = await this.#projectOps.listProjects(query, options, {
@@ -193,19 +184,37 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       );
     }
 
+    const permittedIds = sortByComputedField
+      ? result.projects.map(project => project.id)
+      : await this.#projectOps.listPermittedProjectIds(options);
+
     this.#logger.info(
       `this.#projectOps.listProjects finished, adding migration plans to projects`,
     );
-    await maxConcurrency(
-      result.projects.map(p => () => this.enrichProject(p)),
-      MAX_CONCURRENT_ENRICHMENT_JOBS,
-    );
+    const [portfolio] = await Promise.all([
+      this.loadPortfolio(permittedIds),
+      maxConcurrency(
+        result.projects.map(p => () => this.enrichProject(p)),
+        MAX_CONCURRENT_ENRICHMENT_JOBS,
+      ),
+    ]);
 
     if (sortByComputedField) {
       this.sortAndPaginateInMemory(result, query);
     }
 
-    return result;
+    return { ...result, portfolio };
+  }
+
+  private async loadPortfolio(projectIds: string[]): Promise<PortfolioSummary> {
+    if (projectIds.length === 0) {
+      return summarizePortfolio(projectIds, [], []);
+    }
+    const [moduleRows, jobRows] = await Promise.all([
+      this.#moduleOps.listPortfolioModules(projectIds),
+      this.#jobOps.listPortfolioJobs(projectIds),
+    ]);
+    return summarizePortfolio(projectIds, moduleRows, jobRows);
   }
 
   /**
@@ -218,7 +227,25 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
   ): void {
     const order = query.order || DEFAULT_PAGE_ORDER;
 
-    if (query.sort === 'status') {
+    if (query.sort === 'moduleErrors') {
+      const sign = order === 'asc' ? 1 : -1;
+      result.projects.sort((a, b) => {
+        const sumA = a.status?.modulesSummary;
+        const sumB = b.status?.modulesSummary;
+        const errorA = sumA?.error ?? 0;
+        const errorB = sumB?.error ?? 0;
+        if (errorA !== errorB) {
+          return sign * (errorA - errorB);
+        }
+        const totalA = sumA?.total ?? 0;
+        const totalB = sumB?.total ?? 0;
+        const ratio = errorA * totalB - errorB * totalA;
+        if (ratio !== 0) {
+          return sign * ratio;
+        }
+        return 0;
+      });
+    } else if (query.sort === 'status') {
       const summaryKeys = [
         'finished',
         'error',

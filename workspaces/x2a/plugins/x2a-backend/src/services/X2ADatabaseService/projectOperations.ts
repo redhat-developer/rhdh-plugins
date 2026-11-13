@@ -283,4 +283,23 @@ export class ProjectOperations {
 
     return deletedCount;
   }
+
+  async listPermittedProjectIds(options: {
+    credentials: BackstageCredentials<BackstageUserPrincipal>;
+    canViewAll?: boolean;
+    groupsOfUser: string[];
+  }): Promise<string[]> {
+    const calledByUserRef = getUserRef(options.credentials);
+    const rows = await this.#dbClient('projects')
+      .select('id')
+      .modify(queryBuilder =>
+        filterPermissions(
+          queryBuilder,
+          options.canViewAll,
+          calledByUserRef,
+          options.groupsOfUser,
+        ),
+      );
+    return rows.map((row: { id: string }) => row.id);
+  }
 }
