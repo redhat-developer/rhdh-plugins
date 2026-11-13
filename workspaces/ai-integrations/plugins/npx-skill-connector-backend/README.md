@@ -116,10 +116,14 @@ To run the demo with Evil Martians' public Agent Skills v0.2 index:
    ```ts
    // packages/backend/src/index.ts
    backend.add(
-     import('@red-hat-developer-hub/backstage-plugin-npx-skill-connector-backend'),
+     import(
+       '@red-hat-developer-hub/backstage-plugin-npx-skill-connector-backend'
+     ),
    );
    backend.add(
-     import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider'),
+     import(
+       '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider'
+     ),
    );
    ```
 

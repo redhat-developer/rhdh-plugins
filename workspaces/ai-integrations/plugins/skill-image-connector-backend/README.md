@@ -17,7 +17,9 @@ Then add the plugin to your backend in `packages/backend/src/index.ts`:
 const backend = createBackend();
 // ...
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend'
+  ),
 );
 ```
 

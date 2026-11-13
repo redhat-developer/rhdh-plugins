@@ -28,6 +28,7 @@
   duplicate retention-owner assignments at startup.
 
   ### Breaking changes
+
   - Four new required methods on `ReconciliationStore`: `commitStateAndSaveAcknowledgment`, `getPendingAcknowledgment`, `getAllPendingAcknowledgments`, and `clearPendingAcknowledgment`.
   - The `store` constructor parameter on `SkillsCatalogProvider` is now required (previously optional).
   - Direct callers can no longer rely on an implicit in-memory fallback; they must supply and initialize a durable `ReconciliationStore` implementation.

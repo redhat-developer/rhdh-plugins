@@ -42,8 +42,7 @@ export type FieldHelpContent = {
  * locale code → content (for example `en`, `fr`, `default`).
  */
 export type FieldHelpConfig =
-  | FieldHelpContent
-  | Record<string, FieldHelpContent>;
+  FieldHelpContent | Record<string, FieldHelpContent>;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);

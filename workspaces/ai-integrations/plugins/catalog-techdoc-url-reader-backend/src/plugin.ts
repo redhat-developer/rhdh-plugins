@@ -41,7 +41,9 @@ import fs from 'fs';
 import platformPath from 'path';
 import os from 'os';
 
-export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse implements UrlReaderServiceReadTreeResponse {
+export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
+  implements UrlReaderServiceReadTreeResponse
+{
   private readonly siteName: string;
 
   constructor(

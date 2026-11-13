@@ -24,8 +24,9 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   ...(process.env.PLAYWRIGHT_URL
     ? {
-        globalSetup:
-          require.resolve('./packages/app-legacy/e2e-tests/global-setup'),
+        globalSetup: require.resolve(
+          './packages/app-legacy/e2e-tests/global-setup',
+        ),
       }
     : {}),
 

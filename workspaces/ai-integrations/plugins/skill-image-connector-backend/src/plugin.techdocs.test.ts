@@ -861,8 +861,9 @@ describe('publication and cleanup race safety', () => {
       const snapshot = await request(baseUrl)
         .get('/api/skill-image-connector/skills/default')
         .set('Authorization', serviceAuth());
-      const original =
-        getContentStore().acknowledgeAndCleanup.bind(getContentStore());
+      const original = getContentStore().acknowledgeAndCleanup.bind(
+        getContentStore(),
+      );
       jest
         .spyOn(getContentStore(), 'acknowledgeAndCleanup')
         .mockImplementationOnce(async (...args) => {

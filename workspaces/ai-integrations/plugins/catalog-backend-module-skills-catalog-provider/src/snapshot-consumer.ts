@@ -490,10 +490,11 @@ function buildEntity(
     // Constructed from trusted connector/source configuration and the
     // record's verified digest. The provider does not download or
     // extract Markdown. npx entities do not receive this annotation.
-    annotations['backstage.io/techdocs-ref'] =
-      `url:${connectorBaseUrl}/skilldocs/${encodeURIComponent(
-        sourceId,
-      )}/${encodeURIComponent(record.digest)}`;
+    annotations[
+      'backstage.io/techdocs-ref'
+    ] = `url:${connectorBaseUrl}/skilldocs/${encodeURIComponent(
+      sourceId,
+    )}/${encodeURIComponent(record.digest)}`;
   } else if (sourceType === 'npx') {
     const npxRef = `${record.sourceUri}#${record.digest}`;
     annotations[ANNOTATION_NPX_SKILL_REF] = npxRef;

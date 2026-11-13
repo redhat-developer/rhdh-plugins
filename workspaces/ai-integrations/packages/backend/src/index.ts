@@ -60,7 +60,9 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 // kubernetes
 backend.add(import('@backstage/plugin-kubernetes-backend'));
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog'
+  ),
 );
 
 backend.add(
@@ -70,31 +72,47 @@ backend.add(
 backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
 
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend'
+  ),
 );
 backend.add(import('@backstage/plugin-catalog-backend-module-ai-model'));
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions'
+  ),
 );
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent'
+  ),
 );
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server'
+  ),
 );
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-mcp-registry-provider'
+  ),
 );
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend'
+  ),
 );
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-npx-skill-connector-backend'),
 );
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend'
+  ),
 );
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider'
+  ),
 );
 backend.start();

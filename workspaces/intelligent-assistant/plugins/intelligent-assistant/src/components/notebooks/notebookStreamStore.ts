@@ -54,11 +54,7 @@ import {
 export type ExtendedMessageProps = MessageProps & { toolCalls?: ToolCall[] };
 
 export type NotebookStreamStatus =
-  | 'idle'
-  | 'streaming'
-  | 'complete'
-  | 'stopped'
-  | 'error';
+  'idle' | 'streaming' | 'complete' | 'stopped' | 'error';
 
 export interface NotebookStreamSnapshot {
   messages: ExtendedMessageProps[];

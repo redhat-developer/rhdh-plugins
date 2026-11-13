@@ -65,7 +65,7 @@ describe('skill documentation destination trust', () => {
     global.fetch = jest.fn();
     ModeCatalogBridgeTechdocUrlReader.auth = mockServices.auth.mock({
       getPluginRequestToken: async () => ({ token: 'test-token' }),
-      getOwnServiceCredentials: async () => ({}) as any,
+      getOwnServiceCredentials: async () => ({} as any),
     });
   });
   afterEach(() => {

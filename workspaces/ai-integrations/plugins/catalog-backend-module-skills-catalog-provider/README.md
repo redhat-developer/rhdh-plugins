@@ -18,7 +18,9 @@ Add the module to your backend:
 ```ts
 // packages/backend/src/index.ts
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-skills-catalog-provider'
+  ),
 );
 ```
 

@@ -28,14 +28,13 @@ const closeAgent = Agent.prototype.close;
 let closing: Promise<unknown>[];
 beforeEach(() => {
   closing = [];
-  jest.spyOn(Agent.prototype, 'close').mockImplementation(function trackClose(
-    this: Agent,
-    ...args: any[]
-  ) {
-    const result = (closeAgent as any).apply(this, args);
-    if (result?.then) closing.push(result);
-    return result;
-  } as any);
+  jest
+    .spyOn(Agent.prototype, 'close')
+    .mockImplementation(function trackClose(this: Agent, ...args: any[]) {
+      const result = (closeAgent as any).apply(this, args);
+      if (result?.then) closing.push(result);
+      return result;
+    } as any);
 });
 afterEach(async () => {
   // Retain the socket stub until asynchronous dispatcher teardown settles.

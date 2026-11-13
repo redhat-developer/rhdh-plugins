@@ -69,10 +69,7 @@ export async function withRequestTimeout<T>(
 
 /** HTTP status is kept separate from diagnostic text for retry classification. */
 export class HttpResponseError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-  ) {
+  constructor(message: string, readonly status: number) {
     super(message);
     this.name = 'HttpResponseError';
   }

@@ -419,8 +419,7 @@ export class DataIndexService {
     const initiators = new Set<string>();
     (result.data?.ProcessInstances ?? []).forEach(instance => {
       const variables = parseWorkflowVariables(instance.variables as object) as
-        | { initiatorEntity?: unknown }
-        | undefined;
+        { initiatorEntity?: unknown } | undefined;
       if (
         typeof variables?.initiatorEntity === 'string' &&
         variables.initiatorEntity

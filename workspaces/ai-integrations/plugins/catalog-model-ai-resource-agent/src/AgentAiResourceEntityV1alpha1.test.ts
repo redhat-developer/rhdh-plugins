@@ -78,14 +78,16 @@ function makeFullAgent(): Entity {
 describe('agentAiResourceEntityV1alpha1Validator', () => {
   describe('accept paths', () => {
     it('accepts a minimal valid agent entity', async () => {
-      const result =
-        await agentAiResourceEntityV1alpha1Validator.check(makeMinimalAgent());
+      const result = await agentAiResourceEntityV1alpha1Validator.check(
+        makeMinimalAgent(),
+      );
       expect(result).toBe(true);
     });
 
     it('accepts a valid agent with all optional fields populated', async () => {
-      const result =
-        await agentAiResourceEntityV1alpha1Validator.check(makeFullAgent());
+      const result = await agentAiResourceEntityV1alpha1Validator.check(
+        makeFullAgent(),
+      );
       expect(result).toBe(true);
     });
 
@@ -124,8 +126,9 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
     });
 
     it('accepts agent with only required fields and no optionals', async () => {
-      const result =
-        await agentAiResourceEntityV1alpha1Validator.check(makeMinimalAgent());
+      const result = await agentAiResourceEntityV1alpha1Validator.check(
+        makeMinimalAgent(),
+      );
       expect(result).toBe(true);
     });
 
