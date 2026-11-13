@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent
 
+## 0.5.0
+
+### Minor Changes
+
+- 9e107b2: Add optional `spec.executionMode` field to the agent AiResource entity definition. Accepts `'in-process'` (runs inside the LCore process, no isolation), `'subprocess'` (runs in a child process managed by LCore), or `'sandbox'` (runs in an administrator-predefined sandbox profile). Omitting the field preserves backward compatibility.
+
+## 0.4.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
 ## 0.3.1
 
 ### Patch Changes

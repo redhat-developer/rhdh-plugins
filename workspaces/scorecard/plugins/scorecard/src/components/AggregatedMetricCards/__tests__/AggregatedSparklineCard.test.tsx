@@ -41,8 +41,8 @@ jest.mock('../../../hooks/useMetricCollectors', () => ({
   useMetricCollectors: jest.fn(),
 }));
 
-jest.mock('../../MetricGroupCard/MetricGroupCardMenu', () => ({
-  MetricGroupCardMenu: ({
+jest.mock('../../DataSources/CardActionsMenu', () => ({
+  CardActionsMenu: ({
     actions,
   }: {
     actions: Array<{ id: string; label: string; onClick: () => void }>;
@@ -61,7 +61,7 @@ jest.mock('../../MetricGroupCard/MetricGroupCardMenu', () => ({
   ),
 }));
 
-jest.mock('../../MetricGroupCard/DataSourcesDialog', () => ({
+jest.mock('../../DataSources/DataSourcesDialog', () => ({
   DataSourcesDialog: ({
     title,
     rows,
@@ -70,7 +70,13 @@ jest.mock('../../MetricGroupCard/DataSourcesDialog', () => ({
     buckets,
   }: {
     title: string;
-    rows: Array<{ plugin: string; metricId: string }>;
+    rows: Array<{
+      plugin: string;
+      metricId: string;
+      metricDescription?: string;
+      value?: string;
+      statusLabel?: string;
+    }>;
     isLoading?: boolean;
     error?: Error;
     buckets?: unknown[];
@@ -78,6 +84,9 @@ jest.mock('../../MetricGroupCard/DataSourcesDialog', () => ({
     <div data-testid="data-sources-dialog">
       <span data-testid="dialog-title">{title}</span>
       <span data-testid="dialog-metric-id">{rows[0]?.metricId ?? ''}</span>
+      <span data-testid="dialog-check">{rows[0]?.metricDescription ?? ''}</span>
+      <span data-testid="dialog-value">{rows[0]?.value ?? ''}</span>
+      <span data-testid="dialog-status">{rows[0]?.statusLabel ?? ''}</span>
       <span data-testid="dialog-collectors">
         {rows.map(row => row.plugin).join(',')}
       </span>
@@ -285,9 +294,57 @@ describe('AggregatedSparklineCard', () => {
     expect(screen.getByTestId('dialog-collectors')).toHaveTextContent(
       'GitHub,Jira',
     );
-    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('false');
+    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('true');
     expect(useMetricCollectorsMock).toHaveBeenCalledWith(
       'dora.deploymentFrequency',
+      true,
+    );
+  });
+
+  it('falls back to the metric snapshot when collectors are empty', () => {
+    useMetricCollectorsMock.mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: undefined,
+    });
+
+    const openPrsSeries: AggregatedMetricTimeSeriesResponse = {
+      ...series,
+      id: 'openPrsKpi',
+      metricId: 'github.openPRs',
+      metadata: {
+        ...series.metadata,
+        title: 'GitHub Open PRs KPI',
+        description: 'Current count of open Pull Requests',
+        unit: undefined,
+      },
+    };
+
+    renderCard({
+      series: openPrsSeries,
+      aggregationId: 'openPrsKpi',
+      cardTitle: 'GitHub Open PRs KPI',
+      description: 'Average open PRs across owned repositories.',
+    });
+
+    fireEvent.click(screen.getByTestId('menu-action-view-data-sources'));
+
+    expect(screen.getByTestId('data-sources-dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('dialog-metric-id')).toHaveTextContent(
+      'github.openPRs',
+    );
+    expect(screen.getByTestId('dialog-check')).toHaveTextContent(
+      'Current count of open Pull Requests for a given GitHub repository.',
+    );
+    expect(screen.getByTestId('dialog-check')).not.toHaveTextContent(
+      'Average open PRs across owned repositories.',
+    );
+    expect(screen.getByTestId('dialog-value')).toHaveTextContent('6.8');
+    expect(screen.getByTestId('dialog-status')).toHaveTextContent('Medium');
+    expect(screen.getByTestId('dialog-collectors')).toHaveTextContent('Github');
+    expect(screen.getByTestId('dialog-legend')).toHaveTextContent('true');
+    expect(useMetricCollectorsMock).toHaveBeenCalledWith(
+      'github.openPRs',
       true,
     );
   });

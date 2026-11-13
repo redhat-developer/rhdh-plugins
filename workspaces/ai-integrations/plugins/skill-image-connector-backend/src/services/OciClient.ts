@@ -19,6 +19,7 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import { createHash } from 'node:crypto';
 import type {
   ImageRef,
+  ManifestResult,
   OciManifest,
   RegistryCredentials,
   SkillImageOptions,
@@ -36,6 +37,8 @@ import {
   withRequestTimeout,
   HttpResponseError,
 } from './HttpClient';
+
+export type { ManifestResult } from './types';
 
 export const OCI_REGISTRY_PATTERN =
   /^(?:\[[0-9a-fA-F:]+\]|[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?)(?::\d{1,5})?$/;
@@ -305,7 +308,7 @@ async function fetchBearerToken(
   logger: LoggerService,
   credentials?: RegistryCredentials,
   registryHost?: string,
-  signal?: AbortSignal,
+  signal: AbortSignal = new AbortController().signal,
 ): Promise<string | undefined> {
   const url = new URL(challenge.realm);
   if (url.protocol !== 'https:' || url.username || url.password) {
@@ -334,18 +337,21 @@ async function fetchBearerToken(
 
   logger.debug('Requesting bearer token');
 
-  const response = await fetch(url.toString(), {
+  const response = await fetchWithRedirects(
+    url.toString(),
+    {
+      headers:
+        credentials?.username && credentials.password
+          ? {
+              Authorization: `Basic ${Buffer.from(
+                `${credentials.username}:${credentials.password}`,
+              ).toString('base64')}`,
+            }
+          : undefined,
+    },
     signal,
-    redirect: 'error',
-    headers:
-      credentials?.username && credentials.password
-        ? {
-            Authorization: `Basic ${Buffer.from(
-              `${credentials.username}:${credentials.password}`,
-            ).toString('base64')}`,
-          }
-        : undefined,
-  });
+    { maxRedirects: 0 },
+  );
 
   if (!response.ok) {
     await cancelResponseBody(response);
@@ -393,6 +399,7 @@ async function registryFetch(
   logger: LoggerService,
   credentials: RegistryCredentials | undefined,
   signal: AbortSignal,
+  options: SkillImageOptions,
 ): Promise<Response> {
   const requestSignal = signal;
   const headers = {
@@ -412,6 +419,7 @@ async function registryFetch(
       headers,
     },
     requestSignal,
+    { allowedOrigins: options.allowedOrigins },
   );
 
   if (response.status !== 401) {
@@ -453,12 +461,17 @@ async function registryFetch(
       },
     },
     requestSignal,
+    { allowedOrigins: options.allowedOrigins },
   );
 }
 
 /**
  * Fetches an OCI image manifest from a registry using the OCI
  * Distribution Spec v2 HTTP API.
+ *
+ * Always computes and returns the SHA-256 digest of the raw manifest
+ * bytes. When the image reference includes an explicit digest, the
+ * raw bytes are verified against it before the manifest is decoded.
  *
  * Detects manifest lists / image indexes and throws a descriptive
  * error rather than returning an unexpected schema.
@@ -469,7 +482,7 @@ export async function fetchManifest(
   credentials?: RegistryCredentials,
   signal?: AbortSignal,
   options: SkillImageOptions = DEFAULT_SKILL_IMAGE_OPTIONS,
-): Promise<OciManifest> {
+): Promise<ManifestResult> {
   return withRequestTimeout(
     async requestSignal => {
       const reference = imageRef.digest ?? imageRef.tag;
@@ -489,6 +502,7 @@ export async function fetchManifest(
         logger,
         credentials,
         requestSignal,
+        options,
       );
 
       if (!response.ok) {
@@ -505,27 +519,41 @@ export async function fetchManifest(
         response,
         MAX_MANIFEST_SIZE,
       );
+
+      // Always compute the SHA-256 digest of the raw manifest bytes.
+      // This is the resolved digest for tag-based fetches and the
+      // verified digest for digest-based fetches.
+      const computedHex = createHash('sha256')
+        .update(manifestBuffer)
+        .digest('hex');
+      const computedDigest = `sha256:${computedHex}`;
+
+      // When an explicit digest was requested, verify the raw bytes
+      // match before decoding any metadata or fetching layers.
+      const requestedDigest = imageRef.digest;
+      if (requestedDigest) {
+        const digestInfo = parseDigest(requestedDigest);
+        if (!digestInfo) {
+          throw new Error(`Invalid manifest digest ${requestedDigest}`);
+        }
+        const actualHex =
+          digestInfo.algorithm === 'sha256'
+            ? computedHex
+            : createHash(digestInfo.algorithm)
+                .update(manifestBuffer)
+                .digest('hex');
+        if (actualHex !== digestInfo.hex) {
+          throw new Error(
+            `Manifest digest mismatch for ${requestedDigest}: got ${digestInfo.algorithm}:${actualHex}`,
+          );
+        }
+      }
+
       const manifest = JSON.parse(manifestBuffer.toString('utf-8')) as
         | (OciManifest & {
             manifests?: unknown[];
           })
         | undefined;
-
-      const manifestDigest = imageRef.digest;
-      if (manifestDigest) {
-        const digestInfo = parseDigest(manifestDigest);
-        if (!digestInfo) {
-          throw new Error(`Invalid manifest digest ${manifestDigest}`);
-        }
-        const actualDigest = createHash(digestInfo.algorithm)
-          .update(manifestBuffer)
-          .digest('hex');
-        if (actualDigest !== digestInfo.hex) {
-          throw new Error(
-            `Manifest digest mismatch for ${manifestDigest}: got ${digestInfo.algorithm}:${actualDigest}`,
-          );
-        }
-      }
 
       if (!manifest || typeof manifest !== 'object') {
         throw new TypeError('Registry returned an invalid OCI manifest object');
@@ -554,7 +582,7 @@ export async function fetchManifest(
         );
       }
 
-      return manifest;
+      return { manifest, digest: computedDigest };
     },
     signal,
     options.fetchTimeoutMs,
@@ -603,6 +631,7 @@ export async function fetchBlob(
         logger,
         credentials,
         requestSignal,
+        options,
       );
 
       if (!response.ok) {

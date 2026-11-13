@@ -299,8 +299,7 @@ backend:
 ```
 
 **2. Backstage auth** — enable experimental DCR and use the new frontend app
-(`@backstage/plugin-auth` is required for the OAuth consent flow; `yarn start`,
-not `start:legacy`):
+(`@backstage/plugin-auth` is required for the OAuth consent flow; `yarn start`):
 
 ```yaml
 auth:

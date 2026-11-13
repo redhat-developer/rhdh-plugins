@@ -26,7 +26,6 @@ import {
   expectChatInputValue,
   openChatbot,
   openChatHistoryDrawer,
-  waitForBackstageCatalogReady,
   waitForChatMessageLoadingHidden,
 } from './LightspeedPage';
 
@@ -152,7 +151,6 @@ export class SavedPromptsPage {
   async openOverlayWithPrompts(prompts: SavedPromptMock[]): Promise<void> {
     await this.page.goto('/catalog');
     await loginAsGuest(this.page);
-    await waitForBackstageCatalogReady(this.page);
     await this.resetChatbotOverlay();
 
     // Re-register the route and seed in-memory data for this page.
@@ -160,7 +158,6 @@ export class SavedPromptsPage {
 
     // React Query caches saved prompts for 5 minutes — reload clears stale [].
     await this.page.reload();
-    await waitForBackstageCatalogReady(this.page);
 
     const savedPromptsResponse =
       prompts.length > 0 ? this.waitForSavedPromptsFetch() : null;

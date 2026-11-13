@@ -20,6 +20,24 @@ import { mockScorecardSuccessData } from '../../../../__fixtures__/scorecardData
 import { getStatusConfig } from '../../../utils';
 import { useScorecards } from '../../../hooks/useScorecards';
 
+// jsdom does not provide ResizeObserver; required by EntityScorecardMasonry
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+Object.defineProperty(window, 'ResizeObserver', {
+  writable: true,
+  configurable: true,
+  value: ResizeObserverMock,
+});
+
+jest.mock('@mui/lab/Masonry', () => {
+  return function MockMasonry({ children }: { children?: JSX.Element }) {
+    return <div data-testid="scorecard-masonry">{children}</div>;
+  };
+});
+
 // Mock the child components
 jest.mock('../../Common/NoScorecardsState', () => {
   return function MockNoScorecardsState() {
@@ -107,7 +125,12 @@ jest.mock('../../../hooks/useMetricTimeSeries', () => ({
   useMetricTimeSeries: jest.fn(),
 }));
 
+jest.mock('../../../hooks/useLanguage', () => ({
+  useLanguage: () => 'en',
+}));
+
 jest.mock('../../../utils', () => ({
+  ...jest.requireActual('../../../utils'),
   getStatusConfig: jest.fn(),
   resolveMetricTranslation: jest.fn(
     (_t: any, _metricId: string, _field: string, fallback?: string) =>
@@ -228,11 +251,7 @@ describe('EntityScorecardContent Component', () => {
           ...mockScorecardSuccessData[0].result,
           thresholdResult: {
             ...mockScorecardSuccessData[0].result.thresholdResult,
-            evaluation: {
-              status: 'green',
-              matchedRule: '< 10',
-              label: 'Ideal',
-            },
+            evaluation: 'success',
           },
         },
       },
@@ -243,11 +262,7 @@ describe('EntityScorecardContent Component', () => {
           ...mockScorecardSuccessData[1].result,
           thresholdResult: {
             ...mockScorecardSuccessData[1].result.thresholdResult,
-            evaluation: {
-              status: 'orange',
-              matchedRule: '10-50',
-              label: 'Warning',
-            },
+            evaluation: 'warning',
           },
         },
       },
@@ -263,11 +278,7 @@ describe('EntityScorecardContent Component', () => {
           value: 75,
           thresholdResult: {
             ...mockScorecardSuccessData[0].result.thresholdResult,
-            evaluation: {
-              status: 'red',
-              matchedRule: '> 50',
-              label: 'Critical',
-            },
+            evaluation: 'error',
           },
         },
       },

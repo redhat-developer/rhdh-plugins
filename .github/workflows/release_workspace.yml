@@ -39,6 +39,9 @@ jobs:
   changesets-pr:
     name: Update Version Packages PR for ${{ inputs.workspace }} on branch ${{ inputs.branch }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     defaults:
       run:
         working-directory: ./workspaces/${{ inputs.workspace }}
@@ -47,11 +50,13 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=4096
     outputs:
       needs_release: ${{ steps.release_check.outputs.needs_release }}
+      authorized_release: ${{ steps.verify_release_pr.outputs.authorized_release }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ github.event_name == 'push' && github.sha || inputs.branch }}
+          token: ${{ secrets.RHDH_BOT_TOKEN }}
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -91,7 +96,32 @@ jobs:
         env:
           WORKSPACE_NAME: ${{ inputs.workspace }}
           COMMIT_SHA_BEFORE: '${{ github.event.before }}'
-          TARGET_BRANCH: ${{inputs.branch}}
+          TARGET_BRANCH: ${{ github.event_name == 'push' && github.sha || inputs.branch }}
+
+      - name: Verify merged Version Packages PR
+        id: verify_release_pr
+        if: steps.release_check.outputs.needs_release == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' && inputs.branch == 'main'
+        env:
+          GH_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}
+          WORKSPACE_NAME: ${{ inputs.workspace }}
+        run: |
+          # A version bump is not sufficient: the pushed commit must be the
+          # merge of this workspace's bot-authored Version Packages PR.
+          prs=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls?per_page=100")
+          if jq -e --arg sha "$GITHUB_SHA" --arg workspace "$WORKSPACE_NAME" --arg repo "$GITHUB_REPOSITORY" '
+            any(.[];
+              .merged_at != null and .merge_commit_sha == $sha and
+              .base.ref == "main" and .base.repo.full_name == $repo and
+              .title == ("Version Packages (" + $workspace + ")") and
+              .user.login == "rhdh-bot" and
+              .head.ref == ("changesets-release/" + $workspace + "/main") and
+              .head.repo.full_name == $repo
+            )
+          ' <<< "$prs" > /dev/null; then
+            echo 'authorized_release=true' >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Skipping $WORKSPACE_NAME publish: not a merged rhdh-bot Version Packages PR"
+          fi
 
       - name: Update Version Packages (${{ inputs.workspace }}) PR
         id: changesets-pr
@@ -110,7 +140,7 @@ jobs:
     name: Release workspace ${{ inputs.workspace }} on branch ${{ inputs.branch }}
     runs-on: ubuntu-latest
     needs: changesets-pr
-    if: needs.changesets-pr.outputs.needs_release == 'true' || inputs.force_release == true
+    if: (needs.changesets-pr.outputs.needs_release == 'true' && needs.changesets-pr.outputs.authorized_release == 'true') || inputs.force_release == true
     defaults:
       run:
         working-directory: ./workspaces/${{ inputs.workspace }}
@@ -122,7 +152,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ github.event_name == 'push' && github.sha || inputs.branch }}
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -153,6 +183,17 @@ jobs:
       - name: Build all packages
         run: yarn build:all
 
+      - name: Verify release commit
+        if: github.event_name == 'push'
+        env:
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          actual_sha=$(git rev-parse HEAD)
+          if [ "$actual_sha" != "$RELEASE_SHA" ]; then
+            echo "::error::Refusing to publish $actual_sha; expected release commit $RELEASE_SHA" >&2
+            exit 1
+          fi
+
       - name: publish
         run: |
           yarn config set -H 'npmAuthToken' "${{ secrets.RHDH_NPM_TOKEN }}"
@@ -166,3 +207,14 @@ jobs:
         env:
           WORKSPACE_NAME: ${{ inputs.workspace }}
           GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN}}
+
+  update-overlays:
+    name: Update overlays for ${{ inputs.workspace }}
+    needs: [changesets-pr, release]
+    if: github.repository == 'redhat-developer/rhdh-plugins' && needs.changesets-pr.outputs.authorized_release == 'true'
+    uses: ./.github/workflows/update-overlays.yml
+    with:
+      workspace: ${{ inputs.workspace }}
+      branch: ${{ inputs.branch }}
+    secrets:
+      RHDH_BOT_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}

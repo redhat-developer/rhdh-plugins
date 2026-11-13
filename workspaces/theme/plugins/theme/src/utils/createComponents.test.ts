@@ -106,6 +106,22 @@ describe('createComponents', () => {
     );
   });
 
+  it('uses a darker containedError fill in dark mode for WCAG AA white labels', () => {
+    const dark = createComponents({ palette: customDarkTheme() });
+    const light = createComponents({ palette: customLightTheme() });
+    expect(dark.MuiButton?.styleOverrides).toEqual(
+      expect.objectContaining({
+        containedError: expect.objectContaining({
+          backgroundColor: '#C62828',
+          color: '#ffffff',
+        }),
+      }),
+    );
+    expect(light.MuiButton?.styleOverrides).not.toHaveProperty(
+      'containedError',
+    );
+  });
+
   it('clips the SidebarPage scrollport so the scrollbar follows the rounded well', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
@@ -184,6 +200,20 @@ describe('createComponents', () => {
     expect(String(overrides)).toContain('--rhdh-global-header-height');
   });
 
+  it('caps BUI dialog max-height without forcing full viewport height', () => {
+    const actual = createComponents({});
+    const overrides = actual.MuiCssBaseline?.styleOverrides;
+    expect(typeof overrides).toBe('function');
+    // Source of the styleOverrides factory includes these declarations.
+    expect(String(overrides)).toContain('maxHeight:');
+    expect(String(overrides)).toContain(
+      'maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`',
+    );
+    expect(String(overrides)).not.toContain(
+      'height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`',
+    );
+  });
+
   it('publishes masthead height and hides sidebar logos when global-header is present', () => {
     const actual = createComponents({});
     const overrides = actual.MuiCssBaseline?.styleOverrides;
@@ -218,6 +248,88 @@ describe('createComponents', () => {
         clipPath: 'inset(0 round 0 0 1rem 0)',
       }),
     );
+  });
+
+  it('applies OFS contained primary fill and hover colors', () => {
+    const actual = createComponents({ palette: customLightTheme() });
+    const overrides = actual.MuiButton?.styleOverrides as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(overrides?.containedPrimary).toEqual(
+      expect.objectContaining({
+        borderRadius: '99em',
+        color: '#ffffff !important',
+        backgroundColor: '#0066CC !important',
+        padding: '6px 16px !important',
+        '&:hover, &:focus-visible, &:active': expect.objectContaining({
+          color: '#ffffff !important',
+          backgroundColor: '#00478e !important',
+        }),
+      }),
+    );
+  });
+
+  it('uses dark label on default dark primary fill (#92c5f9)', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    const overrides = actual.MuiButton?.styleOverrides as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(overrides?.containedPrimary).toEqual(
+      expect.objectContaining({
+        color: '#151515 !important',
+        backgroundColor: '#92c5f9 !important',
+        '&:hover, &:focus-visible, &:active': expect.objectContaining({
+          color: '#151515 !important',
+          backgroundColor: '#b9dafc !important',
+        }),
+      }),
+    );
+  });
+
+  it('recomputes contrast when app-config overrides primary.main on dark', () => {
+    // Deep-merge leaves contrastText #151515 from dark defaults; label must
+    // still be white on saturated brand blues like #0093F0 (RHDHBUGS-4042).
+    const actual = createComponents({
+      palette: {
+        ...customDarkTheme(),
+        primary: {
+          main: '#0093F0',
+          dark: '#006FCC',
+          contrastText: '#151515',
+        },
+      },
+    });
+    const overrides = actual.MuiButton?.styleOverrides as Record<
+      string,
+      Record<string, unknown>
+    >;
+    expect(overrides?.containedPrimary).toEqual(
+      expect.objectContaining({
+        color: '#ffffff !important',
+        backgroundColor: '#0093F0 !important',
+        '&:hover, &:focus-visible, &:active': expect.objectContaining({
+          color: '#ffffff !important',
+          backgroundColor: '#006FCC !important',
+        }),
+      }),
+    );
+  });
+
+  it('forces CreateButton <a> contained look when ButtonBase resets win', () => {
+    const actual = createComponents({ palette: customLightTheme() });
+    const overrides = actual.MuiCssBaseline?.styleOverrides;
+    expect(typeof overrides).toBe('function');
+    // Factory closes over palette colors; source must force fill/padding so NFS
+    // HeaderPage CreateButton is not left as a bare link (ButtonBase resets).
+    const source = String(overrides);
+    expect(source).toContain('a.MuiButton-containedPrimary');
+    expect(source).toContain('primaryMain');
+    expect(source).toContain('primaryDark');
+    expect(source).toContain('primaryContrast');
+    expect(source).toContain('6px 16px');
+    expect(source).toContain('minHeight');
   });
 
   it('paints shell chrome (html/body/header) with pageInsetBackgroundColor', () => {

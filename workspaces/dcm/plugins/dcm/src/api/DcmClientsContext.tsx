@@ -85,7 +85,7 @@ export function DcmClientsProvider({ children }: { children: ReactNode }) {
   const discoveryApi = useApi(discoveryApiRef);
   const fetchApi = useApi(fetchApiRef);
   const apiHolder = useApiHolder();
-  const authEnabled = configApi.getOptionalBoolean('dcm.auth.enabled') ?? true;
+  const authEnabled = configApi.getOptionalBoolean('dcm.auth.enabled') ?? false;
   const dcmAuthApi = apiHolder.get(dcmAuthApiRef);
   const useOidcFallback =
     authEnabled && (!dcmAuthApi || isDefaultDcmAuthApi(dcmAuthApi));

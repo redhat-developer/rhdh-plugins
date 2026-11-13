@@ -15,11 +15,33 @@
  */
 
 import type { Config } from '@backstage/config';
+import { validateJqlExpression } from '../clients/utils';
 import { OPEN_ISSUES_CONFIG_PATH } from '../constants';
 
 export interface JiraOpenIssuesOptions {
   mandatoryFilter?: string;
   customFilter?: string;
+}
+
+type JiraOpenIssuesFilterOptionKey = keyof JiraOpenIssuesOptions;
+
+/**
+ * Parses and validates an optional free-form JQL filter from openIssues options.
+ * Missing or whitespace-only values are treated as unset.
+ */
+function parseOptionalJqlFilter(
+  optionsConfig: Config | undefined,
+  key: JiraOpenIssuesFilterOptionKey,
+): string | undefined {
+  const raw = optionsConfig?.getOptionalString(key);
+  if (raw === undefined || !raw.trim()) {
+    return undefined;
+  }
+
+  return validateJqlExpression(
+    raw,
+    `${OPEN_ISSUES_CONFIG_PATH}.options.${key}`,
+  );
 }
 
 /**
@@ -33,7 +55,7 @@ export function parseJiraOpenIssuesConfigOptions(
   );
 
   return {
-    mandatoryFilter: optionsConfig?.getOptionalString('mandatoryFilter'),
-    customFilter: optionsConfig?.getOptionalString('customFilter'),
+    mandatoryFilter: parseOptionalJqlFilter(optionsConfig, 'mandatoryFilter'),
+    customFilter: parseOptionalJqlFilter(optionsConfig, 'customFilter'),
   };
 }

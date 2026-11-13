@@ -46,5 +46,8 @@ export async function runAccessibilityTests(
   const violationsToAssert = getFilteredViolations(
     accessibilityScanResults.violations,
   );
-  expect(violationsToAssert, 'Accessibility violations found').toEqual([]);
+  expect(
+    violationsToAssert,
+    `Accessibility check (${accessibilityScanResults.violations.length} violations)`,
+  ).toEqual([]);
 }

@@ -10,8 +10,8 @@ PRDs and Jira analysis are background, not current truth.
 - `plugins/ai-catalog` — AI Catalog frontend
 - `plugins/ogx-entity-provider`
 
-The `boost-backend` plugin and Kagenti packages are development scaffolding;
-they are not released for RHDH 2.1. Browse and entity cards use
+The `boost-backend` plugin is development scaffolding;
+it is not released for RHDH 2.1. Browse and entity cards use
 `catalogApiRef` only and do not call a Boost backend.
 
 The unreleased backend and the current Usage card still contain project-specific
@@ -26,6 +26,26 @@ The two installable release plugins require three supporting packages:
 `ai-catalog-entity-provider-sdk` for OGX entity annotations and version
 normalization. These are support dependencies, not additional dynamic plugins
 or additional AI Catalog release features.
+
+## RHDH 2.2 SDK recovery and planning references
+
+[RHIDP-18760](https://redhat.atlassian.net/browse/RHIDP-18760) recovers reusable
+SDK interfaces, validators, delta helpers, and documentation from the archive
+for subsequent 2.2 reconciliation. This recovery does not expand the 2.1 release
+boundary above or activate the restored helpers in live providers. See the
+[recovery manifest](RHIDP-18760-recovery-manifest.md) for provenance, preserved
+files, exclusions, and the follow-on scope.
+
+These recovered documents are follow-on planning references:
+
+- [AI asset upstream migration design](ai-asset-upstream-migration-design.md)
+  points to the canonical migration plan.
+- [Annotation specification](annotation-specification.md) preserves the prior
+  mapping and annotation design for reconciliation.
+
+Their historical category and mapping statements do not establish current
+minimum requirements. The `ai-catalog-entity-model` change remains follow-on
+planning, as recorded in the status table below.
 
 ## Implemented frontend (`openspec/specs/`)
 
@@ -78,11 +98,16 @@ There is no remaining active frontend work in `openspec/changes/`.
 
 ## RBAC follow-on work
 
-The `ai-catalog-asset-governance` proposal, design, behavioral specs, and tasks
-now describe the follow-on RBAC model built on the current Catalog and OGX
-baseline. The model uses built-in `catalog.entity.read`, RHDH conditional
-policies, API-level field redaction where required, and the existing RBAC audit
-and administration surfaces. This is not part of the RHDH 2.1 release.
+The `ai-catalog-rbac-versioning-policy` change records the follow-on RHDHPLAN-1508
+RBAC model from `agentic-feature-refinement`. It uses built-in
+`catalog.entity.read`, existing RHDH conditional policies and administration,
+and direct per-entity version policy. The earlier `ai-catalog-asset-governance`
+draft is archived. This planning change is not part of the RHDH 2.1 release.
+
+The synced change predates the October 6 Jira revision. Its
+`ai-catalog.manage` and provider-audit scope differs from the current parent
+issue's `ai-catalog.admin` and stretch provider-audit language. Reconcile
+those contracts before implementing this change.
 
 ## Status of the remaining OpenSpecs
 
@@ -94,25 +119,24 @@ listed below.
 | Change                               | Status and scope                                                                                                                  |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | `ai-catalog-entity-model`            | Follow-on entity-model and SDK planning; the archived `ogx-entity-provider` spec remains the current OGX release source of truth. |
-| `agent-creation-discovery`           | Follow-on agent, MCP, and catalog-entity capabilities; not current-release behavior.                                              |
-| `ai-chat-interaction-experience`     | Follow-on chat and interaction capabilities; not current-release behavior.                                                        |
-| `pluggable-ai-platform-architecture` | Follow-on provider/backend architecture; not current-release behavior.                                                            |
-| `platform-operations-deployment`     | Follow-on backend, configuration, deployment, and administration work; not current-release behavior.                              |
-| `security-safety-governance`         | Follow-on backend security and authorization work; not current-release behavior.                                                  |
+| `agent-creation-discovery`           | Removed (#5548) — obsolete application-oriented area; entity taxonomy governed by `ai-catalog-entity-model`.                      |
+| `ai-chat-interaction-experience`     | Removed (#5548) — obsolete chat/interaction area; not current planning.                                                           |
+| `pluggable-ai-platform-architecture` | Removed (#5548) — obsolete provider/backend architecture area; not current planning.                                              |
+| `platform-operations-deployment`     | Moved (#5548) to `RHDHPLAN-1513-potential-openspecs/` as historical reference for potential RHDHPLAN-1513 reuse.                  |
 | `connector-shared-infrastructure`    | Follow-on shared connector infrastructure; not current-release behavior.                                                          |
 | `connector-config-hot-reload`        | Follow-on connector administration and backend configuration work; not current-release behavior.                                  |
 | `ingestion-audit-metrics`            | Consolidated/follow-on ingestion and analytics work; not current-release behavior.                                                |
 | `ingestion-health-dashboard`         | Follow-on backend/admin health dashboard work; not current-release behavior.                                                      |
-| `neo4j-knowledge-graph`              | Follow-on graph synchronization work; not current-release behavior.                                                               |
-| `oci-skill-connector`                | Follow-on OCI connector implementation; not current-release behavior.                                                             |
-| `oci-skill-registry`                 | Follow-on OCI registry ingestion framework; not current-release behavior.                                                         |
+| `neo4j-knowledge-graph`              | Archived (RHIDP-18761) — see `archive/2026-11-06-neo4j-knowledge-graph/`.                                                         |
+| `oci-skill-connector`                | Archived (RHIDP-18761) — see `archive/2026-11-06-oci-skill-connector/`.                                                           |
+| `oci-skill-registry`                 | Archived (RHIDP-18761) — see `archive/2026-11-06-oci-skill-registry/`.                                                            |
 | `mcp-registry-connector`             | Follow-on MCP Registry productization; not current-release behavior.                                                              |
 | `rhoai-connector`                    | Follow-on RHOAI MCP connector; not current-release behavior.                                                                      |
 | `upstream-schema-alignment`          | Follow-on upstream-kind alignment and migration-readiness work; not current-release behavior.                                     |
 
-RBAC governance is tracked separately in `ai-catalog-asset-governance` as
-follow-on design work. Its examples build on the current Catalog/OGX model but
-do not add RBAC behavior to this release.
+RBAC governance is tracked separately in `ai-catalog-rbac-versioning-policy`
+as follow-on design work. Its examples build on the current Catalog/OGX model
+but do not add RBAC behavior to this release.
 
 ## Cleanup progress
 

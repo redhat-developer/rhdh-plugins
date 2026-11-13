@@ -26,10 +26,11 @@ import {
   dedupeMetricsById,
 } from './thresholdBucketUtils';
 import { ThresholdBucketTile } from './ThresholdBucketTile';
-import { MetricGroupCardMenu } from './MetricGroupCardMenu';
-import type { MenuAction } from './MetricGroupCardMenu';
-import { DataSourcesDialog } from './DataSourcesDialog';
-import { toMetricSourceRows } from './metricSourceRows';
+import { CardActionsMenu } from '../DataSources/CardActionsMenu';
+import type { MenuAction } from '../DataSources/CardActionsMenu';
+import { DataSourcesDialog } from '../DataSources/DataSourcesDialog';
+import { toMetricSourceRows } from '../DataSources/metricSourceRows';
+import { CardInfoButton } from '../Common/CardInfoButton';
 import type { MetricGroupCardProps } from './types';
 import { CardWrapper } from '../Common/CardWrapper';
 
@@ -53,6 +54,14 @@ export const MetricGroupCard = ({
     () => toMetricSourceRows(uniqueMetrics, { t, locale }),
     [uniqueMetrics, t, locale],
   );
+  const latestTimestamp = useMemo(() => {
+    const timestamps = uniqueMetrics
+      .map(m => m.result?.timestamp)
+      .filter((ts): ts is string => Boolean(ts));
+    return timestamps.length > 0
+      ? timestamps.reduce((a, b) => (a > b ? a : b))
+      : undefined;
+  }, [uniqueMetrics]);
 
   const handleOpenDataSources = useCallback(() => {
     setInitialFilters([]);
@@ -73,7 +82,7 @@ export const MetricGroupCard = ({
     () => [
       {
         id: 'view-data-sources',
-        label: t('metricGroupCard.viewDataSources'),
+        label: t('card.viewDataSources'),
         icon: <InfoOutlinedIcon fontSize="small" />,
         onClick: handleOpenDataSources,
       },
@@ -91,10 +100,15 @@ export const MetricGroupCard = ({
           width="100%"
           childrenHeight="auto"
           info={
-            <MetricGroupCardMenu
-              ariaLabel={t('metricGroupCard.menuAriaLabel')}
-              actions={menuActions}
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {latestTimestamp && (
+                <CardInfoButton timestamp={latestTimestamp} marginRight={0} />
+              )}
+              <CardActionsMenu
+                ariaLabel={t('card.menuAriaLabel')}
+                actions={menuActions}
+              />
+            </Box>
           }
         >
           <Box

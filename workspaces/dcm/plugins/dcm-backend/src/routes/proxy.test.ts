@@ -76,7 +76,10 @@ describe('createDcmProxy', () => {
 
   it('requires the per-user DCM OIDC token', async () => {
     const app = makeApp({
-      dcm: { apiUrl: 'https://control-plane.example.com' },
+      dcm: {
+        apiUrl: 'https://control-plane.example.com',
+        auth: { enabled: true },
+      },
     });
     const res = await request(app).get('/proxy/providers');
     expect(res.status).toBe(401);
@@ -127,7 +130,10 @@ describe('createDcmProxy', () => {
       .spyOn(globalThis, 'fetch')
       .mockRejectedValueOnce(new Error('Connection refused'));
     const app = makeApp({
-      dcm: { apiUrl: 'https://control-plane.example.com' },
+      dcm: {
+        apiUrl: 'https://control-plane.example.com',
+        auth: { enabled: true },
+      },
     });
     const res = await withDcmToken(request(app).get('/proxy/providers'));
     expect(res.status).toBe(502);
@@ -146,7 +152,10 @@ describe('createDcmProxy', () => {
     } as unknown as Response);
 
     const app = makeApp({
-      dcm: { apiUrl: 'https://control-plane.example.com' },
+      dcm: {
+        apiUrl: 'https://control-plane.example.com',
+        auth: { enabled: true },
+      },
     });
     const res = await withDcmToken(
       request(app).get('/proxy/providers?foo=bar'),
@@ -172,7 +181,10 @@ describe('createDcmProxy', () => {
     } as unknown as Response);
 
     const app = makeApp({
-      dcm: { apiUrl: 'https://control-plane.example.com' },
+      dcm: {
+        apiUrl: 'https://control-plane.example.com',
+        auth: { enabled: true },
+      },
     });
     const res = await withDcmToken(
       request(app)
@@ -197,7 +209,10 @@ describe('createDcmProxy', () => {
     } as unknown as Response);
 
     const app = makeApp({
-      dcm: { apiGatewayUrl: 'https://gateway.example.com' },
+      dcm: {
+        apiGatewayUrl: 'https://gateway.example.com',
+        auth: { enabled: true },
+      },
     });
     const res = await withDcmToken(
       request(app)

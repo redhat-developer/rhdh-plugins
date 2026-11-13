@@ -5,8 +5,8 @@ kind: Component
 metadata:
   name: dora-scorecard
   annotations:
-    github.com/project-slug: dzemanov/test-scorecard-github-dora
-    backstage.io/source-location: url:https://github.com/dzemanov/test-scorecard-github-dora
+    github.com/project-slug: janus-qe/overlay-scorecard-backend-module-dora-test
+    backstage.io/source-location: url:https://github.com/janus-qe/overlay-scorecard-backend-module-dora-test
     scorecard.io/dora: 'true'
     jira/incident-project-key: RSPT
 spec:

@@ -471,6 +471,8 @@ export interface X2ADatabaseServiceApi {
     description: string;
     required: boolean;
   }): Promise<RuleEntity | undefined>;
+  // (undocumented)
+  validateAcceptedRules(ruleIds: string[]): Promise<void>;
 }
 
 // @public

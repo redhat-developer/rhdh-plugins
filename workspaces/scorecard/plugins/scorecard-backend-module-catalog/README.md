@@ -346,3 +346,7 @@ scorecard:
 ```
 
 The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). For more details on how to configure schedule, see [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling).
+
+## Development
+
+Local module harness and test commands are in [DEVELOPING.md](./DEVELOPING.md).

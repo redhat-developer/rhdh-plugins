@@ -103,6 +103,7 @@ metadata:
   - Requires `github.com/project-slug` on the entity
 - **Behavior**
   - Records are returned in ascending `createdAt` order (oldest to newest)
+  - Deployment result uses the latest `success` status when one exists. GitHub can later mark that deployment `inactive` after a newer deployment in the same non-production environment succeeds. If the deployment never succeeded, the latest status is used
   - Client-side fetch cap: at most **1000** deployments are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window runs
 
 `github:doraDeploymentWorkflowRuns`
@@ -179,3 +180,7 @@ scorecard:
 ```
 
 The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). See [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for custom schedule configuration.
+
+## Development
+
+Local module harness and test commands are in [DEVELOPING.md](./DEVELOPING.md).

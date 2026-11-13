@@ -25,6 +25,12 @@
     ]
   },
   "sideEffects": false,
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-dcm",
+    "exposedModules": {
+      "PluginRoot": "./src/index.ts"
+    }
+  },
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",

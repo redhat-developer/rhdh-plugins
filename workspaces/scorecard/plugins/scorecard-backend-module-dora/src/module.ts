@@ -38,6 +38,7 @@ import {
   parseDoraSyncConfig,
 } from './metricProviders/DoraConfig';
 
+/** @public */
 export const scorecardModuleDora = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'dora',

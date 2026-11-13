@@ -2,20 +2,20 @@
 
 ## 1. Annotation Specification Document (P0) — RHIDP-15346
 
-- [ ] 1.1 Document all `rhdh.io/ai-asset-category` values (agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server)
-- [ ] 1.2 Document `rhdh.io/ai-asset-version` annotation format and normalization rules
-- [ ] 1.3 Document `rhdh.io/ai-asset-source` annotation format
-- [ ] 1.4 Document entity kind + `spec.type` mapping table for all AI Asset types
-- [ ] 1.5 Map MCP server to upstream `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016)) — kind already aligned, document field/module gaps
-- [ ] 1.6 Map skills/rules to upstream `AiResource` ([#33575](https://github.com/backstage/backstage/issues/33575)) — document kind/name casing alignment
-- [ ] 1.6a Map model-server to candidate `API` / `ai-model-server` ([#34476](https://github.com/backstage/backstage/pull/34476)) — hedge on open PR
-- [ ] 1.6b Map remaining categories (ai-model, agent, skill-bundle) — document explicit uncertainty
-- [ ] 1.7 Assign confidence levels to each mapping (high/medium–high/medium–low/low)
-- [ ] 1.8 Document fields requiring transformation per entity type
-- [ ] 1.9 Add explicit "Future Work" section framing actual migration as separate effort
-- [ ] 1.10 Add header with draft status and last-updated date
-- [ ] 1.11 Cross-reference `agent-creation-discovery/catalog-entities` spec (supplementary — provider-deployment context only; Decision 1 is the mapping SoT)
-- [ ] 1.12 Publish spec in `workspaces/boost/specifications/` directory
+- [x] 1.1 Document the five minimum `rhdh.io/ai-asset-category` values (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) and retain `rule` as a compatibility value; exclude archived SkillBundle contracts
+- [x] 1.2 Document `rhdh.io/ai-asset-version` annotation format and normalization rules
+- [x] 1.3 Document `rhdh.io/ai-asset-source` annotation format
+- [x] 1.4 Document entity kind + `spec.type` mapping table for all AI Asset types
+- [x] 1.5 Map MCP server to upstream `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016)) — kind already aligned, document field/module gaps
+- [x] 1.6 Map skills/rules to upstream `AiResource` ([#33575](https://github.com/backstage/backstage/issues/33575)) — document kind/name casing alignment
+- [x] 1.6a Map model-server to candidate `API` / `ai-model-server` ([#34476](https://github.com/backstage/backstage/pull/34476)) — hedge on open PR
+- [x] 1.6b Map remaining minimum categories (`ai-model`, `agent`) — document explicit uncertainty; document `rule` only as a compatibility mapping
+- [x] 1.7 Assign confidence levels to each mapping (high/medium–high/medium–low/low)
+- [x] 1.8 Document fields requiring transformation per entity type
+- [x] 1.9 Add explicit "Future Work" section framing actual migration as separate effort
+- [x] 1.10 Add header with draft status and last-updated date
+- [x] ~~1.11 Cross-reference `agent-creation-discovery/catalog-entities` spec in RHDH-2-1-Legacy-Content~~ Superseded — `agent-creation-discovery` removed (#5548); Decision 1 is the sole mapping SoT
+- [x] 1.12 Publish spec in `workspaces/boost/specifications/` directory
 
 ## 2. Dry-Run Tooling Scaffold (P1) — RHIDP-15347
 
@@ -34,7 +34,7 @@
 
 ## 3. Testing (P1)
 
-- [ ] 3.1 Unit test mapping logic with fixture entities (all seven AI Asset types)
+- [ ] 3.1 Unit test mapping logic with fixture entities for the five minimum categories and retained `rule` compatibility; do not include archived SkillBundle fixtures
 - [ ] 3.2 Unit test confidence level assignment
 - [ ] 3.3 Unit test field transformation identification
 - [ ] 3.4 Integration test against mock catalog API
@@ -47,19 +47,19 @@
 
 ## 4. Documentation (P1)
 
-- [ ] 4.1 Write README for `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` package
-- [ ] 4.2 Document how to run dry-run tool (command-line usage)
-- [ ] 4.3 Document output interpretation (what each field means)
-- [ ] 4.4 Document confidence levels and their implications
-- [ ] 4.5 Customer-facing messaging: this is readiness assessment, not migration
-- [ ] 4.6 Cross-reference annotation specification document
-- [ ] 4.7 Add tracking links for upstream targets: [#34016](https://github.com/backstage/backstage/pull/34016) (McpServerApiEntity), [#33575](https://github.com/backstage/backstage/issues/33575) (AiResource), [#34476](https://github.com/backstage/backstage/pull/34476) (model-server candidate)
-- [ ] 4.8 Document future work: actual migration, processor hook
+- [x] 4.1 Write README for `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` package
+- [x] 4.2 Document how to run dry-run tool (command-line usage)
+- [x] 4.3 Document output interpretation (what each field means)
+- [x] 4.4 Document confidence levels and their implications
+- [x] 4.5 Customer-facing messaging: this is readiness assessment, not migration
+- [x] 4.6 Cross-reference annotation specification document
+- [x] 4.7 Add tracking links for upstream targets: [#34016](https://github.com/backstage/backstage/pull/34016) (McpServerApiEntity), [#33575](https://github.com/backstage/backstage/issues/33575) (AiResource), [#34476](https://github.com/backstage/backstage/pull/34476) (model-server candidate)
+- [x] 4.8 Document future work: actual migration, processor hook
 
 ## 5. Cross-References and Dependencies (P2)
 
-- [ ] 5.1 Cross-reference RHDHPLAN-1507's `ai-catalog-entity-model` change
-- [ ] 5.2 Cross-reference `agent-creation-discovery/catalog-entities` spec (supplementary — provider-deployment context only; Decision 1 is the mapping SoT)
-- [ ] 5.3 Link to upstream targets: [#34016](https://github.com/backstage/backstage/pull/34016) (McpServerApiEntity), [#33575](https://github.com/backstage/backstage/issues/33575) (AiResource), [#34476](https://github.com/backstage/backstage/pull/34476) (model-server candidate)
+- [x] 5.1 Cross-reference RHDHPLAN-1507's `ai-catalog-entity-model` change
+- [x] ~~5.2 Cross-reference `agent-creation-discovery/catalog-entities` spec in RHDH-2-1-Legacy-Content~~ Superseded — `agent-creation-discovery` removed (#5548); Decision 1 is the sole mapping SoT
+- [x] 5.3 Link to upstream targets: [#34016](https://github.com/backstage/backstage/pull/34016) (McpServerApiEntity), [#33575](https://github.com/backstage/backstage/issues/33575) (AiResource), [#34476](https://github.com/backstage/backstage/pull/34476) (model-server candidate)
 - [ ] 5.4 Cross-reference RHDHPLAN-1507 RHIDP-15302 and RHIDP-15303 (migration-readiness stories in the entity model epic)
-- [ ] 5.5 Update `ai-catalog-entity-model` change to reference this specification
+- [x] 5.5 Update `ai-catalog-entity-model` change to reference this specification

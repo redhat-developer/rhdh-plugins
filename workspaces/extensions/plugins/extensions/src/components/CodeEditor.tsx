@@ -41,6 +41,15 @@ loader.config({ monaco: monacoEditor });
 
 const defaultOptions: MonacoEditor.editor.IEditorConstructionOptions = {
   minimap: { enabled: false },
+  // Avoid a persistent empty scrollbar when content fits the viewport.
+  scrollBeyondLastLine: false,
+  automaticLayout: true,
+  // Parent card owns clipping; Monaco should not introduce a nested DOM scroll.
+  overviewRulerLanes: 0,
+  hideCursorInOverviewRuler: true,
+  scrollbar: {
+    alwaysConsumeMouseWheel: false,
+  },
 };
 
 export interface CodeEditorProps {
@@ -86,7 +95,15 @@ export const CodeEditor = ({
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        minHeight: 0,
+        overflow: 'hidden',
+      }}
+    >
       <Button
         variant="text"
         onClick={handleCopy}
@@ -111,8 +128,14 @@ export const CodeEditor = ({
         )}
       </Button>
 
-      {/* Use absolute to enforce the editor to use the right hight. */}
-      <div style={{ position: 'absolute', width: '100%', height: '100%' }}>
+      {/* Absolute fill so Monaco tracks the card height, not content height. */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+        }}
+      >
         <Editor
           theme={paletteMode}
           defaultLanguage={defaultLanguage}

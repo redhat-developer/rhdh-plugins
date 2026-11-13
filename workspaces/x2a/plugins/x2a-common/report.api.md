@@ -245,6 +245,17 @@ export type CancellablePhase =
   | 'adversarial-analyze'
   | 'adversarial-migrate';
 
+// @public (undocumented)
+export class Codespace {
+  constructor(url: string);
+  // (undocumented)
+  equals(other: Codespace): boolean;
+  // (undocumented)
+  toString(): string;
+  // (undocumented)
+  readonly url: string;
+}
+
 // @public
 export const CREATE_PROJECT_TEMPLATE_PATH =
   '/create/templates/default/x2a-conversion-project-template';
@@ -398,6 +409,24 @@ export class GitRepository {
   readonly url: string;
 }
 
+// @public (undocumented)
+export class GitRepositoryRef {
+  constructor(url: string, branch: string);
+  // (undocumented)
+  readonly branch: string;
+  // (undocumented)
+  equals(other: GitRepositoryRef): boolean;
+  // (undocumented)
+  static fromProject(project: {
+    targetRepoUrl: string;
+    targetRepoBranch: string;
+  }): GitRepositoryRef;
+  // (undocumented)
+  toString(): string;
+  // (undocumented)
+  readonly url: string;
+}
+
 // @public
 export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
 
@@ -480,10 +509,16 @@ export type JobStatusEnum =
   | 'stale';
 
 // @public
+export const MAX_ACCEPTED_RULES_TOTAL_CHARS = 50000;
+
+// @public
 export const MAX_BACKOFF_MS: number;
 
 // @public
 export const MAX_CONCURRENT_BULK_RUN = 3;
+
+// @public
+export const MAX_RULE_DESCRIPTION_CHARS = 50000;
 
 // @public (undocumented)
 export type MigrationPhase =
@@ -1063,6 +1098,10 @@ export interface ScmProvider {
     filePath: string,
   ): string;
   buildBranchUrl(origin: string, path: string, encodedBranch: string): string;
+  buildCodespace?(
+    repository: GitRepositoryRef,
+    devcontainerPath: string,
+  ): Codespace | undefined;
   getAuthTokenDescriptor(readOnly: boolean): AuthTokenDescriptor;
   matches(repoUrl: string): boolean;
   // (undocumented)

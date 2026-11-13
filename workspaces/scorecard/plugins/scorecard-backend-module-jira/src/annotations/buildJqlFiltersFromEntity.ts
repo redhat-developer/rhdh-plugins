@@ -15,7 +15,11 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
-import { validateIdentifier, validateJQLValue } from '../clients/utils';
+import {
+  validateIdentifier,
+  validateJQLValue,
+  validateJqlExpression,
+} from '../clients/utils';
 import type { JiraFilterAnnotations, JiraJqlFilters } from './types';
 
 /**
@@ -89,7 +93,10 @@ export function buildJqlFiltersFromEntity(
   if (filterAnnotations.customFilter) {
     const customFilter = annotations[filterAnnotations.customFilter];
     if (customFilter) {
-      filters.customFilter = customFilter;
+      filters.customFilter = validateJqlExpression(
+        customFilter,
+        filterAnnotations.customFilter,
+      );
     }
   }
 

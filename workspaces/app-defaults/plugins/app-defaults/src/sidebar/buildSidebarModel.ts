@@ -24,6 +24,8 @@ import type {
   SidebarItemGroupData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { defaultSidebarPathPriority } from './defaultSidebarPaths';
+
 /** Icon input accepted by the renderer: contributed icons plus auto-discovered nav icons. */
 export type SidebarModelIcon = SidebarIcon | ReactElement;
 
@@ -105,7 +107,7 @@ function toModelItem(item: SidebarItemData): SidebarModelItem {
     icon: item.icon,
     to: item.to,
     onClick: item.onClick,
-    priority: item.priority ?? DEFAULT_PRIORITY,
+    priority: defaultSidebarPathPriority(item.to, item.priority),
   };
 }
 
@@ -121,9 +123,13 @@ function toModelItem(item: SidebarItemData): SidebarModelItem {
  * - Items flagged with `requiresRoute` are dropped unless an auto-discovered
  *   nav item links to the same path, so an entry that points at an optional
  *   plugin's page disappears when that plugin is not installed.
- * - Nav items auto-discovered from page extensions are merged in at the
- *   default priority unless a contributed item or group already links to the
- *   same path, which lets a plugin take over the placement of its own page.
+ * - Items with an empty `title` are never rendered, but their `to` still
+ *   claims the page, so a title-less item hides the auto-discovered nav item
+ *   for that path without replacing it.
+ * - Nav items auto-discovered from page extensions inherit OFS/NFS default-path
+ *   priorities when their href matches a built-in path; otherwise priority 0.
+ *   A contributed item or group that already links to the same path takes over
+ *   placement of that page.
  * - Custom elements always render at the top level, sorted by priority with
  *   their extension id as tiebreaker. An element with a `to` hides every
  *   contributed item and auto-discovered nav item with the same path, so the
@@ -142,7 +148,7 @@ export function buildSidebarModel({
       title: group.title,
       icon: group.icon,
       to: group.to,
-      priority: group.priority ?? DEFAULT_PRIORITY,
+      priority: defaultSidebarPathPriority(group.to, group.priority),
       variant: group.variant ?? 'inline',
       items: [],
     });
@@ -160,6 +166,9 @@ export function buildSidebarModel({
       continue;
     }
     if (item.to && elementPaths.has(item.to)) {
+      continue;
+    }
+    if (!item.title) {
       continue;
     }
     const group = item.group ? groupById.get(item.group) : undefined;
@@ -184,7 +193,7 @@ export function buildSidebarModel({
       title: navItem.title,
       icon: navItem.icon ?? undefined,
       to: navItem.href,
-      priority: DEFAULT_PRIORITY,
+      priority: defaultSidebarPathPriority(navItem.href),
     });
   }
 

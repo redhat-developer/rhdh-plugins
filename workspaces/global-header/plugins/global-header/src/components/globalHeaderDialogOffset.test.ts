@@ -39,4 +39,13 @@ describe('GLOBAL_HEADER_DIALOG_OFFSET_CSS', () => {
     );
     expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain('z-index: 1300');
   });
+
+  it('caps dialog max-height without forcing full viewport height', () => {
+    expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).toContain(
+      'max-height: calc(100vh - var(--rhdh-global-header-height, 64px) - 3rem) !important;',
+    );
+    expect(GLOBAL_HEADER_DIALOG_OFFSET_CSS).not.toMatch(
+      /bui-Dialog\][\s\S]*?\n\s*height:\s*calc\(100vh/,
+    );
+  });
 });

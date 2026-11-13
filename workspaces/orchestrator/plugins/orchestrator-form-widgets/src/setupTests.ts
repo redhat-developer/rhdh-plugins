@@ -14,3 +14,21 @@
  * limitations under the License.
  */
 import '@testing-library/jest-dom';
+
+const mockLanguageApi = {
+  getLanguage: () => ({ language: 'en' }),
+  getAvailableLanguages: () => ({ languages: ['en'] }),
+  setLanguage: jest.fn(),
+  language$: () => ({
+    subscribe: () => ({ unsubscribe() {} }),
+  }),
+};
+
+jest.mock('@backstage/frontend-plugin-api', () => {
+  const actual = jest.requireActual('@backstage/frontend-plugin-api');
+  return {
+    ...actual,
+    // Widget unit tests do not mount a full App; provide a stable language API.
+    useApi: () => mockLanguageApi,
+  };
+});

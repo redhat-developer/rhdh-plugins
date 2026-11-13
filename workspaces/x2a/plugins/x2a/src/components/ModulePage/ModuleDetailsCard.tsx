@@ -16,37 +16,43 @@
 
 import {
   Box,
+  Button,
   Divider,
   Grid,
   IconButton,
   Tooltip,
   Typography,
 } from '@material-ui/core';
+import CodeIcon from '@material-ui/icons/Code';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import {
   Artifact,
   ArtifactKind,
+  GitRepositoryRef,
   Module,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { InfoCard } from '@backstage/core-components';
 
+import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { ArtifactLink } from '../ArtifactLink';
+import { buildCodespace } from '../tools';
 
 export const ModuleDetailsCard = ({
   module,
-  targetRepoUrl,
-  targetRepoBranch,
+  targetRepository,
   migrationPlanArtifact,
 }: {
   module?: Module;
-  targetRepoUrl: string;
-  targetRepoBranch: string;
+  targetRepository?: GitRepositoryRef;
   migrationPlanArtifact?: Artifact;
 }) => {
   const { t } = useTranslation();
+  const hostMap = useScmHostMap();
+  const targetRepoUrl = targetRepository?.url ?? '';
+  const targetRepoBranch = targetRepository?.branch ?? '';
   const empty = t('empty');
 
   const moduleMigrationPlanArtifact = module?.analyze?.artifacts?.find(
@@ -58,6 +64,9 @@ export const ModuleDetailsCard = ({
   const ansibleProjectArtifact = module?.publish?.artifacts?.find(artifact =>
     ArtifactKind.from(artifact.type).isAnsibleProject(),
   );
+  const codespace = targetRepository
+    ? buildCodespace(targetRepository, hostMap)
+    : undefined;
 
   return (
     <InfoCard title={t('modulePage.title')} variant="gridItem">
@@ -125,11 +134,31 @@ export const ModuleDetailsCard = ({
           <ItemField
             label={t('modulePage.artifacts.migrated_sources')}
             value={
-              <ArtifactLink
-                artifact={migratedSourcesArtifact}
-                targetRepoUrl={targetRepoUrl}
-                targetRepoBranch={targetRepoBranch}
-              />
+              <Box
+                display="flex"
+                alignItems="center"
+                flexWrap="wrap"
+                style={{ gap: 8 }}
+              >
+                <ArtifactLink
+                  artifact={migratedSourcesArtifact}
+                  targetRepoUrl={targetRepoUrl}
+                  targetRepoBranch={targetRepoBranch}
+                />
+                {migratedSourcesArtifact && codespace && (
+                  <Button
+                    href={codespace.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<CodeIcon />}
+                  >
+                    {t('modulePage.artifacts.editInCodespaces')}
+                  </Button>
+                )}
+              </Box>
             }
           />
         </Grid>

@@ -1,5 +1,31 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.13.1
+
+### Patch Changes
+
+- f9e6574: Offset MUI breakpoints by the docked app-drawer width so Grid and useMediaQuery use available content width (viewport minus drawer) while keeping the same responsive cascade as before.
+
+## 1.13.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+## 1.12.2
+
+### Patch Changes
+
+- 5405510: Remove the redundant Search entry from the sidebar menu. Title-less sidebar items are no longer rendered but still claim their page path, and the default sidebar now ships such placeholder items for `/search` and `/create`. The search modal is disabled by default.
+
+## 1.12.1
+
+## 1.12.0
+
+### Patch Changes
+
+- 10e954f: Restore Inspect / Unregister / Copy entity actions in the entity header kebab when a custom entity header layout is active (avoids empty Menu "No results found.")
+
 ## 1.11.0
 
 ### Patch Changes

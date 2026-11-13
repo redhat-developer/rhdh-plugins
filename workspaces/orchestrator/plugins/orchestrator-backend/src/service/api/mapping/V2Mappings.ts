@@ -96,11 +96,13 @@ export function mapToProcessInstanceDTO(
   const end = DateTime.fromISO(processInstance.end as string, {
     setZone: true,
   });
-  const duration = processInstance.end
-    ? Duration.fromMillis(end.diff(start).toMillis())
-        .shiftTo('hours', 'minutes', 'seconds')
-        .toHuman({ unitDisplay: 'long' })
-    : undefined;
+  // Avoid Luxon's "Invalid unit value NaN" when timestamps are missing/invalid.
+  const duration =
+    start.isValid && end.isValid
+      ? Duration.fromMillis(end.diff(start).toMillis())
+          .shiftTo('hours', 'minutes', 'seconds')
+          .toHuman({ unitDisplay: 'long' })
+      : undefined;
 
   let variables: Record<string, unknown> | undefined;
   if (typeof processInstance?.variables === 'string') {

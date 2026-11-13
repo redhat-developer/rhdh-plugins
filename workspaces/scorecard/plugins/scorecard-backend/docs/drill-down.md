@@ -72,12 +72,12 @@ Requires `scorecard.metric.read` permission. Additionally:
     pageSize: number;
     total: number;
     totalPages: number;
-    isCapped: boolean;
+    isCapped: boolean; // True when totals may undercount: eligible-result cap (10k) or DB scan budget (30k rows examined) stopped the scan while more DB rows may exist
   };
   entityHealth: {
     totalEntities: number; // Same as pagination.total for this response
     calculationErrorCount: number; // Latest row is a metric calculation failure (error_message set, value null)
-    countsArePartial: boolean; // True when the DB fetch window was capped
+    countsArePartial: boolean; // Same meaning as pagination.isCapped for this response
   };
 }
 
@@ -490,6 +490,17 @@ This returns a personalized view scoped to the entities the engineer and their t
 
 ## Limitations
 
+### Result Caps and Scan Budget
+
+Drill-down builds an authorized, non-disabled result set in database sort order before applying page/pageSize. Two independent limits apply:
+
+| Limit               | Value                          | Effect                                                                        |
+| ------------------- | ------------------------------ | ----------------------------------------------------------------------------- |
+| Eligible-result cap | 10,000 authorized/enabled rows | Maximum rows kept for `pagination.total` and paging                           |
+| DB scan budget      | 30,000 database rows examined  | Maximum rows read from the metric store per request (up to three 10k windows) |
+
+When either limit stops the scan while more database rows may remain, `pagination.isCapped` and `entityHealth.countsArePartial` are `true`, and totals may undercount the full dataset. The scan budget prevents a single request from walking an unbounded number of database and catalog calls when few rows are visible to the user (for example, sparse catalog permissions or many entity-disabled metrics).
+
 ### Entity Metadata Freshness
 
 Entity metadata (name, kind, owner) is fetched from the catalog at request time and reflects the current state. However, metric values and timestamps represent historical data from the last sync. This means:
@@ -539,12 +550,14 @@ Entity metadata (name, kind, owner) is fetched from the catalog at request time 
 
 1. **Large result set**: Too many entities match the filters
 2. **No filters applied**: Returning all entities in the system
+3. **Sparse authorization / disabled metrics**: Many DB rows are skipped after catalog checks, so the backend may examine up to the 30k-row scan budget per request
 
 **Resolution**:
 
 - Use more specific filters (status, kind, owner, namespace, entityName)
 - Reduce page size
 - Use the `owner` filter to scope results to specific teams
+- Check backend logs for `Drill-down DB scan budget reached; results may be partial` when totals appear incomplete (`isCapped` / `countsArePartial`)
 
 ## Related Documentation
 

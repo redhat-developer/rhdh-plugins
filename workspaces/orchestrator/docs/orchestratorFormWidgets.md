@@ -48,6 +48,7 @@ Implementation of the HTTP endpoints is out of the scope of this library, they a
     - [ActiveText Data Fetching](#activetext-data-fetching)
     - [Dynamic Text Templating](#dynamic-text-templating)
     - [ActiveText widget ui:props](#activetext-widget-uiprops)
+  - [Field-level help (`ui:fieldHelp`)](#field-level-help-uifieldhelp)
   - [Field-Level Validation](#field-level-validation)
     - [Validation on Blur](#validation-on-blur)
     - [Validation on Change](#validation-on-change)
@@ -613,6 +614,75 @@ The widget supports the following `ui:props` (for detailed information on each, 
 - `fetch:retry:delay`: Initial delay (ms) before the first retry
 - `fetch:retry:backoff`: Backoff multiplier applied to the delay
 - `fetch:retry:statusCodes`: Optional list of status codes to retry
+
+## Field-level help (`ui:fieldHelp`)
+
+Authors can attach **on-demand** help to Active form fields with `ui:fieldHelp`. End users see a **"?"** icon next to the field label and open richer guidance only when they need it.
+
+This is different from the field `description` / `ui:description`, which stays as the short text always shown under the input.
+
+Supported on: `ActiveTextInput`, `ActiveText`, `ActiveDropdown`, `ActiveMultiSelect`, and `ActiveBoolean`.
+
+### Description vs field help
+
+|            | Always-visible description | On-demand field help (`ui:fieldHelp`)   |
+| ---------- | -------------------------- | --------------------------------------- |
+| Where      | Under the input            | "?" next to the label                   |
+| When shown | Always                     | On hover / keyboard focus               |
+| Content    | Short plain helper text    | Title, markdown body, optional doc link |
+
+### Example
+
+```json
+{
+  "component": {
+    "type": "string",
+    "title": "Component",
+    "description": "The catalog component this workflow will be associated with",
+    "ui:widget": "ActiveTextInput",
+    "ui:fieldHelp": {
+      "title": "Component",
+      "body": "Choose the **catalog Component** this workflow run should be linked to.\n\n- The selection appears on the run detail page and in catalog relations.\n- Use search to filter by component name.",
+      "link": {
+        "label": "Learn more",
+        "url": "https://example.com/docs/components"
+      }
+    }
+  }
+}
+```
+
+### Localization example
+
+Provide author-written translations in the schema. The UI shows the text for the user's RHDH language. Missing locales fall back to `en`, then `default`, then the first available entry. There is **no auto-translation**.
+
+```json
+{
+  "component": {
+    "type": "string",
+    "title": "Component",
+    "ui:widget": "ActiveTextInput",
+    "ui:fieldHelp": {
+      "en": {
+        "title": "Component",
+        "body": "Choose the **catalog Component** this workflow run should be linked to.",
+        "link": {
+          "label": "Learn more",
+          "url": "https://example.com/docs/components"
+        }
+      },
+      "fr": {
+        "title": "Composant",
+        "body": "Choisissez le **composant catalogue** auquel cette exécution doit être liée.",
+        "link": {
+          "label": "En savoir plus",
+          "url": "https://example.com/docs/components"
+        }
+      }
+    }
+  }
+}
+```
 
 ## Field-Level Validation
 

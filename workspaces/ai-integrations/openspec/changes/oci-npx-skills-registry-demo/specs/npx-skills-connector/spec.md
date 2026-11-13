@@ -8,6 +8,8 @@ invoke `npx` nor clone or crawl Git repositories. It SHALL refresh at startup
 and on a non-overlapping Backstage schedule, defaulting to ten minutes.
 Discovery entry `name` SHALL be the stable record key within the configured
 source; changes to a Markdown display name SHALL NOT change that key.
+An entry name longer than 1 KiB in UTF-8 SHALL be rejected as incomplete
+discovery without copying the oversized key into the failed-key list.
 
 #### Scenario: Archive entry
 
@@ -24,11 +26,11 @@ source; changes to a Markdown display name SHALL NOT change that key.
 ### Requirement: Verified and bounded artifact retrieval
 
 The connector SHALL enforce HTTPS, index-origin or explicitly allowlisted
-origins, and redirect/destination validation from design D7. It SHALL cap each
-artifact at 1 MiB and verify SHA-256 over its original bytes against the index
-before decoding and normalizing frontmatter. Invalid supported entries,
-retrieval errors, digest mismatches, and exceeded bounds SHALL make the snapshot
-incomplete. Successfully processed records SHALL expose the validated discovery
+origins, and redirect URL validation from design D7.
+It SHALL cap each artifact at 1 MiB and verify SHA-256 over its original bytes
+against the index before decoding and normalizing frontmatter. Invalid supported
+entries, retrieval errors, digest mismatches, and exceeded bounds SHALL make the
+snapshot incomplete. Successfully processed records SHALL expose the validated discovery
 entry's artifact URL as `sourceUri` and the verified artifact digest; frontmatter
 SHALL NOT override either field.
 
@@ -63,6 +65,18 @@ SHALL return 404.
 
 - **WHEN** the first discovery attempt has not completed
 - **THEN** the endpoint returns `loading`, empty skills and failed-key arrays, and `observedAt: null`
+
+#### Scenario: Total discovery failure
+
+- **WHEN** discovery returns no entries and no index page could be parsed
+- **THEN** the connector publishes a `failed` snapshot
+- **AND** no artifact processing is attempted
+
+#### Scenario: Unhandled exception during discovery or processing
+
+- **WHEN** an unexpected exception is thrown by discovery or artifact processing
+- **THEN** the connector catches it and publishes a `failed` snapshot
+- **AND** the error is logged
 
 #### Scenario: Successful empty discovery
 

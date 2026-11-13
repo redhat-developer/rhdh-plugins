@@ -25,6 +25,7 @@ import { JiraIncidentsCollector } from './collectors/JiraIncidentsCollector';
 import { JiraOpenIssuesProvider } from './metricProviders/JiraOpenIssuesProvider';
 import { JiraClientFactory } from './clients/JiraClientFactory';
 
+/** @public */
 export const scorecardModuleJira = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'jira',

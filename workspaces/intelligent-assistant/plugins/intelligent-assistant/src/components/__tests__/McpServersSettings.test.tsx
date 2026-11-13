@@ -860,4 +860,40 @@ describe('McpServersSettings', () => {
       );
     });
   });
+
+  it('scopes the configure modal to the provided host when isCompact', async () => {
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+
+    render(
+      <TestApiProvider
+        apis={[
+          [
+            configApiRef,
+            {
+              getString: (key: string) => {
+                if (key === 'backend.baseUrl') {
+                  return 'http://localhost:7007';
+                }
+                throw new Error(`Unexpected config key: ${key}`);
+              },
+            },
+          ],
+          [fetchApiRef, { fetch: mockFetch }],
+        ]}
+      >
+        <McpServersSettings isCompact appendTo={() => host} />
+      </TestApiProvider>,
+    );
+
+    await waitForServersLoaded();
+    await openConfigureModal('personal-server');
+
+    expect(
+      host.querySelector('.ia-scoped-chat-modal-backdrop'),
+    ).toBeInTheDocument();
+    expect(host.querySelector('[role="dialog"]')).toBeInTheDocument();
+
+    host.remove();
+  });
 });

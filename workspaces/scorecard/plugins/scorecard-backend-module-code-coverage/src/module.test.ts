@@ -65,9 +65,13 @@ describe('scorecard-backend-module-code-coverage', () => {
     expect(ids).toEqual(
       expect.arrayContaining([
         'codeCoverage.linePercentage',
+        'codeCoverage.lineAvailable',
         'codeCoverage.lineCovered',
+        'codeCoverage.lineMissed',
         'codeCoverage.branchPercentage',
+        'codeCoverage.branchAvailable',
         'codeCoverage.branchCovered',
+        'codeCoverage.branchMissed',
       ]),
     );
   });

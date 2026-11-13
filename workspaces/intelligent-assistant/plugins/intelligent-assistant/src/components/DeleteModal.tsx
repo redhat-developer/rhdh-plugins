@@ -27,6 +27,8 @@ import {
 import { useDeleteConversation } from '../hooks';
 import { useTranslation } from '../hooks/useTranslation';
 
+const SCOPED_BACKDROP_CLASS = 'ia-scoped-chat-modal-backdrop';
+
 const deleteConversationModalBackdropStyles = {
   '.delete-conversation-modal-backdrop': {
     '--pf-v6-c-backdrop--ZIndex': '2000 !important',
@@ -40,12 +42,17 @@ export const DeleteModal = ({
   chatName,
   onClose,
   onConfirm,
+  isCompact = false,
+  appendTo,
 }: {
   isOpen: boolean;
   conversationId: string;
   chatName?: string;
   onClose: () => void;
   onConfirm: () => void;
+  isCompact?: boolean;
+  /** Compact mode host for PatternFly Modal portal (overlay/docked). */
+  appendTo?: () => HTMLElement;
 }) => {
   const { t } = useTranslation();
   const {
@@ -70,14 +77,23 @@ export const DeleteModal = ({
 
   return (
     <>
-      <GlobalStyles styles={deleteConversationModalBackdropStyles} />
+      {!isCompact && (
+        <GlobalStyles styles={deleteConversationModalBackdropStyles} />
+      )}
       <Modal
         variant="small"
         isOpen={isOpen}
         onClose={onClose}
         aria-labelledby="delete-modal"
         aria-describedby="delete-modal-confirmation"
-        backdropClassName="delete-conversation-modal-backdrop"
+        {...(isCompact
+          ? {
+              appendTo: () => appendTo?.() ?? document.body,
+              backdropClassName: SCOPED_BACKDROP_CLASS,
+            }
+          : {
+              backdropClassName: 'delete-conversation-modal-backdrop',
+            })}
       >
         <ModalHeader
           title={t('conversation.delete.confirm.title' as any, {

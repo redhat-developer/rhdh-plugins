@@ -98,6 +98,27 @@ describe('MessageBarModelSelector', () => {
     });
   });
 
+  it('should hide the toggle full-name tooltip while the menu is open', async () => {
+    render(
+      <MessageBarModelSelector
+        selectedModel="granite-3.3"
+        models={mockModels}
+        onSelect={mockOnSelect}
+      />,
+    );
+
+    const toggleButton = screen.getByRole('button', {
+      name: 'Chatbot selector',
+    });
+    await userEvent.click(toggleButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+    });
+    // Tip must not cover menu items (e2e "Models are available" failure mode).
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
+
   it('should display all models in the dropdown', async () => {
     render(
       <MessageBarModelSelector

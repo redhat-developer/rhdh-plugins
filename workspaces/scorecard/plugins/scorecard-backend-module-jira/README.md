@@ -17,10 +17,19 @@ This module also requires a Jira integration to be configured in your `app-confi
 
 ### Authentication `token`
 
-- For the `cloud` product:
+For direct connections, `jira.token` is the bare credential (base64 string or
+PAT). The module prefixes the Authorization scheme from `jira.authType`, or
+from product defaults when `authType` is omitted:
 
-  - Obtain your personal token from Jira. Please use the following link to create token: [link](https://id.atlassian.com/manage-profile/security/api-tokens).
-  - Create a Base64-encoded string from the following plain text format: `your-atlassian-email:your-jira-api-token`:
+| `jira.product` | Default `authType` |
+| -------------- | ------------------ |
+| `cloud`        | `Basic`            |
+| `datacenter`   | `Bearer`           |
+
+- For Jira Cloud with a classic user API token (Basic auth, default):
+
+  - Obtain your personal token from Jira: [API tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
+  - Create a Base64-encoded string from `your-atlassian-email:your-jira-api-token`:
 
   ```bash
   // Node
@@ -35,9 +44,16 @@ This module also requires a Jira integration to be configured in your `app-confi
   echo -n 'your-atlassian-email:your-jira-api-token' | base64
   ```
 
+  - Set `JIRA_TOKEN` to that base64 value (no `Basic ` prefix).
+
+- For Jira Cloud with a service account / scoped API token (Bearer auth):
+
+  - Create a scoped API token for the service account: [Manage API tokens for service accounts](https://support.atlassian.com/user-management/docs/manage-api-tokens-for-service-accounts/).
+  - Set `JIRA_TOKEN` to the bare token and set `authType: Bearer`.
+
 - For the `datacenter` product:
-  - Obtain your personal token from Jira. Please use the following link to the Jira documentation for information on how to generate a token: [link](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)
-  - Use the Jira token without changing
+  - Obtain your personal access token: [Using personal access tokens](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)
+  - Set `JIRA_TOKEN` to the bare PAT (default `authType` is `Bearer`).
 
 ### Configuration **Direct** Jira integration
 
@@ -47,15 +63,28 @@ Provide the following config to `app-config.yaml` file:
 jira:
   # Required
   baseUrl: ${JIRA_URL}
-  # Required
+  # Required: bare credential (base64 for cloud Basic, PAT/token for Bearer)
   token: ${JIRA_TOKEN}
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
+  # Optional: Authorization scheme. Defaults to Basic for cloud, Bearer for datacenter.
+  # authType: Bearer
 ```
 
-### Configuration **Proxy** jira integration
+Example for Jira Cloud service account tokens:
 
-Provide the following config to `app-config.yaml` file:
+```yaml
+jira:
+  baseUrl: ${JIRA_URL}
+  token: ${JIRA_TOKEN}
+  product: cloud
+  authType: Bearer
+```
+
+### Configuration **Proxy** Jira integration
+
+When `proxyPath` is set, `jira.token` and `jira.authType` are ignored. Put the
+full Authorization value on the proxy endpoint headers:
 
 ```yaml
 jira:
@@ -96,6 +125,9 @@ scorecard:
           # jira/custom-filter when that annotation is set.
           customFilter: priority in ("Critical", "Blocker")
 ```
+
+`options.mandatoryFilter` and `options.customFilter` are validated at config
+load time with the same rules as [JQL filter constraints](#jql-filter-constraints).
 
 ## Schedule Configuration
 
@@ -176,6 +208,25 @@ spec:
   system: examples
   providesApis: [example-grpc-api]
 ```
+
+#### JQL filter constraints
+
+Free-form JQL from the entity annotation `jira/custom-filter` and from
+app-config `openIssues.options.mandatoryFilter` /
+`openIssues.options.customFilter` is injected into a larger JQL query. Each
+value is validated before use (annotation at metric calculation time;
+app-config options at config load) and rejected if it:
+
+- is longer than 1000 characters
+- contains control characters
+- has unbalanced `()` or `[]`, or an unterminated `"` string literal
+- contains a backslash outside a string literal
+- contains an `ORDER BY` clause (outside a string literal)
+- uses a leading wildcard, such as `summary ~ "*foo"` — these force a full
+  index scan in Jira. Trailing wildcards (`summary ~ "foo*"`) are allowed
+
+Only `"` is treated as a string delimiter. Single quotes are not, so a `(`
+or `)` inside `'...'` still counts toward bracket balancing.
 
 ## Available Metrics
 
@@ -269,3 +320,7 @@ scorecard:
 ```
 
 See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom configuration.
+
+## Development
+
+Local module harness and test commands are in [DEVELOPING.md](./DEVELOPING.md).

@@ -29,8 +29,10 @@ interface TagListProps {
   kind: string;
 }
 
+const MAX_VISIBLE_TAGS = 3;
+
 const TagList: FC<TagListProps> = ({ tags, kind }) => {
-  const hiddenCount = tags.length - 3;
+  const hiddenCount = tags.length - MAX_VISIBLE_TAGS;
 
   const params = new URLSearchParams({
     'filters[kind]': kind,
@@ -73,7 +75,7 @@ const TagList: FC<TagListProps> = ({ tags, kind }) => {
           size="small"
         />
       </Link>
-      {tags.slice(0, 2).map(tag => {
+      {tags.slice(0, MAX_VISIBLE_TAGS).map(tag => {
         const tagParams = new URLSearchParams({
           'filters[kind]': kind,
           'filters[tags]': tag,

@@ -56,6 +56,12 @@ describe('getScopedDialogProps', () => {
     const props = getScopedDialogProps(true);
 
     expect(props.sx).toEqual(
+      expect.objectContaining({
+        position: 'absolute',
+        zIndex: 1400,
+      }),
+    );
+    expect(props.sx).toEqual(
       expect.not.objectContaining({
         '& .MuiDialog-container': expect.anything(),
       }),

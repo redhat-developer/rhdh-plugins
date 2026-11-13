@@ -20,6 +20,7 @@ import {
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { createFilecheckMetricProvider } from './metricProviders/FilecheckMetricProviderFactory';
 
+/** @public */
 export const scorecardModuleFilecheck = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'filecheck',

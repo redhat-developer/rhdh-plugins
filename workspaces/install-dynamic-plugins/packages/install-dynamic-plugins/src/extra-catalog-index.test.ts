@@ -126,6 +126,8 @@ describe('parseExtraCatalogIndexImages', () => {
     ['.', '.=quay.io/x:1'],
     ['foo/bar', 'foo/bar=quay.io/x:1'],
     [String.raw`..\evil`, String.raw`..\evil=quay.io/x:1`],
+    ['/abs', '/abs=quay.io/x:1'],
+    ['/', '/=quay.io/x:1'],
   ])(
     'rejects path-traversing or separator-bearing subdirectory name %p',
     (_badName, entry) => {

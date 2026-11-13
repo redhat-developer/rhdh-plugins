@@ -25,7 +25,9 @@ import {
 
 import { useTranslation } from '../hooks/useTranslation';
 
-const deleteSavedPromptModalBackdropStyles = {
+const SCOPED_BACKDROP_CLASS = 'ia-scoped-chat-modal-backdrop';
+
+const deleteSavedPromptModalZIndexStyles = {
   '.delete-saved-prompt-modal-backdrop': {
     '--pf-v6-c-backdrop--ZIndex': '2000 !important',
     '--pf-v5-c-backdrop--ZIndex': '2000 !important',
@@ -39,6 +41,9 @@ type DeleteSavedPromptModalProps = {
   error?: string | null;
   onClose: () => void;
   onConfirm: () => void;
+  isCompact?: boolean;
+  /** Compact mode host for PatternFly Modal portal (overlay/docked). */
+  appendTo?: () => HTMLElement;
 };
 
 export const DeleteSavedPromptModal = ({
@@ -48,19 +53,30 @@ export const DeleteSavedPromptModal = ({
   error,
   onClose,
   onConfirm,
+  isCompact = false,
+  appendTo,
 }: DeleteSavedPromptModalProps) => {
   const { t } = useTranslation();
 
   return (
     <>
-      <GlobalStyles styles={deleteSavedPromptModalBackdropStyles} />
+      {!isCompact && (
+        <GlobalStyles styles={deleteSavedPromptModalZIndexStyles} />
+      )}
       <Modal
         variant="small"
         isOpen={isOpen}
         onClose={onClose}
         aria-labelledby="delete-saved-prompt-modal"
         aria-describedby="delete-saved-prompt-modal-confirmation"
-        backdropClassName="delete-saved-prompt-modal-backdrop"
+        {...(isCompact
+          ? {
+              appendTo: () => appendTo?.() ?? document.body,
+              backdropClassName: SCOPED_BACKDROP_CLASS,
+            }
+          : {
+              backdropClassName: 'delete-saved-prompt-modal-backdrop',
+            })}
       >
         <ModalHeader
           title={t('savedPrompts.delete.confirm.title' as any, {

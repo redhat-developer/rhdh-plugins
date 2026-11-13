@@ -53,4 +53,63 @@ describe('parseJiraOpenIssuesConfigOptions', () => {
       customFilter: undefined,
     });
   });
+
+  it('should trim valid filter values', () => {
+    const config = newMockRootConfig({
+      options: {
+        mandatoryFilter: '  type = Task  ',
+        customFilter: '  priority = High  ',
+      },
+    });
+
+    expect(parseJiraOpenIssuesConfigOptions(config)).toEqual({
+      mandatoryFilter: 'type = Task',
+      customFilter: 'priority = High',
+    });
+  });
+
+  it('should treat whitespace-only filters as unset', () => {
+    const config = newMockRootConfig({
+      options: {
+        mandatoryFilter: '   ',
+        customFilter: '\t',
+      },
+    });
+
+    expect(parseJiraOpenIssuesConfigOptions(config)).toEqual({
+      mandatoryFilter: undefined,
+      customFilter: undefined,
+    });
+  });
+
+  it.each([
+    {
+      key: 'mandatoryFilter',
+      value: 'type = Task ORDER BY created DESC',
+      reason: 'must not contain an ORDER BY clause',
+    },
+    {
+      key: 'customFilter',
+      value: 'summary ~ "*foo"',
+      reason: 'must not use a leading wildcard',
+    },
+    {
+      key: 'customFilter',
+      value: 'priority = High)',
+      reason: 'unbalanced parentheses',
+    },
+  ] as const)(
+    'should reject invalid $key: $reason',
+    ({ key, value, reason }) => {
+      const config = newMockRootConfig({
+        options: {
+          [key]: value,
+        },
+      });
+
+      expect(() => parseJiraOpenIssuesConfigOptions(config)).toThrow(
+        `scorecard.metricProviders.jira.openIssues.options.${key} is not a valid JQL filter: ${reason}.`,
+      );
+    },
+  );
 });

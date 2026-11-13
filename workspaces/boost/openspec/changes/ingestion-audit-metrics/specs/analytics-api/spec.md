@@ -2,7 +2,7 @@
 
 > **Status:** 🔀 CONSOLIDATED into RHIDP-15277 (RHDHPLAN-1508)  
 > **Story:** RHIDP-15344 (Closed — absorbed by RHIDP-15277 epic scope)  
-> **Coverage:** Sync history endpoint, quality scores endpoint, match coverage endpoint, Neo4j sync status, deployment-policy authorization, pagination, date range filtering
+> **Coverage:** Sync history endpoint, quality scores endpoint, Neo4j sync status, deployment-policy authorization, pagination, date range filtering
 > **Consolidation (2026-07-08):** Analytics metrics REST API scope is now part of the expanded RHIDP-15277 epic (AI Catalog RBAC Audit Logging, RHDHPLAN-1508), which includes RBAC-gated analytics data exposure alongside audit logging.
 
 ## ADDED Requirements
@@ -36,15 +36,6 @@ an independent change; RHIDP-15277 is the authoritative owner.
 **AND** the response includes an aggregate distribution: `{ score_ranges: [{ range: '0.0-0.2', count: N }, ...] }`  
 **AND** the aggregate distribution is computed on-demand from the DB  
 **AND** scores are normalized to 0.0-1.0 range regardless of eval source
-
-### Scenario 3: Match coverage endpoint returns capability coverage ratio
-
-**GIVEN** agents have declared capabilities and skills are available in the catalog  
-**WHEN** an admin calls `GET /api/boost/admin/analytics/match-coverage`  
-**THEN** the response contains `{ total_capabilities: N, matched_capabilities: M, coverage_ratio: M/N, unmatched_capabilities: [...] }`  
-**AND** the coverage ratio is computed by comparing agent capabilities against skill catalog entities  
-**AND** unmatched capabilities are listed as an array of capability IDs  
-**AND** the computation is performed on-demand when the API is called
 
 ### Scenario 4: Neo4j sync status in analytics
 

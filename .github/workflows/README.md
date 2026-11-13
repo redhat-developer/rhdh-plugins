@@ -6,7 +6,11 @@ Triggered on pull requests, this workflow runs tests on workspaces that have cha
 
 ## [release_workspace.yml](./release_workspace.yml)
 
-Handles the release process for a specific workspace from a specified branch (default: `main`). It either creates a "Version Packages" pull request if changesets are present or releases the packages within the workspace if they haven't been published yet. For more details on how changesets work, refer to the [Changesets documentation](https://github.com/changesets/changesets).
+Handles the release process for a specific workspace from a specified branch (default: `main`). Automatic publishing requires both a package version bump and a push from merging that workspace's `Version Packages (<workspace>)` PR authored by `rhdh-bot` from `changesets-release/<workspace>/main`. Other pushes that bump versions do not publish. The explicit `force_release` input remains available for manual releases. If there is no version bump, the workflow updates the Version Packages PR from pending changesets. For more details, see the [Changesets documentation](https://github.com/changesets/changesets).
+
+Automatic release checks and publication check out the triggering commit, not a moving branch. A SHA guard before npm publication rejects an unexpected checkout. Manual runs still check out the selected input branch.
+
+After a successful automatic release, calls [update-overlays.yml](./update-overlays.yml) to request an overlays update and comment its PR link on the merged Version Packages PR. Forced manual releases do not trigger this follow-up.
 
 ## [backport.yml](./backport.yml)
 
@@ -22,7 +26,30 @@ The same release process applies to both branch layouts:
 2. The workflow opens a separate `Version Packages` pull request for each affected workspace, from `maintenance-changesets-release/release-x.y/<workspace>`. A leftover branch with that name from a previous cycle must be deleted before the workflow can open a new PR. For legacy branches, the workspace comes from the target branch; for repository-wide branches, the workflow detects affected workspaces from the merged PR.
 3. Merge the `Version Packages` PR authored by `rhdh-bot` to publish that workspace with the `maintenance` npm dist-tag and create its Git tag. Closing it without merging does not publish.
 
+Both maintenance publish jobs check out and verify the triggering SHA before publication. Successful maintenance releases also call [update-overlays.yml](./update-overlays.yml). The overlays target is the matching `release-x.y` branch, including when the source branch is the legacy `release-1.x/<workspace>` layout.
+
 For `yarn.lock`-only fixes without plugin code changes, no changeset or npm release is needed; update the corresponding overlays `source.json` `repo-ref` instead. See [Backporting patches](../../CONTRIBUTING.md#backporting-patches-prior-release-lines) for the full procedure, including the follow-up `CHANGELOG` PR to `main`.
+
+## [update-overlays.yml](./update-overlays.yml)
+
+Reusable post-release workflow; it has no manual or pull-request trigger. It runs only in `redhat-developer/rhdh-plugins`, after the caller's publish and tag jobs succeed. The helper in `scripts/ci/update-overlays.js`:
+
+1. Resolves the exact merged, bot-authored Version Packages PR from the release commit.
+2. Dispatches overlays' existing `update-plugins-repo-refs.yaml` workflow from `main`, scoped to the released workspace and matching target branch. If an update PR already exists, passes `pr-to-update` to refresh it.
+3. Waits up to 30 minutes for an open or merged overlays PR whose `source.json` references this repository and the release commit. It also accepts a newer commit only when GitHub confirms that it descends from this release and is the merge of a bot-authored Version Packages PR for the same workspace and source branch. The comment identifies the original published commit and explains when overlays tracks a newer release commit. Foreign, unrelated, diverged, and unverified source refs are not accepted.
+
+Each successful publish retains its own follow-up; the reusable workflow has no shared concurrency group that could replace an older pending job. If releases A, B, and C overlap and overlays coalesces their updates into C, all three Version Packages PRs can receive the verified C overlays link. A cancelled dispatch or a successful run with no matching PR does not immediately discard its follow-up: it continues looking for an exact or verified newer release PR within the polling limit. Reruns reuse matching PRs and do not duplicate the same release's link to the same overlays PR.
+
+Workspaces missing from overlays or owned by a different upstream are skipped with a warning. If no matching PR is found, failed, cancelled, incompatible/no-op, and timed-out updates fail the follow-up job with a run URL; packages already published to npm are not rolled back. Inspect the failed follow-up job and linked overlays run before retrying. A link can be posted as soon as the matching PR exists; the overlays workflow's subsequent publish checks remain separate.
+
+### Prerequisites and rollout
+
+- The existing `RHDH_BOT_TOKEN` must have **Actions: read/write**, **Contents: read**, and **Pull requests: read** on `redhat-developer/rhdh-plugin-export-overlays`, plus **Contents: read** and **Pull requests: read/write** on `redhat-developer/rhdh-plugins`. A classic PAT needs `repo` scope and access to both repositories. The default repository-scoped `GITHUB_TOKEN` cannot perform this cross-repository dispatch.
+- Install the companion overlays concurrency change before enabling this caller: group discovery runs by workspace and target branch so different workspaces cannot cancel one another. Include the PR number for explicit refreshes so retrying the same PR can supersede its previous refresh.
+- Backport this workflow, its helper, and the caller changes together to each source release branch where automatic propagation is needed. The helper is checked out at the triggering commit, not from a moving `main` branch.
+- Dispatch requests use GitHub REST API version `2026-03-10`, which returns the new workflow run ID. No run is selected by a timestamp or by searching for the latest run.
+
+Local checks cover workflow syntax (`actionlint`), helper linting (ESLint), and formatting (Prettier). Live cross-repository verification requires an approved test setup. Do not dispatch production updates or publish packages for local validation.
 
 ## [release.yml](./release.yml)
 

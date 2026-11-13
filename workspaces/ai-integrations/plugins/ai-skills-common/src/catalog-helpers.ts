@@ -26,8 +26,46 @@
 
 import { createHash } from 'crypto';
 
+import { CATALOG_TAG_PATTERN, MAX_TAG_LENGTH } from './tag-constants';
 import type { SkillSourceType } from './types';
 import { isValidDigest } from './validation';
+
+// ─── Annotation key constants ───────────────────────────────────────
+
+/**
+ * Annotation key for the AI asset category (e.g., `skill`).
+ *
+ * @public
+ */
+export const ANNOTATION_AI_ASSET_CATEGORY = 'rhdh.io/ai-asset-category';
+
+/**
+ * Annotation key for the resolved AI asset version.
+ *
+ * @public
+ */
+export const ANNOTATION_AI_ASSET_VERSION = 'rhdh.io/ai-asset-version';
+
+/**
+ * Annotation key for the AI asset source (`<sourceType>/<sourceId>`).
+ *
+ * @public
+ */
+export const ANNOTATION_AI_ASSET_SOURCE = 'rhdh.io/ai-asset-source';
+
+/**
+ * Annotation key for the OCI skill image reference.
+ *
+ * @public
+ */
+export const ANNOTATION_OCI_SKILL_REF = 'rhdh.io/oci-skill-ref';
+
+/**
+ * Annotation key for the npx skill package reference with digest.
+ *
+ * @public
+ */
+export const ANNOTATION_NPX_SKILL_REF = 'rhdh.io/npx-skill-ref';
 
 // ─── Identity ────────────────────────────────────────────────────────
 
@@ -72,19 +110,6 @@ export function computeCatalogName(tuple: IdentityTuple): string {
 // ─── Tag normalization ───────────────────────────────────────────────
 
 /**
- * Backstage catalog tag validation pattern: one or more segments of
- * `[a-z0-9:+#]` separated by hyphens, maximum 63 characters.
- *
- * This pattern intentionally extends the standard Backstage catalog tag
- * pattern (which uses `[a-z0-9]` segments) to also allow colons, plus
- * signs, and hash characters per design D3/D5 requirements.
- */
-const CATALOG_TAG_RE = /^[a-z0-9:+#]+(-[a-z0-9:+#]+)*$/;
-
-/** Maximum length for a Backstage catalog tag. */
-const MAX_TAG_LENGTH = 63;
-
-/**
  * Result of tag normalization.
  *
  * @public
@@ -92,7 +117,13 @@ const MAX_TAG_LENGTH = 63;
 export interface NormalizeTagsResult {
   /** Valid, deduplicated tags in lowercase. */
   tags: string[];
-  /** Diagnostic messages for tags that were dropped. */
+  /**
+   * Diagnostic messages for tags that were dropped.
+   *
+   * @remarks
+   * Message text is informational and may change. Consumers must not
+   * treat wording as a stable API or use it for programmatic decisions.
+   */
   diagnostics: string[];
 }
 
@@ -100,11 +131,9 @@ export interface NormalizeTagsResult {
  * Normalizes tags for catalog use per design D3/D5.
  *
  * Trims whitespace, lowercases, deduplicates, and retains only values
- * accepted by an extended catalog tag pattern (per design D3/D5) that
- * allows colons, plus signs, and hash characters beyond the standard
- * Backstage tag validator. Invalid or overlength values are omitted
- * with a diagnostic — tags are never truncated and replacement
- * characters are never synthesized.
+ * accepted by {@link CATALOG_TAG_PATTERN} (per design D3/D5). Invalid or
+ * overlength values are omitted with a diagnostic — tags are never
+ * truncated and replacement characters are never synthesized.
  *
  * @public
  */
@@ -117,26 +146,26 @@ export function normalizeTags(tags: string[]): NormalizeTagsResult {
     const trimmed = raw.trim().toLocaleLowerCase('en-US');
 
     if (trimmed.length === 0) {
-      diagnostics.push(`tag '${raw}': empty after trim, skipped`);
+      diagnostics.push(`tag '${raw}': empty after trim, omitted`);
       continue;
     }
 
     if (seen.has(trimmed)) {
-      diagnostics.push(`tag '${raw}': duplicate '${trimmed}', skipped`);
+      diagnostics.push(`tag '${raw}': duplicate '${trimmed}', omitted`);
       continue;
     }
 
     if (trimmed.length > MAX_TAG_LENGTH) {
       diagnostics.push(
-        `tag '${raw}': length ${trimmed.length} exceeds maximum ${MAX_TAG_LENGTH}, skipped`,
+        `tag '${raw}': length ${trimmed.length} exceeds maximum ${MAX_TAG_LENGTH}, omitted`,
       );
       seen.add(trimmed);
       continue;
     }
 
-    if (!CATALOG_TAG_RE.test(trimmed)) {
+    if (!CATALOG_TAG_PATTERN.test(trimmed)) {
       diagnostics.push(
-        `tag '${raw}': '${trimmed}' does not match catalog tag pattern, skipped`,
+        `tag '${raw}': '${trimmed}' does not match catalog tag pattern, omitted`,
       );
       seen.add(trimmed);
       continue;

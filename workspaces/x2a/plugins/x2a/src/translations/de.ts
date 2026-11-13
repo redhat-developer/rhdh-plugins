@@ -152,6 +152,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.artifacts.migration_plan': 'Gesamter Projektmigrationsplan',
     'modulePage.artifacts.module_migration_plan': 'Modulplan nach Analyse',
     'modulePage.artifacts.migrated_sources': 'Migrierte Quellen',
+    'modulePage.artifacts.editInCodespaces': 'In Codespaces bearbeiten',
     'modulePage.artifacts.ansible_project': 'AAP-Projekt',
     'modulePage.artifacts.description':
       'Diese Artefakte werden durch den Konvertierungsprozess generiert und stehen zur Überprüfung bereit.',
@@ -336,6 +337,9 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Abbrechen',
     'rulesPage.dialog.createError': 'Regel konnte nicht erstellt werden',
     'rulesPage.dialog.updateError': 'Regel konnte nicht aktualisiert werden',
+    'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} Zeichen',
+    'rulesPage.dialog.descriptionTooLong':
+      'Die Beschreibung darf höchstens {{max}} Zeichen enthalten ({{count}} verwendet).',
     'modulePage.phases.runAdversarialReview':
       'Gegnerische Überprüfung ausführen',
     'modulePage.phases.adversarialReview': 'Gegnerische Überprüfung',

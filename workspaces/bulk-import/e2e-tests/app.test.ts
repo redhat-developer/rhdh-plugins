@@ -120,7 +120,7 @@ test.describe('Bulk Import', () => {
     translations = getTranslations(currentLocale);
     previewSidebarSnapshots = getPreviewSidebarSnapshots(translations);
 
-    const bulkImportNavLabel = getBulkImportNavLabel(currentLocale);
+    const bulkImportNavLabel = getBulkImportNavLabel();
     await expect(
       sharedPage.getByRole('link', { name: bulkImportNavLabel }),
     ).toBeVisible();

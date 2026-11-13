@@ -22,9 +22,11 @@ import {
 import { createBackendModule } from '@backstage/backend-plugin-api';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
+  scorecardCollectorsExtensionPoint,
   scorecardCollectorsServiceFactory,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { z } from 'zod';
 import { scorecardPlugin } from './plugin';
 import {
   MockNumberProvider,
@@ -45,10 +47,28 @@ const testMetricsModule = createBackendModule({
   moduleId: 'test-metrics',
   register(reg) {
     reg.registerInit({
-      deps: { metrics: scorecardMetricsExtensionPoint },
-      async init({ metrics }) {
+      deps: {
+        collectors: scorecardCollectorsExtensionPoint,
+        metrics: scorecardMetricsExtensionPoint,
+      },
+      async init({ collectors, metrics }) {
+        const emptySchema = z.object({});
+        collectors.addCollector({
+          getCollectorId: () => 'test:sample',
+          getCollectorDescription: () => 'Sample collector for wiring tests',
+          getInputSchema: () => emptySchema,
+          getOutputSchema: () => emptySchema,
+          collect: async () => ({}),
+        });
         metrics.addMetricProvider(
-          new MockNumberProvider('github.openPRs', 'github', 'GitHub Open PRs'),
+          new MockNumberProvider(
+            'github.openPRs',
+            'github',
+            'GitHub Open PRs',
+            'Mock number description.',
+            42,
+            ['test:sample'],
+          ),
           new MockNumberProvider(
             'github.openIssues',
             'github',
@@ -185,6 +205,24 @@ describe('scorecard plugin (startTestBackend)', () => {
       expect(res.body.error.message).toBe(
         'Cannot filter by both metricIds and datasource',
       );
+    });
+  });
+
+  describe('GET /api/scorecard/metrics/:metricId/collectors', () => {
+    it('returns collectors registered through the collectors extension point', async () => {
+      const res = await request(server).get(
+        '/api/scorecard/metrics/github.openPRs/collectors',
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        collectors: [
+          {
+            id: 'test:sample',
+            description: 'Sample collector for wiring tests',
+          },
+        ],
+      });
     });
   });
 

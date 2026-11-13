@@ -1,0 +1,76 @@
+{"ts":"2026-11-09T21:16:26Z","phase":"any","event":"turn.start","input":"Implement accepted Fullsend review findings using the Boost OpenSpec workflow."}
+{"ts":"2026-11-09T21:24:30Z","phase":"any","event":"skill.invoked","name":"receiving-code-review"}
+{"ts":"2026-11-09T21:24:30Z","phase":"authoring","event":"artifact.revised","ref":"specs/migration-readiness/migration-plan.md","input":"Clarify how migration confidence ratings relate to upstream readiness.","output":"Distinguished committed RHDH 2.1 target confidence from upstream schema readiness."}
+{"ts":"2026-11-09T21:24:31Z","phase":"authoring","event":"artifact.revised","ref":"specs/performance-resilience/spec.md","input":"Normalize the deferred load-test label.","output":"Matched the stretch marker to the task deferral convention."}
+{"ts":"2026-11-09T21:24:31Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md","input":"Clarify the deferred load-test task.","output":"Added RHIDP-15268 traceability and RHIDP-15294 deferral context."}
+{"ts":"2026-11-09T21:24:31Z","phase":"any","event":"turn.end","output":"Clarified confidence dimensions and load-test deferral; Prettier and OpenSpec validation passed."}
+{"ts":"2026-11-09T21:48:34Z","phase":"any","event":"turn.start","input":"Reconcile implemented OpenSpec tasks against current implementation evidence."}
+{"ts":"2026-11-09T21:48:34Z","phase":"apply","event":"mode.chosen","mode":"direct","input":"Use direct mode for task-checkbox documentation reconciliation; verify each item against code, tests, and docs."}
+{"ts":"2026-11-09T21:48:34Z","phase":"any","event":"skill.invoked","name":"openspec-apply-change"}
+{"ts":"2026-11-09T22:03:34Z","phase":"apply","event":"task.start","ref":"1.2"}
+{"ts":"2026-11-09T22:03:34Z","phase":"apply","event":"task.start","ref":"1.3"}
+{"ts":"2026-11-09T22:03:34Z","phase":"apply","event":"task.start","ref":"1.4"}
+{"ts":"2026-11-09T22:03:34Z","phase":"apply","event":"task.start","ref":"1.5"}
+{"ts":"2026-11-09T22:03:34Z","phase":"apply","event":"task.start","ref":"2.1"}
+{"ts":"2026-11-09T22:03:34Z","phase":"apply","event":"task.start","ref":"2.2"}
+{"ts":"2026-11-09T22:03:34Z","phase":"apply","event":"task.start","ref":"2.3"}
+{"ts":"2026-11-09T22:03:34Z","phase":"apply","event":"task.start","ref":"2.4"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.start","ref":"2.8"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.start","ref":"2.9"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.start","ref":"2.10"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.start","ref":"2.11"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.start","ref":"2.13"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.start","ref":"9.1"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.start","ref":"9.3"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.start","ref":"9.5"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.start","ref":"10.3"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"1.2","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"1.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"1.4","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"1.5","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"2.1","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"2.2","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"2.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"2.4","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"2.8","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"2.9","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"2.10","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"2.11","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"2.13","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"9.1","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"9.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"9.5","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"apply","event":"task.complete","ref":"10.3","mode":"direct","input":"Reconciled against implementation, tests, and documentation","output":"Marked the evidenced task complete in tasks.md"}
+{"ts":"2026-11-09T22:03:35Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md","input":"Reconcile completed work and stale task wording","output":"Checked only tasks supported by current implementation evidence"}
+{"ts":"2026-11-09T22:06:51Z","phase":"any","event":"decision","input":"Reconcile completed checklist work against current evidence","output":"Leave category-validation tasks open while the SDK still accepts skill-bundle, which is outside the reconciled baseline."}
+{"ts":"2026-11-09T22:06:51Z","phase":"any","event":"turn.end","output":"Checked evidenced SDK and migration tasks; left retired-category validation, publishing, deferrals, and unverified tasks open."}
+{"ts":"2026-11-10T14:45:09Z","phase":"any","event":"turn.start","input":"Make AiResource/agent the active agent mapping and retire contradictory Component references."}
+{"ts":"2026-11-10T14:49:41Z","phase":"authoring","event":"artifact.revised","ref":"design.md","input":"Address final PR 5474 review and maintainer direction.","output":"Documented AiResource/agent as the settled mapping; retained Component migration only as historical context."}
+{"ts":"2026-11-10T14:49:41Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md","input":"Address final PR 5474 review and maintainer direction.","output":"Documented AiResource/agent as the settled mapping; retained Component migration only as historical context."}
+{"ts":"2026-11-10T14:49:41Z","phase":"authoring","event":"artifact.revised","ref":"specs/entity-provider-sdk/spec.md","input":"Address final PR 5474 review and maintainer direction.","output":"Documented AiResource/agent as the settled mapping; retained Component migration only as historical context."}
+{"ts":"2026-11-10T14:49:41Z","phase":"authoring","event":"artifact.revised","ref":"specs/migration-readiness/spec.md","input":"Address final PR 5474 review and maintainer direction.","output":"Documented AiResource/agent as the settled mapping; retained Component migration only as historical context."}
+{"ts":"2026-11-10T14:49:41Z","phase":"authoring","event":"artifact.revised","ref":"specs/migration-readiness/migration-plan.md","input":"Address final PR 5474 review and maintainer direction.","output":"Documented AiResource/agent as the settled mapping; retained Component migration only as historical context."}
+{"ts":"2026-11-10T14:49:42Z","phase":"authoring","event":"artifact.revised","ref":"audit.md","input":"Address final PR 5474 review and maintainer direction.","output":"Documented AiResource/agent as the settled mapping; retained Component migration only as historical context."}
+{"ts":"2026-11-10T14:55:19Z","phase":"any","event":"turn.end","output":"Agent mapping and review follow-up validated; PR/Jira text and review threads updated. Local changes remain uncommitted."}
+{"ts":"2026-11-10T16:20:21Z","phase":"any","event":"turn.start","input":"Apply four PR-scoped audit corrections; move inherited findings to RHIDP-18929."}
+{"ts":"2026-11-10T16:26:13Z","phase":"authoring","event":"artifact.revised","ref":"audit.md","input":"Apply PR-scoped audit corrections.","output":"Corrected package references and scope deferrals; inherited findings are tracked in RHIDP-18929."}
+{"ts":"2026-11-10T16:26:13Z","phase":"authoring","event":"artifact.revised","ref":"design.md","input":"Apply PR-scoped audit corrections.","output":"Corrected package references and scope deferrals; inherited findings are tracked in RHIDP-18929."}
+{"ts":"2026-11-10T16:26:13Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md","input":"Apply PR-scoped audit corrections.","output":"Corrected package references and scope deferrals; inherited findings are tracked in RHIDP-18929."}
+{"ts":"2026-11-10T16:26:13Z","phase":"authoring","event":"artifact.revised","ref":"specs/annotation-scheme/spec.md","input":"Apply PR-scoped audit corrections.","output":"Corrected package references and scope deferrals; inherited findings are tracked in RHIDP-18929."}
+{"ts":"2026-11-10T16:26:13Z","phase":"authoring","event":"artifact.revised","ref":"specs/entity-provider-sdk/spec.md","input":"Apply PR-scoped audit corrections.","output":"Corrected package references and scope deferrals; inherited findings are tracked in RHIDP-18929."}
+{"ts":"2026-11-10T16:26:13Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md","input":"Apply PR-scoped audit corrections.","output":"Corrected package references and scope deferrals; inherited findings are tracked in RHIDP-18929."}
+{"ts":"2026-11-10T16:27:19Z","phase":"any","event":"turn.end","output":"Four PR-scoped corrections verified; inherited findings moved to RHIDP-18929. Local changes remain uncommitted."}
+{"ts":"2026-11-10T16:38:13Z","phase":"any","event":"turn.start","input":"Correct Fullsend taxonomy documentation findings against the current shared taxonomy."}
+{"ts":"2026-11-10T16:40:17Z","phase":"authoring","event":"artifact.revised","ref":"specs/migration-readiness/migration-plan.md","input":"Address Fullsend current-taxonomy findings.","output":"Documented current browse taxonomy, retired legacy values, and existing model-server support; companion annotation prose agrees."}
+{"ts":"2026-11-10T16:40:18Z","phase":"authoring","event":"artifact.revised","ref":"audit.md","input":"Record the scoped Fullsend follow-up.","output":"Recorded source-grounded taxonomy documentation corrections; broader inherited findings remain with RHIDP-18929."}
+{"ts":"2026-11-10T16:42:04Z","phase":"any","event":"turn.end","output":"Corrected current browse-taxonomy claims in two documents; OpenSpec validation, formatting, and whitespace checks passed. Ready for a separate unsigned commit."}
+{"ts":"2026-11-10T21:41:17Z","phase":"any","event":"turn.start","input":"Correct PR5508 model-server mapping and triage handoff after review."}
+{"ts":"2026-11-10T21:49:46Z","phase":"authoring","event":"artifact.revised","ref":"specs/migration-readiness","input":"Confirm current model-server kind after PR5508 review.","output":"Reconciled AiModelServerAPI current mappings, refs and filters; upstream API adoption remains separate future work."}
+{"ts":"2026-11-10T21:51:03Z","phase":"any","event":"turn.end","output":"PR5508 corrections verified: OpenSpec 15/15, Markdown formatting and scoped readbacks passed. Local changes remain uncommitted."}
+{"ts":"2026-11-11T20:35:52Z","phase":"any","event":"turn.start","input":"Address PR5524 review findings: major SDK release, vocabulary status, and delta example consistency."}
+{"ts":"2026-11-11T20:42:50Z","phase":"authoring","event":"artifact.revised","ref":"specs/entity-provider-sdk/spec.md","input":"Update reconciled vocabulary status for RHIDP-18762.","output":"Recorded six retained category values and excluded skill-bundle without activating deferred provider or metadata contracts."}
+{"ts":"2026-11-11T20:42:50Z","phase":"authoring","event":"artifact.revised","ref":"specs/delta-sync-framework/spec.md","input":"Align the agent deletion example with the current kind.","output":"Changed the example entity ref to airesource:default/agent-foo; delta semantics are unchanged."}
+{"ts":"2026-11-11T20:42:50Z","phase":"any","event":"turn.end","output":"Review fixes verified: SDK51 and OGX57 tests, types, SDK lint, API reports, OpenSpec15/15 and SDK2.0/OGX1.2.2 release plan. Ready for unsigned commit."}
+{"ts":"2026-11-12T18:00:18Z","phase":"any","event":"turn.start","input":"Address latest PR5524 findings: reconcile annotation preamble, update PR description, and reply to and resolve review threads."}
+{"ts":"2026-11-12T18:00:19Z","phase":"authoring","event":"artifact.revised","ref":"specs/annotation-scheme/spec.md","input":"Correct the stale seven-value SDK preamble after RHIDP-18762 reconciliation.","output":"Recorded the completed six-value vocabulary and diagnostic reconciliation while preserving deferred provider, metadata, and incremental-sync design."}
+{"ts":"2026-11-12T18:01:35Z","phase":"any","event":"turn.end","output":"Updated annotation preamble and PR description; posted assessment and resolved three threads. OpenSpec validation and formatting passed. Ready for unsigned commit."}

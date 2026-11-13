@@ -1,5 +1,41 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki
 
+## 1.6.2
+
+### Patch Changes
+
+- Updated dependencies [2c22798]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.6.2
+
+## 1.6.1
+
+### Patch Changes
+
+- Updated dependencies [f9236bd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.6.1
+
+## 1.6.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [0a42ebd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.6.0
+
+## 1.5.2
+
+### Patch Changes
+
+- Updated dependencies [a577327]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.11.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.5.2
+
 ## 1.5.1
 
 ### Patch Changes

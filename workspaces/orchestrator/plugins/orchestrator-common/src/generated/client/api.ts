@@ -1128,6 +1128,40 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * Retrieve unique initiator entity references from up to 500 matching workflow executions
+         * @summary Get distinct instance initiators
+         * @param {SearchRequest} [searchRequest] Filters and pagination for retrieving instance initiators
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getInstanceInitiators: async (searchRequest?: SearchRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/v2/workflows/instances/initiators`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(searchRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Retrieve an array of workflow executions (instances)
          * @summary Get instances
          * @param {SearchRequest} [searchRequest] Parameters for retrieving instances
@@ -1565,6 +1599,19 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Retrieve unique initiator entity references from up to 500 matching workflow executions
+         * @summary Get distinct instance initiators
+         * @param {SearchRequest} [searchRequest] Filters and pagination for retrieving instance initiators
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getInstanceInitiators(searchRequest?: SearchRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<string>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getInstanceInitiators(searchRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getInstanceInitiators']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Retrieve an array of workflow executions (instances)
          * @summary Get instances
          * @param {SearchRequest} [searchRequest] Parameters for retrieving instances
@@ -1746,6 +1793,16 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getInstanceById(instanceId, options).then((request) => request(axios, basePath));
         },
         /**
+         * Retrieve unique initiator entity references from up to 500 matching workflow executions
+         * @summary Get distinct instance initiators
+         * @param {SearchRequest} [searchRequest] Filters and pagination for retrieving instance initiators
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getInstanceInitiators(searchRequest?: SearchRequest, options?: any): AxiosPromise<Array<string>> {
+            return localVarFp.getInstanceInitiators(searchRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Retrieve an array of workflow executions (instances)
          * @summary Get instances
          * @param {SearchRequest} [searchRequest] Parameters for retrieving instances
@@ -1897,6 +1954,18 @@ export class DefaultApi extends BaseAPI {
      */
     public getInstanceById(instanceId: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).getInstanceById(instanceId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Retrieve unique initiator entity references from up to 500 matching workflow executions
+     * @summary Get distinct instance initiators
+     * @param {SearchRequest} [searchRequest] Filters and pagination for retrieving instance initiators
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getInstanceInitiators(searchRequest?: SearchRequest, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getInstanceInitiators(searchRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

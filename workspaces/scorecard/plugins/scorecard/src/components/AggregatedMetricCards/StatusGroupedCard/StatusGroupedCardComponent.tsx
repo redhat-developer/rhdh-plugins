@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import { useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { useState } from 'react';
 import { PieData } from '../../types';
 import type { TooltipPosition } from '../types';
 import {
@@ -24,7 +24,8 @@ import {
   resolveStatusColor,
 } from '../../../utils';
 import { CardWrapper } from '../../Common/CardWrapper';
-import { CardInfoButton } from '../components/CardInfoButton';
+import { MetricDataSources } from '../../DataSources/MetricDataSources';
+import { toAggregatedDialogMetricResult } from '../../DataSources/toAggregatedDialogMetricResult';
 import { ResponsivePieChart } from '../../ScorecardHomepageSection/ResponsivePieChart';
 import { CardLegendContent } from '../components/CardLegendContent';
 import { CardPieTooltipContent } from '../components/CardPieTooltipContent';
@@ -32,6 +33,7 @@ import { CardChartContainer } from '../components/CardChartContainer';
 import { CardSubheader } from '../components/CardSubheader';
 import { CardTooltip } from '../components/CardTooltip';
 import { StatusGroupedCardComponentProps } from './types';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 export const StatusGroupedCardComponent = ({
   scorecard,
@@ -43,6 +45,7 @@ export const StatusGroupedCardComponent = ({
   dataTestId,
 }: StatusGroupedCardComponentProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] =
@@ -71,8 +74,30 @@ export const StatusGroupedCardComponent = ({
     />
   ) : null;
 
+  const metricSnapshot = useMemo(
+    () =>
+      toAggregatedDialogMetricResult({
+        t,
+        metricId: scorecardId,
+        cardTitle,
+        type: 'number',
+        timestamp: result.timestamp,
+        includeValueAndStatus: false,
+      }),
+    [t, scorecardId, cardTitle, result.timestamp],
+  );
+
   const info = showInfo ? (
-    <CardInfoButton timestamp={result.timestamp} />
+    <MetricDataSources
+      title={cardTitle}
+      metricId={scorecardId}
+      lastSyncedTimestamp={result.timestamp}
+      fetchEnabled
+      metric={metricSnapshot}
+      unavailableValueLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
+      unavailableStatusLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
+      showThresholdLegend={false}
+    />
   ) : null;
 
   return (

@@ -15,20 +15,28 @@
  */
 
 /**
- * Paths that belong in the default (top) sidebar section, matching the OFS
- * `default.*` main-menu items and RHDH pages that ship enabled by default.
+ * Default (top-section) sidebar paths with OFS `DefaultMainMenuItems` priorities
+ * from RHDH `packages/app/src/consts.ts` (e.g. 1.10.5):
+ * Home 100, Catalog 80, APIs 70, Learning Paths 60, Create 50.
  *
- * Optional / customer-enabled plugin pages are not listed here and therefore
- * render in the middle section.
+ * `/docs` is an NFS default page not listed in OFS consts; it sits between APIs
+ * and Learning Paths. Optional / customer-enabled plugin pages are omitted and
+ * therefore render in the middle section at priority 0 unless configured.
  */
-export const DEFAULT_SIDEBAR_PATHS: ReadonlySet<string> = new Set([
-  '/',
-  '/catalog',
-  '/api-docs',
-  '/docs',
-  '/learning-paths',
-  '/create',
-]);
+export const DEFAULT_SIDEBAR_PATH_PRIORITIES: Readonly<Record<string, number>> =
+  {
+    '/': 100,
+    '/catalog': 80,
+    '/api-docs': 70,
+    '/docs': 65,
+    '/learning-paths': 60,
+    '/create': 50,
+  };
+
+/** Paths that belong in the default (top) sidebar section. */
+export const DEFAULT_SIDEBAR_PATHS: ReadonlySet<string> = new Set(
+  Object.keys(DEFAULT_SIDEBAR_PATH_PRIORITIES),
+);
 
 /**
  * Normalizes an internal sidebar path for allowlist comparison.
@@ -54,4 +62,25 @@ export function normalizeSidebarPath(
 export function isDefaultSidebarPath(to: string | undefined): boolean {
   const path = normalizeSidebarPath(to);
   return path !== undefined && DEFAULT_SIDEBAR_PATHS.has(path);
+}
+
+/**
+ * Resolves sidebar priority for a path. An explicit priority always wins;
+ * otherwise OFS/NFS default-path priorities apply, then `0`.
+ */
+export function defaultSidebarPathPriority(
+  to: string | undefined,
+  explicitPriority?: number,
+): number {
+  if (explicitPriority !== undefined) {
+    return explicitPriority;
+  }
+  const path = normalizeSidebarPath(to);
+  if (path !== undefined) {
+    const pathPriority = DEFAULT_SIDEBAR_PATH_PRIORITIES[path];
+    if (pathPriority !== undefined) {
+      return pathPriority;
+    }
+  }
+  return 0;
 }

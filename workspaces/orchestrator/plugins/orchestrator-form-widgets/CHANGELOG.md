@@ -1,5 +1,51 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 2.4.1
+
+### Patch Changes
+
+- Updated dependencies [2c22798]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.12.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.13.2
+
+## 2.4.0
+
+### Minor Changes
+
+- 10926d3: Add optional on-demand field help (`ui:fieldHelp`) for Active form widgets, with markdown, external links, and locale fallback.
+
+### Patch Changes
+
+- Updated dependencies [dc818df]
+- Updated dependencies [f9236bd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.12.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.13.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.1
+
+## 2.3.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [0a42ebd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.12.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.13.0
+
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies [fb4ecee]
+- Updated dependencies [a577327]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.12.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.11.1
+
 ## 2.2.1
 
 ### Patch Changes

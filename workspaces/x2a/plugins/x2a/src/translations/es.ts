@@ -155,6 +155,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.artifacts.module_migration_plan':
       'Plan del módulo por análisis',
     'modulePage.artifacts.migrated_sources': 'Fuentes migradas',
+    'modulePage.artifacts.editInCodespaces': 'Editar en Codespaces',
     'modulePage.artifacts.ansible_project': 'Proyecto AAP',
     'modulePage.artifacts.description':
       'Estos artefactos son generados por el proceso de conversión y están disponibles para revisión.',
@@ -339,6 +340,9 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Cancelar',
     'rulesPage.dialog.createError': 'No se pudo crear la regla',
     'rulesPage.dialog.updateError': 'No se pudo actualizar la regla',
+    'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} caracteres',
+    'rulesPage.dialog.descriptionTooLong':
+      'La descripción debe tener {{max}} caracteres o menos ({{count}} usados).',
     'modulePage.phases.runAdversarialReview': 'Ejecutar revisión adversaria',
     'modulePage.phases.adversarialReview': 'Revisión adversaria',
     'modulePage.phases.adversarialNoRuns': 'Aún no hay ejecuciones',

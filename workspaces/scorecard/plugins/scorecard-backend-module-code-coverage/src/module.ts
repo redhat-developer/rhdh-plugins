@@ -21,6 +21,7 @@ import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage
 import { CodeCoverageClient } from './clients/CodeCoverageClient';
 import { CodeCoverageMetricProvider } from './metricProviders/CodeCoverageMetricProvider';
 
+/** @public */
 export const scorecardModuleCodeCoverage = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'code-coverage',

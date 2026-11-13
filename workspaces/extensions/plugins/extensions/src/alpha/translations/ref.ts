@@ -56,6 +56,7 @@ export const extensionsMessages = {
     disabled: 'Disabled',
     partiallyInstalled: 'Partially installed',
     updateAvailable: 'Update available',
+    restartRequired: 'Restart required',
   },
 
   // Role labels
@@ -211,11 +212,11 @@ export const extensionsMessages = {
           'To enable actions, add a catalog entity for this package.',
         enableActionsDocsLink: 'View documentation',
         noDownloadPermissions:
-          "You don't have permission to download the configuration. Contact your administrator to request access or assistance.",
+          'You do not have permission to download the configuration. Contact your administrator to request access or assistance.',
         noEditPermissions:
-          "You don't have permission to edit the configuration. Contact your administrator to request access or assistance.",
+          'View Configuration. You do not have permission to edit the configuration. Contact your administrator to request access or assistance.',
         noTogglePermissions:
-          "You don't have permission to enable or disable packages. Contact your administrator to request access or assistance.",
+          'You do not have permission to enable or disable packages. Contact your administrator to request access or assistance.',
         editPackage: 'Edit package configuration',
         downloadPackage: 'Download package configuration',
         enablePackage: 'Enable package',
@@ -318,6 +319,7 @@ export const extensionsMessages = {
     pluginInstalled: 'Plugin installed',
     instructions: 'Instructions',
     editInstructions: 'Edit instructions',
+    noPackagesTitle: 'No package entities found',
     back: 'Back',
     packageUpdated: 'Package updated',
     packageEnabled: 'Package enabled',
@@ -357,12 +359,20 @@ export const extensionsMessages = {
   tooltips: {
     productionDisabled:
       'Plugin installation is disabled in the production environment.',
-    extensionsDisabled:
-      'Plugin installation is disabled. To enable it, add or modify the extensions configuration in your dynamic-plugins configuration file.',
+    extensionsDisabledInstallPlugin:
+      'Cannot install the plugin. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
+    extensionsDisabledInstallPackage:
+      'Cannot install the package. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
+    extensionsDisabledManagePlugin:
+      'Cannot manage the plugin. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
+    extensionsDisabledManagePackage:
+      'Cannot manage the package. To enable actions, add or modify the extensions configuration in your dynamic-plugins configuration file.',
     noPermissions:
       "You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.",
     missingDynamicArtifact:
       'Cannot manage this {{type}}. To enable actions, a Catalog entity with the required spec.dynamicArtifact must be added.',
+    restartRequired:
+      'A platform restart is required for this change to take effect.',
   },
 
   // Accessibility

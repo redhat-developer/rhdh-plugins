@@ -32,15 +32,19 @@ import Typography from '@mui/material/Typography';
 import { useConversations } from '../hooks/useConversations';
 import { useRenameConversation } from '../hooks/useRenameConversation';
 import { useTranslation } from '../hooks/useTranslation';
+import { getScopedDialogProps } from '../utils/scoped-dialog-utils';
+import { optionalStyle } from './notebooks/notebookDialogStyles';
 
 export const RenameConversationModal = ({
   isOpen,
   onClose,
   conversationId,
+  isCompact = false,
 }: {
   isOpen: boolean;
   onClose: () => void;
   conversationId: string;
+  isCompact?: boolean;
 }) => {
   const { t } = useTranslation();
   const {
@@ -85,6 +89,8 @@ export const RenameConversationModal = ({
     }
   };
 
+  const scopedProps = getScopedDialogProps(isCompact);
+
   return (
     <Dialog
       open={isOpen}
@@ -92,6 +98,11 @@ export const RenameConversationModal = ({
       aria-labelledby="rename-modal"
       aria-describedby="rename-modal-confirmation"
       fullWidth
+      {...scopedProps}
+      PaperProps={{
+        ...scopedProps.PaperProps,
+        sx: [optionalStyle(scopedProps.PaperProps?.sx)],
+      }}
     >
       <DialogTitle
         id="rename-modal"

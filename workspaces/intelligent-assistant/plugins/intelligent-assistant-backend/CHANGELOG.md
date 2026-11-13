@@ -1,5 +1,31 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.3.10
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.10
+
+## 5.3.9
+
+### Patch Changes
+
+- 102547a: Updated dependency `msw` to `2.15.0`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^1.4.1`.
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.9
+
+## 5.3.8
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.8
+
+## 5.3.7
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.3.7
+
 ## 5.3.6
 
 ### Patch Changes
@@ -215,7 +241,6 @@
 ### Patch Changes
 
 - 94e2278: Refactor the MCP server configure modal with PatternFly layout and improved credential management:
-
   - Add **Use organization default token** / **Use personal token** radio selectors when an app-config default token is available, replacing the remove-personal-token flow
   - Show server status, tools list, and enabled toggle with local draft state applied on Save
   - Hide the tools section when the server is disabled; keep status consistent while drafting an unverified personal token

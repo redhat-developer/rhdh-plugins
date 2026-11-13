@@ -24,9 +24,8 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   ...(process.env.PLAYWRIGHT_URL
     ? {
-        globalSetup: require.resolve(
-          './packages/app-legacy/e2e-tests/global-setup',
-        ),
+        globalSetup:
+          require.resolve('./packages/app-legacy/e2e-tests/global-setup'),
       }
     : {}),
 
@@ -93,7 +92,7 @@ export default defineConfig({
           {
             name: 'live',
             testDir: 'packages/app-legacy/e2e-tests',
-            testMatch: /^(?!app\.test\.ts$).*\.test\.ts$/,
+            testIgnore: /app\.test\.ts$/,
             use: {
               channel: 'chrome' as const,
             },

@@ -54,7 +54,11 @@ import {
 export type ExtendedMessageProps = MessageProps & { toolCalls?: ToolCall[] };
 
 export type NotebookStreamStatus =
-  'idle' | 'streaming' | 'complete' | 'stopped' | 'error';
+  | 'idle'
+  | 'streaming'
+  | 'complete'
+  | 'stopped'
+  | 'error';
 
 export interface NotebookStreamSnapshot {
   messages: ExtendedMessageProps[];
@@ -224,7 +228,10 @@ export function createNotebookStreamStore(): NotebookStreamStore {
 
         const { value, done } = await reader.read();
         if (isStale()) return;
-        if (done) break;
+        if (done) {
+          buffer += decoder.decode();
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
         const { events: parsedEvents, remainder } = parseSSEBuffer(buffer);
@@ -329,6 +336,23 @@ export function createNotebookStreamStore(): NotebookStreamStore {
           }
         }
         if (streamEnded) break;
+      }
+
+      const trailing = buffer.trim();
+      if (trailing) {
+        const { events: trailingEvents } = parseSSEBuffer(`${trailing}\n\n`);
+        for (const { event, data } of trailingEvents) {
+          if (event === 'end') {
+            const documents = data?.referenced_documents || [];
+            const sources = transformDocumentsToSources(documents);
+            updateLast(last => ({
+              ...last,
+              isLoading: false,
+              ...(sources ? { sources } : {}),
+            }));
+            commit('streaming');
+          }
+        }
       }
     } catch (e: any) {
       if (isStale()) return;

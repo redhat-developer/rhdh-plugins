@@ -11,15 +11,13 @@ For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModul
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
 - **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie), **`weightedStatusScore`** (weighted health donut), and scalar types (`sum`, `average`, `max`, `min`, `count`) configured under **`scorecard.aggregationKPIs`**.
 - **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
-- **Metric group cards (grid layout)** — Group related metrics into cards with threshold bucket tiles, a filterable/sortable data sources dialog, and a Masonry grid layout. Enabled via app-config.yaml.
+- **Metric group cards (grid layout)** — Group related metrics into cards with threshold bucket tiles, a filterable/sortable data sources dialog, and a Masonry layout whose column count follows the entity tab width. Enabled via app-config.yaml.
 
 ## Getting started
 
 Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/scorecard](http://localhost:3000/scorecard).
 
-You can also serve the plugin in isolation by running `yarn start` in the plugin directory.
-This method of serving the plugin provides quicker iteration speed and a faster startup and hot reloads.
-It is only meant for local development, and the setup for it can be found inside the [/dev](./dev) directory.
+Contributor setup, including the mock API limitation of the package dev app, is in [DEVELOPING.md](./DEVELOPING.md).
 
 ## For Administrators
 
@@ -29,13 +27,13 @@ Before installing the frontend plugin, ensure that the Scorecard backend is inte
 
 ### Installation and usage
 
-Install the package in your frontend (use `app` for NFS or `app-legacy` for legacy):
+Install the package in your frontend:
 
 ```sh
 yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
-# or for the legacy frontend:
-yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
 ```
+
+For a legacy (OFS) frontend app, install the same package and import from `@red-hat-developer-hub/backstage-plugin-scorecard/legacy` (see [Legacy app](#legacy-app)).
 
 ### Procedure
 
@@ -162,7 +160,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - Metrics listed in `groups` are rendered as **MetricGroupCard** components. Each card shows threshold bucket tiles (e.g. Passing, Warning, Failing) with counts. Clicking a tile opens a **data sources dialog** pre-filtered to that status.
    - The data sources dialog displays a sortable, filterable table with columns: Plugin, Check, Value, Status, and Last Synced. A threshold legend allows toggling visibility by status.
    - Metrics **not** listed in any group are rendered as individual Scorecard cards below the group cards.
-   - All cards are arranged in a responsive **Masonry** grid (1 column on mobile, 2 on tablet, 3 on desktop).
+   - All cards are arranged in a responsive **Masonry** layout (1 / 2 / 3 columns based on the entity tab width via ResizeObserver, not the viewport), so cards densify without vertical gaps and reflow when a docked drawer such as Quickstart is open.
    - If `groups` is empty or omitted, the grid layout falls back to the default `EntityScorecardContent` view (individual cards for all metrics).
    - When multiple layout extensions are enabled, the Scorecard tab renders a toggle to switch between them.
 
@@ -286,13 +284,13 @@ OFS components, the OFS plugin, and status icons are available only from `./lega
 
 #### Legacy app
 
-1. Install the Scorecard frontend plugin (see [Installation and usage](#installation-and-usage)) using `app-legacy`:
+1. Install the Scorecard frontend plugin in your legacy frontend package:
 
    ```console
-   yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
+   yarn workspace <your-frontend-app> add @red-hat-developer-hub/backstage-plugin-scorecard
    ```
 
-2. Add the Scorecard tab to the entity overview in `packages/app-legacy/src/components/catalog/EntityPage.tsx` (or your legacy app's equivalent):
+2. Add the Scorecard tab to the entity overview in your legacy app's catalog entity page (for example `src/components/catalog/EntityPage.tsx`):
 
    ```tsx
    import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
@@ -351,7 +349,7 @@ OFS components, the OFS plugin, and status icons are available only from `./lega
 
 4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml` (see discovery snippet under [NFS](#nfs-new-frontend-system--app)).
 
-5. Start the legacy app (e.g. `yarn start:legacy`) and open the **Scorecard** tab on catalog entity pages.
+5. Start your Backstage app and open the **Scorecard** tab on catalog entity pages.
 
 ### Permission Framework Support
 
@@ -379,8 +377,8 @@ permission:
 
 ### Accessing the Plugin
 
-- **app (NFS):** Open your Backstage app, go to **Catalog**, open an entity. The **Scorecard** tab appears when the entity matches your `allowedFilters` in app-config (or for all entities if the extension config is omitted).
-- **app-legacy:** Open your Backstage app, go to the entity overview from the catalog, and open the **Scorecard** tab to view and analyze scorecard metrics.
+- **NFS:** Open your Backstage app, go to **Catalog**, open an entity. The **Scorecard** tab appears when the entity matches your `allowedFilters` in app-config (or for all entities if the extension config is omitted).
+- **Legacy (OFS):** Open your Backstage app, go to the entity overview from the catalog, and open the **Scorecard** tab to view and analyze scorecard metrics.
 
 ### Homepage scorecard cards
 
@@ -390,7 +388,7 @@ The plugin exports **`ScorecardHomepageCard`** from `@red-hat-developer-hub/back
 
 Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId`. The default type is **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**, otherwise **`statusGrouped`**. A missing custom KPI key that is not a registered metric id returns **404**; the homepage card shows that error instead of staying in a loading state.
 
-The NFS homepage contributes one card, **`home-page-widget:scorecard/scorecard-aggregated-card`** (`ScorecardAggregatedCard`). On an editable homepage, set **Aggregation ID** in the card settings. The same widget can be added more than once, each copy with its own id. Dynamic Home Page / app-legacy can still pass any `aggregationId` through mountpoint props. Metric ids (for example `github.openPRs` or `filecheck.codeowners`) work without an `aggregationKPIs` row. Custom KPI keys such as `avgDeploymentFrequency`, `licenseFileExistsKpi`, or `changeFailureRateKpi` must exist in app-config (or the metadata API returns 404).
+The NFS homepage contributes one card, **`home-page-widget:scorecard/scorecard-aggregated-card`** (`ScorecardAggregatedCard`). On an editable homepage, set **Aggregation ID** in the card settings. The same widget can be added more than once, each copy with its own id. Dynamic Home Page / legacy mount points can still pass any `aggregationId` through mountpoint props. Metric ids (for example `github.openPRs` or `filecheck.codeowners`) work without an `aggregationKPIs` row. Custom KPI keys such as `avgDeploymentFrequency`, `licenseFileExistsKpi`, or `changeFailureRateKpi` must exist in app-config (or the metadata API returns 404).
 
 Supported scorecard aggregation types (see [Entity Aggregation — Aggregation types](../scorecard-backend/docs/aggregation.md#aggregation-types)):
 

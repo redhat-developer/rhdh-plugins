@@ -30,6 +30,7 @@ import { packageInstallRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePackage } from '../hooks/usePackage';
 import { ExtensionsPackageEditContentLoader } from '../components/ExtensionsPackageEditContent';
+import { INSTALL_PAGE_CLASS, InstallPageFill } from './installPageFill';
 
 const PackageEditHeader = () => {
   const params = useRouteRefParams(packageInstallRouteRef);
@@ -72,15 +73,17 @@ const PackageEditHeader = () => {
 export const ExtensionsPackageInstallPage = () => {
   return (
     <ReactQueryProvider>
-      <Page themeId={themeId}>
-        <PackageEditHeader />
-        <Content>
-          <ErrorBoundary>
-            {/* Force remount on navigation within same route to reseed editor */}
-            <ExtensionsPackageEditContentLoader />
-          </ErrorBoundary>
-        </Content>
-      </Page>
+      <InstallPageFill>
+        <Page themeId={themeId} className={INSTALL_PAGE_CLASS}>
+          <PackageEditHeader />
+          <Content stretch>
+            <ErrorBoundary>
+              {/* Force remount on navigation within same route to reseed editor */}
+              <ExtensionsPackageEditContentLoader />
+            </ErrorBoundary>
+          </Content>
+        </Page>
+      </InstallPageFill>
     </ReactQueryProvider>
   );
 };

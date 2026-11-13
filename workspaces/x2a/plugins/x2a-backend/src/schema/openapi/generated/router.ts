@@ -222,6 +222,7 @@ export const spec = {
                   },
                   "description": {
                     "type": "string",
+                    "maxLength": 50000,
                     "description": "Description of the rule"
                   },
                   "required": {
@@ -305,6 +306,7 @@ export const spec = {
                   },
                   "description": {
                     "type": "string",
+                    "maxLength": 50000,
                     "description": "Description of the rule"
                   },
                   "required": {

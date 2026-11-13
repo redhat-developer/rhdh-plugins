@@ -6,7 +6,7 @@ The module provides:
 
 - App layout wrapper (`appLayoutExtension`) that provides BUI routing and analytics context around routed application content, and renders the extensible application drawer (`appDrawerExtension` remains as a compatibility alias)
 - Priority-ordered sidebar (`appSidebarExtension`, extension ID `nav-content:app/sidebar`) that renders `SidebarItemBlueprint`, `SidebarItemGroupBlueprint`, `SidebarElementBlueprint`, `SidebarSpacerBlueprint` and `SidebarDividerBlueprint` contributions from `@red-hat-developer-hub/backstage-plugin-app-react`
-- Default sidebar layout: company logo (`sidebar-element:app/logo`, full logo while the sidebar is open and icon logo while collapsed, from `app.branding.fullLogo`, `app.branding.iconLogo` and `app.branding.fullLogoWidth`, with the RHDH logos as fallback), a gap below it (`sidebar-spacer:app/logo`), search modal (`sidebar-element:app/search`), then three menu sections — default built-in paths (top), optional plugin items (middle, with a divider only when non-empty), and a bottom block pushed down by `sidebar-spacer:app/bottom` (Administration, Settings, notifications) with a divider only when that block has visible entries. Administration (`sidebar-item-group:app/admin`, id `admin`) appears for users with admin permission once a plugin contributes an item with `group: 'admin'`. Settings and the company logo are hidden by default when the global header is present; force them with `app.sidebar.settings` / `app.sidebar.logo`. Disable or move any of them from `app-config.yaml`:
+- Default sidebar layout: company logo (`sidebar-element:app/logo`, full logo while the sidebar is open and icon logo while collapsed, from `app.branding.fullLogo`, `app.branding.iconLogo` and `app.branding.fullLogoWidth`, with the RHDH logos as fallback), a gap below it (`sidebar-spacer:app/logo`), search modal (`sidebar-element:app/search`, disabled by default; while it is disabled a title-less `sidebar-item:app/search` keeps the plain Search page out of the menu; a title-less `sidebar-item:app/create` likewise hides the scaffolder page), then three menu sections — default built-in paths (top), optional plugin items (middle, with a divider only when non-empty), and a bottom block pushed down by `sidebar-spacer:app/bottom` (Administration, Settings, notifications) with a divider only when that block has visible entries. Administration (`sidebar-item-group:app/admin`, id `admin`) appears for users with admin permission once a plugin contributes an item with `group: 'admin'`. Settings and the company logo are hidden by default when the global header is present; force them with `app.sidebar.settings` / `app.sidebar.logo`. Disable or move any of them from `app-config.yaml`:
 
   ```yaml
   app:
@@ -254,16 +254,16 @@ Reference: [Migrating entity pages to the new frontend system](https://github.co
 
 Use the app-defaults workspace dev app (`yarn start` in `workspaces/app-defaults`) and example catalog entities.
 
-| Check                  | Steps                                    | Expected                                                                 |
-| ---------------------- | ---------------------------------------- | ------------------------------------------------------------------------ |
-| RHIDP-16564 AC         | Open a **component** → **Overview**      | About (and Links) in the **left** column                                 |
-| Component overview     | **component** → Overview                 | No depends-on / subcomponent / consumed-provided API cards               |
-| Component Dependencies | **component** → **Dependencies**         | Graph on the left; dependency and API list cards on the right            |
-| API overview           | **api** → Overview                       | Relations graph on the right; no API **Definition** card                 |
-| API Definition         | **api** → Documentation → **Definition** | Definition content present                                               |
-| System overview        | **system** → Overview                    | Relations graph on the right                                             |
-| System Diagram         | **system** → **System Diagram**          | Diagram tab content loads                                                |
-| Group / User           | **group** or **user** → Overview         | About left; no duplicate org profile cards on overview (verify visually) |
+| Check                  | Steps                                    | Expected                                                                   |
+| ---------------------- | ---------------------------------------- | -------------------------------------------------------------------------- |
+| RHIDP-16564 AC         | Open a **component** → **Overview**      | About (and Links) in the **left** column                                   |
+| Component overview     | **component** → Overview                 | No depends-on / subcomponent / consumed-provided API cards                 |
+| Component Dependencies | **component** → **Dependencies**         | Graph and list cards side by side at lg+; stacked full width when narrower |
+| API overview           | **api** → Overview                       | Relations graph on the right; no API **Definition** card                   |
+| API Definition         | **api** → Documentation → **Definition** | Definition content present                                                 |
+| System overview        | **system** → Overview                    | Relations graph on the right                                               |
+| System Diagram         | **system** → **System Diagram**          | Diagram tab content loads                                                  |
+| Group / User           | **group** or **user** → Overview         | About left; no duplicate org profile cards on overview (verify visually)   |
 
 ## Links
 

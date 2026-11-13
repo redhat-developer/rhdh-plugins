@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+/**
+ * Supported scorecard visualization type values.
+ * @public
+ */
 export const ScorecardVisualizationTypes = {
   DONUT: 'donut',
   SPARKLINE: 'sparkline',

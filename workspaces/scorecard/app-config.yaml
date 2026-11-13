@@ -164,6 +164,7 @@ proxy:
   '/jira/api':
     target: ${JIRA_URL}
     headers:
+      # Full Authorization value required for proxy (e.g. Basic <base64> or Bearer <token>)
       Authorization: ${JIRA_TOKEN}
       Accept: 'application/json'
       Content-Type: 'application/json'
@@ -181,7 +182,10 @@ jira:
   # Supported products: `cloud` or `datacenter`
   product: cloud
   baseUrl: ${JIRA_URL}
+  # Bare credential (base64 for cloud Basic, PAT/token for Bearer). Do not include Basic/Bearer prefix.
   token: ${JIRA_TOKEN}
+  # Optional Authorization scheme. Defaults to Basic for cloud, Bearer for datacenter.
+  # authType: Bearer
 
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs

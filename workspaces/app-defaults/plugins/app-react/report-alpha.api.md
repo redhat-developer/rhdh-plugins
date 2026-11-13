@@ -4,7 +4,7 @@
 
 ```ts
 import { AppNode } from '@backstage/frontend-plugin-api';
-import type { EntityContextMenuItemData } from '@backstage/plugin-catalog-react/alpha';
+import { EntityContextMenuItemData } from '@backstage/plugin-catalog-react/alpha';
 import { HeaderNavTabItem } from '@backstage/ui';
 import { IconComponent } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';

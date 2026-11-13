@@ -15,9 +15,21 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import { discoverQuayRepositories } from './QuayDiscovery';
+import {
+  discoverQuayRepositories,
+  discoverQuayRepositorySnapshot,
+} from './QuayDiscovery';
 import type { QuayDiscoveryConfig } from './types';
 import { DEFAULT_SKILL_IMAGE_OPTIONS, MAX_DISCOVERY_PAGES } from './types';
+
+// Mock DNS resolution so fetchWithRedirects validation passes.
+jest.mock('node:dns', () => ({
+  promises: {
+    lookup: jest
+      .fn()
+      .mockResolvedValue([{ address: '93.184.216.34', family: 4 }]),
+  },
+}));
 
 const mockLogger: LoggerService = {
   info: jest.fn(),
@@ -35,6 +47,14 @@ const baseConfig: QuayDiscoveryConfig = {
 
 // Save and restore global fetch
 const originalFetch = global.fetch;
+
+beforeEach(() => {
+  // Re-establish the DNS mock after resetAllMocks clears it.
+  const dns = require('node:dns');
+  (dns.promises.lookup as jest.Mock).mockResolvedValue([
+    { address: '93.184.216.34', family: 4 },
+  ]);
+});
 
 afterEach(() => {
   global.fetch = originalFetch;
@@ -65,7 +85,7 @@ describe('discovery request resilience', () => {
     );
     await expect(
       discoverQuayRepositories(baseConfig, mockLogger),
-    ).rejects.toThrow('public HTTPS URL');
+    ).rejects.toThrow('HTTPS');
     expect(global.fetch).toHaveBeenCalledTimes(1);
   });
 
@@ -489,14 +509,14 @@ describe('all-tag discovery', () => {
     { tags: {} },
     { tags: [] },
     { tags: [], has_additional: 'false' },
-  ])('rejects malformed tag-list responses: %j', async body => {
+  ])('marks malformed tag-list responses incomplete: %j', async body => {
     global.fetch = jest
       .fn()
       .mockResolvedValueOnce(Response.json(repositories))
       .mockResolvedValueOnce(Response.json(body));
     await expect(
-      discoverQuayRepositories(allTagsConfig, mockLogger),
-    ).rejects.toThrow('Invalid Quay tag list response for test-org/repo-a');
+      discoverQuayRepositorySnapshot(allTagsConfig, mockLogger),
+    ).resolves.toEqual({ imageRefs: [], complete: false, usable: true });
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
@@ -610,9 +630,15 @@ describe('all-tag discovery', () => {
       .mockResolvedValueOnce(Response.json(repositories))
       .mockResolvedValueOnce(response);
     await expect(
-      discoverQuayRepositories(allTagsConfig, mockLogger),
-    ).rejects.toThrow(
-      'Quay tag list request failed for repository test-org/repo-a: 404',
+      discoverQuayRepositorySnapshot(allTagsConfig, mockLogger),
+    ).resolves.toEqual({ imageRefs: [], complete: false, usable: true });
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('tag discovery failed'),
+      expect.objectContaining({
+        message: expect.stringContaining(
+          'Quay tag list request failed for repository test-org/repo-a: 404',
+        ),
+      }),
     );
     expect(cancel).toHaveBeenCalledTimes(1);
     expect(global.fetch).toHaveBeenCalledTimes(2);
@@ -655,11 +681,17 @@ describe('all-tag discovery', () => {
         }),
       );
     await expect(
-      discoverQuayRepositories(allTagsConfig, mockLogger, undefined, {
+      discoverQuayRepositorySnapshot(allTagsConfig, mockLogger, undefined, {
         ...DEFAULT_SKILL_IMAGE_OPTIONS,
         maxDiscoveryResponseSizeBytes: 100,
       }),
-    ).rejects.toThrow('maximum allowed size');
+    ).resolves.toEqual({ imageRefs: [], complete: false, usable: true });
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('tag discovery failed'),
+      expect.objectContaining({
+        message: expect.stringContaining('maximum allowed size'),
+      }),
+    );
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
@@ -673,8 +705,12 @@ describe('all-tag discovery', () => {
         return Response.json({ tags: [{ name: 'v1' }], has_additional: true });
       });
     await expect(
-      discoverQuayRepositories(allTagsConfig, mockLogger, controller.signal),
-    ).rejects.toThrow('This operation was aborted');
+      discoverQuayRepositorySnapshot(
+        allTagsConfig,
+        mockLogger,
+        controller.signal,
+      ),
+    ).resolves.toEqual({ imageRefs: [], complete: false, usable: true });
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 });
@@ -752,4 +788,304 @@ describe('configured discovery limits', () => {
     expect(cancel).toHaveBeenCalledTimes(1);
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
+});
+
+describe('discovery snapshot completeness', () => {
+  const options = { ...DEFAULT_SKILL_IMAGE_OPTIONS, maxRetries: 0 };
+  const repositories = [{ namespace: 'test-org', name: 'repo-a' }];
+
+  it('distinguishes successful empty discovery from total failure', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(Response.json({ repositories: [] }));
+    await expect(
+      discoverQuayRepositorySnapshot(
+        baseConfig,
+        mockLogger,
+        undefined,
+        options,
+      ),
+    ).resolves.toEqual({ imageRefs: [], complete: true, usable: true });
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 404 }));
+    await expect(
+      discoverQuayRepositorySnapshot(
+        baseConfig,
+        mockLogger,
+        undefined,
+        options,
+      ),
+    ).rejects.toThrow('404');
+  });
+
+  it('preserves repositories when a later listing request fails', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(Response.json({ repositories, next_page: 'next' }))
+      .mockResolvedValueOnce(new Response(null, { status: 404 }));
+    await expect(
+      discoverQuayRepositorySnapshot(
+        baseConfig,
+        mockLogger,
+        undefined,
+        options,
+      ),
+    ).resolves.toEqual({
+      imageRefs: ['quay.io/test-org/repo-a:latest'],
+      complete: false,
+      usable: true,
+    });
+  });
+
+  it('preserves tags across a later tag page failure and continues other repositories', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json({
+          repositories: [
+            ...repositories,
+            { namespace: 'test-org', name: 'repo-b' },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({ tags: [{ name: 'v1' }], has_additional: true }),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(
+        Response.json({ tags: [{ name: 'v2' }], has_additional: false }),
+      );
+    await expect(
+      discoverQuayRepositorySnapshot(
+        { ...baseConfig, tag: undefined },
+        mockLogger,
+        undefined,
+        options,
+      ),
+    ).resolves.toEqual({
+      imageRefs: ['quay.io/test-org/repo-a:v1', 'quay.io/test-org/repo-b:v2'],
+      complete: false,
+      usable: true,
+    });
+  });
+
+  it('reports an empty partial result when repository discovery succeeds but all tag lists fail', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(Response.json({ repositories }))
+      .mockResolvedValueOnce(new Response(null, { status: 404 }));
+    await expect(
+      discoverQuayRepositorySnapshot(
+        { ...baseConfig, tag: undefined },
+        mockLogger,
+        undefined,
+        options,
+      ),
+    ).resolves.toEqual({ imageRefs: [], complete: false, usable: true });
+  });
+
+  it('marks repository pagination cycles incomplete', async () => {
+    global.fetch = jest
+      .fn()
+      .mockImplementation(async () =>
+        Response.json({ repositories, next_page: 'cycle' }),
+      );
+    await expect(
+      discoverQuayRepositorySnapshot(
+        baseConfig,
+        mockLogger,
+        undefined,
+        options,
+      ),
+    ).resolves.toEqual({
+      imageRefs: ['quay.io/test-org/repo-a:latest'],
+      complete: false,
+      usable: true,
+    });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('marks budget exhaustion incomplete while retaining discovered candidates', async () => {
+    let page = 0;
+    global.fetch = jest
+      .fn()
+      .mockImplementation(async () =>
+        Response.json({ repositories, next_page: String(++page) }),
+      );
+    await expect(
+      discoverQuayRepositorySnapshot(
+        baseConfig,
+        mockLogger,
+        undefined,
+        options,
+      ),
+    ).resolves.toEqual({
+      imageRefs: ['quay.io/test-org/repo-a:latest'],
+      complete: false,
+      usable: true,
+    });
+    expect(global.fetch).toHaveBeenCalledTimes(MAX_DISCOVERY_PAGES);
+  });
+
+  it('retains discovered tagged references when a later repository page is aborted', async () => {
+    const controller = new AbortController();
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(Response.json({ repositories, next_page: 'next' }))
+      .mockImplementationOnce(async () => {
+        controller.abort(new DOMException('deadline exceeded', 'AbortError'));
+        throw controller.signal.reason;
+      });
+    await expect(
+      discoverQuayRepositorySnapshot(
+        baseConfig,
+        mockLogger,
+        controller.signal,
+        options,
+      ),
+    ).resolves.toEqual({
+      imageRefs: ['quay.io/test-org/repo-a:latest'],
+      complete: false,
+      usable: true,
+    });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('retains active-tag candidates when a later tag page is aborted', async () => {
+    const controller = new AbortController();
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json({
+          repositories: [
+            ...repositories,
+            { namespace: 'test-org', name: 'repo-b' },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({ tags: [{ name: 'v1' }], has_additional: true }),
+      )
+      .mockImplementationOnce(async () => {
+        controller.abort(new DOMException('deadline exceeded', 'AbortError'));
+        throw controller.signal.reason;
+      });
+    await expect(
+      discoverQuayRepositorySnapshot(
+        { ...baseConfig, tag: undefined },
+        mockLogger,
+        controller.signal,
+        options,
+      ),
+    ).resolves.toEqual({
+      imageRefs: ['quay.io/test-org/repo-a:v1'],
+      complete: false,
+      usable: true,
+    });
+    expect(global.fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('reports usable empty partial discovery when the first tag request is aborted', async () => {
+    const controller = new AbortController();
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(Response.json({ repositories }))
+      .mockImplementationOnce(async () => {
+        controller.abort();
+        throw controller.signal.reason;
+      });
+    await expect(
+      discoverQuayRepositorySnapshot(
+        { ...baseConfig, tag: undefined },
+        mockLogger,
+        controller.signal,
+        options,
+      ),
+    ).resolves.toEqual({ imageRefs: [], complete: false, usable: true });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('marks non-progressing tag pagination incomplete', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(Response.json({ repositories }))
+      .mockImplementation(async () =>
+        Response.json({ tags: [{ name: 'v1' }], has_additional: true }),
+      );
+    await expect(
+      discoverQuayRepositorySnapshot(
+        { ...baseConfig, tag: undefined },
+        mockLogger,
+        undefined,
+        options,
+      ),
+    ).resolves.toEqual({
+      imageRefs: ['quay.io/test-org/repo-a:v1'],
+      complete: false,
+      usable: true,
+    });
+    expect(global.fetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('retains candidates when a repository pagination token is malformed', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(Response.json({ repositories, next_page: 12 }));
+    await expect(
+      discoverQuayRepositorySnapshot(
+        baseConfig,
+        mockLogger,
+        undefined,
+        options,
+      ),
+    ).resolves.toEqual({
+      imageRefs: ['quay.io/test-org/repo-a:latest'],
+      complete: false,
+      usable: true,
+    });
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    { invalidRepository: true, invalidTag: false },
+    { invalidRepository: false, invalidTag: true },
+  ])(
+    'marks rejected entries incomplete: %j',
+    async ({ invalidRepository, invalidTag }) => {
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce(
+          Response.json({
+            repositories: [
+              ...repositories,
+              ...(invalidRepository
+                ? [{ namespace: 'other', name: 'bad' }]
+                : []),
+            ],
+          }),
+        )
+        .mockResolvedValueOnce(
+          Response.json({
+            tags: [
+              { name: 'v1' },
+              ...(invalidTag ? [{ name: '../invalid' }] : []),
+            ],
+            has_additional: false,
+          }),
+        );
+      await expect(
+        discoverQuayRepositorySnapshot(
+          { ...baseConfig, tag: undefined },
+          mockLogger,
+          undefined,
+          options,
+        ),
+      ).resolves.toEqual({
+        imageRefs: ['quay.io/test-org/repo-a:v1'],
+        complete: false,
+        usable: true,
+      });
+    },
+  );
 });

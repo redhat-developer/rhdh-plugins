@@ -83,4 +83,32 @@ describe('applyDefaultWidgetsToNfsWidgets', () => {
 
     expect(result[0].breakpointLayouts).toEqual({ xl: { w: 12, h: 7 } });
   });
+
+  it('skips defaultWidgets whose ref does not match any mountable widget', () => {
+    const widgets = [widget('quickaccess-card')];
+    const result = applyDefaultWidgetsToNfsWidgets(widgets, [
+      { id: 'missing', ref: 'homepage.missing' },
+      { id: 'qa', ref: 'quickaccess-card' },
+    ]);
+
+    expect(result).toHaveLength(1);
+    expect(getHomepageWidgetExtensionName(result[0])).toBe('quickaccess-card');
+  });
+
+  it('keeps existing breakpointLayouts when defaultWidgets omit layout', () => {
+    const widgets = [
+      widget('rhdh-entity-section', {
+        breakpointLayouts: {
+          xl: { x: 0, y: 0, w: 6, h: 4 },
+        } as HomePageCardConfig['breakpointLayouts'],
+      }),
+    ];
+    const result = applyDefaultWidgetsToNfsWidgets(widgets, [
+      { id: 'entity-list', ref: 'rhdh-entity-section' },
+    ]);
+
+    expect(result[0].breakpointLayouts).toEqual({
+      xl: { x: 0, y: 0, w: 6, h: 4 },
+    });
+  });
 });

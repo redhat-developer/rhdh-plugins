@@ -1,5 +1,52 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.13.1
+
+### Patch Changes
+
+- f9e6574: Fix Learning Paths card layout: drop the shrink-wrapped outer Grid (staircase), and use InfoCard fullHeight so cards in a row share the row height.
+- Updated dependencies [f9e6574]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.13.1
+
+## 1.13.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [0a42ebd]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.13.0
+
+## 1.12.2
+
+### Patch Changes
+
+- 5405510: Remove the redundant Search entry from the sidebar menu. Title-less sidebar items are no longer rendered but still claim their page path, and the default sidebar now ships such placeholder items for `/search` and `/create`. The search modal is disabled by default.
+- 479e8c5: Fix sidebar Search crashing with `No path for routeRef{type=absolute,id=search}` when the search routeRef is unbound under module federation. Fall back to a plain `/search` sidebar link when the route is missing.
+- Updated dependencies [5405510]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.12.2
+
+## 1.12.1
+
+### Patch Changes
+
+- 50ec702: Give built-in default sidebar pages OFS `DefaultMainMenuItems` priorities (Home 100, Catalog 80, APIs 70, Docs 65, Learning Paths 60, Create 50) when no explicit priority is set, so Home sorts above Create. Default-path items stay in the top menu section even with positive priority (chrome remains for logo/search and other non-default positive entries).
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.12.1
+
+## 1.12.0
+
+### Minor Changes
+
+- f8d9ade: Split the NFS sidebar into default, optional-plugin, and admin/settings sections with conditional dividers. Hide Settings and the company logo by default when the global header is present (`app.sidebar.settings` / `app.sidebar.logo` override), and hide Administration when the user lacks admin permission or the group has no visible children. Offset the fixed sidebar root below the masthead (`height: 100vh − header`) with the drawer filling the root, and use a stable scrollbar gutter in the menu scroller so items do not shift when the scrollbar appears.
+
+### Patch Changes
+
+- f010913: Stack Dependencies tab info and list cards full width below the Dependencies-specific lg breakpoint (1400px) so tables are not squeezed in a two-column layout (RHDHBUGS-3893)
+- Updated dependencies [10e954f]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.12.0
+
 ## 1.11.0
 
 ### Minor Changes

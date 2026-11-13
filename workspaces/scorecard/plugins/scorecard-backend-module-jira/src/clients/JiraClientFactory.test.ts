@@ -79,7 +79,7 @@ describe('JiraClientFactory', () => {
       expect(mockedDirectConnectionStrategy).toHaveBeenCalledWith(
         'https://example.atlassian.net',
         'token',
-        'cloud',
+        'Basic',
       );
       expect(mockedProxyConnectionStrategy).not.toHaveBeenCalled();
     });
@@ -94,7 +94,7 @@ describe('JiraClientFactory', () => {
       expect(mockedDirectConnectionStrategy).toHaveBeenCalledWith(
         'https://example.com/api',
         'dummyToken',
-        'datacenter',
+        'Bearer',
       );
       expect(JiraDataCenterClientStrategy).toHaveBeenCalledWith(
         mockedDirectConnectionStrategy.mock.instances[0],
@@ -131,7 +131,7 @@ describe('JiraClientFactory', () => {
       expect(mockedDirectConnectionStrategy).toHaveBeenCalledWith(
         'https://example.com/api',
         'dummyToken',
-        'cloud',
+        'Basic',
       );
       expect(JiraCloudClientStrategy).toHaveBeenCalledWith(
         mockedDirectConnectionStrategy.mock.instances[0],
@@ -156,6 +156,90 @@ describe('JiraClientFactory', () => {
         mockedProxyConnectionStrategy.mock.instances[0],
         factoryOptions.logger,
       );
+    });
+
+    it('should use authType override for cloud service account tokens', () => {
+      config = newMockRootConfig({
+        jiraConfig: {
+          product: 'cloud',
+          proxyPath: undefined,
+          token: 'service-account-token',
+          authType: 'Bearer',
+        },
+      });
+
+      JiraClientFactory.fromConfig(config, factoryOptions);
+      expect(mockedDirectConnectionStrategy).toHaveBeenCalledWith(
+        'https://example.com/api',
+        'service-account-token',
+        'Bearer',
+      );
+    });
+
+    it('should use authType override for datacenter Basic auth', () => {
+      config = newMockRootConfig({
+        jiraConfig: {
+          product: 'datacenter',
+          proxyPath: undefined,
+          token: 'basic-credential',
+          authType: 'Basic',
+        },
+      });
+
+      JiraClientFactory.fromConfig(config, factoryOptions);
+      expect(mockedDirectConnectionStrategy).toHaveBeenCalledWith(
+        'https://example.com/api',
+        'basic-credential',
+        'Basic',
+      );
+    });
+
+    it('should ignore token when proxyPath is set', () => {
+      config = newMockRootConfig({
+        jiraConfig: {
+          product: 'cloud',
+          proxyPath: '/jira/api',
+          token: '',
+        },
+      });
+
+      expect(() =>
+        JiraClientFactory.fromConfig(config, factoryOptions),
+      ).not.toThrow();
+      expect(mockedDirectConnectionStrategy).not.toHaveBeenCalled();
+      expect(mockedProxyConnectionStrategy).toHaveBeenCalled();
+    });
+
+    it('should throw when direct token is empty', () => {
+      config = newMockRootConfig({
+        jiraConfig: {
+          product: 'cloud',
+          proxyPath: undefined,
+          token: '   ',
+        },
+      });
+
+      expect(() =>
+        JiraClientFactory.fromConfig(config, factoryOptions),
+      ).toThrow('jira.token must be a non-empty credential.');
+      expect(mockedDirectConnectionStrategy).not.toHaveBeenCalled();
+    });
+
+    it('should throw when authType is invalid', () => {
+      config = newMockRootConfig({
+        jiraConfig: {
+          product: 'cloud',
+          proxyPath: undefined,
+          authType: 'Digest',
+        },
+      });
+
+      expect(() =>
+        JiraClientFactory.fromConfig(config, factoryOptions),
+      ).toThrow(
+        'Invalid jira.authType: "Digest". Valid values are: Basic, Bearer',
+      );
+      expect(mockedDirectConnectionStrategy).not.toHaveBeenCalled();
     });
 
     it('should throw when product is invalid', () => {

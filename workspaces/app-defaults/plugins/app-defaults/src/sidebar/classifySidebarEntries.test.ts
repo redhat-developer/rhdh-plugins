@@ -15,6 +15,8 @@
  */
 
 import {
+  DEFAULT_SIDEBAR_PATH_PRIORITIES,
+  defaultSidebarPathPriority,
   isDefaultSidebarPath,
   normalizeSidebarPath,
 } from './defaultSidebarPaths';
@@ -37,6 +39,18 @@ describe('defaultSidebarPaths', () => {
     expect(isDefaultSidebarPath('learning-paths')).toBe(true);
     expect(isDefaultSidebarPath('/tech-radar')).toBe(false);
   });
+
+  it('matches OFS DefaultMainMenuItems priorities', () => {
+    expect(DEFAULT_SIDEBAR_PATH_PRIORITIES['/']).toBe(100);
+    expect(DEFAULT_SIDEBAR_PATH_PRIORITIES['/catalog']).toBe(80);
+    expect(DEFAULT_SIDEBAR_PATH_PRIORITIES['/api-docs']).toBe(70);
+    expect(DEFAULT_SIDEBAR_PATH_PRIORITIES['/docs']).toBe(65);
+    expect(DEFAULT_SIDEBAR_PATH_PRIORITIES['/learning-paths']).toBe(60);
+    expect(DEFAULT_SIDEBAR_PATH_PRIORITIES['/create']).toBe(50);
+    expect(defaultSidebarPathPriority('catalog')).toBe(80);
+    expect(defaultSidebarPathPriority('/create', 12)).toBe(12);
+    expect(defaultSidebarPathPriority('/tech-radar')).toBe(0);
+  });
 });
 
 describe('classifySidebarEntries', () => {
@@ -56,6 +70,37 @@ describe('classifySidebarEntries', () => {
     expect(
       classified.middle.map(e => (e.kind === 'item' ? e.item.id : '')),
     ).toEqual(['radar']);
+  });
+
+  it('keeps OFS-priority default items in top, not chrome', () => {
+    const classified = classifySidebarEntries([
+      item('home', '/', 100),
+      item('create', '/create', 50),
+      item('radar', '/tech-radar', 10),
+      {
+        kind: 'element',
+        element: {
+          id: 'sidebar-element:app/search',
+          component: () => null,
+          priority: 1000,
+        },
+      },
+    ]);
+    expect(
+      classified.chrome.map(e => {
+        if (e.kind === 'element') {
+          return e.element.id;
+        }
+        if (e.kind === 'item') {
+          return e.item.id;
+        }
+        return '';
+      }),
+    ).toEqual(['radar', 'sidebar-element:app/search']);
+    expect(
+      classified.top.map(e => (e.kind === 'item' ? e.item.id : '')),
+    ).toEqual(['home', 'create']);
+    expect(classified.middle).toHaveLength(0);
   });
 
   it('keeps chrome above the scroll area and drops bottom section dividers', () => {

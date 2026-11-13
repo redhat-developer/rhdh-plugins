@@ -246,6 +246,7 @@ describe('AppSidebar', () => {
     );
 
     const links = screen.getAllByRole('link');
+    // Chat (priority 1) stays chrome; Catalog inherits OFS priority in top.
     expect(links.map(l => l.textContent)).toEqual(['Chat', 'Catalog']);
   });
 

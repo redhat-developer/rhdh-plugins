@@ -21,15 +21,18 @@ import {
   TopPluginCount,
   TopSearches,
   TopTechDocsCount,
-  TopTemplatesCount,
+  TopTemplatesResponse,
+  TimeSavedTotals,
   TotalUsers,
 } from '../types/event';
 import { Event } from '../models/Event';
+import { TemplateSortBy } from '../types/event-request';
 
 export interface Filters {
   start_date: string;
   end_date: string;
   limit?: number | undefined;
+  sort_by?: TemplateSortBy;
   kind?: string | undefined;
   timezone: string;
   grouping?: Grouping | undefined;
@@ -53,9 +56,10 @@ export interface EventDatabase {
   setConfig(userConfig: UserConfig): void;
   getUsers(): Promise<Knex.QueryBuilder<TotalUsers>>;
   getDailyUsers(): Promise<Knex.QueryBuilder<DailyUsers>>;
+  getTimeSaved(): Promise<TimeSavedTotals>;
   getTopSearches(): Promise<Knex.QueryBuilder<TopSearches>>;
   getTopPluginViews(): Promise<Knex.QueryBuilder<TopPluginCount>>;
-  getTopTemplateViews(): Promise<Knex.QueryBuilder<TopTemplatesCount>>;
+  getTopTemplates(): Promise<Knex.QueryBuilder<TopTemplatesResponse>>;
   getTopTechDocsViews(): Promise<Knex.QueryBuilder<TopTechDocsCount>>;
   getTopCatalogEntitiesViews(): Promise<
     Knex.QueryBuilder<TopCatalogEntitiesCount>

@@ -41,10 +41,14 @@ const rootSx = (theme: Theme) => ({
   minHeight: '100%',
   height: '100%',
   flex: '1 1 auto',
+  alignSelf: 'stretch' as const,
   alignItems: 'center',
   justifyContent: 'center',
   padding: theme.spacing(4, 2),
-  backgroundColor: theme.palette.background.default,
+  // Transparent so overlay/docked/page shells show through. Painting
+  // `background.default` overrode LightspeedOverlayChat's floating-secondary
+  // (#151515 dark) and made error/loading look different from loaded chat.
+  backgroundColor: 'transparent',
 });
 
 const panelSx = (theme: Theme) => ({

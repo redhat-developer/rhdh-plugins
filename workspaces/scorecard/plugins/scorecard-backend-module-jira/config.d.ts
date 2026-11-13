@@ -32,6 +32,12 @@ export interface Config {
       }
   ) & {
     product: string;
+    /**
+     * Authorization scheme for direct connections.
+     * Defaults to Basic for cloud and Bearer for datacenter.
+     * Ignored when proxyPath is set.
+     */
+    authType?: 'Basic' | 'Bearer';
   };
   /** Configuration for scorecard plugin */
   scorecard?: {

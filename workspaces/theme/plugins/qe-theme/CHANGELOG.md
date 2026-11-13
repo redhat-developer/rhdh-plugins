@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-qe-theme
 
+## 0.13.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
 ## 0.12.0
 
 ### Minor Changes

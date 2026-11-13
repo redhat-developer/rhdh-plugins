@@ -19,7 +19,7 @@ import { isDefaultSidebarPath } from './defaultSidebarPaths';
 
 /** Layout sections used when rendering {@link AppSidebar}. */
 export interface ClassifiedSidebarEntries {
-  /** Logo, search, and other entries pinned above the scroll area (priority > 0). */
+  /** Logo, search, and other positive-priority entries pinned above the scroll area. */
   chrome: SidebarModelEntry[];
   /** Flexible / fixed spacers that push the bottom block down. */
   spacers: SidebarModelEntry[];
@@ -98,6 +98,10 @@ function isBottomMenuEntry(entry: SidebarModelEntry): boolean {
  * are dropped so {@link AppSidebar} can insert conditional ones. The search
  * divider (priority > 0) stays in chrome. Positive-priority spacers (logo gap)
  * stay in chrome; negative-priority spacers push the bottom block down.
+ *
+ * Positive-priority entries normally pin as chrome (logo, search, …). Default
+ * menu paths are an exception: they keep OFS priorities (Home 100 … Create 50)
+ * for sort order but still render in the scrollable top section.
  */
 export function classifySidebarEntries(
   entries: SidebarModelEntry[],
@@ -124,6 +128,10 @@ export function classifySidebarEntries(
       }
       continue;
     }
+    if (isDefaultMenuEntry(entry)) {
+      top.push(entry);
+      continue;
+    }
     if (entryPriority(entry) > 0) {
       chrome.push(entry);
       continue;
@@ -132,11 +140,7 @@ export function classifySidebarEntries(
       bottom.push(entry);
       continue;
     }
-    if (isDefaultMenuEntry(entry)) {
-      top.push(entry);
-    } else {
-      middle.push(entry);
-    }
+    middle.push(entry);
   }
 
   return { chrome, spacers, top, middle, bottom };

@@ -1,5 +1,50 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github
 
+## 4.6.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.6.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@4.6.1
+
+## 4.6.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [0a42ebd]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.6.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.6.0
+
+## 4.5.2
+
+### Patch Changes
+
+- fc01181: Add local development harnesses and contributor guides for the Scorecard plugin, backend, and metric modules. Tests cover the drill-down namespace query, the collectors route, and New Frontend System plugin wiring. No runtime behavior change.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.2
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.2
+
+## 4.5.1
+
+### Patch Changes
+
+- f4bf977: Use latest deployment success status in DORA deployments if it exists
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.1
+
+## 4.5.0
+
+### Patch Changes
+
+- dfcbf0d: Add missing `@public` release tags to all scorecard backend module exports and common types, and re-enable `ae-missing-release-tag` api-extractor warning.
+- Updated dependencies [dfcbf0d]
+- Updated dependencies [b8d8662]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.5.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.5.0
+
 ## 4.4.2
 
 ### Patch Changes

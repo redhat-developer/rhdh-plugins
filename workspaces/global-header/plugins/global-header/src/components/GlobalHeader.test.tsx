@@ -64,7 +64,7 @@ describe('GlobalHeader', () => {
     expect(document.getElementById('global-header')).toBeInTheDocument();
   });
 
-  it('spans the full viewport width', () => {
+  it('uses auto width so a docked drawer can shrink the bar', () => {
     render(
       <GlobalHeaderProvider components={[]} menuItems={[]}>
         <GlobalHeader />
@@ -72,7 +72,8 @@ describe('GlobalHeader', () => {
     );
 
     expect(document.getElementById('global-header')).toHaveStyle({
-      width: '100%',
+      width: 'auto',
+      marginRight: 'var(--docked-drawer-width, 0px)',
     });
   });
 

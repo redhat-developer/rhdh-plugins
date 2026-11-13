@@ -16,6 +16,8 @@
 
 export type Product = 'datacenter' | 'cloud';
 
+export type AuthType = 'Basic' | 'Bearer';
+
 export interface JiraIssue {
   id: string;
   createdAt: string;

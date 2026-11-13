@@ -31,8 +31,6 @@ import {
   openChatbot,
   selectDisplayMode,
   type DisplayMode,
-  expectBackstagePageVisible,
-  waitForBackstageCatalogReady,
   verifyMcpSettingsPanel,
   openMcpSettingsPanel,
   closeMcpSettingsPanel,
@@ -96,7 +94,6 @@ test.describe('Intelligent assistant MCP', () => {
 
     test.beforeEach(async () => {
       await sharedPage.goto('/catalog');
-      await waitForBackstageCatalogReady(sharedPage);
     });
 
     test.afterEach(async () => {
@@ -105,7 +102,6 @@ test.describe('Intelligent assistant MCP', () => {
 
     test.describe('Panel rendering', () => {
       test('renders in overlay mode', async () => {
-        await expectBackstagePageVisible(sharedPage);
         await openChatbot(sharedPage, translations);
         await verifyMcpSettingsPanel(sharedPage, translations);
       });

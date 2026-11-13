@@ -50,6 +50,7 @@ const extensionsTranslationJa = createTranslationMessages({
     'status.disabled': '無効',
     'status.partiallyInstalled': '部分的にインストール済み',
     'status.updateAvailable': '更新が利用可能',
+    'status.restartRequired': '再起動が必要です',
     'role.backend': 'バックエンド',
     'role.backendModule': 'バックエンドモジュール',
     'role.frontend': 'フロントエンド',
@@ -170,7 +171,7 @@ const extensionsTranslationJa = createTranslationMessages({
     'installedPackages.table.tooltips.noDownloadPermissions':
       '設定をダウンロードする権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'installedPackages.table.tooltips.noEditPermissions':
-      '設定を編集する権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
+      '設定を表示。設定を編集する権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'installedPackages.table.tooltips.noTogglePermissions':
       'パッケージを有効化または無効化する権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'installedPackages.table.tooltips.editPackage': 'パッケージ設定を編集する',
@@ -250,6 +251,7 @@ const extensionsTranslationJa = createTranslationMessages({
     'install.pluginUpdated': 'プラグインが更新されました',
     'install.pluginInstalled': 'プラグインがインストールされました',
     'install.instructions': '手順',
+    'install.noPackagesTitle': 'パッケージエンティティーが見つかりません',
     'install.editInstructions': '編集手順',
     'install.back': '戻る',
     'install.packageUpdated': 'パッケージが更新されました',
@@ -280,12 +282,20 @@ const extensionsTranslationJa = createTranslationMessages({
     'errors.unknownError': '設定ファイルの読み取り中にエラーが発生しました。',
     'tooltips.productionDisabled':
       '実稼働環境ではプラグインのインストールが無効になっています。',
-    'tooltips.extensionsDisabled':
-      'プラグインのインストールが無効になっています。これを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'tooltips.extensionsDisabledInstallPlugin':
+      'このプラグインをインストールできません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'tooltips.extensionsDisabledInstallPackage':
+      'このパッケージをインストールできません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'tooltips.extensionsDisabledManagePlugin':
+      'このプラグインを管理できません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
+    'tooltips.extensionsDisabledManagePackage':
+      'このパッケージを管理できません。アクションを有効にするには、dynamic-plugins 設定ファイルで拡張機能設定を追加または変更してください。',
     'tooltips.noPermissions':
       'プラグインをインストールする権限またはその設定を表示する権限がありません。管理者に連絡し、アクセス権を要求またはサポートを依頼してください。',
     'tooltips.missingDynamicArtifact':
       'この {{type}} を管理できません。アクションを有効にするには、必要な spec.dynamicArtifact を持つカタログエンティティーを追加する必要があります。',
+    'tooltips.restartRequired':
+      'この変更を有効にするには、プラットフォームの再起動が必要です。',
     'aria.openPlugin': 'プラグイン {{name}} を開く',
     'aria.closeDialog': 'ダイアログを閉じる',
     'aria.expandSection': 'セクションを展開',

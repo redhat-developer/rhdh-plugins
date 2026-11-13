@@ -19,6 +19,13 @@ import { Tooltip } from '@patternfly/react-core';
 
 type ModelSelectorToggleTextProps = {
   label: string;
+  /**
+   * When the model menu is open, suppress the full-name tooltip. PF Tooltip's
+   * default focus trigger leaves the tip visible after the toggle is clicked,
+   * and the tip content can sit over the dropdown and block option clicks
+   * (Playwright: "subtree intercepts pointer events").
+   */
+  hideTooltip?: boolean;
 };
 
 /**
@@ -38,12 +45,24 @@ const ToggleLabel = styled('span')({
 /** Full label in the DOM; CSS ellipsis when the parent row is constrained. */
 export const ModelSelectorToggleText = ({
   label,
+  hideTooltip = false,
 }: ModelSelectorToggleTextProps) => {
   const trimmed = label.trim();
 
+  if (hideTooltip) {
+    return <ToggleLabel title={trimmed}>{trimmed}</ToggleLabel>;
+  }
+
   return (
-    <Tooltip content={trimmed} position="top">
-      <ToggleLabel title={trimmed}>{trimmed}</ToggleLabel>
+    // mouseenter only — focus would re-show the tip when the toggle is
+    // activated by keyboard/click even briefly before hideTooltip flips.
+    <Tooltip
+      content={trimmed}
+      position="top"
+      trigger="mouseenter"
+      exitDelay={0}
+    >
+      <ToggleLabel>{trimmed}</ToggleLabel>
     </Tooltip>
   );
 };

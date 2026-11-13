@@ -41,6 +41,8 @@ Environment variables:
   REGISTRY_URL    Optional. Container registry URL. Default: quay.io
   ORG_ID          Optional. Organization / namespace in the registry. Default: dcm-project
   REPO            Optional. Repository name. Default: dcm-ui-rhdh
+  RHDH_CLI_VERSION Optional. @red-hat-developer-hub/cli version. Default: 1.11.4
+                   (pinned so frontend export still emits dist-scalprum for Scalprum hosts)
 
 Sub-commands:
   (default)         Builds, pushes :VERSION, and copies the tag to :latest via skopeo.
@@ -54,6 +56,12 @@ EOF
 # Prefer podman; fall back to docker.
 _pocker="$(command -v podman || command -v docker)"
 
+# Pin to the last 1.x CLI that still emits legacy Scalprum assets
+# (dist-scalprum/ + package.json scalprum metadata). CLI 2.x only produces
+# Module Federation assets under dist/, which RHDH Scalprum hosts reject
+# with: "Could not find 'scalprum-dist' folder".
+RHDH_CLI_VERSION="${RHDH_CLI_VERSION:-1.11.4}"
+
 # Path to the rhdh-cli binary, populated by _ensure_rhdh_cli.
 _rhdh_cli_bin=""
 
@@ -65,7 +73,8 @@ function _ensure_rhdh_cli {
   fi
   local cli_prefix
   cli_prefix="$(mktemp -d)"
-  npm install @red-hat-developer-hub/cli@latest --ignore-scripts --prefix "$cli_prefix"
+  echo "Installing @red-hat-developer-hub/cli@${RHDH_CLI_VERSION}..."
+  npm install "@red-hat-developer-hub/cli@${RHDH_CLI_VERSION}" --ignore-scripts --prefix "$cli_prefix"
   _rhdh_cli_bin="$cli_prefix/node_modules/.bin/rhdh-cli"
   if [[ ! -x "$_rhdh_cli_bin" ]]; then
     echo "Error: failed to install rhdh-cli at $_rhdh_cli_bin" >&2

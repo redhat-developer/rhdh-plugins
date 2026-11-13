@@ -15,6 +15,7 @@ openapi_generate() {
     # TypeScript Client generation
     rm -rf ${CLIENT_FOLDER}
     openapi-generator-cli generate -g typescript-axios -i ${OPENAPI_SPEC_FILE} -o ${CLIENT_FOLDER}
+    node ./scripts/patch-openapi-client.js
 
     # Docs generation
     rm -rf ./src/generated/docs/markdown ./src/generated/docs/html ./src/generated/docs/api-doc

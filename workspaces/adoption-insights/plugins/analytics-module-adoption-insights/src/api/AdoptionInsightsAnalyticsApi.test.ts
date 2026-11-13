@@ -67,6 +67,11 @@ describe('InsightsAnalyticsApi', () => {
       .mockResolvedValue('dummy-hashed-user-id');
   });
 
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.restoreAllMocks();
+  });
+
   it('should initialize correctly', () => {
     expect(insightsAnalyticsApi).toBeDefined();
   });
@@ -165,5 +170,84 @@ describe('InsightsAnalyticsApi', () => {
     });
     // eslint-disable-next-line no-console
     expect(console.log).toHaveBeenCalled();
+  });
+
+  describe('flushEvents response handling', () => {
+    const event: AnalyticsEvent = {
+      action: 'click',
+      subject: 'button',
+      context: { ...mockContext },
+    };
+    const getBuffer = () =>
+      (insightsAnalyticsApi as any).eventBuffer as AnalyticsEvent[];
+    const flush = () =>
+      (insightsAnalyticsApi as any).flushEvents() as Promise<void>;
+
+    beforeEach(() => {
+      (insightsAnalyticsApi as any).eventBuffer = [event];
+    });
+
+    it('clears the sent batch after a successful response', async () => {
+      await flush();
+
+      expect(fetch).toHaveBeenCalledWith(
+        'http://localhost:3000/api/adoption-insights/events',
+        expect.objectContaining({ body: JSON.stringify([event]) }),
+      );
+      expect(getBuffer()).toEqual([]);
+    });
+
+    it.each([400, 401, 413])(
+      'logs and drops the batch after an HTTP %s response',
+      async status => {
+        jest.mocked(fetch).mockResolvedValueOnce({
+          ok: false,
+          status,
+        } as Response);
+        const errorLog = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => {});
+
+        await flush();
+
+        expect(getBuffer()).toEqual([]);
+        expect(errorLog).toHaveBeenCalledWith(
+          expect.stringContaining(`HTTP ${status}; dropping batch of 1`),
+        );
+      },
+    );
+
+    it('logs and requeues the batch after an HTTP 500 response', async () => {
+      jest.mocked(fetch).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      } as Response);
+      const errorLog = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      await flush();
+
+      expect(getBuffer()).toEqual([event]);
+      expect(errorLog).toHaveBeenCalledWith(
+        expect.stringContaining('HTTP 500; requeuing batch of 1'),
+      );
+    });
+
+    it('logs and requeues the batch after a network error', async () => {
+      const networkError = new Error('Network unavailable');
+      jest.mocked(fetch).mockRejectedValueOnce(networkError);
+      const errorLog = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      await flush();
+
+      expect(getBuffer()).toEqual([event]);
+      expect(errorLog).toHaveBeenCalledWith(
+        'Failed to send analytics events, adding the events back to the queue:',
+        networkError,
+      );
+    });
   });
 });

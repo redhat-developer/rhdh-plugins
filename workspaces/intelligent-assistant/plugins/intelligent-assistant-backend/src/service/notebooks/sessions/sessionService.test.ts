@@ -143,15 +143,27 @@ describe('SessionService', () => {
         'Original description',
       );
 
-      const updated = await service.updateSession(
-        created.session_id,
-        mockUserId,
-        'Updated Name',
-      );
+      // Creation and update can finish within the same millisecond.
+      const updatedAt = new Date(
+        Date.parse(created.updated_at) + 1000,
+      ).toISOString();
+      const timestamp = jest
+        .spyOn(Date.prototype, 'toISOString')
+        .mockReturnValue(updatedAt);
 
-      expect(updated.name).toBe('Updated Name');
-      expect(updated.description).toBe('Original description');
-      expect(updated.updated_at).not.toBe(created.updated_at);
+      try {
+        const updated = await service.updateSession(
+          created.session_id,
+          mockUserId,
+          'Updated Name',
+        );
+
+        expect(updated.name).toBe('Updated Name');
+        expect(updated.description).toBe('Original description');
+        expect(updated.updated_at).toBe(updatedAt);
+      } finally {
+        timestamp.mockRestore();
+      }
     });
 
     it('should update session description', async () => {

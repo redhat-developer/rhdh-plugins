@@ -21,11 +21,39 @@ import { useScorecards } from '../../../hooks/useScorecards';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { getStatusConfig } from '../../../utils';
 
+// jsdom does not provide ResizeObserver; required by EntityScorecardMasonry
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+Object.defineProperty(window, 'ResizeObserver', {
+  writable: true,
+  configurable: true,
+  value: ResizeObserverMock,
+});
+
 jest.mock('@backstage/core-components', () => ({
   ResponseErrorPanel: ({ error }: { error: Error }) => (
     <div data-testid="error-panel">{error.message}</div>
   ),
 }));
+
+jest.mock('@mui/lab/Masonry', () => {
+  return function MockMasonry({
+    children,
+    columns,
+  }: {
+    children?: JSX.Element;
+    columns?: number;
+  }) {
+    return (
+      <div data-testid="scorecard-masonry" data-columns={columns}>
+        {children}
+      </div>
+    );
+  };
+});
 
 jest.mock('../../Common/NoScorecardsState', () => {
   return function MockNoScorecardsState() {
@@ -50,6 +78,11 @@ jest.mock('../EntitySparklineCard', () => ({
   }) {
     return <div data-testid="area-chart-card" data-title={title} />;
   },
+}));
+
+jest.mock('../../MetricGroupCard/thresholdBucketUtils', () => ({
+  ...jest.requireActual('../../MetricGroupCard/thresholdBucketUtils'),
+  buildThresholdBuckets: () => [],
 }));
 
 jest.mock('../Scorecard', () => {
@@ -140,31 +173,17 @@ jest.mock('../../../hooks/useMetricTimeSeries', () => ({
   useMetricTimeSeries: jest.fn(),
 }));
 
+jest.mock('../../../hooks/useLanguage', () => ({
+  useLanguage: () => 'en',
+}));
+
 jest.mock('../../../utils', () => ({
+  ...jest.requireActual('../../../utils'),
   getStatusConfig: jest.fn(),
   resolveMetricTranslation: jest.fn(
     (_t: any, _metricId: string, _field: string, fallback?: string) =>
       fallback ?? `metric.${_metricId}.${_field}`,
   ),
-}));
-
-jest.mock('../../../utils', () => {
-  const { getTranslatedTextWithFallback } = jest.requireActual(
-    '../../../utils/translationUtils',
-  );
-  return {
-    getStatusConfig: jest.fn(),
-    resolveMetricTranslation: jest.fn(
-      (_t: any, _metricId: string, _field: string, fallback?: string) =>
-        fallback ?? `metric.${_metricId}.${_field}`,
-    ),
-    getTranslatedTextWithFallback,
-  };
-});
-
-jest.mock('../../../utils/statusUtils', () => ({
-  hasMetricDataError: jest.fn(() => false),
-  hasThresholdError: jest.fn(() => false),
 }));
 
 const useScorecardsMock = useScorecards as jest.Mock;
@@ -547,7 +566,7 @@ describe('ScorecardEntityContentGridView', () => {
     });
   });
 
-  it('should render both group cards and ungrouped cards in Masonry layout', () => {
+  it('should render both group cards and ungrouped cards in container-width Masonry', () => {
     useScorecardsMock.mockReturnValue({
       data: mockScorecardSuccessData,
       isLoading: false,
@@ -563,6 +582,7 @@ describe('ScorecardEntityContentGridView', () => {
 
     render(<ScorecardEntityContentGridView groups={groups} />);
 
+    expect(screen.getByTestId('scorecard-entity-grid')).toBeInTheDocument();
     expect(screen.getByTestId('metric-group-card')).toBeInTheDocument();
     expect(screen.getAllByTestId('scorecard-card')).toHaveLength(1);
   });

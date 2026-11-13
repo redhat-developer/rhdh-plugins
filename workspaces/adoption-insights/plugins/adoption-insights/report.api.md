@@ -199,6 +199,4 @@ const _default: OverridableFrontendPlugin<
   }
 >;
 export default _default;
-
-// (No @packageDocumentation comment for this package)
 ```

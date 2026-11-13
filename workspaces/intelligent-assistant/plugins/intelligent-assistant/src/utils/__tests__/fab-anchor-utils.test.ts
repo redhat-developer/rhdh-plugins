@@ -21,6 +21,7 @@ import {
   clearLightspeedFabAnchorVars,
   getLightspeedDockedDrawerGutter,
   getLightspeedFabEdgeInset,
+  getLightspeedFabInlineEdgeInset,
   getLightspeedOverlayGap,
   publishLightspeedFabAnchorVars,
 } from '../fab-anchor-utils';
@@ -37,7 +38,10 @@ describe('fab-anchor-utils', () => {
   });
 
   it('uses theme spacing tokens for edge inset and gaps', () => {
-    expect(getLightspeedFabEdgeInset(theme)).toBe(theme.spacing(2));
+    expect(getLightspeedFabEdgeInset(theme)).toBe(
+      `calc(${theme.spacing(2)} + 56px)`,
+    );
+    expect(getLightspeedFabInlineEdgeInset(theme)).toBe(theme.spacing(2));
     expect(getLightspeedOverlayGap(theme)).toBe(theme.spacing(2));
     expect(getLightspeedDockedDrawerGutter(theme)).toBe(theme.spacing(3));
   });
@@ -86,6 +90,40 @@ describe('fab-anchor-utils', () => {
     expect(root.style.getPropertyValue(LIGHTSPEED_FAB_ANCHOR_VARS.height)).toBe(
       '48px',
     );
+  });
+
+  it('encodes docked-drawer FAB shift in inset-inline-end (overlay must not re-add it)', () => {
+    // FAB already shifted left for a ~500px Quickstart drawer + gutter.
+    const fab = document.createElement('div');
+    fab.getBoundingClientRect = () =>
+      ({
+        width: 48,
+        height: 48,
+        top: 900,
+        left: 700,
+        right: 748,
+        bottom: 948,
+        x: 700,
+        y: 900,
+        toJSON: () => ({}),
+      }) as DOMRect;
+
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true,
+      value: 1280,
+    });
+
+    publishLightspeedFabAnchorVars({ fabElement: fab, theme });
+
+    expect(
+      document.documentElement.style.getPropertyValue(
+        LIGHTSPEED_FAB_ANCHOR_VARS.insetInlineEnd,
+      ),
+    ).toBe('532px');
   });
 
   it('clears all published anchor vars', () => {

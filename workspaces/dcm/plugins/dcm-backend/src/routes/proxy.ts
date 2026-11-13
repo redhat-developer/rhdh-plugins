@@ -58,7 +58,7 @@ export function createDcmProxy(options: RouterOptions) {
       return;
     }
 
-    const authEnabled = config.getOptionalBoolean('dcm.auth.enabled') ?? true;
+    const authEnabled = config.getOptionalBoolean('dcm.auth.enabled') ?? false;
     const dcmOidcToken = req.headers[DCM_OIDC_TOKEN_HEADER];
     if (
       authEnabled &&

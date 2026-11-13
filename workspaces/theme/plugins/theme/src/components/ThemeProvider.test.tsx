@@ -64,7 +64,14 @@ const mockAppThemeApi = (activeThemeId?: string) => {
 const createMockTheme = (secondaryColor: string) =>
   ({
     getTheme: () => ({
-      palette: { text: { secondary: secondaryColor } },
+      palette: {
+        text: { secondary: secondaryColor },
+        primary: {
+          main: '#0066CC',
+          dark: '#00478e',
+          contrastText: '#ffffff',
+        },
+      },
     }),
   }) as any;
 
@@ -117,6 +124,9 @@ describe('createSharedThemeProvider', () => {
     const style = container.querySelector('style');
     expect(style?.textContent).toContain('#dark-marker');
     expect(style?.textContent).not.toContain('#light-marker');
+    // RHDHBUGS-4042: unlayered CreateButton fill must ship with the provider.
+    expect(style?.textContent).toContain('a.MuiButton-containedPrimary');
+    expect(style?.textContent).toContain('#0066CC');
   });
 
   it('resolves to light entry when system prefers light', () => {

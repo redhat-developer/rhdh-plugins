@@ -1,5 +1,37 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 1.9.2
+
+### Patch Changes
+
+- Updated dependencies [2c22798]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.2
+
+## 1.9.1
+
+### Patch Changes
+
+- Updated dependencies [f9236bd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.1
+
+## 1.9.0
+
+### Minor Changes
+
+- 0a42ebd: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- Updated dependencies [0a42ebd]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.12.0
+
+## 1.8.2
+
+### Patch Changes
+
+- Updated dependencies [a577327]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.11.1
+
 ## 1.8.1
 
 ### Patch Changes

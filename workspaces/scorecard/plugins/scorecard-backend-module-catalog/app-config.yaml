@@ -1,0 +1,28 @@
+# Loaded only by this package's yarn start (--config app-config.yaml).
+# Workspace aggregation KPIs are not applied.
+app:
+  title: Scorecard harness
+  baseUrl: http://localhost:3000
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+# Sample required-attributes metric so the module harness registers a provider.
+# With no metrics configured the module starts and registers nothing.
+scorecard:
+  metricProviders:
+    catalog:
+      requiredAttributes:
+        options:
+          filter:
+            kind: Component
+          metrics:
+            title:
+              title: Has title
+              description: Entity metadata.title is set
+              field: metadata.title

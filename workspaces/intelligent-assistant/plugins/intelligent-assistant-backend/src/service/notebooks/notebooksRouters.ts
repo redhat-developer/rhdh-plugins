@@ -72,7 +72,6 @@ export async function createNotebooksRouter(
 ): Promise<Router> {
   const { logger, config, httpAuth, userInfo, permissions } = options;
   const notebooksRouter = Router();
-  notebooksRouter.use(express.json());
 
   const lightSpeedPort =
     config.getOptionalNumber('intelligent-assistant.servicePort') ??
@@ -129,7 +128,7 @@ export async function createNotebooksRouter(
       try {
         const { userEntityRef } = getIdentity(req);
         const { sessionId } = req.params;
-        await sessionService.readSession(sessionId, userEntityRef);
+        await sessionService.fetchSession(sessionId, userEntityRef);
         next();
       } catch (error) {
         handleError(
@@ -233,17 +232,18 @@ export async function createNotebooksRouter(
             };
             this.push(`data: ${JSON.stringify(legacy)}\n\n`);
           } else if (eventType === 'response.completed') {
-            // Log the full response to see what we're getting
-            logger.info(
-              `Full response.completed event: ${JSON.stringify(parsed?.response, null, 2)}`,
-            );
-
-            // Extract citations/sources from tool calls (file_search results)
-
-            // this.push(`data: ${JSON.stringify(legacy)}\n\n`);
+            logger.info('Notebook response completed', {
+              responseId: parsed?.response?.id,
+            });
           } else {
             // Log unhandled event types to help identify what we're missing
-            logger.debug(`Unhandled SSE event type: ${eventType}`, parsed);
+            logger.debug(`Unhandled SSE event type: ${eventType}`, {
+              sessionId,
+              sequenceNumber: parsed?.sequence_number,
+              outputIndex: parsed?.output_index,
+              itemId: parsed?.item?.id,
+              itemType: parsed?.item?.type,
+            });
           }
         }
 
@@ -268,7 +268,9 @@ export async function createNotebooksRouter(
     });
   };
 
-  notebooksRouter.get('/health', (_req, res) => res.json({ status: 'ok' }));
+  notebooksRouter.get('/health', express.json(), (_req, res) =>
+    res.json({ status: 'ok' }),
+  );
   notebooksRouter.use(
     '/v1',
     createIdentityMiddleware(httpAuth, userInfo, logger),
@@ -278,6 +280,7 @@ export async function createNotebooksRouter(
     '/v1/sessions',
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (req, res, userId) => {
       const { name, description, metadata } = req.body;
       if (!name) {
@@ -298,6 +301,7 @@ export async function createNotebooksRouter(
     '/v1/sessions',
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (_req, res, userId) => {
       const sessions = await sessionService.listSessions(userId);
       res.json(createSessionListResponse(sessions));
@@ -308,6 +312,7 @@ export async function createNotebooksRouter(
     '/v1/sessions/:sessionId',
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const session = await sessionService.readSession(sessionId, userId);
@@ -321,6 +326,7 @@ export async function createNotebooksRouter(
     '/v1/sessions/:sessionId',
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { name, description, metadata } = req.body;
@@ -339,6 +345,7 @@ export async function createNotebooksRouter(
     '/v1/sessions/:sessionId',
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       await sessionService.deleteSession(sessionId, userId);
@@ -355,6 +362,7 @@ export async function createNotebooksRouter(
     '/v1/sessions/:sessionId/documents',
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId } = req.params;
@@ -371,6 +379,7 @@ export async function createNotebooksRouter(
     '/v1/sessions/:sessionId/documents',
     expensiveRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     upload.single('file') as any,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
@@ -390,11 +399,7 @@ export async function createNotebooksRouter(
         return;
       }
 
-      const session = await sessionService.readSession(sessionId, userId);
-      if (!session) {
-        handleError(logger, res, 'Session not found');
-        return;
-      }
+      await sessionService.fetchSession(sessionId, userId);
 
       if (!req.file) {
         handleError(logger, res, 'No file uploaded');
@@ -430,6 +435,7 @@ export async function createNotebooksRouter(
     '/v1/sessions/:sessionId/documents/:documentId/status',
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -450,6 +456,7 @@ export async function createNotebooksRouter(
     '/v1/sessions/:sessionId/documents/:documentId',
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -487,6 +494,7 @@ export async function createNotebooksRouter(
     '/v1/sessions/:sessionId/documents/:documentId',
     generalRateLimiter,
     requirePermission(iaNotebooksPermission),
+    express.json(),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -524,7 +532,7 @@ export async function createNotebooksRouter(
         return;
       }
 
-      const session = await sessionService.readSession(sessionId, userId);
+      const { session } = await sessionService.fetchSession(sessionId, userId);
       let conversationId = session.metadata?.conversation_id;
 
       const lcsRequest: any = {

@@ -28,7 +28,6 @@ import {
   type HttpAuthService,
   type PermissionsService,
 } from '@backstage/backend-plugin-api';
-import type { CatalogService } from '@backstage/plugin-catalog-node';
 import {
   filterAuthorizedMetrics,
   checkEntityAccess,
@@ -41,7 +40,6 @@ import {
   validateAggregationTimeSeriesQueryParams,
   validateTimeSeriesQueryParams,
 } from '../middlewares/validateTimeSeriesQueryParams';
-import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { AggregatedMetricMapper } from './mappers';
 import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
@@ -58,7 +56,6 @@ export type ScorecardRouterOptions = {
     catalogMetricService: CatalogMetricService;
   };
   metricProvidersRegistry: MetricProvidersRegistry;
-  catalog: CatalogService;
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
   logger: LoggerService;
@@ -69,7 +66,6 @@ export type ScorecardRouterOptions = {
 export async function createRouter({
   metricProvidersRegistry,
   service,
-  catalog,
   httpAuth,
   permissions,
   logger,
@@ -243,10 +239,14 @@ export async function createRouter({
         throw new AuthenticationError('User entity reference not found');
       }
 
-      const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
-        catalog,
-        credentials,
-      });
+      const entitiesOwnedByAUser =
+        await catalogMetricService.getEntitiesOwnedByUser(
+          userEntityRef,
+          metric.id,
+          {
+            credentials,
+          },
+        );
 
       for (const entityRef of entitiesOwnedByAUser) {
         await checkEntityAccess(entityRef, req, permissions, httpAuth);
@@ -359,10 +359,14 @@ export async function createRouter({
         aggregationConfig.metricId,
       );
 
-      const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
-        catalog,
-        credentials,
-      });
+      const entitiesOwnedByAUser =
+        await catalogMetricService.getEntitiesOwnedByUser(
+          userEntityRef,
+          metric.id,
+          {
+            credentials,
+          },
+        );
 
       for (const entityRef of entitiesOwnedByAUser) {
         await checkEntityAccess(entityRef, req, permissions, httpAuth);
@@ -436,10 +440,14 @@ export async function createRouter({
         aggregationConfig.metricId,
       );
 
-      const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
-        catalog,
-        credentials,
-      });
+      const entitiesOwnedByAUser =
+        await catalogMetricService.getEntitiesOwnedByUser(
+          userEntityRef,
+          metric.id,
+          {
+            credentials,
+          },
+        );
 
       for (const entityRef of entitiesOwnedByAUser) {
         await checkEntityAccess(entityRef, req, permissions, httpAuth);

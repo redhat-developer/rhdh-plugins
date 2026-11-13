@@ -28,7 +28,10 @@ import {
   FormControlLabel,
   TextField,
 } from '@material-ui/core';
-import type { Rule } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  MAX_RULE_DESCRIPTION_CHARS,
+  type Rule,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
 import { extractResponseError, isHttpSuccessResponse } from '../tools';
@@ -97,7 +100,12 @@ export const RuleDialog = ({
     }
   };
 
-  const canSave = title.trim().length > 0 && description.trim().length > 0;
+  const descriptionTooLong = description.length > MAX_RULE_DESCRIPTION_CHARS;
+
+  const canSave =
+    title.trim().length > 0 &&
+    description.trim().length > 0 &&
+    !descriptionTooLong;
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -127,6 +135,18 @@ export const RuleDialog = ({
           margin="normal"
           disabled={saving}
           required
+          error={descriptionTooLong}
+          helperText={
+            descriptionTooLong
+              ? t('rulesPage.dialog.descriptionTooLong' as any, {
+                  max: MAX_RULE_DESCRIPTION_CHARS.toLocaleString('en-US'),
+                  count: description.length.toLocaleString('en-US'),
+                })
+              : t('rulesPage.dialog.descriptionCharCount' as any, {
+                  count: description.length.toLocaleString('en-US'),
+                  max: MAX_RULE_DESCRIPTION_CHARS.toLocaleString('en-US'),
+                })
+          }
         />
         <FormControlLabel
           control={

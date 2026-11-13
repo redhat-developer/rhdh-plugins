@@ -24,6 +24,8 @@ export async function runAccessibilityTests(
 ) {
   const accessibilityScanResults = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    // disabling while https://redhat.atlassian.net/browse/RHDHBUGS-4111 is open
+    .disableRules('label-content-name-mismatch')
     .analyze();
 
   await testInfo.attach(attachName, {
@@ -33,6 +35,6 @@ export async function runAccessibilityTests(
 
   expect(
     accessibilityScanResults.violations,
-    'Accessibility violations found',
+    `Accessibility check (${accessibilityScanResults.violations.length} violations)`,
   ).toEqual([]);
 }

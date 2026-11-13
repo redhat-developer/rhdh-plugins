@@ -34,6 +34,8 @@ Configuration is in `app-config.yaml`. Example catalog data is in `examples/`.
 ## Authentication
 
 Set `dcm.auth.enabled` to match the DCM control plane's `auth.enabled` setting.
+It defaults to `false` when unset (`DCM_AUTH_ENABLED` defaults to false in the
+dynamic plugin configs).
 
 - When enabled, the DCM UI uses the signed-in user's OIDC access token. Configure
   an OIDC provider in RHDH `auth.providers`, including its metadata URL, client

@@ -27,10 +27,9 @@ export async function switchToLocale(
   const e2eTranslations = getE2eTranslations(locale);
 
   if (baseLocale !== 'en') {
-    await page
-      .locator('nav[aria-label="sidebar nav"]')
-      .getByRole('link', { name: 'Settings' })
-      .click();
+    // Sidebar Settings is hidden when the global header is present.
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('menuitem', { name: 'Settings' }).click();
     await page.getByRole('button', { name: 'English' }).click();
     await page
       .getByRole('option', { name: e2eTranslations.languageDropdownTitle })

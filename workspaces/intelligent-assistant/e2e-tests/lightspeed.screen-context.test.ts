@@ -24,7 +24,6 @@ import {
   expectConversationArea,
   openChatbot,
   selectDisplayMode,
-  waitForBackstageCatalogReady,
 } from './pages/LightspeedPage';
 import {
   bootstrapLightspeedE2ePage,
@@ -59,7 +58,6 @@ test.describe('Intelligent assistant screen context', () => {
 
   test.beforeEach(async () => {
     await sharedPage.goto('/catalog');
-    await waitForBackstageCatalogReady(sharedPage);
     await openChatbot(sharedPage, translations);
   });
 

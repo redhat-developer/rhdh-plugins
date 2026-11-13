@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useAsync } from 'react-use';
 
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 
+import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 import { QueryClientProvider } from '@tanstack/react-query';
 
@@ -26,7 +33,10 @@ import { useAllModels } from '../hooks/useAllModels';
 import { useIaChatPermission } from '../hooks/useIaChatPermission';
 import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
-import { loadChatPatternflyStyles } from '../loadChatPatternflyStyles';
+import {
+  areChatPatternflyStylesLoaded,
+  loadChatPatternflyStyles,
+} from '../loadChatPatternflyStyles';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { ChatLoadingFallback } from './ChatLoadingFallback';
@@ -36,6 +46,26 @@ import {
   LightspeedChatModelsLoading,
   ModelsLoadErrorEmptyState,
 } from './LightspeedChatModelsState';
+
+/** Fill LightspeedPage / drawer so loading states don't collapse the page well. */
+const chatContainerRootSx = {
+  display: 'flex',
+  flexDirection: 'column' as const,
+  flex: '1 1 auto',
+  alignSelf: 'stretch',
+  width: '100%',
+  minWidth: 0,
+  minHeight: '100%',
+  height: '100%',
+  // Ensure the chatbot child can flex-fill the page route.
+  '& > *': {
+    flex: '1 1 auto',
+    minHeight: 0,
+  },
+};
+const fillPageWell = (node: ReactNode) => (
+  <Box sx={chatContainerRootSx}>{node}</Box>
+);
 
 const THEME_DARK = 'dark';
 const THEME_DARK_CLASS = 'pf-v6-theme-dark';
@@ -159,7 +189,7 @@ const LightspeedChatContainerInner = () => {
     // Never return null inside the overlay modal: PatternFly's focus-trap requires at least
     // one tabbable node (e.g. after removing the modal close button). Locale switches can
     // briefly re-enter this loading state.
-    return <LightspeedChatModelsLoading />;
+    return fillPageWell(<LightspeedChatModelsLoading />);
   }
 
   if (!hasPluginAccess) {
@@ -167,25 +197,27 @@ const LightspeedChatContainerInner = () => {
   }
 
   if (hasChatAccess && modelsLoading) {
-    return <LightspeedChatModelsLoading />;
+    return fillPageWell(<LightspeedChatModelsLoading />);
   }
 
   // TanStack Query can keep the last successful `data` while `isError` is true after a
   // failed refetch. Prefer showing chat when we still have LLM rows; only use the full-page
   // error state when there is nothing usable to render.
   if (hasChatAccess && modelsError && modelsItems.length === 0) {
-    return <ModelsLoadErrorEmptyState onRetry={() => refetchModels()} />;
+    return fillPageWell(
+      <ModelsLoadErrorEmptyState onRetry={() => refetchModels()} />,
+    );
   }
 
   if (hasChatAccess && modelsItems.length === 0) {
-    return <LcoreNotConfiguredEmptyState />;
+    return fillPageWell(<LcoreNotConfiguredEmptyState />);
   }
 
   const resolvedSelectedModel = selectedModel || modelsItems[0]?.value || '';
   const resolvedSelectedProvider =
     selectedProvider || modelsItems[0]?.provider || '';
 
-  return (
+  return fillPageWell(
     <FileAttachmentContextProvider>
       <LightspeedChat
         selectedModel={resolvedSelectedModel}
@@ -202,7 +234,7 @@ const LightspeedChatContainerInner = () => {
         avatar={profile?.picture}
         profileLoading={profileLoading}
       />
-    </FileAttachmentContextProvider>
+    </FileAttachmentContextProvider>,
   );
 };
 
@@ -210,9 +242,14 @@ const LightspeedChatContainerInner = () => {
  * @public
  */
 export const LightspeedChatContainer = () => {
-  const [stylesReady, setStylesReady] = useState(false);
+  // Overlay/docked already loaded PF CSS; start ready so remount into
+  // fullscreen does not flash ChatLoadingFallback (RHDHBUGS-3925 follow-up).
+  const [stylesReady, setStylesReady] = useState(areChatPatternflyStylesLoaded);
 
   useEffect(() => {
+    if (stylesReady) {
+      return undefined;
+    }
     let cancelled = false;
     loadChatPatternflyStyles().then(() => {
       if (!cancelled) {
@@ -222,10 +259,10 @@ export const LightspeedChatContainer = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [stylesReady]);
 
   if (!stylesReady) {
-    return <ChatLoadingFallback />;
+    return fillPageWell(<ChatLoadingFallback />);
   }
 
   return (

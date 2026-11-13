@@ -24,6 +24,7 @@ import { graphql } from '@octokit/graphql';
 import { Octokit } from '@octokit/rest';
 import {
   GithubDeployment,
+  GithubDeploymentStatusConnection,
   GithubWorkflowRun,
   GithubPullRequest,
   GithubRepository,
@@ -33,6 +34,8 @@ import {
 import {
   DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT,
   GITHUB_BATCH_SIZE,
+  GITHUB_DEPLOYMENT_STATUSES_PAGE_SIZE,
+  MAX_DEPLOYMENT_STATUS_PAGES,
 } from './constants';
 import { buildCommitsPullRequestsQuery } from './queries/buildCommitsPullRequestsQuery';
 import { mapCommitsPullRequests } from './mappers';
@@ -137,12 +140,23 @@ export class GithubClient {
             after: $after
           ) {
             nodes {
+              id
               databaseId
               commitOid
               createdAt
               environment
               latestStatus {
                 state
+              }
+              statuses(first: ${GITHUB_DEPLOYMENT_STATUSES_PAGE_SIZE}) {
+                nodes {
+                  state
+                  createdAt
+                }
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
               }
             }
             pageInfo {
@@ -204,7 +218,7 @@ export class GithubClient {
             sha: deployment.commitOid,
             createdAt: deployment.createdAt,
             environment: deployment.environment ?? null,
-            status: deployment.latestStatus?.state ?? null,
+            status: await this.resolveDeploymentStatus(octokit, deployment),
           });
         }
       }
@@ -231,6 +245,80 @@ export class GithubClient {
     // GitHub returns DESC by createdAt so we can stop early when outside of time range;
     // normalize to ASC for chronological processing (oldest -> newest).
     return deployments.reverse();
+  }
+
+  /**
+   * The deployment result is the newest SUCCESS when one exists, including
+   * when a later status is `inactive`, `failure`, or `error`. GitHub appends
+   * `inactive` after a newer deployment in the same non-production environment.
+   * Status pages are newest-first, so paging stops at the first page that
+   * contains a success. With no success, the result is `latestStatus`.
+   */
+  private async resolveDeploymentStatus(
+    octokit: Awaited<ReturnType<GithubClient['getOctokitClient']>>,
+    deployment: NonNullable<
+      NonNullable<
+        NonNullable<GithubDeploymentsQueryResponse['repository']>['deployments']
+      >['nodes']
+    >[number],
+  ): Promise<string | null> {
+    let connection = deployment?.statuses;
+    let successfulStatus = latestSuccessfulStatus(connection?.nodes);
+    const seenCursors = new Set<string>();
+    let pages = 0;
+
+    while (
+      !successfulStatus &&
+      pages < MAX_DEPLOYMENT_STATUS_PAGES &&
+      connection?.pageInfo?.hasNextPage &&
+      connection.pageInfo.endCursor &&
+      deployment?.id &&
+      !seenCursors.has(connection.pageInfo.endCursor)
+    ) {
+      pages += 1;
+      seenCursors.add(connection.pageInfo.endCursor);
+      connection = await this.fetchDeploymentStatusPage(
+        octokit,
+        deployment.id,
+        connection.pageInfo.endCursor,
+      );
+      successfulStatus = latestSuccessfulStatus(connection?.nodes);
+    }
+
+    return successfulStatus ?? deployment?.latestStatus?.state ?? null;
+  }
+
+  private async fetchDeploymentStatusPage(
+    octokit: Awaited<ReturnType<GithubClient['getOctokitClient']>>,
+    deploymentId: string,
+    after: string,
+  ): Promise<GithubDeploymentStatusConnection | null> {
+    const query = `
+      query getDeploymentStatuses($id: ID!, $after: String!) {
+        node(id: $id) {
+          ... on Deployment {
+            statuses(first: ${GITHUB_DEPLOYMENT_STATUSES_PAGE_SIZE}, after: $after) {
+              nodes {
+                state
+                createdAt
+              }
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+            }
+          }
+        }
+      }
+    `;
+    const response = await octokit<{
+      node?: { statuses?: GithubDeploymentStatusConnection | null } | null;
+    }>(query, {
+      id: deploymentId,
+      after,
+    });
+
+    return response.node?.statuses ?? null;
   }
 
   async getCommitShasBetween(
@@ -408,4 +496,27 @@ export class GithubClient {
     // normalize to ASC for chronological processing (oldest -> newest).
     return workflowRuns.reverse();
   }
+}
+
+/** Newest success on this page. Status pages are newest-first. */
+function latestSuccessfulStatus(
+  statuses: GithubDeploymentStatusConnection['nodes'] | null | undefined,
+): string | null {
+  let latestSuccessful: { state: string; createdAt: number } | undefined;
+
+  for (const status of statuses ?? []) {
+    if (status?.state?.toLowerCase() !== 'success') {
+      continue;
+    }
+
+    const createdAt = Date.parse(status.createdAt ?? '');
+    const createdAtTime = Number.isNaN(createdAt)
+      ? Number.NEGATIVE_INFINITY
+      : createdAt;
+    if (!latestSuccessful || createdAtTime >= latestSuccessful.createdAt) {
+      latestSuccessful = { state: status.state, createdAt: createdAtTime };
+    }
+  }
+
+  return latestSuccessful?.state ?? null;
 }

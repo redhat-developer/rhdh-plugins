@@ -18,7 +18,10 @@ import { z } from 'zod';
 import express from 'express';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
-import { x2aAdminWritePermission } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  x2aAdminWritePermission,
+  MAX_RULE_DESCRIPTION_CHARS,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
 import { authorize, useEnforceX2APermissions } from './common';
@@ -80,7 +83,7 @@ export function registerRuleRoutes(
 
     const createRuleSchema = z.object({
       title: z.string(),
-      description: z.string(),
+      description: z.string().max(MAX_RULE_DESCRIPTION_CHARS),
       required: z.boolean().optional(),
     });
 
@@ -110,7 +113,7 @@ export function registerRuleRoutes(
 
     const updateRuleSchema = z.object({
       title: z.string(),
-      description: z.string(),
+      description: z.string().max(MAX_RULE_DESCRIPTION_CHARS),
       required: z.boolean(),
     });
 

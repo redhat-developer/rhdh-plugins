@@ -19,8 +19,17 @@ import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { AttachmentEdit } from '@patternfly/chatbot/dist/dynamic/AttachmentEdit';
 import { PreviewAttachment } from '@patternfly/chatbot/dist/dynamic/PreviewAttachment';
 
+import { ChatbotDisplayMode as IaDisplayMode } from '../const';
+import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { ensureMonacoEditorWorkerEnvironment } from '../monacoEditorWorkerEnvironment';
 import { useFileAttachmentContext } from './AttachmentContext';
+import {
+  AttachmentScopedCodeModal,
+  type ModalUserEvent,
+} from './AttachmentScopedCodeModal';
+
+ensureMonacoEditorWorkerEnvironment();
 
 const MODAL_FOOTER_CLASS = 'ia-attachment-modal-footer';
 
@@ -30,7 +39,17 @@ const AttachmentScope = styled('div')({
   },
 });
 
-const Attachment = () => {
+type AttachmentProps = {
+  appendTo?: () => HTMLElement;
+};
+
+const Attachment = ({ appendTo }: AttachmentProps) => {
+  const { displayMode } = useLightspeedDrawerContext();
+  const scopeToChatShell =
+    (displayMode === IaDisplayMode.default ||
+      displayMode === IaDisplayMode.docked) &&
+    Boolean(appendTo);
+
   const {
     currentFileContent,
     setFileContents,
@@ -42,6 +61,7 @@ const Attachment = () => {
   if (!currentFileContent) {
     return null;
   }
+
   const {
     previewModalKey,
     isPreviewModalOpen,
@@ -51,76 +71,123 @@ const Attachment = () => {
     setIsPreviewModalOpen,
   } = modalState;
 
+  const openEdit = () => {
+    setIsPreviewModalOpen(false);
+    setIsEditModalOpen(true);
+  };
+
+  const dismissAttachment = () => {
+    setCurrentFileContent(undefined);
+    setIsPreviewModalOpen(false);
+  };
+
+  const persistEditedContent = (content: string) => {
+    setCurrentFileContent({ ...currentFileContent, content });
+    setFileContents(prev => {
+      const index = prev.findIndex(f => f.name === currentFileContent.name);
+      if (index !== -1) {
+        const updated = [...prev];
+        updated[index] = { ...updated[index], content };
+        return updated;
+      }
+      return [
+        ...prev,
+        {
+          name: currentFileContent.name,
+          type: currentFileContent.type,
+          content,
+        },
+      ];
+    });
+    setPreviewModalKey(k => k + 1);
+    setIsEditModalOpen(false);
+    setIsPreviewModalOpen(true);
+  };
+
+  const handleEditPrimaryAction = (
+    _event: ModalUserEvent,
+    content?: string,
+  ) => {
+    if (content !== undefined) {
+      persistEditedContent(content);
+    }
+  };
+
+  const fileCode = currentFileContent.content;
+  const fileName = currentFileContent.name;
+
   return (
     <AttachmentScope>
-      <PreviewAttachment
-        key={previewModalKey}
-        code={currentFileContent?.content}
-        fileName={currentFileContent?.name}
-        isModalOpen={isPreviewModalOpen}
-        secondaryActionButtonText={t('modal.close')}
-        primaryActionButtonText={t('modal.edit')}
-        title={t('modal.title.preview')}
-        modalFooterClassName={MODAL_FOOTER_CLASS}
-        onEdit={() => {
-          setIsPreviewModalOpen(false);
-          setIsEditModalOpen(true);
-        }}
-        onDismiss={() => {
-          setCurrentFileContent(undefined);
-          setIsPreviewModalOpen(false);
-        }}
-        handleModalToggle={() => setIsPreviewModalOpen(false)}
-        displayMode={ChatbotDisplayMode.fullscreen}
-      />
-      <AttachmentEdit
-        key={currentFileContent?.content}
-        code={currentFileContent?.content}
-        fileName={currentFileContent?.name}
-        isModalOpen={isEditModalOpen}
-        title={t('modal.title.edit')}
-        secondaryActionButtonText={t('modal.cancel')}
-        primaryActionButtonText={t('modal.save')}
-        modalFooterClassName={MODAL_FOOTER_CLASS}
-        onSave={(_event, content) => {
-          setCurrentFileContent({
-            ...currentFileContent,
-            content,
-          });
-          setFileContents(prev => {
-            const existingIndex = prev.findIndex(
-              f => f.name === currentFileContent?.name,
-            );
-
-            if (existingIndex !== -1) {
-              // Update the existing file's content
-              const updated = [...prev];
-              updated[existingIndex] = {
-                ...updated[existingIndex],
-                content: content as string,
-              };
-              return updated;
-            }
-
-            // File doesn't exist, add a new one
-            return [
-              ...prev,
-              {
-                name: currentFileContent?.name,
-                type: currentFileContent?.type,
-                content: content as string,
-              },
-            ];
-          });
-
-          setPreviewModalKey(prev => prev + 1);
-          setIsEditModalOpen(false);
-          setIsPreviewModalOpen(true);
-        }}
-        onCancel={() => setCurrentFileContent(undefined)}
-        handleModalToggle={() => setIsEditModalOpen(false)}
-        displayMode={ChatbotDisplayMode.fullscreen}
-      />
+      {scopeToChatShell && appendTo ? (
+        <>
+          <AttachmentScopedCodeModal
+            key={previewModalKey}
+            appendTo={appendTo}
+            code={fileCode}
+            fileName={fileName}
+            isModalOpen={isPreviewModalOpen}
+            isReadOnly
+            isCopyEnabled
+            isLineNumbersVisible={false}
+            title={t('modal.title.preview')}
+            primaryActionBtn={t('modal.edit')}
+            secondaryActionBtn={t('modal.close')}
+            modalFooterClassName={MODAL_FOOTER_CLASS}
+            codeEditorControlClassName="pf-chatbot__code-modal--controls"
+            handleModalToggle={() => setIsPreviewModalOpen(false)}
+            onPrimaryAction={() => openEdit()}
+            onSecondaryAction={() => dismissAttachment()}
+          />
+          <AttachmentScopedCodeModal
+            key={fileCode}
+            appendTo={appendTo}
+            code={fileCode}
+            fileName={fileName}
+            isModalOpen={isEditModalOpen}
+            isCopyEnabled
+            isLineNumbersVisible={false}
+            title={t('modal.title.edit')}
+            primaryActionBtn={t('modal.save')}
+            secondaryActionBtn={t('modal.cancel')}
+            modalFooterClassName={MODAL_FOOTER_CLASS}
+            codeEditorControlClassName="pf-chatbot__code-modal--controls"
+            handleModalToggle={() => setIsEditModalOpen(false)}
+            onPrimaryAction={handleEditPrimaryAction}
+            onSecondaryAction={() => setCurrentFileContent(undefined)}
+          />
+        </>
+      ) : (
+        <>
+          <PreviewAttachment
+            key={previewModalKey}
+            code={fileCode}
+            fileName={fileName}
+            isModalOpen={isPreviewModalOpen}
+            secondaryActionButtonText={t('modal.close')}
+            primaryActionButtonText={t('modal.edit')}
+            title={t('modal.title.preview')}
+            modalFooterClassName={MODAL_FOOTER_CLASS}
+            onEdit={openEdit}
+            onDismiss={dismissAttachment}
+            handleModalToggle={() => setIsPreviewModalOpen(false)}
+            displayMode={ChatbotDisplayMode.fullscreen}
+          />
+          <AttachmentEdit
+            key={fileCode}
+            code={fileCode}
+            fileName={fileName}
+            isModalOpen={isEditModalOpen}
+            title={t('modal.title.edit')}
+            secondaryActionButtonText={t('modal.cancel')}
+            primaryActionButtonText={t('modal.save')}
+            modalFooterClassName={MODAL_FOOTER_CLASS}
+            onSave={(_event, content) => persistEditedContent(content)}
+            onCancel={() => setCurrentFileContent(undefined)}
+            handleModalToggle={() => setIsEditModalOpen(false)}
+            displayMode={ChatbotDisplayMode.fullscreen}
+          />
+        </>
+      )}
     </AttachmentScope>
   );
 };

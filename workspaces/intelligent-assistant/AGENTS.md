@@ -10,16 +10,16 @@
 - Lint: `yarn lint`
 - Lint single file: `yarn lint --fix path/to/file.ts`
 - Type check: `yarn tsc`
-- Dev (modern): `yarn start`
+- Dev: `yarn start`
 
 ## Key Conventions
 
 - UI uses PatternFly components for the chat interface, not MUI
-- The frontend has two variants: modern (new Backstage plugin API) and legacy (old API)
+- The frontend uses the new Backstage frontend plugin API (NFS)
 
 ## Architecture (only non-obvious parts)
 
-- `packages/app` uses the new Backstage frontend plugin API; `packages/app-legacy` uses the old API for backwards compatibility
+- `packages/app` uses the new Backstage frontend plugin API
 - Backend uses Knex for database access; migrations live in `plugins/intelligent-assistant-backend/migrations/`
 - `packages/` is strictly for the dev environment; do not add application code there
 

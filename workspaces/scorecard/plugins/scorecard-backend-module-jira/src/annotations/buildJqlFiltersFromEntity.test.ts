@@ -223,6 +223,36 @@ describe('buildJqlFiltersFromEntity', () => {
     });
   });
 
+  it('open issues: should accept a valid "custom filter" and trim surrounding whitespace', () => {
+    const entity = newEntityComponent({
+      [PROJECT_KEY]: 'TEST',
+      [CUSTOM_FILTER]: '  priority = High  ',
+    });
+
+    const filters = buildJqlFiltersFromEntity(
+      entity,
+      OPEN_ISSUES_FILTER_ANNOTATIONS,
+    );
+
+    expect(filters).toEqual({
+      project: 'project = "TEST"',
+      customFilter: 'priority = High',
+    });
+  });
+
+  it('open issues: should throw error for invalid "custom filter" when "custom filter" is unbalanced', () => {
+    const entity = newEntityComponent({
+      [PROJECT_KEY]: 'TEST',
+      [CUSTOM_FILTER]: 'priority = High) OR (1=1',
+    });
+
+    expect(() =>
+      buildJqlFiltersFromEntity(entity, OPEN_ISSUES_FILTER_ANNOTATIONS),
+    ).toThrow(
+      `${CUSTOM_FILTER} is not a valid JQL filter: unbalanced parentheses.`,
+    );
+  });
+
   it('incidents: should apply incident filters and ignore open-issues annotations', () => {
     const entity = newEntityComponent({
       [INCIDENT_PROJECT_KEY]: 'INC',

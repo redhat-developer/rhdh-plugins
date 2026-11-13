@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { MouseEvent } from 'react';
 
 import { useTheme } from '@mui/material/styles';
@@ -22,8 +22,13 @@ import { useTheme } from '@mui/material/styles';
 import { CardWrapper } from '../../Common/CardWrapper';
 import type { PieData } from '../../types';
 import { resolveStatusColor } from '../../../utils';
+import { useTranslation } from '../../../hooks/useTranslation';
 import { ResponsivePieChart } from '../../ScorecardHomepageSection/ResponsivePieChart';
-import { CardInfoButton } from '../components/CardInfoButton';
+import { MetricDataSources } from '../../DataSources/MetricDataSources';
+import {
+  getWeightedStatusScoreEvaluation,
+  toAggregatedDialogMetricResult,
+} from '../../DataSources/toAggregatedDialogMetricResult';
 import { CardSubheader } from '../components/CardSubheader';
 import { CardChartContainer } from '../components/CardChartContainer';
 import { CardTooltip } from '../components/CardTooltip';
@@ -54,6 +59,7 @@ export const WeightedStatusScoreCardComponent = ({
   dataTestId,
 }: WeightedStatusScoreCardComponentProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const [centerTooltipPosition, setCenterTooltipPosition] =
     useState<TooltipPosition | null>(null);
@@ -100,8 +106,38 @@ export const WeightedStatusScoreCardComponent = ({
     />
   ) : null;
 
+  const evaluation = getWeightedStatusScoreEvaluation({
+    weightedStatusScore: scorecard.result.weightedStatusScore,
+    total: scorecard.result.total,
+    thresholds: scorecard.result.thresholds,
+    displayColor: scorecard.result.aggregationChartDisplayColor,
+  });
+
+  const metricSnapshot = useMemo(
+    () =>
+      toAggregatedDialogMetricResult({
+        t,
+        metricId: scorecard.id,
+        cardTitle,
+        type: 'number',
+        unit: '%',
+        value: scorecard.result.weightedStatusScore,
+        timestamp: scorecard.result.timestamp,
+        evaluation,
+        thresholds: scorecard.result.thresholds,
+      }),
+    [t, scorecard, cardTitle, evaluation],
+  );
+
   const info = showInfo ? (
-    <CardInfoButton timestamp={scorecard.result.timestamp} />
+    <MetricDataSources
+      title={cardTitle}
+      metricId={scorecard.id}
+      lastSyncedTimestamp={scorecard.result.timestamp}
+      fetchEnabled
+      metric={metricSnapshot}
+      unavailableStatusLabel={t('dataSourcesDialog.collectorUnavailableStatus')}
+    />
   ) : null;
 
   return (

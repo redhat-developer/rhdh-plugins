@@ -25,7 +25,7 @@ import {
   SignInPageBlueprint,
   type SignInPageProps,
 } from '@backstage/plugin-app-react';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import { navModule } from './modules/nav';
 
@@ -86,7 +86,7 @@ const signInModule = createFrontendModule({
  * - ApiBlueprint
  * - SignInPageBlueprint
  *
- * To run: yarn start (NFS) or yarn start:legacy (legacy app)
+ * To run: yarn start
  */
 const app = createApp({
   features: [

@@ -16,4 +16,3 @@
 
 export { MetricGroupCard } from './MetricGroupCard';
 export type { MetricGroupCardProps, ThresholdBucket } from './types';
-export type { MenuAction } from './MetricGroupCardMenu';

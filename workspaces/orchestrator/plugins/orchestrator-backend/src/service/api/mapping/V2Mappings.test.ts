@@ -122,6 +122,30 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
       processInstanceV1?.variables?.workflowdata,
     );
   });
+  it('does not throw and omits duration when start is missing', () => {
+    // Arrange
+    const processInstanceV1: ProcessInstance = generateProcessInstance(1);
+    processInstanceV1.start = undefined as unknown as string;
+
+    // Act
+    const result = mapToProcessInstanceDTO(processInstanceV1);
+
+    // Assert
+    expect(result.duration).toBeUndefined();
+    expect(result.start).toBeUndefined();
+  });
+  it('does not throw and omits duration when start is invalid', () => {
+    // Arrange
+    const processInstanceV1: ProcessInstance = generateProcessInstance(1);
+    processInstanceV1.start = 'not-a-date';
+
+    // Act
+    const result = mapToProcessInstanceDTO(processInstanceV1);
+
+    // Assert
+    expect(result.duration).toBeUndefined();
+    expect(result.start).toBe('not-a-date');
+  });
   it('correctly maps ProcessInstanceDTO', () => {
     // Arrange
     const processIntanceV1: ProcessInstance = generateProcessInstance(1);

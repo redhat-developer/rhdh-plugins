@@ -193,6 +193,8 @@ export interface X2ADatabaseServiceApi {
 
   deleteRule(args: { id: string }): Promise<number>;
 
+  validateAcceptedRules(ruleIds: string[]): Promise<void>;
+
   attachRulesToProject(args: {
     projectId: string;
     ruleIds: string[];
