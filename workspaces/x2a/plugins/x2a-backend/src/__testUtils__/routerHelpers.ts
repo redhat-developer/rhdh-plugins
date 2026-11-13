@@ -28,6 +28,7 @@ import { Knex } from 'knex';
 import { createRouter } from '../router';
 import { registerCollectArtifactsRoutes } from '../router/collectArtifacts';
 import { X2ADatabaseService } from '../services/X2ADatabaseService';
+import type { ScmFileStore } from '../services/ScmFileStore';
 import { createService } from './testHelpers';
 
 // ---------------------------------------------------------------------------
@@ -140,6 +141,21 @@ export function getCatalogMock() {
   };
 }
 
+export type MockScmFileStore = {
+  getFile: jest.Mock;
+  putFile: jest.Mock;
+} & ScmFileStore;
+
+export function createMockScmFileStore(): MockScmFileStore {
+  return { getFile: jest.fn(), putFile: jest.fn() };
+}
+
+export interface CreateAppOptions {
+  scmFileStore?: ScmFileStore;
+  /** Merged into the \`x2a\` config section, e.g. \`{ git: { targetRepo: { token } } }\`. */
+  x2aConfig?: Record<string, unknown>;
+}
+
 export async function createApp(
   client: Knex,
   authorizeResult?: AuthorizeResult,
@@ -147,6 +163,7 @@ export async function createApp(
   kubeServiceOverrides?: Record<string, unknown>,
   adminViewResult?: AuthorizeResult,
   catalogOverride?: { getEntityByRef?: jest.Mock },
+  options: CreateAppOptions = {},
 ): Promise<express.Express> {
   const x2aDatabase = createService(client);
   const router = await createRouter({
@@ -207,6 +224,7 @@ export async function createApp(
           credentials: {
             llm: { LLM_MODEL: 'test-model' },
           },
+          ...options.x2aConfig,
         },
       },
     }),
@@ -218,6 +236,7 @@ export async function createApp(
       deleteJob: jest.fn().mockResolvedValue(undefined),
       ...kubeServiceOverrides,
     },
+    scmFileStore: options.scmFileStore ?? createMockScmFileStore(),
   });
 
   const app = express();
@@ -272,6 +291,7 @@ export interface MockRouterDeps {
   logger: ReturnType<typeof mockServices.logger.mock>;
   permissionsSvc: ReturnType<typeof mockServices.permissions.mock>;
   config: ReturnType<typeof mockServices.rootConfig>;
+  scmFileStore: MockScmFileStore;
 }
 
 export function createMockRouterDeps(): MockRouterDeps {
@@ -332,6 +352,7 @@ export function createMockRouterDeps(): MockRouterDeps {
         },
       },
     }),
+    scmFileStore: createMockScmFileStore(),
   };
 }
 

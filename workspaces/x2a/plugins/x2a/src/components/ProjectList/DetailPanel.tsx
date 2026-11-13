@@ -24,7 +24,7 @@ import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { ModuleTable } from '../ModuleTable';
 import { ItemField } from '../ItemField';
-import { ArtifactLink } from '../Artifacts';
+import { MigrationPlanLink } from '../EditMigrationPlan';
 import { ExternalLink } from '../ExternalLink';
 import { buildProjectDirUrl } from '../tools';
 
@@ -93,10 +93,11 @@ export const DetailPanel = ({
           <ItemField
             label={t('artifact.types.migration_plan')}
             value={
-              <ArtifactLink
+              <MigrationPlanLink
                 artifact={project.migrationPlan}
                 targetRepoUrl={project.targetRepoUrl}
                 targetRepoBranch={project.targetRepoBranch}
+                project={project}
               />
             }
           />

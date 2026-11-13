@@ -302,6 +302,51 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Impossibile risincronizzare il piano di migrazione per il progetto "{{name}}"',
     'resyncMigrationPlan.errorStart':
       'Impossibile avviare la risincronizzazione del piano di migrazione',
+    'editMigrationPlan.button.edit': 'Modifica questo documento',
+    'editMigrationPlan.button.bitbucketUnsupported':
+      'La modifica diretta non è ancora disponibile per i repository Bitbucket. Usa il link accanto per aprire il documento in Bitbucket e modificarlo lì.',
+    'editMigrationPlan.title': 'Modifica: {{document}}',
+    'editMigrationPlan.breadcrumb': 'Modifica piano di migrazione',
+    'editMigrationPlan.actions.cancel': 'Annulla',
+    'editMigrationPlan.actions.close': 'Chiudi',
+    'editMigrationPlan.actions.reload': 'Ricarica',
+    'editMigrationPlan.actions.save': 'Salva',
+    'editMigrationPlan.tabs.edit': 'Modifica',
+    'editMigrationPlan.tabs.preview': 'Anteprima',
+    'editMigrationPlan.editorLabel': 'Sorgente Markdown',
+    'editMigrationPlan.loading': 'Caricamento del documento dal repository…',
+    'editMigrationPlan.unsavedChanges': 'Ci sono modifiche non salvate.',
+    'editMigrationPlan.authorize.message':
+      "È necessario l'accesso a {{provider}} per leggere ed eseguire il commit del documento. Autorizzalo per continuare.",
+    'editMigrationPlan.authorize.button': 'Autorizza {{provider}}',
+    'editMigrationPlan.authorize.error':
+      'Impossibile ottenere un token di accesso per {{provider}}: {{message}}',
+    'editMigrationPlan.notAllowed':
+      "Non hai il permesso di modificare questo progetto. Chiedi l'accesso al proprietario del progetto o a un amministratore.",
+    'editMigrationPlan.loadError':
+      'Caricamento del documento non riuscito. Riprova con il pulsante Ricarica.',
+    'editMigrationPlan.saveError':
+      "Salvataggio del documento non riuscito. Le modifiche restano nell'editor.",
+    'editMigrationPlan.saved':
+      'Salvato. È stato creato un nuovo commit nel repository.',
+    'editMigrationPlan.resyncNote':
+      "La modifica del documento non aggiorna l'elenco dei moduli. Usa poi «Risincronizza piano di migrazione» nella pagina del progetto per applicare modifiche come moduli aggiunti o rimossi. Per rimuovere un modulo, eliminalo da tutto il documento: l'elenco dei moduli viene riletto da un modello di IA dall'intero testo, quindi un modulo ancora citato altrove (comprese indicazioni come «tre moduli») può essere mantenuto.",
+    'editMigrationPlan.tooLarge':
+      'Il documento è troppo grande per essere salvato da qui (il limite è {{limit}} kB). Modificalo direttamente nel repository.',
+    'editMigrationPlan.dialogs.keepEditing': 'Continua a modificare',
+    'editMigrationPlan.dialogs.cancel.title': 'Scartare le modifiche?',
+    'editMigrationPlan.dialogs.cancel.message':
+      'Tutte le modifiche non salvate andranno perse e tornerai alla pagina precedente.',
+    'editMigrationPlan.dialogs.cancel.confirm': 'Scarta modifiche',
+    'editMigrationPlan.dialogs.reload.title': 'Ricaricare dal repository?',
+    'editMigrationPlan.dialogs.reload.message':
+      "Tutte le modifiche non salvate andranno perse e l'ultima versione del documento verrà caricata dal repository.",
+    'editMigrationPlan.dialogs.reload.confirm': 'Ricarica',
+    'editMigrationPlan.dialogs.save.title': 'Salvare le modifiche?',
+    'editMigrationPlan.dialogs.save.message':
+      'Verrà creato un nuovo commit con le tue modifiche sul branch «{{branch}}» del repository di destinazione.',
+    'editMigrationPlan.dialogs.save.commitMessageLabel': 'Messaggio di commit',
+    'editMigrationPlan.dialogs.save.confirm': 'Salva',
     'scaffolder.rulesAcceptance.loadingRules':
       'Caricamento delle regole in corso...',
     'scaffolder.rulesAcceptance.noRulesConfigured':

@@ -178,4 +178,34 @@ describe('DetailPanel', () => {
     expect(screen.getByText('Directory Name')).toBeInTheDocument();
     expect(screen.getByText('test-project-proj-1')).toBeInTheDocument();
   });
+
+  describe('migration plan', () => {
+    const migrationPlan = {
+      id: 'a1',
+      type: 'migration_plan' as const,
+      value: 'test-project-proj-1/migration-plan.md',
+    };
+
+    it('offers editing next to the link', () => {
+      renderDetailPanel({
+        project: { ...mockProject, migrationPlan },
+        modules: [],
+      });
+
+      expect(
+        screen.getByRole('link', { name: /Project Migration Plan/ }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Edit this document' }),
+      ).toBeEnabled();
+    });
+
+    it('does not offer editing without a migration plan', () => {
+      renderDetailPanel({ modules: [] });
+
+      expect(
+        screen.queryByRole('button', { name: 'Edit this document' }),
+      ).not.toBeInTheDocument();
+    });
+  });
 });
