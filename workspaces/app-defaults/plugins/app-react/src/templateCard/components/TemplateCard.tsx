@@ -154,7 +154,7 @@ export const TemplateCard = (props: TemplateCardProps) => {
   }) ?? { fontColor: '#fff', backgroundImage: 'none' };
 
   const iconResolver = (key?: string): IconComponent =>
-    key ? (app.getSystemIcon(key) ?? LanguageIcon) : LanguageIcon;
+    key ? app.getSystemIcon(key) ?? LanguageIcon : LanguageIcon;
 
   return (
     <Card>
