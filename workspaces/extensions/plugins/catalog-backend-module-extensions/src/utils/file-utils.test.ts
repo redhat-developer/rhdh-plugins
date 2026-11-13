@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import fs from 'fs';
-import glob from 'glob';
+import { globSync } from 'glob';
 import yaml from 'js-yaml';
 import { findTopmostFolder, readYamlFiles } from './file-utils';
 
@@ -102,7 +102,7 @@ describe('findTopmostFolder', () => {
 });
 
 describe('readYamlFiles', () => {
-  const mockGlobSync = glob.sync as unknown as jest.Mock;
+  const mockGlobSync = globSync as unknown as jest.Mock;
   const mockReadFileSync = fs.readFileSync as jest.Mock;
   const mockYamlLoad = yaml.load as jest.Mock;
   const folderPath = '/path/to/yaml';
