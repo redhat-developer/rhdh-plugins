@@ -159,6 +159,7 @@ Override entry points (for advanced installs):
 | `./api-docs-plugin-override`          | API docs empty state, definition card hidden on Overview, API cards on Dependencies              |
 | `./scaffolder-plugin-override`        | Scaffolder empty state                                                                           |
 | `./docs-plugin-override`              | TechDocs empty state                                                                             |
+| `./global-header`                     | Default toolbar widgets and dropdown menu items (`pluginId: 'global-header'`)                    |
 | `./global-header-module`              | Global header wrapper + system icons only (no default toolbar/menu items)                        |
 | `./global-header-translations-module` | Global header translation resource                                                               |
 | `./global-header-components`          | Global-header building-block UI (`GlobalHeaderMenuItem`, …)                                      |
@@ -208,9 +209,11 @@ export default createApp({
 ```
 
 Focused subpaths: `./global-header-module` and
-`./global-header-translations-module` (wrapper/icons and translations only;
-add `globalHeaderPlugin` from the package root when you want the default
-toolbar/menu items).
+`./global-header-translations-module` (wrapper/icons and translations only);
+add `./global-header` (or `globalHeaderPlugin` from the package root) when
+you want the default toolbar/menu items. Dynamic plugin hosts must load
+`./global-header` — the package-root FeatureLoader is not registered in
+`backstage.features`.
 
 ### Disable or customize defaults
 

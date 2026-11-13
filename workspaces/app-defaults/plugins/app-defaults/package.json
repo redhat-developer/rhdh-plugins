@@ -12,6 +12,7 @@
     "./app-drawer-module": "./src/appDrawerModuleExport.ts",
     "./app-sidebar-module": "./src/appSidebarModuleExport.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
+    "./global-header": "./src/global-header/globalHeaderPluginExport.ts",
     "./global-header-module": "./src/global-header/globalHeaderModuleExport.ts",
     "./global-header-translations-module": "./src/global-header/globalHeaderTranslationsModuleExport.ts",
     "./global-header-components": "./src/global-header/componentsExport.ts",
@@ -40,6 +41,9 @@
       ],
       "app-defaults-translations-module": [
         "src/appDefaultsTranslationsModuleExport.ts"
+      ],
+      "global-header": [
+        "src/global-header/globalHeaderPluginExport.ts"
       ],
       "global-header-module": [
         "src/global-header/globalHeaderModuleExport.ts"
