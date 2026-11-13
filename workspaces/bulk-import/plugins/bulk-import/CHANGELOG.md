@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.2.3
+
+### Patch Changes
+
+- d4cdc69: Updated dependency `@playwright/test` to `1.65.0`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.2.3
+
 ## 9.2.2
 
 ### Patch Changes
