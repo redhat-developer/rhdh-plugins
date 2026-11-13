@@ -64,7 +64,7 @@ const _default: OverridableFrontendPlugin<
           | undefined;
         path: string | undefined;
         title: string | undefined;
-        filter: FilterPredicate | undefined;
+        filter: string | FilterPredicate | undefined;
         group: string | false | undefined;
         icon: string | undefined;
       };
@@ -77,7 +77,7 @@ const _default: OverridableFrontendPlugin<
           | undefined;
         path?: string | undefined | undefined;
         title?: string | undefined | undefined;
-        filter?: FilterPredicate | undefined;
+        filter?: string | FilterPredicate | undefined;
         group?: string | false | undefined | undefined;
         icon?: string | undefined | undefined;
       };
