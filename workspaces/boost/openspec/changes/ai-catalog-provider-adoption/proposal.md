@@ -1,3 +1,5 @@
+# Proposal: AI Catalog Provider Adoption
+
 ## Why
 
 [RHIDP-18843](https://redhat.atlassian.net/browse/RHIDP-18843), under

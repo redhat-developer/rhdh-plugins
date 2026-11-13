@@ -1,3 +1,5 @@
+# Design: AI Catalog Provider Adoption
+
 ## Context
 
 [RHIDP-18843](https://redhat.atlassian.net/browse/RHIDP-18843) establishes the
