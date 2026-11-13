@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.13.2
+
+### Patch Changes
+
+- f99ef6f: Show estimated time saved on scaffolder template cards from the backstage.io/time-saved annotation. The value is an ISO 8601 duration such as PT4H. When it is missing or invalid, the card shows a copyable line to add the annotation.
+
 ## 1.13.1
 
 ### Patch Changes

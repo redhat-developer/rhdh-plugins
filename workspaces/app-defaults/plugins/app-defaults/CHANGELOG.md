@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.13.2
+
+### Patch Changes
+
+- Updated dependencies [f99ef6f]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.13.2
+
 ## 1.13.1
 
 ### Patch Changes
