@@ -17,9 +17,7 @@
 import { defineConfig } from '@playwright/test';
 
 const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
-// APP_MODE: 'legacy' (packages/app-legacy) or 'nfs' (packages/app with new frontend system)
-const appMode = process.env.APP_MODE || 'legacy';
-const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+const startCommand = 'yarn start';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -51,9 +49,7 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [
-    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
-  ],
+  reporter: [['html', { open: 'never', outputFolder: `e2e-test-report` }]],
 
   use: {
     actionTimeout: 0,
@@ -62,7 +58,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
 
-  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
+  outputDir: `node_modules/.cache/e2e-test-results`,
 
   testDir: 'e2e-tests',
 

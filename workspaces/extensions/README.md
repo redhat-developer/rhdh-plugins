@@ -84,12 +84,6 @@ yarn install
 yarn start
 ```
 
-For the legacy (OFS) app and backend:
-
-```bash
-yarn start:legacy
-```
-
 To develop the frontend plugin in isolation (mock data, no backend):
 
 ```bash
