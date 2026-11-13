@@ -136,13 +136,12 @@ describe('DeleteRepositoryDialog', () => {
       </QueryClientProvider>,
     );
 
-    const deleteButton = screen.getByText('Remove');
-    fireEvent.click(deleteButton);
+    fireEvent.click(screen.getByRole('button', { name: /Remove/i }));
     await waitFor(() => {
       expect(
         screen.queryByText('Unable to remove repository. Error occured'),
       ).toBeInTheDocument();
-      expect(deleteButton).toBeDisabled();
+      expect(screen.getByRole('button', { name: /Remove/i })).toBeDisabled();
     });
   });
 });

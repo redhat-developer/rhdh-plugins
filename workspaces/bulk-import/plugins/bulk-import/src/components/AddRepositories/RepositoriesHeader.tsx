@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import type { ChangeEvent } from 'react';
-
-import Checkbox from '@mui/material/Checkbox';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
+import { Checkbox, Flex } from '@backstage/ui';
 
 import { useGitlabConfigured } from '../../hooks';
 import { useImportFlow } from '../../hooks/useImportFlow';
@@ -28,6 +23,10 @@ import { ImportFlow } from '../../types';
 import { getRepositoriesListColumns } from '../Repositories/RepositoriesListColumns';
 import { getOrganizationsColumnHeader } from './OrganizationsColumnHeader';
 import { getRepositoriesColumnHeader } from './RepositoriesColumnHeader';
+import {
+  repositoriesTableHeaderCellStyle,
+  repositoriesTableOrgHeaderCellStyle,
+} from './repositoriesTableShared';
 import { getReposSelectDrawerColumnHeader } from './ReposSelectDrawerColumnHeader';
 
 export const RepositoriesHeader = ({
@@ -47,7 +46,7 @@ export const RepositoriesHeader = ({
   showImportJobs?: boolean;
   isRepoSelectDrawer?: boolean;
   isApprovalToolGitlab?: boolean;
-  onSelectAllClick?: (event: ChangeEvent<HTMLInputElement>) => void;
+  onSelectAllClick?: (isSelected: boolean) => void;
 }) => {
   const { t } = useTranslation();
 
@@ -76,57 +75,44 @@ export const RepositoriesHeader = ({
     );
   };
 
-  const tableCellStyle = () => {
+  const headerCellStyle = () => {
     if (showImportJobs) {
-      return undefined;
+      return repositoriesTableHeaderCellStyle;
     }
     if (showOrganizations) {
-      return '15px 16px 15px 24px';
+      return repositoriesTableOrgHeaderCellStyle;
     }
-    return '15px 16px 15px 6px';
+    return repositoriesTableHeaderCellStyle;
   };
 
+  const showSelectAll = !showOrganizations && !showImportJobs;
+
+  const isIndeterminate =
+    (numSelected ?? 0) > 0 && (rowCount ?? 0) > 0 && numSelected! < rowCount!;
+  const isAllSelected = (rowCount ?? 0) > 0 && numSelected === rowCount;
+
   return (
-    <TableHead>
-      <TableRow>
+    <thead>
+      <tr>
         {getColumnHeader()?.map((headCell, index) => (
-          <TableCell
-            key={headCell.id as string}
-            align="left"
-            padding="normal"
-            style={{
-              lineHeight: '1.5rem',
-              fontSize: '0.875rem',
-              padding: tableCellStyle(),
-              fontWeight: '700',
-            }}
-          >
-            {index === 0 && !showOrganizations && !showImportJobs && (
-              <Checkbox
-                disableRipple
-                color="primary"
-                style={{ padding: '0 12px' }}
-                indeterminate={
-                  (numSelected &&
-                    rowCount &&
-                    numSelected > 0 &&
-                    numSelected < rowCount) ||
-                  false
-                }
-                checked={
-                  ((rowCount ?? 0) > 0 && numSelected === rowCount) || false
-                }
-                onChange={onSelectAllClick}
-                inputProps={{
-                  'aria-label': 'select all repositories',
-                }}
-                disabled={isDataLoading}
-              />
+          <th key={headCell.id as string} style={headerCellStyle()}>
+            {index === 0 && showSelectAll ? (
+              <Flex align="center" gap="2">
+                <Checkbox
+                  aria-label="select all repositories"
+                  isSelected={isAllSelected}
+                  isIndeterminate={isIndeterminate}
+                  isDisabled={isDataLoading}
+                  onChange={onSelectAllClick}
+                />
+                <span>{headCell.title}</span>
+              </Flex>
+            ) : (
+              headCell.title
             )}
-            {headCell.title}
-          </TableCell>
+          </th>
         ))}
-      </TableRow>
-    </TableHead>
+      </tr>
+    </thead>
   );
 };

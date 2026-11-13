@@ -142,6 +142,8 @@ const bulkImportTranslationJa = createTranslationMessages({
       'グループとユーザーを読み込んでいます',
     'previewFile.pullRequest.mergeRequest': 'マージリクエスト',
     'previewFile.pullRequest.previewEntities': 'エンティティーのプレビュー',
+    'previewFile.pullRequest.previewCardSubheader':
+      '新しいプルリクエストを作成',
     'previewFile.pullRequest.serviceNowTicket': 'ServiceNow チケット',
     'previewFile.pullRequest.spec': '仕様',
     'previewFile.pullRequest.title': 'プルリクエスト',

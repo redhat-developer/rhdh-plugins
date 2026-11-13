@@ -41,20 +41,30 @@ jest.mock('../../hooks', () => ({
   useNumberOfApprovalTools: jest.fn(() => ({
     numberOfApprovalTools: 1,
   })),
-  useTranslation: jest.fn(() => ({
-    t: (key: string) => {
+  useTranslation: jest.fn(() => {
+    const t = (key: string) => {
       const translations: Record<string, string> = {
         'addRepositories.selectedLabel': 'Selected',
         'addRepositories.selectedRepositories': 'repositories',
         'addRepositories.selectedProjects': 'projects',
       };
       return translations[key] || key;
-    },
-  })),
+    };
+    return {
+      t,
+      tParams: (key: string, params: Record<string, string | number>) => {
+        let message = t(key);
+        for (const [paramKey, paramValue] of Object.entries(params)) {
+          message = message.replaceAll(`{{${paramKey}}}`, String(paramValue));
+        }
+        return message;
+      },
+    };
+  }),
 }));
 
 // Mock the child components to avoid complex dependencies
-jest.mock('./AddRepositoriesTableToolbar', () => ({
+jest.mock('./RepositoriesTableToolbar', () => ({
   AddRepositoriesTableToolbar: ({ title }: { title: string }) => (
     <div data-testid="table-toolbar">{title}</div>
   ),

@@ -17,11 +17,9 @@
 import { isValidElement } from 'react';
 
 import { useApp } from '@backstage/core-plugin-api';
+import { Text } from '@backstage/ui';
 
-import MuiIcon from '@mui/material/Icon';
-import { useTheme } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-
+import { useBulkImportColorScheme } from '../../hooks/useBulkImportColorScheme';
 import { getImageForIconClass } from '../../utils/icons';
 
 export interface InstructionIconProps {
@@ -40,7 +38,7 @@ export interface InstructionIconProps {
  */
 export const InstructionIcon = ({ icon, text }: InstructionIconProps) => {
   const app = useApp();
-  const theme = useTheme();
+  const scheme = useBulkImportColorScheme();
 
   // Common wrapper for consistent layout
   const IconWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -63,7 +61,7 @@ export const InstructionIcon = ({ icon, text }: InstructionIconProps) => {
       >
         {children}
       </div>
-      <Typography
+      <Text
         style={{
           maxWidth: '150px',
           textAlign: 'center',
@@ -71,7 +69,7 @@ export const InstructionIcon = ({ icon, text }: InstructionIconProps) => {
         }}
       >
         {text}
-      </Typography>
+      </Text>
     </div>
   );
 
@@ -169,11 +167,8 @@ export const InstructionIcon = ({ icon, text }: InstructionIconProps) => {
   ];
 
   if (legacyIcons.includes(strIcon)) {
-    // Use theme-aware legacy icons
     const iconClassname =
-      theme.palette.mode === 'dark'
-        ? `icon-${strIcon}-white`
-        : `icon-${strIcon}-black`;
+      scheme === 'dark' ? `icon-${strIcon}-white` : `icon-${strIcon}-black`;
 
     return (
       <IconWrapper>
@@ -193,12 +188,13 @@ export const InstructionIcon = ({ icon, text }: InstructionIconProps) => {
   // Fallback: treat as Material Design icon name
   return (
     <IconWrapper>
-      <MuiIcon
-        baseClassName="material-icons-outlined"
-        sx={{ fontSize: '80px' }}
+      <span
+        className="material-icons-outlined"
+        style={{ fontSize: '80px' }}
+        aria-hidden
       >
         {strIcon}
-      </MuiIcon>
+      </span>
     </IconWrapper>
   );
 };

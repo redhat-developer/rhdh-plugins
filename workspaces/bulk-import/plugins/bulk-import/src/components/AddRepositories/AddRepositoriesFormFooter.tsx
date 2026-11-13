@@ -15,16 +15,13 @@
  */
 
 import { Link } from '@backstage/core-components';
+import { Button, Flex, Tooltip, TooltipTrigger } from '@backstage/ui';
 
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
+import { bulkImportOpaqueSurfaceColor } from '../bulkImportSurfaces';
 
 export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
@@ -67,54 +64,44 @@ export const AddRepositoriesFormFooter = () => {
 
   const submitButton = (
     <Button
-      variant="contained"
-      color="primary"
-      onClick={handleSubmit as any}
-      disabled={disableCreate || isSubmitting}
-      startIcon={
-        isSubmitting && <CircularProgress size="20px" color="inherit" />
-      }
+      variant="primary"
+      onPress={() => handleSubmit()}
+      isDisabled={disableCreate || isSubmitting}
+      isPending={isSubmitting}
     >
       {label[values.approvalTool]?.submitTitle}
     </Button>
   );
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'left',
-        gap: 1,
+    <Flex
+      align="center"
+      gap="3"
+      pt="4"
+      pb="8"
+      pl="6"
+      data-testid="add-repository-footer"
+      style={{
         position: 'fixed',
         bottom: 0,
-        pt: 2,
-        pb: 4,
-        pl: 3,
-        // Content surface (not nav chrome) so light/dark toggles stay correct under MF.
-        backgroundColor: theme => theme.palette.background.paper,
         width: '100%',
-        borderTopStyle: 'groove',
-        borderColor: 'divider',
-        zIndex: 1,
+        zIndex: 10,
+        backgroundColor: bulkImportOpaqueSurfaceColor,
+        borderTop: '1px solid var(--bui-border-1)',
+        boxSizing: 'border-box',
       }}
-      data-testid="add-repository-footer"
     >
       {disableCreate ? (
-        <Tooltip
-          title={getTooltipTitle()}
-          sx={{
-            maxWidth: 'none',
-          }}
-        >
-          <Typography component="span">{submitButton}</Typography>
-        </Tooltip>
+        <TooltipTrigger>
+          <span>{submitButton}</span>
+          <Tooltip placement="top">{getTooltipTitle()}</Tooltip>
+        </TooltipTrigger>
       ) : (
         submitButton
       )}
       <Link to="/bulk-import">
-        <Button variant="outlined">{t('common.cancel')}</Button>
+        <Button variant="secondary">{t('common.cancel')}</Button>
       </Link>
-    </Box>
+    </Flex>
   );
 };

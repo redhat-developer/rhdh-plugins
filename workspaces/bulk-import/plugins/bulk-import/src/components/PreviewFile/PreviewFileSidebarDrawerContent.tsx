@@ -17,16 +17,7 @@
 import { useState } from 'react';
 
 import { Link } from '@backstage/core-components';
-
-import CloseIcon from '@mui/icons-material/Close';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import Skeleton from '@mui/material/Skeleton';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import { Box, Button, ButtonIcon, Flex, Skeleton, Text } from '@backstage/ui';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -35,6 +26,13 @@ import {
   RepositorySelection,
 } from '../../types';
 import { urlHelper } from '../../utils/repository-utils';
+import {
+  BulkImportCloseIcon,
+  BulkImportExternalLinkIcon,
+  bulkImportExternalLinkLinkStyle,
+} from '../bulkImportIcons';
+import { bulkImportOpaqueSurfaceColor } from '../bulkImportSurfaces';
+import { bulkImportTypographyH6 } from '../bulkImportTypography';
 import { PreviewPullRequest } from './PreviewPullRequest';
 import { PreviewPullRequests } from './PreviewPullRequests';
 
@@ -63,80 +61,111 @@ export const PreviewFileSidebarDrawerContent = ({
 
   if (isLoading) {
     return (
-      <Stack spacing={5} sx={{ p: 2.5 }}>
-        <Typography component="span" style={{ display: 'flex', height: '10%' }}>
-          <Skeleton variant="rectangular" width="100%" height="100%" />
-          <IconButton
-            key="dismiss"
-            title={t('previewFile.closeDrawer')}
-            onClick={onCancel}
-            color="inherit"
-            size="large"
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </Typography>
-        <Skeleton variant="rectangular" width="100%" height={750} />
-        <Skeleton variant="rectangular" width="100%" height="10%" />
-      </Stack>
+      <Flex direction="column" gap="5" style={{ padding: '20px' }}>
+        <Flex align="start" justify="between">
+          <Skeleton width="80%" height={40} />
+          <ButtonIcon
+            icon={<BulkImportCloseIcon size={14} />}
+            aria-label={t('previewFile.closeDrawer')}
+            variant="tertiary"
+            onPress={onCancel}
+          />
+        </Flex>
+        <Skeleton width="100%" height={750} />
+        <Skeleton width="100%" height={48} />
+      </Flex>
     );
   }
   return (
-    <>
-      <Box>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'baseline',
-            p: 2.5, // padding: theme.spacing(2.5)
+    <Flex
+      direction="column"
+      style={{
+        flex: 1,
+        minHeight: 0,
+        minWidth: 0,
+        width: '100%',
+        maxWidth: '100%',
+        height: '100%',
+        boxSizing: 'border-box',
+      }}
+    >
+      <Box
+        style={{
+          flex: 1,
+          minHeight: 0,
+          minWidth: 0,
+          width: '100%',
+          maxWidth: '100%',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          boxSizing: 'border-box',
+        }}
+      >
+        <Flex
+          align="baseline"
+          justify="between"
+          style={{
+            padding: '20px',
+            minWidth: 0,
+            maxWidth: '100%',
+            boxSizing: 'border-box',
           }}
         >
-          <div>
+          <Flex
+            direction="column"
+            gap="1"
+            align="start"
+            style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}
+          >
             {repositoryType === RepositorySelection.Repository ? (
               <>
-                <Typography variant="h5">
+                <Text as="h2" style={bulkImportTypographyH6}>
                   {`${data.orgName ?? data.organizationUrl}/${data.repoName}`}
-                </Typography>
-                <Link to={data.repoUrl ?? ''}>
-                  {urlHelper(data.repoUrl || '')}
-                  <OpenInNewIcon
-                    style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-                  />
-                </Link>
+                </Text>
+                <span style={{ fontSize: '0.875rem', lineHeight: '1.5rem' }}>
+                  <Link
+                    to={data.repoUrl ?? ''}
+                    style={bulkImportExternalLinkLinkStyle}
+                  >
+                    {urlHelper(data.repoUrl || '')}
+                    <BulkImportExternalLinkIcon />
+                  </Link>
+                </span>
               </>
             ) : (
               <>
-                <Typography variant="h5">{`${data.orgName}`}</Typography>
-                <Link to={data.organizationUrl ?? ''}>
-                  {urlHelper(data.organizationUrl || '')}
-                  <OpenInNewIcon
-                    style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-                  />
-                </Link>
+                <Text as="h2" style={bulkImportTypographyH6}>
+                  {`${data.orgName}`}
+                </Text>
+                <span style={{ fontSize: '0.875rem', lineHeight: '1.5rem' }}>
+                  <Link
+                    to={data.organizationUrl ?? ''}
+                    style={bulkImportExternalLinkLinkStyle}
+                  >
+                    {urlHelper(data.organizationUrl || '')}
+                    <BulkImportExternalLinkIcon />
+                  </Link>
+                </span>
               </>
             )}
-          </div>
+          </Flex>
 
-          <IconButton
-            key="dismiss"
-            title={t('previewFile.closeDrawer')}
-            onClick={onCancel}
-            color="inherit"
-            size="large"
-          >
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </Box>
+          <ButtonIcon
+            icon={<BulkImportCloseIcon size={14} />}
+            aria-label={t('previewFile.closeDrawer')}
+            variant="tertiary"
+            onPress={onCancel}
+          />
+        </Flex>
 
         <Box
-          sx={{
-            p: 2.5, // padding: theme.spacing(2.5)
-            pt: 1, // paddingTop: theme.spacing(1)
-            pb: 1, // paddingBottom: theme.spacing(1)
-            mb: '100px', // marginBottom: '100px'
-            flexGrow: 1, // flex-grow: 1
+          style={{
+            padding: '20px',
+            paddingTop: '8px',
+            paddingBottom: '8px',
+            minWidth: 0,
+            maxWidth: '100%',
+            boxSizing: 'border-box',
           }}
         >
           {repositoryType === RepositorySelection.Repository && (
@@ -163,31 +192,23 @@ export const PreviewFileSidebarDrawerContent = ({
           )}
         </Box>
       </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          gap: '14px',
-          pt: 2.5, // paddingTop: theme.spacing(2.5)
-          justifyContent: 'left',
-          position: 'fixed',
-          bottom: 0,
-          pl: '24px', // paddingLeft: '24px'
-          pb: '24px', // paddingBottom: '24px'
-          backgroundColor: theme =>
-            theme.palette.mode === 'light' ? '#fff' : '#1b1d21',
-          width: '100%',
-          borderTopStyle: 'groove',
-          borderColor: 'divider', // using theme.palette.divider for border
-          zIndex: 1,
+      <Flex
+        align="center"
+        gap="3"
+        style={{
+          flexShrink: 0,
+          paddingTop: '20px',
+          paddingBottom: '24px',
+          paddingLeft: '24px',
+          paddingRight: '24px',
+          backgroundColor: bulkImportOpaqueSurfaceColor,
+          borderTop: '1px solid var(--bui-border-1)',
         }}
       >
         <Button
-          variant="contained"
-          color="primary"
-          onClick={e => onSave(pullRequest, e)}
-          sx={{ mr: 1 }}
-          disabled={
+          variant="primary"
+          onPress={() => onSave(pullRequest, undefined)}
+          isDisabled={
             isSubmitting ||
             (!!formErrors &&
               Object.values(formErrors).length > 0 &&
@@ -195,23 +216,14 @@ export const PreviewFileSidebarDrawerContent = ({
                 fe => !!fe && Object.values(fe).length > 0,
               ))
           }
-          startIcon={
-            isSubmitting && <CircularProgress size="20px" color="inherit" />
-          }
+          isPending={isSubmitting}
         >
           {t('common.save')}
         </Button>
-        <Link
-          to=""
-          variant="button"
-          onClick={e => {
-            e.preventDefault();
-            onCancel();
-          }}
-        >
-          <Button variant="outlined">{t('common.cancel')}</Button>
-        </Link>
-      </Box>
-    </>
+        <Button variant="secondary" onPress={onCancel}>
+          {t('common.cancel')}
+        </Button>
+      </Flex>
+    </Flex>
   );
 };

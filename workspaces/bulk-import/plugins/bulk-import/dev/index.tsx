@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { cloneElement, ReactElement, useCallback, useState } from 'react';
+import { cloneElement, ReactElement, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import useObservable from 'react-use/esm/useObservable';
 
@@ -43,12 +43,7 @@ import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { mockApis } from '@backstage/test-utils';
-
-import AutoIcon from '@mui/icons-material/BrightnessAuto';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import { Menu, MenuItem, MenuSection, MenuTrigger } from '@backstage/ui';
 
 import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
@@ -59,6 +54,7 @@ import {
   mockCatalogApi,
   mockConfigApi,
 } from './mocks';
+import { BulkImportThemeAutoIcon } from './themeSwitcherIcons';
 
 const appDevOverrides = createFrontendModule({
   pluginId: 'app',
@@ -118,7 +114,9 @@ function ThemeIcon({
   return icon ? (
     cloneElement(icon, { color: active ? 'primary' : undefined })
   ) : (
-    <AutoIcon color={active ? 'primary' : undefined} />
+    <BulkImportThemeAutoIcon
+      color={active ? 'var(--bui-fg-link, #0066cc)' : undefined}
+    />
   );
 }
 
@@ -130,21 +128,14 @@ function SidebarThemeSwitcher() {
   );
   const themes = appThemeApi.getInstalledThemes();
   const activeTheme = themes.find(t => t.id === themeId);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement>();
-  const open = Boolean(anchorEl);
 
-  const handleOpen = (event: React.MouseEvent<Element>) => {
-    setAnchorEl(event.currentTarget as HTMLElement);
-  };
   const handleSelectTheme = (newThemeId?: string) => {
     if (newThemeId && themes.some(t => t.id === newThemeId)) {
       appThemeApi.setActiveThemeId(newThemeId);
     } else {
       appThemeApi.setActiveThemeId(undefined);
     }
-    setAnchorEl(undefined);
   };
-  const handleClose = () => setAnchorEl(undefined);
 
   const ActiveIcon = useCallback(
     () => <ThemeIcon icon={activeTheme?.icon} />,
@@ -152,41 +143,35 @@ function SidebarThemeSwitcher() {
   );
 
   return (
-    <>
-      <SidebarItem icon={ActiveIcon} text="Switch Theme" onClick={handleOpen} />
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{ role: 'listbox' }}
-      >
-        <MenuItem disabled>Choose a theme</MenuItem>
-        <MenuItem
-          selected={themeId === undefined}
-          onClick={() => handleSelectTheme(undefined)}
-        >
-          <ListItemIcon>
-            <ThemeIcon active={themeId === undefined} />
-          </ListItemIcon>
-          <ListItemText>Auto</ListItemText>
-        </MenuItem>
-        {themes.map(theme => {
-          const active = theme.id === themeId;
-          return (
-            <MenuItem
-              key={theme.id}
-              selected={active}
-              onClick={() => handleSelectTheme(theme.id)}
-            >
-              <ListItemIcon>
-                <ThemeIcon icon={theme.icon} active={active} />
-              </ListItemIcon>
-              <ListItemText>{theme.title}</ListItemText>
-            </MenuItem>
-          );
-        })}
+    <MenuTrigger>
+      <SidebarItem
+        icon={ActiveIcon}
+        text="Switch Theme"
+        onClick={() => undefined}
+      />
+      <Menu placement="right bottom">
+        <MenuSection title="Choose a theme">
+          <MenuItem
+            iconStart={<ThemeIcon active={themeId === undefined} />}
+            onAction={() => handleSelectTheme(undefined)}
+          >
+            Auto
+          </MenuItem>
+          {themes.map(theme => {
+            const active = theme.id === themeId;
+            return (
+              <MenuItem
+                key={theme.id}
+                iconStart={<ThemeIcon icon={theme.icon} active={active} />}
+                onAction={() => handleSelectTheme(theme.id)}
+              >
+                {theme.title}
+              </MenuItem>
+            );
+          })}
+        </MenuSection>
       </Menu>
-    </>
+    </MenuTrigger>
   );
 }
 

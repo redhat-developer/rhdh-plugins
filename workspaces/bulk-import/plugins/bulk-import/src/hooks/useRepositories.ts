@@ -164,6 +164,7 @@ export const useRepositories = (
     data: value,
     error,
     isLoading: isQueryLoading,
+    isFetching: isQueryFetching,
   } = useQuery(
     [
       options?.showOrganizations ? 'organizations' : 'repositories',
@@ -201,8 +202,14 @@ export const useRepositories = (
     errors.push(...value.errors);
   }
 
+  const awaitingFirstRepositoryPayload =
+    queryEnabled && isQueryFetching && value === undefined;
+
   return {
-    loading: tokenLoading || (queryEnabled && isQueryLoading),
+    loading:
+      tokenLoading ||
+      (queryEnabled && isQueryLoading) ||
+      awaitingFirstRepositoryPayload,
     data: prepareData,
     error: {
       ...(error ?? {}),

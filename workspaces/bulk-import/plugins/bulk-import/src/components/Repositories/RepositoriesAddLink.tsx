@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import { LinkButton } from '@backstage/core-components';
+import { Link } from '@backstage/core-components';
+import { Alert, Button, Flex } from '@backstage/ui';
 
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { useGitlabConfigured } from '../../hooks';
@@ -38,31 +36,32 @@ export const RepositoriesAddLink = () => {
     <>
       {(status?.title || status?.url) && (
         <>
-          <Alert severity="error" onClose={() => handleCloseAlert()}>
-            <AlertTitle>
-              {t('repositories.errorOccuredWhileFetching')}
-            </AlertTitle>
-            {`${status?.title} ${status?.url}`}
-          </Alert>
+          <Alert
+            status="danger"
+            icon
+            title={t('repositories.errorOccuredWhileFetching')}
+            description={`${status?.title} ${status?.url}`}
+            customActions={
+              <Button variant="tertiary" onPress={handleCloseAlert}>
+                {t('common.close')}
+              </Button>
+            }
+          />
           <br />
         </>
       )}
-      <Typography
-        sx={{
-          display: 'flex',
-          justifyContent: 'end',
-          marginBottom: '24px !important',
+      <Flex
+        justify="end"
+        style={{
+          marginBottom: '24px',
         }}
       >
-        <LinkButton
-          to="add"
-          color="primary"
-          variant="contained"
-          data-testid="add-repository"
-        >
-          {gitlabConfigured ? t('common.import') : t('common.add')}
-        </LinkButton>
-      </Typography>
+        <Link to="add">
+          <Button variant="primary" data-testid="add-repository">
+            {gitlabConfigured ? t('common.import') : t('common.add')}
+          </Button>
+        </Link>
+      </Flex>
     </>
   );
 };

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { useTheme } from '@mui/material/styles';
-
+import { useBulkImportColorScheme } from '../hooks/useBulkImportColorScheme';
 import bulkImportBlackImg from '../images/BulkImportIcon-Black.svg';
 import bulkImportWhiteImg from '../images/BulkImportIcon-White.svg';
 
@@ -24,12 +23,11 @@ import bulkImportWhiteImg from '../images/BulkImportIcon-White.svg';
  * Bulk Import Icon (kept free of sidebar/permission deps for NFS sync).
  */
 export const BulkImportIcon = () => {
-  const theme = useTheme();
-  const isDarkTheme = theme.palette.mode === 'dark';
+  const scheme = useBulkImportColorScheme();
 
   return (
     <img
-      src={isDarkTheme ? bulkImportWhiteImg : bulkImportBlackImg}
+      src={scheme === 'dark' ? bulkImportWhiteImg : bulkImportBlackImg}
       alt="bulk import icon"
       style={{ height: '25px' }}
     />
