@@ -16,11 +16,21 @@
 
 import { useState } from 'react';
 import Box from '@mui/material/Box';
+import { useApiHolder } from '@backstage/core-plugin-api';
+import {
+  SearchContextProvider,
+  searchApiRef,
+} from '@backstage/plugin-search-react';
 import { SearchBar } from './SearchBar';
-import { SearchContextProvider } from '@backstage/plugin-search-react';
 
 export const SearchComponent = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const apiHolder = useApiHolder();
+  const searchApi = apiHolder.get(searchApiRef);
+
+  if (!searchApi) {
+    return null;
+  }
 
   return (
     <SearchContextProvider>

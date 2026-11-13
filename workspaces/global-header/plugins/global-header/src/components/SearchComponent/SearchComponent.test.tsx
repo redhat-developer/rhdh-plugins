@@ -96,4 +96,14 @@ describe('SearchComponent', () => {
 
     expect(searchBar).toHaveValue('example');
   });
+
+  it('should render null when searchApiRef is not available', () => {
+    const { container } = render(
+      <TestApiProvider apis={[[configApiRef, mockConfig]]}>
+        <SearchComponent />
+      </TestApiProvider>,
+    );
+
+    expect(container).toBeEmptyDOMElement();
+  });
 });
