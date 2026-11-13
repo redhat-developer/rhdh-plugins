@@ -19,33 +19,59 @@ import chalk from 'chalk';
 import { OptionValues } from 'commander';
 import { createWorkspace } from '../../lib/workspaces/createWorkspace';
 
-export default async (_: OptionValues) => {
-  const answers = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'name',
-      message: chalk.blue('Name of the new workspace'),
-      validate(value) {
-        return (
-          !!value.match(/^[a-z0-9\-]+$/) ||
-          'Invalid input. Please enter lowercase letters, numbers, and dashes only.'
-        );
-      },
-    },
-    {
-      type: 'input',
-      name: 'owners',
-      message: chalk.blue('Name of the owner(s) of the workspace'),
-      validate(value) {
-        return (
-          !!value.match(/@[a-zA-Z0-9_-]+/) ||
-          "Invalid input. Please enter a valid GitHub handle or group preceded by '@'."
-        );
-      },
-    },
-  ]);
+const NAME_PATTERN = /^[a-z0-9\-]+$/;
+const OWNER_PATTERN = /@[a-zA-Z0-9_-]+/;
 
-  await createWorkspace({
-    name: answers.name,
-  });
+const validateName = (value: string) =>
+  !!value.match(NAME_PATTERN) ||
+  'Invalid input. Please enter lowercase letters, numbers, and dashes only.';
+
+const validateOwner = (value: string) =>
+  !!value.match(OWNER_PATTERN) ||
+  "Invalid input. Please enter a valid GitHub handle or group preceded by '@'.";
+
+export default async (opts: OptionValues) => {
+  let name = opts.name as string | undefined;
+
+  if (name) {
+    const nameError = validateName(name);
+    if (nameError !== true) {
+      throw new Error(nameError);
+    }
+  }
+
+  if (opts.owner) {
+    const ownerError = validateOwner(opts.owner);
+    if (ownerError !== true) {
+      throw new Error(ownerError);
+    }
+  }
+
+  if (!name || !opts.owner) {
+    const answers = await inquirer.prompt([
+      ...(name
+        ? []
+        : [
+            {
+              type: 'input' as const,
+              name: 'name',
+              message: chalk.blue('Name of the new workspace'),
+              validate: validateName,
+            },
+          ]),
+      ...(opts.owner
+        ? []
+        : [
+            {
+              type: 'input' as const,
+              name: 'owners',
+              message: chalk.blue('Name of the owner(s) of the workspace'),
+              validate: validateOwner,
+            },
+          ]),
+    ]);
+    name = name ?? answers.name;
+  }
+
+  await createWorkspace({ name: name! });
 };

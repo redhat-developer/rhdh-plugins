@@ -1,0 +1,81 @@
+name: CI Create Workspace
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'yarn.lock'
+      - 'workspaces/repo-tools/**'
+      - '.github/workflows/ci-create-workspace.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  create-workspace:
+    name: Verify yarn create-workspace
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=8192
+      WORKSPACE_NAME: ci-create-workspace-test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install root dependencies
+        run: yarn install --immutable
+        env:
+          YARN_ENABLE_SCRIPTS: 'false'
+
+      - name: Install repo-tools dependencies
+        working-directory: ./workspaces/repo-tools
+        run: yarn install --immutable
+        env:
+          YARN_ENABLE_SCRIPTS: 'false'
+
+      - name: Create workspace
+        run: yarn create-workspace --name "$WORKSPACE_NAME" --owner '@ci-bot'
+
+      - name: Check workspace files
+        run: |
+          workspace="workspaces/$WORKSPACE_NAME"
+          for path in \
+            "$workspace/package.json" \
+            "$workspace/yarn.lock" \
+            "$workspace/tsconfig.json" \
+            "$workspace/backstage.json" \
+            "$workspace/catalog-info.yaml" \
+            "$workspace/.changeset/config.json" \
+            "$workspace/plugins/README.md"
+          do
+            if [[ ! -f "$path" ]]; then
+              echo "Missing expected file: $path"
+              exit 1
+            fi
+            echo "Found $path"
+          done
+
+      - name: Install new workspace dependencies
+        working-directory: ./workspaces/${{ env.WORKSPACE_NAME }}
+        # Template yarn.lock is a seed and is rewritten on first install.
+        # CI=true enables immutable installs by default; allow the lockfile update here.
+        run: yarn install --no-immutable
+        env:
+          YARN_ENABLE_SCRIPTS: 'false'
+
+      - name: Build new workspace
+        working-directory: ./workspaces/${{ env.WORKSPACE_NAME }}
+        run: yarn build:all
