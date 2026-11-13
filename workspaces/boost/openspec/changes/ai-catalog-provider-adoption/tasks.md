@@ -1,32 +1,45 @@
-# Tasks: AI Catalog Provider Adoption
+# Provider adoption implementation tasks
 
-> **RHIDP-18843.** This file reserves space for future coding tasks
-> that will map 1:1 to coding stories at accepted revisions. No
-> numbered tasks or coding Jiras are created by this planning merge.
+**Status: Implementation task breakdown deferred.** RHIDP-18843 supplies the
+provider inventory, cohort, and pilot inputs. No numbered implementation tasks
+are defined at this stage; this file is not an executable implementation plan.
 
-## Future work scope
+This file is reserved for RHDHPLAN-1507 implementation work covered by this
+change: code that delivers the specified functionality, associated automated
+tests, and documentation for the new or changed code. Planning reviews,
+evidence gathering, grill-me decisions, specification audits, and planning
+acceptance are tracked in the separate
+[RHIDP-18843 acceptance checklist](acceptance-checklist.md).
 
-Implementation tasks will be defined after the planning artifacts are
-reviewed and accepted. Each task will correspond to a coding story in
-one of the follow-up issues:
+Stories under RHIDP-18839 and RHIDP-18840 establish the shared metadata/SDK and
+incremental-ingestion contracts. Those stories define implementation tasks in
+their relevant OpenSpec changes. Under RHIDP-18841, RHIDP-18849 and RHIDP-18850
+use the accepted shared contracts to refine provider adoption specifications
+and the implementation tasks in this change. Final scope and task boundaries
+remain deferred until those contracts and profiles are accepted.
 
-- **RHIDP-18849** — OGX provider adoption and migration (Boost
-  workspace). Covers OGX model and agent provider SDK alignment.
-- **RHIDP-18850** — ai-integrations provider adoption and migration.
-  Covers ModelCatalogResourceEntityProvider, McpRegistryEntityProvider,
-  and SkillsCatalogProvider SDK adoption.
+At that point, every implementation task must have a change-local `x.y` ID.
+Each task maps to exactly one coding Jira story, and every in-scope task has one
+such story, tied to the OpenSpec change path and accepted revision. Coding
+stories are created only after specification acceptance. Planning-checklist IDs
+are not part of this mapping.
 
-### Shared contract prerequisites
+Implementation tasks remain unchecked when planning specifications merge; mark
+them complete only when the specified implementation work and its required
+verification are complete. Merging RHIDP-18843 does not establish runtime
+implementation, migration, qualification, or readiness to apply this change.
 
-Final tasks depend on accepted revisions of:
+## Canonical Touchpoints
 
-- **RHIDP-18839** — metadata and SDK contracts
-- **RHIDP-18840** — incremental ingestion contracts
+Change type: **docs-only** planning. No canonical document updates in this stage.
 
-### Lifecycle and safety coordination
+- Product PRDs under `specifications/prd/`: **None** modified. RHDHPLAN-1507 and
+  RHIDP-18843 define this stage's scope.
+- ADRs under `specifications/adr/`: **None** modified. Shared SDK and ingestion
+  architecture decisions remain with their owning stories.
+- Long-lived specifications under `openspec/specs/`: **None** modified. The
+  [implemented OGX specification](../../specs/ogx-entity-provider/spec.md) remains
+  the release behavior reference.
 
-- **RHIDP-18846** — lifecycle coordination
-- **RHIDP-18848** — safety coordination
-
-Later profiles need evidence or accepted safe limitations before tasks
-are assigned.
+Later implementation specifications must reconcile these touchpoints with the
+accepted runtime scope before adding executable tasks.

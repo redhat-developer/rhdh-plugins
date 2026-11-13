@@ -1,101 +1,82 @@
-# Proposal: AI Catalog Provider Adoption and Migration
-
-> **Workspace:** Boost (planning artifact). This change area inventories
-> providers across Boost and ai-integrations and defines the RHDHPLAN-1507
-> adoption cohorts and pilot order. No production code, package publication,
-> or coding stories are included.
-
 ## Why
 
-Both the Boost and ai-integrations workspaces contain entity providers
-and backend source services that ingest AI assets into the Backstage
-catalog. The OCI skill-image connector service and the skills catalog
-entity provider have different responsibilities, and the OGX providers
-serve a different source entirely. Before the 2.2 release can commit to
-a migration scope, the team needs a verified inventory of what each
-provider does, which SDK it uses, how it persists state, and what
-source-side guarantees it relies on.
-
-Without this inventory, adoption scope risks being driven by assumptions
-rather than actual source capabilities. Existing experimental OCI
-delivery must not become a 2.2 commitment through this plan.
+[RHIDP-18843](https://redhat.atlassian.net/browse/RHIDP-18843), under
+[RHIDP-18841](https://redhat.atlassian.net/browse/RHIDP-18841), needs a verified
+inventory, adoption cohorts, and pilot for RHDHPLAN-1507.
+Current providers differ in source protocols, entity identity, catalog mutation
+mode, and recovery state; backend source services must not be mistaken for
+catalog entity providers.
 
 ## What Changes
 
-This change area produces planning artifacts only:
+- Record current provider registration, configuration, identity, metadata,
+  source capabilities, mutations, persistence, and ownership with implementation
+  evidence in [provider-inventory.md](provider-inventory.md).
+- Separate observed client behavior from source capabilities that still require
+  upstream contract verification or deployment evidence. Q3 accepts the stated
+  inventory limits; later profiles must verify relied-on guarantees or define
+  accepted safe limitations before acceptance.
+- Record the maintainer-selected adoption cohort: OGX model/agent, model-catalog,
+  and MCP-registry, with skills outside the initial 2.2 shipping cohort and
+  KServe retained as a supporting source service. The selected validation order is **OGX model smoke → OCI skills pilot →
+  MCP-registry validation later**. OCI remains outside the 2.2 shipping cohort.
+  Final designs depend on the shared contracts; this inventory does not deliver
+  provider migration.
+- Establish **eventual adoption and conformance coverage for every catalog entity
+  provider across Boost and ai-integrations**, including the skills provider.
+  The pilot sequence is the starting order, not a permanent subset; coverage and
+  product shipping commitments are separate decisions.
+- Feed the accepted inventory into RHIDP-18849 and RHIDP-18850. Those stories
+  specify concrete adoption after the metadata/SDK and incremental-ingestion
+  contracts from RHIDP-18839 and RHIDP-18840 are accepted.
 
-- **Provider inventory** — documents every entity provider and source
-  connector across both workspaces with verified evidence from the
-  codebase at revision `8af3d2f`.
-- **Adoption cohorts** — groups providers into required-2.2,
-  reference-only, and deferred/experimental categories.
-- **Pilot and rollout order** — justifies a representative pilot
-  starting with OGX model smoke testing and defines the validation
-  sequence.
-- **Acceptance checklist** — verifiable criteria for planning
-  completeness.
+This inventory-stage change is being authored incrementally. The
+[design](design.md) records the accepted cohort and pilot selection;
+the [behavioral specification](specs/ai-catalog-provider-adoption/spec.md)
+defines planning acceptance. The [acceptance checklist](acceptance-checklist.md)
+tracks planning verification and handoff; [tasks](tasks.md) is reserved for later
+code, associated tests, and code documentation, with no implementation tasks
+defined yet. File presence does not establish implementation readiness.
 
-## Cohort classification
+## Capabilities
 
-### Required 2.2 migrations (Cohort 1)
+### New Capabilities
 
-These providers have verified source capabilities and are on the 2.2
-critical path:
+- `ai-catalog-provider-adoption`: An evidence-backed provider inventory, explicit
+  cohort/pilot decisions, and inputs to later provider adoption specifications.
+  The initial stage defines planning acceptance, not new runtime behavior.
 
-1. **OGX model provider** (`OgxModelEntityProvider`) — smoke test pilot.
-   Simple stateless provider with a single entity, full mutation, and
-   direct API polling. Uses the entity-provider-sdk annotations.
-2. **OGX agent provider** (`OgxAgentEntityProvider`) — config-driven,
-   stateless, full mutation. Shares the same module registration.
-3. **ModelCatalogResourceEntityProvider** — full mutation, stateless.
-   Consumes KServe connector bridge. Does not use the shared SDK yet.
-4. **McpRegistryEntityProvider** — full mutation with cursor-based
-   pagination and in-memory last-good retention. Complex but
-   production-ready pagination logic.
+### Modified Capabilities
 
-### Reference-only (Cohort 2)
+None in this initial inventory stage. Later adoption work must explicitly name
+any implemented capability whose behavior it proposes to change.
 
-5. **NPX skill connector** (`npx-skill-connector-backend`) — source
-   connector service consumed by SkillsCatalogProvider. Reference-only
-   for adoption planning; no entity provider migration required.
+## Canonical Touchpoints
 
-### Deferred/experimental (Cohort 3)
+Change type: **docs-only** planning.
 
-6. **OCI skill connector** (`skill-image-connector-backend`) — pilot
-   for OCI discovery is included in validation order but is not a 2.2
-   shipping commitment. The connector's D8 reconcile protocol is
-   experimental.
-7. **SkillsCatalogProvider** — delta mutations with durable
-   ReconciliationStore. The most complex provider. Full adoption
-   requires reconciling its store-backed delta approach with the SDK's
-   `InMemoryCursorStore`.
-
-### Source connector services (not providers)
-
-KServe/Kubeflow connector supports its consumer
-(`ModelCatalogResourceEntityProvider`) and does not require independent
-adoption work. OCI and NPX connectors are classified above by their
-consumer's cohort.
-
-## Validation order
-
-1. OGX model smoke test (simplest provider, one entity, full mutation)
-2. OCI skills pilot (exercises connector-to-provider boundary)
-3. MCP Registry (exercises pagination and last-good retention)
-4. All remaining providers across both workspaces
+- Product PRDs under `specifications/prd/`: **None** modified. The current
+  [RHDHPLAN-1507](https://redhat.atlassian.net/browse/RHDHPLAN-1507) issue and
+  RHIDP-18843 define this story's scope.
+- ADRs under `specifications/adr/`: **None** modified. No shared-SDK or ingestion
+  architecture decision is made here; cohort/pilot planning is change-local.
+- Long-lived specifications under `openspec/specs/`: **None** modified. The
+  [implemented OGX specification](../../specs/ogx-entity-provider/spec.md) remains
+  the Boost release behavior reference; inventory observations do not replace
+  it with a future adoption contract.
 
 ## Non-goals
 
-- Production code changes or runtime provider migration
-- Package publication
-- Creating coding stories or Jira tasks for implementation
-- Shared contracts (deferred to RHIDP-18844 through RHIDP-18848)
+No production code, runtime migration, SDK API design, annotation naming,
+incremental-ingestion engine, package publication, or coding Jira stories.
+Experimental OCI/NPX skills work is an input, not an automatic RHDH 2.2
+commitment. No registry product selection, Neo4j/SkillBundle contract, or
+abandoned provider restoration is introduced.
 
 ## Impact
 
-- **Jira:** RHIDP-18843 (this story), blocking RHIDP-18849 (OGX) and
-  RHIDP-18850 (ai-integrations)
-- **Workspaces:** Boost, ai-integrations
-- **Dependencies:** Final adoption criteria consume RHIDP-18839
-  (metadata/SDK contracts) and RHIDP-18840 (incremental ingestion
-  contracts)
+Planning references cover Boost OGX providers and ai-integrations model-catalog,
+MCP-registry, and skills-catalog providers, together with their source-service
+boundaries. Runtime packages, dependencies, dynamic-plugin wiring, and existing
+entity identities remain unchanged. This work does not expand the RHDH 2.1
+release boundary or duplicate the completed RHIDP-18759 baseline reconciliation.
