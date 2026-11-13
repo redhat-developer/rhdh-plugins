@@ -22,7 +22,6 @@ import {
   SidebarDivider,
   SidebarItem,
   SidebarSubmenu,
-  SidebarSubmenuItem,
   useSidebarOpenState,
 } from '@backstage/core-components';
 import {
@@ -53,6 +52,10 @@ import {
   type SidebarModelItem,
 } from './buildSidebarModel';
 import { classifySidebarEntries } from './classifySidebarEntries';
+import {
+  SidebarConfiguredItem,
+  SidebarConfiguredSubmenuItem,
+} from './SidebarConfiguredLinkItems';
 import {
   readConfigSidebarGroups,
   readConfigSidebarItems,
@@ -137,29 +140,17 @@ function SidebarModelItemEntry({ item }: { item: SidebarModelItem }) {
   const icon = useSidebarIcon(item.icon);
   const translate = useTranslateTitle('pages');
   const text = translate(item.title);
-  if (item.to) {
-    return (
-      <SidebarItem
-        icon={icon}
-        text={text}
-        to={item.to}
-        onClick={item.onClick}
-      />
-    );
-  }
-  return (
-    <SidebarItem icon={icon} text={text} onClick={() => item.onClick?.()} />
-  );
+  return <SidebarConfiguredItem icon={icon} text={text} item={item} />;
 }
 
 function SidebarModelSubmenuItem({ item }: { item: SidebarModelItem }) {
   const icon = useSidebarIcon(item.icon);
   const translate = useTranslateTitle('pages');
   return (
-    <SidebarSubmenuItem
-      title={translate(item.title)}
-      to={item.to}
+    <SidebarConfiguredSubmenuItem
+      item={item}
       icon={icon}
+      title={translate(item.title)}
     />
   );
 }

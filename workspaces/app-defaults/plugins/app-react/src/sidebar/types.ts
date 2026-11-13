@@ -42,8 +42,10 @@ export interface SidebarItemData {
   title: string;
   /** Icon shown in the sidebar. Falls back to a generic icon when unset or unknown. */
   icon?: SidebarIcon;
-  /** Link target. Items inside a group must provide `to`. */
+  /** Destination URL or app path. Items inside a group must provide `to`. */
   to?: string;
+  /** HTML anchor target (`_blank` or `_self`). Invalid values are ignored. */
+  target?: '_blank' | '_self';
   /** Click handler for items that trigger an action instead of navigating. */
   onClick?: () => void;
   /** Ordering priority. Higher values render first. Defaults to `0`. */

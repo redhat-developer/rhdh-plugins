@@ -20,6 +20,8 @@ import type {
   SidebarItemGroupData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { parseSidebarHtmlLinkTarget } from './sidebarLinkAttributes';
+
 const SIDEBAR_KEY = 'app.sidebar';
 const PLUGINS_KEY = 'plugins';
 
@@ -67,6 +69,7 @@ export function readConfigSidebarItems(
       title: item.getString('title'),
       icon: item.getOptionalString('icon'),
       to: item.getString('to'),
+      target: parseSidebarHtmlLinkTarget(item.getOptionalString('target')),
       priority: item.getOptionalNumber('priority'),
       group: item.getOptionalString('group'),
       requiresRoute: item.getOptionalBoolean('requiresRoute'),

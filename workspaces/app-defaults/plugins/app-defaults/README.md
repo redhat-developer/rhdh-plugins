@@ -96,6 +96,7 @@ app:
       - title: Docs
         icon: school
         to: https://example.com/docs
+        target: _blank
       # Joins the Administration group shipped by app-defaults; only shown
       # when a page is registered at /audit-log.
       - title: Audit log
@@ -119,7 +120,7 @@ app:
         title: Admin area
 ```
 
-`icon` is the key of a system icon registered via `IconBundleBlueprint` (for example the common RHDH icons `home`, `category`, `school`, `extension`); unknown keys fall back to a generic icon. Items with `group` render inside the group with that `id`, regardless of whether the group comes from config or from an extension; items whose group does not exist render at the top level.
+`icon` is the key of a system icon registered via `IconBundleBlueprint` (for example the common RHDH icons `home`, `category`, `school`, `extension`); unknown keys fall back to a generic icon. Optional `target` (`_blank` or `_self`) sets the HTML anchor target (`_blank` opens in a new tab and adds `rel="noopener noreferrer"`; `_self` in the same tab). Invalid values are ignored. External `http(s)` links with `target: _blank` show a launch icon in the sidebar. Items with `group` render inside the group with that `id`, regardless of whether the group comes from config or from an extension; items whose group does not exist render at the top level.
 
 ### Per-plugin entries
 
