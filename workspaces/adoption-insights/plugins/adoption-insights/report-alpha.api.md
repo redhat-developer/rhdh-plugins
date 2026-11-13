@@ -85,6 +85,12 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'common.loading': string;
     readonly 'permission.title': string;
     readonly 'permission.description': string;
+    readonly 'homepage.topPlugins.title': string;
+    readonly 'homepage.topPlugins.visits': string;
+    readonly 'homepage.topPlugins.empty': string;
+    readonly 'homepage.topPlugins.error': string;
+    readonly 'homepage.topPlugins.permissionDenied': string;
+    readonly 'homepage.topPlugins.trendTooltip': string;
   }
 >;
 

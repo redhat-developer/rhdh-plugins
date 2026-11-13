@@ -105,6 +105,132 @@ The translations module uses `pluginId: 'app'` and is also available as the defa
 
 Dynamic plugin configurations must use `module: Legacy` for OFS exports. See `app-config.dynamic.yaml`.
 
+### Homepage widgets (NFS)
+
+`adoptionInsightsPlugin` registers Popular Content homepage widgets that attach to RHDH `page:homepage`.
+
+**Prerequisite:** install and enable `@red-hat-developer-hub/backstage-plugin-homepage` (and typically `@red-hat-developer-hub/backstage-plugin-homepage-backend`) so `page:homepage` and the Add Widget catalog are available. Usage-ranked modes (`auto` / `hybrid`) also require the Adoption Insights backend.
+
+In an NFS app feature loader / `packages/app`, import both plugins, for example:
+
+```ts
+import homepagePlugin from '@red-hat-developer-hub/backstage-plugin-homepage';
+import adoptionInsightsPlugin from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
+
+export const features = [homepagePlugin, adoptionInsightsPlugin /*, … */];
+```
+
+Widgets are gated by `adoption-insights.events.read`. Users without that permission do not see Adoption Insights homepage cards on the grid or in the Add Widget catalog.
+
+#### Top Plugins
+
+| Field        | Value                                                 |
+| ------------ | ----------------------------------------------------- |
+| Extension ID | `home-page-widget:adoption-insights/top-plugins-card` |
+| Widget name  | `TopPluginsCard`                                      |
+| Title        | **Top Plugins**                                       |
+
+Shows org-wide most-used plugins/extensions from Adoption Insights.
+
+**Modes**
+
+| Mode             | Behavior                                       |
+| ---------------- | ---------------------------------------------- |
+| `auto` (default) | Usage-ranked from Adoption Insights            |
+| `hybrid`         | Admin pins/overrides merged with usage ranking |
+| `curated`        | Admin list only (no Adoption Insights fetch)   |
+
+**Settings / layout props**
+
+| Prop                 | Type                            | Default | Description                                                                  |
+| -------------------- | ------------------------------- | ------- | ---------------------------------------------------------------------------- |
+| `mode`               | `auto` \| `hybrid` \| `curated` | `auto`  | Content selection mode                                                       |
+| `displayCount`       | number                          | `3`     | Number of rows to show                                                       |
+| `title`              | string                          | —       | Optional card title override                                                 |
+| `items`              | `{ id, title?, href?, … }[]`    | —       | Curated list (`curated`) or pins (`hybrid`); ignored in `auto`               |
+| `pluginDestinations` | `{ [pluginId]: '/path' }`       | —       | Extra / overriding routes for ranked rows (and curated items without `href`) |
+
+Rows link only when a destination is known. Built-in destinations cover common OOTB / supported plugins (Catalog, Catalog Graph, Bulk Import, RBAC, Tech Radar, …). Unknown `plugin_id` values stay plain text unless you add them via `pluginDestinations` (or set `items[].href` in curated/hybrid).
+
+On an editable homepage, add **Top Plugins** from the widget catalog and edit mode / display count / title in card settings. Use `widgetLayout` props for a read-only homepage (or to seed defaults).
+
+Example `app-config.yaml` (with the Homepage plugin). On RHDH / when
+`homepage-backend` is installed, **also** list the widget under
+`homepage.defaultWidgets` — the Add-widget catalog only includes refs that
+match the extension name (`top-plugins-card`):
+
+```yaml
+app:
+  extensions:
+    - page:home: false
+    - page:homepage:
+        config:
+          path: /
+    - page:catalog:
+        config:
+          path: /catalog
+    - home-page-layout:homepage/dynamic-homepage-layout:
+        config:
+          customizable: true
+          widgetLayout:
+            TopPluginsCard:
+              priority: 400
+              props:
+                mode: auto
+                displayCount: 5
+                # Optional: register custom / third-party plugin routes
+                pluginDestinations:
+                  my-custom-plugin: /my-custom-plugin
+                  # Override a built-in destination if your path differs
+                  # scaffolder: /templates
+              breakpoints:
+                xl: { w: 4, h: 5 }
+                lg: { w: 4, h: 5 }
+                md: { w: 6, h: 5 }
+                sm: { w: 6, h: 5 }
+                xs: { w: 12, h: 5 }
+                xxs: { w: 12, h: 5 }
+
+homepage:
+  defaultWidgets:
+    - id: top-plugins-card
+      ref: top-plugins-card
+      props:
+        title: Top Plugins
+        mode: auto
+        displayCount: 5
+```
+
+Read-only curated example (no Adoption Insights ranking call):
+
+```yaml
+widgetLayout:
+  TopPluginsCard:
+    props:
+      mode: curated
+      displayCount: 3
+      title: Recommended plugins
+      items:
+        - id: catalog
+          title: Catalog
+          href: /catalog
+        - id: scaffolder
+          title: Software Templates
+          href: /create
+```
+
+##### Modules and extensions (NFS)
+
+| Module                               | Description                                                             |
+| ------------------------------------ | ----------------------------------------------------------------------- |
+| `adoptionInsightsTranslationsModule` | Registers Adoption Insights translations. Add to your app's `features`. |
+
+| Extension ID                                          | Description                                                           |
+| ----------------------------------------------------- | --------------------------------------------------------------------- |
+| `api:adoption-insights`                               | Adoption Insights API (auto-discovered when the plugin is installed). |
+| `page:adoption-insights`                              | Adoption Insights dashboard page.                                     |
+| `home-page-widget:adoption-insights/top-plugins-card` | Homepage **Top Plugins** widget (`TopPluginsCard`).                   |
+
 ## For Users
 
 ### Using the Adoption Insights Plugin
@@ -121,3 +247,7 @@ The Adoption Insights plugin allows users to explore analytics data through an i
 1. Open your Backstage application.
 2. Navigate to the **Adoption Insights** section from the sidebar.
 3. Explore and analyze adoption metrics using the interactive dashboard.
+
+#### Homepage Top Plugins card
+
+On the RHDH homepage, the **Top Plugins** card (BUI `Card` / `List` / `ListRow`) lists popular plugins and extensions for your organization (rank, display name, plugin id, trend %, and visit count on a second line). Click a row to open that plugin when a destination is available. Empty and error states keep the card on the page so the homepage remains loadable. Users without `adoption-insights.events.read` do not see the card at all.
