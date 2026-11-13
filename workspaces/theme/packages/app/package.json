@@ -54,7 +54,7 @@
     "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.0",
+    "@axe-core/playwright": "^4.14.0",
     "@backstage/frontend-test-utils": "backstage:^",
     "@playwright/test": "1.63.0",
     "@testing-library/dom": "^9.0.0",
