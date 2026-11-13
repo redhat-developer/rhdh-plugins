@@ -32,6 +32,7 @@ import {
   loadNotificationButton,
   loadProfileDropdown,
   loadSearchComponent,
+  loadSelfServiceButton,
   loadSpacer,
   loadStarredDropdown,
   loadApplicationLauncherDropdown,
@@ -73,11 +74,8 @@ export const spacerExtension = GlobalHeaderComponentBlueprint.make({
 export const selfServiceButtonExtension = GlobalHeaderComponentBlueprint.make({
   name: 'self-service-button',
   params: {
-    title: 'Self-service',
-    titleKey: 'create.title',
-    icon: 'add',
-    link: '/create',
     priority: 90,
+    loader: loadSelfServiceButton,
   },
 });
 

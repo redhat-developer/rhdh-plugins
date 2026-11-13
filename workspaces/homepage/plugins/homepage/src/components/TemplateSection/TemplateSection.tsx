@@ -22,6 +22,8 @@ import {
   WarningPanel,
   Link as BackstageLink,
 } from '@backstage/core-components';
+import { useApiHolder } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -49,11 +51,17 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
 
 export const TemplateSectionContent = () => {
   const { t } = useTranslation();
+  const apiHolder = useApiHolder();
+  const catalogApi = apiHolder.get(catalogApiRef);
   const {
     data: templates,
     error,
     isLoading,
   } = useEntities({ kind: 'Template' });
+
+  if (!catalogApi) {
+    return <></>;
+  }
 
   const params = new URLSearchParams({
     'filters[kind]': 'template',

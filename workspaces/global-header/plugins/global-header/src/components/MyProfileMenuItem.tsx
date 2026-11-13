@@ -16,7 +16,6 @@
 
 import { useEffect, useState } from 'react';
 
-import { useUserProfile } from '@backstage/plugin-user-settings';
 import { parseEntityRef } from '@backstage/catalog-model';
 import { Link } from '@backstage/core-components';
 
@@ -24,11 +23,13 @@ import MenuItem from '@mui/material/MenuItem';
 
 import { MenuItemLinkContent } from './MenuItemLink/MenuItemLinkContent';
 import { useTranslation } from '../hooks/useTranslation';
+import { useUserIdentity } from '../hooks/useUserIdentity';
+import { useIsCatalogAvailable } from '../hooks/useIsCatalogAvailable';
 
 /**
  * Custom component for the "My Profile" menu item.
  * Dynamically resolves the catalog URL from the user's identity and
- * returns `null` for guest users, matching old ProfileDropdown behavior.
+ * returns `null` for guest users, or when the catalog plugin is not available.
  *
  * @internal
  */
@@ -37,7 +38,8 @@ export const MyProfileMenuItem = ({
 }: {
   handleClose?: () => void;
 }) => {
-  const { backstageIdentity } = useUserProfile();
+  const isCatalogAvailable = useIsCatalogAvailable();
+  const { backstageIdentity } = useUserIdentity();
   const { t } = useTranslation();
   const [profileLink, setProfileLink] = useState<string | null>(null);
   const [isGuest, setIsGuest] = useState(true);
@@ -62,7 +64,7 @@ export const MyProfileMenuItem = ({
     }
   }, [backstageIdentity]);
 
-  if (isGuest || !profileLink) return null;
+  if (!isCatalogAvailable || isGuest || !profileLink) return null;
 
   return (
     <MenuItem

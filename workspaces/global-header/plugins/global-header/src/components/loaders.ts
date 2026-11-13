@@ -48,6 +48,9 @@ export const loadSearchComponent = async (): Promise<ComponentType<any>> =>
 export const loadSpacer = async (): Promise<ComponentType<any>> =>
   (await loadCriticalHeaderBundle()).Spacer;
 
+export const loadSelfServiceButton = async () =>
+  (await loadCriticalHeaderBundle()).SelfServiceButton;
+
 export const loadHeaderIconButton = async () =>
   (await loadCriticalHeaderBundle()).HeaderIconButton;
 

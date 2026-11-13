@@ -52,8 +52,10 @@ const StarredItem: FC<SectionComponentProps> = ({
   toggleStarredEntity,
   handleClose,
 }) => {
-  const { Icon, primaryTitle, secondaryTitle } =
-    useEntityPresentation(entityRef);
+  const presentation = useEntityPresentation(entityRef);
+  const Icon = presentation?.Icon;
+  const primaryTitle = presentation?.primaryTitle;
+  const secondaryTitle = presentation?.secondaryTitle;
   const { name, kind, namespace } = parseEntityRef(entityRef as string);
   const theme = useTheme();
   const { t } = useTranslation();
@@ -122,7 +124,19 @@ export const StarredDropdownMenu = ({
 }: {
   handleClose: () => void;
 }) => {
-  const { starredEntities, toggleStarredEntity } = useStarredEntities();
+  let starredEntities = new Set<string>();
+  let toggleStarredEntity: (
+    entityOrRef: Entity | CompoundEntityRef | string,
+  ) => void = () => {};
+
+  try {
+    const hook = useStarredEntities();
+    starredEntities = hook.starredEntities;
+    toggleStarredEntity = hook.toggleStarredEntity;
+  } catch {
+    // catalog or starredEntitiesApi not available
+  }
+
   const { t } = useTranslation();
   const entitiesArray = Array.from(starredEntities);
 

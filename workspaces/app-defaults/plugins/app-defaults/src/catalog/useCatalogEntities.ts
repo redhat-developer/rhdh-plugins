@@ -15,7 +15,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useApi } from '@backstage/frontend-plugin-api';
+import { useApiHolder } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import type { EntityFilterQuery } from '@backstage/catalog-client';
 
@@ -25,10 +25,20 @@ type State =
   | { status: 'error'; error: Error };
 
 export function useCatalogEntities(filter?: EntityFilterQuery): State {
-  const catalogApi = useApi(catalogApiRef);
-  const [state, setState] = useState<State>({ status: 'loading' });
+  const apiHolder = useApiHolder();
+  const catalogApi = apiHolder.get(catalogApiRef);
+  const [state, setState] = useState<State>(
+    catalogApi
+      ? { status: 'loading' }
+      : { status: 'success', hasEntities: false },
+  );
 
   useEffect(() => {
+    if (!catalogApi) {
+      setState({ status: 'success', hasEntities: false });
+      return;
+    }
+
     catalogApi
       .getEntityFacets({
         facets: ['kind'],

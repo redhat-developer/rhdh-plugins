@@ -27,6 +27,7 @@ import {
   defaultSidebarExtensions,
   sidebarAdminGroup,
   sidebarBottomSpacer,
+  sidebarCatalogGraphItem,
   sidebarCreateItem,
   sidebarLogoElement,
   sidebarLogoSpacer,
@@ -55,6 +56,7 @@ describe('defaultSidebarExtensions', () => {
       'sidebar-spacer/logo',
       'sidebar-item/search',
       'sidebar-item/create',
+      'sidebar-item/catalog-graph',
       'sidebar-element/search',
       'sidebar-divider/search',
       'sidebar-spacer/bottom',
@@ -90,16 +92,20 @@ describe('defaultSidebarExtensions', () => {
     // Other default entries stay enabled.
     expect(disabledById['sidebar-item/search']).toBeFalsy();
     expect(disabledById['sidebar-item/create']).toBeFalsy();
+    expect(disabledById['sidebar-item/catalog-graph']).toBeFalsy();
     expect(disabledById['sidebar-element/logo']).toBeFalsy();
   });
 
-  it('claims the search and create pages with title-less items so they are not listed', () => {
+  it('claims the search, create, and catalog-graph pages with title-less items so they are not listed', () => {
     expect(
       createExtensionTester(sidebarSearchItem).get(sidebarItemDataRef),
     ).toMatchObject({ title: '', to: '/search' });
     expect(
       createExtensionTester(sidebarCreateItem).get(sidebarItemDataRef),
     ).toMatchObject({ title: '', to: '/create' });
+    expect(
+      createExtensionTester(sidebarCatalogGraphItem).get(sidebarItemDataRef),
+    ).toMatchObject({ title: '', to: '/catalog-graph' });
   });
 
   it('orders search first and the bottom spacer below chrome', () => {

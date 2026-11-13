@@ -13,11 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useEffect } from 'react';
-
-import { useUserProfile } from '@backstage/plugin-user-settings';
-import { useApi } from '@backstage/core-plugin-api';
-import { UserEntity } from '@backstage/catalog-model';
+import { useApiHolder } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import Grid from '@mui/material/Grid';
@@ -30,6 +26,7 @@ import HomePageIllustrationDark from '../../images/homepage-illustration-dark.sv
 import HomePageIllustrationLight from '../../images/homepage-illustration-light.svg';
 import { getLearningItems } from '../../utils/constants';
 import useGreeting from '../../hooks/useGreeting';
+import { useUserIdentity } from '../../hooks/useUserIdentity';
 import { LearningSectionItem } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 import { containerGridItemSx } from '../../utils/GridItem';
@@ -39,42 +36,19 @@ import {
 } from '../../styles/sectionCardSx';
 
 export function useOnboardingSection() {
-  const [user, setUser] = useState<string | null>();
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
   const greeting = useGreeting();
   const { t } = useTranslation();
-  const {
-    displayName,
-    backstageIdentity,
-    loading: profileLoading,
-  } = useUserProfile();
-  const catalogApi = useApi(catalogApiRef);
+  const apiHolder = useApiHolder();
+  const catalogApi = apiHolder.get(catalogApiRef);
 
-  useEffect(() => {
-    const fetchUserEntity = async () => {
-      if (!backstageIdentity?.userEntityRef) {
-        return;
-      }
-      try {
-        const userEntity = (await catalogApi.getEntityByRef(
-          backstageIdentity.userEntityRef,
-        )) as unknown as UserEntity;
-        setUser(
-          userEntity?.spec?.profile?.displayName ?? userEntity?.metadata?.title,
-        );
-      } catch (_err) {
-        setUser(null);
-      }
-    };
-
-    fetchUserEntity();
-  }, [backstageIdentity, catalogApi]);
+  const { displayName, loading: profileLoading } = useUserIdentity();
 
   const profileDisplayName = () => {
-    const name = user ?? displayName;
+    const name = displayName;
     const regex = /^[^:/]+:[^/]+\/[^/]+$/;
-    if (regex.test(name)) {
+    if (name && regex.test(name)) {
       return name
         .charAt(name.indexOf('/') + 1)
         .toLocaleUpperCase('en-US')
@@ -88,6 +62,10 @@ export function useOnboardingSection() {
       {`${greeting}, ${profileDisplayName() || t('onboarding.guest')}!`}
     </Typography>
   ) : null;
+
+  const learningItems = getLearningItems(t).filter(
+    item => Boolean(catalogApi) || item.buttonLink !== '/catalog',
+  );
 
   const body = (
     <Box sx={{ mt: 2 }}>
@@ -113,7 +91,7 @@ export function useOnboardingSection() {
             }}
           />
         </Grid>
-        {getLearningItems(t).map((item: LearningSectionItem) => (
+        {learningItems.map((item: LearningSectionItem) => (
           <Grid
             item
             key={item.title}

@@ -20,6 +20,8 @@ import {
 } from '@backstage/plugin-home-react/alpha';
 import homePlugin from '@backstage/plugin-home/alpha';
 import { compatWrapper } from '@backstage/core-compat-api';
+import { useApiHolder } from '@backstage/core-plugin-api';
+import { searchApiRef } from '@backstage/plugin-search-react';
 import { createTranslatedCardRenderer } from '../utils/translatedCardRenderer';
 import { homepageWidgetAttachTo } from './homepageAttach';
 
@@ -67,6 +69,15 @@ const upstreamHomeCardRenderer = ({
   Content: React.ComponentType;
 }) => <Content />;
 
+const SearchCardRenderer = ({ Content }: { Content: React.ComponentType }) => {
+  const apiHolder = useApiHolder();
+  const searchApi = apiHolder.get(searchApiRef);
+  if (!searchApi) {
+    return <></>;
+  }
+  return compatWrapper(<Content />);
+};
+
 const onboarding = makeDualHomeWidgets('rhdh-onboarding-section', {
   name: 'Red Hat Developer Hub - Onboarding',
   layout: defaultCardLayout,
@@ -84,7 +95,9 @@ const entity = makeDualHomeWidgets('rhdh-entity-section', {
   components: () =>
     import('../components/EntitySection/EntitySection').then(m => ({
       Content: m.EntitySectionContent,
-      Renderer: createTranslatedCardRenderer('entities.title'),
+      Renderer: createTranslatedCardRenderer('entities.title', {
+        requiresCatalog: true,
+      }),
     })),
 });
 
@@ -94,7 +107,9 @@ const template = makeDualHomeWidgets('rhdh-template-section', {
   components: () =>
     import('../components/TemplateSection/TemplateSection').then(m => ({
       Content: m.TemplateSectionContent,
-      Renderer: createTranslatedCardRenderer('templates.title'),
+      Renderer: createTranslatedCardRenderer('templates.title', {
+        requiresCatalog: true,
+      }),
     })),
 });
 
@@ -125,8 +140,7 @@ const searchBar = makeDualHomeWidgets('search-bar', {
   components: () =>
     import('../components/SearchBar').then(m => ({
       Content: m.SearchBar,
-      Renderer: ({ Content }: { Content: React.ComponentType }) =>
-        compatWrapper(<Content />),
+      Renderer: SearchCardRenderer,
     })),
 });
 
