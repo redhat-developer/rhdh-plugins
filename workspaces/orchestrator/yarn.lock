@@ -1700,9 +1700,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage-community/plugin-rbac@npm:2.3.6, @backstage-community/plugin-rbac@npm:^2.3.4":
-  version: 2.3.6
-  resolution: "@backstage-community/plugin-rbac@npm:2.3.6"
+"@backstage-community/plugin-rbac@npm:2.3.7, @backstage-community/plugin-rbac@npm:^2.3.4":
+  version: 2.3.7
+  resolution: "@backstage-community/plugin-rbac@npm:2.3.7"
   dependencies:
     "@backstage-community/plugin-rbac-common": "npm:^2.1.1"
     "@backstage/catalog-model": "npm:^1.10.0"
@@ -1729,7 +1729,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 10c0/80df2d739824d404564b3f607656f3f0e391ed48d517a9fa4da1a166b413e55fe9f61ddb0167489847f35d02eaeb6fb5e69f2e5a42c7a7989bda8798e5de82e6
+  checksum: 10c0/270b6d69ed94ebb9a37b69502b09a7966d43198529f26b5524bc2f0ba00f79a3139ce710e4e2f9c0d0a41e66cbd61031fa036e50a15da39407532c43de271830
   languageName: node
   linkType: hard
 
@@ -8734,9 +8734,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openapitools/openapi-generator-cli@npm:2.42.0":
-  version: 2.42.0
-  resolution: "@openapitools/openapi-generator-cli@npm:2.42.0"
+"@openapitools/openapi-generator-cli@npm:2.42.1":
+  version: 2.42.1
+  resolution: "@openapitools/openapi-generator-cli@npm:2.42.1"
   dependencies:
     "@inquirer/select": "npm:1.3.3"
     "@nestjs/axios": "npm:4.0.1"
@@ -8757,7 +8757,7 @@ __metadata:
     tslib: "npm:2.8.1"
   bin:
     openapi-generator-cli: main.js
-  checksum: 10c0/3763a60cc58258ac27dac08aabb7be8fb19bbd16f721998f546e041341e47263f4f82a039fc6ce1ea5848b34e06bf0c71a1192f6df77f1e517a24bbacbfff363
+  checksum: 10c0/fb1935f7b3ce859a86cda38f86e0efd485af1acb72aad2b60137a3d6cec8cc34adf954c120b6a7bcfd8c5eb2b73616494080a117ceb6c9110ad2822ff4a752d2
   languageName: node
   linkType: hard
 
@@ -9888,7 +9888,7 @@ __metadata:
     "@backstage/cli": "npm:^0.36.7"
     "@backstage/plugin-permission-common": "npm:^0.9.12"
     "@backstage/types": "npm:^1.2.2"
-    "@openapitools/openapi-generator-cli": "npm:2.42.0"
+    "@openapitools/openapi-generator-cli": "npm:2.42.1"
     "@serverlessworkflow/sdk-typescript": "npm:^0.8.4"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@types/js-yaml": "npm:^4.0.0"
@@ -15354,7 +15354,7 @@ __metadata:
   resolution: "app@workspace:packages/app"
   dependencies:
     "@axe-core/playwright": "npm:^4.10.0"
-    "@backstage-community/plugin-rbac": "npm:2.3.6"
+    "@backstage-community/plugin-rbac": "npm:2.3.7"
     "@backstage/cli": "npm:^0.36.7"
     "@backstage/core-compat-api": "npm:^0.5.16"
     "@backstage/core-components": "npm:^0.18.15"
