@@ -160,7 +160,7 @@ function VisitMetric({
       color="secondary"
       style={{ flexShrink: 0, whiteSpace: 'nowrap' }}
     >
-      {`${visitCount.toLocaleString('en-US')} ${visitsLabel}`}
+      {`${visitCount.toLocaleString()} ${visitsLabel}`}
     </Text>
   );
 }

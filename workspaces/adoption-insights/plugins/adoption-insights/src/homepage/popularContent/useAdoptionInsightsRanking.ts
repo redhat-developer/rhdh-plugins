@@ -17,7 +17,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAsyncRetry } from 'react-use';
-import { format, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 
 import { determineGrouping } from '../../utils/utils';
@@ -90,7 +90,7 @@ export function useAdoptionInsightsRanking({
     const ranked = await fetchRanking({
       limit,
       start_date: formatInTimeZone(dateWindow.start, timezone, 'yyyy-MM-dd'),
-      end_date: format(dateWindow.end, 'yyyy-MM-dd'),
+      end_date: formatInTimeZone(dateWindow.end, timezone, 'yyyy-MM-dd'),
       timezone,
       grouping,
     });

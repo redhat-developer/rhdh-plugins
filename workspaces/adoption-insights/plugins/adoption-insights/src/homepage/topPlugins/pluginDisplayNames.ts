@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { normalizePluginId } from './pluginDestinations';
+import { normalizePluginId } from '../popularContent/pluginDestinations';
 
 /**
  * Friendly labels for well-known Backstage / RHDH plugin ids.

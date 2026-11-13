@@ -62,6 +62,7 @@ describe('parsePluginDestinations', () => {
         bad: 'relative',
         empty: '',
         num: 1,
+        evil: '//evil.com',
       }),
     ).toEqual({ ok: '/ok' });
     expect(parsePluginDestinations(null)).toBeUndefined();

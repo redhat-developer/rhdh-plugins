@@ -109,7 +109,20 @@ Dynamic plugin configurations must use `module: Legacy` for OFS exports. See `ap
 
 ### Homepage widgets (NFS)
 
-`adoptionInsightsPlugin` registers Popular Content homepage widgets that attach to RHDH `page:homepage` (via `@red-hat-developer-hub/backstage-plugin-homepage`). Requires the Adoption Insights backend for usage-ranked modes (`auto` / `hybrid`).
+`adoptionInsightsPlugin` registers Popular Content homepage widgets that attach to RHDH `page:homepage`.
+
+**Prerequisite:** install and enable `@red-hat-developer-hub/backstage-plugin-homepage` (and typically `@red-hat-developer-hub/backstage-plugin-homepage-backend`) so `page:homepage` and the Add Widget catalog are available. Usage-ranked modes (`auto` / `hybrid`) also require the Adoption Insights backend.
+
+In an NFS app feature loader / `packages/app`, import both plugins, for example:
+
+```ts
+import homepagePlugin from '@red-hat-developer-hub/backstage-plugin-homepage';
+import adoptionInsightsPlugin from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
+
+export const features = [homepagePlugin, adoptionInsightsPlugin /*, … */];
+```
+
+Widgets are gated by `adoption-insights.events.read`. Users without that permission do not see Adoption Insights homepage cards on the grid or in the Add Widget catalog.
 
 #### Top Plugins
 
@@ -239,4 +252,4 @@ The Adoption Insights plugin allows users to explore analytics data through an i
 
 #### Homepage Top Plugins card
 
-On the RHDH homepage, the **Top Plugins** card (BUI `Card` / `List` / `ListRow`) lists popular plugins and extensions for your organization (rank, display name, plugin id, trend %, and visit count on a second line). Click a row to open that plugin when a destination is available. Empty, error, and permission-denied states still keep the card on the page so the homepage remains loadable.
+On the RHDH homepage, the **Top Plugins** card (BUI `Card` / `List` / `ListRow`) lists popular plugins and extensions for your organization (rank, display name, plugin id, trend %, and visit count on a second line). Click a row to open that plugin when a destination is available. Empty and error states keep the card on the page so the homepage remains loadable. Users without `adoption-insights.events.read` do not see the card at all.

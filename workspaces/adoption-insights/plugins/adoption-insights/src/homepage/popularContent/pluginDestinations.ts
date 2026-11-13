@@ -59,8 +59,16 @@ export function normalizePluginId(pluginId: string): string {
 }
 
 /**
+ * True for absolute in-app paths (`/catalog`), false for protocol-relative
+ * URLs (`//evil.com`) and other non-path values.
+ */
+export function isAbsoluteAppPath(path: string): boolean {
+  return path.startsWith('/') && !path.startsWith('//');
+}
+
+/**
  * Parse admin `pluginDestinations` from widget layout / settings props.
- * Only absolute app paths (starting with `/`) are accepted.
+ * Only absolute app paths (starting with `/`, not `//`) are accepted.
  */
 export function parsePluginDestinations(
   value: unknown,
@@ -80,7 +88,7 @@ export function parsePluginDestinations(
       continue;
     }
     const path = rawPath.trim();
-    if (!path.startsWith('/')) {
+    if (!isAbsoluteAppPath(path)) {
       continue;
     }
     destinations[normalizePluginId(rawId)] = path;
