@@ -3,32 +3,42 @@
 #
 # This file configures fullsend for per-repo installation mode.
 # See ADR 0033 for details.
-version: "1"
+version: '1'
 # The reusable workflow overlays upstream defaults onto the standard layered
 # directories before every run. Keep repo-owned agents under rhdh/ so their
 # harnesses and resources remain intact.
 agents:
-    - name: triage
-      source: rhdh/harness/triage-jira.yaml
-    - name: code
-      source: rhdh/harness/code.yaml
-    - name: fix
-      source: rhdh/harness/fix.yaml
-    - name: review
-      source: rhdh/harness/review.yaml
+  - name: triage
+    source: rhdh/harness/triage-jira.yaml
+  - name: code
+    source: rhdh/harness/code.yaml
+  - name: fix
+    source: rhdh/harness/fix.yaml
+  - name: review
+    source: rhdh/harness/review.yaml
+  # Keep /fs-spec on the CEL path with separate generation and audit roles.
+  - name: spec-generate
+    runtime: claude
+    source: rhdh/harness/spec-generate.yaml
+  - name: spec-audit
+    runtime: claude
+    source: rhdh/harness/spec-audit.yaml
+  - name: grillme
+    runtime: claude
+    source: rhdh/harness/grillme.yaml
 roles:
-    - triage
-    - coder
-    - review
-    - fix
-    - retro
-    - prioritize
+  - triage
+  - coder
+  - review
+  - fix
+  - retro
+  - prioritize
 allowed_remote_resources:
-    - https://raw.githubusercontent.com/fullsend-ai/fullsend/
-    - https://raw.githubusercontent.com/fullsend-ai/agents/
-    - https://github.com/redhat-developer/rhdh-skills/
+  - https://raw.githubusercontent.com/fullsend-ai/fullsend/
+  - https://raw.githubusercontent.com/fullsend-ai/agents/
+  - https://github.com/redhat-developer/rhdh-skills/
 create_issues:
-    allow_targets:
-        repos:
-            - redhat-developer/rhdh-plugins
-            - fullsend-ai/fullsend
+  allow_targets:
+    repos:
+      - redhat-developer/rhdh-plugins
+      - fullsend-ai/fullsend

@@ -1,0 +1,90 @@
+# Interactive PR decision questions. One /fs-grillme comment runs one turn.
+# Standalone harness: the standard review validation/publisher expects code
+# review findings, whereas grillme publishes questions and thread actions.
+# Policy and built-in providers match the repository's Fullsend v0.45.0 pin.
+
+agent: rhdh/agents/grillme.md
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+policy: https://raw.githubusercontent.com/fullsend-ai/agents/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748/policies/base.yaml#sha256=3ed634401d87a1327fffe5e266272d930321484ce8a91dfa5fe447d4f2e00470
+readonly_repo: true
+
+role: review
+slug: fullsend-ai-review
+
+# Pin 4.6 explicitly. The `opus` alias on Claude Code 2.1.x resolves to
+# claude-opus-5. Opus 4.8 is not enabled on this Vertex project.
+model: claude-opus-4-6
+
+providers:
+  - vertex-ai
+  - github-ro
+
+# URL policy/provider/profile need the harness allowlist (not inherited
+# from config.yaml). Prefix must match config.yaml allowed_remote_resources.
+allowed_remote_resources:
+  - https://raw.githubusercontent.com/fullsend-ai/agents/
+
+skills:
+  - rhdh/skills/grilling
+
+host_files:
+  - src: rhdh/env/gcp-vertex.env
+    dest: /sandbox/workspace/.env.d/gcp-vertex.env
+    expand: true
+  - src: rhdh/env/grillme.env
+    dest: /sandbox/workspace/.env.d/grillme.env
+  - src: ${GOOGLE_APPLICATION_CREDENTIALS}
+    dest: /tmp/.gcp-credentials.json
+    optional: true
+  - src: ${GCP_OIDC_TOKEN_FILE}
+    dest: /sandbox/workspace/.gcp-oidc-token
+    optional: true
+
+  - src: dispatch/event-payload.json
+    dest: /sandbox/workspace/.fullsend-event.json
+    optional: true
+
+pre_script: rhdh/scripts/pre-grillme.sh
+post_script: rhdh/scripts/post-grillme.sh
+
+timeout_minutes: 15
+
+trigger: >
+  event.source.system == "github"
+    && has(event.state.change_proposal)
+    && event.transition.kind == "comment_added"
+    && has(event.transition.comment.command)
+    && event.transition.comment.command == "/fs-grillme"
+    && !event.state.change_proposal.is_fork
+
+# Top-level env provides defaults; forge.github.env supplies the same vars
+# for the GitHub-specific dispatch path. Both are required because the
+# harness resolves them independently (not merged).
+#
+# GH_TOKEN in the sandbox is the OIDC-minted role token (role: review),
+# scoped to read + PR-comment permissions — not the workflow GITHUB_TOKEN.
+# The agent needs it for gh pr diff / gh pr view inside the sandbox.
+env:
+  runner:
+    GH_TOKEN: ${GH_TOKEN}
+    REPO_FULL_NAME: ${REPO_FULL_NAME}
+    GITHUB_ISSUE_URL: ${GITHUB_ISSUE_URL}
+  sandbox:
+    GH_TOKEN: ${GH_TOKEN}
+    GITHUB_ISSUE_URL: ${GITHUB_ISSUE_URL}
+    REPO_FULL_NAME: ${REPO_FULL_NAME}
+
+# pre_script / post_script are declared at the top level.
+# The harness falls through to top-level scripts when forge does not
+# override them — no forge-level script declarations needed.
+forge:
+  github:
+    env:
+      runner:
+        GH_TOKEN: ${GH_TOKEN}
+        REPO_FULL_NAME: ${REPO_FULL_NAME}
+        GITHUB_ISSUE_URL: ${GITHUB_ISSUE_URL}
+      sandbox:
+        GH_TOKEN: ${GH_TOKEN}
+        GITHUB_ISSUE_URL: ${GITHUB_ISSUE_URL}
+        REPO_FULL_NAME: ${REPO_FULL_NAME}

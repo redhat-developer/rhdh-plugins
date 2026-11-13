@@ -8,60 +8,97 @@
 
 ### Enabled agents
 
-| Agent | Trigger | How to use |
-|-------|---------|------------|
-| Triage | `/fs-triage` slash command | Post on any issue |
-| Coder | `/fs-code` slash command, or `ready-to-code` label | Post on a triaged issue |
-| Review | Auto-triggers on PR open/update | Automatic for `workspaces/scorecard/` PRs |
-| Fix | `/fs-fix` slash command, or `changes_requested` review | Post on a PR, or request changes on a fullsend PR |
+| Agent           | Trigger                        | How to use                                        |
+| --------------- | ------------------------------ | ------------------------------------------------- |
+| Triage          | `/fs-triage` slash command     | Post on any issue                                 |
+| Coder           | `/fs-code` slash command       | Post on a triaged issue                           |
+| Review          | `/fs-review` slash command     | Post on a PR                                      |
+| Fix             | `/fs-fix` slash command        | Post on a PR                                      |
+| Spec generation | `/fs-spec [guidance]`          | Post on a GitHub issue or eligible Jira work item |
+| Spec audit      | `/fs-spec audit [change-path]` | Post on a PR containing OpenSpec artifacts        |
+| Grillme         | `/fs-grillme [guidance]`       | Post on an open, non-fork PR                      |
 
-### Auto-trigger vs. manual trigger
+### Manual triggers and workspace scope
 
-Fullsend is designed to chain agents automatically (issue → triage → code → review → fix). In practice, most of that chain requires manual triggering. Here's what actually happens:
+The workflow forwards human `/fs-*` issue comments and PR label changes.
+It does not subscribe to issue creation, PR open/update, or submitted reviews,
+so those events do not automatically chain agents. Slash commands are available
+repository-wide, subject to Fullsend's authorization checks.
 
-| Agent | Designed auto-trigger | What actually happens | How to trigger manually |
-|-------|----------------------|----------------------|------------------------|
-| Triage | `issues/opened` | **Does not auto-trigger.** The upstream dispatcher only handles `issues/labeled`, not `issues/opened`. | `/fs-triage` on an issue |
-| Coder | `ready-to-code` label | **Does not auto-trigger from triage.** Triage labels issues `triaged`, not `ready-to-code`. | `/fs-code` on a triaged issue, or manually add `ready-to-code` label |
-| Review | `pull_request_target/opened\|synchronize` | **Auto-triggers on `workspaces/scorecard/` PRs.** This is the only agent that reliably auto-triggers. Scoped via `paths` filter. | `/fs-review` on any PR (auth-gated) |
-| Fix | `pull_request_review/submitted` with `changes_requested` | **Partially auto-triggers.** Only fires from bot reviews (e.g., fullsend-review requesting changes), not from human reviews. Effectively scoped to scorecard PRs because only scorecard PRs get auto-reviewed. | `/fs-fix` on a PR, `/fs-fix-stop` to disable |
-
-The "autonomous pipeline" does not chain automatically. In practice: review auto-triggers on augment PRs, everything else is slash-command-driven.
-
-### Scope details
-
-The `paths` filter (`workspaces/scorecard/**`) only applies to the `pull_request_target` event. Other triggers are repo-wide:
-
-- **`issues`** — fires for all issues (fine, since auto-triage doesn't work; slash commands are auth-gated)
-- **`issue_comment`** — fires for all comments (auth-gated to OWNER/MEMBER/COLLABORATOR)
-- **`pull_request_review`** — fires for all PR reviews (no `paths` support for this event type). Fix is transitively scoped: it only auto-fires from bot reviews, and the review bot only auto-reviews scorecard PRs.
+The PR label event path filter covers `workspaces/boost/`,
+`workspaces/scorecard/`, and `workspaces/ai-integrations/`. It does not limit
+issue-comment commands to those workspaces.
 
 ### What does NOT run
 
-| Agent | Why |
-|-------|-----|
-| Retro | Out of scope for initial pilot |
+| Agent      | Why                            |
+| ---------- | ------------------------------ |
+| Retro      | Out of scope for initial pilot |
 | Prioritize | Out of scope for initial pilot |
 
 ## Slash commands
 
-Slash commands are **restricted to org members and collaborators** via an `author_association` check in the workflow shim. This prevents external users from burning Vertex AI tokens on this public repo.
+The workflow forwards slash commands from human commenters to Fullsend.
+Fullsend checks repository permissions before dispatching an agent; the custom
+spec and grillme commands use the same authorization gate.
 
 Available commands:
 
-| Command | What it does |
-|---------|-------------|
-| `/fs-triage` | Run triage on an issue |
-| `/fs-code` | Generate code for a triaged issue |
-| `/fs-review` | Run review on a PR |
-| `/fs-fix` | Fix issues flagged in a review |
-| `/fs-fix-stop` | Disable fix agent for a PR (adds `fullsend-no-fix` label) |
+| Command                        | What it does                                                           |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| `/fs-triage`                   | Run triage on an issue                                                 |
+| `/fs-code`                     | Generate code for a triaged issue                                      |
+| `/fs-review`                   | Run review on a PR                                                     |
+| `/fs-fix`                      | Fix issues flagged in a review                                         |
+| `/fs-fix-stop`                 | Disable fix agent for a PR (adds `fullsend-no-fix` label)              |
+| `/fs-spec [guidance]`          | Generate a spec-only PR from a GitHub issue or eligible Jira work item |
+| `/fs-spec audit [change-path]` | Publish an advisory OpenSpec audit comment on a PR                     |
+| `/fs-grillme [guidance]`       | Ask design questions on a PR and follow up on answers                  |
+
+### Specifications and design questions
+
+`/fs-spec` creates an apply-ready OpenSpec change in the owning workspace's
+`openspec/` directory without implementing it. Name the workspace in the
+command when the issue does not make ownership clear, for example:
+
+```text
+/fs-spec Focus on workspaces/ai-integrations; keep the first version read-only.
+```
+
+The agent installs the RHDH schema if needed, generates and validates the
+required artifacts, and opens a spec-only PR against `main`. The work item
+stays open for implementation. After the spec PR merges, use `/fs-code` to
+request implementation.
+
+On the spec PR, use `/fs-spec audit` for an independent consistency audit.
+With multiple changes or duplicate names across workspaces, specify the full
+repository-relative change directory:
+
+```text
+/fs-spec audit workspaces/ai-integrations/openspec/changes/example-change
+```
+
+The audit reads the verified PR head, including fork PRs, and updates a separate
+advisory comment. It does not edit files, approve the PR, request changes, or
+replace code-review findings. If the head changes during the audit, its comment
+asks for a rerun instead of reporting a current outcome.
+
+`/fs-grillme` works on any open, non-fork PR, including code, documentation, and
+spec changes. Each invocation asks a round of design questions pinned to the
+diff. Reply to the inline comments and invoke `/fs-grillme` again to resolve
+answered threads, follow up, and identify remaining decisions. The agent does
+not edit files; capture agreed decisions yourself or request `/fs-fix`.
+
+Spec generation and audit use separate `spec-generate` and `spec-audit`
+registrations so `/fs-spec` has one dispatch path. The new agents explicitly
+use the Claude runtime and Opus 4.6; grillme's publisher consumes Claude's
+transcript format. Their base harnesses and providers match Fullsend 0.45.0.
 
 ### Jira pilot for RHDH AI
 
 The [Jira poll workflow](../.github/workflows/fullsend-poll-jira.yml) checks
-every five minutes for `/fs-triage` and `/fs-code` comments on RHIDP work
-items. Fullsend checks the command author's Jira project role. The existing
+every five minutes for `/fs-triage`, `/fs-code`, and `/fs-spec` comments on
+RHIDP work items. Fullsend checks the command author's Jira project role. The existing
 GitHub Fullsend commands are unchanged.
 
 Each Jira query requires all of these gates:
@@ -73,8 +110,8 @@ Each Jira query requires all of these gates:
 
 Add the `fullsend` label to an eligible Jira work item before posting a
 command. `/fs-triage` does not automatically start coding; use `/fs-code`
-explicitly when implementation is ready. Grillme and spec commands are not
-part of this Jira pilot.
+explicitly when implementation is ready. `/fs-spec` generates specifications;
+`/fs-spec audit` and `/fs-grillme` run only on GitHub PRs.
 
 To expand the cohort, add a project/team pair to the `poll_project` calls in
 the workflow. Keep the `fullsend` opt-in label for each cohort.
@@ -91,32 +128,17 @@ the ID if `JIRA_BASE_URL` points to a different Jira instance.
 rhdh-plugins already has [PR Agent](https://github.com/Codium-ai/pr-agent) configured (`.pr_agent.toml`). Both agents run independently:
 
 - **PR Agent** — runs on all PRs across the entire repo
-- **Fullsend Review** — auto-triggers only on PRs touching `workspaces/scorecard/`
+- **Fullsend Review** — invoked explicitly with `/fs-review`
 
 This parallel setup allows comparing review quality. Neither blocks the other. PR Agent configuration is not modified.
-
-## How to expand review to more workspaces
-
-Add paths to the `paths` filter in `.github/workflows/fullsend.yaml`:
-
-```yaml
-on:
-  pull_request_target:
-    types: [opened, synchronize, ready_for_review, closed]
-    paths:
-      - "workspaces/scorecard/**"
-      - "workspaces/your-new-workspace/**"  # add here
-```
-
-To enable review for ALL workspaces, remove the `paths` filter entirely.
-
-Note: the `paths` filter only affects the Review agent's auto-trigger. Triage, coder, and fix are already available repo-wide via slash commands.
 
 ## Authorization model
 
 ### Slash command auth gate
 
-The dispatch job checks `author_association` on `issue_comment` events. Only `OWNER`, `MEMBER`, and `COLLABORATOR` can trigger agents via slash commands. External contributors are silently ignored.
+Fullsend checks the commenter's repository permissions before evaluating
+custom command triggers. The workflow itself filters out bot comments and
+comments that do not start with `/fs-`.
 
 ### CODEOWNERS protection
 
@@ -132,10 +154,10 @@ Fullsend uses GCP Workload Identity Federation (WIF) to authenticate GitHub Acti
 
 ## Configuration files
 
-| Path | Purpose |
-|------|---------|
-| `.fullsend/config.yaml` | Declares enabled roles (triage, coder, review, fix) |
-| `.fullsend/customized/` | Scaffold for future agent customization (agents, harness, policies, schemas, env, scripts, skills) |
+| Path                              | Purpose                                                                                              |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `.fullsend/config.yaml`           | Registers agents, their harnesses, and enabled roles                                                 |
+| `.fullsend/rhdh/`                 | Repository-owned agents, harnesses, scripts, schemas, environment files, and skills                  |
 | `.github/workflows/fullsend.yaml` | Event shim — routes GitHub events to fullsend's reusable workflows, with auth gate on slash commands |
 
 ## Debugging
@@ -159,14 +181,39 @@ Available in the workflow run logs under the sandbox creation step. Look for `fu
 
 ### Common issues
 
-| Symptom | Likely cause |
-|---------|-------------|
-| Slash command ignored | Commenter is not OWNER/MEMBER/COLLABORATOR |
-| Review doesn't trigger | PR doesn't touch files in `workspaces/scorecard/` |
-| 403 from mint | Repo not in mint's `ALLOWED_ORGS` — contact fullsend team |
-| `aiplatform.endpoints.predict` denied | WIF IAM binding missing on GCP project |
-| Agent produces no output | Check transcript artifact for agent errors |
+| Symptom                               | Likely cause                                                    |
+| ------------------------------------- | --------------------------------------------------------------- |
+| Slash command ignored                 | Commenter lacks the repository permissions required by Fullsend |
+| Review doesn't trigger                | Review is manual; use `/fs-review` on the PR                    |
+| 403 from mint                         | Repo not in mint's `ALLOWED_ORGS` — contact fullsend team       |
+| `aiplatform.endpoints.predict` denied | WIF IAM binding missing on GCP project                          |
+| Agent produces no output              | Check transcript artifact for agent errors                      |
 
 ## Reference
 
 For a comprehensive deep-dive into fullsend agents, customization, and debugging, see the [fullsend-agents.md](https://github.com/redhat-developer/rhdh-agentic/blob/main/docs/fullsend-agents.md) in rhdh-agentic.
+
+## Validating custom commands
+
+Run the regression tests with Python 3, `jsonschema`, `PyYAML`, Git, and
+`jq` installed. Routing tests also require the Fullsend CLI (otherwise they
+are skipped):
+
+```bash
+python3 -m unittest discover -s .fullsend/rhdh/scripts/tests -v
+shellcheck .fullsend/rhdh/scripts/*.sh
+```
+
+With Fullsend 0.45.0 installed, resolve each new harness without running an
+agent (this requires access to its pinned GitHub resources):
+
+```bash
+fullsend lock spec-generate --forge github --fullsend-dir .fullsend
+fullsend lock spec-audit --forge github --fullsend-dir .fullsend
+fullsend lock grillme --forge github --fullsend-dir .fullsend
+```
+
+When updating the spec-generation base, also update
+`SPEC_GENERATE_BASE_SCRIPTS_SHA256` to the resolved `post_script` directory
+digest. The wrapper uses that cached, pinned publisher for branch validation,
+secret scanning, pushing, and PR creation.

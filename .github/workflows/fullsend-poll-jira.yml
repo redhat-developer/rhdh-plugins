@@ -1,14 +1,14 @@
 # Poll RHIDP for Fullsend commands intended for this repository.
 #
 # Fullsend resolves the command author's Jira role in RHIDP.
-# Only /fs-triage and /fs-code are registered for
-# Jira dispatch; other Fullsend commands remain out of scope.
+# Only /fs-triage, /fs-code, and /fs-spec generation are registered for
+# Jira dispatch; PR audits and grillme remain GitHub-only.
 
 name: fullsend Jira poll
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: '*/5 * * * *'
   workflow_dispatch: {}
 
 permissions: {}
