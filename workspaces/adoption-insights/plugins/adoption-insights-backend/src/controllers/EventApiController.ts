@@ -17,6 +17,8 @@ import { Request, Response } from 'express';
 import { json2csv as Parser } from 'json-2-csv';
 import { Knex } from 'knex';
 import { AnalyticsEvent } from '@backstage/core-plugin-api';
+import { CatalogService } from '@backstage/plugin-catalog-node';
+import { Duration } from 'luxon';
 import { EventDatabase, Filters } from '../database/event-database';
 import { EventBatchProcessor } from '../domain/EventBatchProcessor';
 import { Event } from '../models/Event';
@@ -29,13 +31,18 @@ import {
   AuditorService,
   AuditorServiceEvent,
   AuthService,
+  BackstageCredentials,
   DiscoveryService,
   HttpAuthService,
   LoggerService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
-import { getLicensedUsersCount } from '../utils/config';
-import { TechDocsCount, TopTechDocsCount } from '../types/event';
+import { getLicensedUsersCount, getMaxEventsPerRequest } from '../utils/config';
+import {
+  TechDocsCount,
+  TimeSavedTotals,
+  TopTechDocsCount,
+} from '../types/event';
 import {
   buildTechDocsMetadataUrl,
   isSafeTechDocsEntitySegment,
@@ -55,6 +62,10 @@ function readTechDocsSiteName(payload: unknown): string | undefined {
 }
 
 class EventApiController {
+  // Upper bound on simultaneous catalog lookups when resolving template
+  // time-saved estimates for a single incoming batch.
+  private static readonly MAX_CATALOG_LOOKUP_CONCURRENCY = 5;
+
   private readonly database: EventDatabase;
   private readonly config: RootConfigService;
   private readonly processor: EventBatchProcessor;
@@ -62,6 +73,7 @@ class EventApiController {
   private readonly auth: AuthService;
   private readonly httpAuth: HttpAuthService;
   private readonly discovery: DiscoveryService;
+  private readonly catalog: CatalogService;
   private readonly logger: LoggerService;
 
   constructor(
@@ -72,6 +84,7 @@ class EventApiController {
     auth: AuthService,
     httpAuth: HttpAuthService,
     discovery: DiscoveryService,
+    catalog: CatalogService,
     logger: LoggerService,
   ) {
     this.database = eventDatabase;
@@ -81,29 +94,160 @@ class EventApiController {
     this.auth = auth;
     this.httpAuth = httpAuth;
     this.discovery = discovery;
+    this.catalog = catalog;
     this.logger = logger;
   }
 
-  private processIncomingEvents(
+  private isScaffolderCreateEvent(event: AnalyticsEvent): boolean {
+    return (
+      event.action === 'create' &&
+      event.subject === 'Task has been created' &&
+      event.context?.pluginId === 'scaffolder'
+    );
+  }
+
+  private async getTimeSavedMinutes(
+    entityRef: string,
+    credentials: BackstageCredentials,
+  ): Promise<number | undefined> {
+    try {
+      const entity = await this.catalog.getEntityByRef(entityRef, {
+        credentials,
+      });
+      const annotation =
+        entity?.kind.toLowerCase() === 'template'
+          ? entity.metadata.annotations?.['backstage.io/time-saved']
+          : undefined;
+      if (!annotation) {
+        this.logger.debug('Template has no time-saved estimate', { entityRef });
+        return undefined;
+      }
+
+      const minutes = Duration.fromISO(annotation).as('minutes');
+      if (!Number.isFinite(minutes) || minutes < 0) {
+        this.logger.warn('Template has an invalid time-saved estimate', {
+          entityRef,
+        });
+        return undefined;
+      }
+
+      this.logger.debug('Resolved template time-saved estimate', { entityRef });
+      return minutes;
+    } catch (error) {
+      this.logger.warn('Failed to resolve template time-saved estimate', {
+        entityRef,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return undefined;
+    }
+  }
+
+  /**
+   * Resolves each distinct template ref to its time-saved estimate once, while
+   * bounding how many catalog lookups run at the same time.
+   */
+  private async resolveTimeSavedByRef(
+    entityRefs: string[],
+    credentials: BackstageCredentials,
+  ): Promise<Map<string, number | undefined>> {
+    const timeSavedByRef = new Map<string, number | undefined>();
+    const concurrency = EventApiController.MAX_CATALOG_LOOKUP_CONCURRENCY;
+
+    for (let i = 0; i < entityRefs.length; i += concurrency) {
+      const chunk = entityRefs.slice(i, i + concurrency);
+      const minutes = await Promise.all(
+        chunk.map(ref => this.getTimeSavedMinutes(ref, credentials)),
+      );
+      chunk.forEach((ref, index) => timeSavedByRef.set(ref, minutes[index]));
+    }
+
+    return timeSavedByRef;
+  }
+
+  private collectScaffolderEntityRefs(events: AnalyticsEvent[]): string[] {
+    const entityRefs = new Set<string>();
+    for (const event of events) {
+      const entityRef = event.context?.entityRef;
+      if (
+        this.isScaffolderCreateEvent(event) &&
+        typeof entityRef === 'string' &&
+        entityRef
+      ) {
+        entityRefs.add(entityRef);
+      }
+    }
+    return [...entityRefs];
+  }
+
+  private async processIncomingEvents(
     events: AnalyticsEvent[],
     auditEvent: AuditorServiceEvent,
-  ): void {
-    const proccessedEvents = events
-      .filter(e => !!e.context?.userId)
-      .map(event => new Event(event, this.database.isJsonSupported()));
+    userRef: string,
+    credentials: BackstageCredentials,
+  ): Promise<void> {
+    const maxEventsPerRequest = getMaxEventsPerRequest(this.config);
+    if (!Array.isArray(events) || events.length > maxEventsPerRequest) {
+      const error = new ValidationError('Invalid event data', {
+        fieldErrors: {
+          events: [
+            `A maximum of ${maxEventsPerRequest} events may be submitted per request`,
+          ],
+        },
+      });
+      auditEvent.fail({ error });
+      throw error;
+    }
 
-    proccessedEvents.forEach(event => {
-      const result = EventSchema.safeParse(event);
+    // Only events carrying a user id are persisted.
+    const candidateEvents = events.filter(e => !!e.context?.userId);
 
+    // Validate every event before performing any catalog lookups so that
+    // rejected batches never trigger enrichment requests.
+    for (const event of candidateEvents) {
+      const candidate = new Event(
+        { ...event, context: { ...event.context, userName: userRef } },
+        this.database.isJsonSupported(),
+      );
+      const result = EventSchema.safeParse(candidate);
       if (!result.success) {
         auditEvent.fail({
           error: new Error(JSON.stringify(result.error.flatten())),
         });
         throw new ValidationError('Invalid event data', result.error.flatten());
       }
-      auditEvent.success({ meta: { eventId: event.id } });
-      return this.processor.addEvent(event);
-    });
+    }
+
+    const timeSavedByRef = await this.resolveTimeSavedByRef(
+      this.collectScaffolderEntityRefs(candidateEvents),
+      credentials,
+    );
+
+    // Enrich the validated events from the lookup table and persist them.
+    for (const event of candidateEvents) {
+      let value = event.value;
+      if (this.isScaffolderCreateEvent(event)) {
+        const entityRef = event.context?.entityRef;
+        if (typeof entityRef === 'string' && entityRef) {
+          value = timeSavedByRef.get(entityRef);
+        } else {
+          this.logger.warn(
+            'Scaffolder create event has no template entity ref',
+          );
+          value = undefined;
+        }
+      }
+
+      const processedEvent = new Event(
+        {
+          ...event,
+          value,
+          context: { ...event.context, userName: userRef },
+        },
+        this.database.isJsonSupported(),
+      );
+      auditEvent.success({ meta: { eventId: processedEvent.id } });
+      this.processor.addEvent(processedEvent);
+    }
   }
 
   async trackEvents(
@@ -118,15 +262,28 @@ class EventApiController {
     });
 
     try {
-      this.processIncomingEvents(events, auditEvent);
+      const credentials = await this.httpAuth.credentials(req, {
+        allow: ['user'],
+      });
+      await this.processIncomingEvents(
+        events,
+        auditEvent,
+        credentials.principal.userEntityRef,
+        credentials,
+      );
       res.status(200).json({ success: true, message: 'Event received' });
     } catch (error) {
       auditEvent.fail({
         error: error instanceof Error ? error : new Error(String(error)),
       });
-      res
-        .status(400)
-        .json({ message: error.message, errors: error.details.fieldErrors });
+      if (error instanceof ValidationError) {
+        res.status(400).json({
+          message: error.message,
+          errors: error.details.fieldErrors,
+        });
+        return;
+      }
+      throw error;
     }
   }
 
@@ -167,13 +324,17 @@ class EventApiController {
 
     db.setFilters(filters);
     db.setConfig({ licensedUsers });
-    const queryHandlers: Record<QueryType, () => Promise<Knex.QueryBuilder>> = {
+    const queryHandlers: Record<
+      QueryType,
+      () => Promise<Knex.QueryBuilder | TimeSavedTotals>
+    > = {
       total_users: () => db.getUsers(),
       active_users: () => db.getDailyUsers(),
       top_searches: () => db.getTopSearches(),
       top_plugins: () => db.getTopPluginViews(),
       top_techdocs: () => db.getTopTechDocsViews(),
-      top_templates: () => db.getTopTemplateViews(),
+      top_templates: () => db.getTopTemplates(),
+      time_saved: () => db.getTimeSaved(),
       top_catalog_entities: () => db.getTopCatalogEntitiesViews(),
     };
 

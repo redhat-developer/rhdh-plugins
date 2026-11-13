@@ -86,9 +86,7 @@ app:
 
 ### User IDs
 
-This plugin supports sending user context by providing a `userID` and `userName`. This requires instantiating the `AdoptionInsightsAnalyticsApi` instance with an `identityApi` instance passed to it, but this is optional. If omitted the plugin will not send user context to Adoption Insights backend.
-
-By default, it computes `userId` as SHA-256 hash of the current user's `userEntityRef`.
+The analytics API requires `identityApi`. It uses the current user's identity to attach a SHA-256 hash of `userEntityRef` as `context.userId`, and it sends the user's credentials with each batch. The backend skips events without `context.userId`. For accepted events, the backend sets the stored `user_ref` from the authenticated user principal, rather than trusting a client-supplied `userName`. This applies to every accepted analytics event, including non-Scaffolder events.
 
 ```tsx
 // packages/app/src/apis.ts
