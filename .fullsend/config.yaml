@@ -23,9 +23,6 @@ agents:
   - name: spec-audit
     runtime: claude
     source: rhdh/harness/spec-audit.yaml
-  - name: grillme
-    runtime: claude
-    source: rhdh/harness/grillme.yaml
 roles:
   - triage
   - coder

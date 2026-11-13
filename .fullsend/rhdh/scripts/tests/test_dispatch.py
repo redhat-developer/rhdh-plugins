@@ -16,7 +16,7 @@ import yaml
 
 
 FULLSEND_DIR = Path(__file__).resolve().parents[3]
-ROLES = {"spec-generate": "coder", "spec-audit": "review", "grillme": "review"}
+ROLES = {"spec-generate": "coder", "spec-audit": "review"}
 
 
 @unittest.skipUnless(shutil.which("fullsend"), "Fullsend CLI required for CEL tests")
@@ -79,8 +79,6 @@ class DispatchTest(unittest.TestCase):
             (self.event("/fs-spec audit", pr=True), ["spec-audit"]),
             (self.event("/fs-spec audit workspaces/boost/openspec/changes/demo", pr=True), ["spec-audit"]),
             (self.event("/fs-spec audit\nexample", pr=True, fork=True), ["spec-audit"]),
-            (self.event("/fs-grillme", pr=True), ["grillme"]),
-            (self.event("/fs-grillme focus on compatibility", pr=True), ["grillme"]),
         ]
         for event, expected in cases:
             with self.subTest(command=event["transition"]["comment"]["body"], source=event["source"]):
@@ -91,13 +89,10 @@ class DispatchTest(unittest.TestCase):
             self.event("/fs-spec", pr=True),
             self.event("/fs-spec audit"),
             self.event("/fs-spec audit", source="jira"),
-            self.event("/fs-grillme"),
-            self.event("/fs-grillme", source="jira"),
-            self.event("/fs-grillme", pr=True, fork=True),
             self.event("/fs-code"),
             self.event("/fs-review", pr=True),
         ]
-        for command, pr in [("/fs-spec", False), ("/fs-spec audit", True), ("/fs-grillme", True)]:
+        for command, pr in [("/fs-spec", False), ("/fs-spec audit", True)]:
             cases.append(self.event(command, pr=pr, role="read"))
         no_comment = copy.deepcopy(self.event("/fs-spec"))
         no_comment["transition"] = {"kind": "opened"}
