@@ -247,7 +247,7 @@ Backstage v1.51.0 introduced two AI-related additions via `@backstage/plugin-cat
 - **`AiResource`** kind — for AI tools and governance rules. Built-in types: `skill` (with `disciplines`, `categories`, `agents`, `dependsOn`) and `rule` (with `category`, `rationale`). Any other `spec.type` string is accepted with the base spec (`type`, `lifecycle`, `owner`, `system`).
 - **`API` with `spec.type: mcp-server`** — MCP servers as a structured subtype of the existing API kind, with `spec.remotes` list (RFC #32062).
 
-Boost's entity model (Decision 1 in the agent-creation-discovery design) uses upstream kinds where available and existing kinds as fallback:
+Boost's entity model ([Decision 1](../openspec/changes/ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds) in the ai-catalog-entity-model design) uses upstream kinds where available and existing kinds as fallback:
 
 | Category      | Entity Kind        | `spec.type`       | Notes                                                            |
 | ------------- | ------------------ | ----------------- | ---------------------------------------------------------------- |

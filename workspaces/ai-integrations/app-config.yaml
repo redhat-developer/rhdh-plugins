@@ -194,8 +194,8 @@ catalog:
           - connectorPluginId: skill-image-connector
             sourceId: skillimage-skills
             sourceType: oci
-          # Add this source after enabling npxSkillConnector below to show its
-          # verified skills in the catalog.
+          # Uncomment after enabling npxSkillConnector below to show its
+          # verified skills in the catalog alongside OCI sources.
           # - connectorPluginId: npx-skill-connector
           #   sourceId: public-agent-skills
           #   sourceType: npx
