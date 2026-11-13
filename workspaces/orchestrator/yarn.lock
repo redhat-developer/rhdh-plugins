@@ -9867,7 +9867,7 @@ __metadata:
     cloudevents: "npm:^10.0.0"
     express: "npm:^4.21.2"
     fs-extra: "npm:^10.1.0"
-    isomorphic-git: "npm:^1.23.0"
+    isomorphic-git: "npm:^1.38.6"
     js-yaml: "npm:^4.1.0"
     kafkajs: "npm:^2.2.4"
     lodash: "npm:^4.18.1"
@@ -23515,6 +23515,27 @@ __metadata:
   bin:
     isogit: cli.cjs
   checksum: 10c0/a864e24d866c03226273d00346962568553b19aaf84d5419967283dd7f2967b3189a27ca28d7cefd7509a78d2e983f78b95d3bead1d3053e5dbd78ff500d1e3b
+  languageName: node
+  linkType: hard
+
+"isomorphic-git@npm:^1.38.6":
+  version: 1.38.6
+  resolution: "isomorphic-git@npm:1.38.6"
+  dependencies:
+    async-lock: "npm:^1.4.1"
+    clean-git-ref: "npm:^2.0.1"
+    crc-32: "npm:^1.2.0"
+    diff3: "npm:0.0.3"
+    ignore: "npm:^5.1.4"
+    minimisted: "npm:^2.0.0"
+    pako: "npm:^1.0.10"
+    pify: "npm:^4.0.1"
+    readable-stream: "npm:^4.0.0"
+    sha.js: "npm:^2.4.12"
+    simple-get: "npm:^4.0.1"
+  bin:
+    isogit: cli.cjs
+  checksum: 10c0/1ddc344bcf135ecf642672b17a18baaeac28a6d5fd51a758bccd6b97b36794ef7ae7fffeaeab4de36cac90ac4ad73c66ccbbcb31c2950aae2c5a9967f01a8584
   languageName: node
   linkType: hard
 
