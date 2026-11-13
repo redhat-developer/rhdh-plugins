@@ -59,9 +59,7 @@ spec:
     requests, and account balance questions. Escalate complex billing
     disputes to a human operator.
   handoffDescription: Handles billing, refund, and account balance inquiries.
-  model:
-    provider: openai
-    name: gpt-4o
+  model: gpt-4o
   tools:
     - lookup-account
     - process-refund
@@ -88,9 +86,9 @@ spec:
     guide users through troubleshooting steps, and escalate unresolved issues to
     the engineering team.
   handoffDescription: Handles technical troubleshooting and engineering inquiries.
-  model:
-    provider: openai
-    name: gpt-4o
+  inferenceProvider:
+    name: openai
+    model: gpt-4o
   tools:
     - run-diagnostics
     - search-knowledge-base

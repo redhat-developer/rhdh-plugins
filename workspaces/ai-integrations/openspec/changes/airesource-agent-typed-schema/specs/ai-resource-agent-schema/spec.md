@@ -43,7 +43,7 @@ These are schema-layer requirements for agent authoring and tests; catalog proce
 
 The agent schema MUST allow the optional agent fields defined in this change’s `design.md` mapping table (under `spec` / `metadata`, not agent-specific annotations). Optional field membership and shapes SHALL follow that mapping rather than a divergent inventory in code.
 
-At minimum, the mapping’s optional catalog fields include: `spec.instructions`, `spec.handoffDescription`, `spec.model`, `spec.handoffs` (`string[]`), `spec.tools` (`string[]`), `spec.toolUseBehavior`, `spec.resetToolChoice`, `spec.modelSettings` (`temperature`, `maxTokens`, `toolChoice` only for v1), `spec.outputSchema`, and `spec.executionMode`.
+At minimum, the mapping’s optional catalog fields include: `spec.instructions`, `spec.handoffDescription`, `spec.model`, `spec.inferenceProvider`, `spec.handoffs` (`string[]`), `spec.tools` (`string[]`), `spec.toolUseBehavior`, `spec.resetToolChoice`, `spec.modelSettings` (`temperature`, `maxTokens`, `toolChoice` only for v1), `spec.outputSchema`, and `spec.executionMode`.
 
 #### Scenario: Optional fields from mapping accepted
 
@@ -67,27 +67,38 @@ At minimum, the mapping’s optional catalog fields include: `spec.instructions`
 
 ---
 
-### Requirement: Optional agent model object
+### Requirement: Optional inference provider object
 
-An agent-shaped AiResource MAY omit `spec.model`. When present, `spec.model`
-MUST be an object containing both `provider` and `name` as non-empty strings.
-`provider` identifies the model provider and `name` identifies the model.
-The previous string form MUST be rejected.
+An agent-shaped AiResource MAY omit `spec.inferenceProvider`. When present,
+`spec.inferenceProvider` MUST be an object containing both `name` and `model`
+as non-empty strings. `name` identifies the inference provider and `model`
+identifies the model. The existing optional `spec.model` field MUST remain a
+non-empty string. Both fields MAY be used independently or together.
 
-#### Scenario: Model omitted
+#### Scenario: Model and inference provider omitted
 
-- **WHEN** an otherwise valid agent entity omits `spec.model`
+- **WHEN** an otherwise valid agent entity omits `spec.model` and `spec.inferenceProvider`
 - **THEN** the agent schema accepts it
 
-#### Scenario: Complete model object accepted
+#### Scenario: Existing model string accepted
 
-- **WHEN** an otherwise valid agent entity sets `spec.model` to `{ provider: openai, name: gpt-4o }`
+- **WHEN** an otherwise valid agent entity sets `spec.model` to `gpt-4o` and omits `spec.inferenceProvider`
 - **THEN** the agent schema accepts it
+
+#### Scenario: Complete inference provider object accepted
+
+- **WHEN** an otherwise valid agent entity sets `spec.inferenceProvider` to `{ name: openai, model: gpt-4o }`, with or without a `spec.model` string
+- **THEN** the agent schema accepts it
+
+#### Scenario: Invalid inference provider rejected
+
+- **WHEN** an agent entity sets `spec.inferenceProvider` to a string, number, boolean, null, array, or an object with either `name` or `model` missing, empty, or not a string
+- **THEN** the agent schema rejects it with an error naming the invalid inference provider field
 
 #### Scenario: Invalid model rejected
 
-- **WHEN** an agent entity sets `spec.model` to a string, number, boolean, null, array, or an object with either `provider` or `name` missing, empty, or not a string
-- **THEN** the agent schema rejects it with an error naming the invalid model field
+- **WHEN** an agent entity sets `spec.model` to an empty string or a non-string value, including an object
+- **THEN** the agent schema rejects it with an error naming `spec.model`
 
 ---
 

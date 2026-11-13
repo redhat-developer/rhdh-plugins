@@ -338,49 +338,71 @@ describe('collectAgentErrors', () => {
     });
   });
 
-  describe('spec.model (optional, requires provider and name)', () => {
-    it('accepts model with provider and name', () => {
+  describe('spec.model (optional, must be string)', () => {
+    it('accepts model as a string without inferenceProvider', () => {
+      expect(collectAgentErrors(makeAgent({ model: 'gpt-4o' }))).toEqual([]);
+    });
+
+    it.each([42, true, null, [], { provider: 'openai', name: 'gpt-4o' }])(
+      'rejects non-string model: %j',
+      model => {
+        const errors = collectAgentErrors(makeAgent({ model }));
+        expect(errors).toHaveLength(1);
+        expect(errors[0]).toContain('spec.model');
+        expect(errors[0]).toContain('string');
+      },
+    );
+  });
+
+  describe('spec.inferenceProvider (optional, requires name and model)', () => {
+    it('accepts inferenceProvider without spec.model', () => {
       const entity = makeAgent({
-        model: { provider: 'openai', name: 'gpt-4o' },
+        inferenceProvider: { name: 'openai', model: 'gpt-4o' },
       });
       expect(collectAgentErrors(entity)).toEqual([]);
     });
 
-    it('accepts an omitted model', () => {
+    it('accepts omitted model and inferenceProvider', () => {
       expect(collectAgentErrors(makeAgent())).toEqual([]);
     });
 
-    it.each(['gpt-4o', 42, true, null, []])('rejects model as %j', model => {
-      const errors = collectAgentErrors(makeAgent({ model }));
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('spec.model');
-      expect(errors[0]).toContain('object');
-    });
+    it.each(['openai', 42, true, null, []])(
+      'rejects inferenceProvider as %j',
+      inferenceProvider => {
+        const errors = collectAgentErrors(makeAgent({ inferenceProvider }));
+        expect(errors).toHaveLength(1);
+        expect(errors[0]).toContain('spec.inferenceProvider');
+        expect(errors[0]).toContain('object');
+      },
+    );
 
-    it('reports both missing fields for an empty model object', () => {
-      const errors = collectAgentErrors(makeAgent({ model: {} }));
+    it('reports both missing fields for an empty inferenceProvider object', () => {
+      const errors = collectAgentErrors(makeAgent({ inferenceProvider: {} }));
       expect(errors).toHaveLength(2);
       expect(errors).toEqual(
         expect.arrayContaining([
-          expect.stringContaining('spec.model.provider'),
-          expect.stringContaining('spec.model.name'),
+          expect.stringContaining('spec.inferenceProvider.name'),
+          expect.stringContaining('spec.inferenceProvider.model'),
         ]),
       );
     });
 
     it.each([
-      ['provider', { name: 'gpt-4o' }],
-      ['name', { provider: 'openai' }],
-      ['provider', { provider: '', name: 'gpt-4o' }],
-      ['name', { provider: 'openai', name: '' }],
-      ['provider', { provider: 42, name: 'gpt-4o' }],
-      ['name', { provider: 'openai', name: 42 }],
-    ])('rejects invalid spec.model.%s in %j', (field, model) => {
-      const errors = collectAgentErrors(makeAgent({ model }));
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain(`spec.model.${field}`);
-      expect(errors[0]).toContain('non-empty string');
-    });
+      ['name', { model: 'gpt-4o' }],
+      ['model', { name: 'openai' }],
+      ['name', { name: '', model: 'gpt-4o' }],
+      ['model', { name: 'openai', model: '' }],
+      ['name', { name: 42, model: 'gpt-4o' }],
+      ['model', { name: 'openai', model: 42 }],
+    ])(
+      'rejects invalid spec.inferenceProvider.%s in %j',
+      (field, inferenceProvider) => {
+        const errors = collectAgentErrors(makeAgent({ inferenceProvider }));
+        expect(errors).toHaveLength(1);
+        expect(errors[0]).toContain(`spec.inferenceProvider.${field}`);
+        expect(errors[0]).toContain('non-empty string');
+      },
+    );
   });
 
   describe('spec.executionMode (optional, must be one of in-process, subprocess, sandbox)', () => {
@@ -464,7 +486,8 @@ describe('collectAgentErrors', () => {
       const entity = makeAgent({
         instructions: 'You are a fully configured agent.',
         handoffDescription: 'Handles everything.',
-        model: { provider: 'openai', name: 'gpt-4o' },
+        model: 'gpt-4o',
+        inferenceProvider: { name: 'openai', model: 'gpt-4o' },
         handoffs: ['agent-a', 'agent-b'],
         tools: ['tool-x', 'tool-y'],
         toolUseBehavior: 'run_llm_again',

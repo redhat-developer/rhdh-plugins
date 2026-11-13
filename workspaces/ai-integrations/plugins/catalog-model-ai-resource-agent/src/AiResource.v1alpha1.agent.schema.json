@@ -83,16 +83,21 @@
               "minLength": 1
             },
             "model": {
+              "type": "string",
+              "description": "The model identifier for this agent.",
+              "minLength": 1
+            },
+            "inferenceProvider": {
               "type": "object",
-              "description": "The model for this agent. Optional; when set, both provider and name are required.",
-              "required": ["provider", "name"],
+              "description": "The inference provider for this agent. Optional; when set, both name and model are required.",
+              "required": ["name", "model"],
               "properties": {
-                "provider": {
+                "name": {
                   "type": "string",
-                  "description": "The model provider.",
+                  "description": "The inference provider identifier.",
                   "minLength": 1
                 },
-                "name": {
+                "model": {
                   "type": "string",
                   "description": "The model identifier.",
                   "minLength": 1

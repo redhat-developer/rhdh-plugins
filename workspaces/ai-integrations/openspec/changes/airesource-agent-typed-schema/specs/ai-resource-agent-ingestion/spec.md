@@ -26,25 +26,31 @@ When an AiResource entity declares `spec.type: agent`, the catalog processor MUS
 
 ---
 
-### Requirement: Optional agent model validation
+### Requirement: Optional inference provider validation
 
-The processor MUST accept an omitted `spec.model`. When present, `spec.model`
-MUST be an object with both `provider` and `name` as non-empty strings.
+The processor MUST accept an omitted `spec.inferenceProvider`. When present,
+`spec.inferenceProvider` MUST be an object with both `name` and `model` as
+non-empty strings.
 
-#### Scenario: Model object accepted at ingestion
+#### Scenario: Existing model string accepted at ingestion
 
-- **WHEN** an otherwise valid agent entity sets `spec.model` to `{ provider: openai, name: gpt-4o }`
+- **WHEN** an otherwise valid agent entity sets `spec.model` to `gpt-4o` and omits `spec.inferenceProvider`
 - **THEN** the processor accepts the entity
 
-#### Scenario: Invalid model shape rejected at ingestion
+#### Scenario: Inference provider object accepted at ingestion
 
-- **WHEN** an agent entity sets `spec.model` to a string, number, boolean, null, or array
-- **THEN** the processor rejects ingestion with an error naming `spec.model`
+- **WHEN** an otherwise valid agent entity sets `spec.inferenceProvider` to `{ name: openai, model: gpt-4o }`, with or without a `spec.model` string
+- **THEN** the processor accepts the entity
 
-#### Scenario: Invalid model fields reported at ingestion
+#### Scenario: Invalid inference provider shape rejected at ingestion
 
-- **WHEN** an agent entity supplies a model object with either `provider` or `name` missing, empty, or not a string
-- **THEN** the processor reports each invalid field as `spec.model.provider` or `spec.model.name`
+- **WHEN** an agent entity sets `spec.inferenceProvider` to a string, number, boolean, null, or array
+- **THEN** the processor rejects ingestion with an error naming `spec.inferenceProvider`
+
+#### Scenario: Invalid inference provider fields reported at ingestion
+
+- **WHEN** an agent entity supplies an inference provider object with either `name` or `model` missing, empty, or not a string
+- **THEN** the processor reports each invalid field as `spec.inferenceProvider.name` or `spec.inferenceProvider.model`
 
 ---
 
