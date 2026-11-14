@@ -8734,34 +8734,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openapitools/openapi-generator-cli@npm:2.42.1":
-  version: 2.42.1
-  resolution: "@openapitools/openapi-generator-cli@npm:2.42.1"
-  dependencies:
-    "@inquirer/select": "npm:1.3.3"
-    "@nestjs/axios": "npm:4.0.1"
-    "@nestjs/common": "npm:11.2.3"
-    "@nestjs/core": "npm:11.2.3"
-    "@nuxtjs/opencollective": "npm:0.3.2"
-    axios: "npm:^1.20.0"
-    chalk: "npm:4.1.2"
-    commander: "npm:8.3.0"
-    compare-versions: "npm:6.1.1"
-    concurrently: "npm:^10.0.5"
-    console.table: "npm:0.10.0"
-    fs-extra: "npm:11.4.0"
-    glob: "npm:13.0.6"
-    proxy-agent: "npm:8.0.2"
-    reflect-metadata: "npm:0.2.2"
-    rxjs: "npm:7.8.2"
-    tslib: "npm:2.8.1"
-  bin:
-    openapi-generator-cli: main.js
-  checksum: 10c0/fb1935f7b3ce859a86cda38f86e0efd485af1acb72aad2b60137a3d6cec8cc34adf954c120b6a7bcfd8c5eb2b73616494080a117ceb6c9110ad2822ff4a752d2
-  languageName: node
-  linkType: hard
-
-"@openapitools/openapi-generator-cli@npm:^2.41.0":
+"@openapitools/openapi-generator-cli@npm:2.42.2, @openapitools/openapi-generator-cli@npm:^2.41.0":
   version: 2.42.2
   resolution: "@openapitools/openapi-generator-cli@npm:2.42.2"
   dependencies:
@@ -9888,7 +9861,7 @@ __metadata:
     "@backstage/cli": "npm:^0.36.7"
     "@backstage/plugin-permission-common": "npm:^0.9.12"
     "@backstage/types": "npm:^1.2.2"
-    "@openapitools/openapi-generator-cli": "npm:2.42.1"
+    "@openapitools/openapi-generator-cli": "npm:2.42.2"
     "@serverlessworkflow/sdk-typescript": "npm:^0.8.4"
     "@spotify/prettier-config": "npm:^15.0.0"
     "@types/js-yaml": "npm:^4.0.0"
@@ -21563,17 +21536,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:13.0.6, glob@npm:^13.0.0, glob@npm:^13.0.6":
-  version: 13.0.6
-  resolution: "glob@npm:13.0.6"
-  dependencies:
-    minimatch: "npm:^10.2.2"
-    minipass: "npm:^7.1.3"
-    path-scurry: "npm:^2.0.2"
-  checksum: 10c0/269c236f11a9b50357fe7a8c6aadac667e01deb5242b19c84975628f05f4438d8ee1354bb62c5d6c10f37fd59911b54d7799730633a2786660d8c69f1d18120a
-  languageName: node
-  linkType: hard
-
 "glob@npm:14.0.4":
   version: 14.0.4
   resolution: "glob@npm:14.0.4"
@@ -21598,6 +21560,17 @@ __metadata:
   bin:
     glob: dist/esm/bin.mjs
   checksum: 10c0/100705eddbde6323e7b35e1d1ac28bcb58322095bd8e63a7d0bef1a2cdafe0d0f7922a981b2b48369a4f8c1b077be5c171804534c3509dfe950dde15fbe6d828
+  languageName: node
+  linkType: hard
+
+"glob@npm:^13.0.0, glob@npm:^13.0.6":
+  version: 13.0.6
+  resolution: "glob@npm:13.0.6"
+  dependencies:
+    minimatch: "npm:^10.2.2"
+    minipass: "npm:^7.1.3"
+    path-scurry: "npm:^2.0.2"
+  checksum: 10c0/269c236f11a9b50357fe7a8c6aadac667e01deb5242b19c84975628f05f4438d8ee1354bb62c5d6c10f37fd59911b54d7799730633a2786660d8c69f1d18120a
   languageName: node
   linkType: hard
 
