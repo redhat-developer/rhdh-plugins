@@ -60,9 +60,27 @@ export class UIhelper {
       .first()
       .click();
   }
+  /**
+   * CTAs are BUI Buttons (not anchors). Target URL is exposed as data-cta-href.
+   */
   async verifyButtonURL(label: string | RegExp, url: string) {
-    const anchor = this.page.locator('a').filter({ hasText: label });
-    expect(await anchor.first().getAttribute('href')).toContain(url);
+    const buttons = this.page.getByRole('button', { name: label, exact: true });
+    await expect(buttons.first()).toBeVisible();
+    const count = await buttons.count();
+    const hrefs: string[] = [];
+    for (let i = 0; i < count; i++) {
+      hrefs.push((await buttons.nth(i).getAttribute('data-cta-href')) ?? '');
+    }
+    expect(hrefs.some(href => href.includes(url))).toBeTruthy();
+  }
+  /** Click the Quickstart CTA whose data-cta-href matches `url` (avoids title/CTA name collisions). */
+  async clickCtaByHref(url: string) {
+    // Use a locator + auto-wait: accordion panels remount after navigation/progress
+    // updates, so a one-shot getByRole scan can miss the CTA.
+    const cta = this.page.locator(
+      `button[data-cta-href="${url}"], button[data-cta-href*="${url}"]`,
+    );
+    await cta.first().click({ timeout: 15000 });
   }
   async verifyHeading(heading: string | RegExp, exact: boolean = true) {
     await expect(

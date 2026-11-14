@@ -14,38 +14,54 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
-import Collapse from '@mui/material/Collapse';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import { useEffect, useState } from 'react';
+import {
+  Accordion,
+  AccordionPanel,
+  AccordionTrigger,
+  Box,
+  Flex,
+  Text,
+} from '@backstage/ui';
 
 import { QuickstartItemIcon } from './QuickstartItemIcon';
 import { QuickstartCtaLink } from './QuickstartCtaLink';
-import { QuickstartIcon } from './QuickstartIcon';
 import { QuickstartItemData } from '../../types';
+import { useIsDarkTheme } from '../../hooks/useIsDarkTheme';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../../utils';
+
+/**
+ * Surfaces from theme / host PF tokens (no MUI useTheme, no PF package dep).
+ * - incomplete: --bui-redhat-theme-bg-primary
+ * - completed light: --pf-v5-global--palette--green-50
+ * - completed dark:  --pf-t--global--text--color--status--success--clicked
+ */
+const itemBackground = (completed: boolean, isDark: boolean) => {
+  if (!completed) {
+    return 'var(--bui-redhat-theme-bg-primary)';
+  }
+  return isDark
+    ? 'var(--pf-t--global--text--color--status--success--clicked, #223D2D)'
+    : 'var(--pf-v5-global--palette--green-50, #F3FAF2)';
+};
 
 export type QuickstartItemProps = {
   item: QuickstartItemData;
   setProgress: () => void;
   index: number;
-  open: boolean;
-  handleOpen: () => void;
 };
 
+/** MUI ListItem + Collapse → BUI Accordion. */
 export const QuickstartItem = ({
   item,
   setProgress,
   index,
-  open,
-  handleOpen,
 }: QuickstartItemProps) => {
   const { t } = useTranslation();
+  const isDark = useIsDarkTheme();
   const itemKey = `${item.title}-${index}`;
+  const title = getTranslatedTextWithFallback(t, item.titleKey, item.title);
 
   const [stepCompleted, setStepCompleted] = useState(
     () => localStorage.getItem(itemKey) === 'true',
@@ -61,107 +77,32 @@ export const QuickstartItem = ({
     setStepCompleted(localStorage.getItem(itemKey) === 'true');
   }, [itemKey]);
 
+  const itemStyle = {
+    backgroundColor: itemBackground(stepCompleted, isDark),
+  };
+
   return (
-    <Box component="li" sx={{ marginBottom: theme => `${theme.spacing(0.2)}` }}>
-      <ListItem
-        component="div"
-        key={itemKey}
-        onClick={handleOpen}
-        role="button"
-        aria-expanded={open}
-        aria-label={
-          open
-            ? t('item.collapseAriaLabel' as any, { title: item.title })
-            : t('item.expandAriaLabel' as any, { title: item.title })
-        }
-        tabIndex={0}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleOpen();
-          }
-        }}
-        sx={{
-          cursor: 'pointer',
-          ...(stepCompleted
-            ? {
-                backgroundColor: theme =>
-                  theme.palette.mode === 'light' ? '#F3FAF2' : '#223D2D',
-              }
-            : { backgroundColor: theme => theme.palette.background.paper }),
-        }}
-      >
-        <ListItemIcon
-          sx={{
-            minWidth: '40px',
-          }}
-        >
-          <QuickstartItemIcon
-            icon={item.icon}
-            sx={{
-              ...(open
-                ? { color: theme => theme.palette.text.primary }
-                : { color: theme => theme.palette.text.secondary }),
-            }}
-          />
-        </ListItemIcon>
-        <ListItemText
-          primary={getTranslatedTextWithFallback(t, item.titleKey, item.title)}
-          sx={{
-            '& .v5-MuiTypography-root': {
-              fontWeight: theme =>
-                `${theme.typography.fontWeightMedium}!important`,
-            },
-            ...(open
-              ? { color: theme => theme.palette.text.primary }
-              : { color: theme => theme.palette.text.secondary }),
-          }}
-        />
-        <Box
-          component="span"
-          aria-hidden="true"
-          sx={{
-            display: 'inline-flex',
-            padding: '8px',
-            ...(open
-              ? { color: theme => theme.palette.text.primary }
-              : { color: theme => theme.palette.text.secondary }),
-          }}
-        >
-          <QuickstartIcon
-            icon={open ? 'expand_less' : 'expand_more'}
-            size="small"
-          />
-        </Box>
-      </ListItem>
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <List
-          component="div"
-          disablePadding
-          sx={{
-            ...(stepCompleted
-              ? {
-                  backgroundColor: theme =>
-                    theme.palette.mode === 'light' ? '#F3FAF2' : '#223D2D',
-                }
-              : { backgroundColor: theme => theme.palette.background.paper }),
-            paddingBottom: '10px',
-          }}
-        >
-          <ListItem>
-            <ListItemText
-              primary={getTranslatedTextWithFallback(
-                t,
-                item.descriptionKey,
-                item.description,
-              )}
-            />
-          </ListItem>
-          <ListItem>
+    <Accordion style={itemStyle}>
+      <AccordionTrigger>
+        <Flex gap="2" align="center">
+          <QuickstartItemIcon icon={item.icon} />
+          <Text variant="body-medium">{title}</Text>
+        </Flex>
+      </AccordionTrigger>
+      <AccordionPanel style={itemStyle}>
+        <Flex direction="column" align="start">
+          <Text variant="body-medium">
+            {getTranslatedTextWithFallback(
+              t,
+              item.descriptionKey,
+              item.description,
+            )}
+          </Text>
+          <Box mt="1">
             <QuickstartCtaLink cta={item.cta} onClick={markStepCompleted} />
-          </ListItem>
-        </List>
-      </Collapse>
-    </Box>
+          </Box>
+        </Flex>
+      </AccordionPanel>
+    </Accordion>
   );
 };

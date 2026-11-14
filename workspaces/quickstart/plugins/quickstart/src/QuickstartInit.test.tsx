@@ -21,6 +21,7 @@ import {
   TestApiProvider,
 } from '@backstage/test-utils';
 import { configApiRef, identityApiRef } from '@backstage/core-plugin-api';
+import { toastApiRef } from '@backstage/frontend-plugin-api';
 import { QuickstartInit } from './QuickstartInit';
 import { QUICKSTART_DRAWER_ID } from './const';
 
@@ -57,6 +58,10 @@ const mockIdentityApi = {
   signOut: jest.fn(),
 };
 
+const mockToastApi = {
+  post: jest.fn(() => ({ close: jest.fn() })),
+};
+
 describe('QuickstartInit', () => {
   const configApi = mockApis.config({
     data: {
@@ -84,6 +89,7 @@ describe('QuickstartInit', () => {
         apis={[
           [configApiRef, configApi],
           [identityApiRef, mockIdentityApi],
+          [toastApiRef, mockToastApi],
         ]}
       >
         <QuickstartInit />

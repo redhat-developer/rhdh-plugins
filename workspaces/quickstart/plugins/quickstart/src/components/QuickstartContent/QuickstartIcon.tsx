@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
+import type { ComponentType, CSSProperties } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
-import WidgetsOutlinedIcon from '@mui/icons-material/WidgetsOutlined';
-import Box from '@mui/material/Box';
-import MuiIcon from '@mui/material/Icon';
-import { SxProps, Theme } from '@mui/material/styles';
-import { SvgIconProps } from '@mui/material/SvgIcon';
+import { Box } from '@backstage/ui';
+import { RiApps2Line } from '@remixicon/react';
 
 import {
   resolveQuickstartIconId,
@@ -27,16 +25,31 @@ import {
   toMaterialLigature,
 } from './quickstartIconIds';
 
+export type QuickstartIconSize = 'small' | 'medium' | 'large';
+
 export interface QuickstartIconProps {
   icon: string;
-  size?: SvgIconProps['fontSize'];
-  sx?: SxProps<Theme>;
+  size?: QuickstartIconSize;
+  className?: string;
+  style?: CSSProperties;
 }
 
-const flexSx = (sx?: SxProps<Theme>): SxProps<Theme> =>
-  (sx
-    ? [{ display: 'flex', alignItems: 'center' }, sx]
-    : { display: 'flex', alignItems: 'center' }) as SxProps<Theme>;
+const pixelSize = (size: QuickstartIconSize): number => {
+  switch (size) {
+    case 'small':
+      return 20;
+    case 'large':
+      return 35;
+    case 'medium':
+    default:
+      return 24;
+  }
+};
+
+const sizeStyle = (size: QuickstartIconSize): CSSProperties => {
+  const px = pixelSize(size);
+  return { width: px, height: px, fontSize: px, display: 'inline-flex' };
+};
 
 const toInlineSvgDataUri = (rawSvg: string): string =>
   `data:image/svg+xml;base64,${btoa(rawSvg)}`;
@@ -46,40 +59,42 @@ const isRemoteOrPathImage = (value: string): boolean =>
 
 type QuickstartImageIconProps = {
   src: string;
-  size: SvgIconProps['fontSize'];
-  sx?: SxProps<Theme>;
-  outlined?: boolean;
+  size: QuickstartIconSize;
+  className?: string;
+  style?: CSSProperties;
 };
 
 /** Renders an icon from an image `src` (URL, path, or data URI). */
 const QuickstartImageIcon = ({
   src,
   size,
-  sx,
-  outlined = true,
+  className,
+  style,
 }: QuickstartImageIconProps) => (
-  <MuiIcon
-    fontSize={size}
-    {...(outlined ? { baseClassName: 'material-icons-outlined' } : {})}
-    sx={sx}
-  >
-    <Box
-      component="img"
+  <Box className={className} style={{ ...sizeStyle(size), ...style }}>
+    <img
       src={src}
       alt=""
-      sx={{ height: '100%', width: '100%' }}
+      style={{ width: '100%', height: '100%', display: 'block' }}
     />
-  </MuiIcon>
+  </Box>
 );
+
+type SystemIconProps = {
+  fontSize?: QuickstartIconSize;
+  className?: string;
+  style?: CSSProperties;
+};
 
 /**
  * Renders quickstart icons from system icons, image/SVG URLs, or Material
- * ligatures for legacy config ids. Falls back to a MUI outlined widget icon.
+ * ligatures for legacy config ids. Falls back to a Remix apps icon.
  */
 export const QuickstartIcon = ({
   icon,
   size = 'medium',
-  sx,
+  className,
+  style,
 }: QuickstartIconProps) => {
   const app = useApp();
 
@@ -88,10 +103,12 @@ export const QuickstartIcon = ({
   }
 
   const resolvedIconId = resolveQuickstartIconId(icon);
-  const SystemIcon = app.getSystemIcon(resolvedIconId);
+  const SystemIcon = app.getSystemIcon(resolvedIconId) as
+    | ComponentType<SystemIconProps>
+    | undefined;
   if (SystemIcon) {
     return (
-      <Box sx={flexSx(sx)}>
+      <Box className={className} style={style}>
         <SystemIcon fontSize={size} />
       </Box>
     );
@@ -102,21 +119,38 @@ export const QuickstartIcon = ({
       <QuickstartImageIcon
         src={toInlineSvgDataUri(icon)}
         size={size}
-        sx={sx}
-        outlined={false}
+        className={className}
+        style={style}
       />
     );
   }
 
   if (isRemoteOrPathImage(icon)) {
-    return <QuickstartImageIcon src={icon} size={size} sx={sx} />;
+    return (
+      <QuickstartImageIcon
+        src={icon}
+        size={size}
+        className={className}
+        style={style}
+      />
+    );
   }
 
   if (shouldUseMaterialLigature(icon)) {
     return (
-      <MuiIcon fontSize={size} baseClassName="material-icons-outlined" sx={sx}>
+      <Box
+        className={['material-icons-outlined', className]
+          .filter(Boolean)
+          .join(' ')}
+        style={{
+          ...sizeStyle(size),
+          lineHeight: 1,
+          overflow: 'hidden',
+          ...style,
+        }}
+      >
         {toMaterialLigature(icon)}
-      </MuiIcon>
+      </Box>
     );
   }
 
@@ -126,11 +160,13 @@ export const QuickstartIcon = ({
   );
 
   return (
-    <Box aria-hidden sx={flexSx(sx)}>
-      <WidgetsOutlinedIcon
-        data-testid="QuickstartIconFallback"
-        fontSize={size}
-      />
+    <Box
+      aria-hidden
+      className={className}
+      style={style}
+      data-testid="QuickstartIconFallback"
+    >
+      <RiApps2Line size={pixelSize(size)} />
     </Box>
   );
 };

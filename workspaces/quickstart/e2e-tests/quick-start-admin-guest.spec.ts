@@ -50,13 +50,19 @@ test.describe('Test Quick Start plugin', () => {
     await uiHelper.verifyText(translations.header.title);
     await uiHelper.verifyText(translations.header.subtitle);
     await uiHelper.verifyText(translations.footer.notStarted);
+    // Wait until role filtering finishes so the step list (not the loading
+    // skeleton) is present before the axe scan.
+    await page
+      .getByText(translations.steps.setupAuthentication.title, { exact: true })
+      .waitFor({ state: 'visible', timeout: 15000 });
 
     await runAccessibilityTests(
       page,
       testInfo,
       'quick-start-accessibility.json',
       {
-        exclude: ['table', '.v5-MuiButton-textInherit'],
+        // Host MUI spinner can appear without a name during page load
+        exclude: ['table', '[data-testid="loading-indicator"]'],
       },
     );
 
@@ -99,20 +105,18 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.configureGit.description,
     );
     await configureGitDescription.waitFor({ state: 'visible' });
-    // Find the parent container (List) that contains both the description and the CTA
-    // The structure is: List > ListItem (description) > ListItem (CTA)
-    const parentList = configureGitDescription
-      .locator('..') // ListItemText
-      .locator('..') // ListItem
-      .locator('..'); // List
-    // Find the CTA button within this specific List container to avoid matching the setupAuthentication button
-    const configureGitCta = parentList
-      .getByRole('link', { name: translations.steps.configureGit.ctaTitle })
-      .first();
+    const configureGitDocsUrl =
+      'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/';
+    const configureGitCta = page
+      .getByRole('button', { name: translations.steps.configureGit.ctaTitle })
+      .and(
+        page.locator(
+          '[data-cta-href*="integrating_red_hat_developer_hub_with_github"]',
+        ),
+      );
     await configureGitCta.waitFor({ state: 'visible' });
-    const href = await configureGitCta.getAttribute('href');
-    expect(href).toContain(
-      'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/',
+    expect(await configureGitCta.getAttribute('data-cta-href')).toContain(
+      configureGitDocsUrl,
     );
 
     const lightspeedDocsUrl =
@@ -126,23 +130,17 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.setupLightspeed.description,
     );
     await setupLightspeedDescription.waitFor({ state: 'visible' });
-    // NFS catalog breadcrumbs are also role=list; target the quickstart step list.
-    await expect(
-      page.getByRole('list').filter({
-        hasText: translations.steps.setupLightspeed.description,
-      }),
-    ).toBeVisible();
-    const setupLightspeedParentList = setupLightspeedDescription
-      .locator('..')
-      .locator('..')
-      .locator('..');
-    const setupLightspeedCta = setupLightspeedParentList
-      .getByRole('link', {
+    const setupLightspeedCta = page
+      .getByRole('button', {
         name: translations.steps.setupLightspeed.ctaTitle,
       })
-      .first();
+      .and(
+        page.locator(
+          '[data-cta-href*="interacting_with_red_hat_developer_lightspeed"]',
+        ),
+      );
     await setupLightspeedCta.waitFor({ state: 'visible' });
-    expect(await setupLightspeedCta.getAttribute('href')).toContain(
+    expect(await setupLightspeedCta.getAttribute('data-cta-href')).toContain(
       lightspeedDocsUrl,
     );
 
@@ -151,14 +149,14 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.managePlugins.ctaTitle,
       '/extensions',
     );
-    await uiHelper.clickLinkByText(translations.steps.managePlugins.ctaTitle);
+    await uiHelper.clickCtaByHref('/extensions');
     await expect(page).toHaveURL(/extensions/);
 
     await expect(page.getByRole('progressbar')).toBeVisible();
     await uiHelper.verifyText(getProgressPattern(translations.footer.progress));
-    await uiHelper.clickButtonByText(translations.footer.hide);
+    await uiHelper.clickLinkByText(translations.footer.hide);
     await expect(
-      page.getByRole('button', { name: translations.footer.hide }),
+      page.getByRole('link', { name: translations.footer.hide }),
     ).toBeHidden();
   });
 });

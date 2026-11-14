@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
+import { Box, ButtonLink, Flex, Text } from '@backstage/ui';
+
 import { useTranslation } from '../hooks/useTranslation';
 
 export type QuickstartFooterProps = {
@@ -25,38 +23,61 @@ export type QuickstartFooterProps = {
   progress: number;
 };
 
+/**
+ * Hide uses ButtonLink (theme → PatternFly link / text style).
+ * Progress bar uses BUI tokens via inline layout (no Progress component in BUI).
+ */
 export const QuickstartFooter = ({
   handleDrawerClose,
   progress,
 }: QuickstartFooterProps) => {
   const { t } = useTranslation();
+  const safeProgress = Number.isFinite(progress) ? progress : 0;
+  const progressLabel =
+    safeProgress > 0
+      ? t('footer.progress' as any, { progress: safeProgress.toString() })
+      : t('footer.notStarted');
 
   return (
     <Box>
-      <LinearProgress
-        variant="determinate"
-        value={progress}
-        aria-label={
-          progress > 0
-            ? t('footer.progress' as any, { progress: progress.toString() })
-            : t('footer.notStarted')
-        }
-      />
       <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: theme => `${theme.spacing(2.5)}`,
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={safeProgress}
+        aria-label={progressLabel}
+        style={{
+          height: 4,
+          width: '100%',
+          backgroundColor: 'var(--bui-bg-neutral-2)',
+          overflow: 'hidden',
         }}
       >
-        <Typography sx={{ fontSize: theme => theme.typography.caption }}>
-          {progress > 0
-            ? t('footer.progress' as any, { progress: progress.toString() })
-            : t('footer.notStarted')}
-        </Typography>
-        <Button onClick={() => handleDrawerClose()}>{t('footer.hide')}</Button>
+        <Box
+          style={{
+            height: '100%',
+            width: `${safeProgress}%`,
+            backgroundColor: 'var(--bui-accent-bg)',
+            transition: 'width 0.2s ease',
+          }}
+        >
+          {/* Box requires children; empty fill bar */}
+          {null}
+        </Box>
       </Box>
+      <Flex align="center" justify="between" p="5">
+        <Text variant="body-small">{progressLabel}</Text>
+        <ButtonLink
+          href="#"
+          style={{ fontWeight: 400 }}
+          onClick={event => {
+            event.preventDefault();
+          }}
+          onPress={() => handleDrawerClose()}
+        >
+          {t('footer.hide')}
+        </ButtonLink>
+      </Flex>
     </Box>
   );
 };
