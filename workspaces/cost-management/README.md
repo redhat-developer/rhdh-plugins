@@ -46,7 +46,9 @@ You can follow one of these options for installing `Cost Management` plugin depe
 
 ### Option 1: Dynamic plugin - on a Red Hat Developer Hub(RHDH) instance
 
-[Follow this link](./docs/dynamic-plugin.md) for installing plugin as Dynamic Plugin
+[Follow this link](./docs/installing-on-rhdh.md) for installing Cost Management on Red Hat Developer Hub.
+
+For plugin developers (rhdh-cli packaging, Scalprum vs NFS, RHDH version compatibility), see [docs/dev/packaging-and-rhdh-compatibility.md](./docs/dev/packaging-and-rhdh-compatibility.md).
 
 #### Dependency on Orchestrator plugin and Workflow details
 
