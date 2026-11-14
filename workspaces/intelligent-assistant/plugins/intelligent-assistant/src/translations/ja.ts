@@ -340,6 +340,17 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'settings.displayMode.overlay': 'オーバーレイ',
     'settings.mcp.badge': '新規',
     'settings.panel.title': '設定',
+    'settings.menu.label': '設定',
+    'settings.preferences.tab.title': '基本設定',
+    'settings.preferences.pinnedChats.label': 'ピン留めされたチャット',
+    'settings.preferences.pinnedChats.description':
+      '会話履歴パネルにピン留めされたチャットを表示します。',
+    'settings.preferences.savedPrompts.label': '保存済みプロンプト',
+    'settings.preferences.savedPrompts.description':
+      '会話履歴パネルに保存済みプロンプトを表示します。',
+    'settings.preferences.screenContext.label': '画面コンテキスト',
+    'settings.preferences.screenContext.description':
+      'メッセージ送信時に現在の画面をアシスタントと共有します。デフォルトはオフです。',
     'settings.mcp.label': 'MCP 設定',
     'settings.prompt.label': 'プロンプト設定',
     'settings.pinned.disable': 'チャットの固定の無効化',

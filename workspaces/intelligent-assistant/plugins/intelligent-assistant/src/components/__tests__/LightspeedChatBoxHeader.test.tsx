@@ -29,11 +29,7 @@ describe('LightspeedChatBoxHeader', () => {
     selectedModel: 'gpt-4',
     handleSelectedModel: jest.fn(),
     models: [{ label: 'GPT-4', value: 'gpt-4', provider: 'openai' }],
-    isPinningChatsEnabled: true,
-    onPinnedChatsToggle: jest.fn(),
-    isSavedPromptsEnabled: true,
-    onSavedPromptsToggle: jest.fn(),
-    onMcpSettingsClick: jest.fn(),
+    onSettingsClick: jest.fn(),
     setDisplayMode: jest.fn(),
   };
 
@@ -52,92 +48,44 @@ describe('LightspeedChatBoxHeader', () => {
     expect(screen.queryByText('gpt-4')).not.toBeInTheDocument();
   });
 
-  it('should accept isSavedPromptsEnabled prop without error', () => {
-    expect(() =>
-      render(
-        <LightspeedChatBoxHeader
-          {...defaultProps}
-          isSavedPromptsEnabled={false}
-        />,
-      ),
-    ).not.toThrow();
-  });
-
-  it('should accept onSavedPromptsToggle prop without error', () => {
-    const toggleFn = jest.fn();
-    expect(() =>
-      render(
-        <LightspeedChatBoxHeader
-          {...defaultProps}
-          onSavedPromptsToggle={toggleFn}
-        />,
-      ),
-    ).not.toThrow();
-  });
-
-  it('should show MCP and Prompt Settings when showMcpSettings is true', () => {
-    render(<LightspeedChatBoxHeader {...defaultProps} showMcpSettings />);
+  it('should show Settings menu item when chat tab options are enabled', () => {
+    render(<LightspeedChatBoxHeader {...defaultProps} />);
 
     fireEvent.click(screen.getByLabelText('Options'));
-    expect(screen.getByText('MCP and Prompt Settings')).toBeInTheDocument();
+    expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 
-  it('should show Prompt Settings when showMcpSettings is false', () => {
-    render(
-      <LightspeedChatBoxHeader {...defaultProps} showMcpSettings={false} />,
-    );
-
-    fireEvent.click(screen.getByLabelText('Options'));
-    expect(screen.getByText('Prompt Settings')).toBeInTheDocument();
-    expect(
-      screen.queryByText('MCP and Prompt Settings'),
-    ).not.toBeInTheDocument();
-  });
-
-  it('hides screen context kebab items when admin flag is off', () => {
+  it('should call onSettingsClick when Settings is clicked', () => {
+    const onSettingsClick = jest.fn();
     render(
       <LightspeedChatBoxHeader
         {...defaultProps}
-        screenContextAdminEnabled={false}
+        onSettingsClick={onSettingsClick}
       />,
     );
 
     fireEvent.click(screen.getByLabelText('Options'));
+    fireEvent.click(screen.getByText('Settings'));
+    expect(onSettingsClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('should hide Settings when showChatTabOptions is false', () => {
+    render(
+      <LightspeedChatBoxHeader {...defaultProps} showChatTabOptions={false} />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Options'));
+    expect(screen.queryByText('Settings')).not.toBeInTheDocument();
+    expect(screen.getByText('Display mode')).toBeInTheDocument();
+  });
+
+  it('should not show preference toggles in the 3-dots menu', () => {
+    render(<LightspeedChatBoxHeader {...defaultProps} />);
+
+    fireEvent.click(screen.getByLabelText('Options'));
+    expect(screen.queryByText('Enable pinned chats')).not.toBeInTheDocument();
+    expect(screen.queryByText('Disable pinned chats')).not.toBeInTheDocument();
+    expect(screen.queryByText('Enable saved prompts')).not.toBeInTheDocument();
     expect(screen.queryByText('Enable screen context')).not.toBeInTheDocument();
-    expect(
-      screen.queryByText('Disable screen context'),
-    ).not.toBeInTheDocument();
-  });
-
-  it('shows Enable screen context when admin on and sharing off', () => {
-    const onToggle = jest.fn();
-    render(
-      <LightspeedChatBoxHeader
-        {...defaultProps}
-        screenContextAdminEnabled
-        isScreenContextSharingEnabled={false}
-        onScreenContextSharingToggle={onToggle}
-      />,
-    );
-
-    fireEvent.click(screen.getByLabelText('Options'));
-    fireEvent.click(screen.getByText('Enable screen context'));
-    expect(onToggle).toHaveBeenCalledWith(true);
-  });
-
-  it('shows Disable screen context when admin on and sharing on', () => {
-    const onToggle = jest.fn();
-    render(
-      <LightspeedChatBoxHeader
-        {...defaultProps}
-        screenContextAdminEnabled
-        isScreenContextSharingEnabled
-        onScreenContextSharingToggle={onToggle}
-      />,
-    );
-
-    fireEvent.click(screen.getByLabelText('Options'));
-    fireEvent.click(screen.getByText('Disable screen context'));
-    expect(onToggle).toHaveBeenCalledWith(false);
   });
 });

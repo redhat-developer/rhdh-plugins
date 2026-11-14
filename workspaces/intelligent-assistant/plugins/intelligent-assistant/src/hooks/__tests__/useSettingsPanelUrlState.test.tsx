@@ -83,6 +83,7 @@ describe('parseSettingsTabParam', () => {
   });
 
   it('returns valid settings tab values', () => {
+    expect(parseSettingsTabParam('preferences')).toBe('preferences');
     expect(parseSettingsTabParam('mcp-servers')).toBe('mcp-servers');
     expect(parseSettingsTabParam('saved-prompts')).toBe('saved-prompts');
   });
@@ -152,7 +153,7 @@ describe('useSettingsPanelUrlState', () => {
       );
 
       expect(result.current.isOpen).toBe(false);
-      expect(result.current.activeTab).toBe('mcp-servers');
+      expect(result.current.activeTab).toBe('preferences');
     });
 
     it('restores persisted settings tab to the URL when entering fullscreen', () => {

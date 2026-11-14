@@ -1256,7 +1256,7 @@ export const LightspeedChat = ({
       isSettingsOpen &&
       activeSettingsTab === 'mcp-servers'
     ) {
-      setSettingsTab('saved-prompts');
+      setSettingsTab('preferences');
     }
   }, [
     mcpToolsPermissionResolved,
@@ -2277,7 +2277,10 @@ export const LightspeedChat = ({
       onTabChange={setSettingsTab}
       onClose={closeSettings}
       backgroundColor={chatHeaderBgColor}
+      isPinningChatsEnabled={isPinningChatsEnabled}
+      onPinnedChatsToggle={handlePinningChatsToggle}
       isSavedPromptsEnabled={isSavedPromptsEnabled}
+      onSavedPromptsToggle={handleSavedPromptsToggle}
       onEnableSavedPrompts={() => handleSavedPromptsToggle(true)}
       onApplySavedPromptToInput={handleApplySavedPrompt}
       onSendSavedPromptDirectly={sendMessage}
@@ -2289,6 +2292,9 @@ export const LightspeedChat = ({
       onCreateSavedPrompt={createPrompt}
       onRequestSavedPromptDelete={requestSavedPromptDelete}
       showMcpSettings={mcpToolsPermissionResolved}
+      screenContextAdminEnabled={screenContextEnabled}
+      isScreenContextSharingEnabled={isScreenContextSharingEnabled}
+      onScreenContextSharingToggle={handleScreenContextSharingToggle}
       isCompact={!isFullscreenMode}
       appendTo={() => chatModalScopeRef.current ?? document.body}
     />
@@ -2467,28 +2473,12 @@ export const LightspeedChat = ({
                     selectedModel={selectedModel}
                     handleSelectedModel={handleSelectedModel}
                     models={models}
-                    isPinningChatsEnabled={isPinningChatsEnabled}
-                    isSavedPromptsEnabled={isSavedPromptsEnabled}
-                    onSavedPromptsToggle={handleSavedPromptsToggle}
                     hideModelSelector
                     showChatTabOptions={!showNotebooksPanel}
-                    showMcpSettings={mcpToolsPermissionResolved}
                     setDisplayMode={setDisplayModeFromHeader}
                     displayMode={displayMode}
-                    onPinnedChatsToggle={handlePinningChatsToggle}
-                    screenContextAdminEnabled={screenContextEnabled}
-                    isScreenContextSharingEnabled={
-                      isScreenContextSharingEnabled
-                    }
-                    onScreenContextSharingToggle={
-                      handleScreenContextSharingToggle
-                    }
-                    onMcpSettingsClick={() => {
-                      openSettings(
-                        mcpToolsPermissionResolved
-                          ? 'mcp-servers'
-                          : 'saved-prompts',
-                      );
+                    onSettingsClick={() => {
+                      openSettings('preferences');
                     }}
                   />
                 </div>
