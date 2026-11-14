@@ -26,7 +26,7 @@ jobs:
       has_dispatches: ${{ steps.build-matrix.outputs.has_dispatches }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -126,7 +126,7 @@ jobs:
       issues: write
       packages: read
       pull-requests: write
-    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@3454a2e4ee2b667e2ed71fa9d384edc6de3d4f74 # v0.45.0
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@b2945ba14789828dae7a6b99a192c83f00b90981 # v0.56.0
     with:
       matrix: ${{ needs.poll.outputs.matrix }}
       install_mode: per-repo
