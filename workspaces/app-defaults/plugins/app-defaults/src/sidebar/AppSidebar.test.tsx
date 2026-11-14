@@ -68,6 +68,51 @@ describe('AppSidebar', () => {
     expect(screen.getByTestId('home-icon')).toBeInTheDocument();
   });
 
+  it('shows a hover tooltip only when the sidebar label is truncated', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          {
+            id: 'insights',
+            title: 'Adoption Insights',
+            to: '/adoption-insights',
+          },
+        ]}
+        groups={[]}
+      />,
+    );
+
+    const link = screen.getByRole('link', { name: 'Adoption Insights' });
+    const wrapper = link.parentElement ?? link;
+    const label = wrapper.querySelector(
+      'span[class*="MuiTypography-subtitle2"]',
+    ) as HTMLElement;
+    expect(label).toBeTruthy();
+
+    Object.defineProperty(label, 'scrollWidth', {
+      configurable: true,
+      get: () => 100,
+    });
+    Object.defineProperty(label, 'clientWidth', {
+      configurable: true,
+      get: () => 100,
+    });
+    fireEvent.mouseEnter(wrapper);
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    fireEvent.mouseLeave(wrapper);
+
+    Object.defineProperty(label, 'scrollWidth', {
+      configurable: true,
+      get: () => 200,
+    });
+    fireEvent.mouseEnter(wrapper);
+    await waitFor(() => {
+      expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'Adoption Insights',
+      );
+    });
+  });
+
   it('renders onClick items as buttons and invokes the handler', async () => {
     const onClick = jest.fn();
     await renderInTestApp(
