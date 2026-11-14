@@ -12,6 +12,7 @@ import { FrontendModule } from '@backstage/frontend-plugin-api';
 import type { IconComponent } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
+import { ReactNode } from 'react';
 import { SwappableComponentRef } from '@backstage/frontend-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
@@ -173,6 +174,141 @@ export interface DrawerPanelProps {
   maxWidth?: number;
   minWidth?: number;
   onWidthChange?: (width: number) => void;
+}
+
+// @public
+export const GlobalHeaderComponentBlueprint: ExtensionBlueprint<{
+  kind: 'gh-component';
+  params: ToolbarComponentParams;
+  output: ExtensionDataRef<
+    GlobalHeaderComponentData,
+    'global-header.component',
+    {}
+  >;
+  inputs: {};
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  dataRefs: {
+    componentData: ConfigurableExtensionDataRef<
+      GlobalHeaderComponentData,
+      'global-header.component',
+      {}
+    >;
+  };
+}>;
+
+// @public
+export interface GlobalHeaderComponentData {
+  component?: ComponentType<any>;
+  icon?: string;
+  id?: string;
+  layout?: Record<string, unknown>;
+  link?: string;
+  onClick?: () => void;
+  priority?: number;
+  title?: string;
+  titleKey?: string;
+  tooltip?: string;
+}
+
+// @public
+export const globalHeaderComponentDataRef: ConfigurableExtensionDataRef<
+  GlobalHeaderComponentData,
+  'global-header.component',
+  {}
+>;
+
+// @public
+export const GlobalHeaderMenuItemBlueprint: ExtensionBlueprint<{
+  kind: 'gh-menu-item';
+  params: MenuItemParams;
+  output: ExtensionDataRef<
+    GlobalHeaderMenuItemData,
+    'global-header.menu-item',
+    {}
+  >;
+  inputs: {};
+  config: {
+    priority: number | undefined;
+    title: string | undefined;
+    titleKey: string | undefined;
+    icon: string | undefined;
+    link: string | undefined;
+    sectionLabel: string | undefined;
+    sectionLink: string | undefined;
+    sectionLinkLabel: string | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+    title?: string | undefined;
+    titleKey?: string | undefined;
+    icon?: string | undefined;
+    link?: string | undefined;
+    sectionLabel?: string | undefined;
+    sectionLink?: string | undefined;
+    sectionLinkLabel?: string | undefined;
+  };
+  dataRefs: {
+    menuItemData: ConfigurableExtensionDataRef<
+      GlobalHeaderMenuItemData,
+      'global-header.menu-item',
+      {}
+    >;
+  };
+}>;
+
+// @public
+export interface GlobalHeaderMenuItemData {
+  component?: ComponentType<any>;
+  icon?: string;
+  link?: string;
+  onClick?: () => void;
+  priority?: number;
+  sectionLabel?: string;
+  sectionLink?: string;
+  sectionLinkLabel?: string;
+  subTitle?: string;
+  subTitleKey?: string;
+  target: string;
+  title?: string;
+  titleKey?: string;
+  type?: 'component' | 'data';
+}
+
+// @public
+export const globalHeaderMenuItemDataRef: ConfigurableExtensionDataRef<
+  GlobalHeaderMenuItemData,
+  'global-header.menu-item',
+  {}
+>;
+
+// @public
+export function GlobalHeaderProvider(props: {
+  components: GlobalHeaderComponentData[];
+  menuItems: GlobalHeaderMenuItemData[];
+  children: ReactNode;
+}): JSX_2.Element;
+
+// @public
+export interface MenuItemParams {
+  component?: ComponentType<any>;
+  icon?: string;
+  link?: string;
+  loader?: () => Promise<ComponentType<any>>;
+  onClick?: () => void;
+  priority?: number;
+  sectionLabel?: string;
+  sectionLink?: string;
+  sectionLinkLabel?: string;
+  subTitle?: string;
+  subTitleKey?: string;
+  target: string;
+  title?: string;
+  titleKey?: string;
 }
 
 // @public
@@ -506,5 +642,27 @@ export const templateCardExtension: OverridableExtensionDefinition<{
 export const templateCardModule: FrontendModule;
 
 // @public
+export interface ToolbarComponentParams {
+  component?: ComponentType<any>;
+  icon?: string;
+  layout?: Record<string, unknown>;
+  link?: string;
+  loader?: () => Promise<ComponentType<any>>;
+  onClick?: () => void;
+  priority?: number;
+  title?: string;
+  titleKey?: string;
+  tooltip?: string;
+}
+
+// @public
 export const useAppDrawer: () => AppDrawerApi;
+
+// @public
+export function useGlobalHeaderComponents(): GlobalHeaderComponentData[];
+
+// @public
+export function useGlobalHeaderMenuItems(
+  target: string,
+): GlobalHeaderMenuItemData[];
 ```

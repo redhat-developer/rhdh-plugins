@@ -52,6 +52,11 @@ import { DeveloperHubIcon } from './DeveloperHub';
  * and NFS `config.icon` strings resolve icons by these keys.
  *
  * Matches the legacy catalog in rhdh `packages/app/.../CommonIcons.tsx`.
+ *
+ * Also registers Material Icons ligature aliases (`waving_hand`, snake_case
+ * camelCase keys, …). Remotes such as quickstart still pass those ligature
+ * ids; RHDH does not load the Material Icons font, so they must resolve here
+ * via `IconBundleBlueprint` / `getSystemIcon` instead of a font ligature.
  */
 export const commonIcons: Record<string, IconComponent> = {
   home: HomeOutlinedIcon,
@@ -66,6 +71,7 @@ export const commonIcons: Record<string, IconComponent> = {
   favorite: FavoriteIcon,
   bookmarks: BookmarksOutlinedIcon,
   queryStats: QueryStatsOutlinedIcon,
+  query_stats: QueryStatsOutlinedIcon,
   chart: InsertChartOutlinedIcon,
   business: BusinessOutlinedIcon,
   storefront: StorefrontOutlinedIcon,
@@ -78,10 +84,14 @@ export const commonIcons: Record<string, IconComponent> = {
   help: HelpOutlineIcon,
   support: SupportIcon,
   quickstart: WavingHandOutlinedIcon,
+  /** Material ligature used by quickstart help menu / older configs. */
+  waving_hand: WavingHandOutlinedIcon,
   notifications: NotificationsOutlinedIcon,
   manageAccounts: ManageAccountsOutlinedIcon,
+  manage_accounts: ManageAccountsOutlinedIcon,
   logout: LogoutOutlinedIcon,
   developerHub: DeveloperHubIcon,
+  developer_hub: DeveloperHubIcon,
   account: AccountCircleOutlinedIcon,
   admin: GppMaybeOutlinedIcon,
 };

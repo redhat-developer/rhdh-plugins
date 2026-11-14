@@ -48,6 +48,16 @@ describe('QuickstartIcon', () => {
     expect(mockGetSystemIcon).toHaveBeenCalledWith('home');
   });
 
+  it('maps waving_hand ligature to the quickstart system icon id', () => {
+    mockGetSystemIcon.mockReturnValue(() => (
+      <HomeIcon data-testid="system-quickstart-icon" />
+    ));
+
+    render(<QuickstartIcon icon="waving_hand" />);
+    expect(screen.getByTestId('system-quickstart-icon')).toBeInTheDocument();
+    expect(mockGetSystemIcon).toHaveBeenCalledWith('quickstart');
+  });
+
   it('renders inline svg icons', () => {
     const svgString = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
     const { container } = render(<QuickstartIcon icon={svgString} />);

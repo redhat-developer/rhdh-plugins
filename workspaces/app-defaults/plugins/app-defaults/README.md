@@ -26,6 +26,7 @@ The module provides:
 - Common RHDH icon catalog via `IconBundleBlueprint` (`icon-bundle:app/common`) — same IDs as the legacy `CommonIcons` map (`home`, `group`, `category`, `extension`, `school`, `add`, `developerHub`, …)
 - **Plugin overrides** (via the default feature loader) for catalog, catalog-graph, API docs, TechDocs, and scaffolder — including empty-state pages and **RHDH catalog entity page defaults** (see below)
 - Learning Paths page at `/learning-paths` (`learningPathsModule`) with proxy-backed data and static JSON fallback
+- Global header masthead (wrapper module, default toolbar/menu items, and translations) loaded by the default feature loader — see [Global header](#global-header)
 
 ## Customizing Learning Paths
 
@@ -151,13 +152,170 @@ For apps that need only the app layout and drawer wrapper, import `appLayoutModu
 
 Override entry points (for advanced installs):
 
-| Export                            | Role                                                                                             |
-| --------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `./catalog-plugin-override`       | Catalog index empty state, overview layout, Dependencies / System Diagram tabs, card attachments |
-| `./catalog-graph-plugin-override` | Graph empty state, RHDH relations graph cards                                                    |
-| `./api-docs-plugin-override`      | API docs empty state, definition card hidden on Overview, API cards on Dependencies              |
-| `./scaffolder-plugin-override`    | Scaffolder empty state                                                                           |
-| `./docs-plugin-override`          | TechDocs empty state                                                                             |
+| Export                                | Role                                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `./catalog-plugin-override`           | Catalog index empty state, overview layout, Dependencies / System Diagram tabs, card attachments |
+| `./catalog-graph-plugin-override`     | Graph empty state, RHDH relations graph cards                                                    |
+| `./api-docs-plugin-override`          | API docs empty state, definition card hidden on Overview, API cards on Dependencies              |
+| `./scaffolder-plugin-override`        | Scaffolder empty state                                                                           |
+| `./docs-plugin-override`              | TechDocs empty state                                                                             |
+| `./global-header`                     | Default toolbar widgets and dropdown menu items (`pluginId: 'global-header'`)                    |
+| `./global-header-module`              | Global header wrapper + system icons only (no default toolbar/menu items)                        |
+| `./global-header-translations-module` | Global header translation resource                                                               |
+| `./global-header-components`          | Global-header building-block UI (`GlobalHeaderMenuItem`, …)                                      |
+
+## Global header
+
+The default feature loader registers:
+
+1. `globalHeaderModule` — `app-root-wrapper:app/global-header` plus header system icons
+2. `globalHeaderPlugin` — default toolbar widgets and dropdown menu items (`pluginId: 'global-header'`)
+3. `globalHeaderTranslationsModule` — masthead translation resource
+
+Extension APIs for contributing items (`GlobalHeaderComponentBlueprint`,
+`GlobalHeaderMenuItemBlueprint`, context hooks) live in
+`@red-hat-developer-hub/backstage-plugin-app-react`.
+
+### Enable in an app
+
+With the feature loader (typical RHDH / sample app path):
+
+```typescript
+import { createApp } from '@backstage/frontend-defaults';
+import appDefaultsFeatureLoader from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+
+export default createApp({
+  features: [appDefaultsFeatureLoader /* … */],
+});
+```
+
+Or register the pieces yourself:
+
+```typescript
+import {
+  globalHeaderModule,
+  globalHeaderPlugin,
+  globalHeaderTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-app-defaults';
+
+export default createApp({
+  features: [
+    globalHeaderModule,
+    globalHeaderPlugin,
+    globalHeaderTranslationsModule,
+    // …
+  ],
+});
+```
+
+Focused subpaths: `./global-header-module` and
+`./global-header-translations-module` (wrapper/icons and translations only);
+add `./global-header` (or `globalHeaderPlugin` from the package root) when
+you want the default toolbar/menu items. Dynamic plugin hosts must load
+`./global-header` — the package-root FeatureLoader is not registered in
+`backstage.features`.
+
+### Disable or customize defaults
+
+Turn off the whole masthead:
+
+```yaml
+app:
+  extensions:
+    - app-root-wrapper:app/global-header:
+        disabled: true
+```
+
+Disable or reorder individual defaults (`gh-component:global-header/<name>`,
+`gh-menu-item:global-header/<name>`):
+
+```yaml
+app:
+  extensions:
+    - gh-component:global-header/notification-button:
+        disabled: true
+    - gh-component:global-header/search:
+        config:
+          priority: 50
+    - gh-menu-item:global-header/settings:
+        disabled: true
+```
+
+Default toolbar names: `company-logo`, `search`, `spacer`, `self-service-button`,
+`starred-dropdown`, `app-launcher-dropdown`, `help-dropdown`,
+`notification-button`, `divider`, `profile-dropdown`.
+
+Default menu item names: `settings`, `my-profile`, `logout` (profile);
+`support-button` (help); `app-launcher-devhub`, `app-launcher-rhdh-local`
+(app launcher).
+
+### Config-driven extras
+
+Add simple toolbar buttons and dropdown links without writing a plugin:
+
+```yaml
+globalHeader:
+  components:
+    - title: Dashboard
+      icon: dashboard
+      link: /dashboard
+      priority: 75
+  menuItems:
+    - target: help
+      title: Docs
+      icon: article
+      link: https://docs.example.com
+      priority: 80
+```
+
+### Contribute from a plugin
+
+```typescript
+import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+
+const docsItem = GlobalHeaderMenuItemBlueprint.make({
+  name: 'docs',
+  params: {
+    target: 'help',
+    priority: 50,
+    loader: () => import('./DocsMenuItem').then(m => m.DocsMenuItem),
+  },
+});
+
+export default createFrontendPlugin({
+  pluginId: 'my-plugin',
+  extensions: [docsItem],
+});
+```
+
+Prefer a blueprint `loader` and import building-block UI only from
+`/global-header-components` inside that lazy file so MUI stays off the root
+NFS sync chunk. Read collected items with `useGlobalHeaderComponents` /
+`useGlobalHeaderMenuItems` from `app-react` (do not invent a private React
+context).
+
+### Building-block UI
+
+```typescript
+import {
+  GlobalHeaderMenuItem,
+  GlobalHeaderIconButton,
+  GlobalHeaderDropdown,
+  GlobalHeaderCompanyLogo,
+} from '@red-hat-developer-hub/backstage-plugin-app-defaults/global-header-components';
+```
+
+| Export                    | Role                                   |
+| ------------------------- | -------------------------------------- |
+| `GlobalHeaderMenuItem`    | Dropdown menu item with link + icon    |
+| `GlobalHeaderIconButton`  | Toolbar icon button                    |
+| `GlobalHeaderDropdown`    | Dropdown that collects `gh-menu-item`s |
+| `GlobalHeaderCompanyLogo` | Header masthead logo (`logo` prop)     |
+
+Do **not** confuse `GlobalHeaderCompanyLogo` with the package-root sidebar
+`CompanyLogo` (`fullLogo` / `iconLogo`). Both read `app.branding.fullLogo`, but
+the prop APIs differ on purpose.
 
 ## Catalog entity pages (NFS)
 
