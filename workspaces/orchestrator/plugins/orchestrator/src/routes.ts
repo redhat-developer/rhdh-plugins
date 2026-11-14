@@ -56,6 +56,13 @@ export const executeWorkflowRouteRef = createSubRouteRef({
   path: '/workflows/:workflowId/execute',
 });
 
+// workflow builder (create from scratch / import)
+export const workflowBuilderRouteRef = createSubRouteRef({
+  id: 'orchestrator/builder',
+  parent: orchestratorRootRouteRef,
+  path: '/builder',
+});
+
 // entity workflow page
 export const entityWorkflowRouteRef = createSubRouteRef({
   id: 'orchestrator.workflow',
