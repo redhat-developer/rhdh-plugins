@@ -12,7 +12,7 @@
 |-------|---------|------------|
 | Triage | `/fs-triage` slash command | Post on any issue |
 | Coder | `/fs-code` slash command, or `ready-to-code` label | Post on a triaged issue |
-| Review | Auto-triggers on PR open/update | Automatic for `workspaces/scorecard/` PRs |
+| Review | Auto-triggers on PR open/update | Automatic for PRs in all workspaces |
 | Fix | `/fs-fix` slash command, or `changes_requested` review | Post on a PR, or request changes on a fullsend PR |
 
 ### Auto-trigger vs. manual trigger
@@ -23,18 +23,17 @@ Fullsend is designed to chain agents automatically (issue → triage → code �
 |-------|----------------------|----------------------|------------------------|
 | Triage | `issues/opened` | **Does not auto-trigger.** The upstream dispatcher only handles `issues/labeled`, not `issues/opened`. | `/fs-triage` on an issue |
 | Coder | `ready-to-code` label | **Does not auto-trigger from triage.** Triage labels issues `triaged`, not `ready-to-code`. | `/fs-code` on a triaged issue, or manually add `ready-to-code` label |
-| Review | `pull_request_target/opened\|synchronize` | **Auto-triggers on `workspaces/scorecard/` PRs.** This is the only agent that reliably auto-triggers. Scoped via `paths` filter. | `/fs-review` on any PR (auth-gated) |
-| Fix | `pull_request_review/submitted` with `changes_requested` | **Partially auto-triggers.** Only fires from bot reviews (e.g., fullsend-review requesting changes), not from human reviews. Effectively scoped to scorecard PRs because only scorecard PRs get auto-reviewed. | `/fs-fix` on a PR, `/fs-fix-stop` to disable |
+| Review | `pull_request_target/opened\|synchronize\|ready_for_review` | **Auto-triggers on all PRs** whose author has triage+ access (or is a bot). This is the only agent that reliably auto-triggers. | `/fs-review` on any PR (auth-gated), or the `ready-for-review` label |
+| Fix | `pull_request_review/submitted` with `changes_requested` | **Partially auto-triggers.** Only fires from bot reviews (e.g., fullsend-review requesting changes), not from human reviews. | `/fs-fix` on a PR, `/fs-fix-stop` to disable |
 
-The "autonomous pipeline" does not chain automatically. In practice: review auto-triggers on augment PRs, everything else is slash-command-driven.
+The "autonomous pipeline" does not chain automatically. In practice: review auto-triggers on PRs, everything else is slash-command-driven.
 
 ### Scope details
 
-The `paths` filter (`workspaces/scorecard/**`) only applies to the `pull_request_target` event. Other triggers are repo-wide:
+There is no `paths` filter, so all triggers are repo-wide:
 
-- **`issues`** — fires for all issues (fine, since auto-triage doesn't work; slash commands are auth-gated)
 - **`issue_comment`** — fires for all comments (auth-gated to OWNER/MEMBER/COLLABORATOR)
-- **`pull_request_review`** — fires for all PR reviews (no `paths` support for this event type). Fix is transitively scoped: it only auto-fires from bot reviews, and the review bot only auto-reviews scorecard PRs.
+- **`pull_request_target`** — fires on PR open/update/ready-for-review (review agent) and on label changes (`ready-for-review` label).
 
 ### What does NOT run
 
@@ -91,26 +90,24 @@ the ID if `JIRA_BASE_URL` points to a different Jira instance.
 rhdh-plugins already has [PR Agent](https://github.com/Codium-ai/pr-agent) configured (`.pr_agent.toml`). Both agents run independently:
 
 - **PR Agent** — runs on all PRs across the entire repo
-- **Fullsend Review** — auto-triggers only on PRs touching `workspaces/scorecard/`
+- **Fullsend Review** — auto-triggers on PRs across all workspaces
 
 This parallel setup allows comparing review quality. Neither blocks the other. PR Agent configuration is not modified.
 
-## How to expand review to more workspaces
+## Limiting review to specific workspaces
 
-Add paths to the `paths` filter in `.github/workflows/fullsend.yaml`:
+Review auto-triggers on all workspaces. To restrict it again, add a `paths`
+filter to the `pull_request_target` trigger in `.github/workflows/fullsend.yaml`:
 
 ```yaml
 on:
   pull_request_target:
-    types: [opened, synchronize, ready_for_review, closed]
+    types: [opened, synchronize, ready_for_review, labeled, unlabeled]
     paths:
       - "workspaces/scorecard/**"
-      - "workspaces/your-new-workspace/**"  # add here
 ```
 
-To enable review for ALL workspaces, remove the `paths` filter entirely.
-
-Note: the `paths` filter only affects the Review agent's auto-trigger. Triage, coder, and fix are already available repo-wide via slash commands.
+Note: a `paths` filter only affects the `pull_request_target` triggers. Slash commands keep working repo-wide.
 
 ## Authorization model
 
@@ -162,7 +159,7 @@ Available in the workflow run logs under the sandbox creation step. Look for `fu
 | Symptom | Likely cause |
 |---------|-------------|
 | Slash command ignored | Commenter is not OWNER/MEMBER/COLLABORATOR |
-| Review doesn't trigger | PR doesn't touch files in `workspaces/scorecard/` |
+| Review doesn't trigger | PR author lacks triage+ access — use `/fs-review` or the `ready-for-review` label |
 | 403 from mint | Repo not in mint's `ALLOWED_ORGS` — contact fullsend team |
 | `aiplatform.endpoints.predict` denied | WIF IAM binding missing on GCP project |
 | Agent produces no output | Check transcript artifact for agent errors |
