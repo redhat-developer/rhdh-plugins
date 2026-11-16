@@ -30,6 +30,16 @@ import LaunchIcon from '@mui/icons-material/Launch';
 import type { SidebarModelItem } from './buildSidebarModel';
 import { resolveSidebarLinkAttributes } from './sidebarLinkAttributes';
 
+/** Matches global-header {@link MenuItemLinkContent} external launch icon sizing. */
+function externalLaunchIconSx(theme: Theme) {
+  return {
+    fontSize: 16,
+    color: theme.palette.text.secondary,
+    ml: 0.5,
+    flexShrink: 0,
+  };
+}
+
 function submenuItemRowSx(theme: Theme) {
   return {
     height: 48,
@@ -61,6 +71,8 @@ export function SidebarConfiguredItem({
   text: string;
   item: SidebarModelItem;
 }) {
+  const theme = useTheme();
+
   if (!item.to) {
     return (
       <SidebarItem icon={icon} text={text} onClick={() => item.onClick?.()} />
@@ -79,7 +91,7 @@ export function SidebarConfiguredItem({
       {...(link.rel ? { rel: link.rel } : {})}
     >
       {link.externalLinkIcon ? (
-        <LaunchIcon fontSize="small" aria-hidden />
+        <LaunchIcon sx={externalLaunchIconSx(theme)} aria-hidden />
       ) : undefined}
     </SidebarItem>
   );
@@ -139,7 +151,7 @@ function SidebarSubmenuItemWithLink({
             to={to}
             target={target}
             {...(rel ? { rel } : {})}
-            {...(externalLinkIcon ? { externalLinkIcon: true } : {})}
+            externalLinkIcon={false}
             underline="none"
             color="inherit"
             style={{
@@ -167,6 +179,9 @@ function SidebarSubmenuItemWithLink({
             >
               {title}
             </Typography>
+            {externalLinkIcon ? (
+              <LaunchIcon sx={externalLaunchIconSx(theme)} aria-hidden />
+            ) : null}
           </Link>
         </Box>
       </Tooltip>
