@@ -351,34 +351,27 @@ test.describe('Orchestrator workflow runs', () => {
       ).toBeVisible();
       await sharedPage.getByRole('link', { name: 'my-component' }).click();
       await expect(sharedPage.getByText('my-component')).toBeVisible();
-      if (process.env.APP_MODE === 'legacy') {
-        await sharedPage
-          .getByRole('tab', { name: 'Workflows' })
-          .first()
-          .click();
-      } else {
-        // Copied values from https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/src/translations
-        // until app-defaults (or Backstage) support that plugins add their own translations
-        // for catalog entity tab titles.
-        const baseLocale =
-          typeof testInfo.project.use.locale === 'string'
-            ? testInfo.project.use.locale.split('-')[0]
-            : 'en';
-        const workflowTranslationsFromAppReact = {
-          de: 'Workflows',
-          en: 'Workflows',
-          es: 'Workflows',
-          fr: 'Workflows',
-          it: 'Workflow',
-          ja: 'ワークフロー',
-        } as Record<string, string>;
-        const workflowsTabTitle =
-          workflowTranslationsFromAppReact[baseLocale] || 'Workflows';
-        await sharedPage
-          .getByRole('link', { name: workflowsTabTitle })
-          .first()
-          .click();
-      }
+      // Copied values from https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/src/translations
+      // until app-defaults (or Backstage) support that plugins add their own translations
+      // for catalog entity tab titles.
+      const baseLocale =
+        typeof testInfo.project.use.locale === 'string'
+          ? testInfo.project.use.locale.split('-')[0]
+          : 'en';
+      const workflowTranslationsFromAppReact = {
+        de: 'Workflows',
+        en: 'Workflows',
+        es: 'Workflows',
+        fr: 'Workflows',
+        it: 'Workflow',
+        ja: 'ワークフロー',
+      } as Record<string, string>;
+      const workflowsTabTitle =
+        workflowTranslationsFromAppReact[baseLocale] || 'Workflows';
+      await sharedPage
+        .getByRole('link', { name: workflowsTabTitle })
+        .first()
+        .click();
       await expect(
         sharedPage
           .getByRole('row', { name: 'Hello World Workflow' })
