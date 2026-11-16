@@ -616,6 +616,11 @@ test.describe('Orchestrator workflow runs', () => {
       await orchestratorHelper.clickButton(translations.common.next);
       await orchestratorHelper.clickButton(translations.common.next);
       await orchestratorHelper.clickButton(translations.common.back);
+      await sharedPage
+        .getByRole('button', {
+          name: 'Step 2 Provide information about the Java metadata',
+        })
+        .click();
       await orchestrator.verifyJavaMetadata(javaMetadata);
       await expect(
         sharedPage.getByRole('button', {

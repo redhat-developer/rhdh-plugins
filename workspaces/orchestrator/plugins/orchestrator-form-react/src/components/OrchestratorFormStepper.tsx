@@ -84,6 +84,7 @@ const OrchestratorFormStepper = ({
     <>
       <Stepper
         activeStep={activeStep}
+        nonLinear
         variant="elevation"
         className={classes.stepper}
         alternativeLabel

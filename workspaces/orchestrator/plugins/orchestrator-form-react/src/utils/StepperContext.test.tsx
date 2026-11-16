@@ -162,4 +162,36 @@ describe('StepperContext', () => {
 
     expect(clearFormErrors).toHaveBeenCalled();
   });
+
+  it('invokes clearFormErrorsRef when completeGoToStep succeeds', () => {
+    const clearFormErrors = jest.fn();
+    const { result } = renderHook(() => useStepperContext(), {
+      wrapper: wrapper(),
+    });
+
+    result.current.clearFormErrorsRef.current = clearFormErrors;
+
+    act(() => {
+      result.current.completeGoToStep(1);
+    });
+
+    expect(clearFormErrors).toHaveBeenCalledTimes(1);
+    expect(result.current.activeStep).toBe(1);
+  });
+
+  it('preserves form errors when completeGoToStep is called with preserveErrors', () => {
+    const clearFormErrors = jest.fn();
+    const { result } = renderHook(() => useStepperContext(), {
+      wrapper: wrapper(),
+    });
+
+    result.current.clearFormErrorsRef.current = clearFormErrors;
+
+    act(() => {
+      result.current.completeGoToStep(1, true);
+    });
+
+    expect(clearFormErrors).not.toHaveBeenCalled();
+    expect(result.current.activeStep).toBe(1);
+  });
 });

@@ -44,6 +44,10 @@ import { useStepperContext } from '../utils/StepperContext';
 import { toRootExtraErrors } from '../utils/toRootExtraErrors';
 import { useFieldValidation } from '../utils/useFieldValidation';
 import useValidator from '../utils/useValidator';
+import {
+  getStepSchemaErrors,
+  hasErrorSchemaErrors,
+} from '../utils/validateStepFormData';
 import { AuthRequester } from './AuthRequester';
 import HiddenObjectFieldTemplate from './HiddenObjectFieldTemplate';
 import StepperObjectField from './StepperObjectField';
@@ -185,6 +189,75 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     if (pendingTarget !== undefined) {
       pendingGoToStepRef.current = undefined;
       _onSubmit(_formData);
+
+      if (pendingTarget > activeStep + 1) {
+        for (
+          let stepIndex = activeStep + 1;
+          stepIndex < pendingTarget;
+          stepIndex += 1
+        ) {
+          const stepKey = getActiveStepKey(
+            formContext.schema,
+            stepIndex,
+            _formData,
+          );
+          const schemaErrors = getStepSchemaErrors(
+            formContext.schema,
+            _formData,
+            stepIndex,
+          );
+          let intermediateExtraErrors: ErrorSchema<JsonObject> | undefined;
+          let intermediateValidationError: Error | undefined;
+
+          const scopedUiSchema = currentUiSchema?.[stepKey]
+            ? ({
+                [stepKey]: currentUiSchema[stepKey],
+              } as OrchestratorFormContextProps['uiSchema'])
+            : currentUiSchema;
+
+          if (decoratorProps.getExtraErrors) {
+            try {
+              handleValidateStarted();
+              intermediateExtraErrors = await decoratorProps.getExtraErrors(
+                _formData,
+                scopedUiSchema,
+              );
+            } catch (err) {
+              intermediateValidationError = err as Error;
+            } finally {
+              handleValidateEnded();
+            }
+          }
+
+          const extraStepErrors = (
+            stepKey
+              ? intermediateExtraErrors?.[stepKey]
+              : intermediateExtraErrors
+          ) as ErrorSchema<JsonObject> | undefined;
+          const hasExtraStepErrors = hasErrorSchemaErrors(extraStepErrors);
+          const hasSchemaErrors = hasErrorSchemaErrors(schemaErrors);
+
+          if (
+            hasExtraStepErrors ||
+            hasSchemaErrors ||
+            intermediateValidationError
+          ) {
+            setValidationError(intermediateValidationError);
+            const mergedStepErrors: ErrorSchema<JsonObject> = {
+              ...(schemaErrors ?? {}),
+              ...(extraStepErrors ?? {}),
+            };
+            setExtraErrors(
+              normalizeErrorSchema({
+                [stepKey]: mergedStepErrors,
+              }),
+            );
+            completeGoToStep(stepIndex, true);
+            return;
+          }
+        }
+      }
+
       completeGoToStep(pendingTarget);
       return;
     }

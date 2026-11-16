@@ -37,7 +37,7 @@ export type StepperContext = {
   clearFormErrorsRef: MutableRefObject<(() => void) | undefined>;
   pendingGoToStepRef: MutableRefObject<number | undefined>;
   requestFormSubmitRef: MutableRefObject<(() => void) | undefined>;
-  completeGoToStep: (step: number) => void;
+  completeGoToStep: (step: number, preserveErrors?: boolean) => void;
   reviewStep: ReactNode;
   isValidating: boolean;
   handleValidateStarted: () => void;
@@ -106,8 +106,10 @@ export const StepperContextProvider = ({
           return step;
         });
       },
-      completeGoToStep: (step: number) => {
-        clearFormErrors();
+      completeGoToStep: (step: number, preserveErrors?: boolean) => {
+        if (!preserveErrors) {
+          clearFormErrors();
+        }
         setActiveStep(step);
       },
       requestGoToStep: (step: number) => {
