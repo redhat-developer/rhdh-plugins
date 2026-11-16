@@ -20,7 +20,7 @@ import { ErrorPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
 import Grid from '@mui/material/Grid';
-import { IChangeEvent, withTheme } from '@rjsf/core';
+import RjsfForm, { IChangeEvent, withTheme } from '@rjsf/core';
 import { Theme as MuiTheme } from '@rjsf/material-ui';
 import { ErrorSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
@@ -67,7 +67,14 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     handleValidateStarted,
     handleValidateEnded,
     clearFormErrorsRef,
+    pendingGoToStepRef,
+    requestFormSubmitRef,
+    completeGoToStep,
   } = useStepperContext();
+  const formRef =
+    useRef<RjsfForm<JsonObject, JSONSchema7, OrchestratorFormContextProps>>(
+      null,
+    );
   const [validationError, setValidationError] = useState<Error | undefined>();
   const validator = useValidator(isMultiStep);
   const { t } = useTranslation();
@@ -98,6 +105,15 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       clearFormErrorsRef.current = undefined;
     };
   }, [clearFormErrorsRef]);
+
+  useEffect(() => {
+    requestFormSubmitRef.current = () => {
+      formRef.current?.submit();
+    };
+    return () => {
+      requestFormSubmitRef.current = undefined;
+    };
+  }, [requestFormSubmitRef]);
 
   if (!formContext) {
     return <div>{t('formDecorator.error')}</div>;
@@ -157,12 +173,23 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       : _extraErrors;
     const hasCurrentStepErrors =
       currentStepErrors && Object.keys(currentStepErrors).length > 0;
+    const pendingTarget = pendingGoToStepRef.current;
 
-    if (
-      !hasCurrentStepErrors &&
-      !_validationError &&
-      activeStep < (numStepsInMultiStepSchema ?? 1)
-    ) {
+    if (hasCurrentStepErrors || _validationError) {
+      if (pendingTarget !== undefined) {
+        pendingGoToStepRef.current = undefined;
+      }
+      return;
+    }
+
+    if (pendingTarget !== undefined) {
+      pendingGoToStepRef.current = undefined;
+      _onSubmit(_formData);
+      completeGoToStep(pendingTarget);
+      return;
+    }
+
+    if (activeStep < (numStepsInMultiStepSchema ?? 1)) {
       _onSubmit(_formData);
       handleNext();
     }
@@ -210,6 +237,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       )}
       <Grid item>
         <MuiForm
+          ref={formRef}
           {...omit(decoratorProps, 'getExtraErrors', 'getExtraErrorsForField')}
           widgets={{ AuthRequester, ...decoratorProps.widgets }}
           fields={isMultiStep ? { ObjectField: StepperObjectField } : {}}

@@ -19,3 +19,21 @@ export const isBackwardStepNavigable = (
   targetStep: number,
   activeStep: number,
 ): boolean => targetStep >= 0 && targetStep < activeStep;
+
+/**
+ * True when the user may jump to `targetStep` from `activeStep`.
+ * Backward jumps are always allowed; forward jumps only up to `furthestReachedStep`.
+ */
+export const isStepNavigable = (
+  targetStep: number,
+  activeStep: number,
+  furthestReachedStep: number,
+): boolean => {
+  if (targetStep === activeStep || targetStep < 0) {
+    return false;
+  }
+  if (targetStep < activeStep) {
+    return true;
+  }
+  return targetStep <= furthestReachedStep;
+};

@@ -567,7 +567,7 @@ test.describe('Orchestrator workflow runs', () => {
       }
     });
 
-    test('Backward navigation in multi-step stepper', async () => {
+    test('Multi-step stepper backward and forward navigation', async () => {
       const workflowName = 'Quarkus Backend application';
       const newComponentInputs: NewComponentInputs = {
         organizationName: 'test-name',
@@ -606,29 +606,27 @@ test.describe('Orchestrator workflow runs', () => {
         sharedPage.getByRole('button', {
           name: 'Step 2 Provide information about the Java metadata',
         }),
-      ).not.toBeVisible();
-      await expect(
-        sharedPage.getByLabel(
-          'Step 2 Provide information about the Java metadata',
-        ),
-      ).toBeVisible();
+      ).toBeEnabled();
+      await sharedPage
+        .getByRole('button', {
+          name: 'Step 2 Provide information about the Java metadata',
+        })
+        .click();
+      await orchestrator.verifyJavaMetadata(javaMetadata);
       await orchestratorHelper.clickButton(translations.common.next);
-      await expect(
-        sharedPage.getByLabel(
-          'Step 2 Provide information about the Java metadata',
-        ),
-      ).not.toHaveClass(/Mui-disabled/);
       await orchestratorHelper.clickButton(translations.common.next);
       await orchestratorHelper.clickButton(translations.common.back);
       await orchestrator.verifyJavaMetadata(javaMetadata);
-      await orchestratorHelper.clickButton(translations.common.next);
       await expect(
-        sharedPage.getByLabel(`Step 4 ${translations.common.review}`),
-      ).toHaveClass(/Mui-disabled/);
-      await orchestratorHelper.clickButton(translations.common.next);
-      await expect(
-        sharedPage.getByLabel(`Step 4 ${translations.common.review}`),
-      ).not.toHaveClass(/Mui-disabled/);
+        sharedPage.getByRole('button', {
+          name: `Step 4 ${translations.common.review}`,
+        }),
+      ).toBeEnabled();
+      await sharedPage
+        .getByRole('button', {
+          name: `Step 4 ${translations.common.review}`,
+        })
+        .click();
       const allInputs = [
         ...Object.values(newComponentInputs),
         ...Object.values(javaMetadata),

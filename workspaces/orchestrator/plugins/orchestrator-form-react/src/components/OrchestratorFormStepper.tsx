@@ -23,7 +23,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
-import { isBackwardStepNavigable } from '../utils/isBackwardStepNavigable';
+import { isStepNavigable } from '../utils/isStepNavigable';
 import { useStepperContext } from '../utils/StepperContext';
 import SubmitButton from './SubmitButton';
 
@@ -66,7 +66,15 @@ const OrchestratorFormStepper = ({
 }) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
-  const { activeStep, goToStep, reviewStep } = useStepperContext();
+  const {
+    activeStep,
+    furthestReachedStep,
+    requestGoToStep,
+    reviewStep,
+    isValidating,
+    isFetching,
+  } = useStepperContext();
+  const navigationDisabled = isValidating || isFetching;
   const stepsWithReview = [
     ...steps,
     { content: reviewStep, title: t('common.review'), key: 'review' },
@@ -81,7 +89,13 @@ const OrchestratorFormStepper = ({
         alternativeLabel
       >
         {stepsWithReview?.map((step, index) => {
-          const canNavigateBack = isBackwardStepNavigable(index, activeStep);
+          const canNavigate = isStepNavigable(
+            index,
+            activeStep,
+            furthestReachedStep,
+          );
+          const stepCompleted =
+            index !== activeStep && index <= furthestReachedStep;
           const stepLabel = (
             <Typography variant="h6" component="h2">
               {step.title}
@@ -93,12 +107,13 @@ const OrchestratorFormStepper = ({
             <Step
               key={step.key}
               className={classes.step}
-              completed={canNavigateBack}
+              completed={stepCompleted}
             >
-              {canNavigateBack ? (
+              {canNavigate ? (
                 <StepButton
-                  onClick={() => goToStep(index)}
+                  onClick={() => requestGoToStep(index)}
                   aria-label={ariaLabel}
+                  disabled={navigationDisabled}
                 >
                   {stepLabel}
                 </StepButton>

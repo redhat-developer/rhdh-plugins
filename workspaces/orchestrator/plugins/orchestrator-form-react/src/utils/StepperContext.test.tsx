@@ -41,16 +41,19 @@ describe('StepperContext', () => {
     });
 
     expect(result.current.activeStep).toBe(0);
+    expect(result.current.furthestReachedStep).toBe(0);
 
     act(() => {
       result.current.handleNext();
     });
     expect(result.current.activeStep).toBe(1);
+    expect(result.current.furthestReachedStep).toBe(1);
 
     act(() => {
       result.current.handleBack();
     });
     expect(result.current.activeStep).toBe(0);
+    expect(result.current.furthestReachedStep).toBe(1);
   });
 
   it('only allows goToStep for previous steps', () => {
@@ -73,6 +76,49 @@ describe('StepperContext', () => {
       result.current.goToStep(0);
     });
     expect(result.current.activeStep).toBe(0);
+  });
+
+  it('tracks furthest reached across forward navigation requests', () => {
+    const submit = jest.fn();
+    const { result } = renderHook(() => useStepperContext(), {
+      wrapper: wrapper(),
+    });
+
+    act(() => {
+      result.current.handleNext();
+      result.current.handleNext();
+    });
+    expect(result.current.furthestReachedStep).toBe(2);
+
+    act(() => {
+      result.current.goToStep(0);
+    });
+
+    act(() => {
+      result.current.requestFormSubmitRef.current = submit;
+      result.current.requestGoToStep(2);
+    });
+    expect(submit).toHaveBeenCalled();
+    expect(result.current.pendingGoToStepRef.current).toBe(2);
+
+    act(() => {
+      result.current.completeGoToStep(2);
+    });
+    expect(result.current.activeStep).toBe(2);
+    expect(result.current.pendingGoToStepRef.current).toBe(2);
+  });
+
+  it('does not request submit when jumping forward beyond furthest reached', () => {
+    const submit = jest.fn();
+    const { result } = renderHook(() => useStepperContext(), {
+      wrapper: wrapper(),
+    });
+
+    act(() => {
+      result.current.requestFormSubmitRef.current = submit;
+      result.current.requestGoToStep(2);
+    });
+    expect(submit).not.toHaveBeenCalled();
   });
 
   it('tracks validating and fetching counters', () => {
