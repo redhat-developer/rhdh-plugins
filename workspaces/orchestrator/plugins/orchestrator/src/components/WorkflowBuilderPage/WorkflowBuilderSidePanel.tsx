@@ -154,8 +154,11 @@ export const WorkflowBuilderSidePanel = ({
           zIndex: 2,
         }}
       />
-      <Flex direction="column" style={{ flex: 1, minHeight: 0 }}>
-        <Box p="4" pb="2">
+      <Flex
+        direction="column"
+        style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}
+      >
+        <Box p="4" pb="2" style={{ flexShrink: 0 }}>
           <Text variant="body-medium" weight="bold" as="span">
             {t('builder.sidePanel.workflow')}
           </Text>

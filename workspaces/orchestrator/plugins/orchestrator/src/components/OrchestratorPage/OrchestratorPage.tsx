@@ -18,6 +18,7 @@ import { ReactElement, ReactNode, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { TabbedLayout } from '@backstage/core-components';
+import { useRouteRef } from '@backstage/core-plugin-api';
 
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
@@ -79,11 +80,12 @@ export const OrchestratorPage = () => {
   const isDarkMode = useIsDarkMode();
   const { classes } = useStyles({ isDarkMode });
   const { pathname } = useLocation();
+  const instancesLink = useRouteRef(workflowInstancesRouteRef);
   const [search, setSearch] = useState('');
   const allWorkflows = useAllWorkflowOverviews();
 
   // Page action only on Workflows tab (not All runs).
-  const isWorkflowsTab = !pathname.includes('instances');
+  const isWorkflowsTab = !pathname.startsWith(instancesLink());
 
   const displayedWorkflowsCount = useMemo(() => {
     if (!allWorkflows.isReady || allWorkflows.count === undefined) {
