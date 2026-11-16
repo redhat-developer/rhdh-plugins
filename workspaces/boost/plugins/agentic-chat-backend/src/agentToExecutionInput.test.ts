@@ -91,14 +91,22 @@ it.each(['invalid', false, null])('rejects invalid execution mode %s', mode => {
   ).toThrow('Invalid agent configuration');
 });
 
-it('rejects handoffs instead of silently dropping another agent', () => {
-  expect(() =>
-    agentToExecutionInput(
-      { ...agent, spec: { ...agent.spec, handoffs: ['other-agent'] } },
+it.each([
+  { handoffs: ['other-agent'] },
+  { handoffs: [] },
+  { handoffs: null },
+  { handoffs: 'unused-handoff-data' },
+])(
+  'ignores Catalog handoffs without changing interpreted input: %j',
+  ({ handoffs }) => {
+    const interpreted = agentToExecutionInput(
+      { ...agent, spec: { ...agent.spec, handoffs } },
       input('Hello'),
-    ),
-  ).toThrow('Handoffs are not supported');
-});
+    );
+    expect(interpreted).toEqual(agentToExecutionInput(agent, input('Hello')));
+    expect(interpreted).not.toHaveProperty('handoffs');
+  },
+);
 
 it('rejects non-agent entities and unsupported string output schemas', () => {
   expect(() =>
@@ -130,6 +138,15 @@ it('maps conversation identity without a workflow envelope', () => {
     agentToExecutionInput(agent, {
       ...input('Hello'),
       conversation_id: 'session-1',
-    }).session_id,
+    }).conversation_id,
   ).toBe('session-1');
+});
+
+it('does not rename conversation_id to a workflow session_id', () => {
+  const interpreted = agentToExecutionInput(agent, {
+    ...input('Hello'),
+    conversation_id: 'conversation-1',
+  });
+  expect(interpreted.conversation_id).toBe('conversation-1');
+  expect(interpreted).not.toHaveProperty('session_id');
 });

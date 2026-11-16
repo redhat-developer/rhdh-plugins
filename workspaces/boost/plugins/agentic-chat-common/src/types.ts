@@ -32,5 +32,5 @@ export interface AgentExecutionInput {
   inference_provider: { name: string; model: string };
   tools?: string[];
   output_schema?: Record<string, unknown>;
-  session_id?: string;
+  conversation_id?: string;
 }

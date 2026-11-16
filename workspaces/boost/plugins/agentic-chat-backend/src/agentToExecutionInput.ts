@@ -31,7 +31,6 @@ const agentSpecSchema = z.object({
   instructions: z.string().optional(),
   tools: z.array(z.string().min(1)).optional(),
   outputSchema: z.record(z.string(), z.unknown()).optional(),
-  handoffs: z.array(z.string()).optional(),
 });
 
 const spawnModes = {
@@ -50,7 +49,6 @@ export function agentToExecutionInput(
   const parsed = agentSpecSchema.safeParse(entity.spec);
   if (!parsed.success) throw new InputError('Invalid agent configuration');
   const spec = parsed.data;
-  if (spec.handoffs?.length) throw new InputError('Handoffs are not supported');
 
   return {
     agent: entity.metadata.name,
@@ -65,7 +63,7 @@ export function agentToExecutionInput(
       output_schema: spec.outputSchema,
     }),
     ...(input.conversation_id !== undefined && {
-      session_id: input.conversation_id,
+      conversation_id: input.conversation_id,
     }),
   };
 }

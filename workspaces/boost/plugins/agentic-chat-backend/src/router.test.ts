@@ -49,6 +49,7 @@ const agent = {
     owner: 'platform',
     model: 'granite',
     instructions: 'Support instructions',
+    handoffs: ['airesource:default/other-agent'],
     executionMode: 'in-process',
     tools: ['search'],
   },
@@ -190,7 +191,7 @@ it('submits one mapped workflow with trusted identity and preserves upstream acc
         spawn: 'none',
         tools: ['search'],
         inference_provider: { name: 'openai', model: 'selected-model' },
-        session_id: 'session-1',
+        conversation_id: 'session-1',
       },
     },
   ]);

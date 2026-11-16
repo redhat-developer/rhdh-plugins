@@ -11,6 +11,8 @@ export interface AgentExecutionInput {
   // (undocumented)
   agent: string;
   // (undocumented)
+  conversation_id?: string;
+  // (undocumented)
   inference_provider: {
     name: string;
     model: string;
@@ -21,8 +23,6 @@ export interface AgentExecutionInput {
   output_schema?: Record<string, unknown>;
   // (undocumented)
   prompt: string;
-  // (undocumented)
-  session_id?: string;
   // (undocumented)
   spawn?: 'none' | 'local' | 'ephemeral';
   // (undocumented)
@@ -50,16 +50,16 @@ export const runAgentRequestSchema: z.ZodObject<
   'strict',
   z.ZodTypeAny,
   {
-    query: string;
     provider: string;
     model: string;
+    query: string;
     agentRef: string;
     conversation_id?: string | undefined;
   },
   {
-    query: string;
     provider: string;
     model: string;
+    query: string;
     agentRef: string;
     conversation_id?: string | undefined;
   }
