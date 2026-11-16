@@ -66,7 +66,7 @@ export type PopularContentConfigItem = {
   iconUrl?: string;
 };
 
-/** Shared widget config resolved from homepage card settings / layout props. */
+/** Shared widget config resolved from app-config `widgetLayout` / layout props. */
 export type PopularContentCardConfig = {
   mode: PopularContentMode;
   /** Visible row count. Default: 3. */

@@ -152,7 +152,68 @@ Shows org-wide most-used plugins/extensions from Adoption Insights.
 
 Rows link only when a destination is known. Built-in destinations cover common OOTB / supported plugins (Catalog, Catalog Graph, Bulk Import, RBAC, Tech Radar, …). Unknown `plugin_id` values stay plain text unless you add them via `pluginDestinations` (or set `items[].href` in curated/hybrid).
 
-On an editable homepage, add **Top Plugins** from the widget catalog and edit mode / display count / title in card settings. Use `widgetLayout` props for a read-only homepage (or to seed defaults).
+Configure **mode**, **display count**, **title**, **items**, and **pluginDestinations** via app-config `widgetLayout` props (admin-controlled — no in-card Edit settings UI). On an editable homepage you can still add the widget from the catalog; content options come from `widgetLayout` / defaults.
+
+##### Admin-controlled modes (examples)
+
+Props below go under
+`home-page-layout:homepage/dynamic-homepage-layout` → `config.widgetLayout.TopPluginsCard.props`
+(and, when using `homepage-backend`, mirror them under `homepage.defaultWidgets`).
+
+**`auto`** — usage-ranked from Adoption Insights (default):
+
+```yaml
+widgetLayout:
+  TopPluginsCard:
+    props:
+      mode: auto
+      displayCount: 3
+      title: Top Plugins
+      # Optional: register custom / third-party plugin routes
+      pluginDestinations:
+        my-custom-plugin: /my-custom-plugin
+```
+
+**`hybrid`** — admin pins first, then fill remaining slots from usage ranking:
+
+```yaml
+widgetLayout:
+  TopPluginsCard:
+    props:
+      mode: hybrid
+      displayCount: 3
+      title: Top Plugins
+      items:
+        # Pins / overrides (shown first; ranked items fill the rest)
+        - id: catalog
+          title: Software Catalog
+          href: /catalog
+        - id: scaffolder
+          # title/href optional — filled from ranking / built-in destinations when omitted
+```
+
+**`curated`** — explicit admin list only (no Adoption Insights fetch):
+
+```yaml
+widgetLayout:
+  TopPluginsCard:
+    props:
+      mode: curated
+      displayCount: 3
+      title: Recommended plugins
+      items:
+        - id: catalog
+          title: Catalog
+          href: /catalog
+        - id: scaffolder
+          title: Software Templates
+          href: /create
+        - id: techdocs
+          title: TechDocs
+          href: /docs
+```
+
+##### Full homepage wiring example
 
 Example `app-config.yaml` (with the Homepage plugin). On RHDH / when
 `homepage-backend` is installed, **also** list the widget under
@@ -178,11 +239,8 @@ app:
               props:
                 mode: auto
                 displayCount: 5
-                # Optional: register custom / third-party plugin routes
                 pluginDestinations:
                   my-custom-plugin: /my-custom-plugin
-                  # Override a built-in destination if your path differs
-                  # scaffolder: /templates
               breakpoints:
                 xl: { w: 4, h: 5 }
                 lg: { w: 4, h: 5 }
@@ -199,24 +257,6 @@ homepage:
         title: Top Plugins
         mode: auto
         displayCount: 5
-```
-
-Read-only curated example (no Adoption Insights ranking call):
-
-```yaml
-widgetLayout:
-  TopPluginsCard:
-    props:
-      mode: curated
-      displayCount: 3
-      title: Recommended plugins
-      items:
-        - id: catalog
-          title: Catalog
-          href: /catalog
-        - id: scaffolder
-          title: Software Templates
-          href: /create
 ```
 
 ##### Modules and extensions (NFS)

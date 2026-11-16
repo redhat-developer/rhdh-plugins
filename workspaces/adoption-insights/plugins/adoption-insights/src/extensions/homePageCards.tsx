@@ -35,7 +35,7 @@ const defaultCardLayout = {
   },
 } as const;
 
-/** Forwards homepage card settings into the Top Plugins card. */
+/** Forwards homepage `widgetLayout` / layout props into the Top Plugins card. */
 function ConfigurablePopularContentRenderer({
   Content,
   ...rest
@@ -64,7 +64,8 @@ function lazyTopPluginsWidget(
  * Gated by `adoption-insights.events.read` so denied users neither see the
  * card on the homepage nor as an option in the Add Widget catalog.
  *
- * Settings (editable homepage) / layout props:
+ * Admin configuration is via app-config `widgetLayout` props only (no in-card
+ * Edit settings UI) — RHDHPLAN-1711:
  * - `mode`: `auto` | `hybrid` | `curated` (default `auto`)
  * - `displayCount`: number of rows (default `3`)
  * - `title`: overridable card title
@@ -82,34 +83,6 @@ export const topPluginsCardWidget = HomePageWidgetBlueprint.make({
     description:
       'Org-wide most-used plugins and extensions from Adoption Insights. Supports auto, hybrid, and curated modes.',
     layout: defaultCardLayout,
-    settings: {
-      schema: {
-        title: 'Top Plugins settings',
-        type: 'object',
-        properties: {
-          mode: {
-            title: 'Mode',
-            type: 'string',
-            enum: ['auto', 'hybrid', 'curated'],
-            default: 'auto',
-            description:
-              'auto: usage-ranked; hybrid: pins + ranking; curated: admin list only',
-          },
-          displayCount: {
-            title: 'Display count',
-            type: 'integer',
-            minimum: 1,
-            default: 3,
-            description: 'Number of items to show (default 3)',
-          },
-          title: {
-            title: 'Card title',
-            type: 'string',
-            description: 'Optional override for the card title',
-          },
-        },
-      },
-    },
     componentProps: {
       Renderer: ConfigurablePopularContentRenderer,
     },

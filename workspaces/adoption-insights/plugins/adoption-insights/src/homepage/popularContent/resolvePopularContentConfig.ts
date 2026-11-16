@@ -66,7 +66,7 @@ function parseConfigItems(
 }
 
 /**
- * Normalize homepage widget props / settings into a {@link PopularContentCardConfig}.
+ * Normalize homepage `widgetLayout` / layout props into a {@link PopularContentCardConfig}.
  * Unknown or invalid values fall back to safe defaults so the homepage stays loadable.
  */
 export function resolvePopularContentConfig(
