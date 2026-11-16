@@ -16,11 +16,8 @@
 
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
+import { Alert } from '@backstage/ui';
 
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import FormControl from '@mui/material/FormControl';
-import Typography from '@mui/material/Typography';
 import { Formik } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
@@ -59,29 +56,28 @@ export const BulkImportPage = () => {
           enableReinitialize
           onSubmit={async (_values: AddRepositoriesFormValues) => {}}
         >
-          <FormControl fullWidth>
+          <div style={{ width: '100%' }}>
             <RepositoriesList />
-          </FormControl>
+          </div>
         </Formik>
       );
     }
     return (
-      <Alert severity="warning" data-testid="no-permission-alert">
-        <AlertTitle>{t('permissions.title')}</AlertTitle>
-        {t('permissions.viewRepositoriesMessage')}
-      </Alert>
+      <Alert
+        status="warning"
+        icon
+        data-testid="no-permission-alert"
+        title={t('permissions.title')}
+        description={t('permissions.viewRepositoriesMessage')}
+      />
     );
   };
 
   return (
     <Page themeId="tool">
       <Header
-        title={
-          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
-            {t('page.title')}
-          </Typography>
-        }
-        style={{ borderBottom: '1px solid #ccc' }}
+        title={t('page.title')}
+        style={{ borderBottom: '1px solid var(--bui-border-1)' }}
       />
       <DrawerContextProvider>
         <DeleteDialogContextProvider>

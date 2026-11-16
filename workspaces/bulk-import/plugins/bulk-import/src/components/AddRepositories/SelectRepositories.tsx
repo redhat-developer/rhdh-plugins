@@ -15,11 +15,11 @@
  */
 
 import { Link } from '@backstage/core-components';
-
-import Typography from '@mui/material/Typography';
+import { Text } from '@backstage/ui';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
+import { bulkImportTypographySecondary } from '../bulkImportTypography';
 
 export const SelectRepositories = ({
   onOrgRowSelected,
@@ -34,21 +34,21 @@ export const SelectRepositories = ({
 
   if (orgData?.totalReposInOrg === 0) {
     return (
-      <Typography
-        component="span"
-        style={{ color: '#6A6E73' }}
+      <Text
+        as="span"
+        style={bulkImportTypographySecondary}
         data-testid="no-repositories"
       >
         {t('addRepositories.noRepositoriesFound')}
-      </Typography>
+      </Text>
     );
   }
 
   if (orgData?.totalReposInOrg === addedRepositoriesCount) {
     return (
-      <Typography
-        component="span"
-        style={{ color: '#6A6E73' }}
+      <Text
+        as="span"
+        style={bulkImportTypographySecondary}
         data-testid="no-repositories"
       >
         {t('addRepositories.allRepositoriesAdded')}{' '}
@@ -61,7 +61,7 @@ export const SelectRepositories = ({
         >
           {t('common.view')}
         </Link>
-      </Typography>
+      </Text>
     );
   }
 
@@ -70,7 +70,7 @@ export const SelectRepositories = ({
     Object.keys(orgData?.selectedRepositories || [])?.length === 0
   ) {
     return (
-      <Typography component="span" data-testid="select-repositories">
+      <Text as="span" data-testid="select-repositories">
         {t('addRepositories.noSelection')}{' '}
         <Link
           to=""
@@ -81,11 +81,11 @@ export const SelectRepositories = ({
         >
           {t('common.select')}
         </Link>
-      </Typography>
+      </Text>
     );
   }
   return (
-    <Typography component="span" data-testid="edit-repositories">
+    <Text as="span" data-testid="edit-repositories">
       {Object.keys(orgData.selectedRepositories || [])?.length}/
       {(orgData?.totalReposInOrg || 0) - addedRepositoriesCount}{' '}
       <Link
@@ -97,6 +97,6 @@ export const SelectRepositories = ({
       >
         {t('common.edit')}
       </Link>
-    </Typography>
+    </Text>
   );
 };

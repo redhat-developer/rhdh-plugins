@@ -14,62 +14,54 @@
  * limitations under the License.
  */
 
-import Clear from '@mui/icons-material/Clear';
-import Search from '@mui/icons-material/Search';
-import FormControl from '@mui/material/FormControl';
-import IconButton from '@mui/material/IconButton';
-import Input from '@mui/material/Input';
-import InputAdornment from '@mui/material/InputAdornment';
+import { ButtonIcon, Flex, SearchField } from '@backstage/ui';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { BulkImportClearIcon } from '../bulkImportIcons';
 
 export const RepositoriesSearchBar = ({
   value,
   onChange,
   activeOrganization,
+  placeholder,
 }: {
   value: string;
   onChange: (filter: string) => void;
   activeOrganization?: boolean;
+  placeholder?: string;
 }) => {
   const { t } = useTranslation();
   const ariaLabel = activeOrganization ? 'search-in-organization' : 'search';
 
   return (
-    <FormControl
-      sx={{
-        alignItems: 'flex-end',
+    <Flex
+      align="center"
+      gap="2"
+      style={{
         flexGrow: 1,
         paddingLeft: '21px',
+        justifyContent: 'flex-end',
       }}
     >
-      <Input
+      <SearchField
         data-testid={ariaLabel}
-        placeholder={t('addRepositories.searchPlaceholder')}
-        inputProps={{ 'aria-label': ariaLabel }}
+        aria-label={ariaLabel}
+        placeholder={placeholder ?? t('addRepositories.searchPlaceholder')}
         autoComplete="off"
-        onChange={event => onChange(event.target.value)}
         value={value}
-        startAdornment={
-          <InputAdornment position="start">
-            <Search />
-          </InputAdornment>
-        }
-        endAdornment={
-          <InputAdornment position="end">
-            <IconButton
-              aria-label={t('addRepositories.clearSearch')}
-              onClick={() => onChange('')}
-              edge="end"
-              disabled={!value}
-              data-testid="clear-search"
-              size="large"
-            >
-              <Clear />
-            </IconButton>
-          </InputAdornment>
-        }
+        onChange={onChange}
+        size="small"
+        style={{ flexGrow: 1, maxWidth: '100%' }}
       />
-    </FormControl>
+      {value ? (
+        <ButtonIcon
+          icon={<BulkImportClearIcon />}
+          aria-label={t('addRepositories.clearSearch')}
+          data-testid="clear-search"
+          variant="tertiary"
+          onPress={() => onChange('')}
+        />
+      ) : null}
+    </Flex>
   );
 };

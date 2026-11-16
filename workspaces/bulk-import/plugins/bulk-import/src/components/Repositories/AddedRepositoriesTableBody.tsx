@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
+import { Alert, Flex, Text } from '@backstage/ui';
+
+import { Spinner } from '@patternfly/react-core';
 
 import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
+import { repositoriesTableCellStyle } from '../AddRepositories/repositoriesTableShared';
 import { AddedRepositoryTableRow } from './AddedRepositoryTableRow';
 import { getRepositoriesListColumns } from './RepositoriesListColumns';
 
@@ -50,16 +48,13 @@ export const AddedRepositoriesTableBody = ({
       <tbody>
         <tr>
           <td colSpan={repositoriesListColumns?.length}>
-            <Box
+            <Flex
               data-testid="import-jobs-loading"
-              sx={{
-                p: 2,
-                display: 'flex',
-                justifyContent: 'center',
-              }}
+              justify="center"
+              style={{ padding: '16px' }}
             >
-              <CircularProgress />
-            </Box>
+              <Spinner size="lg" aria-label={t('importActions.loading')} />
+            </Flex>
           </td>
         </tr>
       </tbody>
@@ -71,7 +66,10 @@ export const AddedRepositoriesTableBody = ({
         <tr>
           <td colSpan={repositoriesListColumns?.length}>
             <div data-testid="import-jobs-error">
-              <Alert severity="error">{`${error.name}. ${error.message}`}</Alert>
+              <Alert
+                status="danger"
+                title={`${error.name}. ${error.message}`}
+              />
             </div>
           </td>
         </tr>
@@ -81,40 +79,39 @@ export const AddedRepositoriesTableBody = ({
 
   if (rows?.length > 0) {
     return (
-      <TableBody data-testid="import-jobs">
+      <tbody data-testid="import-jobs">
         {rows.map(row => {
           return <AddedRepositoryTableRow key={row.id} data={row} />;
         })}
         {emptyRows > 0 && (
-          <TableRow
+          <tr
             style={{
               height: 55 * emptyRows,
             }}
           >
-            <TableCell />
-          </TableRow>
+            <td style={repositoriesTableCellStyle} />
+          </tr>
         )}
-      </TableBody>
+      </tbody>
     );
   }
   return (
     <tbody>
       <tr>
         <td colSpan={repositoriesListColumns?.length}>
-          <Box
+          <Flex
             data-testid="no-import-jobs-found"
-            sx={{
-              p: 2,
-              display: 'flex',
-              justifyContent: 'center',
-            }}
+            justify="center"
+            style={{ padding: '16px' }}
           >
-            {t(
-              gitlabConfigured
-                ? 'repositories.noProjectsFound'
-                : 'repositories.noRecordsFound',
-            )}
-          </Box>
+            <Text>
+              {t(
+                gitlabConfigured
+                  ? 'repositories.noProjectsFound'
+                  : 'repositories.noRecordsFound',
+              )}
+            </Text>
+          </Flex>
         </td>
       </tr>
     </tbody>

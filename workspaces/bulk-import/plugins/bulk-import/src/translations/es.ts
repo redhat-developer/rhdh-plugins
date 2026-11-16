@@ -143,6 +143,8 @@ const bulkImportTranslationEs = createTranslationMessages({
     'previewFile.pullRequest.loadingText': 'Cargando grupos y usuarios',
     'previewFile.pullRequest.mergeRequest': 'Solicitud de fusión',
     'previewFile.pullRequest.previewEntities': 'Previsualizar entidades',
+    'previewFile.pullRequest.previewCardSubheader':
+      'Crear una nueva solicitud de extracción',
     'previewFile.pullRequest.serviceNowTicket': 'Ticket de ServiceNow',
     'previewFile.pullRequest.spec': 'Especificación',
     'previewFile.pullRequest.title': 'Solicitud de extracción',

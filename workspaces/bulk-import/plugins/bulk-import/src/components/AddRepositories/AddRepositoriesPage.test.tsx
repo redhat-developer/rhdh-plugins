@@ -43,8 +43,8 @@ jest.mock('../../hooks/useImportFlow', () => ({
 }));
 
 jest.mock('../../hooks/useTranslation', () => ({
-  useTranslation: jest.fn(() => ({
-    t: (key: string) => {
+  useTranslation: jest.fn(() => {
+    const t = (key: string) => {
       const translations: Record<string, string> = {
         'page.title': 'Bulk import',
         'page.importEntitiesSubtitle': 'Import to Red Hat Developer Hub',
@@ -57,8 +57,18 @@ jest.mock('../../hooks/useTranslation', () => ({
         'steps.trackStatus': 'Track the approval status',
       };
       return translations[key] || key;
-    },
-  })),
+    };
+    return {
+      t,
+      tParams: (key: string, params: Record<string, string | number>) => {
+        let message = t(key);
+        for (const [paramKey, paramValue] of Object.entries(params)) {
+          message = message.replaceAll(`{{${paramKey}}}`, String(paramValue));
+        }
+        return message;
+      },
+    };
+  }),
 }));
 
 // Mock the heavy child components to make tests faster

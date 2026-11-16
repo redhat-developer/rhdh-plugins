@@ -15,37 +15,35 @@
  */
 
 import { Link, StatusPending } from '@backstage/core-components';
-
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Typography from '@mui/material/Typography';
+import { Text } from '@backstage/ui';
 
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  BulkImportExternalLinkIcon,
+  bulkImportExternalLinkLinkStyle,
+} from './bulkImportIcons';
 
 export const WaitingForPR = ({ url }: { url: string }) => {
   const { t } = useTranslation();
 
   return (
-    <Typography
-      component="span"
-      style={{
-        display: 'flex',
-      }}
-    >
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
       <StatusPending />
-      <Typography component="span">{t('status.waitingForApproval')}</Typography>
+      <Text>{t('status.waitingForApproval')}</Text>
       {url && (
         <Link
           to={url}
           data-testid="pull request url"
           style={{
             paddingLeft: '5px',
-            display: 'inline-flex',
+            ...bulkImportExternalLinkLinkStyle,
+            whiteSpace: 'nowrap',
           }}
         >
           {t('repositories.pr')}
-          <OpenInNewIcon sx={{ paddingBottom: '5px', paddingTop: '3px' }} />
+          <BulkImportExternalLinkIcon size={14} />
         </Link>
       )}
-    </Typography>
+    </span>
   );
 };

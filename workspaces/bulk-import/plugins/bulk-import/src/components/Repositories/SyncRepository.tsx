@@ -15,11 +15,8 @@
  */
 
 import { useApi } from '@backstage/core-plugin-api';
+import { ButtonIcon, Tooltip, TooltipTrigger } from '@backstage/ui';
 
-import SyncIcon from '@mui/icons-material/Sync';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -29,6 +26,7 @@ import {
   AddRepositoryData,
   ImportJobStatus,
 } from '../../types';
+import { BulkImportSyncIcon } from '../bulkImportIcons';
 
 type SyncRepositoryProps = {
   data: AddRepositoryData;
@@ -56,18 +54,17 @@ const SyncRepository = ({ data }: SyncRepositoryProps) => {
   };
 
   return (
-    <Tooltip title={t('repositories.refresh')}>
-      <Typography component="span" data-testid="refresh-repository">
-        <IconButton
-          color="inherit"
-          onClick={() => handleClick()}
+    <TooltipTrigger>
+      <span data-testid="refresh-repository">
+        <ButtonIcon
+          icon={<BulkImportSyncIcon size={14} />}
           aria-label={t('repositories.refresh')}
-          size="large"
-        >
-          <SyncIcon />
-        </IconButton>
-      </Typography>
-    </Tooltip>
+          variant="tertiary"
+          onPress={handleClick}
+        />
+      </span>
+      <Tooltip placement="top">{t('repositories.refresh')}</Tooltip>
+    </TooltipTrigger>
   );
 };
 
