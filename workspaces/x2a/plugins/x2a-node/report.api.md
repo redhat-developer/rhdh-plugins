@@ -164,6 +164,20 @@ export interface JobStatusInfo {
   status: 'pending' | 'running' | 'success' | 'error';
 }
 
+// @public
+export type JsonObject = {
+  [key: string]: JsonValue;
+};
+
+// @public
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | JsonObject;
+
 // @public (undocumented)
 export const KUBE_SERVICE_ID = 'x2a-kubernetes';
 
@@ -263,6 +277,7 @@ export interface X2AConfig {
     imageTag: string;
     imagePullPolicy?: string;
     ttlSecondsAfterFinished: number;
+    deploymentPatch?: JsonObject;
     resources: {
       requests: {
         cpu: string;
