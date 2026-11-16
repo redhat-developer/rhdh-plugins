@@ -23,24 +23,14 @@ export type RunAgentRequest = z.infer<typeof runAgentRequestSchema>;
 /** The execution mode exposed by an AI Catalog agent. @public */
 export type AgentExecutionMode = 'in-process' | 'subprocess' | 'sandbox';
 
-/** Single-agent workflow step accepted by the runtime. @public */
-export interface AgentWorkflowStep {
+/** Interpreted agent and turn input sent to the LCore controller. @public */
+export interface AgentExecutionInput {
   agent: string;
-  name: 'agent';
-  type: 'agent';
   prompt: string;
-  output_key: 'result';
   instructions?: string;
   spawn?: 'none' | 'local' | 'ephemeral';
-  inference_provider?: { name: string; model: string };
+  inference_provider: { name: string; model: string };
   tools?: string[];
   output_schema?: Record<string, unknown>;
-}
-
-/** One agent execution represented as a Cloud Agents workflow. @public */
-export interface AgentWorkflow {
-  apiVersion: 'v1';
-  kind: 'AgentWorkflow';
-  metadata: { name: string };
-  spec: { steps: [AgentWorkflowStep] };
+  session_id?: string;
 }

@@ -251,3 +251,7 @@ boost:
     showAllNamespaces: true
     skipTlsVerify: true
     verboseStreamLogging: true
+
+# LCore development server for Agentic Chat.
+agentic-chat:
+  servicePort: 8090 # Optional: default is 8090

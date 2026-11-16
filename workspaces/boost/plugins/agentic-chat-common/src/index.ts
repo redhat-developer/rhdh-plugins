@@ -20,6 +20,5 @@ export { runAgentRequestSchema } from './schemas';
 export type {
   RunAgentRequest,
   AgentExecutionMode,
-  AgentWorkflowStep,
-  AgentWorkflow,
+  AgentExecutionInput,
 } from './types';

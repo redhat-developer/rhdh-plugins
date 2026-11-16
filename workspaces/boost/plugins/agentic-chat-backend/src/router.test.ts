@@ -184,27 +184,12 @@ it('submits one mapped workflow with trusted identity and preserves upstream acc
       method: 'POST',
       authorization: undefined,
       body: {
-        definition: {
-          apiVersion: 'v1',
-          kind: 'AgentWorkflow',
-          metadata: { name: 'support' },
-          spec: {
-            steps: [
-              {
-                agent: 'support',
-                name: 'agent',
-                type: 'agent',
-                prompt: 'Hello',
-                instructions: 'Support instructions',
-                output_key: 'result',
-                spawn: 'none',
-                tools: ['search'],
-                inference_provider: { name: 'openai', model: 'selected-model' },
-              },
-            ],
-          },
-        },
-        provider: { name: 'openai', model: 'selected-model' },
+        agent: 'support',
+        prompt: 'Hello',
+        instructions: 'Support instructions',
+        spawn: 'none',
+        tools: ['search'],
+        inference_provider: { name: 'openai', model: 'selected-model' },
         session_id: 'session-1',
       },
     },
@@ -385,26 +370,16 @@ it.each(['support', 'ogx-agent-legal'])(
     expect(catalogLookups).toEqual([
       { ref: agentRef, owner: 'user:default/alice' },
     ]);
+    expect(calls[0].body).not.toHaveProperty('provider');
     const entity = name === 'support' ? agent : legalAgent;
+    expect(calls[0].body).not.toHaveProperty('definition');
     expect(calls).toMatchObject([
       {
         body: {
-          provider: { name: 'openai', model: 'selected-model' },
-          definition: {
-            metadata: { name },
-            spec: {
-              steps: [
-                {
-                  agent: name,
-                  instructions: entity.spec.instructions,
-                  inference_provider: {
-                    name: 'openai',
-                    model: 'selected-model',
-                  },
-                },
-              ],
-            },
-          },
+          agent: name,
+          prompt: 'Hello',
+          instructions: entity.spec.instructions,
+          inference_provider: { name: 'openai', model: 'selected-model' },
         },
       },
     ]);

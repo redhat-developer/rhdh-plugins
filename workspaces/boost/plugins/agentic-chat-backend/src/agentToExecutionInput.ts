@@ -17,8 +17,7 @@
 import type { Entity } from '@backstage/catalog-model';
 import { InputError } from '@backstage/errors';
 import type {
-  AgentWorkflow,
-  AgentWorkflowStep,
+  AgentExecutionInput,
   RunAgentRequest,
 } from '@red-hat-developer-hub/backstage-plugin-agentic-chat-common';
 import { z } from 'zod';
@@ -41,10 +40,10 @@ const spawnModes = {
   sandbox: 'ephemeral',
 } as const;
 
-export function agentToWorkflow(
+export function agentToExecutionInput(
   entity: Entity,
   input: RunAgentRequest,
-): AgentWorkflow {
+): AgentExecutionInput {
   if (entity.kind.toLocaleLowerCase('en-US') !== 'airesource') {
     throw new InputError('Expected an AiResource agent');
   }
@@ -53,12 +52,9 @@ export function agentToWorkflow(
   const spec = parsed.data;
   if (spec.handoffs?.length) throw new InputError('Handoffs are not supported');
 
-  const step: AgentWorkflowStep = {
+  return {
     agent: entity.metadata.name,
-    name: 'agent',
-    type: 'agent',
     prompt: input.query,
-    output_key: 'result',
     ...(spec.executionMode !== undefined && {
       spawn: spawnModes[spec.executionMode],
     }),
@@ -68,11 +64,8 @@ export function agentToWorkflow(
     ...(spec.outputSchema !== undefined && {
       output_schema: spec.outputSchema,
     }),
-  };
-  return {
-    apiVersion: 'v1',
-    kind: 'AgentWorkflow',
-    metadata: { name: entity.metadata.name },
-    spec: { steps: [step] },
+    ...(input.conversation_id !== undefined && {
+      session_id: input.conversation_id,
+    }),
   };
 }

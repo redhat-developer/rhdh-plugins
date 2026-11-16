@@ -35,7 +35,7 @@ import express from 'express';
 import type { Response } from 'express';
 import Router from 'express-promise-router';
 import { z } from 'zod';
-import { agentToWorkflow } from './agentToWorkflow';
+import { agentToExecutionInput } from './agentToExecutionInput';
 
 interface RouterOptions {
   config: Config;
@@ -69,7 +69,7 @@ function canonicalAgentRef(value: string): string {
 export async function createRouter(options: RouterOptions) {
   const { config, logger, httpAuth, userInfo, permissions, catalog } = options;
   const settings = configSchema.parse({
-    servicePort: config.getOptionalNumber('agentic-chat.servicePort') ?? 8080,
+    servicePort: config.getOptionalNumber('agentic-chat.servicePort') ?? 8090,
   });
   const baseUrl = `http://127.0.0.1:${settings.servicePort}`;
   const router = Router();
@@ -143,14 +143,12 @@ export async function createRouter(options: RouterOptions) {
       credentials: res.locals.credentials,
     });
     if (!entity) throw new NotFoundError('Agent not found');
-    const definition = agentToWorkflow(entity, input);
-    await forward('/v1/agent/run', 'POST', res, {
-      definition,
-      provider: { name: input.provider, model: input.model },
-      ...(input.conversation_id !== undefined && {
-        session_id: input.conversation_id,
-      }),
-    });
+    await forward(
+      '/v1/agent/run',
+      'POST',
+      res,
+      agentToExecutionInput(entity, input),
+    );
   });
 
   router.get('/v2/conversations', async (_req, res) => {

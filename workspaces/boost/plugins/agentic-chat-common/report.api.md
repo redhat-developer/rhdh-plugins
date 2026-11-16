@@ -7,53 +7,33 @@ import { BasicPermission } from '@backstage/plugin-permission-common';
 import { z } from 'zod';
 
 // @public
-export type AgentExecutionMode = 'in-process' | 'subprocess' | 'sandbox';
-
-// @public
-export const agenticChatPermission: BasicPermission;
-
-// @public
-export interface AgentWorkflow {
-  // (undocumented)
-  apiVersion: 'v1';
-  // (undocumented)
-  kind: 'AgentWorkflow';
-  // (undocumented)
-  metadata: {
-    name: string;
-  };
-  // (undocumented)
-  spec: {
-    steps: [AgentWorkflowStep];
-  };
-}
-
-// @public
-export interface AgentWorkflowStep {
+export interface AgentExecutionInput {
   // (undocumented)
   agent: string;
   // (undocumented)
-  inference_provider?: {
+  inference_provider: {
     name: string;
     model: string;
   };
   // (undocumented)
   instructions?: string;
   // (undocumented)
-  name: 'agent';
-  // (undocumented)
-  output_key: 'result';
-  // (undocumented)
   output_schema?: Record<string, unknown>;
   // (undocumented)
   prompt: string;
   // (undocumented)
+  session_id?: string;
+  // (undocumented)
   spawn?: 'none' | 'local' | 'ephemeral';
   // (undocumented)
   tools?: string[];
-  // (undocumented)
-  type: 'agent';
 }
+
+// @public
+export type AgentExecutionMode = 'in-process' | 'subprocess' | 'sandbox';
+
+// @public
+export const agenticChatPermission: BasicPermission;
 
 // @public
 export type RunAgentRequest = z.infer<typeof runAgentRequestSchema>;

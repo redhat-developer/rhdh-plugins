@@ -15,7 +15,7 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
-import { agentToWorkflow } from './agentToWorkflow';
+import { agentToExecutionInput } from './agentToExecutionInput';
 
 const input = (query: string) => ({
   query,
@@ -42,28 +42,16 @@ const agent: Entity = {
   },
 };
 
-it('maps the Catalog fields and query into exactly one workflow agent step', () => {
-  expect(agentToWorkflow(agent, input('What failed?'))).toEqual({
-    apiVersion: 'v1',
-    kind: 'AgentWorkflow',
-    metadata: { name: 'support-agent' },
-    spec: {
-      steps: [
-        {
-          agent: 'support-agent',
-          name: 'agent',
-          type: 'agent',
-          prompt: 'What failed?',
-          output_key: 'result',
-          instructions: 'Help the user',
-          tools: ['search'],
-          inference_provider: { name: 'openai', model: 'selected-model' },
-          output_schema: {
-            type: 'object',
-            properties: { answer: { type: 'string' } },
-          },
-        },
-      ],
+it('interprets Catalog agent fields without constructing a workflow', () => {
+  expect(agentToExecutionInput(agent, input('What failed?'))).toEqual({
+    agent: 'support-agent',
+    prompt: 'What failed?',
+    instructions: 'Help the user',
+    tools: ['search'],
+    inference_provider: { name: 'openai', model: 'selected-model' },
+    output_schema: {
+      type: 'object',
+      properties: { answer: { type: 'string' } },
     },
   });
 });
@@ -74,10 +62,10 @@ it.each([
   ['sandbox', 'ephemeral'],
 ])('maps %s to spawn %s', (mode, spawn) => {
   expect(
-    agentToWorkflow(
+    agentToExecutionInput(
       { ...agent, spec: { ...agent.spec, executionMode: mode } },
       input('Hello'),
-    ).spec.steps[0].spawn,
+    ).spawn,
   ).toBe(spawn);
 });
 
@@ -86,20 +74,17 @@ it('leaves omitted execution mode and optional capabilities absent', () => {
     ...agent,
     spec: { type: 'agent', lifecycle: 'production', owner: 'team' },
   };
-  const step = agentToWorkflow(minimal, input('Hello')).spec.steps[0];
+  const step = agentToExecutionInput(minimal, input('Hello'));
   expect(JSON.parse(JSON.stringify(step))).toEqual({
     agent: 'support-agent',
-    name: 'agent',
-    type: 'agent',
     prompt: 'Hello',
-    output_key: 'result',
     inference_provider: { name: 'openai', model: 'selected-model' },
   });
 });
 
 it.each(['invalid', false, null])('rejects invalid execution mode %s', mode => {
   expect(() =>
-    agentToWorkflow(
+    agentToExecutionInput(
       { ...agent, spec: { ...agent.spec, executionMode: mode } },
       input('Hello'),
     ),
@@ -108,7 +93,7 @@ it.each(['invalid', false, null])('rejects invalid execution mode %s', mode => {
 
 it('rejects handoffs instead of silently dropping another agent', () => {
   expect(() =>
-    agentToWorkflow(
+    agentToExecutionInput(
       { ...agent, spec: { ...agent.spec, handoffs: ['other-agent'] } },
       input('Hello'),
     ),
@@ -117,10 +102,10 @@ it('rejects handoffs instead of silently dropping another agent', () => {
 
 it('rejects non-agent entities and unsupported string output schemas', () => {
   expect(() =>
-    agentToWorkflow({ ...agent, kind: 'Component' }, input('Hello')),
+    agentToExecutionInput({ ...agent, kind: 'Component' }, input('Hello')),
   ).toThrow('Expected an AiResource agent');
   expect(() =>
-    agentToWorkflow(
+    agentToExecutionInput(
       { ...agent, spec: { ...agent.spec, outputSchema: 'CustomType' } },
       input('Hello'),
     ),
@@ -136,6 +121,15 @@ it('uses frontend selection without interpreting the Catalog model', () => {
     },
   };
   expect(
-    agentToWorkflow(entity, input('Hello')).spec.steps[0].inference_provider,
+    agentToExecutionInput(entity, input('Hello')).inference_provider,
   ).toEqual({ name: 'openai', model: 'selected-model' });
+});
+
+it('maps conversation identity without a workflow envelope', () => {
+  expect(
+    agentToExecutionInput(agent, {
+      ...input('Hello'),
+      conversation_id: 'session-1',
+    }).session_id,
+  ).toBe('session-1');
 });
