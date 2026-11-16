@@ -17,8 +17,9 @@ entities.
 This design grounds every contract in inspected code (RHIDP-18843 inventory
 revision `719a89f8061b0ee7f232451e47629d5ef60eea6e`, revalidated at
 `8af3d2f4e0dbbf57b8425c688a02551f82289c4a`). Observed behavior is stated as
-current fact; proposed contracts are clearly labeled and await frontend feedback
-and maintainer acceptance.
+current fact; target contracts are labeled as future adoption requirements. The
+maintainer accepted the source contract and review reconciliation on 2026-11-16;
+frontend presentation/filtering feedback remains pending.
 
 ## Canonical Touchpoints
 
@@ -59,7 +60,8 @@ Change type: **docs-only** planning. No canonical document updates.
   [RHIDP-18846](https://redhat.atlassian.net/browse/RHIDP-18846).
 - Approved recovery and safe-removal behavior — deferred to
   [RHIDP-18848](https://redhat.atlassian.net/browse/RHIDP-18848).
-- Selecting new annotation schemes beyond the three working-baseline annotations.
+- Additional AI asset annotations beyond the three working-baseline keys.
+  Location-side correlation metadata is part of this source contract.
 - Creating new entity kinds or modifying the upstream alignment strategy.
 - Neo4j knowledge graph or SkillBundle/skillcard.yaml contracts.
 
@@ -69,11 +71,11 @@ Change type: **docs-only** planning. No canonical document updates.
 
 All entities carrying any `rhdh.io/ai-asset-*` annotation MUST carry all three:
 
-| Annotation                  | Required | Validation                                                                                       |
-| --------------------------- | -------- | ------------------------------------------------------------------------------------------------ |
-| `rhdh.io/ai-asset-category` | Yes      | Must be one of the six accepted values (five minimum categories plus `rule` compatibility)       |
-| `rhdh.io/ai-asset-version`  | Yes      | Must be a non-empty string; normalization rules are specified by RHIDP-18845                     |
-| `rhdh.io/ai-asset-source`   | Yes      | Must be a non-empty string identifying the connector and, when applicable, the registry instance |
+| Annotation                  | Required | Validation                                                                                                                             |
+| --------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `rhdh.io/ai-asset-category` | Yes      | Must be one of the six accepted values (five minimum categories plus `rule` compatibility)                                             |
+| `rhdh.io/ai-asset-version`  | Yes      | Must be a non-empty string; normalization rules are specified by RHIDP-18845                                                           |
+| `rhdh.io/ai-asset-source`   | Yes      | Under the adoption contract, the canonical full entity reference of its logical source Location; current SDK checks non-emptiness only |
 
 **Observed current state:** OGX providers populate all three annotations. The
 model-catalog and MCP-registry providers do not populate the three SDK
@@ -107,14 +109,20 @@ Decision 1 in the entity-model design. It is not yet in the
 `AI_ASSET_SPEC_TYPES` taxonomy because no active provider emits it; its
 category annotation value is documented for future providers.
 
-**Precedence rule:** The `rhdh.io/ai-asset-category` annotation is the source
-of truth for semantic classification. The kind/`spec.type` pair is the
-structural Backstage type. When they disagree (e.g., a legacy entity with
-`kind: Resource` but `rhdh.io/ai-asset-category: model-server`), the
-annotation takes precedence for AI Catalog browsing and filtering. The
-CatalogProcessor validator rejects entities where the category does not match
-any recognized kind/`spec.type` pairing; this validation is specified separately
-in the [annotation-scheme spec](../ai-catalog-entity-model/specs/annotation-scheme/spec.md).
+**Known provider mappings:** The integrations retrieve specific upstream APIs or
+configured records whose catalog representation is already known. This contract
+documents those mappings; it does not introduce a generic classifier, a
+"closest category" fallback, or a new record-skipping policy. Preserve native
+kind/`spec.type` alongside the semantic category. The entity-model design keeps
+connector-domain flexibility where permitted; its `AiResource` / `agent`
+mapping is settled, not an alternative to `Component` / `ai-agent`.
+
+**Observed validation and consumers:** `AIAssetValidator` checks the category
+enum and required annotation presence. It neither cross-validates category
+against native kind/type nor warns about a mismatch. Current
+`buildAiAssetCatalogFilter()` uses kind/`spec.type` pairs. This story does not
+add rejection, warning, or frontend-filtering behavior for inconsistent manually
+authored metadata. Consumer recommendations remain pending in Decision 7.
 
 **Excluded scope:** `vector-store` and `ai-tool` are retired from the
 `AI_ASSET_SPEC_TYPES` taxonomy. `skill-bundle` was removed by RHIDP-18761.
@@ -123,55 +131,124 @@ The UI `categoryMeta.ts` retains fallback display entries for `ai-tool` and
 
 ### Decision 3: Source annotation format and safe exposure
 
-The `rhdh.io/ai-asset-source` annotation identifies which connector ingested the
-entity. Its format is provider-defined.
+The future source annotation identifies the catalog Location representing the
+asset's configured logical source. It MUST contain the canonical full entity
+reference `location:<namespace>/<name>`, including the namespace. For example:
+`location:default/ai-source-oci-quay-prod`.
 
-**Observed formats:**
+This is one source identity represented on both the asset and its source record:
+many assets can reference the same Location. A consumer can resolve the annotation
+with a catalog entity-reference lookup; provider-specific string parsing is not
+the correlation mechanism. This is a contract for future adoption, not current
+SDK validation or current provider behavior.
 
-| Provider       | Current source value                              | Format                                |
-| -------------- | ------------------------------------------------- | ------------------------------------- |
-| OGX model      | `ogx`                                             | Bare connector name                   |
-| OGX agent      | `ogx`                                             | Bare connector name                   |
-| Skills catalog | `<sourceType>/<sourceId>` (e.g., `oci/quay-prod`) | Connector type / registry instance    |
-| MCP registry   | _(not currently populated)_                       | Proposed: `mcp-registry/<instanceId>` |
-| Model catalog  | _(not currently populated)_                       | Proposed: `model-catalog/<configId>`  |
+The Location MUST carry `rhdh.io/ai-source-ref`. Its value MUST equal both the
+asset's `rhdh.io/ai-asset-source` value and the Location's canonical full entity
+reference:
+
+```text
+asset.annotations["rhdh.io/ai-asset-source"]
+  = location.annotations["rhdh.io/ai-source-ref"]
+  = canonicalEntityRef(location)
+```
+
+**Maintainer accepted the Location-side key on 2026-11-16.**
+`rhdh.io/ai-source-ref` is source-record metadata, not a fourth required AI asset
+annotation. Source Locations MUST NOT receive the AI asset annotation trio as a
+way to classify them. Location remains a source record, not a new asset category.
+
+The existing AIAssetValidator processor activates on `rhdh.io/ai-asset-*` keys;
+the new source-record key does not match that prefix. The standalone
+`validateAIAssetEntity` helper has no such guard. Future SDK/provider integration
+must route Location validation separately instead of passing source records to
+that AI-asset-only helper. This is an RHIDP-18847/adoption-profile responsibility,
+not a TypeScript change in this story.
+
+Malformed source references, a referenced non-Location kind, and a mismatching
+Location correlation value are contract validation errors. A temporarily
+unprocessed Location must not cause a consumer to guess another source from a
+connector label or URL. Detection/reporting and safe handling of missing or
+retiring sources must coordinate with RHIDP-18847/RHIDP-18848; no synchronous
+catalog-processing order or new deletion policy is asserted here.
+
+**Paired example (illustrative metadata excerpts, not runnable manifests):**
+
+```yaml
+# AI skill entity metadata
+metadata:
+  annotations:
+    rhdh.io/ai-asset-category: skill
+    rhdh.io/ai-asset-version: 1.2.3
+    rhdh.io/ai-asset-source: location:default/ai-source-oci-quay-prod
+---
+# Source Location record
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  namespace: default
+  name: ai-source-oci-quay-prod
+  annotations:
+    rhdh.io/ai-source-ref: location:default/ai-source-oci-quay-prod
+    backstage.io/managed-by-location: skills-catalog-provider:skills/oci/quay-prod
+    backstage.io/managed-by-origin-location: skills-catalog-provider:skills/oci/quay-prod
+spec: {}
+```
+
+The source Location has no discovery targets. Its valid Backstage management
+references record provider provenance; they do not instruct a reader to fetch
+the source. These illustrative management values are not a new prescribed
+provider naming algorithm. Decision 4 explains the documented Backstage shape.
+
+**Observed formats (legacy values, not the new target contract):**
+
+| Provider       | Current source value                              | Format                                            |
+| -------------- | ------------------------------------------------- | ------------------------------------------------- |
+| OGX model      | `ogx`                                             | Bare connector name                               |
+| OGX agent      | `ogx`                                             | Bare connector name                               |
+| Skills catalog | `<sourceType>/<sourceId>` (e.g., `oci/quay-prod`) | Connector type / registry instance                |
+| MCP registry   | _(not currently populated)_                       | Adoption must produce a source Location reference |
+| Model catalog  | _(not currently populated)_                       | Adoption must produce a source Location reference |
 
 **Safe-exposure rules:**
 
-The source annotation MUST NOT contain:
+Asset source and Location correlation annotations contain canonical entity
+references, not endpoint URLs. Use safe, stable configured source identifiers in
+Location namespace/name construction. No source metadata, names, annotations,
+links, or diagnostics may publish credentials, including API keys, passwords,
+client secrets, or credential-bearing URLs. Backend authentication stays in
+backend configuration. A configured label is not automatically credential-free.
 
-- Credentials (API keys, tokens, passwords, client secrets)
-- Internal network addresses that expose infrastructure topology (use instance
-  IDs from app-config, not raw URLs)
-- Personally identifiable information
+The Location MAY include an optional backend-service link in `metadata.links`.
+Such links must be credential-free, including removal of authentication-bearing
+userinfo, query parameters, or fragments. Internal URLs are not categorically
+prohibited: their exposure must be appropriate for the catalog's intended
+users and normal visibility policy. This does not introduce new permission
+names, field-level access rules, or a frontend display feature.
 
-The annotation MAY contain:
-
-- Connector names (e.g., `ogx`, `mcp-registry`, `rhoai`)
-- App-config instance identifiers (e.g., `default`, `prod-west`)
-- Source type identifiers (e.g., `oci`, `npx`)
-
-**Rationale:** The source annotation appears on catalog entities visible to all
-authorized users. Including credentials or raw internal URLs would expose
-sensitive infrastructure details. Instance IDs from app-config are safe because
-they are administrative labels without network significance.
+**Rationale:** Canonical source identity supports lookup without exposing
+connection secrets. Optional links provide useful service context without
+turning provenance metadata into another ingestion request.
 
 ### Decision 4: Location entity generation contract
 
-> **Status: Proposed.** No provider currently emits Location entities. This
-> contract defines the future behavior for providers that choose to emit them.
+> **Status: Maintainer direction accepted; implementation remains future work.**
+> Adopting providers must emit source Locations and the three AI asset annotations.
+> No current provider is claimed to implement this contract. The matching
+> `rhdh.io/ai-source-ref` key was accepted on 2026-11-16.
 
 Backstage distinguishes three related concepts:
 
 1. **Catalog Location entity** — a `kind: Location` entity in the catalog that
-   represents a source from which other entities are discovered. It has
-   `spec.type` and `spec.target` fields.
+   represents a source from which other entities are discovered. Its `spec` is
+   required, but `spec.type`, `spec.target`, and `spec.targets` are optional.
 2. **Management annotations** — `backstage.io/managed-by-location` and
    `backstage.io/managed-by-origin-location` on each emitted entity, recording
-   which location or provider ingested it. Required by the catalog processing
-   pipeline; entities without them do not appear.
-3. **Mutation `locationKey`** — a string passed to `applyMutation` that
-   determines which provider owns the entity for update and deletion scoping.
+   the processing location and its origin. Their values are Backstage location
+   references in `<type>:<target>` form, distinct from catalog entity references.
+   A bare Location `metadata.name` is not a valid location-reference value.
+3. **Mutation `locationKey`** — an optional conflict-resolution string passed
+   to `applyMutation` for definitions sharing an entity reference. Provider
+   identity, not this key, scopes the entity set replaced by a full mutation.
 
 **Current behavior (from RHIDP-18843 inventory):**
 
@@ -193,132 +270,197 @@ value as `backstage.io/managed-by-location`.
 
 **Proposed Location entity contract:**
 
-When a provider emits Location entities, the following rules apply:
+Providers adopting this contract MUST emit one Location per configured logical
+source, including sources that currently yield zero assets. A provider instance
+that aggregates multiple registries/sources therefore emits multiple Locations.
 
-- **Granularity:** One Location entity per provider instance (per configured
-  `configId` or equivalent). A provider instance that connects to one registry
-  endpoint produces one Location entity representing that endpoint.
-- **Stable identity:** The Location entity name MUST be deterministic from
-  the provider identity (e.g., `ai-catalog-<connector>-<instanceId>`). It
-  MUST NOT change across restart cycles.
-- **Type:** `spec.type` SHOULD be `ai-catalog-provider` to distinguish
-  AI Catalog provider locations from file-based or URL-based catalog locations.
-- **Target:** `spec.target` SHOULD identify the source endpoint without
-  exposing credentials. For API-origin sources, use the configured base URL.
-  For configuration-backed sources (like OGX agents), use the app-config path.
-- **Correlation:** Emitted entities SHOULD reference their Location via
-  `backstage.io/managed-by-location` using the Location entity's
-  `metadata.name`. The `backstage.io/managed-by-origin-location` annotation
-  SHOULD carry the same value for programmatic providers.
-- **Ownership:** The Location entity's `spec.owner` SHOULD match the
-  `spec.owner` of the entities it produces, or reference the team responsible
-  for the connector deployment.
-- **Deletion lifecycle:** When a provider instance is removed from
-  configuration and the provider performs a full mutation with an empty entity
-  list, the associated Location entity MUST also be removed. Orphaned Location
-  entities (no associated asset entities) SHOULD be cleaned up.
+- **Granularity and ownership:** A logical source is the configured ingestion
+  source/path, not merely a hostname, provider class, individual asset, or asset
+  version. Each provider owns the Locations for its configured logical sources.
+  Equal endpoints do not collapse distinct ingestion paths or give another
+  provider shared ownership of the same Location.
+- **Proxy sources:** OGX can proxy multiple remotes through different modes.
+  Current model discovery queries OGX `/v1/models`; agent discovery does not use
+  an OGX agent REST endpoint and may use configuration or descriptor imports.
+  Record these actual discovery paths separately. Distinguish upstream remotes
+  when the integration knows and models them; do not invent provenance for
+  remotes hidden behind a proxy. Using OGX to interact with an agent does not
+  make OGX its discovery source. Descriptor imports retain their actual
+  Backstage processing/origin provenance.
+- **Stable identity:** The Location namespace/name derives deterministically
+  from a collision-safe identity scoped by the provider configuration and
+  logical source/path. It MUST remain stable across restarts and credential,
+  endpoint, or asset-version changes that preserve that logical identity.
+  Renaming/removing the configured identity is a migration/retirement operation
+  for RHIDP-18849/RHIDP-18850. Detailed encoding/hashing remains with those
+  profiles; source and asset namespaces need not be identical.
+- **Spec and links:** The provider emits `spec: {}`. It MUST NOT populate
+  `spec.type`, `spec.target`, or `spec.targets` on these provenance-only source
+  records. No custom target reader is required for this shape. An optional
+  `metadata.links` entry can identify the backend service under Decision 3's
+  exposure policy; a link is not a discovery target.
 
-**API origins versus catalog descriptor URLs:**
+- **Correlation:** Each AI asset's `rhdh.io/ai-asset-source` MUST resolve to its
+  logical source Location. That Location MUST carry the matching correlation
+  `rhdh.io/ai-source-ref` annotation described in Decision 3. One provider may emit assets referring to
+  different Locations; each asset must identify its actual configured source.
+- **Management annotations:** Preserve valid Backstage `<type>:<target>` location
+  references and their processing/origin meanings. Do not populate them with a
+  bare Location name or assume an entity-reference string automatically creates
+  a Backstage management link. The AI source lookup uses the explicit contract
+  above; exact processing integration is coordinated with RHIDP-18847 and the
+  provider adoption profiles.
+- **Ownership:** A designated ingestion owner manages each source Location and
+  its correlated assets. Catalog mutation ownership is separate from asset
+  `spec.owner`. Location has no standard `spec.owner` semantics to rely on here;
+  record any display ownership through an explicitly supported metadata contract.
+- **Lifecycle:** Keep the Location while the logical source remains configured,
+  including ready-empty results and temporary source failures. Zero current assets
+  alone is not a reason to delete a configured source record. Explicit retirement
+  must account for referenced assets and retained-content obligations before the
+  source Location is removed; approved deletion/recovery mechanics remain with
+  RHIDP-18848 and the adoption profiles. Removing configuration does not imply that
+  a removed provider will run another full-empty mutation.
 
-Programmatic entity providers (OGX, MCP registry, model catalog) discover
-entities through API calls, not catalog descriptor YAML files. Their Location
-entities represent API endpoints, not file URLs. The `spec.target` value for
-these providers is the API base URL or a synthetic identifier — not a
-`catalog-info.yaml` path. The `spec.type` value (`ai-catalog-provider`)
-distinguishes them from standard `url` or `file` locations.
+**Cross-change reconciliation:** The older
+[RHOAI connector failure-path plan](../rhoai-connector/design.md#decision-2-graceful-degradation-for-mcp-catalog-api)
+proposes a full-empty mutation on API absence or connection failure. If that
+provider adopts this source contract, its adoption/safety profile must reconcile
+that path so configured source Locations remain in the provider-owned set.
+RHIDP-18848 and the adoption profiles retain ownership of asset-removal policy;
+this handoff neither approves the older asset-pruning behavior nor adds a
+provider to the current adoption cohort.
 
-**Rationale:** Location entities enable the catalog to display provenance and
-support administrative operations (refresh, delete source). Without them,
-administrators cannot discover which sources feed the AI Catalog or remove a
-source's entities in bulk. The one-per-instance granularity balances
-administrative visibility with entity count — one Location per entity would
-produce unnecessary catalog noise.
+**Backstage alignment and research:**
+
+The `DeferredEntity` API accepts a generic `Entity`; providers can emit
+Locations alongside assets in full or delta mutations. Built-in
+`GithubEntityProvider`, `AzureBlobStorageEntityProvider`, and
+`ConfigLocationEntityProvider` illustrate provider-owned Location emission,
+often using `locationSpecToLocationEntity`. Those examples normally populate
+discovery targets for catalog descriptors. That helper is not mandatory: it
+populates type/target, so it is not the prescribed construction mechanism for
+our targetless source records.
+
+The [Location descriptor documentation](https://backstage.io/docs/features/software-catalog/descriptor-format/#kind-location)
+explicitly permits a minimal `spec: {}`. The catalog processing orchestrator
+collects only declared targets and invokes `readLocation` for each; our records
+have none. Thus the provider remains responsible for fetching remote APIs or
+reading configured data, without an additional reader or duplicate asset path.
+Custom `spec.type` plus target would instead require a supporting reader and is
+not this contract.
+
+The [entity-provider documentation](https://backstage.io/docs/features/software-catalog/external-integrations/entity-providers/)
+requires valid management/origin references and demonstrates service provenance
+with `hr-user:<service-url>`. The
+[management-annotation documentation](https://backstage.io/docs/features/software-catalog/well-known-annotations/#backstageiomanaged-by-location)
+allows generic location references, not just URLs or single files. These
+annotation references are distinct from Location `spec` targets and from our
+canonical entity-reference keys.
+
+Discovery providers own emitted Locations through their mutation sets; those
+Locations do not require manual registration rows in the `locations` table.
+`DefaultLocationStore` implements `EntityProvider` for the separate manually
+registered Location API path. The relevant upstream source is pinned at
+[Backstage revision 0c8eb334](https://github.com/backstage/backstage/tree/0c8eb3342cfdc5ef47c10b92604fc1fd29545deb):
+`plugins/catalog-node/src/processing/types.ts`, the three providers above,
+`plugins/catalog-backend/src/providers/DefaultLocationStore.ts`, and
+`plugins/catalog-backend/src/processing/DefaultCatalogProcessingOrchestrator.ts`.
+Targetless processing was also checked against Boost's installed
+`@backstage/plugin-catalog-backend` 3.9.1.
+
+This combines documented Backstage capabilities into our source-record design;
+it is not a claim that upstream documents this exact AI correlation convention.
+No automatic parent/child relations arise from matching annotations. Assets and
+source Locations emitted directly by the provider are independently owned roots;
+this contract does not claim generic refresh/delete operations control provider
+retrieval or cascade from the source Location to its sibling assets.
+
+**Example:** one SkillsCatalogProvider with OCI sources `quay-prod` and
+`quay-staging` emits two Locations. Assets from `quay-prod` carry
+`location:default/ai-source-oci-quay-prod`; assets from `quay-staging` carry
+`location:default/ai-source-oci-quay-staging`. Multiple asset versions from one
+logical source share its Location. Detailed identity construction and legacy
+source-value migration belong to RHIDP-18849/RHIDP-18850.
+
+**Rationale:** Source annotation and source Location describe the same logical
+origin, with a deterministic catalog lookup between them. This source identity
+is distinct from provider implementation, processing provenance, and mutation
+ownership. Sources remain discoverable even when they have no current assets.
 
 ### Decision 5: Duplicate ingestion prevention
 
-Multi-instance deployments (e.g., two RHDH instances pointing at the same OGX
-server) can produce duplicate catalog entities. Prevention relies on two
-mechanisms:
+Within one catalog, deterministic entity references and explicit ingestion
+ownership prevent ambiguous source assignment. The new provenance link is not
+a deduplication or ownership override mechanism.
 
-1. **Entity identity uniqueness:** The combination of `kind`, `namespace`, and
-   `metadata.name` determines entity identity in the Backstage catalog. If two
-   providers emit entities with the same identity triple, the catalog merges
-   them. Providers MUST construct deterministic entity names from source data
-   (not random UUIDs) so that the same source asset always maps to the same
-   entity identity.
-2. **Mutation `locationKey` scoping:** Each provider instance's `locationKey`
-   scopes its mutations. When two provider instances share a `locationKey`,
-   their full mutations overwrite each other's entities — the last writer wins.
-   When they use different `locationKey` values, both sets coexist. The
-   appropriate behavior depends on the deployment model:
-   - **Shared source, single owner:** Use the same `locationKey` across
-     instances. Only one instance's entities survive, avoiding duplicates.
-   - **Distinct sources:** Use different `locationKey` values. Entities from
-     each source coexist.
+1. **Entity identity:** `(kind, namespace, name)` identifies one catalog entity.
+   Matching identity does not mean metadata from independent owners is merged.
+   Different configured sources that must coexist need non-colliding identities;
+   exact mapping/migration decisions remain with the adoption profiles.
+2. **Provider mutation scope:** A full mutation replaces the entity set owned by
+   that provider identity, potentially spanning several logical sources. A
+   `locationKey` is not a source-specific full-mutation bucket. A multi-source
+   provider must not submit one source's subset as the provider's complete set.
+3. **Conflict protection:** `locationKey` is Backstage's conflict-resolution key
+   for the same entity reference. If an existing entity has a key, an incoming
+   definition must have the same key to replace it. Different keys do not permit
+   two definitions of the same entity reference to coexist or merge. Sharing a
+   key alone does not define safe multi-writer coordination.
+4. **Source-record ownership:** Each logical source Location has a designated
+   ingestion owner. Equal URLs or equal correlation strings do not grant a
+   second provider ownership. Transfers and safe reconciliation remain with
+   RHIDP-18848 and the adoption profiles.
 
-**Multi-instance source scenarios:**
-
-- Two RHDH instances both pointing to `ogx.corp.example.com`: Because OGX
-  model uses a fixed entity name (`ogx-model-server`), both instances emit
-  the same entity identity. The `locationKey` (`ogx-model-entity-provider`)
-  is also fixed, so the last full mutation wins. No duplicates.
-- Two configured model-catalog instances (`catalog.providers.modelCatalog.us`
-  and `catalog.providers.modelCatalog.eu`) pointing to different KServe
-  clusters: Different `locationKey` values
-  (`ModelCatalogResourceEntityProvider:us` and `:eu`) ensure both sets
-  coexist. Entity name collisions are possible if both clusters serve a
-  model with the same name; the model-catalog provider does not currently
-  include an instance prefix in entity names.
-
-**Rationale:** Deterministic naming is the primary deduplication mechanism.
-`locationKey` provides a secondary ownership boundary. This approach works
-within existing Backstage catalog semantics without custom deduplication logic.
+These constraints are grounded in Backstage's
+[provider mutation and location-key contracts](https://backstage.io/docs/features/software-catalog/external-integrations/entity-providers/).
+Source correlation must preserve them, not infer ownership from a provenance
+annotation. Separate backend installations with independent catalogs do not
+share this catalog identity/ownership state.
 
 ### Decision 6: Precedence for overlapping metadata representations
 
 When metadata appears in multiple places (annotation, `spec` field, kind
 name), precedence rules resolve conflicts:
 
-1. **Category:** `rhdh.io/ai-asset-category` annotation is authoritative.
-   `spec.type` and `kind` are the structural mapping that SHOULD agree with the
-   category but are not the classification source of truth.
-2. **Version:** `rhdh.io/ai-asset-version` annotation is authoritative for
-   display and sorting. Source-native version fields (e.g., model server
-   `serverVersion`, MCP server raw version) are the original values; the
-   annotation holds the normalized form. Original-value preservation semantics
-   are specified by RHIDP-18845.
-3. **Source:** `rhdh.io/ai-asset-source` annotation is authoritative for
-   provenance. The `backstage.io/managed-by-location` annotation identifies
-   the Location/provider, not the upstream registry. They serve different
-   purposes and are not interchangeable.
+1. **Category:** `rhdh.io/ai-asset-category` expresses semantic classification;
+   native kind/`spec.type` retains its structural meaning. Known provider mappings
+   supply both. This does not decide frontend query/filter precedence or add
+   cross-field validation for manually authored conflicts.
+2. **Version:** `rhdh.io/ai-asset-version` carries the common version metadata.
+   Native versions keep their source-specific meanings. Scheme, normalization,
+   original-value preservation, and comparison are RHIDP-18845's responsibility;
+   this story does not prescribe display/sorting behavior.
+3. **Source:** `rhdh.io/ai-asset-source` resolves to the configured logical
+   source's Location, whose `rhdh.io/ai-source-ref` matches that canonical
+   reference. Management annotations retain Backstage processing/origin meanings
+   and cannot substitute for or override this source correlation.
 
-**Conflicting metadata scenario:** If a catalog processor or manual YAML edit
-sets `rhdh.io/ai-asset-category` to a value that conflicts with the entity's
-kind/`spec.type` (e.g., `rhdh.io/ai-asset-category: agent` on a
-`kind: Resource` entity), the AI Catalog browse view uses the annotation value
-for filtering. The CatalogProcessor validator logs a warning but does not reject
-the entity — the annotation is the classification truth.
+For illustration, manually authored `AiResource` / `skill` with category `agent`
+is inconsistent with the documented skill mapping. Current SDK validation
+accepts the recognized category and does not diagnose that disagreement; the
+current kind/type browse filter sees the skill representation. This is evidence
+of distinct representations, not a proposed conflict-resolution feature.
+Do not claim that current consumers switch to the annotation in this case.
 
 ### Decision 7: Frontend feedback status
 
 > **Status: Pending.** Frontend stakeholder review of the annotation baseline
 > has not been completed.
 
-The three annotations and the kind/`spec.type` taxonomy are the **working
-baseline** inherited from RHIDP-18761 and the current implementation. They are
-not described as stakeholder-approved. Outstanding review questions:
+The annotation baseline and known kind/`spec.type` mappings are the working
+baseline. The maintainer has accepted this source contract; frontend filtering
+and presentation are not stakeholder-approved by that acceptance.
 
-- Should the AI Catalog browse view filter by `rhdh.io/ai-asset-category`
-  annotation or by `spec.type`? The current implementation uses `spec.type`
-  via `buildAiAssetCatalogFilter()`.
-- Should Location entities appear in the AI Catalog browse view? If so, with
-  what category badge?
-- Should the source annotation be visible in entity detail cards, and if so,
-  in what format (raw value, parsed connector/instance, linked to admin)?
+| Frontend review question                                                                       | Provisional recommendation                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Should browse classification/filtering use the semantic annotation, native kind/type, or both? | Preserve current kind/type behavior until frontend agreement. Review the annotation as an additional semantic input; do not change filtering in this story.                     |
+| Should source Locations appear as AI assets?                                                   | Keep source Locations outside AI asset classification; use them as provenance records reachable through the source reference.                                                   |
+| How should source provenance appear on an asset?                                               | Consider a link to the referenced source Location and a readable source title, with an optional safe service link; avoid provider-specific parsing of source-reference strings. |
 
-Recommendations are recorded in the specification. None has stakeholder
-approval. Changes to the working baseline require explicit frontend review
-before implementation.
+These are review recommendations, not implemented UI requirements. Presentation
+and filtering changes require frontend agreement and their own implementation
+scope. No badge category is invented for Locations.
 
 ## Risks
 
@@ -331,9 +473,11 @@ No current provider emits Location entities. Adopting Decision 4 requires
 changes to every provider's entity emission logic. The migration must be
 coordinated across the Boost and ai-integrations workspaces.
 
-**Mitigation:** Location entity emission is optional in the initial contract.
-Providers can adopt it incrementally. The `backstage.io/managed-by-location`
-annotation already works without a corresponding Location entity.
+**Mitigation:** Implementation can be staged through later adoption profiles;
+Location emission is mandatory for providers claiming conformance to this target
+contract. Existing management annotations alone do not establish conformance.
+Verify targetless Location processing and required management annotations during
+adoption; no custom target-reader implementation is prescribed.
 
 ### Risk 2: Source annotation format divergence
 
@@ -341,11 +485,11 @@ annotation already works without a corresponding Location entity.
 **Impact:** Low
 
 Current providers use different source annotation formats (bare name vs.
-type/instance). Standardizing requires provider changes and may break
-existing conditional policies that match on current values.
+type/instance). Moving to canonical Location entity references requires provider changes and
+may break existing conditional policies that match current values.
 
-**Mitigation:** The contract documents both current and proposed formats.
-Migration guidance will be part of the provider adoption profiles
+**Mitigation:** The contract separates observed legacy values from the new
+source-reference format. Migration guidance will be part of the provider adoption profiles
 (RHIDP-18849/RHIDP-18850).
 
 ### Risk 3: Frontend filtering dependency on spec.type
@@ -357,6 +501,7 @@ The current browse view filters by `spec.type` via `buildAiAssetCatalogFilter()`
 not by the `rhdh.io/ai-asset-category` annotation. If the annotation and
 `spec.type` disagree, users see inconsistent results.
 
-**Mitigation:** Decision 6 establishes the annotation as authoritative. The
-frontend review (Decision 7) will determine whether to add annotation-based
-filtering alongside or replacing `spec.type` filtering.
+**Mitigation:** State current kind/type filtering accurately and preserve the
+known provider mappings. Frontend review (Decision 7) will determine whether
+annotation-based filtering is appropriate; this story does not settle or
+implement that behavior.

@@ -3,7 +3,7 @@
 ## Why
 
 [RHIDP-18844](https://redhat.atlassian.net/browse/RHIDP-18844), under
-[RHIDP-18841](https://redhat.atlassian.net/browse/RHIDP-18841), needs a precise
+[RHIDP-18839](https://redhat.atlassian.net/browse/RHIDP-18839), needs a precise
 metadata and provenance contract so that catalog consumers can identify an AI
 asset and its origin consistently. Current providers diverge in annotation
 population, Location entity generation, and provenance tracking. Without a
@@ -25,16 +25,23 @@ providers must adopt.
 - Map each supported kind/`spec.type` pair to an `rhdh.io/ai-asset-category`
   value using the current taxonomy. No Neo4j, SkillBundle, or graph/bundle
   scope.
-- Specify generated Location entity granularity, stable identity, `type` and
-  `target` semantics, asset correlation via `backstage.io/managed-by-location`
-  and `backstage.io/managed-by-origin-location`, ownership, and deletion
-  lifecycle.
+- Require adopting providers to generate one Location per configured logical
+  source and ingestion path. Define stable identity, targetless source records, ownership, and
+  lifecycle, including configured sources with zero current assets.
+- Make `rhdh.io/ai-asset-source` a canonical full Location entity reference.
+  Require matching `rhdh.io/ai-source-ref` metadata on the Location so assets
+  and source records share one resolvable source identity. Source Locations use
+  their own validation path and remain outside AI asset classification.
+- Keep Backstage management/origin `<type>:<target>` location references separate
+  from the source entity reference; do not use bare Location names as references.
 - Distinguish a catalog Location entity, the `backstage.io/managed-by-location`
   / `backstage.io/managed-by-origin-location` annotations, and the mutation
   `locationKey` parameter.
 - Account for API-origin sources (OGX `/v1/models`, MCP registry, KServe
-  informer) versus catalog descriptor file URLs. Prevent duplicate ingestion
-  across multi-instance deployments.
+  informer), configuration, and catalog descriptor imports. Provider-owned source
+  Locations use `spec: {}` with no discovery targets; providers continue to own
+  remote retrieval. Preserve actual import provenance and prevent duplicate
+  ingestion within a catalog using deterministic identity and explicit ownership.
 - Cover edge cases: conflicting metadata from multiple sources, missing source
   data, multi-instance registries, and credential-free provenance examples
   with safe-exposure rules.
@@ -49,7 +56,7 @@ tracks planning verification; [tasks](tasks.md) is reserved for future code,
 associated tests, and code documentation. File presence does not establish
 implementation readiness.
 
-## Out of Scope
+## Non-Goals
 
 - Production code, runtime provider migration, package publication, and
   creating coding stories.
