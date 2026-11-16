@@ -31,6 +31,7 @@ import Tooltip from '@mui/material/Tooltip';
 
 import CardWrapper from '../CardWrapper';
 import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
+import { formatTotalTimeSaved } from '../../utils/totalTimeSaved';
 
 import TableFooterPagination from '../CardFooter';
 import { useTemplates } from '../../hooks/useTemplates';
@@ -167,7 +168,7 @@ const Templates = () => {
                   >
                     <TableCell
                       sx={{
-                        width: '50%',
+                        width: '45%',
                         minWidth: 0,
                       }}
                     >
@@ -204,8 +205,21 @@ const Templates = () => {
                         </Link>
                       </Tooltip>
                     </TableCell>
-                    <TableCell sx={{ width: '50%' }}>
-                      {Number(template.count).toLocaleString('en-US') ?? '--'}
+                    <TableCell sx={{ width: '20%' }}>
+                      {Number.isFinite(Number(template.count))
+                        ? Number(template.count).toLocaleString('en-US')
+                        : '--'}
+                    </TableCell>
+                    <TableCell sx={{ width: '35%' }}>
+                      {formatTotalTimeSaved(template.minutes, (part, count) => {
+                        if (part === 'day') {
+                          return t('table.timeSaved.day', { count });
+                        }
+                        if (part === 'hour') {
+                          return t('table.timeSaved.hour', { count });
+                        }
+                        return t('table.timeSaved.minute', { count });
+                      })}
                     </TableCell>
                   </TableRow>
                 );

@@ -38,10 +38,24 @@ jest.mock('../../Trans', () => ({
 jest.mock('../../../hooks/useTemplates', () => ({
   useTemplates: () => ({
     templates: {
-      data: Array.from({ length: 6 }, (_, i) => ({
-        entityref: `template:default/example-go-template-${i + 1}`,
-        count: (i + 1) * 10,
-      })),
+      data: [
+        {
+          entityref: 'template:default/example-go-template-1',
+          count: 10,
+          minutes: 90,
+          runs: 2,
+        },
+        {
+          entityref: 'template:default/example-go-template-2',
+          count: 20,
+          minutes: 0,
+          runs: 4,
+        },
+        ...Array.from({ length: 4 }, (_, i) => ({
+          entityref: `template:default/example-go-template-${i + 3}`,
+          count: (i + 3) * 10,
+        })),
+      ],
     },
     loading: false,
   }),
@@ -81,6 +95,10 @@ jest.mock('../../../utils/constants', () => ({
   TEMPLATE_TABLE_HEADERS: [
     { id: 'name', titleKey: 'table.headers.name' },
     { id: 'executions', titleKey: 'table.headers.executions' },
+    {
+      id: 'total-estimated-time-saved',
+      titleKey: 'table.headers.totalEstimatedTimeSaved',
+    },
   ],
 }));
 
@@ -142,15 +160,15 @@ describe('Templates', () => {
   // eslint-disable-next-line jest/expect-expect
   it('should display correct table headers', () => {
     renderComponent();
-    verifyHeaders(['Name', 'Executions']);
+    verifyHeaders(['Name', 'Executions', 'Total Est. Time Saved']);
   });
 
   // eslint-disable-next-line jest/expect-expect
   it('should display correct data in table rows', () => {
     renderComponent();
     verifyTableData([
-      ['Example Go Template 1', '10'],
-      ['Example Go Template 2', '20'],
+      ['Example Go Template 1', '10', '1 hour 30 minutes'],
+      ['Example Go Template 2', '20', '--'],
     ]);
   });
 

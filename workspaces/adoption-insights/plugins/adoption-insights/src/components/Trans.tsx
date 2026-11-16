@@ -31,5 +31,5 @@ interface TransProps<
 
 export const Trans = ({ message, params }: TransProps<Messages>) => {
   const { t } = useTranslation();
-  return t(message, params);
+  return t(message as any, params);
 };
