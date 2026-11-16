@@ -93,7 +93,7 @@ export function mapRowToJob(
   };
 }
 
-function parseTelemetry(raw: string | undefined): Telemetry | undefined {
+export function parseTelemetry(raw: string | undefined): Telemetry | undefined {
   if (!raw) {
     return undefined;
   }
