@@ -17,7 +17,6 @@
 import { PluginTrend } from '../../types';
 import { PopularContentItem } from '../popularContent';
 import { resolvePluginDisplayName } from './pluginDisplayNames';
-import { resolvePluginIcon } from './pluginIcons';
 import {
   PluginDestinationOverrides,
   resolvePluginDestination,
@@ -25,6 +24,7 @@ import {
 
 /**
  * Map Adoption Insights plugin trends into the shared Popular Content list model.
+ * Rank numbers (via `showRank`) replace per-row icons in the Top Plugins card.
  */
 export function mapPluginTrendsToPopularContentItems(
   plugins: PluginTrend[],
@@ -39,7 +39,6 @@ export function mapPluginTrendsToPopularContentItems(
         title: resolvePluginDisplayName(id),
         subtitle: id,
         href: resolvePluginDestination(id, destinations),
-        icon: resolvePluginIcon(id),
         visitCount: plugin.visit_count,
         trendPercentage: plugin.trend_percentage,
       };
@@ -49,7 +48,6 @@ export function mapPluginTrendsToPopularContentItems(
 /**
  * Fill missing `href` values from the destination map / admin overrides.
  * Explicit item hrefs (curated / hybrid pins) are preserved.
- * Also fills missing leading icons from the known plugin icon map.
  */
 export function applyPluginDestinations(
   items: PopularContentItem[],
@@ -58,6 +56,5 @@ export function applyPluginDestinations(
   return items.map(item => ({
     ...item,
     href: item.href ?? resolvePluginDestination(item.id, destinations),
-    icon: item.icon ?? resolvePluginIcon(item.id),
   }));
 }

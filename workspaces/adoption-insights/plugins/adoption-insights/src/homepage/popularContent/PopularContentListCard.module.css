@@ -1,0 +1,12 @@
+/*
+ * BUI ListRow hover styles are gated on [data-selection-mode], which is absent
+ * when selectionMode="none". Mirror the built-in hover token for homepage rows.
+ * Cursor matches BUI Table's [data-href] treatment for whole-row navigation.
+ */
+.row:hover {
+  background-color: var(--bui-bg-neutral-1-hover);
+}
+
+.row[data-href] {
+  cursor: pointer;
+}

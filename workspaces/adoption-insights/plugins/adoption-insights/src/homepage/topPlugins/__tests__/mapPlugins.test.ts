@@ -20,7 +20,7 @@ import {
 } from '../mapPlugins';
 
 describe('mapPluginTrendsToPopularContentItems', () => {
-  it('maps plugin trends with display name, metrics, icons, and destinations', () => {
+  it('maps plugin trends with display name, metrics, and destinations', () => {
     const mapped = mapPluginTrendsToPopularContentItems([
       {
         plugin_id: 'catalog',
@@ -68,7 +68,7 @@ describe('mapPluginTrendsToPopularContentItems', () => {
         trendPercentage: '0',
       },
     ]);
-    expect(mapped.every(item => item.icon)).toBe(true);
+    expect(mapped.every(item => item.icon === undefined)).toBe(true);
   });
 
   it('applies admin destination overrides', () => {

@@ -16,11 +16,10 @@
 
 import { isValidElement, type ReactNode } from 'react';
 
-import { InfoCard, Link as BackstageLink } from '@backstage/core-components';
+import { InfoCard } from '@backstage/core-components';
 import {
   ButtonIcon,
   Flex,
-  Link as ExternalLink,
   List,
   ListRow,
   Skeleton,
@@ -35,42 +34,8 @@ import {
   RiSubtractLine,
 } from '@remixicon/react';
 
+import styles from './PopularContentListCard.module.css';
 import { PopularContentItem } from './types';
-
-/** Absolute / protocol-relative / mailto links leave the SPA; paths stay in-app. */
-function isExternalHref(href: string): boolean {
-  return (
-    href.startsWith('http://') ||
-    href.startsWith('https://') ||
-    href.startsWith('//') ||
-    href.startsWith('mailto:') ||
-    href.startsWith('tel:')
-  );
-}
-
-function ItemTitleLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: ReactNode;
-}) {
-  // @backstage/ui Link renders a plain <a href> (full document load). Use
-  // core-components Link for in-app router navigation like other homepage cards.
-  if (isExternalHref(href)) {
-    return (
-      <ExternalLink href={href} weight="bold">
-        {children}
-      </ExternalLink>
-    );
-  }
-
-  return (
-    <BackstageLink to={href} style={{ fontWeight: 700 }}>
-      {children}
-    </BackstageLink>
-  );
-}
 
 export type PopularContentListCardProps = {
   title: string;
@@ -84,7 +49,10 @@ export type PopularContentListCardProps = {
   permissionDeniedMessage?: string;
   /** Optional trailing content under the list (e.g. "View all"). */
   footer?: ReactNode;
-  /** When true, prefix each row with its 1-based display rank. */
+  /**
+   * When true, show each row's 1-based rank in front of the title and omit
+   * leading icons (rank replaces the icon slot, matching Top Plugins).
+   */
   showRank?: boolean;
   /** Optional tooltip text shown on the right side of the card header. */
   titleTooltip?: string;
@@ -202,6 +170,13 @@ export function PopularContentListCard({
   titleTooltip,
   visitsLabel = 'visits',
 }: PopularContentListCardProps) {
+  // Match InfoCard header horizontal padding so row text aligns with the
+  // title while borderBottom can still span the full card width (noPadding).
+  const contentInlinePadding = '16px';
+  const statusStyle = {
+    padding: `8px ${contentInlinePadding} 16px`,
+  } as const;
+
   let body: ReactNode;
 
   if (loading) {
@@ -211,7 +186,7 @@ export function PopularContentListCard({
         gap="3"
         aria-busy="true"
         aria-label="Loading"
-        style={{ padding: '8px 0' }}
+        style={statusStyle}
       >
         <Skeleton height="20px" width="100%" />
         <Skeleton height="20px" width="90%" />
@@ -220,44 +195,101 @@ export function PopularContentListCard({
     );
   } else if (permissionDenied) {
     body = (
-      <Text variant="body-small" color="secondary" role="status">
+      <Text
+        variant="body-small"
+        color="secondary"
+        role="status"
+        style={statusStyle}
+      >
         {permissionDeniedMessage}
       </Text>
     );
   } else if (error) {
     body = (
-      <Text variant="body-small" color="secondary" role="alert">
+      <Text
+        variant="body-small"
+        color="secondary"
+        role="alert"
+        style={statusStyle}
+      >
         {errorMessage}
       </Text>
     );
   } else if (items.length === 0) {
     body = (
-      <Text variant="body-small" color="secondary" role="status">
+      <Text
+        variant="body-small"
+        color="secondary"
+        role="status"
+        style={statusStyle}
+      >
         {emptyMessage}
       </Text>
     );
   } else {
     body = (
-      <List aria-label={title} selectionMode="none">
+      // Collapse default List gap so borderBottom sits flush between rows.
+      // Use --bui-border-1 (subtle separator); --bui-border was renamed away.
+      <List aria-label={title} selectionMode="none" style={{ gap: 0 }}>
         {items.map((item, index) => {
           const rank = index + 1;
-          const titleNode = showRank ? (
-            <Flex align="center" gap="2">
-              <Text
-                variant="body-small"
-                color="secondary"
-                weight="bold"
-                as="span"
-              >
-                {rank}
-              </Text>
-              <Text variant="body-small" weight="bold" as="span">
-                {item.title}
-              </Text>
-            </Flex>
+          const isLast = index === items.length - 1;
+          const rowStyle = {
+            borderRadius: 0,
+            paddingBlock: 'var(--bui-space-3)', // 12px — match prototype row padding
+            paddingInline: contentInlinePadding,
+            ...(isLast
+              ? undefined
+              : { borderBottom: '1px solid var(--bui-border-1)' }),
+          };
+          // Whole-row navigation via ListRow href (GridListItem + BUI router).
+          // Avoid nested title links so the row behaves like a single <li><a>.
+          const titleContent = showRank ? (
+            <Text variant="body-small" weight="bold" as="span">
+              {item.title}
+            </Text>
           ) : (
             item.title
           );
+
+          // Rank replaces the leading icon. Keep it vertically centered with
+          // the title+subtitle block (not top-aligned with the title alone).
+          // ListRow's icon slot is a 32×32 neutral box — avoid that for ranks.
+          if (showRank) {
+            return (
+              <ListRow
+                key={item.id}
+                id={item.id}
+                textValue={item.title}
+                href={item.href}
+                className={styles.row}
+                style={rowStyle}
+                customActions={
+                  <RowMetrics item={item} visitsLabel={visitsLabel} />
+                }
+              >
+                <Flex align="center" gap="3">
+                  <Text
+                    variant="body-small"
+                    color="secondary"
+                    weight="bold"
+                    as="span"
+                    style={{ flexShrink: 0, lineHeight: 1 }}
+                  >
+                    {rank}
+                  </Text>
+                  <Flex direction="column" gap="0">
+                    {titleContent}
+                    {item.subtitle ? (
+                      <Text variant="body-x-small" color="secondary" as="span">
+                        {item.subtitle}
+                      </Text>
+                    ) : null}
+                  </Flex>
+                </Flex>
+              </ListRow>
+            );
+          }
 
           const leadingIcon =
             item.icon ??
@@ -276,17 +308,16 @@ export function PopularContentListCard({
               key={item.id}
               id={item.id}
               textValue={item.title}
+              href={item.href}
               description={item.subtitle}
               icon={isValidElement(leadingIcon) ? leadingIcon : undefined}
+              className={styles.row}
+              style={rowStyle}
               customActions={
                 <RowMetrics item={item} visitsLabel={visitsLabel} />
               }
             >
-              {item.href ? (
-                <ItemTitleLink href={item.href}>{titleNode}</ItemTitleLink>
-              ) : (
-                titleNode
-              )}
+              {titleContent}
             </ListRow>
           );
         })}
@@ -297,26 +328,58 @@ export function PopularContentListCard({
   // InfoCard (MUI paper) matches other NFS homepage widgets. @backstage/ui Card
   // uses bg="neutral" (e.g. --bui-bg-neutral-1), which reads as a different
   // surface in dark mode next to theme.palette.background.paper.
+  //
+  // Put the info control in the title row (not CardHeader `action`). MUI's
+  // action slot uses marginTop:-4 / marginRight:-8, so top/right insets never
+  // match. Inside the title, both edges use the same header padding.
+  const titleNode = titleTooltip ? (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 8,
+        width: '100%',
+      }}
+    >
+      <span>{title}</span>
+      <TooltipTrigger delay={300}>
+        <ButtonIcon
+          aria-label={titleTooltip}
+          icon={<RiInformationLine size={16} />}
+          size="small"
+          variant="tertiary"
+        />
+        <Tooltip>{titleTooltip}</Tooltip>
+      </TooltipTrigger>
+    </div>
+  ) : (
+    title
+  );
+
   return (
     <InfoCard
-      title={title}
-      divider={!!title}
-      action={
-        titleTooltip ? (
-          <TooltipTrigger delay={300}>
-            <ButtonIcon
-              aria-label={titleTooltip}
-              icon={<RiInformationLine size={16} />}
-              size="small"
-              variant="tertiary"
-            />
-            <Tooltip>{titleTooltip}</Tooltip>
-          </TooltipTrigger>
-        ) : undefined
-      }
+      title={titleNode}
+      titleTypographyProps={{
+        // Drop MUI h5 default margin-bottom so the header sits tight above rows.
+        ...(titleTooltip ? { component: 'div' as const } : undefined),
+        style: {
+          marginBottom: 0,
+          ...(titleTooltip ? { width: '100%' } : undefined),
+        },
+      }}
+      // Prototype has no header divider; row borders are the only separators.
+      divider={false}
+      // Drop CardContent padding so row borderBottom can span full card width;
+      // horizontal inset is applied on each row / status message instead.
+      noPadding
     >
       {body}
-      {footer}
+      {footer ? (
+        <div style={{ padding: `0 ${contentInlinePadding} 16px` }}>
+          {footer}
+        </div>
+      ) : null}
     </InfoCard>
   );
 }
