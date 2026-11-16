@@ -86,16 +86,17 @@ export class AdoptionInsightsAnalyticsApi
       const { token } = await identityApi.getCredentials();
       this.userToken = token;
       this.userId = identity.userEntityRef;
-      this.isUserIdentityAvailable = true;
 
       await Promise.all(
         this.pendingEvents.map(event => this.setUserIdToEvent(event)),
       );
 
-      this.eventBuffer.push(...this.pendingEvents);
-      this.enforceQueueLimit();
-
+      this.isUserIdentityAvailable = true;
+      // Pending events are older than anything in `eventBuffer`, so they go
+      // first. This keeps the buffer oldest-first for `enforceQueueLimit`.
+      this.eventBuffer.unshift(...this.pendingEvents);
       this.pendingEvents = [];
+      this.enforceQueueLimit();
     });
 
     setInterval(() => this.flushEvents(), this.flushInterval);
@@ -241,6 +242,7 @@ export class AdoptionInsightsAnalyticsApi
 
   /**
    * Drops the oldest events if the buffer exceeds `MAX_QUEUED_EVENTS`.
+   * Relies on `eventBuffer` being kept in capture order, oldest first.
    */
   private enforceQueueLimit() {
     const overflow = this.eventBuffer.length - MAX_QUEUED_EVENTS;

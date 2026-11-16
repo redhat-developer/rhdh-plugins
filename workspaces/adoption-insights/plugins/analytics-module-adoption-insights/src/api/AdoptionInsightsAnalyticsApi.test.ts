@@ -399,6 +399,117 @@ describe('InsightsAnalyticsApi', () => {
     });
   });
 
+  describe('identity initialization', () => {
+    const makeEvent = (subject: string): AnalyticsEvent => ({
+      action: 'click',
+      subject,
+      context: { ...mockContext },
+    });
+    const subjects = (events: AnalyticsEvent[]) => events.map(e => e.subject);
+
+    /** Lets pending promise callbacks run until `condition` holds. */
+    const settle = async (condition: () => boolean) => {
+      for (let i = 0; i < 100 && !condition(); i++) {
+        await Promise.resolve();
+      }
+      expect(condition()).toBe(true);
+    };
+
+    /**
+     * Creates an API whose identity resolves on demand and whose hashing is
+     * held until `releaseHash` is called, so tests can capture events while
+     * the pending events are being hashed.
+     */
+    const createApiWithPausedIdentity = () => {
+      let resolveIdentity: (identity: {
+        userEntityRef: string;
+      }) => void = () => {};
+      const identityApi = {
+        getBackstageIdentity: jest.fn().mockReturnValue(
+          new Promise(resolve => {
+            resolveIdentity = resolve;
+          }),
+        ),
+        getCredentials: jest.fn().mockResolvedValue({ token: 'dummy-token' }),
+      } as unknown as IdentityApi;
+      const api = AdoptionInsightsAnalyticsApi.fromConfig(mockConfigApi, {
+        identityApi,
+      });
+
+      let releaseHash: () => void = () => {};
+      const hashGate = new Promise<void>(resolve => {
+        releaseHash = resolve;
+      });
+      const hashSpy = jest
+        .spyOn(api as any, 'hash')
+        .mockImplementation(async () => {
+          await hashGate;
+          return 'dummy-hashed-user-id';
+        });
+
+      const internals = api as any;
+      return {
+        api,
+        internals,
+        startIdentityHandoff: async () => {
+          resolveIdentity({ userEntityRef: 'user:test' });
+          await settle(() => hashSpy.mock.calls.length > 0);
+        },
+        finishIdentityHandoff: async () => {
+          releaseHash();
+          await settle(
+            () =>
+              internals.isUserIdentityAvailable &&
+              internals.pendingEvents.length === 0,
+          );
+        },
+      };
+    };
+
+    it('keeps pending events ahead of events captured while they are hashed', async () => {
+      const { api, internals, startIdentityHandoff, finishIdentityHandoff } =
+        createApiWithPausedIdentity();
+      await api.captureEvent(makeEvent('captured-before-identity'));
+
+      await startIdentityHandoff();
+      const capturing = api.captureEvent(makeEvent('captured-during-handoff'));
+      await finishIdentityHandoff();
+      await capturing;
+
+      expect(subjects(internals.eventBuffer)).toEqual([
+        'captured-before-identity',
+        'captured-during-handoff',
+      ]);
+    });
+
+    it('drops the oldest pending events, not newer captures, when the cap is exceeded', async () => {
+      const { api, internals, startIdentityHandoff, finishIdentityHandoff } =
+        createApiWithPausedIdentity();
+      const pending = Array.from({ length: 1000 }, (_, i) =>
+        makeEvent(`pending-${i}`),
+      );
+      internals.pendingEvents = [...pending];
+      // Keep captureEvent from flushing, so the whole queue can be inspected.
+      internals.isFlushing = true;
+      const errorLog = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
+      await startIdentityHandoff();
+      const capturing = api.captureEvent(makeEvent('captured-during-handoff'));
+      await finishIdentityHandoff();
+      await capturing;
+
+      const buffer = internals.eventBuffer as AnalyticsEvent[];
+      expect(buffer).toHaveLength(1000);
+      expect(buffer[0].subject).toBe('pending-1');
+      expect(buffer[999].subject).toBe('captured-during-handoff');
+      expect(errorLog).toHaveBeenCalledWith(
+        expect.stringContaining('dropped 1 oldest event.'),
+      );
+    });
+  });
+
   describe('maxBufferSize configuration', () => {
     const createApiWithMaxBufferSize = (value: number | undefined) => {
       const config = {
