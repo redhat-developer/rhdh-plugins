@@ -45,8 +45,6 @@ allowed_remote_resources:
   - https://raw.githubusercontent.com/fullsend-ai/fullsend/
   - https://raw.githubusercontent.com/fullsend-ai/agents/
   - https://github.com/redhat-developer/rhdh-skills/
-  - https://github.com/redhat-developer/rhdh-skill/
-  - https://github.com/kim-tsao/rhdh-security-skills/
 create_issues:
   allow_targets:
     repos:
