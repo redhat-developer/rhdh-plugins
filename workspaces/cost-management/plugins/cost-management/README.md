@@ -170,7 +170,7 @@ The procedure involves the following steps:
    > communication with the Red Hat Cost Management API server-side, including SSO
    > token management and RBAC enforcement.
 
-   See [dynamic-plugin.md](../../docs/dynamic-plugin.md) for complete dynamic plugin configuration.
+   See [installing-on-rhdh.md](../../docs/installing-on-rhdh.md) for complete RHDH installation steps.
 
 ### Contributing
 
