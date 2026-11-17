@@ -59,6 +59,7 @@ describe('readConfigSidebarItems', () => {
         icon: 'history',
         to: '/audit-log',
         priority: 5,
+        target: undefined,
         group: 'admin',
         requiresRoute: true,
       },
@@ -67,6 +68,49 @@ describe('readConfigSidebarItems', () => {
         title: 'Docs',
         icon: undefined,
         to: 'https://example.com/docs',
+        target: undefined,
+        priority: undefined,
+        group: undefined,
+        requiresRoute: undefined,
+      },
+    ]);
+  });
+
+  it('maps configured target when valid', () => {
+    const configApi = mockApis.config({
+      data: {
+        app: {
+          sidebar: {
+            items: [
+              {
+                title: 'Help',
+                to: 'https://example.com/help',
+                target: '_blank',
+              },
+              { title: 'Home', to: '/', target: '_top' },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(readConfigSidebarItems(configApi)).toEqual([
+      {
+        id: 'app.sidebar.items[0]',
+        title: 'Help',
+        icon: undefined,
+        to: 'https://example.com/help',
+        target: '_blank',
+        priority: undefined,
+        group: undefined,
+        requiresRoute: undefined,
+      },
+      {
+        id: 'app.sidebar.items[1]',
+        title: 'Home',
+        icon: undefined,
+        to: '/',
+        target: undefined,
         priority: undefined,
         group: undefined,
         requiresRoute: undefined,
