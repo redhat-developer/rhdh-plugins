@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-ai-catalog
 
+## 1.2.2
+
+### Patch Changes
+
+- 318ae51: Show Podman pull commands for OCI skills in the AI Catalog Usage card.
+
 ## 1.2.1
 
 ### Patch Changes
