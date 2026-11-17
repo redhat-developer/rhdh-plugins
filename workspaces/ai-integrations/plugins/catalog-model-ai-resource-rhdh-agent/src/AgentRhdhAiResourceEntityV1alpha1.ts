@@ -20,65 +20,63 @@ import {
   type KindValidator,
 } from '@backstage/catalog-model';
 import { createCatalogModelLayer } from '@backstage/catalog-model/alpha';
-import type { AgentRhdhNextAiResourceEntityV1alpha1 } from './types';
-import agentRhdhNextJsonSchema from './AiResource.v1alpha1.agent-rhdh-next.schema.json';
+import type { AgentRhdhAiResourceEntityV1alpha1 } from './types';
+import agentRhdhJsonSchema from './AiResource.v1alpha1.rhdh-agent.schema.json';
 
-const agentRhdhNextValidator = entityKindSchemaValidator(
-  agentRhdhNextJsonSchema,
-);
+const agentRhdhValidator = entityKindSchemaValidator(agentRhdhJsonSchema);
 
 /**
- * Entity data validator for {@link AgentRhdhNextAiResourceEntityV1alpha1}.
+ * Entity data validator for {@link AgentRhdhAiResourceEntityV1alpha1}.
  *
  * Uses the same JSON-schema-based validation pattern as upstream
  * `agentAiResourceEntityV1alpha1Validator`.
  *
  * @public
  */
-export const agentRhdhNextAiResourceEntityV1alpha1Validator: KindValidator = {
+export const agentRhdhAiResourceEntityV1alpha1Validator: KindValidator = {
   async check(data) {
-    return agentRhdhNextValidator(data) === data;
+    return agentRhdhValidator(data) === data;
   },
 };
 
 /**
- * Type guard for {@link AgentRhdhNextAiResourceEntityV1alpha1}.
+ * Type guard for {@link AgentRhdhAiResourceEntityV1alpha1}.
  *
  * Checks `apiVersion`, `kind`, and `spec.type` without running
  * schema validation.
  *
  * @public
  */
-export function isAgentRhdhNextAiResourceEntity(
+export function isAgentRhdhAiResourceEntity(
   entity: Entity,
-): entity is AgentRhdhNextAiResourceEntityV1alpha1 {
+): entity is AgentRhdhAiResourceEntityV1alpha1 {
   return (
     entity.apiVersion === 'backstage.io/v1alpha1' &&
     entity.kind === 'AiResource' &&
-    entity.spec?.type === 'agent-rhdh-next'
+    entity.spec?.type === 'rhdh-agent'
   );
 }
 
 /**
- * Extends the catalog model with the agent-rhdh-next specType for
+ * Extends the catalog model with the rhdh-agent specType for
  * the AiResource kind.
  *
  * Follows the upstream pattern established by `agentAiResourceEntityModel`,
- * using `addKindVersion` to register the agent-rhdh-next JSON schema
- * under `specType: 'agent-rhdh-next'`. Declares only the owner
+ * using `addKindVersion` to register the rhdh-agent JSON schema
+ * under `specType: 'rhdh-agent'`. Declares only the owner
  * relation (no system relation).
  *
  * @public
  */
-export const agentRhdhNextAiResourceEntityModel = createCatalogModelLayer({
-  layerId: 'redhat.com/kind-ai-resource-agent-rhdh-next',
+export const agentRhdhAiResourceEntityModel = createCatalogModelLayer({
+  layerId: 'redhat.com/kind-ai-resource-rhdh-agent',
   builder: model => {
     model.addKindVersion({
       kind: 'AiResource',
       versions: [
         {
           name: 'v1alpha1',
-          specType: 'agent-rhdh-next',
+          specType: 'rhdh-agent',
           relationFields: [
             {
               selector: { path: 'spec.owner' },
@@ -89,7 +87,7 @@ export const agentRhdhNextAiResourceEntityModel = createCatalogModelLayer({
             },
           ],
           schema: {
-            jsonSchema: agentRhdhNextJsonSchema,
+            jsonSchema: agentRhdhJsonSchema,
           },
         },
       ],

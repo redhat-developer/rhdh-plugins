@@ -1,17 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "AiResourceV1alpha1AgentRhdhNext",
-  "description": "An AI resource of type 'agent-rhdh-next', representing an RHDH Next agentic chat agent with a focused configuration contract and optional LLM model settings.",
+  "$id": "AiResourceV1alpha1RhdhAgent",
+  "description": "An AI resource of type 'rhdh-agent', representing an RHDH agentic chat agent with a focused configuration contract and optional LLM model settings.",
   "examples": [
     {
       "apiVersion": "backstage.io/v1alpha1",
       "kind": "AiResource",
       "metadata": {
-        "name": "my-rhdh-next-agent",
-        "description": "Minimal agent-rhdh-next entity"
+        "name": "my-rhdh-agent",
+        "description": "Minimal rhdh-agent entity"
       },
       "spec": {
-        "type": "agent-rhdh-next",
+        "type": "rhdh-agent",
         "owner": "ai-platform-team"
       }
     },
@@ -19,11 +19,11 @@
       "apiVersion": "backstage.io/v1alpha1",
       "kind": "AiResource",
       "metadata": {
-        "name": "full-rhdh-next-agent",
-        "description": "Fully configured agent-rhdh-next entity"
+        "name": "full-rhdh-agent",
+        "description": "Fully configured rhdh-agent entity"
       },
       "spec": {
-        "type": "agent-rhdh-next",
+        "type": "rhdh-agent",
         "owner": "ai-platform-team",
         "instructions": "You are a support router agent.",
         "inferenceProvider": {
@@ -67,7 +67,7 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["agent-rhdh-next"],
+              "enum": ["rhdh-agent"],
               "description": "The type of AI resource."
             },
             "owner": {
@@ -101,11 +101,13 @@
                   "properties": {
                     "temperature": {
                       "type": "number",
-                      "description": "Sampling temperature."
+                      "description": "Sampling temperature.",
+                      "minimum": 0
                     },
                     "maxTokens": {
-                      "type": "number",
-                      "description": "Maximum number of tokens to generate."
+                      "type": "integer",
+                      "description": "Maximum number of tokens to generate.",
+                      "minimum": 0
                     }
                   },
                   "additionalProperties": false

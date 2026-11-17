@@ -16,18 +16,18 @@
 
 /**
  * Catalog model types, validator, and CatalogModelLayer for AiResource
- * agent-rhdh-next entities (spec.type: agent-rhdh-next).
+ * rhdh-agent entities (spec.type: rhdh-agent).
  *
  * @packageDocumentation
  */
 
 export type {
-  AgentRhdhNextAiResourceEntityV1alpha1,
-  AgentRhdhNextModelConfig,
-  AgentRhdhNextInferenceProvider,
+  AgentRhdhAiResourceEntityV1alpha1,
+  AgentRhdhModelConfig,
+  AgentRhdhInferenceProvider,
 } from './types';
 export {
-  agentRhdhNextAiResourceEntityV1alpha1Validator,
-  agentRhdhNextAiResourceEntityModel,
-  isAgentRhdhNextAiResourceEntity,
-} from './AgentRhdhNextAiResourceEntityV1alpha1';
+  agentRhdhAiResourceEntityV1alpha1Validator,
+  agentRhdhAiResourceEntityModel,
+  isAgentRhdhAiResourceEntity,
+} from './AgentRhdhAiResourceEntityV1alpha1';

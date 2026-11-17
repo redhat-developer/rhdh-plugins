@@ -27,7 +27,7 @@ import type { JsonValue } from '@backstage/types';
  *
  * @public
  */
-export type AgentRhdhNextModelConfig = {
+export type AgentRhdhModelConfig = {
   /** Sampling temperature. */
   temperature?: number;
   /** Maximum number of tokens to generate. */
@@ -35,7 +35,7 @@ export type AgentRhdhNextModelConfig = {
 };
 
 /**
- * Inference provider configuration for an agent-rhdh-next entity.
+ * Inference provider configuration for an rhdh-agent entity.
  *
  * Uses a type alias (not an interface) so that TypeScript generates an
  * implicit index signature, keeping the type assignable to JsonObject
@@ -44,18 +44,18 @@ export type AgentRhdhNextModelConfig = {
  *
  * @public
  */
-export type AgentRhdhNextInferenceProvider = {
+export type AgentRhdhInferenceProvider = {
   /** The inference provider identifier. */
   name: string;
   /** The model identifier. */
   model: string;
   /** Optional model configuration. */
-  modelConfig?: AgentRhdhNextModelConfig;
+  modelConfig?: AgentRhdhModelConfig;
 };
 
 /**
- * AiResource entity with spec.type 'agent-rhdh-next'. Represents an
- * RHDH Next agentic chat agent with a focused configuration contract
+ * AiResource entity with spec.type 'rhdh-agent'. Represents an
+ * RHDH agentic chat agent with a focused configuration contract
  * and optional LLM model settings inside inferenceProvider.
  *
  * Follows the upstream discriminated-union pattern from
@@ -63,12 +63,12 @@ export type AgentRhdhNextInferenceProvider = {
  *
  * @public
  */
-export interface AgentRhdhNextAiResourceEntityV1alpha1 extends Entity {
+export interface AgentRhdhAiResourceEntityV1alpha1 extends Entity {
   apiVersion: 'backstage.io/v1alpha1';
   kind: 'AiResource';
   spec: {
-    /** Must be 'agent-rhdh-next'. */
-    type: 'agent-rhdh-next';
+    /** Must be 'rhdh-agent'. */
+    type: 'rhdh-agent';
     /** An entity reference to the owner of the AI resource. */
     owner: string;
     /**
@@ -77,7 +77,7 @@ export interface AgentRhdhNextAiResourceEntityV1alpha1 extends Entity {
      */
     instructions?: string;
     /** Optional inference provider with model configuration. */
-    inferenceProvider?: AgentRhdhNextInferenceProvider;
+    inferenceProvider?: AgentRhdhInferenceProvider;
     /** Opaque string references to tools available to this agent. */
     tools?: string[];
     /** JSON Schema object or simple type name describing the agent's output format. */
