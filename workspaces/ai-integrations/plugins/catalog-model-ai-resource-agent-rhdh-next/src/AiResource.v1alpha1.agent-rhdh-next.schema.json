@@ -26,7 +26,6 @@
         "type": "agent-rhdh-next",
         "owner": "ai-platform-team",
         "instructions": "You are a support router agent.",
-        "handoffDescription": "Routes support requests.",
         "inferenceProvider": {
           "name": "openai",
           "model": "gpt-4o",
@@ -35,7 +34,6 @@
             "maxTokens": 4096
           }
         },
-        "handoffs": ["agent-a", "agent-b"],
         "tools": ["tool-x", "tool-y"],
         "outputSchema": {
           "type": "object",
@@ -82,11 +80,6 @@
               "type": "string",
               "description": "The agent's instructions (system prompt). Optional — omit when the agent image/runtime already provides a default prompt."
             },
-            "handoffDescription": {
-              "type": "string",
-              "description": "A description used when this agent is listed as a handoff target.",
-              "minLength": 1
-            },
             "inferenceProvider": {
               "type": "object",
               "description": "The inference provider for this agent. Optional; when set, both name and model are required.",
@@ -119,14 +112,6 @@
                 }
               },
               "additionalProperties": false
-            },
-            "handoffs": {
-              "type": "array",
-              "description": "Opaque string references to other agents this agent can hand off to.",
-              "items": {
-                "type": "string",
-                "minLength": 1
-              }
             },
             "tools": {
               "type": "array",

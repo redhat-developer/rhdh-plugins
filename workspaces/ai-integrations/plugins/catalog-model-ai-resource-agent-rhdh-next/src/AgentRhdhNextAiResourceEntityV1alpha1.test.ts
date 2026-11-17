@@ -51,7 +51,6 @@ function makeFullAgent(): Entity {
       type: 'agent-rhdh-next',
       owner: 'ai-platform-team',
       instructions: 'You are a fully configured agent.',
-      handoffDescription: 'Handles everything.',
       inferenceProvider: {
         name: 'openai',
         model: 'gpt-4o',
@@ -60,7 +59,6 @@ function makeFullAgent(): Entity {
           maxTokens: 4096,
         },
       },
-      handoffs: ['agent-a', 'agent-b'],
       tools: ['tool-x', 'tool-y'],
       outputSchema: {
         type: 'object',
@@ -176,15 +174,6 @@ describe('agentRhdhNextAiResourceEntityV1alpha1Validator', () => {
     it('accepts outputSchema as non-empty string', async () => {
       const result = await agentRhdhNextAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({ outputSchema: 'text' }),
-      );
-      expect(result).toBe(true);
-    });
-
-    it('accepts handoffs as string array', async () => {
-      const result = await agentRhdhNextAiResourceEntityV1alpha1Validator.check(
-        makeMinimalAgent({
-          handoffs: ['some-arbitrary-string', 'another-ref'],
-        }),
       );
       expect(result).toBe(true);
     });
@@ -390,14 +379,6 @@ describe('agentRhdhNextAiResourceEntityV1alpha1Validator', () => {
       await expect(
         agentRhdhNextAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ instructions: ['step 1', 'step 2'] as any }),
-        ),
-      ).rejects.toThrow();
-    });
-
-    it('rejects handoffs as non-array', async () => {
-      await expect(
-        agentRhdhNextAiResourceEntityV1alpha1Validator.check(
-          makeMinimalAgent({ handoffs: 'not-an-array' as any }),
         ),
       ).rejects.toThrow();
     });

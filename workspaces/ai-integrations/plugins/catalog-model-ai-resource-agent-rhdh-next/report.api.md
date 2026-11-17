@@ -22,9 +22,7 @@ export interface AgentRhdhNextAiResourceEntityV1alpha1 extends Entity {
     type: 'agent-rhdh-next';
     owner: string;
     instructions?: string;
-    handoffDescription?: string;
     inferenceProvider?: AgentRhdhNextInferenceProvider;
-    handoffs?: string[];
     tools?: string[];
     outputSchema?: Record<string, JsonValue | undefined> | string;
     executionMode?: 'in-process' | 'subprocess' | 'sandbox';

@@ -76,12 +76,8 @@ export interface AgentRhdhNextAiResourceEntityV1alpha1 extends Entity {
      * agent image/runtime already provides a default prompt.
      */
     instructions?: string;
-    /** A description used when this agent is listed as a handoff target. */
-    handoffDescription?: string;
     /** Optional inference provider with model configuration. */
     inferenceProvider?: AgentRhdhNextInferenceProvider;
-    /** Opaque string references to other agents this agent can hand off to. */
-    handoffs?: string[];
     /** Opaque string references to tools available to this agent. */
     tools?: string[];
     /** JSON Schema object or simple type name describing the agent's output format. */
