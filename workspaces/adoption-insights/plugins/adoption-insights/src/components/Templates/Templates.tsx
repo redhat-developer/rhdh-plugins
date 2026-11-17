@@ -211,15 +211,9 @@ const Templates = () => {
                         : '--'}
                     </TableCell>
                     <TableCell sx={{ width: '35%' }}>
-                      {formatTotalTimeSaved(template.minutes, (part, count) => {
-                        if (part === 'day') {
-                          return t('table.timeSaved.day', { count });
-                        }
-                        if (part === 'hour') {
-                          return t('table.timeSaved.hour', { count });
-                        }
-                        return t('table.timeSaved.minute', { count });
-                      })}
+                      {formatTotalTimeSaved(template.minutes, (part, count) =>
+                        t(`table.timeSaved.${part}` as any, { count } as any),
+                      )}
                     </TableCell>
                   </TableRow>
                 );
