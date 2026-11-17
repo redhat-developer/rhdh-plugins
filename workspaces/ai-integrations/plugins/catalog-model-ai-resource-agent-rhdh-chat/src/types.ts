@@ -27,7 +27,7 @@ import type { JsonValue } from '@backstage/types';
  *
  * @public
  */
-export type AgentRhdhModelConfig = {
+export type AgentRhdhChatModelConfig = {
   /** Sampling temperature. */
   temperature?: number;
   /** Maximum number of tokens to generate. */
@@ -35,7 +35,7 @@ export type AgentRhdhModelConfig = {
 };
 
 /**
- * Inference provider configuration for an rhdh-agent entity.
+ * Inference provider configuration for an agent-rhdh-chat entity.
  *
  * Uses a type alias (not an interface) so that TypeScript generates an
  * implicit index signature, keeping the type assignable to JsonObject
@@ -44,17 +44,17 @@ export type AgentRhdhModelConfig = {
  *
  * @public
  */
-export type AgentRhdhInferenceProvider = {
+export type AgentRhdhChatInferenceProvider = {
   /** The inference provider identifier. */
   name: string;
   /** The model identifier. */
   model: string;
   /** Optional model configuration. */
-  modelConfig?: AgentRhdhModelConfig;
+  modelConfig?: AgentRhdhChatModelConfig;
 };
 
 /**
- * AiResource entity with spec.type 'rhdh-agent'. Represents an
+ * AiResource entity with spec.type 'agent-rhdh-chat'. Represents an
  * RHDH agentic chat agent with a focused configuration contract
  * and optional LLM model settings inside inferenceProvider.
  *
@@ -63,12 +63,12 @@ export type AgentRhdhInferenceProvider = {
  *
  * @public
  */
-export interface AgentRhdhAiResourceEntityV1alpha1 extends Entity {
+export interface AgentRhdhChatAiResourceEntityV1alpha1 extends Entity {
   apiVersion: 'backstage.io/v1alpha1';
   kind: 'AiResource';
   spec: {
-    /** Must be 'rhdh-agent'. */
-    type: 'rhdh-agent';
+    /** Must be 'agent-rhdh-chat'. */
+    type: 'agent-rhdh-chat';
     /** An entity reference to the owner of the AI resource. */
     owner: string;
     /**
@@ -77,7 +77,7 @@ export interface AgentRhdhAiResourceEntityV1alpha1 extends Entity {
      */
     instructions?: string;
     /** Optional inference provider with model configuration. */
-    inferenceProvider?: AgentRhdhInferenceProvider;
+    inferenceProvider?: AgentRhdhChatInferenceProvider;
     /** Opaque string references to tools available to this agent. */
     tools?: string[];
     /** JSON Schema object or simple type name describing the agent's output format. */

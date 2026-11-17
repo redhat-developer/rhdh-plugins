@@ -10810,9 +10810,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:plugins/catalog-model-ai-resource-agent":
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent-rhdh-chat@workspace:plugins/catalog-model-ai-resource-agent-rhdh-chat":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:plugins/catalog-model-ai-resource-agent"
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent-rhdh-chat@workspace:plugins/catalog-model-ai-resource-agent-rhdh-chat"
   dependencies:
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"
@@ -10820,9 +10820,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-rhdh-agent@workspace:plugins/catalog-model-ai-resource-rhdh-agent":
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:plugins/catalog-model-ai-resource-agent":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-rhdh-agent@workspace:plugins/catalog-model-ai-resource-rhdh-agent"
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:plugins/catalog-model-ai-resource-agent"
   dependencies:
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"

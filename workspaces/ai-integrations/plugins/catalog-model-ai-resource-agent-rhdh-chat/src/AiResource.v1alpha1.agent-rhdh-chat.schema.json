@@ -1,17 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "AiResourceV1alpha1RhdhAgent",
-  "description": "An AI resource of type 'rhdh-agent', representing an RHDH agentic chat agent with a focused configuration contract and optional LLM model settings.",
+  "$id": "AiResourceV1alpha1AgentRhdhChat",
+  "description": "An AI resource of type 'agent-rhdh-chat', representing an RHDH agentic chat agent with a focused configuration contract and optional LLM model settings.",
   "examples": [
     {
       "apiVersion": "backstage.io/v1alpha1",
       "kind": "AiResource",
       "metadata": {
-        "name": "my-rhdh-agent",
-        "description": "Minimal rhdh-agent entity"
+        "name": "my-agent-rhdh-chat",
+        "description": "Minimal agent-rhdh-chat entity"
       },
       "spec": {
-        "type": "rhdh-agent",
+        "type": "agent-rhdh-chat",
         "owner": "ai-platform-team"
       }
     },
@@ -19,11 +19,11 @@
       "apiVersion": "backstage.io/v1alpha1",
       "kind": "AiResource",
       "metadata": {
-        "name": "full-rhdh-agent",
-        "description": "Fully configured rhdh-agent entity"
+        "name": "full-agent-rhdh-chat",
+        "description": "Fully configured agent-rhdh-chat entity"
       },
       "spec": {
-        "type": "rhdh-agent",
+        "type": "agent-rhdh-chat",
         "owner": "ai-platform-team",
         "instructions": "You are a support router agent.",
         "inferenceProvider": {
@@ -67,7 +67,7 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": ["rhdh-agent"],
+              "enum": ["agent-rhdh-chat"],
               "description": "The type of AI resource."
             },
             "owner": {

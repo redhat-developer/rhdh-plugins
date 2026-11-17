@@ -16,39 +16,39 @@
 
 import type { Entity } from '@backstage/catalog-model';
 import {
-  agentRhdhAiResourceEntityV1alpha1Validator,
-  isAgentRhdhAiResourceEntity,
-} from './AgentRhdhAiResourceEntityV1alpha1';
-import type { AgentRhdhAiResourceEntityV1alpha1 } from './types';
+  agentRhdhChatAiResourceEntityV1alpha1Validator,
+  isAgentRhdhChatAiResourceEntity,
+} from './AgentRhdhChatAiResourceEntityV1alpha1';
+import type { AgentRhdhChatAiResourceEntityV1alpha1 } from './types';
 
-/** Minimal valid rhdh-agent entity for reuse across tests. */
+/** Minimal valid agent-rhdh-chat entity for reuse across tests. */
 function makeMinimalAgent(
-  overrides?: Partial<AgentRhdhAiResourceEntityV1alpha1['spec']>,
+  overrides?: Partial<AgentRhdhChatAiResourceEntityV1alpha1['spec']>,
 ): Entity {
   return {
     apiVersion: 'backstage.io/v1alpha1',
     kind: 'AiResource',
-    metadata: { name: 'test-rhdh-agent' },
+    metadata: { name: 'test-agent-rhdh-chat' },
     spec: {
-      type: 'rhdh-agent',
+      type: 'agent-rhdh-chat',
       owner: 'ai-platform-team',
       ...overrides,
     },
   } as Entity;
 }
 
-/** Full rhdh-agent entity with all optional fields populated. */
+/** Full agent-rhdh-chat entity with all optional fields populated. */
 function makeFullAgent(): Entity {
   return {
     apiVersion: 'backstage.io/v1alpha1',
     kind: 'AiResource',
     metadata: {
-      name: 'full-rhdh-agent',
-      title: 'Full RHDH Agent',
+      name: 'full-agent-rhdh-chat',
+      title: 'Full Agent RHDH Chat',
       description: 'Agent with all optional fields.',
     },
     spec: {
-      type: 'rhdh-agent',
+      type: 'agent-rhdh-chat',
       owner: 'ai-platform-team',
       instructions: 'You are a fully configured agent.',
       inferenceProvider: {
@@ -69,17 +69,17 @@ function makeFullAgent(): Entity {
   } as Entity;
 }
 
-describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
+describe('agentRhdhChatAiResourceEntityV1alpha1Validator', () => {
   describe('accept paths', () => {
-    it('accepts a minimal valid rhdh-agent entity (type + owner only)', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+    it('accepts a minimal valid agent-rhdh-chat entity (type + owner only)', async () => {
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent(),
       );
       expect(result).toBe(true);
     });
 
-    it('accepts a fully populated rhdh-agent entity', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+    it('accepts a fully populated agent-rhdh-chat entity', async () => {
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeFullAgent(),
       );
       expect(result).toBe(true);
@@ -88,21 +88,21 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
     it('accepts agent without instructions', async () => {
       const entity = makeMinimalAgent();
       delete (entity as any).spec.instructions;
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         entity,
       );
       expect(result).toBe(true);
     });
 
     it('accepts empty string spec.instructions', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({ instructions: '' }),
       );
       expect(result).toBe(true);
     });
 
     it('accepts inferenceProvider without modelConfig', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({
           inferenceProvider: { name: 'openai', model: 'gpt-4o' },
         }),
@@ -111,7 +111,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
     });
 
     it('accepts inferenceProvider with empty modelConfig', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({
           inferenceProvider: {
             name: 'openai',
@@ -124,7 +124,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
     });
 
     it('accepts inferenceProvider with temperature only in modelConfig', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({
           inferenceProvider: {
             name: 'openai',
@@ -137,7 +137,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
     });
 
     it('accepts inferenceProvider with maxTokens only in modelConfig', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({
           inferenceProvider: {
             name: 'openai',
@@ -150,7 +150,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
     });
 
     it('accepts inferenceProvider with both temperature and maxTokens', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({
           inferenceProvider: {
             name: 'openai',
@@ -163,7 +163,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
     });
 
     it('accepts outputSchema as object', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({
           outputSchema: { type: 'object', properties: {} },
         }),
@@ -172,14 +172,14 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
     });
 
     it('accepts outputSchema as non-empty string', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({ outputSchema: 'text' }),
       );
       expect(result).toBe(true);
     });
 
     it('accepts tools as string array', async () => {
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         makeMinimalAgent({ tools: ['my-custom-tool'] }),
       );
       expect(result).toBe(true);
@@ -188,9 +188,10 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
     it.each(['in-process', 'subprocess', 'sandbox'] as const)(
       'accepts executionMode: %s',
       async executionMode => {
-        const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
-          makeMinimalAgent({ executionMode }),
-        );
+        const result =
+          await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
+            makeMinimalAgent({ executionMode }),
+          );
         expect(result).toBe(true);
       },
     );
@@ -198,7 +199,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
     it('accepts agent without executionMode (field absent)', async () => {
       const entity = makeMinimalAgent();
       delete (entity as any).spec.executionMode;
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         entity,
       );
       expect(result).toBe(true);
@@ -211,16 +212,16 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
         apiVersion: 'backstage.io/v1alpha1',
         kind: 'AiResource',
         metadata: { name: 'test' },
-        spec: { type: 'rhdh-agent' },
+        spec: { type: 'agent-rhdh-chat' },
       };
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(entity),
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(entity),
       ).rejects.toThrow();
     });
 
     it('rejects empty spec.owner', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ owner: '' as any }),
         ),
       ).rejects.toThrow();
@@ -245,7 +246,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
       'rejects spec.inferenceProvider with %s',
       async (_description, inferenceProvider) => {
         await expect(
-          agentRhdhAiResourceEntityV1alpha1Validator.check(
+          agentRhdhChatAiResourceEntityV1alpha1Validator.check(
             makeMinimalAgent({ inferenceProvider: inferenceProvider as any }),
           ),
         ).rejects.toThrow(/inferenceProvider/);
@@ -256,7 +257,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
   describe('reject paths — modelConfig', () => {
     it('rejects modelConfig.temperature as string', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({
             inferenceProvider: {
               name: 'openai',
@@ -270,7 +271,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects modelConfig.maxTokens as string', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({
             inferenceProvider: {
               name: 'openai',
@@ -284,7 +285,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects modelConfig.maxTokens as fractional number', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({
             inferenceProvider: {
               name: 'openai',
@@ -298,7 +299,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects modelConfig.temperature with negative value', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({
             inferenceProvider: {
               name: 'openai',
@@ -312,7 +313,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects modelConfig.maxTokens with negative value', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({
             inferenceProvider: {
               name: 'openai',
@@ -326,7 +327,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects modelConfig with unknown property', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({
             inferenceProvider: {
               name: 'openai',
@@ -342,7 +343,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
   describe('reject paths — outputSchema', () => {
     it('rejects outputSchema as empty string', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ outputSchema: '' as any }),
         ),
       ).rejects.toThrow();
@@ -355,7 +356,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
       ['an array', ['schema']],
     ])('rejects outputSchema as %s', async (_description, outputSchema) => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ outputSchema: outputSchema as any }),
         ),
       ).rejects.toThrow();
@@ -365,7 +366,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
   describe('reject paths — executionMode', () => {
     it('rejects executionMode as boolean', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ executionMode: true as any }),
         ),
       ).rejects.toThrow();
@@ -373,7 +374,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects executionMode as number', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ executionMode: 42 as any }),
         ),
       ).rejects.toThrow();
@@ -381,7 +382,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects executionMode with invalid string value', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ executionMode: 'other' as any }),
         ),
       ).rejects.toThrow();
@@ -391,7 +392,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
   describe('reject paths — wrong type/kind', () => {
     it('rejects spec.type "agent" (wrong discriminator)', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ type: 'agent' as any }),
         ),
       ).rejects.toThrow();
@@ -399,7 +400,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects spec.type "skill"', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ type: 'skill' as any }),
         ),
       ).rejects.toThrow();
@@ -411,11 +412,11 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
         kind: 'Component',
         metadata: { name: 'test' },
         spec: {
-          type: 'rhdh-agent',
+          type: 'agent-rhdh-chat',
           owner: 'team',
         },
       };
-      const result = await agentRhdhAiResourceEntityV1alpha1Validator.check(
+      const result = await agentRhdhChatAiResourceEntityV1alpha1Validator.check(
         entity,
       );
       expect(result).toBe(false);
@@ -423,7 +424,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects wrong type for spec.instructions (number)', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ instructions: 42 as any }),
         ),
       ).rejects.toThrow();
@@ -431,7 +432,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects wrong type for spec.instructions (array)', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ instructions: ['step 1', 'step 2'] as any }),
         ),
       ).rejects.toThrow();
@@ -439,7 +440,7 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
 
     it('rejects tools as non-array', async () => {
       await expect(
-        agentRhdhAiResourceEntityV1alpha1Validator.check(
+        agentRhdhChatAiResourceEntityV1alpha1Validator.check(
           makeMinimalAgent({ tools: 'not-an-array' as any }),
         ),
       ).rejects.toThrow();
@@ -464,10 +465,10 @@ describe('agentRhdhAiResourceEntityV1alpha1Validator', () => {
   });
 });
 
-describe('isAgentRhdhAiResourceEntity', () => {
-  it('returns true for a valid rhdh-agent entity', () => {
+describe('isAgentRhdhChatAiResourceEntity', () => {
+  it('returns true for a valid agent-rhdh-chat entity', () => {
     const entity = makeMinimalAgent();
-    expect(isAgentRhdhAiResourceEntity(entity)).toBe(true);
+    expect(isAgentRhdhChatAiResourceEntity(entity)).toBe(true);
   });
 
   it('returns false for an agent entity (different spec.type)', () => {
@@ -482,7 +483,7 @@ describe('isAgentRhdhAiResourceEntity', () => {
         instructions: 'You are a test agent.',
       },
     };
-    expect(isAgentRhdhAiResourceEntity(entity)).toBe(false);
+    expect(isAgentRhdhChatAiResourceEntity(entity)).toBe(false);
   });
 
   it('returns false for a skill entity', () => {
@@ -496,7 +497,7 @@ describe('isAgentRhdhAiResourceEntity', () => {
         owner: 'team',
       },
     };
-    expect(isAgentRhdhAiResourceEntity(entity)).toBe(false);
+    expect(isAgentRhdhChatAiResourceEntity(entity)).toBe(false);
   });
 
   it('returns false for a rule entity', () => {
@@ -512,7 +513,7 @@ describe('isAgentRhdhAiResourceEntity', () => {
         rationale: 'Because safety.',
       },
     };
-    expect(isAgentRhdhAiResourceEntity(entity)).toBe(false);
+    expect(isAgentRhdhChatAiResourceEntity(entity)).toBe(false);
   });
 
   it('returns false for a Component entity', () => {
@@ -522,19 +523,19 @@ describe('isAgentRhdhAiResourceEntity', () => {
       metadata: { name: 'my-component' },
       spec: { type: 'service', lifecycle: 'production', owner: 'team' },
     };
-    expect(isAgentRhdhAiResourceEntity(entity)).toBe(false);
+    expect(isAgentRhdhChatAiResourceEntity(entity)).toBe(false);
   });
 
   it('returns false for wrong apiVersion', () => {
     const entity: Entity = {
       apiVersion: 'backstage.io/v1beta1',
       kind: 'AiResource',
-      metadata: { name: 'test-rhdh-agent' },
+      metadata: { name: 'test-agent-rhdh-chat' },
       spec: {
-        type: 'rhdh-agent',
+        type: 'agent-rhdh-chat',
         owner: 'team',
       },
     };
-    expect(isAgentRhdhAiResourceEntity(entity)).toBe(false);
+    expect(isAgentRhdhChatAiResourceEntity(entity)).toBe(false);
   });
 });
