@@ -87,6 +87,23 @@
               "description": "The model identifier for this agent.",
               "minLength": 1
             },
+            "inferenceProvider": {
+              "type": "object",
+              "description": "The inference provider for this agent. Optional; when set, both name and model are required.",
+              "required": ["name", "model"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The inference provider identifier.",
+                  "minLength": 1
+                },
+                "model": {
+                  "type": "string",
+                  "description": "The model identifier.",
+                  "minLength": 1
+                }
+              }
+            },
             "handoffs": {
               "type": "array",
               "description": "Opaque string references to other agents this agent can hand off to.",

@@ -18,6 +18,8 @@ import {
   AI_ASSET_CATEGORY_ANNOTATION,
   AI_ASSET_SOURCE_ANNOTATION,
   AI_ASSET_VERSION_ANNOTATION,
+  AI_ASSET_CATEGORIES,
+  AIAssetCategorySchema,
 } from './annotations';
 
 describe('annotation constants', () => {
@@ -31,5 +33,29 @@ describe('annotation constants', () => {
 
   it('AI_ASSET_VERSION_ANNOTATION has the correct value', () => {
     expect(AI_ASSET_VERSION_ANNOTATION).toBe('rhdh.io/ai-asset-version');
+  });
+});
+
+describe('AI_ASSET_CATEGORIES', () => {
+  it('exports exactly the five minimum categories plus rule', () => {
+    expect(AI_ASSET_CATEGORIES).toEqual(
+      expect.arrayContaining([
+        'agent',
+        'skill',
+        'mcp-server',
+        'ai-model',
+        'model-server',
+        'rule',
+      ]),
+    );
+    expect(AI_ASSET_CATEGORIES).toHaveLength(6);
+    expect(AI_ASSET_CATEGORIES).not.toContain('skill-bundle');
+  });
+});
+
+describe('AIAssetCategorySchema', () => {
+  it('rejects skill-bundle as invalid category', () => {
+    const result = AIAssetCategorySchema.safeParse('skill-bundle');
+    expect(result.success).toBe(false);
   });
 });

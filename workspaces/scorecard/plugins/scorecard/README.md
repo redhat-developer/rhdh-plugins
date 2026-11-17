@@ -27,13 +27,13 @@ Before installing the frontend plugin, ensure that the Scorecard backend is inte
 
 ### Installation and usage
 
-Install the package in your frontend (use `app` for NFS or `app-legacy` for legacy):
+Install the package in your frontend:
 
 ```sh
 yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
-# or for the legacy frontend:
-yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
 ```
+
+For a legacy (OFS) frontend app, install the same package and import from `@red-hat-developer-hub/backstage-plugin-scorecard/legacy` (see [Legacy app](#legacy-app)).
 
 ### Procedure
 
@@ -284,13 +284,13 @@ OFS components, the OFS plugin, and status icons are available only from `./lega
 
 #### Legacy app
 
-1. Install the Scorecard frontend plugin (see [Installation and usage](#installation-and-usage)) using `app-legacy`:
+1. Install the Scorecard frontend plugin in your legacy frontend package:
 
    ```console
-   yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
+   yarn workspace <your-frontend-app> add @red-hat-developer-hub/backstage-plugin-scorecard
    ```
 
-2. Add the Scorecard tab to the entity overview in `packages/app-legacy/src/components/catalog/EntityPage.tsx` (or your legacy app's equivalent):
+2. Add the Scorecard tab to the entity overview in your legacy app's catalog entity page (for example `src/components/catalog/EntityPage.tsx`):
 
    ```tsx
    import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
@@ -349,7 +349,7 @@ OFS components, the OFS plugin, and status icons are available only from `./lega
 
 4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml` (see discovery snippet under [NFS](#nfs-new-frontend-system--app)).
 
-5. Start the legacy app (e.g. `yarn start:legacy`) and open the **Scorecard** tab on catalog entity pages.
+5. Start your Backstage app and open the **Scorecard** tab on catalog entity pages.
 
 ### Permission Framework Support
 
@@ -377,8 +377,8 @@ permission:
 
 ### Accessing the Plugin
 
-- **app (NFS):** Open your Backstage app, go to **Catalog**, open an entity. The **Scorecard** tab appears when the entity matches your `allowedFilters` in app-config (or for all entities if the extension config is omitted).
-- **app-legacy:** Open your Backstage app, go to the entity overview from the catalog, and open the **Scorecard** tab to view and analyze scorecard metrics.
+- **NFS:** Open your Backstage app, go to **Catalog**, open an entity. The **Scorecard** tab appears when the entity matches your `allowedFilters` in app-config (or for all entities if the extension config is omitted).
+- **Legacy (OFS):** Open your Backstage app, go to the entity overview from the catalog, and open the **Scorecard** tab to view and analyze scorecard metrics.
 
 ### Homepage scorecard cards
 
@@ -388,7 +388,7 @@ The plugin exports **`ScorecardHomepageCard`** from `@red-hat-developer-hub/back
 
 Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId`. The default type is **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**, otherwise **`statusGrouped`**. A missing custom KPI key that is not a registered metric id returns **404**; the homepage card shows that error instead of staying in a loading state.
 
-The NFS homepage contributes one card, **`home-page-widget:scorecard/scorecard-aggregated-card`** (`ScorecardAggregatedCard`). On an editable homepage, set **Aggregation ID** in the card settings. The same widget can be added more than once, each copy with its own id. Dynamic Home Page / app-legacy can still pass any `aggregationId` through mountpoint props. Metric ids (for example `github.openPRs` or `filecheck.codeowners`) work without an `aggregationKPIs` row. Custom KPI keys such as `avgDeploymentFrequency`, `licenseFileExistsKpi`, or `changeFailureRateKpi` must exist in app-config (or the metadata API returns 404).
+The NFS homepage contributes one card, **`home-page-widget:scorecard/scorecard-aggregated-card`** (`ScorecardAggregatedCard`). On an editable homepage, set **Aggregation ID** in the card settings. The same widget can be added more than once, each copy with its own id. Dynamic Home Page / legacy mount points can still pass any `aggregationId` through mountpoint props. Metric ids (for example `github.openPRs` or `filecheck.codeowners`) work without an `aggregationKPIs` row. Custom KPI keys such as `avgDeploymentFrequency`, `licenseFileExistsKpi`, or `changeFailureRateKpi` must exist in app-config (or the metadata API returns 404).
 
 Supported scorecard aggregation types (see [Entity Aggregation — Aggregation types](../scorecard-backend/docs/aggregation.md#aggregation-types)):
 

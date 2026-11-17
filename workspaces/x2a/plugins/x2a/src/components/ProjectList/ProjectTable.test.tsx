@@ -575,16 +575,20 @@ describe('mapOrderByToSort', () => {
     expect(mapOrderByToSort(2)).toBe('status');
   });
 
-  it('throws for unsortable column index 3', () => {
-    expect(() => mapOrderByToSort(3)).toThrow('Invalid orderBy: 3');
+  it('maps index 3 to moduleErrors', () => {
+    expect(mapOrderByToSort(3)).toBe('moduleErrors');
   });
 
   it('throws for unsortable column index 4', () => {
     expect(() => mapOrderByToSort(4)).toThrow('Invalid orderBy: 4');
   });
 
-  it('maps index 5 to createdAt', () => {
-    expect(mapOrderByToSort(5)).toBe('createdAt');
+  it('throws for unsortable column index 5', () => {
+    expect(() => mapOrderByToSort(5)).toThrow('Invalid orderBy: 5');
+  });
+
+  it('maps index 6 to createdAt', () => {
+    expect(mapOrderByToSort(6)).toBe('createdAt');
   });
 
   it('falls back to name for negative index', () => {

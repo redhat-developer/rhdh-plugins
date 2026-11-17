@@ -1,6 +1,6 @@
 # Tasks: Ingestion Audit Logging and Metrics
 
-> **RHDHPLAN-1513 Consolidation (2026-07-08):** All tasks below have been consolidated into RHIDP-15277 (AI Catalog RBAC Audit Logging, RHDHPLAN-1508). Task groups 1-4 (audit events) → RHIDP-15280, task groups 5-10 (analytics API, Neo4j status) → RHIDP-15277 epic scope, task groups 11-13 (Eval Hub) → RHIDP-15277 epic scope. Cross-reference tasks (group 17) remain relevant — surviving RHDHPLAN-1513 epics should reference RHIDP-15277 for audit event patterns.
+> **RHDHPLAN-1513 Consolidation (2026-07-08):** All tasks below have been consolidated into RHIDP-15277 (AI Catalog RBAC Audit Logging, RHDHPLAN-1508). Task groups 1-4 (audit events) → RHIDP-15280, task groups 5-8 and 10 (analytics API, Neo4j status) → RHIDP-15277 epic scope, task groups 11-13 (Eval Hub) → RHIDP-15277 epic scope. Cross-reference tasks (group 17) remain relevant — surviving RHDHPLAN-1513 epics should reference RHIDP-15277 for audit event patterns.
 
 ## 1. Audit Event Infrastructure (P0) — RHIDP-15343
 
@@ -48,7 +48,6 @@
 - [ ] 5.1 Define analytics API routes in `plugins/boost-backend/src/api/admin/analytics/routes.ts`
 - [ ] 5.2 Add `GET /api/boost/admin/analytics/sync-history` endpoint
 - [ ] 5.3 Add `GET /api/boost/admin/analytics/quality-scores` endpoint
-- [ ] 5.4 Add `GET /api/boost/admin/analytics/match-coverage` endpoint
 - [ ] 5.5 Add `boost.admin` authorization to all endpoints using
       `permissions.authorize()`
 - [ ] 5.6 Add pagination support (page, limit, total_count metadata)
@@ -87,17 +86,6 @@
 - [ ] 8.4 Add score normalization to 0.0-1.0 range
 - [ ] 8.5 Add eval source filtering
 - [ ] 8.6 Add unit tests for quality score analytics
-
-## 9. Match Coverage Calculator (P1) — RHIDP-15344
-
-- [ ] 9.1 Create `MatchCoverageCalculator` in `plugins/boost-backend/src/analytics/match-coverage-calculator.ts`
-- [ ] 9.2 Implement agent capability extraction from catalog entities
-- [ ] 9.3 Implement skill ID extraction from catalog entities
-- [ ] 9.4 Implement capability matching logic (agent capabilities vs. skill IDs)
-- [ ] 9.5 Implement coverage ratio calculation (matched / total)
-- [ ] 9.6 Implement unmatched capabilities list generation
-- [ ] 9.7 Add caching for match coverage results (5 minute TTL)
-- [ ] 9.8 Add unit tests for match coverage calculator
 
 ## 10. Neo4j Sync Status (P1) — RHIDP-15344
 
@@ -154,7 +142,6 @@
 - [ ] 15.3 Add end-to-end test for config change audit event flow
 - [ ] 15.4 Add end-to-end test for sync history API endpoint
 - [ ] 15.5 Add end-to-end test for quality scores API endpoint
-- [ ] 15.6 Add end-to-end test for match coverage API endpoint
 - [ ] 15.7 Add end-to-end test for Eval Hub ingestion flow
 - [ ] 15.8 Add end-to-end test for RBAC gating on analytics endpoints
 - [ ] 15.9 Add end-to-end test for pagination and filtering

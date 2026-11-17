@@ -87,7 +87,7 @@ test.describe('AI Catalog translations', () => {
     await mockCatalogEntities(page, [skillEntity]);
     await signInAndSwitchLocale(page, currentLocale);
 
-    await page.getByRole('link', { name: translations.nav.aiCatalog }).click();
+    await page.locator('nav a[href="/ai-catalog"]').click();
 
     // This heading is rendered by the page component so it updates at runtime.
     await expect(
@@ -118,7 +118,7 @@ test.describe('AI Catalog translations', () => {
     await mockCatalogEntities(page, []);
     await signInAndSwitchLocale(page, currentLocale);
 
-    await page.getByRole('link', { name: translations.nav.aiCatalog }).click();
+    await page.locator('nav a[href="/ai-catalog"]').click();
 
     await expect(
       page.getByText(translations.catalog.empty.title),

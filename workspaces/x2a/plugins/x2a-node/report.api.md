@@ -16,6 +16,7 @@ import type { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
+import type { PortfolioSummary } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { ProjectsGet } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { RuleEntity } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -164,6 +165,20 @@ export interface JobStatusInfo {
   status: 'pending' | 'running' | 'success' | 'error';
 }
 
+// @public
+export type JsonObject = {
+  [key: string]: JsonValue;
+};
+
+// @public
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | JsonObject;
+
 // @public (undocumented)
 export const KUBE_SERVICE_ID = 'x2a-kubernetes';
 
@@ -263,6 +278,7 @@ export interface X2AConfig {
     imageTag: string;
     imagePullPolicy?: string;
     ttlSecondsAfterFinished: number;
+    deploymentPatch?: JsonObject;
     resources: {
       requests: {
         cpu: string;
@@ -413,6 +429,7 @@ export interface X2ADatabaseServiceApi {
   ): Promise<{
     projects: Project[];
     totalCount: number;
+    portfolio: PortfolioSummary;
   }>;
   // (undocumented)
   listRules(): Promise<RuleEntity[]>;

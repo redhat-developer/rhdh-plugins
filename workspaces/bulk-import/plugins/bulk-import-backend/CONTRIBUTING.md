@@ -71,11 +71,11 @@ Then implement or update handlers in [`src/service/router.ts`](src/service/route
 | Need                                                          | Use                                                                                                                            |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Plugin init, router, migrations, permission/auditor contracts | Plugin `dev/` + scoped `yarn workspace … test`                                                                                 |
-| Cross-plugin OAuth UI or full NFS/legacy app wiring           | Workspace `yarn start` / `yarn start:legacy`                                                                                   |
-| Playwright (legacy + NFS)                                     | `yarn test:e2e:all` — **mocks OAuth**; not bump coverage for real on-behalf-of flows                                           |
+| Cross-plugin OAuth UI or full NFS app wiring                  | Workspace `yarn start`                                                                                                         |
+| Playwright (NFS)                                              | `yarn test:e2e` — **mocks OAuth**; not bump coverage for real on-behalf-of flows                                               |
 | Real multi-user / credential-backed OAuth e2e                 | [`rhdh-plugin-export-overlays`](https://github.com/redhat-developer/rhdh-plugin-export-overlays) or a consumer RHDH deployment |
 
-**Evaluation (RHIDP-14104):** `packages/app`, `packages/app-legacy`, and `packages/backend` already exist for OAuth/cross-plugin work. Do **not** scaffold another full app for bump trust. Default confidence comes from plugin harnesses + CI package tests.
+**Evaluation (RHIDP-14104):** `packages/app` and `packages/backend` already exist for OAuth/cross-plugin work. Do **not** scaffold another full app for bump trust. Default confidence comes from plugin harnesses + CI package tests.
 
 ## API docs
 

@@ -64,14 +64,20 @@ describe('createRouter', () => {
       }),
     };
 
+    const mockHttpAuth = mockServices.httpAuth.mock();
+    jest
+      .mocked(mockHttpAuth.credentials)
+      .mockResolvedValue(mockCredentials.user('user:default/test-user'));
+
     const eventApiController = new EventApiController(
       mockEventDatabase as any,
       mockEventBatchProcessor as any,
       mockServices.rootConfig.mock(),
       mockAuditor as any,
       mockServices.auth.mock(),
-      mockServices.httpAuth.mock(),
+      mockHttpAuth,
       mockServices.discovery.mock(),
+      { getEntityByRef: jest.fn() } as any,
       mockServices.logger.mock(),
     );
 

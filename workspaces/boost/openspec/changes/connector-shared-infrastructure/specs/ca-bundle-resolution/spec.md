@@ -4,7 +4,7 @@
 
 Custom CA bundle resolution for entity-provider connectors. Shared utility loads CA bundles from K8s Secret/ConfigMap mounts or direct file paths, configurable per connector. Creates `https.Agent` with custom CA for HTTPS verification in air-gapped deployments.
 
-## EXISTING Requirements
+## ADDED Requirements
 
 ### Requirement: Per-Connector CA Bundle Configuration
 

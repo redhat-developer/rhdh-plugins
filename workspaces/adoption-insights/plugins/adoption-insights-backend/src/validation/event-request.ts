@@ -15,7 +15,7 @@
  */
 import { z } from 'zod';
 import { DateTime } from 'luxon';
-import { QUERY_TYPES } from '../types/event-request';
+import { QUERY_TYPES, TEMPLATE_SORT_BY } from '../types/event-request';
 
 const dateRequiredSchema = (fieldName: string) =>
   z.string({
@@ -29,6 +29,7 @@ export const EventRequestSchema = z
     end_date: dateRequiredSchema('end_date'),
     timezone: z.string(),
     limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+    sort_by: z.enum(TEMPLATE_SORT_BY).optional(),
     kind: z.string().optional(),
     type: z.enum(QUERY_TYPES, {
       errorMap: () => ({
@@ -44,6 +45,14 @@ export const EventRequestSchema = z
       .optional(),
   })
   .superRefine((data, ctx) => {
+    if (data.sort_by && data.type !== 'top_templates') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'sort_by is only supported for top_templates',
+        path: ['sort_by'],
+      });
+    }
+
     const startDate = DateTime.fromISO(data.start_date);
     const endDate = DateTime.fromISO(data.end_date);
 

@@ -1,3 +1,30 @@
+## Npx authentication tests and catalog provider docs
+
+**Last audited:** 2026-11-12T22:20:43Z
+
+PR #5497 verifies the existing Backstage default backend authentication on the
+npx connector. The HTTP router already applies the credentials barrier to
+plugin routes; no additional `httpAuth` dependency is needed. Integration tests
+(`plugin.integration.test.ts`) cover unauthenticated, user, and service requests,
+unknown source handling (404), snapshot lifecycle states
+(loading/ready/empty/failed/partial), isolation between npx sources, and
+scheduled refresh.
+The `startConnector` test helper and `NpxConnectorTestConfig` type are added to
+`testUtils.ts`. README is expanded with catalog provider integration guide,
+combined OCI+npx source configuration, and a public Evil Martians index demo.
+RHESS-specific demo verification and joint OCI+npx provider integration remain
+open under tasks 5.3–5.4. Task 3.4's partial-completion note is updated to
+credit PR #5497 integration tests. A `patch` changeset covers the documentation
+and schedule diagnostics without claiming an authentication behavior change.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
 ## Npx artifact verification and normalization
 
 **Last audited:** 2026-11-05T00:30:00Z

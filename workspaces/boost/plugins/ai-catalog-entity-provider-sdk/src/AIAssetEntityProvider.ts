@@ -71,14 +71,14 @@ export interface AIAssetEntityProvider {
   /**
    * Return the human-readable provider name.
    *
-   * Used for logging and UI display (e.g. `"Kagenti"`, `"LlamaStack"`).
+   * Used for logging and UI display (e.g. `"OGX"`, `"LlamaStack"`).
    */
   getProviderName(): string;
 
   /**
    * Return the unique provider instance identifier.
    *
-   * Scoped to the app-config instance ID (e.g. `"prod-kagenti"`,
+   * Scoped to the app-config instance ID (e.g. `"prod-ogx"`,
    * `"default"`). Used for entity deduplication and provenance
    * tracking via the `rhdh.io/ai-asset-source` annotation.
    */

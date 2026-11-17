@@ -1,7 +1,7 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator",
   "description": "The orchestrator module for @backstage/plugin-scaffolder-backend",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -54,20 +54,20 @@
     "lint:fix": "backstage-cli package lint --fix"
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "^1.10.0",
-    "@backstage/plugin-permission-common": "^0.9.10",
-    "@backstage/plugin-scaffolder-node": "^0.13.6",
+    "@backstage/backend-plugin-api": "^1.11.0",
+    "@backstage/plugin-permission-common": "^0.9.12",
+    "@backstage/plugin-scaffolder-node": "^0.13.8",
     "@backstage/types": "^1.2.2",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "axios": "^1.15.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "@backstage/backend-defaults": "^0.17.8",
-    "@backstage/backend-test-utils": "^1.11.6",
-    "@backstage/cli": "^0.36.5",
-    "@backstage/plugin-scaffolder-backend": "^4.1.0",
-    "@backstage/plugin-scaffolder-node-test-utils": "^0.3.14",
+    "@backstage/backend-defaults": "^0.18.1",
+    "@backstage/backend-test-utils": "^1.11.8",
+    "@backstage/cli": "^0.36.7",
+    "@backstage/plugin-scaffolder-backend": "^4.2.1",
+    "@backstage/plugin-scaffolder-node-test-utils": "^0.3.16",
     "@spotify/prettier-config": "^15.0.0",
     "@types/js-yaml": "^4.0.0"
   },

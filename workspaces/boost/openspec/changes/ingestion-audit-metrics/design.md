@@ -6,7 +6,7 @@
 
 Boost audit logging extends the pattern established by RHIDP-15277 (RBAC audit events). That epic defined the RHDH audit log integration, structured JSON event schema, and event emission infrastructure. This change applies the same pattern to ingestion operations.
 
-Analytics REST API provides the data layer for the Admin Panel's Analytics tab (RHDHPLAN-1509). The tab consumes sync history, quality scores, and match coverage metrics via RBAC-gated endpoints.
+Analytics REST API provides the data layer for the Admin Panel's Analytics tab (RHDHPLAN-1509). The tab consumes sync history and quality scores via RBAC-gated endpoints.
 
 Eval Hub is the quality feedback pipeline — external eval frameworks (LightEval, IBM Clear, GuideLLM) produce per-skill quality scores, which flow into Boost's analytics API. The API contract and availability of these eval backends are the main integration risk — not the Backstage framework.
 
@@ -18,7 +18,7 @@ Eval Hub is the quality feedback pipeline — external eval frameworks (LightEva
   for the analytics data it exposes
 - Quality score storage decoupled from eval framework specifics
 - Graceful degradation when Eval Hub unavailable
-- On-demand computation for expensive metrics (match coverage, aggregate distributions)
+- On-demand computation for aggregate distributions
 
 ## Non-Goals
 
@@ -105,12 +105,7 @@ Endpoints:
    - Response: per-skill quality scores array + aggregate distribution (histogram of score ranges)
    - Aggregate distribution computed on-demand from DB
 
-3. **Match Coverage:**
-   - `GET /api/boost/admin/analytics/match-coverage`
-   - Response: `{ total_capabilities: number, matched_capabilities: number, coverage_ratio: number, unmatched_capabilities: string[] }`
-   - Computed on-demand by comparing agent capability declarations against skill catalog entities
-
-4. **Neo4j Sync Status:**
+3. **Neo4j Sync Status:**
    - Embedded in analytics responses (not a separate endpoint)
    - Status: `{ neo4j_connected: boolean, last_sync: string, entity_count: number }`
 
@@ -186,33 +181,8 @@ Graceful degradation:
 
 **Implementation:** `plugins/boost-backend/src/eval-hub/client.ts` implements `EvalHubClient`. `plugins/boost-backend/src/eval-hub/ingestion-service.ts` polls Eval Hub on interval (via background task), fetches scores, stores in DB. Config loaded from `boost.evalHub` in app-config.
 
-### Decision 5: Match coverage calculation
-
-Match coverage compares declared agent capabilities (from Kagenti agent specs) against available skills in catalog. Coverage = matched capabilities / total capabilities. Computed on-demand when analytics API is called.
-
-**Why:** Coverage is expensive to compute (requires fetching all agents and all skills, then matching). On-demand computation avoids continuous re-calculation. Coverage changes infrequently (only when agents or skills are added/removed).
-
-**How to apply:**
-
-Agent capabilities: Declared in Kagenti agent specs (e.g., `metadata.capabilities: ['code-review', 'bug-detection']`). Boost reads agent entities from catalog.
-
-Skill catalog: Entities with `spec.type: skill` (from RHDHPLAN-1506 skill ingestion). Boost reads skill entities from catalog.
-
-Match logic:
-
-1. Fetch all agent entities (filter by `spec.type: ai-agent` or similar)
-2. Fetch all skill entities (filter by `spec.type: skill`)
-3. Extract capabilities from agents: `agent.metadata.capabilities`
-4. Extract skill IDs from skills: `skill.metadata.id`
-5. Compute matched capabilities: capabilities that have a corresponding skill
-6. Coverage ratio = matched capabilities / total capabilities
-7. Unmatched capabilities = capabilities without corresponding skills
-
-**Implementation:** `plugins/boost-backend/src/analytics/match-coverage-calculator.ts` implements match logic. `AnalyticsService.getMatchCoverage()` calls calculator, returns coverage data. Catalog queries use Backstage catalog client.
-
 ## Risks
 
 - **Eval Hub API instability:** If Eval Hub API changes frequently, integration breaks. Mitigated by pluggable design and graceful degradation (fall back to manual score import).
 - **Audit log volume:** High-frequency sync operations generate many audit events. Mitigated by RHDH audit log retention policies (managed by platform, not Boost).
-- **Match coverage computation cost:** Fetching all agents and skills is expensive. Mitigated by on-demand computation (only when API is called), not continuous re-calculation. Future optimization: cache coverage result for 5 minutes.
 - **Quality score normalization:** Different eval frameworks produce scores on different scales (0-100, 0-1, letter grades). Mitigated by normalizing all scores to 0.0-1.0 range in `EvalHubClient.fetchQualityScores()` before storing.

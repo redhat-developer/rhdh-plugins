@@ -140,7 +140,7 @@ export class AdoptionInsightsAnalyticsApi
     this.eventBuffer = []; // Clear buffer before sending to avoid blocking new events
 
     try {
-      await fetch(`${this.backendUrl}/events`, {
+      const response = await fetch(`${this.backendUrl}/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,6 +148,19 @@ export class AdoptionInsightsAnalyticsApi
         },
         body: JSON.stringify(eventsToSend),
       });
+
+      if (!response.ok) {
+        const retryable = response.status >= 500;
+        // eslint-disable-next-line no-console
+        console.error(
+          `Failed to send analytics events: HTTP ${response.status}; ${
+            retryable ? 'requeuing' : 'dropping'
+          } batch of ${eventsToSend.length}.`,
+        );
+        if (retryable) {
+          this.eventBuffer.unshift(...eventsToSend);
+        }
+      }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(

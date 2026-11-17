@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Advisory OpenSpec audit result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action", "pr_number", "repo", "head_sha", "body"],
+  "properties": {
+    "action": { "enum": ["comment", "failure"] },
+    "pr_number": { "type": "integer", "minimum": 1 },
+    "repo": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+    "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "body": { "type": "string", "pattern": "\\S" },
+    "reason": {
+      "enum": [
+        "missing-context",
+        "tool-failure",
+        "ambiguous-findings",
+        "token-limit"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "action": { "const": "failure" } } },
+      "then": { "required": ["reason"] }
+    }
+  ]
+}

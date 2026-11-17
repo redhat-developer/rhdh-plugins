@@ -14,24 +14,34 @@
  * limitations under the License.
  */
 
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, type ReactNode } from 'react';
 
 import { Content, Header, Page } from '@backstage/core-components';
 
 export interface BaseOrchestratorProps {
-  title?: string;
-  subtitle?: string;
+  title?: ReactNode;
+  subtitle?: ReactNode;
+  /** Document / breadcrumb title when `title` is a React node. */
+  pageTitleOverride?: string;
   type?: string;
   typeLink?: string;
   noPadding?: boolean;
+  /**
+   * Page-level actions for `@backstage/core-components` Header.
+   * Passed as Header `children` (right side) — same slot Catalog NFS fills
+   * with `@backstage/ui` Header `customActions`.
+   */
+  headerAction?: ReactNode;
 }
 
 export const BaseOrchestratorPage = ({
   title,
   subtitle,
+  pageTitleOverride,
   type,
   typeLink,
   noPadding,
+  headerAction,
   children,
 }: PropsWithChildren<BaseOrchestratorProps>) => {
   return (
@@ -39,9 +49,12 @@ export const BaseOrchestratorPage = ({
       <Header
         title={title}
         subtitle={subtitle}
+        pageTitleOverride={pageTitleOverride}
         type={type}
         typeLink={typeLink}
-      />
+      >
+        {headerAction}
+      </Header>
       <Content noPadding={noPadding}>{children}</Content>
     </Page>
   );

@@ -76,11 +76,11 @@ describe('normalizeAIAssetVersion', () => {
     it('includes entityRef in the warning when provided', () => {
       const warn = jest.fn();
       normalizeAIAssetVersion('bad-version', {
-        entityRef: 'resource:default/my-agent',
+        entityRef: 'airesource:default/my-agent',
         warn,
       });
       expect(warn).toHaveBeenCalledWith(
-        "Unrecognized version format 'bad-version' for entity resource:default/my-agent. Normalized to 0.0.0-unknown",
+        "Unrecognized version format 'bad-version' for entity airesource:default/my-agent. Normalized to 0.0.0-unknown",
       );
     });
   });

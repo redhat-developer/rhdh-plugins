@@ -7,7 +7,6 @@
   },
   "scripts": {
     "start": "NODE_OPTIONS=--no-node-snapshot backstage-cli repo start",
-    "start:legacy": "NODE_OPTIONS=--no-node-snapshot backstage-cli repo start backend app-legacy",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
@@ -24,10 +23,7 @@
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install",
-    "test:e2e:legacy": "APP_MODE=legacy playwright test",
-    "test:e2e:nfs": "APP_MODE=nfs playwright test",
-    "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
-    "playwright": "bash -c 'if [[ \"$@\" == test ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _"
+    "test:e2e": "playwright test"
   },
   "workspaces": {
     "packages": [
@@ -41,14 +37,14 @@
     "directory": "workspaces/bulk-import"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.0",
+    "@axe-core/playwright": "^4.14.0",
     "@backstage/cli": "^0.36.5",
     "@backstage/e2e-test-utils": "^0.1.2",
     "@backstage/repo-tools": "^0.19.0",
     "@changesets/cli": "^2.27.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
     "@jest/environment-jsdom-abstract": "^30.3.0",
-    "@playwright/test": "1.64.1",
+    "@playwright/test": "1.65.0",
     "@spotify/prettier-config": "^12.0.0",
     "@types/jest": "^30.0.0",
     "@types/jsdom": "^27.0.0",

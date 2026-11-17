@@ -92,6 +92,50 @@ describe('EventRequestSchema', () => {
     expect(parsed.limit).toBe(5);
   });
 
+  it('accepts either top template sort order', () => {
+    const query = {
+      start_date: '2025-03-01',
+      end_date: '2025-03-02',
+      type: 'top_templates',
+      timezone: 'UTC',
+    };
+
+    expect(
+      EventRequestSchema.parse({ ...query, sort_by: 'clicks' }).sort_by,
+    ).toBe('clicks');
+    expect(
+      EventRequestSchema.parse({ ...query, sort_by: 'runs' }).sort_by,
+    ).toBe('runs');
+  });
+
+  it('rejects unsupported top template sort values', () => {
+    const result = EventRequestSchema.safeParse({
+      start_date: '2025-03-01',
+      end_date: '2025-03-02',
+      type: 'top_templates',
+      timezone: 'UTC',
+      sort_by: 'minutes',
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.flatten().fieldErrors.sort_by).toBeDefined();
+  });
+
+  it('rejects sort_by for other event types', () => {
+    const result = EventRequestSchema.safeParse({
+      start_date: '2025-03-01',
+      end_date: '2025-03-02',
+      type: 'time_saved',
+      timezone: 'UTC',
+      sort_by: 'runs',
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.flatten().fieldErrors.sort_by).toEqual([
+      'sort_by is only supported for top_templates',
+    ]);
+  });
+
   it('should reject a non-numeric limit', () => {
     const invalidData = {
       start_date: '2025-03-01',
