@@ -41,10 +41,10 @@ one_line() {
 
 result_file=""
 if [[ -n "${FULLSEND_VALIDATED_ITERATION_DIR:-}" ]]; then
-  if [[ -f "${FULLSEND_VALIDATED_ITERATION_DIR}/output/agent-result.json" ]]; then
-    result_file="${FULLSEND_VALIDATED_ITERATION_DIR}/output/agent-result.json"
-  elif [[ -f "${FULLSEND_VALIDATED_ITERATION_DIR}/output/result.json" ]]; then
-    result_file="${FULLSEND_VALIDATED_ITERATION_DIR}/output/result.json"
+  if [[ -f "${FULLSEND_VALIDATED_ITERATION_DIR}/agent-result.json" ]]; then
+    result_file="${FULLSEND_VALIDATED_ITERATION_DIR}/agent-result.json"
+  elif [[ -f "${FULLSEND_VALIDATED_ITERATION_DIR}/result.json" ]]; then
+    result_file="${FULLSEND_VALIDATED_ITERATION_DIR}/result.json"
   fi
 else
   shopt -s nullglob
@@ -82,6 +82,7 @@ ctx_attempt="$(jq -r '._fullsend_ci.run_attempt' "${CI_CONTEXT_FILE}")"
 ctx_workspace="$(jq -r '._fullsend_ci.workspace_scope.workspace // "none"' "${CI_CONTEXT_FILE}")"
 ctx_mode="$(jq -r '._fullsend_ci.automation_mode' "${CI_CONTEXT_FILE}")"
 mutation_eligible="$(jq -r '._fullsend_ci.trust.mutation_eligible == true' "${CI_CONTEXT_FILE}")"
+retry_eligible="$(jq -r '._fullsend_ci.trust.retry_eligible == true' "${CI_CONTEXT_FILE}")"
 same_repository="$(jq -r '._fullsend_ci.trust.same_repository == true' "${CI_CONTEXT_FILE}")"
 
 [[ "${pr_number}" == "${ctx_pr}" && "${head_sha}" == "${ctx_head}" && "${run_id}" == "${ctx_run}" && "${run_attempt}" == "${ctx_attempt}" ]] || {
@@ -181,7 +182,7 @@ if [[ "${stale}" == "false" && "${ctx_mode}" == "repair" && "${same_repository}"
       ensure_label fullsend-ci-fix 1D76DB "Ephemeral Fullsend CI repair dispatch"
       cycle_ephemeral_label fullsend-ci-fix
     fi
-  elif [[ "${mutation_eligible}" == "true" && "${recommendation}" == "retry_once" ]]; then
+  elif [[ "${retry_eligible}" == "true" && "${recommendation}" == "retry_once" ]]; then
     retry_marker="<!-- fullsend:ci-retry run=${run_id} attempt=${run_attempt} head=${head_sha} -->"
     if ! grep -Fq -- "${retry_marker}" <<<"${existing}"; then
       ensure_label fullsend-ci-retry D4C5F9 "Ephemeral Fullsend CI retry dispatch"

@@ -267,7 +267,18 @@ function hasWriteRole(role) {
 }
 
 function isTrustedPrAuthor(login, role) {
-  return APPROVED_PR_BOTS.has(String(login || '')) || hasWriteRole(role);
+  return isApprovedPrBot(login) || hasWriteRole(role);
+}
+
+function isApprovedPrBot(login) {
+  return APPROVED_PR_BOTS.has(String(login || ''));
+}
+
+function hasRepairOptIn(login, labels) {
+  return (
+    isApprovedPrBot(login) ||
+    (labels || []).some(label => label?.name === 'fullsend-fix')
+  );
 }
 
 function countRepairCommits(commits) {
@@ -450,11 +461,13 @@ function isTrustedWorkspaceRequest({
   sameRepository,
   trustedAuthor,
   noFix,
+  repairOptedIn = true,
 }) {
   return (
     sameRepository &&
     trustedAuthor &&
     !noFix &&
+    repairOptedIn &&
     Boolean(triage.workspace) &&
     allowlist.includes(triage.workspace)
   );
@@ -648,13 +661,15 @@ async function prepareIntake({ github, context, core, env = process.env }) {
     label => label.name === 'fullsend-no-fix',
   );
   const trustedAuthor = isTrustedPrAuthor(pr.user?.login, role);
-  const mutationEligible =
+  const repairOptedIn = hasRepairOptIn(pr.user?.login, pr.labels);
+  const retryEligible =
     scope.deterministic &&
     allowlist.includes(scope.workspace) &&
     sameRepository &&
     trustedAuthor &&
     !hasNoFix &&
     priorRepairCommits < 2;
+  const mutationEligible = retryEligible && repairOptedIn;
 
   const ciContext = {
     version: 1,
@@ -673,6 +688,8 @@ async function prepareIntake({ github, context, core, env = process.env }) {
       trusted_author: trustedAuthor,
       author_role: role,
       no_fix_label: hasNoFix,
+      repair_opted_in: repairOptedIn,
+      retry_eligible: retryEligible,
       prior_repair_commits: priorRepairCommits,
       workspace_allowlisted: Boolean(
         scope.workspace && allowlist.includes(scope.workspace),
@@ -850,6 +867,7 @@ async function prepareRepairDispatch({
   const noFix = (pr.labels || []).some(item => item.name === 'fullsend-no-fix');
   const role = await collaboratorRole(github, owner, repo, pr.user?.login);
   const trustedAuthor = isTrustedPrAuthor(pr.user?.login, role);
+  const repairOptedIn = hasRepairOptIn(pr.user?.login, pr.labels);
   const commits = await github.paginate(github.rest.pulls.listCommits, {
     owner,
     repo,
@@ -917,6 +935,7 @@ async function prepareRepairDispatch({
       sameRepository,
       trustedAuthor,
       noFix,
+      repairOptedIn,
     })
   )
     return;
@@ -1007,7 +1026,9 @@ module.exports = {
   extractJobScope,
   failedLeafJobs,
   findPullRequest,
+  hasRepairOptIn,
   hasWriteRole,
+  isApprovedPrBot,
   isTrustedPrAuthor,
   makeFixDispatchMarker,
   makeFixResultMarker,

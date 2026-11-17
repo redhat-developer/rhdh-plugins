@@ -47,6 +47,7 @@ function makeRun({
   repoDir = '',
   gitleaksExit = 0,
   rejectPush = false,
+  labels = [],
 }) {
   const runDir = fs.mkdtempSync(
     path.join(os.tmpdir(), 'fullsend-ci-post-run-'),
@@ -114,7 +115,7 @@ function makeRun({
         ref: 'feature/repair',
         repo: { full_name: 'redhat-developer/rhdh-plugins' },
       },
-      labels: [],
+      labels,
     }),
   );
   fs.writeFileSync(
@@ -151,7 +152,7 @@ exit 0
       GITHUB_ISSUE_URL:
         'https://github.com/redhat-developer/rhdh-plugins/pull/7',
       CI_CONTEXT_FILE: contextFile,
-      FULLSEND_VALIDATED_ITERATION_DIR: path.join(runDir, 'iteration-1'),
+      FULLSEND_VALIDATED_ITERATION_DIR: iterationDir,
       REPO_DIR: repoDir,
       FAKE_PR_FILE: prFile,
       FAKE_GH_LOG: ghLog,
@@ -240,6 +241,36 @@ test('secret findings and non-fast-forward push failures are rejected', async t 
     assert.match(
       run.execution.stderr + run.execution.stdout,
       /fast-forward push was rejected/i,
+    );
+  });
+  await t.test('kill switch is rechecked before push', t => {
+    const built = makeRepo();
+    const remote = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'fullsend-ci-post-remote-'),
+    );
+    git(remote, 'init', '--bare', '-q');
+    git(built.repo, 'remote', 'add', 'origin', remote);
+    git(
+      built.repo,
+      'push',
+      '-q',
+      'origin',
+      `${built.base}:refs/heads/feature/repair`,
+    );
+    const run = makeRun({
+      currentHead: built.base,
+      trustedHead: built.base,
+      status: 'committed',
+      repoDir: built.repo,
+      labels: [{ name: 'fullsend-no-fix' }],
+    });
+    t.after(() => fs.rmSync(run.runDir, { recursive: true, force: true }));
+    t.after(() => fs.rmSync(built.repo, { recursive: true, force: true }));
+    t.after(() => fs.rmSync(remote, { recursive: true, force: true }));
+    assert.notEqual(run.execution.status, 0);
+    assert.match(
+      run.execution.stderr + run.execution.stdout,
+      /kill switch is active/i,
     );
   });
 });

@@ -24,9 +24,20 @@ diagnosis-only.
 - `FULLSEND_CI_AUTOFIX_WORKSPACES`: comma-separated workspace names. The default
   rollout set is `boost,scorecard,ai-integrations`.
 
-`fullsend-no-fix` is the maintainer/author kill switch. Each PR is capped at two
-commits whose subject starts with `fix(ci-agent):`. `needs-human` is never
-removed automatically.
+`fullsend-fix` is required as an explicit opt-in for human-authored PRs before
+an autonomous repair commit can be dispatched. Approved repair bots remain
+eligible without that label. `fullsend-no-fix` is the maintainer/author opt-out.
+Both labels are checked during dispatch and `fullsend-no-fix` is checked again
+immediately before the guarded push. A label added after that final check cannot
+reliably stop a race already at the push boundary; cancel the active GitHub
+Actions run when an in-flight repair must stop:
+
+```bash
+gh run cancel <REPAIR_RUN_ID> --repo redhat-developer/rhdh-plugins
+```
+
+Each PR is capped at two commits whose subject starts with `fix(ci-agent):`.
+`needs-human` is never removed automatically.
 
 ## Rollout
 
@@ -36,8 +47,10 @@ removed automatically.
    retrieval, and zero stale-head, deduplication, or trust-boundary violations.
 3. Set the allowlist to `boost,scorecard,ai-integrations`, then change the mode
    to `repair`. Expand one workspace at a time.
-4. Set the mode to `off` for an immediate rollback. No workflow revert is
-   needed.
+4. Set the mode to `off` to prevent new triage and repair dispatches. This does
+   not cancel an already-dispatched repair because its mode is captured in the
+   trusted dispatch context. Cancel the active GitHub Actions run if it must
+   stop immediately; no workflow revert is needed.
 
 Manual replay is available from **Fullsend CI triage** with a completed run ID.
 It defaults to dry-run and never comments or dispatches in that mode. Manual

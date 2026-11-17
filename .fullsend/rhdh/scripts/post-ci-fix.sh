@@ -76,10 +76,10 @@ install_gitleaks() {
 
 result_file=""
 if [[ -n "${FULLSEND_VALIDATED_ITERATION_DIR:-}" ]]; then
-  if [[ -f "${FULLSEND_VALIDATED_ITERATION_DIR}/output/agent-result.json" ]]; then
-    result_file="${FULLSEND_VALIDATED_ITERATION_DIR}/output/agent-result.json"
-  elif [[ -f "${FULLSEND_VALIDATED_ITERATION_DIR}/output/result.json" ]]; then
-    result_file="${FULLSEND_VALIDATED_ITERATION_DIR}/output/result.json"
+  if [[ -f "${FULLSEND_VALIDATED_ITERATION_DIR}/agent-result.json" ]]; then
+    result_file="${FULLSEND_VALIDATED_ITERATION_DIR}/agent-result.json"
+  elif [[ -f "${FULLSEND_VALIDATED_ITERATION_DIR}/result.json" ]]; then
+    result_file="${FULLSEND_VALIDATED_ITERATION_DIR}/result.json"
   fi
 else
   shopt -s nullglob
@@ -156,6 +156,9 @@ current_pr="$(gh api "repos/${REPO_FULL_NAME}/pulls/${pr_number}")"
 [[ "$(jq -r '.state' <<<"${current_pr}")" == "open" ]] || fail "The PR closed before push."
 [[ "$(jq -r '.head.sha' <<<"${current_pr}")" == "${base_sha}" ]] || fail "The PR advanced before push."
 [[ "$(jq -r '.head.ref' <<<"${current_pr}")" == "${head_ref}" ]] || fail "The PR branch changed before push."
+if jq -e '.labels | any(.[]; .name == "fullsend-no-fix")' <<<"${current_pr}" >/dev/null; then
+  fail "The fullsend-no-fix kill switch is active."
+fi
 
 gh auth setup-git
 remote_head="$(git -C "${repo_dir}" ls-remote origin "refs/heads/${head_ref}" | awk 'NR == 1 {print $1}')"

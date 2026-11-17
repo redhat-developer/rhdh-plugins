@@ -190,6 +190,15 @@ test('fork and trust decisions require an approved bot or write role', () => {
   assert.equal(ci.isTrustedPrAuthor('dependabot[bot]', null), false);
 });
 
+test('human repair requires fullsend-fix opt-in while approved bots do not', () => {
+  assert.equal(
+    ci.hasRepairOptIn('developer', [{ name: 'fullsend-fix' }]),
+    true,
+  );
+  assert.equal(ci.hasRepairOptIn('developer', []), false);
+  assert.equal(ci.hasRepairOptIn('fullsend-ai-coder[bot]', []), true);
+});
+
 test('counts only dedicated autonomous repair commits', () => {
   assert.equal(
     ci.countRepairCommits([
