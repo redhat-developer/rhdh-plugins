@@ -1,3 +1,18 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 'use strict';
 
 const test = require('node:test');
@@ -15,6 +30,14 @@ test('parses and deduplicates only valid workspace allowlist entries', () => {
     ci.parseWorkspaceAllowlist('boost, scorecard,boost,../root,UPPER'),
     ['boost', 'scorecard'],
   );
+});
+
+test('uses the approved default autofix workspace allowlist', () => {
+  assert.deepEqual(ci.parseWorkspaceAllowlist(undefined), [
+    'boost',
+    'scorecard',
+    'intelligent-assistant',
+  ]);
 });
 
 test('drops aggregate failure and retains failed leaf steps', () => {
@@ -167,10 +190,9 @@ test('strictly parses durable markers and rejects reordered or malformed data', 
     null,
   );
 
-  const triage =
-    '<!-- fullsend:ci-triage-result run=12 attempt=1 head=' +
-    'b'.repeat(40) +
-    ' workspace=boost category=repository_test confidence=high recommendation=repair -->';
+  const triage = `<!-- fullsend:ci-triage-result run=12 attempt=1 head=${'b'.repeat(
+    40,
+  )} workspace=boost category=repository_test confidence=high recommendation=repair -->`;
   assert.equal(
     ci.parseTriageResultMarker(`text\n${triage}\ntext`).recommendation,
     'repair',
@@ -188,6 +210,15 @@ test('fork and trust decisions require an approved bot or write role', () => {
   assert.equal(ci.isTrustedPrAuthor('developer', 'write'), true);
   assert.equal(ci.isTrustedPrAuthor('developer', 'triage'), false);
   assert.equal(ci.isTrustedPrAuthor('dependabot[bot]', null), false);
+});
+
+test('human repair requires fullsend-fix opt-in while approved bots do not', () => {
+  assert.equal(
+    ci.hasRepairOptIn('developer', [{ name: 'fullsend-fix' }]),
+    true,
+  );
+  assert.equal(ci.hasRepairOptIn('developer', []), false);
+  assert.equal(ci.hasRepairOptIn('fullsend-ai-coder[bot]', []), true);
 });
 
 test('counts only dedicated autonomous repair commits', () => {

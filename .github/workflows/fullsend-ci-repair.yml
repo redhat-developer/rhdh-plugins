@@ -48,7 +48,7 @@ jobs:
           FULLSEND_CI_PR_NUMBER: ${{ inputs.pr_number }}
           FULLSEND_CI_ACTION: ${{ inputs.action }}
           FULLSEND_CI_AUTOMATION: ${{ vars.FULLSEND_CI_AUTOMATION || 'observe' }}
-          FULLSEND_CI_AUTOFIX_WORKSPACES: ${{ vars.FULLSEND_CI_AUTOFIX_WORKSPACES || 'boost,scorecard,ai-integrations' }}
+          FULLSEND_CI_AUTOFIX_WORKSPACES: ${{ vars.FULLSEND_CI_AUTOFIX_WORKSPACES || 'boost,scorecard,intelligent-assistant' }}
         with:
           script: |
             // This privileged workflow never checks out a PR or fork. Fetch
@@ -85,7 +85,7 @@ jobs:
       issues: write
       packages: read
       pull-requests: write
-    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@84c8bbbb821ff85136854150b06740253709b3b8 # v0.37.0
+    uses: fullsend-ai/fullsend/.github/workflows/reusable-dispatch.yml@3454a2e4ee2b667e2ed71fa9d384edc6de3d4f74 # v0.45.0
     with:
       event_action: ci_fix
       install_mode: per-repo

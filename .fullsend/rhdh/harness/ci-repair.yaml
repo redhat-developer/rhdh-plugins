@@ -1,4 +1,4 @@
-base: https://raw.githubusercontent.com/fullsend-ai/agents/4bbe4f50ed8e33c60539eaa30ddc320edf8bcda0/harness/fix.yaml#sha256=f966f0b8cd9b58289f19b446cfc4fd343c9079d9c9acee0260824b57e896e068
+base: https://raw.githubusercontent.com/fullsend-ai/agents/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748/harness/fix.yaml#sha256=20741c3ef52e41f4a5e5a78b02a91859b9300172798eea3dd448896b1f369066
 agent: rhdh/agents/fix.md
 image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
 policy: rhdh/policies/ci-fix.yaml
@@ -12,12 +12,12 @@ openshell:
     - profiles/fullsend-github-artifacts.yaml
 
 skills:
-  - https://github.com/redhat-developer/rhdh-skill/tree/e84109919ae6085e3dcfe568c695e6dda54874ce/skills/rhdh-coding#sha256=5a4bc35476108a215091ccf1180cee68547c7668c6b193de4402674bc7b6cded
+  - https://github.com/redhat-developer/rhdh-skills/tree/e84109919ae6085e3dcfe568c695e6dda54874ce/skills/rhdh-coding#sha256=5a4bc35476108a215091ccf1180cee68547c7668c6b193de4402674bc7b6cded
   - skills/ci-repair
   - skills/ci-failure-analysis
   - skills/playwright-trace
 allowed_remote_resources:
-  - https://github.com/redhat-developer/rhdh-skill/
+  - https://github.com/redhat-developer/rhdh-skills/
 
 host_files:
   - src: rhdh/env/gcp-vertex.env
@@ -58,3 +58,10 @@ env:
     PLAYWRIGHT_BROWSERS_PATH: /tmp/playwright-browsers
 
 timeout_minutes: 60
+
+forge:
+  github:
+    # Override the inherited GitHub forge scripts as well as the root scripts.
+    # Fullsend applies forge.github settings after the base harness.
+    pre_script: rhdh/scripts/pre-ci-fix.sh
+    post_script: rhdh/scripts/post-ci-fix.sh

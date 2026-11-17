@@ -48,8 +48,8 @@ test('positive and negative triage/fix fixtures match their schema expectations'
   }
 });
 
-test('new workflows pin actions and Fullsend v0.37 exactly', () => {
-  const pinnedFullsend = '84c8bbbb821ff85136854150b06740253709b3b8';
+test('new workflows pin actions and Fullsend v0.45 exactly', () => {
+  const pinnedFullsend = '3454a2e4ee2b667e2ed71fa9d384edc6de3d4f74';
   for (const file of [
     '.github/workflows/fullsend-ci-triage.yml',
     '.github/workflows/fullsend-ci-repair.yml',
@@ -66,6 +66,16 @@ test('new workflows pin actions and Fullsend v0.37 exactly', () => {
     }
     assert.match(text, new RegExp(`reusable-dispatch\\.yml@${pinnedFullsend}`));
   }
+});
+
+test('CI repair overrides GitHub forge scripts and uses the v0.45 base', () => {
+  const fix = YAML.parse(read('.fullsend/rhdh/harness/ci-repair.yaml'));
+  assert.match(
+    fix.base,
+    /agents\/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748\/harness\/fix\.yaml/,
+  );
+  assert.equal(fix.forge.github.pre_script, 'rhdh/scripts/pre-ci-fix.sh');
+  assert.equal(fix.forge.github.post_script, 'rhdh/scripts/post-ci-fix.sh');
 });
 
 test('privileged workflows load only trusted upstream helper code', () => {
