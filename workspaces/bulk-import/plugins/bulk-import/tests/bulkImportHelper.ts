@@ -35,13 +35,10 @@ export class Common {
   async clickButton(
     label: string,
     clickOpts?: Parameters<Locator['click']>[0],
-    getByTextOpts: Parameters<Locator['getByText']>[1] = { exact: true },
+    nameOpts: { exact?: boolean } = { exact: true },
   ) {
-    const muiButtonLabel = 'span[class^="MuiButton-label"]';
-    const selector = `${muiButtonLabel}:has-text("${label}")`;
     const button = this.page
-      .locator(selector)
-      .getByText(label, getByTextOpts)
+      .getByRole('button', { name: label, exact: nameOpts.exact })
       .first();
     await button.waitFor({ state: 'visible' });
     await button.click(clickOpts);

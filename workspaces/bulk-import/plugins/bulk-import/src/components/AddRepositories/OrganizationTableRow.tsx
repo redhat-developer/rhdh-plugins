@@ -16,21 +16,17 @@
 
 import { Link } from '@backstage/core-components';
 
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
 import { useFormikContext } from 'formik';
 
 import { AddRepositoriesFormValues, AddRepositoryData } from '../../types';
 import { urlHelper } from '../../utils/repository-utils';
+import {
+  BulkImportExternalLinkIcon,
+  bulkImportExternalLinkLinkStyle,
+} from '../bulkImportIcons';
 import { CatalogInfoStatus } from './CatalogInfoStatus';
+import { repositoriesTableOrgCellStyle } from './repositoriesTableShared';
 import { SelectRepositories } from './SelectRepositories';
-
-const tableCellStyle = {
-  lineHeight: '1.5rem',
-  fontSize: '0.875rem',
-  padding: '15px 16px 15px 24px',
-};
 
 export const OrganizationTableRow = ({
   onOrgRowSelected,
@@ -45,30 +41,29 @@ export const OrganizationTableRow = ({
   ).length;
 
   return (
-    <TableRow hover>
-      <TableCell component="th" scope="row" padding="none" sx={tableCellStyle}>
+    <tr>
+      <th scope="row" style={repositoriesTableOrgCellStyle}>
         {data.orgName}
-      </TableCell>
-      <TableCell align="left" sx={tableCellStyle}>
-        <Link to={data?.organizationUrl || ''}>
-          <>
-            {urlHelper(data?.organizationUrl || '')}
-            <OpenInNewIcon
-              style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-            />
-          </>
+      </th>
+      <td style={repositoriesTableOrgCellStyle}>
+        <Link
+          to={data?.organizationUrl || ''}
+          style={bulkImportExternalLinkLinkStyle}
+        >
+          {urlHelper(data?.organizationUrl || '')}
+          <BulkImportExternalLinkIcon size={14} />
         </Link>
-      </TableCell>
-      <TableCell align="left" sx={tableCellStyle}>
+      </td>
+      <td style={repositoriesTableOrgCellStyle}>
         <SelectRepositories
           onOrgRowSelected={onOrgRowSelected}
           orgData={data}
           addedRepositoriesCount={alreadyAdded}
         />
-      </TableCell>
-      <TableCell align="left" sx={tableCellStyle}>
+      </td>
+      <td style={repositoriesTableOrgCellStyle}>
         <CatalogInfoStatus data={data} alreadyAdded={alreadyAdded} />
-      </TableCell>
-    </TableRow>
+      </td>
+    </tr>
   );
 };

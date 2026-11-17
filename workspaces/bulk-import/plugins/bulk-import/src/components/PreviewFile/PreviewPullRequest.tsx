@@ -15,11 +15,8 @@
  */
 
 import { Link, MarkdownContent } from '@backstage/core-components';
+import { Alert, Box, Flex } from '@backstage/ui';
 
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Box from '@mui/material/Box';
 import { useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -29,7 +26,15 @@ import {
   RepositoryStatus,
 } from '../../types';
 import { getCustomisedErrorMessage } from '../../utils/repository-utils';
+import {
+  BulkImportExternalLinkIcon,
+  bulkImportExternalLinkLinkStyle,
+} from '../bulkImportIcons';
 import { PreviewPullRequestForm } from './PreviewPullRequestForm';
+
+const sectionSpacing = (addPaddingTop?: boolean) => ({
+  marginTop: addPaddingTop ? '16px' : 0,
+});
 
 export const PreviewPullRequest = ({
   repoId,
@@ -64,14 +69,15 @@ export const PreviewPullRequest = ({
   ) {
     // hide preview pull request form for this status
     return (
-      <Box marginTop={others?.addPaddingTop ? 2 : 0}>
-        <Alert severity="info">
-          {
+      <Box style={sectionSpacing(others?.addPaddingTop)}>
+        <Alert
+          status="info"
+          description={
             getCustomisedErrorMessage(info.error.message, (key: string) =>
               t(key as any, {}),
             ).message
           }
-        </Alert>
+        />
       </Box>
     );
   }
@@ -79,55 +85,54 @@ export const PreviewPullRequest = ({
   return (
     <>
       {error && (
-        <Box marginTop={others?.addPaddingTop ? 2 : 0}>
-          <Alert severity="error">
-            <AlertTitle>
-              {error.error?.title
+        <Box style={sectionSpacing(others?.addPaddingTop)}>
+          <Alert
+            status="danger"
+            title={
+              error.error?.title
                 ? error.error?.title
-                : t('previewFile.failedToCreatePR')}
-            </AlertTitle>
-            {
+                : t('previewFile.failedToCreatePR')
+            }
+            description={
               getCustomisedErrorMessage(error.error.message, (key: string) =>
                 t(key as any, {}),
               ).message
-            }{' '}
-            {error?.repository?.organization && error?.repository?.name && (
-              <Link
-                to={`https://github.com/${error.repository.organization}/${error.repository.name}`}
-              >
-                {t('previewFile.viewRepository')}
-                <OpenInNewIcon
-                  style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-                />
-              </Link>
-            )}
-          </Alert>
+            }
+          />
+          {error?.repository?.organization && error?.repository?.name && (
+            <Link
+              to={`https://github.com/${error.repository.organization}/${error.repository.name}`}
+              style={bulkImportExternalLinkLinkStyle}
+            >
+              {t('previewFile.viewRepository')}
+              <BulkImportExternalLinkIcon />
+            </Link>
+          )}
           {!others?.addPaddingTop && <br />}
         </Box>
       )}
       {info && (
-        <Box marginTop={others?.addPaddingTop ? 2 : 0}>
-          <Alert severity="info" data-testid="other-info">
-            {
+        <Box style={sectionSpacing(others?.addPaddingTop)}>
+          <Alert
+            status="info"
+            data-testid="other-info"
+            description={
               getCustomisedErrorMessage(info.error.message, (key: string) =>
                 t(key as any, {}),
               ).message
-            }{' '}
-          </Alert>
+            }
+          />
           {!others?.addPaddingTop && <br />}
         </Box>
       )}
       {pullRequest[repoId]?.pullRequestUrl && (
-        <Box marginTop={others?.addPaddingTop ? 2 : 0}>
-          <Alert severity="info" data-testid="pull-request-info">
-            <Box
-              sx={{
+        <Box style={sectionSpacing(others?.addPaddingTop)}>
+          <Alert status="info" data-testid="pull-request-info">
+            <Flex
+              direction="column"
+              style={{
                 margin: 0,
                 padding: 0,
-                '& p': {
-                  margin: 0,
-                  padding: 0,
-                },
               }}
             >
               <MarkdownContent
@@ -141,7 +146,7 @@ export const PreviewPullRequest = ({
                     t('previewFile.pullRequestText'),
                   )}
               />
-            </Box>
+            </Flex>
           </Alert>
         </Box>
       )}

@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-import type { ChangeEvent, ReactNode } from 'react';
 import { useState } from 'react';
 
-import ErrorOutline from '@mui/icons-material/ErrorOutline';
-import InfoOutlined from '@mui/icons-material/InfoOutlined';
-import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Typography from '@mui/material/Typography';
+import { Tab, TabList, TabPanel, Tabs, Text } from '@backstage/ui';
+
 import { useFormikContext } from 'formik';
 
 import {
@@ -30,51 +25,30 @@ import {
   AddRepositoryData,
   PullRequestPreviewData,
 } from '../../types';
+import { BulkImportErrorIcon, BulkImportInfoIcon } from '../bulkImportIcons';
 import { PreviewPullRequest } from './PreviewPullRequest';
-
-const CustomTabPanel = ({
-  children,
-  value,
-  index,
-  ...other
-}: {
-  children?: ReactNode;
-  index: number;
-  value: number;
-}) => {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`preview-pullrequest-panel-${index}`}
-      {...other}
-    >
-      {value === index && <>{children}</>}
-    </div>
-  );
-};
 
 const getLabel = (status: any, repoId: string, repoName: string) => {
   if (status?.errors?.[`${repoId}`]) {
     return (
-      <Typography component="span" data-testid="pr-creation-failed">
-        <ErrorOutline
-          color="error"
-          style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-        />{' '}
-        {repoName}
-      </Typography>
+      <span
+        data-testid="pr-creation-failed"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+      >
+        <BulkImportErrorIcon />
+        <Text>{repoName}</Text>
+      </span>
     );
   }
   if (status?.infos?.[`${repoId}`]) {
     return (
-      <Typography component="span" data-testid="info-message">
-        <InfoOutlined
-          color="info"
-          style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-        />{' '}
-        {repoName}
-      </Typography>
+      <span
+        data-testid="info-message"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+      >
+        <BulkImportInfoIcon />
+        <Text>{repoName}</Text>
+      </span>
     );
   }
   return repoName;
@@ -93,12 +67,8 @@ export const PreviewPullRequests = ({
   formErrors: PullRequestPreviewData;
   setFormErrors: (pullRequest: PullRequestPreviewData) => void;
 }) => {
-  const [value, setValue] = useState(0);
   const { status } = useFormikContext<AddRepositoriesFormValues>();
-
-  const handleChange = (_event: ChangeEvent<{}>, newValue: number) => {
-    setValue(newValue);
-  };
+  const [selectedKey, setSelectedKey] = useState(repositories[0]?.id ?? '');
 
   if (Object.values(repositories || []).length === 1) {
     return (
@@ -115,43 +85,32 @@ export const PreviewPullRequests = ({
   }
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          variant="scrollable"
-          indicatorColor="primary"
-          scrollButtons="auto"
-          aria-label="preview-pull-requests"
-        >
-          {repositories.map((repo: AddRepositoryData) => {
-            return (
-              <Tab
-                label={getLabel(status, repo.id, repo?.repoName || '')}
-                id={repo.repoName}
-                key={repo.id}
-              />
-            );
-          })}
-        </Tabs>
-      </Box>
-      {Object.values(repositories).map((repo: AddRepositoryData, index) => {
-        return (
-          <CustomTabPanel value={value} index={index} key={repo.id}>
-            <PreviewPullRequest
-              repoId={repo.id}
-              repoUrl={repo.repoUrl || ''}
-              repoBranch={repo.defaultBranch || 'main'}
-              pullRequest={pullRequest}
-              setPullRequest={setPullRequest}
-              formErrors={formErrors}
-              setFormErrors={setFormErrors}
-              others={{ addPaddingTop: true }}
-            />
-          </CustomTabPanel>
-        );
-      })}
-    </Box>
+    <Tabs
+      selectedKey={selectedKey}
+      onSelectionChange={key => setSelectedKey(String(key))}
+      style={{ width: '100%' }}
+    >
+      <TabList aria-label="preview-pull-requests">
+        {repositories.map((repo: AddRepositoryData) => (
+          <Tab key={repo.id} id={repo.id}>
+            {getLabel(status, repo.id, repo?.repoName || '')}
+          </Tab>
+        ))}
+      </TabList>
+      {repositories.map((repo: AddRepositoryData) => (
+        <TabPanel key={repo.id} id={repo.id}>
+          <PreviewPullRequest
+            repoId={repo.id}
+            repoUrl={repo.repoUrl || ''}
+            repoBranch={repo.defaultBranch || 'main'}
+            pullRequest={pullRequest}
+            setPullRequest={setPullRequest}
+            formErrors={formErrors}
+            setFormErrors={setFormErrors}
+            others={{ addPaddingTop: true }}
+          />
+        </TabPanel>
+      ))}
+    </Tabs>
   );
 };

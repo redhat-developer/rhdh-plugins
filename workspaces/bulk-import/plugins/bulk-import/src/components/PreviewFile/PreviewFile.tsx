@@ -15,11 +15,8 @@
  */
 
 import { Link, StatusOK } from '@backstage/core-components';
+import { Flex, Text, Tooltip, TooltipTrigger } from '@backstage/ui';
 
-import FailIcon from '@mui/icons-material/ErrorOutline';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -30,6 +27,11 @@ import {
   RepositorySelection,
 } from '../../types';
 import { getCustomisedErrorMessage } from '../../utils/repository-utils';
+import {
+  BulkImportErrorIcon,
+  BulkImportExternalLinkIcon,
+  bulkImportExternalLinkLinkStyle,
+} from '../bulkImportIcons';
 import { useDrawer } from '../DrawerContext';
 
 export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
@@ -59,24 +61,20 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
             s?.repository?.organization === data.orgName),
       ) ? (
         <>
-          <Tooltip
-            title={
-              values.repositoryType === RepositorySelection.Repository
-                ? errorMessage.message
-                : t('previewFile.prCreationUnsuccessful')
-            }
-          >
-            <Typography component="span">
-              <FailIcon
-                color="error"
-                style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-              />
-              <Typography component="span" data-testid="failed">
+          <TooltipTrigger>
+            <span>
+              <BulkImportErrorIcon />
+              <Text data-testid="failed">
                 {' '}
                 {t('previewFile.failedToCreatePR')}{' '}
-              </Typography>
-            </Typography>
-          </Tooltip>
+              </Text>
+            </span>
+            <Tooltip placement="top">
+              {values.repositoryType === RepositorySelection.Repository
+                ? errorMessage.message
+                : t('previewFile.prCreationUnsuccessful')}
+            </Tooltip>
+          </TooltipTrigger>
 
           <Link
             to={errorMessage.showRepositoryLink ? data.repoUrl || '' : ''}
@@ -87,13 +85,16 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
               }
             }}
             data-testid="edit-pull-request"
+            style={
+              errorMessage.showRepositoryLink
+                ? bulkImportExternalLinkLinkStyle
+                : undefined
+            }
           >
             {errorMessage.showRepositoryLink ? (
               <>
-                {t('previewFile.viewRepository')}{' '}
-                <OpenInNewIcon
-                  style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-                />{' '}
+                {t('previewFile.viewRepository')}
+                <BulkImportExternalLinkIcon />
               </>
             ) : (
               t('common.edit')
@@ -101,12 +102,13 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
           </Link>
         </>
       ) : (
-        <Typography
-          component="span"
-          style={{ display: 'flex', alignItems: 'baseline' }}
+        <Flex
+          align="center"
+          gap="1"
+          style={{ display: 'inline-flex', alignItems: 'baseline' }}
         >
           <StatusOK />
-          {t('status.readyToImport')}
+          <Text>{t('status.readyToImport')}</Text>
           <Link
             to=""
             style={{ marginLeft: '4px' }}
@@ -124,7 +126,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
               ? t('previewFile.previewFiles')
               : t('previewFile.previewFile')}
           </Link>
-        </Typography>
+        </Flex>
       )}
     </>
   );
