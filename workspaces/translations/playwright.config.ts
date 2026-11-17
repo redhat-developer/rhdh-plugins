@@ -16,9 +16,6 @@
 
 import { defineConfig } from '@playwright/test';
 
-const appMode = process.env.APP_MODE || 'legacy';
-const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
-
 export default defineConfig({
   timeout: 2 * 60_000,
 
@@ -30,10 +27,14 @@ export default defineConfig({
     ? []
     : [
         {
-          command: startCommand,
+          command: 'yarn start',
           port: 7007,
           reuseExistingServer: true,
           timeout: 120_000,
+          env: {
+            ...process.env,
+            NODE_ENV: 'development',
+          },
         },
         {
           command:
@@ -48,9 +49,7 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [
-    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
-  ],
+  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
 
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
@@ -60,12 +59,13 @@ export default defineConfig({
     actionTimeout: 30_000,
   },
 
-  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
+  outputDir: 'node_modules/.cache/e2e-test-results',
+
+  testDir: 'e2e-tests',
 
   projects: [
     {
-      name: appMode,
-      testDir: 'packages/app-legacy/e2e-tests',
+      name: 'nfs',
       use: {
         channel: 'chrome' as const,
       },
