@@ -10810,6 +10810,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent-rhdh-next@workspace:plugins/catalog-model-ai-resource-agent-rhdh-next":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent-rhdh-next@workspace:plugins/catalog-model-ai-resource-agent-rhdh-next"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.10.0"
+    "@backstage/cli": "npm:^0.36.5"
+    "@backstage/types": "npm:^1.2.2"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:plugins/catalog-model-ai-resource-agent":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:plugins/catalog-model-ai-resource-agent"
