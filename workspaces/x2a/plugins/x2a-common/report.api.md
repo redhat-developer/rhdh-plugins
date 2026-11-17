@@ -640,6 +640,33 @@ export class Phase {
 // @public
 export const POLLING_INTERVAL_MS: number;
 
+// @public
+export interface PortfolioProjectCounts {
+  // (undocumented)
+  completed: number;
+  // (undocumented)
+  created: number;
+  // (undocumented)
+  failed: number;
+  // (undocumented)
+  initialized: number;
+  // (undocumented)
+  initializing: number;
+  // (undocumented)
+  inProgress: number;
+}
+
+// @public
+export interface PortfolioSummary {
+  inputTokens: number;
+  // (undocumented)
+  modules: ModulesStatusSummary;
+  outputTokens: number;
+  // (undocumented)
+  projectCounts: PortfolioProjectCounts;
+  tokensReported: boolean;
+}
+
 // @public (undocumented)
 export interface Project {
   acceptedRules?: Array<RuleSnapshot>;
@@ -670,13 +697,21 @@ export type ProjectsGet = {
     page?: number;
     pageSize?: number;
     order?: 'asc' | 'desc';
-    sort?: 'createdAt' | 'name' | 'status' | 'description' | 'ownedBy';
+    sort?:
+      | 'createdAt'
+      | 'name'
+      | 'status'
+      | 'moduleErrors'
+      | 'description'
+      | 'ownedBy';
   };
 };
 
 // @public (undocumented)
 export interface ProjectsGet200Response {
   items?: Array<Project>;
+  // (undocumented)
+  portfolio: PortfolioSummary;
   totalCount?: number;
 }
 

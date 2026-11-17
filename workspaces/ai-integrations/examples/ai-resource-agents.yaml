@@ -86,7 +86,9 @@ spec:
     guide users through troubleshooting steps, and escalate unresolved issues to
     the engineering team.
   handoffDescription: Handles technical troubleshooting and engineering inquiries.
-  model: gpt-4o
+  inferenceProvider:
+    name: openai
+    model: gpt-4o
   tools:
     - run-diagnostics
     - search-knowledge-base

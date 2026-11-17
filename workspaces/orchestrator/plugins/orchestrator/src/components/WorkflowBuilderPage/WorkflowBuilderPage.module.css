@@ -1,0 +1,32 @@
+/*
+ * Builder chrome: white canvas in light (prototype), app surface in dark.
+ * Avoid nesting BUI bg="neutral" (steps TextField fills to gray).
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  max-height: calc(100vh - 64px);
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bui-white, #fff);
+  color: var(--bui-fg-primary, inherit);
+}
+
+:global([data-theme-mode='dark']) .page {
+  background: var(--bui-bg-app, #151515);
+}
+
+.headerRegion {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--bui-border-1, #d2d2d2);
+  background: inherit;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}

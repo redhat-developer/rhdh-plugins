@@ -21,8 +21,30 @@ import {
   ProjectState,
   ProjectStatus,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { calculateModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
-export { calculateModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+export { calculateModuleStatus };
+
+/**
+ * Attaches the newest analyze, migrate, and publish jobs, then sets module
+ * status from those jobs. A removed module keeps status `removed`.
+ */
+export function enrichModuleWithJobStatus(
+  module: Module,
+  lastJobs: {
+    analyze?: Job;
+    migrate?: Job;
+    publish?: Job;
+  },
+): Module {
+  const { status, errorDetails } = calculateModuleStatus(lastJobs);
+  return {
+    ...module,
+    ...lastJobs,
+    status: module.removedAt ? 'removed' : status,
+    errorDetails: module.removedAt ? undefined : errorDetails,
+  };
+}
 
 /**
  * Project status is calculated from its modules.

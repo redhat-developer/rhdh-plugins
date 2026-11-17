@@ -28,6 +28,7 @@ import type {
   Artifact,
   Telemetry,
   ProjectsGet,
+  PortfolioSummary,
   RuleSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -69,7 +70,11 @@ export interface X2ADatabaseServiceApi {
       canViewAll?: boolean;
       groupsOfUser: string[];
     },
-  ): Promise<{ projects: Project[]; totalCount: number }>;
+  ): Promise<{
+    projects: Project[];
+    totalCount: number;
+    portfolio: PortfolioSummary;
+  }>;
 
   getProject(
     args: { projectId: string; skipEnrichment?: boolean },
