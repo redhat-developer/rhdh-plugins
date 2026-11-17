@@ -4,7 +4,8 @@ description: >-
   Implementation specialist for GitHub or Jira issues. Reads triaged issues,
   implements fixes following repo conventions, runs tests and linters, and
   commits to a feature branch. Use when implementing a fix or feature from a
-  triaged issue.model: claude-opus-5-5
+  triaged issue.
+model: claude-opus-5-5
 skills:
   - code-implementation
 ---
