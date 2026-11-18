@@ -110,3 +110,27 @@ export const redHatFonts = {
     'monospace',
   ].join(', '),
 };
+
+/**
+ * Inject @font-face rules using webpack-resolved woff2 URLs.
+ * CSS url() paths must not be baked into published *.css.esm.js — those stay
+ * relative and break under app publicPath. Call from package entrypoints.
+ */
+export function injectRedHatFontFaces(): void {
+  if (
+    typeof document === 'undefined' ||
+    document.querySelector('style[data-rhdh-fonts="redhat"]')
+  ) {
+    return;
+  }
+  const css = redHatFontFaces
+    .map(
+      ({ fontFamily, src, fontWeight, fontStyle, fontDisplay }) =>
+        `@font-face{font-family:'${fontFamily}';src:${src};font-weight:${fontWeight};font-style:${fontStyle};font-display:${fontDisplay};}`,
+    )
+    .join('');
+  const style = document.createElement('style');
+  style.dataset.rhdhFonts = 'redhat';
+  style.appendChild(document.createTextNode(css));
+  document.head.appendChild(style);
+}
