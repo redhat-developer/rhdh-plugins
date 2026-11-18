@@ -21,7 +21,7 @@ import {
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { createRouter } from './router';
 
-/** Agentic chat backend using the local LCore sidecar. @public */
+/** Agentic chat backend using the local LCORE sidecar. @public */
 export const agenticChatPlugin = createBackendPlugin({
   pluginId: 'agentic-chat',
   register(env) {

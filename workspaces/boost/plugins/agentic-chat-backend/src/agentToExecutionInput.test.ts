@@ -29,7 +29,7 @@ const agent: Entity = {
   kind: 'AiResource',
   metadata: { name: 'support-agent' },
   spec: {
-    type: 'agent',
+    type: 'agent-rhdh-chat',
     lifecycle: 'production',
     owner: 'group:default/platform',
     instructions: 'Help the user',
@@ -72,7 +72,7 @@ it.each([
 it('leaves omitted execution mode and optional capabilities absent', () => {
   const minimal = {
     ...agent,
-    spec: { type: 'agent', lifecycle: 'production', owner: 'team' },
+    spec: { type: 'agent-rhdh-chat', lifecycle: 'production', owner: 'team' },
   };
   const step = agentToExecutionInput(minimal, input('Hello'));
   expect(JSON.parse(JSON.stringify(step))).toEqual({
@@ -120,17 +120,38 @@ it('rejects non-agent entities and unsupported string output schemas', () => {
   ).toThrow('Invalid agent configuration');
 });
 
-it('uses frontend selection without interpreting the Catalog model', () => {
+describe('Catalog modelConfig', () => {
   const entity = {
     ...agent,
     spec: {
       ...agent.spec,
-      model: { provider: 'catalog', name: 'catalog-model' },
+      inferenceProvider: {
+        name: 'openai',
+        model: 'selected-model',
+        modelConfig: { temperature: 0, maxTokens: 512 },
+      },
     },
   };
-  expect(
-    agentToExecutionInput(entity, input('Hello')).inference_provider,
-  ).toEqual({ name: 'openai', model: 'selected-model' });
+
+  it('preserves settings including zero for the default provider and model', () => {
+    expect(
+      agentToExecutionInput(entity, input('Hello')).inference_provider,
+    ).toEqual({
+      name: 'openai',
+      model: 'selected-model',
+      modelConfig: { temperature: 0, maxTokens: 512 },
+    });
+  });
+
+  it.each([
+    { provider: 'openai', model: 'different-model' },
+    { provider: 'different-provider', model: 'selected-model' },
+  ])('omits settings for a different selection %j', selection => {
+    expect(
+      agentToExecutionInput(entity, { ...input('Hello'), ...selection })
+        .inference_provider,
+    ).toEqual({ name: selection.provider, model: selection.model });
+  });
 });
 
 it('maps conversation identity without a workflow envelope', () => {
@@ -149,4 +170,13 @@ it('does not rename conversation_id to a workflow session_id', () => {
   });
   expect(interpreted.conversation_id).toBe('conversation-1');
   expect(interpreted).not.toHaveProperty('session_id');
+});
+
+it('rejects the legacy agent type for agentic chat', () => {
+  expect(() =>
+    agentToExecutionInput(
+      { ...agent, spec: { ...agent.spec, type: 'agent' } },
+      input('Hello'),
+    ),
+  ).toThrow('Invalid agent configuration');
 });

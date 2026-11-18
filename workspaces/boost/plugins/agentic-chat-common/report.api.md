@@ -16,6 +16,10 @@ export interface AgentExecutionInput {
   inference_provider: {
     name: string;
     model: string;
+    modelConfig?: {
+      temperature?: number;
+      maxTokens?: number;
+    };
   };
   // (undocumented)
   instructions?: string;

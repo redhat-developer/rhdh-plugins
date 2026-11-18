@@ -23,13 +23,17 @@ export type RunAgentRequest = z.infer<typeof runAgentRequestSchema>;
 /** The execution mode exposed by an AI Catalog agent. @public */
 export type AgentExecutionMode = 'in-process' | 'subprocess' | 'sandbox';
 
-/** Interpreted agent and turn input sent to the LCore controller. @public */
+/** Interpreted agent and turn input sent to the LCORE controller. @public */
 export interface AgentExecutionInput {
   agent: string;
   prompt: string;
   instructions?: string;
   spawn?: 'none' | 'local' | 'ephemeral';
-  inference_provider: { name: string; model: string };
+  inference_provider: {
+    name: string;
+    model: string;
+    modelConfig?: { temperature?: number; maxTokens?: number };
+  };
   tools?: string[];
   output_schema?: Record<string, unknown>;
   conversation_id?: string;

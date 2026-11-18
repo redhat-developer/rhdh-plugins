@@ -44,7 +44,7 @@ const agent = {
   kind: 'AiResource',
   metadata: { name: 'support' },
   spec: {
-    type: 'agent',
+    type: 'agent-rhdh-chat',
     lifecycle: 'production',
     owner: 'platform',
     model: 'granite',
@@ -164,7 +164,7 @@ async function app(
           throw new NotAllowedError('Forbidden');
         if (options.missingAgent) return undefined;
         if (ref === 'airesource:default/support') return agent;
-        if (ref === 'airesource:default/ogx-agent-legal') return legalAgent;
+        if (ref === 'airesource:default/legal-chat') return legalAgent;
         return undefined;
       },
     } as unknown as CatalogService,
@@ -315,9 +315,7 @@ it('captures the supplied Legal agent request at the new upstream agent endpoint
         factory: async () =>
           ({
             getEntityByRef: async (ref: string) =>
-              ref === 'airesource:default/ogx-agent-legal'
-                ? legalAgent
-                : undefined,
+              ref === 'airesource:default/legal-chat' ? legalAgent : undefined,
           }) as unknown as CatalogService,
       }),
     ],
@@ -356,7 +354,7 @@ it.each([
   },
 );
 
-it.each(['support', 'ogx-agent-legal'])(
+it.each(['support', 'legal-chat'])(
   'resolves the requested %s agent with trusted caller credentials',
   async name => {
     const agentRef = `airesource:default/${name}`;
@@ -374,6 +372,7 @@ it.each(['support', 'ogx-agent-legal'])(
     expect(calls[0].body).not.toHaveProperty('provider');
     const entity = name === 'support' ? agent : legalAgent;
     expect(calls[0].body).not.toHaveProperty('definition');
+    expect(calls[0].body).not.toHaveProperty('inference_provider.modelConfig');
     expect(calls).toMatchObject([
       {
         body: {
@@ -392,12 +391,12 @@ it('canonicalizes frontend references before Catalog lookup', async () => {
     .post('/v1/agent/run')
     .send({
       ...selection,
-      agentRef: 'AiResource:DEFAULT/OGX-AGENT-LEGAL',
+      agentRef: 'AiResource:DEFAULT/LEGAL-CHAT',
       query: 'Hello',
     });
   expect(response.status).toBe(202);
   expect(catalogLookups).toEqual([
-    { ref: 'airesource:default/ogx-agent-legal', owner: 'user:default/alice' },
+    { ref: 'airesource:default/legal-chat', owner: 'user:default/alice' },
   ]);
 });
 

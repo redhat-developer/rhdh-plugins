@@ -23,12 +23,24 @@ import type {
 import { z } from 'zod';
 
 const agentSpecSchema = z.object({
-  type: z
-    .string()
-    .transform(value => value.toLocaleLowerCase('en-US'))
-    .pipe(z.literal('agent')),
+  type: z.literal('agent-rhdh-chat'),
+  owner: z.string().min(1),
   executionMode: z.enum(['in-process', 'subprocess', 'sandbox']).optional(),
   instructions: z.string().optional(),
+  inferenceProvider: z
+    .object({
+      name: z.string().min(1),
+      model: z.string().min(1),
+      modelConfig: z
+        .object({
+          temperature: z.number().finite().nonnegative().optional(),
+          maxTokens: z.number().int().nonnegative().optional(),
+        })
+        .strict()
+        .optional(),
+    })
+    .strict()
+    .optional(),
   tools: z.array(z.string().min(1)).optional(),
   outputSchema: z.record(z.string(), z.unknown()).optional(),
 });
@@ -49,6 +61,12 @@ export function agentToExecutionInput(
   const parsed = agentSpecSchema.safeParse(entity.spec);
   if (!parsed.success) throw new InputError('Invalid agent configuration');
   const spec = parsed.data;
+  const defaultProvider = spec.inferenceProvider;
+  const modelConfig =
+    defaultProvider?.name === input.provider &&
+    defaultProvider.model === input.model
+      ? defaultProvider.modelConfig
+      : undefined;
 
   return {
     agent: entity.metadata.name,
@@ -57,7 +75,11 @@ export function agentToExecutionInput(
       spawn: spawnModes[spec.executionMode],
     }),
     ...(spec.instructions !== undefined && { instructions: spec.instructions }),
-    inference_provider: { name: input.provider, model: input.model },
+    inference_provider: {
+      name: input.provider,
+      model: input.model,
+      ...(modelConfig !== undefined && { modelConfig }),
+    },
     ...(spec.tools !== undefined && { tools: spec.tools }),
     ...(spec.outputSchema !== undefined && {
       output_schema: spec.outputSchema,

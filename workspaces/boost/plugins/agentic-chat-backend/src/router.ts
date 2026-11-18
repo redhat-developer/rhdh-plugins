@@ -32,10 +32,10 @@ import {
   runAgentRequestSchema,
 } from '@red-hat-developer-hub/backstage-plugin-agentic-chat-common';
 import express from 'express';
-import type { Response } from 'express';
 import Router from 'express-promise-router';
 import { z } from 'zod';
 import { agentToExecutionInput } from './agentToExecutionInput';
+import { createLcoreForwarder } from './lcoreClient';
 
 interface RouterOptions {
   config: Config;
@@ -45,6 +45,8 @@ interface RouterOptions {
   permissions: PermissionsService;
   catalog: CatalogService;
 }
+
+const DEFAULT_LCORE_PORT = 8090;
 
 const configSchema = z.object({
   servicePort: z.number().int().min(1).max(65535),
@@ -69,9 +71,14 @@ function canonicalAgentRef(value: string): string {
 export async function createRouter(options: RouterOptions) {
   const { config, logger, httpAuth, userInfo, permissions, catalog } = options;
   const settings = configSchema.parse({
-    servicePort: config.getOptionalNumber('agentic-chat.servicePort') ?? 8090,
+    servicePort:
+      config.getOptionalNumber('agentic-chat.servicePort') ??
+      DEFAULT_LCORE_PORT,
   });
-  const baseUrl = `http://127.0.0.1:${settings.servicePort}`;
+  const forward = createLcoreForwarder(
+    `http://127.0.0.1:${settings.servicePort}`,
+    logger,
+  );
   const router = Router();
   router.use(
     createPermissionIntegrationRouter({ permissions: [agenticChatPermission] }),
@@ -91,47 +98,6 @@ export async function createRouter(options: RouterOptions) {
     res.locals.userEntityRef = identity.userEntityRef;
     next();
   });
-
-  async function forward(
-    path: string,
-    method: string,
-    response: Response,
-    body?: unknown,
-  ) {
-    // Build a fresh URL: browser identity selectors and credentials are never forwarded.
-    const url = new URL(path, baseUrl);
-    url.searchParams.set('user_id', response.locals.userEntityRef);
-    try {
-      const upstream = await fetch(url, {
-        method,
-        ...(body !== undefined && {
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        }),
-        redirect: 'error',
-        signal: AbortSignal.timeout(30_000),
-      });
-      if (!upstream.ok) {
-        const status = [400, 401, 403, 404, 409, 413, 422].includes(
-          upstream.status,
-        )
-          ? upstream.status
-          : 502;
-        logger.warn('LCore request failed', { status: upstream.status });
-        response.status(status).json({ error: 'Chat runtime request failed' });
-        return;
-      }
-      if (upstream.status === 204) {
-        response.status(204).end();
-        return;
-      }
-      const result = await upstream.json();
-      response.status(upstream.status).json(result);
-    } catch {
-      logger.warn('LCore request could not be completed');
-      response.status(502).json({ error: 'Chat runtime unavailable' });
-    }
-  }
 
   router.post('/v1/agent/run', express.json(), async (req, res) => {
     const parsed = runAgentRequestSchema.safeParse(req.body);
@@ -174,6 +140,7 @@ export async function createRouter(options: RouterOptions) {
         res,
       );
     });
+
   router.use(MiddlewareFactory.create({ logger, config }).error());
   return router;
 }
