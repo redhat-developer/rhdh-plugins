@@ -35,6 +35,10 @@ import express from 'express';
 import Router from 'express-promise-router';
 import { z } from 'zod';
 import { agentToExecutionInput } from './agentToExecutionInput';
+import {
+  DEFAULT_LCORE_SERVER_HOST,
+  DEFAULT_LCORE_SERVER_PORT,
+} from './constants';
 import { createLcoreForwarder } from './lcoreClient';
 
 interface RouterOptions {
@@ -45,8 +49,6 @@ interface RouterOptions {
   permissions: PermissionsService;
   catalog: CatalogService;
 }
-
-const DEFAULT_LCORE_PORT = 8090;
 
 const configSchema = z.object({
   servicePort: z.number().int().min(1).max(65535),
@@ -73,10 +75,10 @@ export async function createRouter(options: RouterOptions) {
   const settings = configSchema.parse({
     servicePort:
       config.getOptionalNumber('agentic-chat.servicePort') ??
-      DEFAULT_LCORE_PORT,
+      DEFAULT_LCORE_SERVER_PORT,
   });
   const forward = createLcoreForwarder(
-    `http://127.0.0.1:${settings.servicePort}`,
+    `http://${DEFAULT_LCORE_SERVER_HOST}:${settings.servicePort}`,
     logger,
   );
   const router = Router();

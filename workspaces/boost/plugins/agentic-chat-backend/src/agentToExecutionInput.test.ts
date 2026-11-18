@@ -16,6 +16,10 @@
 
 import type { Entity } from '@backstage/catalog-model';
 import { agentToExecutionInput } from './agentToExecutionInput';
+import {
+  InvalidAgentConfigurationError,
+  InvalidAgentKindError,
+} from './errors';
 
 const input = (query: string) => ({
   query,
@@ -88,7 +92,7 @@ it.each(['invalid', false, null])('rejects invalid execution mode %s', mode => {
       { ...agent, spec: { ...agent.spec, executionMode: mode } },
       input('Hello'),
     ),
-  ).toThrow('Invalid agent configuration');
+  ).toThrow(InvalidAgentConfigurationError);
 });
 
 it.each([
@@ -111,13 +115,13 @@ it.each([
 it('rejects non-agent entities and unsupported string output schemas', () => {
   expect(() =>
     agentToExecutionInput({ ...agent, kind: 'Component' }, input('Hello')),
-  ).toThrow('Expected an AiResource agent');
+  ).toThrow(InvalidAgentKindError);
   expect(() =>
     agentToExecutionInput(
       { ...agent, spec: { ...agent.spec, outputSchema: 'CustomType' } },
       input('Hello'),
     ),
-  ).toThrow('Invalid agent configuration');
+  ).toThrow(InvalidAgentConfigurationError);
 });
 
 describe('Catalog modelConfig', () => {
@@ -178,5 +182,5 @@ it('rejects the legacy agent type for agentic chat', () => {
       { ...agent, spec: { ...agent.spec, type: 'agent' } },
       input('Hello'),
     ),
-  ).toThrow('Invalid agent configuration');
+  ).toThrow(InvalidAgentConfigurationError);
 });

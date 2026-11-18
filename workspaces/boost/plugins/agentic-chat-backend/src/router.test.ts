@@ -126,6 +126,7 @@ async function app(
     anonymous?: boolean;
     catalogDenied?: boolean;
     missingAgent?: boolean;
+    catalogAgent?: typeof agent;
   } = {},
 ) {
   const router = await createRouter({
@@ -163,7 +164,8 @@ async function app(
         )
           throw new NotAllowedError('Forbidden');
         if (options.missingAgent) return undefined;
-        if (ref === 'airesource:default/support') return agent;
+        if (ref === 'airesource:default/support')
+          return options.catalogAgent ?? agent;
         if (ref === 'airesource:default/legal-chat') return legalAgent;
         return undefined;
       },
@@ -271,6 +273,25 @@ it('rejects identity overrides and reports missing Catalog agents', async () => 
   ).toBe(404);
   expect(calls).toHaveLength(0);
 });
+
+it.each([
+  [{ ...agent, kind: 'Component' }, 'Expected an AiResource agent'],
+  [
+    { ...agent, spec: { ...agent.spec, type: 'agent' } },
+    'Invalid agent configuration',
+  ],
+])(
+  'rejects invalid Catalog agents before upstream dispatch %#',
+  async (catalogAgent, message) => {
+    const response = await request(await app({ catalogAgent }))
+      .post('/v1/agent/run')
+      .send({ ...selection, query: 'Hello' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toMatchObject({ name: 'InputError', message });
+    expect(calls).toHaveLength(0);
+  },
+);
 
 it('honors Catalog denial and missing entities before submission', async () => {
   expect(

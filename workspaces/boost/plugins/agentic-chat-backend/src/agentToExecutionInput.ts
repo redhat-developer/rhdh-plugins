@@ -15,12 +15,15 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
-import { InputError } from '@backstage/errors';
 import type {
   AgentExecutionInput,
   RunAgentRequest,
 } from '@red-hat-developer-hub/backstage-plugin-agentic-chat-common';
 import { z } from 'zod';
+import {
+  InvalidAgentConfigurationError,
+  InvalidAgentKindError,
+} from './errors';
 
 const agentSpecSchema = z.object({
   type: z.literal('agent-rhdh-chat'),
@@ -56,10 +59,10 @@ export function agentToExecutionInput(
   input: RunAgentRequest,
 ): AgentExecutionInput {
   if (entity.kind.toLocaleLowerCase('en-US') !== 'airesource') {
-    throw new InputError('Expected an AiResource agent');
+    throw new InvalidAgentKindError();
   }
   const parsed = agentSpecSchema.safeParse(entity.spec);
-  if (!parsed.success) throw new InputError('Invalid agent configuration');
+  if (!parsed.success) throw new InvalidAgentConfigurationError();
   const spec = parsed.data;
   const defaultProvider = spec.inferenceProvider;
   const modelConfig =
