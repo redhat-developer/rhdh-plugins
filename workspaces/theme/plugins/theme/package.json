@@ -23,7 +23,13 @@
   "sideEffects": [
     "*.css",
     "*.css.esm.js",
-    "**/*.css.esm.js"
+    "**/*.css.esm.js",
+    "./src/fonts.ts",
+    "./dist/fonts.esm.js",
+    "./src/index.ts",
+    "./dist/index.esm.js",
+    "./src/legacyExports.ts",
+    "./dist/legacyExports.esm.js"
   ],
   "exports": {
     ".": "./src/index.ts",
