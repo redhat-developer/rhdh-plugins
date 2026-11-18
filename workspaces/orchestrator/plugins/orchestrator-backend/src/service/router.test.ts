@@ -41,6 +41,7 @@ import request from 'supertest';
 
 import { ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { V2 } from './api/v2';
 import { initPublicServices } from './initPublicServices';
 import {
   orchestratorPermissionRules,
@@ -227,6 +228,9 @@ jest.mock('./api/v2', () => ({
       paginationInfo: {},
     }),
     pingWorkflowService: jest.fn().mockResolvedValue(true),
+    getInstanceInitiators: jest
+      .fn()
+      .mockResolvedValue(['user:default/test-user']),
     getInstances: jest
       .fn()
       .mockImplementation((_pagination, _filters, authorizedWorkflowIds) => {
@@ -936,6 +940,73 @@ describe('Router Authorization Tests', () => {
 
       expect(response.status).toBe(403);
       expect(mockPermissions.authorizeConditional).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('POST /v2/workflows/instances/initiators', () => {
+    it('preserves authorization, ownership filters, and the 500-row cap', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow1', 'workflow3']),
+      ]);
+
+      const response = await request(app)
+        .post('/v2/workflows/instances/initiators')
+        .send({
+          paginationInfo: {
+            pageSize: 900,
+            offset: -5,
+            orderBy: 'start',
+            orderDirection: 'DESC',
+          },
+          filters: {
+            field: 'state',
+            operator: 'EQ',
+            value: 'COMPLETED',
+          },
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(['user:default/test-user']);
+
+      const latestV2 = (V2 as jest.MockedClass<typeof V2>).mock.results.at(-1)
+        ?.value as unknown as {
+        getInstanceInitiators: jest.Mock;
+      };
+      expect(latestV2.getInstanceInitiators).toHaveBeenCalledWith(
+        { limit: 500, offset: 0, order: 'DESC', sortField: 'start' },
+        {
+          operator: 'AND',
+          filters: [
+            {
+              field: 'variables',
+              nested: {
+                field: 'initiatorEntity',
+                operator: 'EQ',
+                value: 'user:default/test-user',
+              },
+            },
+            {
+              field: 'state',
+              operator: 'EQ',
+              value: 'COMPLETED',
+            },
+          ],
+        },
+        ['workflow1', 'workflow3'],
+      );
+    });
+
+    it('returns no initiators when no workflows are authorized', async () => {
+      mockPermissions.authorizeConditional.mockResolvedValueOnce([
+        rbacConditionalRead(['workflow99']),
+      ]);
+
+      const response = await request(app)
+        .post('/v2/workflows/instances/initiators')
+        .send({});
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual([]);
     });
   });
 

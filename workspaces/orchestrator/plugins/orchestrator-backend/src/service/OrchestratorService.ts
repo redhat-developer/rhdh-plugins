@@ -76,6 +76,34 @@ export class OrchestratorService {
     });
   }
 
+  public async fetchInstanceInitiators(args: {
+    pagination?: Pagination;
+    filter?: Filter;
+    workflowIds?: string[];
+  }): Promise<string[]> {
+    const definitionIds = args.workflowIds
+      ? args.workflowIds
+      : this.workflowCacheService.definitionIds;
+    return await this.dataIndexService.fetchInstanceInitiators({
+      definitionIds,
+      pagination: args.pagination,
+      filter: args.filter,
+    });
+  }
+
+  public async countInstances(args: {
+    filter?: Filter;
+    workflowIds?: string[];
+  }): Promise<number> {
+    const definitionIds = args.workflowIds
+      ? args.workflowIds
+      : this.workflowCacheService.definitionIds;
+    return await this.dataIndexService.countInstances({
+      definitionIds,
+      filter: args.filter,
+    });
+  }
+
   public async fetchDefinitionIdsFromInstances(args: {
     targetEntity: string;
   }): Promise<string[]> {
@@ -125,7 +153,7 @@ export class OrchestratorService {
     filter?: Filter;
     targetEntity?: string;
   }): Promise<WorkflowOverview[] | undefined> {
-    const overviews = await this.sonataFlowService.fetchWorkflowOverviews({
+    const overviewResult = await this.sonataFlowService.fetchWorkflowOverviews({
       definitionIds: this.workflowCacheService.definitionIds?.concat(
         this.workflowCacheService.unavailableDefinitionIds,
       ),
@@ -134,11 +162,14 @@ export class OrchestratorService {
       targetEntity: args.targetEntity,
     });
 
+    if (!overviewResult) {
+      return undefined;
+    }
+
+    const { overviews, serviceUrls } = overviewResult;
     if (!overviews?.length) {
       return overviews;
     }
-
-    const serviceUrls = await this.dataIndexService.fetchWorkflowServiceUrls();
 
     return Promise.all(
       overviews.map(async overview => {
