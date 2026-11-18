@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 1.2.0
+
+### Minor Changes
+
+- 38e5ee0: Resolve Scaffolder time-saved estimates from catalog annotations, expose an aggregate Adoption Insights query, and include task runs and historical minutes saved in top template results with optional ranking by runs. Newly accepted events of every type use the authenticated user's identity for `user_ref`, regardless of a client-supplied `userName`. Historical Scaffolder create events already stored minutes when an estimate was present, but those values were supplied by clients; new values are resolved from the catalog. Event batches are validated before any catalog lookup or enqueue, oversized batches are rejected up front (configurable via `app.analytics.adoptionInsights.maxEventsPerRequest` with a positive integer; default 100), and repeated Template refs are resolved once per batch with bounded concurrency. Validation is now all-or-nothing per batch: if any event in a `POST /events` request is invalid the whole request is rejected and no events from it are stored, whereas previously valid events preceding the first invalid one could be persisted.
+
+  Clarify in the analytics module README that `identityApi` is required and how user context and authenticated credentials are used when events are sent to the backend. The analytics module now logs and drops rejected event batches on HTTP 4xx responses, while retrying batches after network errors or HTTP 5xx responses.
+
+- 206ff3f: Backstage version bump to v1.56.4
+
+### Patch Changes
+
+- 8520b98: Buffered events are now sent in batches of at most `maxBufferSize`, so a backlog built up while the backend is unavailable stays within the backend's per-request limit (`maxEventsPerRequest`). A batch rejected with HTTP 4xx is dropped without affecting later batches. After a network error or HTTP 5xx, the failed batch and everything after it are requeued for the next flush. Only one flush runs at a time. The queue of unsent events is capped at 1000 events, and the oldest events are dropped first. An invalid `maxBufferSize` (not a positive integer) now logs a warning and falls back to the default of 20.
+
+  The backend README now explains that `maxBufferSize` should be kept at or below `maxEventsPerRequest`, and how the analytics module retries failed batches.
+
+- Updated dependencies [206ff3f]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.2.0
+
 ## 1.1.1
 
 ### Patch Changes
