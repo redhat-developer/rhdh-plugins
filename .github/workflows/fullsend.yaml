@@ -30,13 +30,16 @@ on:
     # Slash commands on other workspaces still work via issue_comment.
     paths:
       - "workspaces/adoption-insights/**"
+      - "workspaces/ai-integrations/**"
       - "workspaces/app-defaults/**"
+      - "workspaces/boost/**"
       - "workspaces/bulk-import/**"
       - "workspaces/global-header/**"
       - "workspaces/homepage/**"
       - "workspaces/intelligent-assistant/**"
       - "workspaces/orchestrator/**"
       - "workspaces/quickstart/**"
+      - "workspaces/scorecard/**"
 
 permissions: {}
 
