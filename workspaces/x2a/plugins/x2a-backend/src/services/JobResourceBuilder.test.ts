@@ -68,6 +68,52 @@ describe('JobResourceBuilder', () => {
         });
       });
 
+      it('should stringify non-string LLM values from app-config', () => {
+        // An unquoted YAML scalar such as `MAX_TOKENS: 32000` reaches the
+        // builder as a number. Kubernetes rejects the whole Secret if a
+        // stringData value is not a string.
+        mockConfig.credentials.llm = {
+          LLM_MODEL: 'anthropic.claude-v2',
+          MAX_TOKENS: 32000,
+          TEMPERATURE: 0.5,
+          STREAMING: false,
+        } as unknown as Record<string, string>;
+
+        const secret = JobResourceBuilder.buildProjectSecret(
+          projectId,
+          undefined,
+          mockConfig,
+        );
+
+        expect(secret.stringData).toMatchObject({
+          LLM_MODEL: 'anthropic.claude-v2',
+          MAX_TOKENS: '32000',
+          TEMPERATURE: '0.5',
+          STREAMING: 'false',
+        });
+        for (const value of Object.values(secret.stringData!)) {
+          expect(typeof value).toBe('string');
+        }
+      });
+
+      it('should drop LLM values that are null or undefined', () => {
+        mockConfig.credentials.llm = {
+          LLM_MODEL: 'anthropic.claude-v2',
+          UNRESOLVED: undefined,
+          EMPTIED: null,
+        } as unknown as Record<string, string>;
+
+        const secret = JobResourceBuilder.buildProjectSecret(
+          projectId,
+          undefined,
+          mockConfig,
+        );
+
+        expect(secret.stringData!.LLM_MODEL).toBe('anthropic.claude-v2');
+        expect(secret.stringData).not.toHaveProperty('UNRESOLVED');
+        expect(secret.stringData).not.toHaveProperty('EMPTIED');
+      });
+
       it('should support alternative LLM credential formats', () => {
         mockConfig.credentials.llm = {
           LLM_MODEL: 'anthropic.claude-v2',
@@ -425,6 +471,62 @@ describe('JobResourceBuilder', () => {
         SOURCE_REPO_TOKEN: 'source-token',
         SOURCE_REPO_BRANCH: 'main',
       });
+    });
+
+    it('should stringify non-string git credential values', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        phase,
+        {
+          sourceRepo: {
+            url: 'https://github.com/org/source',
+            token: 12345,
+            branch: 'main',
+          },
+          targetRepo: {
+            url: 'https://github.com/org/target',
+            token: 'target-token', // NOSONAR
+            branch: 42,
+          },
+        } as unknown as typeof gitCredentials,
+        ownerReference,
+      );
+
+      expect(secret.stringData).toMatchObject({
+        SOURCE_REPO_TOKEN: '12345',
+        TARGET_REPO_BRANCH: '42',
+      });
+      for (const value of Object.values(secret.stringData!)) {
+        expect(typeof value).toBe('string');
+      }
+    });
+
+    it('should drop git credential values that are null or undefined', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        phase,
+        {
+          sourceRepo: {
+            url: 'https://github.com/org/source',
+            token: undefined,
+            branch: 'main',
+          },
+          targetRepo: {
+            url: 'https://github.com/org/target',
+            token: null,
+            branch: 'main',
+          },
+        } as unknown as typeof gitCredentials,
+        ownerReference,
+      );
+
+      expect(secret.stringData!.SOURCE_REPO_URL).toBe(
+        'https://github.com/org/source',
+      );
+      expect(secret.stringData).not.toHaveProperty('SOURCE_REPO_TOKEN');
+      expect(secret.stringData).not.toHaveProperty('TARGET_REPO_TOKEN');
     });
 
     it('should include target repository credentials', () => {

@@ -28,6 +28,29 @@ import { X2AConfig, JobCreateParams, AAPCredentials, GitRepo } from './types';
 import { applyDeploymentPatch } from './applyDeploymentPatch';
 
 /**
+ * Coerces a set of environment-variable values into the string map that a
+ * Kubernetes Secret's `stringData` requires.
+ *
+ * Values under `x2a.credentials` are read straight from app-config without
+ * schema coercion, so an unquoted YAML scalar such as `MAX_TOKENS: 32000`
+ * arrives here as a number. Sending that to the API server makes it reject the
+ * entire Secret with "cannot unmarshal number into Go struct field
+ * Secret.stringData of type string", which surfaces to the user as a generic
+ * 400 during project creation. Null and undefined values (an env var that was
+ * never substituted) are dropped rather than stringified into "null".
+ *
+ * Applied to every Secret this builder produces, so the guarantee holds
+ * regardless of where a value originated.
+ */
+function toStringData(values: Record<string, unknown>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(values)
+      .filter(([, value]) => value !== undefined && value !== null)
+      .map(([key, value]) => [key, String(value)]),
+  );
+}
+
+/**
  * Builds Kubernetes Job and Secret resources for X2A migration jobs
  */
 export class JobResourceBuilder {
@@ -127,7 +150,7 @@ export class JobResourceBuilder {
         },
       },
       type: 'Opaque',
-      stringData: {
+      stringData: toStringData({
         // LLM credentials from config (generic key-value env vars)
         ...llmCredentials,
 
@@ -136,7 +159,7 @@ export class JobResourceBuilder {
 
         // AAP SSL verification setting (derived from skipSSLVerification config)
         AAP_VERIFY_SSL: String(!skipSSL),
-      },
+      }),
     };
   }
 
@@ -186,7 +209,7 @@ export class JobResourceBuilder {
         ownerReferences: [ownerReference],
       },
       type: 'Opaque',
-      stringData: {
+      stringData: toStringData({
         // Git source repository credentials from user
         SOURCE_REPO_URL: gitCredentials.sourceRepo.url,
         SOURCE_REPO_TOKEN: gitCredentials.sourceRepo.token,
@@ -196,7 +219,7 @@ export class JobResourceBuilder {
         TARGET_REPO_URL: gitCredentials.targetRepo.url,
         TARGET_REPO_TOKEN: gitCredentials.targetRepo.token,
         TARGET_REPO_BRANCH: gitCredentials.targetRepo.branch,
-      },
+      }),
     };
   }
 
