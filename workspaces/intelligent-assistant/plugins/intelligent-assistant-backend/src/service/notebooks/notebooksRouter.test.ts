@@ -777,6 +777,39 @@ describe('Notebooks Router', () => {
       sessionId = response.body.session.session_id;
     });
 
+    it('should preserve UTF-8 characters split across stream chunks', async () => {
+      const content = 'café';
+      const event = Buffer.from(
+        `event: response.output_text.delta\ndata: ${JSON.stringify({ delta: content })}\n\ndata: [DONE]\n\n`,
+      );
+      // Split between the two UTF-8 bytes of é.
+      const splitIndex = event.indexOf(Buffer.from('é')) + 1;
+      server.use(
+        http.post(
+          `${LIGHTSPEED_CORE_ADDR}/v1/responses`,
+          () =>
+            new HttpResponse(
+              new ReadableStream({
+                start(controller) {
+                  controller.enqueue(event.subarray(0, splitIndex));
+                  controller.enqueue(event.subarray(splitIndex));
+                  controller.close();
+                },
+              }),
+              { headers: { 'Content-Type': 'text/event-stream' } },
+            ),
+        ),
+      );
+
+      const response = await request(app)
+        .post(`/notebooks/v1/sessions/${sessionId}/query`)
+        .send({ query: 'What is in this notebook?' });
+
+      expect(response.status).toBe(200);
+      expect(response.text).toContain(content);
+      expect(response.text).toContain('data: [DONE]');
+    });
+
     it('should stream notebook content without logging event payloads', async () => {
       const content = 'private notebook content';
       const events = [

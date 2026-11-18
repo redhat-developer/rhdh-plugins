@@ -82,12 +82,9 @@ export class Orchestrator {
 
   /**
    * NFS AppSidebar places Orchestrator in the Administration group
-   * (`SidebarItemBlueprint` group: 'admin'). Legacy Root keeps it under Menu.
+   * (`SidebarItemBlueprint` group: 'admin').
    */
   async expectOrchestratorUnderAdministration() {
-    if (process.env.APP_MODE === 'legacy') {
-      return;
-    }
     const administrationLabels: Record<string, string> = {
       en: 'Administration',
       de: 'Administration',

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { isBackwardStepNavigable } from './isBackwardStepNavigable';
+import { isBackwardStepNavigable, isStepNavigable } from './isStepNavigable';
 
 describe('isBackwardStepNavigable', () => {
   it('allows navigating to any step before the active step', () => {
@@ -29,5 +29,26 @@ describe('isBackwardStepNavigable', () => {
 
   it('disallows negative step indices', () => {
     expect(isBackwardStepNavigable(-1, 2)).toBe(false);
+  });
+});
+
+describe('isStepNavigable', () => {
+  it('allows backward navigation like isBackwardStepNavigable', () => {
+    expect(isStepNavigable(0, 2, 4)).toBe(true);
+    expect(isStepNavigable(1, 3, 4)).toBe(true);
+  });
+
+  it('allows forward navigation up to furthestReachedStep', () => {
+    expect(isStepNavigable(4, 2, 4)).toBe(true);
+    expect(isStepNavigable(3, 1, 4)).toBe(true);
+  });
+
+  it('disallows forward navigation beyond furthestReachedStep', () => {
+    expect(isStepNavigable(4, 2, 3)).toBe(false);
+    expect(isStepNavigable(5, 2, 4)).toBe(false);
+  });
+
+  it('disallows the active step', () => {
+    expect(isStepNavigable(2, 2, 4)).toBe(false);
   });
 });

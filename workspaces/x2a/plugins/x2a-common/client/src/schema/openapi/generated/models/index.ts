@@ -30,6 +30,8 @@ export * from '../models/Module.model';
 export * from '../models/ModulePhase.model';
 export * from '../models/ModuleStatus.model';
 export * from '../models/ModulesStatusSummary.model';
+export * from '../models/PortfolioProjectCounts.model';
+export * from '../models/PortfolioSummary.model';
 export * from '../models/Project.model';
 export * from '../models/ProjectStatus.model';
 export * from '../models/ProjectStatusState.model';

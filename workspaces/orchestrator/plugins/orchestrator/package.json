@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-orchestrator",
-  "version": "6.3.2",
+  "version": "6.4.0",
   "license": "Apache-2.0",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
@@ -89,6 +89,7 @@
     "@backstage/plugin-permission-react": "^0.5.6",
     "@backstage/plugin-scaffolder-react": "^2.1.1",
     "@backstage/types": "^1.2.2",
+    "@backstage/ui": "^0.19.0",
     "@dagrejs/dagre": "^2.0.4",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.17.1",
@@ -115,7 +116,6 @@
     "@backstage/plugin-search": "^1.7.9",
     "@backstage/plugin-user-settings": "^0.9.8",
     "@backstage/test-utils": "^1.7.23",
-    "@backstage/ui": "^0.19.0",
     "@red-hat-developer-hub/backstage-plugin-app-defaults": "^1.8.1",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-theme": "^1.2.2",
@@ -127,7 +127,7 @@
     "@types/luxon": "^3.7.1",
     "@types/react": "^18.2.58",
     "@types/react-dom": "^18.2.19",
-    "prettier": "3.9.10",
+    "prettier": "3.10.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.3.0"

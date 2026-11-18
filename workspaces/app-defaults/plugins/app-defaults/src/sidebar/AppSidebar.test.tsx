@@ -45,6 +45,27 @@ const navItems = (items: NavContentNavItem[]): NavContentNavItems => ({
 const HomeIcon = () => <span data-testid="home-icon" />;
 
 describe('AppSidebar', () => {
+  it('passes target and rel for external _blank links', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          {
+            id: 'help',
+            title: 'Help',
+            to: 'https://example.com/help',
+            target: '_blank',
+          },
+        ]}
+        groups={[]}
+      />,
+    );
+
+    const link = screen.getByRole('link', { name: /help/i });
+    expect(link).toHaveAttribute('href', 'https://example.com/help');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
   it('renders items in priority order with links', async () => {
     await renderInTestApp(
       <AppSidebar
@@ -167,6 +188,29 @@ describe('AppSidebar', () => {
     expect(screen.queryByText('Users')).not.toBeInTheDocument();
     fireEvent.mouseEnter(screen.getByTestId('item-with-submenu'));
     expect(screen.getByText('Users')).toBeInTheDocument();
+  });
+
+  it('passes target and rel for external _blank links in flyout submenus', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          {
+            id: 'docs',
+            title: 'Docs',
+            to: 'https://example.com/docs',
+            target: '_blank',
+            group: 'tools',
+          },
+        ]}
+        groups={[{ id: 'tools', title: 'Tools', variant: 'flyout' }]}
+      />,
+    );
+
+    fireEvent.mouseEnter(screen.getByTestId('item-with-submenu'));
+    const link = screen.getByRole('link', { name: /docs/i });
+    expect(link).toHaveAttribute('href', 'https://example.com/docs');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('skips groups without items and without a link', async () => {

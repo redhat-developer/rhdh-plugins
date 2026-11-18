@@ -351,34 +351,27 @@ test.describe('Orchestrator workflow runs', () => {
       ).toBeVisible();
       await sharedPage.getByRole('link', { name: 'my-component' }).click();
       await expect(sharedPage.getByText('my-component')).toBeVisible();
-      if (process.env.APP_MODE === 'legacy') {
-        await sharedPage
-          .getByRole('tab', { name: 'Workflows' })
-          .first()
-          .click();
-      } else {
-        // Copied values from https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/src/translations
-        // until app-defaults (or Backstage) support that plugins add their own translations
-        // for catalog entity tab titles.
-        const baseLocale =
-          typeof testInfo.project.use.locale === 'string'
-            ? testInfo.project.use.locale.split('-')[0]
-            : 'en';
-        const workflowTranslationsFromAppReact = {
-          de: 'Workflows',
-          en: 'Workflows',
-          es: 'Workflows',
-          fr: 'Workflows',
-          it: 'Workflow',
-          ja: 'ワークフロー',
-        } as Record<string, string>;
-        const workflowsTabTitle =
-          workflowTranslationsFromAppReact[baseLocale] || 'Workflows';
-        await sharedPage
-          .getByRole('link', { name: workflowsTabTitle })
-          .first()
-          .click();
-      }
+      // Copied values from https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/app-defaults/plugins/app-react/src/translations
+      // until app-defaults (or Backstage) support that plugins add their own translations
+      // for catalog entity tab titles.
+      const baseLocale =
+        typeof testInfo.project.use.locale === 'string'
+          ? testInfo.project.use.locale.split('-')[0]
+          : 'en';
+      const workflowTranslationsFromAppReact = {
+        de: 'Workflows',
+        en: 'Workflows',
+        es: 'Workflows',
+        fr: 'Workflows',
+        it: 'Workflow',
+        ja: 'ワークフロー',
+      } as Record<string, string>;
+      const workflowsTabTitle =
+        workflowTranslationsFromAppReact[baseLocale] || 'Workflows';
+      await sharedPage
+        .getByRole('link', { name: workflowsTabTitle })
+        .first()
+        .click();
       await expect(
         sharedPage
           .getByRole('row', { name: 'Hello World Workflow' })
@@ -574,7 +567,7 @@ test.describe('Orchestrator workflow runs', () => {
       }
     });
 
-    test('Backward navigation in multi-step stepper', async () => {
+    test('Multi-step stepper backward and forward navigation', async () => {
       const workflowName = 'Quarkus Backend application';
       const newComponentInputs: NewComponentInputs = {
         organizationName: 'test-name',
@@ -613,29 +606,32 @@ test.describe('Orchestrator workflow runs', () => {
         sharedPage.getByRole('button', {
           name: 'Step 2 Provide information about the Java metadata',
         }),
-      ).not.toBeVisible();
-      await expect(
-        sharedPage.getByLabel(
-          'Step 2 Provide information about the Java metadata',
-        ),
-      ).toBeVisible();
-      await orchestratorHelper.clickButton(translations.common.next);
-      await expect(
-        sharedPage.getByLabel(
-          'Step 2 Provide information about the Java metadata',
-        ),
-      ).not.toHaveClass(/Mui-disabled/);
-      await orchestratorHelper.clickButton(translations.common.next);
-      await orchestratorHelper.clickButton(translations.common.back);
+      ).toBeEnabled();
+      await sharedPage
+        .getByRole('button', {
+          name: 'Step 2 Provide information about the Java metadata',
+        })
+        .click();
       await orchestrator.verifyJavaMetadata(javaMetadata);
       await orchestratorHelper.clickButton(translations.common.next);
-      await expect(
-        sharedPage.getByLabel(`Step 4 ${translations.common.review}`),
-      ).toHaveClass(/Mui-disabled/);
       await orchestratorHelper.clickButton(translations.common.next);
+      await orchestratorHelper.clickButton(translations.common.back);
+      await sharedPage
+        .getByRole('button', {
+          name: 'Step 2 Provide information about the Java metadata',
+        })
+        .click();
+      await orchestrator.verifyJavaMetadata(javaMetadata);
       await expect(
-        sharedPage.getByLabel(`Step 4 ${translations.common.review}`),
-      ).not.toHaveClass(/Mui-disabled/);
+        sharedPage.getByRole('button', {
+          name: `Step 4 ${translations.common.review}`,
+        }),
+      ).toBeEnabled();
+      await sharedPage
+        .getByRole('button', {
+          name: `Step 4 ${translations.common.review}`,
+        })
+        .click();
       const allInputs = [
         ...Object.values(newComponentInputs),
         ...Object.values(javaMetadata),
@@ -745,6 +741,113 @@ test.describe('Orchestrator workflow runs', () => {
         timeout: 60_000,
       });
       await orchestratorHelper.verifyBreadcrumbLink(workflowName);
+    });
+
+    test('verify extended field-level help is displayed in Active form widgets', async ({}, testInfo) => {
+      const workflowName = 'Test Field-level Help';
+      const locale =
+        typeof testInfo.project.use.locale === 'string'
+          ? testInfo.project.use.locale.split('-')[0]
+          : 'en';
+
+      // Schema provides en/de/es/fr/it; ja omitted → English fallback
+      const processNameHelpByLocale: Record<
+        string,
+        { title: string; body: RegExp; linkLabel: string }
+      > = {
+        en: {
+          title: 'Process name',
+          body: /unique process name/,
+          linkLabel: 'Learn more',
+        },
+        de: {
+          title: 'Process name (DE)',
+          body: /Hilfe \(DE\)/,
+          linkLabel: 'Mehr erfahren',
+        },
+        es: {
+          title: 'Process name (ES)',
+          body: /Ayuda \(ES\)/,
+          linkLabel: 'Más información',
+        },
+        fr: {
+          title: 'Process name (FR)',
+          body: /Aide \(FR\)/,
+          linkLabel: 'En savoir plus',
+        },
+        it: {
+          title: 'Process name (IT)',
+          body: /Aiuto \(IT\)/,
+          linkLabel: 'Scopri di più',
+        },
+      };
+      const expectedHelp =
+        processNameHelpByLocale[locale] ?? processNameHelpByLocale.en;
+
+      await orchestrator.searchWorkflow(workflowName);
+      await orchestrator.openWorkflowFromTable(workflowName);
+      await orchestrator.verifyWorkflowDetails();
+      await orchestrator.clickRunWorkflowFromDetails();
+
+      const fieldLabels = [
+        'Process name',
+        'Guidance',
+        'Environment',
+        'Tags',
+        'Enable notifications',
+      ] as const;
+      const helpPopover = sharedPage.getByTestId('field-help-popover');
+
+      // Help control present on all five Active widgets
+      for (const label of fieldLabels) {
+        await expect(
+          sharedPage.getByRole('button', {
+            name: `More information about ${label}`,
+          }),
+        ).toBeVisible({ timeout: 30_000 });
+      }
+
+      // No ui:fieldHelp → no help button; description still visible
+      await expect(
+        sharedPage.getByRole('button', {
+          name: 'More information about Notes',
+        }),
+      ).toHaveCount(0);
+      await expect(
+        sharedPage.getByText(
+          'Short always-visible description under the input (coexists with help).',
+        ),
+      ).toBeVisible();
+
+      const helpButton = sharedPage.getByRole('button', {
+        name: 'More information about Process name',
+      });
+      await helpButton.hover();
+      await expect(helpPopover).toBeVisible();
+      await expect(
+        helpPopover.getByText(expectedHelp.title, { exact: true }),
+      ).toBeVisible();
+      await expect(helpPopover.getByText(expectedHelp.body)).toBeVisible();
+      const helpLink = sharedPage.getByTestId('field-help-link');
+      await expect(helpLink).toHaveText(expectedHelp.linkLabel);
+      await expect(helpLink).toHaveAttribute(
+        'href',
+        'https://backstage.io/docs/features/software-catalog/descriptor-format/#kind-component',
+      );
+      await expect(helpLink).toHaveAttribute('target', '_blank');
+      await expect(helpLink).toHaveAttribute('rel', /noopener/);
+      await sharedPage.mouse.move(0, 0);
+      await expect(helpPopover).toBeHidden({ timeout: 1000 });
+
+      // Keyboard: focus opens popover; accessible name is tied to the field
+      await helpButton.focus();
+      await expect(helpButton).toHaveAttribute(
+        'aria-label',
+        'More information about Process name',
+      );
+      await expect(helpPopover).toBeVisible();
+      await helpButton.blur();
+      await expect(helpPopover).toBeHidden({ timeout: 1000 });
     });
   });
 
