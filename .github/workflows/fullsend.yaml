@@ -1,5 +1,6 @@
-# Based on fullsend scaffold; customized to disable all agent auto-triggers.
-# Only label-based triggers and /fs-* slash commands remain active.
+# Based on fullsend scaffold; customized to disable agent auto-triggers except
+# review. Review auto-runs on PR open/update for all workspaces; everything else
+# is driven by label-based triggers and /fs-* slash commands.
 # Upstream: https://github.com/fullsend-ai/fullsend/blob/main/internal/scaffold/fullsend-repo/templates/shim-per-repo.yaml
 ---
 # fullsend shim workflow (per-repo installation mode)
@@ -24,13 +25,12 @@ on:
   issue_comment:
     types: [created]
   pull_request_target:
-    types: [labeled, unlabeled]
-    # Monorepo: only auto-dispatch on workspaces enrolled for fullsend.
-    # Slash commands on other workspaces still work via issue_comment.
-    paths:
-      - "workspaces/boost/**"
-      - "workspaces/scorecard/**"
-      - "workspaces/ai-integrations/**"
+    # opened/synchronize/ready_for_review auto-dispatch the review agent on
+    # every PR (no paths filter, so all workspaces are covered). The upstream
+    # dispatcher only reviews PRs whose author has triage+ access or is a bot;
+    # other PRs still need /fs-review or the ready-for-review label.
+    # `closed` (retro) is intentionally not enabled.
+    types: [opened, synchronize, ready_for_review, labeled, unlabeled]
 
 permissions: {}
 
