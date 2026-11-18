@@ -57,10 +57,12 @@ export function readTotalMinutes(minutes: unknown): number | undefined {
 /**
  * Formats a minute total as days, hours, and minutes.
  * Sub-minute totals round away to the empty marker.
+ * Japanese joins units with no space (`1日2時間`).
  */
 export function formatTotalTimeSaved(
   minutes: unknown,
   translate: (part: TimeSavedPart, count: number) => string,
+  locale?: string,
 ): string {
   const total = readTotalMinutes(minutes);
   if (total === undefined) {
@@ -87,5 +89,6 @@ export function formatTotalTimeSaved(
     parts.push(translate('minute', remainingMinutes));
   }
 
-  return parts.join(' ');
+  const separator = locale === 'ja' ? '' : ' ';
+  return parts.join(separator);
 }

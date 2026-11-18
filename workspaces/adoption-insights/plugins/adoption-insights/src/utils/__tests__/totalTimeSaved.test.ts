@@ -90,4 +90,19 @@ describe('formatTotalTimeSaved', () => {
     expect(format(135.5)).toBe('2 hours 16 minutes');
     expect(format(135.5)).not.toBe(format(135.5 * 3));
   });
+
+  it('should join Japanese units without a space', () => {
+    const translate = (part: 'day' | 'hour' | 'minute', count: number) => {
+      if (part === 'day') {
+        return `${count}日`;
+      }
+      if (part === 'hour') {
+        return `${count}時間`;
+      }
+      return `${count}分`;
+    };
+
+    expect(formatTotalTimeSaved(1501, translate, 'ja')).toBe('1日1時間1分');
+    expect(formatTotalTimeSaved(1501, translate, 'en')).toBe('1日 1時間 1分');
+  });
 });

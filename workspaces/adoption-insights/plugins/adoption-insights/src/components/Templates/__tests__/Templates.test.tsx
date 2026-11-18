@@ -31,6 +31,10 @@ jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: mockUseTranslation,
 }));
 
+jest.mock('../../../hooks/useLanguage', () => ({
+  useLanguage: () => 'en',
+}));
+
 jest.mock('../../Trans', () => ({
   Trans: MockTrans,
 }));
