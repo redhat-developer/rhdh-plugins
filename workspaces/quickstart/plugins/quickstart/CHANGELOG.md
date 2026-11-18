@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 2.4.0
+
+### Minor Changes
+
+- c582620: Backstage version bump to v1.56.5
+
 ## 2.3.0
 
 ### Minor Changes
