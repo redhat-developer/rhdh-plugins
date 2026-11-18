@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 1.8.2
+
+### Patch Changes
+
+- Updated dependencies [e8d3cfc]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.11.1
+
 ## 1.8.1
 
 ### Patch Changes
