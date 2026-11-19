@@ -84,7 +84,7 @@ export class GitlabClient {
     context: string,
   ): number {
     if (!Number.isFinite(total)) {
-      throw new Error(
+      throw new TypeError(
         `GitLab did not return a pagination total for ${context}. ` +
           'Counts cannot be derived from a single page when X-Total is absent.',
       );
@@ -222,6 +222,57 @@ export class GitlabClient {
     return jobs.length;
   }
 
+  private async fetchJobsPage(
+    api: GitlabApi,
+    projectSlug: string,
+    page: number,
+    perPage: number,
+    scope?: string[],
+  ): Promise<Array<{ created_at: string }>> {
+    // GitLab accepts repeated scope[] query params; gitbeaker types only a
+    // single JobScope in this release, so cast options for array callers.
+    const jobOptions = {
+      ...(scope && scope.length > 0 ? { scope } : {}),
+      page,
+      perPage,
+      maxPages: 1,
+    } as { page: number; perPage: number; maxPages: number };
+
+    return (await api.Jobs.all(projectSlug, jobOptions)) as {
+      created_at: string;
+    }[];
+  }
+
+  private appendJobsSince(
+    items: Array<{ created_at: string }>,
+    since: Date,
+    allItems: Array<{ created_at: string }>,
+    fetchItemsLimit: number,
+  ): boolean {
+    for (const item of items) {
+      if (allItems.length >= fetchItemsLimit) {
+        return true;
+      }
+      if (new Date(item.created_at) >= since) {
+        allItems.push(item);
+      }
+    }
+    return allItems.length >= fetchItemsLimit;
+  }
+
+  private shouldContinueJobsPaging(
+    items: Array<{ created_at: string }>,
+    since: Date,
+    perPage: number,
+  ): boolean {
+    const oldestItem = items.at(items.length - 1);
+
+    if (oldestItem && new Date(oldestItem.created_at) < since) {
+      return false;
+    }
+    return items.length >= perPage;
+  }
+
   private async fetchJobsSince(
     api: GitlabApi,
     projectSlug: string,
@@ -234,7 +285,6 @@ export class GitlabClient {
     } = options;
 
     const perPage = GitlabClient.GITLAB_JOBS_PAGE_SIZE;
-
     const allItems: Array<{ created_at: string }> = [];
 
     let page = 1;
@@ -247,52 +297,23 @@ export class GitlabClient {
         break;
       }
 
-      // GitLab accepts repeated scope[] query params; gitbeaker types only a
-      // single JobScope in this release, so cast options for array callers.
-      const jobOptions = {
-        ...(scope && scope.length > 0 ? { scope } : {}),
+      const items = await this.fetchJobsPage(
+        api,
+        projectSlug,
         page,
         perPage,
-        maxPages: 1,
-      } as { page: number; perPage: number; maxPages: number };
-
-      const items = (await api.Jobs.all(projectSlug, jobOptions)) as {
-        created_at: string;
-      }[];
-
+        scope,
+      );
       if (items.length === 0) {
-        hasMore = false;
-        continue;
+        break;
       }
 
-      for (const item of items) {
-        if (allItems.length >= fetchItemsLimit) {
-          truncated = true;
-          break;
-        }
-        if (new Date(item.created_at) >= since) {
-          allItems.push(item);
-        }
-      }
-
-      if (allItems.length >= fetchItemsLimit) {
+      if (this.appendJobsSince(items, since, allItems, fetchItemsLimit)) {
         truncated = true;
-        hasMore = false;
-        continue;
+        break;
       }
 
-      // If the oldest item on this page is before 'since', we've gone far enough
-      const oldestItem = items[items.length - 1];
-      if (new Date(oldestItem.created_at) < since) {
-        hasMore = false;
-        continue;
-      }
-
-      if (items.length < perPage) {
-        hasMore = false;
-        continue;
-      }
-
+      hasMore = this.shouldContinueJobsPaging(items, since, perPage);
       page++;
     }
 
