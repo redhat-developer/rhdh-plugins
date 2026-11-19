@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { filterQuickstartItemsByRole } from './filterQuickstartItems';
+import {
+  filterQuickstartItemsByRole,
+  filterQuickstartItemsByAvailability,
+  PluginAvailability,
+} from './filterQuickstartItems';
 import { QuickstartItemData } from '../types';
 
 describe('filterQuickstartItemsByRole', () => {
@@ -334,6 +338,134 @@ describe('filterQuickstartItemsByRole', () => {
 
       const unknownResult = filterQuickstartItemsByRole(mixedItems, 'unknown');
       expect(unknownResult).toEqual([]);
+    });
+  });
+
+  describe('filterQuickstartItemsByAvailability', () => {
+    const mockItems: QuickstartItemData[] = [
+      {
+        title: 'Browse The Software Catalog',
+        description: 'Catalog description',
+        icon: 'catalog',
+        roles: ['admin', 'developer'],
+        cta: { text: 'Open the Catalog', link: '/catalog' },
+      },
+      {
+        title: 'Add Software To The Catalog',
+        description: 'Register components',
+        icon: 'add',
+        roles: ['admin', 'developer'],
+        cta: { text: 'Register a Component', link: '/catalog-import' },
+      },
+      {
+        title: "Browse The 'Golden Path' Templates",
+        description: 'Scaffolder templates',
+        icon: 'scaffolder',
+        roles: ['admin', 'developer'],
+        cta: { text: 'Browse Templates', link: '/create' },
+      },
+      {
+        title: 'Read Some TechDocs',
+        description: 'Techdocs guides',
+        icon: 'techdocs',
+        roles: ['admin', 'developer'],
+        cta: { text: 'View TechDocs', link: '/docs' },
+      },
+      {
+        title: 'Explore APIs',
+        description: 'API docs',
+        icon: 'kind:api',
+        roles: ['admin', 'developer'],
+        cta: { text: 'View APIs', link: '/api-docs' },
+      },
+      {
+        title: 'Personalize Your Experience',
+        description: 'Settings description',
+        icon: 'manageAccounts',
+        roles: ['admin', 'developer'],
+        cta: { text: 'Open Settings', link: '/settings' },
+      },
+    ];
+
+    it('returns all items when all plugins are available', () => {
+      const availability: PluginAvailability = {
+        isCatalogAvailable: true,
+        isScaffolderAvailable: true,
+        isTechDocsAvailable: true,
+        isApiDocsAvailable: true,
+      };
+
+      const result = filterQuickstartItemsByAvailability(
+        mockItems,
+        availability,
+      );
+      expect(result.map(i => i.title)).toEqual([
+        'Browse The Software Catalog',
+        'Add Software To The Catalog',
+        "Browse The 'Golden Path' Templates",
+        'Read Some TechDocs',
+        'Explore APIs',
+        'Personalize Your Experience',
+      ]);
+    });
+
+    it('hides catalog, scaffolder templates, techdocs, and apis items when catalog is unavailable', () => {
+      const availability: PluginAvailability = {
+        isCatalogAvailable: false,
+        isScaffolderAvailable: true,
+        isTechDocsAvailable: true,
+        isApiDocsAvailable: true,
+      };
+
+      const result = filterQuickstartItemsByAvailability(
+        mockItems,
+        availability,
+      );
+      expect(result.map(i => i.title)).toEqual([
+        'Personalize Your Experience',
+      ]);
+    });
+
+    it('hides scaffolder item when scaffolder is unavailable', () => {
+      const availability: PluginAvailability = {
+        isCatalogAvailable: true,
+        isScaffolderAvailable: false,
+        isTechDocsAvailable: true,
+        isApiDocsAvailable: true,
+      };
+
+      const result = filterQuickstartItemsByAvailability(
+        mockItems,
+        availability,
+      );
+      expect(result.map(i => i.title)).toEqual([
+        'Browse The Software Catalog',
+        'Add Software To The Catalog',
+        'Read Some TechDocs',
+        'Explore APIs',
+        'Personalize Your Experience',
+      ]);
+    });
+
+    it('hides techdocs item when techdocs is unavailable', () => {
+      const availability: PluginAvailability = {
+        isCatalogAvailable: true,
+        isScaffolderAvailable: true,
+        isTechDocsAvailable: false,
+        isApiDocsAvailable: true,
+      };
+
+      const result = filterQuickstartItemsByAvailability(
+        mockItems,
+        availability,
+      );
+      expect(result.map(i => i.title)).toEqual([
+        'Browse The Software Catalog',
+        'Add Software To The Catalog',
+        "Browse The 'Golden Path' Templates",
+        'Explore APIs',
+        'Personalize Your Experience',
+      ]);
     });
   });
 });

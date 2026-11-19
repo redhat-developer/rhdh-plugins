@@ -14,5 +14,9 @@
  * limitations under the License.
  */
 
-export { filterQuickstartItemsByRole } from './filterQuickstartItems';
+export {
+  filterQuickstartItemsByRole,
+  filterQuickstartItemsByAvailability,
+  type PluginAvailability,
+} from './filterQuickstartItems';
 export { getTranslatedTextWithFallback } from './translationUtils';
