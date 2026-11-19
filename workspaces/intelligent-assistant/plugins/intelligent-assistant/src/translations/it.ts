@@ -350,9 +350,9 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'settings.displayMode.fullscreen': 'Schermo intero',
     'settings.displayMode.label': 'Modalità di visualizzazione',
     'settings.displayMode.overlay': 'Sovrapposizione',
-    'settings.mcp.badge': 'Nuovo',
     'settings.panel.title': 'Impostazioni',
     'settings.menu.label': 'Impostazioni',
+    'settings.menu.badge': 'Nuovo',
     'settings.preferences.tab.title': 'Preferenze',
     'settings.preferences.pinnedChats.label': 'Chat fissate',
     'settings.preferences.pinnedChats.description':
@@ -363,8 +363,6 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'settings.preferences.screenContext.label': 'Contesto dello schermo',
     'settings.preferences.screenContext.description':
       "Condividi lo schermo corrente con l'assistente quando invii messaggi. Disattivato per impostazione predefinita.",
-    'settings.mcp.label': 'Impostazioni MCP',
-    'settings.prompt.label': 'Impostazioni Prompt',
     'settings.pinned.disable': 'Disabilita le chat fissate',
     'settings.pinned.disabled.description':
       'Le chat fissate sono attualmente disabilitate',

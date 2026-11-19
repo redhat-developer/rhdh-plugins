@@ -338,6 +338,7 @@ export const intelligentAssistantMessages = {
 
   // lightspeed settings
   'settings.menu.label': 'Settings',
+  'settings.menu.badge': 'New',
   'settings.preferences.tab.title': 'Preferences',
   'settings.preferences.pinnedChats.label': 'Pinned chats',
   'settings.preferences.pinnedChats.description':
@@ -392,9 +393,6 @@ export const intelligentAssistantMessages = {
   'contextChip.aria.pause': 'Pause screen context: {{label}}',
   'contextChip.aria.resume': 'Resume screen context',
   'settings.panel.title': 'Settings',
-  'settings.mcp.label': 'MCP and Prompt Settings',
-  'settings.prompt.label': 'Prompt Settings',
-  'settings.mcp.badge': 'New',
 
   // MCP settings
   'mcp.settings.title': 'MCP servers',

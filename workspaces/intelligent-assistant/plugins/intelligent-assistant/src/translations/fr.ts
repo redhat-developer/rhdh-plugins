@@ -346,9 +346,9 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.displayMode.fullscreen': 'Plein écran',
     'settings.displayMode.label': "Mode d'affichage",
     'settings.displayMode.overlay': 'Recouvrir',
-    'settings.mcp.badge': 'Nouveau',
     'settings.panel.title': 'Paramètres',
     'settings.menu.label': 'Paramètres',
+    'settings.menu.badge': 'Nouveau',
     'settings.preferences.tab.title': 'Préférences',
     'settings.preferences.pinnedChats.label': 'Discussions épinglées',
     'settings.preferences.pinnedChats.description':
@@ -359,8 +359,6 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.preferences.screenContext.label': "Contexte d'écran",
     'settings.preferences.screenContext.description':
       "Partager votre écran actuel avec l'assistant lors de l'envoi de messages. Désactivé par défaut.",
-    'settings.mcp.label': 'Paramètres MCP',
-    'settings.prompt.label': 'Paramètres de prompts',
     'settings.pinned.disable': 'Désactiver les discussions épinglées',
     'settings.pinned.disabled.description':
       'Les discussions épinglées sont actuellement désactivées.',

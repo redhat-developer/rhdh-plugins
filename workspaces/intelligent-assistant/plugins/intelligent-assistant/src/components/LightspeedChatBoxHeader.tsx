@@ -29,6 +29,7 @@ import {
   DropdownItem,
   DropdownList,
   Icon,
+  Label,
   MenuToggle,
   MenuToggleElement,
 } from '@patternfly/react-core';
@@ -249,6 +250,9 @@ export const LightspeedChatBoxHeader = ({
                   onClick={onSettingsClick}
                 >
                   {t('settings.menu.label')}
+                  <Label color="purple" isCompact style={{ marginLeft: 8 }}>
+                    {t('settings.menu.badge')}
+                  </Label>
                 </DropdownItem>
               </DropdownList>
             </DropdownGroup>
