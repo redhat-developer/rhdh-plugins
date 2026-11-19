@@ -25,14 +25,19 @@ import {
 } from 'react';
 
 import { TranslationFunction } from '../hooks/useTranslation';
-import { isBackwardStepNavigable } from './isBackwardStepNavigable';
+import { isBackwardStepNavigable, isStepNavigable } from './isStepNavigable';
 
 export type StepperContext = {
   activeStep: number;
+  furthestReachedStep: number;
   handleNext: () => void;
   handleBack: () => void;
   goToStep: (step: number) => void;
+  requestGoToStep: (step: number) => void;
   clearFormErrorsRef: MutableRefObject<(() => void) | undefined>;
+  pendingGoToStepRef: MutableRefObject<number | undefined>;
+  requestFormSubmitRef: MutableRefObject<(() => void) | undefined>;
+  completeGoToStep: (step: number, preserveErrors?: boolean) => void;
   reviewStep: ReactNode;
   isValidating: boolean;
   handleValidateStarted: () => void;
@@ -63,18 +68,30 @@ export const StepperContextProvider = ({
   t: TranslationFunction;
 }) => {
   const [activeStep, setActiveStep] = useState<number>(0);
+  const [furthestReachedStep, setFurthestReachedStep] = useState<number>(0);
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [fetchingCount, setFetchingCount] = useState<number>(0);
   const clearFormErrorsRef = useRef<(() => void) | undefined>();
+  const pendingGoToStepRef = useRef<number | undefined>();
+  const requestFormSubmitRef = useRef<(() => void) | undefined>();
 
   const contextData = useMemo(() => {
     const clearFormErrors = () => clearFormErrorsRef.current?.();
 
     return {
       activeStep,
+      furthestReachedStep,
       clearFormErrorsRef,
+      pendingGoToStepRef,
+      requestFormSubmitRef,
       handleNext: () => {
-        setActiveStep(curActiveStep => curActiveStep + 1);
+        setActiveStep(curActiveStep => {
+          const nextStep = curActiveStep + 1;
+          setFurthestReachedStep(currentFurthest =>
+            Math.max(currentFurthest, nextStep),
+          );
+          return nextStep;
+        });
       },
       handleBack: () => {
         clearFormErrors();
@@ -89,6 +106,24 @@ export const StepperContextProvider = ({
           return step;
         });
       },
+      completeGoToStep: (step: number, preserveErrors?: boolean) => {
+        if (!preserveErrors) {
+          clearFormErrors();
+        }
+        setActiveStep(step);
+      },
+      requestGoToStep: (step: number) => {
+        if (!isStepNavigable(step, activeStep, furthestReachedStep)) {
+          return;
+        }
+        if (isBackwardStepNavigable(step, activeStep)) {
+          clearFormErrors();
+          setActiveStep(step);
+          return;
+        }
+        pendingGoToStepRef.current = step;
+        requestFormSubmitRef.current?.();
+      },
       reviewStep,
       isValidating,
       handleValidateStarted: () => setIsValidating(true),
@@ -100,14 +135,11 @@ export const StepperContextProvider = ({
     };
   }, [
     t,
-    setActiveStep,
     activeStep,
+    furthestReachedStep,
     reviewStep,
     isValidating,
-    setIsValidating,
     fetchingCount,
-    setFetchingCount,
-    clearFormErrorsRef,
   ]);
   return <context.Provider value={contextData}>{children}</context.Provider>;
 };

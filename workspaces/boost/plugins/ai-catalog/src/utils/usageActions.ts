@@ -31,6 +31,10 @@ export type UsageAction =
 
 type RecordValue = Record<string, unknown>;
 
+const AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source';
+const OCI_SKILL_REF_ANNOTATION = 'rhdh.io/oci-skill-ref';
+const OCI_REFERENCE_SCHEME = 'oci://';
+
 function asRecord(value: unknown): RecordValue | undefined {
   return typeof value === 'object' && value !== null
     ? (value as RecordValue)
@@ -118,20 +122,40 @@ function getGitAction(target: string): UsageAction | undefined {
 /**
  * Resolves the usage action for an entity.
  *
- * Skills use a command, model servers and MCP servers expose their HTTP(S)
- * endpoint, OCI remotes use a Podman command, supported Git repository roots
- * use an archive download, and other valid Git sources use a source link.
+ * Skill source annotations select a Podman pull command for OCI images and an
+ * npx command for other skills. Model servers and MCP servers expose their
+ * HTTP(S) endpoint, OCI remotes use a Podman command, supported Git repository
+ * roots use an archive download, and other valid Git sources use a source link.
  */
 export function getUsageAction(entity: Entity): UsageAction | undefined {
   const spec = asRecord(entity.spec);
   const specType =
     typeof spec?.type === 'string' ? spec.type.toLowerCase() : undefined;
 
-  if (specType === 'skill' && isSafeCommandToken(entity.metadata.name)) {
-    return {
-      type: 'copy',
-      value: `npx skills add ${entity.metadata.name}`,
-    };
+  if (specType === 'skill') {
+    const sourceType =
+      entity.metadata.annotations?.[AI_ASSET_SOURCE_ANNOTATION]?.split(
+        '/',
+      )[0]?.toLowerCase();
+
+    if (sourceType === 'oci') {
+      const ociSkillRef =
+        entity.metadata.annotations?.[OCI_SKILL_REF_ANNOTATION]?.trim();
+
+      if (!ociSkillRef || !isSafeOciReference(ociSkillRef)) return undefined;
+
+      return {
+        type: 'copy',
+        value: `podman pull ${ociSkillRef.slice(OCI_REFERENCE_SCHEME.length)}`,
+      };
+    }
+
+    if (isSafeCommandToken(entity.metadata.name)) {
+      return {
+        type: 'copy',
+        value: `npx skills add ${entity.metadata.name}`,
+      };
+    }
   }
 
   if (specType === 'ai-model-server' && typeof spec?.serverUrl === 'string') {
@@ -145,7 +169,7 @@ export function getUsageAction(entity: Entity): UsageAction | undefined {
   if (ociRemote) {
     return {
       type: 'copy',
-      value: `podman pull ${ociRemote.url}`,
+      value: `podman pull ${ociRemote.url.slice(OCI_REFERENCE_SCHEME.length)}`,
     };
   }
 

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.5.2
+
+### Patch Changes
+
+- c44e797: Fix Red Hat font loading in production app bundles by injecting @font-face from the package entrypoints via `fonts.ts` (webpack-resolved woff2 URLs) instead of `font.min.css` styleInject paths that stay relative and fail under publicPath.
+
 ## 1.5.1
 
 ### Patch Changes

@@ -88,4 +88,24 @@ export class ThemeVerifier {
     await this.page.screenshot({ path: screenshotPath, fullPage: true });
     await testInfo.attach(description, { path: screenshotPath });
   }
+
+  /**
+   * Asserts Red Hat @font-face rules were injected with webpack-resolved woff2
+   * URLs (not relative paths from published font.min.css styleInject).
+   */
+  async verifyRedHatFontsInjected() {
+    const fontStyle = this.page.locator('style[data-rhdh-fonts="redhat"]');
+    await expect(fontStyle).toHaveCount(1);
+
+    const css = await fontStyle.textContent();
+    expect(css).toBeTruthy();
+
+    for (const fontFamily of ['RedHatDisplay', 'RedHatText', 'RedHatMono']) {
+      expect(css).toContain(`@font-face{font-family:'${fontFamily}'`);
+    }
+
+    expect(css).toMatch(/url\([^)]+\.woff2\)\s+format\('woff2-variations'\)/);
+    // Relative styleInject paths break under app publicPath.
+    expect(css).not.toMatch(/url\(\s*['"]?\.\//);
+  }
 }

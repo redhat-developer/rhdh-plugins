@@ -14,8 +14,20 @@
  * limitations under the License.
  */
 
-/** True when the user may jump to `targetStep` from `activeStep` (backward only). */
-export const isBackwardStepNavigable = (
-  targetStep: number,
-  activeStep: number,
-): boolean => targetStep >= 0 && targetStep < activeStep;
+/**
+ * Catalog model types, validator, and CatalogModelLayer for AiResource
+ * agent-rhdh-chat entities (spec.type: agent-rhdh-chat).
+ *
+ * @packageDocumentation
+ */
+
+export type {
+  AgentRhdhChatAiResourceEntityV1alpha1,
+  AgentRhdhChatModelConfig,
+  AgentRhdhChatInferenceProvider,
+} from './types';
+export {
+  agentRhdhChatAiResourceEntityV1alpha1Validator,
+  agentRhdhChatAiResourceEntityModel,
+  isAgentRhdhChatAiResourceEntity,
+} from './AgentRhdhChatAiResourceEntityV1alpha1';

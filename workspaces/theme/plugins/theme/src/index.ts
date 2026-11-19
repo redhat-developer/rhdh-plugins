@@ -23,10 +23,12 @@ import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { ThemeBlueprint } from '@backstage/plugin-app-react';
 
 import { getThemes } from './themes';
-
-import './assets/fonts/font.min.css';
+import { injectRedHatFontFaces } from './fonts';
 import './assets/bui/tokens.css';
 import './assets/bui/component-overrides.css';
+
+// Side-effect: inject Red Hat @font-face rules with webpack-resolved woff2 URLs.
+injectRedHatFontFaces();
 
 export { LogoFull, LogoIcon } from './components';
 
