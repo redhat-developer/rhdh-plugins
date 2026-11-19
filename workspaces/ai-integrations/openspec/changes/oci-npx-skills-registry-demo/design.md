@@ -328,7 +328,16 @@ Provider removals persist the full original catalog entity reference, including
 namespace, rather than reconstructing it from current configuration. A namespace
 configuration change is reconciled even for a repeated connector observation:
 ready results add the new identity and remove the old one; partial results retain
-old identities until ready cleanup is authorized. Pre-upgrade pending removals
+old identities until ready cleanup is authorized. Effective `spec.owner` and
+`spec.lifecycle` are reconciled the same way: when a changed `defaultOwner` or
+`defaultLifecycle` alters a mapped entity's effective value, an accepted `ready`
+or `partial` snapshot upserts that entity even when its digest and connector
+observation timestamp are unchanged. The planner compares the already mapped
+values, so valid source hints still win independently per field and a field
+resolved from a hint is unaffected by its default changing. Once applied,
+identical refreshes are no-ops; `loading`, `failed`, and stale observations
+still preserve committed entities. Defaults are read when the provider is
+constructed at backend startup. Pre-upgrade pending removals
 recover their original references from committed ownership; missing or ambiguous
 ownership blocks that source's replay rather than guessing a namespace.
 

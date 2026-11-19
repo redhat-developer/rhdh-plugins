@@ -164,6 +164,18 @@ not participate in this protocol.
 - **THEN** successful records may be upserted in the new namespace
 - **AND** old identities remain owned and retained until a ready reconciliation authorizes their removal
 
+#### Scenario: Configured owner or lifecycle default changes with unchanged skill content
+
+- **WHEN** the backend restarts with a changed `defaultOwner` or `defaultLifecycle` while a skill's digest and connector observation timestamp remain unchanged
+- **THEN** an accepted `ready` or `partial` reconciliation upserts each entity whose effective `spec.owner` or `spec.lifecycle` changed
+- **AND** a valid owner or lifecycle hint is preserved independently, so only fields resolved from the changed default are updated
+- **AND** a subsequent identical refresh emits no catalog mutation
+
+#### Scenario: Non-accepted observation after a default change
+
+- **WHEN** the configured owner or lifecycle default changes and the next snapshot is `loading`, `failed`, or older than the committed observation
+- **THEN** the provider preserves committed entities without catalog mutations
+
 #### Scenario: Legacy pending removal has no original identity
 
 - **WHEN** a pending removal without a full entity reference cannot be matched unambiguously to committed ownership
