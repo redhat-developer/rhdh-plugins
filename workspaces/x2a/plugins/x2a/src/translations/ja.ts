@@ -286,6 +286,8 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'scaffolder.repoUrlPicker.authError':
       '{{provider}} のアクセストークンを取得できませんでした: {{error}}。このインスタンス用に「{{provider}}」認証プロバイダーが設定されているか確認してください。',
     'scaffolder.repoUrlPicker.authRetry': '再試行',
+    'scaffolder.repoUrlPicker.sharedProviderNotice':
+      'アクセストークンは、{{host}} 自体ではなく、この Backstage インスタンスに設定された唯一の {{provider}} 認証プロバイダーから取得されます。そのプロバイダーが {{host}} 用に設定されていることを確認してください。',
     'scaffolder.rulesAcceptance.fetchError': 'ルールの取得に失敗しました',
     'scaffolder.rulesAcceptance.loadingRules': 'ルールの読み込み中...',
     'scaffolder.rulesAcceptance.noRulesConfigured':

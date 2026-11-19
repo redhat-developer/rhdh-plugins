@@ -170,6 +170,9 @@ dynamicPlugins:
   A token obtained for the configured `audience` is sent to whichever
   same-type host is picked, so list only hosts that match the auth provider
   (set `allowedHosts` in the template if needed).
+  When more than one host of the selected type is offered and credentials are
+  requested, the picker shows a notice below the field saying that the token
+  comes from the single configured provider and not from the selected host.
 - **Validation does not wait for the token.** The field's validation is the
   stock `repoPickerValidation`, which checks the repository URL only. If the
   OAuth exchange fails, the wizard still lets the user continue; the error is

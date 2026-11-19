@@ -325,6 +325,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'scaffolder.repoUrlPicker.authError':
       "Impossible d'obtenir un jeton d'accès {{provider}} : {{error}}. Vérifiez que le fournisseur d'authentification \"{{provider}}\" est configuré pour cette instance.",
     'scaffolder.repoUrlPicker.authRetry': 'Réessayer',
+    'scaffolder.repoUrlPicker.sharedProviderNotice':
+      "Le jeton d'accès provient de l'unique fournisseur d'authentification {{provider}} configuré pour cette instance Backstage, et non de {{host}} lui-même. Vérifiez que ce fournisseur est configuré pour {{host}}.",
     'scaffolder.rulesAcceptance.loadingRules': 'Chargement des règles...',
     'scaffolder.rulesAcceptance.noRulesConfigured': 'Aucune règle configurée.',
     'scaffolder.rulesAcceptance.required': 'requis',

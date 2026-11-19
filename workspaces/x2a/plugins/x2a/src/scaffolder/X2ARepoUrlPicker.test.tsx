@@ -128,8 +128,14 @@ const scmIntegrationsApi = ScmIntegrationsApi.fromConfig(
   }),
 );
 
-const WithApis = ({ children }: { children: React.ReactNode }) => (
-  <TestApiProvider apis={[[scmIntegrationsApiRef, scmIntegrationsApi]]}>
+const WithApis = ({
+  children,
+  integrations = scmIntegrationsApi,
+}: {
+  children: React.ReactNode;
+  integrations?: ScmIntegrationsApi;
+}) => (
+  <TestApiProvider apis={[[scmIntegrationsApiRef, integrations]]}>
     {children}
   </TestApiProvider>
 );
@@ -145,6 +151,7 @@ const SecretProbe = ({ name }: { name: string }) => {
 async function renderPicker(
   uiSchema: Props['uiSchema'] = {},
   extra: Partial<Props> = {},
+  integrations?: ScmIntegrationsApi,
 ) {
   const props = {
     uiSchema,
@@ -155,7 +162,7 @@ async function renderPicker(
     ...extra,
   } as unknown as Props;
   return await renderInTestApp(
-    <WithApis>
+    <WithApis integrations={integrations}>
       <SecretsContextProvider>
         <X2ARepoUrlPicker {...props} />
         <SecretProbe name="SRC_USER_OAUTH_TOKEN" />
@@ -228,6 +235,92 @@ describe('X2ARepoUrlPicker', () => {
       } as Props['uiSchema']);
 
       expect(allowedHostsPassedToStockPicker()).toEqual(['gitlab.com']);
+    });
+  });
+
+  describe('shared provider notice', () => {
+    const twoGitlabs = ScmIntegrationsApi.fromConfig(
+      new ConfigReader({
+        integrations: {
+          github: [{ host: 'github.com' }],
+          gitlab: [
+            { host: 'gitlab.com' },
+            {
+              host: 'gitlab.corp.example.com',
+              apiBaseUrl: 'https://gitlab.corp.example.com/api/v4',
+            },
+          ],
+        },
+      }),
+    );
+    const twoGitlabHostMap = () =>
+      mockHostMap.mockReturnValue(
+        new Map([
+          ['github.com', 'github'],
+          ['gitlab.com', 'gitlab'],
+          ['gitlab.corp.example.com', 'gitlab'],
+        ]),
+      );
+
+    it('warns when several hosts of the selected type are offered', async () => {
+      twoGitlabHostMap();
+      await renderPicker(
+        credentialsUiSchema(),
+        { formData: 'gitlab.corp.example.com?owner=o&repo=r' },
+        twoGitlabs,
+      );
+
+      expect(
+        await screen.findByText(
+          'scaffolder.repoUrlPicker.sharedProviderNotice:{"provider":"gitlab","host":"gitlab.corp.example.com"}',
+        ),
+      ).toBeInTheDocument();
+    });
+
+    it('does not warn when the selected type has a single offered host', async () => {
+      twoGitlabHostMap();
+      await renderPicker(
+        credentialsUiSchema(),
+        { formData: 'github.com?owner=o&repo=r' },
+        twoGitlabs,
+      );
+
+      await waitFor(() => expect(srcSecret()).toBe('t0ken'));
+      expect(
+        screen.queryByText(/sharedProviderNotice/),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not warn when an explicit allowedHosts narrows the type to one host', async () => {
+      twoGitlabHostMap();
+      await renderPicker(
+        {
+          'ui:options': {
+            allowedHosts: ['gitlab.corp.example.com'],
+            requestUserCredentials: { secretsKey: 'SRC_USER_OAUTH_TOKEN' },
+          },
+        } as Props['uiSchema'],
+        { formData: 'gitlab.corp.example.com?owner=o&repo=r' },
+        twoGitlabs,
+      );
+
+      await waitFor(() => expect(srcSecret()).toBe('t0ken'));
+      expect(
+        screen.queryByText(/sharedProviderNotice/),
+      ).not.toBeInTheDocument();
+    });
+
+    it('does not warn when no credentials are requested', async () => {
+      twoGitlabHostMap();
+      await renderPicker(
+        {},
+        { formData: 'gitlab.corp.example.com?owner=o&repo=r' },
+        twoGitlabs,
+      );
+
+      expect(
+        screen.queryByText(/sharedProviderNotice/),
+      ).not.toBeInTheDocument();
     });
   });
 

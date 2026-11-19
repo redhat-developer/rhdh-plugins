@@ -318,6 +318,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'scaffolder.repoUrlPicker.authError':
       '{{provider}}-Zugriffstoken konnte nicht abgerufen werden: {{error}}. Prüfen Sie, ob der Auth-Provider "{{provider}}" für diese Instanz konfiguriert ist.',
     'scaffolder.repoUrlPicker.authRetry': 'Erneut versuchen',
+    'scaffolder.repoUrlPicker.sharedProviderNotice':
+      'Das Zugriffstoken stammt vom einzigen für diese Backstage-Instanz konfigurierten {{provider}}-Auth-Provider und nicht von {{host}} selbst. Stellen Sie sicher, dass dieser Provider für {{host}} eingerichtet ist.',
     'scaffolder.rulesAcceptance.loadingRules': 'Regeln werden geladen...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'Es sind keine Regeln konfiguriert.',

@@ -407,6 +407,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'scaffolder.repoUrlPicker.authOk': string;
     readonly 'scaffolder.repoUrlPicker.authError': string;
     readonly 'scaffolder.repoUrlPicker.authRetry': string;
+    readonly 'scaffolder.repoUrlPicker.sharedProviderNotice': string;
     readonly 'scaffolder.rulesAcceptance.required': string;
     readonly 'scaffolder.rulesAcceptance.loadingRules': string;
     readonly 'scaffolder.rulesAcceptance.noRulesConfigured': string;

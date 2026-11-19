@@ -323,6 +323,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'scaffolder.repoUrlPicker.authError':
       'No se pudo obtener un token de acceso de {{provider}}: {{error}}. Compruebe que el proveedor de autenticación "{{provider}}" está configurado para esta instancia.',
     'scaffolder.repoUrlPicker.authRetry': 'Reintentar',
+    'scaffolder.repoUrlPicker.sharedProviderNotice':
+      'El token de acceso proviene del único proveedor de autenticación {{provider}} configurado para esta instancia de Backstage, no de {{host}} en sí. Asegúrese de que ese proveedor esté configurado para {{host}}.',
     'scaffolder.rulesAcceptance.loadingRules': 'Cargando reglas…',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'No hay reglas configuradas.',

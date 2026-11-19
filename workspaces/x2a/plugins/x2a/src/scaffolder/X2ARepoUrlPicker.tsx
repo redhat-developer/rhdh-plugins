@@ -143,6 +143,31 @@ function hostFromFormData(formData: string | undefined): string | undefined {
   return host || undefined;
 }
 
+/**
+ * Provider label for an integration `type`, as shown in the shared-provider
+ * notice. Bitbucket Cloud's integration type is `bitbucketCloud`.
+ */
+const providerLabel = (integrationType: string) =>
+  integrationType === 'bitbucketCloud' ? 'bitbucket' : integrationType;
+
+/**
+ * Number of offered hosts that share the integration type of `host`, and that
+ * type. Backstage auth providers are configured per provider type (one
+ * instance each), so with more than one such host the token cannot be tied to
+ * the host the user picked.
+ */
+function useSameTypeHosts(host: string | undefined, offeredHosts: string[]) {
+  const integrations = useApi(scmIntegrationsApiRef);
+  const type = host ? integrations.byHost(host)?.type : undefined;
+  if (!type) {
+    return { type: undefined, count: 0 };
+  }
+  const count = offeredHosts.filter(
+    h => integrations.byHost(h)?.type === type,
+  ).length;
+  return { type, count };
+}
+
 const CredentialsStatusMessage = ({
   credentials,
 }: {
@@ -231,10 +256,20 @@ export const X2ARepoUrlPicker = (props: X2ARepoUrlPickerProps) => {
   const title = props.schema?.title;
   const prefix = title ? `${title}: ` : '';
 
+  const selectedHost = hostFromFormData(props.formData);
   const credentials = useRepoUrlCredentials({
-    host: hostFromFormData(props.formData),
+    host: selectedHost,
     options: uiOptions?.requestUserCredentials,
   });
+  const sameType = useSameTypeHosts(
+    selectedHost,
+    hasExplicitHosts ? uiOptions!.allowedHosts! : defaultHosts,
+  );
+  const showSharedProviderNotice =
+    !!uiOptions?.requestUserCredentials?.secretsKey &&
+    !!selectedHost &&
+    !!sameType.type &&
+    sameType.count > 1;
   const { apis, attempt } = credentials;
 
   // `attempt` changes the identity on Retry, which re-runs the stock
@@ -275,6 +310,16 @@ export const X2ARepoUrlPicker = (props: X2ARepoUrlPickerProps) => {
           uiSchema={uiSchema}
         />
       </ApiProvider>
+      {showSharedProviderNotice && (
+        <Box mt={1}>
+          <Typography variant="caption" color="textSecondary">
+            {t('scaffolder.repoUrlPicker.sharedProviderNotice' as any, {
+              provider: providerLabel(sameType.type!),
+              host: selectedHost!,
+            })}
+          </Typography>
+        </Box>
+      )}
       <CredentialsStatusMessage credentials={credentials} />
     </>
   );

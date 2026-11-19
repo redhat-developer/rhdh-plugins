@@ -400,6 +400,8 @@ export const x2aPluginMessages = {
       authError:
         'Could not obtain a {{provider}} access token: {{error}}. Check that the "{{provider}}" auth provider is configured for this instance.',
       authRetry: 'Retry',
+      sharedProviderNotice:
+        'The access token comes from the single {{provider}} auth provider configured for this Backstage instance, not from {{host}} itself. Make sure that provider is set up for {{host}}.',
     },
     rulesAcceptance: {
       loadingRules: 'Loading rules...',
