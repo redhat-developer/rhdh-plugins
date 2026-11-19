@@ -200,6 +200,28 @@ When reviewing changes to `ThresholdResolver`, the `Metric` type,
   `getMetricThresholdsConfigPath()`. Changes to provider/metric IDs or
   config schema must update both path helpers and `config.d.ts`.
 
+### Review guidance for public API changes
+
+When a PR adds or modifies public type exports in `scorecard-common` or
+`scorecard-node`:
+
+- **Verify exports have production consumers.** New public type exports
+  from shared packages must be imported by production (non-test) code in
+  at least one other package. Check that the exported type appears in a
+  non-test `.ts` file outside the package that defines it. An export
+  consumed only by test files (e.g., `*.test.ts`, `__fixtures__/`,
+  `testUtils/`) does not justify expanding the public API surface.
+- **Flag test-only exports as \[medium\].** If a new public export is
+  only consumed by test files, flag it and suggest using a local type
+  alias within the test file or test utilities instead of adding to the
+  shared package's public API.
+- **Verify changeset bump level for intentional API additions.** If the
+  author broadens usage to justify the export (e.g., adds a production
+  consumer in response to review feedback), accept that as a valid
+  resolution but verify the changeset bump level reflects the API
+  surface addition — a new public type export requires at least a
+  `minor` bump.
+
 ### Key files
 
 | File                                | Package                               | Role                                                              |
