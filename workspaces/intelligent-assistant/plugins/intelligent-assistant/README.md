@@ -157,7 +157,7 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 
 ### Display modes and chat continuity
 
-Intelligent assistant supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
+Intelligent assistant supports multiple **display modes** from the chatbot options (3-dots) menu (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
 
 ### Screen Context
 
