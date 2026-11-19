@@ -306,7 +306,7 @@ export class GitlabClient {
     since: Date,
     perPage: number,
   ): boolean {
-    const oldestItem = items.at(items.length - 1);
+    const oldestItem = items.at(-1);
 
     if (oldestItem && new Date(oldestItem.created_at) < since) {
       return false;
