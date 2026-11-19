@@ -75,6 +75,40 @@ export const appDrawerContentDataRef: ConfigurableExtensionDataRef<
 >;
 
 // @public
+export const AppHeaderBlueprint: ExtensionBlueprint<{
+  kind: 'app-header';
+  params: {
+    component: ComponentType<{}>;
+    priority?: number;
+  };
+  output: ExtensionDataRef<AppHeaderData, 'app.header', {}>;
+  inputs: {};
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  dataRefs: {
+    header: ConfigurableExtensionDataRef<AppHeaderData, 'app.header', {}>;
+  };
+}>;
+
+// @public
+export interface AppHeaderData {
+  component: ComponentType<{}>;
+  id: string;
+  priority?: number;
+}
+
+// @public
+export const appHeaderDataRef: ConfigurableExtensionDataRef<
+  AppHeaderData,
+  'app.header',
+  {}
+>;
+
+// @public
 export const ApplicationDrawer: (
   input: ApplicationDrawerProps,
 ) => JSX_2.Element;
