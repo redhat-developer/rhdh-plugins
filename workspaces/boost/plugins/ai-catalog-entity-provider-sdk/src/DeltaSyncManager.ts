@@ -63,8 +63,10 @@ export interface CursorStore {
   set(locationKey: string, state: CursorState): Promise<void>;
 
   /**
-   * Delete the cursor for a provider, forcing a full refresh on the
-   * next polling cycle.
+   * Delete the stored cursor state for a provider.
+   *
+   * Deletion does not initiate a full refresh. The consuming provider
+   * owns missing-cursor recovery and refresh orchestration.
    *
    * @param locationKey - The location key identifying the provider's
    *   entities.
@@ -125,8 +127,11 @@ export interface DeltaSyncManagerOptions {
  * providers can resume incremental sync across polling cycles.
  *
  * When no cursor is available (first run or after
- * {@link DeltaSyncManager.clearCursor}), the provider should fall
- * back to a full refresh.
+ * {@link DeltaSyncManager.clearCursor}), the consuming provider
+ * should fall back to a full refresh. This helper does not
+ * orchestrate synchronization — consuming providers own durable
+ * persistence, first/full refresh, source-cursor recovery, and
+ * the choice to request deltas.
  *
  * @example
  * ```ts
@@ -231,11 +236,13 @@ export class DeltaSyncManager {
   }
 
   /**
-   * Clear the persisted cursor, forcing a full refresh on the next
-   * polling cycle.
+   * Delete the stored cursor state for this provider.
    *
    * Call this when the connector rejects the cursor (e.g. HTTP 412
-   * Precondition Failed) to trigger fallback to full refresh.
+   * Precondition Failed). Clearing only deletes stored cursor
+   * state — it does not initiate a full refresh. The consuming
+   * provider is responsible for detecting the missing cursor and
+   * falling back to a full refresh on the next polling cycle.
    *
    * Uses the `locationKey` supplied at construction time — the same
    * key used by {@link DeltaSyncManager.applyDelta} to persist the

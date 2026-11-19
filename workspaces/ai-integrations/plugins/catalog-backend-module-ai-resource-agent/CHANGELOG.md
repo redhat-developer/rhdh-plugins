@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent
 
+## 0.7.0
+
+### Minor Changes
+
+- 8af3d2f: Add the optional agent `spec.inferenceProvider` object with required non-empty
+  `name` (inference provider identifier) and `model` (model identifier) strings.
+  Keep the existing optional `spec.model` string unchanged.
+  Update schema and ingestion validation, tests, documentation, and examples accordingly.
+
+### Patch Changes
+
+- Updated dependencies [8af3d2f]
+  - @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@0.6.0
+
 ## 0.6.0
 
 ### Minor Changes

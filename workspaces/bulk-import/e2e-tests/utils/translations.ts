@@ -94,12 +94,13 @@ export function getSelectedRepositoriesHeading(
 }
 
 /**
- * Sidebar label for the bulk import page.
- * Legacy uses translated nav text; NFS still uses a hardcoded English title (RHIDP-12094).
+ * Sidebar label for the bulk import page under NFS.
+ *
+ * PageBlueprint still sets a hardcoded English `title: 'Bulk import'`
+ * (see plugins/bulk-import/src/index.tsx). Until that title uses translations,
+ * e2e must match English for every locale. `locale` is kept for call-site
+ * consistency with other helpers.
  */
-export function getBulkImportNavLabel(locale: string): string {
-  if (process.env.APP_MODE === 'legacy') {
-    return getTranslations(locale).sidebar.bulkImport;
-  }
+export function getBulkImportNavLabel(): string {
   return 'Bulk import';
 }

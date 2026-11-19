@@ -92,7 +92,30 @@ MUST render the instruction content as Markdown.
 ### Requirement: Usage card
 
 The Usage card MUST expose a safe, type-specific usage action when one can be
-derived from the entity. It MUST NOT call a Boost backend.
+derived from the entity. For skills, it MUST use the connector token in
+`rhdh.io/ai-asset-source` to distinguish OCI sources from other sources. OCI
+skills use the `rhdh.io/oci-skill-ref` annotation for their pull command; other
+skills retain the existing `npx` command behavior. It MUST NOT call a Boost
+backend.
+
+#### Scenario: OCI skill usage
+
+- **WHEN** a skill has `rhdh.io/ai-asset-source` with the connector token `oci`
+- **AND** it has a safe `rhdh.io/oci-skill-ref` annotation
+- **THEN** the Usage card exposes a copyable `podman pull` command using the
+  registry reference without the `oci://` catalog prefix
+
+#### Scenario: OCI skill reference is missing or unsafe
+
+- **WHEN** a skill has the `oci` connector token and its OCI skill reference is
+  missing or unsafe
+- **THEN** the Usage card is not rendered
+
+#### Scenario: Non-OCI skill usage
+
+- **WHEN** a skill does not have the `oci` connector token and its catalog name
+  is safe for a command
+- **THEN** the Usage card exposes the existing `npx skills add` command
 
 #### Scenario: Usage action exists
 

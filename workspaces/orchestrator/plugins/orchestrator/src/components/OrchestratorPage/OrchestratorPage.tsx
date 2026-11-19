@@ -15,8 +15,10 @@
  */
 
 import { ReactElement, ReactNode, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { TabbedLayout } from '@backstage/core-components';
+import { useRouteRef } from '@backstage/core-plugin-api';
 
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
@@ -31,6 +33,7 @@ import { filterWorkflowOverviewsBySearch } from '../../utils/filterWorkflowOverv
 import { useIsDarkMode } from '../../utils/isDarkMode';
 import { translateMessage } from '../Trans';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
+import { CreateWorkflowMenu } from './CreateWorkflowMenu';
 import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
 import { WorkflowsTabContent } from './WorkflowsTabContent';
 
@@ -76,8 +79,13 @@ export const OrchestratorPage = () => {
   const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
   const { classes } = useStyles({ isDarkMode });
+  const { pathname } = useLocation();
+  const instancesLink = useRouteRef(workflowInstancesRouteRef);
   const [search, setSearch] = useState('');
   const allWorkflows = useAllWorkflowOverviews();
+
+  // Page action only on Workflows tab (not All runs).
+  const isWorkflowsTab = !pathname.startsWith(instancesLink());
 
   const displayedWorkflowsCount = useMemo(() => {
     if (!allWorkflows.isReady || allWorkflows.count === undefined) {
@@ -105,7 +113,11 @@ export const OrchestratorPage = () => {
       : t('page.tabs.workflows');
 
   return (
-    <BaseOrchestratorPage title={t('page.title')} noPadding>
+    <BaseOrchestratorPage
+      title={t('page.title')}
+      noPadding
+      headerAction={isWorkflowsTab ? <CreateWorkflowMenu /> : undefined}
+    >
       <Box className={classes.tabbedLayout}>
         <TabbedLayout>
           <TabbedLayout.Route

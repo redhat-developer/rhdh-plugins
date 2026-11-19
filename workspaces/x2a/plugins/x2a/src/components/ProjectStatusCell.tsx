@@ -21,6 +21,7 @@ import { Box, Grid, makeStyles, Tooltip, Chip } from '@material-ui/core';
 import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { MODULE_STATUS_COLORS } from './moduleStatusColors';
 
 const size = 25;
 
@@ -80,37 +81,37 @@ export const ProjectStatusCell = ({
         id: 'finished',
         label: t('module.summary.finished'),
         value: modulesSummary.finished,
-        color: '#00C49F',
+        color: MODULE_STATUS_COLORS.finished,
       },
       {
         id: 'waiting',
         label: t('module.summary.waiting'),
         value: modulesSummary.waiting,
-        color: '#4CAF50',
+        color: MODULE_STATUS_COLORS.waiting,
       },
       {
         id: 'pending',
         label: t('module.summary.pending'),
         value: modulesSummary.pending,
-        color: '#FF8042',
+        color: MODULE_STATUS_COLORS.pending,
       },
       {
         id: 'running',
         label: t('module.summary.running'),
         value: modulesSummary.running,
-        color: '#0088FE',
+        color: MODULE_STATUS_COLORS.running,
       },
       {
         id: 'error',
         label: t('module.summary.error'),
         value: modulesSummary.error,
-        color: '#FF0000',
+        color: MODULE_STATUS_COLORS.error,
       },
       {
         id: 'cancelled',
         label: t('module.summary.cancelled'),
         value: modulesSummary.cancelled,
-        color: '#9E9E9E',
+        color: MODULE_STATUS_COLORS.cancelled,
       },
     ];
 

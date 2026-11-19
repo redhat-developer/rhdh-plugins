@@ -37,6 +37,8 @@ export async function createRouter({
 }): Promise<express.Router> {
   const router = Router();
 
+  // Express's default 100kb body limit applies; the controller also limits
+  // the number of events per request.
   router.use(express.json());
 
   const authorizeUser = async (

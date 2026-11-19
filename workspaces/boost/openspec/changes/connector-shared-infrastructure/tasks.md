@@ -9,7 +9,7 @@
 - [x] 1.5 Add per-connector config isolation — each connector resolves its own Config nesting before calling `loadCaBundle()` (e.g., MCP passes `config.getConfig('ai-catalog.providers.mcpRegistry')`, RHOAI passes `config.getConfig('ai-catalog.providers.rhoai.mcpCatalog')`, OCI passes per-registry Config node)
 - [x] 1.6 Create `https.Agent` factory utility: `createHttpsAgent(caBundle?: Buffer): https.Agent | undefined`
 - [x] 1.7 Handle missing CA file: log WARN-level warning with expected file path, return `undefined` (don't crash)
-- [ ] 1.8 Handle invalid/expired CA certificate: log ERROR with certificate details (issuer, expiry), return `undefined`
+- [ ] 1.8 Handle invalid/malformed PEM data: log ERROR with certificate details, return `undefined` (expired certificates are returned unchanged per the CA bundle spec and detected at TLS connection time)
 - [x] 1.9 Support CA certificate chains (concatenated PEM blocks)
 - [x] 1.10 Unit tests: CA loaded from file path
 - [x] 1.11 Unit tests: CA loaded from environment variable ($env pattern)
@@ -61,7 +61,7 @@
 - [ ] 5.1 Integration test: CA bundle loaded from mounted file in k8s-like environment (use temp file as mock)
 - [ ] 5.2 Integration test: CA bundle loaded from environment variable ($env pattern)
 - [ ] 5.3 Integration test: `https.Agent` created with custom CA and used in axios HTTP client
-- [ ] 5.4 Integration test: Provider failure contained — other providers unaffected (mock two providers, crash one)
+- [ ] 5.4 Integration test: Provider failure contained — other providers unaffected (two providers with real persistence/cache backends, crash one; verify retained entities in unaffected provider bucket per AGENTS.md)
 - [ ] 5.5 Integration test: Disabled connector skipped entirely on startup (mock backend module registration)
 - [ ] 5.6 Integration test: Structured error log produced when provider crashes (assert log fields)
 

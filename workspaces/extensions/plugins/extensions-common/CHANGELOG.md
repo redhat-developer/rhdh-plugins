@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-extensions-common
 
+## 1.2.0
+
+### Minor Changes
+
+- 0d0c43a: Backstage version bump to v1.56.5
+
 ## 1.1.2
 
 ### Patch Changes

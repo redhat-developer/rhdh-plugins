@@ -98,6 +98,19 @@ schedule reference examples remain available in shared infrastructure.
 - Identified consumer-facing changes during migration
 - Reviewed/signed off by upstream maintainer or RHDH architect
 
+## Capabilities
+
+### New Capabilities
+
+- `annotation-scheme`: Standardized `rhdh.io/ai-asset-*` annotations with five minimum feature categories and `rule` compatibility.
+- `entity-provider-sdk`: TypeScript interface contract for entity emission, annotation population, and kind/spec.type mappings.
+- `delta-sync-framework`: Cursor/ETag-based delta sync built on `applyMutation({ type: 'delta' })`.
+- `migration-readiness`: Design document mapping custom annotations to upstream entity kinds with confidence levels.
+
+### Modified Capabilities
+
+- `performance-resilience`: Per-entity error resilience and sync-cycle completion guarantees (load testing deferred as stretch goal).
+
 ## Impact
 
 - `plugins/ai-catalog-entity-provider-sdk/` — SDK package (types, annotations, validation)

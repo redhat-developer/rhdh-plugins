@@ -100,3 +100,6 @@
 {"ts":"2026-11-10T16:26:14Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md","input":"Apply PR-scoped audit corrections.","output":"Corrected package references and scope deferrals; inherited findings are tracked in RHIDP-18929."}
 {"ts":"2026-11-10T16:26:14Z","phase":"authoring","event":"artifact.revised","ref":"audit.md","input":"Apply PR-scoped audit corrections.","output":"Corrected package references and scope deferrals; inherited findings are tracked in RHIDP-18929."}
 {"ts":"2026-11-10T16:27:19Z","phase":"any","event":"turn.end","output":"Four PR-scoped corrections verified; inherited findings moved to RHIDP-18929. Local changes remain uncommitted."}
+{"ts":"2026-11-10T21:41:18Z","phase":"any","event":"turn.start","input":"Remove the empty unsupported EXISTING template section noted by Fullsend."}
+{"ts":"2026-11-10T21:49:46Z","phase":"authoring","event":"artifact.revised","ref":"specs/reference-app-config/spec.md","input":"Address the empty unsupported delta heading.","output":"Removed empty EXISTING template section; ADDED requirements remain."}
+{"ts":"2026-11-10T21:51:04Z","phase":"any","event":"turn.end","output":"PR5508 corrections verified: OpenSpec 15/15, Markdown formatting and scoped readbacks passed. Local changes remain uncommitted."}

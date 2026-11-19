@@ -4,7 +4,7 @@
 
 Standardized annotation scheme for the five minimum feature categories (agents, skills, MCP servers, models, model servers), with existing rule compatibility retained separately.
 
-Requirements cover: `rhdh.io/ai-asset-category` (five minimum categories plus the existing `rule` compatibility value), `rhdh.io/ai-asset-version` (4 normalization rules), `rhdh.io/ai-asset-source` (provenance), and migration-readiness mapping. SDK implementation and diagnostic-message reconciliation belong to RHIDP-18762; these curated scenarios do not claim that the current seven-value SDK has already changed.
+Requirements cover: `rhdh.io/ai-asset-category` (five minimum categories plus the existing `rule` compatibility value), `rhdh.io/ai-asset-version` (4 normalization rules), `rhdh.io/ai-asset-source` (provenance), and migration-readiness mapping. RHIDP-18762 reconciled the SDK category schema, public type/list, and validation diagnostics to the six retained values, excluding `skill-bundle`. This reconciliation does not activate provider adoption or settle deferred metadata and incremental-sync design.
 
 ## ADDED Requirements
 

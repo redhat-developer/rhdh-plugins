@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-npx-skill-connector-backend
 
+## 0.4.1
+
+### Patch Changes
+
+- d96810e: Document catalog-provider configuration and public-index demo setup for the npx
+  connector. Add integration coverage for its existing Backstage authentication
+  and snapshot lifecycle, plus source-specific schedule diagnostics.
+
 ## 0.4.0
 
 ### Minor Changes

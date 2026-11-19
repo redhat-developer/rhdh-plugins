@@ -119,10 +119,10 @@ listed below.
 | Change                               | Status and scope                                                                                                                  |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | `ai-catalog-entity-model`            | Follow-on entity-model and SDK planning; the archived `ogx-entity-provider` spec remains the current OGX release source of truth. |
-| `agent-creation-discovery`           | Follow-on agent, MCP, and catalog-entity capabilities; not current-release behavior.                                              |
-| `ai-chat-interaction-experience`     | Follow-on chat and interaction capabilities; not current-release behavior.                                                        |
-| `pluggable-ai-platform-architecture` | Follow-on provider/backend architecture; not current-release behavior.                                                            |
-| `platform-operations-deployment`     | Follow-on backend, configuration, deployment, and administration work; not current-release behavior.                              |
+| `agent-creation-discovery`           | Removed (#5548) — obsolete application-oriented area; entity taxonomy governed by `ai-catalog-entity-model`.                      |
+| `ai-chat-interaction-experience`     | Removed (#5548) — obsolete chat/interaction area; not current planning.                                                           |
+| `pluggable-ai-platform-architecture` | Removed (#5548) — obsolete provider/backend architecture area; not current planning.                                              |
+| `platform-operations-deployment`     | Moved (#5548) to `RHDHPLAN-1513-potential-openspecs/` as historical reference for potential RHDHPLAN-1513 reuse.                  |
 | `connector-shared-infrastructure`    | Follow-on shared connector infrastructure; not current-release behavior.                                                          |
 | `connector-config-hot-reload`        | Follow-on connector administration and backend configuration work; not current-release behavior.                                  |
 | `ingestion-audit-metrics`            | Consolidated/follow-on ingestion and analytics work; not current-release behavior.                                                |

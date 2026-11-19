@@ -74,6 +74,24 @@ export const appReactTranslationRef = createTranslationRef({
       Detailed: 'Detailed',
       Text: 'Text',
     },
+    templateCard: {
+      timeSaved: {
+        estimate: 'Est. time saved: {{duration}}',
+        estimateTooltip:
+          'This number reflects the typical time to do this work without the template, as reported by the owner.',
+        add: 'Add est. time saved',
+        addTooltip:
+          'Help others see the value of this template. Add this annotation to its template.yaml:',
+        copy: 'Copy annotation',
+        copied: 'Copied',
+        minute_one: '{{count}} minute',
+        minute_other: '{{count}} minutes',
+        hour_one: '{{count}} hour',
+        hour_other: '{{count}} hours',
+        day_one: '{{count}} day',
+        day_other: '{{count}} days',
+      },
+    },
     catalog: {
       // Catalog entity page group titles, keyed by the English group title.
       entityTabGroups: {

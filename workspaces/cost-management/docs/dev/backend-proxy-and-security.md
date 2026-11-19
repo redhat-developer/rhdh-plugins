@@ -2,7 +2,7 @@
 
 This document covers why the Cost Management plugin uses its own secure proxy instead of the generic Backstage proxy, the security controls enforced on the backend, and the old-vs-new architecture change. It is the **security-focused companion** to the other docs in this workspace.
 
-For architecture, request flow, code map, and configuration see [`architecture.md`](./architecture.md) and [`api-flow.md`](./api-flow.md). For permissions and policy CSV examples see [`rbac.md`](../rbac.md). For installation see [`dynamic-plugin.md`](../dynamic-plugin.md).
+For architecture, request flow, code map, and configuration see [`architecture.md`](./architecture.md) and [`api-flow.md`](./api-flow.md). For permissions and policy CSV examples see [`rbac.md`](../rbac.md). For installation see [`installing-on-rhdh.md`](../installing-on-rhdh.md).
 
 ---
 
@@ -40,7 +40,7 @@ This was a **breaking security change** in plugin **2.2.0** (`ab26a80`), driven 
 
 **Cost Management now owns its own secure proxy** at `/api/cost-management/proxy/*`. Do not add `proxy.endpoints['/cost-management/v1']`. The plugin authenticates the RHDH user, enforces RBAC, fetches the SSO token server-side, and injects authorized filters before forwarding to HCC. See [How the secure proxy works](#how-the-secure-proxy-works--frontend-to-upstream) for the step-by-step flow.
 
-That is why [`dynamic-plugin.md`](../dynamic-plugin.md) says no `proxy` configuration is required.
+That is why no `proxy` configuration is required when installing the plugin.
 
 ```
 BEFORE (do not use)                          NOW
@@ -182,6 +182,6 @@ For the full list of prerequisite reading (Backstage, RHDH, Cost Management), se
 | [`api-flow.md`](./api-flow.md)                                         | Hop-by-hop request/response, code links, auth at each hop, debugging |
 | [`walkthrough-architecture-api.md`](./walkthrough-architecture-api.md) | Step-by-step walkthrough + hands-on verification checklist           |
 | [`rbac.md`](../rbac.md)                                                | Permission names, policy CSV examples, cluster/project scoping       |
-| [`dynamic-plugin.md`](../dynamic-plugin.md)                            | OCI install, secrets, and "no proxy config required"                 |
+| [`installing-on-rhdh.md`](../installing-on-rhdh.md)                    | Customer install guide for RHDH 2.1 and 1.10                         |
 | [`local-dev-setup.md`](./local-dev-setup.md)                           | Local dev environment, RBAC setup, testing on rhdh-local             |
 | [Backend README](../../plugins/cost-management-backend/README.md)      | Endpoint table, audit log format                                     |

@@ -109,6 +109,8 @@ type ProjectTableProps = {
  *
  * @returns
  */
+const IN_ERROR_COLUMN_INDEX = 3;
+
 export const mapOrderByToSort = (
   orderBy: number,
 ): ProjectsGet['query']['sort'] => {
@@ -117,6 +119,7 @@ export const mapOrderByToSort = (
     undefined,
     'name',
     'status',
+    'moduleErrors',
     undefined,
     undefined,
     'createdAt',
@@ -169,7 +172,7 @@ const useColumns = (
     [orderBy, orderDirection],
   );
 
-  const isStatusSortable =
+  const isComputedFieldSortable =
     totalCount !== undefined &&
     totalCount > 0 &&
     totalCount <= PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD;
@@ -241,7 +244,7 @@ const useColumns = (
         defaultSort: getDefaultSort(1),
       },
       {
-        title: isStatusSortable ? (
+        title: isComputedFieldSortable ? (
           t('table.columns.status')
         ) : (
           // TODO: make this configurable via an env variable
@@ -259,8 +262,29 @@ const useColumns = (
         render: (rowData: Project) => (
           <ProjectStatusCell projectStatus={rowData.status} />
         ),
-        sorting: isStatusSortable,
-        defaultSort: isStatusSortable ? getDefaultSort(2) : undefined,
+        sorting: isComputedFieldSortable,
+        defaultSort: isComputedFieldSortable ? getDefaultSort(2) : undefined,
+      },
+      {
+        title: isComputedFieldSortable ? (
+          t('table.columns.inError')
+        ) : (
+          <Tooltip
+            title={t('table.columns.inErrorSortDisabledTooltip' as any, {
+              threshold: String(PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD),
+            })}
+          >
+            <Typography component="span" variant="inherit">
+              {t('table.columns.inError')}
+            </Typography>
+          </Tooltip>
+        ),
+        render: (rowData: Project) =>
+          String(rowData.status?.modulesSummary?.error ?? 0),
+        sorting: isComputedFieldSortable,
+        defaultSort: isComputedFieldSortable
+          ? getDefaultSort(IN_ERROR_COLUMN_INDEX)
+          : undefined,
       },
       {
         title: t('table.columns.sourceRepo'),
@@ -290,7 +314,7 @@ const useColumns = (
         title: t('table.columns.createdAt'),
         field: 'createdAt',
         type: 'datetime',
-        defaultSort: getDefaultSort(5),
+        defaultSort: getDefaultSort(6),
       },
     ];
 
@@ -302,7 +326,7 @@ const useColumns = (
     allExpanded,
     onToggleAll,
     onToggleRow,
-    isStatusSortable,
+    isComputedFieldSortable,
   ]);
 };
 
@@ -591,6 +615,15 @@ export const ProjectTable = ({
   );
 
   const handleOrderChange = (sortBy: number, od: OrderDirection) => {
+    if (sortBy === IN_ERROR_COLUMN_INDEX) {
+      const next =
+        orderBy === IN_ERROR_COLUMN_INDEX && orderDirection === 'desc'
+          ? 'asc'
+          : 'desc';
+      setOrderBy(sortBy);
+      setOrderDirection(next);
+      return;
+    }
     setOrderBy(sortBy);
     setOrderDirection(od);
   };

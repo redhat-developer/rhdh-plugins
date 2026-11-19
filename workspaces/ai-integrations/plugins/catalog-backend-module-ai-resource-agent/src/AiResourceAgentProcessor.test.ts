@@ -68,6 +68,7 @@ describe('AiResourceAgentProcessor', () => {
         instructions: 'You are a fully configured agent.',
         handoffDescription: 'Handles everything.',
         model: 'gpt-4o',
+        inferenceProvider: { name: 'openai', model: 'gpt-4o' },
         handoffs: ['agent-a', 'agent-b'],
         tools: ['tool-x', 'tool-y'],
         toolUseBehavior: 'run_llm_again',

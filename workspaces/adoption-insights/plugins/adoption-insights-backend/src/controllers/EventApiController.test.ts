@@ -23,9 +23,11 @@ import {
   AnalyticsEvent,
 } from '@backstage/core-plugin-api';
 import { QUERY_TYPES, QueryParams } from '../types/event-request';
-import type { AuditorServiceEvent } from '@backstage/backend-plugin-api';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 import { toEndOfDayUTC, toStartOfDayUTC } from '../utils/date';
 import { TechDocsCount, TopTechDocsCount } from '../types/event';
+import { ValidationError } from '../validation/ValidationError';
+import { AuthenticationError } from '@backstage/errors';
 
 let controller: EventApiController;
 let req: Partial<Request>;
@@ -40,7 +42,8 @@ const mockEventDb = {
   getTopSearches: jest.fn(),
   getTopPluginViews: jest.fn(),
   getTopTechDocsViews: jest.fn(),
-  getTopTemplateViews: jest.fn(),
+  getTopTemplates: jest.fn(),
+  getTimeSaved: jest.fn(),
   getTopCatalogEntitiesViews: jest.fn(),
   getTechdocsMetadata: jest.fn(),
 } as unknown as jest.Mocked<EventDatabase>;
@@ -62,6 +65,9 @@ const mockDiscovery = mockServices.discovery.mock({
   getBaseUrl: async (pluginId: string) => `http://example.com/api/${pluginId}`,
 });
 const mockLogger = mockServices.logger.mock();
+const mockCatalog = {
+  getEntityByRef: jest.fn(),
+} as unknown as jest.Mocked<CatalogService>;
 
 const createController = () =>
   new EventApiController(
@@ -72,6 +78,7 @@ const createController = () =>
     mockAuth,
     mockHttpAuth,
     mockDiscovery,
+    mockCatalog,
     mockLogger,
   );
 
@@ -90,19 +97,20 @@ const mockEvent: AnalyticsEvent = {
 };
 
 describe('trackEvents', () => {
-  let mockProcessIncomingEvents: jest.Spied<
-    (events: AnalyticsEvent[], auditEvent: AuditorServiceEvent) => void
-  >;
+  let mockProcessIncomingEvents: jest.SpyInstance;
   let mockProcessorAddEvent: jest.Spied<EventBatchProcessor['addEvent']>;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest
+      .mocked(mockHttpAuth.credentials)
+      .mockResolvedValue(mockCredentials.user('user:default/signed-in'));
     controller = createController();
 
     mockProcessIncomingEvents = jest.spyOn(
       controller as any,
       'processIncomingEvents',
-    ) as typeof mockProcessIncomingEvents;
+    );
     mockProcessorAddEvent = jest.spyOn(mockProcessor, 'addEvent');
 
     req = {
@@ -120,12 +128,14 @@ describe('trackEvents', () => {
   });
 
   it('should process events and return 200 on success', async () => {
-    mockProcessIncomingEvents.mockImplementation(() => {});
+    mockProcessIncomingEvents.mockResolvedValue(undefined);
 
     await controller.trackEvents(req as Request, res as Response);
 
     expect(mockProcessIncomingEvents).toHaveBeenCalledWith(
       req.body,
+      expect.any(Object),
+      'user:default/signed-in',
       expect.any(Object),
     );
     expect(res.status).toHaveBeenCalledWith(200);
@@ -164,13 +174,12 @@ describe('trackEvents', () => {
     });
   });
 
-  it('should return 400 on failure with error message', async () => {
-    const error = new Error('Validation error') as any;
-    error.details = { fieldErrors: ['Invalid user_ref'] };
-
-    mockProcessIncomingEvents.mockImplementation(() => {
-      throw error;
+  it('should return 400 for a validation error', async () => {
+    const error = new ValidationError('Validation error', {
+      fieldErrors: ['Invalid user_ref'],
     });
+
+    mockProcessIncomingEvents.mockRejectedValue(error);
 
     await controller.trackEvents(req as Request, res as Response);
 
@@ -179,6 +188,35 @@ describe('trackEvents', () => {
       message: 'Validation error',
       errors: ['Invalid user_ref'],
     });
+  });
+
+  it('rethrows unexpected errors for the router to handle', async () => {
+    const error = new Error('Unexpected processing failure');
+    mockProcessIncomingEvents.mockRejectedValue(error);
+
+    await expect(
+      controller.trackEvents(req as Request, res as Response),
+    ).rejects.toBe(error);
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(
+      (await mockAuditor.createEvent.mock.results[0].value).fail,
+    ).toHaveBeenCalledWith({
+      error,
+    });
+  });
+
+  it('rethrows authentication errors for the router to handle', async () => {
+    const error = new AuthenticationError('Authentication failed');
+    jest.mocked(mockHttpAuth.credentials).mockRejectedValue(error);
+
+    await expect(
+      controller.trackEvents(req as Request, res as Response),
+    ).rejects.toBe(error);
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
   });
 
   it('should not process events without user information', async () => {
@@ -233,6 +271,191 @@ describe('trackEvents', () => {
       success: true,
       message: 'Event received',
     });
+  });
+
+  const scaffolderCreate = (value = 999): AnalyticsEvent => ({
+    ...mockEvent,
+    action: 'create',
+    subject: 'Task has been created',
+    value,
+    context: {
+      ...mockEvent.context,
+      pluginId: 'scaffolder',
+      entityRef: 'template:default/example',
+      userId: 'client-id',
+      userName: 'user:default/spoofed',
+    },
+  });
+
+  it('stores the catalog estimate and signed-in user instead of client values', async () => {
+    jest.mocked(mockCatalog.getEntityByRef).mockResolvedValue({
+      kind: 'Template',
+      metadata: {
+        name: 'example',
+        annotations: { 'backstage.io/time-saved': 'PT2H' },
+      },
+    } as any);
+
+    await controller.trackEvents(
+      { body: [scaffolderCreate()] } as Request,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(mockCatalog.getEntityByRef).toHaveBeenCalledWith(
+      'template:default/example',
+      { credentials: mockCredentials.user('user:default/signed-in') },
+    );
+    expect(mockProcessorAddEvent).toHaveBeenCalledTimes(1);
+    expect(mockProcessorAddEvent.mock.calls[0][0].toJSON()).toEqual(
+      expect.objectContaining({
+        user_ref: 'user:default/signed-in',
+        value: 120,
+      }),
+    );
+  });
+
+  it.each([
+    ['missing', undefined],
+    ['invalid', 'not-a-duration'],
+  ])('stores a %s annotation without minutes', async (_, annotation) => {
+    jest.mocked(mockCatalog.getEntityByRef).mockResolvedValue({
+      kind: 'Template',
+      metadata: {
+        name: 'example',
+        annotations: annotation
+          ? { 'backstage.io/time-saved': annotation }
+          : undefined,
+      },
+    } as any);
+
+    await controller.trackEvents(
+      { body: [scaffolderCreate()] } as Request,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(mockProcessorAddEvent.mock.calls[0][0].value).toBeUndefined();
+  });
+
+  it('keeps a run without minutes when the catalog lookup fails', async () => {
+    jest
+      .mocked(mockCatalog.getEntityByRef)
+      .mockRejectedValue(new Error('catalog unavailable'));
+
+    await controller.trackEvents(
+      { body: [scaffolderCreate()] } as Request,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(mockProcessorAddEvent.mock.calls[0][0].value).toBeUndefined();
+  });
+
+  it('resolves the catalog estimate once per distinct template ref', async () => {
+    jest.mocked(mockCatalog.getEntityByRef).mockResolvedValue({
+      kind: 'Template',
+      metadata: {
+        name: 'example',
+        annotations: { 'backstage.io/time-saved': 'PT2H' },
+      },
+    } as any);
+
+    await controller.trackEvents(
+      {
+        body: [scaffolderCreate(), scaffolderCreate(), scaffolderCreate()],
+      } as Request,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    // Three duplicate Scaffolder events share one template ref -> one lookup.
+    expect(mockCatalog.getEntityByRef).toHaveBeenCalledTimes(1);
+    expect(mockProcessorAddEvent).toHaveBeenCalledTimes(3);
+    for (const call of mockProcessorAddEvent.mock.calls) {
+      expect(call[0].value).toBe(120);
+    }
+  });
+
+  it('rejects oversized event batches before any catalog lookup', async () => {
+    const limitedController = new EventApiController(
+      mockEventDb,
+      mockProcessor,
+      mockServices.rootConfig({
+        data: {
+          app: { analytics: { adoptionInsights: { maxEventsPerRequest: 1 } } },
+        },
+      }),
+      mockAuditor,
+      mockAuth,
+      mockHttpAuth,
+      mockDiscovery,
+      mockCatalog,
+      mockLogger,
+    );
+
+    await limitedController.trackEvents(
+      { body: [scaffolderCreate(), scaffolderCreate()] } as Request,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Invalid event data',
+      errors: {
+        events: ['A maximum of 1 events may be submitted per request'],
+      },
+    });
+    expect(mockCatalog.getEntityByRef).not.toHaveBeenCalled();
+    expect(mockProcessorAddEvent).not.toHaveBeenCalled();
+  });
+
+  it('does not run catalog lookups when an event fails validation', async () => {
+    await controller.trackEvents(
+      {
+        body: [
+          scaffolderCreate(),
+          // Missing action -> fails EventSchema validation.
+          {
+            context: {
+              ...mockEvent.context,
+              userId: 'client-id',
+            } as AnalyticsContextValue,
+          } as AnalyticsEvent,
+        ],
+      } as Request,
+      res as Response,
+    );
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(mockCatalog.getEntityByRef).not.toHaveBeenCalled();
+    expect(mockProcessorAddEvent).not.toHaveBeenCalled();
+  });
+
+  it('uses the authenticated user for non-Scaffolder events too', async () => {
+    await controller.trackEvents(
+      {
+        body: [
+          {
+            ...mockEvent,
+            context: {
+              ...mockEvent.context,
+              userId: 'client-id',
+              userName: 'user:default/spoofed',
+            },
+          },
+        ],
+      } as Request,
+      res as Response,
+    );
+
+    expect(mockCatalog.getEntityByRef).not.toHaveBeenCalled();
+    expect(mockProcessorAddEvent.mock.calls[0][0].toJSON()).toEqual(
+      expect.objectContaining({
+        user_ref: 'user:default/signed-in',
+        value: 42,
+      }),
+    );
   });
 });
 
@@ -320,7 +543,8 @@ describe('GetInsights', () => {
     mockEventDb.getDailyUsers.mockResolvedValue({} as any);
     mockEventDb.getTopSearches.mockResolvedValue({} as any);
     mockEventDb.getTopPluginViews.mockResolvedValue({} as any);
-    mockEventDb.getTopTemplateViews.mockResolvedValue({} as any);
+    mockEventDb.getTopTemplates.mockResolvedValue({} as any);
+    mockEventDb.getTimeSaved.mockResolvedValue({} as any);
     mockEventDb.getTopTechDocsViews.mockResolvedValue({} as any);
     mockEventDb.getTopCatalogEntitiesViews.mockResolvedValue({} as any);
 
@@ -340,7 +564,7 @@ describe('GetInsights', () => {
     expect(mockEventDb.getDailyUsers).toHaveBeenCalled();
     expect(mockEventDb.getTopSearches).toHaveBeenCalled();
     expect(mockEventDb.getTopPluginViews).toHaveBeenCalled();
-    expect(mockEventDb.getTopTemplateViews).toHaveBeenCalled();
+    expect(mockEventDb.getTopTemplates).toHaveBeenCalled();
     expect(mockEventDb.getTopTechDocsViews).toHaveBeenCalled();
     expect(mockEventDb.getTopCatalogEntitiesViews).toHaveBeenCalled();
   });

@@ -67,6 +67,7 @@
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "5.18.0",
     "@remixicon/react": ">=4.6.0 <4.9.0",
+    "luxon": "^3.5.0",
     "react-use": "^17.4.0",
     "zod": "^3.25.76 || ^4.0.0"
   },

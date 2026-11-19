@@ -6,13 +6,17 @@ Exports annotation constants, validation utilities, entity-provider interfaces, 
 
 The provider interfaces, validators, category vocabulary, and delta helpers were
 recovered for RHDH 2.2 reconciliation under
-[RHIDP-18760](https://redhat.atlassian.net/browse/RHIDP-18760). They do not expand
-the RHDH 2.1 release contract and are not registered with live providers by this
-recovery. Their annotation policy, minimum categories, and synchronization
-contract remain subject to the follow-on work in
-[RHIDP-18761](https://redhat.atlassian.net/browse/RHIDP-18761) and
-[RHIDP-18762](https://redhat.atlassian.net/browse/RHIDP-18762), followed by the
-deferred SDK design decisions. See the
+[RHIDP-18760](https://redhat.atlassian.net/browse/RHIDP-18760) and reconciled
+under [RHIDP-18762](https://redhat.atlassian.net/browse/RHIDP-18762) to the
+agreed 2.2 minimum baseline. The category vocabulary covers the five minimum
+categories (`agent`, `skill`, `mcp-server`, `ai-model`, `model-server`) plus
+retained `rule` compatibility. `skill-bundle` is excluded from the active
+vocabulary.
+
+Provider SDK helpers remain unregistered with live providers. Consuming providers
+own durable cursor persistence, first/full refresh, source-cursor recovery, and
+the choice to request deltas. Metadata/per-kind SDK design, incremental-sync
+design, and provider adoption remain deferred. See the
 [recovery manifest](../../specifications/RHIDP-18760-recovery-manifest.md).
 
 ## Installation
@@ -41,7 +45,9 @@ import {
 
 ## Category validation
 
-The `AIAssetCategory` type defines the allowed AI asset categories as a string union: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`. The `AI_ASSET_CATEGORIES` constant provides the full list for display and validation.
+The `AIAssetCategory` type defines the allowed AI asset categories as a string union: `agent`, `skill`, `rule`, `mcp-server`, `ai-model`, `model-server`. The `AI_ASSET_CATEGORIES` constant provides the full list for display and validation.
+
+Agent contract documentation, examples, and fixtures use `kind: AiResource`, `spec.type: agent`. The former `Component` / `ai-agent` mapping is historical, not an active fallback.
 
 ```ts
 import {
@@ -52,6 +58,19 @@ import {
 const category: AIAssetCategory = 'agent';
 console.log(AI_ASSET_CATEGORIES); // ['agent', 'skill', ...]
 ```
+
+### Upgrading from SDK 1.x
+
+SDK 1.2.1 exported `skill-bundle` as a public `AIAssetCategory` member.
+The 2.0 release removes it from the public type, category list, and validation
+schema. Remove `skill-bundle` from consumer typed values and provider annotation
+inputs before upgrading. SDK validation rejects entities with that category.
+
+Already-ingested catalog entities carrying
+`rhdh.io/ai-asset-category: skill-bundle` also fail when passed through SDK 2.x
+validation. Correct their source/provider output to an appropriate supported
+category and re-ingest them, or retire the unsupported entities. Upgrading the
+SDK does not automatically migrate or delete existing catalog entities.
 
 ## Entity validation
 
@@ -74,7 +93,7 @@ import type { AIAssetEntityProvider } from '@red-hat-developer-hub/backstage-plu
 
 ## Delta sync framework
 
-`DeltaSyncManager` wraps Backstage's `applyMutation({ type: 'delta' })` API and manages cursor persistence via the `CursorStore` interface. `InMemoryCursorStore` is provided for development and testing.
+`DeltaSyncManager` wraps Backstage's `applyMutation({ type: 'delta' })` API and manages cursor persistence via the `CursorStore` interface. `CursorStore` is an interface; `InMemoryCursorStore` is provided for development and testing. Consuming providers own durable persistence, first/full refresh, source-cursor recovery, and the choice to request deltas. Clearing a cursor only deletes stored cursor state — it does not initiate a full refresh.
 
 ```ts
 import {
@@ -103,7 +122,7 @@ normalizeAIAssetVersion('1.2.3'); // '1.2.3'
 normalizeAIAssetVersion('20260708'); // '0.0.0-20260708'
 normalizeAIAssetVersion('a1b2c3d'); // '0.0.0-a1b2c3d'
 normalizeAIAssetVersion('unknown-fmt', {
-  entityRef: 'component:default/my-agent',
+  entityRef: 'airesource:default/my-agent',
   warn: msg => logger.warn(msg),
 }); // '0.0.0-unknown'
 ```

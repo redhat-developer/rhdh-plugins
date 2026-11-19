@@ -24,7 +24,6 @@ export type AIAssetCategory =
   | 'agent'
   | 'skill'
   | 'rule'
-  | 'skill-bundle'
   | 'mcp-server'
   | 'ai-model'
   | 'model-server';

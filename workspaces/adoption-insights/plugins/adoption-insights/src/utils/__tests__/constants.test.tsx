@@ -63,6 +63,10 @@ describe('Constants', () => {
     expect(TEMPLATE_TABLE_HEADERS).toEqual([
       { id: 'name', titleKey: 'table.headers.name' },
       { id: 'executions', titleKey: 'table.headers.executions' },
+      {
+        id: 'total-estimated-time-saved',
+        titleKey: 'table.headers.totalEstimatedTimeSaved',
+      },
     ]);
   });
 });

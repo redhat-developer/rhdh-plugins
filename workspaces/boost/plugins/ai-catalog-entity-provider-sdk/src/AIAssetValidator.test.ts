@@ -20,10 +20,13 @@ import { AIAssetValidator } from './AIAssetValidator';
 function makeEntity(annotations: Record<string, string>): Entity {
   return {
     apiVersion: 'backstage.io/v1alpha1',
-    kind: 'Resource',
+    kind: 'AiResource',
     metadata: {
       name: 'test-entity',
       annotations,
+    },
+    spec: {
+      type: 'agent',
     },
   };
 }
@@ -51,7 +54,7 @@ describe('AIAssetValidator', () => {
     it('returns false for entities with no annotations', async () => {
       const entity: Entity = {
         apiVersion: 'backstage.io/v1alpha1',
-        kind: 'Component',
+        kind: 'AiResource',
         metadata: { name: 'test' },
       };
       const result = await validator.validateEntityKind(entity);
@@ -64,7 +67,7 @@ describe('AIAssetValidator', () => {
       const entity = makeEntity({
         'rhdh.io/ai-asset-category': 'agent',
         'rhdh.io/ai-asset-version': '1.0.0',
-        'rhdh.io/ai-asset-source': 'kagenti/default',
+        'rhdh.io/ai-asset-source': 'ogx/default',
       });
       const result = await validator.validateEntityKind(entity);
       expect(result).toBe(false);
@@ -75,7 +78,6 @@ describe('AIAssetValidator', () => {
         'agent',
         'skill',
         'rule',
-        'skill-bundle',
         'mcp-server',
         'ai-model',
         'model-server',
@@ -84,7 +86,7 @@ describe('AIAssetValidator', () => {
         const entity = makeEntity({
           'rhdh.io/ai-asset-category': category,
           'rhdh.io/ai-asset-version': '1.0.0',
-          'rhdh.io/ai-asset-source': 'kagenti/default',
+          'rhdh.io/ai-asset-source': 'ogx/default',
         });
         const result = await validator.validateEntityKind(entity);
         expect(result).toBe(false);
@@ -96,11 +98,11 @@ describe('AIAssetValidator', () => {
     it('rejects entities with missing category', async () => {
       const entity = makeEntity({
         'rhdh.io/ai-asset-version': '1.0.0',
-        'rhdh.io/ai-asset-source': 'kagenti/default',
+        'rhdh.io/ai-asset-source': 'ogx/default',
       });
       await expect(validator.validateEntityKind(entity)).rejects.toThrow(
         new Error(
-          'Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server',
+          'Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, mcp-server, ai-model, model-server',
         ),
       );
     });
@@ -109,7 +111,7 @@ describe('AIAssetValidator', () => {
       const entity = makeEntity({
         'rhdh.io/ai-asset-category': 'invalid-type',
         'rhdh.io/ai-asset-version': '1.0.0',
-        'rhdh.io/ai-asset-source': 'kagenti/default',
+        'rhdh.io/ai-asset-source': 'ogx/default',
       });
       await expect(validator.validateEntityKind(entity)).rejects.toThrow(
         "Invalid rhdh.io/ai-asset-category value 'invalid-type'",
@@ -119,7 +121,7 @@ describe('AIAssetValidator', () => {
     it('rejects entities with missing version', async () => {
       const entity = makeEntity({
         'rhdh.io/ai-asset-category': 'agent',
-        'rhdh.io/ai-asset-source': 'kagenti/default',
+        'rhdh.io/ai-asset-source': 'ogx/default',
       });
       await expect(validator.validateEntityKind(entity)).rejects.toThrow(
         'Invalid or missing rhdh.io/ai-asset-version annotation',
@@ -148,11 +150,11 @@ describe('AIAssetValidator', () => {
         const entity = makeEntity({
           'rhdh.io/ai-asset-category': category,
           'rhdh.io/ai-asset-version': '1.0.0',
-          'rhdh.io/ai-asset-source': 'kagenti/default',
+          'rhdh.io/ai-asset-source': 'ogx/default',
         });
         await expect(validator.validateEntityKind(entity)).rejects.toThrow(
           new Error(
-            `Invalid rhdh.io/ai-asset-category value '${escaped}'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`,
+            `Invalid rhdh.io/ai-asset-category value '${escaped}'. Allowed: agent, skill, rule, mcp-server, ai-model, model-server`,
           ),
         );
       },
