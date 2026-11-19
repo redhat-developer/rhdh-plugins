@@ -878,4 +878,156 @@ describe('calculateReconciliationPlan', () => {
       expect(plan.nextState.observedAt).toBe(t2);
     });
   });
+
+  describe('effective owner and lifecycle changes', () => {
+    function withSpec(
+      mapped: MappedSkillEntity,
+      spec: { owner?: string; lifecycle?: string },
+    ): MappedSkillEntity {
+      return {
+        ...mapped,
+        entity: {
+          ...mapped.entity,
+          spec: { ...mapped.entity.spec, ...spec },
+        },
+      };
+    }
+
+    const fieldChanges = [
+      { field: 'owner', spec: { owner: 'team-platform' } },
+      { field: 'lifecycle', spec: { lifecycle: 'experimental' } },
+    ] as const;
+    const statuses = ['ready', 'partial'] as const;
+    const observations = [
+      { label: 'repeated', observedAt: t1 },
+      { label: 'newer', observedAt: t2 },
+    ] as const;
+
+    for (const { field, spec } of fieldChanges) {
+      for (const status of statuses) {
+        for (const { label, observedAt } of observations) {
+          it(`upserts a ${field}-only change with an unchanged digest on a ${label} ${status} observation`, () => {
+            const previousState: CommittedSourceState = {
+              ...emptyState(),
+              observedAt: t1,
+              entities: [makeOwned('key-a', digestA)],
+            };
+            const changed = withSpec(makeMapped('key-a', digestA), spec);
+
+            const plan = calculateReconciliationPlan({
+              previousState,
+              snapshotStatus: status,
+              snapshotObservedAt: observedAt,
+              mappedEntities: [changed],
+              externalOwnership: [],
+            });
+
+            expect(plan.noOp).toBe(false);
+            expect(plan.removals).toHaveLength(0);
+            expect(plan.upserts).toHaveLength(1);
+            expect(plan.upserts[0].digest).toBe(digestA);
+            expect(plan.upserts[0].entity.spec).toEqual({
+              ...makeEntity(changed.catalogName).spec,
+              ...spec,
+            });
+            expect(plan.nextState.entities[0].entity.spec).toEqual(
+              plan.upserts[0].entity.spec,
+            );
+
+            // An identical refresh against the resulting state is a no-op
+            const followUp = calculateReconciliationPlan({
+              previousState: plan.nextState,
+              snapshotStatus: status,
+              snapshotObservedAt: observedAt,
+              mappedEntities: [withSpec(makeMapped('key-a', digestA), spec)],
+              externalOwnership: [],
+            });
+
+            expect(followUp.noOp).toBe(true);
+            expect(followUp.upserts).toHaveLength(0);
+            expect(followUp.removals).toHaveLength(0);
+          });
+        }
+      }
+    }
+
+    it('upserts only the entity whose effective values changed', () => {
+      const plan = calculateReconciliationPlan({
+        previousState: {
+          ...emptyState(),
+          observedAt: t1,
+          entities: [makeOwned('key-a', digestA), makeOwned('key-b', digestB)],
+        },
+        snapshotStatus: 'ready',
+        snapshotObservedAt: t1,
+        mappedEntities: [
+          makeMapped('key-a', digestA),
+          withSpec(makeMapped('key-b', digestB), { owner: 'team-platform' }),
+        ],
+        externalOwnership: [],
+      });
+
+      expect(plan.noOp).toBe(false);
+      expect(plan.upserts).toHaveLength(1);
+      expect(plan.upserts[0].catalogName).toBe(
+        computeCatalogName(makeTuple('key-b')),
+      );
+      expect(plan.nextState.entities).toHaveLength(2);
+    });
+
+    it.each(['loading', 'failed'] as const)(
+      'preserves committed entities for %s snapshots despite changed defaults',
+      status => {
+        const previousState: CommittedSourceState = {
+          ...emptyState(),
+          observedAt: t1,
+          entities: [makeOwned('key-a', digestA)],
+        };
+
+        const plan = calculateReconciliationPlan({
+          previousState,
+          snapshotStatus: status,
+          snapshotObservedAt: t2,
+          mappedEntities: [
+            withSpec(makeMapped('key-a', digestA), {
+              owner: 'team-platform',
+              lifecycle: 'experimental',
+            }),
+          ],
+          externalOwnership: [],
+        });
+
+        expect(plan.noOp).toBe(true);
+        expect((plan as NoOpPlan).reason).toBe(status);
+        expect(plan.upserts).toHaveLength(0);
+        expect(plan.nextState).toBe(previousState);
+      },
+    );
+
+    it('preserves committed entities for stale snapshots despite changed defaults', () => {
+      const previousState: CommittedSourceState = {
+        ...emptyState(),
+        observedAt: t2,
+        entities: [makeOwned('key-a', digestA)],
+      };
+
+      const plan = calculateReconciliationPlan({
+        previousState,
+        snapshotStatus: 'ready',
+        snapshotObservedAt: t1,
+        mappedEntities: [
+          withSpec(makeMapped('key-a', digestA), {
+            owner: 'team-platform',
+            lifecycle: 'experimental',
+          }),
+        ],
+        externalOwnership: [],
+      });
+
+      expect(plan.noOp).toBe(true);
+      expect((plan as NoOpPlan).reason).toBe('stale-observation');
+      expect(plan.upserts).toHaveLength(0);
+      expect(plan.nextState).toBe(previousState);
+    });
+  });
 });

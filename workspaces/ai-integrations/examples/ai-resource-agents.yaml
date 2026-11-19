@@ -86,11 +86,8 @@ spec:
     guide users through troubleshooting steps, and escalate unresolved issues to
     the engineering team.
   handoffDescription: Handles technical troubleshooting and engineering inquiries.
-  inferenceProvider:
-    name: openai
-    model: gpt-4o
+  model: gpt-4o
   tools:
     - run-diagnostics
     - search-knowledge-base
   toolUseBehavior: run_llm_again
-  executionMode: subprocess

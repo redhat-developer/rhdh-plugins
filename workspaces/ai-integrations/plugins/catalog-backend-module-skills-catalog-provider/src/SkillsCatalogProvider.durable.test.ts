@@ -105,6 +105,10 @@ describe('SkillsCatalogProvider durable lifecycle', () => {
     store: ReconciliationStore,
     sources = [ociConfig] as SkillsCatalogProviderConfig['sources'],
     namespace = 'default',
+    defaults: Pick<
+      SkillsCatalogProviderConfig,
+      'defaultOwner' | 'defaultLifecycle'
+    > = { defaultOwner: 'team-skills', defaultLifecycle: 'production' },
   ) {
     let run: (() => Promise<void>) | undefined;
     const auth = mockServices.auth.mock({
@@ -128,8 +132,7 @@ describe('SkillsCatalogProvider durable lifecycle', () => {
         id: 'test',
         sources,
         namespace,
-        defaultOwner: 'team-skills',
-        defaultLifecycle: 'production',
+        ...defaults,
       },
       mockServices.discovery.mock({
         getBaseUrl: async id => `http://localhost/api/${id}`,
@@ -396,6 +399,111 @@ describe('SkillsCatalogProvider durable lifecycle', () => {
         .metadata.namespace,
     ).toBe('new-namespace');
   });
+
+  it.each([
+    { status: 'ready' as const, label: 'ready' },
+    { status: 'partial' as const, label: 'partial' },
+  ])(
+    'reconciles changed owner and lifecycle defaults after a restart with an unchanged $label snapshot',
+    async ({ status }) => {
+      const {
+        owner: _owner,
+        lifecycle: _lifecycle,
+        ...base
+      } = validOciRecordFull;
+      const record = (suffix: string, hints: Record<string, string>) => ({
+        ...base,
+        key: `quay.io/octo/hello-world-skill:${suffix}`,
+        ...hints,
+      });
+      const records = {
+        missing: record('missing', {}),
+        invalid: record('invalid', {
+          owner: 'Not A Valid Owner!',
+          lifecycle: '   ',
+        }),
+        both: record('both', { owner: 'team-octo', lifecycle: 'beta' }),
+        ownerOnly: record('owner-only', { owner: 'team-octo' }),
+        lifecycleOnly: record('lifecycle-only', { lifecycle: 'beta' }),
+      };
+      current = snapshot({
+        status,
+        skills: Object.values(records),
+        failedSkillKeys: [],
+      });
+
+      const first = await database.open();
+      await (await start(first.store)).run();
+      expect(catalog.size).toBe(5);
+      await first.client.destroy();
+
+      // Backend restart: same durable state, same connector snapshot
+      // (digests and observedAt unchanged), new configured defaults.
+      const second = await database.open();
+      const apply = connection.applyMutation as jest.Mock;
+      apply.mockClear();
+      const restarted = await start(second.store, [ociConfig], 'default', {
+        defaultOwner: 'team-platform',
+        defaultLifecycle: 'experimental',
+      });
+      await restarted.run();
+
+      expect(apply).toHaveBeenCalledTimes(1);
+      const mutation = apply.mock.calls[0][0];
+      expect(mutation.removed).toEqual([]);
+      const committed = await second.store.getCommittedState(
+        'oci',
+        ociSource.id,
+      );
+      const specByKey = (key: string) =>
+        committed.entities.find(e => e.tuple.key === key)?.entity.spec;
+      const addedSpecByKey = (key: string) =>
+        mutation.added.find(
+          (entry: { entity: Entity }) =>
+            stringifyEntityRef(entry.entity) ===
+            stringifyEntityRef(
+              committed.entities.find(e => e.tuple.key === key)!.entity,
+            ),
+        )?.entity.spec;
+
+      const expected = {
+        missing: { owner: 'team-platform', lifecycle: 'experimental' },
+        invalid: { owner: 'team-platform', lifecycle: 'experimental' },
+        ownerOnly: { owner: 'team-octo', lifecycle: 'experimental' },
+        lifecycleOnly: { owner: 'team-platform', lifecycle: 'beta' },
+      };
+      expect(mutation.added).toHaveLength(Object.keys(expected).length);
+      for (const [name, values] of Object.entries(expected)) {
+        const key = records[name as keyof typeof records].key;
+        expect(addedSpecByKey(key)).toMatchObject(values);
+        expect(specByKey(key)).toMatchObject(values);
+      }
+      // Both explicit hints remain intact and the entity is not re-emitted
+      expect(addedSpecByKey(records.both.key)).toBeUndefined();
+      expect(specByKey(records.both.key)).toMatchObject({
+        owner: 'team-octo',
+        lifecycle: 'beta',
+      });
+      for (const entity of catalog.values()) {
+        const key = committed.entities.find(
+          e => stringifyEntityRef(e.entity) === stringifyEntityRef(entity),
+        )!.tuple.key;
+        expect(entity.spec).toEqual(specByKey(key));
+      }
+
+      // Identical refreshes (repeated and newer observation) are no-ops
+      apply.mockClear();
+      await restarted.run();
+      current = snapshot({
+        status,
+        observedAt: t2,
+        skills: Object.values(records),
+        failedSkillKeys: [],
+      });
+      await restarted.run();
+      expect(apply).not.toHaveBeenCalled();
+    },
+  );
 
   it('retains both namespace identities on partial migration until a ready observation authorizes cleanup', async () => {
     const { store } = await database.open();

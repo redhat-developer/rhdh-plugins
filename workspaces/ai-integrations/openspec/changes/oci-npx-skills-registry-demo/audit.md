@@ -1,3 +1,26 @@
+## Catalog provider owner and lifecycle default reconciliation
+
+**Last audited:** 2026-11-19T20:04:04Z
+
+Issue #5628: changing `defaultOwner` or `defaultLifecycle` did not update
+already imported skill entities whose content and connector observation were
+unchanged, because the reconciliation planner's repeated-observation short
+circuit and per-entity upsert predicate ignored effective `spec.owner` and
+`spec.lifecycle`. Both decision points now share one comparison helper covering
+entity identity, the TechDocs reference, owner, and lifecycle. Hint resolution
+stays in the snapshot consumer, so valid hints still win independently per
+field. Design D6, the catalog provider spec, and the provider README describe
+the reconciliation. No connector, public API, or database schema change; no
+tasks are reopened. A `patch` changeset covers the provider.
+
+| Severity   | Count |
+| ---------- | ----- |
+| CRITICAL   | 0     |
+| WARNING    | 0     |
+| SUGGESTION | 0     |
+
+---
+
 ## Npx authentication tests and catalog provider docs
 
 **Last audited:** 2026-11-12T22:20:43Z
