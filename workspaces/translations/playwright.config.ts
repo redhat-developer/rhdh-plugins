@@ -31,10 +31,6 @@ export default defineConfig({
           port: 7007,
           reuseExistingServer: true,
           timeout: 120_000,
-          env: {
-            ...process.env,
-            NODE_ENV: 'development',
-          },
         },
         {
           command:

@@ -21,8 +21,6 @@ test('App should render the welcome page', async ({ page }) => {
 
   const enterButton = page.getByRole('button', { name: 'Enter' });
   await expect(enterButton).toBeVisible({ timeout: 30_000 });
-  // Accept guest-token dialog if auth backend is not ready yet.
-  page.once('dialog', dialog => dialog.accept());
   await enterButton.click();
 
   await expect(
