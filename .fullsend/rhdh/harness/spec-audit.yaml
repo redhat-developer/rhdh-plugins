@@ -6,7 +6,7 @@
 base: https://raw.githubusercontent.com/fullsend-ai/agents/93c69826f40bd14c8c40dc5797bd7d9ef5a8b748/harness/review.yaml#sha256=3e9302d8143fcfd93df8e4542162776e98893c8ef367450679e2ffa89e5b0c53
 
 agent: rhdh/agents/spec-audit.md
-model: claude-opus-4-6
+model: claude-opus-5-5
 image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
 
 pre_script: rhdh/scripts/pre-spec-audit.sh
@@ -43,7 +43,7 @@ env:
     PRIOR_REVIEW_SHA: ''
     PRIOR_REVIEW_PROVENANCE: 'none'
   sandbox:
-    ANTHROPIC_DEFAULT_OPUS_MODEL: claude-opus-4-6
+    ANTHROPIC_DEFAULT_OPUS_MODEL: claude-opus-5-5
     TIMEOUT_SECONDS: '1800'
     PRIOR_REVIEW_SHA: ''
     PRIOR_REVIEW_PROVENANCE: 'none'
