@@ -96,10 +96,7 @@ export function calculateReconciliationPlan(
         tuplesEqual(previous.tuple, mapped.tuple) &&
         (stringifyEntityRef(previous.entity) !==
           stringifyEntityRef(mapped.entity) ||
-          previous.entity.metadata.annotations?.[
-            'backstage.io/techdocs-ref'
-          ] !==
-            mapped.entity.metadata.annotations?.['backstage.io/techdocs-ref']),
+          skillLinksChanged(previous, mapped)),
     ),
   );
   if (
@@ -172,8 +169,7 @@ export function calculateReconciliationPlan(
     if (
       !previous ||
       previous.digest !== digest ||
-      previous.entity.metadata.annotations?.['backstage.io/techdocs-ref'] !==
-        entity.metadata.annotations?.['backstage.io/techdocs-ref']
+      skillLinksChanged(previous, mapped)
     ) {
       // New entity or content changed — plan upsert
       upserts.push({ tuple, catalogName, digest, entity });
@@ -235,6 +231,21 @@ export function calculateReconciliationPlan(
     collisions,
     nextState,
   };
+}
+
+function skillLinksChanged(
+  previous: OwnedEntity,
+  mapped: PlannedUpsert,
+): boolean {
+  return [
+    'backstage.io/techdocs-ref',
+    'rhdh.io/npx-skill-registry',
+    'rhdh.io/npx-skill-key',
+  ].some(
+    key =>
+      previous.entity.metadata.annotations?.[key] !==
+      mapped.entity.metadata.annotations?.[key],
+  );
 }
 
 /**

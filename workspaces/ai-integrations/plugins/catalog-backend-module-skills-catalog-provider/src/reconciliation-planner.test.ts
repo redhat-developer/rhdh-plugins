@@ -188,6 +188,37 @@ describe('calculateReconciliationPlan', () => {
       expect(plan.nextState.observedAt).toBe(t2);
     });
 
+    it('upgrades legacy npx install annotations at the same digest and observation', () => {
+      const previous = makeOwned(
+        'original-key',
+        digestA,
+        'npx',
+        'public-skills',
+      );
+      const mapped = makeMapped(
+        'original-key',
+        digestA,
+        'npx',
+        'public-skills',
+      );
+      mapped.entity.metadata.annotations!['rhdh.io/npx-skill-registry'] =
+        'https://example.com';
+      mapped.entity.metadata.annotations!['rhdh.io/npx-skill-key'] =
+        'original-key';
+      const plan = calculateReconciliationPlan({
+        previousState: {
+          ...emptyState('npx', 'public-skills'),
+          observedAt: t1,
+          entities: [previous],
+        },
+        snapshotStatus: 'partial',
+        snapshotObservedAt: t1,
+        mappedEntities: [mapped],
+        externalOwnership: [],
+      });
+      expect(plan.upserts).toEqual([mapped]);
+    });
+
     it('makes a repeated observation idempotent', () => {
       const plan = calculateReconciliationPlan({
         previousState: {

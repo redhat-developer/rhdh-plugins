@@ -76,7 +76,9 @@ Each entity carries:
 - `backstage.io/source-location` — connector source URI
 - `backstage.io/managed-by-location` — connector source URI
 - `backstage.io/managed-by-origin-location` — connector source URI
-- `backstage.io/techdocs-ref` — TechDocs documentation URL for OCI skill entities, constructed from the connector's discovery-resolved base URL and the record's verified digest (`url:<connectorBaseUrl>/skilldocs/<sourceId>/<digest>`). Not set on npx entities. (OCI sources only)
+- `backstage.io/techdocs-ref` — TechDocs documentation URL for OCI and npx skill entities, constructed from the connector's discovery-resolved base URL and the record's verified digest (`url:<connectorBaseUrl>/skilldocs/<sourceId>/<digest>`).
+- `rhdh.io/npx-skill-registry` — registry base URL for a well-known npx index.
+- `rhdh.io/npx-skill-key` — original index entry name that Boost passes to `--skill`.
 - `rhdh.io/ai-asset-category` — always `skill`
 - `rhdh.io/ai-asset-version` — resolved skill version
 - `rhdh.io/ai-asset-source` — `<sourceType>/<sourceId>`
