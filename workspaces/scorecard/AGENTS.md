@@ -214,3 +214,134 @@ When reviewing changes to `ThresholdResolver`, the `Metric` type,
 | `OpenSSFConfig.ts`                  | `scorecard-backend-module-openssf`    | OpenSSF provider metric and threshold definitions                 |
 | `FilecheckConfig.ts`                | `scorecard-backend-module-filecheck`  | Filecheck provider metric and threshold definitions               |
 | `DoraConfig.ts`                     | `scorecard-backend-module-dora`       | DORA provider config, collector wiring, and threshold definitions |
+
+## Testing Conventions for Collector Interactions
+
+When a DORA provider (or its underlying `DoraSyncService`) calls
+`collectorsService.collect()`, each call passes a structured input
+object whose fields control what data the collector fetches — time
+boundaries (`from`, `to`, `updatedSince`), pagination limits
+(`fetchItemsLimit`), commit ranges (`baseCommitSha`, `headCommitSha`),
+and any custom static input from configuration. Tests must verify the
+full contract between caller and collector, not just the fields used
+for mock branching.
+
+### 1. Assert full collector input contracts
+
+When a sync method calls `collectorsService.collect()`, the test must
+use `toHaveBeenCalledWith` (or `toHaveBeenLastCalledWith`) to assert on
+every behaviorally significant field in the input object — including
+`from`, `to`, `updatedSince`, `fetchItemsLimit`, and any spread custom
+input. Do not assert on only the field used for mock dispatch (e.g.,
+`collectorId` or `input.from`) while ignoring the rest.
+
+**Why this matters:** Mock collectors built with `buildMockCollectorsService`
+dispatch on `collectorId` and return a canned response regardless of the
+input shape. If a test only checks `input.from`, dropping
+`fetchItemsLimit` or `to` from the production code leaves the entire
+test suite green while the collector starts requesting unbounded data.
+
+**Pattern — correct:**
+
+```ts
+expect(collect).toHaveBeenCalledWith(
+  expect.objectContaining({
+    collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+    input: expect.objectContaining({
+      from: windowFrom.toISOString(),
+      to: windowTo.toISOString(),
+    }),
+  }),
+);
+```
+
+When `fetchItemsLimit` or other config-derived fields are passed, assert
+on them too:
+
+```ts
+expect(collect).toHaveBeenCalledWith(
+  expect.objectContaining({
+    input: expect.objectContaining({
+      from: expectedFrom.toISOString(),
+      to: windowTo.toISOString(),
+      fetchItemsLimit: expectedLimit,
+    }),
+  }),
+);
+```
+
+**Pattern — insufficient (do not do this):**
+
+```ts
+// Only branches on `from`; dropping `to` or `fetchItemsLimit`
+// from the production code would not fail this assertion.
+expect(collect).toHaveBeenCalledWith(
+  expect.objectContaining({
+    input: expect.objectContaining({
+      from: windowFrom.toISOString(),
+    }),
+  }),
+);
+```
+
+### 2. Cover error and fallback paths
+
+When a collector call is wrapped in try/catch with fallback behavior
+(e.g., falling back to fewer results on rate limit, or logging a
+warning and returning a degraded metric), add a test case using
+`mockRejectedValueOnce` on the `collect` mock to verify:
+
+- **(a)** The fallback produces the correct output (e.g., empty array,
+  default value, or partial result).
+- **(b)** The error/warning message distinguishes the failure type
+  (e.g., authentication failure vs. rate limit vs. schema rejection)
+  so operators can diagnose issues from logs.
+
+**Pattern:**
+
+```ts
+collect.mockRejectedValueOnce(new Error('rate limit exceeded'));
+
+await expect(
+  syncService.syncDeployments(mockEntity, options),
+).rejects.toThrow('rate limit exceeded');
+
+// Verify the watermark did not advance — the next run retries.
+expect(
+  await lastSync.getLastSyncedAt(catalogEntityRef, collectorId, inputHash),
+).toBe(previousWatermark);
+```
+
+When production code catches the error and falls back silently, the
+test must verify both the returned value and the logged warning:
+
+```ts
+collect.mockRejectedValueOnce(new Error('rate limit exceeded'));
+
+const result = await provider.calculateMetrics(entity);
+expect(result.get('dora.metricId')?.value).toBe(expectedFallback);
+expect(logger.warn).toHaveBeenCalledWith(
+  expect.stringContaining('rate limit'),
+);
+```
+
+### 3. Review checklist for DORA collector test changes
+
+When reviewing test changes for DORA providers or `DoraSyncService`:
+
+- **Verify mock assertions cover distinguishing parameters.** If the
+  production code sends `from`, `to`, and `fetchItemsLimit` to a
+  collector, the test assertion must check all three. Flag tests where
+  the mock branches on one field but the production code sends
+  additional fields that affect behavior (e.g., time boundaries,
+  pagination limits).
+- **Flag new try/catch blocks without error-path tests.** Any new
+  try/catch around a `collectorsService.collect()` call (or around
+  `syncService.syncDeployments` / `syncIncidents`) must have a
+  corresponding `mockRejectedValueOnce` test that verifies fallback
+  behavior and error messaging.
+- **Check for spread custom input.** `DoraSyncService` spreads
+  `options.collector.input` into the collect call
+  (`{ ...options.collector.input, from, to }`). When reviewing tests
+  that use custom input (e.g., `{ workflowName: 'Deploy A' }`), verify
+  the assertion includes the custom fields alongside `from` and `to`.
