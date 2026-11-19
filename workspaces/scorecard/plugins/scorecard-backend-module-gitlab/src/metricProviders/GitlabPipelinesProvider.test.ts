@@ -95,7 +95,7 @@ describe('GitlabPipelinesProvider', () => {
       const expectedMetrics = {
         'gitlab.startedPipelines7d': {
           id: 'gitlab.startedPipelines7d',
-          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+          thresholds: GITLAB_SUCCESS_COUNT_THRESHOLDS,
         },
         'gitlab.successfulPipelines7d': {
           id: 'gitlab.successfulPipelines7d',
@@ -187,6 +187,18 @@ describe('GitlabPipelinesProvider', () => {
         since1d,
         'failed',
       );
+    });
+
+    it('should omit ratio metrics when no successful or failed pipelines exist', async () => {
+      mockedClientInstance.getPipelinesCount.mockResolvedValue(0);
+
+      const result = await provider.calculateMetrics(mockEntity);
+
+      expect(result.get('gitlab.startedPipelines7d')).toBe(0);
+      expect(result.get('gitlab.successfulPipelines7d')).toBe(0);
+      expect(result.get('gitlab.failedPipelines7d')).toBe(0);
+      expect(result.has('gitlab.pipelineSuccessRatio7d')).toBe(false);
+      expect(result.has('gitlab.pipelineSuccessRatio24h')).toBe(false);
     });
 
     it('should throw when project-slug annotation is missing', async () => {

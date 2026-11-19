@@ -39,10 +39,11 @@ jest.mock('@backstage/catalog-model', () => ({
 describe('GitlabJobsProvider', () => {
   let provider: GitlabJobsProvider;
 
-  const mockedClientInstance: jest.Mocked<Pick<GitlabClient, 'getJobsCount'>> =
-    {
-      getJobsCount: jest.fn(),
-    };
+  const mockedClientInstance: jest.Mocked<
+    Pick<GitlabClient, 'getJobsWindowStats'>
+  > = {
+    getJobsWindowStats: jest.fn(),
+  };
 
   const sourceUrl = 'https://gitlab.com/my-group/my-project/-/tree/main/';
   const projectSlug = 'my-group/my-project';
@@ -93,7 +94,7 @@ describe('GitlabJobsProvider', () => {
       const expectedMetrics = {
         'gitlab.startedJobs7d': {
           id: 'gitlab.startedJobs7d',
-          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+          thresholds: GITLAB_SUCCESS_COUNT_THRESHOLDS,
         },
         'gitlab.successfulJobs7d': {
           id: 'gitlab.successfulJobs7d',
@@ -132,13 +133,18 @@ describe('GitlabJobsProvider', () => {
   });
 
   describe('calculateMetrics', () => {
-    it('should return all job metrics', async () => {
-      mockedClientInstance.getJobsCount
-        .mockResolvedValueOnce(300)
-        .mockResolvedValueOnce(250)
-        .mockResolvedValueOnce(30)
-        .mockResolvedValueOnce(50)
-        .mockResolvedValueOnce(10);
+    it('should return all job metrics from two window stats fetches', async () => {
+      mockedClientInstance.getJobsWindowStats
+        .mockResolvedValueOnce({
+          started: 300,
+          successful: 250,
+          failed: 30,
+        })
+        .mockResolvedValueOnce({
+          started: 60,
+          successful: 50,
+          failed: 10,
+        });
 
       const result = await provider.calculateMetrics(mockEntity);
 
@@ -151,47 +157,35 @@ describe('GitlabJobsProvider', () => {
       expect(result.get('gitlab.jobSuccessRatio7d')).toBe(89);
       expect(result.get('gitlab.jobSuccessRatio24h')).toBe(83);
 
-      expect(mockedClientInstance.getJobsCount).toHaveBeenCalledTimes(5);
-
-      expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
+      expect(mockedClientInstance.getJobsWindowStats).toHaveBeenCalledTimes(2);
+      expect(mockedClientInstance.getJobsWindowStats).toHaveBeenNthCalledWith(
         1,
         sourceUrl,
         projectSlug,
         { since: since7d },
       );
-      expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
+      expect(mockedClientInstance.getJobsWindowStats).toHaveBeenNthCalledWith(
         2,
         sourceUrl,
         projectSlug,
-        { since: since7d, scope: ['success'] },
-      );
-      expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
-        3,
-        sourceUrl,
-        projectSlug,
-        { since: since7d, scope: ['failed'] },
-      );
-      expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
-        4,
-        sourceUrl,
-        projectSlug,
-        { since: since1d, scope: ['success'] },
-      );
-      expect(mockedClientInstance.getJobsCount).toHaveBeenNthCalledWith(
-        5,
-        sourceUrl,
-        projectSlug,
-        { since: since1d, scope: ['failed'] },
+        { since: since1d },
       );
     });
 
-    it('should return 100% ratio when no jobs exist', async () => {
-      mockedClientInstance.getJobsCount.mockResolvedValue(0);
+    it('should omit ratio metrics when no successful or failed jobs exist', async () => {
+      mockedClientInstance.getJobsWindowStats.mockResolvedValue({
+        started: 0,
+        successful: 0,
+        failed: 0,
+      });
 
       const result = await provider.calculateMetrics(mockEntity);
 
-      expect(result.get('gitlab.jobSuccessRatio7d')).toBe(100);
-      expect(result.get('gitlab.jobSuccessRatio24h')).toBe(100);
+      expect(result.get('gitlab.startedJobs7d')).toBe(0);
+      expect(result.get('gitlab.successfulJobs7d')).toBe(0);
+      expect(result.get('gitlab.failedJobs7d')).toBe(0);
+      expect(result.has('gitlab.jobSuccessRatio7d')).toBe(false);
+      expect(result.has('gitlab.jobSuccessRatio24h')).toBe(false);
     });
 
     it('should throw when project-slug annotation is missing', async () => {
@@ -208,7 +202,7 @@ describe('GitlabJobsProvider', () => {
     });
 
     it('should propagate client errors', async () => {
-      mockedClientInstance.getJobsCount.mockRejectedValue(
+      mockedClientInstance.getJobsWindowStats.mockRejectedValue(
         new Error('GitLab unavailable'),
       );
 

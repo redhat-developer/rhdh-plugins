@@ -117,9 +117,8 @@ export const scorecardMessages = {
         'Number of issues opened in the last 7 days for a given GitLab project.',
     },
     'gitlab.closedIssues7d': {
-      title: 'GitLab issues closed (7d)',
-      description:
-        'Number of issues in closed state that were updated in the last 7 days for a given GitLab project.',
+      title: 'GitLab closed issues updated (7d)',
+      description: 'Number of closed issues with activity in the last 7 days.',
     },
     'gitlab.openMergeRequests': {
       title: 'GitLab open merge requests',
@@ -132,9 +131,9 @@ export const scorecardMessages = {
         'Number of merge requests opened in the last 7 days for a given GitLab project.',
     },
     'gitlab.closedMergeRequests7d': {
-      title: 'GitLab merge requests closed (7d)',
+      title: 'GitLab closed/merged MRs updated (7d)',
       description:
-        'Number of merge requests in closed or merged state that were updated in the last 7 days for a given GitLab project.',
+        'Number of closed or merged merge requests with activity in the last 7 days.',
     },
     'gitlab.startedPipelines7d': {
       title: 'GitLab pipelines started (7d)',

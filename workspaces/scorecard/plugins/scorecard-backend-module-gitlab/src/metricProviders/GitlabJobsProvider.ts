@@ -61,7 +61,7 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
         description:
           'Number of jobs started in the last 7 days for a given GitLab project.',
         type: 'number',
-        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        thresholds: GITLAB_SUCCESS_COUNT_THRESHOLDS,
         history: true,
       },
       {
@@ -118,41 +118,35 @@ export class GitlabJobsProvider implements MetricProvider<'number'> {
     const since7d = sevenDaysAgo();
     const since1d = oneDayAgo();
 
-    const [started7d, successful7d, failed7d, successful24h, failed24h] =
-      await Promise.all([
-        this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: since7d,
-        }),
-        this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: since7d,
-          scope: ['success'],
-        }),
-        this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: since7d,
-          scope: ['failed'],
-        }),
-        this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: since1d,
-          scope: ['success'],
-        }),
-        this.gitlabClient.getJobsCount(target, projectSlug, {
-          since: since1d,
-          scope: ['failed'],
-        }),
-      ]);
-
-    return new Map([
-      [GITLAB_JOBS_METRIC_IDS.STARTED_7D, started7d],
-      [GITLAB_JOBS_METRIC_IDS.SUCCESSFUL_7D, successful7d],
-      [GITLAB_JOBS_METRIC_IDS.FAILED_7D, failed7d],
-      [
-        GITLAB_JOBS_METRIC_IDS.SUCCESS_RATIO_7D,
-        calculateRatio(successful7d, failed7d),
-      ],
-      [
-        GITLAB_JOBS_METRIC_IDS.SUCCESS_RATIO_24H,
-        calculateRatio(successful24h, failed24h),
-      ],
+    const [stats7d, stats24h] = await Promise.all([
+      this.gitlabClient.getJobsWindowStats(target, projectSlug, {
+        since: since7d,
+      }),
+      this.gitlabClient.getJobsWindowStats(target, projectSlug, {
+        since: since1d,
+      }),
     ]);
+
+    const results = new Map<string, number>([
+      [GITLAB_JOBS_METRIC_IDS.STARTED_7D, stats7d.started],
+      [GITLAB_JOBS_METRIC_IDS.SUCCESSFUL_7D, stats7d.successful],
+      [GITLAB_JOBS_METRIC_IDS.FAILED_7D, stats7d.failed],
+    ]);
+
+    if (stats7d.successful + stats7d.failed > 0) {
+      results.set(
+        GITLAB_JOBS_METRIC_IDS.SUCCESS_RATIO_7D,
+        calculateRatio(stats7d.successful, stats7d.failed),
+      );
+    }
+
+    if (stats24h.successful + stats24h.failed > 0) {
+      results.set(
+        GITLAB_JOBS_METRIC_IDS.SUCCESS_RATIO_24H,
+        calculateRatio(stats24h.successful, stats24h.failed),
+      );
+    }
+
+    return results;
   }
 }

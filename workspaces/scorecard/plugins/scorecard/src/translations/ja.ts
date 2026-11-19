@@ -129,9 +129,9 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.gitlab.openedIssues7d.description':
       '特定の GitLab プロジェクトで過去 7 日間にオープンされたイシューの数。',
     'metric.gitlab.closedIssues7d.title':
-      'GitLab でクローズされたイシュー (7 日)',
+      'GitLab で更新されたクローズ済みイシュー (7 日)',
     'metric.gitlab.closedIssues7d.description':
-      '特定の GitLab プロジェクトで、クローズ状態かつ過去 7 日間に更新されたイシューの数。',
+      '過去 7 日間にアクティビティがあったクローズ済みイシューの数。',
     'metric.gitlab.openMergeRequests.title':
       'GitLab のオープン状態のマージリクエスト',
     'metric.gitlab.openMergeRequests.description':
@@ -141,9 +141,9 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.gitlab.openedMergeRequests7d.description':
       '特定の GitLab プロジェクトで過去 7 日間にオープンされたマージリクエストの数。',
     'metric.gitlab.closedMergeRequests7d.title':
-      'GitLab でクローズされたマージリクエスト (7 日)',
+      'GitLab で更新されたクローズ/マージ済み MR (7 日)',
     'metric.gitlab.closedMergeRequests7d.description':
-      '特定の GitLab プロジェクトで、クローズまたはマージ済みの状態かつ過去 7 日間に更新されたマージリクエストの数。',
+      '過去 7 日間にアクティビティがあったクローズまたはマージ済みのマージリクエストの数。',
     'metric.gitlab.startedPipelines7d.title':
       'GitLab で開始されたパイプライン (7 日)',
     'metric.gitlab.startedPipelines7d.description':

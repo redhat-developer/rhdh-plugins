@@ -17,7 +17,9 @@
 export function calculateRatio(success: number, failed: number): number {
   const total = success + failed;
   if (total === 0) {
-    return 100;
+    throw new Error(
+      'Cannot calculate success ratio: no successful or failed items were found in the time window',
+    );
   }
   return Math.round((success / total) * 100);
 }

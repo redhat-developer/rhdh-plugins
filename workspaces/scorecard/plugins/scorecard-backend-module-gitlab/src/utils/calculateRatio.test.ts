@@ -17,8 +17,10 @@
 import { calculateRatio } from './calculateRatio';
 
 describe('calculateRatio', () => {
-  it('should return 100 when no pipelines exist', () => {
-    expect(calculateRatio(0, 0)).toBe(100);
+  it('should throw when no successful or failed items exist', () => {
+    expect(() => calculateRatio(0, 0)).toThrow(
+      'Cannot calculate success ratio: no successful or failed items were found in the time window',
+    );
   });
 
   it('should calculate correct ratio', () => {

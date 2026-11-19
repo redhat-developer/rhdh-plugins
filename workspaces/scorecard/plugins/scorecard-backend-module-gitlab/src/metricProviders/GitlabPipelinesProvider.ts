@@ -61,7 +61,7 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
         description:
           'Number of pipelines started in the last 7 days for a given GitLab project.',
         type: 'number',
-        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        thresholds: GITLAB_SUCCESS_COUNT_THRESHOLDS,
         history: true,
       },
       {
@@ -147,18 +147,26 @@ export class GitlabPipelinesProvider implements MetricProvider<'number'> {
         ),
       ]);
 
-    return new Map([
+    const results = new Map<string, number>([
       [GITLAB_PIPELINES_METRIC_IDS.STARTED_7D, started7d],
       [GITLAB_PIPELINES_METRIC_IDS.SUCCESSFUL_7D, successful7d],
       [GITLAB_PIPELINES_METRIC_IDS.FAILED_7D, failed7d],
-      [
+    ]);
+
+    if (successful7d + failed7d > 0) {
+      results.set(
         GITLAB_PIPELINES_METRIC_IDS.SUCCESS_RATIO_7D,
         calculateRatio(successful7d, failed7d),
-      ],
-      [
+      );
+    }
+
+    if (successful24h + failed24h > 0) {
+      results.set(
         GITLAB_PIPELINES_METRIC_IDS.SUCCESS_RATIO_24H,
         calculateRatio(successful24h, failed24h),
-      ],
-    ]);
+      );
+    }
+
+    return results;
   }
 }

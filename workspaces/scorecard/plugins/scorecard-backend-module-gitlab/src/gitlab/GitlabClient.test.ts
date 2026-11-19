@@ -146,18 +146,15 @@ describe('GitlabClient', () => {
       ).rejects.toThrow(`Missing GitLab integration for '${unknownUrl}'`);
     });
 
-    it('should warn when no GitLab token is provided', async () => {
+    it('should throw when no GitLab token is provided', async () => {
       getCredentialsSpy.mockResolvedValue({});
-      mockGitlabApi.Issues.all.mockResolvedValue(mockExpandedCount(0));
 
-      await gitlabClient.getOpenIssuesCount(url, projectSlug);
-
-      expect(mockedLogger.warn).toHaveBeenCalledWith(
+      await expect(
+        gitlabClient.getOpenIssuesCount(url, projectSlug),
+      ).rejects.toThrow(
         `No GitLab token provided for '${url}'. Configure integrations.gitlab token (Backend Service Integration).`,
       );
-      expect(MockGitlab).toHaveBeenCalledWith({
-        host: 'https://gitlab.com',
-      });
+      expect(MockGitlab).not.toHaveBeenCalled();
     });
   });
 
@@ -288,7 +285,7 @@ describe('GitlabClient', () => {
 
       expect(result).toBe(15);
       expect(mockGitlabApi.Pipelines.all).toHaveBeenCalledWith(projectSlug, {
-        updatedAfter: since.toISOString(),
+        createdAfter: since.toISOString(),
         status: 'success',
         perPage: 1,
         maxPages: 1,
@@ -309,7 +306,7 @@ describe('GitlabClient', () => {
 
       expect(result).toBe(25);
       expect(mockGitlabApi.Pipelines.all).toHaveBeenCalledWith(projectSlug, {
-        updatedAfter: since.toISOString(),
+        createdAfter: since.toISOString(),
         perPage: 1,
         maxPages: 1,
         page: 1,
@@ -494,6 +491,63 @@ describe('GitlabClient', () => {
         `Reached jobs fetch limit for '${projectSlug}' ` +
           `(fetchItemsLimit=1001, maxPages=10); stopping fetch`,
       );
+    });
+  });
+
+  describe('getJobsWindowStats', () => {
+    it('should classify jobs from a single unscoped fetch', async () => {
+      const now = Date.now();
+      const since = new Date(now - 7 * 24 * 60 * 60 * 1000);
+
+      mockGitlabApi.Jobs.all.mockResolvedValue([
+        { created_at: new Date(now - 1000).toISOString(), status: 'success' },
+        { created_at: new Date(now - 2000).toISOString(), status: 'success' },
+        { created_at: new Date(now - 3000).toISOString(), status: 'failed' },
+        { created_at: new Date(now - 4000).toISOString(), status: 'running' },
+        { created_at: new Date(now - 5000).toISOString(), status: 'canceled' },
+      ]);
+
+      const result = await gitlabClient.getJobsWindowStats(url, projectSlug, {
+        since,
+      });
+
+      expect(result).toEqual({
+        started: 5,
+        successful: 2,
+        failed: 1,
+      });
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledTimes(1);
+      expect(mockGitlabApi.Jobs.all).toHaveBeenCalledWith(projectSlug, {
+        page: 1,
+        perPage: 100,
+        maxPages: 1,
+      });
+    });
+
+    it('should exclude jobs older than since from stats', async () => {
+      const now = Date.now();
+      const since = new Date(now - 1000);
+
+      mockGitlabApi.Jobs.all.mockResolvedValue([
+        {
+          created_at: new Date(now - 500).toISOString(),
+          status: 'success',
+        },
+        {
+          created_at: new Date(now - 5000).toISOString(),
+          status: 'failed',
+        },
+      ]);
+
+      const result = await gitlabClient.getJobsWindowStats(url, projectSlug, {
+        since,
+      });
+
+      expect(result).toEqual({
+        started: 1,
+        successful: 1,
+        failed: 0,
+      });
     });
   });
 

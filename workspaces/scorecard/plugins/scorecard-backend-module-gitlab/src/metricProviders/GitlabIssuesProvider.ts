@@ -71,9 +71,9 @@ export class GitlabIssuesProvider implements MetricProvider<'number'> {
       },
       {
         id: GITLAB_ISSUES_METRIC_IDS.CLOSED_ISSUES_7D,
-        title: 'GitLab issues closed (7d)',
+        title: 'GitLab closed issues updated (7d)',
         description:
-          'Number of issues in closed state that were updated in the last 7 days for a given GitLab project.',
+          'Number of closed issues with activity in the last 7 days.',
         type: 'number',
         thresholds: DEFAULT_NUMBER_THRESHOLDS,
         history: true,

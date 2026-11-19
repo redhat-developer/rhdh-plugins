@@ -36,10 +36,21 @@ type GitlabMergeRequestsOptions = {
   updatedAfter?: string;
 };
 
+type GitlabJobItem = {
+  created_at: string;
+  status?: string;
+};
+
 type FetchJobsSinceOptions = {
   since: Date;
   scope?: string[];
   fetchItemsLimit?: number;
+};
+
+type GitlabJobsWindowStats = {
+  started: number;
+  successful: number;
+  failed: number;
 };
 
 export class GitlabClient {
@@ -68,14 +79,14 @@ export class GitlabClient {
     const { token } = await this.credentialsProvider.getCredentials({ url });
 
     if (!token) {
-      this.logger.warn(
+      throw new Error(
         `No GitLab token provided for '${url}'. Configure integrations.gitlab token (Backend Service Integration).`,
       );
     }
 
     return new Gitlab({
       host: gitlabIntegration.config.baseUrl,
-      ...(token ? { oauthToken: token } : {}),
+      oauthToken: token,
     });
   }
 
@@ -198,8 +209,12 @@ export class GitlabClient {
     status?: string,
   ): Promise<number> {
     const api = await this.getGitlabApi(url);
+    // gitbeaker AllPipelinesOptions does not yet include createdAfter; GitLab
+    // project pipelines API supports created_after for "started" windows.
     const { paginationInfo } = await api.Pipelines.all(projectSlug, {
-      updatedAfter: since.toISOString(),
+      ...({
+        createdAfter: since.toISOString(),
+      } as Record<string, string>),
       ...(status ? { status: status as 'success' | 'failed' } : {}),
       perPage: 1,
       maxPages: 1,
@@ -222,13 +237,41 @@ export class GitlabClient {
     return jobs.length;
   }
 
+  async getJobsWindowStats(
+    url: string,
+    projectSlug: string,
+    options: { since: Date; fetchItemsLimit?: number },
+  ): Promise<GitlabJobsWindowStats> {
+    const api = await this.getGitlabApi(url);
+    const jobs = await this.fetchJobsSince(api, projectSlug, {
+      since: options.since,
+      fetchItemsLimit: options.fetchItemsLimit,
+    });
+
+    let successful = 0;
+    let failed = 0;
+    for (const job of jobs) {
+      if (job.status === 'success') {
+        successful++;
+      } else if (job.status === 'failed') {
+        failed++;
+      }
+    }
+
+    return {
+      started: jobs.length,
+      successful,
+      failed,
+    };
+  }
+
   private async fetchJobsPage(
     api: GitlabApi,
     projectSlug: string,
     page: number,
     perPage: number,
     scope?: string[],
-  ): Promise<Array<{ created_at: string }>> {
+  ): Promise<GitlabJobItem[]> {
     // GitLab accepts repeated scope[] query params; gitbeaker types only a
     // single JobScope in this release, so cast options for array callers.
     const jobOptions = {
@@ -238,15 +281,13 @@ export class GitlabClient {
       maxPages: 1,
     } as { page: number; perPage: number; maxPages: number };
 
-    return (await api.Jobs.all(projectSlug, jobOptions)) as {
-      created_at: string;
-    }[];
+    return (await api.Jobs.all(projectSlug, jobOptions)) as GitlabJobItem[];
   }
 
   private appendJobsSince(
-    items: Array<{ created_at: string }>,
+    items: GitlabJobItem[],
     since: Date,
-    allItems: Array<{ created_at: string }>,
+    allItems: GitlabJobItem[],
     fetchItemsLimit: number,
   ): boolean {
     for (const item of items) {
@@ -261,7 +302,7 @@ export class GitlabClient {
   }
 
   private shouldContinueJobsPaging(
-    items: Array<{ created_at: string }>,
+    items: GitlabJobItem[],
     since: Date,
     perPage: number,
   ): boolean {
@@ -277,7 +318,7 @@ export class GitlabClient {
     api: GitlabApi,
     projectSlug: string,
     options: FetchJobsSinceOptions,
-  ): Promise<Array<{ created_at: string }>> {
+  ): Promise<GitlabJobItem[]> {
     const {
       since,
       scope,
@@ -285,7 +326,7 @@ export class GitlabClient {
     } = options;
 
     const perPage = GitlabClient.GITLAB_JOBS_PAGE_SIZE;
-    const allItems: Array<{ created_at: string }> = [];
+    const allItems: GitlabJobItem[] = [];
 
     let page = 1;
     let hasMore = true;
