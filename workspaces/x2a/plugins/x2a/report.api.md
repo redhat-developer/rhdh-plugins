@@ -15,6 +15,12 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 // @public (undocumented)
 export const RepoAuthenticationExtension: FieldExtensionComponent<string, {}>;
 
+// @public
+export type RepoUrlCredentialsOptions = {
+  secretsKey: string;
+  readOnly?: boolean;
+};
+
 // @public (undocumented)
 export const RulesAcceptanceExtension: FieldExtensionComponent<string, {}>;
 
@@ -293,6 +299,11 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'artifact.types.project_metadata': string;
     readonly 'artifact.types.adversarial_report': string;
     readonly 'artifact.types.adversarial_report_json': string;
+    readonly 'scaffolder.repoUrlPicker.pickerUnavailable': string;
+    readonly 'scaffolder.repoUrlPicker.authPending': string;
+    readonly 'scaffolder.repoUrlPicker.authOk': string;
+    readonly 'scaffolder.repoUrlPicker.authError': string;
+    readonly 'scaffolder.repoUrlPicker.authRetry': string;
     readonly 'scaffolder.rulesAcceptance.required': string;
     readonly 'scaffolder.rulesAcceptance.loadingRules': string;
     readonly 'scaffolder.rulesAcceptance.noRulesConfigured': string;
@@ -379,6 +390,22 @@ export const x2aPluginTranslationRef: TranslationRef<
 
 // @public
 export const x2aPluginTranslations: TranslationResource<'plugin.x2a'>;
+
+// @public
+export const X2ARepoUrlPickerExtension: FieldExtensionComponent<
+  string,
+  X2ARepoUrlPickerUiOptions
+>;
+
+// @public
+export type X2ARepoUrlPickerUiOptions = {
+  allowedHosts?: string[];
+  allowedOrganizations?: string[];
+  allowedOwners?: string[];
+  allowedProjects?: string[];
+  allowedRepos?: string[];
+  requestUserCredentials?: RepoUrlCredentialsOptions;
+};
 
 // (No @packageDocumentation comment for this package)
 ```

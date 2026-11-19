@@ -310,6 +310,14 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Erneute Synchronisierung des Migrationsplans für Projekt „{{name}}“ fehlgeschlagen',
     'resyncMigrationPlan.errorStart':
       'Erneute Synchronisierung des Migrationsplans konnte nicht gestartet werden',
+    'scaffolder.repoUrlPicker.pickerUnavailable':
+      'Die Repository-Auswahl konnte nicht geladen werden. Dies ist ein Plugin-Kompatibilitätsproblem, bitte melden Sie es.',
+    'scaffolder.repoUrlPicker.authPending':
+      '{{provider}}-Zugriffstoken wird angefordert...',
+    'scaffolder.repoUrlPicker.authOk': '{{provider}}-Zugriffstoken erhalten',
+    'scaffolder.repoUrlPicker.authError':
+      '{{provider}}-Zugriffstoken konnte nicht abgerufen werden: {{error}}. Prüfen Sie, ob der Auth-Provider "{{provider}}" für diese Instanz konfiguriert ist.',
+    'scaffolder.repoUrlPicker.authRetry': 'Erneut versuchen',
     'scaffolder.rulesAcceptance.loadingRules': 'Regeln werden geladen...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'Es sind keine Regeln konfiguriert.',

@@ -314,6 +314,15 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'No se pudo volver a sincronizar el plan de migración para el proyecto "{{name}}"',
     'resyncMigrationPlan.errorStart':
       'No se pudo iniciar la resincronización del plan de migración',
+    'scaffolder.repoUrlPicker.pickerUnavailable':
+      'No se pudo cargar el selector de repositorios. Se trata de un problema de compatibilidad del complemento, infórmelo.',
+    'scaffolder.repoUrlPicker.authPending':
+      'Solicitando un token de acceso de {{provider}}...',
+    'scaffolder.repoUrlPicker.authOk':
+      'Token de acceso de {{provider}} obtenido',
+    'scaffolder.repoUrlPicker.authError':
+      'No se pudo obtener un token de acceso de {{provider}}: {{error}}. Compruebe que el proveedor de autenticación "{{provider}}" está configurado para esta instancia.',
+    'scaffolder.repoUrlPicker.authRetry': 'Reintentar',
     'scaffolder.rulesAcceptance.loadingRules': 'Cargando reglas…',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'No hay reglas configuradas.',

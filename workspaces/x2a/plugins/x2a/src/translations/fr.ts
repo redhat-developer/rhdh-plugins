@@ -317,6 +317,14 @@ const x2aPluginTranslationFr = createTranslationMessages({
       'Échec de la resynchronisation du plan de migration pour le projet « {{name}} »',
     'resyncMigrationPlan.errorStart':
       'Échec de la resynchronisation du plan de migration',
+    'scaffolder.repoUrlPicker.pickerUnavailable':
+      "Le sélecteur de dépôt n'a pas pu être chargé. Il s'agit d'un problème de compatibilité du plugin, veuillez le signaler.",
+    'scaffolder.repoUrlPicker.authPending':
+      "Demande d'un jeton d'accès {{provider}}...",
+    'scaffolder.repoUrlPicker.authOk': "Jeton d'accès {{provider}} obtenu",
+    'scaffolder.repoUrlPicker.authError':
+      "Impossible d'obtenir un jeton d'accès {{provider}} : {{error}}. Vérifiez que le fournisseur d'authentification \"{{provider}}\" est configuré pour cette instance.",
+    'scaffolder.repoUrlPicker.authRetry': 'Réessayer',
     'scaffolder.rulesAcceptance.loadingRules': 'Chargement des règles...',
     'scaffolder.rulesAcceptance.noRulesConfigured': 'Aucune règle configurée.',
     'scaffolder.rulesAcceptance.required': 'requis',

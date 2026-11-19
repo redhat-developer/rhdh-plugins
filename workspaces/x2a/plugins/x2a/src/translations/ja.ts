@@ -277,6 +277,15 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} 文字',
     'rulesPage.dialog.descriptionTooLong':
       '説明は{{max}}文字以内で入力してください（現在{{count}}文字）。',
+    'scaffolder.repoUrlPicker.pickerUnavailable':
+      'リポジトリピッカーを読み込めませんでした。これはプラグインの互換性の問題です。報告してください。',
+    'scaffolder.repoUrlPicker.authPending':
+      '{{provider}} のアクセストークンを要求しています...',
+    'scaffolder.repoUrlPicker.authOk':
+      '{{provider}} のアクセストークンを取得しました',
+    'scaffolder.repoUrlPicker.authError':
+      '{{provider}} のアクセストークンを取得できませんでした: {{error}}。このインスタンス用に「{{provider}}」認証プロバイダーが設定されているか確認してください。',
+    'scaffolder.repoUrlPicker.authRetry': '再試行',
     'scaffolder.rulesAcceptance.fetchError': 'ルールの取得に失敗しました',
     'scaffolder.rulesAcceptance.loadingRules': 'ルールの読み込み中...',
     'scaffolder.rulesAcceptance.noRulesConfigured':

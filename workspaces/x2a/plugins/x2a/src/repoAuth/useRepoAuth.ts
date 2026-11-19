@@ -88,8 +88,17 @@ export const useRepoAuthentication = () => {
     }
   }, [apiByProvider]);
 
-  const getToken = useCallback(
-    async (tokenDescriptor: AuthTokenDescriptor): Promise<AuthToken> => {
+  /**
+   * Returns the OAuth access token exactly as the provider issued it, without
+   * the provider-specific git-over-HTTPS prefix that {@link augmentToken} adds.
+   *
+   * Consumers that hand the token to the x2a backend must pick the right
+   * variant: the `OAUTH_TOKEN_*` secrets written by the CSV bulk import carry
+   * augmented tokens, while `SRC_USER_OAUTH_TOKEN` / `TGT_USER_OAUTH_TOKEN`
+   * carry raw ones because `createProjectAction` augments them server-side.
+   */
+  const getRawToken = useCallback(
+    async (tokenDescriptor: AuthTokenDescriptor): Promise<string> => {
       const providerName = tokenDescriptor.provider as ScmProviderName;
       const api = apiByProvider[providerName];
 
@@ -100,7 +109,14 @@ export const useRepoAuthentication = () => {
         );
       }
 
-      const rawToken = await getProviderToken(api, tokenDescriptor);
+      return await getProviderToken(api, tokenDescriptor);
+    },
+    [apiByProvider],
+  );
+
+  const getToken = useCallback(
+    async (tokenDescriptor: AuthTokenDescriptor): Promise<AuthToken> => {
+      const rawToken = await getRawToken(tokenDescriptor);
       const provider = resolveScmProviderByName(
         tokenDescriptor.provider as ScmProviderName,
       );
@@ -109,7 +125,7 @@ export const useRepoAuthentication = () => {
         provider: tokenDescriptor.provider,
       };
     },
-    [apiByProvider],
+    [getRawToken],
   );
 
   const authenticate = useCallback(
@@ -128,8 +144,9 @@ export const useRepoAuthentication = () => {
   const response = useMemo(() => {
     return {
       authenticate,
+      getRawToken,
     };
-  }, [authenticate]);
+  }, [authenticate, getRawToken]);
 
   return response;
 };

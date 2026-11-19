@@ -392,6 +392,15 @@ export const x2aPluginMessages = {
     },
   },
   scaffolder: {
+    repoUrlPicker: {
+      pickerUnavailable:
+        'The repository picker could not be loaded. This is a plugin compatibility issue, please report it.',
+      authPending: 'Requesting a {{provider}} access token...',
+      authOk: '{{provider}} access token obtained',
+      authError:
+        'Could not obtain a {{provider}} access token: {{error}}. Check that the "{{provider}}" auth provider is configured for this instance.',
+      authRetry: 'Retry',
+    },
     rulesAcceptance: {
       loadingRules: 'Loading rules...',
       noRulesConfigured: 'No rules configured.',
