@@ -75,8 +75,10 @@ describe('JobResourceBuilder', () => {
         mockConfig.credentials.llm = {
           LLM_MODEL: 'anthropic.claude-v2',
           MAX_TOKENS: 32000,
+          ZERO_TOKENS: 0,
           TEMPERATURE: 0.5,
           STREAMING: false,
+          EMPTY: '',
         } as unknown as Record<string, string>;
 
         const secret = JobResourceBuilder.buildProjectSecret(
@@ -88,8 +90,10 @@ describe('JobResourceBuilder', () => {
         expect(secret.stringData).toMatchObject({
           LLM_MODEL: 'anthropic.claude-v2',
           MAX_TOKENS: '32000',
+          ZERO_TOKENS: '0',
           TEMPERATURE: '0.5',
           STREAMING: 'false',
+          EMPTY: '',
         });
         for (const value of Object.values(secret.stringData!)) {
           expect(typeof value).toBe('string');
@@ -112,6 +116,43 @@ describe('JobResourceBuilder', () => {
         expect(secret.stringData!.LLM_MODEL).toBe('anthropic.claude-v2');
         expect(secret.stringData).not.toHaveProperty('UNRESOLVED');
         expect(secret.stringData).not.toHaveProperty('EMPTIED');
+      });
+
+      it.each([
+        {
+          label: 'a nested map',
+          extra: { NESTED: { model: 'x' } },
+          message: 'Secret value "NESTED" must be a string, number, or boolean',
+        },
+        {
+          label: 'a list',
+          extra: { NESTED: ['a', 'b'] },
+          message: 'Secret value "NESTED" must be a string, number, or boolean',
+        },
+        {
+          label: 'an integer too large to represent exactly',
+          extra: { MAX_TOKENS: Number.MAX_SAFE_INTEGER + 1 },
+          message:
+            'Secret value "MAX_TOKENS" is an integer outside the safe range. Quote it in app-config so the digits are preserved.',
+        },
+        {
+          label: 'a non-finite number',
+          extra: { TEMPERATURE: Number.POSITIVE_INFINITY },
+          message: 'Secret value "TEMPERATURE" must be a finite number',
+        },
+      ])('should reject an LLM value that is $label', ({ extra, message }) => {
+        mockConfig.credentials.llm = {
+          LLM_MODEL: 'anthropic.claude-v2',
+          ...extra,
+        } as unknown as Record<string, string>;
+
+        expect(() =>
+          JobResourceBuilder.buildProjectSecret(
+            projectId,
+            undefined,
+            mockConfig,
+          ),
+        ).toThrow(message);
       });
 
       it('should support alternative LLM credential formats', () => {

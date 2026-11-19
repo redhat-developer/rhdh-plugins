@@ -39,15 +39,46 @@ import { applyDeploymentPatch } from './applyDeploymentPatch';
  * 400 during project creation. Null and undefined values (an env var that was
  * never substituted) are dropped rather than stringified into "null".
  *
+ * Only strings, booleans, and finite numbers are coerced. Objects, arrays,
+ * and other non-scalars are rejected: `String()` would turn a nested map into
+ * the literal "[object Object]" and the API server would accept it. Integers
+ * outside the safe integer range are rejected too, because YAML parsing may
+ * already have rounded them and `String()` cannot recover the original digits.
+ *
  * Applied to every Secret this builder produces, so the guarantee holds
  * regardless of where a value originated.
  */
 function toStringData(values: Record<string, unknown>): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(values)
-      .filter(([, value]) => value !== undefined && value !== null)
-      .map(([key, value]) => [key, String(value)]),
-  );
+  const entries: [string, string][] = [];
+  for (const [key, value] of Object.entries(values)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+    if (typeof value === 'string') {
+      entries.push([key, value]);
+      continue;
+    }
+    if (typeof value === 'boolean') {
+      entries.push([key, String(value)]);
+      continue;
+    }
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) {
+        throw new Error(`Secret value "${key}" must be a finite number`);
+      }
+      if (Number.isInteger(value) && !Number.isSafeInteger(value)) {
+        throw new Error(
+          `Secret value "${key}" is an integer outside the safe range. Quote it in app-config so the digits are preserved.`,
+        );
+      }
+      entries.push([key, String(value)]);
+      continue;
+    }
+    throw new Error(
+      `Secret value "${key}" must be a string, number, or boolean`,
+    );
+  }
+  return Object.fromEntries(entries);
 }
 
 /**

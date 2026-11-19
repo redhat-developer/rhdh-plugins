@@ -8,5 +8,7 @@ Values under `x2a.credentials` are read from app-config without schema coercion,
 unquoted YAML scalar such as `MAX_TOKENS: 32000` reached the Kubernetes API as a number
 and made it reject the entire project Secret with `cannot unmarshal number into Go struct
 field Secret.stringData of type string`. The user saw only a generic HTTP 400 during
-project creation. All `stringData` values are now coerced to strings, and null or
-undefined values (from an env var that was never substituted) are dropped.
+project creation. String, boolean, and finite numeric `stringData` values are
+now coerced to strings. Null or undefined values (from an env var that was never
+substituted) are dropped. Nested values and integers too large to represent
+exactly are rejected instead of being written into the Secret.
