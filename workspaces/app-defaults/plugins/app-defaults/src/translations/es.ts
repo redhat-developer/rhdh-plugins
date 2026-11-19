@@ -44,6 +44,9 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       'Todavía no hay entidades documentadas o no tiene permiso para visualizarlas. La documentación aparecerá aquí una vez que se registren las entidades con anotaciones de TechDocs y usted tenga acceso.',
     'docs.emptyState.importButtonTitle': 'Registrar un componente',
+    'notFound.title': 'Página no encontrada',
+    'notFound.description':
+      'La página que busca puede haber sido eliminada, haber cambiado de nombre o no estar disponible temporalmente.',
     'learningPaths.title': 'Rutas de aprendizaje',
     'learningPaths.error.title': 'No se pudieron extraer los datos.',
     'learningPaths.error.unknownError': 'Error desconocido',
