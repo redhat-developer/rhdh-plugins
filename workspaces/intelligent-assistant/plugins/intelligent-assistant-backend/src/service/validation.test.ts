@@ -383,6 +383,76 @@ describe('validateAttachmentsForModel', () => {
       expect(statusMock).not.toHaveBeenCalled();
     });
 
+    it.each([
+      [
+        'whitespace inside the base64 prefix',
+        VALID_WEBP_B64.match(/.{1,4}/g)!.join('\n'),
+      ],
+      ['leading whitespace', `${'\r\n'.repeat(40)}${VALID_WEBP_B64}`],
+      [
+        'characters the base64 decoder skips',
+        `${VALID_WEBP_B64.slice(0, 3)}.${VALID_WEBP_B64.slice(3)}`,
+      ],
+      [
+        'base64url encoding',
+        // The size bytes make the encoded prefix contain "-" and "_".
+        Buffer.from([
+          0x52, 0x49, 0x46, 0x46, 0xff, 0xfb, 0xbf, 0xff, 0x57, 0x45, 0x42,
+          0x50,
+        ]).toString('base64url'),
+      ],
+    ])('should accept WebP image with %s', (_case, encoded) => {
+      mockReq.body = {
+        model: 'gpt-4',
+        provider: 'openai',
+        attachments: [
+          {
+            attachment_type: 'image',
+            content_type: 'image/webp',
+            content: `data:image/webp;base64,${encoded}`,
+          },
+        ],
+      };
+
+      callValidate();
+
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+
+    it('should only decode the image signature prefix', () => {
+      const largeJpeg = Buffer.concat([
+        Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
+        Buffer.alloc(64 * 1024),
+      ]).toString('base64');
+      mockReq.body = {
+        model: 'gpt-4',
+        provider: 'openai',
+        attachments: [
+          {
+            attachment_type: 'image',
+            content_type: 'image/jpeg',
+            content: `data:image/jpeg;base64,${largeJpeg}`,
+          },
+        ],
+      };
+      const bufferFromSpy = jest.spyOn(Buffer, 'from');
+
+      try {
+        callValidate();
+
+        const decodedLengths = (bufferFromSpy.mock.calls as unknown[][])
+          .filter(([, encoding]) => encoding === 'base64')
+          .map(([input]) => (input as string).length);
+        expect(decodedLengths).toHaveLength(1);
+        expect(decodedLengths[0]).toBeLessThanOrEqual(64);
+      } finally {
+        bufferFromSpy.mockRestore();
+      }
+      expect(mockNext).toHaveBeenCalled();
+      expect(statusMock).not.toHaveBeenCalled();
+    });
+
     it('should reject image with invalid magic bytes', () => {
       mockReq.body = {
         model: 'gpt-4',
