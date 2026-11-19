@@ -55,6 +55,22 @@ import {
   validateSnapshotSize,
 } from './validation';
 
+describe('npx registry base in a snapshot', () => {
+  it.each([
+    'http://example.com',
+    'https://user@example.com',
+    'https://example.com?q=1',
+    'https://example.com/#foo',
+  ])('rejects %s', registryBaseUrl => {
+    expect(
+      validateSnapshot({
+        ...validNpxSnapshotReady,
+        source: { ...npxSource, registryBaseUrl },
+      }).valid,
+    ).toBe(false);
+  });
+});
+
 describe('isValidDigest', () => {
   it('accepts a valid lowercase SHA-256 digest', () => {
     expect(

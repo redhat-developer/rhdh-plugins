@@ -28,6 +28,7 @@
  * design D6's status table.
  */
 
+import { isDeepStrictEqual } from 'node:util';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import type { IdentityTuple } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 
@@ -96,10 +97,7 @@ export function calculateReconciliationPlan(
         tuplesEqual(previous.tuple, mapped.tuple) &&
         (stringifyEntityRef(previous.entity) !==
           stringifyEntityRef(mapped.entity) ||
-          previous.entity.metadata.annotations?.[
-            'backstage.io/techdocs-ref'
-          ] !==
-            mapped.entity.metadata.annotations?.['backstage.io/techdocs-ref']),
+          annotationsChanged(previous, mapped)),
     ),
   );
   if (
@@ -172,8 +170,7 @@ export function calculateReconciliationPlan(
     if (
       !previous ||
       previous.digest !== digest ||
-      previous.entity.metadata.annotations?.['backstage.io/techdocs-ref'] !==
-        entity.metadata.annotations?.['backstage.io/techdocs-ref']
+      annotationsChanged(previous, mapped)
     ) {
       // New entity or content changed — plan upsert
       upserts.push({ tuple, catalogName, digest, entity });
@@ -235,6 +232,18 @@ export function calculateReconciliationPlan(
     collisions,
     nextState,
   };
+}
+
+// Both entities are provider-owned records. Annotation-only upgrades must
+// reach the catalog even when the connector returns the same content digest.
+function annotationsChanged(
+  previous: OwnedEntity,
+  mapped: PlannedUpsert,
+): boolean {
+  return !isDeepStrictEqual(
+    previous.entity.metadata.annotations ?? {},
+    mapped.entity.metadata.annotations ?? {},
+  );
 }
 
 /**

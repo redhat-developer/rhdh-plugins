@@ -55,7 +55,7 @@ const defaultSource: NpxConnectorTestConfig = {
 };
 
 describe('backend authentication', () => {
-  it('rejects unauthenticated requests to GET /skills/:sourceId', async () => {
+  it('rejects unauthenticated requests for snapshots and documentation', async () => {
     mockedDiscoverIndex.mockResolvedValue({
       entries: [],
       failedKeys: [],
@@ -75,6 +75,9 @@ describe('backend authentication', () => {
     );
 
     expect(response.status).toBe(401);
+    await request(server)
+      .get(`/api/npx-skill-connector/skilldocs/rhess/sha256:${'a'.repeat(64)}`)
+      .expect(401);
   });
 
   it('accepts service credentials for GET /skills/:sourceId', async () => {

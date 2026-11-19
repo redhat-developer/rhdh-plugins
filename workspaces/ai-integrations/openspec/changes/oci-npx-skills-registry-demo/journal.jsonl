@@ -161,3 +161,5 @@
 {"ts":"2026-10-26T17:08:28Z","phase":"any","event":"turn.start","input":"Commit approved final 6.5 mock-boundary comments and prose formatting; maintainer will sign, push and merge."}
 {"ts":"2026-10-26T17:08:28Z","phase":"any","event":"turn.end","output":"Prepared approved comment/formatting cleanup and focused audit records for unsigned commit. No runtime/API changes, push, or merge."}
 {"ts":"2026-11-05T00:30:00Z","phase":"authoring","event":"artifact.revised","ref":"audit.md","input":"PR #5452 implements task 3.2 artifact verification and normalization.","output":"Recorded task 3.2 completion with concurrent task 3.3 and 3.4 progress; no conflicting requirements found."}
+{"ts":"2026-11-19T20:17:05Z","phase":"apply","event":"artifact.revised","ref":"proposal,design,specs,audit","output":"Verified npx TechDocs from the catalog Docs tab for good-readme and checked the OCI Hello World article."}
+{"ts":"2026-11-19T20:34:25Z","phase":"apply","event":"artifact.revised","ref":"design,specs,audit","output":"Published optional CLI registry base and index key and verified the companion Boost resolver against all seven live npx entities."}

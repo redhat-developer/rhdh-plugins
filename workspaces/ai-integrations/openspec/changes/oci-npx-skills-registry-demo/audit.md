@@ -1,3 +1,22 @@
+## npx skill TechDocs and CLI install metadata
+
+**Last audited:** 2026-11-19T20:34:25Z
+
+All seven live Evil Martians entities exposed the public discovery base and
+original index key. The companion Boost command resolver selected the
+corresponding upstream skill for each entity. Reconciliation tests cover
+adding install annotations to an existing entity at an unchanged digest.
+
+The npx provider annotation and the URL reader agree on the source and digest
+route. The connector resolves the upstream URL from its own snapshot, verifies
+fresh response bytes, and accepts authenticated documentation requests. A
+fresh build depends on upstream availability. In the local development app,
+the catalog Docs tabs rendered the Evil Martians `good-readme` article and the
+OCI `Hello World` article. The local MkDocs build used the physical temporary
+directory so symlinked macOS paths resolved consistently.
+
+---
+
 ## Npx authentication tests and catalog provider docs
 
 **Last audited:** 2026-11-12T22:20:43Z

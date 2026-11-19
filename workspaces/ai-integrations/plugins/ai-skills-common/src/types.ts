@@ -146,6 +146,8 @@ export interface SnapshotSource {
   id: string;
   /** Source type discriminator. */
   type: SkillSourceType;
+  /** Public CLI discovery base for an npx source, including any path prefix. */
+  registryBaseUrl?: string;
 }
 
 /**

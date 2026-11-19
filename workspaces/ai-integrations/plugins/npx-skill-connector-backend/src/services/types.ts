@@ -30,6 +30,7 @@ export interface NpxSourceConfig {
   readonly id: string;
   /** Public HTTPS URL of the Agent Skills v0.2 discovery index. */
   readonly indexUrl: string;
+  readonly registryBaseUrl?: string;
   /** Additional HTTPS origins for artifact redirects. */
   readonly allowedOrigins?: readonly string[];
   /** Backstage refresh schedule, always local scope. */

@@ -31,14 +31,13 @@ a valid OCI skill image SHALL produce its own entity using its repository/tag
 key, even when another tag has identical content or declared version. Confirmed
 non-skills SHALL produce no entity.
 
-For OCI skill entities, the provider SHALL set `backstage.io/techdocs-ref` to
+For OCI and npx skill entities, the provider SHALL set `backstage.io/techdocs-ref` to
 `url:<discovered-connector-base>/skilldocs/<sourceId>/<digest>` as specified in
 design D5/D8. The `<discovered-connector-base>` SHALL be resolved through
 Backstage discovery using the configured `connectorPluginId`. The `<sourceId>`
 SHALL be the configured source ID and the `<digest>` SHALL be the verified
-manifest digest from the record. The provider SHALL NOT download or extract
-skill content to construct this annotation. npx skill entities SHALL NOT
-receive a `backstage.io/techdocs-ref` annotation in this increment.
+OCI manifest digest or npx artifact digest from the record. The provider SHALL NOT download or extract
+skill content to construct this annotation.
 
 #### Scenario: Source metadata lacks owner and version
 
@@ -82,10 +81,10 @@ receive a `backstage.io/techdocs-ref` annotation in this increment.
 - **AND** the annotation uses the discovery-resolved connector base URL, not a hardcoded address
 - **AND** the provider does not download or extract Markdown to construct the annotation
 
-#### Scenario: npx entity has no techdocs-ref annotation
+#### Scenario: npx entity links to verified Markdown
 
 - **WHEN** an npx skill record is mapped to an entity
-- **THEN** the entity does not have a `backstage.io/techdocs-ref` annotation
+- **THEN** the entity links to the npx connector documentation route using its source ID and verified artifact digest
 
 #### Scenario: Several valid skill-image tags in one repository
 
@@ -277,3 +276,9 @@ not participate in this protocol.
 - **AND** the connector's next `ready` snapshot omits that skill
 - **THEN** recovery replays the persisted pending delta and commits its ownership first
 - **AND** reconciliation of the newer snapshot removes the now-tracked entity
+
+#### Scenario: CLI install metadata
+
+- **WHEN** the provider maps an npx record from a source with a CLI registry base
+- **THEN** it publishes `rhdh.io/npx-skill-registry` from the source and `rhdh.io/npx-skill-key` from the record key
+- **AND** it upgrades existing entities when the annotations change at the same digest

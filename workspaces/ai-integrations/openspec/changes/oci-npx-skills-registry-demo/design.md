@@ -230,8 +230,7 @@ version as SemVer, and otherwise emits
   content. Same-digest tag aliases share the same documentation URL because they
   share the same manifest digest. When a tag moves to a new manifest, the entity's
   `backstage.io/techdocs-ref` updates to reflect the new digest, matching the
-  entity's updated integrity references. The annotation is OCI-only for this
-  increment; npx skill entities do not receive a `backstage.io/techdocs-ref`.
+  entity's updated integrity references.
 - npx: `sourceUri` is the configured index entry's absolute HTTPS artifact URL,
   serialized with the URL API. URL credentials, fragments, query-string
   credentials, and signed access tokens are rejected before the value is
@@ -241,7 +240,13 @@ version as SemVer, and otherwise emits
   `rhdh.io/npx-skill-ref` to `<sourceUri>#<digest>`. A parser splits at the single
   literal `#`; comparison uses the serialized URL and lowercase SHA-256 digest.
   This reference records verified content at that URL, not a guarantee that the
-  server supports immutable retrieval. Consumers fetching it again must reverify.
+  server supports immutable retrieval. The provider sets the same
+  connector-relative TechDocs route as for OCI using the verified Markdown
+  digest. The npx connector looks up that digest in the source snapshot and
+  revalidates the upstream bytes on a documentation read. The connector also publishes
+  the CLI discovery base on the snapshot source when available. The provider emits
+  that base and the original record key as separate install annotations so that
+  clients can select the skill independently of its display name and artifact host.
 
 Configured digest-only references retain raw acquisition without inventing a tag.
 They are deliberately excluded from normalized `skills` and `failedSkillKeys`;
@@ -545,8 +550,8 @@ the HTTP-based model-card TechDocs integration pattern established in the
 discovery-resolved `backstage.io/techdocs-ref` annotation, and authenticated
 URL-reader retrieval producing a minimal MkDocs project. No direct OCI
 UrlReader is added; the existing URL reader retrieves extracted content over
-connector HTTP; the connector alone acquires and extracts OCI artifacts. This
-increment covers OCI skill documentation only; npx TechDocs is deferred.
+connector HTTP; the connector alone acquires and extracts OCI artifacts.
+The npx connector shares the reader and HTTP contract using artifact digests as described in D5.
 
 **Connector Markdown endpoint.** The OCI connector exposes
 `GET /skilldocs/:sourceId/:digest` relative to its Backstage plugin base URL.
@@ -732,13 +737,13 @@ download or extract skill content; it constructs the annotation from trusted
 configuration and the record's verified digest. The annotation is set alongside
 the existing identity, integrity, and source-location annotations. When a tag
 moves to a new manifest, the entity's `backstage.io/techdocs-ref` updates to
-reflect the new digest, consistent with D5's integrity reference update. npx
-skill entities do not receive a `backstage.io/techdocs-ref` in this increment.
+reflect the new digest, consistent with D5's integrity reference update.
+The same annotation tracks the Markdown artifact digest for npx entities.
 
 **URL-reader integration.** The existing `catalog-techdoc-url-reader-backend`
-plugin is extended to match OCI skill documentation URLs from trusted
+plugin matches OCI and npx skill documentation URLs from trusted
 configured or Backstage-discovered connector destinations and paths. The reader
-resolves configured OCI connector bases through Backstage discovery during service
+resolves configured skill connector bases through Backstage discovery during service
 initialization, before publishing its synchronous reader factory. Both predicate
 selection and direct reads enforce those trusted destinations. The reader
 matches the exact trusted connector origin and base pathname, followed by

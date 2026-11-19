@@ -1,14 +1,14 @@
 ## ADDED Requirements
 
-### Requirement: OCI skill documentation URL matching
+### Requirement: OCI and npx skill documentation URL matching
 
-The URL-reader plugin SHALL match OCI skill documentation URLs from trusted
+The URL-reader plugin SHALL match OCI and npx skill documentation URLs from trusted
 configured or Backstage-discovered connector destinations, extending the
 existing model-card URL-reader pattern. It SHALL match the exact trusted origin
 and connector base pathname followed by `/skilldocs/<sourceId>/<digest>`. It
 SHALL append the route to the full connector base, including any `/api/<pluginId>`
 prefix, encoding source ID and digest individually as path segments. Matching
-SHALL decode each segment once, validate the manifest digest, and reject extra
+SHALL decode each segment once, validate the SHA-256 digest format, and reject extra
 segments, query strings, fragments, URL credentials, and paths outside the trusted
 base. Connector redirects SHALL be errors; service tokens SHALL NOT be forwarded
 to redirect destinations. It SHALL NOT infer arbitrary credential destinations
@@ -59,7 +59,7 @@ preserved.
 
 ### Requirement: Service-token authentication to connector
 
-The URL reader SHALL authenticate to the OCI connector using Backstage
+The URL reader SHALL authenticate to the configured skill connector using Backstage
 service-to-service tokens, as specified in design D8. It SHALL call
 `auth.getPluginRequestToken` with `targetPluginId` set to the receiving
 connector plugin's registered `pluginId`, consistent with the model-card URL

@@ -839,9 +839,12 @@ describe('consumeSnapshot', () => {
     );
   });
 
-  it('does not set backstage.io/techdocs-ref on npx entities', async () => {
+  it('sets the connector documentation URL on npx entities', async () => {
     const snapshot = makeSnapshot({
-      source: npxSource,
+      source: {
+        ...npxSource,
+        registryBaseUrl: 'https://registry.example/team',
+      },
       skills: [validNpxRecordFull],
     });
     mockFetchResponse(snapshot);
@@ -858,9 +861,15 @@ describe('consumeSnapshot', () => {
 
     expect(result.ok).toBe(true);
     const entity = result.entities[0].entity;
-    expect(
-      entity.metadata.annotations?.['backstage.io/techdocs-ref'],
-    ).toBeUndefined();
+    expect(entity.metadata.annotations).toMatchObject({
+      'rhdh.io/npx-skill-key': validNpxRecordFull.key,
+      'rhdh.io/npx-skill-registry': 'https://registry.example/team',
+    });
+    expect(entity.metadata.annotations?.['backstage.io/techdocs-ref']).toBe(
+      `url:${baseUrl}/skilldocs/${encodeURIComponent(
+        npxConsumer.sourceId,
+      )}/${encodeURIComponent(validNpxRecordFull.digest)}`,
+    );
   });
 
   it('same-digest tag aliases share the same techdocs-ref URL', async () => {

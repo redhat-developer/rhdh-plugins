@@ -91,6 +91,22 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 /**
+ * Checks an npx CLI discovery base before publishing it in the catalog.
+ * @public
+ */
+export function isValidRegistryBaseUrl(value: unknown): value is string {
+  if (
+    typeof value !== 'string' ||
+    !value.startsWith('https://') ||
+    /[\s\\?#]/u.test(value) ||
+    !URL.canParse(value)
+  )
+    return false;
+  const url = new URL(value);
+  return !url.username && !url.password;
+}
+
+/**
  * Validates a SHA-256 digest string.
  *
  * @public
@@ -460,6 +476,15 @@ function validateSnapshotShape(
   if (!VALID_SOURCE_TYPES.has(source.type as string)) {
     errors.push(
       `source.type: must be one of 'oci', 'npx', got '${String(source.type)}'`,
+    );
+  }
+
+  if (
+    source.registryBaseUrl !== undefined &&
+    (source.type !== 'npx' || !isValidRegistryBaseUrl(source.registryBaseUrl))
+  ) {
+    errors.push(
+      'source.registryBaseUrl: expected a public HTTPS base URL for an npx source',
     );
   }
 

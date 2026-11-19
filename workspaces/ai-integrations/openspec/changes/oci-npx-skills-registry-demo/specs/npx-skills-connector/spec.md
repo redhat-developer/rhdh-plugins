@@ -82,3 +82,29 @@ SHALL return 404.
 
 - **WHEN** the entire index is retrieved and validated successfully and contains no supported skills
 - **THEN** the endpoint returns `ready` with empty skills and failed-key arrays and a completion time
+
+### Requirement: Verified Markdown for TechDocs
+
+The connector SHALL serve `GET /skilldocs/:sourceId/:digest` under its default
+Backstage authentication policy. It SHALL resolve the artifact URL from the
+source snapshot and reuse the configured HTTPS transport limits.
+
+#### Scenario: Read a published skill
+
+- **WHEN** the requested artifact bytes match the source record's SHA-256 digest
+- **THEN** the response contains the Markdown bytes and a digest-based ETag
+- **AND** a matching conditional request can reuse the previously built documentation
+
+#### Scenario: Missing or changed artifact
+
+- **WHEN** the source or digest is absent from the snapshot
+- **THEN** the connector returns 404
+- **WHEN** the fetched bytes differ from the requested digest
+- **THEN** the connector returns 409 and withholds the changed bytes
+
+#### Scenario: CLI discovery base
+
+- **WHEN** a source uses a well-known index below a registry path prefix
+- **THEN** the completed snapshot publishes the registry base including that prefix in `source.registryBaseUrl`
+- **WHEN** an operator supplies a public HTTPS `registryBaseUrl` for a custom index
+- **THEN** the snapshot publishes that base independently of the artifact origin

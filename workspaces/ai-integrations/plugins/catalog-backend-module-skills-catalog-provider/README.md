@@ -76,11 +76,13 @@ Each entity carries:
 - `backstage.io/source-location` — connector source URI
 - `backstage.io/managed-by-location` — connector source URI
 - `backstage.io/managed-by-origin-location` — connector source URI
-- `backstage.io/techdocs-ref` — TechDocs documentation URL for OCI skill entities, constructed from the connector's discovery-resolved base URL and the record's verified digest (`url:<connectorBaseUrl>/skilldocs/<sourceId>/<digest>`). Not set on npx entities. (OCI sources only)
+- `backstage.io/techdocs-ref` — TechDocs documentation URL for OCI and npx skill entities, constructed from the connector's discovery-resolved base URL and the record's verified digest (`url:<connectorBaseUrl>/skilldocs/<sourceId>/<digest>`).
 - `rhdh.io/ai-asset-category` — always `skill`
 - `rhdh.io/ai-asset-version` — resolved skill version
 - `rhdh.io/ai-asset-source` — `<sourceType>/<sourceId>`
 - `rhdh.io/oci-skill-ref` — OCI image reference (OCI sources only)
+- `rhdh.io/npx-skill-key` — original npx discovery index entry name used by the CLI
+- `rhdh.io/npx-skill-registry` — public CLI discovery base when available on the npx source
 - `rhdh.io/npx-skill-ref` — npx package reference with digest (npx sources only)
 
 ## Behavior

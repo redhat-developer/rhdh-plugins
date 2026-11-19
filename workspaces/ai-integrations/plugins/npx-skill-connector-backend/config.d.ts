@@ -35,6 +35,12 @@ export interface Config {
        */
       indexUrl: string;
       /**
+       * Public CLI discovery base for a custom index location. Standard
+       * well-known indexes derive this URL from indexUrl.
+       * @visibility backend
+       */
+      registryBaseUrl?: string;
+      /**
        * Additional HTTPS origins permitted for artifact redirects. The
        * initial index origin is always allowed. Omitted means no
        * additional origins are permitted.

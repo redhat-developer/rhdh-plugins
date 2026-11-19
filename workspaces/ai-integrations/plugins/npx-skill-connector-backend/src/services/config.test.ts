@@ -35,6 +35,23 @@ const valid = {
 };
 
 describe('npx source configuration', () => {
+  it('preserves the registry path and supports an explicit base for custom indexes', () => {
+    const base = 'https://skills.example.com/teams/one';
+    expect(
+      read({
+        ...valid,
+        indexUrl: `${base}/.well-known/agent-skills/index.json`,
+      })[0].registryBaseUrl,
+    ).toBe(base);
+    expect(read(valid)[0].registryBaseUrl).toBeUndefined();
+    expect(read({ ...valid, registryBaseUrl: base })[0].registryBaseUrl).toBe(
+      base,
+    );
+    expect(() =>
+      read({ ...valid, registryBaseUrl: `${base}?token=secret` }),
+    ).toThrow('registryBaseUrl');
+  });
+
   it('allows no configured sources', () => {
     expect(readSourceConfigs(new ConfigReader({}))).toEqual([]);
   });

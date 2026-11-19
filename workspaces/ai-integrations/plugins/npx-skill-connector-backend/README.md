@@ -38,6 +38,13 @@ five redirects, a 5 MiB index limit, and a 1 MiB skill file limit.
 The connector does not inspect destination addresses. Deployments that need to
 restrict destinations should use a network egress policy.
 
+For a standard `/.well-known/agent-skills/index.json` index, the connector
+derives the public CLI registry base from the configured URL, preserving any
+path prefix. If the index is elsewhere and the registry also offers CLI
+discovery, set `registryBaseUrl` on that source to its public HTTPS discovery
+base. The provider publishes it as `rhdh.io/npx-skill-registry` and publishes
+the index entry key as `rhdh.io/npx-skill-key`. An artifact may live on a CDN.
+
 ### Integrating with the skills catalog provider
 
 The npx connector serves normalized snapshots that the common skills catalog
@@ -77,7 +84,15 @@ the configured npx sources. The provider resolves the connector's base URL
 through Backstage service discovery and obtains a service token targeted to
 `npx-skill-connector` for each snapshot request.
 
-npx skill entities do not receive a `backstage.io/techdocs-ref` annotation.
+The **Docs** tab renders the imported `SKILL.md` when the backend includes the
+catalog TechDocs URL reader. The provider sets `backstage.io/techdocs-ref` to
+the connector's authenticated `GET /skilldocs/:sourceId/:digest` endpoint.
+On a docs read, the connector looks up the artifact in the current source
+snapshot, fetches it using the source's allowed origins and size limit, and
+verifies the SHA-256 digest before serving Markdown. The response has a
+digest-based ETag. An unknown source or digest returns 404. If the upstream
+file changes, the old digest returns 409 until the catalog receives the new
+revision. A fresh build requires the upstream artifact to be available.
 
 ### Combining OCI and npx sources
 

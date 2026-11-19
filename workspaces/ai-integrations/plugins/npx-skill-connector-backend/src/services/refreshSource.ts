@@ -86,7 +86,11 @@ export async function refreshSource(
     const observedAt = new Date().toISOString();
 
     const snapshot = boundSnapshot({
-      source: { id: source.id, type: 'npx' },
+      source: {
+        id: source.id,
+        type: 'npx',
+        registryBaseUrl: source.registryBaseUrl,
+      },
       records: processing.records,
       failedSkillKeys: allFailedKeys,
       discoveryComplete,

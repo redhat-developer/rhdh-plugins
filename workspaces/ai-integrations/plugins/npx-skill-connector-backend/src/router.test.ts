@@ -18,11 +18,16 @@ import { createLoadingSnapshot } from '@red-hat-developer-hub/backstage-plugin-a
 import type { SkillSnapshot } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import express from 'express';
 import request from 'supertest';
+import { createHash } from 'node:crypto';
 import { createRouter } from './router';
+import { testSource } from './testUtils';
+import { fetchSourceBuffer } from './services/fetchSource';
+
+jest.mock('./services/fetchSource', () => ({ fetchSourceBuffer: jest.fn() }));
 
 describe('npx skill snapshots', () => {
   const snapshots = new Map<string, SkillSnapshot>();
-  const app = express().use(createRouter(snapshots));
+  const app = express().use(createRouter(snapshots, [testSource]));
 
   beforeEach(() => snapshots.clear());
 
@@ -45,5 +50,40 @@ describe('npx skill snapshots', () => {
 
     const response = await request(app).get('/skills/source%20one').expect(200);
     expect(response.body).toEqual(snapshot);
+  });
+
+  it('serves the verified artifact with an ETag and rejects changed bytes or unknown revisions', async () => {
+    const markdown = Buffer.from('# Example skill\n');
+    const digest = `sha256:${createHash('sha256')
+      .update(markdown)
+      .digest('hex')}`;
+    const sourceUri = 'https://skills.example.com/skill.md';
+    snapshots.set(testSource.id, {
+      ...createLoadingSnapshot({ id: testSource.id, type: 'npx' }),
+      status: 'ready',
+      skills: [{ key: 'example', name: 'example', digest, sourceUri }],
+    });
+    const route = `/skilldocs/${testSource.id}/${encodeURIComponent(digest)}`;
+    const fetchArtifact = jest.mocked(fetchSourceBuffer);
+    await request(app).get(`/skilldocs/other/${digest}`).expect(404);
+    await request(app).get(`/skilldocs/${testSource.id}/unknown`).expect(404);
+    expect(fetchArtifact).not.toHaveBeenCalled();
+    fetchArtifact.mockResolvedValue(markdown);
+    const response = await request(app).get(route).expect(200);
+    expect(fetchArtifact).toHaveBeenCalledWith(
+      sourceUri,
+      testSource,
+      'artifact',
+    );
+    expect(response.text).toBe(markdown.toString());
+    expect(response.type).toBe('text/markdown');
+    expect(response.headers.etag).toBe(`"${digest}"`);
+    await request(app)
+      .get(route)
+      .set('If-None-Match', response.headers.etag)
+      .expect(304);
+    expect(fetchArtifact).toHaveBeenCalledTimes(1);
+    fetchArtifact.mockResolvedValue(Buffer.from('# Changed'));
+    await request(app).get(route).expect(409);
   });
 });

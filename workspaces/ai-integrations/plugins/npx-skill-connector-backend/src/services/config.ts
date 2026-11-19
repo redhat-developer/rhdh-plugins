@@ -20,6 +20,7 @@ import type {
   SchedulerServiceTaskScheduleDefinition,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
+import { isValidRegistryBaseUrl } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import { InputError } from '@backstage/errors';
 import { validateAllowedOrigin, validateRequestUrl } from './fetchSource';
 import type { NpxSourceConfig } from './types';
@@ -155,6 +156,21 @@ export function readSourceConfigs(
     }
     const indexUrl = validateIndexUrl(rawIndexUrl, context);
 
+    const suffix = '/.well-known/agent-skills/index.json';
+    const registryBaseUrl =
+      entry.getOptionalString('registryBaseUrl') ??
+      (indexUrl.endsWith(suffix) && !new URL(indexUrl).search
+        ? indexUrl.slice(0, -suffix.length)
+        : undefined);
+    if (
+      registryBaseUrl !== undefined &&
+      !isValidRegistryBaseUrl(registryBaseUrl)
+    ) {
+      throw new InputError(
+        `${context}.registryBaseUrl must be an HTTPS URL without credentials, a query, or a fragment`,
+      );
+    }
+
     const allowedOrigins = readAllowedOrigins(entry, context);
 
     const schedule = readSourceSchedule(entry, context);
@@ -162,6 +178,7 @@ export function readSourceConfigs(
     return {
       id,
       indexUrl,
+      registryBaseUrl,
       allowedOrigins,
       schedule,
     };

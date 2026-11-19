@@ -129,6 +129,9 @@ export function isOciSkillRecord(
 export function isValidDigest(digest: string): boolean;
 
 // @public
+export function isValidRegistryBaseUrl(value: unknown): value is string;
+
+// @public
 export function isValidUtcTimestamp(value: string): boolean;
 
 // @public
@@ -388,6 +391,7 @@ export type SkillSourceType = 'oci' | 'npx';
 // @public
 export interface SnapshotSource {
   id: string;
+  registryBaseUrl?: string;
   type: SkillSourceType;
 }
 

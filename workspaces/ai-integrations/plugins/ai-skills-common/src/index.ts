@@ -44,6 +44,7 @@ export {
   isNpxSkillRecord,
   isOciSkillRecord,
   isValidDigest,
+  isValidRegistryBaseUrl,
   isValidUtcTimestamp,
   MAX_SNAPSHOT_BYTES,
   MAX_SNAPSHOT_RECORDS,

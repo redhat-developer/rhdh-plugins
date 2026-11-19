@@ -34,6 +34,7 @@ import type {
   IdentityTuple,
   SkillRecord,
   SkillSnapshot,
+  SnapshotSource,
   SkillSourceType,
 } from '@red-hat-developer-hub/backstage-plugin-ai-skills-common';
 import {
@@ -306,8 +307,7 @@ export async function consumeSnapshot(
   // Map accepted records to entities
   const entities = mapRecordsToEntities(
     snapshot.skills,
-    snapshot.source.type,
-    source.sourceId,
+    snapshot.source,
     normalizedBaseUrl,
     namespace,
     defaultOwner,
@@ -387,8 +387,7 @@ function isValidHintString(value: string): boolean {
  */
 function mapRecordsToEntities(
   records: SkillRecord[],
-  sourceType: SkillSourceType,
-  sourceId: string,
+  source: SnapshotSource,
   connectorBaseUrl: string,
   namespace: string,
   defaultOwner: string,
@@ -400,8 +399,8 @@ function mapRecordsToEntities(
 
   for (const record of records) {
     const tuple: IdentityTuple = {
-      type: sourceType,
-      id: sourceId,
+      type: source.type,
+      id: source.id,
       key: record.key,
     };
     const catalogName = computeCatalogName(tuple);
@@ -422,8 +421,7 @@ function mapRecordsToEntities(
     try {
       const entity = buildEntity(
         record,
-        sourceType,
-        sourceId,
+        source,
         connectorBaseUrl,
         catalogName,
         namespace,
@@ -444,14 +442,14 @@ function mapRecordsToEntities(
  */
 function buildEntity(
   record: SkillRecord,
-  sourceType: SkillSourceType,
-  sourceId: string,
+  source: SnapshotSource,
   connectorBaseUrl: string,
   catalogName: string,
   namespace: string,
   defaultOwner: string,
   defaultLifecycle: string,
 ): Entity {
+  const { type: sourceType, id: sourceId } = source;
   const version = resolveVersion(record.version, record.digest);
 
   // Use configured defaults when owner/lifecycle hints are absent,
@@ -485,20 +483,20 @@ function buildEntity(
   // before any records are mapped, so no per-entity validation is needed.
   if (sourceType === 'oci') {
     annotations[ANNOTATION_OCI_SKILL_REF] = record.sourceUri;
-
-    // TechDocs annotation for OCI entities per design D5/D8.
-    // Constructed from trusted connector/source configuration and the
-    // record's verified digest. The provider does not download or
-    // extract Markdown. npx entities do not receive this annotation.
-    annotations[
-      'backstage.io/techdocs-ref'
-    ] = `url:${connectorBaseUrl}/skilldocs/${encodeURIComponent(
-      sourceId,
-    )}/${encodeURIComponent(record.digest)}`;
   } else if (sourceType === 'npx') {
     const npxRef = `${record.sourceUri}#${record.digest}`;
     annotations[ANNOTATION_NPX_SKILL_REF] = npxRef;
+    annotations['rhdh.io/npx-skill-key'] = record.key;
+    if (source.registryBaseUrl) {
+      annotations['rhdh.io/npx-skill-registry'] = source.registryBaseUrl;
+    }
   }
+
+  annotations[
+    'backstage.io/techdocs-ref'
+  ] = `url:${connectorBaseUrl}/skilldocs/${encodeURIComponent(
+    sourceId,
+  )}/${encodeURIComponent(record.digest)}`;
 
   // Build tags
   let metadataTags: string[] | undefined;
