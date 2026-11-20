@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-common
 
+## 2.1.0
+
+### Minor Changes
+
+- 5a6d789: Show migration progress, module errors, and token totals for the projects a user can already see, and sort the Conversion Hub table by modules in error.
+- aa44c81: Bump minor after the release-2.1 cut so main patch versions do not collide with the maintenance line on npm.
+
+### Patch Changes
+
+- c1ea707: Add an Edit in Codespaces action beside GitHub migrated sources, using the target branch and Ansible devcontainer configuration. Copy the generated Ansible devcontainer configuration into the target repository and include it in the migration commit. Also match Ansible role-name sanitization in migration jobs and prefer rebased job output when resolving repository conflicts.
+- 1f60858: Enforce rule content limits: max 50,000 characters per rule description, and max 50,000 total characters across all rules accepted by a project
+
 ## 2.0.1
 
 ### Patch Changes
