@@ -33,8 +33,8 @@ type RecordValue = Record<string, unknown>;
 
 const AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source';
 const OCI_SKILL_REF_ANNOTATION = 'rhdh.io/oci-skill-ref';
-const NPX_SKILL_REGISTRY = 'rhdh.io/npx-skill-registry';
-const NPX_SKILL_KEY = 'rhdh.io/npx-skill-key';
+const NPX_SKILL_REGISTRY_ANNOTATION = 'rhdh.io/npx-skill-registry';
+const NPX_SKILL_KEY_ANNOTATION = 'rhdh.io/npx-skill-key';
 const OCI_REFERENCE_SCHEME = 'oci://';
 
 function asRecord(value: unknown): RecordValue | undefined {
@@ -182,8 +182,9 @@ export function getUsageAction(entity: Entity): UsageAction | undefined {
     }
 
     if (sourceType === 'npx') {
-      const registry = entity.metadata.annotations?.[NPX_SKILL_REGISTRY];
-      const key = entity.metadata.annotations?.[NPX_SKILL_KEY];
+      const registry =
+        entity.metadata.annotations?.[NPX_SKILL_REGISTRY_ANNOTATION];
+      const key = entity.metadata.annotations?.[NPX_SKILL_KEY_ANNOTATION];
       if (registry !== undefined || key !== undefined) {
         return getRegistryInstallAction(registry, key);
       }
