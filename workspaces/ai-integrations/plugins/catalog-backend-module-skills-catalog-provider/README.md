@@ -93,6 +93,12 @@ Each configured source has its own location key for catalog mutations. A failure
 
 When a source returns a ready snapshot, the provider computes a reconciliation plan against committed ownership state and applies a `type: 'delta'` mutation scoped to that source's location key. Only changed entities are upserted and only entities absent from the new snapshot are removed. Sources that return loading or failed status, or that encounter errors during polling, are skipped — their previously-committed entities remain in the catalog.
 
+### Owner and lifecycle defaults
+
+Owner and lifecycle are resolved independently for each record. A valid `owner` or `lifecycle` hint from the source (for OCI skills, `metadata.owner` and `metadata.lifecycle` in the skill Markdown frontmatter) takes precedence; a missing, blank, or invalid hint uses `defaultOwner` or `defaultLifecycle` respectively.
+
+When `defaultOwner` or `defaultLifecycle` changes, the next accepted `ready` or `partial` snapshot after a backend restart updates every existing entity whose effective `spec.owner` or `spec.lifecycle` changed, even if the skill digest and connector observation are unchanged. Fields resolved from a valid hint are unaffected. Subsequent identical refreshes emit no mutations, and `loading`, `failed`, or stale snapshots still preserve committed entities. Configuration is read at backend startup.
+
 ### Error handling
 
 - **Per-source failures**: HTTP, authentication, or validation failures for one source are logged and do not stop other sources.

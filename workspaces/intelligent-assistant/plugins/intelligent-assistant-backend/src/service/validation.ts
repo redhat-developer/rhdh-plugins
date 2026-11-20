@@ -28,6 +28,11 @@ const JPEG_MAGIC = [0xff, 0xd8, 0xff];
 // WebP files are a RIFF container: bytes 0-3 are "RIFF" and bytes 8-11 are "WEBP".
 const WEBP_RIFF_MAGIC = [0x52, 0x49, 0x46, 0x46];
 const WEBP_FORMAT_MAGIC = [0x57, 0x45, 0x42, 0x50];
+// 16 base64 characters decode to the 12 bytes the signatures above need.
+const MAGIC_BYTES_BASE64_LENGTH = 16;
+// Characters Node's base64 decoder uses (base64 and base64url, plus padding);
+// it silently skips everything else.
+const BASE64_DECODED_CHAR = /[A-Za-z0-9+/=_-]/;
 
 function extractBase64(content: string): string {
   const commaIndex = content.indexOf(',');
@@ -44,8 +49,24 @@ function matchesMagic(bytes: Buffer, magic: number[], offset = 0): boolean {
   );
 }
 
+// Collects the leading characters Node would decode, so decoding them yields
+// the same first bytes as decoding the whole payload.
+function leadingBase64(base64: string, length: number): string {
+  let prefix = '';
+  for (let i = 0; i < base64.length && prefix.length < length; i++) {
+    if (BASE64_DECODED_CHAR.test(base64[i])) {
+      prefix += base64[i];
+    }
+  }
+  return prefix;
+}
+
 function hasValidImageMagicBytes(content: string): boolean {
-  const bytes = Buffer.from(extractBase64(content), 'base64');
+  // Decode only the leading bytes; decoding the whole image adds no validation.
+  const bytes = Buffer.from(
+    leadingBase64(extractBase64(content), MAGIC_BYTES_BASE64_LENGTH),
+    'base64',
+  );
   const isJpeg = matchesMagic(bytes, JPEG_MAGIC);
   const isWebp =
     matchesMagic(bytes, WEBP_RIFF_MAGIC) &&
