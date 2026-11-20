@@ -1,0 +1,13 @@
+# Loaded only by this package's yarn start (--config app-config.yaml).
+# Workspace aggregation KPIs are not applied.
+app:
+  title: Scorecard harness
+  baseUrl: http://localhost:3000
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
