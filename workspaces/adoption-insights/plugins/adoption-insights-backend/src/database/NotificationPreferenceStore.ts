@@ -31,7 +31,7 @@ export class NotificationPreferenceStore {
     value: string,
     userRef: string,
   ): NotificationFrequency {
-    if (NOTIFICATION_FREQUENCIES.some(frequency => frequency === value)) {
+    if ((NOTIFICATION_FREQUENCIES as readonly string[]).includes(value)) {
       return value as NotificationFrequency;
     }
     this.logger.warn('Invalid stored notification preference frequency', {
@@ -51,7 +51,7 @@ export class NotificationPreferenceStore {
   }
 
   /** Upserts and returns the previous value (undefined if no row existed). */
-  async set(
+  set(
     userRef: string,
     frequency: NotificationFrequency,
   ): Promise<{ previous?: NotificationFrequency }> {
