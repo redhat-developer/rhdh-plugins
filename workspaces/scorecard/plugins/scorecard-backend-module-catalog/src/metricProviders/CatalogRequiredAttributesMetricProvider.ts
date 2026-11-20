@@ -113,28 +113,20 @@ function collectDistinctStatuses(statusMapping: StatusMapping): string[] {
 }
 
 /**
- * Builds a mapping from status strings to numeric codes and generates
- * threshold rules that map those codes back to status strings.
+ * Builds threshold rules for string metrics from the distinct statuses
+ * in a status mapping. Each status gets an `==statusKey` expression.
  */
-function buildStatusCodeMapping(statusMapping: StatusMapping): {
-  statusToCode: Map<string, number>;
-  thresholds: ThresholdConfig;
-} {
+function buildStringThresholds(statusMapping: StatusMapping): ThresholdConfig {
   const statuses = collectDistinctStatuses(statusMapping);
-  const statusToCode = new Map<string, number>();
 
-  statuses.forEach((status, index) => {
-    statusToCode.set(status, index);
-  });
-
-  const rules = statuses.map((status, index) => ({
+  const rules = statuses.map(status => ({
     key: status,
-    expression: `==${index}`,
+    expression: `==${status}`,
     color: getDefaultColor(status),
     icon: getDefaultIcon(status),
   }));
 
-  return { statusToCode, thresholds: { rules } };
+  return { rules };
 }
 
 /**
@@ -180,23 +172,20 @@ function getDefaultIcon(status: string): string {
 }
 
 export class CatalogRequiredAttributesMetricProvider
-  implements MetricProvider<'number'>
+  implements MetricProvider<'string'>
 {
   private readonly filter: object;
   private readonly metricConfigs: MetricConfig[];
-  private readonly statusCodeMappings: Map<
-    string,
-    { statusToCode: Map<string, number>; thresholds: ThresholdConfig }
-  >;
+  private readonly thresholdsByMetricId: Map<string, ThresholdConfig>;
 
   constructor(options: CatalogRequiredAttributesOptions) {
     this.filter = options.filter;
     this.metricConfigs = options.metrics;
-    this.statusCodeMappings = new Map();
+    this.thresholdsByMetricId = new Map();
     for (const metric of this.metricConfigs) {
-      this.statusCodeMappings.set(
+      this.thresholdsByMetricId.set(
         metric.id,
-        buildStatusCodeMapping(metric.statusMapping),
+        buildStringThresholds(metric.statusMapping),
       );
     }
   }
@@ -209,15 +198,15 @@ export class CatalogRequiredAttributesMetricProvider
     return 'catalog.requiredAttributes';
   }
 
-  getMetrics(): Metric<'number'>[] {
+  getMetrics(): Metric<'string'>[] {
     return this.metricConfigs.map(metric => {
-      const mapping = this.statusCodeMappings.get(metric.id)!;
+      const thresholds = this.thresholdsByMetricId.get(metric.id)!;
       return {
         id: `catalog.${metric.id}`,
         title: metric.title,
         description: metric.description,
-        type: 'number' as const,
-        thresholds: mapping.thresholds,
+        type: 'string' as const,
+        thresholds,
       };
     });
   }
@@ -226,8 +215,8 @@ export class CatalogRequiredAttributesMetricProvider
     return this.filter as Record<string, string | symbol | (string | symbol)[]>;
   }
 
-  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
-    const results = new Map<string, number>();
+  async calculateMetrics(entity: Entity): Promise<Map<string, string>> {
+    const results = new Map<string, string>();
 
     for (const metric of this.metricConfigs) {
       const status = evaluateFieldStatus(
@@ -236,11 +225,7 @@ export class CatalogRequiredAttributesMetricProvider
         metric.statusMapping,
       );
 
-      const mapping = this.statusCodeMappings.get(metric.id)!;
-      const code = mapping.statusToCode.get(status);
-      if (code !== undefined) {
-        results.set(`catalog.${metric.id}`, code);
-      }
+      results.set(`catalog.${metric.id}`, status);
     }
 
     return results;
