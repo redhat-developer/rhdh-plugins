@@ -79,6 +79,8 @@ catalog:
               Group,
               User,
             ]
+    - type: file
+      target: ../../plugins/agentic-chat-backend/examples/legal-agent.json
 
 ai-catalog:
   entityProviders:
@@ -251,3 +253,7 @@ boost:
     showAllNamespaces: true
     skipTlsVerify: true
     verboseStreamLogging: true
+
+# LCORE development server for Agentic Chat.
+agentic-chat:
+  servicePort: 8090 # Optional: default is 8090
