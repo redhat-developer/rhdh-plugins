@@ -1,5 +1,28 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 1.2.0
+
+### Minor Changes
+
+- 25b52dd: Show total estimated time saved for each template on the Top templates card.
+
+  Custom translation resources need these keys:
+
+  - `table.headers.totalEstimatedTimeSaved`
+  - `table.timeSaved.minute_one`
+  - `table.timeSaved.minute_other`
+  - `table.timeSaved.hour_one`
+  - `table.timeSaved.hour_other`
+  - `table.timeSaved.day_one`
+  - `table.timeSaved.day_other`
+
+- 206ff3f: Backstage version bump to v1.56.4
+
+### Patch Changes
+
+- Updated dependencies [206ff3f]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.2.0
+
 ## 1.1.1
 
 ### Patch Changes
