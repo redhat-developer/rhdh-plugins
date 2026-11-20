@@ -8669,6 +8669,7 @@ __metadata:
     "@backstage/plugin-permission-common": "npm:^0.9.10"
     "@backstage/plugin-permission-node": "npm:^0.11.3"
     "@red-hat-developer-hub/backstage-plugin-agentic-chat-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent-rhdh-chat": "npm:^0.2.0"
     "@types/express": "npm:^4.17.25"
     "@types/supertest": "npm:^2.0.16"
     express: "npm:^4.21.1"
@@ -8872,6 +8873,16 @@ __metadata:
   dependencies:
     "@backstage/catalog-model": "npm:^1.10.0"
   checksum: 10c0/7d057ef6bb438c365923aa31d12d4e5fa2b03a2cc6549bc0df47820a10e054f14ee5b3c690668d3e1ea75d81311233e427efe067d2abffa85b3f690d6dc2a21e
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent-rhdh-chat@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent-rhdh-chat@npm:0.2.0"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.10.0"
+    "@backstage/types": "npm:^1.2.2"
+  checksum: 10c0/cb055cd0a1afdc2b8e54726a691e4e7c8b4cc0ca4b1639737c8c58c9ec26dda3c00d0c2dc783ac782899d9395cf9cd34a28148182239ecb0d251f1892ac143dc
   languageName: node
   linkType: hard
 

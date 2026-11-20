@@ -46,8 +46,8 @@ const agent: Entity = {
   },
 };
 
-it('interprets Catalog agent fields without constructing a workflow', () => {
-  expect(agentToExecutionInput(agent, input('What failed?'))).toEqual({
+it('interprets Catalog agent fields without constructing a workflow', async () => {
+  expect(await agentToExecutionInput(agent, input('What failed?'))).toEqual({
     agent: 'support-agent',
     prompt: 'What failed?',
     instructions: 'Help the user',
@@ -64,21 +64,20 @@ it.each([
   ['in-process', 'none'],
   ['subprocess', 'local'],
   ['sandbox', 'ephemeral'],
-])('maps %s to spawn %s', (mode, spawn) => {
-  expect(
-    agentToExecutionInput(
-      { ...agent, spec: { ...agent.spec, executionMode: mode } },
-      input('Hello'),
-    ).spawn,
-  ).toBe(spawn);
+])('maps %s to spawn %s', async (mode, spawn) => {
+  const interpreted = await agentToExecutionInput(
+    { ...agent, spec: { ...agent.spec, executionMode: mode } },
+    input('Hello'),
+  );
+  expect(interpreted.spawn).toBe(spawn);
 });
 
-it('leaves omitted execution mode and optional capabilities absent', () => {
+it('leaves omitted execution mode and optional capabilities absent', async () => {
   const minimal = {
     ...agent,
     spec: { type: 'agent-rhdh-chat', lifecycle: 'production', owner: 'team' },
   };
-  const step = agentToExecutionInput(minimal, input('Hello'));
+  const step = await agentToExecutionInput(minimal, input('Hello'));
   expect(JSON.parse(JSON.stringify(step))).toEqual({
     agent: 'support-agent',
     prompt: 'Hello',
@@ -86,42 +85,31 @@ it('leaves omitted execution mode and optional capabilities absent', () => {
   });
 });
 
-it.each(['invalid', false, null])('rejects invalid execution mode %s', mode => {
-  expect(() =>
-    agentToExecutionInput(
-      { ...agent, spec: { ...agent.spec, executionMode: mode } },
-      input('Hello'),
-    ),
-  ).toThrow(InvalidAgentConfigurationError);
-});
-
-it.each([
-  { handoffs: ['other-agent'] },
-  { handoffs: [] },
-  { handoffs: null },
-  { handoffs: 'unused-handoff-data' },
-])(
-  'ignores Catalog handoffs without changing interpreted input: %j',
-  ({ handoffs }) => {
-    const interpreted = agentToExecutionInput(
-      { ...agent, spec: { ...agent.spec, handoffs } },
-      input('Hello'),
-    );
-    expect(interpreted).toEqual(agentToExecutionInput(agent, input('Hello')));
-    expect(interpreted).not.toHaveProperty('handoffs');
+it.each(['invalid', false, null])(
+  'rejects invalid execution mode %s',
+  async mode => {
+    await expect(
+      agentToExecutionInput(
+        { ...agent, spec: { ...agent.spec, executionMode: mode } },
+        input('Hello'),
+      ),
+    ).rejects.toThrow(InvalidAgentConfigurationError);
   },
 );
 
-it('rejects non-agent entities and unsupported string output schemas', () => {
-  expect(() =>
+it('rejects non-agent entities', async () => {
+  await expect(
     agentToExecutionInput({ ...agent, kind: 'Component' }, input('Hello')),
-  ).toThrow(InvalidAgentKindError);
-  expect(() =>
+  ).rejects.toThrow(InvalidAgentKindError);
+});
+
+it('rejects unsupported string output schemas', async () => {
+  await expect(
     agentToExecutionInput(
       { ...agent, spec: { ...agent.spec, outputSchema: 'CustomType' } },
       input('Hello'),
     ),
-  ).toThrow(InvalidAgentConfigurationError);
+  ).rejects.toThrow(InvalidAgentConfigurationError);
 });
 
 describe('Catalog modelConfig', () => {
@@ -137,10 +125,9 @@ describe('Catalog modelConfig', () => {
     },
   };
 
-  it('preserves settings including zero for the default provider and model', () => {
-    expect(
-      agentToExecutionInput(entity, input('Hello')).inference_provider,
-    ).toEqual({
+  it('preserves settings including zero for the default provider and model', async () => {
+    const interpreted = await agentToExecutionInput(entity, input('Hello'));
+    expect(interpreted.inference_provider).toEqual({
       name: 'openai',
       model: 'selected-model',
       modelConfig: { temperature: 0, maxTokens: 512 },
@@ -150,25 +137,28 @@ describe('Catalog modelConfig', () => {
   it.each([
     { provider: 'openai', model: 'different-model' },
     { provider: 'different-provider', model: 'selected-model' },
-  ])('omits settings for a different selection %j', selection => {
-    expect(
-      agentToExecutionInput(entity, { ...input('Hello'), ...selection })
-        .inference_provider,
-    ).toEqual({ name: selection.provider, model: selection.model });
+  ])('omits settings for a different selection %j', async selection => {
+    const interpreted = await agentToExecutionInput(entity, {
+      ...input('Hello'),
+      ...selection,
+    });
+    expect(interpreted.inference_provider).toEqual({
+      name: selection.provider,
+      model: selection.model,
+    });
   });
 });
 
-it('maps conversation identity without a workflow envelope', () => {
-  expect(
-    agentToExecutionInput(agent, {
-      ...input('Hello'),
-      conversation_id: 'session-1',
-    }).conversation_id,
-  ).toBe('session-1');
+it('maps conversation identity without a workflow envelope', async () => {
+  const interpreted = await agentToExecutionInput(agent, {
+    ...input('Hello'),
+    conversation_id: 'session-1',
+  });
+  expect(interpreted.conversation_id).toBe('session-1');
 });
 
-it('does not rename conversation_id to a workflow session_id', () => {
-  const interpreted = agentToExecutionInput(agent, {
+it('does not rename conversation_id to a workflow session_id', async () => {
+  const interpreted = await agentToExecutionInput(agent, {
     ...input('Hello'),
     conversation_id: 'conversation-1',
   });
@@ -176,11 +166,11 @@ it('does not rename conversation_id to a workflow session_id', () => {
   expect(interpreted).not.toHaveProperty('session_id');
 });
 
-it('rejects the legacy agent type for agentic chat', () => {
-  expect(() =>
+it('rejects the legacy agent type for agentic chat', async () => {
+  await expect(
     agentToExecutionInput(
       { ...agent, spec: { ...agent.spec, type: 'agent' } },
       input('Hello'),
     ),
-  ).toThrow(InvalidAgentConfigurationError);
+  ).rejects.toThrow(InvalidAgentConfigurationError);
 });

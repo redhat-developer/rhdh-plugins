@@ -19,34 +19,14 @@ import type {
   AgentExecutionInput,
   RunAgentRequest,
 } from '@red-hat-developer-hub/backstage-plugin-agentic-chat-common';
-import { z } from 'zod';
+import {
+  agentRhdhChatAiResourceEntityV1alpha1Validator,
+  isAgentRhdhChatAiResourceEntity,
+} from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent-rhdh-chat';
 import {
   InvalidAgentConfigurationError,
   InvalidAgentKindError,
 } from './errors';
-
-const agentSpecSchema = z.object({
-  type: z.literal('agent-rhdh-chat'),
-  owner: z.string().min(1),
-  executionMode: z.enum(['in-process', 'subprocess', 'sandbox']).optional(),
-  instructions: z.string().optional(),
-  inferenceProvider: z
-    .object({
-      name: z.string().min(1),
-      model: z.string().min(1),
-      modelConfig: z
-        .object({
-          temperature: z.number().finite().nonnegative().optional(),
-          maxTokens: z.number().int().nonnegative().optional(),
-        })
-        .strict()
-        .optional(),
-    })
-    .strict()
-    .optional(),
-  tools: z.array(z.string().min(1)).optional(),
-  outputSchema: z.record(z.string(), z.unknown()).optional(),
-});
 
 const spawnModes = {
   'in-process': 'none',
@@ -54,16 +34,26 @@ const spawnModes = {
   sandbox: 'ephemeral',
 } as const;
 
-export function agentToExecutionInput(
+export async function agentToExecutionInput(
   entity: Entity,
   input: RunAgentRequest,
-): AgentExecutionInput {
+): Promise<AgentExecutionInput> {
   if (entity.kind.toLocaleLowerCase('en-US') !== 'airesource') {
     throw new InvalidAgentKindError();
   }
-  const parsed = agentSpecSchema.safeParse(entity.spec);
-  if (!parsed.success) throw new InvalidAgentConfigurationError();
-  const spec = parsed.data;
+  if (!isAgentRhdhChatAiResourceEntity(entity)) {
+    throw new InvalidAgentConfigurationError();
+  }
+  const valid = await agentRhdhChatAiResourceEntityV1alpha1Validator
+    .check(entity)
+    .catch(() => false);
+  if (!valid) throw new InvalidAgentConfigurationError();
+
+  const { spec } = entity;
+  // Catalog also accepts string schemas. LCore requires an object here.
+  if (typeof spec.outputSchema === 'string') {
+    throw new InvalidAgentConfigurationError();
+  }
   const defaultProvider = spec.inferenceProvider;
   const modelConfig =
     defaultProvider?.name === input.provider &&

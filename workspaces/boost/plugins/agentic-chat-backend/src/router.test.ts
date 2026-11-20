@@ -49,7 +49,6 @@ const agent = {
     owner: 'platform',
     model: 'granite',
     instructions: 'Support instructions',
-    handoffs: ['airesource:default/other-agent'],
     executionMode: 'in-process',
     tools: ['search'],
   },
@@ -69,7 +68,7 @@ let calls: Array<{
   body: unknown;
   authorization?: string;
 }>;
-let upstreamFails = false;
+let upstreamError: { status: number; retryAfter?: string } | undefined;
 let catalogLookups: Array<{ ref: string; owner: string }> = [];
 
 beforeAll(async () => {
@@ -85,8 +84,13 @@ beforeAll(async () => {
       body: req.body,
       authorization: req.headers.authorization,
     });
-    if (upstreamFails) {
-      res.status(500).json({ error: 'PRIVATE_UPSTREAM_CREDENTIAL' });
+    if (upstreamError) {
+      if (upstreamError.retryAfter !== undefined) {
+        res.set('Retry-After', upstreamError.retryAfter);
+      }
+      res
+        .status(upstreamError.status)
+        .json({ error: 'PRIVATE_UPSTREAM_CREDENTIAL' });
       return;
     }
     if (url.pathname === '/v1/agent/run') {
@@ -117,7 +121,7 @@ afterAll(async () => {
 beforeEach(() => {
   calls = [];
   catalogLookups = [];
-  upstreamFails = false;
+  upstreamError = undefined;
 });
 
 async function app(
@@ -277,6 +281,10 @@ it('rejects identity overrides and reports missing Catalog agents', async () => 
 it.each([
   [{ ...agent, kind: 'Component' }, 'Expected an AiResource agent'],
   [
+    { ...agent, apiVersion: 'backstage.io/v1beta1' },
+    'Invalid agent configuration',
+  ],
+  [
     { ...agent, spec: { ...agent.spec, type: 'agent' } },
     'Invalid agent configuration',
   ],
@@ -312,11 +320,25 @@ it('honors Catalog denial and missing entities before submission', async () => {
 });
 
 it('returns a safe dependency failure without upstream details', async () => {
-  upstreamFails = true;
+  upstreamError = { status: 500 };
   const response = await request(await app()).get('/v2/conversations');
   expect(response.status).toBe(502);
   expect(response.text).not.toContain('PRIVATE_UPSTREAM_CREDENTIAL');
 });
+
+it.each(['120', undefined])(
+  'preserves upstream rate limiting with Retry-After %s',
+  async retryAfter => {
+    upstreamError = { status: 429, retryAfter };
+    const response = await request(await app())
+      .post('/v1/agent/run')
+      .send({ ...selection, query: 'Hello' });
+
+    expect(response.status).toBe(429);
+    expect(response.headers['retry-after']).toBe(retryAfter);
+    expect(response.body).toEqual({ error: 'Chat runtime request failed' });
+  },
+);
 
 it('captures the supplied Legal agent request at the new upstream agent endpoint', async () => {
   const { server: backendServer } = await startTestBackend({

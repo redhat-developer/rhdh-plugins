@@ -111,12 +111,8 @@ export async function createRouter(options: RouterOptions) {
       credentials: res.locals.credentials,
     });
     if (!entity) throw new NotFoundError('Agent not found');
-    await forward(
-      '/v1/agent/run',
-      'POST',
-      res,
-      agentToExecutionInput(entity, input),
-    );
+    const executionInput = await agentToExecutionInput(entity, input);
+    await forward('/v1/agent/run', 'POST', res, executionInput);
   });
 
   router.get('/v2/conversations', async (_req, res) => {
