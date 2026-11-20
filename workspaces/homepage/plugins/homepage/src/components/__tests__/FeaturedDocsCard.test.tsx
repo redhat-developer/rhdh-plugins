@@ -15,6 +15,8 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import { TestApiProvider } from '@backstage/test-utils';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { FeaturedDocsCard } from '../FeaturedDocsCard';
@@ -40,9 +42,23 @@ jest.mock('@backstage/plugin-home', () => ({
 
 describe('FeaturedDocsCard', () => {
   it('renders with translated title and sub link text', () => {
-    render(<FeaturedDocsCard filter={{ kind: 'component' }} />);
+    render(
+      <TestApiProvider apis={[[catalogApiRef, {}]]}>
+        <FeaturedDocsCard filter={{ kind: 'component' }} />
+      </TestApiProvider>,
+    );
 
     expect(screen.getByTestId('title')).toHaveTextContent('Featured Docs');
     expect(screen.getByTestId('sub-link').textContent).toContain('Learn more');
+  });
+
+  it('renders nothing when catalogApi is not available', () => {
+    const { container } = render(
+      <TestApiProvider apis={[]}>
+        <FeaturedDocsCard filter={{ kind: 'component' }} />
+      </TestApiProvider>,
+    );
+
+    expect(container).toBeEmptyDOMElement();
   });
 });

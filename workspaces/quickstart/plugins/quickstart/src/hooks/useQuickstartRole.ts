@@ -18,7 +18,7 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import {
   configApiRef,
   identityApiRef,
-  useApi,
+  useApiHolder,
 } from '@backstage/core-plugin-api';
 import { policyEntityCreatePermission } from '@backstage-community/plugin-rbac-common';
 import { useAsync } from 'react-use';
@@ -40,10 +40,11 @@ export const useQuickstartRole = (): {
   isLoading: boolean;
   userRole: UserRole | null;
 } => {
-  const config = useApi(configApiRef);
-  const identityApi = useApi(identityApiRef);
+  const apiHolder = useApiHolder();
+  const config = apiHolder.get(configApiRef);
+  const identityApi = apiHolder.get(identityApiRef);
   const isRBACEnabled =
-    config.getOptionalBoolean('permission.enabled') ?? false;
+    config?.getOptionalBoolean('permission.enabled') ?? false;
   const { loading, allowed } = usePermission({
     permission: policyEntityCreatePermission,
   });
@@ -51,6 +52,9 @@ export const useQuickstartRole = (): {
   // Check user authorization status by examining identity and credentials
   const { value: authResult, loading: authLoading } = useAsync(async () => {
     try {
+      if (!identityApi) {
+        return { isAuthenticated: false, identity: null, credentials: null };
+      }
       const credentials = await identityApi.getCredentials();
       const identity = await identityApi.getBackstageIdentity();
 

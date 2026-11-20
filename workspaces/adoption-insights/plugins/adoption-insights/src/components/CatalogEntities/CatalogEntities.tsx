@@ -28,8 +28,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import Link from '@mui/material/Link';
-import { entityRouteRef } from '@backstage/plugin-catalog-react';
-import { useRouteRef } from '@backstage/core-plugin-api';
 import Tooltip from '@mui/material/Tooltip';
 
 import CardWrapper from '../CardWrapper';
@@ -52,7 +50,12 @@ const CatalogEntities = () => {
   >([]);
   const { t } = useTranslation();
 
-  const entityLink = useRouteRef(entityRouteRef);
+  const getEntityHref = useCallback(
+    (kind?: string, namespace?: string, name?: string) => {
+      return `/catalog/${kind}/${namespace ?? 'default'}/${name}`;
+    },
+    [],
+  );
 
   const { catalogEntities, loading, error } = useCatalogEntities({
     limit,
@@ -229,11 +232,11 @@ const CatalogEntities = () => {
                     >
                       <Link
                         component="a"
-                        href={entityLink({
-                          kind: entity.kind,
-                          namespace: entity.namespace,
-                          name: entity.name,
-                        })}
+                        href={getEntityHref(
+                          entity.kind,
+                          entity.namespace,
+                          entity.name,
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         sx={{

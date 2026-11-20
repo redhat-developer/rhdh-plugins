@@ -20,13 +20,18 @@ import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react'
 
 import { Quickstart } from './components/Quickstart';
 import { useQuickstartRole } from './hooks/useQuickstartRole';
+import { usePluginAvailability } from './hooks/usePluginAvailability';
 import { QuickstartItemData } from './types';
-import { filterQuickstartItemsByRole } from './utils';
+import {
+  filterQuickstartItemsByRole,
+  filterQuickstartItemsByAvailability,
+} from './utils';
 import { QUICKSTART_DRAWER_ID } from './const';
 
 export const QuickstartDrawerContent = () => {
   const { isOpen, closeDrawer } = useAppDrawer();
   const { isLoading: roleLoading, userRole } = useQuickstartRole();
+  const availability = usePluginAvailability();
   const config = useApi(configApiRef);
 
   const drawerOpen = isOpen(QUICKSTART_DRAWER_ID);
@@ -47,10 +52,12 @@ export const QuickstartDrawerContent = () => {
   }, [config]);
 
   const eligibleItems = useMemo(() => {
-    return !roleLoading && userRole
-      ? filterQuickstartItemsByRole(quickstartItems, userRole)
-      : [];
-  }, [roleLoading, userRole, quickstartItems]);
+    if (roleLoading || !userRole) {
+      return [];
+    }
+    const roleItems = filterQuickstartItemsByRole(quickstartItems, userRole);
+    return filterQuickstartItemsByAvailability(roleItems, availability);
+  }, [roleLoading, userRole, quickstartItems, availability]);
 
   const filteredItems = useMemo(() => {
     return drawerOpen ? eligibleItems : [];

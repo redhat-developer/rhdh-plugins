@@ -18,6 +18,9 @@ import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { TestApiProvider } from '@backstage/test-utils';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import { identityApiRef } from '@backstage/core-plugin-api';
 
 import { EntitySectionContent } from '../EntitySection';
 import { useEntities } from '../../../hooks/useEntities';
@@ -33,18 +36,15 @@ window.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
 jest.mock('../../../hooks/useEntities');
 const mockUseEntities = useEntities as jest.MockedFunction<typeof useEntities>;
 
-jest.mock('@backstage/plugin-user-settings', () => ({
-  useUserProfile: () => ({
-    displayName: 'Test User',
-    loading: false,
-  }),
-}));
-
-jest.mock('@backstage/plugin-catalog-react', () => ({
-  EntityRefLink: ({ children }: { children: ReactNode }) => (
-    <span>{children}</span>
-  ),
-}));
+jest.mock('@backstage/plugin-catalog-react', () => {
+  const actual = jest.requireActual('@backstage/plugin-catalog-react');
+  return {
+    ...actual,
+    EntityRefLink: ({ children }: { children: ReactNode }) => (
+      <span>{children}</span>
+    ),
+  };
+});
 
 jest.mock('@backstage/core-components', () => ({
   CodeSnippet: ({ text }: { text: string }) => <pre>{text}</pre>,
@@ -86,13 +86,29 @@ jest.mock('../../../hooks/useContainerQuery', () => ({
 
 const theme = createTheme();
 
-const renderComponent = () =>
+const mockIdentityApi = {
+  getProfileInfo: jest.fn().mockResolvedValue({ displayName: 'Test User' }),
+  getBackstageIdentity: jest
+    .fn()
+    .mockResolvedValue({ userEntityRef: 'user:default/test-user' }),
+  getCredentials: jest.fn().mockResolvedValue({}),
+  signOut: jest.fn().mockResolvedValue(undefined),
+};
+
+const renderComponent = (
+  apis: any[] = [
+    [catalogApiRef, { queryEntities: jest.fn() }],
+    [identityApiRef, mockIdentityApi],
+  ],
+) =>
   render(
-    <ThemeProvider theme={theme}>
-      <MemoryRouter>
-        <EntitySectionContent />
-      </MemoryRouter>
-    </ThemeProvider>,
+    <TestApiProvider apis={apis}>
+      <ThemeProvider theme={theme}>
+        <MemoryRouter>
+          <EntitySectionContent />
+        </MemoryRouter>
+      </ThemeProvider>
+    </TestApiProvider>,
   );
 
 describe('<EntitySectionContent />', () => {
@@ -202,5 +218,10 @@ describe('<EntitySectionContent />', () => {
     renderComponent();
 
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+
+  it('renders nothing when catalogApi is not available', () => {
+    const { container } = renderComponent([[identityApiRef, mockIdentityApi]]);
+    expect(container).toBeEmptyDOMElement();
   });
 });

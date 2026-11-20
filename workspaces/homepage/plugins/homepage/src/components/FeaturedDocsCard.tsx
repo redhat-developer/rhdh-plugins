@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { useApiHolder } from '@backstage/core-plugin-api';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import {
   FeaturedDocsCard as PluginHomeFeaturedDocsCard,
   FeaturedDocsCardProps,
@@ -39,9 +41,15 @@ export type FeaturedDocsCardComponentProps = FeaturedDocsCardProps &
  * @public
  */
 export const FeaturedDocsCard = (props: FeaturedDocsCardComponentProps) => {
+  const apiHolder = useApiHolder();
+  const catalogApi = apiHolder.get(catalogApiRef);
   const { t } = useTranslation();
   const { titleKey: _titleKey, title: _title, ...cardProps } = props;
   const title = useHomePageCardTitle('featuredDocs.title', props);
+
+  if (!catalogApi) {
+    return <></>;
+  }
 
   return (
     <PluginHomeFeaturedDocsCard

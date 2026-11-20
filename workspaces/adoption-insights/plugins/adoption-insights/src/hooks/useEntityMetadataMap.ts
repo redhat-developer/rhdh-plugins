@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { Entity } from '@backstage/catalog-model';
 import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
-import { useApi } from '@backstage/core-plugin-api';
+import { useApiHolder } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 type EntityMetadata = {
@@ -43,7 +43,8 @@ const uniqueEntityRefs = (refs: string[]) => {
 };
 
 export const useEntityMetadataMap = (entityRefs: string[]) => {
-  const catalogApi = useApi(catalogApiRef);
+  const apiHolder = useApiHolder();
+  const catalogApi = apiHolder.get(catalogApiRef);
   const [entityMetadataMap, setEntityMetadataMap] = useState<EntityMetadataMap>(
     {},
   );
@@ -86,6 +87,10 @@ export const useEntityMetadataMap = (entityRefs: string[]) => {
     }
 
     const fetchEntities = async () => {
+      if (!catalogApi) {
+        setEntityMetadataMap({});
+        return;
+      }
       try {
         const response = await catalogApi.getEntities({
           filter: refFilters,

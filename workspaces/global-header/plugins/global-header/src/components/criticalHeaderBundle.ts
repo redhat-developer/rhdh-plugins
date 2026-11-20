@@ -39,6 +39,7 @@ export { HeaderIconButton } from './HeaderIconButton/HeaderIconButton';
 export { HeaderIcon } from './HeaderIcon/HeaderIcon';
 export { Divider } from './Divider/Divider';
 export { NotificationButton } from './NotificationButton/NotificationButton';
+export { SelfServiceButton } from './SelfServiceButton/SelfServiceButton';
 
 export { StarredDropdown } from './HeaderDropdownComponent/StarredDropdown';
 export { ApplicationLauncherDropdown } from './ApplicationLauncherDropdown';

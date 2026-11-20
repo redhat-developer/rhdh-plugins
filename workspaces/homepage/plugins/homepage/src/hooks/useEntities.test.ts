@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { renderHook, waitFor } from '@testing-library/react';
-import { useApi } from '@backstage/core-plugin-api';
+import { useApiHolder } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import { useEntities } from './useEntities';
@@ -23,7 +23,7 @@ jest.mock('@backstage/core-plugin-api', () => {
   const actual = jest.requireActual('@backstage/core-plugin-api');
   return {
     ...actual,
-    useApi: jest.fn(),
+    useApiHolder: jest.fn(),
   };
 });
 
@@ -32,13 +32,15 @@ describe('useEntities', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useApi as jest.Mock).mockImplementation(apiRef => {
-      if (apiRef === catalogApiRef) {
-        return {
-          queryEntities: mockQueryEntities,
-        };
-      }
-      return {};
+    (useApiHolder as jest.Mock).mockReturnValue({
+      get: (apiRef: any) => {
+        if (apiRef === catalogApiRef) {
+          return {
+            queryEntities: mockQueryEntities,
+          };
+        }
+        return undefined;
+      },
     });
   });
 
