@@ -34,6 +34,11 @@ import { catalogGraphPluginOverride } from './catalog-graph/catalogGraphPluginOv
 import { docsPluginOverride } from './docs/docsPluginOverride';
 import { scaffolderPluginOverride } from './scaffolder/scaffolderPluginOverride';
 import { learningPathsModule } from './learning-paths';
+import globalHeaderPlugin from './global-header/plugin';
+import { globalHeaderModule } from './global-header/extensions/globalHeaderModule';
+import { globalHeaderTranslationsModule } from './global-header/globalHeaderTranslationsModule';
+import { globalHeaderTranslations } from './global-header/translations';
+import { globalHeaderTranslationRef } from './global-header/translations/ref';
 
 export { appDefaultsModule };
 
@@ -71,11 +76,18 @@ export {
 } from './sidebar/logo';
 export type { CompanyLogoProps, LogoURLs } from './sidebar/logo';
 
+export { globalHeaderModule };
+export { globalHeaderTranslationsModule };
+export { globalHeaderTranslations };
+export { globalHeaderTranslationRef };
+export { default as globalHeaderPlugin } from './global-header/plugin';
+
 /**
- * Feature loader that registers the RHDH app defaults module, the catalog
- * entity header layout that localizes the catalog tab titles, and all plugin
- * overrides (catalog, catalog graph, scaffolder, API docs, TechDocs) that add
- * empty-state pages when no entities are available.
+ * Feature loader that registers the RHDH app defaults module, the global
+ * header (wrapper module, default toolbar/menu plugin, and translations),
+ * the catalog entity header layout that localizes the catalog tab titles,
+ * and all plugin overrides (catalog, catalog graph, scaffolder, API docs,
+ * TechDocs) that add empty-state pages when no entities are available.
  *
  * @public
  */
@@ -84,6 +96,9 @@ export default createFrontendFeatureLoader({
     return [
       appDefaultsModule,
       appDefaultsTranslationsModule,
+      globalHeaderModule,
+      globalHeaderPlugin,
+      globalHeaderTranslationsModule,
       learningPathsModule,
       catalogPluginOverride,
       catalogModule,

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-app-defaults/global-header-components';
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/components';
 
 /**
  * Help-dropdown menu item that toggles the demo help drawer.
@@ -33,6 +33,6 @@ export const HelpDrawerMenuItem = ({
   };
 
   return (
-    <GlobalHeaderMenuItem title="Help" icon="support" onClick={handleClick} />
+    <GlobalHeaderMenuItem title="Help" icon="help" onClick={handleClick} />
   );
 };

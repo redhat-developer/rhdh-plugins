@@ -18,10 +18,6 @@ import { createApp } from '@backstage/frontend-defaults';
 import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth';
 import appDefaultsFeatureLoader from '@red-hat-developer-hub/backstage-plugin-app-defaults';
 import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations';
-import {
-  globalHeaderModule,
-  globalHeaderTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-global-header';
 import { drawerDemoModule } from './modules/drawer-demo';
 import { sidebarDemoModule } from './modules/sidebar-demo';
 import { templateCardDemoModule } from './modules/template-card-demo';
@@ -29,15 +25,14 @@ import { templateCardDemoModule } from './modules/template-card-demo';
 export default createApp({
   features: [
     // Production path: feature loader with the app defaults module
-    // (drawer + sidebar + template card + common icons) plus the catalog,
-    // catalog graph, scaffolder, API docs, and TechDocs empty-state overrides.
+    // (drawer + sidebar + template card + common icons + global header)
+    // plus the catalog, catalog graph, scaffolder, API docs, and TechDocs
+    // empty-state overrides.
     appDefaultsFeatureLoader,
     appAuthModule,
     appIntegrationsModule,
     drawerDemoModule,
     sidebarDemoModule,
     templateCardDemoModule,
-    globalHeaderModule,
-    globalHeaderTranslationsModule,
   ],
 });
