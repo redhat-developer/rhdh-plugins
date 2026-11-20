@@ -20,12 +20,17 @@ import adoptionInsightsPlugin, {
   adoptionInsightsTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
 import adoptionInsightsAnalyticsPlugin from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights';
+import homepagePlugin, {
+  homepageTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-homepage';
 import { signInModule } from './modules/signIn';
 
 export default createApp({
   features: [
     catalogPlugin,
     userSettingsPlugin,
+    homepagePlugin,
+    homepageTranslationsModule,
     adoptionInsightsPlugin,
     adoptionInsightsTranslationsModule,
     adoptionInsightsAnalyticsPlugin,

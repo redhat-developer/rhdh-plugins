@@ -65,7 +65,22 @@ describe('adoption-insights NFS exports', () => {
     expect(nfsPluginSource).toMatch(
       /PageBlueprint\.make\(\{[\s\S]*?if:\s*adoptionInsightsAccess/,
     );
-    expect(nfsPluginSource).toMatch(
+  });
+
+  it('registers the Top Plugins homepage widget with an events.read permission if predicate', () => {
+    const homePageCardsSource = readFileSync(
+      resolve(__dirname, 'extensions/homePageCards.tsx'),
+      'utf8',
+    );
+    expect(homePageCardsSource).toMatch(
+      /HomePageWidgetBlueprint\.make\(\{[\s\S]*?if:\s*adoptionInsightsAccess/,
+    );
+
+    const accessSource = readFileSync(
+      resolve(__dirname, 'permissions/adoptionInsightsAccess.ts'),
+      'utf8',
+    );
+    expect(accessSource).toMatch(
       /\$contains:\s*`\$\{adoptionInsightsEventsReadPermission\.name\}#read`/,
     );
   });
@@ -92,5 +107,13 @@ describe('adoption-insights NFS wiring', () => {
     // point the page renders and every request it makes fails.
     expect(plugin.getExtension('page:adoption-insights')).toBeDefined();
     expect(plugin.getExtension('api:adoption-insights')).toBeDefined();
+  });
+
+  it('registers the Top Plugins homepage widget', () => {
+    expect(
+      plugin.getExtension(
+        'home-page-widget:adoption-insights/top-plugins-card',
+      ),
+    ).toBeDefined();
   });
 });

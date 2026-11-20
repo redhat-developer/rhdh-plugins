@@ -16,9 +16,61 @@ app:
         config:
           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
           defaultLanguage: 'en'
-    - page:catalog:
+
+    # RHDH homepage (required to verify Popular Content / Top Plugins widgets)
+    - page:home: false
+    - page:homepage:
         config:
           path: /
+    - page:catalog:
+        config:
+          path: /catalog
+
+    # Keep the homepage focused on Adoption Insights widgets during local verify
+    - home-page-widget:homepage/rhdh-entity-section: false
+    - home-page-widget:homepage/rhdh-template-section: false
+    - home-page-widget:homepage/quickaccess-card: false
+    - home-page-widget:homepage/search-bar: false
+    - home-page-widget:homepage/featured-docs-card: false
+    - home-page-widget:homepage/catalog-starred-entities-card: false
+    - home-page-widget:homepage/recently-visited-card: false
+    - home-page-widget:homepage/top-visited-card: false
+    - home-page-widget:homepage/rhdh-onboarding-section: false
+
+    - home-page-layout:homepage/dynamic-homepage-layout:
+        config:
+          customizable: true
+          widgetLayout:
+            # Key matches HomePageWidgetBlueprint params.name (also accepts
+            # extension name top-plugins-card).
+            TopPluginsCard:
+              priority: 400
+              props:
+                mode: auto
+                displayCount: 3
+                # Example: add routes for custom plugins (optional)
+                # pluginDestinations:
+                #   my-custom-plugin: /my-custom-plugin
+              breakpoints:
+                xl: { w: 4, h: 5, x: 0, y: 0 }
+                lg: { w: 4, h: 5, x: 0, y: 0 }
+                md: { w: 6, h: 5, x: 0, y: 0 }
+                sm: { w: 6, h: 5, x: 0, y: 0 }
+                xs: { w: 12, h: 5, x: 0, y: 0 }
+                xxs: { w: 12, h: 5, x: 0, y: 0 }
+
+# When homepage-backend is installed (RHDH / rhdh-local), Add-widget only lists
+# cards whose extension name matches a defaultWidgets.ref (last path segment of
+# home-page-widget:adoption-insights/top-plugins-card → top-plugins-card).
+# Without this entry the Top Plugins card never appears in the catalog.
+homepage:
+  defaultWidgets:
+    - id: top-plugins-card
+      ref: top-plugins-card
+      props:
+        title: Top Plugins
+        mode: auto
+        displayCount: 3
 
 organization:
   name: My Company

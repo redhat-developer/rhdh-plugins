@@ -64,6 +64,14 @@ const adoptionInsightsTranslationEs = createTranslationMessages({
     'header.dateRange.title': 'Rango de fechas',
     'header.dateRange.today': 'Hoy',
     'header.title': 'Adoption Insights',
+    'homepage.topPlugins.empty': 'Aún no hay datos de uso de plugins',
+    'homepage.topPlugins.error': 'No se pudieron cargar los datos de plugins',
+    'homepage.topPlugins.permissionDenied':
+      'No tiene permiso para ver los datos de Adoption Insights.',
+    'homepage.topPlugins.title': 'Plugins principales',
+    'homepage.topPlugins.trendTooltip':
+      'Tendencia calculada en función de los últimos 28 días',
+    'homepage.topPlugins.visits': 'visitas',
     'page.title': 'Adoption Insights',
     'permission.description':
       'Para ver el complemento "Adoption Insights", comuníquese con su administrador para que le otorgue permisos a adoption-insights.events.read.',

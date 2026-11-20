@@ -279,7 +279,6 @@
 ### Minor Changes
 
 - 94e2278: Refactor the MCP server configure modal with PatternFly layout and improved credential management:
-
   - Add **Use organization default token** / **Use personal token** radio selectors when an app-config default token is available, replacing the remove-personal-token flow
   - Show server status, tools list, and enabled toggle with local draft state applied on Save
   - Hide the tools section when the server is disabled; keep status consistent while drafting an unverified personal token
