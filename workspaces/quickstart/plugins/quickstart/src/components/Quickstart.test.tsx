@@ -44,7 +44,7 @@ describe('Quickstart', () => {
   };
 
   const expectHideButton = () => {
-    expect(screen.getByRole('button', { name: 'Hide' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Hide' })).toBeInTheDocument();
   };
 
   describe('Role-based item rendering', () => {
@@ -102,12 +102,11 @@ describe('Quickstart', () => {
       expect(screen.getByText('Not started')).toBeInTheDocument();
 
       // Complete first admin item
-      const expandButtons = screen.getAllByRole('button', {
-        name: /expand .* details/i,
-      });
-      fireEvent.click(expandButtons[0]);
+      fireEvent.click(
+        screen.getByRole('button', { name: /Step 1 for Admin/i }),
+      );
 
-      const cta = await screen.findByRole('link', { name: 'Start Now' });
+      const cta = await screen.findByRole('button', { name: 'Start Now' });
       fireEvent.click(cta);
 
       await waitFor(() => {
@@ -115,8 +114,10 @@ describe('Quickstart', () => {
       });
 
       // Complete second admin item
-      fireEvent.click(expandButtons[1]);
-      const cta2 = await screen.findByRole('link', { name: 'Continue' });
+      fireEvent.click(
+        screen.getByRole('button', { name: /Step 2 for Admin/i }),
+      );
+      const cta2 = await screen.findByRole('button', { name: 'Continue' });
       fireEvent.click(cta2);
 
       await waitFor(() => {
@@ -130,12 +131,11 @@ describe('Quickstart', () => {
       expect(screen.getByText('Not started')).toBeInTheDocument();
 
       // Complete first developer item
-      const expandButtons = screen.getAllByRole('button', {
-        name: /expand .* details/i,
-      });
-      fireEvent.click(expandButtons[0]);
+      fireEvent.click(
+        screen.getByRole('button', { name: /Step 1 for Developer/i }),
+      );
 
-      const cta = await screen.findByRole('link', { name: 'Start Now' });
+      const cta = await screen.findByRole('button', { name: 'Start Now' });
       fireEvent.click(cta);
 
       await waitFor(() => {
@@ -143,8 +143,10 @@ describe('Quickstart', () => {
       });
 
       // Complete second developer item
-      fireEvent.click(expandButtons[1]);
-      const cta2 = await screen.findByRole('link', { name: 'Continue' });
+      fireEvent.click(
+        screen.getByRole('button', { name: /Step 2 for Developer/i }),
+      );
+      const cta2 = await screen.findByRole('button', { name: 'Continue' });
       fireEvent.click(cta2);
 
       await waitFor(() => {
@@ -163,11 +165,10 @@ describe('Quickstart', () => {
   });
 
   describe('Component interaction', () => {
-    it('calls handleDrawerClose when Hide button is clicked', async () => {
+    it('calls handleDrawerClose when Hide is clicked', async () => {
       await renderWithRole('admin');
 
-      const hideBtn = screen.getByRole('button', { name: 'Hide' });
-      fireEvent.click(hideBtn);
+      fireEvent.click(screen.getByRole('link', { name: 'Hide' }));
 
       expect(mockHandleDrawerClose).toHaveBeenCalledTimes(1);
     });

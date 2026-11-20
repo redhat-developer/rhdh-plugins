@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Button from '@mui/material/Button';
-import { Link } from 'react-router-dom';
+
+import { Button } from '@backstage/ui';
+import { RiExternalLinkLine } from '@remixicon/react';
+import { useNavigate } from 'react-router-dom';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../../utils';
@@ -26,12 +27,17 @@ export type QuickstartCtaLinkProps = {
   onClick: () => void;
 };
 
+/**
+ * MUI LinkButton `variant="outlined"` → BUI Button `variant="secondary"`.
+ * RHDH theme styles secondary as PatternFly outlined buttons.
+ */
 export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   if (!cta) {
     return (
-      <Button color="primary" variant="outlined" onClick={onClick}>
+      <Button variant="secondary" onPress={() => onClick()}>
         {t('button.gotIt')}
       </Button>
     );
@@ -44,15 +50,13 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
   if (isExternalLink) {
     return (
       <Button
-        color="primary"
-        variant="outlined"
-        component="a"
-        href={cta.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={onClick}
-        endIcon={<OpenInNewIcon sx={{ fontSize: 15 }} />}
-        sx={{ gap: '5px' }}
+        variant="secondary"
+        data-cta-href={cta.link}
+        iconEnd={<RiExternalLinkLine size={15} />}
+        onPress={() => {
+          onClick();
+          window.open(cta.link, '_blank', 'noopener,noreferrer');
+        }}
       >
         {finalText}
       </Button>
@@ -61,11 +65,12 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
 
   return (
     <Button
-      color="primary"
-      variant="outlined"
-      component={Link}
-      to={cta.link}
-      onClick={onClick}
+      variant="secondary"
+      data-cta-href={cta.link}
+      onPress={() => {
+        onClick();
+        navigate(cta.link);
+      }}
     >
       {finalText}
     </Button>
