@@ -28,6 +28,60 @@ import { X2AConfig, JobCreateParams, AAPCredentials, GitRepo } from './types';
 import { applyDeploymentPatch } from './applyDeploymentPatch';
 
 /**
+ * Coerces a set of environment-variable values into the string map that a
+ * Kubernetes Secret's `stringData` requires.
+ *
+ * Values under `x2a.credentials` are read straight from app-config without
+ * schema coercion, so an unquoted YAML scalar such as `MAX_TOKENS: 32000`
+ * arrives here as a number. Sending that to the API server makes it reject the
+ * entire Secret with "cannot unmarshal number into Go struct field
+ * Secret.stringData of type string", which surfaces to the user as a generic
+ * 400 during project creation. Null and undefined values (an env var that was
+ * never substituted) are dropped rather than stringified into "null".
+ *
+ * Only strings, booleans, and finite numbers are coerced. Objects, arrays,
+ * and other non-scalars are rejected: `String()` would turn a nested map into
+ * the literal "[object Object]" and the API server would accept it. Integers
+ * outside the safe integer range are rejected too, because YAML parsing may
+ * already have rounded them and `String()` cannot recover the original digits.
+ *
+ * Applied to every Secret this builder produces, so the guarantee holds
+ * regardless of where a value originated.
+ */
+function toStringData(values: Record<string, unknown>): Record<string, string> {
+  const entries: [string, string][] = [];
+  for (const [key, value] of Object.entries(values)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+    if (typeof value === 'string') {
+      entries.push([key, value]);
+      continue;
+    }
+    if (typeof value === 'boolean') {
+      entries.push([key, String(value)]);
+      continue;
+    }
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) {
+        throw new Error(`Secret value "${key}" must be a finite number`);
+      }
+      if (Number.isInteger(value) && !Number.isSafeInteger(value)) {
+        throw new Error(
+          `Secret value "${key}" is an integer outside the safe range. Quote it in app-config so the digits are preserved.`,
+        );
+      }
+      entries.push([key, String(value)]);
+      continue;
+    }
+    throw new Error(
+      `Secret value "${key}" must be a string, number, or boolean`,
+    );
+  }
+  return Object.fromEntries(entries);
+}
+
+/**
  * Builds Kubernetes Job and Secret resources for X2A migration jobs
  */
 export class JobResourceBuilder {
@@ -127,7 +181,7 @@ export class JobResourceBuilder {
         },
       },
       type: 'Opaque',
-      stringData: {
+      stringData: toStringData({
         // LLM credentials from config (generic key-value env vars)
         ...llmCredentials,
 
@@ -136,7 +190,7 @@ export class JobResourceBuilder {
 
         // AAP SSL verification setting (derived from skipSSLVerification config)
         AAP_VERIFY_SSL: String(!skipSSL),
-      },
+      }),
     };
   }
 
@@ -186,7 +240,7 @@ export class JobResourceBuilder {
         ownerReferences: [ownerReference],
       },
       type: 'Opaque',
-      stringData: {
+      stringData: toStringData({
         // Git source repository credentials from user
         SOURCE_REPO_URL: gitCredentials.sourceRepo.url,
         SOURCE_REPO_TOKEN: gitCredentials.sourceRepo.token,
@@ -196,7 +250,7 @@ export class JobResourceBuilder {
         TARGET_REPO_URL: gitCredentials.targetRepo.url,
         TARGET_REPO_TOKEN: gitCredentials.targetRepo.token,
         TARGET_REPO_BRANCH: gitCredentials.targetRepo.branch,
-      },
+      }),
     };
   }
 

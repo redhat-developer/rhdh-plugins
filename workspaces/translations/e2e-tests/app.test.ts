@@ -14,5 +14,18 @@
  * limitations under the License.
  */
 
-// eslint-disable-next-line @backstage/no-relative-monorepo-imports -- workspace ESLint shared config
-module.exports = require('../../eslint.frontend-shared.cjs')(__dirname);
+import { test, expect } from '@playwright/test';
+
+test('App should render the welcome page', async ({ page }) => {
+  await page.goto('/');
+
+  const enterButton = page.getByRole('button', { name: 'Enter' });
+  await expect(enterButton).toBeVisible({ timeout: 30_000 });
+  await enterButton.click();
+
+  await expect(
+    page.getByRole('link', { name: 'Translations' }).first(),
+  ).toBeVisible({
+    timeout: 30_000,
+  });
+});
