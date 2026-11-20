@@ -262,6 +262,7 @@ export const ModulePage = () => {
             <Grid item xs={12}>
               <ModuleDetailsCard
                 module={module}
+                project={project}
                 targetRepository={
                   project?.targetRepoUrl && project.targetRepoBranch
                     ? GitRepositoryRef.fromProject(project)

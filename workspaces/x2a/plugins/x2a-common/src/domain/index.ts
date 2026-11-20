@@ -21,6 +21,10 @@ export { Codespace } from './Codespace';
 export { GitRepository } from './GitRepository';
 export { GitRepositoryRef } from './GitRepositoryRef';
 export { JobStatus } from './JobStatus';
+export {
+  findMigrationPlanArtifact,
+  findModuleMigrationPlanArtifact,
+} from './migrationPlanArtifacts';
 export { Phase } from './Phase';
 export { ProjectState } from './ProjectState';
 export { RuleEntity } from './Rule';

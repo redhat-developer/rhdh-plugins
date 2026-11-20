@@ -40,6 +40,12 @@ export const githubProvider: ScmProvider = {
 
   augmentToken: (token: string) => token,
 
+  extractToken: (token: string) => token,
+
+  // The `repo` scope covers both git-over-HTTPS and the REST contents API.
+  getContentWriteAuthTokenDescriptor: () =>
+    githubProvider.getAuthTokenDescriptor(false),
+
   buildBranchUrl: (origin, path, encodedBranch) =>
     `${origin}${path}/tree/${encodedBranch}`,
 

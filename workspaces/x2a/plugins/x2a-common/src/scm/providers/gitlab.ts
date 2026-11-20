@@ -16,6 +16,8 @@
 
 import { ScmProvider } from '../ScmProvider';
 
+const GITLAB_TOKEN_PREFIX = 'oauth2:';
+
 /**
  * GitLab SCM provider.
  *
@@ -38,7 +40,25 @@ export const gitlabProvider: ScmProvider = {
     scope: readOnly ? 'read_repository' : 'write_repository',
   }),
 
-  augmentToken: (token: string) => `oauth2:${token}`,
+  augmentToken: (token: string) => `${GITLAB_TOKEN_PREFIX}${token}`,
+
+  extractToken: (token: string) =>
+    token.startsWith(GITLAB_TOKEN_PREFIX)
+      ? token.slice(GITLAB_TOKEN_PREFIX.length)
+      : token,
+
+  // Why `api` and not `write_repository`: GitLab documents `write_repository`
+  // as the scope for Git-over-HTTP pushes and states that it does not support
+  // API authentication. Editing a file in the browser flow commits through the
+  // REST Repository Files API, which therefore needs the broader `api` scope.
+  // The GitLab OAuth application must allow `api`; users re-consent when they
+  // first edit a document. The scope is requested only for this action.
+  // See https://docs.gitlab.com/security/tokens/access_token_scopes/
+  getContentWriteAuthTokenDescriptor: () => ({
+    provider: 'gitlab',
+    tokenType: 'oauth' as const,
+    scope: 'api',
+  }),
 
   buildBranchUrl: (origin, path, encodedBranch) =>
     `${origin}${path}/-/tree/${encodedBranch}`,
