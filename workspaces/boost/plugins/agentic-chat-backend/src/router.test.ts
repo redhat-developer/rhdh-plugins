@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import express from 'express';
+import express, { type Response } from 'express';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import request from 'supertest';
@@ -68,7 +68,7 @@ let calls: Array<{
   body: unknown;
   authorization?: string;
 }>;
-let upstreamError: { status: number; retryAfter?: string } | undefined;
+let respondUpstream: ((response: Response) => void) | undefined;
 let catalogLookups: Array<{ ref: string; owner: string }> = [];
 
 beforeAll(async () => {
@@ -84,13 +84,8 @@ beforeAll(async () => {
       body: req.body,
       authorization: req.headers.authorization,
     });
-    if (upstreamError) {
-      if (upstreamError.retryAfter !== undefined) {
-        res.set('Retry-After', upstreamError.retryAfter);
-      }
-      res
-        .status(upstreamError.status)
-        .json({ error: 'PRIVATE_UPSTREAM_CREDENTIAL' });
+    if (respondUpstream) {
+      respondUpstream(res);
       return;
     }
     if (url.pathname === '/v1/agent/run') {
@@ -121,7 +116,7 @@ afterAll(async () => {
 beforeEach(() => {
   calls = [];
   catalogLookups = [];
-  upstreamError = undefined;
+  respondUpstream = undefined;
 });
 
 async function app(
@@ -320,7 +315,9 @@ it('honors Catalog denial and missing entities before submission', async () => {
 });
 
 it('returns a safe dependency failure without upstream details', async () => {
-  upstreamError = { status: 500 };
+  respondUpstream = res => {
+    res.status(500).json({ error: 'PRIVATE_UPSTREAM_CREDENTIAL' });
+  };
   const response = await request(await app()).get('/v2/conversations');
   expect(response.status).toBe(502);
   expect(response.text).not.toContain('PRIVATE_UPSTREAM_CREDENTIAL');
@@ -329,7 +326,10 @@ it('returns a safe dependency failure without upstream details', async () => {
 it.each(['120', undefined])(
   'preserves upstream rate limiting with Retry-After %s',
   async retryAfter => {
-    upstreamError = { status: 429, retryAfter };
+    respondUpstream = res => {
+      if (retryAfter !== undefined) res.set('Retry-After', retryAfter);
+      res.status(429).json({ error: 'PRIVATE_UPSTREAM_CREDENTIAL' });
+    };
     const response = await request(await app())
       .post('/v1/agent/run')
       .send({ ...selection, query: 'Hello' });
@@ -339,6 +339,57 @@ it.each(['120', undefined])(
     expect(response.body).toEqual({ error: 'Chat runtime request failed' });
   },
 );
+
+it('returns a sanitized 502 when LCORE disconnects', async () => {
+  respondUpstream = res => {
+    res.destroy();
+  };
+
+  const response = await request(await app()).get('/v2/conversations');
+
+  expect(response.status).toBe(502);
+  expect(response.body).toEqual({ error: 'Chat runtime unavailable' });
+});
+
+it('returns a sanitized 502 when the LCORE request times out', async () => {
+  respondUpstream = () => undefined;
+  const createTimeout = AbortSignal.timeout;
+  const timeout = jest
+    .spyOn(AbortSignal, 'timeout')
+    .mockImplementationOnce(() => createTimeout(100));
+
+  try {
+    const response = await request(await app()).get('/v2/conversations');
+
+    expect(response.status).toBe(502);
+    expect(response.body).toEqual({ error: 'Chat runtime unavailable' });
+  } finally {
+    timeout.mockRestore();
+  }
+});
+
+it('returns a sanitized 502 without following an LCORE redirect', async () => {
+  respondUpstream = res => {
+    res.redirect('/redirect-target');
+  };
+
+  const response = await request(await app()).get('/v2/conversations');
+
+  expect(response.status).toBe(502);
+  expect(response.body).toEqual({ error: 'Chat runtime unavailable' });
+  expect(calls.map(call => call.path)).toEqual(['/v2/conversations']);
+});
+
+it('returns a sanitized 502 when LCORE returns malformed JSON', async () => {
+  respondUpstream = res => {
+    res.type('json').send('{"error":"PRIVATE_UPSTREAM_CREDENTIAL"');
+  };
+
+  const response = await request(await app()).get('/v2/conversations');
+
+  expect(response.status).toBe(502);
+  expect(response.body).toEqual({ error: 'Chat runtime unavailable' });
+});
 
 it('captures the supplied Legal agent request at the new upstream agent endpoint', async () => {
   const { server: backendServer } = await startTestBackend({

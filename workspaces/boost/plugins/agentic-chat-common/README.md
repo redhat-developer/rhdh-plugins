@@ -1,7 +1,10 @@
 # Agentic chat common
 
-Browser-safe permission, run-request schema and interpreted-agent input types for the agentic-chat backend. This package imports no backend service or execution SDK.
+Shared request and permission contracts for agentic chat.
 
-Exports `agenticChatPermission` (`agentic-chat.chat`, RBAC action `use`), `runAgentRequestSchema`, `RunAgentRequest`, `AgentExecutionMode`, `AgentExecutionInput`.
+- `agenticChatPermission` defines the `agentic-chat.chat` permission with RBAC action `use`.
+- `runAgentRequestSchema` validates the browser's `RunAgentRequest`. It requires nonblank `agentRef`, `query`, `provider`, and `model`, accepts an optional `conversation_id`, and rejects unknown fields.
 
-Run requests require nonblank `agentRef`, `query`, `provider` and `model` strings, with optional `conversation_id`. The backend resolves the requested agent through authorized Catalog access for each run. Provider/model selection comes from the frontend; agent instructions and capabilities remain Catalog-owned. Unknown request fields are rejected.
+The frontend selects the agent, provider, and model. The backend resolves the agent through Catalog using the caller's credentials and reads its instructions and capabilities from the Catalog entity.
+
+The package also exports `AgentExecutionInput` for the backend's request to LCORE and `AgentExecutionMode` for Catalog execution modes. The [backend README](../agentic-chat-backend/README.md#successful-responses) documents browser-facing responses.

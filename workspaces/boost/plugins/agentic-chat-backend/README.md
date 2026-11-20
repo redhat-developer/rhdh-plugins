@@ -29,6 +29,17 @@ g, group:default/APPROVED_GROUP, role:default/agentic-chat-user
 - GET `/v2/conversations/:conversationId`: proxy one conversation.
 - DELETE `/v2/conversations/:conversationId`: proxy deletion and preserve the runtime's status/body, including no-content responses.
 
+### Successful responses
+
+The backend passes through LCORE's success status and JSON body. The routes below are relative to `/api/agentic-chat`.
+
+- POST `/v1/agent/run` returns `202 Accepted` with `{ "workflow_id": "wf-1", "status": "running" }` when LCORE accepts the run.
+- GET `/v2/conversations` returns `200 OK` with a `conversations` array. Each entry contains `conversation_id`, `topic_summary` (which can be null), and `last_message_timestamp` (Unix seconds). An empty list is `{ "conversations": [] }`.
+- GET `/v2/conversations/:conversationId` returns `200 OK` with `conversation_id` and a `chat_history` array of turns.
+- DELETE `/v2/conversations/:conversationId` returns `200 OK` with `conversation_id`, a boolean `deleted`, and a human-readable `response` when LCORE returns JSON. If the runtime returns `204 No Content`, the response has an empty body.
+
+See the [LCORE conversation response models](https://github.com/lightspeed-core/lightspeed-stack/blob/main/src/models/api/responses/successful/conversations.py) for details on the conversation payloads.
+
 ## Single-agent mapping
 
 Chat runs use Catalog `AiResource` entities with `spec.type: agent-rhdh-chat`. Catalog `metadata.name` becomes `agent`; request `query` becomes `prompt`. Instructions, tools and object outputSchema map to `instructions`, `tools` and `output_schema`. The frontend request supplies `provider` → `inference_provider.name` and `model` → `inference_provider.model`. No top-level `provider` is sent to LCORE; the interpreted agent's `inference_provider` is the selection source. Frontend selection takes precedence over Catalog model/provider values. The optional Catalog `spec.inferenceProvider.modelConfig` supplies `temperature` and `maxTokens` only when both selected values match the Catalog provider and model. Selecting a different provider or model omits `inference_provider.modelConfig`. LCORE validates provider/model authorization and resolves credentials; the browser cannot supply credentials or capabilities.
