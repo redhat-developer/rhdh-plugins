@@ -384,6 +384,9 @@ export class DefaultApiClient {
 export const ENTITY_REF_RE: RegExp;
 
 // @public
+export function extractHost(repoUrl: string): string | undefined;
+
+// @public
 export const githubProvider: ScmProvider;
 
 // @public

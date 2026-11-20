@@ -25,6 +25,9 @@ import {
   repoAuthenticationValidation,
   RulesAcceptance,
   rulesAcceptanceValidation,
+  X2ARepoUrlPicker,
+  x2aRepoUrlPickerFieldSchema,
+  x2aRepoUrlPickerValidation,
 } from './scaffolder';
 
 /** @public */
@@ -59,5 +62,20 @@ export const RulesAcceptanceExtension = x2APlugin.provide(
     component: RulesAcceptance,
     name: 'RulesAcceptance', // name used in ui:field in templates
     validation: rulesAcceptanceValidation,
+  }),
+);
+
+/**
+ * RepoUrlPicker variant that derives `allowedHosts` from the `integrations:`
+ * config, so templates work with SCM instances on custom URLs.
+ *
+ * @public
+ */
+export const X2ARepoUrlPickerExtension = x2APlugin.provide(
+  createScaffolderFieldExtension({
+    component: X2ARepoUrlPicker,
+    name: 'X2ARepoUrlPicker', // name used in ui:field in templates
+    validation: x2aRepoUrlPickerValidation,
+    schema: x2aRepoUrlPickerFieldSchema.schema,
   }),
 );

@@ -310,6 +310,24 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Erneute Synchronisierung des Migrationsplans für Projekt „{{name}}“ fehlgeschlagen',
     'resyncMigrationPlan.errorStart':
       'Erneute Synchronisierung des Migrationsplans konnte nicht gestartet werden',
+    'scaffolder.repoUrlPicker.pickerUnavailable':
+      'Die Repository-Auswahl konnte nicht geladen werden. Dies ist ein Plugin-Kompatibilitätsproblem, bitte melden Sie es.',
+    'scaffolder.repoUrlPicker.authPending':
+      '{{provider}}-Zugriffstoken wird angefordert...',
+    'scaffolder.repoUrlPicker.authOk': '{{provider}}-Zugriffstoken erhalten',
+    'scaffolder.repoUrlPicker.authError':
+      '{{provider}}-Zugriffstoken konnte nicht abgerufen werden: {{error}}. Prüfen Sie, ob der Auth-Provider "{{provider}}" für diese Instanz konfiguriert ist.',
+    'scaffolder.repoUrlPicker.authRetry': 'Erneut versuchen',
+    'scaffolder.repoUrlPicker.hostsHiddenUnset':
+      '{{provider}}-Hosts werden nicht angeboten ({{hosts}}): Für die {{provider}}-Anmeldung ist kein Host festgelegt. Ein Administrator muss {{configKey}} setzen.',
+    'scaffolder.repoUrlPicker.hostsHiddenOther':
+      '{{provider}}-Hosts außer {{authHost}} werden nicht angeboten ({{hosts}}): Die {{provider}}-Anmeldung ist nur für {{authHost}} eingerichtet.',
+    'scaffolder.repoUrlPicker.hostsHiddenNotListed':
+      '{{provider}}-Hosts werden nicht angeboten ({{hosts}}): Die {{provider}}-Anmeldung ist für {{authHost}} eingerichtet, der nicht in der Integrationskonfiguration enthalten ist.',
+    'scaffolder.repoUrlPicker.hostRefusedOther':
+      'Die {{provider}}-Anmeldung ist für {{authHost}} eingerichtet, nicht für {{host}}. Ihr Zugriffstoken wird nicht an andere Hosts gesendet.',
+    'scaffolder.repoUrlPicker.hostRefusedUnset':
+      'Für die {{provider}}-Anmeldung ist kein Host festgelegt, daher kann kein {{provider}}-Zugriffstoken für {{host}} verwendet werden. Ein Administrator muss {{configKey}} setzen.',
     'scaffolder.rulesAcceptance.loadingRules': 'Regeln werden geladen...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'Es sind keine Regeln konfiguriert.',

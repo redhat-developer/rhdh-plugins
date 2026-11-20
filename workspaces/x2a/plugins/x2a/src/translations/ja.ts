@@ -277,6 +277,25 @@ const x2aPluginTranslationJa = createTranslationMessages({
     'rulesPage.dialog.descriptionCharCount': '{{count}} / {{max}} 文字',
     'rulesPage.dialog.descriptionTooLong':
       '説明は{{max}}文字以内で入力してください（現在{{count}}文字）。',
+    'scaffolder.repoUrlPicker.pickerUnavailable':
+      'リポジトリピッカーを読み込めませんでした。これはプラグインの互換性の問題です。報告してください。',
+    'scaffolder.repoUrlPicker.authPending':
+      '{{provider}} のアクセストークンを要求しています...',
+    'scaffolder.repoUrlPicker.authOk':
+      '{{provider}} のアクセストークンを取得しました',
+    'scaffolder.repoUrlPicker.authError':
+      '{{provider}} のアクセストークンを取得できませんでした: {{error}}。このインスタンス用に「{{provider}}」認証プロバイダーが設定されているか確認してください。',
+    'scaffolder.repoUrlPicker.authRetry': '再試行',
+    'scaffolder.repoUrlPicker.hostsHiddenUnset':
+      '{{provider}} のホストは表示されません ({{hosts}}): {{provider}} のサインイン用のホストが設定されていません。管理者が {{configKey}} を設定する必要があります。',
+    'scaffolder.repoUrlPicker.hostsHiddenOther':
+      '{{authHost}} 以外の {{provider}} のホストは表示されません ({{hosts}}): {{provider}} のサインインは {{authHost}} 専用に設定されています。',
+    'scaffolder.repoUrlPicker.hostsHiddenNotListed':
+      '{{provider}} のホストは表示されません ({{hosts}}): {{provider}} のサインインは {{authHost}} 用に設定されていますが、このホストは統合設定に含まれていません。',
+    'scaffolder.repoUrlPicker.hostRefusedOther':
+      '{{provider}} のサインインは {{host}} ではなく {{authHost}} 用に設定されています。そのアクセストークンは他のホストには送信されません。',
+    'scaffolder.repoUrlPicker.hostRefusedUnset':
+      '{{provider}} のサインイン用のホストが設定されていないため、{{host}} には {{provider}} のアクセストークンを使用できません。管理者が {{configKey}} を設定する必要があります。',
     'scaffolder.rulesAcceptance.fetchError': 'ルールの取得に失敗しました',
     'scaffolder.rulesAcceptance.loadingRules': 'ルールの読み込み中...',
     'scaffolder.rulesAcceptance.noRulesConfigured':
