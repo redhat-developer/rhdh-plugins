@@ -19,6 +19,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { scaffolderActionsExtensionPoint } from '@backstage/plugin-scaffolder-node';
 import { createProjectAction } from './actions/createProjectAction';
+import { createPublishAapConfigAction } from './actions/publishAapConfigAction';
 
 /**
  * A backend module that registers the action into the scaffolder
@@ -38,6 +39,7 @@ export const scaffolderModule = createBackendModule({
       async init({ scaffolderActions, discoveryService, config }) {
         scaffolderActions.addActions(
           createProjectAction(discoveryService, config),
+          createPublishAapConfigAction(config),
         );
       },
     });

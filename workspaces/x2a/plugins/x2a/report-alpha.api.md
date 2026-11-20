@@ -101,6 +101,21 @@ const _default: OverridableFrontendPlugin<
         noHeader?: boolean;
       };
     }>;
+    'scaffolder-form-field:x2a/DestinationPathPreview': OverridableExtensionDefinition<{
+      kind: 'scaffolder-form-field';
+      name: 'DestinationPathPreview';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<
+        () => Promise<FormField>,
+        'scaffolder.form-field-loader',
+        {}
+      >;
+      inputs: {};
+      params: {
+        field: () => Promise<FormField>;
+      };
+    }>;
     'scaffolder-form-field:x2a/RepoAuthentication': OverridableExtensionDefinition<{
       kind: 'scaffolder-form-field';
       name: 'RepoAuthentication';
@@ -213,6 +228,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.artifacts.migrated_sources': string;
     readonly 'modulePage.artifacts.editInCodespaces': string;
     readonly 'modulePage.artifacts.ansible_project': string;
+    readonly 'modulePage.artifacts.aap_config': string;
+    readonly 'modulePage.artifacts.publishAapConfig': string;
     readonly 'modulePage.phases.title': string;
     readonly 'modulePage.phases.id': string;
     readonly 'modulePage.phases.status': string;
@@ -384,6 +401,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'artifact.types.module_migration_plan': string;
     readonly 'artifact.types.migrated_sources': string;
     readonly 'artifact.types.ansible_project': string;
+    readonly 'artifact.types.aap_config': string;
     readonly 'artifact.types.project_metadata': string;
     readonly 'artifact.types.adversarial_report': string;
     readonly 'artifact.types.adversarial_report_json': string;

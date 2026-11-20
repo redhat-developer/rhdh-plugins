@@ -56,15 +56,16 @@ describe('ArtifactKind', () => {
   });
 
   describe('all', () => {
-    it('returns 7 kinds in defined order', () => {
+    it('returns 8 kinds in defined order', () => {
       const all = ArtifactKind.all();
-      expect(all).toHaveLength(7);
+      expect(all).toHaveLength(8);
       expect(all).toEqual([
         ArtifactKind.MIGRATION_PLAN,
         ArtifactKind.MODULE_MIGRATION_PLAN,
         ArtifactKind.MIGRATED_SOURCES,
         ArtifactKind.PROJECT_METADATA,
         ArtifactKind.ANSIBLE_PROJECT,
+        ArtifactKind.AAP_CONFIG,
         ArtifactKind.ADVERSARIAL_REPORT,
         ArtifactKind.ADVERSARIAL_REPORT_JSON,
       ]);
@@ -81,6 +82,7 @@ describe('ArtifactKind', () => {
         'adversarial_report_json',
         'project_metadata',
         'ansible_project',
+        'aap_config',
       ]);
     });
   });
@@ -123,6 +125,7 @@ describe('ArtifactKind', () => {
       expect(ArtifactKind.MIGRATED_SOURCES.toString()).toBe('migrated_sources');
       expect(ArtifactKind.PROJECT_METADATA.toString()).toBe('project_metadata');
       expect(ArtifactKind.ANSIBLE_PROJECT.toString()).toBe('ansible_project');
+      expect(ArtifactKind.AAP_CONFIG.toString()).toBe('aap_config');
     });
   });
 

@@ -268,6 +268,8 @@ export const ModulePage = () => {
                     : undefined
                 }
                 migrationPlanArtifact={project?.migrationPlan}
+                projectName={project?.name}
+                projectDirName={project?.dirName}
               />
             </Grid>
             <Grid item xs={12}>

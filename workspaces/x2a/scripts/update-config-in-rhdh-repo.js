@@ -120,6 +120,11 @@ const TEMPLATE_SOURCE = path.join(
   '../plugins/scaffolder-backend-module-x2a/templates/conversion-project-template.yaml',
 );
 const TEMPLATE_FILENAME = 'x2a-conversion-project-template.yaml';
+const AAP_CONFIG_TEMPLATE_SOURCE = path.join(
+  __dirname,
+  '../plugins/scaffolder-backend-module-x2a/templates/x2a-publish-aap-config-template.yaml',
+);
+const AAP_CONFIG_TEMPLATE_FILENAME = 'x2a-publish-aap-config-template.yaml';
 
 const ORG_DATA_SOURCE = path.join(__dirname, '../examples/org.yaml');
 const ORG_DATA_FILENAME = 'x2a-org.yaml';
@@ -252,6 +257,18 @@ function updateConfig() {
       rules: [{ allow: ['Template'] }],
     });
   }
+  const aapConfigTemplateTarget = `../../${AAP_CONFIG_TEMPLATE_FILENAME}`;
+  if (
+    !config.catalog.locations.some(
+      loc => loc.target === aapConfigTemplateTarget,
+    )
+  ) {
+    config.catalog.locations.push({
+      type: 'file',
+      target: aapConfigTemplateTarget,
+      rules: [{ allow: ['Template'] }],
+    });
+  }
   const orgTarget = `../../${ORG_DATA_FILENAME}`;
   if (!config.catalog.locations.some(loc => loc.target === orgTarget)) {
     config.catalog.locations.push({
@@ -273,6 +290,11 @@ function main() {
   }
   copyFileToRhdh(RBAC_POLICY_SOURCE, RBAC_POLICY_FILENAME, 'RBAC policy');
   copyFileToRhdh(TEMPLATE_SOURCE, TEMPLATE_FILENAME, 'scaffolder template');
+  copyFileToRhdh(
+    AAP_CONFIG_TEMPLATE_SOURCE,
+    AAP_CONFIG_TEMPLATE_FILENAME,
+    'AAP configuration scaffolder template',
+  );
   copyFileToRhdh(ORG_DATA_SOURCE, ORG_DATA_FILENAME, 'org data');
   createLocalConfigIfMissing();
   updateConfig();
