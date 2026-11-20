@@ -25,7 +25,24 @@ class CveReviewScoreTest(unittest.TestCase):
     def setUpClass(cls):
         cls.score_mod = _load_scorer()
 
-    def score(self, title, body, packages, *, colored=False):
+    def score(
+        self,
+        title,
+        body,
+        packages,
+        *,
+        colored=False,
+        why_versions=None,
+        lockfile_packages=None,
+        empty_why=(),
+    ):
+        """Score advisories for ``packages``.
+
+        why_versions: optional {name: version_string} overriding installed ver.
+        lockfile_packages: if set, write a yarn.lock containing those names and
+            pass --lockfile.
+        empty_why: package names whose why dump is an empty file.
+        """
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             why_dir = root / "why"
@@ -39,18 +56,31 @@ class CveReviewScoreTest(unittest.TestCase):
             }]
             (root / "advisories.json").write_text(json.dumps(advisories))
             (root / "pr.json").write_text(json.dumps({"title": title, "body": body}))
+            why_versions = why_versions or {}
             for name in packages:
-                version = f"{name}@npm:1.0.0"
+                if name in empty_why:
+                    (why_dir / f"{name}.txt").write_text("")
+                    continue
+                ver = why_versions.get(name, "1.0.0")
+                version = f"{name}@npm:{ver}"
                 if colored:
                     version = f"\x1b[34m{version}\x1b[0m"
                 (why_dir / f"{name}.txt").write_text(version + "\n")
-            output = root / "verification.json"
-            subprocess.run([
+            cmd = [
                 sys.executable, str(SCORER), "--advisories",
                 str(root / "advisories.json"),
                 "--why-dir", str(why_dir), "--pr-context", str(root / "pr.json"),
-                "--workspace", "example", "--out", str(output),
-            ], check=True, capture_output=True, text=True)
+                "--workspace", "example", "--out", str(root / "verification.json"),
+            ]
+            if lockfile_packages is not None:
+                lines = []
+                for name in lockfile_packages:
+                    lines.append(f'"{name}@npm:^1.0.0":\n  version: 1.0.0\n')
+                lock_path = root / "yarn.lock"
+                lock_path.write_text("".join(lines))
+                cmd.extend(["--lockfile", str(lock_path)])
+            output = root / "verification.json"
+            subprocess.run(cmd, check=True, capture_output=True, text=True)
             return json.loads(output.read_text())
 
     def test_ansi_colored_yarn_why_versions_are_scored(self):
@@ -137,6 +167,74 @@ class CveReviewScoreTest(unittest.TestCase):
             {entry["package"]: entry["status"] for entry in result["packages"]},
             {"axios": "fail", "lodash": "fail"},
         )
+
+    def test_empty_yarn_why_is_not_installed_pass(self):
+        result = self.score(
+            "CVE bump", "", ["vite-plus"], empty_why=("vite-plus",),
+        )
+        self.assertEqual(result["packages"][0]["status"], "pass")
+        self.assertIn("Not installed", result["packages"][0]["detail"])
+        self.assertEqual(result["status"], "pass")
+
+    def test_advisory_sibling_missing_from_lockfile_is_pass(self):
+        """launch-editor patched; vite/vite-plus on same GHSA but not in lockfile."""
+        result = self.score(
+            "CVE bump",
+            "",
+            ["launch-editor", "vite", "vite-plus"],
+            why_versions={"launch-editor": "2.14.2"},
+            lockfile_packages=["launch-editor"],
+            empty_why=("vite", "vite-plus"),
+        )
+        by_pkg = {e["package"]: e for e in result["packages"]}
+        self.assertEqual(by_pkg["launch-editor"]["status"], "pass")
+        self.assertEqual(by_pkg["vite"]["status"], "pass")
+        self.assertIn("Not in lockfile", by_pkg["vite"]["detail"])
+        self.assertEqual(by_pkg["vite-plus"]["status"], "pass")
+        self.assertEqual(result["status"], "pass")
+        self.assertEqual(
+            result["packages_not_in_lockfile"], ["vite", "vite-plus"],
+        )
+
+    def test_unparseable_nonempty_why_still_errors(self):
+        """ANSI/noise without strip path: non-empty unparseable stays error."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            why_dir = root / "why"
+            why_dir.mkdir()
+            advisories = [{
+                "ghsa_id": "GHSA-test",
+                "packages": [
+                    {"name": "axios", "patched": "2.0.0", "vulnerable_range": "< 2.0.0"},
+                ],
+            }]
+            (root / "advisories.json").write_text(json.dumps(advisories))
+            (root / "pr.json").write_text(json.dumps({"title": "t", "body": ""}))
+            # Non-empty garbage that VERSION_RE will not match (and no ANSI
+            # strip recovery because there is no @npm: token).
+            (why_dir / "axios.txt").write_text("Package tree unavailable\n")
+            lock = root / "yarn.lock"
+            lock.write_text('"axios@npm:^1.0.0":\n  version: 1.0.0\n')
+            out = root / "verification.json"
+            subprocess.run([
+                sys.executable, str(SCORER),
+                "--advisories", str(root / "advisories.json"),
+                "--why-dir", str(why_dir),
+                "--pr-context", str(root / "pr.json"),
+                "--workspace", "example",
+                "--lockfile", str(lock),
+                "--out", str(out),
+            ], check=True, capture_output=True, text=True)
+            result = json.loads(out.read_text())
+        self.assertEqual(result["packages"][0]["status"], "error")
+        self.assertEqual(result["status"], "error")
+
+    def test_package_in_yarn_lock_helper(self):
+        lock = '"launch-editor@npm:^2.6.0":\n  version: 2.14.1\n"@scope/pkg@npm:1.0.0":\n  version: 1.0.0\n'
+        self.assertTrue(self.score_mod.package_in_yarn_lock(lock, "launch-editor"))
+        self.assertTrue(self.score_mod.package_in_yarn_lock(lock, "@scope/pkg"))
+        self.assertFalse(self.score_mod.package_in_yarn_lock(lock, "vite"))
+        self.assertFalse(self.score_mod.package_in_yarn_lock(lock, "vite-plus"))
 
 
 if __name__ == "__main__":
