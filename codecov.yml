@@ -119,9 +119,6 @@ component_management:
     - component_id: community-plugins
       name: 'Community Plugins'
       paths:
-        - workspaces/theme/
-        - workspaces/translations/
-        - workspaces/x2a/
     # Dev-Preview Plugins — 5 workspace(s)
     - component_id: dev-preview-plugins
       name: 'Dev-Preview Plugins'
