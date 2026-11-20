@@ -149,6 +149,9 @@ export type EntityMetricDetailResponse = {
   thresholds: ThresholdConfig;
 };
 
+// @public
+export const INFORMATIONAL_NUMBER_THRESHOLD: ThresholdConfig;
+
 // @public (undocumented)
 export type Metric<T extends MetricType = MetricType> = {
   id: string;
@@ -268,6 +271,7 @@ export const scalarAggregationTypes: readonly [
 
 // @public
 export const SCORECARD_THRESHOLD_RULE_COLOR_VALUES: (
+  | 'info.main'
   | 'success.main'
   | 'warning.main'
   | 'error.main'
@@ -296,6 +300,7 @@ export const ScorecardThresholdRuleColors: {
   readonly SUCCESS: 'success.main';
   readonly WARNING: 'warning.main';
   readonly ERROR: 'error.main';
+  readonly INFO: 'info.main';
 };
 
 // @public
