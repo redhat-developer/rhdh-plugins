@@ -10656,7 +10656,6 @@ __metadata:
     "@spotify/prettier-config": "npm:^15.0.0"
     "@types/express": "npm:4.17.25"
     "@types/git-url-parse": "npm:^9.0.0"
-    "@types/knex": "npm:^0.16.1"
     "@types/supertest": "npm:2.0.16"
     ajv-formats: "npm:^3.0.1"
     eventsource-client: "npm:^1.2.0"
@@ -14521,15 +14520,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/knex@npm:^0.16.1":
-  version: 0.16.1
-  resolution: "@types/knex@npm:0.16.1"
-  dependencies:
-    knex: "npm:*"
-  checksum: 10c0/3b0b396b311a2c3cd4af9d9be946bb9f3445b2b8702f387bac2b40cbf3a2394930453ef665ce4752a21292b43b327efbb40e0b8d5ad9459110e18259ab864df4
-  languageName: node
-  linkType: hard
-
 "@types/linkify-it@npm:^5":
   version: 5.0.0
   resolution: "@types/linkify-it@npm:5.0.0"
@@ -16878,7 +16868,6 @@ __metadata:
     "@types/express": "npm:^4.17.6"
     "@types/express-serve-static-core": "npm:^4.17.5"
     "@types/git-url-parse": "npm:^9.0.0"
-    "@types/knex": "npm:^0.16.1"
     "@types/luxon": "npm:^2.0.4"
     "@types/supertest": "npm:2.0.16"
     ajv-formats: "npm:^3.0.1"
@@ -26458,7 +26447,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:*, knex@npm:3, knex@npm:^3.0.0":
+"knex@npm:3, knex@npm:^3.0.0":
   version: 3.2.8
   resolution: "knex@npm:3.2.8"
   dependencies:
