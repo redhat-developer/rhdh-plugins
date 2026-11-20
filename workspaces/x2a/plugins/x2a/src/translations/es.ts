@@ -323,8 +323,16 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'scaffolder.repoUrlPicker.authError':
       'No se pudo obtener un token de acceso de {{provider}}: {{error}}. Compruebe que el proveedor de autenticación "{{provider}}" está configurado para esta instancia.',
     'scaffolder.repoUrlPicker.authRetry': 'Reintentar',
-    'scaffolder.repoUrlPicker.sharedProviderNotice':
-      'El token de acceso proviene del único proveedor de autenticación {{provider}} configurado para esta instancia de Backstage, no de {{host}} en sí. Asegúrese de que ese proveedor esté configurado para {{host}}.',
+    'scaffolder.repoUrlPicker.hostsHiddenUnset':
+      'No se ofrecen hosts de {{provider}} ({{hosts}}): no hay ningún host definido para el inicio de sesión de {{provider}}. Un administrador debe definir {{configKey}}.',
+    'scaffolder.repoUrlPicker.hostsHiddenOther':
+      'No se ofrecen hosts de {{provider}} distintos de {{authHost}} ({{hosts}}): el inicio de sesión de {{provider}} solo está configurado para {{authHost}}.',
+    'scaffolder.repoUrlPicker.hostsHiddenNotListed':
+      'No se ofrecen hosts de {{provider}} ({{hosts}}): el inicio de sesión de {{provider}} está configurado para {{authHost}}, que no figura en la configuración de integraciones.',
+    'scaffolder.repoUrlPicker.hostRefusedOther':
+      'El inicio de sesión de {{provider}} está configurado para {{authHost}}, no para {{host}}. Su token de acceso no se envía a otros hosts.',
+    'scaffolder.repoUrlPicker.hostRefusedUnset':
+      'No hay ningún host definido para el inicio de sesión de {{provider}}, por lo que no se puede usar ningún token de acceso de {{provider}} para {{host}}. Un administrador debe definir {{configKey}}.',
     'scaffolder.rulesAcceptance.loadingRules': 'Cargando reglas…',
     'scaffolder.rulesAcceptance.noRulesConfigured':
       'No hay reglas configuradas.',

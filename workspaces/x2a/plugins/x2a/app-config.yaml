@@ -17,3 +17,13 @@ dynamicPlugins:
           menuItem:
             icon: x2aIcon
             text: X2Ansible
+
+# Required for repository authentication (GitHub, GitLab): the one host each SCM
+# OAuth provider is registered against. Must match `auth.providers.gitlab.<env>.audience`
+# and `auth.providers.github.<env>.enterpriseInstanceUrl` (github.com when unset).
+# There is no default; an unset key refuses every host of that type.
+# x2a:
+#   scm:
+#     authHosts:
+#       github: github.com
+#       gitlab: gitlab.example.com

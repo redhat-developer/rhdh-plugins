@@ -400,8 +400,16 @@ export const x2aPluginMessages = {
       authError:
         'Could not obtain a {{provider}} access token: {{error}}. Check that the "{{provider}}" auth provider is configured for this instance.',
       authRetry: 'Retry',
-      sharedProviderNotice:
-        'The access token comes from the single {{provider}} auth provider configured for this Backstage instance, not from {{host}} itself. Make sure that provider is set up for {{host}}.',
+      hostsHiddenUnset:
+        '{{provider}} hosts are not offered ({{hosts}}): no host is set for the {{provider}} sign-in. An administrator has to set {{configKey}}.',
+      hostsHiddenOther:
+        '{{provider}} hosts other than {{authHost}} are not offered ({{hosts}}): the {{provider}} sign-in is set up for {{authHost}} only.',
+      hostsHiddenNotListed:
+        '{{provider}} hosts are not offered ({{hosts}}): the {{provider}} sign-in is set up for {{authHost}}, which is not in the integrations configuration.',
+      hostRefusedOther:
+        'The {{provider}} sign-in is set up for {{authHost}}, not {{host}}. Its access token is not sent to other hosts.',
+      hostRefusedUnset:
+        'No host is set for the {{provider}} sign-in, so no {{provider}} access token can be used for {{host}}. An administrator has to set {{configKey}}.',
     },
     rulesAcceptance: {
       loadingRules: 'Loading rules...',

@@ -27,7 +27,8 @@ import {
   type ScmProviderName,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { useRepoAuthentication } from '../repoAuth';
+import { AuthHostNotAllowedError, useRepoAuthentication } from '../repoAuth';
+import { normalizeHost } from '../hooks/useScmAuthHosts';
 
 /**
  * `ui:options.requestUserCredentials` as consumed by `X2ARepoUrlPicker`.
@@ -68,6 +69,12 @@ export type RepoUrlCredentialsState = {
   /** Host the status refers to, for messages when no provider is known. */
   host?: string;
   error?: string;
+  /**
+   * Set when the host is not the one the provider's OAuth app is registered
+   * against (`x2a.scm.authHosts`), so no token was requested. Retrying does
+   * not help.
+   */
+  refused?: AuthHostNotAllowedError;
   retry: () => void;
 };
 
@@ -89,6 +96,7 @@ type Status = {
   provider?: ScmProviderName;
   host?: string;
   error?: string;
+  refused?: AuthHostNotAllowedError;
 };
 
 const IDLE: Status = { status: 'idle' };
@@ -103,9 +111,11 @@ const IDLE: Status = { status: 'idle' };
  * in that scope only:
  *
  * - `scmAuthApiRef`: a shim whose `getCredentials` obtains the token from the
- *   provider-level Backstage auth API (configured per provider type, so any
- *   host works). It never throws: a failure is reported through `status` and
- *   an empty token is returned, which fails closed in the scaffolder action.
+ *   provider-level Backstage auth API. That API is configured per provider
+ *   type, so `useRepoAuthentication` only hands its token to the host set in
+ *   `x2a.scm.authHosts`; any other host is reported as an error. It never
+ *   throws: a failure is reported through `status` and an empty token is
+ *   returned, which fails closed in the scaffolder action.
  * - `scmIntegrationsApiRef`: reports Bitbucket Cloud as `bitbucket`, which is
  *   what the stock picker needs to render the workspace/project inputs.
  *   TODO: remove once `@backstage/plugin-scaffolder` >= 1.38.1
@@ -133,14 +143,28 @@ export function useRepoUrlCredentials({ host, options }: Params) {
   const setSecretsRef = useRef(setSecrets);
   setSecretsRef.current = setSecrets;
   const failedHostRef = useRef<string | undefined>(undefined);
+  const inFlightRef = useRef<
+    { host: string; promise: Promise<{ token: string }> } | undefined
+  >(undefined);
 
-  const getCredentials = useCallback(
-    async ({ url }: { url: string }): Promise<{ token: string }> => {
-      const callHost = new URL(url).host;
+  /**
+   * Requests the token for `callHost`, which is normalised (lowercased,
+   * without a default port), as `new URL().host` returns it.
+   */
+  const requestCredentials = useCallback(
+    async (callHost: string): Promise<{ token: string }> => {
       if (failedHostRef.current === callHost) {
         return { token: '' };
       }
-      const integration = integrations.byHost(callHost);
+      // `byHost` matches the configured host exactly, but the URL drops an
+      // explicit default port (`host:443` is a valid integration host). The
+      // selected host keeps the configured spelling, so fall back to it.
+      const selectedHost = latest.current.host;
+      const integration =
+        integrations.byHost(callHost) ??
+        (selectedHost && normalizeHost(selectedHost) === callHost
+          ? integrations.byHost(selectedHost)
+          : undefined);
       const provider = integration
         ? PROVIDER_BY_INTEGRATION_TYPE[integration.type]
         : undefined;
@@ -148,7 +172,9 @@ export function useRepoUrlCredentials({ host, options }: Params) {
 
       // A response for a host that is no longer selected must not touch the
       // secret: hand back its current value so the caller's write is a no-op.
-      const stale = () => latest.current.host !== callHost;
+      // The selected host keeps the integration's spelling (e.g. `:443`), so
+      // normalise it like the URL host.
+      const stale = () => normalizeHost(latest.current.host) !== callHost;
       const currentSecret = () => {
         const key = latest.current.secretsKey;
         return { token: (key && latest.current.secrets[key]) || '' };
@@ -162,6 +188,9 @@ export function useRepoUrlCredentials({ host, options }: Params) {
           resolveScmProviderByName(provider).getAuthTokenDescriptor(
             latest.current.readOnly,
           ),
+          // The guard in useRepoAuth refuses a host other than the one the
+          // provider's OAuth app is registered against.
+          callHost,
         );
         if (stale()) {
           return currentSecret();
@@ -178,11 +207,35 @@ export function useRepoUrlCredentials({ host, options }: Params) {
           provider,
           host: callHost,
           error: e instanceof Error ? e.message : String(e),
+          refused: e instanceof AuthHostNotAllowedError ? e : undefined,
         });
         return { token: '' };
       }
     },
     [integrations],
+  );
+
+  // One request per host at a time. While a sign-in is pending the secret is
+  // still empty, so the stock picker asks again on every debounced state
+  // change (each owner/repo keystroke). Those calls share the pending request
+  // rather than starting another one, whose late result could overwrite the
+  // status or the stored token.
+  const getCredentials = useCallback(
+    ({ url }: { url: string }): Promise<{ token: string }> => {
+      const callHost = new URL(url).host;
+      const inFlight = inFlightRef.current;
+      if (inFlight?.host === callHost) {
+        return inFlight.promise;
+      }
+      const promise = requestCredentials(callHost).finally(() => {
+        if (inFlightRef.current?.promise === promise) {
+          inFlightRef.current = undefined;
+        }
+      });
+      inFlightRef.current = { host: callHost, promise };
+      return promise;
+    },
+    [requestCredentials],
   );
 
   const apis = useMemo<ApiHolder>(() => {
@@ -236,6 +289,7 @@ export function useRepoUrlCredentials({ host, options }: Params) {
     provider: state.provider,
     host: state.host,
     error: state.error,
+    refused: state.refused,
     retry,
   } satisfies RepoUrlCredentialsState & { apis: ApiHolder; attempt: number };
 }

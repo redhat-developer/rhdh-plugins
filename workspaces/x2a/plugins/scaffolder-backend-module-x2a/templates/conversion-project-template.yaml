@@ -119,8 +119,10 @@ spec:
                     # silently falls back to a plain text input for this "type: string" field.
                     # It behaves like the stock RepoUrlPicker, but offers the GitHub/GitLab
                     # hosts from the "integrations:" app config plus bitbucket.org instead of
-                    # a hard-coded allowedHosts list, and fetches the OAuth token per provider
-                    # rather than per host, so self-hosted instances work. See workspaces/x2a/docs/scm-hosts.md.
+                    # a hard-coded allowedHosts list, so self-hosted instances work. The OAuth
+                    # token is only obtained for the host set in x2a.scm.authHosts.<github|gitlab>
+                    # (the host each auth provider is registered against). See
+                    # workspaces/x2a/docs/scm-hosts.md.
                     ui:field: X2ARepoUrlPicker
                     ui:options:
                       requestUserCredentials:

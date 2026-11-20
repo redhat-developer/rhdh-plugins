@@ -42,7 +42,9 @@ jest.mock('../../hooks/useScmHostMap', () => ({
 
 jest.mock('../../repoAuth', () => ({
   useRepoAuthentication: () => ({
-    authenticate: jest.fn().mockResolvedValue([{ token: 'mock-token' }]),
+    authenticate: jest.fn(async (requests: unknown[]) =>
+      requests.map(() => ({ token: 'mock-token' })),
+    ),
   }),
 }));
 

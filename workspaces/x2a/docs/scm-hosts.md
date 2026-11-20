@@ -49,8 +49,15 @@ app config:
 - Azure, Gerrit, Gitea and **Bitbucket Server** hosts are **not** offered. x2a
   has no provider implementation for them; its Bitbucket provider is
   Bitbucket Cloud only.
+- When credentials are requested (`requestUserCredentials`), only the host each
+  OAuth provider is registered against is offered, see
+  [`x2a.scm.authHosts`](#configuring-a-custom-scm-host). A GitHub or GitLab host
+  that is in `integrations:` but not in `x2a.scm.authHosts` does not appear; a
+  note under the field lists the hosts left out and the key to set.
 - An explicit `allowedHosts` in the template still wins, so a deployment that
-  wants to expose only some of its integrations can still say so.
+  wants to expose only some of its integrations can still say so. The note
+  about left-out hosts is not shown then. The token rule below still applies
+  to those hosts.
 
 ### Credentials
 
@@ -61,10 +68,20 @@ owner/repository autocomplete works. The stock picker runs inside a scoped
 provider-level Backstage auth API
 (`githubAuthApiRef` / `gitlabAuthApiRef` / `bitbucketAuthApiRef`), the same way
 the CSV bulk import does. Those auth providers are configured **per provider
-type, not per host**, so they work with any instance.
+type, not per host**, so the token they issue is valid for one host only.
 
-The secret is cleared as soon as another host is selected, and a failed token
-request leaves it empty, so the conversion fails with
+A token is **only handed to the host the OAuth provider is registered
+against**, as declared by `x2a.scm.authHosts` (see below). The check lives in
+the shared token helper (`useRepoAuthentication`), so it covers the picker and
+every other place that obtains SCM tokens: running phases and bulk runs on a
+project, and the CSV bulk import. For any other host the request fails with an
+explicit error, the OAuth flow is not started, and no token is stored. The
+picker shows that error without a Retry button, since only a configuration
+change helps. When the key is not set, no GitHub or GitLab host can be
+authenticated.
+
+The secret is also cleared as soon as another host is selected, and a failed
+token request leaves it empty, so the conversion fails with
 `Source repository token is required` instead of using another host's token.
 
 The token is stored in the scaffolder secret named by `secretsKey`, raw — the
@@ -86,10 +103,11 @@ read-only counterpart, so GitHub always gets read/write.
 
 ## Configuring a custom SCM host
 
-Add the instance to `integrations:` and configure the matching auth provider.
-Backstage supports one auth provider instance per provider type, so a
-deployment can use one GitLab instance, one GitHub instance and one Bitbucket
-Cloud instance at a time.
+Add the instance to `integrations:`, configure the matching auth provider, and
+declare the host the auth provider belongs to in `x2a.scm.authHosts`. Backstage
+supports one auth provider instance per provider type, so a deployment can use
+one GitLab instance, one GitHub instance and one Bitbucket Cloud instance at a
+time.
 
 ```yaml
 integrations:
@@ -103,9 +121,30 @@ auth:
       development:
         clientId: ${AUTH_GITLAB_CLIENT_ID}
         clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
-        # Must point at the same instance as the integration above.
         audience: https://gitlab.example.com
+
+x2a:
+  scm:
+    authHosts:
+      # Must be the host of the auth provider above: for GitLab its `audience`,
+      # for GitHub Enterprise its `enterpriseInstanceUrl`.
+      gitlab: gitlab.example.com
+      # github: ghe.example.com
 ```
+
+`x2a.scm.authHosts.<github|gitlab>` is a single host, compared
+case-insensitively. It may also be written as a URL
+(`https://gitlab.example.com`), so the GitLab `audience` can be copied as is;
+only the host is used and a default port (`:443`) is dropped. Include the port
+when the host has a non-default one (`gitlab.example.com:8443`). Bitbucket Cloud is always
+`bitbucket.org` and needs no entry.
+
+**There is no default.** Set both keys for the providers you use, including for
+`github.com` and `gitlab.com`; an unset key means no host of that type can be
+authenticated, and the error names the missing key. The frontend cannot read
+the auth provider's `audience`, so **keeping `x2a.scm.authHosts` in sync with
+the auth provider configuration is up to the operator**: a mismatch means the
+OAuth token is issued for a different host than the one it is sent to.
 
 No change to the scaffolder template is needed — the host appears in the picker
 on the next page load.
@@ -165,14 +204,13 @@ dynamicPlugins:
   scope would break shared-repo conversions. Narrowing this needs the two cases
   to be distinguished first.
 - **One instance per provider type.** Because Backstage auth providers are
-  configured per provider type, the picker can offer several hosts of the same
-  type but only the one matching the configured `audience` will authenticate.
-  A token obtained for the configured `audience` is sent to whichever
-  same-type host is picked, so list only hosts that match the auth provider
-  (set `allowedHosts` in the template if needed).
-  When more than one host of the selected type is offered and credentials are
-  requested, the picker shows a notice below the field saying that the token
-  comes from the single configured provider and not from the selected host.
+  configured per provider type, only one GitHub, one GitLab and one Bitbucket
+  Cloud host can be authenticated at a time: the one named in
+  `x2a.scm.authHosts`. Repositories on any other host of the same type cannot
+  be used for conversions, even if they are listed in `integrations:`.
+- **`x2a.scm.authHosts` is not verified against the auth provider.** The
+  frontend cannot read the auth provider configuration, so the two have to be
+  kept in sync by hand.
 - **Validation does not wait for the token.** The field's validation is the
   stock `repoPickerValidation`, which checks the repository URL only. If the
   OAuth exchange fails, the wizard still lets the user continue; the error is

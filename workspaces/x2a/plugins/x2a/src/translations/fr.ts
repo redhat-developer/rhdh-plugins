@@ -325,8 +325,16 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'scaffolder.repoUrlPicker.authError':
       "Impossible d'obtenir un jeton d'accès {{provider}} : {{error}}. Vérifiez que le fournisseur d'authentification \"{{provider}}\" est configuré pour cette instance.",
     'scaffolder.repoUrlPicker.authRetry': 'Réessayer',
-    'scaffolder.repoUrlPicker.sharedProviderNotice':
-      "Le jeton d'accès provient de l'unique fournisseur d'authentification {{provider}} configuré pour cette instance Backstage, et non de {{host}} lui-même. Vérifiez que ce fournisseur est configuré pour {{host}}.",
+    'scaffolder.repoUrlPicker.hostsHiddenUnset':
+      "Les hôtes {{provider}} ne sont pas proposés ({{hosts}}) : aucun hôte n'est défini pour la connexion {{provider}}. Un administrateur doit définir {{configKey}}.",
+    'scaffolder.repoUrlPicker.hostsHiddenOther':
+      'Les hôtes {{provider}} autres que {{authHost}} ne sont pas proposés ({{hosts}}) : la connexion {{provider}} est configurée uniquement pour {{authHost}}.',
+    'scaffolder.repoUrlPicker.hostsHiddenNotListed':
+      'Les hôtes {{provider}} ne sont pas proposés ({{hosts}}) : la connexion {{provider}} est configurée pour {{authHost}}, qui ne figure pas dans la configuration des intégrations.',
+    'scaffolder.repoUrlPicker.hostRefusedOther':
+      "La connexion {{provider}} est configurée pour {{authHost}}, et non pour {{host}}. Son jeton d'accès n'est pas envoyé à d'autres hôtes.",
+    'scaffolder.repoUrlPicker.hostRefusedUnset':
+      "Aucun hôte n'est défini pour la connexion {{provider}} : aucun jeton d'accès {{provider}} ne peut donc être utilisé pour {{host}}. Un administrateur doit définir {{configKey}}.",
     'scaffolder.rulesAcceptance.loadingRules': 'Chargement des règles...',
     'scaffolder.rulesAcceptance.noRulesConfigured': 'Aucune règle configurée.',
     'scaffolder.rulesAcceptance.required': 'requis',

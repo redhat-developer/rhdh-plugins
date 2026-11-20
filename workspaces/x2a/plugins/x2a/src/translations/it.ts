@@ -322,8 +322,16 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'scaffolder.repoUrlPicker.authError':
       'Impossibile ottenere un token di accesso {{provider}}: {{error}}. Verifica che il provider di autenticazione "{{provider}}" sia configurato per questa istanza.',
     'scaffolder.repoUrlPicker.authRetry': 'Riprova',
-    'scaffolder.repoUrlPicker.sharedProviderNotice':
-      "Il token di accesso proviene dall'unico provider di autenticazione {{provider}} configurato per questa istanza di Backstage, non da {{host}} stesso. Verifica che tale provider sia configurato per {{host}}.",
+    'scaffolder.repoUrlPicker.hostsHiddenUnset':
+      "Gli host {{provider}} non sono disponibili ({{hosts}}): nessun host è impostato per l'autenticazione {{provider}}. Un amministratore deve impostare {{configKey}}.",
+    'scaffolder.repoUrlPicker.hostsHiddenOther':
+      "Gli host {{provider}} diversi da {{authHost}} non sono disponibili ({{hosts}}): l'autenticazione {{provider}} è configurata solo per {{authHost}}.",
+    'scaffolder.repoUrlPicker.hostsHiddenNotListed':
+      "Gli host {{provider}} non sono disponibili ({{hosts}}): l'autenticazione {{provider}} è configurata per {{authHost}}, che non è presente nella configurazione delle integrazioni.",
+    'scaffolder.repoUrlPicker.hostRefusedOther':
+      "L'autenticazione {{provider}} è configurata per {{authHost}}, non per {{host}}. Il suo token di accesso non viene inviato ad altri host.",
+    'scaffolder.repoUrlPicker.hostRefusedUnset':
+      "Nessun host è impostato per l'autenticazione {{provider}}, quindi non è possibile usare alcun token di accesso {{provider}} per {{host}}. Un amministratore deve impostare {{configKey}}.",
     'scaffolder.rulesAcceptance.loadingRules':
       'Caricamento delle regole in corso...',
     'scaffolder.rulesAcceptance.noRulesConfigured':

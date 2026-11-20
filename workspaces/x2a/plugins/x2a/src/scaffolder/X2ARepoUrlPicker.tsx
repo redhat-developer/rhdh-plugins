@@ -37,6 +37,9 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 
+import type { ScmProviderName } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { useScmAuthHosts } from '../hooks/useScmAuthHosts';
+import { providerLabels } from '../repoAuth';
 import { useScmHostMap } from '../hooks/useScmHostMap';
 import { useTranslation } from '../hooks/useTranslation';
 import {
@@ -108,28 +111,123 @@ type X2ARepoUrlPickerProps = FieldExtensionComponentProps<
  * Bitbucket Cloud. Bitbucket Cloud's config is stripped from the frontend
  * config, so it comes from the integrations API (which always has
  * `bitbucket.org`). Public hosts that Backstage injects (github.com,
- * gitlab.com) are offered only when configured.
+ * gitlab.com) are offered only when configured. When credentials are
+ * requested, only the host each OAuth provider is registered against
+ * (`x2a.scm.authHosts`) is offered; the others are returned in `hidden`, so
+ * the field can say why they are missing.
  */
-function useDefaultHosts(): string[] {
+function useDefaultHosts(onlyAuthHosts: boolean): {
+  hosts: string[];
+  hidden: HiddenHosts[];
+} {
   const hostMap = useScmHostMap();
   const integrations = useApi(scmIntegrationsApiRef);
+  const { authHostFor, isAuthHost } = useScmAuthHosts();
   return useMemo(() => {
-    const byProvider = (name: string) =>
+    const byProvider = (name: ScmProviderName) =>
       Array.from(hostMap.entries())
         .filter(([, provider]) => provider === name)
         .map(([host]) => host);
     const bitbucketCloud = integrations.bitbucketCloud
       .list()
       .map(i => i.config.host);
-    return Array.from(
-      new Set([
-        ...byProvider('github'),
-        ...byProvider('gitlab'),
-        ...bitbucketCloud,
-      ]),
-    );
-  }, [hostMap, integrations]);
+    const offered: Array<[string, ScmProviderName]> = [
+      ...byProvider('github').map(
+        h => [h, 'github'] as [string, ScmProviderName],
+      ),
+      ...byProvider('gitlab').map(
+        h => [h, 'gitlab'] as [string, ScmProviderName],
+      ),
+      ...bitbucketCloud.map(h => [h, 'bitbucket'] as [string, ScmProviderName]),
+    ];
+    // UX only: hosts whose token the guard in useRepoAuth would refuse are
+    // not offered. The guard stays the security boundary.
+    const allowed = ([host, provider]: [string, ScmProviderName]) =>
+      !onlyAuthHosts || isAuthHost(host, provider);
+
+    const hidden: HiddenHosts[] = [];
+    for (const provider of ['github', 'gitlab'] as const) {
+      const ofProvider = offered.filter(entry => entry[1] === provider);
+      const hosts = ofProvider
+        .filter(entry => !allowed(entry))
+        .map(([host]) => host);
+      if (hosts.length) {
+        hidden.push({
+          provider,
+          hosts,
+          authHost: authHostFor(provider),
+          authHostListed: ofProvider.some(allowed),
+        });
+      }
+    }
+
+    return {
+      hosts: Array.from(new Set(offered.filter(allowed).map(([host]) => host))),
+      hidden,
+    };
+  }, [hostMap, integrations, authHostFor, isAuthHost, onlyAuthHosts]);
 }
+
+/** Hosts of one provider left out of the picker by `x2a.scm.authHosts`. */
+type HiddenHosts = {
+  provider: 'github' | 'gitlab';
+  hosts: string[];
+  /** The configured auth host, if any. */
+  authHost?: string;
+  /** Whether the auth host is one of the provider's integrations. */
+  authHostListed: boolean;
+};
+
+/**
+ * Explains why configured GitHub/GitLab hosts are missing from the picker, so
+ * an unset or mismatching `x2a.scm.authHosts` does not just look like an
+ * incomplete list.
+ */
+const HiddenHostsNotice = ({ hidden }: { hidden: HiddenHosts[] }) => {
+  const { t } = useTranslation();
+  if (!hidden.length) {
+    return null;
+  }
+  return (
+    <Box mt={1}>
+      {hidden.map(({ provider, hosts, authHost, authHostListed }) => {
+        const params = {
+          provider: providerLabels[provider],
+          hosts: hosts.join(', '),
+          authHost: authHost ?? '',
+          configKey: `x2a.scm.authHosts.${provider}`,
+        };
+        let message: string;
+        if (!authHost) {
+          message = t(
+            'scaffolder.repoUrlPicker.hostsHiddenUnset' as any,
+            params,
+          );
+        } else if (authHostListed) {
+          message = t(
+            'scaffolder.repoUrlPicker.hostsHiddenOther' as any,
+            params,
+          );
+        } else {
+          message = t(
+            'scaffolder.repoUrlPicker.hostsHiddenNotListed' as any,
+            params,
+          );
+        }
+        return (
+          <Typography
+            key={provider}
+            variant="caption"
+            color="textSecondary"
+            component="div"
+          >
+            {message}
+          </Typography>
+        );
+      })}
+    </Box>
+  );
+};
 
 /**
  * Extracts the host from the picker's form data.
@@ -143,38 +241,14 @@ function hostFromFormData(formData: string | undefined): string | undefined {
   return host || undefined;
 }
 
-/**
- * Provider label for an integration `type`, as shown in the shared-provider
- * notice. Bitbucket Cloud's integration type is `bitbucketCloud`.
- */
-const providerLabel = (integrationType: string) =>
-  integrationType === 'bitbucketCloud' ? 'bitbucket' : integrationType;
-
-/**
- * Number of offered hosts that share the integration type of `host`, and that
- * type. Backstage auth providers are configured per provider type (one
- * instance each), so with more than one such host the token cannot be tied to
- * the host the user picked.
- */
-function useSameTypeHosts(host: string | undefined, offeredHosts: string[]) {
-  const integrations = useApi(scmIntegrationsApiRef);
-  const type = host ? integrations.byHost(host)?.type : undefined;
-  if (!type) {
-    return { type: undefined, count: 0 };
-  }
-  const count = offeredHosts.filter(
-    h => integrations.byHost(h)?.type === type,
-  ).length;
-  return { type, count };
-}
-
 const CredentialsStatusMessage = ({
   credentials,
 }: {
   credentials: ReturnType<typeof useRepoUrlCredentials>;
 }) => {
   const { t } = useTranslation();
-  const { status, error, retry } = credentials;
+  const { authHostFor } = useScmAuthHosts();
+  const { status, error, refused, retry } = credentials;
   const provider = credentials.provider ?? credentials.host;
 
   if (status === 'idle' || !provider) {
@@ -201,12 +275,34 @@ const CredentialsStatusMessage = ({
     );
   }
 
+  // A refused host is a configuration matter: say what to change, without a
+  // Retry, which cannot succeed.
+  if (refused) {
+    const authHost = authHostFor(refused.provider);
+    const params = {
+      provider: providerLabels[refused.provider],
+      host: refused.host,
+      authHost: authHost ?? '',
+      configKey: `x2a.scm.authHosts.${refused.provider}`,
+    };
+    return (
+      <Box mt={1}>
+        <StatusError>
+          {authHost
+            ? t('scaffolder.repoUrlPicker.hostRefusedOther' as any, params)
+            : t('scaffolder.repoUrlPicker.hostRefusedUnset' as any, params)}
+        </StatusError>
+      </Box>
+    );
+  }
+
   return (
     <Box mt={1}>
       <StatusError>
         {t('scaffolder.repoUrlPicker.authError' as any, {
           provider,
-          error: error ?? '',
+          // The message is followed by ". " in the translation.
+          error: (error ?? '').replace(/\.\s*$/, ''),
         })}
       </StatusError>
       <Button variant="text" color="primary" size="small" onClick={retry}>
@@ -230,7 +326,9 @@ const CredentialsStatusMessage = ({
  *    had to hard-code hosts. This field defaults `allowedHosts` to the GitHub
  *    and GitLab hosts under `integrations:` plus `bitbucket.org`; Azure,
  *    Gerrit, Gitea and Bitbucket Server are left out because x2a does not
- *    support them. An explicit `allowedHosts` in the template still wins.
+ *    support them. When credentials are requested, only the host each OAuth
+ *    provider is registered against (`x2a.scm.authHosts`) is offered. An
+ *    explicit `allowedHosts` in the template still wins.
  *
  * 2. **Credentials.** The stock picker resolves `requestUserCredentials`
  *    through `scmAuthApi`, which is keyed **by host** and, in its default
@@ -238,14 +336,17 @@ const CredentialsStatusMessage = ({
  *    dev.azure.com — it throws for everything else. The stock picker still
  *    handles `requestUserCredentials` (so owner/repo autocomplete works), but
  *    runs inside a scoped `ApiProvider` where `scmAuthApi` obtains the token
- *    from the provider-level Backstage auth API, which is host-independent.
- *    See `useRepoUrlCredentials`.
+ *    from the provider-level Backstage auth API. That API is configured per
+ *    provider type, so its token is only handed to the host set in
+ *    `x2a.scm.authHosts`. See `useRepoUrlCredentials`.
  *
  * @public
  */
 export const X2ARepoUrlPicker = (props: X2ARepoUrlPickerProps) => {
   const { t } = useTranslation();
-  const defaultHosts = useDefaultHosts();
+  const { hosts: defaultHosts, hidden: hiddenHosts } = useDefaultHosts(
+    !!props.uiSchema?.['ui:options']?.requestUserCredentials?.secretsKey,
+  );
   const StockRepoUrlPicker = getStockRepoUrlPicker();
 
   const uiOptions = props.uiSchema?.['ui:options'] as
@@ -261,15 +362,6 @@ export const X2ARepoUrlPicker = (props: X2ARepoUrlPickerProps) => {
     host: selectedHost,
     options: uiOptions?.requestUserCredentials,
   });
-  const sameType = useSameTypeHosts(
-    selectedHost,
-    hasExplicitHosts ? uiOptions!.allowedHosts! : defaultHosts,
-  );
-  const showSharedProviderNotice =
-    !!uiOptions?.requestUserCredentials?.secretsKey &&
-    !!selectedHost &&
-    !!sameType.type &&
-    sameType.count > 1;
   const { apis, attempt } = credentials;
 
   // `attempt` changes the identity on Retry, which re-runs the stock
@@ -310,16 +402,7 @@ export const X2ARepoUrlPicker = (props: X2ARepoUrlPickerProps) => {
           uiSchema={uiSchema}
         />
       </ApiProvider>
-      {showSharedProviderNotice && (
-        <Box mt={1}>
-          <Typography variant="caption" color="textSecondary">
-            {t('scaffolder.repoUrlPicker.sharedProviderNotice' as any, {
-              provider: providerLabel(sameType.type!),
-              host: selectedHost!,
-            })}
-          </Typography>
-        </Box>
-      )}
+      {!hasExplicitHosts && <HiddenHostsNotice hidden={hiddenHosts} />}
       <CredentialsStatusMessage credentials={credentials} />
     </>
   );

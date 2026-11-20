@@ -86,6 +86,9 @@ jest.mock('../hooks/useTranslation', () => ({
 
 const mockGetRawToken = jest.fn();
 jest.mock('../repoAuth', () => ({
+  AuthHostNotAllowedError:
+    jest.requireActual('../repoAuth').AuthHostNotAllowedError,
+  providerLabels: jest.requireActual('../repoAuth').providerLabels,
   useRepoAuthentication: () => ({
     getRawToken: mockGetRawToken,
     authenticate: jest.fn(),
@@ -100,7 +103,7 @@ import {
   scmIntegrationsApiRef,
 } from '@backstage/integration-react';
 import userEvent from '@testing-library/user-event';
-import { getComponentData } from '@backstage/core-plugin-api';
+import { configApiRef, getComponentData } from '@backstage/core-plugin-api';
 import {
   SecretsContextProvider,
   useTemplateSecrets,
@@ -128,6 +131,9 @@ const scmIntegrationsApi = ScmIntegrationsApi.fromConfig(
   }),
 );
 
+// Value of `x2a.scm.authHosts`; reset in beforeEach.
+let authHosts: Record<string, string> | undefined;
+
 const WithApis = ({
   children,
   integrations = scmIntegrationsApi,
@@ -135,7 +141,15 @@ const WithApis = ({
   children: React.ReactNode;
   integrations?: ScmIntegrationsApi;
 }) => (
-  <TestApiProvider apis={[[scmIntegrationsApiRef, integrations]]}>
+  <TestApiProvider
+    apis={[
+      [scmIntegrationsApiRef, integrations],
+      [
+        configApiRef,
+        new ConfigReader(authHosts ? { x2a: { scm: { authHosts } } } : {}),
+      ],
+    ]}
+  >
     {children}
   </TestApiProvider>
 );
@@ -198,6 +212,7 @@ describe('X2ARepoUrlPicker', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockStockPickerState.hidden = false;
+    authHosts = { github: 'github.com', gitlab: 'gitlab.corp.example.com' };
     mockHostMap.mockReturnValue(
       new Map([
         ['github.com', 'github'],
@@ -238,7 +253,7 @@ describe('X2ARepoUrlPicker', () => {
     });
   });
 
-  describe('shared provider notice', () => {
+  describe('hosts offered when credentials are requested', () => {
     const twoGitlabs = ScmIntegrationsApi.fromConfig(
       new ConfigReader({
         integrations: {
@@ -253,74 +268,71 @@ describe('X2ARepoUrlPicker', () => {
         },
       }),
     );
-    const twoGitlabHostMap = () =>
+
+    beforeEach(() =>
       mockHostMap.mockReturnValue(
         new Map([
           ['github.com', 'github'],
           ['gitlab.com', 'gitlab'],
           ['gitlab.corp.example.com', 'gitlab'],
         ]),
-      );
+      ),
+    );
 
-    it('warns when several hosts of the selected type are offered', async () => {
-      twoGitlabHostMap();
-      await renderPicker(
-        credentialsUiSchema(),
-        { formData: 'gitlab.corp.example.com?owner=o&repo=r' },
-        twoGitlabs,
-      );
+    it('offers only the host each OAuth provider is registered against', async () => {
+      await renderPicker(credentialsUiSchema(), {}, twoGitlabs);
 
-      expect(
-        await screen.findByText(
-          'scaffolder.repoUrlPicker.sharedProviderNotice:{"provider":"gitlab","host":"gitlab.corp.example.com"}',
-        ),
-      ).toBeInTheDocument();
+      expect(allowedHostsPassedToStockPicker()).toEqual([
+        'github.com',
+        'gitlab.corp.example.com',
+        'bitbucket.org',
+      ]);
     });
 
-    it('does not warn when the selected type has a single offered host', async () => {
-      twoGitlabHostMap();
-      await renderPicker(
-        credentialsUiSchema(),
-        { formData: 'github.com?owner=o&repo=r' },
-        twoGitlabs,
-      );
+    it('offers no GitHub or GitLab host when x2a.scm.authHosts is unset', async () => {
+      authHosts = undefined;
+      await renderPicker(credentialsUiSchema(), {}, twoGitlabs);
 
-      await waitFor(() => expect(srcSecret()).toBe('t0ken'));
+      expect(allowedHostsPassedToStockPicker()).toEqual(['bitbucket.org']);
+      // One notice per provider type whose hosts were left out.
       expect(
-        screen.queryByText(/sharedProviderNotice/),
-      ).not.toBeInTheDocument();
+        screen.getAllByText(/^scaffolder\.repoUrlPicker\.hostsHiddenUnset/),
+      ).toHaveLength(2);
     });
 
-    it('does not warn when an explicit allowedHosts narrows the type to one host', async () => {
-      twoGitlabHostMap();
-      await renderPicker(
-        {
-          'ui:options': {
-            allowedHosts: ['gitlab.corp.example.com'],
-            requestUserCredentials: { secretsKey: 'SRC_USER_OAUTH_TOKEN' },
-          },
-        } as Props['uiSchema'],
-        { formData: 'gitlab.corp.example.com?owner=o&repo=r' },
-        twoGitlabs,
-      );
+    it('says when the auth host is not among the integrations', async () => {
+      authHosts = { github: 'github.com', gitlab: 'gitlab.elsewhere.example' };
+      await renderPicker(credentialsUiSchema(), {}, twoGitlabs);
 
-      await waitFor(() => expect(srcSecret()).toBe('t0ken'));
+      expect(allowedHostsPassedToStockPicker()).toEqual([
+        'github.com',
+        'bitbucket.org',
+      ]);
       expect(
-        screen.queryByText(/sharedProviderNotice/),
-      ).not.toBeInTheDocument();
+        screen.getByText(/^scaffolder\.repoUrlPicker\.hostsHiddenNotListed/),
+      ).toHaveTextContent('"authHost":"gitlab.elsewhere.example"');
+      expect(screen.queryByText(/hostsHiddenOther/)).not.toBeInTheDocument();
     });
 
-    it('does not warn when no credentials are requested', async () => {
-      twoGitlabHostMap();
-      await renderPicker(
-        {},
-        { formData: 'gitlab.corp.example.com?owner=o&repo=r' },
-        twoGitlabs,
-      );
+    it('matches hosts case-insensitively', async () => {
+      authHosts = { gitlab: 'GitLab.Corp.Example.com' };
+      await renderPicker(credentialsUiSchema(), {}, twoGitlabs);
 
-      expect(
-        screen.queryByText(/sharedProviderNotice/),
-      ).not.toBeInTheDocument();
+      expect(allowedHostsPassedToStockPicker()).toContain(
+        'gitlab.corp.example.com',
+      );
+    });
+
+    it('offers every integration host when no credentials are requested', async () => {
+      await renderPicker({}, {}, twoGitlabs);
+
+      expect(allowedHostsPassedToStockPicker()).toEqual([
+        'github.com',
+        'gitlab.com',
+        'gitlab.corp.example.com',
+        'bitbucket.org',
+      ]);
+      expect(screen.queryByText(/hostsHidden/)).not.toBeInTheDocument();
     });
   });
 
@@ -350,6 +362,7 @@ describe('X2ARepoUrlPicker', () => {
       await waitFor(() => expect(srcSecret()).toBe('t0ken'));
       expect(mockGetRawToken).toHaveBeenCalledWith(
         expect.objectContaining({ provider: 'gitlab' }),
+        'gitlab.corp.example.com',
       );
     });
 
@@ -361,6 +374,7 @@ describe('X2ARepoUrlPicker', () => {
       await waitFor(() => expect(mockGetRawToken).toHaveBeenCalled());
       expect(mockGetRawToken).toHaveBeenCalledWith(
         expect.objectContaining({ scope: 'write_repository' }),
+        'gitlab.corp.example.com',
       );
     });
 
@@ -372,6 +386,7 @@ describe('X2ARepoUrlPicker', () => {
       await waitFor(() => expect(mockGetRawToken).toHaveBeenCalled());
       expect(mockGetRawToken).toHaveBeenCalledWith(
         expect.objectContaining({ scope: 'read_repository' }),
+        'gitlab.corp.example.com',
       );
     });
 
@@ -393,6 +408,56 @@ describe('X2ARepoUrlPicker', () => {
       await userEvent.click(retry);
 
       await waitFor(() => expect(srcSecret()).toBe('t0ken'));
+    });
+
+    it('shows a refused host as a translated configuration error without Retry', async () => {
+      const { AuthHostNotAllowedError } = jest.requireActual('../repoAuth');
+      mockGetRawToken.mockRejectedValueOnce(
+        new AuthHostNotAllowedError(
+          'English guard message',
+          'gitlab',
+          'gitlab.other.example.com',
+        ),
+      );
+
+      await renderPicker(credentialsUiSchema(), {
+        formData: 'gitlab.corp.example.com?owner=me&repo=thing',
+      });
+
+      const message = await screen.findByText(
+        /^scaffolder\.repoUrlPicker\.hostRefusedOther/,
+      );
+      expect(message).toHaveTextContent('"provider":"GitLab"');
+      expect(message).toHaveTextContent('"host":"gitlab.other.example.com"');
+      expect(message).toHaveTextContent('"authHost":"gitlab.corp.example.com"');
+      expect(
+        screen.queryByText(/English guard message/),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', {
+          name: 'scaffolder.repoUrlPicker.authRetry',
+        }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('names the key to set when the refused provider has no auth host', async () => {
+      authHosts = { github: 'github.com' };
+      const { AuthHostNotAllowedError } = jest.requireActual('../repoAuth');
+      mockGetRawToken.mockRejectedValueOnce(
+        new AuthHostNotAllowedError(
+          'English guard message',
+          'gitlab',
+          'gitlab.corp.example.com',
+        ),
+      );
+
+      await renderPicker(credentialsUiSchema(), {
+        formData: 'gitlab.corp.example.com?owner=me&repo=thing',
+      });
+
+      expect(
+        await screen.findByText(/^scaffolder\.repoUrlPicker\.hostRefusedUnset/),
+      ).toHaveTextContent('"configKey":"x2a.scm.authHosts.gitlab"');
     });
 
     it('fails closed for a host that is not a supported integration', async () => {

@@ -1,6 +1,7 @@
 ---
 '@red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module': minor
 '@red-hat-developer-hub/backstage-plugin-x2a': minor
+'@red-hat-developer-hub/backstage-plugin-x2a-common': minor
 ---
 
 Add the `X2ARepoUrlPicker` scaffolder field and use it in the conversion project template, so
@@ -20,11 +21,22 @@ on custom hosts:
   secret is cleared when the host changes. The option gains a `readOnly` flag for requesting a
   read-only scope where the provider has one; `additionalScopes` is not supported.
 
-Backstage auth providers are configured once per provider type, so the access token cannot be
-tied to the host the user picked. When more than one host of the selected type is offered (for
-example github.com and a GitHub Enterprise host), the picker shows a notice saying the token
-comes from the single configured provider; keep `allowedHosts` limited to hosts that provider
-serves.
+**BREAKING:** SCM access tokens are now bound to one host per provider type. After upgrading,
+set `x2a.scm.authHosts.github` / `x2a.scm.authHosts.gitlab` to the host each OAuth provider is
+registered against (GitLab `audience`, GitHub `enterpriseInstanceUrl`; Bitbucket Cloud is always
+`bitbucket.org`). There is no default, not even for github.com or gitlab.com: until the key is
+set, running phases, bulk runs, the CSV bulk import and the repository picker refuse every host
+of that type with an error naming the missing key.
+
+Backstage auth providers are configured once per provider type, so the access token they issue
+is valid for a single host only. A token is now only handed to the host in `x2a.scm.authHosts`,
+in the picker and in every other place that obtains SCM tokens, instead of being sent to another
+host of the same type. With credentials requested, the picker offers only that host and says
+which configured hosts it left out and why. The value may be a bare host or a URL, so the GitLab
+`audience` can be copied as is. Keep `x2a.scm.authHosts` in sync with the auth provider config;
+it cannot be verified from the frontend.
+
+`extractHost` is now exported from the common package.
 
 Azure, Gerrit, Gitea and Bitbucket Server hosts are deliberately not offered; x2a has no
 provider implementation for them.
