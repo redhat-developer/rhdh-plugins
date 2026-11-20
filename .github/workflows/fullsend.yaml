@@ -25,12 +25,21 @@ on:
     types: [created]
   pull_request_target:
     types: [labeled, unlabeled]
-    # Monorepo: only auto-dispatch on workspaces enrolled for fullsend.
+    # Monorepo: only auto-dispatch on workspaces enrolled for fullsend
+    # (RHDH-owned plugins covered by cve-reviewer and related agents).
     # Slash commands on other workspaces still work via issue_comment.
     paths:
-      - "workspaces/boost/**"
-      - "workspaces/scorecard/**"
+      - "workspaces/adoption-insights/**"
       - "workspaces/ai-integrations/**"
+      - "workspaces/app-defaults/**"
+      - "workspaces/boost/**"
+      - "workspaces/bulk-import/**"
+      - "workspaces/global-header/**"
+      - "workspaces/homepage/**"
+      - "workspaces/intelligent-assistant/**"
+      - "workspaces/orchestrator/**"
+      - "workspaces/quickstart/**"
+      - "workspaces/scorecard/**"
 
 permissions: {}
 
@@ -62,6 +71,10 @@ jobs:
       FULLSEND_GCP_PROJECT_ID: ${{ secrets.FULLSEND_GCP_PROJECT_ID }}
       OTEL_EXPORTER_OTLP_TRACES_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_TRACES_HEADERS }}
       OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+      # Required for cve-reviewer / Jira-based harnesses (pull_request_target
+      # always loads this shim from the default branch as of Dec 2025).
+      JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+      JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
 
   stop-fix:
     if: >-

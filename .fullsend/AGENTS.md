@@ -2,6 +2,12 @@
 
 Before working under `workspaces/`, invoke the `rhdh-workspace` skill.
 
+CVE dependency-bump PR assessment is owned by the `cve-reviewer` harness
+(`rhdh/harness/cve-review.yaml`): label `cve-fix` or comment
+`/fs-cve-pr-review`. It stages Jira/CVE → GHSA floors, `yarn why -R`, and
+`verification.json`, then posts an advisory PASS/FAIL/PARTIAL/ERROR comment.
+It does not `/lgtm` or merge.
+
 Run Jest tests non-interactively with `CI=true yarn test --watchAll=false`.
 If Claude auto-backgrounds a verification command, invoke `TaskStop` before
 finishing.
