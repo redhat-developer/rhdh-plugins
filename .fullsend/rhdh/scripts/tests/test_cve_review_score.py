@@ -35,6 +35,7 @@ class CveReviewScoreTest(unittest.TestCase):
         why_versions=None,
         lockfile_packages=None,
         empty_why=(),
+        custom_why=None,
     ):
         """Score advisories for ``packages``.
 
@@ -42,6 +43,7 @@ class CveReviewScoreTest(unittest.TestCase):
         lockfile_packages: if set, write a yarn.lock containing those names and
             pass --lockfile.
         empty_why: package names whose why dump is an empty file.
+        custom_why: optional {name: raw_why_text} overriding why file contents.
         """
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -57,7 +59,11 @@ class CveReviewScoreTest(unittest.TestCase):
             (root / "advisories.json").write_text(json.dumps(advisories))
             (root / "pr.json").write_text(json.dumps({"title": title, "body": body}))
             why_versions = why_versions or {}
+            custom_why = custom_why or {}
             for name in packages:
+                if name in custom_why:
+                    (why_dir / f"{name}.txt").write_text(custom_why[name])
+                    continue
                 if name in empty_why:
                     (why_dir / f"{name}.txt").write_text("")
                     continue
@@ -66,11 +72,12 @@ class CveReviewScoreTest(unittest.TestCase):
                 if colored:
                     version = f"\x1b[34m{version}\x1b[0m"
                 (why_dir / f"{name}.txt").write_text(version + "\n")
+            output = root / "verification.json"
             cmd = [
                 sys.executable, str(SCORER), "--advisories",
                 str(root / "advisories.json"),
                 "--why-dir", str(why_dir), "--pr-context", str(root / "pr.json"),
-                "--workspace", "example", "--out", str(root / "verification.json"),
+                "--workspace", "example", "--out", str(output),
             ]
             if lockfile_packages is not None:
                 lines = []
@@ -79,7 +86,6 @@ class CveReviewScoreTest(unittest.TestCase):
                 lock_path = root / "yarn.lock"
                 lock_path.write_text("".join(lines))
                 cmd.extend(["--lockfile", str(lock_path)])
-            output = root / "verification.json"
             subprocess.run(cmd, check=True, capture_output=True, text=True)
             return json.loads(output.read_text())
 
@@ -196,36 +202,30 @@ class CveReviewScoreTest(unittest.TestCase):
             result["packages_not_in_lockfile"], ["vite", "vite-plus"],
         )
 
+    def test_in_lockfile_empty_why_is_error(self):
+        """Package in lockfile but empty yarn why → error (do not greenwash)."""
+        result = self.score(
+            "CVE bump",
+            "",
+            ["axios"],
+            lockfile_packages=["axios"],
+            empty_why=("axios",),
+        )
+        self.assertEqual(result["packages"][0]["status"], "error")
+        self.assertIn("empty yarn why", result["packages"][0]["detail"])
+        self.assertEqual(result["status"], "error")
+
     def test_unparseable_nonempty_why_still_errors(self):
         """ANSI/noise without strip path: non-empty unparseable stays error."""
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            why_dir = root / "why"
-            why_dir.mkdir()
-            advisories = [{
-                "ghsa_id": "GHSA-test",
-                "packages": [
-                    {"name": "axios", "patched": "2.0.0", "vulnerable_range": "< 2.0.0"},
-                ],
-            }]
-            (root / "advisories.json").write_text(json.dumps(advisories))
-            (root / "pr.json").write_text(json.dumps({"title": "t", "body": ""}))
+        result = self.score(
+            "t",
+            "",
+            ["axios"],
+            lockfile_packages=["axios"],
             # Non-empty garbage that VERSION_RE will not match (and no ANSI
             # strip recovery because there is no @npm: token).
-            (why_dir / "axios.txt").write_text("Package tree unavailable\n")
-            lock = root / "yarn.lock"
-            lock.write_text('"axios@npm:^1.0.0":\n  version: 1.0.0\n')
-            out = root / "verification.json"
-            subprocess.run([
-                sys.executable, str(SCORER),
-                "--advisories", str(root / "advisories.json"),
-                "--why-dir", str(why_dir),
-                "--pr-context", str(root / "pr.json"),
-                "--workspace", "example",
-                "--lockfile", str(lock),
-                "--out", str(out),
-            ], check=True, capture_output=True, text=True)
-            result = json.loads(out.read_text())
+            custom_why={"axios": "Package tree unavailable\n"},
+        )
         self.assertEqual(result["packages"][0]["status"], "error")
         self.assertEqual(result["status"], "error")
 
