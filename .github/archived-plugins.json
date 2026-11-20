@@ -44,6 +44,69 @@
       "gitTag": "@red-hat-developer-hub/backstage-plugin-augment-common@0.3.0",
       "reason": "No longer maintained",
       "archivedDate": "2026-11-02"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module",
+      "version": "2.0.1",
+      "workspace": "x2a",
+      "plugin": "scaffolder-backend-module-x2a",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module@2.0.1",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-20"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-x2a",
+      "version": "2.0.2",
+      "workspace": "x2a",
+      "plugin": "x2a",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-x2a@2.0.2",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-20"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-x2a-backend",
+      "version": "2.0.1",
+      "workspace": "x2a",
+      "plugin": "x2a-backend",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-x2a-backend@2.0.1",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-20"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-x2a-common",
+      "version": "2.0.1",
+      "workspace": "x2a",
+      "plugin": "x2a-common",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-x2a-common@2.0.1",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-20"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-x2a-dcr",
+      "version": "1.0.0",
+      "workspace": "x2a",
+      "plugin": "x2a-dcr",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-x2a-dcr@1.0.0",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-20"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-x2a-mcp-extras",
+      "version": "1.0.1",
+      "workspace": "x2a",
+      "plugin": "x2a-mcp-extras",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-x2a-mcp-extras@1.0.1",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-20"
+    },
+    {
+      "pluginName": "@red-hat-developer-hub/backstage-plugin-x2a-node",
+      "version": "1.0.1",
+      "workspace": "x2a",
+      "plugin": "x2a-node",
+      "gitTag": "@red-hat-developer-hub/backstage-plugin-x2a-node@1.0.1",
+      "reason": "No longer maintained",
+      "archivedDate": "2026-11-20"
     }
   ]
 }

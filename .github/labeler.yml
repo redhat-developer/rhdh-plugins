@@ -54,6 +54,3 @@ workspace/theme:
 
 workspace/translations:
   - 'Workspace\\s*translations'
-
-workspace/x2a:
-  - 'Workspace\\s*x2a'
