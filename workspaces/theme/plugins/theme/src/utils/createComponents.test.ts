@@ -97,7 +97,7 @@ describe('createComponents', () => {
     );
   });
 
-  it('uses a compact 12px font for BackstageSidebarItem labels', () => {
+  it('lets BackstageSidebarItem labels fill remaining row width', () => {
     const actual = createComponents({});
     const item = actual.BackstageSidebarItem?.styleOverrides as
       | Record<string, Record<string, unknown>>
@@ -105,12 +105,21 @@ describe('createComponents', () => {
     expect(item?.label).toEqual(
       expect.objectContaining({
         fontSize: 12,
+        width: 'auto',
+        flex: '1 1 0',
+        minWidth: 0,
       }),
     );
     expect(item?.label?.['&[class*="MuiTypography-subtitle2"]']).toEqual(
       expect.objectContaining({
         fontSize: 12,
         fontWeight: 'normal',
+      }),
+    );
+    expect(item?.secondaryAction).toEqual(
+      expect.objectContaining({
+        width: 'auto',
+        minWidth: 0,
       }),
     );
   });

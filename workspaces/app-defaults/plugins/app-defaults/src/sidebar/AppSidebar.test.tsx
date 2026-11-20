@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderInTestApp } from '@backstage/frontend-test-utils';
 import type {
   NavContentNavItem,
@@ -90,6 +91,7 @@ describe('AppSidebar', () => {
   });
 
   it('shows a hover tooltip only when the sidebar label is truncated', async () => {
+    const user = userEvent.setup();
     await renderInTestApp(
       <AppSidebar
         items={[
@@ -104,6 +106,7 @@ describe('AppSidebar', () => {
     );
 
     const link = screen.getByRole('link', { name: 'Adoption Insights' });
+    // Focusable merges onto this Box wrapper (tabindex=-1) — that is the trigger.
     const wrapper = link.parentElement ?? link;
     const label = wrapper.querySelector(
       'span[class*="MuiTypography-subtitle2"]',
@@ -118,15 +121,22 @@ describe('AppSidebar', () => {
       configurable: true,
       get: () => 100,
     });
-    fireEvent.mouseEnter(wrapper);
+    await act(async () => {
+      fireEvent.mouseEnter(wrapper); // remeasure → isDisabled=true
+    });
+    await user.hover(wrapper);
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
-    fireEvent.mouseLeave(wrapper);
+    await user.unhover(wrapper);
 
     Object.defineProperty(label, 'scrollWidth', {
       configurable: true,
       get: () => 200,
     });
-    fireEvent.mouseEnter(wrapper);
+    await act(async () => {
+      fireEvent.mouseEnter(wrapper); // remeasure → isDisabled=false
+    });
+    await user.unhover(wrapper);
+    await user.hover(wrapper);
     await waitFor(() => {
       expect(screen.getByRole('tooltip')).toHaveTextContent(
         'Adoption Insights',

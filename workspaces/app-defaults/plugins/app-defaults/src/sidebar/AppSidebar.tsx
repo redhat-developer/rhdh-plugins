@@ -18,6 +18,7 @@ import {
   isValidElement,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type ReactNode,
@@ -161,33 +162,48 @@ function SidebarLabelTooltip({
   text?: string;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLSpanElement>(null);
+  const [truncated, setTruncated] = useState(false);
+
+  const measureTruncation = () => {
+    if (wrapRef.current) {
+      setTruncated(isSidebarLabelTruncated(wrapRef.current));
+    }
+  };
+
+  useEffect(() => {
+    if (!text) {
+      setTruncated(false);
+      return undefined;
+    }
+    measureTruncation();
+    const root = wrapRef.current;
+    if (!root || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+    const observer = new ResizeObserver(() => measureTruncation());
+    observer.observe(root);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- remeasure when label text changes
+  }, [text]);
+
   if (!text) {
     return <>{children}</>;
   }
   return (
-    <TooltipTrigger
-      delay={300}
-      isOpen={open}
-      onOpenChange={nextOpen => {
-        if (!nextOpen) {
-          setOpen(false);
-        }
-      }}
-    >
+    <TooltipTrigger delay={300} isDisabled={!truncated}>
       <Focusable excludeFromTabOrder>
         <Box
+          ref={wrapRef}
           component="span"
           style={{ display: 'block', width: '100%' }}
-          onMouseEnter={event => {
-            setOpen(isSidebarLabelTruncated(event.currentTarget));
-          }}
-          onMouseLeave={() => setOpen(false)}
+          onMouseEnter={measureTruncation}
+          onFocus={measureTruncation}
         >
           {children}
         </Box>
       </Focusable>
-      <Tooltip placement="bottom">{text}</Tooltip>
+      <Tooltip placement="right">{text}</Tooltip>
     </TooltipTrigger>
   );
 }

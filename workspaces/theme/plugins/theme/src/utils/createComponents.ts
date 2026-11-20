@@ -856,10 +856,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
         label: {
           fontSize: 12,
+          width: 'auto',
+          flex: '1 1 0',
+          minWidth: 0, // needed for flex + ellipsis
+          // Matches today's Backstage SidebarItem Typography (subtitle2).
           '&[class*="MuiTypography-subtitle2"]': {
             fontSize: 12,
             fontWeight: 'normal',
           },
+        },
+        // Collapse when empty; grow when an expand/flyout arrow is present.
+        secondaryAction: {
+          width: 'auto',
+          minWidth: 0,
         },
         selected: {
           backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
