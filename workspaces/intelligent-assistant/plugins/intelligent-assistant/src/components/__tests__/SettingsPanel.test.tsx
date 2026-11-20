@@ -30,15 +30,22 @@ jest.mock('../SavedPromptsSettings', () => ({
   SavedPromptsSettings: () => <div data-testid="saved-prompts-settings" />,
 }));
 
+jest.mock('../PreferencesSettings', () => ({
+  PreferencesSettings: () => <div data-testid="preferences-settings" />,
+}));
+
 describe('SettingsPanel', () => {
   const onTabChange = jest.fn();
   const onClose = jest.fn();
 
   const defaultProps = {
-    activeTab: 'mcp-servers' as const,
+    activeTab: 'preferences' as const,
     onTabChange,
     onClose,
+    isPinningChatsEnabled: true,
+    onPinnedChatsToggle: jest.fn(),
     isSavedPromptsEnabled: true,
+    onSavedPromptsToggle: jest.fn(),
     onEnableSavedPrompts: jest.fn(),
     onApplySavedPromptToInput: jest.fn(),
     onSendSavedPromptDirectly: jest.fn(),
@@ -54,6 +61,15 @@ describe('SettingsPanel', () => {
     expect(
       screen.getByRole('heading', { name: 'Settings' }),
     ).toBeInTheDocument();
+  });
+
+  it('should render Preferences when Preferences tab is active', () => {
+    render(<SettingsPanel {...defaultProps} activeTab="preferences" />);
+
+    expect(screen.getByTestId('preferences-settings')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('mcp-servers-settings'),
+    ).not.toBeInTheDocument();
   });
 
   it('should render MCP settings when MCP tab is active', () => {
@@ -74,8 +90,16 @@ describe('SettingsPanel', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should call onTabChange when saved prompts tab is clicked', () => {
+  it('should call onTabChange when Preferences tab is clicked', () => {
     render(<SettingsPanel {...defaultProps} activeTab="mcp-servers" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preferences' }));
+
+    expect(onTabChange).toHaveBeenCalledWith('preferences');
+  });
+
+  it('should call onTabChange when saved prompts tab is clicked', () => {
+    render(<SettingsPanel {...defaultProps} activeTab="preferences" />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Saved prompts' }));
 
@@ -90,7 +114,7 @@ describe('SettingsPanel', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('should hide MCP tab and show saved prompts when showMcpSettings is false', () => {
+  it('should hide MCP tab and fall back to Preferences when showMcpSettings is false', () => {
     render(
       <SettingsPanel
         {...defaultProps}
@@ -102,7 +126,7 @@ describe('SettingsPanel', () => {
     expect(
       screen.queryByRole('button', { name: 'MCP servers' }),
     ).not.toBeInTheDocument();
-    expect(screen.getByTestId('saved-prompts-settings')).toBeInTheDocument();
+    expect(screen.getByTestId('preferences-settings')).toBeInTheDocument();
     expect(
       screen.queryByTestId('mcp-servers-settings'),
     ).not.toBeInTheDocument();
