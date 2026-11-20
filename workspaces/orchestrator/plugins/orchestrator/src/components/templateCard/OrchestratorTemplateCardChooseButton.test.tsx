@@ -161,4 +161,23 @@ describe('OrchestratorTemplateCardChooseButton', () => {
       'workflow.unavailable.runTooltip',
     );
   });
+
+  it('disables Choose and shows unavailable tooltip when workflow overview fails', async () => {
+    mockUseAsync.mockReturnValue({
+      loading: false,
+      error: new Error('Request failed with status 403'),
+    });
+
+    renderChooseButton();
+
+    const chooseButton = screen.getByRole('button', {
+      name: 'templateCard.chooseButtonText',
+    });
+    expect(chooseButton).toBeDisabled();
+
+    await userEvent.hover(chooseButton.parentElement!);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'workflow.unavailable.runTooltip',
+    );
+  });
 });

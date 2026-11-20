@@ -26,17 +26,12 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     instructions?: string;
     handoffDescription?: string;
     model?: string;
-    inferenceProvider?: {
-      name: string;
-      model: string;
-    };
     handoffs?: string[];
     tools?: string[];
     toolUseBehavior?: string | string[];
     resetToolChoice?: boolean;
     modelSettings?: AgentAiResourceModelSettings;
     outputSchema?: Record<string, JsonValue | undefined> | string;
-    executionMode?: 'in-process' | 'subprocess' | 'sandbox';
   };
 }
 

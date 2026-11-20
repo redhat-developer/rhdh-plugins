@@ -8607,7 +8607,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.0, @red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.10":
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.14.10":
   version: 0.14.11
   resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.14.11"
   dependencies:
@@ -13103,57 +13103,6 @@ __metadata:
   checksum: 10c0/60060daf71743539df845382bdfa0bffe2268bd02f0285d4714a4ed8ce610b5810eb157b831cf2b3133d248e6de338c83c48ab9164a5f6069bb0e9c146531b53
   languageName: node
   linkType: hard
-
-"app-legacy@workspace:packages/app-legacy":
-  version: 0.0.0-use.local
-  resolution: "app-legacy@workspace:packages/app-legacy"
-  dependencies:
-    "@backstage/app-defaults": "npm:^1.7.13"
-    "@backstage/catalog-model": "npm:^1.10.2"
-    "@backstage/cli": "npm:^0.36.7"
-    "@backstage/core-app-api": "npm:^1.20.6"
-    "@backstage/core-components": "npm:^0.18.15"
-    "@backstage/core-plugin-api": "npm:^1.12.11"
-    "@backstage/integration-react": "npm:^1.2.23"
-    "@backstage/plugin-api-docs": "npm:^0.14.6"
-    "@backstage/plugin-catalog": "npm:^2.0.10"
-    "@backstage/plugin-catalog-common": "npm:^1.2.1"
-    "@backstage/plugin-catalog-graph": "npm:^0.6.9"
-    "@backstage/plugin-catalog-import": "npm:^0.13.19"
-    "@backstage/plugin-catalog-react": "npm:^3.3.0"
-    "@backstage/plugin-kubernetes": "npm:^0.12.24"
-    "@backstage/plugin-notifications": "npm:^0.6.1"
-    "@backstage/plugin-org": "npm:^0.8.0"
-    "@backstage/plugin-permission-react": "npm:^0.5.6"
-    "@backstage/plugin-scaffolder": "npm:^1.40.0"
-    "@backstage/plugin-search": "npm:^1.7.9"
-    "@backstage/plugin-search-react": "npm:^1.11.9"
-    "@backstage/plugin-signals": "npm:^0.0.36"
-    "@backstage/plugin-techdocs": "npm:^1.19.0"
-    "@backstage/plugin-techdocs-module-addons-contrib": "npm:^1.1.41"
-    "@backstage/plugin-techdocs-react": "npm:^1.4.0"
-    "@backstage/plugin-user-settings": "npm:^0.9.8"
-    "@backstage/test-utils": "npm:^1.7.23"
-    "@backstage/theme": "npm:^0.7.3"
-    "@backstage/ui": "npm:^0.19.0"
-    "@mui/icons-material": "npm:^5.18.0"
-    "@mui/material": "npm:^5.18.0"
-    "@playwright/test": "npm:1.61.1"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.14.0"
-    "@red-hat-developer-hub/backstage-plugin-translations": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-translations-test": "workspace:^"
-    "@testing-library/dom": "npm:^9.0.0"
-    "@testing-library/jest-dom": "npm:^6.0.0"
-    "@testing-library/react": "npm:^14.0.0"
-    "@testing-library/user-event": "npm:^14.0.0"
-    "@types/react-dom": "npm:*"
-    cross-env: "npm:^7.0.0"
-    react: "npm:^18.0.2"
-    react-dom: "npm:^18.0.2"
-    react-router: "npm:^6.30.4"
-    react-router-dom: "npm:^6.30.6"
-  languageName: unknown
-  linkType: soft
 
 "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
   version: 0.0.0-use.local
