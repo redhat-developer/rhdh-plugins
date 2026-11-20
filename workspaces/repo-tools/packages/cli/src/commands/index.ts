@@ -64,6 +64,14 @@ export const registerCommands = (program: Command) => {
   program
     .command('workspace')
     .command('create')
+    .option(
+      '--name <name>',
+      'Name of the new workspace (skips the interactive name prompt)',
+    )
+    .option(
+      '--owner <owner>',
+      'GitHub handle or group for the workspace owner (skips the interactive owner prompt)',
+    )
     .action(lazy(() => import('./workspace/create'), 'default'));
 
   const lintCommand = program
