@@ -7,4 +7,23 @@ import { BasicPermission } from '@backstage/plugin-permission-common';
 
 // @public
 export const adoptionInsightsEventsReadPermission: BasicPermission;
+
+// @public
+export const DEFAULT_NOTIFICATION_FREQUENCY: NotificationFrequency;
+
+// @public
+export const NOTIFICATION_FREQUENCIES: readonly [
+  'off',
+  'daily',
+  'weekly',
+  'monthly',
+];
+
+// @public
+export type NotificationFrequency = (typeof NOTIFICATION_FREQUENCIES)[number];
+
+// @public
+export type NotificationPreference = {
+  frequency: NotificationFrequency;
+};
 ```

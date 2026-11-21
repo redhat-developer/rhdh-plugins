@@ -17,23 +17,26 @@ import {
   HttpAuthService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
-import { NotAllowedError } from '@backstage/errors';
+import { AuthenticationError, NotAllowedError } from '@backstage/errors';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
 import express, { Request, Response } from 'express';
 import Router from 'express-promise-router';
 
 import EventApiController from './controllers/EventApiController';
+import { NotificationPreferenceController } from './controllers/NotificationPreferenceController';
 import { QueryParams } from './types/event-request';
 
 export async function createRouter({
   httpAuth,
   permissions,
   eventApiController,
+  notificationPreferenceController,
 }: {
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
   eventApiController: EventApiController;
+  notificationPreferenceController: NotificationPreferenceController;
 }): Promise<express.Router> {
   const router = Router();
 
@@ -63,8 +66,18 @@ export async function createRouter({
     return credentials.principal.userEntityRef;
   };
   router.use(async (req, _, next) => {
-    await getUserEntityRef(req);
-    next();
+    try {
+      await getUserEntityRef(req);
+      next();
+    } catch (error) {
+      if (
+        req.path === '/notification-preference' &&
+        error instanceof NotAllowedError
+      ) {
+        throw new AuthenticationError('User credentials required');
+      }
+      throw error;
+    }
   });
 
   router.get(
@@ -78,6 +91,15 @@ export async function createRouter({
   router.post('/events', async (req, res) => {
     return eventApiController.trackEvents(req, res);
   });
+
+  // Users manage only their own preference; no board-read permission required.
+  // Keep these routes registered regardless of notification sending config.
+  router.get('/notification-preference', (req, res) =>
+    notificationPreferenceController.getPreference(req, res),
+  );
+  router.put('/notification-preference', (req, res) =>
+    notificationPreferenceController.updatePreference(req, res),
+  );
 
   router.get('/health', (_, response) => {
     response.json({ status: 'ok' });
