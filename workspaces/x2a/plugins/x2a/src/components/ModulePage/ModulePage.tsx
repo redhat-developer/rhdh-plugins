@@ -24,7 +24,6 @@ import {
 } from '@backstage/core-components';
 import { Box, Grid } from '@material-ui/core';
 import {
-  resolveScmProvider,
   CancellablePhase,
   GitRepositoryRef,
   MigrationPhase,
@@ -40,7 +39,7 @@ import { useClientService } from '../../ClientService';
 import { useScmHostMap } from '../../hooks/useScmHostMap';
 import { useTranslation } from '../../hooks/useTranslation';
 import { usePolledFetch } from '../../hooks/usePolledFetch';
-import { useRepoAuthentication } from '../../repoAuth';
+import { repoTokenRequest, useRepoAuthentication } from '../../repoAuth';
 import { ModuleDetailsCard } from './ModuleDetailsCard';
 import { PhasesCard } from './PhasesCard';
 import { ModulePageBreadcrumb } from './ModulePageBreadcrumb';
@@ -91,22 +90,14 @@ export const ModulePage = () => {
       setError(undefined);
 
       try {
-        const sourceRepoAuthToken = (
+        // One batch, so a refused host fails before any sign-in starts.
+        const [sourceRepoAuth, targetRepoAuth] =
           await repoAuthentication.authenticate([
-            resolveScmProvider(
-              project.sourceRepoUrl,
-              hostMap,
-            ).getAuthTokenDescriptor(true),
-          ])
-        )[0].token;
-        const targetRepoAuthToken = (
-          await repoAuthentication.authenticate([
-            resolveScmProvider(
-              project.targetRepoUrl,
-              hostMap,
-            ).getAuthTokenDescriptor(false),
-          ])
-        )[0].token;
+            repoTokenRequest(project.sourceRepoUrl, hostMap, true),
+            repoTokenRequest(project.targetRepoUrl, hostMap, false),
+          ]);
+        const sourceRepoAuthToken = sourceRepoAuth.token;
+        const targetRepoAuthToken = targetRepoAuth.token;
 
         const response =
           await clientService.projectsProjectIdModulesModuleIdRunPost({
@@ -152,10 +143,7 @@ export const ModulePage = () => {
       try {
         const targetRepoAuthToken = (
           await repoAuthentication.authenticate([
-            resolveScmProvider(
-              project.targetRepoUrl,
-              hostMap,
-            ).getAuthTokenDescriptor(false),
+            repoTokenRequest(project.targetRepoUrl, hostMap, false),
           ])
         )[0].token;
 

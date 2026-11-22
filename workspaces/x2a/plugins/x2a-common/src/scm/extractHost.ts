@@ -20,7 +20,7 @@
  * Accepts URLs with or without a scheme (`https://github.com/…` or `github.com/…`).
  * Returns `undefined` when the URL cannot be parsed.
  *
- * @internal
+ * @public
  */
 export function extractHost(repoUrl: string): string | undefined {
   try {
