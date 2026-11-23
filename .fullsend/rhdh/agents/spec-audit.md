@@ -3,7 +3,7 @@ name: spec-audit
 description: >-
   Runs an independent, read-only cross-artifact OpenSpec audit for a pull
   request and publishes the advisory report as a PR comment.
-model: claude-opus-4-6
+model: claude-opus-5-5
 skills:
   - openspec-audit-change
 ---

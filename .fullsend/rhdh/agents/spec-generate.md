@@ -3,7 +3,7 @@ name: spec-generate
 description: >-
   Generates every apply-required OpenSpec artifact for a work item and opens
   a spec-only pull request. Never implements or applies the change.
-model: claude-opus-4-6
+model: claude-opus-5-5
 skills:
   - code-implementation
   - openspec-ff-change
